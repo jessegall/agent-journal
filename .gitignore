@@ -1,8 +1,5 @@
 __pycache__/
 *.pyc
-record.json
-record.json.lock
-settings.json
-state.json*
-runtime/
-todo/
+.journal/runtime/
+.journal/record.json.lock
+.journal/state.json*
