@@ -221,6 +221,8 @@ def _text_of(msg: dict) -> tuple[str, list[str], dict, list[str]]:
         elif t == "tool_use":
             name = block.get("name", "?")
             tools.append(name)
+            if name == "Skill":  # which skill: `Skill:loop` is how a running loop is recognised
+                tools.append("Skill:" + str((block.get("input") or {}).get("skill", "")))
             if name in ASKS:
                 asks[block.get("id", "")] = name
                 out.append(_asked(block.get("input") or {}))

@@ -81,6 +81,20 @@ DEFAULTS = {
     # comes back and carries on until nothing is left it can do. Minutes; 0 asks for none.
     "auto_loop_minutes": 15,
 
+    # ONE LIVE SESSION PER TRACK. A second session that starts on a track another running
+    # session holds is told at its start, held at its stops and refused edits until it has
+    # switched; a switch onto a taken track is refused. false lets sessions share a track.
+    "one_session_per_track": True,
+
+    # After this many hours without a hook event a bound session counts as gone — a
+    # terminal closed without a SessionEnd — and its track is free again.
+    "session_stale_hours": 24.0,
+
+    # THE ORDER OF THE STOP QUEUE, by subject: lower runs first. The defaults are track 5,
+    # loop 10, context 20, deferral 30, untagged 40, work 50, auto 60; {"work": 1} puts
+    # open work at the head. `journal settings` shows the order in force.
+    "stop_priority": {},
+
     # WHERE THE PROJECT'S DOCS LIVE, relative to the project root. The journal catalogues
     # what is there rather than keeping a store of its own: a knowledge base beside the
     # docs the humans read is one that drifts from them.
@@ -139,6 +153,9 @@ def load(root: Path) -> tuple[dict, list[str]]:
             continue
         if want is list and not isinstance(value, list):
             problems.append(f"{PATH}: {key} wants a list, got {value!r} — default kept")
+            continue
+        if want is dict and not isinstance(value, dict):
+            problems.append(f"{PATH}: {key} wants an object, got {value!r} — default kept")
             continue
         out[key] = value
     return out, problems

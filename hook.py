@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -43,6 +44,7 @@ import state  # noqa: E402
 import tags  # noqa: E402
 import context  # noqa: E402
 import docs  # noqa: E402
+import nudges  # noqa: E402
 import pins  # noqa: E402
 import work  # noqa: E402
 import todo  # noqa: E402
@@ -289,7 +291,9 @@ def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
 #: Measured before this: three conditions, one reply that did none of them, all three
 #: gone; and later a resolved context warning followed by silence where "auto is on, pick
 #: up the next" was owed. The user's rule: the hook runs them one by one.
-SUBJECTS = ("context", "deferral", "untagged", "work", "auto")
+#: The subjects of the queue live below, each registered with `nudges.subject(name, priority)`;
+#: `nudges.ordered(conf)` is the order they run in. `SUBJECTS` is kept as the default order.
+SUBJECTS = ("track", "loop", "context", "deferral", "untagged", "work", "auto")
 
 
 def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
@@ -305,10 +309,10 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     _floor(ctx, lines)
     here = tracks.current(ROOT, ctx.stem)
 
-    for subject in SUBJECTS:
-        if subject in raised:
+    for subject, pending in nudges.ordered(conf):
+        if subject in raised or subject in conf["silenced"]:
             continue
-        hold = _pending(subject, conf, ctx, lines, stretch, here, active)
+        hold = pending(conf, ctx, lines, stretch, here, active)
         if hold is None:
             continue
         state.put(ROOT, "raised_this_turn", raised + [subject], stem=ctx.stem)
@@ -340,148 +344,232 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     return 0
 
 
-def _pending(subject: str, conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
-    """The hold for `subject` if its condition is pending, else None.
+#: THE SUBJECTS OF THE STOP QUEUE. Each returns None when nothing is pending, a
+#: `(label, one-line brief[, details])` tuple for a hold, or `("context-only", text)` for a
+#: line said rather than held. The number is the priority: lower runs first, and
+#: `stop_priority` in settings.json overrides it per project.
 
-    A tuple (label, brief[, details]) for a hold, or ("context-only", text) for a line
-    that is said rather than held.
-    """
-    if subject == "context":
-        # ONE RUNG, ONCE; then, while the decision is owed, said again once per turn. The
-        # PreToolUse gate enforces it between stops; this is the stop's share.
-        got = context.pressure(ctx.path, conf["context_window"], state.get(ROOT, "window", 0) or 0)
-        rung = _rung(conf, ctx, got, stretch) if got and got[3] else None
-        if rung:
-            return rung
-        due = state.get(ROOT, "pin_due", None, stem=ctx.stem)
-        if due:
-            pct = 100 * due["used"] / due["window"] if due.get("window") else 0
-            return (f"context {pct:.0f}% full, still undecided",
-                    f"journal: the context warning is unanswered — `.journal/journal.py pin \"<claim>\"` "
-                    f"or `.journal/journal.py nothing \"<why>\"` before anything else; details: "
-                    "`.journal/journal.py next`")
+
+@nudges.subject("track", 5)
+def _p_track(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    due = _track_due(conf, ctx)
+    if not due:
         return None
+    return (f"track `{due['track']}` is taken by another session",
+            f"journal: track `{due['track']}` is taken by session {due['by'][:8]} ({due['age']}), and "
+            "one session works a track — ask the user which track this session works on, then "
+            '`.journal/journal.py switch "<name>"` (`journal tracks` lists them; a new name creates one)')
 
-    if subject == "deferral":
-        due = _deferral(conf, ctx)
-        return ("work deferred in words, not parked", due[0]) if due else None
 
-    if subject == "untagged":
-        missing = untagged(stretch, transcript.filing_units(lines))
-        if not missing:
-            return None
-        floor = _floor(ctx, lines)
-        held_at = max(state.get(ROOT, "held_at", 0, stem=ctx.stem), floor)
-        newest = missing[-1].n
-        if newest <= held_at:
-            return None
-        fresh = [m for m in missing if m.n > held_at]
-        state.put(ROOT, "held_at", newest, stem=ctx.stem)
-        taught = state.get(ROOT, "taught_vocabulary", False, stem=ctx.stem)
-        if not taught:
-            state.put(ROOT, "taught_vocabulary", True, stem=ctx.stem)
-        return (f"{len(fresh)} untagged message(s)",
-                f"journal: {len(fresh)} message(s) carried no tag (last: line {fresh[-1].n}) — open the "
-                "next one with " + " ".join(f"[!{t}]" for t in tags.TAGS)
-                + ("" if taught else "; the tag is the first thing in the message, nothing before it"))
+@nudges.subject("loop", 10)
+def _p_loop(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    # THE LOOP COMES FIRST. With auto on, everything the queue asks after this depends on
+    # a session that wakes up by itself; without a loop an idle stop is the end of the list.
+    m = conf.get("auto_loop_minutes", 0)
+    if not m or not todo.auto(ROOT, here):
+        return None
+    if not (work.open_work(ROOT) or todo.ready(ROOT, here)):
+        return None
+    if _loop_running(ctx, lines):
+        return None
+    return ("auto is on, no loop running",
+            f"journal: auto is on for `{here}` and this session has no loop — start one first: "
+            f"the `loop` skill with `{m}m journal next`; if one is already running that the "
+            "journal cannot see, `.journal/journal.py loop set`")
 
-    if subject == "work":
-        standing = work.open_work(ROOT)
-        if not standing:
-            return None
-        if todo.auto(ROOT, here):
-            # AUTO IS ON AND WORK IS OPEN AT A STOP: every turn, once. End it, or park what
-            # is left as a to-do and end it; open work is never left standing.
-            names = "; ".join(w["subject"] for w in standing)
-            listed = bool(todo.open_items(ROOT, here))
-            return ("auto is on, work still open",
-                    f"journal: auto is on, and `{names}` is still open — `work end` it if it is done, "
-                    "or park what is left as a to-do and `work end` it"
-                    + ("; then the list starts" if listed else "; open work is never left standing"),
-                    f"Open: {names}\n\nAuto is on for `{here}`, and the next to-do starts only "
-                    "when nothing is open. If this work is finished, close it:\n"
-                    '  .journal/journal.py work end "<the same words>"\n'
-                    "If part of it is waiting on the user — a ruling, a review — that part is a "
-                    "to-do, not open work: park it with the questions in its brief, then end the "
-                    "work:\n"
-                    '  .journal/journal.py todo "<what is left, and on what it waits>" --brief\n'
-                    "If you are mid-work and stopped to ask the user something, say so; the next "
-                    "turn asks again.")
-        # ONLY WORK THIS TRANSCRIPT OPENED, ONCE PER PIECE. Work opened elsewhere was told
-        # at the start; work legitimately spans stops, and a hold that repeats until it
-        # closes is a trap.
-        mine = ctx.path.name if ctx.path else None
-        raw = state.get(ROOT, "held_work", {}, stem=ctx.stem)
-        held = raw if isinstance(raw, dict) else {k: -1 for k in (raw or [])}
-        fresh = [w for w in standing if w.get("session") == mine and w["subject"] not in held]
-        if not fresh:
-            return None
-        for w in fresh:
-            held[w["subject"]] = len(w.get("notes", []))
-        state.put(ROOT, "held_work", held, stem=ctx.stem)
-        return ("work still open",
-                f"journal: still open — {'; '.join(w['subject'] for w in fresh)} — `work end` it, or "
-                "`work update` where it got to")
 
-    if subject == "auto":
-        if work.open_work(ROOT):
-            return None
-        waiting = todo.open_items(ROOT, here)
-        ids = sorted(t["n"] for t in waiting)
-        if not ids:
-            return None
-        auto = todo.auto(ROOT, here)
-        ready = todo.ready(ROOT, here)
-        unstuck = todo.answered(ROOT, here)
-        if auto and not ready:
-            # every waiting to-do waits on the user: nothing to hold for, said once per state
-            if ids != state.get(ROOT, "todos_said", [], stem=ctx.stem):
-                state.put(ROOT, "todos_said", ids, stem=ctx.stem)
-                return ("context-only",
-                        f"journal: auto is on for `{here}`, but every waiting to-do waits on the "
-                        "user (`journal todo` shows the questions). Nothing to pick up until they answer.")
-            return None
-        if not auto:
-            if not unstuck:
-                return None
-            key = [str(t["n"]) for t in unstuck]
-            if key == state.get(ROOT, "answered_said", [], stem=ctx.stem):
-                return None
-            state.put(ROOT, "answered_said", key, stem=ctx.stem)
-            t = unstuck[0]
-            return (f"the user answered to-do {t['n']}",
-                    f"journal: the user answered to-do {t['n']} ({t['title']}) — that is their "
-                    f"word to do it: `.journal/journal.py todo start {t['n']}`",
-                    "\n".join(f"To-do {u['n']}: {u['title']}\n  asked:    {u['asks']}\n"
-                              f"  answered: {u['answer']}" for u in unstuck)
-                    + "\n\nStart it, do it, end it. The answer stays on the to-do; "
-                    f"`journal todo {t['n']}` shows both.")
-        nxt = ready[0]
-        if todo.answered_one(nxt):
-            return (f"auto is on, the user answered to-do {nxt['n']}",
-                    f"journal: the user answered to-do {nxt['n']} ({nxt['title']}) — you are "
-                    f"unstuck: `.journal/journal.py todo start {nxt['n']}`",
-                    "\n".join(f"To-do {u['n']}: {u['title']}\n  asked:    {u['asks']}\n"
-                              f"  answered: {u['answer']}" for u in unstuck)
-                    + f"\n\nStart with to-do {nxt['n']}: the answer is above, the brief is "
-                    f"`journal todo {nxt['n']}`. Then the rest of the list:\n"
-                    + "\n".join(f"  {t['n']:>3}  {t['title']}" for t in waiting if not todo.answered_one(t)))
-        return (f"auto is on, {len(ids)} to-do(s) waiting",
-                f"journal: auto is on for `{here}` and nothing is open — pick up the next to-do: "
-                f"`.journal/journal.py todo start {nxt['n']}`",
-                f"Waiting on `{here}`:\n" + "\n".join(
-                    f"  {t['n']:>3}  {t['title']}" + (f"  (waits on the user: {t['asks']})" if t.get("asks") else "")
-                    for t in waiting)
-                + f"\n\nAuto mode is on: this list is worked through without asking. Read "
-                f"the brief (`journal todo {nxt['n']}`), start it, SOLVE IT YOURSELF, `work end` it, "
-                "and the next idle stop brings the next one. " + _loop_line(conf)
-                + " Every choice the brief leaves open is yours to make: make it, write it in "
-                "`journal work update`, carry on. Ask the user only if you cannot proceed without "
-                "something only they can supply, or the hook tells you that you are stalled — then "
-                f"`work update` what was tried, `work end`, `journal todo ask {nxt['n']} \"<what is stuck>\"`, "
-                "and the next stop names the next to-do.")
+@nudges.subject("context", 20)
+def _p_context(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+
+    # ONE RUNG, ONCE; then, while the decision is owed, said again once per turn. The
+    # PreToolUse gate enforces it between stops; this is the stop's share.
+    got = context.pressure(ctx.path, conf["context_window"], state.get(ROOT, "window", 0) or 0)
+    rung = _rung(conf, ctx, got, stretch) if got and got[3] else None
+    if rung:
+        return rung
+    due = state.get(ROOT, "pin_due", None, stem=ctx.stem)
+    if due:
+        pct = 100 * due["used"] / due["window"] if due.get("window") else 0
+        return (f"context {pct:.0f}% full, still undecided",
+                f"journal: the context warning is unanswered — `.journal/journal.py pin \"<claim>\"` "
+                f"or `.journal/journal.py nothing \"<why>\"` before anything else; details: "
+                "`.journal/journal.py next`")
     return None
 
+
+@nudges.subject("deferral", 30)
+def _p_deferral(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    due = _deferral(conf, ctx)
+    return ("work deferred in words, not parked", due[0]) if due else None
+
+
+@nudges.subject("untagged", 40)
+def _p_untagged(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    missing = untagged(stretch, transcript.filing_units(lines))
+    if not missing:
+        return None
+    floor = _floor(ctx, lines)
+    held_at = max(state.get(ROOT, "held_at", 0, stem=ctx.stem), floor)
+    newest = missing[-1].n
+    if newest <= held_at:
+        return None
+    fresh = [m for m in missing if m.n > held_at]
+    state.put(ROOT, "held_at", newest, stem=ctx.stem)
+    taught = state.get(ROOT, "taught_vocabulary", False, stem=ctx.stem)
+    if not taught:
+        state.put(ROOT, "taught_vocabulary", True, stem=ctx.stem)
+    return (f"{len(fresh)} untagged message(s)",
+            f"journal: {len(fresh)} message(s) carried no tag (last: line {fresh[-1].n}) — open the "
+            "next one with " + " ".join(f"[!{t}]" for t in tags.TAGS)
+            + ("" if taught else "; the tag is the first thing in the message, nothing before it"))
+
+
+@nudges.subject("work", 50)
+def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    standing = work.open_work(ROOT)
+    if not standing:
+        return None
+    if todo.auto(ROOT, here):
+        # AUTO IS ON AND WORK IS OPEN AT A STOP: every turn, once. End it, or park what
+        # is left as a to-do and end it; open work is never left standing.
+        names = "; ".join(w["subject"] for w in standing)
+        listed = bool(todo.open_items(ROOT, here))
+        return ("auto is on, work still open",
+                f"journal: auto is on, and `{names}` is still open — `work end` it if it is done, "
+                "or park what is left as a to-do and `work end` it"
+                + ("; then the list starts" if listed else "; open work is never left standing"),
+                f"Open: {names}\n\nAuto is on for `{here}`, and the next to-do starts only "
+                "when nothing is open. If this work is finished, close it:\n"
+                '  .journal/journal.py work end "<the same words>"\n'
+                "If part of it is waiting on the user — a ruling, a review — that part is a "
+                "to-do, not open work: park it with the questions in its brief, then end the "
+                "work:\n"
+                '  .journal/journal.py todo "<what is left, and on what it waits>" --brief\n'
+                "If you are mid-work and stopped to ask the user something, say so; the next "
+                "turn asks again.")
+    # ONLY WORK THIS TRANSCRIPT OPENED, ONCE PER PIECE. Work opened elsewhere was told
+    # at the start; work legitimately spans stops, and a hold that repeats until it
+    # closes is a trap.
+    mine = ctx.path.name if ctx.path else None
+    raw = state.get(ROOT, "held_work", {}, stem=ctx.stem)
+    held = raw if isinstance(raw, dict) else {k: -1 for k in (raw or [])}
+    fresh = [w for w in standing if w.get("session") == mine and w["subject"] not in held]
+    if not fresh:
+        return None
+    for w in fresh:
+        held[w["subject"]] = len(w.get("notes", []))
+    state.put(ROOT, "held_work", held, stem=ctx.stem)
+    return ("work still open",
+            f"journal: still open — {'; '.join(w['subject'] for w in fresh)} — `work end` it, or "
+            "`work update` where it got to")
+
+
+@nudges.subject("auto", 60)
+def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    if work.open_work(ROOT):
+        return None
+    waiting = todo.open_items(ROOT, here)
+    ids = sorted(t["n"] for t in waiting)
+    if not ids:
+        return None
+    auto = todo.auto(ROOT, here)
+    ready = todo.ready(ROOT, here)
+    unstuck = todo.answered(ROOT, here)
+    if auto and not ready:
+        # every waiting to-do waits on the user: nothing to hold for, said once per state
+        if ids != state.get(ROOT, "todos_said", [], stem=ctx.stem):
+            state.put(ROOT, "todos_said", ids, stem=ctx.stem)
+            return ("context-only",
+                    f"journal: auto is on for `{here}`, but every waiting to-do waits on the "
+                    "user (`journal todo` shows the questions). Nothing to pick up until they answer.")
+        return None
+    if not auto:
+        if not unstuck:
+            return None
+        key = [str(t["n"]) for t in unstuck]
+        if key == state.get(ROOT, "answered_said", [], stem=ctx.stem):
+            return None
+        state.put(ROOT, "answered_said", key, stem=ctx.stem)
+        t = unstuck[0]
+        return (f"the user answered to-do {t['n']}",
+                f"journal: the user answered to-do {t['n']} ({t['title']}) — that is their "
+                f"word to do it: `.journal/journal.py todo start {t['n']}`",
+                "\n".join(f"To-do {u['n']}: {u['title']}\n  asked:    {u['asks']}\n"
+                          f"  answered: {u['answer']}" for u in unstuck)
+                + "\n\nStart it, do it, end it. The answer stays on the to-do; "
+                f"`journal todo {t['n']}` shows both.")
+    nxt = ready[0]
+    if todo.answered_one(nxt):
+        return (f"auto is on, the user answered to-do {nxt['n']}",
+                f"journal: the user answered to-do {nxt['n']} ({nxt['title']}) — you are "
+                f"unstuck: `.journal/journal.py todo start {nxt['n']}`",
+                "\n".join(f"To-do {u['n']}: {u['title']}\n  asked:    {u['asks']}\n"
+                          f"  answered: {u['answer']}" for u in unstuck)
+                + f"\n\nStart with to-do {nxt['n']}: the answer is above, the brief is "
+                f"`journal todo {nxt['n']}`. Then the rest of the list:\n"
+                + "\n".join(f"  {t['n']:>3}  {t['title']}" for t in waiting if not todo.answered_one(t)))
+    return (f"auto is on, {len(ids)} to-do(s) waiting",
+            f"journal: auto is on for `{here}` and nothing is open — pick up the next to-do: "
+            f"`.journal/journal.py todo start {nxt['n']}`",
+            f"Waiting on `{here}`:\n" + "\n".join(
+                f"  {t['n']:>3}  {t['title']}" + (f"  (waits on the user: {t['asks']})" if t.get("asks") else "")
+                for t in waiting)
+            + f"\n\nAuto mode is on: this list is worked through without asking. Read "
+            f"the brief (`journal todo {nxt['n']}`), start it, SOLVE IT YOURSELF, `work end` it, "
+            "and the next idle stop brings the next one. " + _loop_line(conf)
+            + " Every choice the brief leaves open is yours to make: make it, write it in "
+            "`journal work update`, carry on. Ask the user only if you cannot proceed without "
+            "something only they can supply, or the hook tells you that you are stalled — then "
+            f"`work update` what was tried, `work end`, `journal todo ask {nxt['n']} \"<what is stuck>\"`, "
+            "and the next stop names the next to-do.")
+
+
+
+#: What a running loop looks like in a transcript: the harness's scheduling tools, the
+#: `loop` skill, or the user typing `/loop`.
+_LOOP_TOOLS = frozenset({"CronCreate", "ScheduleWakeup", "Skill:loop"})
+
+
+def _loop_running(ctx: Ctx, lines) -> bool:
+    """Has this session a loop? Once seen it is remembered; `journal loop set` says so by hand."""
+    if state.get(ROOT, "loop_set", False, stem=ctx.stem):
+        return True
+    for l in lines:
+        if any(t in _LOOP_TOOLS for t in l.tools) or (l.role == "user" and "/loop" in (l.text or "")):
+            state.put(ROOT, "loop_set", True, stem=ctx.stem)
+            return True
+    return False
+
+
+def _track_due(conf: dict, ctx: Ctx) -> dict | None:
+    """Is this session on a track another live session holds? Written to runtime while it is.
+
+    ONE SESSION WORKS A TRACK. Two agents on one track share its open work and its to-do
+    list, and two auto sessions would pick the same chore. So a session that starts on a
+    taken track — the project's start track, usually, because the user opened a second
+    terminal — is told at its start, held at its stops and refused edits until it has
+    switched. A session that was here first is never moved.
+    """
+    if not conf["one_session_per_track"] or "track" in conf["silenced"]:
+        return None
+    here = tracks.current(ROOT, ctx.stem)
+    others = tracks.occupants(ROOT, here, ctx.stem, conf["session_stale_hours"])
+    if not others:
+        if state.get(ROOT, "track_due", None, stem=ctx.stem):
+            state.put(ROOT, "track_due", None, stem=ctx.stem)
+        return None
+    sid, age = others[0]
+    due = {"track": here, "by": sid, "age": tracks.age_text(age)}
+    state.put(ROOT, "track_due", due, stem=ctx.stem)
+    return due
+
+
+def _taken_block(due: dict) -> str:
+    return (f"TRACK `{due['track']}` IS TAKEN: session {due['by'][:8]} is on it ({due['age']}), and one "
+            "session works a track at a time. Before anything else, tell the user and ask which "
+            "track this session works on — a free one from `journal tracks`, or a new name — then\n"
+            '  .journal/journal.py switch "<name>"\n'
+            "Until then edits are refused and every stop asks again. Reads are fine.")
 
 
 #: Tools whose ENTIRE PURPOSE is to change a file. No judgement needed for these.
@@ -731,7 +819,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 
 #: Journal verbs that WRITE. A subagent may read the record; it may not change it.
 JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "remember", "strike", "switch", "nothing",
-                            "rule", "promote", "todo", "docs", "work", "tools"})
+                            "rule", "promote", "todo", "docs", "work", "tools", "loop"})
 
 
 def _journal_write(payload: dict) -> str | None:
@@ -822,6 +910,10 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
             "Nothing is the right answer more often than not — say so and carry on. "
             "`journal search`, `journal conversation --back=1` and `journal pins` still run, to decide with."
         )
+    if _is_write(payload) and not _is_journal(payload):
+        taken = _track_due(conf, ctx)
+        if taken:
+            return _deny(_taken_block(taken))
     if not conf["gate_writes_on_start"] or "gate" in conf["silenced"]:
         return 0
     if not _is_write(payload) or work.open_work(ROOT) or _declared_first(payload):
@@ -1124,14 +1216,14 @@ def _hold(label: str, brief: str, text: str = "") -> int:
     # the user — measured, against its own docs — so anything longer than a line is kept
     # in the transcript's runtime file and the line says `journal next`. The agent runs
     # that; the user sees one line.
+    # ONE LINE, IN ONE FIELD. The harness prints `reason` as "Stop hook error" and
+    # `additionalContext` as "Stop hook feedback": two lines per hold when both are sent.
+    # So the hold is the reason alone — label, then the instruction — and nothing else.
     if text and _HOLD_CTX:
         state.put(ROOT, "next_text", text, stem=_HOLD_CTX[0])
         brief += " — details: `.journal/journal.py next`"
-    print(json.dumps({
-        "decision": "block",
-        "reason": f"journal reminded Claude: {label}",
-        "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": brief},
-    }))
+    body = brief[len("journal: "):] if brief.startswith("journal: ") else brief
+    print(json.dumps({"decision": "block", "reason": f"journal: {label} — {body}"}))
     return 0
 
 
@@ -1331,7 +1423,7 @@ def _loop_line(conf: dict) -> str:
             "or everything left waits on the user.")
 
 
-def _prune() -> None:
+def _prune(keep: str = "") -> None:
     """Drop the runtime file of any transcript this machine no longer has.
 
     BY EVIDENCE, NEVER BY A COUNTER. A file is kept as long as its transcript is, however
@@ -1346,6 +1438,7 @@ def _prune() -> None:
                 state.runtime_file(ROOT, stem).unlink()
             except OSError:
                 pass
+    tracks.prune(ROOT, lambda stem: stem == keep or transcript.find(project, stem) is not None)
 
 
 def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
@@ -1371,8 +1464,11 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
         if peak and not state.get(ROOT, "window", 0):
             state.put(ROOT, "window", context.window_from_peak(peak))
     tracks.carried(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem)
-    _prune()
+    _prune(ctx.stem)
     block = carried(source, ctx.stem)
+    taken = _track_due(conf, ctx)
+    if taken:
+        block = _taken_block(taken) + "\n\n" + block
     if WORKTREE_NOTE:
         block = WORKTREE_NOTE + "\n\n" + block
     # WHAT CHANGED SINCE THIS TRANSCRIPT LAST SAW THE JOURNAL, once. An upgrade writes the
@@ -1403,7 +1499,16 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
 #: are the same events as the harness has also spelled them; an unknown event is silence,
 #: because a doorbell that argues with a caller it does not recognise is worse than one
 #: that does not ring.
+def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
+    """The session is over: its track is free. A closed terminal skips this; staleness covers it."""
+    tracks.unbind(ROOT, ctx.stem)
+    state.put(ROOT, "ended", payload.get("reason") or "exit", stem=ctx.stem)
+    return 0
+
+
 HANDLERS = {
+    "SessionEnd": on_session_end,
+    "session-end": on_session_end,
     "Stop": on_stop,
     "stop": on_stop,
     "UserPromptSubmit": on_user_prompt,
@@ -1449,12 +1554,6 @@ def main() -> int:
             return on_subagent_post(conf, payload)
         return 0
     ctx = _ctx(payload)
-    if ctx is not None:
-        # A SESSION RUNNING WHEN THE UPDATE LANDED has no binding yet: bind it now, at
-        # whatever event comes first, to the project's start track — as its start would.
-        if not payload.get('agent_id') and not tracks.bound(ROOT, ctx.stem):
-            tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
-        state.use_track(tracks.current(ROOT, ctx.stem))
     if ctx is None:
         print(f"journal: {event} payload names no session or transcript — nothing filed",
               file=sys.stderr)
@@ -1463,6 +1562,14 @@ def main() -> int:
     # error, which teaches that the journal is broken where it was only surprised. Say
     # what happened on stderr and let the turn go on.
     try:
+        # A SESSION RUNNING WHEN THE UPDATE LANDED has no binding yet: bind it now, at
+        # whatever event comes first, to the project's start track — as its start would.
+        if not tracks.bound(ROOT, ctx.stem):
+            tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+        state.use_track(tracks.current(ROOT, ctx.stem))
+        # ALIVE, AS OF NOW. What `tracks.occupants` reads to tell a running session from a
+        # terminal that was closed without a SessionEnd.
+        state.put(ROOT, "seen_at", int(time.time()), stem=ctx.stem)
         return handler(conf, payload, ctx)
     except Exception as e:  # noqa: BLE001
         print(f"journal: {event} handler failed ({type(e).__name__}: {e}) — nothing filed",

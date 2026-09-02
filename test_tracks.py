@@ -49,7 +49,7 @@ def live(root):
 r = fresh()
 check("defaults to `default` with no file", tracks.current(r), "default")
 check("listing shows one empty track", tracks.listing(r),
-      [{"name": "default", "current": True, "start": True, "pins": 0, "open": 0, "at": "", "sessions": []}])
+      [{"name": "default", "current": True, "start": True, "pins": 0, "open": 0, "at": "", "sessions": [], "seen": {}}])
 
 pins.add(r, "fact A", AT, 12)
 work.start(r, "work A", AT)

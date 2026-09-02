@@ -44,7 +44,7 @@ def project():
     shutil.copytree(SRC, d / ".journal",
                     ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
                                                   "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
-    (d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 1000000}))
+    (d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 1000000}))
     tdir = transcript.project_dir(d)
     tdir.mkdir(parents=True, exist_ok=True)
     return d
@@ -93,10 +93,12 @@ class Session:
         if not out.strip():
             return "", ""
         got = json.loads(out)
-        ctx = (got.get("hookSpecificOutput") or {}).get("additionalContext", "")
-        # the hold is one line; its details sit behind `journal next`
+        if got.get("decision") != "block":
+            return "", (got.get("hookSpecificOutput") or {}).get("additionalContext", "")
+        # the hold is ONE line, "journal: <label> — <body>"; its details sit behind `journal next`
+        label, _, ctx = got["reason"][len("journal: "):].partition(" — ")
         details = state.get(self.d / ".journal", "next_text", "", stem=self.stem) if "journal.py next" in ctx else ""
-        return got.get("reason", ""), ctx + ("\n" + details if details else "")
+        return "journal reminded Claude: " + label, "journal: " + ctx + ("\n" + details if details else "")
 
     def start(self, source="startup"):
         out = self.fire("SessionStart", source=source)
@@ -378,7 +380,7 @@ check("and the stop right after a hold passes, but only that one",
 
 # ---------------------------------------------------------------- the stall nudge
 d = project(); s = Session(d, "s1")
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 1000000, "stall_calls": 5}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 1000000, "stall_calls": 5}))
 s.journal("todo", "auto", "on"); s.journal("todo", "hard one"); s.journal("todo", "start", "1"); s.start()
 call = dict(tool_name="Read", tool_input={}, tool_response="x")
 outs = [s.fire("PostToolUse", **call) for _ in range(4)]
@@ -397,7 +399,7 @@ s.journal("end", "hard one")
 outs = [s.fire("PostToolUse", **call) for _ in range(6)]
 check("with no started to-do there is nothing to count", [o.strip() for o in outs], [""] * 6)
 d2 = project(); s2 = Session(d2, "s1")
-(d2 / ".journal" / "settings.json").write_text(json.dumps({"context_window": 1000000, "stall_calls": 0}))
+(d2 / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 1000000, "stall_calls": 0}))
 s2.journal("todo", "x"); s2.journal("todo", "start", "1"); s2.start()
 outs = [s2.fire("PostToolUse", **call) for _ in range(50)]
 check("stall_calls 0 turns it off", any(o.strip() for o in outs), False)
@@ -457,7 +459,7 @@ check("after 2 is done, 1 remains answered: held for it", label, "journal remind
 
 # ---------------------------------------------------------------- after another hold, auto still speaks
 d = project(); s = Session(d, "s1")
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 200000}))
 s.journal("todo", "chore"); s.journal("todo", "auto", "on"); s.start()
 s.say("go", "user")
 with s.path.open("a") as fh:

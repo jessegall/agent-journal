@@ -140,6 +140,8 @@ def project_with(lines: int, stem: str = "s1", tagged: bool = False):
     shutil.copytree(SRC, d / ".journal",
                     ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
                                                   "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+    # this suite is not about the loop subject or the one-session-per-track rule
+    (d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False}))
     tdir = transcript.project_dir(d)
     tdir.mkdir(parents=True, exist_ok=True)
     path = tdir / f"{stem}.jsonl"
@@ -168,9 +170,11 @@ def held(out: str) -> tuple[str, str]:
     if not out.strip():
         return "", ""
     got = json.loads(out)
-    ctx = (got.get("hookSpecificOutput") or {}).get("additionalContext", "")
+    if got.get("decision") != "block":
+        return "", (got.get("hookSpecificOutput") or {}).get("additionalContext", "")
+    label, _, ctx = got["reason"][len("journal: "):].partition(" — ")
     details = state.get(d / ".journal", "next_text", "", stem=path.stem) if "journal.py next" in ctx else ""
-    return got.get("reason", ""), ctx + ("\n" + details if details else "")
+    return "journal reminded Claude: " + label, "journal: " + ctx + ("\n" + details if details else "")
 
 
 def runtime_of(d, stem):
@@ -244,11 +248,11 @@ with path.open("a") as fh:
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
 check("120k tokens with the window unknown: no rung", "CONTEXT IS" in out, False)
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 200000}))
 code, out, err = fire(d, "Stop", path)
 check("the same reading with a 200k window set: the 50% rung", "CONTEXT IS 60% FULL" in held(out)[1], True)
 check("the rung is this transcript's", runtime_of(d, "s1").get("warned_at"), 0.5)
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 1000000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 1000000}))
 d2, path2 = project_with(4)
 with path2.open("a") as fh:
     fh.write(json.dumps({"type": "assistant", "message": {
@@ -264,7 +268,7 @@ with path.open("a") as fh:
     fh.write(json.dumps({"type": "assistant", "message": {
         "role": "assistant", "content": [{"type": "text", "text": "[!reply] fine"}],
         "usage": {"input_tokens": 120000}}}) + "\n")
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 200000}))
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
 check("the rung says the gate is coming", "NOTHING ELSE RUNS UNTIL" in held(out)[1], True)
@@ -306,7 +310,7 @@ check("a pin citing a scratch path is refused, with the reason",
 p = subprocess.run([J, "remember", "a real claim"], env=env, capture_output=True, text=True, timeout=60)
 check("an accepted pin lifts the gate", runtime_of(d, "s1").get("pin_due"), None)
 # and the whole thing is a setting
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000,
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 200000,
                                                           "gate_after_context_rung": False}))
 data = json.loads(runtime.read_text()); data["warned_at"] = 0.0; runtime.write_text(json.dumps(data))
 code, out, err = fire(d, "Stop", path)
@@ -885,7 +889,7 @@ J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
 subprocess.run([J, "remember", "a pin of the track"], env=env, capture_output=True, timeout=60)
 subprocess.run([J, "rule", "a rule for every track"], env=env, capture_output=True, timeout=60)
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 200000}))
 call = {"tool_name": "Read", "tool_input": {}, "tool_response": "x"}
 code, out, err = fire(d, "PostToolUse", path, agent_id="abc", **call)
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
@@ -919,7 +923,7 @@ with path.open("a") as fh:
     fh.write(json.dumps({"type": "assistant", "message": {
         "role": "assistant", "content": [{"type": "text", "text": "[!reply] fine"}],
         "usage": {"input_tokens": 120000}}}) + "\n")
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 200000}))
 subprocess.run([J.replace(J.split("/.journal")[0], str(d)), "rule", "the standing rule"],
                env=env, capture_output=True, timeout=60)
 fire(d, "SessionStart", path, source="startup")
@@ -930,7 +934,7 @@ check("the rung hold carries the rules again",
 
 # the rung fires mid-work, from a tool call, with the same gate behind it
 d, path = project_with(4, tagged=True)
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 200000}))
 fire(d, "SessionStart", path, source="startup")
 with path.open("a") as fh:
     fh.write(json.dumps({"type": "assistant", "message": {
@@ -953,7 +957,7 @@ check("decided: nothing else pending, the turn ends", out.strip(), "")
 
 # the window is learned at a compaction
 d, path = project_with(4, tagged=True)
-(d / ".journal" / "settings.json").write_text("{}")  # no override: learn it
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False}))  # no override: learn it
 with path.open("a") as fh:
     fh.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "[!reply] x"}],
                          "usage": {"input_tokens": 930000}}}) + "\n")

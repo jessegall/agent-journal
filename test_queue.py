@@ -68,13 +68,13 @@ class S:
             return ""
         got = json.loads(out)
         if got.get("decision") == "block":
-            return got["reason"].replace("journal reminded Claude: ", "")
+            return got["reason"][len("journal: "):].partition(" — ")[0]
         return "context:" + (got.get("hookSpecificOutput") or {}).get("additionalContext", "")[:40]
 
 
 # ---------------------------------------------------------------- the order, one per stop
 s = S()
-s.j("todo", "chore"); s.j("todo", "auto", "on")
+s.j("todo", "chore"); s.j("todo", "auto", "on"); s.j("loop", "set")
 s.j("work", "start", "the sweep")
 s.user("also fix the banner later")
 s.say("no tag; I'll do the banner after this", tokens=191000)
@@ -108,7 +108,7 @@ check("tagged: resolved", s2.stop(), "")
 
 # ---------------------------------------------------------------- auto after a resolved rung, in the same turn
 s3 = S()
-s3.j("todo", "chore"); s3.j("todo", "auto", "on")
+s3.j("todo", "chore"); s3.j("todo", "auto", "on"); s3.j("loop", "set")
 s3.user("go"); s3.say("[!reply] working", tokens=191000)
 check("rung first", s3.stop(), "context 96% full")
 s3.j("nothing", "only reads")
@@ -136,6 +136,53 @@ check("a hold outranks the to-do reminder", s5.stop(), "1 untagged message(s)")
 s5.say("[!reply] tagged")
 check("with nothing held, the reminder is said as context", s5.stop().startswith("context:journal: 1 to-do(s) waiting"), True)
 check("and once per state", s5.stop(), "")
+
+
+# ---------------------------------------------------------------- the loop comes first
+s6 = S()
+s6.j("todo", "chore"); s6.j("todo", "auto", "on"); s6.j("work", "start", "w")
+s6.user("go"); s6.say("no tag")
+check("auto on and no loop: the loop is asked for before anything else", s6.stop(), "auto is on, no loop running")
+check("then the rest of the queue, one per stop", [s6.stop(True), s6.stop(True), s6.stop(True)],
+      ["1 untagged message(s)", "auto is on, work still open", ""])
+s6.say("[!reply] setting it")
+with s6.path.open("a") as fh:
+    fh.write(json.dumps({"type": "assistant", "uuid": "aL", "message": {"role": "assistant", "content": [
+        {"type": "tool_use", "id": "t1", "name": "Skill", "input": {"skill": "loop", "args": "15m journal next"}}]}}) + "\n")
+check("the loop skill in the transcript is the evidence: next turn starts at open work", s6.stop(), "auto is on, work still open")
+s7 = S()
+s7.j("todo", "chore"); s7.j("todo", "auto", "on"); s7.user("/loop 15m journal next"); s7.say("[!reply] looping")
+check("the user typing /loop counts", s7.stop().startswith("auto is on, 1 to-do(s) waiting"), True)
+s8 = S()
+s8.j("todo", "chore"); s8.j("todo", "auto", "on"); s8.user("go"); s8.say("[!reply] ok")
+with s8.path.open("a") as fh:
+    fh.write(json.dumps({"type": "assistant", "uuid": "aC", "message": {"role": "assistant", "content": [
+        {"type": "tool_use", "id": "t2", "name": "CronCreate", "input": {"prompt": "journal next"}}]}}) + "\n")
+check("a scheduling tool counts", s8.stop().startswith("auto is on, 1 to-do(s) waiting"), True)
+s9 = S()
+s9.j("todo", "chore"); s9.user("go"); s9.say("[!reply] ok")
+check("auto off: no loop is asked for", s9.stop().startswith("context:journal: 1 to-do(s) waiting"), True)
+s9.j("todo", "auto", "on"); s9.j("todo", "done", "1", "did it"); s9.user("again"); s9.say("[!reply] ok")
+check("auto on with nothing to do: no loop is asked for either", s9.stop(), "")
+code = s9.j("loop", "set").returncode
+check("`journal loop set` runs", code, 0)
+
+# ---------------------------------------------------------------- priority is a number
+s10 = S()
+(s10.d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000, "stop_priority": {"untagged": 1}}))
+s10.j("todo", "chore"); s10.j("todo", "auto", "on"); s10.user("go"); s10.say("no tag")
+check("stop_priority reorders the queue: the untagged message before the loop", [s10.stop(), s10.stop(True)],
+      ["1 untagged message(s)", "auto is on, no loop running"])
+p = subprocess.run([sys.executable, "-c", "import hook, nudges, json; print(json.dumps([nudges.names(), "
+                    "nudges.names({'stop_priority': {'work': 1, 'auto': 'x'}}), nudges.priorities()[:2]]))"],
+                   cwd=str(s10.d / ".journal"), capture_output=True, text=True, timeout=60)
+got = json.loads(p.stdout)
+check("the default order, an override, a bad override ignored, and the numbers",
+      (got[0], got[1][:2], got[2]), (["track", "loop", "context", "deferral", "untagged", "work", "auto"], ["work", "track"], [["track", 5], ["loop", 10]]))
+s11 = S()
+(s11.d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000, "silenced": ["loop"]}))
+s11.j("todo", "chore"); s11.j("todo", "auto", "on"); s11.user("go"); s11.say("[!reply] ok")
+check("a silenced subject is skipped", s11.stop().startswith("auto is on, 1 to-do(s) waiting"), True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

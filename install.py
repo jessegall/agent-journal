@@ -47,7 +47,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
-EVENTS = ("Stop", "SessionStart", "PostToolUse", "PreToolUse", "UserPromptSubmit")
+EVENTS = ("Stop", "SessionStart", "SessionEnd", "PostToolUse", "PreToolUse", "UserPromptSubmit")
 #: What goes in settings.json. `$CLAUDE_PROJECT_DIR` is quoted because a path with a space
 #: in it otherwise splits into two arguments and the hook simply never runs.
 COMMAND = '"$CLAUDE_PROJECT_DIR"/.journal/hook.py'

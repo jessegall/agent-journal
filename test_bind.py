@@ -28,7 +28,7 @@ d = Path(tempfile.mkdtemp()) / "proj"
 (d / ".claude").mkdir(parents=True)
 shutil.copytree(SRC, d / ".journal", ignore=shutil.ignore_patterns(
     "runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
-(d / ".journal" / "settings.json").write_text("{}")
+(d / ".journal" / "settings.json").write_text(json.dumps({"one_session_per_track": False}))  # the rule has its own section below
 root = d / ".journal"
 tdir = transcript.project_dir(d); tdir.mkdir(parents=True, exist_ok=True)
 J = str(root / "journal.py")
@@ -128,6 +128,93 @@ out = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name
                      capture_output=True, text=True, timeout=60).stdout
 check("a, on third, is not held for side's list", "auto is on" in (json.loads(out).get("reason", "") if out.strip() else ""), False)
 check("bindings are runtime, not record", (root / "runtime" / "bindings.map").is_file() and "bindings" not in (root / "record.json").read_text(), True)
+
+
+# ---------------------------------------------------------------- one live session per track
+e = Path(tempfile.mkdtemp()) / "proj"
+(e / ".claude").mkdir(parents=True)
+shutil.copytree(SRC, e / ".journal", ignore=shutil.ignore_patterns(
+    "runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+(e / ".journal" / "settings.json").write_text("{}")
+root2 = e / ".journal"
+tdir2 = transcript.project_dir(e); tdir2.mkdir(parents=True, exist_ok=True)
+J2 = str(root2 / "journal.py")
+
+
+class T:
+    def __init__(self, stem):
+        self.stem = stem
+        self.path = tdir2 / f"{stem}.jsonl"; self.path.write_text("")
+        self.env = {**os.environ, transcript.SESSION_ENV: stem}
+        self.ctx = self.fire("SessionStart", source="startup")
+
+    def fire(self, event, **extra):
+        out = subprocess.run([str(root2 / "hook.py")], input=json.dumps({"hook_event_name": event, "session_id": self.stem,
+                             "transcript_path": str(self.path), **extra}), capture_output=True, text=True, timeout=60).stdout
+        if not out.strip():
+            return ""
+        got = json.loads(out)
+        return got.get("reason") or (got.get("hookSpecificOutput") or {}).get("additionalContext") or \
+            (got.get("hookSpecificOutput") or {}).get("permissionDecisionReason") or ""
+
+    def j(self, *a):
+        p = subprocess.run([J2, *a], env=self.env, capture_output=True, text=True, timeout=60)
+        return p.returncode, p.stdout + p.stderr
+
+    def write(self):
+        return self.fire("PreToolUse", tool_name="Write", tool_input={"file_path": str(e / "f.txt"), "content": "x"})
+
+    def read(self):
+        return self.fire("PreToolUse", tool_name="Read", tool_input={"file_path": str(e / "f.txt")})
+
+
+def term2(*a):
+    env = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}
+    p = subprocess.run([J2, *a], env=env, capture_output=True, text=True, timeout=60)
+    return p.returncode, p.stdout + p.stderr
+
+
+x = T("xxxxxxxx-1")
+check("the first session on a track is not told anything", "IS TAKEN" in x.ctx, False)
+y = T("yyyyyyyy-2")
+check("a second session on the same track is told at its start, and by whom",
+      ("TRACK `default` IS TAKEN" in y.ctx, "xxxxxxxx" in y.ctx, "switch" in y.ctx), (True, True, True))
+check("its edits are refused until it switches", "IS TAKEN" in y.write(), True)
+check("its reads are not", y.read(), "")
+check("its stop is held, first in the queue", y.fire("Stop").startswith("journal: track `default` is taken"), True)
+y.j("work", "start", "w")
+check("open work does not lift it", "IS TAKEN" in y.write(), True)
+code, out = y.j("switch", "side")
+check("it switches to a free track", (code, tracks.bound(root2, "yyyyyyyy-2")), (0, "side"))
+check("and is not held or refused for the track any more", (y.fire("Stop"), "IS TAKEN" in y.write()), ("", False))
+check("the first session was never bothered", ("IS TAKEN" in x.write(), x.fire("Stop")), (False, ""))
+code, out = x.j("switch", "side")
+check("a switch onto a taken track is refused, naming the holder", (code, "taken by session yyyyyyyy" in out), (1, True))
+code, out = term2("switch", "side", "--session=xxxxxxxx")
+check("moving a session onto a taken track from a terminal is refused too", (code, "not moved" in out, tracks.bound(root2, "xxxxxxxx-1")), (1, True, "default"))
+check("the --session switch moved the project's start track there all the same",
+      json.loads((root2 / "record.json").read_text())["current"], "side")
+z = T("zzzzzzzz-3")
+check("a session starting on the start track finds it taken by the session on it", ("IS TAKEN" in z.ctx, "yyyyyyyy" in z.ctx), (True, True))
+y.fire("SessionEnd", reason="exit")
+check("SessionEnd frees the track", tracks.bound(root2, "yyyyyyyy-2"), None)
+check("and the waiting session is free at its next event", (z.fire("Stop"), "IS TAKEN" in z.write()), ("", False))
+code, out = x.j("switch", "side")
+check("a switch onto it is refused now because z holds it", (code, "zzzzzzzz" in out), (1, True))
+state.put(root2, "seen_at", 1000, stem="zzzzzzzz-3")
+code, out = x.j("switch", "side")
+check("a session not seen for longer than session_stale_hours is gone: the track is free", code, 0)
+code, out = x.j("tracks")
+check("tracks says who is running and who is stale", ("xxxxxxxx-1 (active just now)".replace("-1", "") in out, "zzzzzzzz (stale)" in out), (True, True))
+q = T("qqqqqqqq-4")   # start track is side, held by x
+check("the start block names the holder and how it was seen", ("IS TAKEN" in q.ctx, "xxxxxxxx" in q.ctx, "active" in q.ctx), (True, True, True))
+(root2 / "settings.json").write_text(json.dumps({"one_session_per_track": False}))
+check("with the rule off, the same session is free", (q.fire("Stop"), "IS TAKEN" in q.write()), ("", False))
+code, out = x.j("switch", "default")
+check("and switches are not refused for it", code, 0)
+(root2 / "settings.json").write_text(json.dumps({"silenced": ["track"]}))
+r = T("rrrrrrrr-5")
+check("silencing `track` is the same as the rule off", "IS TAKEN" in r.ctx, False)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

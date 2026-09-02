@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.14.0 — a prioritized queue, the loop first, one session per track
+
+The stop queue's subjects carry a priority: track 5, loop 10, context 20, deferral 30,
+untagged 40, work 50, auto 60, lowest first, and `stop_priority` in settings.json
+reorders them per project. New at the head: with auto on and something to do, a session
+without a loop is asked to start one before anything else (`journal loop set` when one
+runs that the hook cannot see). A hold is one printed line now, not two.
+
+One running session works a track. A second session that starts on a taken track is
+told at its start by whom, held at its stops and refused edits until it has switched;
+a switch onto a taken track is refused. A SessionEnd frees the track; a session not seen
+for `session_stale_hours` (24) counts as gone. `journal tracks` says who is running.
+`one_session_per_track: false` switches the rule off.
+
+After updating: reload the journal skill. With auto on, make sure a loop is running.
+
 ## 1.13.0 — sessions are bound to tracks
 
 Two sessions can work two tracks of one project at once. A session is bound to the

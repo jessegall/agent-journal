@@ -44,7 +44,8 @@ nothing. This is the index that gets you back to it.
     journal work update "<what moved>" [--on="<work>"]   progress on the open work
     journal work end "<what>"    the same words, to close it
     journal carry           exactly what a compaction will hand back — nothing is written
-    journal tracks          every track, this session's marked, and which sessions are on which
+    journal tracks          every track, this session's marked, which sessions are on which and whether they are running
+    journal loop set        this session has a loop running (the hook could not see it); `journal loop` says whether one is known
     journal switch "<name>" [--project|--session=<id>|--all-sessions]   this session's track; --project also where new sessions start; from a terminal always the project
     journal next            what to do now: the details of the last hold, or the next to-do
     journal worktree [link] is this a linked worktree, and does .journal link to the main checkout's? `link` makes it so
@@ -832,13 +833,35 @@ def cmd_carry(fresh: bool) -> int:
     return 0
 
 
+def cmd_loop(args: list[str]) -> int:
+    import state as _st
+    stem = _stem()
+    if not stem:
+        print("  ! `journal loop` is the session's: run it from inside one", file=sys.stderr)
+        return 1
+    if args and args[0] == "set":
+        _st.put(root(), "loop_set", True, stem=stem)
+        print("noted: this session has a loop running; the stop queue will not ask for one")
+        return 0
+    if args and args[0] in ("unset", "off"):
+        _st.put(root(), "loop_set", False, stem=stem)
+        print("noted: no loop; with auto on, the next stop asks for one")
+        return 0
+    known = bool(_st.get(root(), "loop_set", False, stem=stem))
+    conf, _ = settings_mod.load(root())
+    print(("a loop is known to be running in this session" if known else "no loop is known in this session")
+          + f" — with auto on, one is asked for: the `loop` skill with `{conf['auto_loop_minutes']}m journal next`")
+    return 0
+
+
 def cmd_tracks() -> int:
-    rows = tracks.listing(root(), _stem())
+    conf, _ = settings_mod.load(root())
+    rows = tracks.listing(root(), _stem(), conf["session_stale_hours"])
     print(fmt.title("TRACKS", sub="* this session · > where new sessions start"))
     print()
     for t in rows:
         mark = ("*" if t["current"] else " ") + (">" if t["start"] else " ")
-        who = ("   sessions: " + ", ".join(sid[:8] for sid in t["sessions"])) if t["sessions"] else ""
+        who = ("   sessions: " + ", ".join(f"{sid[:8]} ({t['seen'].get(sid, '')})" for sid in t["sessions"])) if t["sessions"] else ""
         print(f" {mark} {t['name']:<28} {t['pins']} pin(s), {t['open']} open{who}")
     print()
     print(fmt.commands([
@@ -847,23 +870,30 @@ def cmd_tracks() -> int:
         ('journal switch "<name>" --session=<id>', "move one bound session; --all-sessions moves every one"),
         ("journal switch --back", "the one you came from"),
     ]))
-    print(fmt.wrap("Nothing is ever closed by switching."))
+    print(fmt.wrap("Nothing is ever closed by switching." + (
+        " One running session works a track at a time; a stale session is one not seen for "
+        f"{conf['session_stale_hours']:g} h." if conf["one_session_per_track"] else "")))
     return 0
 
 
 def cmd_switch(name: str, go_back: bool, project_too: bool = False, sessions: list[str] | None = None,
                all_sessions: bool = False) -> int:
     stem = _stem() or ""
+    conf, _ = settings_mod.load(root())
+    excl, stale = conf["one_session_per_track"], conf["session_stale_hours"]
     if all_sessions or sessions:
         ok, msg = tracks.switch(root(), name, _now(), "", project=True) if not go_back else (False, "--back takes no sessions")
         if not ok and "already on" not in msg:
             print(f"  ! {msg}", file=sys.stderr)
             return 1
-        moved = tracks.move_sessions(root(), name, None if all_sessions else sessions)
+        moved, refused = tracks.move_sessions(root(), name, None if all_sessions else sessions, excl, stale)
         print(f"the project starts on {name}; moved {len(moved)} session(s): " + ", ".join(m[:8] for m in moved))
+        if refused:
+            print("  ! not moved, one running session works a track: " + ", ".join(r[:8] for r in refused), file=sys.stderr)
+            return 1
         return 0
-    ok, msg = (tracks.back(root(), _now(), stem) if go_back
-               else tracks.switch(root(), name, _now(), stem, project=project_too or not stem))
+    ok, msg = (tracks.back(root(), _now(), stem, excl, stale) if go_back
+               else tracks.switch(root(), name, _now(), stem, project=project_too or not stem, exclusive=excl, stale_hours=stale))
     print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
     return 0 if ok else 1
 
@@ -1069,6 +1099,8 @@ def main(argv: list[str]) -> int:
         return cmd_carry(fresh)
     if verb == "tracks":
         return cmd_tracks()
+    if verb == "loop":
+        return cmd_loop(rest[1:])
     if verb == "switch":
         return cmd_switch(" ".join(rest[1:]), go_back, project_too, sessions or None, all_sessions)
     if verb == "strike":

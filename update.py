@@ -138,6 +138,11 @@ def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
         return False, str(e)
     for line in install.skill(False):
         lines.append(line)
+    # AN EVENT THE NEW VERSION LISTENS TO IS WIRED BY THE UPDATE. Idempotent: what is
+    # wired already is left alone.
+    for line in install.wire(False):
+        if line.startswith("  +"):
+            lines.append(line)
     now = current(root)
     (root / CACHE).unlink(missing_ok=True)  # the next check is a real one
     out = "\n".join(lines)

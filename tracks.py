@@ -20,6 +20,7 @@ tracks would have put the same idea in five files.
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 import state
@@ -58,6 +59,71 @@ def bind(root: Path, stem: str, track: str) -> None:
         b[stem] = track
         (root / BINDINGS).parent.mkdir(parents=True, exist_ok=True)
         (root / BINDINGS).write_text(json.dumps(b, indent=2) + "\n")
+
+
+def unbind(root: Path, stem: str) -> None:
+    if not stem:
+        return
+    with state.locked(root):
+        b = _bindings(root)
+        if stem in b:
+            del b[stem]
+            (root / BINDINGS).write_text(json.dumps(b, indent=2) + "\n")
+
+
+def prune(root: Path, keep) -> None:
+    """Drop the binding of every session `keep(stem)` says is gone."""
+    b = _bindings(root)
+    gone = [sid for sid in b if not keep(sid)]
+    if not gone:
+        return
+    with state.locked(root):
+        b = _bindings(root)
+        for sid in gone:
+            b.pop(sid, None)
+        (root / BINDINGS).write_text(json.dumps(b, indent=2) + "\n")
+
+
+def live(root: Path, stale_hours: float = 24.0) -> dict[str, dict]:
+    """{stem: {track, age}} for every bound session still counted as running.
+
+    RUNNING IS EVIDENCE, NOT A COUNTER: not ended by a SessionEnd, and seen by a hook event
+    within `stale_hours`. A terminal closed without a SessionEnd goes stale and frees its
+    track; one that sits idle waiting for its user for an hour is still running, because
+    the user comes back to it.
+    """
+    now = time.time()
+    out = {}
+    for sid, track in _bindings(root).items():
+        if state.get(root, "ended", None, stem=sid):
+            continue
+        seen = state.get(root, "seen_at", 0, stem=sid) or 0
+        if not seen:
+            f = state.runtime_file(root, sid)
+            seen = f.stat().st_mtime if f.is_file() else 0
+        age = now - seen if seen else None
+        if age is None or age > stale_hours * 3600:
+            continue
+        out[sid] = {"track": track, "age": age}
+    return out
+
+
+def occupants(root: Path, track: str, stem: str | None, stale_hours: float = 24.0) -> list[tuple[str, float]]:
+    """Other live sessions on `track`, most recently seen first: (stem, seconds since seen)."""
+    got = [(sid, v["age"]) for sid, v in live(root, stale_hours).items() if v["track"] == track and sid != stem]
+    return sorted(got, key=lambda x: x[1])
+
+
+def age_text(seconds: float | None) -> str:
+    if seconds is None:
+        return "not seen"
+    if seconds < 90:
+        return "active just now"
+    if seconds < 3600:
+        return f"active {int(seconds // 60)} min ago"
+    if seconds < 86400:
+        return f"idle {seconds / 3600:.1f} h"
+    return f"idle {seconds / 86400:.1f} d"
 
 
 def current(root: Path, stem: str | None = None) -> str:
@@ -115,13 +181,14 @@ def _all(root: Path) -> dict:
     return got
 
 
-def listing(root: Path, stem: str | None = None) -> list[dict]:
+def listing(root: Path, stem: str | None = None, stale_hours: float = 24.0) -> list[dict]:
     """Every track: the project's start track first, sessions bound to each, this one marked."""
     start = state.get(root, CURRENT, DEFAULT) or DEFAULT
     mine = current(root, stem)
     by_track: dict[str, list[str]] = {}
     for sid, t in _bindings(root).items():
         by_track.setdefault(t, []).append(sid)
+    alive = live(root, stale_hours)
     out = []
     for name, held in _all(root).items():
         out.append({
@@ -132,12 +199,14 @@ def listing(root: Path, stem: str | None = None) -> list[dict]:
             "open": len([w for w in held.get("work", []) if not w.get("ended")]),
             "at": held.get("at", ""),
             "sessions": sorted(by_track.get(name, [])),
+            "seen": {sid: age_text(alive[sid]["age"]) if sid in alive else "stale" for sid in by_track.get(name, [])},
         })
     out.sort(key=lambda t: (not t["current"], not t["start"], t["name"]))
     return out
 
 
-def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False) -> tuple[bool, str]:
+def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False,
+           exclusive: bool = True, stale_hours: float = 24.0) -> tuple[bool, str]:
     """Move this session to a track, or the project's start track, or both.
 
     NOTHING IS SWAPPED ANY MORE. Every track's pins and work live under its name; a
@@ -164,6 +233,11 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
             f"{len([p for p in held.get('pins', []) if not p.get('struck')])} pin(s), "
             f"{len([w for w in held.get('work', []) if not w.get('ended')])} open")
         was = current(root, stem)
+        if stem and exclusive and was != name:
+            taken = occupants(root, name, stem, stale_hours)
+            if taken:
+                return False, (f"{name} is taken by session {taken[0][0][:8]} ({age_text(taken[0][1])}), and one "
+                               "session works a track — pick another name; `journal tracks` shows who is where")
         if stem and not project:
             if was == name:
                 return False, f"this session is already on {name}"
@@ -188,19 +262,37 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
     return True, (f"the project starts on {name} now — {kept}" + (f"; this session too" if stem else "") + note)
 
 
-def move_sessions(root: Path, name: str, which: list[str] | None) -> list[str]:
-    """Bind the named sessions (or every bound session) to `name`."""
+def move_sessions(root: Path, name: str, which: list[str] | None,
+                  exclusive: bool = True, stale_hours: float = 24.0) -> tuple[list[str], list[str]]:
+    """Bind the named sessions (or every bound session) to `name`: (moved, refused).
+
+    With one session per track, at most one live session lands on `name`: the one already
+    there if any, else the first picked; the rest are refused and named.
+    """
     b = _bindings(root)
     picked = [sid for sid in b if which is None or any(sid.startswith(w) for w in which)]
+    refused: list[str] = []
+    if exclusive:
+        alive = live(root, stale_hours)
+        holder = next((sid for sid, v in alive.items() if v["track"] == name), None)
+        kept = []
+        for sid in picked:
+            if sid in alive and holder and sid != holder:
+                refused.append(sid)
+            else:
+                kept.append(sid)
+                if sid in alive and not holder:
+                    holder = sid
+        picked = kept
     for sid in picked:
         if b[sid] != name:
             state.put(root, "previous_track", b[sid], stem=sid)   # so `--back` in that session undoes the move
         bind(root, sid, name)
-    return picked
+    return picked, refused
 
 
-def back(root: Path, at: str, stem: str = "") -> tuple[bool, str]:
+def back(root: Path, at: str, stem: str = "", exclusive: bool = True, stale_hours: float = 24.0) -> tuple[bool, str]:
     was = state.get(root, "previous_track", None, stem=stem) if stem else state.get(root, PREVIOUS)
     if not was:
         return False, "no track to go back to — nothing has been switched away from yet"
-    return switch(root, was, at, stem, project=not stem)
+    return switch(root, was, at, stem, project=not stem, exclusive=exclusive, stale_hours=stale_hours)

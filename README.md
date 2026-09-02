@@ -107,7 +107,8 @@ Separate lines of work, each with its own pins and to-dos. Rules and docs are sh
 across all of them. Every session is bound to a track, so two sessions can work two
 tracks of one project at the same time. A switch from inside a session moves only that
 session; a switch from a terminal moves where new sessions start, and says which running
-sessions stayed where they were and how to move one along.
+sessions stayed where they were and how to move one along. One running session works a
+track: a second session that lands on a taken track is told, and switches.
 
 ### Tags
 
@@ -207,6 +208,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal switch "<name>" --project    this session, and where new sessions start (agent)
     journal switch "<name>" --session=<id>   move one running session; --all-sessions moves all
     journal switch --back                the track this session came from
+    journal loop set                     this session has a loop running the hook cannot see (agent)
     journal settings                     every setting and where it came from
     journal version                      the installed version; is a newer one out?
     journal update                       pull the latest journal and print what changed
@@ -235,11 +237,16 @@ without anyone filing anything.
 - **Work deferred in words** after you asked for something: the next tool call is refused
   until it is parked as a to-do.
 - **Work still open** at a stop: reminded; in auto mode, at every stop.
+- **Auto on and no loop running**: asked to start one before anything else.
+- **A second session on a track another session is working**: told at its start, held at
+  its stops and refused edits until it switches. One running session works a track.
 - **A pin over 400 characters, or one naming a temporary path**: refused before it runs.
 - **A markdown file written by hand**: a one-time hint that docs are catalogued.
 - **Something tool-shaped**: a script written into a scratch or scripts folder, the same
   inline script run twice, a scratch script run by name: a one-time hint to make it a tool.
 
+At a stop these form a queue: one subject per stop, each once per turn, in priority
+order (track, loop, context, deferral, untagged, work, auto), until nothing is pending.
 Every hold names its way out. Subagents are outside all of it: they cannot write the
 journal, are never held, and are handed the rules on their first tool call.
 
@@ -293,5 +300,8 @@ journal is used instead, until `journal worktree link` replaces it.
     context_warn_ladder  where the warnings fire, default [0.5, 0.7, 0.9, 0.95]
     pin_max_chars        the cap on a pin, default 400
     stall_calls          tool calls on one to-do without progress before the agent is nudged, default 40
+    one_session_per_track   a second session on a taken track is told to switch, default true
+    session_stale_hours  hours without a hook event before a session counts as gone, default 24
+    stop_priority        the order of the stop queue by subject, e.g. {"work": 1}; lower first
     docs_dir             where docs live, default .journal/docs
     silenced             names of nudges to switch off, e.g. ["tool_cost", "markdown_hint"]
