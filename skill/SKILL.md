@@ -218,6 +218,17 @@ belongs to, filed by you, which is the moment to judge whether it is worth keepi
 Everything else that is long — a survey, the numbers behind a decision — is a part too.
 One doc, many parts; a part is what you replace or strike when it stops being true.
 
+**Attach what is not prose.** A design's HTML, a screenshot, a PDF the user was sent,
+the CSV behind a finding: `journal docs attach <doc> <path> "<what it is>"` copies the
+file — or a whole folder — into the doc, beside the parts that explain it; the original
+stays where it is. `journal docs <doc> files` shows them as a tree, `docs search` finds
+them by name. Attach rather than `cp` into docs/: the copy is listed, said what it is,
+and handed to the next session; a bare file is not.
+
+**By name or number.** A doc is referenced either way, everywhere: `journal docs
+reactivity`, `docs attach reactivity …`, `--doc=reactivity`. The title, or a unique
+part of it.
+
 **Cite it.** `--doc=<n>` or `--doc=<n>.<p>` on `pin`, `rule` and `todo` ties the entry
 to the doc; the entry shows "→ doc 4.2: <doc> · <part>" beside it, and the doc shows what
 cites it. Cite whenever the claim came out of a doc or a doc explains it: the pin is the

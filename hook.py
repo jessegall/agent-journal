@@ -849,7 +849,7 @@ def _journal_write(payload: dict) -> str | None:
     return None
 
 
-DOCS_WRITES = frozenset({"add", "part", "replace", "strike", "final", "draft", "abstract", "supersede", "index"})
+DOCS_WRITES = frozenset({"add", "part", "replace", "strike", "final", "draft", "abstract", "supersede", "index", "attach", "detach"})
 
 
 def _subagent(payload: dict) -> bool:

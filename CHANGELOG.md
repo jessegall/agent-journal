@@ -4,6 +4,21 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.15.0 — attachments, and docs by name
+
+A doc holds files as well as parts: `journal docs attach <doc> <path> "<what it is>"`
+copies a file or a whole folder into the doc's files/ and lists it with one line saying
+what it is; `journal docs <doc> files` shows them as a tree, `journal docs files` every
+doc's; `detach` keeps the file under struck/ with the reason. Attachments are found by
+`docs search` by name and by what they are, files inside a folder too, and the catalogue
+and the start block count them. A file copied in by hand is adopted by `docs index`.
+
+A doc is referenced by name as well as number, everywhere: `journal docs reactivity`,
+`docs attach reactivity …`, `--doc=reactivity`. The title, case-insensitive, or a unique
+part of it; a citation is stored as the number, so a renamed doc keeps what cites it.
+
+After updating: reload the journal skill.
+
 ## 1.14.2 — the skill's start section knows about tracks
 
 The skill says what the start block names — the track this session is bound to — and

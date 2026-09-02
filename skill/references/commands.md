@@ -75,7 +75,10 @@ A brief on stdin:
 **Docs, for every track**
 
     journal docs                     the catalogue
-    journal docs N | N.P             read a doc, or one part
+    journal docs <n>|<name> [.P]     read a doc, by number or by name, or one part (4.2)
+    journal docs <n>|<name> files    its attachments, as a tree; `docs files` lists every doc's
+    journal docs attach <doc> <path> "<what it is>" [--replace]   copy a file or a folder into the doc
+    journal docs detach <doc> <name> "<why>"   drop an attachment; kept under struck/
     journal docs add "<title>" --abstract="<one line>" --brief   a new doc; the intro on stdin
     journal docs part N "<title>" --brief   a new part of doc N, from stdin
     journal docs replace N.P --brief a new body; the old one is kept under struck/
@@ -84,7 +87,7 @@ A brief on stdin:
     journal docs abstract N "<one line>"   the line every session is handed
     journal docs supersede N by M    point readers of N at M
     journal docs index               catalogue the files .journal/docs/ already holds
-    journal docs search <term> [--page=N]   every line of every doc, 25 a page
+    journal docs search <term> [--page=N]   every line of every doc, and every attachment by name, 25 a page
     --doc=N | --doc=N.P              on pin, rule and todo: cite a doc, or one part, from the entry
 
 **Tools, for every track**

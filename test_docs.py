@@ -192,5 +192,85 @@ check("but may read them", out.strip(), "")
 out = fire("PreToolUse", tool_name="Bash", tool_input={"command": 'journal end "w" && journal todo start 1 && cat > x.py <<EOF\ny\nEOF'})
 check("journal todo start N declares work for the rest of the line", "deny" in out, False)
 
+
+# ---------------------------------------------------------------- attachments: any file or folder, copied in
+src = Path(tempfile.mkdtemp())
+(src / "design.html").write_text("<h1>slots</h1>")
+(src / "mock").mkdir(); (src / "mock" / "a.png").write_bytes(b"\x89PNG"); (src / "mock" / "b.css").write_text("x{}")
+code, out = j("docs", "add", "Attachments home", "--abstract=where files go", "--brief", stdin="intro\n")
+n_att = int([l for l in out.splitlines() if l.startswith("doc ")][0].split()[1].rstrip(":"))
+code, out = j("docs", "attach", str(n_att), str(src / "design.html"), "the ruled design, rendered")
+folder_att = [x for x in (d / ".journal" / "docs").iterdir() if x.is_dir() and (x / "index.md").is_file() and f"n: {n_att}" in (x / "index.md").read_text()][0]
+check("a file is copied into the doc's files/ and listed with what it is",
+      (code, "design.html: the ruled design, rendered" in out, (folder_att / "files" / "design.html").read_text(), json.loads((folder_att / "files" / "manifest.json").read_text())[0]["title"]),
+      (0, True, "<h1>slots</h1>", "the ruled design, rendered"))
+check("the original is untouched", (src / "design.html").is_file(), True)
+code, out = j("docs", "attach", str(n_att), str(src / "mock"), "the mockups")
+check("a folder is copied whole", (code, (folder_att / "files" / "mock" / "a.png").is_file(), (folder_att / "files" / "mock" / "b.css").is_file()), (0, True, True))
+code, out = j("docs", "attach", str(n_att), str(src / "nowhere.pdf"), "x")
+check("a missing path is refused", (code, "no file at" in out), (1, True))
+code, out = j("docs", "attach", str(n_att), str(src / "design.html"), "again")
+check("the same name twice is refused, and says how", (code, "--replace" in out), (1, True))
+(src / "design.html").write_text("<h1>slots v2</h1>")
+code, out = j("docs", "attach", str(n_att), str(src / "design.html"), "the design, second cut", "--replace")
+check("--replace swaps it and keeps the old one under struck/",
+      (code, (folder_att / "files" / "design.html").read_text(), (folder_att / "struck" / "files" / "design.html").read_text()),
+      (0, "<h1>slots v2</h1>", "<h1>slots</h1>"))
+code, out = j("docs", str(n_att))
+check("reading the doc lists its attachments with what they are, size and path",
+      ("attachments" in out.lower(), "design.html  — the design, second cut" in out, "mock/  — the mockups" in out, "files/design.html" in out), (True, True, True, True))
+code, out = j("docs")
+check("the catalogue counts them", "2 file(s)" in out, True)
+code, out = j("docs", "attachments", str(n_att))
+check("docs attachments N lists one doc's", (code, "design.html" in out, "mock" in out, "2 file(s) of doc" in out), (0, True, True, True))
+code, out = j("docs", "attachments")
+check("docs attachments lists every doc's", (code, f"doc {n_att}" in out.lower(), "design.html" in out), (0, True, True))
+check("a folder attachment shows its files as a tree", ("a.png" in out and "b.css" in out), True)
+code, out = j("docs", "search", "b.css")
+check("search finds a file inside a folder attachment by name", (code, "mock/b.css" in out.replace("«", "").replace("»", "")), (0, True))
+code, out = j("docs", "attachments home")
+check("a doc is read by its name", (code, "DOC " + str(n_att) in out), (0, True))
+code, out = j("docs", "Attachments Home", "files")
+check("docs <name> files lists its attachments", (code, "design.html" in out, "mock/" in out), (0, True, True))
+code, out = j("docs", "home", "files")
+check("part of the name is enough when it is unique", (code, "design.html" in out), (0, True))
+code, out = j("docs", "nowhere at all")
+check("an unknown name says so", (code, "no doc is called" in out), (1, True))
+code, out = j("docs", "attach", "attachments home", str(src / "design.html"), "by name", "--replace")
+check("attach takes a name", code, 0)
+code, out = j("pin", "cited by name", "--doc=attachments home")
+rec = json.loads((root / "record.json").read_text())
+allpins = [p for t in rec["tracks"].values() for p in t["pins"]]
+check("--doc takes a name and stores the number", (code, allpins[-1].get("doc")), (0, str(n_att)))
+code, out = j("docs", "search", "mockups")
+check("and an attachment by what it is", "attachment mock" in out, True)
+code, out = j("docs", "files", "1")
+check("a doc without any says so", (code, "no attachments" in out), (0, True))
+code, out = j("docs", "detach", str(n_att), "mock", "superseded by the rendered design")
+check("detach moves it under struck/ with the reason on record",
+      (code, (folder_att / "files" / "mock").exists(), (folder_att / "struck" / "files" / "mock" / "a.png").is_file(),
+       "superseded by the rendered design" in (folder_att / "struck" / "files" / "manifest.json").read_text()), (0, False, True, True))
+code, out = j("docs", "detach", str(n_att), "mock", "again")
+check("detaching what is not there is refused", (code, "no attachment named" in out), (1, True))
+code, out = j("docs", "detach", str(n_att), "design.html")
+check("detach wants a reason", code, 1)
+shutil.copy(src / "design.html", folder_att / "files" / "by-hand.html")
+code, out = j("docs", "index")
+check("a file copied in by hand is adopted by docs index", (code, "by-hand.html" in out), (0, True))
+code, out = j("docs", "attachments", str(n_att))
+check("and listed after", "by-hand.html" in out, True)
+# the start block names them
+p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "session_id": "s1", "transcript_path": str(path)}),
+                   capture_output=True, text=True, timeout=60)
+ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
+check("the session start catalogue says which docs carry files", "2 file(s): design.html, by-hand.html" in ctx or "2 file(s): by-hand.html, design.html" in ctx, True)
+# a subagent may not attach
+p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "z9", "transcript_path": str(path),
+                   "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attach {n_att} x.html "x"'}}), capture_output=True, text=True, timeout=60)
+check("a subagent attaching is refused as a journal write", "from a subagent is refused" in p.stdout, True)
+p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "z9", "transcript_path": str(path),
+                   "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attachments {n_att}'}}), capture_output=True, text=True, timeout=60)
+check("a subagent listing them is not", "refused" in p.stdout, False)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

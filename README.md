@@ -93,6 +93,10 @@ subagent, an investigation with numbers. They live as markdown in `.journal/docs
 one folder per doc with a file per part, and the journal keeps a catalogue so every session
 knows what exists. Pins, rules and to-dos can cite a doc.
 
+Docs hold files too: a design's HTML, a screenshot, a PDF, a CSV, a whole folder.
+`journal docs attach <doc> <path> "<what it is>"` copies it in and lists it; `journal docs
+<doc> files` shows a doc's attachments as a tree. A doc is referenced by number or by name.
+
 ### Tools
 
 Scripts the agent writes for jobs that come back: a class mover, a coverage report, a
@@ -174,7 +178,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 ### Docs
 
     journal docs                         the catalogue
-    journal docs <n>                     read a doc; <n>.<p> reads one part
+    journal docs <n>|<name>              read a doc; <n>.<p> reads one part
     journal docs add "<title>" --abstract="<one line>" --brief
                                          a new doc; the intro from stdin
     journal docs part <n> "<title>" --brief
@@ -184,6 +188,9 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal docs supersede <n> by <m>    point readers of an old doc at the new one
     journal docs index                   catalogue markdown already in .journal/docs/
     journal docs search <term>           search every line of every doc
+    journal docs <doc> files             its attachments, as a tree; `docs files` lists every doc's
+    journal docs attach <doc> <path> "<what it is>"   copy a file or a folder into the doc
+    journal docs detach <doc> <name> "<why>"   drop an attachment; kept under struck/
 
 ### Tools
 

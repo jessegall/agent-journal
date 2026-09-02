@@ -25,7 +25,8 @@ nothing. This is the index that gets you back to it.
     journal todo ask N "<question>"   it waits on the user; auto moves on to the next
     journal todo answer N "<answer>"  the user answers it; the agent is told at its next stop and picks it up first
     journal docs             the catalogue: every doc, its status, parts and abstract
-    journal docs N | N.P     read a doc, or one part of it
+    journal docs <n>|<name> [.P]   read a doc, by number or by name, or one part of it (4.2)
+    journal docs <n>|<name> files   the doc's attachments, as a tree; `journal docs files` lists every doc's
     journal docs add "<title>" --abstract "<one line>" --brief   a new doc; the brief on stdin is its intro
     journal docs part N "<title>" --brief   a new part of doc N, from stdin — a report, a section, a finding
     journal docs replace N.P --brief        a new body for a part; the old one is kept under struck/
@@ -33,6 +34,9 @@ nothing. This is the index that gets you back to it.
     journal docs final N | draft N          its status
     journal docs abstract N "<one line>"    the line every session is handed
     journal docs supersede N by M           point readers of N at M
+    journal docs attach N <path> ["<what it is>"] [--replace]   copy a file or a folder into doc N, beside its parts
+    journal docs detach N <name> "<why>"    drop an attachment; it is kept under struck/
+    journal docs attachments [N]            the same as `files`
     journal docs index                      catalogue the files docs/ already holds
     journal docs search <term> [--page=N]   every line of every doc mentioning it
     --doc=N or --doc=N.P on pin, rule and todo cites a doc (or one part) from the entry; the entry shows it, the doc shows what cites it
@@ -437,6 +441,8 @@ def _doc_where(doc_ref: str) -> dict | None:
         if err:
             print(f"  ! --doc: {err}", file=sys.stderr)
             return None
+        doc, prt, _ = docs.get(root(), doc_ref)
+        doc_ref = f"{doc['n']}.{prt['p']}" if prt else str(doc["n"])   # a name resolves once; the number stays
         where["doc"] = doc_ref
     return where
 
@@ -626,7 +632,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
     return 0 if ok else 1
 
 
-def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int) -> int:
+def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bool = False) -> int:
     here = tracks.current(root(), _stem())
     body = sys.stdin.read() if brief else ""
     if not rest:
@@ -646,6 +652,8 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int) -> int:
             ("journal docs <n>", "read one; <n>.<p> reads one part"),
             ('journal docs add "<title>" --abstract "<one line>" --brief', "a new doc, its intro on stdin"),
             ('journal docs part <n> "<title>" --brief', "a new part of doc n, from stdin"),
+            ('journal docs attach <n> <path> "<what it is>"', "copy a file or folder (HTML, a design, a PDF) into doc n"),
+            ("journal docs <n>|<name> files", "its attachments, as a tree; `docs files` lists every doc's"),
             ("journal docs search <term>", "every line of every doc mentioning it"),
             ('journal pin "<claim>" --doc=<n>[.<p>]', "cite a doc, or one part, from a pin; rule and todo take it too"),
         ] + ([("journal docs index", "catalogue the loose files")] if loose else [])))
@@ -683,6 +691,20 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int) -> int:
             print("journal docs supersede <old> by <new>", file=sys.stderr)
             return 1
         ok, msg = docs.supersede(root(), rest[1], rest[3])
+    elif verb == "attach":
+        if len(rest) < 3:
+            print('docs attach wants a doc number and a path: journal docs attach 4 ./design.html "<what it is>"', file=sys.stderr)
+            return 1
+        ok, msg = docs.attach(root(), rest[1], rest[2], " ".join(rest[3:]), here, replace=replace)
+    elif verb in ("attachments", "files"):
+        ok, msg = docs.list_attachments(root(), " ".join(rest[1:]))
+    elif len(rest) > 1 and rest[-1] in ("files", "attachments"):
+        ok, msg = docs.list_attachments(root(), " ".join(rest[:-1]))
+    elif verb == "detach":
+        if len(rest) < 4:
+            print('docs detach wants a doc number, a name and why: journal docs detach 4 design.html "<why>"', file=sys.stderr)
+            return 1
+        ok, msg = docs.detach(root(), rest[1], rest[2], " ".join(rest[3:]))
     elif verb == "index":
         for line in docs.adopt(root(), here):
             print(line)
@@ -690,7 +712,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int) -> int:
     elif verb == "search":
         return cmd_docs_search(" ".join(rest[1:]), page)
     else:
-        ok, msg = docs.show(root(), verb)
+        ok, msg = docs.show(root(), " ".join(rest))
         print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
         return 0 if ok else 1
     print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
@@ -968,6 +990,7 @@ def main(argv: list[str]) -> int:
     on = None
     strike_n = None
     brief = False
+    replace = False
     project_too = False
     all_sessions = False
     sessions: list[str] = []
@@ -1003,6 +1026,8 @@ def main(argv: list[str]) -> int:
             on = a.split("=", 1)[1]
         elif a == "--strike":
             strike_n = -1  # the number follows as the next word
+        elif a == "--replace":
+            replace = True
         elif a == "--brief":
             brief = True
         elif a == "--project":
@@ -1094,7 +1119,7 @@ def main(argv: list[str]) -> int:
     if verb == "todo":
         return cmd_todo(rest[1:], all_of_them, brief, doc_ref)
     if verb == "docs":
-        return cmd_docs(rest[1:], brief, abstract, page)
+        return cmd_docs(rest[1:], brief, abstract, page, replace)
     if verb == "tools":
         return cmd_tools(rest[1:], brief, tool_meta)
     if verb == "carry":
