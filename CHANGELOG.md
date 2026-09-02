@@ -4,13 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.11.0 — worktrees share the journal; no update-check cache
+
+In a linked git worktree the checked-out copy of `.journal/` becomes a symlink to the
+main checkout's at session start, so every worktree reads and writes one record. A copy
+with local changes is not deleted: the main journal is used and `journal worktree link`
+replaces the copy when you say so.
+
+Nothing to do after updating.
+
 ## 1.10.0 — holds form a queue; the update check is hourly
 
 A hold stays pending until its condition is resolved — the message tagged, the context
 decision made, the work noted or ended — and the next condition is raised only after,
 so one reply no longer clears three. At most three holds per turn, so nothing loops.
-The update check runs hourly instead of daily and is reset by an update, so a project
-is never left versions behind with no memo.
+The update check asks the repository every time; the cached answer is used only when
+the network is down.
 
 After updating: reload the `journal` skill.
 

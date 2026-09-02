@@ -30,6 +30,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
+import worktree  # noqa: E402
+
+# A LINKED WORKTREE USES THE MAIN CHECKOUT'S JOURNAL. `resolve` links a clean copy, or
+# redirects here when the copy has changes; the note is handed to the session below.
+_HERE = Path(__file__).parent  # unresolved: a symlink stays a symlink here
+ROOT, WORKTREE_NOTE = worktree.resolve(_HERE if _HERE.is_symlink() else ROOT)
 
 import asks  # noqa: E402
 import settings as settings_mod  # noqa: E402
@@ -1428,6 +1434,8 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     tracks.carried(ROOT, tracks.current(ROOT), ctx.stem)
     _prune()
     block = carried(source)
+    if WORKTREE_NOTE:
+        block = WORKTREE_NOTE + "\n\n" + block
     # WHAT CHANGED SINCE THIS TRANSCRIPT LAST SAW THE JOURNAL, once. An upgrade writes the
     # version pair to the record; each transcript is handed the changelog the first time
     # it starts on the new version, and never again.

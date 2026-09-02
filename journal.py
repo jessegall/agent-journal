@@ -47,6 +47,7 @@ nothing. This is the index that gets you back to it.
     journal tracks          every track of work, current one marked
     journal switch "<name>" park this one and pick up that one; --back for the last
     journal next            what to do now: the details of the last hold, or the next to-do
+    journal worktree [link] is this a linked worktree, and does .journal link to the main checkout's? `link` makes it so
     journal tools           the tools: scripts kept for repeated work, with what each does and how to call it
     journal tools <name>    read one
     journal tools run <name> [args…]   run it from the project root
@@ -83,12 +84,23 @@ import verify
 import work
 
 
+import worktree as _wt
+
+_ROOT, _WT_NOTE = _wt.resolve(Path(__file__).parent if Path(__file__).parent.is_symlink()
+                              else Path(__file__).resolve().parent)
+if _WT_NOTE:
+    print(f"  {_WT_NOTE}", file=sys.stderr)
+
+
 def root() -> Path:
-    return Path(__file__).resolve().parent
+    return _ROOT
 
 
 def project() -> Path:
-    return root().parent
+    # the PROJECT is where this script lives, even when the record is the main checkout's:
+    # transcripts, docs and to-dos paths are relative to it; a worktree's transcript is its own
+    here = Path(__file__).parent
+    return (here if here.is_symlink() else Path(__file__).resolve().parent).parent
 
 
 def _load(back: int = 0):
@@ -1085,6 +1097,16 @@ def main(argv: list[str]) -> int:
         return 0 if ok else 1
     if verb == "settings":
         return cmd_settings()
+    if verb == "worktree":
+        if len(rest) > 1 and rest[1] == "link":
+            ok, msg = _wt.link(Path(__file__).parent if Path(__file__).parent.is_symlink()
+                               else Path(__file__).resolve().parent)
+            print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+            return 0 if ok else 1
+        main = _wt.main_root(project())
+        print(f"a linked worktree of {main}; .journal " + ("is a symlink to its journal" if (project() / ".journal").is_symlink() else "is a COPY — `journal worktree link` fixes that")
+              if main else "not a linked worktree")
+        return 0
     if verb == "next":
         return cmd_next()
     if verb == "version":

@@ -268,6 +268,13 @@ adds only the small record of what must survive.
 - **Files.** Pins, rules, work and tracks in `.journal/record.json`, a file per to-do, a
   folder per doc. Committed, so the team and every later session read the same journal.
 
+## Worktrees
+
+A git worktree of the project shares the journal. At session start in a linked worktree,
+the checked-out copy of `.journal/` is replaced with a symlink to the main checkout's,
+so both read and write one record; a copy with local changes is left alone and the main
+journal is used instead, until `journal worktree link` replaces it.
+
 ## Settings
 
 `.journal/settings.json` holds only what you change; everything else is at its default.

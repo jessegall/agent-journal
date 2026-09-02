@@ -135,6 +135,12 @@ clean marks and a full store.
 The CLI reads **this session's** transcript, found through `CLAUDE_CODE_SESSION_ID`, which
 every Bash call from inside a session carries.
 
+## Worktrees
+
+A linked git worktree shares the main checkout's journal: its `.journal/` is a symlink,
+made at session start when the checked-out copy is clean. `journal worktree` says which
+case you are in; `journal worktree link` replaces a copy by hand. Never write to a copy.
+
 ## Subagents
 
 Subagents do not write the journal. Their `work start`, `remember`, `todo`, `switch` and the

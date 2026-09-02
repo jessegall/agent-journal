@@ -23,7 +23,6 @@ from pathlib import Path
 REPO = "https://github.com/jessegall/agent-journal"
 RAW = "https://raw.githubusercontent.com/jessegall/agent-journal/main"
 CACHE = "runtime/upstream.cache"     # gitignored, project-wide: one check serves every session; not a .json, so verify does not count it as a transcript
-CHECK_EVERY = 3600   # an hour: a day left projects three versions behind with no memo
 
 
 def current(root: Path) -> str:
@@ -78,7 +77,7 @@ def _fetch(url: str, timeout: float = 3.0) -> str | None:
 
 
 def check(root: Path, force: bool = False) -> dict:
-    """{'version': latest seen upstream, 'headline': …, 'at': …} — cached a day."""
+    """{'version': latest upstream, 'headline': …} — asked every time; the file is the last answer."""
     f = root / CACHE
     cached = {}
     if f.is_file():
@@ -86,14 +85,14 @@ def check(root: Path, force: bool = False) -> dict:
             cached = json.loads(f.read_text())
         except ValueError:
             cached = {}
-    if not force and cached.get("at", 0) > time.time() - CHECK_EVERY:
-        return cached
+    # NO CACHE WINDOW. The user's ruling: every check asks the repository. The file only
+    # keeps the last answer for when the network is down, so a known newer version is
+    # still said. A fetch is one small file with a short timeout.
     import os
     if os.environ.get("AGENT_JOURNAL_OFFLINE"):
         return cached  # the test suites, and anyone who wants no network from a hook
-    version = _fetch(f"{RAW}/VERSION")
+    version = _fetch(f"{RAW}/VERSION", timeout=2.0)
     if version is None:
-        cached["at"] = time.time()  # a failed check is still a check: do not hammer
         cached.setdefault("version", "")
     else:
         version = version.strip()
