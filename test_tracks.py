@@ -136,12 +136,12 @@ d = Path(tempfile.mkdtemp()) / "proj"
 # inherit marks it did not write, and `verify` would count them as evidence.
 shutil.copytree(SRC, d / ".journal",
                 ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
-                                              "todo", "__pycache__"))
+                                              "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
 J = str(d / ".journal" / "journal.py")
 
 
 def run_cli(*args):
-    p = subprocess.run([J, *args], capture_output=True, text=True)
+    p = subprocess.run([J, *args], capture_output=True, text=True, timeout=60)
     return p.returncode, p.stdout + p.stderr
 
 
@@ -164,12 +164,12 @@ check("cli lists both, current marked", (" * default" in out, "second" in out), 
 hook = str(d / ".journal" / "hook.py")
 START = json.dumps({"hook_event_name": "SessionStart", "source": "compact",
                     "session_id": "s1", "transcript_path": str(d / "s1.jsonl")})
-p = subprocess.run([hook], input=START, capture_output=True, text=True)
+p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
 check("SessionStart names the current track", "on track `default`" in ctx, True)
 check("SessionStart carries this track's pin", "cli fact" in ctx, True)
 run_cli("switch", "second")
-p = subprocess.run([hook], input=START, capture_output=True, text=True)
+p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
 check("SessionStart on another track names it", "on track `second`" in ctx, True)
 check("and does NOT leak the other track's pin", "cli fact" in ctx, False)

@@ -52,7 +52,7 @@ EVENTS = ("Stop", "SessionStart", "PostToolUse", "PreToolUse", "UserPromptSubmit
 #: in it otherwise splits into two arguments and the hook simply never runs.
 COMMAND = '"$CLAUDE_PROJECT_DIR"/.journal/hook.py'
 EXECUTABLE = ("hook.py", "journal.py", "install.py", "test_tracks.py", "test_gate.py",
-              "test_state.py", "test_auto.py", "test_docs.py", "test_tools.py", "test_worktree.py")
+              "test_state.py", "test_auto.py", "test_docs.py", "test_tools.py", "test_worktree.py", "test_queue.py")
 
 #: THE SKILL IS PART OF THE PACKAGE, and it has to be installed rather than committed.
 #: It teaches the reasoning the injected block has no room for, so it belongs beside the
@@ -84,7 +84,9 @@ def _package_files(root: Path) -> list[Path]:
 def pull(src: Path, check: bool) -> list[str]:
     """Bring another checkout's package here. Tests first, in staging; then the files."""
     src = src.resolve()
-    if src.name != ".journal" and (src / ".journal").is_dir():
+    # a repository whose ROOT is the package also holds its own .journal/ instance inside;
+    # the root is the source, the instance is that project's data
+    if src.name != ".journal" and not (src / "hook.py").is_file() and (src / ".journal").is_dir():
         src = src / ".journal"
     if not (src / "hook.py").is_file() or not (src / "journal.py").is_file():
         raise SystemExit(f"  ! {src} is not a journal package (no hook.py / journal.py)")

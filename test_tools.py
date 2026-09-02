@@ -27,7 +27,7 @@ def check(label, got, want):
 d = Path(tempfile.mkdtemp()) / "proj"
 (d / ".claude").mkdir(parents=True)
 shutil.copytree(SRC, d / ".journal", ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
-                                                                   "todo", "docs", "tools", "__pycache__"))
+                                                                   "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
 (d / ".journal" / "settings.json").write_text("{}")
 tdir = transcript.project_dir(d); tdir.mkdir(parents=True, exist_ok=True)
 path = tdir / "s1.jsonl"; path.write_text("")
@@ -37,13 +37,13 @@ root = d / ".journal"
 
 
 def j(*args, stdin=""):
-    p = subprocess.run([J, *args], env=env, input=stdin, capture_output=True, text=True)
+    p = subprocess.run([J, *args], env=env, input=stdin, capture_output=True, text=True, timeout=60)
     return p.returncode, p.stdout + p.stderr
 
 
 def fire(event, **extra):
     payload = {"hook_event_name": event, "session_id": "s1", "transcript_path": str(path), **extra}
-    p = subprocess.run([str(root / "hook.py")], input=json.dumps(payload), capture_output=True, text=True)
+    p = subprocess.run([str(root / "hook.py")], input=json.dumps(payload), capture_output=True, text=True, timeout=60)
     return p.stdout
 
 
