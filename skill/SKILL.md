@@ -270,9 +270,12 @@ have it rather than filling the space.
     journal open                    work declared and never closed, with its notes
 
 After a compaction, read `conversation --back=1` and `user` before you touch anything;
-they are precisely what the summary dropped. At a fresh start, the block lists the standing
-rules, pins, open work and to-dos. Work opened by an earlier session is listed so you know
-it exists, not held against you; before continuing it, `open` shows where it got to.
+they are precisely what the summary dropped. At a fresh start, the block names the track
+this session is bound to and lists the standing rules, pins, open work and to-dos. If it
+leads with "TRACK … IS TAKEN", another running session holds that track: tell the user, ask
+which track this session works on, and `switch` before anything else. Work opened by an
+earlier session is listed so you know it exists, not held against you; before continuing
+it, `open` shows where it got to.
 
 ## If a hook holds or denies you
 

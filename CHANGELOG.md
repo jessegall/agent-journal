@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.14.2 — the skill's start section knows about tracks
+
+The skill says what the start block names — the track this session is bound to — and
+what to do when it leads with a taken track.
+
+After updating: reload the journal skill.
+
 ## 1.14.1 — a citation names its doc
 
 A pin, rule or to-do that cites a part showed the part's title alone; it shows
