@@ -820,6 +820,7 @@ import update
 LOG = "# Changelog\n\n## 1.2.0 — docs\n\nDocs are catalogued.\n\n## 1.1.0 — to-dos\n\nTo-dos exist.\n\n## 1.0.0 — first\n\nThe start.\n"
 check("entries parse newest first", [e[0] for e in update.entries(LOG)], ["1.2.0", "1.1.0", "1.0.0"])
 check("since a version", [e[0] for e in update.since(LOG, "1.0.0")], ["1.2.0", "1.1.0"])
+check("the changelog block tells the agent to reload the skill", "RELOAD THE JOURNAL SKILL" in update.render_since(LOG, "1.0.0", "1.2.0"), True)
 check("render names both versions and the headlines",
       ("1.0.0 → 1.2.0" in update.render_since(LOG, "1.0.0", "1.2.0"), "1.1.0 — to-dos" in update.render_since(LOG, "1.0.0", "1.2.0")), (True, True))
 check("nothing since the latest", update.render_since(LOG, "1.2.0", "1.2.0"), "")

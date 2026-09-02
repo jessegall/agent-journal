@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.8.0 — tool-shaped work is noticed; reload the skill after an update
+
+A script written into a scratch or scripts folder, the same long inline script run twice,
+or a scratch script run by name earns a one-time hint to catalogue it as a tool. After an
+update the agent is told to reload the journal skill.
+
+After updating: reload the `journal` skill.
+
 ## 1.7.0 — tools
 
 Scripts the agent keeps for repeated work, catalogued under `.journal/tools/<name>/` with

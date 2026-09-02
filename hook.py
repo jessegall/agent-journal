@@ -927,6 +927,71 @@ def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
     )
 
 
+_SCRIPT_EXT = (".py", ".sh", ".php", ".js", ".ts", ".rb", ".pl")
+_SCRATCH = ("/scratchpad/", "/tmp/", "/var/folders/")
+_TOOLISH_DIRS = ("tools/", "scripts/", "bin/", "script/")
+_HEREDOC_BODY_RE = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n(.*?)\n\1(?=\n|$)", re.S)
+
+
+def _tool_shaped(conf: dict, payload: dict, ctx: Ctx) -> str | None:
+    """Something that looks like a tool before anyone called it one: a hint, once.
+
+    THREE SHAPES, all measured in live sessions. A script written into the scratchpad or
+    a scripts folder — a helper the agent will lose with the session. The same long
+    inline script run twice — `python3 - <<'PY' …` with the same body, which is a tool
+    being retyped. A scratch script run by name — `php /tmp/x.php`, the helper in use.
+    Each earns one hint naming `journal tools add`; a hint, never a hold, because plenty
+    of scripts are rightly one-offs and the agent is the one who knows.
+    """
+    if "tool_hint" in conf["silenced"]:
+        return None
+    name = payload.get("tool_name") or ""
+    inp = payload.get("tool_input") or {}
+    said = state.get(ROOT, "tool_hinted", [], stem=ctx.stem) or []
+    what = key = ""
+    if name in ("Write", "Edit", "MultiEdit"):
+        path = str(inp.get("file_path") or "")
+        if path.endswith(_SCRIPT_EXT) and "/.journal/tools/" not in path:
+            try:
+                rel = str(Path(path).resolve().relative_to(ROOT.parent.resolve()))
+                inside = True
+            except ValueError:
+                rel, inside = path, False
+            scratch = not inside and any(x in path for x in _SCRATCH)
+            toolish = inside and any(rel.startswith(d) or f"/{d}" in rel for d in _TOOLISH_DIRS)
+            if scratch or toolish:
+                what, key = f"{rel} is a script you wrote" + (" in a scratch folder, which the next session cannot reach" if scratch else ""), rel
+    elif name == "Bash":
+        cmd = str(inp.get("command") or "")
+        if any(_is_journal_verb(w[0]) for w in _pieces(cmd)):
+            return None
+        m = re.search(r"\b(?:python3?|php|sh|bash|node|ruby)\s+(\S*(?:" + "|".join(x.strip("/") for x in _SCRATCH) + r")\S+)", cmd)
+        if m:
+            what, key = f"{m.group(1)} is a scratch script you ran", "run:" + m.group(1)
+        else:
+            for _, body in _HEREDOC_BODY_RE.findall(cmd):
+                if len(body) < 300:
+                    continue
+                import hashlib
+                h = hashlib.sha1(" ".join(body.split()).encode()).hexdigest()[:12]
+                seen = state.get(ROOT, "inline_scripts", [], stem=ctx.stem) or []
+                if h in seen:
+                    what, key = "the same inline script has now run twice", "inline:" + h
+                else:
+                    state.put(ROOT, "inline_scripts", (seen + [h])[-100:], stem=ctx.stem)
+                break
+    if not what or key in said:
+        return None
+    state.put(ROOT, "tool_hinted", (said + [key])[-50:], stem=ctx.stem)
+    return (
+        f"journal: {what}. If this job will come back, it is a tool: put the script under "
+        ".journal/tools/<name>/ (or leave it and point --entry at it) and catalogue it, so every "
+        "session is handed it instead of writing it again:\n"
+        '  .journal/journal.py tools add <name> "<title>" --summary="<what it does>" --usage="<how to call it>" --entry=<file>\n'
+        "A one-off is fine as it is. Said once."
+    )
+
+
 def _stall(conf: dict, ctx: Ctx) -> str | None:
     """Many tool calls on one started to-do with no progress filed: say so, once.
 
@@ -1016,6 +1081,9 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
             if rung:
                 return _context("PostToolUse", rung[1] + "\n\n" + rung[2])
     hint = _raw_markdown(conf, payload, ctx)
+    if hint:
+        return _context("PostToolUse", hint)
+    hint = _tool_shaped(conf, payload, ctx)
     if hint:
         return _context("PostToolUse", hint)
     stalled = _stall(conf, ctx)

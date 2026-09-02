@@ -289,3 +289,4 @@ thing to do now.
 | *`journal <verb>` from a subagent is refused*                  | you are a subagent: report; the main conversation files |
 | *THAT … CALL RETURNED N CHARACTERS*                            | nothing to undo; read narrower next time               |
 | *… is a markdown file written outside the journal*             | a hint: `docs add` or `docs part` if it is a design or a report; otherwise ignore |
+| *… is a script you wrote / has now run twice / scratch script*  | a hint: `tools add` if the job comes back; otherwise ignore |

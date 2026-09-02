@@ -63,6 +63,8 @@ def render_since(text: str, had: str, now: str) -> str:
     for v, head, body in got:
         lines.append(f"\n{v} — {head}" if head else f"\n{v}")
         lines.append(body)
+    lines.append("\nRELOAD THE JOURNAL SKILL NOW — invoke the `journal` skill again — because its "
+                 "rules and commands changed with this version and what you remember of it is stale.")
     return "\n".join(lines)
 
 

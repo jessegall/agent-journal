@@ -230,6 +230,8 @@ without anyone filing anything.
 - **Work still open** at a stop: reminded; in auto mode, at every stop.
 - **A pin over 400 characters, or one naming a temporary path**: refused before it runs.
 - **A markdown file written by hand**: a one-time hint that docs are catalogued.
+- **Something tool-shaped**: a script written into a scratch or scripts folder, the same
+  inline script run twice, a scratch script run by name: a one-time hint to make it a tool.
 
 Every hold names its way out. Subagents are outside all of it: they cannot write the
 journal, are never held, and are handed the rules on their first tool call.
