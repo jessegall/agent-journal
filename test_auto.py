@@ -319,7 +319,7 @@ d = project(); s = Session(d, "s1")
 s.journal("todo", "auto", "on"); s.journal("start", "w"); s.start()
 labels = [s.stop()[0] for _ in range(5)]
 check("five turns in a row with work open: held five times", labels, [AUTO_OPEN] * 5)
-s.journal("update", "halfway; waiting on nothing")
+s.journal("work", "update", "halfway; waiting on nothing")
 check("an update does not end it: still held", s.stop()[0], AUTO_OPEN)
 code, out = s.journal("end", "the wrong words")
 check("end with the wrong words closes nothing", code, 1)
@@ -386,7 +386,7 @@ check("at the limit: the stall nudge, naming the to-do and the way out",
       ("5 tool calls on to-do 1" in out, "todo ask 1" in out), (True, True))
 outs = [s.fire("PostToolUse", **call) for _ in range(6)]
 check("said once, not on every call after", [o.strip() for o in outs], [""] * 6)
-s.journal("update", "found the cause; fixing")
+s.journal("work", "update", "found the cause; fixing")
 outs = [s.fire("PostToolUse", **call) for _ in range(4)]
 check("an update restarts the count: silent again under the limit", [o.strip() for o in outs], [""] * 4)
 out = s.fire("PostToolUse", **call)

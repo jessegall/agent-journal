@@ -307,12 +307,12 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
             if latest and latest != state.get(ROOT, "update_said", "", stem=ctx.stem):
                 state.put(ROOT, "update_said", latest, stem=ctx.stem)
                 return _context("Stop", note + " Run it now if nothing is mid-flight: "
-                                "`.journal/journal.py upgrade`.")
+                                "`.journal/journal.py update`.")
 
     # THE MISFILED CHECK USED TO LIVE HERE, and it is gone because the thing it policed
     # is gone. It held on a message wearing `[!update]` with no work open — the one tag
     # whose correctness depended on something outside the message it rode on. The user
-    # struck the tag and made it `journal update` instead, and a command cannot be
+    # struck the tag and made it `journal work update` instead, and a command cannot be
     # misfiled: `work.note` refuses when nothing is open rather than filing a claim about
     # nothing. The check moved from after the fact to before it, which is where a check
     # belongs when it can.
@@ -352,7 +352,7 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
                     + ("; then the list starts" if listed else "; open work is never left standing"),
                     f"Open: {names}\n\nAuto is on for `{here}`, and the next to-do starts only "
                     "when nothing is open. If this work is finished, close it:\n"
-                    '  .journal/journal.py end "<the same words>"\n'
+                    '  .journal/journal.py work end "<the same words>"\n'
                     "If part of it is waiting on the user — a ruling, a review — that part is a "
                     "to-do, not open work: park it with the questions in its brief, then `end` "
                     "the work:\n"
@@ -447,7 +447,7 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
                     + f"\n\nThe user is away and asked for this list to be worked through. Read "
                     f"the brief (`journal todo {nxt['n']}`), start it, SOLVE IT YOURSELF, `end` it, "
                     "and the next idle stop brings the next one. Every choice the brief leaves "
-                    "open is yours to make: make it, write it in `journal update`, carry on. Ask "
+                    "open is yours to make: make it, write it in `journal work update`, carry on. Ask "
                     "the user only if you cannot proceed without something only they can supply, "
                     "or the hook tells you that you are stalled — then `update` what was tried, "
                     f"`end`, `journal todo ask {nxt['n']} \"<what is stuck>\"`, and the next "
@@ -531,7 +531,7 @@ _HEREDOC = re.compile(r"<<-?\s*'?\"?([A-Za-z_][A-Za-z0-9_]*)'?\"?.*?(?:\1|$)", r
 
 
 #: Pieces that change nothing and may lead a line: moving into a directory, setting a
-#: variable. `cd proj && journal start "w" && git checkout -b x` declares before it writes.
+#: variable. `cd proj && journal work start "w" && git checkout -b x` declares before it writes.
 _NEUTRAL = frozenset({"cd", "pushd", "popd", "export", "set", "true", ":"})
 _REDIR = re.compile(r"^\d*>{1,2}(.*)$")
 
@@ -637,18 +637,18 @@ _FILTERS = frozenset({"head", "tail", "grep", "cut", "wc", "sort", "uniq", "tr",
                       "less", "more", "fold", "column", "awk"})
 
 def _declared_first(payload: dict) -> bool:
-    """Does every write in this line come after a `journal start` in the same line?
+    """Does every write in this line come after a `journal work start` in the same line?
 
-    `journal start "w" && git commit` declares and then writes, in that order, which is
-    exactly what the gate asks for. `cd proj && journal start "w" && git checkout -b x`
-    too: `cd` changes nothing. `git add && journal start "w"` does not qualify — the
+    `journal work start "w" && git commit` declares and then writes, in that order, which is
+    exactly what the gate asks for. `cd proj && journal work start "w" && git checkout -b x`
+    too: `cd` changes nothing. `git add && journal work start "w"` does not qualify — the
     write would run undeclared. The same shape the rung gate accepts: the deciding
     command leads, and neutral pieces before it do not count.
     """
     declared = False
     for words in _pieces(str((payload.get("tool_input") or {}).get("command", ""))):
         if _is_journal_verb(words[0]) and len(words) > 1 and (
-                words[1] == "start" or (words[1] == "todo" and len(words) > 2 and words[2] == "start")):
+                words[1] == "start" or (words[1] in ("todo", "work") and len(words) > 2 and words[2] == "start")):
             declared = True
         elif _piece_is_write(words) and not declared:
             return False
@@ -743,7 +743,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 
 #: Journal verbs that WRITE. A subagent may read the record; it may not change it.
 JOURNAL_WRITES = frozenset({"start", "end", "update", "remember", "strike", "switch", "nothing",
-                            "rule", "promote", "todo", "docs"})
+                            "rule", "promote", "todo", "docs", "work"})
 
 
 def _journal_write(payload: dict) -> str | None:
@@ -793,7 +793,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     Everything else here is a nudge after the fact: the stop hook says a message went
     unfiled once it is already unfiled, and the agent can read past it. Measured on a live
     session doing eight hours of real work — 843 lines, every message dutifully tagged, and
-    `journal start` run EXACTLY ZERO TIMES. The free thing got used and the costly one did
+    `journal work start` run EXACTLY ZERO TIMES. The free thing got used and the costly one did
     not, which is what always happens when one rule is a side effect and the other is a
     discipline.
 
@@ -839,7 +839,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     return _deny(
         "Nothing is open, so this edit would not be filed against any work. Say what "
         "you are doing first — one line, and then this stops asking:\n"
-        '  .journal/journal.py start "<the work, in your own words>"\n'
+        '  .journal/journal.py work start "<the work, in your own words>"\n'
         "Close it with `end` when it is done. Reads are never gated; only changes."
     )
 
@@ -946,7 +946,7 @@ def _stall(conf: dict, ctx: Ctx) -> str | None:
     state.put(ROOT, "stall", mark, stem=ctx.stem)
     return (
         f"journal: {mark['calls']} tool calls on to-do {t['n']} ({t['title']}) with no progress "
-        "filed. If there is a measurable result, file it — `journal update \"<what moved>\"` — "
+        "filed. If there is a measurable result, file it — `journal work update \"<what moved>\"` — "
         "and carry on. If there is not, stop pouring time in: `update` what was tried, `end` "
         f"the work, `journal todo ask {t['n']} \"<what is stuck>\"`, and move on."
     )

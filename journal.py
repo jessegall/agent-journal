@@ -40,15 +40,15 @@ nothing. This is the index that gets you back to it.
     journal pins [--all]    every pin, numbered — the number is what --supersedes takes
     journal pins N --full   the conversation around where pin N was written
     journal strike N "<why>" retire a pin that stopped being true, no replacement needed
-    journal start "<what>"  declare work — a commitment, which is why it costs a command
-    journal update "<what moved>" [--on="<work>"]   progress on the open work
-    journal end "<what>"    the same words, to close it
+    journal work start "<what>"  declare work — a commitment, which is why it costs a command
+    journal work update "<what moved>" [--on="<work>"]   progress on the open work
+    journal work end "<what>"    the same words, to close it
     journal carry           exactly what a compaction will hand back — nothing is written
     journal tracks          every track of work, current one marked
     journal switch "<name>" park this one and pick up that one; --back for the last
     journal verify          is any of this in force? wired is not the same as fired
     journal version         this project's version of the journal, and whether a newer one is out
-    journal upgrade [--from=<path or git url>]   pull the latest, tests first, and print what changed
+    journal update [--from=<path or git url>]    pull the latest journal and print what changed
     journal settings        every setting, its value, and where it came from
 """
 from __future__ import annotations
@@ -123,6 +123,8 @@ def _help(verb: str = "") -> int:
         return 0
     lines = [l for l in (__doc__ or "").splitlines()
              if l.strip().startswith(f"journal {verb}") or l.strip().startswith(f"journal --{verb}")]
+    if verb in ("start", "end"):
+        lines = [l for l in (__doc__ or "").splitlines() if l.strip().startswith(f"journal work {verb}")]
     if not lines:
         print(f"No such command: {verb}\n", file=sys.stderr)
         print(__doc__, file=sys.stderr)
@@ -244,8 +246,8 @@ def cmd_open() -> int:
             print(fmt.wrap(f"{note['at'][11:16]}  {note['text']}", indent=5))
     print()
     print(fmt.commands([
-        ('journal end "<the same words>"', "close it"),
-        ('journal update "<where it got to>"', "say where it got to"),
+        ('journal work end "<the same words>"', "close it"),
+        ('journal work update "<where it got to>"', "say where it got to"),
     ]))
     return 0
 
@@ -566,7 +568,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             ok, msg = work.start(root(), t["title"], _now(), _where())
             print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
             if ok:
-                print(f"  to-do {n} is started; `journal end \"{t['title']}\"` closes both.")
+                print(f"  to-do {n} is started; `journal work end \"{t['title']}\"` closes both.")
             return 0 if ok else 1
         why = " ".join(rest[2:])
         if verb == "drop":
@@ -943,12 +945,25 @@ def main(argv: list[str]) -> int:
                 print(f"pins wants a NUMBER with --full, got {rest[1]!r}", file=sys.stderr)
                 return 1
         return cmd_pins(all_of_them)
-    if verb == "update":
-        if len(rest) < 2:
-            print('update wants the words: journal update "<what moved>"', file=sys.stderr)
+    if verb == "update" and len(rest) > 1:
+        # `journal update` upgrades the journal; a note on the work is `journal work update`
+        print('journal update upgrades the journal. Progress on the open work is:\n'
+              '  journal work update "<what moved>"', file=sys.stderr)
+        return 1
+    if verb == "work":
+        sub = rest[1] if len(rest) > 1 else ""
+        if sub not in ("start", "end", "update"):
+            print('journal work start|update|end "<words>"', file=sys.stderr)
             return 1
-        return cmd_update(" ".join(rest[1:]), on)
+        if len(rest) < 3:
+            print(f'work {sub} wants the words: journal work {sub} "<the work>"', file=sys.stderr)
+            return 1
+        words = " ".join(rest[2:])
+        if sub == "update":
+            return cmd_update(words, on)
+        return cmd_start(words) if sub == "start" else cmd_end(words)
     if verb in ("start", "end"):
+        # kept so a session that learned the old spelling is not stranded mid-work
         if len(rest) < 2:
             print(f"{verb} wants the words that name the work", file=sys.stderr)
             return 1
@@ -972,7 +987,7 @@ def main(argv: list[str]) -> int:
         else:
             print(fmt.wrap("Could not reach the repository to check for a newer one."))
         return 0
-    if verb == "upgrade":
+    if verb in ("upgrade", "update"):
         src = next((a.split("=", 1)[1] for a in argv if a.startswith("--from=")), None)
         ok, msg = update.upgrade(root(), src)
         print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)

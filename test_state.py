@@ -829,7 +829,7 @@ env = {**os.environ, transcript.SESSION_ENV: "s1"}
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
 check("a newer version upstream: the stop says so as context, with the upgrade command",
-      ("9.9.9 IS AVAILABLE" in out, "journal.py upgrade" in out, '"decision"' in out), (True, True, False))
+      ("9.9.9 IS AVAILABLE" in out, "journal.py update" in out, '"decision"' in out), (True, True, False))
 code, out, err = fire(d, "Stop", path)
 check("once per transcript per version", out.strip(), "")
 code, out, err = fire(d, "SessionStart", path, source="startup")
@@ -839,18 +839,18 @@ check("the status page shows the version and the available one", "9.9.9 availabl
 # an upgrade from a path: the newer package lands, the changelog since is printed, and the next start is handed it once
 src = Path(tempfile.mkdtemp()) / "pkg"
 shutil.copytree(d / ".journal", src, ignore=shutil.ignore_patterns("runtime", "record.json*", "settings.json", "todo", "__pycache__"))
-(src / "VERSION").write_text("1.5.0\n")
-(src / "CHANGELOG.md").write_text("# Changelog\n\n## 1.5.0 — the test release\n\nA line about it.\n\n" + (src / "CHANGELOG.md").read_text().split("\n", 2)[2])
+(src / "VERSION").write_text("9.0.0\n")
+(src / "CHANGELOG.md").write_text("# Changelog\n\n## 9.0.0 — the test release\n\nA line about it.\n\n" + (src / "CHANGELOG.md").read_text().split("\n", 2)[2])
 p = subprocess.run([J, "upgrade", f"--from={src}"], env=env, capture_output=True, text=True)
 check("upgrade pulls the newer package and prints what changed",
-      (p.returncode, "1.5.0 — the test release" in p.stdout, (d / ".journal" / "VERSION").read_text().strip()), (0, True, "1.5.0"))
+      (p.returncode, "9.0.0 — the test release" in p.stdout, (d / ".journal" / "VERSION").read_text().strip()), (0, True, "9.0.0"))
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("the next session start is handed the changelog", "THE JOURNAL WAS UPGRADED" in ctx and "the test release" in ctx, True)
 code, out, err = fire(d, "SessionStart", path, source="compact")
 check("and not again in the same transcript", "THE JOURNAL WAS UPGRADED" in json.loads(out)["hookSpecificOutput"]["additionalContext"], False)
 p = subprocess.run([J, "upgrade", f"--from={src}"], env=env, capture_output=True, text=True)
-check("upgrading again is a no-op that says so", "Already at 1.5.0" in p.stdout, True)
+check("upgrading again is a no-op that says so", "Already at 9.0.0" in p.stdout, True)
 
 # a subagent's marks are pruned with its transcript, and kept while it lives
 d, path = project_with(2)

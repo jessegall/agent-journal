@@ -29,13 +29,13 @@ All of them run as `.journal/journal.py <command>`; `journal` is an alias. `jour
 
 **Work**
 
-    journal start "<what>"           declare it — a commitment, which is why it costs a command
-    journal update "<what moved>" [--on="<work>"]   progress, filed against the open work
-    journal end "<the same words>"   close it; the to-do of the same title closes with it
+    journal work start "<what>"           declare it — a commitment, which is why it costs a command
+    journal work update "<what moved>" [--on="<work>"]   progress, filed against the open work
+    journal work end "<the same words>"   close it; the to-do of the same title closes with it
     journal open                     work declared and never closed, with its notes
 
 `update` refuses when nothing is open and refuses to guess between several; name one with
-`--on`. `end` matches the subject you opened with, case-insensitively.
+`--on`. `work end` matches the subject you opened with, case-insensitively.
 
 **Pins, for this track**
 
@@ -58,7 +58,7 @@ All of them run as `.journal/journal.py <command>`; `journal` is an alias. `jour
     journal todo "<title>" [--brief] add one; --brief reads a longer brief from stdin
     journal todo [--all]             the titles, numbered; --all includes done ones
     journal todo N                   the whole brief
-    journal todo start N             open work with that title; `end` closes both
+    journal todo start N             open work with that title; `work end` closes both
     journal todo done N "<how>"      resolved without starting it
     journal todo drop N "<why>"      abandoned, on the record
     journal todo ask N "<question>"  it waits on the user's answer; auto moves on to the next
@@ -94,7 +94,7 @@ A brief on stdin:
     journal switch --back            the one you came from
 
 **Chains.** A journal command in a chain exempts only itself from the write gate. A line
-whose first non-trivial piece is `journal start` may write after it; a line that decides
+whose first non-trivial piece is `journal work start` may write after it; a line that decides
 first (`remember`, `rule`, `nothing`) passes the context gate for what follows. `cd` and
 `export` before either do not count against it.
 
@@ -127,7 +127,7 @@ every Bash call from inside a session carries.
 
 ## Subagents
 
-Subagents do not write the journal. Their `start`, `remember`, `todo`, `switch` and the
+Subagents do not write the journal. Their `work start`, `remember`, `todo`, `switch` and the
 rest are denied with a line saying to report back; `search`, `pins`, `open` and other reads
 are fine. Their tool calls are neither gated nor nudged. They are handed the rules on their
 first tool call and again at 25%, 50% and 75% of their own window, because a rule binds
@@ -152,7 +152,7 @@ commitment, so it costs a verb, and that cost is the thought.
 
 **A tag describes the message it rides on, and nothing else.** That is why none of them can
 be wrong. `[!update]` was struck because its correctness depended on something outside its
-own message, an open scope. Progress is `journal update` now, a command, because it is
+own message, an open scope. Progress is `journal work update` now, a command, because it is
 about the work.
 
 **Refuse rather than guess.** Every command fails loudly rather than file something
@@ -162,5 +162,5 @@ nothing is ever evicted by a counter: a pin leaves the store only when a person 
 with a reason.
 
 The gates exist because nudges were measured and did not land: a session tagged 843
-messages faithfully and ran `start` zero times, and the user had to ask for a pin after a
+messages faithfully and ran `work start` zero times, and the user had to ask for a pin after a
 context warning. A rule becomes a gate only when its nudge has been shown not to work.

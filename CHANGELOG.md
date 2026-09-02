@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.5.0 — `journal work start|update|end`; `journal update` updates the journal
+
+The work commands are a family: `journal work start "…"`, `journal work update "…"`,
+`journal work end "…"`. That frees `journal update` to mean updating the journal itself
+(`journal upgrade` still works). The old `journal start` and `journal end` keep working;
+`journal update "<text>"` now tells you to use `work update`.
+
+After updating: use `journal work update` for notes on the open work.
+
 ## 1.4.0 — a `journal` command for every shell
 
 `--alias` now installs a `journal` script in ~/.local/bin instead of a zsh/bash alias, so

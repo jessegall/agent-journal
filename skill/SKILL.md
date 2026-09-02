@@ -25,16 +25,16 @@ verb you do not remember.
 Every request is one of three things, and deciding which comes before anything else.
 
 1. **It is the current work**, a step of it, or a correction to it. Carry on. If the
-   direction changes, `journal update "<what changed>"` says so.
+   direction changes, `journal work update "<what changed>"` says so.
 2. **It is different, and it can wait.** Park it and keep going:
    `journal todo "<title>" --brief` with the brief on stdin, then say in your reply that it
    is parked as to-do n. This is the usual case when something is open and the request is
    about something else.
 3. **It is different, and it cannot wait.** The user said so ("now", "first", "stop"), or
    it blocks the open work, or it makes the open work wrong. `update` the open work with
-   where it got to, `end` it if it is being abandoned, then `start` the new one.
+   where it got to, `work end` it if it is being abandoned, then `work start` the new one.
 
-With nothing open, the request *is* the work: read until you can name it, `start` it, go.
+With nothing open, the request *is* the work: read until you can name it, `work start` it, go.
 
 "Can wait" means finishing the open work first loses nothing: the request does not depend
 on it, does not invalidate it, and was not asked for first. The words settle most cases.
@@ -61,12 +61,12 @@ the reply says: "Parked as to-do 4; I'll keep going on the widgets."
 
 **Example 2.** Same open work. The user: "wait, the Dropdown is throwing 500s on every
 recompose now".
-→ It makes the open work wrong. `journal update "Dropdown recompose returns 500 since the
-state-only change; stopping to fix it"`, then `journal start "fix the Dropdown recompose
+→ It makes the open work wrong. `journal work update "Dropdown recompose returns 500 since the
+state-only change; stopping to fix it"`, then `journal work start "fix the Dropdown recompose
 500"`.
 
 **Example 3.** Nothing open. The user: "can you add a --json flag to the export command".
-→ Read the export command until the change is clear, then `journal start "add a --json
+→ Read the export command until the change is clear, then `journal work start "add a --json
 flag to export"` and build it.
 
 ## Tag every message
@@ -88,17 +88,17 @@ user interrupts you, nothing in that turn is judged.
 
 ## Declare work
 
-    journal start "<the work, in your own words>"
-    journal update "<what moved>" [--on="<work>"]
-    journal end "<the same words>"
+    journal work start "<the work, in your own words>"
+    journal work update "<what moved>" [--on="<work>"]
+    journal work end "<the same words>"
 
 Declare before the first write, never before the first read: edits, `rm`, `git commit`
 are refused while nothing is open, and reads never are, because reading is what tells you
 what the work is. A good subject is a sentence you will say again. `update` is for where
 it got to, not every step: a decision inside the work, a dead end, a change of approach.
-`end` asks whether the work taught anything a later reader would get wrong without;
+`work end` asks whether the work taught anything a later reader would get wrong without;
 "nothing" is the usual answer and a fine one. A line that opens the work first,
-`journal start "…" && …`, may write in the same line.
+`journal work start "…" && …`, may write in the same line.
 
 ## Pin, rule, or nothing
 
@@ -139,7 +139,7 @@ moment to park any work you are holding for later, because that lives only in th
     journal todo "<title>" [--brief]   add one; --brief reads a longer brief from stdin
     journal todo                       the titles
     journal todo <n>                   the brief
-    journal todo start <n>             open work under that title; `end` closes both
+    journal todo start <n>             open work under that title; `work end` closes both
     journal todo done <n> "<how>"      resolved without starting it
     journal todo ask <n> "<question>"  it waits on the user; auto moves on to the next
     journal todo answer <n> "<answer>" the user's answer; the agent is told at its next stop
@@ -155,13 +155,13 @@ default, the start block lists what is waiting and an idle stop says so once; ne
 an instruction to begin one. Start a to-do only when the user says so for that one, or
 asks you to work through them, in which case offer `journal todo auto on`. With auto on
 for the track, the user has already said it: whenever nothing is open, pick up the next
-one with `todo start <n>`, do it, `end` it, and the next idle stop brings the next.
+one with `todo start <n>`, do it, `work end` it, and the next idle stop brings the next.
 
 **With auto on, solve it yourself.** The user switched auto on to be away. Every
 question you send them stops the list until they return, so a question is the expensive
 move and a decision is the cheap one. Read the brief, start the to-do, and make every
 choice it leaves open: the name, the signature, the approach, which of the brief's
-options. Make it under the rules and pins that stand, write it in `journal update` so it
+options. Make it under the rules and pins that stand, write it in `journal work update` so it
 can be reviewed and reversed, and carry on. "I would have asked with auto off" is not a
 reason to ask; it is the case auto exists for.
 
@@ -176,8 +176,8 @@ reason to ask; it is the case auto exists for.
 
 In either case:
 
-    journal update "<where it got to, and what was tried>"     if you had started it
-    journal end "<the to-do's title>"                          so nothing stays open
+    journal work update "<where it got to, and what was tried>"     if you had started it
+    journal work end "<the to-do's title>"                          so nothing stays open
     journal todo ask <n> "<what is stuck, and what was tried>"
 
 Say that in your reply, naming the to-do, and stop. The next hold names the next to-do
@@ -188,7 +188,7 @@ that one: start it.
 
 **Work that waits on the user is not open work.** When what is left of a piece of work
 is a ruling or a review only the user can give, park that remainder as a to-do with the
-questions in its brief, and `end` the work. Otherwise the journal sees work in flight,
+questions in its brief, and `work end` the work. Otherwise the journal sees work in flight,
 nothing else starts, and with auto on the stop hook will hold you to do exactly this.
 
 ## Docs: what was settled, catalogued
@@ -263,11 +263,11 @@ first line is the instruction.
 | it says                                                        | do                                                     |
 |----------------------------------------------------------------|--------------------------------------------------------|
 | *N message(s) carried no tag*                                  | tag your next message; it will not hold for those lines again |
-| *N piece(s) of work still open*                                | `end` it, or `update` where it got to                  |
-| *Nothing is open, so this edit would not be filed*             | `start` the work, then edit                            |
+| *N piece(s) of work still open*                                | `work end` it, or `update` where it got to                  |
+| *Nothing is open, so this edit would not be filed*             | `work start` the work, then edit                            |
 | *context N% full — decide before any other tool runs*          | `remember`, `rule` or `nothing "<why>"`                |
 | *your reply puts work off — park it as a to-do*                | `todo "<title>" --brief`, then say so; or run the call again if nothing is deferred |
-| *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `start` |
+| *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
 | *auto is on, N to-do(s) waiting*                               | `todo start <n>` the next one; if its brief needs the user, `todo ask <n> "…"` and ask |
 | *That pin would be refused*                                    | cut it to the claim, or drop the scratch path          |
 | *`journal <verb>` from a subagent is refused*                  | you are a subagent: report; the main conversation files |

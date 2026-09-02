@@ -52,7 +52,7 @@ regardless. Then:
 tells you it is wired and, once a hook has run, that it is live. Commit `.journal/` with
 your project so your team shares the journal.
 
-To upgrade later, run `journal upgrade`. The agent is told when a new version is out.
+To update the journal later, run `journal update`. The agent is told when a new version is out.
 
 ## Features
 
@@ -131,9 +131,9 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 
 ### Work
 
-    journal start "<the work>"           declare it; edits are refused until then (agent)
-    journal update "<what moved>"        add a note to the open work (agent)
-    journal end "<the same words>"       close it (agent)
+    journal work start "<the work>"      declare it; edits are refused until then (agent)
+    journal work update "<what moved>"   add a note to the open work (agent)
+    journal work end "<the same words>"  close it (agent)
 
 ### To-dos
 
@@ -185,7 +185,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal switch "<name>"              park this track, pick up another; --back returns
     journal settings                     every setting and where it came from
     journal version                      the installed version; is a newer one out?
-    journal upgrade                      pull the latest and print what changed
+    journal update                       pull the latest journal and print what changed
 
 ## The tags you will see
 
@@ -205,7 +205,7 @@ without anyone filing anything.
 ## What the hooks enforce
 
 - **An untagged message** at a stop: held once and told the tags.
-- **An edit with nothing declared**: refused, told to `start`.
+- **An edit with nothing declared**: refused, told to `work start`.
 - **A context warning** at 50, 70, 90, 95 percent: nothing else runs until the agent has
   pinned something or said, with a reason, that nothing needs pinning.
 - **Work deferred in words** after you asked for something: the next tool call is refused
