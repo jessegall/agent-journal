@@ -42,8 +42,10 @@ In the root of your project, with `git` and `python3` available:
     curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/main/install.sh | sh
 
 This creates `.journal/` in your project, wires the hooks into `.claude/settings.json`
-next to anything already there, installs the `journal` skill for the agent, and adds a
-`journal` alias to your shell. Then:
+next to anything already there, installs the `journal` skill for the agent, and puts a
+`journal` command in `~/.local/bin` that works in any shell. If that folder is not on
+your PATH the installer tells you the one line to add; `.journal/journal.py` works
+regardless. Then:
 
     journal verify
 
@@ -184,6 +186,21 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal settings                     every setting and where it came from
     journal version                      the installed version; is a newer one out?
     journal upgrade                      pull the latest and print what changed
+
+## The tags you will see
+
+Every message the agent writes now starts with a tag. That is the journal at work, not
+the agent being odd. The tag says what kind of message it is, and because it is part of
+the message it lands in the transcript, where the journal uses it to find what mattered
+without anyone filing anything.
+
+    [!discovery]    something real it did not know: a cause, a constraint, a measurement
+    [!correction]   something it had wrong is now right
+    [!blocked]      it cannot proceed, and says on what
+    [!info]         something happening that is not work progress: an agent started, a build running
+    [!reply]        a plain answer to what you asked; routine, and skipped when reading back
+
+`journal conversation` shows the tagged messages and counts the routine ones.
 
 ## What the hooks enforce
 

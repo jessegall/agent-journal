@@ -2,7 +2,7 @@
 """install — wire the journal into a project that has just downloaded it.
 
     .journal/install.py           wire the hooks, make things executable
-    .journal/install.py --alias   also add a `journal` alias to your shell rc
+    .journal/install.py --alias   also put a `journal` command on your PATH (every shell)
     .journal/install.py --check   say what would change, write nothing
     .journal/install.py --from <path or git url>   pull that package in first (tests run before anything lands)
 
@@ -133,11 +133,23 @@ def pull(src: Path, check: bool) -> list[str]:
     return out
 
 
-ALIAS_MARK = "# journal — added by .journal/install.py"
-#: `git rev-parse` rather than a fixed path, so the alias still resolves from a
-#: subdirectory of the repo. A relative path would break the moment you `cd src`.
-ALIAS = """%s
-alias journal='"$(git rev-parse --show-toplevel)"/.journal/journal.py'""" % ALIAS_MARK
+#: THE `journal` COMMAND IS A SCRIPT ON THE PATH, NOT A SHELL ALIAS. An alias lives in one
+#: shell's rc file — zsh's, or bash's — and a colleague on fish, or in an editor's terminal
+#: that sources nothing, has no `journal`. A script in ~/.local/bin works in every shell
+#: that has that directory on its PATH, which is most; when it is not, install says the
+#: one line to add. It resolves the project from wherever it is run, so `journal` works
+#: from a subdirectory too.
+BIN_DIR = Path.home() / ".local" / "bin"
+LAUNCHER = """#!/bin/sh
+# journal — installed by agent-journal. Runs the journal of the project you are in.
+root="$(git rev-parse --show-toplevel 2>/dev/null)"
+[ -n "$root" ] || root="$(pwd)"
+if [ ! -f "$root/.journal/journal.py" ]; then
+  echo "no .journal/ in $root — install agent-journal in this project first" >&2
+  exit 1
+fi
+exec python3 "$root/.journal/journal.py" "$@"
+"""
 
 
 def _settings_path() -> Path:
@@ -251,26 +263,28 @@ def skill(check: bool) -> list[str]:
     return out or ["  = skill already current"]
 
 
-def _rc() -> Path | None:
-    """The rc file for the shell actually in use, not a guess about which one that is."""
-    shell = Path(os.environ.get("SHELL", "")).name
-    for name in ({"zsh": ".zshrc", "bash": ".bashrc"}.get(shell), ".zshrc", ".bashrc"):
-        if name and (Path.home() / name).is_file():
-            return Path.home() / name
-    return None
-
-
 def alias(check: bool) -> list[str]:
-    rc = _rc()
-    if rc is None:
-        return ["  ! found no ~/.zshrc or ~/.bashrc — add the alias by hand:\n" + ALIAS]
-    body = rc.read_text()
-    if ALIAS_MARK in body:
-        return [f"  = alias already in {rc.name}"]
-    if not check:
-        with rc.open("a") as fh:
-            fh.write(("" if body.endswith("\n") else "\n") + "\n" + ALIAS + "\n")
-    return [f"  + alias added to {rc.name} — `source ~/{rc.name}` or open a new shell"]
+    """Put `journal` on the PATH as a script, for every shell."""
+    dst = BIN_DIR / "journal"
+    out = []
+    if dst.is_file() and dst.read_text() == LAUNCHER and os.access(dst, os.X_OK):
+        out.append(f"  = journal command already in {BIN_DIR}")
+    else:
+        if not check:
+            BIN_DIR.mkdir(parents=True, exist_ok=True)
+            dst.write_text(LAUNCHER)
+            dst.chmod(dst.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        out.append(f"  + journal command installed in {BIN_DIR}")
+    on_path = str(BIN_DIR) in os.environ.get("PATH", "").split(os.pathsep)
+    if not on_path:
+        shell = Path(os.environ.get("SHELL", "")).name
+        line = {"fish": f"fish_add_path {BIN_DIR}",
+                "zsh": f'echo \'export PATH="$HOME/.local/bin:$PATH"\' >> ~/.zshrc',
+                "bash": f'echo \'export PATH="$HOME/.local/bin:$PATH"\' >> ~/.bashrc'}.get(
+            shell, f"add {BIN_DIR} to your PATH")
+        out.append(f"  ! {BIN_DIR} is not on your PATH — once, in your shell:\n      {line}\n"
+                   "    then open a new terminal. Until then: .journal/journal.py <command>")
+    return out
 
 
 def main(argv: list[str]) -> int:

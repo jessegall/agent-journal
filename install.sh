@@ -5,7 +5,7 @@
 #
 # Clones the package into ./.journal (a plain folder, not a nested git repository), then
 # runs .journal/install.py --alias, which wires the hooks into .claude/settings.json,
-# installs the skill, and adds a `journal` alias to your shell rc. Re-running upgrades.
+# installs the skill, and puts a `journal` command in ~/.local/bin. Re-running upgrades.
 set -e
 if ! command -v git >/dev/null 2>&1; then echo "git is required"; exit 1; fi
 if ! command -v python3 >/dev/null 2>&1; then echo "python3 is required"; exit 1; fi

@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.4.0 — a `journal` command for every shell
+
+`--alias` now installs a `journal` script in ~/.local/bin instead of a zsh/bash alias, so
+it works in any shell; the installer says the one PATH line to add if needed. The README
+explains the tags that appear at the start of the agent's messages.
+
+After upgrading: run `.journal/install.py --alias` once to get the command; the old alias
+in your shell rc keeps working and can be removed.
+
 ## 1.3.2 — a short install
 
 The installer prints what it changed, "Installed.", and the one next step. Nothing to do after upgrading.
