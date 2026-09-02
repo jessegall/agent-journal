@@ -197,12 +197,14 @@ nothing else starts, and with auto on the stop hook will hold you to do exactly 
 
 ## Docs: what was settled, catalogued
 
-    journal docs                                the catalogue: number, title, status, parts, abstract
-    journal docs <n>  |  journal docs <n>.<p>   read a doc, or one part
+    journal docs                                the catalogue: number, title, status, parts, files, abstract
+    journal docs <doc>  |  journal docs <doc>.<p>   read a doc, or one part; <doc> is its number or its name
+    journal docs <doc> files                    its attachments, as a tree
     journal docs add "<title>" --abstract="<one line>" --brief    a new doc, its intro on stdin
-    journal docs part <n> "<title>" --brief     a report, a section, a finding — as one part
-    journal docs strike <n>.<p> "<why>"         drop a part, on the record
-    journal docs final <n>                      when it is settled
+    journal docs part <doc> "<title>" --brief   a report, a section, a finding — as one part
+    journal docs attach <doc> <path> "<what it is>"   a file or a folder, copied in beside the parts
+    journal docs strike <doc>.<p> "<why>"       drop a part, on the record
+    journal docs final <doc>                    when it is settled
     journal docs search <term>                  every line of every doc mentioning it
 
 A pin is a claim, a rule binds, a to-do is work. A **doc** is a finding: a design once it
@@ -229,7 +231,7 @@ and handed to the next session; a bare file is not.
 reactivity`, `docs attach reactivity …`, `--doc=reactivity`. The title, or a unique
 part of it.
 
-**Cite it.** `--doc=<n>` or `--doc=<n>.<p>` on `pin`, `rule` and `todo` ties the entry
+**Cite it.** `--doc=<doc>` or `--doc=<doc>.<p>` on `pin`, `rule` and `todo` ties the entry
 to the doc; the entry shows "→ doc 4.2: <doc> · <part>" beside it, and the doc shows what
 cites it. Cite whenever the claim came out of a doc or a doc explains it: the pin is the
 one line, the doc is the reasoning a later reader will want. A

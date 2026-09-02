@@ -39,7 +39,7 @@ All of them run as `.journal/journal.py <command>`; `journal` is an alias. `jour
 
 **Pins, for this track**
 
-    journal pin "<claim>" [--supersedes=N] [--doc=N[.P]]   a fact that must survive a compaction; --doc: the doc or part it rests on
+    journal pin "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a fact that must survive a compaction; --doc: the doc or part it rests on
     journal pins [--all]             every pin, numbered; --all includes struck ones
     journal pins N --full            the conversation around where pin N was written
     journal strike N "<why>"         retire a pin that stopped being true, no replacement needed
@@ -48,7 +48,7 @@ All of them run as `.journal/journal.py <command>`; `journal` is an alias. `jour
 
 **Rules, for every track**
 
-    journal rule "<ruling>" [--doc=N[.P]]   a pin that every track obeys
+    journal rule "<ruling>" [--doc=<doc>[.<p>]]   a pin that every track obeys
     journal rules [--all]            every rule, numbered
     journal rules N --full           the conversation around one
     journal rule --strike N "<why>"  repeal one, on the record
@@ -72,23 +72,23 @@ A brief on stdin:
     them state-only like the others. Start from src/View/Widgets/Dropdown.php.
     EOF
 
-**Docs, for every track**
+**Docs, for every track** — `<doc>` is a doc's number or its name (the title, or a unique part of it)
 
     journal docs                     the catalogue
-    journal docs <n>|<name> [.P]     read a doc, by number or by name, or one part (4.2)
-    journal docs <n>|<name> files    its attachments, as a tree; `docs files` lists every doc's
+    journal docs <doc>               read a doc; `<doc>.<p>` reads one part
+    journal docs <doc> files         its attachments, as a tree; `docs files` lists every doc's
+    journal docs add "<title>" --abstract="<one line>" --brief   a new doc; the intro on stdin
+    journal docs part <doc> "<title>" --brief   a new part, from stdin
     journal docs attach <doc> <path> "<what it is>" [--replace]   copy a file or a folder into the doc
     journal docs detach <doc> <name> "<why>"   drop an attachment; kept under struck/
-    journal docs add "<title>" --abstract="<one line>" --brief   a new doc; the intro on stdin
-    journal docs part N "<title>" --brief   a new part of doc N, from stdin
-    journal docs replace N.P --brief a new body; the old one is kept under struck/
-    journal docs strike N.P "<why>"  drop a part, on the record
-    journal docs final N | draft N   status
-    journal docs abstract N "<one line>"   the line every session is handed
-    journal docs supersede N by M    point readers of N at M
+    journal docs replace <doc>.<p> --brief   a new body; the old one is kept under struck/
+    journal docs strike <doc>.<p> "<why>"    drop a part, on the record
+    journal docs final <doc> | draft <doc>   status
+    journal docs abstract <doc> "<one line>"   the line every session is handed
+    journal docs supersede <doc> by <doc>    point readers of the first at the second
     journal docs index               catalogue the files .journal/docs/ already holds
     journal docs search <term> [--page=N]   every line of every doc, and every attachment by name, 25 a page
-    --doc=N | --doc=N.P              on pin, rule and todo: cite a doc, or one part, from the entry
+    --doc=<doc> | --doc=<doc>.<p>    on pin, rule and todo: cite a doc, or one part, from the entry
 
 **Tools, for every track**
 

@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.15.1 — one word for a doc
+
+Every command listing says `<doc>` where a doc's number or name goes, and `<doc>.<p>`
+for a part, in the synopsis, the skill, the reference and the README alike; `<name>.<p>`
+resolves too.
+
+After updating: reload the journal skill.
+
 ## 1.15.0 — attachments, and docs by name
 
 A doc holds files as well as parts: `journal docs attach <doc> <path> "<what it is>"`

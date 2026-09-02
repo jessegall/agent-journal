@@ -153,7 +153,15 @@ def get(root: Path, ref: str) -> tuple[dict | None, dict | None, str]:
     m = re.fullmatch(r"(\d+)(?:\.(\d+))?", (ref or "").strip())
     if not m:
         doc, err = by_name(root, ref)
-        return (doc, None, err) if doc else (None, None, err)
+        if doc is None:
+            # `<name>.<p>`: the part of a doc named before the dot
+            nm = re.fullmatch(r"(.+)\.(\d+)", (ref or "").strip())
+            if nm:
+                named, _ = by_name(root, nm.group(1))
+                if named is not None:
+                    return get(root, f"{named['n']}.{nm.group(2)}")
+            return None, None, err
+        return doc, None, ""
     n, p = int(m.group(1)), m.group(2)
     doc = next((d for d in _load(root) if d["n"] == n), None)
     if doc is None:

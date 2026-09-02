@@ -166,7 +166,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 ### Pins and rules
 
     journal pins                         the pins on this track
-    journal pin "<claim>"           pin a fact; --doc=<n> or --doc=<n>.<p> cites a doc or one part
+    journal pin "<claim>"           pin a fact; --doc=<doc> or --doc=<doc>.<p> cites a doc or one part
     journal pins <n> --full              the conversation around where a pin was written
     journal strike <n> "<why>"           retire a pin that stopped being true
     journal promote <n>                  lift a pin into a rule
@@ -177,20 +177,23 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 
 ### Docs
 
+`<doc>` is a doc's number or its name.
+
     journal docs                         the catalogue
-    journal docs <n>|<name>              read a doc; <n>.<p> reads one part
+    journal docs <doc>                   read a doc; <doc>.<p> reads one part
+    journal docs <doc> files             its attachments, as a tree; `docs files` lists every doc's
     journal docs add "<title>" --abstract="<one line>" --brief
                                          a new doc; the intro from stdin
-    journal docs part <n> "<title>" --brief
+    journal docs part <doc> "<title>" --brief
                                          add a part: a section, a report
-    journal docs strike <n>.<p> "<why>"  drop a part; kept under struck/
-    journal docs final <n>               mark it settled
-    journal docs supersede <n> by <m>    point readers of an old doc at the new one
-    journal docs index                   catalogue markdown already in .journal/docs/
-    journal docs search <term>           search every line of every doc
-    journal docs <doc> files             its attachments, as a tree; `docs files` lists every doc's
-    journal docs attach <doc> <path> "<what it is>"   copy a file or a folder into the doc
+    journal docs attach <doc> <path> "<what it is>"
+                                         copy a file or a folder into the doc
     journal docs detach <doc> <name> "<why>"   drop an attachment; kept under struck/
+    journal docs strike <doc>.<p> "<why>"   drop a part; kept under struck/
+    journal docs final <doc>             mark it settled
+    journal docs supersede <doc> by <doc>   point readers of an old doc at the new one
+    journal docs index                   catalogue what is already in .journal/docs/
+    journal docs search <term>           search every line of every doc, and attachments by name
 
 ### Tools
 

@@ -10,13 +10,13 @@ nothing. This is the index that gets you back to it.
     journal user            only the user's own words, in full
     journal open            work declared and never closed
     journal search <term> [--all] [--page=N]   every line mentioning it on this track, in every session, 25 a page newest first; --all is every track
-    journal pin "<claim>" [--supersedes=N] [--doc=N[.P]]   a claim that must survive a compaction; --doc ties it to a doc or a part
+    journal pin "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a claim that must survive a compaction; --doc ties it to a doc or a part
     journal nothing "<why>"  after a context warning: nothing here needs pinning, and why
-    journal rule "<ruling>" [--doc=N[.P]]   a pin for EVERY track — what the project decided, not one line of work
+    journal rule "<ruling>" [--doc=<doc>[.<p>]]   a pin for EVERY track — what the project decided, not one line of work
     journal rules [--all]    every rule, numbered; `rules N --full` reads around one
     journal rule --strike N "<why>"   repeal a rule that stopped being true
     journal promote N        lift pin N into a rule; the pin is struck and says where it went
-    journal todo "<title>" [--brief] [--doc=N[.P]]   delayed work, on this track; --brief reads a longer brief from stdin
+    journal todo "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this track; --brief reads a longer brief from stdin
     journal todo [--all]     the titles, numbered
     journal todo N           the whole brief
     journal todo start N     open work with that title — `end` then closes both
@@ -24,22 +24,22 @@ nothing. This is the index that gets you back to it.
     journal todo drop N "<why>"   abandoned, on the record
     journal todo ask N "<question>"   it waits on the user; auto moves on to the next
     journal todo answer N "<answer>"  the user answers it; the agent is told at its next stop and picks it up first
-    journal docs             the catalogue: every doc, its status, parts and abstract
-    journal docs <n>|<name> [.P]   read a doc, by number or by name, or one part of it (4.2)
-    journal docs <n>|<name> files   the doc's attachments, as a tree; `journal docs files` lists every doc's
+    journal docs             the catalogue: every doc, its status, parts, files and abstract
+    journal docs <doc>       read a doc — <doc> is its number or its name, here and everywhere below
+    journal docs <doc>.<p>   read one part of it
+    journal docs <doc> files   its attachments, as a tree; `journal docs files` lists every doc's
     journal docs add "<title>" --abstract "<one line>" --brief   a new doc; the brief on stdin is its intro
-    journal docs part N "<title>" --brief   a new part of doc N, from stdin — a report, a section, a finding
-    journal docs replace N.P --brief        a new body for a part; the old one is kept under struck/
-    journal docs strike N.P "<why>"         drop a part, on the record
-    journal docs final N | draft N          its status
-    journal docs abstract N "<one line>"    the line every session is handed
-    journal docs supersede N by M           point readers of N at M
-    journal docs attach N <path> ["<what it is>"] [--replace]   copy a file or a folder into doc N, beside its parts
-    journal docs detach N <name> "<why>"    drop an attachment; it is kept under struck/
-    journal docs attachments [N]            the same as `files`
-    journal docs index                      catalogue the files docs/ already holds
-    journal docs search <term> [--page=N]   every line of every doc mentioning it
-    --doc=N or --doc=N.P on pin, rule and todo cites a doc (or one part) from the entry; the entry shows it, the doc shows what cites it
+    journal docs part <doc> "<title>" --brief   a new part, from stdin — a report, a section, a finding
+    journal docs replace <doc>.<p> --brief     a new body for a part; the old one is kept under struck/
+    journal docs strike <doc>.<p> "<why>"      drop a part, on the record
+    journal docs final <doc> | draft <doc>     its status
+    journal docs abstract <doc> "<one line>"   the line every session is handed
+    journal docs supersede <doc> by <doc>      point readers of the first at the second
+    journal docs attach <doc> <path> ["<what it is>"] [--replace]   copy a file or a folder into the doc, beside its parts
+    journal docs detach <doc> <name> "<why>"   drop an attachment; it is kept under struck/
+    journal docs index                         catalogue the files docs/ already holds
+    journal docs search <term> [--page=N]      every line of every doc, and every attachment by name
+    --doc=<doc> or --doc=<doc>.<p> on pin, rule and todo cites a doc (or one part) from the entry; the entry shows it, the doc shows what cites it
     journal todo auto [on|off]    work through this track's list without asking, or wait for the user's word
     journal pins [--all]    every pin, numbered — the number is what --supersedes takes
     journal pins N --full   the conversation around where pin N was written
@@ -234,7 +234,7 @@ def cmd_status() -> int:
     print(fmt.commands([
         ("journal conversation [--back=N]", "what was said, since the last compaction or before it"),
         ("journal search <term>", "every line mentioning it on this track, and who said it"),
-        ('journal pin "<claim>" [--doc=N]', "a fact that must outlive a compaction; --doc ties it to a doc"),
+        ('journal pin "<claim>" [--doc=<doc>]', "a fact that must outlive a compaction; --doc ties it to a doc, by number or name"),
         ("journal help", "every command"),
     ]))
     return 0
@@ -649,13 +649,13 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
                            + ", ".join(x.name for x in loose)))
         print()
         print(fmt.commands([
-            ("journal docs <n>", "read one; <n>.<p> reads one part"),
+            ("journal docs <doc>", "read one, by number or name; <doc>.<p> reads one part"),
             ('journal docs add "<title>" --abstract "<one line>" --brief', "a new doc, its intro on stdin"),
-            ('journal docs part <n> "<title>" --brief', "a new part of doc n, from stdin"),
-            ('journal docs attach <n> <path> "<what it is>"', "copy a file or folder (HTML, a design, a PDF) into doc n"),
-            ("journal docs <n>|<name> files", "its attachments, as a tree; `docs files` lists every doc's"),
+            ('journal docs part <doc> "<title>" --brief', "a new part, from stdin"),
+            ('journal docs attach <doc> <path> "<what it is>"', "copy a file or folder (HTML, a design, a PDF) into the doc"),
+            ("journal docs <doc> files", "its attachments, as a tree; `docs files` lists every doc's"),
             ("journal docs search <term>", "every line of every doc mentioning it"),
-            ('journal pin "<claim>" --doc=<n>[.<p>]', "cite a doc, or one part, from a pin; rule and todo take it too"),
+            ('journal pin "<claim>" --doc=<doc>[.<p>]', "cite a doc, or one part, from a pin; rule and todo take it too"),
         ] + ([("journal docs index", "catalogue the loose files")] if loose else [])))
         return 0
     verb = rest[0]
@@ -797,7 +797,7 @@ def cmd_docs_search(term: str, page: int = 1, width: int = 88) -> int:
         body = body[:j] + "«" + body[j:j + len(term)] + "»" + body[j + len(term):]
         print(textwrap.fill(body, width=width, initial_indent=f"  {i:>4}  ", subsequent_indent="        "))
     print()
-    rows = [("journal docs <n>", "read the doc")]
+    rows = [("journal docs <doc>", "read the doc, by number or name")]
     if page < pages:
         rows.insert(0, (f"journal docs search {term} --page={page + 1}", f"the next {min(PAGE, len(hits) - hi)}"))
     print(fmt.commands(rows))
