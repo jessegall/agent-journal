@@ -44,6 +44,7 @@ import state  # noqa: E402
 import tags  # noqa: E402
 import context  # noqa: E402
 import docs  # noqa: E402
+import fmt  # noqa: E402
 import nudges  # noqa: E402
 import pins  # noqa: E402
 import work  # noqa: E402
@@ -931,7 +932,7 @@ def _deny(reason: str) -> int:
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
         "permissionDecision": "deny",
-        "permissionDecisionReason": reason,
+        "permissionDecisionReason": fmt.block(reason),
     }}))
     return 0
 
@@ -1369,7 +1370,7 @@ def _context(event: str, text: str) -> int:
         )
         return 0
     print(json.dumps({"hookSpecificOutput": {"hookEventName": event,
-                                             "additionalContext": text}}))
+                                             "additionalContext": fmt.block(text)}}))
     return 0
 
 

@@ -82,3 +82,63 @@ def facts(rows: list[tuple[str, str, str]], indent: int = 2) -> str:
             value = value[:vw - 1] + "…"
         out.append(f"{pad}{label:<{lw}}   {value:<{vw}}   {dim(cmd)}".rstrip())
     return "\n".join(out)
+
+
+def table(rows: list[tuple[str, str]], indent: int = 2, gap: int = 3, col: int = 26, width: int = WIDTH) -> str:
+    """Two columns: a name on the left, what it is on the right, wrapped in its column.
+
+    A row whose name is empty continues the row above: metadata, a path, a file inside a
+    folder — anything that belongs under the name without repeating it. The left column
+    is as wide as the widest name, up to `col`; a longer name gets its own line.
+    """
+    pad = " " * indent
+    w = min(col, max((len(n) for n, _ in rows if n), default=0))
+    out = []
+    for name, text in rows:
+        body = " ".join((text or "").split())
+        if len(name) > w:
+            out.append(f"{pad}{name}")
+            name = ""
+        first = f"{pad}{name:<{w}}{' ' * gap}"
+        rest = " " * len(first)
+        if not body:
+            out.append(first.rstrip())
+            continue
+        out.append(textwrap.fill(body, width=width, initial_indent=first, subsequent_indent=rest))
+    return "\n".join(out)
+
+
+def block(text: str, width: int = WIDTH) -> str:
+    """What the hook hands the harness, made readable: paragraphs wrapped, commands kept.
+
+    A hold, a denial, a start block, a hint — each is text the agent (and, in the
+    terminal, the user) reads. A paragraph longer than the width is wrapped; a line that
+    is indented, or is a command or a list item, is kept as it is, because wrapping a
+    command breaks it and wrapping a column breaks the column.
+    """
+    out = []
+    for para in (text or "").split("\n"):
+        # a `journal:` line is the hook's one-liner, one line by ruling: the user sees it
+        # in the terminal as a single notice and opens `journal next` for the rest
+        if len(para) <= width or para.startswith((" ", "\t", "-", "•", "|", "journal:")):
+            out.append(para)
+        else:
+            out.append(textwrap.fill(para, width=width))
+    return "\n".join(out)
+
+
+def say(text="", *, error: bool = False) -> None:
+    """THE ONE WAY OUT OF EVERY COMMAND. Whatever a command has to say passes through here.
+
+    So the house style is enforced in one place: an error is one line with `!` in front
+    on stderr, a plain paragraph longer than the width is wrapped, and a line that is
+    already shaped — indented, in columns, a command — is printed as it is. A command
+    that formats its own output is a command whose output nobody checked.
+    """
+    text = "" if text is None else str(text)
+    if error:
+        lines = text.split("\n")
+        if lines and lines[0].strip() and not lines[0].lstrip().startswith("!"):
+            lines[0] = "  ! " + lines[0].strip()
+        text = "\n".join(lines)
+    print(block(text), file=sys.stderr if error else sys.stdout)

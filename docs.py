@@ -307,7 +307,7 @@ def _tree(p: Path, cap: int = 40) -> list[str]:
     for x in sorted(p.rglob("*")):
         if x.name.startswith("."):
             continue
-        depth = len(x.relative_to(p).parts)
+        depth = len(x.relative_to(p).parts) - 1
         rows.append("  " * depth + x.name + ("/" if x.is_dir() else f"  {_human(x.stat().st_size)}"))
     if len(rows) > cap:
         rows = rows[:cap] + [f"… and {len(rows) - cap} more"]
@@ -315,15 +315,24 @@ def _tree(p: Path, cap: int = 40) -> list[str]:
 
 
 def _attachment_lines(root: Path, files: list[dict]) -> list[str]:
-    out = []
+    """One table: the name, what it is; under it what kind, who, when, where; a folder's files."""
+    rows = []
     for a in files:
-        kind = "folder" if a["dir"] else _human(a["size"])
-        out.append(f"  {a['name']}{'/' if a['dir'] else ''}  — {a['title']}")
-        out.append("     " + fmt.dim(f"{kind} · {a.get('source', '')} · {_age(a.get('at', ''))} · "
-                                    f"{a['path'].relative_to(root.parent)}"))
         if a["dir"]:
-            out.extend("     " + fmt.dim(r) for r in _tree(a["path"]))
-    return out
+            inside = [x for x in a["path"].rglob("*") if x.is_file() and not x.name.startswith(".")]
+            kind = f"folder of {len(inside)} file(s), {_human(a['size'])}"
+        else:
+            kind = _human(a["size"])
+        rows.append((a["name"] + ("/" if a["dir"] else ""), a["title"]))
+        rows.append(("", f"{kind} · added by {a.get('source', '')} {_age(a.get('at', ''))}"))
+        rows.append(("", str(a["path"].relative_to(root.parent))))
+        if a["dir"]:
+            for r in _tree(a["path"]):
+                lead = len(r) - len(r.lstrip(" "))
+                name, _, size = r.strip().partition("  ")
+                rows.append(("  " + " " * lead + name, size))
+        rows.append(("", ""))
+    return [fmt.table(rows[:-1])] if rows else []
 
 
 def list_attachments(root: Path, ref: str = "", width: int = 88) -> tuple[bool, str]:
@@ -343,6 +352,7 @@ def list_attachments(root: Path, ref: str = "", width: int = 88) -> tuple[bool, 
             continue
         total += len(files)
         out.append(fmt.section(f"doc {d['n']}  {d['title']}"))
+        out.append("")
         out.extend(_attachment_lines(root, files))
     if not out:
         where = f"doc {chosen[0]['n']} has" if ref else "no doc has"
@@ -667,6 +677,7 @@ def show(root: Path, ref: str, width: int = 88) -> tuple[bool, str]:
     files = attachments(doc)
     if files:
         out.append(fmt.section("attachments"))
+        out.append("")
         out.extend(_attachment_lines(root, files))
     cites = cited_by(root, doc["n"])
     if cites:

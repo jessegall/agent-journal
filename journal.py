@@ -94,7 +94,7 @@ import worktree as _wt
 _ROOT, _WT_NOTE = _wt.resolve(Path(__file__).parent if Path(__file__).parent.is_symlink()
                               else Path(__file__).resolve().parent)
 if _WT_NOTE:
-    print(f"  {_WT_NOTE}", file=sys.stderr)
+    fmt.say(f"  {_WT_NOTE}", error=True)
 
 
 def root() -> Path:
@@ -120,7 +120,7 @@ _state.use_track(tracks.current(_ROOT, _stem()))
 def _load(back: int = 0):
     conf, problems = settings_mod.load(root())
     for p in problems:
-        print(f"  ! {p}", file=sys.stderr)
+        fmt.say(f"{p}", error=True)
     digest.CONTEXT = conf["context_messages"]
     path = _transcript()
     lines, boundaries = transcript.read(path)
@@ -138,7 +138,7 @@ def _transcript() -> Path:
     """
     got = _resolved()
     if got is None:
-        print("No transcript for this project yet.", file=sys.stderr)
+        fmt.say("No transcript for this project yet.", error=True)
         raise SystemExit(1)
     return got[0]
 
@@ -146,15 +146,15 @@ def _transcript() -> Path:
 def _resolved() -> tuple[Path, bool] | None:
     got = transcript.session_transcript(project())
     if got and got[1]:
-        print(f"  (guessed: newest transcript, {got[0].name} — {transcript.SESSION_ENV} is "
-              "not set)", file=sys.stderr)
+        fmt.say(f"  (guessed: newest transcript, {got[0].name} — {transcript.SESSION_ENV} is "
+              "not set)", error=True)
     return got
 
 
 def _help(verb: str = "") -> int:
     """The whole synopsis, or only the lines about one verb."""
     if not verb:
-        print(__doc__)
+        fmt.say(__doc__)
         return 0
     lines = [l for l in (__doc__ or "").splitlines()
              if l.strip().startswith(f"journal {verb}") or l.strip().startswith(f"journal --{verb}")]
@@ -163,11 +163,11 @@ def _help(verb: str = "") -> int:
     if verb == "remember":
         lines = [l for l in (__doc__ or "").splitlines() if l.strip().startswith("journal pin ")]
     if not lines:
-        print(f"No such command: {verb}\n", file=sys.stderr)
-        print(__doc__, file=sys.stderr)
+        fmt.say(f"No such command: {verb}\n", error=True)
+        fmt.say(__doc__, error=True)
         return 1
-    print(f"journal {verb}\n")
-    print("\n".join(lines))
+    fmt.say(f"journal {verb}\n")
+    fmt.say("\n".join(lines))
     return 0
 
 
@@ -180,7 +180,7 @@ def cmd_status() -> int:
     """
     conf, problems = settings_mod.load(root())
     for p in problems:
-        print(f"  ! {p}", file=sys.stderr)
+        fmt.say(f"{p}", error=True)
     here = tracks.current(root(), _stem())
     ruled = len(pins.live(root(), pins.RULES))
     pinned = len(pins.live(root()))
@@ -222,16 +222,16 @@ def cmd_status() -> int:
     have = update.current(root())
     rows.append(("version", have + (f"  ({up['version']} available: journal upgrade)"
                                     if up.get("version") and update.newer(up["version"], have) else ""), "journal version"))
-    print(fmt.title("JOURNAL", sub=f"track {here}"))
-    print()
-    print(fmt.facts(rows))
+    fmt.say(fmt.title("JOURNAL", sub=f"track {here}"))
+    fmt.say()
+    fmt.say(fmt.facts(rows))
     if on_user:
-        print(fmt.section("waiting on the user"))
+        fmt.say(fmt.section("waiting on the user"))
         for t in on_user:
-            print(fmt.numbered(t["n"], t["title"]))
-            print(fmt.wrap(t["asks"], indent=5))
-    print()
-    print(fmt.commands([
+            fmt.say(fmt.numbered(t["n"], t["title"]))
+            fmt.say(fmt.wrap(t["asks"], indent=5))
+    fmt.say()
+    fmt.say(fmt.commands([
         ("journal conversation [--back=N]", "what was said, since the last compaction or before it"),
         ("journal search <term>", "every line mentioning it on this track, and who said it"),
         ('journal pin "<claim>" [--doc=<doc>]', "a fact that must outlive a compaction; --doc ties it to a doc, by number or name"),
@@ -246,45 +246,45 @@ def cmd_read(back: int) -> int:
     if back > n:
         # SAY IT RATHER THAN CLAMP. `since` shows the oldest stretch for any N past the
         # first compaction; labelling that as "N back" is an index that lies.
-        print(f"  ! only {n} compaction(s) in this session; showing the oldest stretch",
-              file=sys.stderr)
+        fmt.say(f"  ! only {n} compaction(s) in this session; showing the oldest stretch",
+              error=True)
         back = n
     where = "since the last compaction" if back == 0 else f"the stretch {back} summary/ies back replaced"
-    print(fmt.title("CONVERSATION", sub=f"{where} · {len(seg)} lines · {n} compaction(s) in this session"))
-    print()
+    fmt.say(fmt.title("CONVERSATION", sub=f"{where} · {len(seg)} lines · {n} compaction(s) in this session"))
+    fmt.say()
     body = digest.render(seg)
-    print(body if body.strip() else "  (nothing was said in this stretch)")
+    fmt.say(body if body.strip() else "  (nothing was said in this stretch)")
     if back == 0 and n:
-        print()
-        print(fmt.commands([("journal conversation --back=1", "precisely what the last summary dropped")]))
+        fmt.say()
+        fmt.say(fmt.commands([("journal conversation --back=1", "precisely what the last summary dropped")]))
     return 0
 
 
 def cmd_user(back: int) -> int:
     _, _, _, seg, _ = _load(back)
     body = digest.users_only(seg)
-    print(fmt.title("THE USER'S OWN WORDS", sub="in full, never trimmed"))
-    print(body if body.strip() else "\n  (the user said nothing in this stretch)")
+    fmt.say(fmt.title("THE USER'S OWN WORDS", sub="in full, never trimmed"))
+    fmt.say(body if body.strip() else "\n  (the user said nothing in this stretch)")
     return 0
 
 
 def cmd_open() -> int:
     standing = work.open_work(root())
     if not standing:
-        print("Nothing is open.")
+        fmt.say("Nothing is open.")
         return 0
-    print(fmt.title("OPEN WORK", sub="declared and never closed"))
+    fmt.say(fmt.title("OPEN WORK", sub="declared and never closed"))
     for w in standing:
-        print()
-        print(f"  {w['subject']}")
-        print(f"     {fmt.dim('since ' + w['at'][:16].replace('T', ' '))}")
+        fmt.say()
+        fmt.say(f"  {w['subject']}")
+        fmt.say(f"     {fmt.dim('since ' + w['at'][:16].replace('T', ' '))}")
         # THE NOTES ARE THE POINT OF `open`, not decoration. A subject alone says a thing
         # is in flight; the notes say where it got to, which is what a reader on the far
         # side of a compaction actually needs before they touch it.
         for note in w.get("notes", []):
-            print(fmt.wrap(f"{note['at'][11:16]}  {note['text']}", indent=5))
-    print()
-    print(fmt.commands([
+            fmt.say(fmt.wrap(f"{note['at'][11:16]}  {note['text']}", indent=5))
+    fmt.say()
+    fmt.say(fmt.commands([
         ('journal work end "<the same words>"', "close it"),
         ('journal work update "<where it got to>"', "say where it got to"),
     ]))
@@ -298,7 +298,7 @@ def _now() -> str:
 
 def cmd_start(subject: str) -> int:
     ok, msg = work.start(root(), subject, _now(), _where())
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     return 0 if ok else 1
 
 
@@ -314,19 +314,19 @@ def cmd_end(subject: str) -> int:
     with a legitimate answer of "nothing" — most work teaches nothing that outlives it.
     """
     ok, msg = work.end(root(), subject, _now())
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     if ok:
         closed = todo.close_titled(root(), tracks.current(root(), _stem()), subject, _now())
         if closed:
-            print(f"  to-do {closed} is done with it.")
-        print('  did that teach anything a later reader would get wrong without?\n'
+            fmt.say(f"  to-do {closed} is done with it.")
+        fmt.say('  did that teach anything a later reader would get wrong without?\n'
               '    journal pin "<the claim, in one line>"   (or nothing, which is fine)')
     return 0 if ok else 1
 
 
 def cmd_update(text: str, on: str | None) -> int:
     ok, msg = work.note(root(), text, _now(), on)
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     return 0 if ok else 1
 
 
@@ -346,7 +346,7 @@ def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int 
     from pins import age
     conf, problems = settings_mod.load(root())
     for pr in problems:
-        print(f"  ! {pr}", file=sys.stderr)
+        fmt.say(f"{pr}", error=True)
     here = tracks.current(root(), _stem())
     needle = term.lower()
     found: list[tuple[Path, list]] = []
@@ -368,11 +368,11 @@ def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int 
             total += len(hits)
     scope = "every track, every session" if all_of_them else f"track {here}, every session"
     if not total:
-        print(fmt.title(f"NOTHING MENTIONS {term!r}", sub=scope))
-        print()
-        print(fmt.wrap("The record does not have it. Say so rather than filling the gap."))
+        fmt.say(fmt.title(f"NOTHING MENTIONS {term!r}", sub=scope))
+        fmt.say()
+        fmt.say(fmt.wrap("The record does not have it. Say so rather than filling the gap."))
         if not all_of_them:
-            print(fmt.commands([(f"journal search {term} --all", "every track")]))
+            fmt.say(fmt.commands([(f"journal search {term} --all", "every track")]))
         return 0
     # A PAGE AT A TIME. A common term in a long track has hundreds of mentions, and the
     # reader is an agent whose window this lands in. Newest first, because a decision is
@@ -381,7 +381,7 @@ def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int 
     page = min(max(1, page), pages)
     lo, hi = (page - 1) * PAGE, page * PAGE
     sub = scope + (f" · page {page} of {pages}, newest first" if pages > 1 else "")
-    print(fmt.title(f"{total} LINE(S) MENTION {term!r}", sub=sub))
+    fmt.say(fmt.title(f"{total} LINE(S) MENTION {term!r}", sub=sub))
     mine = transcript.session_transcript(project())
     seen = 0
     for path, hits in found:  # sessions are newest first already
@@ -392,10 +392,10 @@ def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int 
             continue
         label = "this session" if mine and path == mine[0] else f"session {path.stem[:8]}"
         when = age(take[0].ts) if take[0].ts else ""
-        print(fmt.section(label + (f", {when}" if when else "")))
+        fmt.say(fmt.section(label + (f", {when}" if when else "")))
         for l in take:
             who = "USER" if l.kind == "human" else "agent"
-            print(f"  {l.n:>5}  {who}")
+            fmt.say(f"  {l.n:>5}  {who}")
             body = " ".join(tags.strip(l.text).split())
             i = body.lower().find(needle)
             lo, hi = max(0, i - 140), min(len(body), i + len(term) + 200)
@@ -404,15 +404,15 @@ def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int 
             if j >= 0:
                 snippet = snippet[:j] + "«" + snippet[j:j + len(term)] + "»" + snippet[j + len(term):]
             snippet = ("…" if lo else "") + snippet + ("…" if hi < len(body) else "")
-            print(textwrap.fill(snippet, width=width, initial_indent="         ",
+            fmt.say(textwrap.fill(snippet, width=width, initial_indent="         ",
                                 subsequent_indent="         "))
-            print()
+            fmt.say()
     rows = []
     if page < pages:
         rows.append((f"journal search {term} --page={page + 1}", f"the next {min(PAGE, total - hi)} of {total}, older"))
     rows.append(("journal conversation --back=N", "reads a whole stretch of this session"))
-    print(fmt.wrap("A line number is a citation within its session."))
-    print(fmt.commands(rows))
+    fmt.say(fmt.wrap("A line number is a citation within its session."))
+    fmt.say(fmt.commands(rows))
     return 0
 
 
@@ -439,7 +439,7 @@ def _doc_where(doc_ref: str) -> dict | None:
     if doc_ref:
         err = docs.check_ref(root(), doc_ref)
         if err:
-            print(f"  ! --doc: {err}", file=sys.stderr)
+            fmt.say(f"--doc: {err}", error=True)
             return None
         doc, prt, _ = docs.get(root(), doc_ref)
         doc_ref = f"{doc['n']}.{prt['p']}" if prt else str(doc["n"])   # a name resolves once; the number stays
@@ -453,7 +453,7 @@ def cmd_remember(fact: str, supersedes: int | None, doc_ref: str = "") -> int:
     if where is None:
         return 1
     ok, msg = pins.add(root(), fact, _now(), conf["pin_max_chars"], supersedes, where)
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     if ok:
         _decided("pinned")
     return 0 if ok else 1
@@ -481,13 +481,13 @@ def cmd_nothing(why: str) -> int:
     """
     why = " ".join((why or "").split())
     if not why:
-        print('nothing wants a reason: journal nothing "<why nothing here needs pinning>"',
-              file=sys.stderr)
+        fmt.say('nothing wants a reason: journal nothing "<why nothing here needs pinning>"',
+              error=True)
         return 1
     if _decided("declined: " + why):
-        print(f"noted — nothing pinned at this rung, because: {why}")
+        fmt.say(f"noted — nothing pinned at this rung, because: {why}")
         return 0
-    print("no pin is due — no context warning is waiting on a decision", file=sys.stderr)
+    fmt.say("no pin is due — no context warning is waiting on a decision", error=True)
     return 1
 
 
@@ -503,7 +503,7 @@ def cmd_rule(fact: str, strike_n: int | None, why: str, doc_ref: str = "") -> in
                            key=pins.RULES)
         if ok:
             _decided("ruled")
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     return 0 if ok else 1
 
 
@@ -511,18 +511,18 @@ def cmd_rules(all_of_them: bool, n: int | None, full: bool) -> int:
     if n is not None and full:
         conf, _ = settings_mod.load(root())
         ok, body = pins.around(root(), n, project(), conf["pin_context"], key=pins.RULES)
-        print(body if ok else f"  ! {body}", file=sys.stdout if ok else sys.stderr)
+        fmt.say(body, error=not ok)
         return 0 if ok else 1
     live = len(pins.live(root(), pins.RULES))
     struck = len(pins._all(root(), pins.RULES)) - live
     sub = f"{live} in force, on every track" + (
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
-    print(fmt.title("RULES OF THIS PROJECT", sub=sub))
-    print()
-    print(pins.render(root(), all_of_them=all_of_them, key=pins.RULES))
-    print()
-    print(fmt.wrap("Handed first to every session and to every subagent."))
-    print(fmt.commands([
+    fmt.say(fmt.title("RULES OF THIS PROJECT", sub=sub))
+    fmt.say()
+    fmt.say(pins.render(root(), all_of_them=all_of_them, key=pins.RULES))
+    fmt.say()
+    fmt.say(fmt.wrap("Handed first to every session and to every subagent."))
+    fmt.say(fmt.commands([
         ("journal rules <n> --full", "the conversation around one"),
         ('journal rule --strike <n> "<why>"', "repeal one"),
     ]))
@@ -531,7 +531,7 @@ def cmd_rules(all_of_them: bool, n: int | None, full: bool) -> int:
 
 def cmd_promote(n: int) -> int:
     ok, msg = pins.promote(root(), n, _now(), _where())
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     return 0 if ok else 1
 
 
@@ -544,15 +544,15 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         sub = f"track {here} · {len(waiting)} waiting" + (
             f" · {done} done" + ("" if all_of_them else " (--all shows them)") if done else "") + (
             " · auto ON" if draining else "")
-        print(fmt.title("TO-DO", sub=sub))
-        print()
-        print(todo.render(root(), here, all_of_them=all_of_them))
-        print()
-        print(fmt.wrap("Auto is on: with nothing open, the agent picks up the next one on its own."
+        fmt.say(fmt.title("TO-DO", sub=sub))
+        fmt.say()
+        fmt.say(todo.render(root(), here, all_of_them=all_of_them))
+        fmt.say()
+        fmt.say(fmt.wrap("Auto is on: with nothing open, the agent picks up the next one on its own."
                        if draining else
                        "Delayed work on this track, listed at every session start. Not an "
                        "instruction to start one."))
-        print(fmt.commands([
+        fmt.say(fmt.commands([
             ("journal todo <n>", "the brief, and the question if it waits on the user"),
             ("journal todo start <n>", "pick one up"),
             ('journal todo "<title>" --brief', "add one, with a brief on stdin"),
@@ -564,60 +564,60 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
     verb = rest[0]
     if verb == "auto":
         if len(rest) < 2:
-            print(f"auto is {'ON' if todo.auto(root(), here) else 'OFF'} for `{here}`. "
+            fmt.say(f"auto is {'ON' if todo.auto(root(), here) else 'OFF'} for `{here}`. "
                   "`journal todo auto on|off` sets it.")
             return 0
         want = rest[1].lower()
         if want not in ("on", "off", "true", "false", "yes", "no"):
-            print(f"auto wants on or off, got {rest[1]!r}", file=sys.stderr)
+            fmt.say(f"auto wants on or off, got {rest[1]!r}", error=True)
             return 1
         on = want in ("on", "true", "yes")
-        print(todo.set_auto(root(), here, on))
+        fmt.say(todo.set_auto(root(), here, on))
         standing = work.open_work(root())
         waiting = todo.open_items(root(), here)
         if on:
             if standing:
-                print("  Agent currently working on: " + "; ".join(w["subject"] for w in standing))
-                print(f"  {len(waiting)} to-do(s) waiting; the first is picked up when that work ends.")
+                fmt.say("  Agent currently working on: " + "; ".join(w["subject"] for w in standing))
+                fmt.say(f"  {len(waiting)} to-do(s) waiting; the first is picked up when that work ends.")
             elif waiting:
-                print(f"  Nothing is open, {len(waiting)} to-do(s) waiting: the next idle stop starts "
+                fmt.say(f"  Nothing is open, {len(waiting)} to-do(s) waiting: the next idle stop starts "
                       f"to-do {waiting[0]['n']}, {waiting[0]['title']}.")
             else:
-                print("  Nothing is open and nothing is waiting.")
+                fmt.say("  Nothing is open and nothing is waiting.")
         return 0
     if verb in ("start", "done", "drop", "ask", "answer"):
         if len(rest) < 2 or not rest[1].isdigit():
-            print(f'todo {verb} wants a number: journal todo {verb} 3' + (
-                ' "<how>"' if verb != "start" else ""), file=sys.stderr)
+            fmt.say(f'todo {verb} wants a number: journal todo {verb} 3' + (
+                ' "<how>"' if verb != "start" else ""), error=True)
             return 1
         n = int(rest[1])
         if verb in ("ask", "answer"):
             fn = todo.ask if verb == "ask" else todo.answer
             ok, msg = fn(root(), here, n, " ".join(rest[2:]))
-            print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+            fmt.say(msg, error=not ok)
             return 0 if ok else 1
         if verb == "start":
             t, err = todo.start(root(), here, n, _now())
             if t is None:
-                print(f"  ! {err}", file=sys.stderr)
+                fmt.say(f"{err}", error=True)
                 return 1
             ok, msg = work.start(root(), t["title"], _now(), _where())
-            print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+            fmt.say(msg, error=not ok)
             if ok:
-                print(f"  to-do {n} is started; `journal work end \"{t['title']}\"` closes both.")
+                fmt.say(f"  to-do {n} is started; `journal work end \"{t['title']}\"` closes both.")
             return 0 if ok else 1
         why = " ".join(rest[2:])
         if verb == "drop":
             if not why.strip():
-                print('say why: journal todo drop <n> "<why it is abandoned>"', file=sys.stderr)
+                fmt.say('say why: journal todo drop <n> "<why it is abandoned>"', error=True)
                 return 1
             why = "dropped: " + why
         ok, msg = todo.done(root(), here, n, why, _now())
-        print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+        fmt.say(msg, error=not ok)
         return 0 if ok else 1
     if verb.isdigit():
         ok, body = todo.show(root(), here, int(verb))
-        print(body if ok else f"  ! {body}", file=sys.stdout if ok else sys.stderr)
+        fmt.say(body, error=not ok)
         return 0 if ok else 1
     # adding: the title is the words; the brief comes on stdin ONLY when asked for with
     # --brief. Reading stdin whenever it is not a terminal hung under a test runner whose
@@ -628,7 +628,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
     if where is None:
         return 1
     ok, msg = todo.add(root(), here, title, body, _now(), where)
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     return 0 if ok else 1
 
 
@@ -640,15 +640,15 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         drafts = len([d for d in cat if d.get("status") != "final"])
         loose = docs.uncatalogued(root())
         sub = f"{len(cat)} catalogued" + (f" · {drafts} draft(s)" if drafts else "")
-        print(fmt.title("DOCS OF THIS PROJECT", sub=sub))
-        print()
-        print(docs.catalogue(root()))
+        fmt.say(fmt.title("DOCS OF THIS PROJECT", sub=sub))
+        fmt.say()
+        fmt.say(docs.catalogue(root()))
         if loose:
-            print()
-            print(fmt.wrap(f"{len(loose)} file(s) under {docs.folder(root()).name}/ are not catalogued: "
+            fmt.say()
+            fmt.say(fmt.wrap(f"{len(loose)} file(s) under {docs.folder(root()).name}/ are not catalogued: "
                            + ", ".join(x.name for x in loose)))
-        print()
-        print(fmt.commands([
+        fmt.say()
+        fmt.say(fmt.commands([
             ("journal docs <doc>", "read one, by number or name; <doc>.<p> reads one part"),
             ('journal docs add "<title>" --abstract "<one line>" --brief', "a new doc, its intro on stdin"),
             ('journal docs part <doc> "<title>" --brief', "a new part, from stdin"),
@@ -663,37 +663,37 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         ok, msg = docs.add(root(), " ".join(rest[1:]), abstract, body, here)
     elif verb == "part":
         if len(rest) < 3:
-            print('docs part wants a doc number and a title: journal docs part 4 "<title>" --brief', file=sys.stderr)
+            fmt.say('docs part wants a doc number and a title: journal docs part 4 "<title>" --brief', error=True)
             return 1
         ok, msg = docs.part(root(), rest[1], " ".join(rest[2:]), body, here)
     elif verb == "replace":
         if len(rest) < 2:
-            print("docs replace wants a part, like 4.2", file=sys.stderr)
+            fmt.say("docs replace wants a part, like 4.2", error=True)
             return 1
         ok, msg = docs.replace(root(), rest[1], body, here)
     elif verb == "strike":
         if len(rest) < 3:
-            print('docs strike wants a part and why: journal docs strike 4.2 "<why>"', file=sys.stderr)
+            fmt.say('docs strike wants a part and why: journal docs strike 4.2 "<why>"', error=True)
             return 1
         ok, msg = docs.strike(root(), rest[1], " ".join(rest[2:]))
     elif verb in ("final", "draft"):
         if len(rest) < 2:
-            print(f"docs {verb} wants a doc number", file=sys.stderr)
+            fmt.say(f"docs {verb} wants a doc number", error=True)
             return 1
         ok, msg = docs.set_status(root(), rest[1], verb)
     elif verb == "abstract":
         if len(rest) < 3:
-            print('docs abstract wants a doc number and the line: journal docs abstract 4 "<one line>"', file=sys.stderr)
+            fmt.say('docs abstract wants a doc number and the line: journal docs abstract 4 "<one line>"', error=True)
             return 1
         ok, msg = docs.set_abstract(root(), rest[1], " ".join(rest[2:]))
     elif verb == "supersede":
         if len(rest) < 4 or rest[2] != "by":
-            print("journal docs supersede <old> by <new>", file=sys.stderr)
+            fmt.say("journal docs supersede <old> by <new>", error=True)
             return 1
         ok, msg = docs.supersede(root(), rest[1], rest[3])
     elif verb == "attach":
         if len(rest) < 3:
-            print('docs attach wants a doc number and a path: journal docs attach 4 ./design.html "<what it is>"', file=sys.stderr)
+            fmt.say('docs attach wants a doc number and a path: journal docs attach 4 ./design.html "<what it is>"', error=True)
             return 1
         ok, msg = docs.attach(root(), rest[1], rest[2], " ".join(rest[3:]), here, replace=replace)
     elif verb in ("attachments", "files"):
@@ -702,20 +702,20 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         ok, msg = docs.list_attachments(root(), " ".join(rest[:-1]))
     elif verb == "detach":
         if len(rest) < 4:
-            print('docs detach wants a doc number, a name and why: journal docs detach 4 design.html "<why>"', file=sys.stderr)
+            fmt.say('docs detach wants a doc number, a name and why: journal docs detach 4 design.html "<why>"', error=True)
             return 1
         ok, msg = docs.detach(root(), rest[1], rest[2], " ".join(rest[3:]))
     elif verb == "index":
         for line in docs.adopt(root(), here):
-            print(line)
+            fmt.say(line)
         return 0
     elif verb == "search":
         return cmd_docs_search(" ".join(rest[1:]), page)
     else:
         ok, msg = docs.show(root(), " ".join(rest))
-        print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+        fmt.say(msg, error=not ok)
         return 0 if ok else 1
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     return 0 if ok else 1
 
 
@@ -724,15 +724,15 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict) -> int:
     if not rest:
         cat = tools._all(root())
         loose = tools.uncatalogued(root())
-        print(fmt.title("TOOLS OF THIS PROJECT", sub=f"{len(cat)} catalogued"))
-        print()
-        print(tools.catalogue(root()))
+        fmt.say(fmt.title("TOOLS OF THIS PROJECT", sub=f"{len(cat)} catalogued"))
+        fmt.say()
+        fmt.say(tools.catalogue(root()))
         if loose:
-            print()
-            print(fmt.wrap(f"{len(loose)} folder(s) under .journal/tools/ have no tool.md: "
+            fmt.say()
+            fmt.say(fmt.wrap(f"{len(loose)} folder(s) under .journal/tools/ have no tool.md: "
                            + ", ".join(x.name for x in loose) + " — `journal tools index` catalogues them."))
-        print()
-        print(fmt.commands([
+        fmt.say()
+        fmt.say(fmt.commands([
             ("journal tools <name>", "read one"),
             ("journal tools run <name> …", "run it from the project root"),
             ('journal tools add <name> "<title>" --summary="…" --usage="…" --entry=<file>', "catalogue a script"),
@@ -741,32 +741,32 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict) -> int:
     verb = rest[0]
     if verb == "add":
         if len(rest) < 3:
-            print('journal tools add <name> "<title>" --summary="<one line>" --usage="<how to call it>" [--entry=<file>] [--brief]',
-                  file=sys.stderr)
+            fmt.say('journal tools add <name> "<title>" --summary="<one line>" --usage="<how to call it>" [--entry=<file>] [--brief]',
+                  error=True)
             return 1
         body = sys.stdin.read() if brief else ""
         ok, msg = tools.add(root(), rest[1], " ".join(rest[2:]), meta.get("summary", ""), meta.get("usage", ""),
                             meta.get("when", ""), meta.get("entry", ""), body, here)
     elif verb == "set":
         if len(rest) < 4:
-            print('journal tools set <name> summary|usage|when|entry "<value>"', file=sys.stderr)
+            fmt.say('journal tools set <name> summary|usage|when|entry "<value>"', error=True)
             return 1
         ok, msg = tools.set_field(root(), rest[1], rest[2], " ".join(rest[3:]))
     elif verb == "remove":
         if len(rest) < 3:
-            print('journal tools remove <name> "<why>"', file=sys.stderr)
+            fmt.say('journal tools remove <name> "<why>"', error=True)
             return 1
         ok, msg = tools.remove(root(), rest[1], " ".join(rest[2:]))
     elif verb == "index":
         for line in tools.adopt(root(), here):
-            print(line)
+            fmt.say(line)
         return 0
     elif verb == "run":
-        print("journal tools run <name> [args…]", file=sys.stderr)
+        fmt.say("journal tools run <name> [args…]", error=True)
         return 1
     else:
         ok, msg = tools.show(root(), verb)
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     return 0 if ok else 1
 
 
@@ -774,33 +774,33 @@ def cmd_docs_search(term: str, page: int = 1, width: int = 88) -> int:
     import textwrap
     needle = term.lower()
     if not needle:
-        print("docs search wants a term", file=sys.stderr)
+        fmt.say("docs search wants a term", error=True)
         return 1
     hits = [(ref, title, i, line) for ref, title, i, line in docs.search_lines(root())
             if needle in line.lower()]
     if not hits:
-        print(fmt.title(f"NO DOC MENTIONS {term!r}"))
-        print(fmt.commands([(f"journal search {term}", "the transcript instead")]))
+        fmt.say(fmt.title(f"NO DOC MENTIONS {term!r}"))
+        fmt.say(fmt.commands([(f"journal search {term}", "the transcript instead")]))
         return 0
     pages = max(1, -(-len(hits) // PAGE))
     page = min(max(1, page), pages)
     lo, hi = (page - 1) * PAGE, page * PAGE
-    print(fmt.title(f"{len(hits)} DOC LINE(S) MENTION {term!r}",
+    fmt.say(fmt.title(f"{len(hits)} DOC LINE(S) MENTION {term!r}",
                     sub=f"page {page} of {pages}" if pages > 1 else ""))
     last = None
     for ref, title, i, line in hits[lo:hi]:
         if ref != last:
-            print(fmt.section(f"doc {ref}  {title}"))
+            fmt.say(fmt.section(f"doc {ref}  {title}"))
             last = ref
         body = " ".join(line.split())
         j = body.lower().find(needle)
         body = body[:j] + "«" + body[j:j + len(term)] + "»" + body[j + len(term):]
-        print(textwrap.fill(body, width=width, initial_indent=f"  {i:>4}  ", subsequent_indent="        "))
-    print()
+        fmt.say(textwrap.fill(body, width=width, initial_indent=f"  {i:>4}  ", subsequent_indent="        "))
+    fmt.say()
     rows = [("journal docs <doc>", "read the doc, by number or name")]
     if page < pages:
         rows.insert(0, (f"journal docs search {term} --page={page + 1}", f"the next {min(PAGE, len(hits) - hi)}"))
-    print(fmt.commands(rows))
+    fmt.say(fmt.commands(rows))
     return 0
 
 
@@ -816,30 +816,30 @@ def cmd_next() -> int:
     here = tracks.current(root(), _stem())
     held = _st.get(root(), "next_text", "", stem=stem) if stem else ""
     if held:
-        print(held)
+        fmt.say(held)
         return 0
     standing = work.open_work(root())
     if standing:
-        print("Open work: " + "; ".join(w["subject"] for w in standing))
-        print("Carry on with it; `journal work end \"<the same words>\"` when it is done.")
+        fmt.say("Open work: " + "; ".join(w["subject"] for w in standing))
+        fmt.say("Carry on with it; `journal work end \"<the same words>\"` when it is done.")
         return 0
     if todo.auto(root(), here):
         ready = todo.ready(root(), here)
         if ready:
             t = ready[0]
-            print(f"Auto mode is on and nothing is open. Next: to-do {t['n']}, {t['title']}")
-            print(f"  journal todo {t['n']}          the brief")
-            print(f"  journal todo start {t['n']}    pick it up")
+            fmt.say(f"Auto mode is on and nothing is open. Next: to-do {t['n']}, {t['title']}")
+            fmt.say(f"  journal todo {t['n']}          the brief")
+            fmt.say(f"  journal todo start {t['n']}    pick it up")
             return 0
         blocked = todo.asking(root(), here)
         if blocked:
-            print(f"Nothing to pick up: {len(blocked)} to-do(s) wait on the user's answer. "
+            fmt.say(f"Nothing to pick up: {len(blocked)} to-do(s) wait on the user's answer. "
                   "Stop the loop if one is running; `journal todo` shows the questions.")
         else:
-            print("The list is empty. Stop the loop if one is running.")
+            fmt.say("The list is empty. Stop the loop if one is running.")
         return 0
     waiting = todo.open_items(root(), here)
-    print(f"Nothing is open. {len(waiting)} to-do(s) waiting; auto is off, so none starts "
+    fmt.say(f"Nothing is open. {len(waiting)} to-do(s) waiting; auto is off, so none starts "
           "without the user's word." if waiting else "Nothing is open and nothing is waiting.")
     return 0
 
@@ -853,7 +853,7 @@ def cmd_carry(fresh: bool) -> int:
     changed it.
     """
     import hook
-    print(hook.carried("startup" if fresh else "compact"))
+    fmt.say(hook.carried("startup" if fresh else "compact"))
     return 0
 
 
@@ -861,19 +861,19 @@ def cmd_loop(args: list[str]) -> int:
     import state as _st
     stem = _stem()
     if not stem:
-        print("  ! `journal loop` is the session's: run it from inside one", file=sys.stderr)
+        fmt.say("`journal loop` is the session's: run it from inside one", error=True)
         return 1
     if args and args[0] == "set":
         _st.put(root(), "loop_set", True, stem=stem)
-        print("noted: this session has a loop running; the stop queue will not ask for one")
+        fmt.say("noted: this session has a loop running; the stop queue will not ask for one")
         return 0
     if args and args[0] in ("unset", "off"):
         _st.put(root(), "loop_set", False, stem=stem)
-        print("noted: no loop; with auto on, the next stop asks for one")
+        fmt.say("noted: no loop; with auto on, the next stop asks for one")
         return 0
     known = bool(_st.get(root(), "loop_set", False, stem=stem))
     conf, _ = settings_mod.load(root())
-    print(("a loop is known to be running in this session" if known else "no loop is known in this session")
+    fmt.say(("a loop is known to be running in this session" if known else "no loop is known in this session")
           + f" — with auto on, one is asked for: the `loop` skill with `{conf['auto_loop_minutes']}m journal next`")
     return 0
 
@@ -881,20 +881,20 @@ def cmd_loop(args: list[str]) -> int:
 def cmd_tracks() -> int:
     conf, _ = settings_mod.load(root())
     rows = tracks.listing(root(), _stem(), conf["session_stale_hours"])
-    print(fmt.title("TRACKS", sub="* this session · > where new sessions start"))
-    print()
+    fmt.say(fmt.title("TRACKS", sub="* this session · > where new sessions start"))
+    fmt.say()
     for t in rows:
         mark = ("*" if t["current"] else " ") + (">" if t["start"] else " ")
         who = ("   sessions: " + ", ".join(f"{sid[:8]} ({t['seen'].get(sid, '')})" for sid in t["sessions"])) if t["sessions"] else ""
-        print(f" {mark} {t['name']:<28} {t['pins']} pin(s), {t['open']} open{who}")
-    print()
-    print(fmt.commands([
+        fmt.say(f" {mark} {t['name']:<28} {t['pins']} pin(s), {t['open']} open{who}")
+    fmt.say()
+    fmt.say(fmt.commands([
         ('journal switch "<name>"', "this session onto that track (from a terminal: the project's start track)"),
         ('journal switch "<name>" --project', "this session, and where new sessions start"),
         ('journal switch "<name>" --session=<id>', "move one bound session; --all-sessions moves every one"),
         ("journal switch --back", "the one you came from"),
     ]))
-    print(fmt.wrap("Nothing is ever closed by switching." + (
+    fmt.say(fmt.wrap("Nothing is ever closed by switching." + (
         " One running session works a track at a time; a stale session is one not seen for "
         f"{conf['session_stale_hours']:g} h." if conf["one_session_per_track"] else "")))
     return 0
@@ -908,30 +908,30 @@ def cmd_switch(name: str, go_back: bool, project_too: bool = False, sessions: li
     if all_sessions or sessions:
         ok, msg = tracks.switch(root(), name, _now(), "", project=True) if not go_back else (False, "--back takes no sessions")
         if not ok and "already on" not in msg:
-            print(f"  ! {msg}", file=sys.stderr)
+            fmt.say(f"{msg}", error=True)
             return 1
         moved, refused = tracks.move_sessions(root(), name, None if all_sessions else sessions, excl, stale)
-        print(f"the project starts on {name}; moved {len(moved)} session(s): " + ", ".join(m[:8] for m in moved))
+        fmt.say(f"the project starts on {name}; moved {len(moved)} session(s): " + ", ".join(m[:8] for m in moved))
         if refused:
-            print("  ! not moved, one running session works a track: " + ", ".join(r[:8] for r in refused), file=sys.stderr)
+            fmt.say("  ! not moved, one running session works a track: " + ", ".join(r[:8] for r in refused), error=True)
             return 1
         return 0
     ok, msg = (tracks.back(root(), _now(), stem, excl, stale) if go_back
                else tracks.switch(root(), name, _now(), stem, project=project_too or not stem, exclusive=excl, stale_hours=stale))
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     return 0 if ok else 1
 
 
 def cmd_strike(n: int, why: str) -> int:
     ok, msg = pins.strike(root(), n, why)
-    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(msg, error=not ok)
     return 0 if ok else 1
 
 
 def cmd_pin_full(n: int) -> int:
     conf, _ = settings_mod.load(root())
     ok, body = pins.around(root(), n, project(), conf["pin_context"])
-    print(body if ok else f"  ! {body}", file=sys.stdout if ok else sys.stderr)
+    fmt.say(body, error=not ok)
     return 0 if ok else 1
 
 
@@ -942,12 +942,12 @@ def cmd_pins(all_of_them: bool) -> int:
     struck = len(pins._all(root())) - n
     sub = f"track {here} · {n} standing" + (
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
-    print(fmt.title("PINS", sub=sub))
-    print()
-    print(pins.render(root(), all_of_them=all_of_them))
-    print()
-    print(fmt.wrap("Handed to every session on this track."))
-    print(fmt.commands([
+    fmt.say(fmt.title("PINS", sub=sub))
+    fmt.say()
+    fmt.say(pins.render(root(), all_of_them=all_of_them))
+    fmt.say()
+    fmt.say(fmt.wrap("Handed to every session on this track."))
+    fmt.say(fmt.commands([
         ("journal pins <n> --full", "the conversation around one"),
         ("journal promote <n>", "make one a rule for every track"),
         ('journal strike <n> "<why>"', "retire one that stopped being true"),
@@ -957,9 +957,9 @@ def cmd_pins(all_of_them: bool) -> int:
         import state as _st
         read = context.pressure(got[0], conf["context_window"], _st.get(root(), "window", 0) or 0)
         if read and read[3]:
-            print(fmt.wrap(f"Context {read[0]:.0%} full ({read[1]:,} of {read[2]:,})."))
+            fmt.say(fmt.wrap(f"Context {read[0]:.0%} full ({read[1]:,} of {read[2]:,})."))
         elif read:
-            print(fmt.wrap(f"Context: {read[1]:,} tokens; the window is learned at the first "
+            fmt.say(fmt.wrap(f"Context: {read[1]:,} tokens; the window is learned at the first "
                            "compaction, or set context_window in .journal/settings.json."))
     return 0
 
@@ -967,16 +967,16 @@ def cmd_pins(all_of_them: bool) -> int:
 def cmd_settings() -> int:
     conf, problems = settings_mod.load(root())
     f = root() / settings_mod.PATH
-    print(fmt.title("SETTINGS", sub=str(f) if f.is_file() else "no file, every default in force"))
-    print()
+    fmt.say(fmt.title("SETTINGS", sub=str(f) if f.is_file() else "no file, every default in force"))
+    fmt.say()
     for key, default in settings_mod.DEFAULTS.items():
         mark = " " if conf[key] == default else "*"
-        print(f" {mark} {key:<24} {str(conf[key]):<22} {fmt.dim('default ' + str(default))}")
+        fmt.say(f" {mark} {key:<24} {str(conf[key]):<22} {fmt.dim('default ' + str(default))}")
     if any(conf[k] != settings_mod.DEFAULTS[k] for k in settings_mod.DEFAULTS):
-        print()
-        print(fmt.wrap("* set in settings.json"))
+        fmt.say()
+        fmt.say(fmt.wrap("* set in settings.json"))
     for p in problems:
-        print(f"\n  ! {p}")
+        fmt.say(f"\n  ! {p}")
     return 1 if problems else 0
 
 
@@ -1014,13 +1014,13 @@ def main(argv: list[str]) -> int:
             try:
                 back = int(a.split("=", 1)[1])
             except ValueError:
-                print(f"--back wants a number, got {a.split('=', 1)[1]!r}", file=sys.stderr)
+                fmt.say(f"--back wants a number, got {a.split('=', 1)[1]!r}", error=True)
                 return 1
         elif a.startswith("--supersedes="):
             try:
                 supersedes = int(a.split("=", 1)[1])
             except ValueError:
-                print("--supersedes wants a pin number; `journal pins` numbers them", file=sys.stderr)
+                fmt.say("--supersedes wants a pin number; `journal pins` numbers them", error=True)
                 return 1
         elif a.startswith("--on="):
             on = a.split("=", 1)[1]
@@ -1048,7 +1048,7 @@ def main(argv: list[str]) -> int:
             try:
                 page = int(a.split("=", 1)[1])
             except ValueError:
-                print("--page wants a number", file=sys.stderr)
+                fmt.say("--page wants a number", error=True)
                 return 1
         elif a == "--full":
             full = True
@@ -1059,8 +1059,8 @@ def main(argv: list[str]) -> int:
         elif a == "--all":
             all_of_them = True
         elif a.startswith("--") and len(a) > 2:
-            print(f"unknown option {a!r}. `journal help` lists the commands and their options.",
-                  file=sys.stderr)
+            fmt.say(f"unknown option {a!r}. `journal help` lists the commands and their options.",
+                  error=True)
             return 1
         else:
             rest.append(a)
@@ -1071,12 +1071,12 @@ def main(argv: list[str]) -> int:
         return cmd_open()
     if verb == "search":
         if len(rest) < 2:
-            print("search wants a term", file=sys.stderr)
+            fmt.say("search wants a term", error=True)
             return 1
         return cmd_search(" ".join(rest[1:]), all_of_them, page=page)
     if verb in ("pin", "remember"):
         if len(rest) < 2:
-            print("pin wants the claim, in one line", file=sys.stderr)
+            fmt.say("pin wants the claim, in one line", error=True)
             return 1
         return cmd_remember(" ".join(rest[1:]), supersedes, doc_ref)
     if verb == "nothing":
@@ -1084,17 +1084,17 @@ def main(argv: list[str]) -> int:
     if verb == "rule":
         if strike_n is not None:
             if len(rest) < 3:
-                print('rule --strike wants a number and why: journal rule --strike 2 "<why>"',
-                      file=sys.stderr)
+                fmt.say('rule --strike wants a number and why: journal rule --strike 2 "<why>"',
+                      error=True)
                 return 1
             try:
                 return cmd_rule("", int(rest[1]), " ".join(rest[2:]))
             except ValueError:
-                print(f"rule --strike wants a NUMBER, got {rest[1]!r}. `journal rules` numbers them.",
-                      file=sys.stderr)
+                fmt.say(f"rule --strike wants a NUMBER, got {rest[1]!r}. `journal rules` numbers them.",
+                      error=True)
                 return 1
         if len(rest) < 2:
-            print("rule wants the ruling, in one line", file=sys.stderr)
+            fmt.say("rule wants the ruling, in one line", error=True)
             return 1
         return cmd_rule(" ".join(rest[1:]), None, "", doc_ref)
     if verb == "rules":
@@ -1103,18 +1103,18 @@ def main(argv: list[str]) -> int:
             try:
                 n = int(rest[1])
             except ValueError:
-                print(f"rules wants a NUMBER with --full, got {rest[1]!r}", file=sys.stderr)
+                fmt.say(f"rules wants a NUMBER with --full, got {rest[1]!r}", error=True)
                 return 1
         return cmd_rules(all_of_them, n, full)
     if verb == "promote":
         if len(rest) < 2:
-            print("promote wants a pin number: journal promote 3", file=sys.stderr)
+            fmt.say("promote wants a pin number: journal promote 3", error=True)
             return 1
         try:
             return cmd_promote(int(rest[1]))
         except ValueError:
-            print(f"promote wants a pin NUMBER, got {rest[1]!r}. `journal pins` numbers them.",
-                  file=sys.stderr)
+            fmt.say(f"promote wants a pin NUMBER, got {rest[1]!r}. `journal pins` numbers them.",
+                  error=True)
             return 1
     if verb == "todo":
         return cmd_todo(rest[1:], all_of_them, brief, doc_ref)
@@ -1132,14 +1132,14 @@ def main(argv: list[str]) -> int:
         return cmd_switch(" ".join(rest[1:]), go_back, project_too, sessions or None, all_sessions)
     if verb == "strike":
         if len(rest) < 3:
-            print('strike wants a pin number and why: journal strike 6 "<why>"',
-                  file=sys.stderr)
+            fmt.say('strike wants a pin number and why: journal strike 6 "<why>"',
+                  error=True)
             return 1
         try:
             n = int(rest[1])
         except ValueError:
-            print(f"strike wants a pin NUMBER, got {rest[1]!r}. `journal pins` numbers them.",
-                  file=sys.stderr)
+            fmt.say(f"strike wants a pin NUMBER, got {rest[1]!r}. `journal pins` numbers them.",
+                  error=True)
             return 1
         return cmd_strike(n, " ".join(rest[2:]))
     if verb == "pins":
@@ -1147,21 +1147,21 @@ def main(argv: list[str]) -> int:
             try:
                 return cmd_pin_full(int(rest[1]))
             except ValueError:
-                print(f"pins wants a NUMBER with --full, got {rest[1]!r}", file=sys.stderr)
+                fmt.say(f"pins wants a NUMBER with --full, got {rest[1]!r}", error=True)
                 return 1
         return cmd_pins(all_of_them)
     if verb == "update" and len(rest) > 1:
         # `journal update` upgrades the journal; a note on the work is `journal work update`
-        print('journal update upgrades the journal. Progress on the open work is:\n'
-              '  journal work update "<what moved>"', file=sys.stderr)
+        fmt.say('journal update upgrades the journal. Progress on the open work is:\n'
+              '  journal work update "<what moved>"', error=True)
         return 1
     if verb == "work":
         sub = rest[1] if len(rest) > 1 else ""
         if sub not in ("start", "end", "update"):
-            print('journal work start|update|end "<words>"', file=sys.stderr)
+            fmt.say('journal work start|update|end "<words>"', error=True)
             return 1
         if len(rest) < 3:
-            print(f'work {sub} wants the words: journal work {sub} "<the work>"', file=sys.stderr)
+            fmt.say(f'work {sub} wants the words: journal work {sub} "<the work>"', error=True)
             return 1
         words = " ".join(rest[2:])
         if sub == "update":
@@ -1170,13 +1170,13 @@ def main(argv: list[str]) -> int:
     if verb in ("start", "end"):
         # kept so a session that learned the old spelling is not stranded mid-work
         if len(rest) < 2:
-            print(f"{verb} wants the words that name the work", file=sys.stderr)
+            fmt.say(f"{verb} wants the words that name the work", error=True)
             return 1
         subject = " ".join(rest[1:])
         return cmd_start(subject) if verb == "start" else cmd_end(subject)
     if verb == "verify":
         body, ok = verify.render(root())
-        print(body)
+        fmt.say(body)
         return 0 if ok else 1
     if verb == "settings":
         return cmd_settings()
@@ -1184,10 +1184,10 @@ def main(argv: list[str]) -> int:
         if len(rest) > 1 and rest[1] == "link":
             ok, msg = _wt.link(Path(__file__).parent if Path(__file__).parent.is_symlink()
                                else Path(__file__).resolve().parent)
-            print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+            fmt.say(msg, error=not ok)
             return 0 if ok else 1
         main = _wt.main_root(project())
-        print(f"a linked worktree of {main}; .journal " + ("is a symlink to its journal" if (project() / ".journal").is_symlink() else "is a COPY — `journal worktree link` fixes that")
+        fmt.say(f"a linked worktree of {main}; .journal " + ("is a symlink to its journal" if (project() / ".journal").is_symlink() else "is a COPY — `journal worktree link` fixes that")
               if main else "not a linked worktree")
         return 0
     if verb == "next":
@@ -1195,25 +1195,25 @@ def main(argv: list[str]) -> int:
     if verb == "version":
         have = update.current(root())
         got = update.check(root(), force=True)
-        print(fmt.title(f"AGENT-JOURNAL {have}"))
+        fmt.say(fmt.title(f"AGENT-JOURNAL {have}"))
         if got.get("version") and update.newer(got["version"], have):
-            print(fmt.wrap(f"{got['version']} is available" + (f": {got['headline']}" if got.get("headline") else "")))
-            print(fmt.commands([("journal upgrade", "pull it, tests first, and print what changed")]))
+            fmt.say(fmt.wrap(f"{got['version']} is available" + (f": {got['headline']}" if got.get("headline") else "")))
+            fmt.say(fmt.commands([("journal upgrade", "pull it, tests first, and print what changed")]))
         elif got.get("version"):
-            print(fmt.wrap("This is the latest."))
+            fmt.say(fmt.wrap("This is the latest."))
         else:
-            print(fmt.wrap("Could not reach the repository to check for a newer one."))
+            fmt.say(fmt.wrap("Could not reach the repository to check for a newer one."))
         return 0
     if verb in ("upgrade", "update"):
         src = next((a.split("=", 1)[1] for a in argv if a.startswith("--from=")), None)
         ok, msg = update.upgrade(root(), src)
-        print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+        fmt.say(msg, error=not ok)
         return 0 if ok else 1
     if verb == "conversation":
         return cmd_read(back)
     if verb:
-        print(f"No such command: {verb}\n", file=sys.stderr)
-        print(__doc__, file=sys.stderr)
+        fmt.say(f"No such command: {verb}\n", error=True)
+        fmt.say(__doc__, error=True)
         return 1
     # `journal --back=1` alone still reads: the block and the skill said it for a day,
     # and a reader with the old words in mind must not land on a status page instead.

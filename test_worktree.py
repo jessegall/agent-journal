@@ -48,14 +48,14 @@ p = subprocess.run([str(wt / ".journal" / "hook.py")], input=json.dumps({"hook_e
                    capture_output=True, text=True, timeout=60)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
 check("session start in the worktree replaces the copy with a symlink and says so",
-      ((wt / ".journal").is_symlink(), (wt / ".journal").resolve() == (main / ".journal").resolve(), "replaced with a symlink" in ctx), (True, True, True))
+      ((wt / ".journal").is_symlink(), (wt / ".journal").resolve() == (main / ".journal").resolve(), "replaced with a symlink" in " ".join(ctx.split())), (True, True, True))
 check("and the main checkout's pin is what the worktree is handed", "a fact from main" in ctx, True)
 wenv = {**os.environ, transcript.SESSION_ENV: "w1"}
 subprocess.run([str(wt / ".journal" / "journal.py"), "pin", "a fact from the worktree"], env=wenv, capture_output=True, timeout=60)
 p = subprocess.run([str(main / ".journal" / "journal.py"), "pins"], env=env, capture_output=True, text=True, timeout=60)
 check("a pin written in the worktree is in the main journal", "a fact from the worktree" in p.stdout, True)
 p = subprocess.run([str(wt / ".journal" / "journal.py"), "worktree"], env=wenv, capture_output=True, text=True, timeout=60)
-check("journal worktree reports the link", "is a symlink" in p.stdout, True)
+check("journal worktree reports the link", "is a symlink" in " ".join(p.stdout.split()), True)
 # git in the worktree must not see the link: a commit there leaves .journal untouched
 check("git status in the worktree is clean after the link", git(wt, "status", "--porcelain"), "")
 (wt / "feature.txt").write_text("x\n")
@@ -77,7 +77,7 @@ p = subprocess.run([str(wt2 / ".journal" / "hook.py")], input=json.dumps({"hook_
                    capture_output=True, text=True, timeout=60)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
 check("a copy with local changes is kept, the main journal is used, and it says so",
-      ((wt2 / ".journal").is_symlink(), "a copy with local changes" in ctx, "a fact from main" in ctx), (False, True, True))
+      ((wt2 / ".journal").is_symlink(), "a copy with local changes" in " ".join(ctx.split()), "a fact from main" in ctx), (False, True, True))
 p = subprocess.run([str(wt2 / ".journal" / "journal.py"), "worktree", "link"], env={**os.environ, transcript.SESSION_ENV: "w2"}, capture_output=True, text=True, timeout=60)
 check("worktree link replaces it and keeps the copy aside",
       (p.returncode, (wt2 / ".journal").is_symlink(), (wt2 / ".journal.copy" / "record.json").is_file()), (0, True, True))

@@ -218,7 +218,7 @@ check("--replace swaps it and keeps the old one under struck/",
       (0, "<h1>slots v2</h1>", "<h1>slots</h1>"))
 code, out = j("docs", str(n_att))
 check("reading the doc lists its attachments with what they are, size and path",
-      ("attachments" in out.lower(), "design.html  — the design, second cut" in out, "mock/  — the mockups" in out, "files/design.html" in out), (True, True, True, True))
+      ("attachments" in out.lower(), "design.html   the design, second cut" in out, "mock/         the mockups" in out, "files/design.html" in out), (True, True, True, True))
 code, out = j("docs")
 check("the catalogue counts them", "2 file(s)" in out, True)
 code, out = j("docs", "attachments", str(n_att))

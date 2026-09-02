@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.16.1 — one way out for every line
+
+Everything a command prints passes through one function, and everything the hook hands
+the harness through one other, so the house style is enforced in one place: errors are
+one marked line, long paragraphs wrap, shaped lines — columns, commands, the hook's
+one-liners — are kept as they are. `docs <doc> files` and the attachments of `docs
+<doc>` are a columned table: name, what it is, kind and age, path, a folder's files
+indented under it.
+
+After updating: nothing.
+
 ## 1.16.0 — a hint to attach what keeps being read
 
 A file that is not source — no source extension, not tracked by git; outside the
