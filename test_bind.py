@@ -208,6 +208,19 @@ code, out = x.j("tracks")
 check("tracks says who is running and who is stale", ("xxxxxxxx-1 (active just now)".replace("-1", "") in out, "zzzzzzzz (stale)" in out), (True, True))
 q = T("qqqqqqqq-4")   # start track is side, held by x
 check("the start block names the holder and how it was seen", ("IS TAKEN" in q.ctx, "xxxxxxxx" in q.ctx, "active" in q.ctx), (True, True, True))
+# subagents: outside the rule entirely — a subagent of the waiting session edits, stops and
+# is never bound, and the parent's track holder is not disturbed by it
+sub = {"hook_event_name": "PreToolUse", "session_id": "qqqqqqqq-4", "agent_id": "ab12", "transcript_path": str(q.path),
+       "tool_name": "Write", "tool_input": {"file_path": str(e / "g.txt"), "content": "x"}}
+p = subprocess.run([str(root2 / "hook.py")], input=json.dumps(sub), capture_output=True, text=True, timeout=60)
+check("a subagent's edit on a taken track is not refused", ("deny" in p.stdout, p.returncode), (False, 0))
+p = subprocess.run([str(root2 / "hook.py")], input=json.dumps({**sub, "hook_event_name": "Stop"}), capture_output=True, text=True, timeout=60)
+check("a subagent's stop is never held", p.stdout.strip(), "")
+check("and a subagent is never bound to a track", tracks.bound(root2, "agent-ab12"), None)
+check("nor does it count as a session on one", "agent-ab12" in json.dumps(tracks.live(root2)), False)
+p = subprocess.run([str(root2 / "hook.py")], input=json.dumps({**sub, "tool_input": {"command": '.journal/journal.py switch "elsewhere"'}, "tool_name": "Bash"}),
+                   capture_output=True, text=True, timeout=60)
+check("a subagent switching tracks is refused as a journal write, as before", "from a subagent is refused" in p.stdout, True)
 (root2 / "settings.json").write_text(json.dumps({"one_session_per_track": False}))
 check("with the rule off, the same session is free", (q.fire("Stop"), "IS TAKEN" in q.write()), ("", False))
 code, out = x.j("switch", "default")
