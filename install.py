@@ -84,7 +84,9 @@ def _package_files(root: Path) -> list[Path]:
 def pull(src: Path, check: bool) -> list[str]:
     """Bring another checkout's package here. Tests first, in staging; then the files."""
     src = src.resolve()
-    if src.name != ".journal" and (src / ".journal").is_dir():
+    # a repository whose ROOT is the package also holds its own .journal/ instance inside;
+    # the root is the source, the instance is that project's data
+    if src.name != ".journal" and not (src / "hook.py").is_file() and (src / ".journal").is_dir():
         src = src / ".journal"
     if not (src / "hook.py").is_file() or not (src / "journal.py").is_file():
         raise SystemExit(f"  ! {src} is not a journal package (no hook.py / journal.py)")

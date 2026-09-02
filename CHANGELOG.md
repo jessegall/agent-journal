@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.11.2 — the loop is said where auto is explained
+
+The skill's to-do section says that auto mode means keeping a loop running (`loop`
+skill, `15m journal next`), and the 1.6.0 entry now says to start it. An agent had read
+both places it was documented and acted on neither; it told us why.
+
+After updating: with auto on, start the loop if none is running.
+
 ## 1.11.1 — the package's own journal is not part of the package
 
 agent-journal is now developed in its own repository, which keeps its own `.journal/`;
@@ -60,7 +68,7 @@ line names. With auto on, the agent is asked to keep a loop running that prompts
 carries on until nothing is left it can do. The auto texts say "auto mode is on" rather
 than "the user is away".
 
-Nothing to do after updating.
+After updating: with auto on, start the loop — the `loop` skill with `15m journal next`.
 
 ## 1.5.2 — two fixes from a multi-repo workspace
 

@@ -155,7 +155,10 @@ default, the start block lists what is waiting and an idle stop says so once; ne
 an instruction to begin one. Start a to-do only when the user says so for that one, or
 asks you to work through them, in which case offer `journal todo auto on`. With auto on
 for the track, the user has already said it: whenever nothing is open, pick up the next
-one with `todo start <n>`, do it, `work end` it, and the next idle stop brings the next.
+one with `todo start <n>`, do it, `work end` it, and the next idle stop brings the next. Auto
+also means a loop: start one with the `loop` skill, `15m journal next`, so an idle session
+comes back every fifteen minutes and carries on until nothing is left it can do, and stop
+it when the list is empty or everything left waits on the user.
 
 **With auto on, solve it yourself.** The user switched auto on to be away. Every
 question you send them stops the list until they return, so a question is the expensive
