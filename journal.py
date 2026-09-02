@@ -44,8 +44,8 @@ nothing. This is the index that gets you back to it.
     journal work update "<what moved>" [--on="<work>"]   progress on the open work
     journal work end "<what>"    the same words, to close it
     journal carry           exactly what a compaction will hand back — nothing is written
-    journal tracks          every track of work, current one marked
-    journal switch "<name>" park this one and pick up that one; --back for the last
+    journal tracks          every track, this session's marked, and which sessions are on which
+    journal switch "<name>" [--project|--session=<id>|--all-sessions]   this session's track; --project also where new sessions start; from a terminal always the project
     journal next            what to do now: the details of the last hold, or the next to-do
     journal worktree [link] is this a linked worktree, and does .journal link to the main checkout's? `link` makes it so
     journal tools           the tools: scripts kept for repeated work, with what each does and how to call it
@@ -101,6 +101,15 @@ def project() -> Path:
     # transcripts, docs and to-dos paths are relative to it; a worktree's transcript is its own
     here = Path(__file__).parent
     return (here if here.is_symlink() else Path(__file__).resolve().parent).parent
+
+
+def _stem() -> str | None:
+    got = transcript.session_transcript(project())
+    return got[0].stem if got and not got[1] else None
+
+
+import state as _state
+_state.use_track(tracks.current(_ROOT, _stem()))
 
 
 def _load(back: int = 0):
@@ -167,7 +176,7 @@ def cmd_status() -> int:
     conf, problems = settings_mod.load(root())
     for p in problems:
         print(f"  ! {p}", file=sys.stderr)
-    here = tracks.current(root())
+    here = tracks.current(root(), _stem())
     ruled = len(pins.live(root(), pins.RULES))
     pinned = len(pins.live(root()))
     standing = work.open_work(root())
@@ -301,7 +310,7 @@ def cmd_end(subject: str) -> int:
     ok, msg = work.end(root(), subject, _now())
     print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
     if ok:
-        closed = todo.close_titled(root(), tracks.current(root()), subject, _now())
+        closed = todo.close_titled(root(), tracks.current(root(), _stem()), subject, _now())
         if closed:
             print(f"  to-do {closed} is done with it.")
         print('  did that teach anything a later reader would get wrong without?\n'
@@ -332,7 +341,7 @@ def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int 
     conf, problems = settings_mod.load(root())
     for pr in problems:
         print(f"  ! {pr}", file=sys.stderr)
-    here = tracks.current(root())
+    here = tracks.current(root(), _stem())
     needle = term.lower()
     found: list[tuple[Path, list]] = []
     total = 0
@@ -442,11 +451,6 @@ def cmd_remember(fact: str, supersedes: int | None, doc_ref: str = "") -> int:
     return 0 if ok else 1
 
 
-def _stem() -> str | None:
-    got = transcript.session_transcript(project())
-    return got[0].stem if got else None
-
-
 def _decided(how: str) -> bool:
     """Lift the gate a context rung lowered. True if one was standing."""
     import state
@@ -524,7 +528,7 @@ def cmd_promote(n: int) -> int:
 
 
 def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "") -> int:
-    here = tracks.current(root())
+    here = tracks.current(root(), _stem())
     if not rest:
         waiting = todo.open_items(root(), here)
         done = len(todo._all(root(), here)) - len(waiting)
@@ -621,7 +625,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
 
 
 def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int) -> int:
-    here = tracks.current(root())
+    here = tracks.current(root(), _stem())
     body = sys.stdin.read() if brief else ""
     if not rest:
         cat = docs._load(root())
@@ -691,7 +695,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int) -> int:
 
 
 def cmd_tools(rest: list[str], brief: bool, meta: dict) -> int:
-    here = tracks.current(root())
+    here = tracks.current(root(), _stem())
     if not rest:
         cat = tools._all(root())
         loose = tools.uncatalogued(root())
@@ -784,7 +788,7 @@ def cmd_next() -> int:
     """
     import state as _st
     stem = _stem()
-    here = tracks.current(root())
+    here = tracks.current(root(), _stem())
     held = _st.get(root(), "next_text", "", stem=stem) if stem else ""
     if held:
         print(held)
@@ -829,26 +833,37 @@ def cmd_carry(fresh: bool) -> int:
 
 
 def cmd_tracks() -> int:
-    rows = tracks.listing(root())
-    print(fmt.title("TRACKS", sub="the current one is where pins, work and to-dos go"))
+    rows = tracks.listing(root(), _stem())
+    print(fmt.title("TRACKS", sub="* this session · > where new sessions start"))
     print()
     for t in rows:
-        mark = "*" if t["current"] else " "
-        when = f"   parked {t['at'][:16].replace('T', ' ')}" if t["at"] else ""
-        print(f" {mark} {t['name']:<28} {t['pins']} pin(s), {t['open']} open{when}")
+        mark = ("*" if t["current"] else " ") + (">" if t["start"] else " ")
+        who = ("   sessions: " + ", ".join(sid[:8] for sid in t["sessions"])) if t["sessions"] else ""
+        print(f" {mark} {t['name']:<28} {t['pins']} pin(s), {t['open']} open{who}")
     print()
     print(fmt.commands([
-        ('journal switch "<name>"', "park this one, pick up that one"),
+        ('journal switch "<name>"', "this session onto that track (from a terminal: the project's start track)"),
+        ('journal switch "<name>" --project', "this session, and where new sessions start"),
+        ('journal switch "<name>" --session=<id>', "move one bound session; --all-sessions moves every one"),
         ("journal switch --back", "the one you came from"),
     ]))
     print(fmt.wrap("Nothing is ever closed by switching."))
     return 0
 
 
-def cmd_switch(name: str, go_back: bool) -> int:
+def cmd_switch(name: str, go_back: bool, project_too: bool = False, sessions: list[str] | None = None,
+               all_sessions: bool = False) -> int:
     stem = _stem() or ""
+    if all_sessions or sessions:
+        ok, msg = tracks.switch(root(), name, _now(), "", project=True) if not go_back else (False, "--back takes no sessions")
+        if not ok and "already on" not in msg:
+            print(f"  ! {msg}", file=sys.stderr)
+            return 1
+        moved = tracks.move_sessions(root(), name, None if all_sessions else sessions)
+        print(f"the project starts on {name}; moved {len(moved)} session(s): " + ", ".join(m[:8] for m in moved))
+        return 0
     ok, msg = (tracks.back(root(), _now(), stem) if go_back
-               else tracks.switch(root(), name, _now(), stem))
+               else tracks.switch(root(), name, _now(), stem, project=project_too or not stem))
     print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
     return 0 if ok else 1
 
@@ -868,7 +883,7 @@ def cmd_pin_full(n: int) -> int:
 
 def cmd_pins(all_of_them: bool) -> int:
     conf, _ = settings_mod.load(root())
-    here = tracks.current(root())
+    here = tracks.current(root(), _stem())
     n = len(pins.live(root()))
     struck = len(pins._all(root())) - n
     sub = f"track {here} · {n} standing" + (
@@ -921,6 +936,9 @@ def main(argv: list[str]) -> int:
     on = None
     strike_n = None
     brief = False
+    project_too = False
+    all_sessions = False
+    sessions: list[str] = []
     page = 1
     abstract = ""
     doc_ref = ""
@@ -955,6 +973,12 @@ def main(argv: list[str]) -> int:
             strike_n = -1  # the number follows as the next word
         elif a == "--brief":
             brief = True
+        elif a == "--project":
+            project_too = True
+        elif a == "--all-sessions":
+            all_sessions = True
+        elif a.startswith("--session="):
+            sessions.append(a.split("=", 1)[1])
         elif a.startswith("--abstract="):
             abstract = a.split("=", 1)[1]
         elif a.startswith(("--summary=", "--usage=", "--when=", "--entry=")):
@@ -1046,7 +1070,7 @@ def main(argv: list[str]) -> int:
     if verb == "tracks":
         return cmd_tracks()
     if verb == "switch":
-        return cmd_switch(" ".join(rest[1:]), go_back)
+        return cmd_switch(" ".join(rest[1:]), go_back, project_too, sessions or None, all_sessions)
     if verb == "strike":
         if len(rest) < 3:
             print('strike wants a pin number and why: journal strike 6 "<why>"',

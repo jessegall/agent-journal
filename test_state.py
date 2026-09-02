@@ -1031,14 +1031,18 @@ os.utime(other, None)
 J = str(d / ".journal" / "journal.py")
 p = subprocess.run([J, "remember", "cited"], env={**os.environ, transcript.SESSION_ENV: "s1"},
                    capture_output=True, text=True, timeout=60)
+def _pins(rec):
+    return rec["tracks"][rec.get("current") or "default"]["pins"]
+
+
 rec = json.loads((d / ".journal" / "record.json").read_text())
 check("remember cites the session from the environment, not the newest file",
-      rec["pins"][-1]["session"], "s1.jsonl")
+      _pins(rec)[-1]["session"], "s1.jsonl")
 e = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}
 p = subprocess.run([J, "remember", "guessed"], env=e, capture_output=True, text=True, timeout=60)
 rec = json.loads((d / ".journal" / "record.json").read_text())
 check("without the environment it guesses the newest and SAYS so",
-      (rec["pins"][-1].get("guessed"), "guessed" in p.stderr), (True, True))
+      (_pins(rec)[-1].get("guessed"), "guessed" in p.stderr), (True, True))
 
 # verify reads the runtime files and never a baseline
 d, path = project_with(2)

@@ -103,8 +103,11 @@ again.
 
 ### Tracks
 
-Separate lines of work, each with its own pins and to-dos. Switch tracks with
-one command; rules and docs are shared across all of them.
+Separate lines of work, each with its own pins and to-dos. Rules and docs are shared
+across all of them. Every session is bound to a track, so two sessions can work two
+tracks of one project at the same time. A switch from inside a session moves only that
+session; a switch from a terminal moves where new sessions start, and says which running
+sessions stayed where they were and how to move one along.
 
 ### Tags
 
@@ -199,7 +202,11 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 
 ### Tracks and maintenance
 
-    journal switch "<name>"              park this track, pick up another; --back returns
+    journal tracks                       every track, this session's marked, and who is on which
+    journal switch "<name>"              this session onto that track; from a terminal, the project
+    journal switch "<name>" --project    this session, and where new sessions start (agent)
+    journal switch "<name>" --session=<id>   move one running session; --all-sessions moves all
+    journal switch --back                the track this session came from
     journal settings                     every setting and where it came from
     journal version                      the installed version; is a newer one out?
     journal update                       pull the latest journal and print what changed
@@ -257,7 +264,8 @@ adds only the small record of what must survive.
   anyone filing them, and skip the routine ones.
 - **Line numbers.** Every message has a line. Pins record the line they were written at,
   search prints the line of every hit, and a line is something you can go and check.
-- **Tracks.** Session starts and track switches leave marks in the transcript, so the
+- **Tracks.** Each session is bound to a track in `.journal/runtime/bindings.map`, on this
+  machine only. Session starts and track switches leave marks in the transcript, so the
   journal knows which lines belong to which track and can search one track across every
   session.
 - **Compaction.** A summary keeps what was done and drops what was decided; the transcript

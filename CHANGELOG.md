@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.13.0 — sessions are bound to tracks
+
+Two sessions can work two tracks of one project at once. A session is bound to the
+project's start track when it starts; `journal switch` from inside a session moves that
+session only, `--project` also moves where new sessions start; from a terminal a switch
+is always the project's, and it lists the sessions bound elsewhere with how to move one
+(`--session=<id>`, `--all-sessions`). Pins and work now live under their track's name in
+the record with `current` as a pointer; an old record is moved on first read.
+
+After updating: nothing.
+
 ## 1.12.0 — the stop queue
 
 Stop holds are a queue the hook runs one by one: context, deferral, untagged message,

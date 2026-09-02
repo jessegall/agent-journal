@@ -97,7 +97,41 @@ def runtime_files(root: Path) -> list[tuple[str, dict]]:
     return sorted((f.stem, _read(f)) for f in d.glob("*.json"))
 
 
+#: THE TRACK THIS PROCESS READS AND WRITES. Pins and work live under their track's name
+#: in the record, and `current` is only a pointer; a process says which track it is on
+#: once (`use_track`) and every `get`/`put` of "pins" or "work" goes there. Nobody else
+#: had to learn a new concept: `pins.py` and `work.py` still read "pins" and "work".
+#: Before this, the current track's data sat in top-level keys and a switch SWAPPED it
+#: with a parked copy — which meant one current track for the whole project, and two
+#: sessions could not be on two tracks. A record in the old shape is moved on first read.
+TRACKED = ("pins", "work")
+_TRACK: list = []
+
+
+def use_track(name: str) -> None:
+    _TRACK[:] = [name]
+
+
+def _record(root: Path) -> dict:
+    data = _read(record_file(root))
+    if any(k in data for k in TRACKED):
+        cur = data.get("current") or "default"
+        slot = data.setdefault("tracks", {}).setdefault(cur, {})
+        for k in TRACKED:
+            if k in data:
+                slot[k] = data.pop(k)
+        _write(record_file(root), data)
+    return data
+
+
+def _track_name(root: Path, data: dict) -> str:
+    return _TRACK[0] if _TRACK else (data.get("current") or "default")
+
+
 def get(root: Path, key: str, default=None, *, stem: str | None = None):
+    if key in TRACKED:
+        data = _record(root)
+        return (data.get("tracks") or {}).get(_track_name(root, data), {}).get(key, default)
     if is_record(key):
         return _read(record_file(root)).get(key, default)
     if not stem:
@@ -113,6 +147,11 @@ def put(root: Path, key: str, value, *, stem: str | None = None) -> None:
     dead. Not a silent fallback to project scope either — that is the bug this module was
     rewritten to end.
     """
+    if key in TRACKED:
+        data = _record(root)
+        data.setdefault("tracks", {}).setdefault(_track_name(root, data), {})[key] = value
+        _write(record_file(root), data)
+        return
     if is_record(key):
         f = record_file(root)
     elif not stem:

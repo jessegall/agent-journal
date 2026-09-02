@@ -176,7 +176,7 @@ def _deferral(conf: dict, ctx: Ctx) -> tuple[str, str] | None:
     asked = state.get(ROOT, "prompt", None, stem=ctx.stem)
     if not asked or not asked.get("asked"):
         return None
-    here = tracks.current(ROOT)
+    here = tracks.current(ROOT, ctx.stem)
     if len(todo.open_items(ROOT, here)) > asked.get("todos", 0):
         return None
     got = transcript.last_reply(ctx.path)
@@ -211,7 +211,7 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     """
     prompt = str(payload.get("prompt") or "")
     asked = asks.asks_for_work(prompt)
-    here = tracks.current(ROOT)
+    here = tracks.current(ROOT, ctx.stem)
     state.put(ROOT, "prompt", {"asked": asked, "todos": len(todo.open_items(ROOT, here))},
               stem=ctx.stem)
     standing = work.open_work(ROOT)
@@ -303,7 +303,7 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     lines, boundaries = transcript.read(ctx.path)
     stretch = transcript.since(lines, boundaries, 0)
     _floor(ctx, lines)
-    here = tracks.current(ROOT)
+    here = tracks.current(ROOT, ctx.stem)
 
     for subject in SUBJECTS:
         if subject in raised:
@@ -981,7 +981,7 @@ def _stall(conf: dict, ctx: Ctx) -> str | None:
     limit = conf["stall_calls"]
     if not limit or "stall" in conf["silenced"]:
         return None
-    here = tracks.current(ROOT)
+    here = tracks.current(ROOT, ctx.stem)
     started = [t for t in todo.open_items(ROOT, here) if t.get("started")]
     if not started:
         return None
@@ -1174,7 +1174,7 @@ def _context(event: str, text: str) -> int:
 # exists to report, so the event is no longer wired at all.
 
 
-def carried(source: str = "compact") -> str:
+def carried(source: str = "compact", stem: str | None = None) -> str:
     """Exactly what a session is handed at its start, built without writing anything.
 
     THE INJECTED BLOCK IS THE ONE THING NOBODY COULD LOOK AT. It is assembled inside a
@@ -1192,7 +1192,7 @@ def carried(source: str = "compact") -> str:
     compaction, because on any other source there is no summary and a message claiming one
     is a nudge about an event that did not happen.
     """
-    here = tracks.current(ROOT)
+    here = tracks.current(ROOT, stem)
     parts = [
         # THE RULES ARE SAID AT THE START, NOT ONLY ENFORCED AT THE STOP. Until this, the
         # vocabulary reached the agent exactly one way: by being held for breaking it. A
@@ -1202,8 +1202,9 @@ def carried(source: str = "compact") -> str:
         #
         # WHICH TRACK OF WORK THIS IS comes first: a fresh agent inherits a track it did
         # not choose and cannot see, and every pin and open item below belongs to that one.
-        f"THE JOURNAL IS IN FORCE HERE — you are on track `{here}`"
-        " (`journal tracks` for the others).\nOpen every message with exactly one tag:\n"
+        f"THE JOURNAL IS IN FORCE HERE — this session is bound to track `{here}`"
+        " (`journal tracks` for the others; `journal switch` moves this session only, "
+        "`--project` also the start track).\nOpen every message with exactly one tag:\n"
         + "\n".join(f"  [!{t.name}]  {t.line}" for t in tags.TAGS.values())
         + "\n\nThe tag is free — it rides on a message you were sending anyway. Work is "
         "not:\n"
@@ -1360,13 +1361,18 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     source = payload.get("source") or "startup"
     _floor(ctx)
     state.put(ROOT, "session_started", source, stem=ctx.stem)
+    # BOUND AT THE START to the project's start track, if this session is not bound yet.
+    # A switch from inside the session rebinds it alone.
+    if not tracks.bound(ROOT, ctx.stem):
+        tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+    state.use_track(tracks.current(ROOT, ctx.stem))
     if source == "compact" and ctx.path is not None and not conf["context_window"]:
         peak = context.peak_before_compaction(ctx.path)
         if peak and not state.get(ROOT, "window", 0):
             state.put(ROOT, "window", context.window_from_peak(peak))
-    tracks.carried(ROOT, tracks.current(ROOT), ctx.stem)
+    tracks.carried(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem)
     _prune()
-    block = carried(source)
+    block = carried(source, ctx.stem)
     if WORKTREE_NOTE:
         block = WORKTREE_NOTE + "\n\n" + block
     # WHAT CHANGED SINCE THIS TRANSCRIPT LAST SAW THE JOURNAL, once. An upgrade writes the
@@ -1443,6 +1449,12 @@ def main() -> int:
             return on_subagent_post(conf, payload)
         return 0
     ctx = _ctx(payload)
+    if ctx is not None:
+        # A SESSION RUNNING WHEN THE UPDATE LANDED has no binding yet: bind it now, at
+        # whatever event comes first, to the project's start track — as its start would.
+        if not payload.get('agent_id') and not tracks.bound(ROOT, ctx.stem):
+            tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+        state.use_track(tracks.current(ROOT, ctx.stem))
     if ctx is None:
         print(f"journal: {event} payload names no session or transcript — nothing filed",
               file=sys.stderr)

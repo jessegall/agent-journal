@@ -49,7 +49,7 @@ def live(root):
 r = fresh()
 check("defaults to `default` with no file", tracks.current(r), "default")
 check("listing shows one empty track", tracks.listing(r),
-      [{"name": "default", "current": True, "pins": 0, "open": 0, "at": ""}])
+      [{"name": "default", "current": True, "start": True, "pins": 0, "open": 0, "at": "", "sessions": []}])
 
 pins.add(r, "fact A", AT, 12)
 work.start(r, "work A", AT)
@@ -149,7 +149,7 @@ run_cli("remember", "cli fact")
 run_cli("start", "cli work")
 code, out = run_cli("switch", "second")
 check("cli switch succeeds", code, 0)
-check("cli reports the park", "default is parked" in out, True)
+check("cli reports where the project starts now", "the project starts on second" in out, True)
 code, out = run_cli("pins")
 check("cli new track has no pins", "Nothing is pinned" in out, True)
 run_cli("switch", "--back")
@@ -158,7 +158,7 @@ check("cli --back restores the pin", "cli fact" in out, True)
 code, out = run_cli("open")
 check("cli --back restores the work", "cli work" in out, True)
 code, out = run_cli("tracks")
-check("cli lists both, current marked", (" * default" in out, "second" in out), (True, True))
+check("cli lists both, current marked", ("*> default" in out, "second" in out), (True, True))
 
 # the hook names the right track and carries only its pins
 hook = str(d / ".journal" / "hook.py")
@@ -166,12 +166,17 @@ START = json.dumps({"hook_event_name": "SessionStart", "source": "compact",
                     "session_id": "s1", "transcript_path": str(d / "s1.jsonl")})
 p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
-check("SessionStart names the current track", "on track `default`" in ctx, True)
+check("SessionStart names the session's track", "track `default`" in ctx, True)
 check("SessionStart carries this track's pin", "cli fact" in ctx, True)
-run_cli("switch", "second")
+code, out = run_cli("switch", "second")
+check("a switch from the terminal moves the project and names the session left behind", ("s1" in out, "--session=<id>" in out), (True, True))
 p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
-check("SessionStart on another track names it", "on track `second`" in ctx, True)
+check("the bound session stays on its own track", ("track `default`" in ctx, "cli fact" in ctx), (True, True))
+run_cli("switch", "second", "--session=s1")
+p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
+ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
+check("SessionStart on another track names it", "track `second`" in ctx, True)
 check("and does NOT leak the other track's pin", "cli fact" in ctx, False)
 
 # ------------------------------------------------------- hostile input
