@@ -685,7 +685,7 @@ p = subprocess.run([I], capture_output=True, text=True)
 check("a file the package no longer ships is removed, by name",
       ((installed / "references" / "stale.md").exists(), "stale.md (no longer in the skill)" in p.stdout), (False, True))
 p = subprocess.run([I, "--check"], capture_output=True, text=True)
-check("and then the skill is current", "skill already current" in p.stdout, True)
+check("and then there is nothing to change", "Nothing to change." in p.stdout, True)
 
 # a deferral said in words and not parked: reminder at the prompt, refusal at the next call
 for text, want in (
@@ -1034,7 +1034,8 @@ rows, _ = verify.check(d / ".journal")
 fired = [ok for name, ok, _ in rows if name.startswith("the hook has fired —")]
 check("verify: fired once a transcript carries a mark", fired, [True])
 p = subprocess.run([str(d / ".journal" / "install.py")], env=env_out, capture_output=True, text=True)
-check("install ends with what to do next, and no red marks", ("Installed. Start Claude Code" in p.stdout, "✗" in p.stdout), (True, False))
+check("install ends with a verdict and the next step, and no red marks",
+      (("Installed." in p.stdout or "Already installed." in p.stdout), "Start Claude Code in this project" in p.stdout, "✗" in p.stdout), (True, True, False))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
