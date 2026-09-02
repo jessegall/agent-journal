@@ -165,11 +165,12 @@ def cmd_status() -> int:
     ]
     got = transcript.session_transcript(project())
     if got:
-        read = context.pressure(got[0], conf["context_window"])
+        import state as _st
+        read = context.pressure(got[0], conf["context_window"], _st.get(root(), "window", 0) or 0)
         if read and read[3]:
             rows.append(("context", f"{read[0]:.0%} full ({read[1]:,} of {read[2]:,})", ""))
         elif read:
-            rows.append(("context", f"{read[1]:,} tokens; window unknown, set context_window", ""))
+            rows.append(("context", f"{read[1]:,} tokens; window not yet known (learned at the first compaction)", ""))
         if got[1]:
             rows.append(("transcript", f"guessed: {got[0].name} (no session id in the environment)", ""))
     import state as state_mod
@@ -767,12 +768,13 @@ def cmd_pins(all_of_them: bool) -> int:
     ]))
     got = transcript.session_transcript(project())
     if got:
-        read = context.pressure(got[0], conf["context_window"])
+        import state as _st
+        read = context.pressure(got[0], conf["context_window"], _st.get(root(), "window", 0) or 0)
         if read and read[3]:
             print(fmt.wrap(f"Context {read[0]:.0%} full ({read[1]:,} of {read[2]:,})."))
         elif read:
-            print(fmt.wrap(f"Context: {read[1]:,} tokens; window unknown, so the ladder is silent. "
-                           "Set context_window in .journal/settings.json."))
+            print(fmt.wrap(f"Context: {read[1]:,} tokens; the window is learned at the first "
+                           "compaction, or set context_window in .journal/settings.json."))
     return 0
 
 

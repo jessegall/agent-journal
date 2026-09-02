@@ -144,11 +144,11 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
 
     # A LADDER WITH NO WINDOW IS SILENT, and silence is the shape this file exists to
     # report. Not a failure — the setting is a disagreement with a default — but said.
-    if not conf.get("context_window"):
+    if not conf.get("context_window") and not state.get(root, "window", 0):
         out.append(("context window known", False,
-                    "context_window is unset, so the context ladder stays silent until "
-                    "the session's peak rules out every window but one. "
-                    '`"context_window": 1000000` in .journal/settings.json if you know it.'))
+                    "not yet: it is learned at the first compaction, or from the session's "
+                    "peak; until then the context ladder is silent. To set it now: "
+                    '`"context_window": 1000000` in .journal/settings.json.'))
 
     return out, all(ok for _, ok, _ in out)
 

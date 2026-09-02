@@ -50,10 +50,6 @@ next to anything already there, installs the `journal` skill for the agent, and 
 tells you it is wired and, once a hook has run, that it is live. Commit `.journal/` with
 your project so your team shares the journal.
 
-One setting matters: put `"context_window": 1000000` (or `200000`) in
-`.journal/settings.json` so the context warnings are measured against the right window.
-Without it they stay silent rather than guess.
-
 To upgrade later, run `journal upgrade`. The agent is told when a new version is out.
 
 ## Features
@@ -234,3 +230,16 @@ adds only the small record of what must survive.
   before and after each tool call, and at each stop.
 - **Files.** Pins, rules, work and tracks in `.journal/record.json`, a file per to-do, a
   folder per doc. Committed, so the team and every later session read the same journal.
+
+## Settings
+
+`.journal/settings.json` holds only what you change; everything else is at its default.
+`journal settings` lists them all. The ones worth knowing:
+
+    context_window       the context window the warnings are measured against;
+                         learned automatically at the first compaction, set this to override
+    context_warn_ladder  where the warnings fire, default [0.5, 0.7, 0.9, 0.95]
+    pin_max_chars        the cap on a pin, default 400
+    stall_calls          tool calls on one to-do without progress before the agent is nudged, default 40
+    docs_dir             where docs live, default .journal/docs
+    silenced             names of nudges to switch off, e.g. ["tool_cost", "markdown_hint"]

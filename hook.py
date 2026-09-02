@@ -290,7 +290,7 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     # AND NEVER ON A GUESSED WINDOW. See `context.window_for`: a rung climbed against the
     # wrong window is a wrong nudge, and four of them leave the ladder mute for the real
     # compaction.
-    got = context.pressure(ctx.path, conf["context_window"])
+    got = context.pressure(ctx.path, conf["context_window"], state.get(ROOT, "window", 0) or 0)
     rung = _rung(conf, ctx, got, stretch) if got and got[3] else None
     if rung:
         return _hold(rung[0], rung[1], rung[2])
@@ -992,10 +992,11 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     _floor(ctx)
     # THE CONTEXT LADDER, MID-WORK. Only with the window set: a tail reading has no peak
     # to infer one from, and the ladder never climbs a guess.
-    if conf["context_window"] and ctx.path is not None and "context" not in conf["silenced"]:
+    window = conf["context_window"] or (state.get(ROOT, "window", 0) or 0)
+    if window and ctx.path is not None and "context" not in conf["silenced"]:
         used = context.reading_tail(ctx.path)
         if used is not None:
-            got = (used / conf["context_window"], used, conf["context_window"], True)
+            got = (used / window, used, window, True)
             rung = _rung(conf, ctx, got)
             if rung:
                 return _context("PostToolUse", rung[1] + "\n\n" + rung[2])
@@ -1278,6 +1279,10 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     source = payload.get("source") or "startup"
     _floor(ctx)
     state.put(ROOT, "session_started", source, stem=ctx.stem)
+    if source == "compact" and ctx.path is not None and not conf["context_window"]:
+        peak = context.peak_before_compaction(ctx.path)
+        if peak and not state.get(ROOT, "window", 0):
+            state.put(ROOT, "window", context.window_from_peak(peak))
     tracks.carried(ROOT, tracks.current(ROOT), ctx.stem)
     _prune()
     block = carried(source)

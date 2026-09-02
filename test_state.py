@@ -930,6 +930,21 @@ check("the rung is not repeated on the next call", "CONTEXT IS" in out, False)
 code, out, err = fire(d, "Stop", path)
 check("nor at the stop", "context" in held(out)[0], False)
 
+# the window is learned at a compaction
+d, path = project_with(4, tagged=True)
+(d / ".journal" / "settings.json").write_text("{}")  # no override: learn it
+with path.open("a") as fh:
+    fh.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "[!reply] x"}],
+                         "usage": {"input_tokens": 930000}}}) + "\n")
+    fh.write(json.dumps({"type": "system", "subtype": "compact_boundary"}) + "\n")
+    fh.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "[!reply] y"}],
+                         "usage": {"input_tokens": 520000}}}) + "\n")
+fire(d, "SessionStart", path, source="compact")
+check("the peak before the compaction becomes the window, in the record",
+      json.loads((d / ".journal" / "record.json").read_text()).get("window"), 1000000)
+code, out, err = fire(d, "Stop", path)
+check("and the ladder climbs it with no setting", held(out)[0], "journal reminded Claude: context 52% full")
+
 # open work: told at start, held only for one's own
 d, path = project_with(2, tagged=True)
 J = str(d / ".journal" / "journal.py")

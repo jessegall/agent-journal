@@ -81,8 +81,9 @@ DEFAULTS = {
     # docs the humans read is one that drifts from them.
     "docs_dir": ".journal/docs",
 
-    # THE WINDOW THE LADDER IS CLIMBED AGAINST. 0 means unknown, and unknown means the
-    # ladder stays SILENT until the session's own peak has ruled out every window but one.
+    # THE WINDOW THE LADDER IS CLIMBED AGAINST, as an OVERRIDE. 0 means learn it: from the
+    # peak once it rules out every window but one, or at the first compaction, whose peak
+    # is the window. Until then the ladder stays silent.
     # It is not inferred from the smallest window that fits: that reported 54% at 108k
     # tokens of a 1M window and burned every rung before 20%, after which the ladder was
     # mute for the real compaction. `journal verify` says when this is unset.

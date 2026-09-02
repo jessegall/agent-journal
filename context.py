@@ -19,7 +19,7 @@ WINDOWS = (200_000, 1_000_000)
 DEFAULT_WINDOW = WINDOWS[0]
 
 
-def window_for(peak: int, setting: int = 0) -> tuple[int, bool]:
+def window_for(peak: int, setting: int = 0, learned: int = 0) -> tuple[int, bool]:
     """(the window, whether that is KNOWN or only the smallest one still possible).
 
     NOT from the model id. The first version read `[1m]` out of the model name — and the
@@ -39,6 +39,12 @@ def window_for(peak: int, setting: int = 0) -> tuple[int, bool]:
     """
     if setting:
         return setting, True
+    # LEARNED AT A COMPACTION. Claude Code compacts when the window is nearly full, so the
+    # peak right before a compaction boundary IS the window, rounded up to the one it
+    # fits. The hook records it in the project's record the first time it sees one, and
+    # from then on the ladder climbs a measured window with no setting at all.
+    if learned:
+        return learned, True
     fits = [w for w in WINDOWS if peak <= w]
     if not fits:
         return WINDOWS[-1], True  # past every known window: it is the largest
@@ -107,14 +113,46 @@ def reading_tail(path: Path, limit: int = 300_000) -> int | None:
     return used
 
 
-def pressure(path: Path, setting: int = 0) -> tuple[float, int, int, bool] | None:
+def pressure(path: Path, setting: int = 0, learned: int = 0) -> tuple[float, int, int, bool] | None:
     """(share full, tokens, window, window KNOWN). The share is a guess when the last is False."""
     got = reading(path)
     if not got:
         return None
     used, peak = got
-    window, known = window_for(peak, setting)
+    window, known = window_for(peak, setting, learned)
     return used / window, used, window, known
+
+
+def peak_before_compaction(path: Path) -> int:
+    """The largest context held before any compaction boundary in this transcript, or 0."""
+    peak = 0
+    best = 0
+    if not path.is_file():
+        return 0
+    with path.open() as fh:
+        for line in fh:
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            if rec.get("type") == "system" and rec.get("subtype") == "compact_boundary":
+                best = max(best, peak)
+                peak = 0
+                continue
+            if rec.get("type") != "assistant":
+                continue
+            usage = (rec.get("message") or {}).get("usage")
+            if usage:
+                peak = max(peak, usage.get("input_tokens", 0) + usage.get("cache_read_input_tokens", 0)
+                           + usage.get("cache_creation_input_tokens", 0))
+    return best
+
+
+def window_from_peak(peak: int) -> int:
+    for w in WINDOWS:
+        if peak <= w:
+            return w
+    return WINDOWS[-1]
 
 
 #: What each share IS. A label, not an instruction — every row gets one of these.

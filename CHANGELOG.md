@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.3.0 — the context window is learned
+
+No setting needed: the window is learned at the first compaction (the peak before it is
+the window) or from the session's peak once it rules out every window but one. The
+`context_window` setting is an override. The README gained a settings section.
+
+Nothing to do after upgrading; a `context_window` you set still wins.
+
 ## 1.2.3 — README commands, two columns again
 
 Nothing to do after upgrading.
