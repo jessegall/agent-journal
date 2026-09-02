@@ -102,7 +102,7 @@ it got to, not every step: a decision inside the work, a dead end, a change of a
 
 ## Pin, rule, or nothing
 
-    journal remember "<the claim, in one line>"     a pin: for this track
+    journal pin "<the claim, in one line>"     a pin: for this track
     journal rule "<the ruling, in one line>"        a rule: for every track
     journal nothing "<why nothing here needs pinning>"
     journal promote <n>                             lift pin n into a rule
@@ -130,7 +130,7 @@ claims are several pins. Never cite the scratchpad or `/tmp`: those paths exist 
 session, and a pin naming one is refused.
 
 **When the context warning arrives, decide.** At 50%, 70%, 90% and 95% of the window, no
-other tool runs until `remember`, `rule` or `nothing "<why>"` has. It forces a decision,
+other tool runs until `pin`, `rule` or `nothing "<why>"` has. It forces a decision,
 not a pin; `nothing` with a reason is the right answer more often than not. It is also the
 moment to park any work you are holding for later, because that lives only in the window.
 
@@ -281,7 +281,7 @@ thing to do now.
 | *N message(s) carried no tag*                                  | tag your next message; it will not hold for those lines again |
 | *N piece(s) of work still open*                                | `work end` it, or `update` where it got to                  |
 | *Nothing is open, so this edit would not be filed*             | `work start` the work, then edit                            |
-| *context N% full — decide before any other tool runs*          | `remember`, `rule` or `nothing "<why>"`                |
+| *context N% full — decide before any other tool runs*          | `pin`, `rule` or `nothing "<why>"`                |
 | *your reply puts work off — park it as a to-do*                | `todo "<title>" --brief`, then say so; or run the call again if nothing is deferred |
 | *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
 | *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`; keep a loop running (`loop` skill, `15m journal next`) |

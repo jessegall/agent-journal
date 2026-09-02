@@ -39,7 +39,7 @@ All of them run as `.journal/journal.py <command>`; `journal` is an alias. `jour
 
 **Pins, for this track**
 
-    journal remember "<claim>" [--supersedes=N]   a fact that must survive a compaction
+    journal pin "<claim>" [--supersedes=N]   a fact that must survive a compaction
     journal pins [--all]             every pin, numbered; --all includes struck ones
     journal pins N --full            the conversation around where pin N was written
     journal strike N "<why>"         retire a pin that stopped being true, no replacement needed

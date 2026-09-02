@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.9.0 — `journal pin`
+
+A pin is written with `journal pin "<claim>"`, the same word everything else uses.
+`journal remember` still works.
+
+After updating: reload the `journal` skill.
+
 ## 1.8.0 — tool-shaped work is noticed; reload the skill after an update
 
 A script written into a scratch or scripts folder, the same long inline script run twice,

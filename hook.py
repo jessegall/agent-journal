@@ -269,7 +269,7 @@ def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
     return (
         f"context {pct:.0f}% full",
         f"journal: context {pct:.0f}% full — "
-        + ("decide before any other tool runs: `remember \"<claim>\"` or `nothing \"<why>\"`"
+        + ("decide before any other tool runs: `pin \"<claim>\"` or `nothing \"<why>\"`"
            if gated else "consider what must outlive it"),
         text,
     )
@@ -670,14 +670,14 @@ def _declared_first(payload: dict) -> bool:
 
 #: The journal verbs that answer a context rung. A chain that OPENS with one of these has
 #: decided before anything after it runs, so the rung gate lets the whole line through.
-DECIDES = frozenset({"remember", "rule", "nothing"})
+DECIDES = frozenset({"pin", "remember", "rule", "nothing"})
 
 
 def _is_journal(payload: dict) -> bool:
     """May this call pass the rung gate? Journal-only lines, or a line that decides first.
 
     `journal search x` and `journal conversation --back=1` are how the decision gets made, so a line of
-    nothing but journal commands passes. `journal remember "…" && git commit` passes too:
+    nothing but journal commands passes. `journal pin "…" && git commit` passes too:
     the decision runs first and lifts the gate before the commit. `ls && journal nothing
     "…"` does not — the `ls` would run undecided.
     """
@@ -702,12 +702,12 @@ _REDIRECT = re.compile(r"^\d*[<>]")
 #: next line to the terminator is dropped. Distinct from `_HEREDOC` above, which runs on a
 #: whitespace-collapsed line; this one needs the newlines to know where the body starts.
 #: Caught live: a patch script piped through `python3 - <<'PY'` mentioned
-#: `journal.py remember "<the claim>"` in a string, and the pin gate denied the patch.
+#: `journal.py pin "<the claim>"` in a string, and the pin gate denied the patch.
 _HEREDOC_BODY = re.compile(r"(<<-?\s*['\"]?(\w+)['\"]?[^\n]*)\n.*?(?:\n\2(?=\n|$)|\Z)", re.S)
 
 
 def _pin_overflow(payload: dict, limit: int) -> str | None:
-    """The refusal a `journal remember` on this command line would earn, before it runs.
+    """The refusal a `journal pin` on this command line would earn, before it runs.
 
     THE COMMAND'S OWN EXIT 1 WAS NOT ENOUGH. It is a line of stderr after the fact, and a
     reader in the middle of a thought reads past it and carries on believing the pin
@@ -722,7 +722,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
     if (payload.get("tool_name") or "") != "Bash":
         return None
     cmd = str((payload.get("tool_input") or {}).get("command", ""))
-    if "journal" not in cmd or not ("remember" in cmd or "rule" in cmd):
+    if "journal" not in cmd or not ("pin" in cmd or "remember" in cmd or "rule" in cmd):
         return None
     import shlex
     # ONE LINE AT A TIME. A newline ends a command as surely as `&&`, and shlex treats it
@@ -730,14 +730,14 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
     # lines was measured as 536 and refused, with the next four commands quoted back as
     # the part to cut.
     for line in _HEREDOC_BODY.sub(r"\1", cmd).splitlines():
-        if "journal" not in line or not ("remember" in line or "rule" in line):
+        if "journal" not in line or not ("pin" in line or "remember" in line or "rule" in line):
             continue
         try:
             toks = shlex.split(line)
         except ValueError:
             continue
         for i, t in enumerate(toks):
-            if t not in ("remember", "rule") or i == 0 or "journal" not in toks[i - 1]:
+            if t not in ("pin", "remember", "rule") or i == 0 or "journal" not in toks[i - 1]:
                 continue
             fact = []
             for t2 in toks[i + 1:]:
@@ -755,7 +755,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 
 
 #: Journal verbs that WRITE. A subagent may read the record; it may not change it.
-JOURNAL_WRITES = frozenset({"start", "end", "update", "remember", "strike", "switch", "nothing",
+JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "remember", "strike", "switch", "nothing",
                             "rule", "promote", "todo", "docs", "work", "tools"})
 
 
@@ -828,7 +828,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     if over:
         return _deny("That pin would be refused, so the command is not run.\n" + over)
     # A RUNG WAS ANNOUNCED AND NOTHING WAS DECIDED. The hold at the stop was measured and
-    # did not land — the user had to ask for the pin — so until `remember` or `nothing`
+    # did not land — the user had to ask for the pin — so until `pin` or `nothing`
     # has run, no other tool does. Reads too, this once: the decision needs thought, not
     # more files, and the transcript stays readable through the journal's own commands,
     # which are never gated because they are the way out.
@@ -842,7 +842,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
         return _deny(
             f"CONTEXT IS {pct:.0f}% FULL and nothing has been decided about what must "
             f"outlive it. This call is denied until one of these has run:\n"
-            '  .journal/journal.py remember "<the claim, in one line>"\n'
+            '  .journal/journal.py pin "<the claim, in one line>"\n'
             '  .journal/journal.py nothing "<why nothing here needs pinning>"\n'
             "Nothing is the right answer more often than not — say so and carry on. "
             "`journal search`, `journal conversation --back=1` and `journal pins` still run, to decide with."
@@ -1235,7 +1235,7 @@ def carried(source: str = "compact") -> str:
         "  journal start \"<the work>\"     declare it\n"
         "  journal update \"<what moved>\"  progress on it — a command, never a tag\n"
         "  journal end \"<the same words>\" close it\n"
-        "  journal remember \"<fact>\"      survives a compaction, on this track\n"
+        "  journal pin \"<fact>\"      survives a compaction, on this track\n"
         "  journal rule \"<ruling>\"        survives on every track\n"
         "  journal todo \"<title>\"         delayed work, on this track\n"
         "WHEN THE USER ASKS FOR SOMETHING YOU ARE NOT WORKING ON AND IT CAN WAIT, park it: "

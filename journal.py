@@ -10,7 +10,7 @@ nothing. This is the index that gets you back to it.
     journal user            only the user's own words, in full
     journal open            work declared and never closed
     journal search <term> [--all] [--page=N]   every line mentioning it on this track, in every session, 25 a page newest first; --all is every track
-    journal remember "<fact>" [--supersedes=N]   a fact that must survive a compaction
+    journal pin "<claim>" [--supersedes=N]   a claim that must survive a compaction (remember still works)
     journal nothing "<why>"  after a context warning: nothing here needs pinning, and why
     journal rule "<ruling>"  a pin for EVERY track — what the project decided, not one line of work
     journal rules [--all]    every rule, numbered; `rules N --full` reads around one
@@ -134,6 +134,8 @@ def _help(verb: str = "") -> int:
              if l.strip().startswith(f"journal {verb}") or l.strip().startswith(f"journal --{verb}")]
     if verb in ("start", "end"):
         lines = [l for l in (__doc__ or "").splitlines() if l.strip().startswith(f"journal work {verb}")]
+    if verb == "remember":
+        lines = [l for l in (__doc__ or "").splitlines() if l.strip().startswith("journal pin ")]
     if not lines:
         print(f"No such command: {verb}\n", file=sys.stderr)
         print(__doc__, file=sys.stderr)
@@ -291,7 +293,7 @@ def cmd_end(subject: str) -> int:
         if closed:
             print(f"  to-do {closed} is done with it.")
         print('  did that teach anything a later reader would get wrong without?\n'
-              '    journal remember "<the claim, in one line>"   (or nothing, which is fine)')
+              '    journal pin "<the claim, in one line>"   (or nothing, which is fine)')
     return 0 if ok else 1
 
 
@@ -979,9 +981,9 @@ def main(argv: list[str]) -> int:
             print("search wants a term", file=sys.stderr)
             return 1
         return cmd_search(" ".join(rest[1:]), all_of_them, page=page)
-    if verb == "remember":
+    if verb in ("pin", "remember"):
         if len(rest) < 2:
-            print("remember wants the fact, in one line", file=sys.stderr)
+            print("pin wants the claim, in one line", file=sys.stderr)
             return 1
         return cmd_remember(" ".join(rest[1:]), supersedes, doc_ref)
     if verb == "nothing":
