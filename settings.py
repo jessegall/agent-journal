@@ -68,7 +68,7 @@ DEFAULTS = {
     # and did not land: the user had to remind the agent to pin. So the next tool call is
     # denied until `remember` or `nothing "<why>"` has been run — a decision, not a pin,
     # because a gate that manufactures pins is the padding the ladder warns against.
-    "gate_after_context_rung": True,
+    "gate_after_context_rung": False,
 
     # WHERE A SUBAGENT IS HANDED THE RULES AGAIN, as a share of ITS OWN window. Subagents
     # get no SessionStart and write no journal, but a rule binds their work as much as the
@@ -111,7 +111,7 @@ DEFAULTS = {
     # It is not inferred from the smallest window that fits: that reported 54% at 108k
     # tokens of a 1M window and burned every rung before 20%, after which the ladder was
     # mute for the real compaction. `journal verify` says when this is unset.
-    "context_window": 0,
+    "context_window": 1_000_000,
 
 
     # Reminders to silence, by name, e.g. ["quiet"].

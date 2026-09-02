@@ -232,5 +232,27 @@ for text, want in (
         fail += 1
         print(f"  FAIL asks_for_work expected {want}: {text[:60]!r}")
 
+
+# ---------------------------------------------------------------- the defaults: a 1M window, and never a gate on context
+dd = Path(tempfile.mkdtemp()) / "proj"
+(dd / ".claude").mkdir(parents=True)
+shutil.copytree(SRC, dd / ".journal", ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+(dd / ".journal" / "settings.json").write_text("{}")
+tdd = transcript.project_dir(dd); tdd.mkdir(parents=True, exist_ok=True)
+pd = tdd / "s1.jsonl"
+with pd.open("w") as fh:
+    fh.write(json.dumps({"type": "user", "origin": {"kind": "human"}, "uuid": "u1", "message": {"role": "user", "content": "go"}}) + "\n")
+    fh.write(json.dumps({"type": "assistant", "uuid": "a1", "message": {"role": "assistant", "content": [{"type": "text", "text": "[!reply] ok"}],
+                         "usage": {"input_tokens": 720000}}}) + "\n")
+def fire_dd(event, **extra):
+    p = subprocess.run([str(dd / ".journal" / "hook.py")], input=json.dumps({"hook_event_name": event, "session_id": "s1", "transcript_path": str(pd), **extra}),
+                       capture_output=True, text=True, timeout=60)
+    return p.stdout
+out = fire_dd("Stop")
+check("with no settings at all the window is 1,000,000: 720k is the 70% rung", "context 72% full" in out, True)
+out = fire_dd("PreToolUse", tool_name="Write", tool_input={"file_path": str(dd / "x.txt"), "content": "x"})
+check("and the next tool call is NOT denied for it — the context rung never gates by default",
+      "CONTEXT IS" in out, False)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

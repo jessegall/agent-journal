@@ -12,7 +12,7 @@ here deletes.
 
 Every test runs against a throwaway directory. It never touches the real record.
 """
-import json, os, shutil, subprocess, sys, tempfile
+import json, os, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"  # no network from the hooks under test
@@ -141,7 +141,8 @@ J = str(d / ".journal" / "journal.py")
 
 
 def run_cli(*args):
-    p = subprocess.run([J, *args], capture_output=True, text=True, timeout=60)
+    env = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}  # a terminal, not a session
+    p = subprocess.run([J, *args], env=env, capture_output=True, text=True, timeout=60)
     return p.returncode, p.stdout + p.stderr
 
 

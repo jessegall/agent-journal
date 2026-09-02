@@ -35,7 +35,7 @@ class S:
         (self.d / ".claude").mkdir(parents=True)
         shutil.copytree(SRC, self.d / ".journal", ignore=shutil.ignore_patterns(
             "runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
-        (self.d / ".journal" / "settings.json").write_text(json.dumps({"context_window": window}))
+        (self.d / ".journal" / "settings.json").write_text(json.dumps({"gate_after_context_rung": True, "context_window": window}))
         tdir = transcript.project_dir(self.d); tdir.mkdir(parents=True, exist_ok=True)
         self.path = tdir / "s1.jsonl"; self.path.write_text("")
         self.J = str(self.d / ".journal" / "journal.py")
@@ -169,7 +169,7 @@ check("`journal loop set` runs", code, 0)
 
 # ---------------------------------------------------------------- priority is a number
 s10 = S()
-(s10.d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000, "stop_priority": {"untagged": 1}}))
+(s10.d / ".journal" / "settings.json").write_text(json.dumps({"gate_after_context_rung": True, "context_window": 200000, "stop_priority": {"untagged": 1}}))
 s10.j("todo", "chore"); s10.j("todo", "auto", "on"); s10.user("go"); s10.say("no tag")
 check("stop_priority reorders the queue: the untagged message before the loop", [s10.stop(), s10.stop(True)],
       ["1 untagged message(s)", "auto is on, no loop running"])
@@ -180,7 +180,7 @@ got = json.loads(p.stdout)
 check("the default order, an override, a bad override ignored, and the numbers",
       (got[0], got[1][:2], got[2]), (["track", "loop", "context", "deferral", "untagged", "work", "auto"], ["work", "track"], [["track", 5], ["loop", 10]]))
 s11 = S()
-(s11.d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000, "silenced": ["loop"]}))
+(s11.d / ".journal" / "settings.json").write_text(json.dumps({"gate_after_context_rung": True, "context_window": 200000, "silenced": ["loop"]}))
 s11.j("todo", "chore"); s11.j("todo", "auto", "on"); s11.user("go"); s11.say("[!reply] ok")
 check("a silenced subject is skipped", s11.stop().startswith("auto is on, 1 to-do(s) waiting"), True)
 

@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.17.0 — worktrees find their session, and context never gates
+
+A session that moved into a worktree keeps its transcript under the checkout it started
+in; `journal nothing` there found no transcript, filed nothing, and the hook went on
+denying every call. A session's transcript is now found wherever Claude Code keeps it,
+and a decision that cannot be filed says so instead of "no pin is due".
+
+The context window defaults to 1,000,000 and the context rung never gates a tool call by
+default: it is a hold at the stop, once per turn, answered with `pin` or `nothing`.
+`gate_after_context_rung: true` brings the gate back. `journal verify` reports the
+window the hook actually uses. A hold no longer repeats its label in its body.
+
+After updating: nothing.
+
 ## 1.16.1 — one way out for every line
 
 Everything a command prints passes through one function, and everything the hook hands

@@ -146,9 +146,20 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
     # A LADDER WITH NO WINDOW IS SILENT, and silence is the shape this file exists to
     # report. Not a failure — the setting is a disagreement with a default — but said.
     if not conf.get("context_window") and not state.get(root, "window", 0):
-        out.append(("context window not yet known", None,
-                    "learned at the first compaction; until then the context warnings are "
-                    'silent. To set it now: `"context_window": 1000000` in .journal/settings.json.'))
+        # THE HOOK MAY ALREADY KNOW IT: a peak that fits only one window is a reading, and
+        # the ladder climbs on it. Saying "unknown" while the hook holds at 69% sent an
+        # agent chasing a settings file it could not write. Say what the hook sees.
+        import context
+        got = transcript.session_transcript(project)
+        got = context.pressure(got[0], 0, 0) if got else None
+        if got and got[3]:
+            out.append((f"context window {got[2]:,} — read from this session's peak", True,
+                        f"{got[0] * 100:.0f}% full now; `context_window` in settings.json overrides it"))
+        else:
+            out.append(("context window not yet known", None,
+                        "learned at the first compaction, or once the peak fits one window only; until then "
+                        'the context warnings are silent. To set it now: `"context_window": 1000000` in '
+                        ".journal/settings.json."))
 
     return out, all(ok is not False for _, ok, _ in out)
 

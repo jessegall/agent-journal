@@ -141,6 +141,18 @@ def find(cwd: Path, stem: str) -> Path | None:
     for f in d.glob(f"*/subagents/{stem}.jsonl"):
         if f.is_file():
             return f
+    # NOT UNDER THIS PROJECT'S FOLDER: a session that moved into a worktree keeps its
+    # transcript under the folder of the checkout it started in, and a session id is
+    # unique across every project, so it is looked for everywhere before it is given up.
+    # Measured: `journal nothing` in a worktree found no transcript, wrote no mark, and
+    # the hook — which reads its path from the payload — went on denying every call.
+    if PROJECTS.is_dir() and len(stem) >= 8:
+        for f in PROJECTS.glob(f"*/{stem}.jsonl"):
+            if f.is_file():
+                return f
+        for f in PROJECTS.glob(f"*/*/subagents/{stem}.jsonl"):
+            if f.is_file():
+                return f
     return None
 
 

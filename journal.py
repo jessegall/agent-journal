@@ -487,6 +487,11 @@ def cmd_nothing(why: str) -> int:
     if _decided("declined: " + why):
         fmt.say(f"noted — nothing pinned at this rung, because: {why}")
         return 0
+    if not _stem():
+        fmt.say("this process cannot tell which session it is — no transcript for "
+                f"{transcript.SESSION_ENV} was found — so the decision was NOT filed. Run it from "
+                "inside the session, or `journal verify` to see what the hook sees", error=True)
+        return 1
     fmt.say("no pin is due — no context warning is waiting on a decision", error=True)
     return 1
 

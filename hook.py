@@ -1339,6 +1339,8 @@ def _hold(label: str, brief: str, text: str = "") -> int:
         state.put(ROOT, "next_text", text, stem=_HOLD_CTX[0])
         brief += " — details: `.journal/journal.py next`"
     body = brief[len("journal: "):] if brief.startswith("journal: ") else brief
+    if body.lower().startswith(label.lower()):
+        body = body[len(label):].lstrip(" —-:,")   # the label is the body's own first words: once
     print(json.dumps({"decision": "block", "reason": f"journal: {label} — {body}"}))
     return 0
 
