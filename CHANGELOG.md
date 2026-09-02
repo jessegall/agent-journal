@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.5.1 — the `journal` command works without git
+
+It finds the project by walking up to the nearest `.journal/`. Run `.journal/install.py
+--alias` once to get the new launcher.
+
 ## 1.5.0 — `journal work start|update|end`; `journal update` updates the journal
 
 The work commands are a family: `journal work start "…"`, `journal work update "…"`,

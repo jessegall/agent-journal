@@ -141,14 +141,17 @@ def pull(src: Path, check: bool) -> list[str]:
 #: from a subdirectory too.
 BIN_DIR = Path.home() / ".local" / "bin"
 LAUNCHER = """#!/bin/sh
-# journal — installed by agent-journal. Runs the journal of the project you are in.
-root="$(git rev-parse --show-toplevel 2>/dev/null)"
-[ -n "$root" ] || root="$(pwd)"
-if [ ! -f "$root/.journal/journal.py" ]; then
-  echo "no .journal/ in $root — install agent-journal in this project first" >&2
-  exit 1
-fi
-exec python3 "$root/.journal/journal.py" "$@"
+# journal — installed by agent-journal. Runs the journal of the project you are in:
+# the nearest directory, from here upward, that holds .journal/. No git required.
+dir="$(pwd)"
+while [ "$dir" != "/" ]; do
+  if [ -f "$dir/.journal/journal.py" ]; then
+    exec python3 "$dir/.journal/journal.py" "$@"
+  fi
+  dir="$(dirname "$dir")"
+done
+echo "no .journal/ here or above — install agent-journal in this project first" >&2
+exit 1
 """
 
 
