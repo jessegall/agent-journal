@@ -226,6 +226,20 @@ doc is wrong, do not write beside it: strike the part, or write the new doc and
 A markdown file written by hand outside the catalogue earns a hint, once: not a problem,
 but if it is a design or a report, file it as a doc so it is handed on and found.
 
+## Tools: scripts kept for repeated work
+
+    journal tools                       every tool: what it does, how to call it
+    journal tools <name>                read one
+    journal tools run <name> …          run it from the project root
+    journal tools add <name> "<title>" --summary="…" --usage="…" --entry=<file> [--brief]
+
+A script you wrote for a job that will come again — move a class with every reference,
+list uncovered methods, run a fixer on one directory — is a tool. Put it under
+`.journal/tools/<name>/`, or leave it where it is and point `--entry` at it, and
+catalogue it with its summary and usage. Every session is handed the catalogue, so the
+next agent runs yours instead of writing it again. Before writing a script, read the
+catalogue. Running a tool is a write: declare the work first.
+
 ## Look before you answer
 
     journal search <term> [--all]     this track's whole transcript, every session, 25 hits a page newest first

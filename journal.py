@@ -47,6 +47,13 @@ nothing. This is the index that gets you back to it.
     journal tracks          every track of work, current one marked
     journal switch "<name>" park this one and pick up that one; --back for the last
     journal next            what to do now: the details of the last hold, or the next to-do
+    journal tools           the tools: scripts kept for repeated work, with what each does and how to call it
+    journal tools <name>    read one
+    journal tools run <name> [args…]   run it from the project root
+    journal tools add <name> "<title>" --summary="<one line>" [--usage="<how>"] [--when="<when>"] [--entry=<file>] [--brief]
+    journal tools set <name> summary|usage|when|entry "<value>"
+    journal tools remove <name> "<why>"   retire it, kept under struck/
+    journal tools index     a tool.md for every folder under .journal/tools/ that has none
     journal verify          is any of this in force? wired is not the same as fired
     journal version         this project's version of the journal, and whether a newer one is out
     journal update [--from=<path or git url>]    pull the latest journal and print what changed
@@ -68,6 +75,7 @@ import context
 import pins
 import tags
 import todo
+import tools
 import tracks
 import transcript
 import update
@@ -161,6 +169,7 @@ def cmd_status() -> int:
         ("docs", (lambda c: f"{len(c)} catalogued" + (f", {len([d for d in c if d.get('status') != 'final'])} draft(s)"
                                                        if any(d.get('status') != 'final' for d in c) else ""))(docs._load(root()))
          if docs._load(root()) else "none", "journal docs"),
+        ("tools", f"{len(tools._all(root()))} catalogued" if tools._all(root()) else "none", "journal tools"),
         ("to-do", (f"{len(waiting)} waiting" if waiting else "none")
          + (f", {len(on_user)} on the user" if on_user else "")
          + (f", {len(todo.answered(root(), here))} answered" if todo.answered(root(), here) else "")
@@ -667,6 +676,57 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int) -> int:
     return 0 if ok else 1
 
 
+def cmd_tools(rest: list[str], brief: bool, meta: dict) -> int:
+    here = tracks.current(root())
+    if not rest:
+        cat = tools._all(root())
+        loose = tools.uncatalogued(root())
+        print(fmt.title("TOOLS OF THIS PROJECT", sub=f"{len(cat)} catalogued"))
+        print()
+        print(tools.catalogue(root()))
+        if loose:
+            print()
+            print(fmt.wrap(f"{len(loose)} folder(s) under .journal/tools/ have no tool.md: "
+                           + ", ".join(x.name for x in loose) + " — `journal tools index` catalogues them."))
+        print()
+        print(fmt.commands([
+            ("journal tools <name>", "read one"),
+            ("journal tools run <name> …", "run it from the project root"),
+            ('journal tools add <name> "<title>" --summary="…" --usage="…" --entry=<file>', "catalogue a script"),
+        ]))
+        return 0
+    verb = rest[0]
+    if verb == "add":
+        if len(rest) < 3:
+            print('journal tools add <name> "<title>" --summary="<one line>" --usage="<how to call it>" [--entry=<file>] [--brief]',
+                  file=sys.stderr)
+            return 1
+        body = sys.stdin.read() if brief else ""
+        ok, msg = tools.add(root(), rest[1], " ".join(rest[2:]), meta.get("summary", ""), meta.get("usage", ""),
+                            meta.get("when", ""), meta.get("entry", ""), body, here)
+    elif verb == "set":
+        if len(rest) < 4:
+            print('journal tools set <name> summary|usage|when|entry "<value>"', file=sys.stderr)
+            return 1
+        ok, msg = tools.set_field(root(), rest[1], rest[2], " ".join(rest[3:]))
+    elif verb == "remove":
+        if len(rest) < 3:
+            print('journal tools remove <name> "<why>"', file=sys.stderr)
+            return 1
+        ok, msg = tools.remove(root(), rest[1], " ".join(rest[2:]))
+    elif verb == "index":
+        for line in tools.adopt(root(), here):
+            print(line)
+        return 0
+    elif verb == "run":
+        print("journal tools run <name> [args…]", file=sys.stderr)
+        return 1
+    else:
+        ok, msg = tools.show(root(), verb)
+    print(msg if ok else f"  ! {msg}", file=sys.stdout if ok else sys.stderr)
+    return 0 if ok else 1
+
+
 def cmd_docs_search(term: str, page: int = 1, width: int = 88) -> int:
     import textwrap
     needle = term.lower()
@@ -850,12 +910,15 @@ def main(argv: list[str]) -> int:
     page = 1
     abstract = ""
     doc_ref = ""
+    tool_meta = {}
     rest = []
     # HELP WORKS AFTER ANY VERB, and an unknown option is refused rather than kept as
     # words. `journal todo --help` used to add a to-do titled "--help": help was only
     # recognised as the first word, and anything else starting with `--` fell through
     # into the text. A flag nobody declared is a typo, and a typo filed as a title is a
     # write that reports success and lands wrong.
+    if len(argv) >= 3 and argv[0] == "tools" and argv[1] == "run":
+        return tools.run(root(), argv[2], argv[3:])
     if any(a in ("-h", "--help", "help") for a in argv):
         verb = next((a for a in argv if not a.startswith("-") and a != "help"), "")
         return _help(verb)
@@ -880,6 +943,8 @@ def main(argv: list[str]) -> int:
             brief = True
         elif a.startswith("--abstract="):
             abstract = a.split("=", 1)[1]
+        elif a.startswith(("--summary=", "--usage=", "--when=", "--entry=")):
+            tool_meta[a[2:].split("=", 1)[0]] = a.split("=", 1)[1]
         elif a.startswith("--doc="):
             doc_ref = a.split("=", 1)[1]
         elif a.startswith("--from="):
@@ -960,6 +1025,8 @@ def main(argv: list[str]) -> int:
         return cmd_todo(rest[1:], all_of_them, brief, doc_ref)
     if verb == "docs":
         return cmd_docs(rest[1:], brief, abstract, page)
+    if verb == "tools":
+        return cmd_tools(rest[1:], brief, tool_meta)
     if verb == "carry":
         return cmd_carry(fresh)
     if verb == "tracks":

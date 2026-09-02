@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.7.0 — tools
+
+Scripts the agent keeps for repeated work, catalogued under `.journal/tools/<name>/` with
+a `tool.md` (title, summary, usage, when, entry point) and run with `journal tools run
+<name> …`. Every session is handed the catalogue. `journal tools index` adopts folders
+already there; `--entry` can point at a script anywhere in the project.
+
+After updating: catalogue the scripts you already have.
+
 ## 1.6.0 — one-line holds, `journal next`, and a loop for auto mode
 
 Every hold at a stop is one line; anything longer is behind `journal next`, which the

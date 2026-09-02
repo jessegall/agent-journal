@@ -52,7 +52,7 @@ EVENTS = ("Stop", "SessionStart", "PostToolUse", "PreToolUse", "UserPromptSubmit
 #: in it otherwise splits into two arguments and the hook simply never runs.
 COMMAND = '"$CLAUDE_PROJECT_DIR"/.journal/hook.py'
 EXECUTABLE = ("hook.py", "journal.py", "install.py", "test_tracks.py", "test_gate.py",
-              "test_state.py", "test_auto.py", "test_docs.py")
+              "test_state.py", "test_auto.py", "test_docs.py", "test_tools.py")
 
 #: THE SKILL IS PART OF THE PACKAGE, and it has to be installed rather than committed.
 #: It teaches the reasoning the injected block has no room for, so it belongs beside the
@@ -65,7 +65,7 @@ SKILL_DST = ".claude/skills/journal"
 
 #: What belongs to THIS project and never comes across on a pull.
 DATA = ("record.json", "record.json.lock", "settings.json", "state.json", "state.json.retired",
-        "runtime", "todo", "docs", "__pycache__")
+        "runtime", "todo", "docs", "tools", "__pycache__")
 
 
 def _package_files(root: Path) -> list[Path]:

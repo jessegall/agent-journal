@@ -87,6 +87,16 @@ A brief on stdin:
     journal docs search <term> [--page=N]   every line of every doc, 25 a page
     --doc=N | --doc=N.P              on remember, rule and todo: cite a doc from the entry
 
+**Tools, for every track**
+
+    journal tools                    the catalogue
+    journal tools <name>             read one
+    journal tools run <name> [args]  run its entry point from the project root
+    journal tools add <name> "<title>" --summary="…" --usage="…" --when="…" --entry=<file> [--brief]
+    journal tools set <name> summary|usage|when|entry "<value>"
+    journal tools remove <name> "<why>"   retire it under struck/
+    journal tools index              catalogue folders under .journal/tools/ that lack a tool.md
+
 **Tracks**
 
     journal tracks                   every track, current one marked

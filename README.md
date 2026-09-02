@@ -93,6 +93,14 @@ subagent, an investigation with numbers. They live as markdown in `.journal/docs
 one folder per doc with a file per part, and the journal keeps a catalogue so every session
 knows what exists. Pins, rules and to-dos can cite a doc.
 
+### Tools
+
+Scripts the agent writes for jobs that come back: a class mover, a coverage report, a
+fixer for one directory. Each lives under `.journal/tools/<name>/` with a `tool.md` that
+says what it does and how to call it, and `journal tools run <name>` runs it. Every
+session is handed the catalogue, so the next agent uses the tool instead of writing it
+again.
+
 ### Tracks
 
 Separate lines of work, each with its own pins and to-dos. Switch tracks with
@@ -173,6 +181,15 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal docs index                   catalogue markdown already in .journal/docs/
     journal docs search <term>           search every line of every doc
 
+### Tools
+
+    journal tools                        every tool: what it does, how to call it
+    journal tools <name>                 read one
+    journal tools run <name> …           run it from the project root
+    journal tools add <name> "<title>" --summary="…" --usage="…" --entry=<file>
+                                         catalogue a script (agent)
+    journal tools index                  catalogue folders already under .journal/tools/
+
 ### Reading back
 
     journal conversation                 what was said since the last compaction
@@ -221,6 +238,7 @@ journal, are never held, and are handed the rules on their first tool call.
 
     .journal/record.json      pins, rules, work, tracks — committed
     .journal/todo/<track>/    one file per to-do — committed
+    .journal/tools/<name>/    a tool.md and its script — committed
     .journal/docs/            the docs, one folder each — committed
     .journal/settings.json    only what you changed from the defaults
     .journal/runtime/         the hooks' own bookkeeping, per transcript — ignored by git

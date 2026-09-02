@@ -40,6 +40,7 @@ import docs  # noqa: E402
 import pins  # noqa: E402
 import work  # noqa: E402
 import todo  # noqa: E402
+import tools  # noqa: E402
 import tracks  # noqa: E402
 import transcript  # noqa: E402
 import update  # noqa: E402
@@ -555,7 +556,10 @@ def _piece_is_write(words: list[str]) -> bool:
             continue
         return True
     verb = words[0]
-    if _is_journal_verb(verb) or verb in _NEUTRAL:
+    if _is_journal_verb(verb):
+        # running a tool changes files; it needs declared work like any other write
+        return len(words) > 2 and words[1] == "tools" and words[2] == "run"
+    if verb in _NEUTRAL:
         return False
     if verb in WRITE_CMDS:
         return True
@@ -752,7 +756,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 
 #: Journal verbs that WRITE. A subagent may read the record; it may not change it.
 JOURNAL_WRITES = frozenset({"start", "end", "update", "remember", "strike", "switch", "nothing",
-                            "rule", "promote", "todo", "docs", "work"})
+                            "rule", "promote", "todo", "docs", "work", "tools"})
 
 
 def _journal_write(payload: dict) -> str | None:
@@ -774,6 +778,8 @@ def _journal_write(payload: dict) -> str | None:
         # `docs` and `todo` are read verbs too: `docs`, `docs 4`, `todo`, `todo 3` change nothing.
         if verb == "docs" and nxt not in DOCS_WRITES:
             continue
+        if verb == "tools" and nxt not in ("add", "set", "remove", "index"):
+            continue  # reading or running a tool is not writing the journal
         if verb == "todo" and (not nxt or nxt.isdigit() or nxt.startswith("-")):
             continue
         return verb
@@ -1200,6 +1206,9 @@ def carried(source: str = "compact") -> str:
     catalogued = docs.carry(ROOT)
     if catalogued:
         parts.append(catalogued)
+    kept = tools.carry(ROOT)
+    if kept:
+        parts.append(kept)
     pinned = pins.carry(ROOT, source)
     if pinned:
         parts.append(pinned)
