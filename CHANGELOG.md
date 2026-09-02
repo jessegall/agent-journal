@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.14.1 — a citation names its doc
+
+A pin, rule or to-do that cites a part showed the part's title alone; it shows
+"→ doc 1.4: <doc> · <part>" now, in listings and in the start block. `--doc=N` and
+`--doc=N.P` are taught where the pin is: the skill's pin section, the synopsis, the
+status page and the docs catalogue. The track rule is tested to leave subagents alone.
+
+After updating: reload the journal skill.
+
 ## 1.14.0 — a prioritized queue, the loop first, one session per track
 
 The stop queue's subjects carry a priority: track 5, loop 10, context 20, deferral 30,
