@@ -20,7 +20,7 @@ os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"  # a pull inside a suite runs no suit
 
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, pins, work, tracks  # noqa: E402
+import state, pins, work, tracks, transcript  # noqa: E402
 
 AT = "2026-09-01T12:00:00+00:00"
 ok = fail = 0

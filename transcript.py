@@ -128,6 +128,11 @@ def on_track(lines: list[Line], track: str) -> list[Line]:
     return [l for l in lines if any(lo <= l.n <= hi for lo, hi in keep)]
 
 
+#: What a session id looks like: a UUID. Only one of those is looked for across projects —
+#: a subagent's `agent-xxxx` or a fixture's `s1` would find a stale namesake elsewhere.
+_SESSION_ID = re.compile(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
+
+
 def find(cwd: Path, stem: str) -> Path | None:
     """The transcript with this stem: a session's own file, or a subagent's under it.
 
@@ -146,7 +151,7 @@ def find(cwd: Path, stem: str) -> Path | None:
     # unique across every project, so it is looked for everywhere before it is given up.
     # Measured: `journal nothing` in a worktree found no transcript, wrote no mark, and
     # the hook — which reads its path from the payload — went on denying every call.
-    if PROJECTS.is_dir() and len(stem) >= 8:
+    if PROJECTS.is_dir() and _SESSION_ID.fullmatch(stem):
         for f in PROJECTS.glob(f"*/{stem}.jsonl"):
             if f.is_file():
                 return f

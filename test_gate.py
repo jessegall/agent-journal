@@ -22,11 +22,13 @@ unfiled edit.
 import sys
 from pathlib import Path
 
-import os
+import json, os, shutil, subprocess, tempfile
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import hook  # noqa: E402
+SRC = Path(__file__).resolve().parent
+import transcript  # noqa: E402
 
 READS = [
     # the three regressions, first
@@ -231,6 +233,15 @@ for text, want in (
     else:
         fail += 1
         print(f"  FAIL asks_for_work expected {want}: {text[:60]!r}")
+
+
+def check(label, got, want):
+    global ok, fail
+    if got == want:
+        ok += 1
+    else:
+        fail += 1
+        print(f"  FAIL {label}\n       got  {got!r}\n       want {want!r}")
 
 
 # ---------------------------------------------------------------- the defaults: a 1M window, and never a gate on context

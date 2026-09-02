@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.17.1 — the cross-checkout lookup is for session ids only
+
+Only a real session id (a UUID) is looked for across every project folder; a subagent's
+`agent-…` name or a fixture's stem would have found a stale namesake elsewhere. The
+suites are green on the 1.17.0 defaults.
+
+After updating: nothing.
+
 ## 1.17.0 — worktrees find their session, and context never gates
 
 A session that moved into a worktree keeps its transcript under the checkout it started

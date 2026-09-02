@@ -86,13 +86,15 @@ check("worktree link replaces it and keeps the copy aside",
 # ---------------------------------------------------------------- a session that moved into the worktree mid-way
 # its transcript stays under the MAIN checkout's folder; the CLI in the worktree must still find it
 import state  # noqa: E402
-moved = transcript.project_dir(main) / "moved-session-9.jsonl"; moved.write_text("")
-check("a transcript under another checkout's folder is found by its session id", transcript.find(wt, "moved-session-9"), moved)
-state.put(main / ".journal", "pin_due", {"rung": 0.5, "used": 500, "window": 1000}, stem="moved-session-9")
-p = subprocess.run([str(wt / ".journal" / "journal.py"), "nothing", "only reads"], env={**os.environ, transcript.SESSION_ENV: "moved-session-9"},
+import uuid  # noqa: E402
+moved_id = str(uuid.uuid4())
+moved = transcript.project_dir(main) / f"{moved_id}.jsonl"; moved.write_text("")
+check("a transcript under another checkout's folder is found by its session id", transcript.find(wt, moved_id), moved)
+state.put(main / ".journal", "pin_due", {"rung": 0.5, "used": 500, "window": 1000}, stem=moved_id)
+p = subprocess.run([str(wt / ".journal" / "journal.py"), "nothing", "only reads"], env={**os.environ, transcript.SESSION_ENV: moved_id},
                    capture_output=True, text=True, timeout=60)
 check("`journal nothing` from the worktree clears the gate the hook set for that session",
-      (p.returncode, state.get(main / ".journal", "pin_due", None, stem="moved-session-9")), (0, None))
+      (p.returncode, state.get(main / ".journal", "pin_due", None, stem=moved_id)), (0, None))
 p = subprocess.run([str(wt / ".journal" / "journal.py"), "nothing", "only reads"], env={**os.environ, transcript.SESSION_ENV: "no-such-session-0"},
                    capture_output=True, text=True, timeout=60)
 check("with no transcript to file under, it says the decision was NOT filed", (p.returncode, "NOT filed" in p.stdout + p.stderr), (1, True))
