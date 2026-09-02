@@ -41,60 +41,6 @@ def main_root(project: Path) -> Path | None:
     return root if (root / ".journal" / "journal.py").is_file() else None
 
 
-_ARTIFACTS = ("runtime", "__pycache__")
-
-
-def _dirty(project: Path, root: Path) -> bool:
-    """Does this copy hold anything a delete would lose?
-
-    JUDGED BY WALKING, NOT BY ASKING GIT ALONE. The exclude written by `_hide_from_git`
-    hides untracked files under .journal from `git status`, so a copy with a new file
-    would read as clean and be deleted. So: a tracked file modified (git knows), or any
-    file present that git does not track and that is not a runtime artifact.
-    """
-    status = _git(project, "status", "--porcelain", "--", ".journal")
-    if status is None or status.strip():
-        return True
-    tracked = set((_git(project, "ls-files", "--", ".journal") or "").splitlines())
-    for f in root.rglob("*"):
-        if not f.is_file():
-            continue
-        rel = f.relative_to(project).as_posix()
-        parts = f.relative_to(root).parts
-        if parts and parts[0] in _ARTIFACTS or f.suffix in (".lock", ".tmp", ".pyc"):
-            continue
-        if rel not in tracked:
-            return True
-    return False
-
-
-def _hide_from_git(project: Path) -> None:
-    """After the symlink: git in this worktree must never see .journal as changed.
-
-    THE SYMLINK REPLACES A TRACKED DIRECTORY, so without this git sees every tracked file
-    under .journal/ as deleted and the link as new, and the next `git add -A` in the
-    worktree commits a symlink — measured: a release commit whose .journal was a link to
-    itself. So every tracked path under .journal/ is marked skip-worktree, which makes
-    git ignore that it is gone, and the link itself goes in the repository's exclude file,
-    which makes git ignore that it is there. A commit in the worktree then touches
-    .journal not at all; the main checkout commits the real one.
-    """
-    tracked = _git(project, "ls-files", "--", ".journal") or ""
-    for line in tracked.splitlines():
-        if line.strip():
-            _git(project, "update-index", "--skip-worktree", "--", line.strip())
-    common = _git(project, "rev-parse", "--git-common-dir")
-    if common:
-        exclude = (project / common if not Path(common).is_absolute() else Path(common)) / "info" / "exclude"
-        try:
-            have = exclude.read_text() if exclude.is_file() else ""
-            if "/.journal\n" not in have + "\n":
-                exclude.parent.mkdir(parents=True, exist_ok=True)
-                exclude.write_text(have.rstrip("\n") + ("\n" if have.strip() else "") + "/.journal\n")
-        except OSError:
-            pass
-
-
 def resolve(root: Path) -> tuple[Path, str]:
     """(the .journal to use, a note or ""). Links a clean copy; redirects a dirty one."""
     project = root.parent
@@ -106,11 +52,11 @@ def resolve(root: Path) -> tuple[Path, str]:
     target = main / ".journal"
     if target.resolve() == root.resolve():
         return root, ""
-    if not _dirty(project, root):
+    dirty = _git(project, "status", "--porcelain", "--", ".journal")
+    if dirty == "":
         try:
             shutil.rmtree(root)
             root.symlink_to(target, target_is_directory=True)
-            _hide_from_git(project)
             return target, (f"journal: this is a worktree of {main.name}; its checked-out copy of .journal was "
                             f"replaced with a symlink to the main checkout's, so both share one record.")
         except OSError as e:
@@ -134,6 +80,5 @@ def link(root: Path) -> tuple[bool, str]:
         shutil.rmtree(keep)
     root.rename(keep)
     root.symlink_to(target, target_is_directory=True)
-    _hide_from_git(project)
     return True, (f".journal now links to {target}\n  the old copy is at .journal.copy — delete it once "
                   "nothing in it is missed")

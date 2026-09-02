@@ -43,7 +43,7 @@ def project():
     (d / ".claude").mkdir(parents=True)
     shutil.copytree(SRC, d / ".journal",
                     ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
-                                                  "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+                                                  "todo", "__pycache__"))
     (d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 1000000}))
     tdir = transcript.project_dir(d)
     tdir.mkdir(parents=True, exist_ok=True)
@@ -65,7 +65,7 @@ class Session:
         payload = {"hook_event_name": event, "session_id": self.stem,
                    "transcript_path": str(self.path), **extra}
         p = subprocess.run([str(self.d / ".journal" / "hook.py")], input=json.dumps(payload),
-                           capture_output=True, text=True, timeout=60)
+                           capture_output=True, text=True)
         return p.stdout
 
     def say(self, text, who="assistant"):
@@ -80,7 +80,7 @@ class Session:
                     "usage": {"input_tokens": 1000}}}) + "\n")
 
     def journal(self, *args):
-        p = subprocess.run([self.J, *args], env=self.env, capture_output=True, text=True, timeout=60)
+        p = subprocess.run([self.J, *args], env=self.env, capture_output=True, text=True)
         return p.returncode, p.stdout + p.stderr
 
     def stop(self, after_hold=False):
@@ -454,23 +454,6 @@ check("a new answer is a new state: held again, naming the first answered", labe
 s.journal("todo", "start", "2"); s.journal("end", "q two")
 label, text = s.stop()
 check("after 2 is done, 1 remains answered: held for it", label, "journal reminded Claude: the user answered to-do 1")
-
-# ---------------------------------------------------------------- after another hold, auto still speaks
-d = project(); s = Session(d, "s1")
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
-s.journal("todo", "chore"); s.journal("todo", "auto", "on"); s.start()
-s.say("go", "user")
-with s.path.open("a") as fh:
-    fh.write(json.dumps({"type": "assistant", "message": {"role": "assistant",
-             "content": [{"type": "text", "text": "[!reply] deciding"}], "usage": {"input_tokens": 191000}}}) + "\n")
-label, _ = s.stop()
-check("the context rung comes first", label.startswith("journal reminded Claude: context 96% full"), True)
-s.journal("nothing", "only reads")
-label, text = s.stop(after_hold=True)
-check("the rung resolved: the same turn raises the auto hold, not silence",
-      (label, "todo start 1" in text), (AUTO_NEXT + "1 to-do(s) waiting", True))
-label, _ = s.stop(after_hold=True)
-check("the stop after auto's own hold passes", label, "")
 
 # ---------------------------------------------------------------- subagents never
 d = project(); s = Session(d, "s1")

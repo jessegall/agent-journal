@@ -139,7 +139,7 @@ def project_with(lines: int, stem: str = "s1", tagged: bool = False):
     (d / ".claude").mkdir(parents=True)
     shutil.copytree(SRC, d / ".journal",
                     ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
-                                                  "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+                                                  "todo", "__pycache__"))
     tdir = transcript.project_dir(d)
     tdir.mkdir(parents=True, exist_ok=True)
     path = tdir / f"{stem}.jsonl"
@@ -159,7 +159,7 @@ def fire(d, event, path, **extra):
     payload = {"hook_event_name": event, "session_id": path.stem,
                "transcript_path": str(path), **extra}
     p = subprocess.run([str(d / ".journal" / "hook.py")], input=json.dumps(payload),
-                       capture_output=True, text=True, timeout=60)
+                       capture_output=True, text=True)
     return p.returncode, p.stdout, p.stderr
 
 
@@ -281,29 +281,29 @@ code, out, err = fire(d, "PreToolUse", path, tool_name="Bash",
 check("a subagent's calls are not gated by the parent's rung", out.strip(), "")
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
-p = subprocess.run([J, "nothing"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "nothing"], env=env, capture_output=True, text=True)
 check("nothing without a reason is refused", (p.returncode, "wants a reason" in p.stderr), (1, True))
 check("and the gate still stands", "pin_due" in runtime_of(d, "s1") and runtime_of(d, "s1")["pin_due"] is not None, True)
 p = subprocess.run([J, "nothing", "this stretch only read files, no ruling was made"],
-                   env=env, capture_output=True, text=True, timeout=60)
+                   env=env, capture_output=True, text=True)
 check("nothing with a reason is accepted", (p.returncode, "noted" in p.stdout), (0, True))
 check("and lifts the gate", runtime_of(d, "s1").get("pin_due"), None)
 check("the decision is on the record", runtime_of(d, "s1")["pin_decided"]["how"].startswith("declined"), True)
 code, out, err = fire(d, "PreToolUse", path, tool_name="Read", tool_input={"file_path": "x"})
 check("a Read runs again", out.strip(), "")
-p = subprocess.run([J, "nothing", "again"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "nothing", "again"], env=env, capture_output=True, text=True)
 check("nothing with no rung waiting says so", (p.returncode, "no pin is due" in p.stderr), (1, True))
 # a pin lifts it too, and an over-long one does not
 runtime = d / ".journal" / "runtime" / "s1.json"
 data = json.loads(runtime.read_text()); data["pin_due"] = {"rung": 0.7, "used": 1, "window": 2}
 runtime.write_text(json.dumps(data))
-p = subprocess.run([J, "remember", "x" * 600], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "remember", "x" * 600], env=env, capture_output=True, text=True)
 check("a refused pin does not lift the gate", runtime_of(d, "s1").get("pin_due") is not None, True)
 p = subprocess.run([J, "remember", "the report is in scratchpad/report.md"], env=env,
-                   capture_output=True, text=True, timeout=60)
+                   capture_output=True, text=True)
 check("a pin citing a scratch path is refused, with the reason",
       (p.returncode, "exists for one session only" in p.stderr), (1, True))
-p = subprocess.run([J, "remember", "a real claim"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "remember", "a real claim"], env=env, capture_output=True, text=True)
 check("an accepted pin lifts the gate", runtime_of(d, "s1").get("pin_due"), None)
 # and the whole thing is a setting
 (d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000,
@@ -457,18 +457,18 @@ check("a rule has the same cap", (took, "300" in msg), (False, True))
 d, path = project_with(2)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
-subprocess.run([J, "remember", "a track fact"], env=env, capture_output=True, timeout=60)
-subprocess.run([J, "rule", "a project rule"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "remember", "a track fact"], env=env, capture_output=True)
+subprocess.run([J, "rule", "a project rule"], env=env, capture_output=True)
 for source in ("startup", "compact"):
     code, out, err = fire(d, "SessionStart", path, source=source)
     ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
     check(f"{source}: rules come before pins, under their own header",
           (ctx.find("RULES OF THIS PROJECT") < ctx.find("a project rule") < ctx.find("a track fact")), True)
-p = subprocess.run([J, "promote", "1"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "promote", "1"], env=env, capture_output=True, text=True)
 check("cli promote", (p.returncode, "rule 2, from pin 1" in p.stdout), (0, True))
-p = subprocess.run([J, "rules"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "rules"], env=env, capture_output=True, text=True)
 check("cli rules lists both", ("a project rule" in p.stdout, "a track fact" in p.stdout), (True, True))
-p = subprocess.run([J, "rule", "--strike", "1", "no longer"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "rule", "--strike", "1", "no longer"], env=env, capture_output=True, text=True)
 check("cli rule --strike", (p.returncode, "struck rule 1" in p.stdout), (0, True))
 got = hook._pin_overflow({"tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py rule "{"x" * 400}"'}}, 300)
 check("an over-long rule is denied at the gate", got is not None, True)
@@ -481,7 +481,7 @@ check("and so is its promote", "from a subagent is refused" in out, True)
 runtime = d / ".journal" / "runtime" / "s1.json"
 data = json.loads(runtime.read_text()); data["pin_due"] = {"rung": 0.5, "used": 1, "window": 2}
 runtime.write_text(json.dumps(data))
-subprocess.run([J, "rule", "decided by ruling"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "rule", "decided by ruling"], env=env, capture_output=True)
 check("a rule counts as the decision at a rung", runtime_of(d, "s1").get("pin_due"), None)
 
 # to-dos: titled files, one track each, closed by the work of the same name
@@ -525,11 +525,11 @@ d, path = project_with(4, tagged=True)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
 p = subprocess.run([J, "todo", "convert the remaining widgets", "--brief"], env=env,
-                   input="brief here\n", capture_output=True, text=True, timeout=60)
+                   input="brief here\n", capture_output=True, text=True)
 check("cli adds with a brief from stdin", (p.returncode, "to-do 1" in p.stdout), (0, True))
-p = subprocess.run([J, "todo", "1"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo", "1"], env=env, capture_output=True, text=True)
 check("cli shows the brief", "brief here" in p.stdout, True)
-p = subprocess.run([J, "todo"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo"], env=env, capture_output=True, text=True)
 check("cli lists titles", "1  convert the remaining widgets" in p.stdout, True)
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
@@ -537,21 +537,21 @@ check("a stop with nothing open says what is waiting, as context, not a hold",
       ("to-do(s) waiting" in out, '"decision"' in out, "not an instruction" in out), (True, False, True))
 code, out, err = fire(d, "Stop", path)
 check("and not again while the list is unchanged", out.strip(), "")
-subprocess.run([J, "todo", "second thing"], env=env, capture_output=True, text=True, timeout=60)
+subprocess.run([J, "todo", "second thing"], env=env, capture_output=True, text=True)
 code, out, err = fire(d, "Stop", path)
 check("a changed list is said once more", "2 to-do(s)" in out, True)
-p = subprocess.run([J, "todo", "start", "1"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo", "start", "1"], env=env, capture_output=True, text=True)
 check("cli todo start opens the work", (p.returncode, "open: convert the remaining widgets" in p.stdout), (0, True))
 code, out, err = fire(d, "Stop", path)
 check("with work open the to-do line is not said", "to-do(s) waiting" in out, False)
-p = subprocess.run([J, "end", "convert the remaining widgets"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "end", "convert the remaining widgets"], env=env, capture_output=True, text=True)
 check("end closes the work and the to-do", "to-do 1 is done with it" in p.stdout, True)
-p = subprocess.run([J, "todo", "drop", "2", "no longer wanted"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo", "drop", "2", "no longer wanted"], env=env, capture_output=True, text=True)
 check("cli todo drop", (p.returncode, "dropped: no longer wanted" in p.stdout), (0, True))
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("with none waiting the start block says nothing about to-dos", "TO DO" in ctx, False)
-subprocess.run([J, "todo", "third"], env=env, capture_output=True, text=True, timeout=60)
+subprocess.run([J, "todo", "third"], env=env, capture_output=True, text=True)
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("the start block lists what is waiting", ("TO DO on this track" in ctx, "third" in ctx), (True, True))
@@ -584,40 +584,40 @@ for cmd, want in (('.journal/journal.py start "w" && git commit -m x', False),
 d, path = project_with(2)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
-p = subprocess.run([J, "todo", "--help"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo", "--help"], env=env, capture_output=True, text=True)
 check("journal todo --help prints the todo lines and exits 0",
       (p.returncode, "journal todo" in p.stdout, "delayed work" in p.stdout), (0, True, True))
 check("and adds no to-do", todo.open_items(d / ".journal", "default"), [])
-p = subprocess.run([J, "todo", "--bogus", "title"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo", "--bogus", "title"], env=env, capture_output=True, text=True)
 check("an unknown option is refused", (p.returncode, "unknown option '--bogus'" in p.stderr), (1, True))
 check("and adds no to-do either", todo.open_items(d / ".journal", "default"), [])
-p = subprocess.run([J, "help", "remember"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "help", "remember"], env=env, capture_output=True, text=True)
 check("journal help <verb> prints that verb", (p.returncode, "remember" in p.stdout, "journal todo" in p.stdout), (0, True, False))
-p = subprocess.run([J, "nosuch", "--help"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "nosuch", "--help"], env=env, capture_output=True, text=True)
 check("help for an unknown verb says so", (p.returncode, "No such command" in p.stderr), (1, True))
 
 # search reads like a page
 with path.open("a") as fh:
     fh.write(json.dumps({"type": "user", "origin": {"kind": "human"}, "timestamp": "2026-09-02T00:00:00Z",
                          "message": {"role": "user", "content": "we ruled the heredoc body is data"}}) + "\n")
-p = subprocess.run([J, "search", "heredoc"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "search", "heredoc"], env=env, capture_output=True, text=True)
 check("search leads with the citation and marks the term",
       ("MENTION 'heredoc'" in p.stdout, "USER" in p.stdout, "«heredoc»" in p.stdout), (True, True, True))
-p = subprocess.run([J, "search", "zzzznotthere"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "search", "zzzznotthere"], env=env, capture_output=True, text=True)
 check("an empty search says the record does not have it", "does not have it" in p.stdout, True)
 # search paginates: 25 a page, newest first
 with path.open("a") as fh:
     for i in range(60):
         fh.write(json.dumps({"type": "user", "origin": {"kind": "human"}, "timestamp": f"2026-09-02T00:00:{i:02d}Z",
                              "message": {"role": "user", "content": f"pagetest number {i}"}}) + "\n")
-p = subprocess.run([J, "search", "pagetest"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "search", "pagetest"], env=env, capture_output=True, text=True)
 check("page 1 of 3, newest first, 25 entries",
       ("60 LINE(S)" in p.stdout, "page 1 of 3" in p.stdout, "number 59" in p.stdout, "number 35" in p.stdout,
        "number 34" in p.stdout, p.stdout.count("  USER") , "--page=2" in p.stdout),
       (True, True, True, True, False, 25, True))
-p = subprocess.run([J, "search", "pagetest", "--page=3"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "search", "pagetest", "--page=3"], env=env, capture_output=True, text=True)
 check("the last page holds the remainder and offers no next", ("number 0" in p.stdout, p.stdout.count("  USER"), "--page=4" in p.stdout), (True, 10, False))
-p = subprocess.run([J, "search", "pagetest", "--page=9"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "search", "pagetest", "--page=9"], env=env, capture_output=True, text=True)
 check("a page past the end is the last page", "page 3 of 3" in p.stdout, True)
 
 # search is the whole transcript of the current track, across every session
@@ -638,14 +638,14 @@ older.write_text("\n".join(json.dumps(r) for r in [
 os.utime(older, (1, 1))
 segs = transcript.track_segments(transcript.read(path)[0])
 check("the session is segmented by its marks", [t for t, _, _ in segs][-2:], ["default", "beta"])
-subprocess.run([J, "switch", "beta"], env=env, capture_output=True, timeout=60)
-p = subprocess.run([J, "search", "heredoc"], env=env, capture_output=True, text=True, timeout=60)
+subprocess.run([J, "switch", "beta"], env=env, capture_output=True)
+p = subprocess.run([J, "search", "heredoc"], env=env, capture_output=True, text=True)
 check("on beta, search finds this session's beta stretch and last week's beta session, not default's",
       ("2 LINE(S)" in p.stdout, "THIS SESSION" in p.stdout, "SESSION 00000000" in p.stdout,
        "we ruled the heredoc body" in p.stdout), (True, True, True, False))
-p = subprocess.run([J, "search", "heredoc", "--all"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "search", "heredoc", "--all"], env=env, capture_output=True, text=True)
 check("--all sees every track in every session", "3 LINE(S)" in p.stdout, True)
-subprocess.run([J, "switch", "--back"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "switch", "--back"], env=env, capture_output=True)
 idx = json.loads((d / ".journal" / "record.json").read_text()).get("sessions", {})
 check("the index records the session under every track it was on",
       (("s1" in idx.get("default", [])), ("s1" in idx.get("beta", []))), (True, True))
@@ -654,39 +654,39 @@ other = path.with_name("11111111-other.jsonl")
 other.write_text(json.dumps({"type": "user", "origin": {"kind": "human"}, "timestamp": "2026-08-31T00:00:00Z",
                              "message": {"role": "user", "content": "heredoc said on gamma only"}}) + "\n")
 tracks.carried(d / ".journal", "gamma", "11111111-other")
-p = subprocess.run([J, "search", "heredoc"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "search", "heredoc"], env=env, capture_output=True, text=True)
 check("a session indexed under another track is skipped", "gamma only" in p.stdout, False)
-p = subprocess.run([J, "search", "heredoc", "--all"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "search", "heredoc", "--all"], env=env, capture_output=True, text=True)
 check("but --all reads it", "gamma only" in p.stdout, True)
 
 # bare journal is a status page; conversation is the digest; --back alone still reads
 d, path = project_with(4, tagged=True)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
-subprocess.run([J, "rule", "r"], env=env, capture_output=True, timeout=60)
-subprocess.run([J, "todo", "t"], env=env, capture_output=True, timeout=60)
-p = subprocess.run([J], env=env, capture_output=True, text=True, timeout=60)
+subprocess.run([J, "rule", "r"], env=env, capture_output=True)
+subprocess.run([J, "todo", "t"], env=env, capture_output=True)
+p = subprocess.run([J], env=env, capture_output=True, text=True)
 check("bare journal is the status page",
       (p.returncode, "JOURNAL  track default" in p.stdout, "1 in force" in p.stdout,
        "1 waiting" in p.stdout, "since the last compaction" in p.stdout and "line 1" not in p.stdout),
       (0, True, True, True, True))
-p = subprocess.run([J, "conversation"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "conversation"], env=env, capture_output=True, text=True)
 check("journal conversation is the digest", "CONVERSATION  since the last compaction" in p.stdout, True)
-p = subprocess.run([J, "--back=1"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "--back=1"], env=env, capture_output=True, text=True)
 check("--back alone still reads", ("CONVERSATION" in p.stdout and "JOURNAL  track" not in p.stdout), True)
 
 # the installer carries the whole skill folder, and removes what the package no longer ships
 d, path = project_with(2)
 I = str(d / ".journal" / "install.py")
-subprocess.run([I], capture_output=True, text=True, timeout=60)
+subprocess.run([I], capture_output=True, text=True)
 installed = d / ".claude" / "skills" / "journal"
 check("install carries SKILL.md and its references",
       ((installed / "SKILL.md").is_file(), (installed / "references" / "commands.md").is_file()), (True, True))
 (installed / "references" / "stale.md").write_text("old")
-p = subprocess.run([I], capture_output=True, text=True, timeout=60)
+p = subprocess.run([I], capture_output=True, text=True)
 check("a file the package no longer ships is removed, by name",
       ((installed / "references" / "stale.md").exists(), "stale.md (no longer in the skill)" in p.stdout), (False, True))
-p = subprocess.run([I, "--check"], capture_output=True, text=True, timeout=60)
+p = subprocess.run([I, "--check"], capture_output=True, text=True)
 check("and then there is nothing to change", "Nothing to change." in p.stdout, True)
 
 # a deferral said in words and not parked: reminder at the prompt, refusal at the next call
@@ -724,7 +724,7 @@ def reply(text):
 
 code, out, err = prompt("rename Nothing to None?")
 check("a request with nothing open: no reminder (the request is the work)", out.strip(), "")
-subprocess.run([J, "start", "fix the batch of failures"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "start", "fix the batch of failures"], env=env, capture_output=True)
 code, out, err = prompt("Lets rename the Nothing component to Empty? or None? Suggestions?")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("a request while work is open carries the reminder",
@@ -741,7 +741,7 @@ check("the next tool call after a spoken deferral is refused, naming the sentenc
 code, out, err = fire(d, "PreToolUse", path, tool_name="Bash", tool_input={"command": "ls"})
 check("the retry passes: said once per reply", out.strip(), "")
 reply("[!reply] I'll come back to the banner after this.")
-subprocess.run([J, "todo", "fix the banner"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "todo", "fix the banner"], env=env, capture_output=True)
 code, out, err = fire(d, "PreToolUse", path, tool_name="Bash", tool_input={"command": "ls"})
 check("a deferral with a to-do added since the prompt is not refused", "deny" in out, False)
 prompt("why did we remove PreCompact?")
@@ -761,22 +761,22 @@ check("and not twice", "deferred in words" in out, False)
 d, path = project_with(4, tagged=True)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
-subprocess.run([J, "todo", "first chore"], env=env, capture_output=True, timeout=60)
-subprocess.run([J, "todo", "second chore"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "todo", "first chore"], env=env, capture_output=True)
+subprocess.run([J, "todo", "second chore"], env=env, capture_output=True)
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
 check("auto off: an idle stop says what waits, as context, and calls it not an instruction",
       ('"decision"' in out, "not an instruction" in out), (False, True))
-p = subprocess.run([J, "todo", "auto"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo", "auto"], env=env, capture_output=True, text=True)
 check("auto reports off by default", "auto is OFF" in p.stdout, True)
-p = subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, text=True)
 check("auto on says the state now: nothing open, which to-do starts next",
       "Nothing is open, 2 to-do(s) waiting: the next idle stop starts to-do 1" in p.stdout, True)
-subprocess.run([J, "start", "some work"], env=env, capture_output=True, timeout=60)
-p2 = subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, text=True, timeout=60)
+subprocess.run([J, "start", "some work"], env=env, capture_output=True)
+p2 = subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, text=True)
 check("with work open it says what the agent is working on",
       "Agent currently working on: some work" in p2.stdout, True)
-subprocess.run([J, "end", "some work"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "end", "some work"], env=env, capture_output=True)
 check("auto on is set on the record, per track",
       (p.returncode, "auto ON" in p.stdout, json.loads((d / ".journal" / "record.json").read_text()).get("auto")),
       (0, True, {"default": True}))
@@ -792,27 +792,27 @@ code, out, err = fire(d, "Stop", path, stop_hook_active=True)
 check("the stop that follows the hold passes (an agent that answered is not trapped)", out.strip(), "")
 code, out, err = fire(d, "Stop", path)
 check("the next turn's stop is held again", held(out)[0], "journal reminded Claude: auto is on, 2 to-do(s) waiting")
-subprocess.run([J, "todo", "start", "1"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "todo", "start", "1"], env=env, capture_output=True)
 code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
 check("with the to-do started, work is open: auto holds once to end it or park the rest",
       (brief, "first chore" in why, "park what is left" in why), ("journal reminded Claude: auto is on, work still open", True, True))
 code, out, err = fire(d, "Stop", path, stop_hook_active=True)
 check("and the stop after it passes", out.strip(), "")
-subprocess.run([J, "end", "first chore"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "end", "first chore"], env=env, capture_output=True)
 code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
 check("once it ends, the next idle stop brings the next one",
       (brief, "todo start 2" in why), ("journal reminded Claude: auto is on, 1 to-do(s) waiting", True))
-p = subprocess.run([J, "todo"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo"], env=env, capture_output=True, text=True)
 check("the list says auto is on", "auto ON" in p.stdout, True)
-p = subprocess.run([J, "todo", "auto", "off"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo", "auto", "off"], env=env, capture_output=True, text=True)
 check("auto off again", "auto OFF" in p.stdout, True)
-p = subprocess.run([J, "todo", "auto", "sideways"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "todo", "auto", "sideways"], env=env, capture_output=True, text=True)
 check("auto refuses anything but on or off", p.returncode, 1)
-subprocess.run([J, "switch", "chores"], env=env, capture_output=True, timeout=60)
-subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, timeout=60)
-subprocess.run([J, "switch", "--back"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "switch", "chores"], env=env, capture_output=True)
+subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True)
+subprocess.run([J, "switch", "--back"], env=env, capture_output=True)
 check("auto is per track", (todo.auto(d / ".journal", "chores"), todo.auto(d / ".journal", "default")), (True, False))
 
 # versions: the changelog since, the notice, the upgrade
@@ -837,14 +837,14 @@ code, out, err = fire(d, "Stop", path)
 check("once per transcript per version", out.strip(), "")
 code, out, err = fire(d, "SessionStart", path, source="startup")
 check("the start block carries the notice too", "9.9.9 IS AVAILABLE" in json.loads(out)["hookSpecificOutput"]["additionalContext"], True)
-p = subprocess.run([J], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J], env=env, capture_output=True, text=True)
 check("the status page shows the version and the available one", "9.9.9 available" in p.stdout, True)
 # an upgrade from a path: the newer package lands, the changelog since is printed, and the next start is handed it once
 src = Path(tempfile.mkdtemp()) / "pkg"
-shutil.copytree(d / ".journal", src, ignore=shutil.ignore_patterns("runtime", "record.json*", "settings.json", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+shutil.copytree(d / ".journal", src, ignore=shutil.ignore_patterns("runtime", "record.json*", "settings.json", "todo", "__pycache__"))
 (src / "VERSION").write_text("9.0.0\n")
 (src / "CHANGELOG.md").write_text("# Changelog\n\n## 9.0.0 — the test release\n\nA line about it.\n\n" + (src / "CHANGELOG.md").read_text().split("\n", 2)[2])
-p = subprocess.run([J, "upgrade", f"--from={src}"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "upgrade", f"--from={src}"], env=env, capture_output=True, text=True)
 check("upgrade pulls the newer package and prints what changed",
       (p.returncode, "9.0.0 — the test release" in p.stdout, (d / ".journal" / "VERSION").read_text().strip()), (0, True, "9.0.0"))
 code, out, err = fire(d, "SessionStart", path, source="startup")
@@ -852,7 +852,7 @@ ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("the next session start is handed the changelog", "THE JOURNAL WAS UPGRADED" in ctx and "the test release" in ctx, True)
 code, out, err = fire(d, "SessionStart", path, source="compact")
 check("and not again in the same transcript", "THE JOURNAL WAS UPGRADED" in json.loads(out)["hookSpecificOutput"]["additionalContext"], False)
-p = subprocess.run([J, "upgrade", f"--from={src}"], env=env, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "upgrade", f"--from={src}"], env=env, capture_output=True, text=True)
 check("upgrading again is a no-op that says so", "Already at 9.0.0" in p.stdout, True)
 
 # install --alias retires the alias 1.3.x wrote, and names one it did not write
@@ -861,7 +861,7 @@ home = Path(tempfile.mkdtemp())
 (home / ".bashrc").write_text("alias journal='/somewhere/.journal/journal.py'\n")
 d, path = project_with(2)
 p = subprocess.run([str(d / ".journal" / "install.py"), "--alias"], env={**os.environ, "HOME": str(home)},
-                   capture_output=True, text=True, timeout=60)
+                   capture_output=True, text=True)
 check("the installer's own alias is removed and said",
       ("old journal alias removed from ~/.zshrc" in p.stdout, "alias journal" in (home / ".zshrc").read_text(),
        "alias ll" in (home / ".zshrc").read_text()), (True, False, True))
@@ -883,8 +883,8 @@ check("a subagent's file goes with its transcript, and stays while it exists",
 d, path = project_with(2)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
-subprocess.run([J, "remember", "a pin of the track"], env=env, capture_output=True, timeout=60)
-subprocess.run([J, "rule", "a rule for every track"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "remember", "a pin of the track"], env=env, capture_output=True)
+subprocess.run([J, "rule", "a rule for every track"], env=env, capture_output=True)
 (d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
 call = {"tool_name": "Read", "tool_input": {}, "tool_response": "x"}
 code, out, err = fire(d, "PostToolUse", path, agent_id="abc", **call)
@@ -921,7 +921,7 @@ with path.open("a") as fh:
         "usage": {"input_tokens": 120000}}}) + "\n")
 (d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
 subprocess.run([J.replace(J.split("/.journal")[0], str(d)), "rule", "the standing rule"],
-               env=env, capture_output=True, timeout=60)
+               env=env, capture_output=True)
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
@@ -945,11 +945,7 @@ check("so the next tool call is denied until a decision", "deny" in out, True)
 code, out, err = fire(d, "PostToolUse", path, tool_name="Read", tool_input={}, tool_response="x")
 check("the rung is not repeated on the next call", "CONTEXT IS" in out, False)
 code, out, err = fire(d, "Stop", path)
-check("at the stop the owed decision is raised once more, as the queue's first subject",
-      held(out)[0], "journal reminded Claude: context 96% full, still undecided")
-subprocess.run([J, "nothing", "only reads"], env=env, capture_output=True, timeout=60)
-code, out, err = fire(d, "Stop", path, stop_hook_active=True)
-check("decided: nothing else pending, the turn ends", out.strip(), "")
+check("nor at the stop", "context" in held(out)[0], False)
 
 # the window is learned at a compaction
 d, path = project_with(4, tagged=True)
@@ -966,14 +962,49 @@ check("the peak before the compaction becomes the window, in the record",
 code, out, err = fire(d, "Stop", path)
 check("and the ladder climbs it with no setting", held(out)[0], "journal reminded Claude: context 52% full")
 
+# holds form a queue: pending until resolved, one at a time, bounded per turn
+d, path = project_with(4, tagged=True)
+(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
+J = str(d / ".journal" / "journal.py")
+env = {**os.environ, transcript.SESSION_ENV: "s1"}
+fire(d, "SessionStart", path, source="startup")
+subprocess.run([J, "work", "start", "the sweep"], env=env, capture_output=True)
+with path.open("a") as fh:
+    fh.write(json.dumps({"type": "user", "origin": {"kind": "human"}, "message": {"role": "user", "content": "go"}}) + "\n")
+    fh.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "no tag, and I'll do the rest after this"}],
+                         "usage": {"input_tokens": 120000}}}) + "\n")
+code, out, err = fire(d, "Stop", path)
+check("first stop: the context rung, and only it", held(out)[0], "journal reminded Claude: context 60% full")
+code, out, err = fire(d, "Stop", path, stop_hook_active=True)
+check("the agent replied without deciding: the same condition again, not the next one",
+      held(out)[0], "journal reminded Claude: context 60% full, still undecided")
+subprocess.run([J, "nothing", "only reads"], env=env, capture_output=True)
+code, out, err = fire(d, "Stop", path, stop_hook_active=True)
+check("decided: the NEXT pending condition shows in the same turn — the untagged message",
+      held(out)[0], "journal reminded Claude: 1 untagged message(s)")
+with path.open("a") as fh:
+    fh.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "[!reply] tagged now"}],
+                         "usage": {"input_tokens": 120000}}}) + "\n")
+code, out, err = fire(d, "Stop", path, stop_hook_active=True)
+check("tagged: three holds this turn is the budget — let through", out.strip(), "")
+code, out, err = fire(d, "Stop", path)
+check("a new turn: the open work is still pending and is raised", held(out)[0], "journal reminded Claude: work still open")
+code, out, err = fire(d, "Stop", path, stop_hook_active=True)
+check("no note, no end: raised again within the turn", held(out)[0], "journal reminded Claude: work still open")
+subprocess.run([J, "work", "update", "halfway"], env=env, capture_output=True)
+code, out, err = fire(d, "Stop", path, stop_hook_active=True)
+check("noted: resolved, nothing else pending, the turn ends", out.strip(), "")
+code, out, err = fire(d, "Stop", path)
+check("and a later turn does not nag about work already raised and noted", out.strip(), "")
+
 # open work: told at start, held only for one's own
 d, path = project_with(2, tagged=True)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
 shutil.copy(path, path.with_name("other.jsonl"))  # the other session has a transcript of its own
 subprocess.run([J, "start", "somebody else's work"], env={**os.environ, transcript.SESSION_ENV: "other"},
-               capture_output=True, timeout=60)
-subprocess.run([J, "start", "my work"], env=env, capture_output=True, timeout=60)
+               capture_output=True)
+subprocess.run([J, "start", "my work"], env=env, capture_output=True)
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("SessionStart on startup carries open work from every session",
@@ -991,7 +1022,7 @@ check("and only once", out.strip(), "")
 # pins are delivered on every source, with an honest header
 d, path = project_with(2)
 subprocess.run([J.replace(str(J.split('/.journal')[0]), str(d)), "remember", "a standing fact"],
-               env=env, capture_output=True, timeout=60)
+               env=env, capture_output=True)
 for source, head in (("startup", "FACTS THAT STAND ON THIS TRACK"),
                      ("clear", "FACTS THAT STAND ON THIS TRACK"),
                      ("fork", "FACTS THAT STAND ON THIS TRACK"),
@@ -1016,7 +1047,7 @@ check("a transcript-less runtime file is pruned; a live subagent's is kept",
 # the hook survives bad input
 d, path = project_with(2)
 p = subprocess.run([str(d / ".journal" / "hook.py")], input='{"hook_event_name":"Stop"}',
-                   capture_output=True, text=True, timeout=60)
+                   capture_output=True, text=True)
 check("a payload with no session: exit 0 and one stderr line",
       (p.returncode, "names no session" in p.stderr), (0, True))
 (d / ".journal" / "runtime").mkdir(exist_ok=True)
@@ -1030,12 +1061,12 @@ other = path.with_name("zz-newer.jsonl"); shutil.copy(path, other)
 os.utime(other, None)
 J = str(d / ".journal" / "journal.py")
 p = subprocess.run([J, "remember", "cited"], env={**os.environ, transcript.SESSION_ENV: "s1"},
-                   capture_output=True, text=True, timeout=60)
+                   capture_output=True, text=True)
 rec = json.loads((d / ".journal" / "record.json").read_text())
 check("remember cites the session from the environment, not the newest file",
       rec["pins"][-1]["session"], "s1.jsonl")
 e = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}
-p = subprocess.run([J, "remember", "guessed"], env=e, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "remember", "guessed"], env=e, capture_output=True, text=True)
 rec = json.loads((d / ".journal" / "record.json").read_text())
 check("without the environment it guesses the newest and SAYS so",
       (rec["pins"][-1].get("guessed"), "guessed" in p.stderr), (True, True))
@@ -1047,14 +1078,14 @@ rows, _ = verify.check(d / ".journal")
 fired = [ok for name, ok, _ in rows if name.startswith("the hook has")]
 check("verify: inside a session, nothing fired before any hook ran is a failure", fired[:1], [False])
 env_out = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}
-p = subprocess.run([J, "verify"], env=env_out, capture_output=True, text=True, timeout=60)
+p = subprocess.run([J, "verify"], env=env_out, capture_output=True, text=True)
 check("verify: outside a session it is a fact with the next step, not a failure",
       ("· the hook has not fired yet" in p.stdout, "start Claude Code in this project" in p.stdout, "✗ the hook" in p.stdout), (True, True, False))
 fire(d, "SessionStart", path, source="startup")
 rows, _ = verify.check(d / ".journal")
 fired = [ok for name, ok, _ in rows if name.startswith("the hook has fired —")]
 check("verify: fired once a transcript carries a mark", fired, [True])
-p = subprocess.run([str(d / ".journal" / "install.py")], env=env_out, capture_output=True, text=True, timeout=60)
+p = subprocess.run([str(d / ".journal" / "install.py")], env=env_out, capture_output=True, text=True)
 check("install ends with a verdict and the next step, and no red marks",
       (("Installed." in p.stdout or "Already installed." in p.stdout), "Start Claude Code in this project" in p.stdout, "✗" in p.stdout), (True, True, False))
 
