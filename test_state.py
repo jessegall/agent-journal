@@ -962,6 +962,41 @@ check("the peak before the compaction becomes the window, in the record",
 code, out, err = fire(d, "Stop", path)
 check("and the ladder climbs it with no setting", held(out)[0], "journal reminded Claude: context 52% full")
 
+# holds form a queue: pending until resolved, one at a time, bounded per turn
+d, path = project_with(4, tagged=True)
+(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
+J = str(d / ".journal" / "journal.py")
+env = {**os.environ, transcript.SESSION_ENV: "s1"}
+fire(d, "SessionStart", path, source="startup")
+subprocess.run([J, "work", "start", "the sweep"], env=env, capture_output=True)
+with path.open("a") as fh:
+    fh.write(json.dumps({"type": "user", "origin": {"kind": "human"}, "message": {"role": "user", "content": "go"}}) + "\n")
+    fh.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "no tag, and I'll do the rest after this"}],
+                         "usage": {"input_tokens": 120000}}}) + "\n")
+code, out, err = fire(d, "Stop", path)
+check("first stop: the context rung, and only it", held(out)[0], "journal reminded Claude: context 60% full")
+code, out, err = fire(d, "Stop", path, stop_hook_active=True)
+check("the agent replied without deciding: the same condition again, not the next one",
+      held(out)[0], "journal reminded Claude: context 60% full, still undecided")
+subprocess.run([J, "nothing", "only reads"], env=env, capture_output=True)
+code, out, err = fire(d, "Stop", path, stop_hook_active=True)
+check("decided: the NEXT pending condition shows in the same turn — the untagged message",
+      held(out)[0], "journal reminded Claude: 1 untagged message(s)")
+with path.open("a") as fh:
+    fh.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "[!reply] tagged now"}],
+                         "usage": {"input_tokens": 120000}}}) + "\n")
+code, out, err = fire(d, "Stop", path, stop_hook_active=True)
+check("tagged: three holds this turn is the budget — let through", out.strip(), "")
+code, out, err = fire(d, "Stop", path)
+check("a new turn: the open work is still pending and is raised", held(out)[0], "journal reminded Claude: work still open")
+code, out, err = fire(d, "Stop", path, stop_hook_active=True)
+check("no note, no end: raised again within the turn", held(out)[0], "journal reminded Claude: work still open")
+subprocess.run([J, "work", "update", "halfway"], env=env, capture_output=True)
+code, out, err = fire(d, "Stop", path, stop_hook_active=True)
+check("noted: resolved, nothing else pending, the turn ends", out.strip(), "")
+code, out, err = fire(d, "Stop", path)
+check("and a later turn does not nag about work already raised and noted", out.strip(), "")
+
 # open work: told at start, held only for one's own
 d, path = project_with(2, tagged=True)
 J = str(d / ".journal" / "journal.py")

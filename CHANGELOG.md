@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.10.0 — holds form a queue; the update check is hourly
+
+A hold stays pending until its condition is resolved — the message tagged, the context
+decision made, the work noted or ended — and the next condition is raised only after,
+so one reply no longer clears three. At most three holds per turn, so nothing loops.
+The update check runs hourly instead of daily and is reset by an update, so a project
+is never left versions behind with no memo.
+
+After updating: reload the `journal` skill.
+
 ## 1.9.0 — `journal pin`
 
 A pin is written with `journal pin "<claim>"`, the same word everything else uses.

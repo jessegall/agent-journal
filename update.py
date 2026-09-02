@@ -23,7 +23,7 @@ from pathlib import Path
 REPO = "https://github.com/jessegall/agent-journal"
 RAW = "https://raw.githubusercontent.com/jessegall/agent-journal/main"
 CACHE = "runtime/upstream.cache"     # gitignored, project-wide: one check serves every session; not a .json, so verify does not count it as a transcript
-CHECK_EVERY = 24 * 3600
+CHECK_EVERY = 3600   # an hour: a day left projects three versions behind with no memo
 
 
 def current(root: Path) -> str:
@@ -140,6 +140,7 @@ def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
     for line in install.skill(False):
         lines.append(line)
     now = current(root)
+    (root / CACHE).unlink(missing_ok=True)  # the next check is a real one
     out = "\n".join(lines)
     if newer(now, had):
         log = (root / "CHANGELOG.md").read_text() if (root / "CHANGELOG.md").is_file() else ""

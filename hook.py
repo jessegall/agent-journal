@@ -281,6 +281,19 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     if ctx.path is None:
         return 0
     _HOLD_CTX[:] = [ctx.stem]
+    # A QUEUE, NOT A CHORUS. Every hold below stays PENDING until its condition is actually
+    # resolved — the message tagged, the decision made, the work noted or ended, the
+    # deferral parked — and the next condition is raised only after. Measured: three
+    # conditions, one reply that did none of them, and all three were "said" and gone. So
+    # a stop that follows a hold in the same turn (`stop_hook_active`) re-raises whatever
+    # is still pending, bounded: after HOLDS_PER_TURN holds the turn is let through,
+    # because a hook that can never be satisfied is a trap, not a rule.
+    active = bool(payload.get("stop_hook_active"))
+    turn_holds = state.get(ROOT, "turn_holds", 0, stem=ctx.stem) if active else 0
+    if not active:
+        state.put(ROOT, "turn_holds", 0, stem=ctx.stem)
+    if active and turn_holds >= HOLDS_PER_TURN:
+        return 0
     lines, boundaries = transcript.read(ctx.path)
     stretch = transcript.since(lines, boundaries, 0)
     floor = _floor(ctx, lines)
@@ -296,6 +309,15 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     rung = _rung(conf, ctx, got, stretch) if got and got[3] else None
     if rung:
         return _hold(rung[0], rung[1], rung[2])
+    due = state.get(ROOT, "pin_due", None, stem=ctx.stem)
+    if due and active:
+        # the warning was given and nothing was decided: it is still the first thing owed
+        pct = 100 * due["used"] / due["window"] if due.get("window") else 0
+        return _hold(
+            f"context {pct:.0f}% full, still undecided",
+            f"journal: the context warning is unanswered — `.journal/journal.py pin \"<claim>\"` or "
+            f"`.journal/journal.py nothing \"<why>\"` before anything else; details: `.journal/journal.py next`",
+        )
 
     units = transcript.filing_units(lines)
     missing = untagged(stretch, units)
@@ -343,8 +365,11 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
             if not payload.get("stop_hook_active"):
                 # THIS IS THE STILL-OPEN HOLD TOO. It says to end the work; a second hold
                 # saying the same thing at the next stop would be the same nudge twice.
-                held = set(state.get(ROOT, "held_work", [], stem=ctx.stem))
-                state.put(ROOT, "held_work", sorted(held | {w["subject"] for w in standing}), stem=ctx.stem)
+                raw = state.get(ROOT, "held_work", {}, stem=ctx.stem)
+                held = raw if isinstance(raw, dict) else {k: -1 for k in (raw or [])}
+                for w in standing:
+                    held[w["subject"]] = len(w.get("notes", []))
+                state.put(ROOT, "held_work", held, stem=ctx.stem)
                 names = "; ".join(w["subject"] for w in standing)
                 listed = bool(todo.open_items(ROOT, here))
                 return _hold(
@@ -370,12 +395,19 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
         # ONCE PER PIECE OF WORK. Work legitimately spans a stop — that is what declaring
         # it is FOR — so a hold that repeats until it closes is a trap, not a reminder.
         mine = ctx.path.name if ctx.path else None
-        held = set(state.get(ROOT, "held_work", [], stem=ctx.stem))
-        fresh = [w for w in work.open_work(ROOT)
-                 if w.get("session") == mine and w["subject"] not in held]
+        raw = state.get(ROOT, "held_work", {}, stem=ctx.stem)
+        held = raw if isinstance(raw, dict) else {k: -1 for k in (raw or [])}
+        # pending: never raised; or raised this turn and neither noted nor ended since.
+        # With auto on, the auto hold above already covers open work at every stop.
+        fresh = [] if todo.auto(ROOT, here) else [
+            w for w in work.open_work(ROOT)
+            if w.get("session") == mine and (
+                w["subject"] not in held
+                or (active and held[w["subject"]] == len(w.get("notes", []))))]
         if fresh:
-            state.put(ROOT, "held_work", sorted(held | {w["subject"] for w in fresh}),
-                      stem=ctx.stem)
+            for w in fresh:
+                held[w["subject"]] = len(w.get("notes", []))
+            state.put(ROOT, "held_work", held, stem=ctx.stem)
             return _hold(
                 "work still open",
                 f"journal: still open — {'; '.join(w['subject'] for w in fresh)} — `end` it, or "
@@ -1115,6 +1147,7 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
 
 
 _HOLD_CTX: list = []   # the transcript stem of the hold in flight, set by on_stop
+HOLDS_PER_TURN = 3
 
 
 def _hold(label: str, brief: str, text: str = "") -> int:
@@ -1149,6 +1182,9 @@ def _hold(label: str, brief: str, text: str = "") -> int:
     # the user — measured, against its own docs — so anything longer than a line is kept
     # in the transcript's runtime file and the line says `journal next`. The agent runs
     # that; the user sees one line.
+    if _HOLD_CTX:
+        state.put(ROOT, "turn_holds", (state.get(ROOT, "turn_holds", 0, stem=_HOLD_CTX[0]) or 0) + 1,
+                  stem=_HOLD_CTX[0])
     if text and _HOLD_CTX:
         state.put(ROOT, "next_text", text, stem=_HOLD_CTX[0])
         brief += " — details: `.journal/journal.py next`"
