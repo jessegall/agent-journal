@@ -3,3 +3,9 @@ __pycache__/
 .journal/runtime/
 .journal/record.json.lock
 .journal/state.json*
+# the package lives at the root; this instance holds only its data
+.journal/*.py
+.journal/*.md
+.journal/VERSION
+.journal/install.sh
+.journal/skill/
