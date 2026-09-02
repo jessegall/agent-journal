@@ -852,6 +852,20 @@ check("and not again in the same transcript", "THE JOURNAL WAS UPGRADED" in json
 p = subprocess.run([J, "upgrade", f"--from={src}"], env=env, capture_output=True, text=True)
 check("upgrading again is a no-op that says so", "Already at 9.0.0" in p.stdout, True)
 
+# install --alias retires the alias 1.3.x wrote, and names one it did not write
+home = Path(tempfile.mkdtemp())
+(home / ".zshrc").write_text("export X=1\n# journal — added by .journal/install.py\nalias journal='\"$(git rev-parse --show-toplevel)\"/.journal/journal.py'\nalias ll='ls -l'\n")
+(home / ".bashrc").write_text("alias journal='/somewhere/.journal/journal.py'\n")
+d, path = project_with(2)
+p = subprocess.run([str(d / ".journal" / "install.py"), "--alias"], env={**os.environ, "HOME": str(home)},
+                   capture_output=True, text=True)
+check("the installer's own alias is removed and said",
+      ("old journal alias removed from ~/.zshrc" in p.stdout, "alias journal" in (home / ".zshrc").read_text(),
+       "alias ll" in (home / ".zshrc").read_text()), (True, False, True))
+check("an alias it did not write is named, not touched",
+      ("shadows the journal command" in p.stdout, "/somewhere/" in p.stdout, "alias journal" in (home / ".bashrc").read_text()), (True, True, True))
+check("the launcher landed", (home / ".local" / "bin" / "journal").is_file(), True)
+
 # a subagent's marks are pruned with its transcript, and kept while it lives
 d, path = project_with(2)
 state.put(d / ".journal", "rules_at", [0.0], stem="agent-old")

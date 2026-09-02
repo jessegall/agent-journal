@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.5.2 — two fixes from a multi-repo workspace
+
+`install.py --alias` removes the alias 1.3.x wrote into your shell rc, which shadowed the
+new launcher and kept `journal` broken; an alias it did not write is named so you can
+delete it. The gates read `python3 .journal/journal.py …` as the journal, so a context
+warning can be answered in that form too.
+
+After updating: run `.journal/install.py --alias` once, then open a new terminal.
+
 ## 1.5.1 — the `journal` command works without git
 
 It finds the project by walking up to the nearest `.journal/`. Run `.journal/install.py

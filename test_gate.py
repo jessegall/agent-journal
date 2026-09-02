@@ -99,9 +99,13 @@ for name in ("Read", "Grep", "Glob", "WebFetch"):
 
 # THE RUNG GATE: journal-only lines pass, a line that decides first passes, the rest do not
 for cmd, want in (
+    ('python3 .journal/journal.py nothing "only reads"', True),
+    ('python3 .journal/journal.py search x', True),
+    ('python .journal/journal.py remember "c" && make', True),
     ('journal search thing', True),
     ('.journal/journal.py --back=1 | head -40', True),
     ('journal remember "a claim" && git commit -m x', True),
+    ('python3 other.py nothing "x"', False),
     ('journal nothing "only reads happened" ; ls', True),
     ('journal rule "r" && journal todo "t" && make', True),
     ('ls && journal nothing "late"', False),

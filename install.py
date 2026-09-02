@@ -266,10 +266,52 @@ def skill(check: bool) -> list[str]:
     return out or ["  = skill already current"]
 
 
+OLD_ALIAS_MARK = "# journal — added by .journal/install.py"
+
+
+def _retire_rc_alias(check: bool) -> list[str]:
+    """Remove the alias 1.3.x wrote into the shell rc; name any other `journal` alias.
+
+    A SHELL ALIAS BEATS THE PATH, so the old alias shadowed the new launcher and `journal`
+    stayed broken after an upgrade that printed "Already installed." — reported from a
+    workspace whose .journal sits above several git repos, where `git rev-parse` in the
+    alias could never find it. The lines this installer wrote carry its own marker and are
+    removed; a `journal` alias somebody else wrote is only pointed at.
+    """
+    out = []
+    for name in (".zshrc", ".bashrc", ".bash_profile", ".profile"):
+        rc = Path.home() / name
+        if not rc.is_file():
+            continue
+        lines = rc.read_text().splitlines(keepends=True)
+        keep, removed, foreign = [], 0, []
+        skip_next = False
+        for line in lines:
+            if line.strip() == OLD_ALIAS_MARK:
+                skip_next = True
+                removed += 1
+                continue
+            if skip_next and line.lstrip().startswith("alias journal="):
+                skip_next = False
+                removed += 1
+                continue
+            skip_next = False
+            if line.lstrip().startswith("alias journal=") and "journal.py" in line:
+                foreign.append(line.strip())
+            keep.append(line)
+        if removed:
+            if not check:
+                rc.write_text("".join(keep))
+            out.append(f"  - the old journal alias removed from ~/{name} — open a new terminal")
+        for f in foreign:
+            out.append(f"  ! ~/{name} has an alias that shadows the journal command; delete this line:\n      {f}")
+    return out
+
+
 def alias(check: bool) -> list[str]:
     """Put `journal` on the PATH as a script, for every shell."""
     dst = BIN_DIR / "journal"
-    out = []
+    out = _retire_rc_alias(check)
     if dst.is_file() and dst.read_text() == LAUNCHER and os.access(dst, os.X_OK):
         out.append(f"  = journal command already in {BIN_DIR}")
     else:

@@ -628,6 +628,13 @@ def _pieces(cmd: str) -> list[list[str]]:
             if head.startswith("$"):
                 head = names.get(head.strip("${}"), head)
             words[0] = head.rsplit("/", 1)[-1]
+            # `python3 .journal/journal.py nothing "…"` IS the journal. Measured: a session
+            # whose `journal` command was broken prefixed every call with python3, and the
+            # context gate denied the very command that satisfies it, twice, while the
+            # bare form passed. The interpreter is a wrapper, like sudo.
+            if words[0] in ("python", "python3") and len(words) > 1 and words[1].endswith("journal.py"):
+                words.pop(0)
+                words[0] = words[0].rsplit("/", 1)[-1]
             out.append(words)
     return out
 
