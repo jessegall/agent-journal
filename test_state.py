@@ -167,8 +167,10 @@ def held(out: str) -> tuple[str, str]:
     """(the one line the user sees, the reasoning the agent reads) of a Stop hold."""
     if not out.strip():
         return "", ""
-    d = json.loads(out)
-    return d.get("reason", ""), (d.get("hookSpecificOutput") or {}).get("additionalContext", "")
+    got = json.loads(out)
+    ctx = (got.get("hookSpecificOutput") or {}).get("additionalContext", "")
+    details = state.get(d / ".journal", "next_text", "", stem=path.stem) if "journal.py next" in ctx else ""
+    return got.get("reason", ""), ctx + ("\n" + details if details else "")
 
 
 def runtime_of(d, stem):
@@ -244,7 +246,7 @@ code, out, err = fire(d, "Stop", path)
 check("120k tokens with the window unknown: no rung", "CONTEXT IS" in out, False)
 (d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
 code, out, err = fire(d, "Stop", path)
-check("the same reading with a 200k window set: the 50% rung", "CONTEXT IS 60% FULL" in out, True)
+check("the same reading with a 200k window set: the 50% rung", "CONTEXT IS 60% FULL" in held(out)[1], True)
 check("the rung is this transcript's", runtime_of(d, "s1").get("warned_at"), 0.5)
 (d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 1000000}))
 d2, path2 = project_with(4)
@@ -265,7 +267,7 @@ with path.open("a") as fh:
 (d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 200000}))
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
-check("the rung says the gate is coming", "NOTHING ELSE RUNS UNTIL" in out, True)
+check("the rung says the gate is coming", "NOTHING ELSE RUNS UNTIL" in held(out)[1], True)
 check("and says to park deferred work", ("HOLDING TO DO LATER" in held(out)[1], 'todo "<title>"' in held(out)[1]), (True, True))
 check("and records that a pin is due", runtime_of(d, "s1").get("pin_due", {}).get("rung"), 0.5)
 code, out, err = fire(d, "PreToolUse", path, tool_name="Read", tool_input={"file_path": "x"})
@@ -309,7 +311,7 @@ check("an accepted pin lifts the gate", runtime_of(d, "s1").get("pin_due"), None
 data = json.loads(runtime.read_text()); data["warned_at"] = 0.0; runtime.write_text(json.dumps(data))
 code, out, err = fire(d, "Stop", path)
 check("with the setting off the rung nudges and gates nothing",
-      ("CONTEXT IS" in out, "NOTHING ELSE RUNS" in out, runtime_of(d, "s1").get("pin_due")),
+      ("CONTEXT IS" in held(out)[1], "NOTHING ELSE RUNS" in held(out)[1], runtime_of(d, "s1").get("pin_due")),
       (True, False, None))
 
 # an interrupted turn has no message to judge
@@ -781,7 +783,7 @@ check("auto on is set on the record, per track",
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("the start block says auto is on and to pick up the next one",
-      ("AUTO IS ON" in ctx, "todo start <n>" in ctx, "not an instruction" in ctx), (True, True, False))
+      ("AUTO MODE IS ON" in ctx, "todo start <n>" in ctx, "not an instruction" in ctx), (True, True, False))
 code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
 check("auto on: an idle stop is held, naming the next to-do",

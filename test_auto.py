@@ -92,9 +92,11 @@ class Session:
         out = self.fire("Stop", stop_hook_active=after_hold)
         if not out.strip():
             return "", ""
-        d = json.loads(out)
-        ctx = (d.get("hookSpecificOutput") or {}).get("additionalContext", "")
-        return d.get("reason", ""), ctx
+        got = json.loads(out)
+        ctx = (got.get("hookSpecificOutput") or {}).get("additionalContext", "")
+        # the hold is one line; its details sit behind `journal next`
+        details = state.get(self.d / ".journal", "next_text", "", stem=self.stem) if "journal.py next" in ctx else ""
+        return got.get("reason", ""), ctx + ("\n" + details if details else "")
 
     def start(self, source="startup"):
         out = self.fire("SessionStart", source=source)
@@ -240,15 +242,15 @@ d = project(); s1 = Session(d, "s1")
 s1.journal("todo", "chore one"); s1.journal("todo", "chore two"); s1.journal("todo", "auto", "on")
 ctx = s1.start()
 check("the start block says auto is on and how to proceed",
-      ("AUTO IS ON" in ctx, "todo start <n>" in ctx, "not an instruction" in ctx), (True, True, False))
+      ("AUTO MODE IS ON" in ctx, "todo start <n>" in ctx, "not an instruction" in ctx), (True, True, False))
 s1.stop()
 s2 = Session(d, "s2")
 ctx = s2.start()
-check("a fresh session gets the same block", "AUTO IS ON" in ctx, True)
+check("a fresh session gets the same block", "AUTO MODE IS ON" in ctx, True)
 label, text = s2.stop()
 check("and its first idle stop is held, its own marks being clean", label, AUTO_NEXT + "2 to-do(s) waiting")
 ctx = s1.start("compact")
-check("after a compaction the block still says auto is on", "AUTO IS ON" in ctx, True)
+check("after a compaction the block still says auto is on", "AUTO MODE IS ON" in ctx, True)
 label, text = s1.stop()
 check("and its next stop is held, as every stop is with auto on", label, AUTO_NEXT + "2 to-do(s) waiting")
 s1.journal("todo", "start", "1"); s1.journal("end", "chore one")

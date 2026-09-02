@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.6.0 — one-line holds, `journal next`, and a loop for auto mode
+
+Every hold at a stop is one line; anything longer is behind `journal next`, which the
+line names. With auto on, the agent is asked to keep a loop running that prompts
+`journal next` every `auto_loop_minutes` (default 15), so an idle session comes back and
+carries on until nothing is left it can do. The auto texts say "auto mode is on" rather
+than "the user is away".
+
+Nothing to do after updating.
+
 ## 1.5.2 — two fixes from a multi-repo workspace
 
 `install.py --alias` removes the alias 1.3.x wrote into your shell rc, which shadowed the

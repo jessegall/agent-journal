@@ -256,9 +256,11 @@ it exists, not held against you; before continuing it, `open` shows where it got
 
 ## If a hook holds or denies you
 
-Read what it says and do that one thing. The user sees only a label, "journal reminded
-Claude: …"; the instruction and the reasoning arrive to you as a context block whose
-first line is the instruction.
+Read what it says and do that one thing. A hold is one line. When the line ends with
+"details: `.journal/journal.py next`", run that first: it prints the full text of the
+hold, which to-do is next, the questions the user answered, or what is filling the
+context. `journal next` also answers the loop prompt in auto mode: it says the one
+thing to do now.
 
 | it says                                                        | do                                                     |
 |----------------------------------------------------------------|--------------------------------------------------------|
@@ -268,7 +270,7 @@ first line is the instruction.
 | *context N% full — decide before any other tool runs*          | `remember`, `rule` or `nothing "<why>"`                |
 | *your reply puts work off — park it as a to-do*                | `todo "<title>" --brief`, then say so; or run the call again if nothing is deferred |
 | *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
-| *auto is on, N to-do(s) waiting*                               | `todo start <n>` the next one; if its brief needs the user, `todo ask <n> "…"` and ask |
+| *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`; keep a loop running (`loop` skill, `15m journal next`) |
 | *That pin would be refused*                                    | cut it to the claim, or drop the scratch path          |
 | *`journal <verb>` from a subagent is refused*                  | you are a subagent: report; the main conversation files |
 | *THAT … CALL RETURNED N CHARACTERS*                            | nothing to undo; read narrower next time               |

@@ -279,6 +279,7 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
         return 0
     if ctx.path is None:
         return 0
+    _HOLD_CTX[:] = [ctx.stem]
     lines, boundaries = transcript.read(ctx.path)
     stretch = transcript.since(lines, boundaries, 0)
     floor = _floor(ctx, lines)
@@ -444,9 +445,10 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
                         f"  {t['n']:>3}  {t['title']}"
                         + (f"  (waits on the user: {t['asks']})" if t.get("asks") else "")
                         for t in waiting)
-                    + f"\n\nThe user is away and asked for this list to be worked through. Read "
+                    + f"\n\nAuto mode is on: this list is worked through without asking. Read "
                     f"the brief (`journal todo {nxt['n']}`), start it, SOLVE IT YOURSELF, `end` it, "
-                    "and the next idle stop brings the next one. Every choice the brief leaves "
+                    "and the next idle stop brings the next one. " + _loop_line(conf)
+                    + " Every choice the brief leaves "
                     "open is yours to make: make it, write it in `journal work update`, carry on. Ask "
                     "the user only if you cannot proceed without something only they can supply, "
                     "or the hook tells you that you are stalled — then `update` what was tried, "
@@ -1038,6 +1040,9 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
 # only output is a key nobody reads is a write that reports success and lands nowhere.
 
 
+_HOLD_CTX: list = []   # the transcript stem of the hold in flight, set by on_stop
+
+
 def _hold(label: str, brief: str, text: str = "") -> int:
     """Hold the stop: a small label for the user, the instruction and reasoning for the agent.
 
@@ -1066,11 +1071,17 @@ def _hold(label: str, brief: str, text: str = "") -> int:
     # table, read on demand. The context rung is the exception: its text IS the decision
     # material — what stands, what fills the window, the rules — and it fires four times
     # a session at most.
+    # THE DETAILS GO BEHIND A COMMAND. The harness prints both halves of a Stop hold to
+    # the user — measured, against its own docs — so anything longer than a line is kept
+    # in the transcript's runtime file and the line says `journal next`. The agent runs
+    # that; the user sees one line.
+    if text and _HOLD_CTX:
+        state.put(ROOT, "next_text", text, stem=_HOLD_CTX[0])
+        brief += " — details: `.journal/journal.py next`"
     print(json.dumps({
         "decision": "block",
         "reason": f"journal reminded Claude: {label}",
-        "hookSpecificOutput": {"hookEventName": "Stop",
-                               "additionalContext": brief + ("\n\n" + text if text else "")},
+        "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": brief},
     }))
     return 0
 
@@ -1254,6 +1265,17 @@ def on_subagent_post(conf: dict, payload: dict) -> int:
     )
     body = "\n".join(f"  - {r['fact']}" for r in ruled)
     return _context("PostToolUse", lead + "\n" + body)
+
+
+def _loop_line(conf: dict) -> str:
+    """The ask that keeps an idle auto session alive: a loop that prompts `journal next`."""
+    m = conf.get("auto_loop_minutes", 0)
+    if not m:
+        return ""
+    return (f"KEEP A LOOP RUNNING while auto is on, if none is: the `loop` skill with "
+            f"`{m}m journal next`, so that an idle session comes back every {m} minutes and "
+            "carries on until nothing is left it can do; stop the loop when the list is empty "
+            "or everything left waits on the user.")
 
 
 def _prune() -> None:

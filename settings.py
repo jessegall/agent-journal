@@ -76,6 +76,11 @@ DEFAULTS = {
     # The measurement behind "too much time without result" when auto is on. 0 turns it off.
     "stall_calls": 40,
 
+    # HOW OFTEN AN IDLE AUTO SESSION IS WOKEN. With auto on, the agent is asked to keep a
+    # loop running that prompts `journal next` at this interval, so a session left alone
+    # comes back and carries on until nothing is left it can do. Minutes; 0 asks for none.
+    "auto_loop_minutes": 15,
+
     # WHERE THE PROJECT'S DOCS LIVE, relative to the project root. The journal catalogues
     # what is there rather than keeping a store of its own: a knowledge base beside the
     # docs the humans read is one that drifts from them.

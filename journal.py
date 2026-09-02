@@ -46,6 +46,7 @@ nothing. This is the index that gets you back to it.
     journal carry           exactly what a compaction will hand back — nothing is written
     journal tracks          every track of work, current one marked
     journal switch "<name>" park this one and pick up that one; --back for the last
+    journal next            what to do now: the details of the last hold, or the next to-do
     journal verify          is any of this in force? wired is not the same as fired
     journal version         this project's version of the journal, and whether a newer one is out
     journal update [--from=<path or git url>]    pull the latest journal and print what changed
@@ -700,6 +701,46 @@ def cmd_docs_search(term: str, page: int = 1, width: int = 88) -> int:
     return 0
 
 
+def cmd_next() -> int:
+    """What to do now: the details of the last hold, or the state of the list.
+
+    THE BACK HALF OF A ONE-LINE HOLD, and the prompt a loop fires at an idle auto session.
+    A hold says `journal next` for its details; a loop says `journal next` every few
+    minutes; both land here, and here says the one thing to do.
+    """
+    import state as _st
+    stem = _stem()
+    here = tracks.current(root())
+    held = _st.get(root(), "next_text", "", stem=stem) if stem else ""
+    if held:
+        print(held)
+        return 0
+    standing = work.open_work(root())
+    if standing:
+        print("Open work: " + "; ".join(w["subject"] for w in standing))
+        print("Carry on with it; `journal work end \"<the same words>\"` when it is done.")
+        return 0
+    if todo.auto(root(), here):
+        ready = todo.ready(root(), here)
+        if ready:
+            t = ready[0]
+            print(f"Auto mode is on and nothing is open. Next: to-do {t['n']}, {t['title']}")
+            print(f"  journal todo {t['n']}          the brief")
+            print(f"  journal todo start {t['n']}    pick it up")
+            return 0
+        blocked = todo.asking(root(), here)
+        if blocked:
+            print(f"Nothing to pick up: {len(blocked)} to-do(s) wait on the user's answer. "
+                  "Stop the loop if one is running; `journal todo` shows the questions.")
+        else:
+            print("The list is empty. Stop the loop if one is running.")
+        return 0
+    waiting = todo.open_items(root(), here)
+    print(f"Nothing is open. {len(waiting)} to-do(s) waiting; auto is off, so none starts "
+          "without the user's word." if waiting else "Nothing is open and nothing is waiting.")
+    return 0
+
+
 def cmd_carry(fresh: bool) -> int:
     """Show the block a compaction hands back, without being a compaction.
 
@@ -975,6 +1016,8 @@ def main(argv: list[str]) -> int:
         return 0 if ok else 1
     if verb == "settings":
         return cmd_settings()
+    if verb == "next":
+        return cmd_next()
     if verb == "version":
         have = update.current(root())
         got = update.check(root(), force=True)

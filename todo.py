@@ -307,6 +307,16 @@ def set_auto(root: Path, track: str, on: bool) -> str:
             f"auto OFF for `{track}`: to-dos are listed and never started without the user's word.")
 
 
+def _loop_line(root: Path) -> str:
+    from settings import load
+    m = load(root)[0].get("auto_loop_minutes", 0)
+    if not m:
+        return ""
+    return (f"Keep a loop running while auto is on, if none is: the `loop` skill with "
+            f"`{m}m journal next`, so an idle session comes back every {m} minutes and carries "
+            "on until nothing is left it can do.")
+
+
 def carry(root: Path, track: str) -> str:
     """The block a session start hands over. Titles only; what it asks depends on auto."""
     waiting = open_items(root, track)
@@ -326,13 +336,14 @@ def carry(root: Path, track: str) -> str:
             "first.\n" if unstuck else "")
     if auto(root, track):
         return (
-            f"TO DO on this track, {len(waiting)} waiting — AUTO IS ON: the user is away and has "
-            "said to work through this list. Whenever nothing is open, pick up the next one with "
-            "`journal todo start <n>`, solve it yourself, `end` it, and keep going until the list "
-            "is empty. Every choice a brief leaves open is yours: make it, write it in `journal "
-            "update`, carry on. Ask the user only when you cannot proceed without something only "
-            "they can supply, or the hook says you are stalled — then `journal todo ask <n> "
-            '"<what is stuck>"` and move to the next.\n' + lead + titles
+            f"TO DO on this track, {len(waiting)} waiting — AUTO MODE IS ON: this list is worked "
+            "through without asking. Whenever nothing is open, pick up the next one with "
+            "`journal todo start <n>`, solve it yourself, `journal work end` it, and keep going "
+            "until the list is empty. Every choice a brief leaves open is yours: make it, write it "
+            "in `journal work update`, carry on. Ask the user only when you cannot proceed without "
+            "something only they can supply, or the hook says you are stalled — then `journal todo "
+            'ask <n> "<what is stuck>"` and move to the next. ' + _loop_line(root)
+            + "\n" + lead + titles
             + (f"\n{len(blocked)} of these wait on the user; the questions are above. When the "
                "user answers, `journal todo start <n>`." if blocked else "")
             + "\n`journal todo <n>` reads the brief; `journal todo auto off` turns this off."
