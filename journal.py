@@ -10,13 +10,13 @@ nothing. This is the index that gets you back to it.
     journal user            only the user's own words, in full
     journal open            work declared and never closed
     journal search <term> [--all] [--page=N]   every line mentioning it on this track, in every session, 25 a page newest first; --all is every track
-    journal pin "<claim>" [--supersedes=N]   a claim that must survive a compaction (remember still works)
+    journal pin "<claim>" [--supersedes=N] [--doc=N[.P]]   a claim that must survive a compaction; --doc ties it to a doc or a part
     journal nothing "<why>"  after a context warning: nothing here needs pinning, and why
-    journal rule "<ruling>"  a pin for EVERY track — what the project decided, not one line of work
+    journal rule "<ruling>" [--doc=N[.P]]   a pin for EVERY track — what the project decided, not one line of work
     journal rules [--all]    every rule, numbered; `rules N --full` reads around one
     journal rule --strike N "<why>"   repeal a rule that stopped being true
     journal promote N        lift pin N into a rule; the pin is struck and says where it went
-    journal todo "<title>" [--brief]   delayed work, on this track; --brief reads a longer brief from stdin
+    journal todo "<title>" [--brief] [--doc=N[.P]]   delayed work, on this track; --brief reads a longer brief from stdin
     journal todo [--all]     the titles, numbered
     journal todo N           the whole brief
     journal todo start N     open work with that title — `end` then closes both
@@ -35,7 +35,7 @@ nothing. This is the index that gets you back to it.
     journal docs supersede N by M           point readers of N at M
     journal docs index                      catalogue the files docs/ already holds
     journal docs search <term> [--page=N]   every line of every doc mentioning it
-    --doc=N or --doc=N.P on remember, rule and todo cites a doc from the entry
+    --doc=N or --doc=N.P on pin, rule and todo cites a doc (or one part) from the entry; the entry shows it, the doc shows what cites it
     journal todo auto [on|off]    work through this track's list without asking, or wait for the user's word
     journal pins [--all]    every pin, numbered — the number is what --supersedes takes
     journal pins N --full   the conversation around where pin N was written
@@ -230,6 +230,7 @@ def cmd_status() -> int:
     print(fmt.commands([
         ("journal conversation [--back=N]", "what was said, since the last compaction or before it"),
         ("journal search <term>", "every line mentioning it on this track, and who said it"),
+        ('journal pin "<claim>" [--doc=N]', "a fact that must outlive a compaction; --doc ties it to a doc"),
         ("journal help", "every command"),
     ]))
     return 0
@@ -646,6 +647,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int) -> int:
             ('journal docs add "<title>" --abstract "<one line>" --brief', "a new doc, its intro on stdin"),
             ('journal docs part <n> "<title>" --brief', "a new part of doc n, from stdin"),
             ("journal docs search <term>", "every line of every doc mentioning it"),
+            ('journal pin "<claim>" --doc=<n>[.<p>]', "cite a doc, or one part, from a pin; rule and todo take it too"),
         ] + ([("journal docs index", "catalogue the loose files")] if loose else [])))
         return 0
     verb = rest[0]

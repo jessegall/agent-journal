@@ -39,7 +39,7 @@ All of them run as `.journal/journal.py <command>`; `journal` is an alias. `jour
 
 **Pins, for this track**
 
-    journal pin "<claim>" [--supersedes=N]   a fact that must survive a compaction
+    journal pin "<claim>" [--supersedes=N] [--doc=N[.P]]   a fact that must survive a compaction; --doc: the doc or part it rests on
     journal pins [--all]             every pin, numbered; --all includes struck ones
     journal pins N --full            the conversation around where pin N was written
     journal strike N "<why>"         retire a pin that stopped being true, no replacement needed
@@ -48,7 +48,7 @@ All of them run as `.journal/journal.py <command>`; `journal` is an alias. `jour
 
 **Rules, for every track**
 
-    journal rule "<ruling>"          a pin that every track obeys
+    journal rule "<ruling>" [--doc=N[.P]]   a pin that every track obeys
     journal rules [--all]            every rule, numbered
     journal rules N --full           the conversation around one
     journal rule --strike N "<why>"  repeal one, on the record
@@ -85,7 +85,7 @@ A brief on stdin:
     journal docs supersede N by M    point readers of N at M
     journal docs index               catalogue the files .journal/docs/ already holds
     journal docs search <term> [--page=N]   every line of every doc, 25 a page
-    --doc=N | --doc=N.P              on remember, rule and todo: cite a doc from the entry
+    --doc=N | --doc=N.P              on pin, rule and todo: cite a doc, or one part, from the entry
 
 **Tools, for every track**
 

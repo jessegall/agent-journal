@@ -364,7 +364,9 @@ def ref_label(root: Path, ref: str) -> str:
     doc, prt, _ = get(root, ref)
     if doc is None:
         return f"doc {ref} (missing)"
-    return f"doc {doc['n']}.{prt['p']}: {prt['title']}" if prt else f"doc {doc['n']}: {doc['title']}"
+    if prt:
+        return f"doc {doc['n']}.{prt['p']}: {doc['title']} · {prt['title']}"
+    return f"doc {doc['n']}: {doc['title']}"
 
 
 def check_ref(root: Path, ref: str) -> str | None:

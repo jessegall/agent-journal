@@ -27,6 +27,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import fmt
+import docs as docs_mod
 import state
 
 KEY = "pins"
@@ -242,7 +243,6 @@ def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int 
         if p.get("promoted_from"):
             meta.append(f"promoted from pin {p['promoted_from']}")
         if p.get("doc"):
-            import docs as docs_mod
             meta.append("→ " + docs_mod.ref_label(root, str(p["doc"])))
         out.append(fmt.numbered(i, p["fact"], " · ".join(meta), struck=bool(struck), width=width))
     return "\n\n".join(out)
@@ -337,7 +337,7 @@ def carry(root: Path, source: str = "compact", key: str = KEY) -> str:
         head + "\n"
         + "\n".join(
             f"  - {p['fact']}" + (f"  [{age(p.get('at', ''))}]" if age(p.get("at", "")) else "")
-            + (f"  → doc {p['doc']}" if p.get("doc") else "")
+            + (f"  → {docs_mod.ref_label(root, str(p['doc']))}" if p.get("doc") else "")
             for p in standing
         )
     )

@@ -162,7 +162,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 ### Pins and rules
 
     journal pins                         the pins on this track
-    journal pin "<claim>"           pin a fact; --doc=<n> cites a doc
+    journal pin "<claim>"           pin a fact; --doc=<n> or --doc=<n>.<p> cites a doc or one part
     journal pins <n> --full              the conversation around where a pin was written
     journal strike <n> "<why>"           retire a pin that stopped being true
     journal promote <n>                  lift a pin into a rule

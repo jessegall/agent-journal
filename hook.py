@@ -1341,7 +1341,7 @@ def carried(source: str = "compact", stem: str | None = None) -> str:
     # settled before it re-investigates it; the doc itself is read on demand.
     catalogued = docs.carry(ROOT)
     if catalogued:
-        parts.append(catalogued)
+        parts.append(catalogued + "\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.")
     kept = tools.carry(ROOT)
     if kept:
         parts.append(kept)

@@ -104,6 +104,7 @@ it got to, not every step: a decision inside the work, a dead end, a change of a
 
     journal pin "<the claim, in one line>"     a pin: for this track
     journal rule "<the ruling, in one line>"        a rule: for every track
+    ... --doc=N or --doc=N.P                        on either, and on todo: the doc (or part) it rests on
     journal nothing "<why nothing here needs pinning>"
     journal promote <n>                             lift pin n into a rule
 
@@ -217,8 +218,10 @@ belongs to, filed by you, which is the moment to judge whether it is worth keepi
 Everything else that is long — a survey, the numbers behind a decision — is a part too.
 One doc, many parts; a part is what you replace or strike when it stops being true.
 
-**Cite it.** `--doc=<n>` or `--doc=<n>.<p>` on `remember`, `rule` and `todo` ties the
-entry to the doc; the entry shows the doc beside it, and the doc shows what cites it. A
+**Cite it.** `--doc=<n>` or `--doc=<n>.<p>` on `pin`, `rule` and `todo` ties the entry
+to the doc; the entry shows "→ doc 4.2: <doc> · <part>" beside it, and the doc shows what
+cites it. Cite whenever the claim came out of a doc or a doc explains it: the pin is the
+one line, the doc is the reasoning a later reader will want. A
 pin that only says "read docs/x.md before touching Y" is an abstract wearing a pin; give
 the doc that abstract and cite it instead.
 

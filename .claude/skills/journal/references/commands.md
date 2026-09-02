@@ -99,9 +99,12 @@ A brief on stdin:
 
 **Tracks**
 
-    journal tracks                   every track, current one marked
-    journal switch "<name>"          park this one, pick up that one; creates it if new
-    journal switch --back            the one you came from
+    journal tracks                   every track, this session's marked, the start track marked, who is on which
+    journal switch "<name>"          this session onto that track; creates it if new
+    journal switch "<name>" --project   this session, and where new sessions start
+    journal switch "<name>" --session=<id> | --all-sessions   move other sessions (a terminal's switch offers these)
+    journal switch --back            the track this session came from
+    journal loop set                 this session has a loop the hook cannot see; `journal loop` says what is known
 
 **Chains.** A journal command in a chain exempts only itself from the write gate. A line
 whose first non-trivial piece is `journal work start` may write after it; a line that decides
@@ -112,9 +115,24 @@ first (`remember`, `rule`, `nothing`) passes the context gate for what follows. 
 
 A track is a line of work, not a session. Pins, open work and to-dos belong to the track
 that made them; rules belong to every track. Switch when the user says a new piece of work
-should not inherit the current track's pins and to-dos. Switching parks a track exactly as
-it stood and nothing is ever deleted by it. Tracks are shared, so a switch moves every
-session in the project.
+should not inherit the current track's pins and to-dos. Nothing is ever deleted by a
+switch: every track's pins and work stay under its name.
+
+Every session is bound to a track: the project's start track when it starts, whatever it
+switched to since. `journal switch` from inside a session moves that session only, so a
+second session on another track keeps its own pins, work and to-dos. `--project` also
+moves where new sessions start; do that when the user says the whole project is moving on.
+A switch the user runs from a terminal is always the project's, and it lists the sessions
+bound elsewhere with how to move one — the user decides, not the hook. `journal tracks`
+shows every binding and whether each session is running.
+
+One running session works a track. Two agents on one track would share its open work and
+its to-do list, and two auto sessions would pick the same chore. So a session that starts
+on a taken track — usually the project's start track, because the user opened a second
+terminal — is told at its start who holds it, held at every stop and refused edits until
+it has switched: ask the user which track this session works on, then `switch "<name>"`.
+A switch onto a taken track is refused. A session is running until its SessionEnd, or
+until `session_stale_hours` (24) pass without a hook event from it.
 
 A track has a transcript: everything said while it was current, across every session.
 The record keeps which sessions carried each track, written at every session start and
