@@ -623,6 +623,26 @@
       "ended": "2026-09-02T11:40:20+00:00",
       "line": 1754,
       "session": "a926a873-bbe7-43a7-baba-958131aff937.jsonl"
+    },
+    {
+      "subject": "the loop is part of what auto means: said in the skill's to-do section and in the 1.6.0 changelog; pull prefers a package root over the instance inside it",
+      "at": "2026-09-02T11:44:43+00:00",
+      "ended": "2026-09-02T11:46:32+00:00"
+    },
+    {
+      "subject": "the auto hold joins the queue: after a resolved rung, the same turn raises the next to-do",
+      "at": "2026-09-02T11:47:12+00:00",
+      "ended": null
+    },
+    {
+      "subject": "the stop queue: one pending subject per stop, each subject once per turn, delivered by the hook",
+      "at": "2026-09-02T11:53:23+00:00",
+      "ended": "2026-09-02T12:06:15+00:00"
+    },
+    {
+      "subject": "merge the worktree branch into main and publish 1.12.0",
+      "at": "2026-09-02T12:06:40+00:00",
+      "ended": null
     }
   ],
   "previous": "default",
