@@ -280,50 +280,48 @@ def main(argv: list[str]) -> int:
     check = "--check" in argv
     if "--test" in argv:
         os.environ["AGENT_JOURNAL_TEST_PULL"] = "1"
-    print(f"# installing the journal into {PROJECT}"
-          + ("  (--check: nothing will be written)" if check else "") + "\n")
     src = None
     for i, a in enumerate(argv):
         if a == "--from" and i + 1 < len(argv):
             src = argv[i + 1]
         elif a.startswith("--from="):
             src = a.split("=", 1)[1]
+    lines = []
     if src is not None:
         import re, subprocess, tempfile
         # judged as the string typed: Path() folds `https://` into `https:/`
         if re.match(r"^(https?://|git@|ssh://)", src) or src.endswith(".git"):
             tmp = Path(tempfile.mkdtemp()) / "pkg"
-            p = subprocess.run(["git", "clone", "--quiet", "--depth", "1", str(src), str(tmp)],
+            p = subprocess.run(["git", "clone", "--quiet", "--depth", "1", src, str(tmp)],
                                capture_output=True, text=True)
             if p.returncode != 0:
                 raise SystemExit(f"  ! could not clone {src}:\n{p.stderr.strip()}")
             src = tmp
-        for line in pull(Path(src), check):
-            print(line)
-    for line in executable(check) + wire(check) + skill(check):
-        print(line)
+        lines += pull(Path(src), check)
+    lines += executable(check) + wire(check) + skill(check)
     if "--alias" in argv:
-        for line in alias(check):
-            print(line)
-    else:
-        print("  · no shell alias (pass --alias to add one)")
-
-    # WIRED IS ALL AN INSTALL CAN PROVE. The hooks are read when Claude Code starts, so
-    # nothing has fired yet and nothing could have. The install says what it did, what to
-    # do next, and stops — the fired check is `journal verify`, from inside a session.
+        lines += alias(check)
+    # SAY ONLY WHAT CHANGED, then whether it is good, then the one next step.
+    changed = [l for l in lines if l.startswith("  +") or l.startswith("  -") or l.startswith("  !")]
     sys.path.insert(0, str(ROOT))
     import verify
     rows, _ = verify.check(ROOT)
     bad = [(n, note) for n, ok, note in rows if ok is False]
-    print()
+    if check:
+        print("Would change:" if changed else "Nothing to change.")
+        for l in changed:
+            print(l)
+        return 0
+    for l in changed:
+        print(l)
     if bad:
-        print("  Not ready:")
+        print("\nNot installed:")
         for n, note in bad:
-            print(f"    ✗ {n}" + (f"\n        {note}" if note else ""))
+            print(f"  ✗ {n}" + (f"\n      {note}" if note else ""))
         return 1
-    print("  Installed. Start Claude Code in this project — a new session, or /clear in a")
-    print("  running one — and the journal is live from its first message. Inside it,")
-    print("  `journal verify` confirms the hooks fired; `journal` shows where things stand.")
+    print(("Updated." if src is not None else "Installed.") if changed else "Already installed.")
+    print("Start Claude Code in this project and the journal is on: the agent is handed the")
+    print("record at its first message. Run `journal` any time to see where things stand.")
     return 0
 
 

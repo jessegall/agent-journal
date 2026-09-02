@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.3.2 — a short install
+
+The installer prints what it changed, "Installed.", and the one next step. Nothing to do after upgrading.
+
 ## 1.3.1 — install ends with next steps
 
 The installer no longer runs checks that cannot pass before Claude Code has started; it
