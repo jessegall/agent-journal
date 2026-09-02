@@ -1,5 +1,0 @@
-{
-  "//": "Only what you DISAGREE with. Every key not here is at its default; run `journal settings` to see them all. An unknown key is reported, never ignored.",
-  "hold_stop_on_untagged": true,
-  "context_window": 1000000
-}

@@ -3,9 +3,6 @@ __pycache__/
 .journal/runtime/
 .journal/record.json.lock
 .journal/state.json*
-# the package lives at the root; this instance holds only its data
-.journal/*.py
-.journal/*.md
-.journal/VERSION
-.journal/install.sh
-.journal/skill/
+# this project's own journal instance stays local: a clone must hold no .journal/ at all,
+# because every puller before 1.12.0 walks into that folder when it exists
+/.journal/
