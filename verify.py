@@ -109,18 +109,23 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
     # THE ONE THAT MATTERS. Configuration is a claim; a written key is a fact. And it is
     # TWO facts: a hook that fired in some transcript months ago says nothing about whether
     # it fires now, so the transcript this process belongs to is checked on its own.
+    # FIRED IS A FACT, NOT A FAILURE, WHEN NOTHING COULD HAVE FIRED YET. Run from a plain
+    # terminal right after install, "never fired" is simply true: Claude Code reads the
+    # hooks when it starts. So outside a session these rows are reported as facts (·)
+    # with the next step, and only inside a session is a silent hook a red mark.
     files = state.runtime_files(root)
     fired = [(stem, d) for stem, d in files if any(k in d for k in FIRED)]
-    out.append((
-        f"the hook has ACTUALLY FIRED — in {len(fired)} transcript(s) on this machine",
-        bool(fired),
-        "" if fired else (
-            "wired but never invoked — no transcript carries a mark. Either nothing has "
-            "happened since it was wired, or it is not reaching the harness. Stop once with "
-            "an untagged message: if nothing happens, it is not live."
-        ),
-    ))
     sid = os.environ.get(transcript.SESSION_ENV, "")
+    if fired:
+        out.append((f"the hook has fired — in {len(fired)} transcript(s) on this machine", True, ""))
+    elif sid:
+        out.append(("the hook has fired", False,
+                    "wired but never invoked — no transcript carries a mark. Stop once with an "
+                    "untagged message: if nothing happens, it is not reaching the harness."))
+    else:
+        out.append(("the hook has not fired yet", None,
+                    "start Claude Code in this project; the hooks are read at start. Then "
+                    "`journal verify` from inside it says whether they fired."))
     if sid:
         mine = dict(files).get(sid, {})
         here = any(k in mine for k in FIRED)
@@ -129,10 +134,6 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
             here,
             "" if here else "this session has no runtime file — nothing has reached the hook here",
         ))
-    else:
-        out.append(("this session's transcript is known", False,
-                    f"{transcript.SESSION_ENV} is not set — run this from inside a session "
-                    "to check the current one"))
 
     # A COMMITTED RUNTIME FOLDER FORGES THE EVIDENCE ABOVE on every clone. Checked, not
     # assumed; and only where there is a repository to ask.
@@ -145,19 +146,19 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
     # A LADDER WITH NO WINDOW IS SILENT, and silence is the shape this file exists to
     # report. Not a failure — the setting is a disagreement with a default — but said.
     if not conf.get("context_window") and not state.get(root, "window", 0):
-        out.append(("context window known", False,
-                    "not yet: it is learned at the first compaction, or from the session's "
-                    "peak; until then the context ladder is silent. To set it now: "
-                    '`"context_window": 1000000` in .journal/settings.json.'))
+        out.append(("context window not yet known", None,
+                    "learned at the first compaction; until then the context warnings are "
+                    'silent. To set it now: `"context_window": 1000000` in .journal/settings.json.'))
 
-    return out, all(ok for _, ok, _ in out)
+    return out, all(ok is not False for _, ok, _ in out)
 
 
 def render(root: Path) -> tuple[str, bool]:
     rows, ok = check(root)
     lines = [fmt.title("IS THE JOURNAL IN FORCE?"), ""]
     for name, good, note in rows:
-        lines.append(f"  {'✓' if good else '✗'} {name}" + (f"\n      {note}" if note else ""))
+        mark = "·" if good is None else ("✓" if good else "✗")
+        lines.append(f"  {mark} {name}" + (f"\n      {note}" if note else ""))
     lines.append("")
     lines.append(fmt.wrap(
         "All green means it is wired and has run. Those are different facts and this reports "

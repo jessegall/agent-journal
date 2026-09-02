@@ -308,16 +308,23 @@ def main(argv: list[str]) -> int:
     else:
         print("  · no shell alias (pass --alias to add one)")
 
-    # WIRED IS NOT FIRED, so the install refuses to be the thing that says it worked.
-    print("\n" + "-" * 60)
+    # WIRED IS ALL AN INSTALL CAN PROVE. The hooks are read when Claude Code starts, so
+    # nothing has fired yet and nothing could have. The install says what it did, what to
+    # do next, and stops — the fired check is `journal verify`, from inside a session.
     sys.path.insert(0, str(ROOT))
     import verify
-    body, ok = verify.render(ROOT)
-    print(body)
-    if ok:
-        print("\n  Wired. It is not proven live until a hook has actually run — stop once\n"
-              "  with an untagged message and see whether it holds you.")
-    return 0 if ok else 1
+    rows, _ = verify.check(ROOT)
+    bad = [(n, note) for n, ok, note in rows if ok is False]
+    print()
+    if bad:
+        print("  Not ready:")
+        for n, note in bad:
+            print(f"    ✗ {n}" + (f"\n        {note}" if note else ""))
+        return 1
+    print("  Installed. Start Claude Code in this project — a new session, or /clear in a")
+    print("  running one — and the journal is live from its first message. Inside it,")
+    print("  `journal verify` confirms the hooks fired; `journal` shows where things stand.")
+    return 0
 
 
 if __name__ == "__main__":

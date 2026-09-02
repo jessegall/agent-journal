@@ -1023,12 +1023,18 @@ check("without the environment it guesses the newest and SAYS so",
 d, path = project_with(2)
 import verify
 rows, _ = verify.check(d / ".journal")
-fired = [ok for name, ok, _ in rows if name.startswith("the hook has ACTUALLY FIRED")]
-check("verify: nothing fired before any hook ran", fired, [False])
+fired = [ok for name, ok, _ in rows if name.startswith("the hook has")]
+check("verify: inside a session, nothing fired before any hook ran is a failure", fired[:1], [False])
+env_out = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}
+p = subprocess.run([J, "verify"], env=env_out, capture_output=True, text=True)
+check("verify: outside a session it is a fact with the next step, not a failure",
+      ("· the hook has not fired yet" in p.stdout, "start Claude Code in this project" in p.stdout, "✗ the hook" in p.stdout), (True, True, False))
 fire(d, "SessionStart", path, source="startup")
 rows, _ = verify.check(d / ".journal")
-fired = [ok for name, ok, _ in rows if name.startswith("the hook has ACTUALLY FIRED")]
+fired = [ok for name, ok, _ in rows if name.startswith("the hook has fired —")]
 check("verify: fired once a transcript carries a mark", fired, [True])
+p = subprocess.run([str(d / ".journal" / "install.py")], env=env_out, capture_output=True, text=True)
+check("install ends with what to do next, and no red marks", ("Installed. Start Claude Code" in p.stdout, "✗" in p.stdout), (True, False))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

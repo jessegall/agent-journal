@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.3.1 — install ends with next steps
+
+The installer no longer runs checks that cannot pass before Claude Code has started; it
+says what it wired and what to do next. `journal verify` from a plain terminal reports
+"not fired yet" and "window not yet known" as facts, not failures.
+
+Nothing to do after upgrading.
+
 ## 1.3.0 — the context window is learned
 
 No setting needed: the window is learned at the first compaction (the peak before it is
