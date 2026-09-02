@@ -274,5 +274,48 @@ p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name":
                    "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attachments {n_att}'}}), capture_output=True, text=True, timeout=60)
 check("a subagent listing them is not", "refused" in p.stdout, False)
 
+
+# ---------------------------------------------------------------- the attach hint: reference files read again, source told apart
+def read(fp, tool="Read", cmd=None):
+    inp = {"command": cmd} if cmd else {"file_path": str(fp)}
+    p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PostToolUse", "session_id": "s1", "transcript_path": str(path),
+                       "tool_name": "Bash" if cmd else tool, "tool_input": inp, "tool_response": "x"}), capture_output=True, text=True, timeout=60)
+    return (json.loads(p.stdout).get("hookSpecificOutput") or {}).get("additionalContext", "") if p.stdout.strip() else ""
+
+
+subprocess.run(["git", "init", "-q"], cwd=str(d), capture_output=True, timeout=60)
+(d / "resources").mkdir(); (d / "resources" / "welcome.blade.php").write_text("<h1>hi</h1>")
+(d / "public").mkdir(); (d / "public" / "index.html").write_text("<p>tracked</p>")
+subprocess.run(["git", "add", "public/index.html"], cwd=str(d), capture_output=True, timeout=60)
+subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "x"], cwd=str(d), capture_output=True, timeout=60)
+(d / "export.html").write_text("<p>untracked export</p>")
+(d / "Comp.vue").write_text("<template/>")
+outside = Path(tempfile.mkdtemp()); (outside / "sent-by-user.pdf").write_bytes(b"%PDF"); (outside / "example.py").write_text("x=1")
+check("the first read of a reference file says nothing", read(outside / "sent-by-user.pdf"), "")
+hint = read(outside / "sent-by-user.pdf")
+check("the second read of a file outside the project earns the attach hint, once",
+      ("read 2 times" in hint, "docs attach <doc>" in hint, str(outside / "sent-by-user.pdf") in hint, read(outside / "sent-by-user.pdf")), (True, True, True, ""))
+read(outside / "example.py")
+check("a source file outside the project does not", read(outside / "example.py"), "")
+read(d / "export.html")
+check("an untracked reference file inside the project does", "docs attach" in read(d / "export.html"), True)
+read(d / "public" / "index.html")
+check("a git-tracked html file is source: no hint", read(d / "public" / "index.html"), "")
+read(d / "resources" / "welcome.blade.php"); read(d / "Comp.vue")
+check("blade and vue files are source, tracked or not", (read(d / "resources" / "welcome.blade.php"), read(d / "Comp.vue")), ("", ""))
+read(folder_att / "files" / "design.html")
+check("a file already attached to a doc is left alone", read(folder_att / "files" / "design.html"), "")
+(outside / "trace.log").write_text("boom")
+read(None, cmd=f"cat {outside / 'trace.log'}")
+check("a bash cat counts as a read", "docs attach" in read(None, cmd=f"cat {outside / 'trace.log'}"), True)
+(outside / "notes.txt").write_text("n")
+read(None, cmd=f"cat {outside / 'notes.txt'} | grep x"); read(None, cmd=f"cat {outside / 'notes.txt'} | grep x")
+check("a piped line is not a plain read", read(None, cmd=f"cat {outside / 'notes.txt'} | grep x"), "")
+(root / "settings.json").write_text(json.dumps({"context_window": 1000000, "silenced": ["attach_hint"]}))
+(outside / "other.csv").write_text("a,b")
+read(outside / "other.csv"); read(outside / "other.csv")
+check("silenced: nothing", read(outside / "other.csv"), "")
+(root / "settings.json").write_text(json.dumps({"context_window": 1000000}))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

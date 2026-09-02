@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.16.0 — a hint to attach what keeps being read
+
+A file that is not source — no source extension, not tracked by git; outside the
+project, anything that is not source — read twice in one session earns a hint, once per
+file, to attach it to the doc it belongs to. A design's rendered HTML, an export, a PDF
+the user sent, a log. Source files (.vue, .blade.php, .py, tracked .html…) are never
+hinted. `attach_hint_reads` sets the count; `attach_hint` in `silenced` turns it off.
+
+After updating: reload the journal skill.
+
 ## 1.15.1 — one word for a doc
 
 Every command listing says `<doc>` where a doc's number or name goes, and `<doc>.<p>`

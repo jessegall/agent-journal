@@ -994,6 +994,118 @@ def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
     )
 
 
+#: SOURCE OR REFERENCE. A file the project is built from is source: it has a source
+#: extension, or git tracks it. A file the agent keeps coming back to for what it SAYS —
+#: a rendered design, an export, a PDF the user sent, a log — is reference material, and
+#: the doc it belongs to is where it should be attached. Neither list has to be complete:
+#: an unknown untracked file inside the project is left alone, and only a file outside
+#: the project is judged by not being source.
+_SOURCE_EXT = frozenset({
+    ".py", ".pyi", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".vue", ".svelte", ".php", ".blade", ".rb",
+    ".go", ".rs", ".java", ".kt", ".kts", ".swift", ".c", ".h", ".cc", ".cpp", ".hpp", ".cs", ".m", ".mm",
+    ".scala", ".clj", ".ex", ".exs", ".erl", ".hs", ".lua", ".pl", ".pm", ".r", ".jl", ".dart", ".sh", ".bash",
+    ".zsh", ".fish", ".ps1", ".sql", ".graphql", ".gql", ".proto", ".css", ".scss", ".sass", ".less", ".styl",
+    ".json", ".jsonc", ".yaml", ".yml", ".toml", ".ini", ".cfg", ".conf", ".env", ".lock", ".xml", ".xsl",
+    ".twig", ".jinja", ".j2", ".hbs", ".ejs", ".erb", ".haml", ".pug", ".njk", ".liquid", ".mustache",
+    ".make", ".mk", ".cmake", ".gradle", ".sbt", ".pom", ".ipynb", ".tf", ".hcl", ".dockerfile",
+})
+_REFERENCE_EXT = frozenset({
+    ".html", ".htm", ".pdf", ".csv", ".tsv", ".xlsx", ".xls", ".docx", ".doc", ".pptx", ".ppt", ".odt", ".ods",
+    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".tiff", ".txt", ".log", ".rtf", ".eml", ".msg",
+    ".md", ".markdown", ".rst", ".adoc", ".har", ".ndjson",
+})
+_READ_CMDS = frozenset({"cat", "head", "tail", "less", "more", "bat", "open", "pdftotext", "strings", "xxd", "hexdump"})
+
+
+def _read_path(payload: dict) -> str:
+    """The one file this tool call read, or ''. `Read`, or a bash line whose verb only reads."""
+    name = payload.get("tool_name") or ""
+    inp = payload.get("tool_input") or {}
+    if name == "Read":
+        return str(inp.get("file_path") or "")
+    if name != "Bash":
+        return ""
+    pieces = [w for w in _pieces(str(inp.get("command", ""))) if w and w[0] not in _NEUTRAL]
+    if len(pieces) != 1 or pieces[0][0] not in _READ_CMDS:
+        return ""
+    args = [a for a in pieces[0][1:] if not a.startswith("-")]
+    return args[0] if len(args) == 1 else ""
+
+
+def _git_tracked(project: Path, path: Path) -> bool:
+    import subprocess
+    try:
+        p = subprocess.run(["git", "ls-files", "--error-unmatch", "--", str(path)], cwd=str(project),
+                           capture_output=True, text=True, timeout=5)
+        return p.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def _attach_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
+    """A non-source file read again and again: a hint to attach it to a doc, once per file.
+
+    THE ALGORITHM. (1) The call read exactly one file. (2) The file is not the journal's,
+    not already under docs/, and not source: a source extension, or tracked by git in this
+    project, makes it source and ends the matter. Inside the project, only a reference
+    extension (rendered, exported, sent) counts; outside it — Downloads, another checkout,
+    a scratch folder — anything that is not source counts. (3) It has been read
+    `attach_hint_reads` times this session. Then the hint, once per file, never a hold: a
+    scratch file read twice is not a problem, and the agent is told to ignore it if so.
+    """
+    if "attach_hint" in conf["silenced"] or not conf["attach_hint_reads"]:
+        return None
+    raw = _read_path(payload)
+    if not raw:
+        return None
+    p = Path(raw).expanduser()
+    if not p.is_absolute():
+        p = ROOT.parent / p
+    if not p.is_file():
+        return None
+    rp = p.resolve()
+    project = ROOT.parent.resolve()
+    inside = project in rp.parents
+    if inside:
+        rel = rp.relative_to(project).as_posix()
+        if rel.startswith((".journal/", ".claude/", ".git/")):
+            return None
+    try:
+        if docs.folder(ROOT).resolve() in rp.parents:
+            return None
+    except Exception:
+        pass
+    ext = rp.suffix.lower()
+    if ext in _SOURCE_EXT or rp.name.endswith(".blade.php") or ext == "":
+        return None
+    if inside and (ext not in _REFERENCE_EXT or _git_tracked(project, rp)):
+        return None
+    counts = state.get(ROOT, "read_counts", {}, stem=ctx.stem) or {}
+    if not isinstance(counts, dict):
+        counts = {}
+    key = str(rp)
+    counts[key] = int(counts.get(key, 0)) + 1
+    if len(counts) > 200:
+        counts = dict(list(counts.items())[-200:])
+    state.put(ROOT, "read_counts", counts, stem=ctx.stem)
+    if counts[key] < conf["attach_hint_reads"]:
+        return None
+    said = state.get(ROOT, "attach_hinted", [], stem=ctx.stem) or []
+    if key in said:
+        return None
+    state.put(ROOT, "attach_hinted", (said + [key])[-100:], stem=ctx.stem)
+    shown = rp.relative_to(project).as_posix() if inside else str(rp)
+    return (
+        f"journal: {shown} has been read {counts[key]} times this session, and it is not a source "
+        "file of this project. If it is reference material — a rendered design, an export, something "
+        "the user sent — attach it to the doc it belongs to, so it is catalogued, found by name and "
+        "handed to the next session instead of re-read:\n"
+        f'  .journal/journal.py docs attach <doc> "{shown}" "<what it is>"\n'
+        "(`journal docs add` first if no doc fits; a markdown file may be a doc or a part instead.) "
+        "A scratch file is fine as it is. Said once per file."
+    )
+
+
 _SCRIPT_EXT = (".py", ".sh", ".php", ".js", ".ts", ".rb", ".pl")
 _SCRATCH = ("/scratchpad/", "/tmp/", "/var/folders/")
 _TOOLISH_DIRS = ("tools/", "scripts/", "bin/", "script/")
@@ -1151,6 +1263,9 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     if hint:
         return _context("PostToolUse", hint)
     hint = _tool_shaped(conf, payload, ctx)
+    if hint:
+        return _context("PostToolUse", hint)
+    hint = _attach_hint(conf, payload, ctx)
     if hint:
         return _context("PostToolUse", hint)
     stalled = _stall(conf, ctx)

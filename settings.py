@@ -40,6 +40,11 @@ DEFAULTS = {
     # four to one. 0 turns it off.
     "tool_cost_floor": 20_000,
 
+    # A file that is not source — no source extension, not tracked by git; outside the
+    # project, anything that is not source — read this many times in one session earns a
+    # hint, once, to attach it to a doc. 0 turns it off.
+    "attach_hint_reads": 2,
+
     # THE CAP IS ON LENGTH, NOT COUNT. Measured: a hundred pins is about 4,700 tokens,
     # under half a percent of a million-token window — so counting them rationed something
     # that costs nothing, while the real damage was a pin grown into a paragraph and

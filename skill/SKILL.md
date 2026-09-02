@@ -225,7 +225,8 @@ the CSV behind a finding: `journal docs attach <doc> <path> "<what it is>"` copi
 file — or a whole folder — into the doc, beside the parts that explain it; the original
 stays where it is. `journal docs <doc> files` shows them as a tree, `docs search` finds
 them by name. Attach rather than `cp` into docs/: the copy is listed, said what it is,
-and handed to the next session; a bare file is not.
+and handed to the next session; a bare file is not. The hook says so when you keep
+re-reading a file that is not source — attach it, or ignore the hint if it is scratch.
 
 **By name or number.** A doc is referenced either way, everywhere: `journal docs
 reactivity`, `docs attach reactivity …`, `--doc=reactivity`. The title, or a unique
@@ -316,3 +317,4 @@ thing to do now.
 | *THAT … CALL RETURNED N CHARACTERS*                            | nothing to undo; read narrower next time               |
 | *… is a markdown file written outside the journal*             | a hint: `docs add` or `docs part` if it is a design or a report; otherwise ignore |
 | *… is a script you wrote / has now run twice / scratch script*  | a hint: `tools add` if the job comes back; otherwise ignore |
+| *… has been read N times … not a source file*                  | a hint: `docs attach <doc> <path> "<what it is>"` if it is reference material; otherwise ignore |

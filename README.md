@@ -254,6 +254,8 @@ without anyone filing anything.
 - **A markdown file written by hand**: a one-time hint that docs are catalogued.
 - **Something tool-shaped**: a script written into a scratch or scripts folder, the same
   inline script run twice, a scratch script run by name: a one-time hint to make it a tool.
+- **A reference file read twice**: a rendered design, an export, a PDF, a log, anything
+  that is not a source file of the project: a one-time hint to attach it to a doc.
 
 At a stop these form a queue: one subject per stop, each once per turn, in priority
 order (track, loop, context, deferral, untagged, work, auto), until nothing is pending.
@@ -310,6 +312,7 @@ journal is used instead, until `journal worktree link` replaces it.
     context_warn_ladder  where the warnings fire, default [0.5, 0.7, 0.9, 0.95]
     pin_max_chars        the cap on a pin, default 400
     stall_calls          tool calls on one to-do without progress before the agent is nudged, default 40
+    attach_hint_reads    reads of a non-source file in one session before the attach hint, default 2
     one_session_per_track   a second session on a taken track is told to switch, default true
     session_stale_hours  hours without a hook event before a session counts as gone, default 24
     stop_priority        the order of the stop queue by subject, e.g. {"work": 1}; lower first
