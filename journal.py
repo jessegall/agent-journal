@@ -555,6 +555,13 @@ def cmd_promote(n: int) -> int:
 
 def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "") -> int:
     here = tracks.current(root(), _stem())
+    # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
+    # what a bare noun and a bare noun+id already do; stripping them here means the
+    # existing bare-shape code below is the ONLY place either behaviour lives.
+    if rest and rest[0] == "list":
+        rest = rest[1:]
+    if rest and rest[0] == "show" and len(rest) > 1 and rest[1].isdigit():
+        rest = rest[1:]
     if not rest:
         waiting = todo.open_items(root(), here)
         done = len(todo._all(root(), here)) - len(waiting)
@@ -603,7 +610,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             else:
                 fmt.say("  Nothing is open and nothing is waiting.")
         return 0
-    if verb in ("start", "done", "drop", "ask", "answer"):
+    if verb in ("start", "done", "drop", "strike", "ask", "answer"):
         if len(rest) < 2 or not rest[1].isdigit():
             fmt.say(f'todo {verb} wants a number: journal todo {verb} 3' + (
                 ' "<how>"' if verb != "start" else ""), error=True)
@@ -632,9 +639,9 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
                 fmt.say(f"  to-do {n} is started; `journal work end \"{t['title']}\"` closes both.")
             return 0 if ok else 1
         why = " ".join(rest[2:])
-        if verb == "drop":
+        if verb in ("drop", "strike"):  # ruling R4: `strike` is the one retire verb everywhere
             if not why.strip():
-                fmt.say('say why: journal todo drop <n> "<why it is abandoned>"', error=True)
+                fmt.say(f'say why: journal todo {verb} <n> "<why it is abandoned>"', error=True)
                 return 1
             why = "dropped: " + why
         ok, msg = todo.done(root(), here, n, why, _now())
@@ -644,6 +651,11 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         ok, body = todo.show(root(), here, int(verb))
         fmt.say(body, error=not ok)
         return 0 if ok else 1
+    if verb == "add":
+        rest = rest[1:]
+        if not rest:
+            fmt.say('a to-do needs a title: journal todo add "<what, in a few words>"', error=True)
+            return 1
     # adding: the title is the words; the brief comes on stdin ONLY when asked for with
     # --brief. Reading stdin whenever it is not a terminal hung under a test runner whose
     # stdin never closed, and a command that can hang is worse than one that asks.
@@ -777,9 +789,9 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict) -> int:
             fmt.say('journal tools set <name> summary|usage|when|entry "<value>"', error=True)
             return 1
         ok, msg = tools.set_field(root(), rest[1], rest[2], " ".join(rest[3:]))
-    elif verb == "remove":
+    elif verb in ("remove", "strike"):  # ruling R4: `strike` is the one retire verb everywhere
         if len(rest) < 3:
-            fmt.say('journal tools remove <name> "<why>"', error=True)
+            fmt.say(f'journal tools {verb} <name> "<why>"', error=True)
             return 1
         ok, msg = tools.remove(root(), rest[1], " ".join(rest[2:]))
     elif verb == "index":
@@ -1288,6 +1300,39 @@ def main(argv: list[str]) -> int:
             return 1
         return cmd_rule(" ".join(rest[1:]), None, "", doc_ref)
     if verb == "rules":
+        # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`list`/`show`
+        # call the exact same functions the old `rule`/`rule --strike` branches call, so
+        # the two spellings can never drift apart. Anything else falls to the unchanged
+        # shape below: bare `rules`, or `rules <n> --full`.
+        sub = rest[1] if len(rest) > 1 else ""
+        if sub == "add":
+            if len(rest) < 3:
+                fmt.say("rule wants the ruling, in one line", error=True)
+                return 1
+            return cmd_rule(" ".join(rest[2:]), None, "", doc_ref)
+        if sub == "strike":
+            if len(rest) < 4:
+                fmt.say('rules strike wants a rule number and why: journal rules strike 2 "<why>"',
+                      error=True)
+                return 1
+            try:
+                return cmd_rule("", int(rest[2]), " ".join(rest[3:]))
+            except ValueError:
+                fmt.say(f"rules strike wants a rule NUMBER, got {rest[2]!r}. `journal rules` numbers them.",
+                      error=True)
+                return 1
+        if sub == "list":
+            return cmd_rules(all_of_them, None, False)
+        if sub == "show":
+            if len(rest) < 3:
+                fmt.say("rules show wants a rule number: journal rules show 3", error=True)
+                return 1
+            try:
+                return cmd_rules(all_of_them, int(rest[2]), True)
+            except ValueError:
+                fmt.say(f"rules show wants a rule NUMBER, got {rest[2]!r}. `journal rules` numbers them.",
+                      error=True)
+                return 1
         n = None
         if len(rest) > 1:
             try:
@@ -1306,7 +1351,7 @@ def main(argv: list[str]) -> int:
             fmt.say(f"promote wants a pin NUMBER, got {rest[1]!r}. `journal pins` numbers them.",
                   error=True)
             return 1
-    if verb == "todo":
+    if verb in ("todo", "todos"):  # ruling R1: `todos` is a twin alias of `todo`, both ways
         return cmd_todo(rest[1:], all_of_them, brief, doc_ref)
     if verb == "docs":
         return cmd_docs(rest[1:], brief, abstract, page, replace)
@@ -1340,6 +1385,51 @@ def main(argv: list[str]) -> int:
             return 1
         return cmd_strike(n, " ".join(rest[2:]))
     if verb == "pins":
+        # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`promote`/
+        # `list`/`show` call the exact same functions the old bare top-level `pin`,
+        # `strike` and `promote` verbs call, so the two spellings can never drift apart.
+        # Anything else falls to the unchanged shape below: bare `pins`, or `pins <n>
+        # --full`.
+        sub = rest[1] if len(rest) > 1 else ""
+        if sub == "add":
+            if len(rest) < 3:
+                fmt.say("pin wants the claim, in one line", error=True)
+                return 1
+            return cmd_remember(" ".join(rest[2:]), supersedes, doc_ref)
+        if sub == "strike":
+            if len(rest) < 4:
+                fmt.say('pins strike wants a pin number and why: journal pins strike 6 "<why>"',
+                      error=True)
+                return 1
+            try:
+                n = int(rest[2])
+            except ValueError:
+                fmt.say(f"pins strike wants a pin NUMBER, got {rest[2]!r}. `journal pins` numbers them.",
+                      error=True)
+                return 1
+            return cmd_strike(n, " ".join(rest[3:]))
+        if sub == "promote":
+            if len(rest) < 3:
+                fmt.say("pins promote wants a pin number: journal pins promote 3", error=True)
+                return 1
+            try:
+                return cmd_promote(int(rest[2]))
+            except ValueError:
+                fmt.say(f"pins promote wants a pin NUMBER, got {rest[2]!r}. `journal pins` numbers them.",
+                      error=True)
+                return 1
+        if sub == "list":
+            return cmd_pins(all_of_them)
+        if sub == "show":
+            if len(rest) < 3:
+                fmt.say("pins show wants a pin number: journal pins show 3", error=True)
+                return 1
+            try:
+                return cmd_pin_full(int(rest[2]))
+            except ValueError:
+                fmt.say(f"pins show wants a pin NUMBER, got {rest[2]!r}. `journal pins` numbers them.",
+                      error=True)
+                return 1
         if len(rest) > 1 and full:
             try:
                 return cmd_pin_full(int(rest[1]))
