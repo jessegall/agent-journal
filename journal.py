@@ -161,17 +161,35 @@ def _resolved() -> tuple[Path, bool] | None:
     return got
 
 
+#: WHOSE LINES A VERB BORROWS, when the synopsis does not spell that verb itself.
+#: `_help` answers by reading the synopsis back, which works for every verb the synopsis
+#: names and fails SILENTLY for the ones it does not. `tracks` is the case that proved it:
+#: ruling R3 keeps every current spelling running forever, `journal tracks` works, and
+#: `journal tracks help` said "No such command: tracks". A permanent alias with no help is
+#: a spelling the reader is told does not exist — which is the one thing an alias promised
+#: not to be. Every alias that the synopsis does not spell in its own right belongs here.
+HELP_AS = {
+    "tracks": "environments",
+    "envs": "environments",
+    "remember": "pin",
+    "start": "work start",
+    "end": "work end",
+}
+
+
 def _help(verb: str = "") -> int:
     """The whole synopsis, or only the lines about one verb."""
     if not verb:
         fmt.say(__doc__)
         return 0
+    # THE MATCH ENDS AT A WORD, not at a prefix. `startswith("journal doc")` is true of
+    # every `journal docs …` line, so `journal doc help` answered for a noun that is not a
+    # command — and `journal doc 1` then refused, which is the CLI disagreeing with its own
+    # help about what exists. The verb must be the whole word.
+    want = HELP_AS.get(verb, verb)
+    heads = (f"journal {want}", f"journal --{want}")
     lines = [l for l in (__doc__ or "").splitlines()
-             if l.strip().startswith(f"journal {verb}") or l.strip().startswith(f"journal --{verb}")]
-    if verb in ("start", "end"):
-        lines = [l for l in (__doc__ or "").splitlines() if l.strip().startswith(f"journal work {verb}")]
-    if verb == "remember":
-        lines = [l for l in (__doc__ or "").splitlines() if l.strip().startswith("journal pin ")]
+             if any(l.strip() == h or l.strip().startswith(h + " ") for h in heads)]
     if not lines:
         fmt.say(f"No such command: {verb}\n", error=True)
         fmt.say(__doc__, error=True)
@@ -857,6 +875,17 @@ def cmd_next() -> int:
     here = tracks.current(root(), _stem())
     held = _st.get(root(), "next_text", "", stem=stem) if stem else ""
     if held:
+        # A HOLD'S DETAILS ARE READ ONCE, AND THE SNAPSHOT DIES WITH THE READING. This text
+        # was written by the hold that sent you here, and it describes the list AS IT WAS AT
+        # THAT STOP. Nothing refreshed it afterwards, so a loop firing `journal next` every
+        # fifteen minutes went on being handed the same frozen listing — and it listed
+        # to-dos that had been CLOSED in between, offering finished work as the next thing
+        # to do while `journal todo` correctly showed them done. Two commands, one store,
+        # two answers, and the wrong one is the one an agent in auto mode reads.
+        #
+        # So the text is consumed: shown once, then cleared, and every later call recomputes
+        # from the record. The next hold writes the next snapshot.
+        _st.put(root(), "next_text", "", stem=stem)
         fmt.say(held)
         return 0
     standing = work.open_work(root())

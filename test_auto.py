@@ -482,5 +482,29 @@ s.journal("todo", "chore"); s.journal("todo", "auto", "on")
 out = s.fire("Stop", agent_id="abc")
 check("a subagent's stop is nothing to auto", out.strip(), "")
 
+# ------------------------------------- `journal next` never serves a stale snapshot
+# THE HOLD'S DETAILS ARE A PHOTOGRAPH OF ONE STOP. They were written into the runtime file
+# and nothing refreshed them, so a loop firing `journal next` every fifteen minutes kept
+# being handed the same frozen listing — including to-dos CLOSED since, offered as the next
+# thing to do while `journal todo` correctly showed them done. Two commands, one store, two
+# answers, and an agent in auto mode reads the wrong one.
+d = project(); s = Session(d, "s1")
+s.journal("todo", "the one that gets closed")
+s.journal("todo", "the one that is really next")
+s.journal("todo", "auto", "on")
+label, _ = s.stop()
+check("the hold sends the agent to `journal next`", label.startswith(AUTO_NEXT), True)
+code, first = s.journal("next")
+check("`journal next` answers with the hold's details", (code, "the one that gets closed" in first), (0, True))
+
+s.journal("todo", "start", "1")
+s.journal("work", "end", "the one that gets closed")
+code, again = s.journal("next")
+check("after that to-do is closed, `journal next` does NOT still offer it",
+      (code, "the one that gets closed" in again), (0, False))
+check("it names the one that really is next", "the one that is really next" in again, True)
+check("and `journal todo` agrees with it, which is the whole point",
+      "the one that gets closed" in s.journal("todo")[1].split("done")[0], False)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

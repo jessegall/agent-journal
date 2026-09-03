@@ -375,12 +375,33 @@ def _p_track(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
             '`.journal/journal.py switch "<name>"` (`journal environments` lists them; a new name creates one)')
 
 
+def _delegating(ctx: Ctx, here: str) -> bool:
+    """THIS SESSION HANDED `here` TO A RUNNER, so the list is not this session's to work.
+
+    `journal handoff --run` turns auto ON for the environment itself, because a runner
+    exists to work a list to its end without stopping to ask. But auto is read by whoever
+    stops, and the session that DISPATCHED the runner stops too: it sees auto on and
+    to-dos waiting, and is told to start a loop and pick up the next one. Both actors then
+    work the same list, and the record cannot say which of them did what.
+
+    Measured: a session that had delegated `cli-streamline` to a runner in its own
+    worktree was held at every stop for a loop it had no business running, while the
+    runner was already eight to-dos deep in that same list.
+
+    The delegated SUBAGENT is kept out of these two subjects by its `agent-` stem; this is
+    the other half of that exclusion, for the actor on the other end of the dispatch.
+    """
+    return tracks.delegated(ROOT, ctx.stem) == here
+
+
 @nudges.subject("loop", 10)
 def _p_loop(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # THE LOOP COMES FIRST. With auto on, everything the queue asks after this depends on
     # a session that wakes up by itself; without a loop an idle stop is the end of the list.
     m = conf.get("auto_loop_minutes", 0)
     if not m or not todo.auto(ROOT, here) or ctx.stem.startswith("agent-"):
+        return None
+    if _delegating(ctx, here):
         return None
     if not (work.open_work(ROOT) or todo.ready(ROOT, here)):
         return None
@@ -526,6 +547,8 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
 @nudges.subject("auto", 60)
 def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     if work.open_work(ROOT):
+        return None
+    if _delegating(ctx, here):
         return None
     waiting = todo.open_items(ROOT, here)
     ids = sorted(t["n"] for t in waiting)

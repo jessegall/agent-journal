@@ -99,5 +99,39 @@ p = subprocess.run([str(wt / ".journal" / "journal.py"), "nothing", "only reads"
                    capture_output=True, text=True, timeout=60)
 check("with no transcript to file under, it says the decision was NOT filed", (p.returncode, "NOT filed" in p.stdout + p.stderr), (1, True))
 
+# ---------------------------------- the shipped .gitignore hides the shared journal
+# A WORKTREE'S `.journal` IS A SYMLINK, and `/.journal/` — with the trailing slash — is a
+# pattern that matches a DIRECTORY and nothing else. So the shared journal showed as
+# `?? .journal` in every worktree of this repo, and a `git add -A` there would have
+# committed a symlink pointing at an absolute path on one machine. Measured on the real
+# repo: check-ignore returned 1 in the worktree and 0 in the main checkout, for the same
+# pattern and the same name.
+probe = base / "ignore-probe"
+probe.mkdir()
+git(probe, "init", "-q", "-b", "main")
+
+
+def ignores(pattern: str, make) -> bool:
+    (probe / ".gitignore").write_text(pattern + "\n")
+    target = probe / ".journal"
+    if target.is_symlink() or target.is_file():
+        target.unlink()
+    elif target.is_dir():
+        shutil.rmtree(target)
+    make(target)
+    r = subprocess.run(["git", "check-ignore", "-q", ".journal"], cwd=probe, timeout=60)
+    return r.returncode == 0
+
+
+as_symlink = lambda t: t.symlink_to(base)
+as_directory = lambda t: t.mkdir()
+
+check("`/.journal/` does NOT hide a symlink — the bug", ignores("/.journal/", as_symlink), False)
+check("`/.journal` does", ignores("/.journal", as_symlink), True)
+check("and still hides the real directory in the main checkout", ignores("/.journal", as_directory), True)
+check("the shipped .gitignore carries the pattern without the trailing slash",
+      [l for l in (SRC / ".gitignore").read_text().splitlines() if l.strip() in ("/.journal", "/.journal/")],
+      ["/.journal"])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

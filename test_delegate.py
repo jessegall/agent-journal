@@ -382,6 +382,38 @@ check("the runner's prompt is paragraphs: no line break inside a sentence",
 check("the page inside the runner's prompt carries no switch or delegate commands", ("journal switch" in out, "journal delegate" in out), (False, False))
 n.j("handoff", "--off")
 
+# ------------------------------------------- the runner works the list, not the dispatcher
+# `handoff --run` turns auto ON for the environment, so the runner takes the next to-do
+# without asking. Auto is read by whoever stops, and the DISPATCHING session stops too:
+# before this it saw auto on with to-dos waiting and was held for a loop, then for the
+# next to-do, while its runner was already deep in that same list.
+main.j("delegate", "--off")
+main.j("prepare", "dispatched-env")
+main.j("todo", "something for the runner to do")
+main.j("todo", "auto", "on")
+
+
+def held(session):
+    out, _ = session.fire("Stop")
+    return json.loads(out).get("reason", "") if out.strip() else ""
+
+
+check("with auto on and a to-do ready, a session that delegated nothing is held for a loop",
+      "no loop running" in held(main), True)
+main.j("delegate", "dispatched-env")
+check("a session that delegated the environment is not held for a loop: its runner works the list",
+      held(main), "")
+check("nor for the next to-do", ("loop" in held(main), "todo start" in held(main)), (False, False))
+check("the delegation is what silences it, not the to-do going away",
+      len(main.j("todo")[1].splitlines()) > 1, True)
+main.j("delegate", "--off")
+# `--off` puts the session back on the environment it came from, so the hold returns only
+# once it is working `dispatched-env` in its own right again.
+main.j("switch", "dispatched-env")
+check("with the run over, the same session is held for the loop again",
+      "no loop running" in held(main), True)
+main.j("todo", "auto", "off")
+
 # ---------------------------------------------------------------- the rule off
 (root / "settings.json").write_text(json.dumps({"one_session_per_environment": False}))
 fourth = S("dddddddd-0000-4000-8000-000000000004"); fourth.j("switch", "wwm-1601")

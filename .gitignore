@@ -5,4 +5,13 @@ __pycache__/
 .journal/state.json*
 # this project's own journal instance stays local: a clone must hold no .journal/ at all,
 # because every puller before 1.12.0 walks into that folder when it exists
-/.journal/
+#
+# NO TRAILING SLASH, and that is the whole point. `/.journal/` matches a DIRECTORY and
+# nothing else, and in a worktree of this repo `.journal` is a SYMLINK to the main
+# checkout's — so check-ignore returned 1, the shared journal showed as `?? .journal` in
+# every worktree, and a `git add -A` there would have committed a symlink pointing at an
+# absolute path on somebody's machine. Without the slash the pattern matches both.
+/.journal
+
+# the IDE's own folder, never this project's
+/.idea

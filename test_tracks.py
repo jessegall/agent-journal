@@ -226,5 +226,33 @@ check("and can still be pinned to", took, True)
 tracks.switch(r9, "default", AT)
 check("the thirty are untouched", len(pins.live(r9)), 30)
 
+# ------------------------------------------------- every alias answers for itself
+# RULING R3 KEEPS EVERY CURRENT SPELLING RUNNING FOREVER, and an alias with no help is a
+# spelling the reader is told does not exist. `journal tracks` ran while `journal tracks
+# help` answered "No such command: tracks", because help was a PREFIX GREP over the
+# synopsis and the synopsis no longer spells `tracks`. The same prefix match answered for
+# `journal doc` and `journal environment`, which are not commands at all — the CLI
+# disagreeing with its own help about what exists, in both directions at once.
+J = str(SRC / "journal.py")
+HELP_CWD = tempfile.mkdtemp()   # no record anywhere above it: help must not need one
+
+
+def helped(verb):
+    p = subprocess.run([sys.executable, J, verb, "help"], cwd=HELP_CWD,
+                       capture_output=True, text=True, timeout=60)
+    return p.returncode == 0 and "No such command" not in p.stdout + p.stderr
+
+
+for alias in ("environments", "envs", "tracks"):
+    check(f"`journal {alias} help` answers", helped(alias), True)
+for alias in ("pins", "pin", "remember", "rules", "rule", "todo", "docs", "tools",
+              "work", "start", "end", "switch", "prepare", "delegate", "handoff"):
+    check(f"`journal {alias} help` answers", helped(alias), True)
+for not_a_command in ("doc", "environment", "pinn", "tool"):
+    check(f"`journal {not_a_command} help` refuses: it is a prefix, not a verb",
+          helped(not_a_command), False)
+check("help needs no record: it reads the synopsis, not the store",
+      (Path(HELP_CWD) / ".journal").exists(), False)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
