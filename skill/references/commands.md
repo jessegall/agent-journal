@@ -76,7 +76,7 @@ A brief on stdin:
 
     journal docs                     the catalogue
     journal docs <doc>               read a doc; `<doc>.<p>` reads one part
-    journal docs <doc> files         its attachments, as a tree; `docs files` lists every doc's
+    journal docs files <doc>         its attachments, as a tree; `docs files` lists every doc's; `docs <doc> files` still works
     journal docs add "<title>" --abstract="<one line>" --brief   a new doc; the intro on stdin
     journal docs part <doc> "<title>" --brief   a new part, from stdin
     journal docs attach <doc> <path> "<what it is>" [--replace]   copy a file or a folder into the doc
@@ -208,3 +208,27 @@ with a reason.
 The gates exist because nudges were measured and did not land: a session tagged 843
 messages faithfully and ran `work start` zero times, and the user had to ask for a pin after a
 context warning. A rule becomes a gate only when its nudge has been shown not to work.
+
+**Every command takes its arguments the same way: `journal <noun> <verb> [<id>]
+[<payload>]`, noun first, plural nouns canonical.** `pins`, `rules`, `docs`, `tools` and
+`todo`/`todos` all read `<noun>` alone, read one with `<noun> <id>`, and act with an
+explicit verb — `add`, `strike`, `list`, `show`, and each noun's own lifecycle verbs
+(`start`/`done`/`ask`/`answer` for a to-do, `part`/`attach`/`final` for a doc). `strike`
+is the one verb for retiring anything, everywhere — a struck pin, a repealed rule, a
+dropped to-do, a removed tool are the same idea and now the same word. Every spelling
+that predates this — `pin`, `remember`, `rule`, bare `strike`, bare `promote`, `todo
+drop`, `tools remove` — still runs, forever, calling the exact same function its new
+alias calls; none of them is printed as deprecated.
+
+**Four kinds of command stay outside that pattern, on purpose, not by oversight.**
+`switch`, `prepare`, `delegate` and `handoff` stay top-level verbs rather than being
+wrapped under an `environments` noun: they are session/environment *lifecycle* actions,
+not collection CRUD — there is no list of them to add to or strike from — and they are
+burned into `hook.py`'s hold text, `handoff.default.md`, and every already-generated
+`.journal/handoff.md`. Wrapping them would cost every reader a word and buy nothing.
+`search` stays top-level for the same reason: it has no collection noun of its own. And
+the singleton reads — `conversation`, `user`, `open`, `carry`, `next`, `verify`,
+`settings`, `version`, `worktree`, `loop`, `nothing` — are one-shot, not a collection, so
+noun-first has nothing to attach to. Separately, `docs detach` keeps its own name rather
+than folding into `docs strike`: an attachment is not a part, and `docs strike <doc>
+<name>` would be ambiguous against `docs strike <doc>.<p>`.
