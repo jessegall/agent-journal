@@ -226,6 +226,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 ### Environments and maintenance
 
     journal environments                       every environment, this session's marked, and who is on which
+    journal env | envs | environment | tracks  the same noun; every spelling is permanent
     journal switch "<name>"              this session onto that environment; from a terminal, the project
     journal switch "<name>" --project    this session, and where new sessions start (agent)
     journal switch "<name>" --session=<id>   move one running session; --all-sessions moves all

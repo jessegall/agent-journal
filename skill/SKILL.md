@@ -353,6 +353,7 @@ the holder may be a session they are using.
 
 `switch`, `claim`, `prepare`, `delegate` and `handoff` each answer under the noun too:
 `journal environments switch "<name>"` is the same command as `journal switch "<name>"`.
+The noun answers to `env`, `envs`, `environment`, `tracks` and `track` as well.
 
 ## If a hook holds or denies you
 

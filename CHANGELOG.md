@@ -4,6 +4,21 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.24.1 — the environments noun answers to `env`
+
+`journal env` is `journal environments`, and so are `envs`, `environment`, `tracks` and
+`track`. `environments` stays canonical (ruling R10) and every other spelling is a
+permanent alias, never printed as deprecated — `--env=<name>` already spelled it short as a
+flag, so the noun answering to the same word is the consistent thing.
+
+The four places that listed those spellings inline are one constant now, `ENV_NOUNS`. Four
+copies of a list is three chances to forget an alias, and the fifth site would have been
+the one that did.
+
+Two assertions in test_tracks.py flipped, and correctly: they held `journal environment
+help` to REFUSING, because that spelling dispatched nowhere. It dispatches now, so it must
+answer — the "help answers exactly what runs" rule, working in the direction that adds.
+
 ## 1.24.0 — a name that is also a verb
 
 Every noun's READ is an explicit verb: `journal tools show <name>`, `journal docs show

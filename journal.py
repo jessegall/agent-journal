@@ -116,9 +116,15 @@ def _resolved() -> tuple[Path, bool] | None:
 
 
 #: The lifecycle verbs `journal environments <verb>` hands to their top-level twins. Reads
-#: (`journal environments`, `journal environments "<name>"`) are not here: they are the noun
-#: itself, and a name is not a verb.
+#: (`journal environments`, `journal environments show "<name>"`) are not here: they are the
+#: noun itself, and a name is not a verb.
 ENV_VERBS = ("switch", "claim", "prepare", "delegate", "handoff")
+
+#: EVERY SPELLING OF THE NOUN, in ONE list, because it was written out four times and a
+#: fifth site would have been the one that forgot an alias. `environments` is canonical
+#: (ruling R10); the singular and the short forms are permanent aliases like `pin` and
+#: `todo`, and `--env=<name>` already spelled it short, so the noun answers to it too.
+ENV_NOUNS = ("environments", "environment", "envs", "env", "tracks", "track")
 
 
 def _help(verb: str = "") -> int:
@@ -1355,18 +1361,18 @@ def main(argv: list[str]) -> int:
     # `journal todos start` and `journal pins add` looks for `journal environments switch`,
     # and finding nothing there is the inconsistency this whole pass exists to end. Both
     # spellings dispatch to the same function, the way `todo` and `todos` already do.
-    if verb in ("environments", "envs", "tracks") and len(rest) > 1 and rest[1] in ENV_VERBS:
+    if verb in ENV_NOUNS and len(rest) > 1 and rest[1] in ENV_VERBS:
         rest = rest[1:]
         verb = rest[0]
     # `show` AND `list` STAY UNDER THE NOUN, because neither is a top-level verb: there is
     # no `journal show`. An environment can be named anything, `switch` and `claim`
     # included, so `journal environments show "claim"` is how its page is read.
-    if verb in ("environments", "envs", "tracks") and len(rest) > 1 and rest[1] in ("show", "read"):
+    if verb in ENV_NOUNS and len(rest) > 1 and rest[1] in ("show", "read"):
         if len(rest) < 3:
             fmt.say('environments show wants a name: journal environments show "<name>"', error=True)
             return 1
         return cmd_tracks(" ".join(rest[2:]))
-    if verb in ("environments", "envs", "tracks") and len(rest) == 2 and rest[1] == "list":
+    if verb in ENV_NOUNS and len(rest) == 2 and rest[1] == "list":
         return cmd_tracks("")
     if verb == "user":
         return cmd_user(back)
@@ -1462,7 +1468,7 @@ def main(argv: list[str]) -> int:
         return cmd_carry(fresh)
     if verb == "claim":
         return cmd_claim(rest[1] if len(rest) > 1 else "", " ".join(rest[2:]))
-    if verb in ("environments", "envs", "tracks"):
+    if verb in ENV_NOUNS:
         return cmd_tracks(" ".join(rest[1:]))
     if verb == "prepare":
         return cmd_prepare(" ".join(rest[1:]))

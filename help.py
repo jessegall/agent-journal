@@ -88,7 +88,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal tools index           a tool.md for every folder under .journal/tools/ that has none",
     ),
     "environments": (
-        "journal environments [list]   every environment, this session's marked, which sessions are on which and whether they are running",
+        "journal environments [list]   every environment, this session's marked, which sessions are on which and whether they are running — `env`, `envs`, `environment`, `tracks` and `track` are the same noun",
         'journal environments show "<name>"   the pickup page of one: docs to read first, what stands, open work, to-dos in order, how to begin; bare `journal environments "<name>"` is the same',
         'journal environments switch "<name>" [--project|--session=<id>|--all-sessions]   this session\'s environment; --project also where new sessions start',
         "journal switch --back         the one you came from",
@@ -119,8 +119,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
 
 #: every other spelling -> the group whose lines it borrows. Ruling R3: these run forever,
 #: so they answer forever. A spelling that dispatches but has no help is a broken promise.
-#: THE CONVERSE IS THE OTHER HALF, and it is why `doc`, `tool`, `environment`, `auto` and
-#: `await` are absent: none of them dispatches. `journal doc 1` refuses, so `journal doc
+#: THE CONVERSE IS THE OTHER HALF, and it is why `doc`, `tool`, `auto` and `await` are
+#: absent: none of them dispatches. `journal doc 1` refuses, so `journal doc
 #: help` must refuse too — a CLI that answers for a noun it does not have is disagreeing
 #: with itself about what exists, and the reader believes the help. Only a spelling that
 #: RUNS gets an entry here; test_tracks.py holds all five to their refusal.
@@ -130,7 +130,8 @@ ALIAS: dict[str, str] = {
     "nothing": "pins",
     "rule": "rules",
     "todo": "todos",
-    "tracks": "environments", "envs": "environments",
+    "tracks": "environments", "track": "environments",
+    "envs": "environments", "env": "environments", "environment": "environments",
     "switch": "environments", "prepare": "environments", "delegate": "environments",
     "claim": "environments",
     "handoff": "environments", "worktree": "environments",

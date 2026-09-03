@@ -117,13 +117,14 @@ A brief on stdin:
 **Environments**
 
     journal environments                   every environment, this session's marked, the start environment marked, who is on which
+    journal env | envs | environment | tracks | track   the same noun, every one a permanent alias
     journal switch "<name>"          this session onto that environment; creates it if new
     journal switch "<name>" --project   this session, and where new sessions start
     journal switch "<name>" --session=<id> | --all-sessions   move other sessions (a terminal's switch offers these)
     journal switch --back            the environment this session came from
     journal claim "<name>" "<why>"   take one a live session still holds: it is unbound, told at its next stop why and by whom, and can claim it back. Nothing of the environment is deleted
     journal environments switch|claim|prepare|delegate|handoff …   the noun+verb twin of each of these; the top-level spelling stays (ruling R11) and both call the same function
-    journal environments "<name>"    the pickup page: docs to read first, what stands, open work, to-dos, how to begin
+    journal environments show "<name>"   the pickup page: docs to read first, what stands, open work, to-dos, how to begin (bare `journal environments "<name>"` is the same)
     journal prepare "<name>"         create an environment for a piece of work and switch to it (see prepare.md)
     journal delegate "<name>" | --off   this session and its subagents act on it; a subagent's journal lands there
   LOAD THE `journal-handoff` SKILL before any of these five: they dispatch agents, and it

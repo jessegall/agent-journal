@@ -243,12 +243,12 @@ def helped(verb):
     return p.returncode == 0 and "No such command" not in p.stdout + p.stderr
 
 
-for alias in ("environments", "envs", "tracks"):
+for alias in ("environments", "environment", "envs", "env", "tracks", "track"):
     check(f"`journal {alias} help` answers", helped(alias), True)
 for alias in ("pins", "pin", "remember", "rules", "rule", "todo", "docs", "tools",
               "work", "start", "end", "switch", "prepare", "delegate", "handoff"):
     check(f"`journal {alias} help` answers", helped(alias), True)
-for not_a_command in ("doc", "environment", "pinn", "tool"):
+for not_a_command in ("doc", "pinn", "tool"):
     check(f"`journal {not_a_command} help` refuses: it is a prefix, not a verb",
           helped(not_a_command), False)
 check("help needs no record: it reads the synopsis, not the store",
