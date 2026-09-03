@@ -192,7 +192,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 `<doc>` is a doc's number or its name.
 
     journal docs                         the catalogue
-    journal docs <doc>                   read a doc; <doc>.<p> reads one part
+    journal docs show <doc>                   read a doc; <doc>.<p> reads one part
     journal docs files <doc>             its attachments, as a tree; `docs files` lists every doc's (also: `docs <doc> files`)
     journal docs add "<title>" --abstract="<one line>" --brief
                                          a new doc; the intro from stdin
@@ -210,7 +210,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 ### Tools
 
     journal tools                        every tool: what it does, how to call it
-    journal tools <name>                 read one
+    journal tools show <name>                 read one
     journal tools run <name> …           run it from the project root
     journal tools add <name> "<title>" --summary="…" --usage="…" --entry=<file>
                                          catalogue a script (agent)

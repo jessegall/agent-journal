@@ -89,7 +89,7 @@ A brief on stdin:
 **Docs, for every environment** — `<doc>` is a doc's number or its name (the title, or a unique part of it)
 
     journal docs                     the catalogue
-    journal docs <doc>               read a doc; `<doc>.<p>` reads one part
+    journal docs show <doc>               read a doc; `<doc>.<p>` reads one part
     journal docs files <doc>         its attachments, as a tree; `docs files` lists every doc's; `docs <doc> files` still works
     journal docs add "<title>" --abstract="<one line>" --brief   a new doc; the intro on stdin
     journal docs part <doc> "<title>" --brief   a new part, from stdin
@@ -107,7 +107,7 @@ A brief on stdin:
 **Tools, for every environment**
 
     journal tools                    the catalogue
-    journal tools <name>             read one
+    journal tools show <name>        read one; `show` is how a tool NAMED after a verb (add, run, index) is reached
     journal tools run <name> [args]  run its entry point from the project root
     journal tools add <name> "<title>" --summary="…" --usage="…" --when="…" --entry=<file> [--brief]
     journal tools set <name> summary|usage|when|entry "<value>"

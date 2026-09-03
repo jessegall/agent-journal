@@ -223,5 +223,54 @@ for spelling in sorted(help_mod.ALIAS):
     check(f"the alias `{spelling}` answers, because it runs (ruling R3)",
           (code, "No such command" not in out), (0, True))
 
+# ------------------------------------------- a name that is also a verb, on every noun
+# THE USER'S POINT: a tool can be CALLED `add` or `run`. Reading one by putting its name
+# where a verb goes works right up until somebody names it after a verb, and then the
+# noun's own vocabulary eats it — silently, and with no way to say which was meant. Every
+# read is an explicit verb now, and the bare form stays as the alias ruling R3 promises.
+d3 = fresh()
+J3 = str(d3 / ".journal" / "journal.py")
+env3 = {**os.environ, transcript.SESSION_ENV: "s1"}
+
+
+def j3(*args, stdin=""):
+    p = subprocess.run([J3, *args], env=env3, input=stdin, capture_output=True, text=True, timeout=60)
+    return p.returncode, p.stdout + p.stderr
+
+
+(d3 / "x.sh").write_text("#!/bin/sh\necho ran\n")
+os.chmod(d3 / "x.sh", 0o755)
+for name in ("add", "run", "index", "list", "show", "strike", "set"):
+    code, out = j3("tools", "add", name, f"A tool called {name}", "--summary=x", "--entry=x.sh")
+    check(f"a tool may be NAMED {name!r}", (code, f"tool {name}" in out), (0, True))
+    code, out = j3("tools", "show", name)
+    check(f"`journal tools show {name}` reads it, whatever the verb table says",
+          (code, f"A tool called {name}" in out), (0, True))
+code, out = j3("tools", "run", "run")
+check("`journal tools run run` runs the tool called run", (code, "ran" in out), (0, True))
+code, out = j3("tools", "list")
+check("`journal tools list` is the catalogue", (code, "TOOLS OF THIS PROJECT" in out), (0, True))
+
+j3("docs", "add", "search", "--abstract=a doc whose name is a verb")
+code, out = j3("docs", "show", "search")
+check("`journal docs show search` reads the doc called search, not the search verb",
+      (code, "a doc whose name is a verb" in out or "search" in out), (0, True))
+code, out = j3("docs", "list")
+check("`journal docs list` is the catalogue", (code, "DOCS OF THIS PROJECT" in out), (0, True))
+
+# A VERB WITH ITS ARGUMENT MISSING IS AN ERROR, NEVER A PAYLOAD. Found by probing: this
+# filed a to-do titled "show" and said it had succeeded.
+code, out = j3("todos", "show")
+check("`journal todos show` with no number REFUSES instead of filing a to-do called show",
+      (code, "wants a to-do number" in out), (1, True))
+code, out = j3("todos")
+check("and nothing was written by that refusal", "show" not in out.split("TO-DO")[-1][:200], True)
+code, out = j3("environments", "show", "default")
+check('`journal environments show "<name>"` is the pickup page', (code, "ENVIRONMENT default" in out), (0, True))
+code, out = j3("environments", "show")
+check("`journal environments show` with no name refuses", (code, "wants a name" in out), (1, True))
+code, out = j3("environments", "list")
+check("`journal environments list` is the listing", (code, "ENVIRONMENTS" in out), (0, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

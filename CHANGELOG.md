@@ -4,6 +4,26 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.24.0 — a name that is also a verb
+
+Every noun's READ is an explicit verb: `journal tools show <name>`, `journal docs show
+<doc>`, `journal environments show "<name>"`, beside the `list` each noun already answers.
+The bare spellings — `journal tools <name>`, `journal docs 2`, `journal environments
+"<name>"` — all still run, as ruling R3 requires; `show` is the one that always works.
+
+BECAUSE A TOOL CAN BE CALLED `add`. Reading one by putting its name where a verb goes is
+fine until somebody catalogues a tool named after a verb, and then the noun's own
+vocabulary eats it: `journal tools add` is the add verb, forever, and there is no way to
+say "the tool called add". Proved with tools named add, run, index, list, show, strike and
+set, and a doc named search — each unreachable before this, each readable now, and
+`journal tools run run` runs the one called run.
+
+AND A VERB WITH ITS ARGUMENT MISSING IS AN ERROR, NEVER A PAYLOAD. Found while probing the
+same seam: `journal todos show` with no number fell past the check and was read as a TITLE.
+It filed a to-do called "show" and reported success. A write that lands wrong while saying
+it went right is the one shape this package exists to prevent. It refuses now, and so does
+`journal environments show` with no name.
+
 ## 1.23.0 — one pattern for every command: `journal <noun> <verb> [<id>] [<payload>]`
 
 AN ENVIRONMENT CAN BE CLAIMED. `journal claim "<name>" "<why>"` takes one a live session

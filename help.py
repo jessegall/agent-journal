@@ -62,8 +62,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
     ),
     "docs": (
         "journal docs                  the catalogue: every doc, its status, parts, files and abstract",
-        "journal docs <doc>            read a doc — <doc> is its number or its name, here and everywhere below",
-        "journal docs <doc>.<p>        read one part of it",
+        "journal docs show <doc>       read a doc — <doc> is its number or its name, here and everywhere below; bare `journal docs <doc>` is the same",
+        "journal docs show <doc>.<p>   read one part of it",
         "journal docs files <doc>      its attachments, as a tree; `journal docs <doc> files` and bare `journal docs files` still work",
         'journal docs add "<title>" --abstract="<one line>" --brief   a new doc; the brief on stdin is its intro',
         'journal docs part <doc> "<title>" --brief   a new part, from stdin — a report, a section, a finding',
@@ -80,7 +80,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
     ),
     "tools": (
         "journal tools                 the tools: scripts kept for repeated work, with what each does and how to call it",
-        "journal tools <name>          read one",
+        "journal tools show <name>     read one — bare `journal tools <name>` is the same, but `show` is the way to reach a tool NAMED after a verb",
         "journal tools run <name> [args…]   run it from the project root",
         'journal tools add <name> "<title>" --summary="<one line>" [--usage="<how>"] [--when="<when>"] [--entry=<file>] [--brief]',
         'journal tools set <name> summary|usage|when|entry "<value>"',
@@ -88,8 +88,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal tools index           a tool.md for every folder under .journal/tools/ that has none",
     ),
     "environments": (
-        "journal environments          every environment, this session's marked, which sessions are on which and whether they are running",
-        'journal environments "<name>"   the pickup page of one: docs to read first, what stands, open work, to-dos in order, how to begin',
+        "journal environments [list]   every environment, this session's marked, which sessions are on which and whether they are running",
+        'journal environments show "<name>"   the pickup page of one: docs to read first, what stands, open work, to-dos in order, how to begin; bare `journal environments "<name>"` is the same',
         'journal environments switch "<name>" [--project|--session=<id>|--all-sessions]   this session\'s environment; --project also where new sessions start',
         "journal switch --back         the one you came from",
         'journal environments claim "<name>" "<why>"   take one a live session still holds: it is unbound and told at its next stop',

@@ -236,7 +236,7 @@ runner hands back.
 ## Docs: what was settled, catalogued
 
     journal docs                                the catalogue: number, title, status, parts, files, abstract
-    journal docs <doc>  |  journal docs <doc>.<p>   read a doc, or one part; <doc> is its number or its name
+    journal docs show <doc>  |  journal docs show <doc>.<p>   read a doc, or one part; <doc> is its number or its name
     journal docs files <doc>                    its attachments, as a tree (also: `docs <doc> files`)
     journal docs add "<title>" --abstract="<one line>" --brief    a new doc, its intro on stdin
     journal docs part <doc> "<title>" --brief   a report, a section, a finding — as one part
@@ -287,7 +287,7 @@ but if it is a design or a report, file it as a doc so it is handed on and found
 ## Tools: scripts kept for repeated work
 
     journal tools                       every tool: what it does, how to call it
-    journal tools <name>                read one
+    journal tools show <name>           read one (`show` reaches a tool named after a verb)
     journal tools run <name> …          run it from the project root
     journal tools add <name> "<title>" --summary="…" --usage="…" --entry=<file> [--brief]
 

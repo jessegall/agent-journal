@@ -542,8 +542,18 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
     # existing bare-shape code below is the ONLY place either behaviour lives.
     if rest and rest[0] == "list":
         rest = rest[1:]
-    if rest and rest[0] == "show" and len(rest) > 1 and rest[1].isdigit():
-        rest = rest[1:]
+    if rest and rest[0] == "show":
+        # A VERB WITH ITS ARGUMENT MISSING IS AN ERROR, NEVER A PAYLOAD. `journal todos show`
+        # with no number fell through this check and was read as a TITLE: it filed a to-do
+        # called "show" and reported success. A write that lands wrong while saying it went
+        # right is the one shape this package exists to prevent, and it is the same defect
+        # as a tool named `add` — the noun's vocabulary and its payload sharing one slot.
+        if len(rest) > 1 and rest[1].isdigit():
+            rest = rest[1:]
+        else:
+            fmt.say("todos show wants a to-do number: journal todos show 3"
+                    + (f", got {rest[1]!r}" if len(rest) > 1 else ""), error=True)
+            return 1
     if not rest:
         waiting = todo.open_items(root(), here)
         done = len(todo._all(root(), here)) - len(waiting)
@@ -680,7 +690,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
                            + ", ".join(x.name for x in loose)))
         fmt.say()
         fmt.say(fmt.commands([
-            ("journal docs <doc>", "read one, by number or name; <doc>.<p> reads one part"),
+            ("journal docs show <doc>", "read one, by number or name; <doc>.<p> reads one part"),
             ('journal docs add "<title>" --abstract="<one line>" --brief', "a new doc, its intro on stdin"),
             ('journal docs part <doc> "<title>" --brief', "a new part, from stdin"),
             ('journal docs attach <doc> <path> "<what it is>"', "copy a file or folder (HTML, a design, a PDF) into the doc"),
@@ -742,6 +752,14 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         return 0
     elif verb == "search":
         return cmd_docs_search(" ".join(rest[1:]), page)
+    # A DOC IS NAMED BY THE USER, so it can be called anything — `journal docs show search`
+    # is how you read a doc called "search" when the bare form would dispatch the verb.
+    elif verb in ("show", "read") and len(rest) > 1:
+        ok, msg = docs.show(root(), " ".join(rest[1:]))
+        fmt.say(msg, error=not ok)
+        return 0 if ok else 1
+    elif verb == "list" and len(rest) == 1:
+        return cmd_docs([], brief, abstract, page, replace)
     else:
         ok, msg = docs.show(root(), " ".join(rest))
         fmt.say(msg, error=not ok)
@@ -764,7 +782,7 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1) -> int:
                            + ", ".join(x.name for x in loose) + " — `journal tools index` catalogues them."))
         fmt.say()
         fmt.say(fmt.commands([
-            ("journal tools <name>", "read one"),
+            ("journal tools show <name>", "read one — `show` reaches a tool named after a verb"),
             ("journal tools run <name> …", "run it from the project root"),
             ('journal tools add <name> "<title>" --summary="…" --usage="…" --entry=<file>', "catalogue a script"),
         ]))
@@ -795,6 +813,16 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1) -> int:
     elif verb == "run":
         fmt.say("journal tools run <name> [args…]", error=True)
         return 1
+    # THE READ IS A VERB TOO, because a tool may be NAMED after one. `journal tools <name>`
+    # reads a tool by putting its name where a verb goes, which works until somebody
+    # catalogues a tool called `add`, `run` or `index` — and then the noun's own vocabulary
+    # eats it, silently and forever. `journal tools show add` is the way to say "the tool
+    # called add" no matter what it is called. The bare form stays: ruling R3, nothing that
+    # runs today stops running.
+    elif verb in ("show", "info", "read") and len(rest) > 1:
+        ok, msg = tools.show(root(), rest[1])
+    elif verb == "list" and len(rest) == 1:
+        return cmd_tools([], brief, meta, page)
     else:
         ok, msg = tools.show(root(), verb)
     fmt.say(msg, error=not ok)
@@ -1330,6 +1358,16 @@ def main(argv: list[str]) -> int:
     if verb in ("environments", "envs", "tracks") and len(rest) > 1 and rest[1] in ENV_VERBS:
         rest = rest[1:]
         verb = rest[0]
+    # `show` AND `list` STAY UNDER THE NOUN, because neither is a top-level verb: there is
+    # no `journal show`. An environment can be named anything, `switch` and `claim`
+    # included, so `journal environments show "claim"` is how its page is read.
+    if verb in ("environments", "envs", "tracks") and len(rest) > 1 and rest[1] in ("show", "read"):
+        if len(rest) < 3:
+            fmt.say('environments show wants a name: journal environments show "<name>"', error=True)
+            return 1
+        return cmd_tracks(" ".join(rest[2:]))
+    if verb in ("environments", "envs", "tracks") and len(rest) == 2 and rest[1] == "list":
+        return cmd_tracks("")
     if verb == "user":
         return cmd_user(back)
     if verb == "open":
