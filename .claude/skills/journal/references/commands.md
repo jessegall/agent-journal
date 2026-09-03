@@ -121,6 +121,8 @@ A brief on stdin:
     journal switch "<name>" --project   this session, and where new sessions start
     journal switch "<name>" --session=<id> | --all-sessions   move other sessions (a terminal's switch offers these)
     journal switch --back            the environment this session came from
+    journal claim "<name>" "<why>"   take one a live session still holds: it is unbound, told at its next stop why and by whom, and can claim it back. Nothing of the environment is deleted
+    journal environments switch|claim|prepare|delegate|handoff …   the noun+verb twin of each of these; the top-level spelling stays (ruling R11) and both call the same function
     journal environments "<name>"    the pickup page: docs to read first, what stands, open work, to-dos, how to begin
     journal prepare "<name>"         create an environment for a piece of work and switch to it (see prepare.md)
     journal delegate "<name>" | --off   this session and its subagents act on it; a subagent's journal lands there

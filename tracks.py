@@ -73,6 +73,71 @@ def unbind(root: Path, stem: str) -> None:
             (root / BINDINGS).write_text(json.dumps(b, indent=2) + "\n")
 
 
+def claim(root: Path, name: str, at: str, stem: str, why: str,
+          stale_hours: float = 24.0) -> tuple[bool, str]:
+    """Take an environment a live session still holds, and tell that session it lost it.
+
+    THE GUARD REFUSES; IT DOES NOT ADJUDICATE. `one_session_per_environment` stops a second
+    session binding to an occupied environment, which is right almost always and useless in
+    the one case it is reached for: the holder is GONE — a closed terminal, a crashed
+    session, a runner that never reported — and the only ways past were to wait out
+    `stale_hours`, or to turn the setting off for every environment at once. A guard whose
+    only override is global is a guard people turn off.
+
+    A CLAIM IS AN EVICTION, NEVER CO-TENANCY. Occupancy is derived from who is BOUND, so
+    taking an environment means unbinding the holder: two sessions on one environment is the
+    exact thing the guard exists to prevent, and a claim that produced it would be a bug
+    wearing a command's name.
+
+    THE EVICTED SESSION IS TOLD, which is what makes this safe rather than sneaky. The note
+    lands on its runtime and its next stop reads it out, so it learns it has moved from the
+    journal instead of by contradiction — writing to an environment that is no longer its
+    own. Nothing is deleted: the environment's pins, work and to-dos are untouched, and the
+    evicted session can claim it back.
+
+    IT ALWAYS SAYS WHY, for the same reason `strike` does. A takeover with no reason on the
+    record is indistinguishable from a bug, and the session that lost the environment is
+    owed the sentence.
+    """
+    name = state.slug(name)
+    if not name:
+        return False, ('claim what? `journal claim "<environment>" "<why it is yours now>"` — '
+                       "`journal environments` lists them")
+    why = (why or "").strip()
+    if not why:
+        return False, (f'a claim says why: `journal claim "{name}" "<why it is yours now>"` — '
+                       "the session that loses it is told the reason, so there has to be one")
+    if name not in _all(root):
+        return False, (f"no environment is called {name}; nothing to claim — "
+                       f'`journal prepare "{name}"` makes one, `journal switch "{name}"` takes it')
+    held = occupants(root, name, stem, stale_hours)
+    for sid, age in held:
+        unbind(root, sid)
+        state.put(root, "claimed_away",
+                  {"track": name, "by": stem or "", "why": why, "at": at, "age": age_text(age)},
+                  stem=sid)
+        # ITS OLD SITUATION IS NO LONGER ITS SITUATION. `track_due` is the hold saying the
+        # environment it is on is held by somebody else; the session is on no environment
+        # now, so that hold is about a place it has left. Left standing it fires ahead of
+        # the claim's own note and the session is told the wrong thing first.
+        state.put(root, "track_due", None, stem=sid)
+    claims = state.get(root, "claims", []) or []
+    claims.append({"track": name, "by": stem or "", "at": at, "why": why,
+                   "from": [sid for sid, _ in held]})
+    state.put(root, "claims", claims[-50:])
+    ok, msg = switch(root, name, at, stem=stem, exclusive=False, stale_hours=stale_hours)
+    if not ok:
+        return False, msg
+    if not held:
+        return True, (f"{name} was held by nobody, so there was nothing to take — this session is on it\n"
+                      f"  `journal switch \"{name}\"` would have done the same")
+    who = ", ".join(f"{sid[:8]} ({age_text(age)})" for sid, age in held)
+    return True, (f"claimed {name} from session {who}\n"
+                  f"  why: {why}\n"
+                  "  that session is unbound now and is told at its next stop; nothing of the "
+                  "environment was deleted")
+
+
 def prune(root: Path, keep) -> None:
     """Drop the binding of every session `keep(stem)` says is gone."""
     b = _bindings(root)

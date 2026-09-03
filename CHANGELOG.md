@@ -6,6 +6,35 @@ newer version than the last one it saw is handed the same.
 
 ## 1.23.0 — one pattern for every command: `journal <noun> <verb> [<id>] [<payload>]`
 
+AN ENVIRONMENT CAN BE CLAIMED. `journal claim "<name>" "<why>"` takes one a live session
+still holds. The guard that refuses a second session on an environment is right almost
+always and useless in the one case it is reached for — the holder is gone, a closed
+terminal or a crashed session, and the work is not — where the only ways past were to wait
+out `session_stale_hours` or to turn the guard off for every environment at once. A guard
+whose only override is global is a guard people turn off.
+
+A claim is an EVICTION, never co-tenancy: the holder is unbound, because two sessions on
+one environment is the exact thing the guard exists to prevent. The evicted session is
+TOLD — the reason lands on its runtime and its next stop reads it out, naming who took the
+environment and why, and how to claim it back. Nothing is deleted; the pins, work and
+to-dos are untouched. The reason is required, for the same reason `strike` requires one: a
+takeover with no reason on the record is indistinguishable from a bug, and the session that
+lost the environment is owed the sentence. Every claim is kept on the record — who, from
+whom, when, why.
+
+That fixed a wrong explanation, too. An evicted session is unbound, so it fell into the
+registered-nowhere path, whose whole story is "the environment you START on is held by
+somebody else" — true of the start environment and no answer at all to what happened. A
+wrong cause is worse than none: the reader switches somewhere else and never learns its
+work moved.
+
+THE ENVIRONMENTS NOUN TAKES ITS VERBS. `journal environments switch|claim|prepare|delegate|
+handoff` are twins of the top-level spellings, which ruling R11 keeps because they are
+burned into hook.py, handoff.default.md and every generated handoff.md. Top-level was never
+meant to be the only spelling: a reader who learned `journal todos start` and `journal pins
+add` looks for `journal environments switch`, and finding nothing there is the
+inconsistency this whole release exists to end.
+
 Every command now takes its arguments the same way, and names what it does the same way.
 Nouns are plural — `pins`, `rules`, `docs`, `tools`, `todo`/`todos` (twins, either
 spelling) — and every mutating action has an explicit verb: `add`, `strike`, `promote`,

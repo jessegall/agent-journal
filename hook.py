@@ -307,7 +307,7 @@ def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
 #: up the next" was owed. The user's rule: the hook runs them one by one.
 #: The subjects of the queue live below, each registered with `nudges.subject(name, priority)`;
 #: `nudges.ordered(conf)` is the order they run in. `SUBJECTS` is kept as the default order.
-SUBJECTS = ("environment", "loop", "context", "deferral", "untagged", "work", "auto")
+SUBJECTS = ("claimed", "environment", "loop", "context", "deferral", "untagged", "work", "auto")
 
 
 def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
@@ -362,6 +362,22 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
 #: `(label, one-line brief[, details])` tuple for a hold, or `("context-only", text)` for a
 #: line said rather than held. The number is the priority: lower runs first, and
 #: `stop_priority` in settings.json overrides it per project.
+
+
+@nudges.subject("claimed", 4)
+def _p_claimed(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    """THE SESSION THAT LOST AN ENVIRONMENT LEARNS IT FROM THE JOURNAL, not by contradiction.
+
+    A claim unbinds this session, and nothing about being unbound looks like an event: the
+    next write is simply refused, or worse, lands somewhere else. So the claim leaves a note
+    on this session's runtime and it is read out here, once, ahead of everything — before
+    even the environment subject, because "you are on no environment" is the CONSEQUENCE and
+    this is the cause.
+
+    Said once and cleared: it is news, and news repeated at every stop is a hold nobody
+    reads.
+    """
+    return _claimed_note(ctx)
 
 
 @nudges.subject("environment", 5)
@@ -1812,6 +1828,31 @@ def _register(payload: dict, ctx: Ctx) -> str | None:
     return acting
 
 
+def _claimed_note(ctx: Ctx | None, clear: bool = True) -> tuple[str, str] | None:
+    """(label, text) if this session's environment was claimed away, else None. Said once.
+
+    AN EVICTED SESSION IS NOT A SESSION THAT STARTED ON A TAKEN ENVIRONMENT, and until this
+    it was told it was: being unbound, it fell into the registered-nowhere path, whose whole
+    explanation is "the environment you START on is held by somebody else". True of the
+    start environment, and no answer at all to what actually happened — the session HAD an
+    environment, and another session took it. Wrong causes are worse than none: the reader
+    switches somewhere else and never learns its work moved.
+    """
+    if ctx is None or not ctx.stem or ctx.stem.startswith("agent-"):
+        return None
+    got = state.get(ROOT, "claimed_away", {}, stem=ctx.stem)
+    if not isinstance(got, dict) or not got.get("track"):
+        return None
+    if clear:
+        state.put(ROOT, "claimed_away", {}, stem=ctx.stem)
+    by = (got.get("by") or "")[:8] or "another session"
+    return (f"environment `{got['track']}` was claimed by another session",
+            f"journal: session {by} claimed environment `{got['track']}` — {got.get('why', '')}\n"
+            "  this session is bound to nothing now; nothing of that environment was deleted, and "
+            f'`.journal/journal.py claim "{got["track"]}" "<why>"` takes it back.\n'
+            '  otherwise pick one: `.journal/journal.py switch "<name>"`, `journal environments` lists them')
+
+
 def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) -> int:
     """An actor registered nowhere: refused the journal's writes, handed the rules, else nothing.
 
@@ -1825,7 +1866,9 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
         if handler is on_session_start:
             state.put(ROOT, "session_started", payload.get("source") or "startup", stem=ctx.stem)
             _floor(ctx)
-            block = _taken_block(due) + "\n\n" + carried(payload.get("source") or "startup", ctx.stem)
+            note = _claimed_note(ctx)
+            block = ((note[1] if note else _taken_block(due))
+                     + "\n\n" + carried(payload.get("source") or "startup", ctx.stem))
             return _context("SessionStart", (WORKTREE_NOTE + "\n\n" + block) if WORKTREE_NOTE else block)
         if handler is on_pre_tool:
             verb = _journal_write(payload)
@@ -1837,6 +1880,9 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
             return 0
         if handler is on_stop:
             _HOLD_CTX[:] = [ctx.stem]
+            note = _claimed_note(ctx)
+            if note:
+                return _hold(*note)
             return _hold(f"environment `{due.get('track', '?')}` is taken by another session",
                          f"journal: environment `{due.get('track', '?')}` is taken by session {str(due.get('by', ''))[:8]} "
                          f"({due.get('age', '')}), and one session works an environment — ask the user which "

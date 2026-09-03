@@ -115,6 +115,12 @@ def _resolved() -> tuple[Path, bool] | None:
     return got
 
 
+#: The lifecycle verbs `journal environments <verb>` hands to their top-level twins. Reads
+#: (`journal environments`, `journal environments "<name>"`) are not here: they are the noun
+#: itself, and a name is not a verb.
+ENV_VERBS = ("switch", "claim", "prepare", "delegate", "handoff")
+
+
 def _help(verb: str = "") -> int:
     """The index, or the commands of one group — `help.py` holds the only list of them.
 
@@ -1129,6 +1135,15 @@ def cmd_switch(name: str, go_back: bool, project_too: bool = False, sessions: li
     return 0 if ok else 1
 
 
+def cmd_claim(name: str, why: str) -> int:
+    """Take an environment a live session still holds. The holder is unbound and told."""
+    conf, _ = settings_mod.load(root())
+    ok, msg = tracks.claim(root(), name, _now(), _stem() or "", why,
+                           stale_hours=conf["session_stale_hours"])
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
 def cmd_strike(n: int, why: str) -> int:
     ok, msg = pins.strike(root(), n, why)
     fmt.say(msg, error=not ok)
@@ -1305,6 +1320,16 @@ def main(argv: list[str]) -> int:
         else:
             rest.append(a)
     verb = rest[0] if rest else ""
+    # THE NOUN OWNS ITS VERBS, and `environments` is a noun like every other. Ruling R11
+    # keeps switch, claim, prepare, delegate and handoff as TOP-LEVEL verbs, because they
+    # are burned into hook.py, handoff.default.md and every generated .journal/handoff.md
+    # — but top-level was never meant to be the ONLY spelling. A reader who learned
+    # `journal todos start` and `journal pins add` looks for `journal environments switch`,
+    # and finding nothing there is the inconsistency this whole pass exists to end. Both
+    # spellings dispatch to the same function, the way `todo` and `todos` already do.
+    if verb in ("environments", "envs", "tracks") and len(rest) > 1 and rest[1] in ENV_VERBS:
+        rest = rest[1:]
+        verb = rest[0]
     if verb == "user":
         return cmd_user(back)
     if verb == "open":
@@ -1397,6 +1422,8 @@ def main(argv: list[str]) -> int:
         return cmd_tools(rest[1:], brief, tool_meta, page)
     if verb == "carry":
         return cmd_carry(fresh)
+    if verb == "claim":
+        return cmd_claim(rest[1] if len(rest) > 1 else "", " ".join(rest[2:]))
     if verb in ("environments", "envs", "tracks"):
         return cmd_tracks(" ".join(rest[1:]))
     if verb == "prepare":

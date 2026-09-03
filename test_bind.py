@@ -236,5 +236,53 @@ check("and switches are not refused for it", code, 0)
 r = T("rrrrrrrr-5")
 check("silencing `environment` is the same as the rule off", "IS TAKEN" in r.ctx, False)
 
+# ------------------------------------------------------------------ claiming an environment
+# THE GUARD REFUSES AND DOES NOT ADJUDICATE, so the one case it is reached for — the holder
+# is gone and the work is not — had no answer but waiting out the staleness window or
+# turning the setting off for every environment at once.
+(root2 / "settings.json").write_text(json.dumps({"bind_on_start": True}))
+a = T("aaaaaaaa-6")
+code, out = a.j("switch", "held-env")
+check("a session takes an environment", (code, tracks.bound(root2, "aaaaaaaa-6")), (0, "held-env"))
+b = T("bbbbbbbb-7")
+code, out = b.j("switch", "held-env")
+check("the guard still refuses a plain switch onto it", (code, "taken by session aaaaaaaa" in out), (1, True))
+code, out = b.j("claim", "held-env")
+check("a claim with no reason is refused: the evicted session is owed the sentence",
+      (code, "a claim says why" in out), (1, True))
+code, out = b.j("claim", "no-such-env", "mine now")
+check("a claim of an environment that does not exist is refused, naming what would make one",
+      (code, "nothing to claim" in out, "prepare" in out), (1, True, True))
+code, out = b.j("claim", "held-env", "its terminal was closed hours ago")
+check("the claim takes it, names who lost it and why",
+      (code, "claimed held-env from session aaaaaaaa" in out, "its terminal was closed hours ago" in out),
+      (0, True, True))
+check("the claimer is bound to it", tracks.bound(root2, "bbbbbbbb-7"), "held-env")
+check("and the holder is bound to NOTHING, never to a second session on the same environment",
+      tracks.bound(root2, "aaaaaaaa-6"), None)
+claims = json.loads((root2 / "record.json").read_text())["claims"]
+check("the claim is on the record: who, from whom, and why",
+      (claims[-1]["track"], claims[-1]["by"], claims[-1]["from"], claims[-1]["why"]),
+      ("held-env", "bbbbbbbb-7", ["aaaaaaaa-6"], "its terminal was closed hours ago"))
+held_text = a.fire("Stop")
+check("the evicted session is told at its next stop, with the reason and how to take it back",
+      ("was claimed by another session" in held_text, "bbbbbbbb" in held_text,
+       "its terminal was closed hours ago" in held_text), (True, True, True))
+check("it is news, said once: the next stop is not held for it again",
+      "was claimed" in a.fire("Stop"), False)
+c = T("cccccccc-8")
+c.j("switch", "empty-env")
+c.fire("SessionEnd", reason="exit")
+code, out = b.j("claim", "empty-env", "starting fresh here")
+check("claiming an environment nobody holds is allowed and says so plainly",
+      (code, "held by nobody" in out), (0, True))
+code, out = a.j("environments", "claim", "empty-env", "the twin spelling under the noun")
+check("`journal environments claim` is the same command, eviction and all",
+      (code, tracks.bound(root2, "aaaaaaaa-6"), tracks.bound(root2, "bbbbbbbb-7")),
+      (0, "empty-env", None))
+code, out = a.j("environments", "switch", "held-env")
+check("and every other lifecycle verb answers under the noun too",
+      (code, tracks.bound(root2, "aaaaaaaa-6")), (0, "held-env"))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

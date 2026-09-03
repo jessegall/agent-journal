@@ -178,7 +178,7 @@ p = subprocess.run([sys.executable, "-c", "import hook, nudges, json; print(json
                    cwd=str(s10.d / ".journal"), capture_output=True, text=True, timeout=60)
 got = json.loads(p.stdout)
 check("the default order, an override, a bad override ignored, and the numbers",
-      (got[0], got[1][:2], got[2]), (["environment", "loop", "context", "deferral", "untagged", "work", "auto"], ["work", "environment"], [["environment", 5], ["loop", 10]]))
+      (got[0], got[1][:2], got[2]), (["claimed", "environment", "loop", "context", "deferral", "untagged", "work", "auto"], ["work", "claimed"], [["claimed", 4], ["environment", 5]]))
 s11 = S()
 (s11.d / ".journal" / "settings.json").write_text(json.dumps({"gate_after_context_rung": True, "context_window": 200000, "silenced": ["loop"]}))
 s11.j("todo", "chore"); s11.j("todo", "auto", "on"); s11.user("go"); s11.say("[!reply] ok")
