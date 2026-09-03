@@ -49,8 +49,8 @@ payload, not a description of it.
 
 **Pins, for this environment**
 
-    journal pin "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a fact that must survive a compaction; --doc: the doc or part it rests on
-    journal pins add "<claim>"       the explicit spelling of the line above — `pin` is a permanent alias, not deprecated
+    journal pins add "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a fact that must survive a compaction; --doc: the doc or part it rests on
+    journal pin "<claim>"            the same command, spelled the way it always was — a permanent alias, not deprecated; `remember` too
     journal pins [--all]             every pin, numbered; --all includes struck ones
     journal pins N --full            the conversation around where pin N was written
     journal pins strike N "<why>"    retire a pin that stopped being true, no replacement needed (also: bare `journal strike N "<why>"`)
@@ -59,23 +59,23 @@ payload, not a description of it.
 
 **Rules, for every environment**
 
-    journal rule "<ruling>" [--doc=<doc>[.<p>]]   a pin that every environment obeys
-    journal rules add "<ruling>"     the explicit spelling of the line above — `rule` is a permanent alias, not deprecated
+    journal rules add "<ruling>" [--doc=<doc>[.<p>]]   a pin that every environment obeys
+    journal rule "<ruling>"          the same command, spelled the way it always was — a permanent alias, not deprecated
     journal rules [--all]            every rule, numbered
     journal rules N --full           the conversation around one
     journal rules strike N "<why>"   repeal one, on the record (also: `journal rule --strike N "<why>"`)
 
 **To-dos, for this environment** (`todos` is a twin of `todo` everywhere below — plural or singular, either works)
 
-    journal todo "<title>" [--brief] add one; --brief reads a longer brief from stdin — `journal todo add "<title>"` is the same
-    journal todo [--all]             the titles, numbered — `journal todo list` is the same
-    journal todo N                   the whole brief — `journal todo show N` is the same
-    journal todo start N             open work with that title; `work end` closes both
-    journal todo done N "<how>"      resolved without starting it
-    journal todo drop N "<why>"      abandoned, on the record — `journal todo strike N "<why>"` is the same
-    journal todo ask N "<question>"  it waits on the user's answer; auto moves on to the next
-    journal todo answer N "<answer>" the user answers from the terminal; the agent is told at its next stop and picks it up first
-    journal todo auto [on|off]       per environment: work through the list without asking, or wait for the user's word
+    journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin — bare `journal todo "<title>"` is the same
+    journal todos [--all]            the titles, numbered — `journal todos list` is the same
+    journal todos show N             the whole brief — bare `journal todo N` is the same
+    journal todos start N             open work with that title; `work end` closes both
+    journal todos done N "<how>"      resolved without starting it
+    journal todos strike N "<why>"   abandoned, on the record — `journal todo drop N "<why>"` is the same
+    journal todos ask N "<question>"  it waits on the user's answer; auto moves on to the next
+    journal todos answer N "<answer>" the user answers from the terminal; the agent is told at its next stop and picks it up first
+    journal todos auto [on|off]       per environment: work through the list without asking, or wait for the user's word
     journal todos amend <n> "<section title>" --brief    append a new `## <title>` section to a brief, from stdin
     journal todos replace <n> ["<section title>"] --brief   swap one named section (or, with no title, the whole brief); the old text is kept under struck/
 

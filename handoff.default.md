@@ -54,11 +54,11 @@ Do this, in order, and file as you go.
    of done. Same rule: it returns text, you file it. Two agents, because the one that wrote the
    plan will not find its own gaps; without the tool, be that critic yourself. File it:
    `.journal/journal.py docs part <doc> "Steps, gaps, risks, definition of done" --brief <<'EOF'`.
-5. WHAT MUST HOLD. `.journal/journal.py pin "<constraint>" --doc=<doc>[.<p>]` for each fact
+5. WHAT MUST HOLD. `.journal/journal.py pins add "<constraint>" --doc=<doc>[.<p>]` for each fact
    the runner would get wrong without: the ruling in the source, the API that must not change,
    what already works and must keep working, each gap that changed the plan. Under ten pins;
    the reasoning stays in the doc, the pin is the one line.
-6. THE TO-DOS, ONE PER UNIT OF WORK, IN ORDER. `.journal/journal.py todo "<title>" --brief
+6. THE TO-DOS, ONE PER UNIT OF WORK, IN ORDER. `.journal/journal.py todos add "<title>" --brief
    --doc=<doc>.<p> <<'EOF'` with the brief on stdin: what exactly, where to start, what done
    looks like, the one command that proves it. Small enough for one sitting each; three to nine
    in all — more is two hand-offs. A question only the user can answer: `.journal/journal.py
@@ -66,7 +66,7 @@ Do this, in order, and file as you go.
    always "verify and close": the definition of done, every suite, the tracker.
 7. VALIDATE. `.journal/journal.py environments "{name}"` is exactly the page the runner gets.
    Read it as the runner would: is to-do 1 startable from the page and its brief
-   (`.journal/journal.py todo 1`) alone? Does every to-do cite the part it comes from? Is
+   (`.journal/journal.py todos 1`) alone? Does every to-do cite the part it comes from? Is
    anything in the source covered by no to-do, pin or question? Fix what is not, then read it
    again. Then `.journal/journal.py work end "prepare {name}"`.
 
@@ -96,7 +96,7 @@ absent those words, hand the branch back and stop.
 
 This is your brief. The docs it names are read with `.journal/journal.py docs <n>` (and
 `docs <n> files` for their attachments); read them before you start. Each to-do has a brief
-that the page does not show: `.journal/journal.py todo <n>` prints it.
+that the page does not show: `.journal/journal.py todos <n>` prints it.
 
 {page}
 
@@ -108,11 +108,11 @@ the signature, the approach — under the pins and rules that stand, write what 
 `work update` so it can be reviewed and reversed, and carry on. Ask only when something
 only the user can supply is missing, or when you are stalled with nothing to show.
 
-Work the to-dos in order: `.journal/journal.py todo <n>` to read the brief, `.journal/journal.py
+Work the to-dos in order: `.journal/journal.py todos <n>` to read the brief, `.journal/journal.py
 todo start <n>` to open it, do it, `.journal/journal.py work update "<what moved>"` as you go,
 `.journal/journal.py work end "<the to-do's title, exactly>"` when it is done, and the next. A
 to-do that waits on the user is not startable; `todo start` names the next one that is. A
-question only the user can answer: `.journal/journal.py todo ask <n> "<question>"` — that closes
+question only the user can answer: `.journal/journal.py todos ask <n> "<question>"` — that closes
 the to-do's work and moves it aside — then the next to-do. Every other choice is yours: make it,
 write it in `work update`, carry on. Pin any fact a later reader would get wrong without,
 citing the doc. Never `switch`, `delegate`, `prepare` or `handoff`; subagents of your own run no

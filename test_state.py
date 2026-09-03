@@ -272,7 +272,7 @@ with path.open("a") as fh:
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
 check("the rung says the gate is coming", "NOTHING ELSE RUNS UNTIL" in held(out)[1], True)
-check("and says to park deferred work", ("HOLDING TO DO LATER" in held(out)[1], 'todo "<title>"' in held(out)[1]), (True, True))
+check("and says to park deferred work", ("HOLDING TO DO LATER" in held(out)[1], 'todos add "<title>"' in held(out)[1]), (True, True))
 check("and records that a pin is due", runtime_of(d, "s1").get("pin_due", {}).get("rung"), 0.5)
 code, out, err = fire(d, "PreToolUse", path, tool_name="Read", tool_input={"file_path": "x"})
 check("a Read is denied while a pin is due",
@@ -788,11 +788,11 @@ check("auto on is set on the record, per environment",
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("the start block says auto is on and to pick up the next one",
-      ("AUTO MODE IS ON" in ctx, "todo start <n>" in ctx, "not an instruction" in ctx), (True, True, False))
+      ("AUTO MODE IS ON" in ctx, "todos start <n>" in ctx, "not an instruction" in ctx), (True, True, False))
 code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
 check("auto on: an idle stop is held, naming the next to-do",
-      (brief, "todo start 1" in why), ("journal reminded Claude: auto is on, 2 to-do(s) waiting", True))
+      (brief, "todos start 1" in why), ("journal reminded Claude: auto is on, 2 to-do(s) waiting", True))
 code, out, err = fire(d, "Stop", path, stop_hook_active=True)
 check("the stop that follows the hold passes (an agent that answered is not trapped)", out.strip(), "")
 code, out, err = fire(d, "Stop", path)
@@ -808,7 +808,7 @@ subprocess.run([J, "end", "first chore"], env=env, capture_output=True, timeout=
 code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
 check("once it ends, the next idle stop brings the next one",
-      (brief, "todo start 2" in why), ("journal reminded Claude: auto is on, 1 to-do(s) waiting", True))
+      (brief, "todos start 2" in why), ("journal reminded Claude: auto is on, 1 to-do(s) waiting", True))
 p = subprocess.run([J, "todo"], env=env, capture_output=True, text=True, timeout=60)
 check("the list says auto is on", "auto ON" in p.stdout, True)
 p = subprocess.run([J, "todo", "auto", "off"], env=env, capture_output=True, text=True, timeout=60)

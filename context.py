@@ -265,14 +265,14 @@ def warning(used: int, window: int, pinned: int, made_of=(), rung: float = 0.0,
         # THE STANDARD, SHOWN RATHER THAN DESCRIBED. "Short and concrete" is an instruction
         # nobody can check themselves against; the last pin that was accepted is one they can.
         out.append(f"The last one written, for the shape of it:\n  {latest}")
-    out.append('  .journal/journal.py pin "<the claim, in one line>"')
+    out.append('  .journal/journal.py pins add "<the claim, in one line>"')
     out.append(_NOTHING_IS_FINE)
     # DEFERRED WORK IS THE OTHER THING A COMPACTION EATS. "I'll do X after this" lives
     # nowhere but the context, and the summary keeps what was done, not what was meant.
     out.append(
         "AND ANY WORK YOU ARE HOLDING TO DO LATER — the thing the user asked for that you "
         "set aside, the follow-up you noticed — lives only in this window. Park it now:\n"
-        '  .journal/journal.py todo "<title>" [--brief]\n'
+        '  .journal/journal.py todos add "<title>" [--brief]\n'
         "A to-do is not a pin and does not answer the question above; write both if both "
         "apply."
     )
@@ -283,7 +283,7 @@ def warning(used: int, window: int, pinned: int, made_of=(), rung: float = 0.0,
         out.append(
             "NOTHING ELSE RUNS UNTIL YOU HAVE DECIDED. The next tool call is denied until "
             "one of these has run:\n"
-            '  .journal/journal.py pin "<the claim>"\n'
+            '  .journal/journal.py pins add "<the claim>"\n'
             '  .journal/journal.py nothing "<why nothing here needs pinning>"\n'
             "Both are one command. The journal's own commands still run, so `search` and "
             "`--back=1` are available to decide with."

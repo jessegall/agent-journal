@@ -2,7 +2,7 @@
 
 THE TERMINAL DOES NOT RENDER MARKDOWN. A `#` heading is a hash on screen, a backtick is
 a backtick, and a question folded into a metadata line is a paragraph nobody can find the
-start of. Measured: `journal todo 13` opened with a title behind a hash, then "written 4h
+start of. Measured: `journal todos 13` opened with a title behind a hash, then "written 4h
 ago · line 4874 · waiting on the user: The old /definitions…" running for nine lines. The
 question was there and the user could not see it.
 

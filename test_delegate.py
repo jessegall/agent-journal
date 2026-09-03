@@ -376,7 +376,7 @@ check("an older record's names are migrated to slugs on first read, folders too"
 code, out = n.j("handoff", "real-time-nudges", "--run")
 joined = " ".join(out.split())
 check("the runner's prompt names the tags, the brief command and the forbidden verbs",
-      ("[!reply]" in out, "todo <n>" in out, "`handoff`" in out), (True, True, True))
+      ("[!reply]" in out, "todos <n>" in out, "`handoff`" in out), (True, True, True))
 check("the runner's prompt is paragraphs: no line break inside a sentence",
       ("The session that dispatched you has delegated" in out.replace("\n", " ") and all(len(l) <= 88 for l in out.splitlines())), True)
 check("the page inside the runner's prompt carries no switch or delegate commands", ("journal switch" in out, "journal delegate" in out), (False, False))

@@ -319,7 +319,7 @@ def page(root: Path, name: str, width: int = 88, commands: bool = True) -> tuple
         out.append(todo_mod.render(root, name, width=width, short_refs=True))
         if items:
             out.append("")
-            out.append(fmt.wrap("Each has a brief: .journal/journal.py todo <n> prints it. Start one with todo start <n>.", width=width))
+            out.append(fmt.wrap("Each has a brief: .journal/journal.py todos <n> prints it. Start one with todo start <n>.", width=width))
         out.append("")
         if not commands:
             return True, "\n".join(out).rstrip()

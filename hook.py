@@ -205,7 +205,7 @@ def _deferral(conf: dict, ctx: Ctx) -> tuple[str, str] | None:
         f"You wrote:\n  …{said}…\n\nThe user asked for something and this says it will happen "
         "later. Work held only in words lives in this window, and one distraction or one "
         "compaction loses it. Park it now:\n"
-        '  .journal/journal.py todo "<title>" --brief\n'
+        '  .journal/journal.py todos add "<title>" --brief\n'
         "and say in your next message that it is parked as to-do n. If nothing is deferred — "
         "you were describing the order of the current work — run the call again; this is "
         "said once per reply.",
@@ -237,7 +237,7 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
         "UserPromptSubmit",
         "journal: work is open — " + "; ".join(w["subject"] for w in standing) + ". If this "
         "asks for something else that can wait, park it before answering: "
-        '`.journal/journal.py todo "<title>" --brief`, and say it is parked. If it cannot '
+        '`.journal/journal.py todos add "<title>" --brief`, and say it is parked. If it cannot '
         "wait, `update` the open work and `start` the new one. If it is the same work, carry on.",
     )
 
@@ -524,7 +524,7 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
                 "If part of it is waiting on the user — a ruling, a review — that part is a "
                 "to-do, not open work: park it with the questions in its brief, then end the "
                 "work:\n"
-                '  .journal/journal.py todo "<what is left, and on what it waits>" --brief\n'
+                '  .journal/journal.py todos add "<what is left, and on what it waits>" --brief\n'
                 "If you are mid-work and stopped to ask the user something, say so; the next "
                 "turn asks again.")
     # ONLY WORK THIS TRANSCRIPT OPENED, ONCE PER PIECE. Work opened elsewhere was told
@@ -575,34 +575,34 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         t = unstuck[0]
         return (f"the user answered to-do {t['n']}",
                 f"journal: the user answered to-do {t['n']} ({t['title']}) — that is their "
-                f"word to do it: `.journal/journal.py todo start {t['n']}`",
+                f"word to do it: `.journal/journal.py todos start {t['n']}`",
                 "\n".join(f"To-do {u['n']}: {u['title']}\n  asked:    {u['asks']}\n"
                           f"  answered: {u['answer']}" for u in unstuck)
                 + "\n\nStart it, do it, end it. The answer stays on the to-do; "
-                f"`journal todo {t['n']}` shows both.")
+                f"`journal todos {t['n']}` shows both.")
     nxt = ready[0]
     if todo.answered_one(nxt):
         return (f"auto is on, the user answered to-do {nxt['n']}",
                 f"journal: the user answered to-do {nxt['n']} ({nxt['title']}) — you are "
-                f"unstuck: `.journal/journal.py todo start {nxt['n']}`",
+                f"unstuck: `.journal/journal.py todos start {nxt['n']}`",
                 "\n".join(f"To-do {u['n']}: {u['title']}\n  asked:    {u['asks']}\n"
                           f"  answered: {u['answer']}" for u in unstuck)
                 + f"\n\nStart with to-do {nxt['n']}: the answer is above, the brief is "
-                f"`journal todo {nxt['n']}`. Then the rest of the list:\n"
+                f"`journal todos {nxt['n']}`. Then the rest of the list:\n"
                 + "\n".join(f"  {t['n']:>3}  {t['title']}" for t in waiting if not todo.answered_one(t)))
     return (f"auto is on, {len(ids)} to-do(s) waiting",
             f"journal: auto is on for `{here}` and nothing is open — pick up the next to-do: "
-            f"`.journal/journal.py todo start {nxt['n']}`",
+            f"`.journal/journal.py todos start {nxt['n']}`",
             f"Waiting on `{here}`:\n" + "\n".join(
                 f"  {t['n']:>3}  {t['title']}" + (f"  (waits on the user: {t['asks']})" if t.get("asks") else "")
                 for t in waiting)
             + f"\n\nAuto mode is on: this list is worked through without asking. Read "
-            f"the brief (`journal todo {nxt['n']}`), start it, SOLVE IT YOURSELF, `work end` it, "
+            f"the brief (`journal todos {nxt['n']}`), start it, SOLVE IT YOURSELF, `work end` it, "
             "and the next idle stop brings the next one. " + _loop_line(conf)
             + " Every choice the brief leaves open is yours to make: make it, write it in "
             "`journal work update`, carry on. Ask the user only if you cannot proceed without "
             "something only they can supply, or the hook tells you that you are stalled — then "
-            f"`work update` what was tried, `work end`, `journal todo ask {nxt['n']} \"<what is stuck>\"`, "
+            f"`work update` what was tried, `work end`, `journal todos ask {nxt['n']} \"<what is stuck>\"`, "
             "and the next stop names the next to-do.")
 
 
@@ -781,7 +781,7 @@ def _is_write(payload: dict) -> bool:
     the separators that end a command, and each piece is judged by its FIRST WORD. The
     journal's own commands are never a write, but only THAT piece is exempt: the first
     version waved through any line that mentioned journal.py anywhere, so
-    `journal todo "x" && rm -rf build` was not a write.
+    `journal todos add "x" && rm -rf build` was not a write.
     """
     name = payload.get("tool_name") or ""
     if name in WRITE_TOOLS:
@@ -869,7 +869,7 @@ def _is_journal(payload: dict) -> bool:
     """May this call pass the rung gate? Journal-only lines, or a line that decides first.
 
     `journal search x` and `journal conversation --back=1` are how the decision gets made, so a line of
-    nothing but journal commands passes. `journal pin "…" && git commit` passes too:
+    nothing but journal commands passes. `journal pins add "…" && git commit` passes too:
     the decision runs first and lifts the gate before the commit. `ls && journal nothing
     "…"` does not — the `ls` would run undecided.
     """
@@ -894,7 +894,7 @@ _REDIRECT = re.compile(r"^\d*[<>]")
 #: next line to the terminator is dropped. Distinct from `_HEREDOC` above, which runs on a
 #: whitespace-collapsed line; this one needs the newlines to know where the body starts.
 #: Caught live: a patch script piped through `python3 - <<'PY'` mentioned
-#: `journal.py pin "<the claim>"` in a string, and the pin gate denied the patch.
+#: `journal.py pins add "<the claim>"` in a string, and the pin gate denied the patch.
 _HEREDOC_BODY = re.compile(r"(<<-?\s*['\"]?(\w+)['\"]?[^\n]*)\n.*?(?:\n\2(?=\n|$)|\Z)", re.S)
 
 
@@ -1034,7 +1034,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
         return _deny(
             f"CONTEXT IS {pct:.0f}% FULL and nothing has been decided about what must "
             f"outlive it. This call is denied until one of these has run:\n"
-            '  .journal/journal.py pin "<the claim, in one line>"\n'
+            '  .journal/journal.py pins add "<the claim, in one line>"\n'
             '  .journal/journal.py nothing "<why nothing here needs pinning>"\n'
             "Nothing is the right answer more often than not — say so and carry on. "
             "`journal search`, `journal conversation --back=1` and `journal pins` still run, to decide with."
@@ -1341,7 +1341,7 @@ def _stall(conf: dict, ctx: Ctx) -> str | None:
         f"journal: {mark['calls']} tool calls on to-do {t['n']} ({t['title']}) with no progress "
         "filed. If there is a measurable result, file it — `journal work update \"<what moved>\"` — "
         "and carry on. If there is not, stop pouring time in: `update` what was tried, `end` "
-        f"the work, `journal todo ask {t['n']} \"<what is stuck>\"`, and move on."
+        f"the work, `journal todos ask {t['n']} \"<what is stuck>\"`, and move on."
     )
 
 
@@ -1579,7 +1579,7 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
         "Work is not a tag, it costs a command: `journal work start \"<the work>\"`, "
         "`journal work update \"<what moved>\"`, `journal work end \"<the same words>\"`.\n"
         "WHEN THE USER ASKS FOR SOMETHING YOU ARE NOT WORKING ON AND IT CAN WAIT, park it: "
-        "`journal todo \"<title>\"`, say you did, and carry on — `journal todo start <n>` "
+        "`journal todos \"<title>\"`, say you did, and carry on — `journal todos start <n>` "
         "picks it up later.\n\n"
         # THE REFLEX. Everything above is how to WRITE the record; this is when to READ
         # one instead of answering from whatever survived the summary.
@@ -1665,7 +1665,7 @@ def _subagent_rules(conf: dict, payload: dict, acting: str = "") -> str | None:
     lead = (
         (f"YOU ARE A SUBAGENT, DELEGATED THE ENVIRONMENT `{acting}`. The journal there is yours to "
          "write, and the hooks hold you to it: declare work before you edit (`.journal/journal.py work start` "
-         "or `.journal/journal.py todo start <n>`), `work end` when it is done, pin what must outlive you, "
+         "or `.journal/journal.py todos start <n>`), `work end` when it is done, pin what must outlive you, "
          "and open every message with a tag (`[!reply]`, `[!info]`, `[!discovery]`, `[!blocked]`, "
          "`[!correction]`) or your stop is held for it. Subagents of your own run NO journal command: "
          f"they return text, you file it. `.journal/journal.py environments \"{acting}\"` is your brief. "

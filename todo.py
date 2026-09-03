@@ -109,14 +109,14 @@ def answer(root: Path, track: str, n: int, text: str) -> tuple[bool, str]:
     """
     text = " ".join((text or "").split())
     if not text:
-        return False, 'say the answer: journal todo answer <n> "<the answer>"'
+        return False, 'say the answer: journal todos answer <n> "<the answer>"'
     t, err = _get(root, track, n)
     if t is None:
         return False, err
     if t.get("done"):
         return False, f"to-do {n} is already done ({t.get('how')})"
     if not t.get("asks"):
-        return False, f"to-do {n} is not waiting on a question; `journal todo start {n}` picks it up"
+        return False, f"to-do {n} is not waiting on a question; `journal todos start {n}` picks it up"
     _update(root, track, n, answer=text)
     return True, f"answered to-do {n}: {t['title']}\n  the agent is told at its next stop and picks it up first"
 
@@ -133,7 +133,7 @@ def ask(root: Path, track: str, n: int, question: str) -> tuple[bool, str]:
     """
     question = " ".join((question or "").split())
     if not question:
-        return False, 'say what the user must decide: journal todo ask <n> "<the question>"'
+        return False, 'say what the user must decide: journal todos ask <n> "<the question>"'
     t, err = _get(root, track, n)
     if t is None:
         return False, err
@@ -154,7 +154,7 @@ def add(root: Path, track: str, title: str, body: str, at: str, where: dict | No
     """Write one. Refuses an empty title and a duplicate open one."""
     title = " ".join((title or "").split())
     if not title:
-        return False, 'a to-do needs a title: journal todo "<what, in a few words>"'
+        return False, 'a to-do needs a title: journal todos add "<what, in a few words>"'
     for t in open_items(root, track):
         if t["title"].lower() == title.lower():
             return False, f"already waiting as to-do {t['n']} — nothing to add"
@@ -300,7 +300,7 @@ def start(root: Path, track: str, n: int, at: str, strict: bool = False) -> tupl
 def done(root: Path, track: str, n: int, how: str, at: str) -> tuple[bool, str]:
     how = " ".join((how or "").split())
     if not how:
-        return False, 'say how it was resolved: journal todo done <n> "<how>"'
+        return False, 'say how it was resolved: journal todos done <n> "<how>"'
     t, err = _get(root, track, n)
     if t is None:
         return False, err
@@ -365,7 +365,7 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
         out.append(entry)
     body = "\n\n".join(out)
     if cap and total > page * cap:
-        body += f"\n\n  … and {total - page * cap} more; `journal todo --page={page + 1}` shows the rest."
+        body += f"\n\n  … and {total - page * cap} more; `journal todos --page={page + 1}` shows the rest."
     return body
 
 
@@ -401,12 +401,12 @@ def show(root: Path, track: str, n: int, width: int = 88) -> tuple[bool, str]:
     out.append("")
     rows = []
     if not t.get("done"):
-        rows.append((f"journal todo start {n}", "pick it up"))
-        rows.append((f'journal todo done {n} "<how>"', "close it without starting"))
+        rows.append((f"journal todos start {n}", "pick it up"))
+        rows.append((f'journal todos done {n} "<how>"', "close it without starting"))
         if t.get("asks") and not t.get("answer"):
-            rows.append((f'journal todo answer {n} "<answer>"', "answer it (the user)"))
+            rows.append((f'journal todos answer {n} "<answer>"', "answer it (the user)"))
         elif not t.get("asks"):
-            rows.append((f'journal todo ask {n} "<question>"', "it waits on the user"))
+            rows.append((f'journal todos ask {n} "<question>"', "it waits on the user"))
     if rows:
         out.append(fmt.commands(rows))
     out.append("  " + fmt.dim(str(t["path"].relative_to(root.parent))))
@@ -471,20 +471,20 @@ def carry(root: Path, track: str) -> str:
         return (
             f"TO DO on this environment, {len(waiting)} waiting — AUTO MODE IS ON: this list is worked "
             "through without asking. Whenever nothing is open, pick up the next one with "
-            "`journal todo start <n>`, solve it yourself, `journal work end` it, and keep going "
+            "`journal todos start <n>`, solve it yourself, `journal work end` it, and keep going "
             "until the list is empty. Every choice a brief leaves open is yours: make it, write it "
             "in `journal work update`, carry on. Ask the user only when you cannot proceed without "
-            "something only they can supply, or the hook says you are stalled — then `journal todo "
+            "something only they can supply, or the hook says you are stalled — then `journal todos add "
             'ask <n> "<what is stuck>"` and move to the next. ' + _loop_line(root)
             + "\n" + lead + titles
             + (f"\n{len(blocked)} of these wait on the user; the questions are above. When the "
-               "user answers, `journal todo start <n>`." if blocked else "")
-            + "\n`journal todo <n>` reads the brief; `journal todo auto off` turns this off."
+               "user answers, `journal todos start <n>`." if blocked else "")
+            + "\n`journal todos <n>` reads the brief; `journal todos auto off` turns this off."
         )
     return (
         f"TO DO on this environment, {len(waiting)} waiting — delayed work, not an instruction to "
         "start any of it. Start one only when the user says so, or asks you to work through "
-        "them (then offer `journal todo auto on`). A to-do the user has ANSWERED is theirs "
+        "them (then offer `journal todos auto on`). A to-do the user has ANSWERED is theirs "
         "saying to do it: start it.\n" + lead + titles
-        + "\n`journal todo <n>` reads the brief; `journal todo start <n>` picks one up."
+        + "\n`journal todos <n>` reads the brief; `journal todos start <n>` picks one up."
     )

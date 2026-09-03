@@ -5,76 +5,24 @@ A compaction keeps what was DONE and loses what was DECIDED. The transcript on d
 nothing. This is the index that gets you back to it.
 
     journal                 where things stand: environment, rules, pins, open work, to-dos, context
-    journal conversation    what was said since the last compaction
-    journal conversation --back=N   N compactions back; --back=1 is what the last summary REPLACED
-    journal user            only the user's own words, in full
-    journal open            work declared and never closed
-    journal search <term> [--all] [--page=N]   every line mentioning it on this environment, in every session, 25 a page newest first; --all is every environment
-    journal pin "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a claim that must survive a compaction; --doc ties it to a doc or a part
-    journal nothing "<why>"  after a context warning: nothing here needs pinning, and why
-    journal rule "<ruling>" [--doc=<doc>[.<p>]]   a pin for EVERY environment — what the project decided, not one line of work
-    journal rules [--all]    every rule, numbered; `rules N --full` reads around one
-    journal rule --strike N "<why>"   repeal a rule that stopped being true — `journal rules strike N "<why>"` is the same
-    journal rules add "<ruling>"   the explicit spelling of `journal rule "<ruling>"` above
-    journal promote N        lift pin N into a rule; the pin is struck and says where it went — `journal pins promote N` is the same
-    journal todo "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this environment; --brief reads a longer brief from stdin
-    journal todo [--all]     the titles, numbered
-    journal todo N           the whole brief
-    journal todo start N     open work with that title — `end` then closes both
-    journal todo done N "<how>"   resolved without starting it
-    journal todo drop N "<why>"   abandoned, on the record — `strike` is the same word every other noun uses to retire
-    journal todo ask N "<question>"   it waits on the user; auto moves on to the next
-    journal todo answer N "<answer>"  the user answers it; the agent is told at its next stop and picks it up first
-    journal todo add|list|show   the explicit spellings of the three shapes above; `todos` is a twin of `todo` everywhere
-    journal todos amend N "<section title>" --brief    append a new section to a brief, from stdin
-    journal todos replace N ["<section title>"] --brief   swap one named section, or the whole brief with none; old text kept under struck/
-    journal docs             the catalogue: every doc, its status, parts, files and abstract
-    journal docs <doc>       read a doc — <doc> is its number or its name, here and everywhere below
-    journal docs <doc>.<p>   read one part of it
-    journal docs files <doc>   its attachments, as a tree; `journal docs <doc> files` and bare `journal docs files` still work
-    journal docs add "<title>" --abstract="<one line>" --brief   a new doc; the brief on stdin is its intro
-    journal docs part <doc> "<title>" --brief   a new part, from stdin — a report, a section, a finding
-    journal docs replace <doc>.<p> --brief     a new body for a part; the old one is kept under struck/
-    journal docs strike <doc>.<p> "<why>"      drop a part, on the record
-    journal docs final <doc> | draft <doc>     its status
-    journal docs abstract <doc> "<one line>"   the line every session is handed
-    journal docs supersede <doc> by <doc>      point readers of the first at the second
-    journal docs attach <doc> <path> ["<what it is>"] [--replace]   copy a file or a folder into the doc, beside its parts
-    journal docs detach <doc> <name> "<why>"   drop an attachment; it is kept under struck/
-    journal docs index                         catalogue the files docs/ already holds
-    journal docs search <term> [--page=N]      every line of every doc, and every attachment by name
-    --doc=<doc> or --doc=<doc>.<p> on pin, rule and todo cites a doc (or one part) from the entry; the entry shows it, the doc shows what cites it
-    journal todo auto [on|off]    work through this environment's list without asking, or wait for the user's word
-    journal pins [--all]    every pin, numbered — the number is what --supersedes takes
-    journal pins N --full   the conversation around where pin N was written
-    journal strike N "<why>" retire a pin that stopped being true, no replacement needed — `journal pins strike N "<why>"` is the same
-    journal pins add "<claim>"   the explicit spelling of `journal pin "<claim>"` above
-    journal work start "<what>"  declare work — a commitment, which is why it costs a command
-    journal work update "<what moved>" [--on="<work>"]   progress on the open work
-    journal work end "<what>"    the same words, to close it
-    journal carry           exactly what a compaction will hand back — nothing is written
-    journal environments          every environment, this session's marked, which sessions are on which and whether they are running
-    journal environments "<name>"   the pickup page of one: docs to read first, what stands, open work, to-dos in order, how to begin
-    journal prepare "<name>"      create an environment for a piece of work and switch to it; prints what preparing it means
-    journal delegate "<name>"     this session and its subagents act on that environment; a subagent's journal lands there. --off ends it
-    journal handoff "<name>" "<source>"   an environment made ready BY AGENTS: creates and delegates it, prints the hand-off agent's prompt — dispatch that one subagent
-    journal handoff "<name>" --run        when it reports READY: the runner's prompt — dispatch that one subagent; --off when the run is over
-    journal --env=<name> <command>   run any command on a named environment without switching to it
-    journal loop set        this session has a loop running (the hook could not see it); `journal loop` says whether one is known
-    journal switch "<name>" [--project|--session=<id>|--all-sessions]   this session's environment; --project also where new sessions start; from a terminal always the project
     journal next            what to do now: the details of the last hold, or the next to-do
-    journal worktree [link] is this a linked worktree, and does .journal link to the main checkout's? `link` makes it so
-    journal tools           the tools: scripts kept for repeated work, with what each does and how to call it
-    journal tools <name>    read one
-    journal tools run <name> [args…]   run it from the project root
-    journal tools add <name> "<title>" --summary="<one line>" [--usage="<how>"] [--when="<when>"] [--entry=<file>] [--brief]
-    journal tools set <name> summary|usage|when|entry "<value>"
-    journal tools remove <name> "<why>"   retire it, kept under struck/ — `journal tools strike <name> "<why>"` is the same
-    journal tools index     a tool.md for every folder under .journal/tools/ that has none
-    journal verify          is any of this in force? wired is not the same as fired
-    journal version         this project's version of the journal, and whether a newer one is out
-    journal update [--from=<path or git url>]    pull the latest journal and print what changed
-    journal settings        every setting, its value, and where it came from
+
+Every group below prints its own commands, and so does every spelling of them:
+`journal <noun> help`.
+
+    work           declare it, move it, wait on something, close it
+    pins           a claim that must survive a compaction, on this environment
+    rules          a pin that every environment obeys
+    todos          delayed work, parked with the brief you will need in a week
+    docs           what was settled: findings, reports, the reasoning a pin cites
+    tools          scripts kept for repeated work
+    environments   where work lives: switch, prepare, delegate, handoff, worktree
+    transcript     read it back: conversation, user, search, carry
+    system         verify, version, update, settings, loop
+
+THE PLURAL NOUN IS THE CANONICAL SPELLING (ruling R10). Every singular and legacy one —
+`pin`, `rule`, `todo`, `remember`, `tracks`, bare `strike` and `promote` — still runs, still
+answers `help`, and calls the very same function. None of them is deprecated.
 """
 from __future__ import annotations
 
@@ -87,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import digest
 import docs
 import fmt
+import help
 import settings as settings_mod
 import context
 import pins
@@ -166,41 +115,24 @@ def _resolved() -> tuple[Path, bool] | None:
     return got
 
 
-#: WHOSE LINES A VERB BORROWS, when the synopsis does not spell that verb itself.
-#: `_help` answers by reading the synopsis back, which works for every verb the synopsis
-#: names and fails SILENTLY for the ones it does not. `tracks` is the case that proved it:
-#: ruling R3 keeps every current spelling running forever, `journal tracks` works, and
-#: `journal tracks help` said "No such command: tracks". A permanent alias with no help is
-#: a spelling the reader is told does not exist — which is the one thing an alias promised
-#: not to be. Every alias that the synopsis does not spell in its own right belongs here.
-HELP_AS = {
-    "tracks": "environments",
-    "envs": "environments",
-    "remember": "pin",
-    "start": "work start",
-    "end": "work end",
-}
-
-
 def _help(verb: str = "") -> int:
-    """The whole synopsis, or only the lines about one verb."""
+    """The index, or the commands of one group — `help.py` holds the only list of them.
+
+    THE INDEX IS WHAT `--help` COSTS NOW. It named 72 commands in 77 lines at every `-h`,
+    every `--help` and every unknown verb, in a package whose whole argument is that output
+    is charged to the reader. The lines are not gone; they are one command away, under the
+    noun that owns them, which is also where a reader looking for a verb would think to ask.
+    """
     if not verb:
         fmt.say(__doc__)
         return 0
-    # THE MATCH ENDS AT A WORD, not at a prefix. `startswith("journal doc")` is true of
-    # every `journal docs …` line, so `journal doc help` answered for a noun that is not a
-    # command — and `journal doc 1` then refused, which is the CLI disagreeing with its own
-    # help about what exists. The verb must be the whole word.
-    want = HELP_AS.get(verb, verb)
-    heads = (f"journal {want}", f"journal --{want}")
-    lines = [l for l in (__doc__ or "").splitlines()
-             if any(l.strip() == h or l.strip().startswith(h + " ") for h in heads)]
+    lines = help.lines(verb)
     if not lines:
         fmt.say(f"No such command: {verb}\n", error=True)
         fmt.say(__doc__, error=True)
         return 1
     fmt.say(f"journal {verb}\n")
-    fmt.say("\n".join(lines))
+    fmt.say("\n".join("    " + l for l in lines))
     return 0
 
 
@@ -268,7 +200,7 @@ def cmd_status() -> int:
     fmt.say(fmt.commands([
         ("journal conversation [--back=N]", "what was said, since the last compaction or before it"),
         ("journal search <term>", "every line mentioning it on this environment, and who said it"),
-        ('journal pin "<claim>" [--doc=<doc>]', "a fact that must outlive a compaction; --doc ties it to a doc, by number or name"),
+        ('journal pins add "<claim>" [--doc=<doc>]', "a fact that must outlive a compaction; --doc ties it to a doc, by number or name"),
         ("journal help", "every command"),
     ]))
     return 0
@@ -370,7 +302,7 @@ def cmd_end(subject: str) -> int:
         if closed:
             fmt.say(f"  to-do {closed} is done with it.")
         fmt.say('  did that teach anything a later reader would get wrong without?\n'
-              '    journal pin "<the claim, in one line>"   (or nothing, which is fine)')
+              '    journal pins add "<the claim, in one line>"   (or nothing, which is fine)')
     return 0 if ok else 1
 
 
@@ -622,11 +554,11 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
                        "Delayed work on this environment, listed at every session start. Not an "
                        "instruction to start one."))
         fmt.say(fmt.commands([
-            ("journal todo <n>", "the brief, and the question if it waits on the user"),
-            ("journal todo start <n>", "pick one up"),
-            ('journal todo "<title>" --brief', "add one, with a brief on stdin"),
-            ('journal todo answer <n> "<answer>"', "answer one that waits on you"),
-            ("journal todo auto " + ("off" if draining else "on"),
+            ("journal todos <n>", "the brief, and the question if it waits on the user"),
+            ("journal todos start <n>", "pick one up"),
+            ('journal todos add "<title>" --brief', "add one, with a brief on stdin"),
+            ('journal todos answer <n> "<answer>"', "answer one that waits on you"),
+            ("journal todos auto " + ("off" if draining else "on"),
              "stop working through the list on your own" if draining else "work through the list without asking"),
         ]))
         return 0
@@ -634,7 +566,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
     if verb == "auto":
         if len(rest) < 2:
             fmt.say(f"auto is {'ON' if todo.auto(root(), here) else 'OFF'} for `{here}`. "
-                  "`journal todo auto on|off` sets it.")
+                  "`journal todos auto on|off` sets it.")
             return 0
         want = rest[1].lower()
         if want not in ("on", "off", "true", "false", "yes", "no"):
@@ -656,7 +588,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         return 0
     if verb in ("start", "done", "drop", "strike", "ask", "answer"):
         if len(rest) < 2 or not rest[1].isdigit():
-            fmt.say(f'todo {verb} wants a number: journal todo {verb} 3' + (
+            fmt.say(f'todo {verb} wants a number: journal todos {verb} 3' + (
                 ' "<how>"' if verb != "start" else ""), error=True)
             return 1
         n = int(rest[1])
@@ -685,7 +617,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         why = " ".join(rest[2:])
         if verb in ("drop", "strike"):  # ruling R4: `strike` is the one retire verb everywhere
             if not why.strip():
-                fmt.say(f'say why: journal todo {verb} <n> "<why it is abandoned>"', error=True)
+                fmt.say(f'say why: journal todos {verb} <n> "<why it is abandoned>"', error=True)
                 return 1
             why = "dropped: " + why
         ok, msg = todo.done(root(), here, n, why, _now())
@@ -710,7 +642,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
     if verb == "add":
         rest = rest[1:]
         if not rest:
-            fmt.say('a to-do needs a title: journal todo add "<what, in a few words>"', error=True)
+            fmt.say('a to-do needs a title: journal todos add "<what, in a few words>"', error=True)
             return 1
     # adding: the title is the words; the brief comes on stdin ONLY when asked for with
     # --brief. Reading stdin whenever it is not a terminal hung under a test runner whose
@@ -748,7 +680,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
             ('journal docs attach <doc> <path> "<what it is>"', "copy a file or folder (HTML, a design, a PDF) into the doc"),
             ("journal docs <doc> files", "its attachments, as a tree; `docs files` lists every doc's"),
             ("journal docs search <term>", "every line of every doc mentioning it"),
-            ('journal pin "<claim>" --doc=<doc>[.<p>]', "cite a doc, or one part, from a pin; rule and todo take it too"),
+            ('journal pins add "<claim>" --doc=<doc>[.<p>]', "cite a doc, or one part, from a pin; rule and todo take it too"),
         ] + ([("journal docs index", "catalogue the loose files")] if loose else [])))
         return 0
     verb = rest[0]
@@ -932,8 +864,8 @@ def cmd_next() -> int:
         if ready:
             t = ready[0]
             fmt.say(f"Auto mode is on and nothing is open. Next: to-do {t['n']}, {t['title']}")
-            fmt.say(f"  journal todo {t['n']}          the brief")
-            fmt.say(f"  journal todo start {t['n']}    pick it up")
+            fmt.say(f"  journal todos {t['n']}          the brief")
+            fmt.say(f"  journal todos start {t['n']}    pick it up")
             return 0
         blocked = todo.asking(root(), here)
         if blocked:
@@ -991,12 +923,12 @@ session, or by a subagent. Only when the user asked for it. In order:
                        journal docs attach <doc> <path> "<what it is>"                   designs, screenshots, exports
   3  the plan          a Plan agent: phases and the work in each, from the brief — file it: docs part <doc> "Plan" --brief
   4  the steps         a second agent: concrete steps per phase, what is missing, what could go wrong — docs part <doc> "Steps" --brief
-  5  what must hold    journal pin "<constraint>" --doc=<doc>      the facts every later reader needs; rule if project-wide
+  5  what must hold    journal pins add "<constraint>" --doc=<doc>      the facts every later reader needs; rule if project-wide
   6  the to-dos        one per unit of work, in order, the brief citing the doc:
-                       journal todo "<title>" --brief --doc=<doc>.<p>   < the brief
-                       journal todo ask <n> "<question>"                what only the user can answer
+                       journal todos add "<title>" --brief --doc=<doc>.<p>   < the brief
+                       journal todos ask <n> "<question>"                what only the user can answer
                        the last one: verify and close — the definition of done
-  7  auto?             ask the user: journal todo auto on   works the list without asking
+  7  auto?             ask the user: journal todos auto on   works the list without asking
   8  the page          journal environments "{name}"   — read it as the one who picks this up would
 
 Then offer: work it now (todo start 1), leave it for a session (journal switch "{name}"), or
@@ -1087,7 +1019,7 @@ def cmd_handoff(name: str, source: str, run: bool, off: bool, sessions: list[str
     # next to-do and it must be told to continue, which is a conversation the session is not
     # having — it dispatched an agent precisely so it would not have to. `handoff --off`
     # does not switch it back: the environment keeps whatever the run left, and the user
-    # turns it off with `journal todo auto off` if the leftovers are theirs to decide.
+    # turns it off with `journal todos auto off` if the leftovers are theirs to decide.
     was_auto = todo.auto(root(), name)
     if not was_auto:
         todo.set_auto(root(), name, True)
@@ -1280,13 +1212,18 @@ def main(argv: list[str]) -> int:
     tool_meta = {}
     rest = []
     # HELP WORKS AFTER ANY VERB, and an unknown option is refused rather than kept as
-    # words. `journal todo --help` used to add a to-do titled "--help": help was only
+    # words. `journal todos --help` used to add a to-do titled "--help": help was only
     # recognised as the first word, and anything else starting with `--` fell through
     # into the text. A flag nobody declared is a typo, and a typo filed as a title is a
     # write that reports success and lands wrong.
     if len(argv) >= 3 and argv[0] == "tools" and argv[1] == "run":
         return tools.run(root(), argv[2], argv[3:])
-    if any(a in ("-h", "--help", "help") for a in argv):
+    # `help` IS A WORD IN VERB POSITION, NOT A WORD ANYWHERE. Matching it across the whole
+    # of argv meant a payload could ask for help instead of being written: `journal search
+    # help` could never search for the term, and `journal pins add "help"` was a request
+    # for the pins synopsis rather than a pin. A flag is different — `-h`/`--help` is a
+    # flag wherever it appears, because no payload is spelled with leading dashes.
+    if any(a in ("-h", "--help") for a in argv) or "help" in argv[:2]:
         verb = next((a for a in argv if not a.startswith("-") and a != "help"), "")
         return _help(verb)
     for a in argv:
@@ -1444,7 +1381,7 @@ def main(argv: list[str]) -> int:
         return cmd_rules(all_of_them, n, full, page)
     if verb == "promote":
         if len(rest) < 2:
-            fmt.say("promote wants a pin number: journal promote 3", error=True)
+            fmt.say("promote wants a pin number: journal pins promote 3", error=True)
             return 1
         try:
             return cmd_promote(int(rest[1]))
@@ -1475,7 +1412,7 @@ def main(argv: list[str]) -> int:
         return cmd_switch(" ".join(rest[1:]), go_back, project_too, sessions or None, all_sessions)
     if verb == "strike":
         if len(rest) < 3:
-            fmt.say('strike wants a pin number and why: journal strike 6 "<why>"',
+            fmt.say('strike wants a pin number and why: journal pins strike 6 "<why>"',
                   error=True)
             return 1
         try:
