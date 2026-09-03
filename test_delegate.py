@@ -245,6 +245,8 @@ check("handoff creates the environment, delegates it, and prints the hand-off ag
        "HAND-OFF AGENT" in out, "https://example.test/issues/1700" in out, "READY" in out, "handoff.default.md" in out),
       (0, True, "wwm-1700", True, True, True, True, True))
 check("the runner's section is not in the hand-off prompt", "You are the RUNNER" in out, False)
+check("the hand-off agent is given no worktree: it writes only the journal, which is shared anyway",
+      ('isolation: "worktree"' in out, "YOU ARE IN YOUR OWN WORKTREE" in out), (False, False))
 ha = h.agent("hand0ff1")
 check("the hand-off agent may write the environment (docs, pins, to-dos)", ha.bash('.journal/journal.py docs add "wwm-1700: x" --abstract="y" --brief'), "")
 check("but may not hand off in turn", "refused even when delegated" in ha.bash('.journal/journal.py handoff "other" "x"'), True)
@@ -253,6 +255,19 @@ ha.j("todo", "the first unit of work", "--brief", "--doc=2", stdin="start here\n
 code, out = h.j("handoff", "wwm-1700", "--run")
 check("--run prints the runner's prompt with the page inside it",
       (code, "You are the RUNNER" in out, "the first unit of work" in out, "what the runner must know" in out, "todo start" in out), (0, True, True, True, True))
+flat = " ".join(out.split())
+check("the run is dispatched into its own worktree, and the journal stays shared",
+      ('isolation: "worktree"' in flat, "`.journal` is a symlink to this one" in flat), (True, True))
+check("the branch is the session's to settle: offer, or merge when the user already asked",
+      ("OFFER the merge" in flat, "add a line granting it" in flat, "do not merge on your own" in flat),
+      (True, True, True))
+check("the runner is told it is in a worktree, and that the journal is not its own",
+      ("YOU ARE IN YOUR OWN WORKTREE" in flat, "the journal is NOT" in flat), (True, True))
+check("it is told to commit as it goes", "COMMIT AS YOU GO" in flat, True)
+check("it may not merge unless the prompt granted it",
+      "do not merge, rebase, push or touch another branch UNLESS THIS PROMPT TOLD YOU TO" in flat, True)
+check("and it reports the branch so the merge can be offered",
+      "git branch --show-current" in flat, True)
 (root / "handoff.md").write_text("# handoff agent\n\nOUR OWN WAY for {name}: {source}\n\n# runner agent\n\nRUN {name} OUR WAY\n\n{page}\n")
 code, out = h.j("handoff", "wwm-1700", "the source again")
 check("a project's own handoff.md wins over the shipped template", (code, "OUR OWN WAY for wwm-1700: the source again" in out, ".journal/handoff.md" in out), (0, True, True))

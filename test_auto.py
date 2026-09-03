@@ -209,6 +209,7 @@ check("on again: held again", label, AUTO_NEXT + "1 to-do(s) waiting")
 # ---------------------------------------------------------------- per environment
 d = project(); s = Session(d, "s1")
 s.journal("todo", "default chore"); s.journal("todo", "auto", "on")
+s.journal("switch", "default")   # it chooses one: `--back` returns to what was chosen, not to a fallback
 s.journal("switch", "other")
 s.journal("todo", "other chore")
 s.start()
@@ -367,7 +368,8 @@ s.say("[!reply] tagged")
 check("then the open-work hold, and it keeps coming", (s.stop()[0], s.stop()[0]), (AUTO_OPEN, AUTO_OPEN))
 
 d = project(); s = Session(d, "s1")
-s.journal("todo", "auto", "on"); s.journal("start", "on default"); s.journal("switch", "other"); s.start()
+s.journal("todo", "auto", "on"); s.journal("start", "on default")
+s.journal("switch", "default"); s.journal("switch", "other"); s.start()
 check("on another environment, default's open work is not this environment's: not held", s.stop()[0], "")
 s.journal("switch", "--back")
 check("back on default: held", s.stop()[0], AUTO_OPEN)

@@ -642,6 +642,7 @@ older.write_text("\n".join(json.dumps(r) for r in [
 os.utime(older, (1, 1))
 segs = transcript.track_segments(transcript.read(path)[0])
 check("the session is segmented by its marks", [t for t, _, _ in segs][-2:], ["default", "beta"])
+subprocess.run([J, "switch", "default"], env=env, capture_output=True, timeout=60)  # it chooses default
 subprocess.run([J, "switch", "beta"], env=env, capture_output=True, timeout=60)
 p = subprocess.run([J, "search", "heredoc"], env=env, capture_output=True, text=True, timeout=60)
 check("on beta, search finds this session's beta stretch and last week's beta session, not default's",

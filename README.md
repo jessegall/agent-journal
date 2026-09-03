@@ -121,7 +121,8 @@ as a doc with its files attached, a plan and its steps from two agents, pins for
 must hold, and one to-do per unit of work. `journal environments "<name>"` is the page
 whoever picks it up reads first. `journal handoff "<name>" "<source>"` has agents do
 all of it: the agent dispatches one hand-off subagent, which plans with agents of its
-own, fills the environment and validates it, then one runner. What a hand-off means is
+own, fills the environment and validates it, then one runner — in its own worktree, so
+two runs never edit one checkout, and sharing this journal, so the record stays one. What a hand-off means is
 `.journal/handoff.md`, yours to edit. `journal delegate "<name>"` lets any subagent work
 an environment with the journal and the hooks on, so its work is filed like a session's.
 

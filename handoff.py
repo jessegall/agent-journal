@@ -6,6 +6,13 @@ pins what must hold, writes the to-dos in order and validates the page — then 
 Then a RUNNER works the to-dos. Both are subagents of the session that asked, on an
 environment the session delegated, so their journal lands there under the hooks.
 
+THE RUNNER GETS A WORKTREE; THE HAND-OFF AGENT DOES NOT. The hand-off agent writes only the
+journal — the brief, its attachments, pins, to-dos — and the journal is SHARED by every
+worktree on purpose, so isolating it would isolate nothing. The runner edits source and
+commits, and two runners in one checkout are two runners in each other's way. So the run is
+dispatched with a worktree and hands back a branch; `worktree.py` keeps its `.journal` a
+symlink to the main checkout's, which is what lets one record survive many trees.
+
 WHAT A HAND-OFF MEANS IS A FILE. `handoff.default.md` ships with the package;
 `.journal/handoff.md` is the project's own and wins when it exists, and an update never
 touches it. Two sections, one per agent; placeholders {name}, {source}, {page}.

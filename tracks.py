@@ -183,11 +183,16 @@ def undelegate(root: Path, stem: str) -> tuple[bool, str]:
     back = state.get(root, "previous_track", None, stem=stem)
     if back and back in _all(root):
         bind(root, stem, back)
+    else:
+        unbind(root, stem)   # it chose nothing before the delegation; it chooses nothing after
     # the subagents registered through this delegation are registered nowhere again
     for sid, marks in state.runtime_files(root):
         if sid.startswith("agent-") and (marks.get("delegated_by") == stem or marks.get("delegated") == was):
             state.put(root, "delegated", None, stem=sid)
             state.put(root, "delegated_by", None, stem=sid)
+    if not bound(root, stem):
+        return True, (f"delegation of {was} ended; this session is on no environment again — "
+                      "take one from what the user asks next")
     return True, f"delegation of {was} ended; this session is back on {current(root, stem)}"
 
 
@@ -381,22 +386,27 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
         kept = f"{name} is new" if fresh else (
             f"{len([p for p in held.get('pins', []) if not p.get('struck')])} pin(s), "
             f"{len([w for w in held.get('work', []) if not w.get('ended')])} open")
+        bound_before = bound(root, stem)   # None while the session has chosen nothing
         was = current(root, stem)
-        if stem and exclusive and was != name:
+        if stem and exclusive and bound_before != name:
             taken = occupants(root, name, stem, stale_hours)
             if taken:
                 return False, (f"{name} is taken by session {taken[0][0][:8]} ({age_text(taken[0][1])}), and one "
                                "session works an environment — pick another name; `journal environments` shows who is where")
         if stem and not project:
-            if was == name:
+            if was == name and bound(root, stem):
                 return False, f"this session is already on {name}"
             bind(root, stem, name)
-            state.put(root, "previous_track", was, stem=stem)
+            # WHERE IT WAS IS NOWHERE, for a session that had not chosen yet. `current`
+            # falls back to the start environment so that reads work unbound; recording
+            # that fallback as "previous" would send the session BACK to an environment it
+            # never chose — which is the whole thing an unbound start exists to prevent.
+            state.put(root, "previous_track", bound_before, stem=stem)
             carried(root, name, stem)
             return True, f"this session is on {name} — {kept}\n  {was} is where it was; the project still starts on {state.get(root, CURRENT, DEFAULT) or DEFAULT}"
         if stem:
             bind(root, stem, name)
-            state.put(root, "previous_track", was, stem=stem)
+            state.put(root, "previous_track", bound_before, stem=stem)
         if start == name and not stem:
             return False, f"already on {name} — the project starts there"
         state.put(root, PREVIOUS, start)

@@ -4,6 +4,33 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.20.0 — a hand-off's runner works in its own worktree
+
+`journal handoff "<name>" --run` now says to dispatch the runner with its own worktree, so
+two runs of two environments never edit one checkout. Only the runner: the hand-off agent
+writes nothing but the journal, and the journal is shared by every worktree on purpose, so
+isolating it would isolate nothing. The runner's `.journal` is a symlink to the main
+checkout's — that is what `worktree.py` has always done — so one record survives many
+trees, and the runner's pins and to-dos reach the session that dispatched it.
+
+The runner commits as it goes, because work left uncommitted in a worktree is work nobody
+can reach, and it hands back a BRANCH. What becomes of that is the session's to settle:
+tell the user what is on the branch and offer the merge. When the user has already asked
+for the work to be merged, the session says so in the runner's prompt and the runner merges
+when it is done; absent those words it does not merge, rebase or push at all.
+
+Fixed, from 1.19.0: a session that had chosen no environment yet recorded the START
+environment as "where it was" when it switched or handed off, because `current` falls back
+there so that reads work unbound. `switch --back` and `handoff --off` then put it on an
+environment it had never chosen — the one thing the unbound start exists to prevent. Where
+it was is now NOWHERE for such a session: it returns unbound, and is told so. The same
+fallback was making the one-session-per-environment check skip an unbound session, which
+could bind it to an environment a live session already held; the check now asks about the
+binding, not the fallback.
+
+After updating: reload the journal skill. A project with its own `.journal/handoff.md` keeps
+it — copy the runner section of the new `handoff.default.md` if you want the worktree wording.
+
 ## 1.19.0 — a new session has no environment until it chooses one
 
 A session used to be bound at its start to the project's start environment — one it had

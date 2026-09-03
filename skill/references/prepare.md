@@ -55,8 +55,14 @@ subagent (opus) and do nothing else for the environment until it reports READY. 
 hand-off agent fetches the source, writes the brief, dispatches its own Plan agent and
 critic (a subagent may dispatch subagents), pins what must hold, writes the to-dos in
 order and validates the page. Then `journal handoff "<name>" --run` prints the runner's
-prompt with the page inside it: dispatch that one subagent, read `journal environments
-"<name>"` when it reports, and `journal handoff --off`. If the hand-off agent reports
+prompt with the page inside it: dispatch that one subagent **with its own worktree**
+(`isolation: "worktree"`), read `journal environments "<name>"` when it reports, and
+`journal handoff --off`. The worktree is the runner's alone, so two runs of two
+environments never edit one checkout; its `.journal` is a symlink to the main checkout's,
+so the record stays one. The hand-off agent gets no worktree — it writes only the journal,
+which is shared on purpose. The runner commits as it goes and hands back a BRANCH: tell the
+user what is on it and offer the merge, or, if they have already asked for the work to be
+merged, say so in the runner's prompt and it merges when it is done. If the hand-off agent reports
 BLOCKED, put its question to the user and dispatch no runner; `--run` refuses an
 environment with nothing ready. A session that died mid-run is freed from a terminal with
 `journal handoff --off --session=<id>`. The two prompts are the two

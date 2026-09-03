@@ -1010,7 +1010,15 @@ def cmd_handoff(name: str, source: str, run: bool, off: bool, sessions: list[str
     fmt.say(fmt.title("HANDOFF", sub=f"{name} · the run · template: {origin}"))
     fmt.say("")
     fmt.say(fmt.wrap("Dispatch ONE subagent with the prompt below (a general-purpose agent; name the model — "
-                     "sonnet for careful work without invention, opus for judgement). When it reports, read "
+                     "sonnet for careful work without invention, opus for judgement) AND GIVE IT ITS OWN "
+                     "WORKTREE — `isolation: \"worktree\"` — so that two runs of two environments never edit one "
+                     "checkout. Its journal still lands here: a linked worktree's `.journal` is a symlink to "
+                     "this one."))
+    fmt.say("")
+    fmt.say(fmt.wrap("It hands back a BRANCH, and what becomes of that is yours to settle. If the user has "
+                     "already asked for the work to be merged, say so in the prompt — add a line granting it — "
+                     "and it merges when it is done. If they have not, do not merge on your own: when it "
+                     "reports, tell the user what is on the branch and OFFER the merge. Either way, read "
                      f"`journal environments \"{name}\"` before you file anything; `journal handoff --off` ends the delegation."))
     fmt.say("")
     fmt.say(fmt.section("prompt for the runner"))

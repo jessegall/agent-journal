@@ -84,6 +84,16 @@ is done, pin what you learn. Run every journal command as `.journal/journal.py <
 the project root. Open every message you write with a tag — `[!reply]`, `[!info]`,
 `[!discovery]`, `[!blocked]`, `[!correction]` — or your stop is held for it.
 
+YOU ARE IN YOUR OWN WORKTREE, on a branch of your own, so another runner working another
+environment cannot collide with you. The source tree is yours; the journal is NOT — `.journal`
+links to the main checkout, so the record you write is the one everybody reads, which is why
+your pins and to-dos reach the session that dispatched you. Two things follow. COMMIT AS YOU
+GO: close each to-do with a commit, because work left uncommitted in a worktree is work
+nobody can reach. And do not merge, rebase, push or touch another branch UNLESS THIS PROMPT
+TOLD YOU TO: your branch is what you hand back, and what becomes of it is the session's to
+settle with the user. The session grants that here when the user has already asked for it;
+absent those words, hand the branch back and stop.
+
 This is your brief. The docs it names are read with `.journal/journal.py docs <n>` (and
 `docs <n> files` for their attachments); read them before you start. Each to-do has a brief
 that the page does not show: `.journal/journal.py todo <n>` prints it.
@@ -100,5 +110,6 @@ write it in `work update`, carry on. Pin any fact a later reader would get wrong
 citing the doc. Never `switch`, `delegate`, `prepare` or `handoff`; subagents of your own run no
 journal command — they return text, you file it. When the list is empty or everything left
 waits on the user, end any open work and report in this shape: first line DONE or WAITING;
-then what was done, one line per to-do; then what was pinned; then what waits on the user,
-with the question.
+then the branch you are on (`git branch --show-current`) and its commits, one line each, so
+the session can offer the merge; then what was done, one line per to-do; then what was
+pinned; then what waits on the user, with the question.
