@@ -13,6 +13,13 @@ Contents: [Commands](#commands) · [Environments](#environments) · [Shared, and
 All of them run as `.journal/journal.py <command>`; `journal` is an alias. `journal help
 <verb>` prints one verb's lines.
 
+A bare listing — `journal docs`, `journal tools`, `journal todo`, `journal pins`,
+`journal rules` — shows 15 at a time and says "… and N more; `--page=2` shows the
+rest." if there are more; `--all` still shows struck ones on pins and rules. A single
+item read (`journal docs 4`, `journal todo 3`, a pin's `--full`), a search result, and
+the hand-off page (`journal environments "<name>"`) are never capped — that is the
+payload, not a description of it.
+
 **Where things stand**
 
     journal                          environment, rules, pins, open work, to-dos, context, hooks
@@ -40,27 +47,29 @@ All of them run as `.journal/journal.py <command>`; `journal` is an alias. `jour
 **Pins, for this environment**
 
     journal pin "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a fact that must survive a compaction; --doc: the doc or part it rests on
+    journal pins add "<claim>"       the explicit spelling of the line above — `pin` is a permanent alias, not deprecated
     journal pins [--all]             every pin, numbered; --all includes struck ones
     journal pins N --full            the conversation around where pin N was written
-    journal strike N "<why>"         retire a pin that stopped being true, no replacement needed
+    journal pins strike N "<why>"    retire a pin that stopped being true, no replacement needed (also: bare `journal strike N "<why>"`)
     journal nothing "<why>"          after a context warning: nothing here needs pinning, and why
-    journal promote N                lift pin N into a rule; the pin is struck and says where it went
+    journal pins promote N           lift pin N into a rule; the pin is struck and says where it went (also: bare `journal promote N`)
 
 **Rules, for every environment**
 
     journal rule "<ruling>" [--doc=<doc>[.<p>]]   a pin that every environment obeys
+    journal rules add "<ruling>"     the explicit spelling of the line above — `rule` is a permanent alias, not deprecated
     journal rules [--all]            every rule, numbered
     journal rules N --full           the conversation around one
-    journal rule --strike N "<why>"  repeal one, on the record
+    journal rules strike N "<why>"   repeal one, on the record (also: `journal rule --strike N "<why>"`)
 
-**To-dos, for this environment**
+**To-dos, for this environment** (`todos` is a twin of `todo` everywhere below — plural or singular, either works)
 
-    journal todo "<title>" [--brief] add one; --brief reads a longer brief from stdin
-    journal todo [--all]             the titles, numbered; --all includes done ones
-    journal todo N                   the whole brief
+    journal todo "<title>" [--brief] add one; --brief reads a longer brief from stdin — `journal todo add "<title>"` is the same
+    journal todo [--all]             the titles, numbered — `journal todo list` is the same
+    journal todo N                   the whole brief — `journal todo show N` is the same
     journal todo start N             open work with that title; `work end` closes both
     journal todo done N "<how>"      resolved without starting it
-    journal todo drop N "<why>"      abandoned, on the record
+    journal todo drop N "<why>"      abandoned, on the record — `journal todo strike N "<why>"` is the same
     journal todo ask N "<question>"  it waits on the user's answer; auto moves on to the next
     journal todo answer N "<answer>" the user answers from the terminal; the agent is told at its next stop and picks it up first
     journal todo auto [on|off]       per environment: work through the list without asking, or wait for the user's word
@@ -99,7 +108,7 @@ A brief on stdin:
     journal tools run <name> [args]  run its entry point from the project root
     journal tools add <name> "<title>" --summary="…" --usage="…" --when="…" --entry=<file> [--brief]
     journal tools set <name> summary|usage|when|entry "<value>"
-    journal tools remove <name> "<why>"   retire it under struck/
+    journal tools remove <name> "<why>"   retire it under struck/ — `journal tools strike <name> "<why>"` is the same
     journal tools index              catalogue folders under .journal/tools/ that lack a tool.md
 
 **Environments**
