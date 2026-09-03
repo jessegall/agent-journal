@@ -271,7 +271,11 @@ def show(root: Path, track: str, n: int, width: int = 88) -> tuple[bool, str]:
             out.append("")
             out.append(fmt.wrap("→ " + t["answer"], width=width))
     out.append(fmt.section("brief"))
-    out.append(fmt.wrap(t["body"], width=width) if t["body"] else "  (title only; no brief was written)")
+    # fmt.BLOCK, NOT fmt.wrap: wrap joins every line of a paragraph into one, which
+    # swallows an indented list and a `## ` heading alike into run-on prose — and a
+    # brief has no reader-visible section structure until its headings survive being
+    # read back. block keeps an indented line, a list item and a command as written.
+    out.append(fmt.block(t["body"], width=width) if t["body"] else "  (title only; no brief was written)")
     out.append("")
     rows = []
     if not t.get("done"):
