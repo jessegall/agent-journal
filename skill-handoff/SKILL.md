@@ -48,13 +48,13 @@ the tracker agree on what it is.
 4. **The steps.** Dispatch a second agent with the brief AND the plan: concrete steps per
    phase, what the plan missed, what could go wrong, what to verify. File it as a part,
    "Steps". Two agents, because the one that wrote the plan will not find its own gaps.
-5. **What must hold.** `journal pin "<constraint>" --doc=<doc>` for each fact every later
+5. **What must hold.** `journal pins add "<constraint>" --doc=<doc>` for each fact every later
    reader needs — the API that must not change, the ruling the user gave, the thing that
    already works and must keep working. A rule only if it binds every environment.
-6. **The to-dos, one per unit of work, in order.** `journal todo "<title>" --brief
+6. **The to-dos, one per unit of work, in order.** `journal todos add "<title>" --brief
    --doc=<doc>.<p>` with the brief on stdin: what exactly, where to start, what done looks
    like. Small enough that one is one sitting. Questions only the user can answer:
-   `journal todo ask <n> "<question>"`, so auto skips it and the user sees it. The last
+   `journal todos ask <n> "<question>"`, so auto skips it and the user sees it. The last
    to-do is always "verify and close": the definition of done, the suite, the tracker.
 7. **Auto?** Ask the user when YOU will work the list. When a hand-off runner will,
    `journal handoff --run` turns auto on for the environment itself — a runner exists to
@@ -64,7 +64,7 @@ the tracker agree on what it is.
 
 Then offer the three ways to run it and let the user choose:
 
-    journal todo start 1                work it now, in this session
+    journal todos start 1                work it now, in this session
     journal switch "<name>"             leave it for a session that starts later, or a colleague
     journal delegate "<name>"           then dispatch a subagent with the page as its brief
 
@@ -82,7 +82,7 @@ prompt with the page inside it: dispatch that one subagent **with its own worktr
 environments never edit one checkout; its `.journal` is a symlink to the main checkout's,
 so the record stays one. `--run` also turns AUTO ON for the environment, so the runner
 takes the next to-do whenever nothing is open instead of stopping to ask; it stays on
-after `--off`, and `journal todo auto off` ends it when the leftovers are the user's to
+after `--off`, and `journal todos auto off` ends it when the leftovers are the user's to
 decide. The hand-off agent gets no worktree — it writes only the journal,
 which is shared on purpose. The runner commits as it goes and hands back a BRANCH: tell the
 user what is on it and offer the merge, or, if they have already asked for the work to be
@@ -100,7 +100,7 @@ that environment until `journal delegate --off`. A delegated subagent is journal
 a session: its journal commands land there, the write gate holds it to declared work,
 the hints reach it, its stop is held while work is open, and the rules come back as its
 window fills. It may not `switch`, `delegate`, `prepare` or `handoff` — the environment is
-the session's to move. Brief it with the page, and tell it to `journal todo start <n>`,
+the session's to move. Brief it with the page, and tell it to `journal todos start <n>`,
 `journal work update` as it goes, `journal work end` when done, and to pin what it
 learned. When it reports back, read `journal environments "<name>"` before you file
 anything: what it pinned is already there.

@@ -27,7 +27,7 @@ Every request is one of three things, and deciding which comes before anything e
 1. **It is the current work**, a step of it, or a correction to it. Carry on. If the
    direction changes, `journal work update "<what changed>"` says so.
 2. **It is different, and it can wait.** Park it and keep going:
-   `journal todo "<title>" --brief` with the brief on stdin, then say in your reply that it
+   `journal todos add "<title>" --brief` with the brief on stdin, then say in your reply that it
    is parked as to-do n. This is the usual case when something is open and the request is
    about something else.
 3. **It is different, and it cannot wait.** The user said so ("now", "first", "stop"), or
@@ -56,7 +56,7 @@ parked request is answered, never ignored: the reply names the to-do and its num
 
 **Example 1.** Open work: "convert the widgets to state-only". The user: "also the login
 form's error banner is misaligned, can you fix that at some point".
-→ `journal todo "align the login form's error banner" --brief` with what they said, and
+→ `journal todos add "align the login form's error banner" --brief` with what they said, and
 the reply says: "Parked as to-do 4; I'll keep going on the widgets."
 
 **Example 2.** Same open work. The user: "wait, the Dropdown is throwing 500s on every
@@ -162,14 +162,14 @@ moment to park any work you are holding for later, because that lives only in th
 
 ## Delayed work: the to-do
 
-    journal todo "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `todo add "<title>"`)
-    journal todo                       the titles
-    journal todo <n>                   the brief
-    journal todo start <n>             open work under that title; `work end` closes both
-    journal todo done <n> "<how>"      resolved without starting it
-    journal todo ask <n> "<question>"  it waits on the user; auto moves on to the next
-    journal todo answer <n> "<answer>" the user's answer; the agent is told at its next stop
-    journal todo auto [on|off]         work through the list without asking, or wait for the word
+    journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)
+    journal todos                      the titles
+    journal todos show <n>             the brief (also: `journal todo <n>`)
+    journal todos start <n>             open work under that title; `work end` closes both
+    journal todos done <n> "<how>"      resolved without starting it
+    journal todos ask <n> "<question>"  it waits on the user; auto moves on to the next
+    journal todos answer <n> "<answer>" the user's answer; the agent is told at its next stop
+    journal todos auto [on|off]         work through the list without asking, or wait for the word
 
 A to-do is work that was **put off**: the user said later, or you found something and
 were told not to touch it yet. It is a titled file under `todo/<environment>/`, and the brief is
@@ -179,7 +179,7 @@ for imagined work; "it might be nice to refactor this" is a message with a tag.
 **A to-do is not permission, unless the user has switched it on.** With `auto` off, the
 default, the start block lists what is waiting and an idle stop says so once; neither is
 an instruction to begin one. Start a to-do only when the user says so for that one, or
-asks you to work through them, in which case offer `journal todo auto on`. With auto on
+asks you to work through them, in which case offer `journal todos auto on`. With auto on
 for the environment, the user has already said it: whenever nothing is open, pick up the next
 one with `todo start <n>`, do it, `work end` it, and the next idle stop brings the next. Auto
 also means a loop: start one with the `loop` skill, `15m journal next`, so an idle session
@@ -207,7 +207,7 @@ In either case:
 
     journal work update "<where it got to, and what was tried>"     if you had started it
     journal work end "<the to-do's title>"                          so nothing stays open
-    journal todo ask <n> "<what is stuck, and what was tried>"
+    journal todos ask <n> "<what is stuck, and what was tried>"
 
 Say that in your reply, naming the to-do, and stop. The next hold names the next to-do
 that is not waiting on the user. The user answers from their terminal with `journal todo
@@ -342,10 +342,22 @@ anything else. Work opened by an
 earlier session is listed so you know it exists, not held against you; before continuing
 it, `open` shows where it got to.
 
+**When the holder is gone, claim it** — `journal claim "<name>" "<why>"`. One session works
+an environment, so a switch onto a held one is refused; but a holder can be a closed
+terminal or a crashed session, and then the refusal protects nobody and blocks the work. A
+claim unbinds that session and binds you. It is not free and not silent: the reason is
+required, the claim is kept on the record with who took it from whom, and the evicted
+session is told at its next stop what happened and how to take it back. Nothing of the
+environment is deleted. **Ask the user first** unless they have already said to take it —
+the holder may be a session they are using.
+
+`switch`, `claim`, `prepare`, `delegate` and `handoff` each answer under the noun too:
+`journal environments switch "<name>"` is the same command as `journal switch "<name>"`.
+
 ## If a hook holds or denies you
 
 Read what it says and do that one thing. A hold is one line, and holds come one per
-stop in a fixed order — environment, loop, context, deferral, untagged, work, auto — so what
+stop in a fixed order — claimed, environment, loop, context, deferral, untagged, work, auto — so what
 you are shown is the first thing owed, and the next stop shows the next. When the line ends with
 "details: `.journal/journal.py next`", run that first: it prints the full text of the
 hold, which to-do is next, the questions the user answered, or what is filling the
@@ -362,7 +374,8 @@ thing to do now.
 | *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
 | *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`                  |
 | *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs |
-| *environment `x` is taken by another session*                        | ask the user which environment this session works on, then `switch "<name>"` |
+| *environment `x` is taken by another session*                        | ask the user which environment this session works on, then `switch "<name>"`; if the holder is gone and they say so, `claim "<name>" "<why>"` |
+| *environment `x` was claimed by another session*                     | another session took it and said why; you are bound to nothing — `switch "<name>"`, or `claim "<name>" "<why>"` to take it back |
 | *THIS SESSION HAS NO ENVIRONMENT*                              | take one from what the user just asked — `switch "<name>"` — and say which; ask them if it named none |
 | *That pin would be refused*                                    | cut it to the claim, or drop the scratch path          |
 | *`journal <verb>` from a subagent is refused*                  | you are a subagent: report; the main conversation files |
