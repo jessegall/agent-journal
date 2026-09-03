@@ -38,6 +38,15 @@ DEFAULTS = {
     # because a gate nobody turns on is the same as the setting that was never implemented.
     "gate_writes_on_start": True,
 
+    # HOW LONG WORK MAY WAIT before the hold comes back. `journal work await` says the work
+    # is in flight on something the agent cannot hurry — a subagent, a build, a review —
+    # and the stop stops nudging it. It always expires, because a wait with no end is how
+    # work is abandoned quietly: the awaited thing dies, nothing nudges, and the journal
+    # reads as busy forever. The default is one loop cycle plus a margin, so a session
+    # running `journal next` on a loop is woken before its wait runs out.
+    "await_default_minutes": 20,
+    "await_max_minutes": 120,
+
     # A NEW SESSION CHOOSES ITS ENVIRONMENT; IT IS NOT GIVEN ONE. Binding at the start put
     # every fresh session on the project's start environment — one it did not choose and
     # could not see — and its pins, to-dos and work landed there because nothing had asked.

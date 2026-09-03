@@ -90,6 +90,7 @@ user interrupts you, nothing in that turn is judged.
 
     journal work start "<the work, in your own words>"
     journal work update "<what moved>" [--on="<work>"]
+    journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>] [--on="<work>"]
     journal work end "<the same words>"
 
 Declare before the first write, never before the first read: edits, `rm`, `git commit`
@@ -97,7 +98,31 @@ are refused while nothing is open, and reads never are, because reading is what 
 what the work is. A good subject is a sentence you will say again. `update` is for where
 it got to, not every step: a decision inside the work, a dead end, a change of approach.
 `work end` asks whether the work taught anything a later reader would get wrong without;
-"nothing" is the usual answer and a fine one. A line that opens the work first,
+"nothing" is the usual answer and a fine one.
+
+**`work await` when the work is in flight on something you cannot hurry** — a subagent
+running, a build, a review, a person. The stop stops nudging that piece, because a hold
+that fires while nothing can move is noise, and noise is what teaches a reader to clear a
+hold without reading it.
+
+**Name what you are waiting on.** `--agent=<id>` for a subagent you dispatched, `--pid=<n>`
+for a process you started. A sentence is a claim nobody can check; an identifier is a fact
+the machine can. A pid is watched: when that process exits, the wait is over at the very
+next stop instead of burning its whole timeout. An agent id cannot be tested — nothing
+exposes a subagent's liveness to a hook — so it is recorded and named back to you in the
+hold, which is what tells you WHICH of three dispatches you are still waiting on.
+
+**It always expires** — 20 minutes by default, `--for=` to say otherwise, capped at two
+hours. When it does, the hold returns naming what was awaited and for how long, and the
+only question worth asking is whether it is still coming: `work update` what you know,
+`work await` again to keep waiting, or `work end` it. A wait with no end is how work is
+abandoned quietly — the awaited thing dies, nothing nudges, and the journal reads as busy
+forever. If you are waiting on a loop or a cron to wake you, set `--for=` past its next
+cycle, so the wake-up arrives before the hold does.
+
+Any `work update` or `work end` ends the wait early, because progress means the waiting is
+over. Never await something already finished, and never re-await to dodge a hold you owe
+an answer to. A line that opens the work first,
 `journal work start "…" && …`, may write in the same line.
 
 ## Pin, rule, or nothing

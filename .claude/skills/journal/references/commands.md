@@ -31,6 +31,9 @@ All of them run as `.journal/journal.py <command>`; `journal` is an alias. `jour
 
     journal work start "<what>"           declare it — a commitment, which is why it costs a command
     journal work update "<what moved>" [--on="<work>"]   progress, filed against the open work
+    journal work await "<what you wait on>"   the stop stops nudging this piece until it expires
+                                     --agent=<id> or --pid=<n> names it; a pid is watched and ends the wait when it exits
+                                     --for=<minutes> (default 20, cap 120); any update or end ends it
     journal work end "<the same words>"   close it; the to-do of the same title closes with it
     journal open                     work declared and never closed, with its notes
 

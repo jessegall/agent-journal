@@ -438,9 +438,54 @@ def _p_untagged(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
             + ("" if taught else "; the tag is the first thing in the message, nothing before it"))
 
 
+def _owners(ctx: Ctx) -> set:
+    """The transcript names whose work this actor is answerable for.
+
+    A DELEGATED SUBAGENT'S WRITES CARRY ITS PARENT'S TRANSCRIPT NAME — its shell has the
+    parent's session id — so its work is matched by that name too.
+    """
+    owners = {ctx.path.name if ctx.path else None}
+    if ctx.stem.startswith("agent-"):
+        parent = state.get(ROOT, "delegated_by", None, stem=ctx.stem)
+        if parent:
+            owners.add(f"{parent}.jsonl")
+    return owners
+
+
 @nudges.subject("work", 50)
 def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     standing = work.open_work(ROOT)
+    if not standing:
+        return None
+    # WAITING IS NOT IDLING. Work marked `work await` is in flight on something this agent
+    # cannot hurry — a subagent, a build, a review — and holding it at every stop teaches
+    # the reader to clear holds without reading them. The wait always expires, and the
+    # expired ones are held FIRST and by name, because the question then is a real one.
+    now = time.time()
+    mine = [w for w in standing if w.get("session") in _owners(ctx)]
+    late = [w for w in mine if work.expired(w, now) or work.gone(w)]
+    if late:
+        w = late[0]
+        got = w["awaiting"]
+        mins = int((now - (float(got["until"]) - float(got["minutes"]) * 60)) / 60)
+        dead = work.gone(w) is not None
+        who = work.named(got)
+        work.woke(ROOT, w["subject"])   # said once; saying it again needs a new `await`
+        return ("work waited out",
+                (f"journal: {who} has exited — `{w['subject']}` was waiting on {got['what']}. "
+                 if dead else
+                 f"journal: `{w['subject']}` has been waiting {mins} minute(s) on {got['what']}"
+                 + (f" ({who})" if who else "") + " — is it still coming? ")
+                + "`work update` what you know, `work await` again to keep "
+                "waiting, or `work end` it",
+                f"Open: {w['subject']}\nAwaited: {got['what']}"
+                + (f" ({who})" if who else "")
+                + (" — that process has EXITED.\n\n" if dead else f", for {mins} minute(s).\n\n")
+                + "A wait expires so that work cannot be abandoned quietly. Decide:\n"
+                '  .journal/journal.py work update "<what you know now>"   it moved, or it did not\n'
+                '  .journal/journal.py work await "<the same thing>" --for=<minutes>   still coming\n'
+                '  .journal/journal.py work end "<the same words>"   it is over, or it is not coming')
+    standing = [w for w in standing if not work.awaiting(w, now) or work.gone(w)]
     if not standing:
         return None
     if todo.auto(ROOT, here):
@@ -464,13 +509,7 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # ONLY WORK THIS TRANSCRIPT OPENED, ONCE PER PIECE. Work opened elsewhere was told
     # at the start; work legitimately spans stops, and a hold that repeats until it
     # closes is a trap.
-    owners = {ctx.path.name if ctx.path else None}
-    if ctx.stem.startswith("agent-"):
-        # A DELEGATED SUBAGENT'S WRITES CARRY ITS PARENT'S TRANSCRIPT NAME (its shell
-        # has the parent's session id), so its work is matched by that name too.
-        parent = state.get(ROOT, "delegated_by", None, stem=ctx.stem)
-        if parent:
-            owners.add(f"{parent}.jsonl")
+    owners = _owners(ctx)
     raw = state.get(ROOT, "held_work", {}, stem=ctx.stem)
     held = raw if isinstance(raw, dict) else {k: -1 for k in (raw or [])}
     fresh = [w for w in standing if w.get("session") in owners and w["subject"] not in held]

@@ -307,6 +307,22 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+def cmd_await(what: str, on: str | None, minutes: float | None,
+              agent: str | None = None, pid: int | None = None) -> int:
+    """Mark the open work as waiting on something, with a deadline."""
+    import time as _time
+    conf, _ = settings_mod.load(root())
+    mins = minutes if minutes is not None else conf["await_default_minutes"]
+    cap = conf["await_max_minutes"]
+    if mins > cap:
+        fmt.say(f"a wait is capped at {cap} minute(s) — nothing waits longer without saying so again",
+                error=True)
+        mins = cap
+    ok, said = work.wait(root(), what, mins, _now(), _time.time(), on, agent, pid)
+    fmt.say(said, error=not ok)
+    return 0 if ok else 1
+
+
 def cmd_start(subject: str) -> int:
     ok, msg = work.start(root(), subject, _now(), _where())
     fmt.say(msg, error=not ok)
@@ -1183,6 +1199,9 @@ def main(argv: list[str]) -> int:
     go_back = False
     fresh = False
     full = False
+    wait_for = None
+    await_agent = None
+    await_pid = None
     on = None
     strike_n = None
     brief = False
@@ -1219,6 +1238,20 @@ def main(argv: list[str]) -> int:
                 supersedes = int(a.split("=", 1)[1])
             except ValueError:
                 fmt.say("--supersedes wants a pin number; `journal pins` numbers them", error=True)
+                return 1
+        elif a.startswith("--agent="):
+            await_agent = a.split("=", 1)[1].strip() or None
+        elif a.startswith("--pid="):
+            try:
+                await_pid = int(a.split("=", 1)[1])
+            except ValueError:
+                fmt.say(f"--pid wants a number, got {a.split('=', 1)[1]!r}", error=True)
+                return 1
+        elif a.startswith("--for="):
+            try:
+                wait_for = float(a.split("=", 1)[1])
+            except ValueError:
+                fmt.say(f"--for wants minutes, got {a.split('=', 1)[1]!r}", error=True)
                 return 1
         elif a.startswith("--on="):
             on = a.split("=", 1)[1]
@@ -1371,13 +1404,15 @@ def main(argv: list[str]) -> int:
         return 1
     if verb == "work":
         sub = rest[1] if len(rest) > 1 else ""
-        if sub not in ("start", "end", "update"):
-            fmt.say('journal work start|update|end "<words>"', error=True)
+        if sub not in ("start", "end", "update", "await"):
+            fmt.say('journal work start|update|end|await "<words>"', error=True)
             return 1
         if len(rest) < 3:
             fmt.say(f'work {sub} wants the words: journal work {sub} "<the work>"', error=True)
             return 1
         words = " ".join(rest[2:])
+        if sub == "await":
+            return cmd_await(words, on, wait_for, await_agent, await_pid)
         if sub == "update":
             return cmd_update(words, on)
         return cmd_start(words) if sub == "start" else cmd_end(words)

@@ -4,6 +4,33 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.22.0 — work that is waiting is not nudged
+
+`journal work await "<what you wait on>"` marks open work as in flight on something the
+agent cannot hurry — a subagent, a build, a review, a person — and the stop hold leaves
+that piece alone. Measured on this project's own session: three consecutive stops were
+held for work that was correctly open and simply waiting on a subagent, each costing an
+update that said the same thing. A hold that fires while nothing can move is noise, and
+noise is what teaches a reader to clear a hold without reading it.
+
+NAME WHAT YOU WAIT ON. `--agent=<id>` for a dispatched subagent, `--pid=<n>` for a process.
+A sentence is a claim nobody can check; an identifier is a fact the machine can. A pid is
+watched with signal 0: when that process exits the wait is over at the very next stop
+rather than burning its timeout, and the hold says it exited. An agent id cannot be tested
+— nothing exposes a subagent's liveness to a hook — so it is recorded and named back in
+the hold, which is what tells you which of three dispatches you are still waiting on.
+
+IT ALWAYS EXPIRES, because a wait with no end is how work is abandoned quietly: the
+awaited thing dies, nothing nudges, and the journal reads as busy forever. `--for=<minutes>`
+overrides the 20-minute default, capped at two hours (`await_default_minutes`,
+`await_max_minutes`). When it expires the hold returns FIRST and by name, saying what was
+awaited and for how long, and offering the three ways out: `work update` what you know,
+`work await` again, or `work end`. Any update or close ends a wait early — progress means
+the waiting is over. When a loop or cron will wake the session, set `--for=` past its next
+cycle so the wake-up arrives before the hold.
+
+After updating: reload the journal skill.
+
 ## 1.21.0 — handing work over is its own skill, and a run works the list to its end
 
 The hand-off is now a second skill, `journal-handoff`, installed beside `journal`.

@@ -328,6 +328,8 @@ journal is used instead, until `journal worktree link` replaces it.
                          learned automatically at the first compaction, set this to override
     context_warn_ladder  where the warnings fire, default [0.5, 0.7, 0.9, 0.95]
     pin_max_chars        the cap on a pin, default 400
+    await_default_minutes  how long `journal work await` holds off the nudge, default 20
+    await_max_minutes    the cap on one wait, default 120
     stall_calls          tool calls on one to-do without progress before the agent is nudged, default 40
     attach_hint_reads    reads of a non-source file in one session before the attach hint, default 2
     bind_on_start        bind a new session to the project's start environment, default false;

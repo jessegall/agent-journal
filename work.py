@@ -14,6 +14,7 @@ state, it is small, and it is written down.
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import state
@@ -24,6 +25,9 @@ KEY = "work"
 def _all(root: Path) -> list[dict]:
     got = state.get(root, KEY, [])
     return got if isinstance(got, list) else []
+
+
+AWAIT = "awaiting"
 
 
 def open_work(root: Path) -> list[dict]:
@@ -74,6 +78,121 @@ def end(root: Path, subject: str, at: str) -> tuple[bool, str]:
     )
 
 
+def awaiting(w: dict, now: float) -> dict | None:
+    """The wait still standing on this work, or None — expired counts as not waiting."""
+    got = w.get(AWAIT)
+    if not isinstance(got, dict):
+        return None
+    return got if now < float(got.get("until") or 0) else None
+
+
+def expired(w: dict, now: float) -> dict | None:
+    """The wait that has RUN OUT on this work, or None. What brings the hold back."""
+    got = w.get(AWAIT)
+    if not isinstance(got, dict):
+        return None
+    return got if now >= float(got.get("until") or 0) else None
+
+
+def alive(pid: int) -> bool:
+    """Is that process still running? Signal 0 asks without sending anything."""
+    try:
+        os.kill(int(pid), 0)
+    except ProcessLookupError:
+        return False
+    except (PermissionError, OverflowError, ValueError, TypeError):
+        return True   # it exists and is not ours, or the number is not askable: do not claim it died
+    return True
+
+
+def wait(root: Path, what: str, minutes: float, at: str, now: float,
+         on: str | None = None, agent: str | None = None,
+         pid: int | None = None) -> tuple[bool, str]:
+    """Mark open work as waiting on something, so the stop hold leaves it alone until then.
+
+    A HOLD THAT FIRES WHILE NOTHING CAN MOVE IS NOISE, and noise is what teaches a reader
+    to clear a hold without reading it. Work that is genuinely in flight — a subagent
+    running, a build, a review — is open for a good reason and has nothing to file at every
+    stop; measured on this project's own session, three consecutive stops were held for
+    work that was correctly open and simply waiting, each costing an update that said the
+    same thing.
+
+    IT ALWAYS EXPIRES. A wait with no end is how work is abandoned quietly: the thing being
+    waited for dies, nothing nudges, and the journal reads as busy forever. So the wait has
+    a deadline, and when it passes the hold comes back naming what was awaited and for how
+    long — the one question worth asking then is whether it is still coming.
+    """
+    what = " ".join((what or "").split())
+    if not what:
+        return False, 'await what? `journal work await "<what you are waiting for>"`'
+    if minutes <= 0:
+        return False, "a wait needs a timeout in minutes: nothing may wait forever"
+    with state.locked(root):
+        items = _all(root)
+        standing = [w for w in items if not w.get("ended")]
+        if not standing:
+            return False, "nothing is open to wait on — `journal work start` first"
+        if on:
+            key = " ".join(on.split()).lower()
+            picked = [w for w in standing if w["subject"].lower() == key]
+            if not picked:
+                return False, "that names no open work. Open:\n" + "\n".join(
+                    f"  {w['subject']}" for w in standing)
+        elif len(standing) > 1:
+            return False, ("several pieces of work are open, so this would have to guess which one "
+                           "waits. Name it:\n" + "\n".join(
+                               f'  journal work await "..." --on="{w["subject"]}"' for w in standing))
+        else:
+            picked = standing
+        picked[0][AWAIT] = {"what": what, "until": now + minutes * 60, "at": at,
+                            "minutes": minutes, "agent": agent or None, "pid": pid or None}
+        state.put(root, KEY, items)
+    mins = int(minutes) if float(minutes).is_integer() else minutes
+    who = f" ({named(picked[0][AWAIT])})" if named(picked[0][AWAIT]) else ""
+    return True, (f"waiting on {what}{who} — `{picked[0]['subject']}` is not held for {mins} minute(s).\n"
+                  "  any `work update` or `work end` ends the wait; after that the hold returns "
+                  "and asks whether it is still coming"
+                  + ("\n  the pid is watched: if it exits, the wait is over at the next stop"
+                     if pid else ""))
+
+
+def named(got: dict) -> str:
+    """The identifier of the thing being awaited, if one was given."""
+    if not isinstance(got, dict):
+        return ""
+    if got.get("agent"):
+        return f"agent {got['agent']}"
+    if got.get("pid"):
+        return f"pid {got['pid']}"
+    return ""
+
+
+def gone(w: dict) -> dict | None:
+    """A wait whose named PROCESS has exited — over early, whatever the clock says.
+
+    AN IDENTIFIER IS WHAT MAKES A WAIT CHECKABLE. "waiting on the build" is a sentence; a
+    pid is a fact the machine can test, so a wait on one ends when the thing ends instead
+    of burning its whole timeout. An agent id cannot be tested from here — nothing exposes
+    a subagent's liveness to a hook — so it is recorded and shown, and its wait runs on the
+    clock like any other.
+    """
+    got = w.get(AWAIT)
+    if not isinstance(got, dict) or not got.get("pid"):
+        return None
+    return None if alive(got["pid"]) else got
+
+
+def woke(root: Path, subject: str) -> None:
+    """Progress arrived: the wait is over, whatever the clock says."""
+    with state.locked(root):
+        items = _all(root)
+        for w in items:
+            if not w.get("ended") and w["subject"].lower() == subject.lower() and w.get(AWAIT):
+                w.pop(AWAIT, None)
+                state.put(root, KEY, items)
+                return
+
+
 def note(root: Path, text: str, at: str, on: str | None = None) -> tuple[bool, str]:
     """File progress AGAINST a piece of work. The thing `[!update]` was pretending to be.
 
@@ -122,6 +241,7 @@ def _note(root: Path, text: str, at: str, on: str | None) -> tuple[bool, str]:
     for w in items:
         if w is target or (not w.get("ended") and w["subject"] == target["subject"]):
             w.setdefault("notes", []).append({"at": at, "text": text})
+            w.pop(AWAIT, None)   # progress arrived: whatever was awaited is no longer awaited
             state.put(root, KEY, items)
             n = len(w["notes"])
             return True, f"{target['subject']}: {n} update(s) filed"
