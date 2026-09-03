@@ -68,5 +68,47 @@ check("the indented list items survive, each on its own line",
 check("the indented command line survives exactly, not rewrapped",
       'journal todo edit 1 --section="What exactly" --brief' in out, True)
 
+# ─────────────────────────────── to-do 6: amend and replace ───────────────────────────────────
+struck_dir = root / "todo" / "default" / "struck"
+
+
+def struck_count():
+    return len(list(struck_dir.glob("*.md"))) if struck_dir.is_dir() else 0
+
+
+before_struck = struck_count()
+code, out = j("todos", "amend", "1", "A new part", "--brief", stdin="Content of the new section.\n")
+check("amend adds a section", (code, "added section" in out), (0, True))
+code, out = j("todo", "1")
+check("the new section is there, without disturbing the others",
+      ("## A new part" in out, "Content of the new section." in out, "## What exactly" in out, "## Where to start" in out),
+      (True, True, True, True))
+check("amend snapshots the pre-edit brief under struck/", struck_count(), before_struck + 1)
+
+code, out = j("todos", "amend", "1", "A new part", "--brief", stdin="Try again.\n")
+check("amend refuses a duplicate section title", (code, "already has a section" in out), (1, True))
+check("and does not snapshot on a refusal", struck_count(), before_struck + 1)
+
+before_struck = struck_count()
+code, out = j("todo", "replace", "1", "A new part", "--brief", stdin="Replaced content only.\n")
+check("replace swaps ONE named section", (code, "replaced" in out), (0, True))
+code, out = j("todo", "1")
+check("only the named section changed; the rest is untouched",
+      ("Replaced content only." in out, "Content of the new section." not in out,
+       "## What exactly" in out, "## Where to start" in out), (True, True, True, True))
+check("replace snapshots too, so struck/ now has two", struck_count(), before_struck + 1)
+
+code, out = j("todo", "replace", "1", "No such section", "--brief", stdin="x\n")
+check("replace refuses a title that names no section, and lists what it does have",
+      (code, "has no section called" in out, "A new part" in out), (1, True, True))
+
+# a titleless replace swaps the whole body
+code, out = j("todo", "the untitled one")
+n = len(todo._all(root, "default"))
+code, out = j("todo", "replace", str(n), "--brief", stdin="Only this now.\n")
+check("a titleless replace swaps the whole body", (code, "the whole brief replaced" in out), (0, True))
+code, out = j("todo", str(n))
+check("and it reads back as exactly that", "Only this now." in out, True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

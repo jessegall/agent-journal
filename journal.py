@@ -656,6 +656,18 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         ok, body = todo.show(root(), here, int(verb))
         fmt.say(body, error=not ok)
         return 0 if ok else 1
+    if verb in ("amend", "replace"):  # ruling R5: the CLI gains a verb that CHANGES a brief
+        if len(rest) < 2 or not rest[1].isdigit():
+            fmt.say(f'todo {verb} wants a number: journal todos {verb} <n> ' + (
+                '"<section title>" --brief' if verb == "amend" else '["<section title>"] --brief'), error=True)
+            return 1
+        n = int(rest[1])
+        title = " ".join(rest[2:])
+        text = sys.stdin.read() if brief else ""
+        fn = todo.amend if verb == "amend" else todo.replace_section
+        ok, msg = fn(root(), here, n, title, text)
+        fmt.say(msg, error=not ok)
+        return 0 if ok else 1
     if verb == "add":
         rest = rest[1:]
         if not rest:
