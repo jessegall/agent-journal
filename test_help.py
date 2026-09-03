@@ -149,5 +149,45 @@ check("old `tools remove` retires under struck/", (code, (root / "tools" / "stru
 code, out = j("tools", "strike", "b", "retired the new way")
 check("new `tools strike` does the same", (code, (root / "tools" / "struck" / "b" / "tool.md").is_file()), (0, True))
 
+# ──────────────────── to-do 4: the five renderers, capped and pageable (ruling R7) ─────────────
+d2 = fresh()
+J2 = str(d2 / ".journal" / "journal.py")
+root2 = d2 / ".journal"
+
+
+def j2(*args, stdin=""):
+    p = subprocess.run([J2, *args], env=env, input=stdin, capture_output=True, text=True, timeout=60)
+    return p.returncode, p.stdout + p.stderr
+
+
+for i in range(20):
+    j2("pin", f"pin number {i}")
+    j2("rule", f"rule number {i}")
+    j2("todo", f"todo number {i}")
+    j2("tools", "add", f"tool{i}", f"Tool {i}", "--summary=x")
+
+code, out = j2("pins")
+check("`journal pins` caps at 15 and offers the rest", (code, out.count("\n  ") > 0, "and 5 more" in out, "--page=2" in out), (0, True, True, True))
+code, out = j2("pins", "--page=2")
+check("`journal pins --page=2` shows the remaining 5", "pin number 19" in out, True)
+
+code, out = j2("rules")
+check("`journal rules` caps too", ("and 5 more" in out, "--page=2" in out), (True, True))
+
+code, out = j2("todo")
+check("`journal todo` caps too", ("and 5 more" in out, "--page=2" in out), (True, True))
+
+code, out = j2("tools")
+check("`journal tools` caps too", ("and 5 more" in out, "--page=2" in out), (True, True))
+
+# what must NOT be cut (ruling R8, pin 9): the environment pickup page lists every to-do,
+# in order -- not just the first page of them, because a runner has to see them all
+here = state.get(root2, "current", "default") or "default"
+code, out = j2("environments", here)
+check("the environment page's to-do list is whole, not capped -- to-do 19 is still on it",
+      "todo number 19" in out, True)
+check("and it does not offer a --page=2 for that list (there is nothing more to page to)",
+      "--page=2" not in out, True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

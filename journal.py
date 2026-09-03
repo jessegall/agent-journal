@@ -342,6 +342,11 @@ def cmd_update(text: str, on: str | None) -> int:
 
 
 PAGE = 25
+#: A LISTING SHOWN BY DEFAULT COSTS CONTEXT EVERY TIME; a search was asked for. So the
+#: catalogues (`journal docs`, `journal tools`, `journal todo`, `journal pins`, `journal
+#: rules`) page at a smaller size than `search`'s 25 — ruling R7, applying the cap
+#: `docs.carry`/`tools.carry` already had to the five renderers that never got one.
+CATALOGUE_PAGE = 15
 
 
 def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int = 1) -> int:
@@ -525,7 +530,7 @@ def cmd_rule(fact: str, strike_n: int | None, why: str, doc_ref: str = "") -> in
     return 0 if ok else 1
 
 
-def cmd_rules(all_of_them: bool, n: int | None, full: bool) -> int:
+def cmd_rules(all_of_them: bool, n: int | None, full: bool, page: int = 1) -> int:
     if n is not None and full:
         conf, _ = settings_mod.load(root())
         ok, body = pins.around(root(), n, project(), conf["pin_context"], key=pins.RULES)
@@ -537,7 +542,7 @@ def cmd_rules(all_of_them: bool, n: int | None, full: bool) -> int:
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
     fmt.say(fmt.title("RULES OF THIS PROJECT", sub=sub))
     fmt.say()
-    fmt.say(pins.render(root(), all_of_them=all_of_them, key=pins.RULES))
+    fmt.say(pins.render(root(), all_of_them=all_of_them, key=pins.RULES, cap=CATALOGUE_PAGE, page=page))
     fmt.say()
     fmt.say(fmt.wrap("Handed first to every session and to every subagent."))
     fmt.say(fmt.commands([
@@ -553,7 +558,7 @@ def cmd_promote(n: int) -> int:
     return 0 if ok else 1
 
 
-def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "") -> int:
+def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", page: int = 1) -> int:
     here = tracks.current(root(), _stem())
     # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
     # what a bare noun and a bare noun+id already do; stripping them here means the
@@ -571,7 +576,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             " · auto ON" if draining else "")
         fmt.say(fmt.title("TO-DO", sub=sub))
         fmt.say()
-        fmt.say(todo.render(root(), here, all_of_them=all_of_them))
+        fmt.say(todo.render(root(), here, all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page))
         fmt.say()
         fmt.say(fmt.wrap("Auto is on: with nothing open, the agent picks up the next one on its own."
                        if draining else
@@ -679,7 +684,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         sub = f"{len(cat)} catalogued" + (f" · {drafts} draft(s)" if drafts else "")
         fmt.say(fmt.title("DOCS OF THIS PROJECT", sub=sub))
         fmt.say()
-        fmt.say(docs.catalogue(root()))
+        fmt.say(docs.catalogue(root(), cap=CATALOGUE_PAGE, page=page))
         if loose:
             fmt.say()
             fmt.say(fmt.wrap(f"{len(loose)} file(s) under {docs.folder(root()).name}/ are not catalogued: "
@@ -756,14 +761,14 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
     return 0 if ok else 1
 
 
-def cmd_tools(rest: list[str], brief: bool, meta: dict) -> int:
+def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1) -> int:
     here = tracks.current(root(), _stem())
     if not rest:
         cat = tools._all(root())
         loose = tools.uncatalogued(root())
         fmt.say(fmt.title("TOOLS OF THIS PROJECT", sub=f"{len(cat)} catalogued"))
         fmt.say()
-        fmt.say(tools.catalogue(root()))
+        fmt.say(tools.catalogue(root(), cap=CATALOGUE_PAGE, page=page))
         if loose:
             fmt.say()
             fmt.say(fmt.wrap(f"{len(loose)} folder(s) under .journal/tools/ have no tool.md: "
@@ -1126,7 +1131,7 @@ def cmd_pin_full(n: int) -> int:
     return 0 if ok else 1
 
 
-def cmd_pins(all_of_them: bool) -> int:
+def cmd_pins(all_of_them: bool, page: int = 1) -> int:
     conf, _ = settings_mod.load(root())
     here = tracks.current(root(), _stem())
     n = len(pins.live(root()))
@@ -1135,7 +1140,7 @@ def cmd_pins(all_of_them: bool) -> int:
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
     fmt.say(fmt.title("PINS", sub=sub))
     fmt.say()
-    fmt.say(pins.render(root(), all_of_them=all_of_them))
+    fmt.say(pins.render(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page))
     fmt.say()
     fmt.say(fmt.wrap("Handed to every session on this environment."))
     fmt.say(fmt.commands([
@@ -1322,7 +1327,7 @@ def main(argv: list[str]) -> int:
                       error=True)
                 return 1
         if sub == "list":
-            return cmd_rules(all_of_them, None, False)
+            return cmd_rules(all_of_them, None, False, page)
         if sub == "show":
             if len(rest) < 3:
                 fmt.say("rules show wants a rule number: journal rules show 3", error=True)
@@ -1340,7 +1345,7 @@ def main(argv: list[str]) -> int:
             except ValueError:
                 fmt.say(f"rules wants a NUMBER with --full, got {rest[1]!r}", error=True)
                 return 1
-        return cmd_rules(all_of_them, n, full)
+        return cmd_rules(all_of_them, n, full, page)
     if verb == "promote":
         if len(rest) < 2:
             fmt.say("promote wants a pin number: journal promote 3", error=True)
@@ -1352,11 +1357,11 @@ def main(argv: list[str]) -> int:
                   error=True)
             return 1
     if verb in ("todo", "todos"):  # ruling R1: `todos` is a twin alias of `todo`, both ways
-        return cmd_todo(rest[1:], all_of_them, brief, doc_ref)
+        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, page)
     if verb == "docs":
         return cmd_docs(rest[1:], brief, abstract, page, replace)
     if verb == "tools":
-        return cmd_tools(rest[1:], brief, tool_meta)
+        return cmd_tools(rest[1:], brief, tool_meta, page)
     if verb == "carry":
         return cmd_carry(fresh)
     if verb in ("environments", "envs", "tracks"):
@@ -1419,7 +1424,7 @@ def main(argv: list[str]) -> int:
                       error=True)
                 return 1
         if sub == "list":
-            return cmd_pins(all_of_them)
+            return cmd_pins(all_of_them, page)
         if sub == "show":
             if len(rest) < 3:
                 fmt.say("pins show wants a pin number: journal pins show 3", error=True)
@@ -1436,7 +1441,7 @@ def main(argv: list[str]) -> int:
             except ValueError:
                 fmt.say(f"pins wants a NUMBER with --full, got {rest[1]!r}", error=True)
                 return 1
-        return cmd_pins(all_of_them)
+        return cmd_pins(all_of_them, page)
     if verb == "update" and len(rest) > 1:
         # `journal update` upgrades the journal; a note on the work is `journal work update`
         fmt.say('journal update upgrades the journal. Progress on the open work is:\n'

@@ -215,22 +215,30 @@ def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[boo
     return True, f"rule {len(rules)}, from pin {n}: {items[i]['fact'][:70]}"
 
 
-def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int = 88) -> str:
+def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int = 88,
+           cap: int | None = None, page: int = 1) -> str:
     """The list as a person reads it: numbered, wrapped, the provenance on a quiet line.
 
     The number is what `--full`, `--supersedes`, `strike` and `promote` take, so it is
     always the position in the FULL list — a struck entry keeps its number and is simply
     not shown unless asked for. Renumbering the standing ones would make "pin 3" mean a
     different fact after every strike.
+
+    CAPPED LIKE `carry`, for a bare `journal pins`/`journal rules` — asked for fresh each
+    time, so it pages rather than just saying how many more there are. `carry` itself
+    (below) is never capped: nothing that reaches the far side of a compaction is
+    trimmed, ever, by this module's own rule.
     """
     items = _all(root, key)
     if not items:
         return "  No rules stand." if key == RULES else "  Nothing is pinned."
+    shown = [(i, p) for i, p in enumerate(items, 1) if all_of_them or not p.get("struck")]
+    total = len(shown)
+    if cap:
+        shown = shown[(page - 1) * cap: page * cap]
     out = []
-    for i, p in enumerate(items, 1):
+    for i, p in shown:
         struck = p.get("struck")
-        if struck and not all_of_them:
-            continue
         meta = []
         if struck:
             meta.append(f"struck: {struck}")
@@ -245,7 +253,11 @@ def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int 
         if p.get("doc"):
             meta.append("→ " + docs_mod.ref_label(root, str(p["doc"])))
         out.append(fmt.numbered(i, p["fact"], " · ".join(meta), struck=bool(struck), width=width))
-    return "\n\n".join(out)
+    body = "\n\n".join(out)
+    if cap and total > page * cap:
+        noun = "rules" if key == RULES else "pins"
+        body += f"\n\n  … and {total - page * cap} more; `journal {noun} --page={page + 1}` shows the rest."
+    return body
 
 
 def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tuple[bool, str]:

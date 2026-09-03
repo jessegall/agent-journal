@@ -217,11 +217,22 @@ def _age(at: str) -> str:
     return age(at) if at else ""
 
 
-def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88, short_refs: bool = False) -> str:
-    """The list as a person reads it: the title, where it stands, and any question below."""
+def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88, short_refs: bool = False,
+           cap: int | None = None, page: int = 1) -> str:
+    """The list as a person reads it: the title, where it stands, and any question below.
+
+    CAPPED LIKE `carry` (below), for the same reason: a bare `journal todo` is asked for
+    fresh each time rather than handed automatically, so it pages past the cap instead
+    of just saying how many more there are. `cap` is None by default — the environment
+    pickup page (`tracks.page`) calls this uncapped on purpose: a runner has to see the
+    WHOLE ordered list, not the first page of it.
+    """
     items = _all(root, track) if all_of_them else open_items(root, track)
     if not items:
         return "  Nothing is waiting." if not all_of_them else "  No to-dos on this environment."
+    total = len(items)
+    if cap:
+        items = items[(page - 1) * cap: page * cap]
     out = []
     for t in items:
         if t.get("done"):
@@ -244,7 +255,10 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
             if t.get("answer"):
                 entry += "\n" + fmt.wrap("→ " + t["answer"], indent=5, width=width)
         out.append(entry)
-    return "\n\n".join(out)
+    body = "\n\n".join(out)
+    if cap and total > page * cap:
+        body += f"\n\n  … and {total - page * cap} more; `journal todo --page={page + 1}` shows the rest."
+    return body
 
 
 def show(root: Path, track: str, n: int, width: int = 88) -> tuple[bool, str]:
