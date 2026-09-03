@@ -213,7 +213,11 @@ def _snapshot(t: dict) -> Path:
     """
     struck_dir = t["path"].parent / STRUCK
     struck_dir.mkdir(exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
+    # MICROSECONDS, NOT SECONDS: two edits inside one automated run (a test, a script)
+    # land inside the same second often enough that a coarser stamp would make the
+    # second snapshot silently overwrite the first — the exact silent loss this whole
+    # mechanism exists to prevent.
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")
     dst = struck_dir / f"{t['path'].stem}-{stamp}.md"
     dst.write_text(t["path"].read_text())
     return dst

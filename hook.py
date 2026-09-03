@@ -1429,41 +1429,28 @@ def carried(source: str = "compact", stem: str | None = None) -> str:
         # not choose and cannot see, and every pin and open item below belongs to that one.
         f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{here}`"
         " (`journal environments` for the others; `journal switch` moves this session only, "
-        "`--project` also the start environment).\nOpen every message with exactly one tag:\n"
-        + "\n".join(f"  [!{t.name}]  {t.line}" for t in tags.TAGS.values())
-        + "\n\nThe tag is free — it rides on a message you were sending anyway. Work is "
-        "not:\n"
-        "  journal start \"<the work>\"     declare it\n"
-        "  journal update \"<what moved>\"  progress on it — a command, never a tag\n"
-        "  journal end \"<the same words>\" close it\n"
-        "  journal pin \"<fact>\"      survives a compaction, on this environment\n"
-        "  journal rule \"<ruling>\"        survives on every environment\n"
-        "  journal todo \"<title>\"         delayed work, on this environment\n"
+        "`--project` also the start environment).\n"
+        # ONE LINE OF TAGS, NOT ONE LINE PER TAG. What each means is in the `journal`
+        # skill, loaded before the first one is worn — this block is the rule, not the
+        # reasoning, and it is read at every start and again after every compaction, so
+        # its own length is a recurring charge on the very context it is protecting.
+        "Open every message with exactly one tag: "
+        + " ".join(f"[!{t.name}]" for t in tags.TAGS.values())
+        + " — what each is for: the `journal` skill.\n"
+        # CURRENT SPELLING ONLY. `journal start`/`update`/`end` still run — 1.x sessions
+        # are not stranded — but this block is what teaches every fresh one, and it must
+        # not teach the spelling this project moved past.
+        "Work is not a tag, it costs a command: `journal work start \"<the work>\"`, "
+        "`journal work update \"<what moved>\"`, `journal work end \"<the same words>\"`.\n"
         "WHEN THE USER ASKS FOR SOMETHING YOU ARE NOT WORKING ON AND IT CAN WAIT, park it: "
-        "`journal todo \"<title>\"`, say you did, and carry on. It is listed at every start "
-        "and picked up with `journal todo start <n>` when the user says so.\n\n"
-        # THE BLOCK IS THE RULES; THE SKILL IS THE REASONING. This has to stay short — it
-        # arrives at every session start and again after every compaction — so the why, the
-        # refusals, and how to read the transcript back live in a skill that is loaded only
-        # when somebody wants them.
-        # THE REFLEX, AND IT IS THE HALF THAT WAS MISSING. Everything above tells the
-        # agent how to WRITE the record. Nothing told it when to READ one — so the default
-        # when asked about an earlier decision is to answer from whatever survived the
-        # summary, confidently, which is exactly the failure the record exists to prevent.
-        # A half-remembered ruling is worse than an admitted gap: it sounds like knowledge.
-        "IF YOU ARE UNSURE WHAT WAS DECIDED, LOOK — do not answer from what survived:\n"
-        "  journal search <term>   every line mentioning it, and who said it\n"
-        "  journal conversation --back=1   the stretch the last summary replaced\n"
-        "  journal user            the user's own words, in full\n"
-        "The transcript lost nothing. Checking costs one command; guessing costs the "
-        "user their own decision.\n\n"
-        # THE SKILL IS WHERE "WHEN" LIVES. This block can only hold the rules; the skill
-        # says when to pin and when not to, when to search instead of answering from
-        # memory, and what each hold means. A reader who never loads it learns the rules
-        # by being held for them, which is the shape this block was written to end.
+        "`journal todo \"<title>\"`, say you did, and carry on — `journal todo start <n>` "
+        "picks it up later.\n\n"
+        # THE REFLEX. Everything above is how to WRITE the record; this is when to READ
+        # one instead of answering from whatever survived the summary.
+        "IF YOU ARE UNSURE WHAT WAS DECIDED, LOOK — do not answer from what survived: "
+        "`journal search <term>`, `journal conversation --back=1`, `journal user`.\n\n"
         "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in "
-        "this session — it says WHEN to do each, with examples — and again whenever a "
-        "hook holds or denies you."
+        "this session, and again whenever a hook holds or denies you."
     ]
     # RULES BEFORE PINS. A rule binds every environment, so a reader meets the constraints
     # before the facts of the one environment they happen to be on.
