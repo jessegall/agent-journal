@@ -4,6 +4,43 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.18.1 — one pattern for every command: `journal <noun> <verb> [<id>] [<payload>]`
+
+Every command now takes its arguments the same way, and names what it does the same way.
+Nouns are plural — `pins`, `rules`, `docs`, `tools`, `todo`/`todos` (twins, either
+spelling) — and every mutating action has an explicit verb: `add`, `strike`, `promote`,
+`list`, `show`, plus each noun's own lifecycle verbs. `strike` is the one word for
+retiring anything, everywhere: a struck pin, a repealed rule, a dropped to-do, a removed
+tool. The old spellings still work — `journal pin "<x>"`, `journal remember "<x>"`,
+`journal rule "<x>"`, `journal rule --strike N "<why>"`, bare `journal strike N "<why>"`,
+bare `journal promote N`, `journal todo drop N "<why>"`, `journal tools remove <name>
+"<why>"` — calling the exact same function their new alias calls, so the two spellings
+can never drift apart; none of them is printed as deprecated. `switch`, `prepare`,
+`delegate`, `handoff` and `search` stay top-level verbs, not wrapped under an
+`environments` noun — they are lifecycle actions, not collection CRUD.
+
+A to-do's brief can be changed instead of rewritten by hand: `journal todos amend <n>
+"<section title>" --brief` appends a new `## <title>` section from stdin; `journal todos
+replace <n> ["<section title>"] --brief` swaps one named section, or the whole brief with
+no title given. The old text is always kept, copied whole to struck/ before the rewrite.
+This needed `todo.show` to stop collapsing an indented list or a `## ` heading into
+run-on prose — it renders with `fmt.block` now, the same renderer the hook already used.
+
+Five listings that grew without a cap now have the one `docs.carry`/`tools.carry`
+already used: a bare `journal docs`/`tools`/`todo`/`pins`/`rules` shows 15 and says
+"… and N more; `--page=2` shows the rest." A single item, a search result, and
+`journal environments "<name>"` — the page a runner picks work up from — are never
+capped; the cut targets a description or a listing, never a payload. The SessionStart
+block taught the retired `journal start`/`update`/`end` spelling in the one place every
+session actually learns from; it teaches `journal work start`/`update`/`end` now, and
+is shorter besides — what each tag means moved to the `journal` skill, already pointed
+to from the same block.
+
+Run on the branch this shipped from: `python3 install.py --check` before pulling, since
+this repo's own version lineage forked from 1.18.0 while unrelated 1.19.0–1.22.0 work
+landed on the branch it will be merged onto — the numbers will need reconciling by hand
+at that point, not by `journal upgrade`.
+
 ## 1.18.0 — tracks are environments
 
 What was called a track is an environment: a session is bound to one, `journal
