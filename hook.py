@@ -687,10 +687,10 @@ def _pieces(cmd: str) -> list[list[str]]:
     """Each command of a chain as its words, quotes and heredoc bodies removed.
 
     NEWLINES ARE SEPARATORS, SO THEY ARE NOT COLLAPSED FIRST. The first version joined
-    the whole command on spaces before splitting, and `cd proj\njournal start "w"` became
-    one piece whose verb was `cd` — the `start` on the second line was never seen, and a
-    line that declared before it wrote was denied. Heredoc bodies are removed on the raw
-    text, where the newlines still say where a body begins and ends.
+    the whole command on spaces before splitting, and `cd proj\njournal work start "w"`
+    became one piece whose verb was `cd` — the `start` on the second line was never seen,
+    and a line that declared before it wrote was denied. Heredoc bodies are removed on
+    the raw text, where the newlines still say where a body begins and ends.
 
     `>&` IS A FILE-DESCRIPTOR DUP, NOT A SEPARATOR. Splitting on `&` cut `2>&1` into a
     redirect with no target, which read as a write, and stopped a read.

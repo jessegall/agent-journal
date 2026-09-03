@@ -14,20 +14,24 @@ nothing. This is the index that gets you back to it.
     journal nothing "<why>"  after a context warning: nothing here needs pinning, and why
     journal rule "<ruling>" [--doc=<doc>[.<p>]]   a pin for EVERY environment — what the project decided, not one line of work
     journal rules [--all]    every rule, numbered; `rules N --full` reads around one
-    journal rule --strike N "<why>"   repeal a rule that stopped being true
-    journal promote N        lift pin N into a rule; the pin is struck and says where it went
+    journal rule --strike N "<why>"   repeal a rule that stopped being true — `journal rules strike N "<why>"` is the same
+    journal rules add "<ruling>"   the explicit spelling of `journal rule "<ruling>"` above
+    journal promote N        lift pin N into a rule; the pin is struck and says where it went — `journal pins promote N` is the same
     journal todo "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this environment; --brief reads a longer brief from stdin
     journal todo [--all]     the titles, numbered
     journal todo N           the whole brief
     journal todo start N     open work with that title — `end` then closes both
     journal todo done N "<how>"   resolved without starting it
-    journal todo drop N "<why>"   abandoned, on the record
+    journal todo drop N "<why>"   abandoned, on the record — `strike` is the same word every other noun uses to retire
     journal todo ask N "<question>"   it waits on the user; auto moves on to the next
     journal todo answer N "<answer>"  the user answers it; the agent is told at its next stop and picks it up first
+    journal todo add|list|show   the explicit spellings of the three shapes above; `todos` is a twin of `todo` everywhere
+    journal todos amend N "<section title>" --brief    append a new section to a brief, from stdin
+    journal todos replace N ["<section title>"] --brief   swap one named section, or the whole brief with none; old text kept under struck/
     journal docs             the catalogue: every doc, its status, parts, files and abstract
     journal docs <doc>       read a doc — <doc> is its number or its name, here and everywhere below
     journal docs <doc>.<p>   read one part of it
-    journal docs <doc> files   its attachments, as a tree; `journal docs files` lists every doc's
+    journal docs files <doc>   its attachments, as a tree; `journal docs <doc> files` and bare `journal docs files` still work
     journal docs add "<title>" --abstract "<one line>" --brief   a new doc; the brief on stdin is its intro
     journal docs part <doc> "<title>" --brief   a new part, from stdin — a report, a section, a finding
     journal docs replace <doc>.<p> --brief     a new body for a part; the old one is kept under struck/
@@ -43,7 +47,8 @@ nothing. This is the index that gets you back to it.
     journal todo auto [on|off]    work through this environment's list without asking, or wait for the user's word
     journal pins [--all]    every pin, numbered — the number is what --supersedes takes
     journal pins N --full   the conversation around where pin N was written
-    journal strike N "<why>" retire a pin that stopped being true, no replacement needed
+    journal strike N "<why>" retire a pin that stopped being true, no replacement needed — `journal pins strike N "<why>"` is the same
+    journal pins add "<claim>"   the explicit spelling of `journal pin "<claim>"` above
     journal work start "<what>"  declare work — a commitment, which is why it costs a command
     journal work update "<what moved>" [--on="<work>"]   progress on the open work
     journal work end "<what>"    the same words, to close it
@@ -64,7 +69,7 @@ nothing. This is the index that gets you back to it.
     journal tools run <name> [args…]   run it from the project root
     journal tools add <name> "<title>" --summary="<one line>" [--usage="<how>"] [--when="<when>"] [--entry=<file>] [--brief]
     journal tools set <name> summary|usage|when|entry "<value>"
-    journal tools remove <name> "<why>"   retire it, kept under struck/
+    journal tools remove <name> "<why>"   retire it, kept under struck/ — `journal tools strike <name> "<why>"` is the same
     journal tools index     a tool.md for every folder under .journal/tools/ that has none
     journal verify          is any of this in force? wired is not the same as fired
     journal version         this project's version of the journal, and whether a newer one is out
@@ -547,7 +552,7 @@ def cmd_rules(all_of_them: bool, n: int | None, full: bool, page: int = 1) -> in
     fmt.say(fmt.wrap("Handed first to every session and to every subagent."))
     fmt.say(fmt.commands([
         ("journal rules <n> --full", "the conversation around one"),
-        ('journal rule --strike <n> "<why>"', "repeal one"),
+        ('journal rules strike <n> "<why>"', "repeal one"),
     ]))
     return 0
 
@@ -1157,8 +1162,8 @@ def cmd_pins(all_of_them: bool, page: int = 1) -> int:
     fmt.say(fmt.wrap("Handed to every session on this environment."))
     fmt.say(fmt.commands([
         ("journal pins <n> --full", "the conversation around one"),
-        ("journal promote <n>", "make one a rule for every environment"),
-        ('journal strike <n> "<why>"', "retire one that stopped being true"),
+        ("journal pins promote <n>", "make one a rule for every environment"),
+        ('journal pins strike <n> "<why>"', "retire one that stopped being true"),
     ]))
     got = transcript.session_transcript(project())
     if got:

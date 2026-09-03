@@ -152,7 +152,7 @@ def set_field(root: Path, name: str, field: str, value: str) -> tuple[bool, str]
 def remove(root: Path, name: str, why: str) -> tuple[bool, str]:
     why = " ".join((why or "").split())
     if not why:
-        return False, 'say why: journal tools remove <name> "<why it is retired>"'
+        return False, 'say why: journal tools strike <name> "<why it is retired>"'
     t, err = get(root, name)
     if t is None:
         return False, err
