@@ -4,6 +4,25 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.21.0 — handing work over is its own skill, and a run works the list to its end
+
+The hand-off is now a second skill, `journal-handoff`, installed beside `journal`.
+Preparing an environment, `journal handoff` and its two prompts, the runner's worktree and
+`journal delegate` moved into it whole; the `journal` skill keeps a pointer and loads it
+before the first `prepare`, `handoff` or `delegate` of a session. A session that never
+hands anything over no longer carries the procedure for doing so, and the half that says
+which model to dispatch and what becomes of the runner's branch is now read at the moment
+it is needed. `journal install` carries both skills; `skill/references/prepare.md` is gone
+and is removed from installed copies by name.
+
+`journal handoff "<name>" --run` now turns AUTO ON for the environment, and the command
+does it rather than trusting the prompt to. A runner exists to work a list to its end;
+with auto off its stop is not held for the next to-do, so it would stop and ask — which is
+the conversation the session dispatched an agent to avoid. It stays on after `--off`;
+`journal todo auto off` ends it when what is left is the user's to decide.
+
+After updating: reload the journal skill, and note the new `journal-handoff` one.
+
 ## 1.20.0 — a hand-off's runner works in its own worktree
 
 `journal handoff "<name>" --run` now says to dispatch the runner with its own worktree, so

@@ -110,6 +110,8 @@ A brief on stdin:
     journal environments "<name>"    the pickup page: docs to read first, what stands, open work, to-dos, how to begin
     journal prepare "<name>"         create an environment for a piece of work and switch to it (see prepare.md)
     journal delegate "<name>" | --off   this session and its subagents act on it; a subagent's journal lands there
+  LOAD THE `journal-handoff` SKILL before any of these five: they dispatch agents, and it
+  says which model, which gets a worktree, and what happens to the branch.
     journal handoff "<name>" "<source>"   an environment made ready BY AGENTS: creates and delegates it, prints the hand-off agent's prompt
     journal handoff "<name>" --run   when it reports READY: the runner's prompt; --off when the run is over
                                      what a hand-off means: .journal/handoff.md (copy of the shipped handoff.default.md)

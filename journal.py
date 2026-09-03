@@ -1003,11 +1003,20 @@ def cmd_handoff(name: str, source: str, run: bool, off: bool, sessions: list[str
         if not ok:
             fmt.say(msg, error=True)
             return 1
+    # AUTO GOES ON FOR THE RUN, and the command does it rather than trusting the prompt.
+    # A runner exists to work a list to its end; with auto off its stop is not held for the
+    # next to-do and it must be told to continue, which is a conversation the session is not
+    # having — it dispatched an agent precisely so it would not have to. `handoff --off`
+    # does not switch it back: the environment keeps whatever the run left, and the user
+    # turns it off with `journal todo auto off` if the leftovers are theirs to decide.
+    was_auto = todo.auto(root(), name)
+    if not was_auto:
+        todo.set_auto(root(), name, True)
     text, origin = handoff.prompt(root(), "runner agent", name, source, page)
     if not text:
         fmt.say(f"the template at {origin} has no `# runner agent` section", error=True)
         return 1
-    fmt.say(fmt.title("HANDOFF", sub=f"{name} · the run · template: {origin}"))
+    fmt.say(fmt.title("HANDOFF", sub=f"{name} · the run · auto {'was already on' if was_auto else 'is now ON'} · template: {origin}"))
     fmt.say("")
     fmt.say(fmt.wrap("Dispatch ONE subagent with the prompt below (a general-purpose agent; name the model — "
                      "sonnet for careful work without invention, opus for judgement) AND GIVE IT ITS OWN "

@@ -1,3 +1,22 @@
+---
+name: journal-handoff
+description: "Preparing an environment somebody else can pick up, and handing it to agents: `journal prepare`, `journal handoff` and its two prompts, `journal delegate`, and the runner's worktree. LOAD THIS BEFORE RUNNING ANY OF THOSE COMMANDS — prepare, handoff, delegate, environments \"<name>\" — and whenever the user asks to prepare an environment, set up the journal for an issue or a PR, make a hand-off, hand work to a subagent, delegate an environment, or run an environment's to-dos with agents. It says which agent gets dispatched with which model, which gets a worktree, what the hand-off agent may not do, and what happens to the branch a runner hands back. The journal skill covers everything else; this one covers only handing work over. Not for subagents: a subagent reports what it found and the main conversation files it."
+---
+
+# Handing an environment over
+
+This is the journal's hand-over half: making an environment somebody else can pick up from
+A to Z, and having agents do it. Everything else — tags, declaring work, pins, rules,
+to-dos, reading the transcript back — is the `journal` skill; load that one for those.
+
+**If you are a subagent, stop here.** You cannot run these commands: `prepare`, `handoff`,
+`delegate` and `switch` are the session's, and are refused from a subagent even when it is
+delegated. Report what you found; the conversation that dispatched you files it.
+
+**Load this skill before the first `prepare`, `handoff` or `delegate` of a session.** The
+commands print what to do next, but not which model to dispatch, what may not be done
+between the two prompts, or what becomes of the branch — those are here.
+
 # Preparing an environment
 
 Only when the user asks for it — "prepare an environment for …", "set up the journal
@@ -37,7 +56,9 @@ the tracker agree on what it is.
    like. Small enough that one is one sitting. Questions only the user can answer:
    `journal todo ask <n> "<question>"`, so auto skips it and the user sees it. The last
    to-do is always "verify and close": the definition of done, the suite, the tracker.
-7. **Auto?** Ask the user. `journal todo auto on` means the list is worked without asking.
+7. **Auto?** Ask the user when YOU will work the list. When a hand-off runner will,
+   `journal handoff --run` turns auto on for the environment itself — a runner exists to
+   work a list to its end, and with auto off its stop is not held for the next to-do.
 8. **The page.** `journal environments "<name>"`. Read it as the one who picks this up
    would: is the first to-do startable from the page alone? If not, the brief is short.
 
@@ -59,7 +80,10 @@ prompt with the page inside it: dispatch that one subagent **with its own worktr
 (`isolation: "worktree"`), read `journal environments "<name>"` when it reports, and
 `journal handoff --off`. The worktree is the runner's alone, so two runs of two
 environments never edit one checkout; its `.journal` is a symlink to the main checkout's,
-so the record stays one. The hand-off agent gets no worktree — it writes only the journal,
+so the record stays one. `--run` also turns AUTO ON for the environment, so the runner
+takes the next to-do whenever nothing is open instead of stopping to ask; it stays on
+after `--off`, and `journal todo auto off` ends it when the leftovers are the user's to
+decide. The hand-off agent gets no worktree — it writes only the journal,
 which is shared on purpose. The runner commits as it goes and hands back a BRANCH: tell the
 user what is on it and offer the merge, or, if they have already asked for the work to be
 merged, say so in the runner's prompt and it merges when it is done. If the hand-off agent reports

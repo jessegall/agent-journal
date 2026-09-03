@@ -252,9 +252,14 @@ check("the hand-off agent may write the environment (docs, pins, to-dos)", ha.ba
 check("but may not hand off in turn", "refused even when delegated" in ha.bash('.journal/journal.py handoff "other" "x"'), True)
 ha.j("docs", "add", "wwm-1700: the delete guard, second half", "--abstract=what the runner must know", "--brief", stdin="the source\n")
 ha.j("todo", "the first unit of work", "--brief", "--doc=2", stdin="start here\n")
+import todo as _todo
+check("auto was off before the run", _todo.auto(root, "wwm-1700"), False)
 code, out = h.j("handoff", "wwm-1700", "--run")
 check("--run prints the runner's prompt with the page inside it",
       (code, "You are the RUNNER" in out, "the first unit of work" in out, "what the runner must know" in out, "todo start" in out), (0, True, True, True, True))
+check("--run turns auto ON for the environment, so the runner works the list to its end",
+      (_todo.auto(root, "wwm-1700"), "auto is now ON" in out), (True, True))
+check("and the runner is told so", "AUTO IS ON for this environment" in " ".join(out.split()), True)
 flat = " ".join(out.split())
 check("the run is dispatched into its own worktree, and the journal stays shared",
       ('isolation: "worktree"' in flat, "`.journal` is a symlink to this one" in flat), (True, True))

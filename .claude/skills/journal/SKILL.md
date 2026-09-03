@@ -195,25 +195,18 @@ is a ruling or a review only the user can give, park that remainder as a to-do w
 questions in its brief, and `work end` the work. Otherwise the journal sees work in flight,
 nothing else starts, and with auto on the stop hook will hold you to do exactly this.
 
-## Preparing an environment, when asked
+## Handing work over: load the `journal-handoff` skill
 
-Only when the user asks for it — "prepare an environment for this issue", "set up the
-journal for …", "make a hand-off" — never on your own: most work is a to-do or open work
-where you are. Two ways. **By agents:** `journal handoff "<name>" "<link, id or text>"`
-creates and delegates the environment and prints one prompt; dispatch ONE subagent with
-it (opus) and do nothing else until it reports READY — it fetches the source, writes the
-brief, runs its own planner and critic, pins, writes the to-dos, validates the page. Then
-`journal handoff "<name>" --run` prints the runner's prompt: dispatch that one subagent,
-and `journal handoff --off` when it reports. What a hand-off means is
-`.journal/handoff.md`, the project's own copy of the shipped template. **By hand:**
-`journal prepare "<name>"` and follow
-[references/prepare.md](references/prepare.md): the source whole, the brief as a doc with
-its files attached, a Plan agent for the phases and a second agent for the steps (you file
-both as parts), pins for what must hold, one to-do per unit of work in order with "verify
-and close" last, auto or not, and `journal environments "<name>"` — the page whoever picks
-it up reads first. Then offer: work it now, leave it for a session, or `journal delegate
-"<name>"` and dispatch a subagent with the page as its brief; a delegated subagent
-journals on that environment under the hooks.
+Preparing an environment, handing it to agents, and delegating one are their own skill:
+**`journal-handoff`**. Load it before the first `journal prepare`, `journal handoff` or
+`journal delegate` of a session, and whenever the user asks to prepare an environment, set
+up the journal for an issue or a PR, make a hand-off, or hand work to a subagent.
+
+Only when the user asks for it — never on your own: most work is a to-do or open work
+where you are. What the other skill adds is what the commands do not print: which agent is
+dispatched with which model, that the runner gets its own worktree and the hand-off agent
+does not, what may not happen between the two prompts, and what becomes of the branch the
+runner hands back.
 
 ## Docs: what was settled, catalogued
 

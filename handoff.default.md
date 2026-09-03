@@ -100,6 +100,14 @@ that the page does not show: `.journal/journal.py todo <n>` prints it.
 
 {page}
 
+AUTO IS ON for this environment, which is the session saying: work the list to its end
+without asking. Whenever nothing is open, take the next to-do and keep going. A question
+you send stops the list until a person comes back, so a question is the expensive move and
+a decision is the cheap one: read the brief, make every choice it leaves open — the name,
+the signature, the approach — under the pins and rules that stand, write what you chose in
+`work update` so it can be reviewed and reversed, and carry on. Ask only when something
+only the user can supply is missing, or when you are stalled with nothing to show.
+
 Work the to-dos in order: `.journal/journal.py todo <n>` to read the brief, `.journal/journal.py
 todo start <n>` to open it, do it, `.journal/journal.py work update "<what moved>"` as you go,
 `.journal/journal.py work end "<the to-do's title, exactly>"` when it is done, and the next. A

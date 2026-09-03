@@ -60,8 +60,12 @@ EXECUTABLE = ("hook.py", "journal.py", "install.py", "test_tracks.py", "test_gat
 #: harness owns and which several projects gitignore. A skill that only exists where it was
 #: first written is one that silently goes missing on the next clone, and nothing about a
 #: missing skill looks broken: the agent simply never learns why any of this is here.
-SKILL_SRC = "skill"
-SKILL_DST = ".claude/skills/journal"
+#: TWO SKILLS, because they are read at different moments. `journal` is the one every
+#: session needs; `journal-handoff` is loaded only when work is being handed over, and
+#: keeping it out of the first means the session that never hands anything off never pays
+#: for the procedure that does it.
+SKILLS = (("skill", ".claude/skills/journal"),
+          ("skill-handoff", ".claude/skills/journal-handoff"))
 
 #: What belongs to THIS project and never comes across on a pull.
 DATA = ("record.json", "record.json.lock", "settings.json", "state.json", "state.json.retired",
@@ -244,6 +248,14 @@ def skill(check: bool) -> list[str]:
     a copy that carried SKILL.md alone would leave every one of those pointers dangling in
     the installed copy, silently. Files the package no longer ships are removed by name.
     """
+    out = []
+    for src_name, dst_name in SKILLS:
+        out += _one_skill(src_name, dst_name, check)
+    return out
+
+
+def _one_skill(SKILL_SRC: str, SKILL_DST: str, check: bool) -> list[str]:
+    """One packaged skill folder, copied into place and kept current."""
     src = ROOT / SKILL_SRC
     if not (src / "SKILL.md").is_file():
         return [f"  ! {SKILL_SRC}/SKILL.md is missing — no skill to install"]
