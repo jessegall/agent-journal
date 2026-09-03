@@ -1,6 +1,6 @@
 ---
 name: journal
-description: "The project's journal: how to file what happens so it survives a compaction and reaches every later session — the tag on each message, declared work, pins, rules, to-dos, and reading the transcript back instead of answering from memory. Use it whenever the user asks for a feature, a fix, an implementation or any piece of work, because the first decision is whether that is the current work, work to do now, or work to park as a to-do. Also use it whenever a hook holds your stop or denies a tool call; before your first pin, rule, declaration or search in a session; when a context warning asks for a decision; when the user says later, not yet, or after X; when the user rules something project-wide or asks to promote a pin; when you are about to say 'I think we decided…'; and at a fresh start or after a compaction. Load it even when the request seems small — the decision it teaches is the one most often skipped. Not for subagents: a subagent reports what it found and the main conversation files it."
+description: "The project's journal: how to file what happens so it survives a compaction and reaches every later session — the tag on each message, declared work, pins, rules, to-dos, and reading the transcript back instead of answering from memory. Use it whenever the user asks for a feature, a fix, an implementation or any piece of work, because the first decision is whether that is the current work, work to do now, or work to park as a to-do. Also use it whenever a hook holds your stop or denies a tool call; before your first pin, rule, declaration or search in a session; when a context warning asks for a decision; when the user says later, not yet, or after X; when the user rules something project-wide or asks to promote a pin; when you are about to say 'I think we decided…'; when the user asks to prepare an environment, set up the journal for an issue or PR, make a hand-off, or delegate an environment to a subagent; and at a fresh start or after a compaction. Load it even when the request seems small — the decision it teaches is the one most often skipped. Not for subagents: a subagent reports what it found and the main conversation files it."
 ---
 
 # The journal
@@ -16,7 +16,7 @@ facts that must be handed to you again after the loss.
 
 Everything runs through one script, `.journal/journal.py <command>`; `journal` is an alias
 for it. Bare `journal` shows where things stand. This file is about *when*. The full
-command reference, tracks, what is shared, and why the design is what it is are in
+command reference, environments, what is shared, and why the design is what it is are in
 [references/commands.md](references/commands.md); read it when you need an option or a
 verb you do not remember.
 
@@ -102,8 +102,9 @@ it got to, not every step: a decision inside the work, a dead end, a change of a
 
 ## Pin, rule, or nothing
 
-    journal pin "<the claim, in one line>"     a pin: for this track
-    journal rule "<the ruling, in one line>"        a rule: for every track
+    journal pin "<the claim, in one line>"     a pin: for this environment
+    journal rule "<the ruling, in one line>"        a rule: for every environment
+    ... --doc=N or --doc=N.P                        on either, and on todo: the doc (or part) it rests on
     journal nothing "<why nothing here needs pinning>"
     journal promote <n>                             lift pin n into a rule
 
@@ -120,9 +121,9 @@ falsehood wearing the same authority as the facts that still hold.
     converted 14 of 22 components                                               a status; wrong by tomorrow
     tests pass on the rethink branch                                            a count; wrong by the next commit
 
-**A rule answers one more question:** would it be wrong on any *other* track? "Components
+**A rule answers one more question:** would it be wrong on any *other* environment? "Components
 never hold a component as a State field" binds every line of work; write it as a rule, or
-`promote` a pin that turns out to. Switching tracks never moves a rule.
+`promote` a pin that turns out to. Switching environments never moves a rule.
 
 **A pin is a claim, not its reasoning.** There is a length cap and no count cap. The
 reasoning stays in the transcript; `journal pins <n> --full` reads around it. Several
@@ -146,7 +147,7 @@ moment to park any work you are holding for later, because that lives only in th
     journal todo auto [on|off]         work through the list without asking, or wait for the word
 
 A to-do is work that was **put off**: the user said later, or you found something and
-were told not to touch it yet. It is a titled file under `todo/<track>/`, and the brief is
+were told not to touch it yet. It is a titled file under `todo/<environment>/`, and the brief is
 what you will need in a week: what exactly, why, where to start, what the user said. Not
 for imagined work; "it might be nice to refactor this" is a message with a tag.
 
@@ -154,7 +155,7 @@ for imagined work; "it might be nice to refactor this" is a message with a tag.
 default, the start block lists what is waiting and an idle stop says so once; neither is
 an instruction to begin one. Start a to-do only when the user says so for that one, or
 asks you to work through them, in which case offer `journal todo auto on`. With auto on
-for the track, the user has already said it: whenever nothing is open, pick up the next
+for the environment, the user has already said it: whenever nothing is open, pick up the next
 one with `todo start <n>`, do it, `work end` it, and the next idle stop brings the next. Auto
 also means a loop: start one with the `loop` skill, `15m journal next`, so an idle session
 comes back every fifteen minutes and carries on until nothing is left it can do, and stop
@@ -194,14 +195,29 @@ is a ruling or a review only the user can give, park that remainder as a to-do w
 questions in its brief, and `work end` the work. Otherwise the journal sees work in flight,
 nothing else starts, and with auto on the stop hook will hold you to do exactly this.
 
+## Preparing an environment, when asked
+
+Only when the user asks for it — "prepare an environment for this issue", "set up the
+journal for …", "make a hand-off" — never on your own: most work is a to-do or open work
+where you are. Then `journal prepare "<name>"` and follow
+[references/prepare.md](references/prepare.md): the source whole, the brief as a doc with
+its files attached, a Plan agent for the phases and a second agent for the steps (you file
+both as parts), pins for what must hold, one to-do per unit of work in order with "verify
+and close" last, auto or not, and `journal environments "<name>"` — the page whoever picks
+it up reads first. Then offer: work it now, leave it for a session, or `journal delegate
+"<name>"` and dispatch a subagent with the page as its brief; a delegated subagent
+journals on that environment under the hooks.
+
 ## Docs: what was settled, catalogued
 
-    journal docs                                the catalogue: number, title, status, parts, abstract
-    journal docs <n>  |  journal docs <n>.<p>   read a doc, or one part
+    journal docs                                the catalogue: number, title, status, parts, files, abstract
+    journal docs <doc>  |  journal docs <doc>.<p>   read a doc, or one part; <doc> is its number or its name
+    journal docs <doc> files                    its attachments, as a tree
     journal docs add "<title>" --abstract="<one line>" --brief    a new doc, its intro on stdin
-    journal docs part <n> "<title>" --brief     a report, a section, a finding — as one part
-    journal docs strike <n>.<p> "<why>"         drop a part, on the record
-    journal docs final <n>                      when it is settled
+    journal docs part <doc> "<title>" --brief   a report, a section, a finding — as one part
+    journal docs attach <doc> <path> "<what it is>"   a file or a folder, copied in beside the parts
+    journal docs strike <doc>.<p> "<why>"       drop a part, on the record
+    journal docs final <doc>                    when it is settled
     journal docs search <term>                  every line of every doc mentioning it
 
 A pin is a claim, a rule binds, a to-do is work. A **doc** is a finding: a design once it
@@ -217,8 +233,22 @@ belongs to, filed by you, which is the moment to judge whether it is worth keepi
 Everything else that is long — a survey, the numbers behind a decision — is a part too.
 One doc, many parts; a part is what you replace or strike when it stops being true.
 
-**Cite it.** `--doc=<n>` or `--doc=<n>.<p>` on `remember`, `rule` and `todo` ties the
-entry to the doc; the entry shows the doc beside it, and the doc shows what cites it. A
+**Attach what is not prose.** A design's HTML, a screenshot, a PDF the user was sent,
+the CSV behind a finding: `journal docs attach <doc> <path> "<what it is>"` copies the
+file — or a whole folder — into the doc, beside the parts that explain it; the original
+stays where it is. `journal docs <doc> files` shows them as a tree, `docs search` finds
+them by name. Attach rather than `cp` into docs/: the copy is listed, said what it is,
+and handed to the next session; a bare file is not. The hook says so when you keep
+re-reading a file that is not source — attach it, or ignore the hint if it is scratch.
+
+**By name or number.** A doc is referenced either way, everywhere: `journal docs
+reactivity`, `docs attach reactivity …`, `--doc=reactivity`. The title, or a unique
+part of it.
+
+**Cite it.** `--doc=<doc>` or `--doc=<doc>.<p>` on `pin`, `rule` and `todo` ties the entry
+to the doc; the entry shows "→ doc 4.2: <doc> · <part>" beside it, and the doc shows what
+cites it. Cite whenever the claim came out of a doc or a doc explains it: the pin is the
+one line, the doc is the reasoning a later reader will want. A
 pin that only says "read docs/x.md before touching Y" is an abstract wearing a pin; give
 the doc that abstract and cite it instead.
 
@@ -245,7 +275,7 @@ catalogue. Running a tool is a write: declare the work first.
 
 ## Look before you answer
 
-    journal search <term> [--all]     this track's whole transcript, every session, 25 hits a page newest first
+    journal search <term> [--all]     this environment's whole transcript, every session, 25 hits a page newest first
 
 Search when any of these is about to leave your mouth: "I think we decided…", "as
 discussed…", "earlier you said…"; the name of a command, flag, option or file the user
@@ -267,14 +297,17 @@ have it rather than filling the space.
     journal open                    work declared and never closed, with its notes
 
 After a compaction, read `conversation --back=1` and `user` before you touch anything;
-they are precisely what the summary dropped. At a fresh start, the block lists the standing
-rules, pins, open work and to-dos. Work opened by an earlier session is listed so you know
-it exists, not held against you; before continuing it, `open` shows where it got to.
+they are precisely what the summary dropped. At a fresh start, the block names the environment
+this session is bound to and lists the standing rules, pins, open work and to-dos. If it
+leads with "ENVIRONMENT … IS TAKEN", another running session holds that environment: tell the user, ask
+which environment this session works on, and `switch` before anything else. Work opened by an
+earlier session is listed so you know it exists, not held against you; before continuing
+it, `open` shows where it got to.
 
 ## If a hook holds or denies you
 
 Read what it says and do that one thing. A hold is one line, and holds come one per
-stop in a fixed order — track, loop, context, deferral, untagged, work, auto — so what
+stop in a fixed order — environment, loop, context, deferral, untagged, work, auto — so what
 you are shown is the first thing owed, and the next stop shows the next. When the line ends with
 "details: `.journal/journal.py next`", run that first: it prints the full text of the
 hold, which to-do is next, the questions the user answered, or what is filling the
@@ -291,9 +324,10 @@ thing to do now.
 | *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
 | *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`                  |
 | *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs |
-| *track `x` is taken by another session*                        | ask the user which track this session works on, then `switch "<name>"` |
+| *environment `x` is taken by another session*                        | ask the user which environment this session works on, then `switch "<name>"` |
 | *That pin would be refused*                                    | cut it to the claim, or drop the scratch path          |
 | *`journal <verb>` from a subagent is refused*                  | you are a subagent: report; the main conversation files |
 | *THAT … CALL RETURNED N CHARACTERS*                            | nothing to undo; read narrower next time               |
 | *… is a markdown file written outside the journal*             | a hint: `docs add` or `docs part` if it is a design or a report; otherwise ignore |
 | *… is a script you wrote / has now run twice / scratch script*  | a hint: `tools add` if the job comes back; otherwise ignore |
+| *… has been read N times … not a source file*                  | a hint: `docs attach <doc> <path> "<what it is>"` if it is reference material; otherwise ignore |

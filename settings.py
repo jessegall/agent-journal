@@ -15,6 +15,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+#: Older names for settings, still accepted: environments were called environments.
+ALIASES = {"one_session_per_track": "one_session_per_environment"}
+
 DEFAULTS = {
     # How much either side of a prompt is kept, so "yes please" has its question.
     "context_messages": 2,
@@ -86,16 +89,16 @@ DEFAULTS = {
     # comes back and carries on until nothing is left it can do. Minutes; 0 asks for none.
     "auto_loop_minutes": 15,
 
-    # ONE LIVE SESSION PER TRACK. A second session that starts on a track another running
+    # ONE LIVE SESSION PER ENVIRONMENT. A second session that starts on an environment another running
     # session holds is told at its start, held at its stops and refused edits until it has
-    # switched; a switch onto a taken track is refused. false lets sessions share a track.
-    "one_session_per_track": True,
+    # switched; a switch onto a taken environment is refused. false lets sessions share an environment.
+    "one_session_per_environment": True,
 
     # After this many hours without a hook event a bound session counts as gone — a
-    # terminal closed without a SessionEnd — and its track is free again.
+    # terminal closed without a SessionEnd — and its environment is free again.
     "session_stale_hours": 24.0,
 
-    # THE ORDER OF THE STOP QUEUE, by subject: lower runs first. The defaults are track 5,
+    # THE ORDER OF THE STOP QUEUE, by subject: lower runs first. The defaults are environment 5,
     # loop 10, context 20, deferral 30, untagged 40, work 50, auto 60; {"work": 1} puts
     # open work at the head. `journal settings` shows the order in force.
     "stop_priority": {},
@@ -143,6 +146,7 @@ def load(root: Path) -> tuple[dict, list[str]]:
         # the next reader, not a setting, so it is neither applied nor complained about.
         if key.startswith("//"):
             continue
+        key = ALIASES.get(key, key)   # an older name for a setting still works
         if key not in DEFAULTS:
             problems.append(f"{PATH}: unknown setting {key!r} — it does nothing")
             continue

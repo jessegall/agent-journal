@@ -32,7 +32,7 @@ run rerun retry restart revert undo redo apply commit push pull format lint
 show list print display expose hide increase decrease raise lower limit cap
 park promote strike pin remember switch teach explain
 nudge remind notify warn block deny refuse gate inject trigger load unload hide expose
-track log record store save read parse detect measure count dedupe deduplicate
+environment log record store save read parse detect measure count dedupe deduplicate
 """.split())
 
 #: What precedes the verb in a request, stripped so the verb can lead. Order matters

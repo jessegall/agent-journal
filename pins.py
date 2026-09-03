@@ -31,10 +31,10 @@ import docs as docs_mod
 import state
 
 KEY = "pins"
-#: A RULE IS A PIN FOR EVERY TRACK. Pins say what this line of work decided; a rule says
+#: A RULE IS A PIN FOR EVERY ENVIRONMENT. Pins say what this line of work decided; a rule says
 #: what the project decided, and `tracks.switch` never moves it. Same shape, same cap,
 #: same citation into the transcript — one more question before writing one: would it
-#: be wrong on any OTHER track? If only on this one, it is a pin.
+#: be wrong on any OTHER environment? If only on this one, it is a pin.
 RULES = "rules"
 
 
@@ -192,7 +192,7 @@ def strike(root: Path, n: int, why: str, key: str = KEY) -> tuple[bool, str]:
 
 
 def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[bool, str]:
-    """Lift a pin into a rule: the same claim, now for every track.
+    """Lift a pin into a rule: the same claim, now for every environment.
 
     THE PIN IS STRUCK, NOT COPIED. Two entries carrying one claim would drift — one gets
     superseded, the other does not — and the far side would be handed both. The strike
@@ -279,6 +279,9 @@ def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tu
         return False, "that pin names a transcript this machine no longer has."
     if want and path.name != want:
         note = f"  ! the session it was written in ({want}) is gone; reading the newest instead\n"
+    elif p.get("via") == "delegation":
+        note = ("  ! written while the environment was DELEGATED: the writer may have been a subagent,\n"
+                "    whose words are one level under this transcript, in its subagents/ folder\n")
     elif p.get("guessed"):
         note = "  ! the transcript was GUESSED when this pin was written (no session id in the\n" \
                "    environment); the citation may point at another terminal's conversation\n"
@@ -327,12 +330,12 @@ def carry(root: Path, source: str = "compact", key: str = KEY) -> str:
     if not standing:
         return ""
     if key == RULES:
-        head = "RULES OF THIS PROJECT, on every track. Decided, and still in force:"
+        head = "RULES OF THIS PROJECT, on every environment. Decided, and still in force:"
     elif source == "compact":
         head = ("FACTS THE SUMMARY YOU ARE HOLDING DID NOT KEEP. They were true before the "
                 "compaction and are true now:")
     else:
-        head = "FACTS THAT STAND ON THIS TRACK, decided in earlier sessions and still true:"
+        head = "FACTS THAT STAND ON THIS ENVIRONMENT, decided in earlier sessions and still true:"
     return (
         head + "\n"
         + "\n".join(

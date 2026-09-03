@@ -1,6 +1,6 @@
 """`.journal/record.json` and `.journal/runtime/<transcript>.json` — two kinds of fact.
 
-THE RECORD IS SHARED. Pins, work, tracks: what somebody decided. It belongs to the project,
+THE RECORD IS SHARED. Pins, work, environments: what somebody decided. It belongs to the project,
 survives a fresh clone, is the half worth reviewing in a diff, and every Claude Code session
 and every agent inside one reads and writes the same file.
 
@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import re
 import os
 import sys
 import tempfile
@@ -97,13 +98,13 @@ def runtime_files(root: Path) -> list[tuple[str, dict]]:
     return sorted((f.stem, _read(f)) for f in d.glob("*.json"))
 
 
-#: THE TRACK THIS PROCESS READS AND WRITES. Pins and work live under their track's name
-#: in the record, and `current` is only a pointer; a process says which track it is on
+#: THE ENVIRONMENT THIS PROCESS READS AND WRITES. Pins and work live under their environment's name
+#: in the record, and `current` is only a pointer; a process says which environment it is on
 #: once (`use_track`) and every `get`/`put` of "pins" or "work" goes there. Nobody else
 #: had to learn a new concept: `pins.py` and `work.py` still read "pins" and "work".
-#: Before this, the current track's data sat in top-level keys and a switch SWAPPED it
-#: with a parked copy — which meant one current track for the whole project, and two
-#: sessions could not be on two tracks. A record in the old shape is moved on first read.
+#: Before this, the current environment's data sat in top-level keys and a switch SWAPPED it
+#: with a parked copy — which meant one current environment for the whole project, and two
+#: sessions could not be on two environments. A record in the old shape is moved on first read.
 TRACKED = ("pins", "work")
 _TRACK: list = []
 
@@ -112,16 +113,57 @@ def use_track(name: str) -> None:
     _TRACK[:] = [name]
 
 
+def slug(name: str) -> str:
+    """An environment's name on disk and on the command line: lowercase, letters, digits, dashes.
+
+    NO SPACES, EVER. A name with a space is a folder with a space, a flag that needs
+    quoting, and a search that matches half of it. Everything becomes a slug on the way in.
+    """
+    return re.sub(r"[^a-z0-9]+", "-", (name or "").lower()).strip("-")[:60].rstrip("-")
+
+
 def _record(root: Path) -> dict:
     data = _read(record_file(root))
+    changed = False
     if any(k in data for k in TRACKED):
         cur = data.get("current") or "default"
         slot = data.setdefault("tracks", {}).setdefault(cur, {})
         for k in TRACKED:
             if k in data:
                 slot[k] = data.pop(k)
+        changed = True
+    # OLDER NAMES WITH SPACES OR CAPITALS become slugs, once, here — the record, its
+    # pointers, and the to-do folders that carry the name.
+    held = data.get("tracks")
+    if isinstance(held, dict) and any(slug(k) != k for k in held):
+        fixed: dict = {}
+        for k, v in held.items():
+            s = slug(k) or "default"
+            if s in fixed and isinstance(fixed[s], dict) and isinstance(v, dict):
+                for key in ("pins", "work"):
+                    fixed[s][key] = (fixed[s].get(key) or []) + (v.get(key) or [])
+            else:
+                fixed[s] = v
+            _rename_todo_folder(root, k, s)
+        data["tracks"] = fixed
+        for key in ("current", "previous"):
+            if data.get(key):
+                data[key] = slug(data[key]) or "default"
+        changed = True
+    if changed:
         _write(record_file(root), data)
     return data
+
+
+def _rename_todo_folder(root: Path, old: str, new: str) -> None:
+    if old == new:
+        return
+    src, dst = root / "todo" / old, root / "todo" / new
+    if src.is_dir() and not dst.exists():
+        try:
+            src.rename(dst)
+        except OSError:
+            pass
 
 
 def _track_name(root: Path, data: dict) -> str:

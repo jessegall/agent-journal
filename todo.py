@@ -7,8 +7,8 @@ a to-do is a brief, not a claim, and when it is picked up in a week the reader n
 why and where to start, which is longer than one line. A file can be edited by hand and
 read in a diff.
 
-SCOPED TO THE TRACK. A to-do belongs to the line of work that deferred it, and one track's
-debts do not bleed into another's: `todo/<track>/NNN-<slug>.md`. The number is the file's,
+SCOPED TO THE ENVIRONMENT. A to-do belongs to the line of work that deferred it, and one environment's
+debts do not bleed into another's: `todo/<environment>/NNN-<slug>.md`. The number is the file's,
 stable for the life of the to-do, so "to-do 3" means the same thing after 2 is done.
 
 SAID, NEVER HELD, AND NOT AT EVERY STOP. An idle agent told "three to-dos are waiting"
@@ -35,6 +35,7 @@ def _slug(text: str, limit: int = 40) -> str:
 
 
 def folder(root: Path, track: str) -> Path:
+    track = state.slug(track) or "default"
     return root / DIR / _slug(track, 60)
 
 
@@ -143,7 +144,7 @@ def ask(root: Path, track: str, n: int, question: str) -> tuple[bool, str]:
 def _get(root: Path, track: str, n: int) -> tuple[dict | None, str]:
     items = {t["n"]: t for t in _all(root, track)}
     if n not in items:
-        return None, f"there is no to-do {n} on track `{track}`. `journal todo` numbers them."
+        return None, f"there is no to-do {n} on environment `{track}`. `journal todo` numbers them."
     return items[n], ""
 
 
@@ -173,12 +174,18 @@ def _update(root: Path, track: str, n: int, **fields) -> tuple[dict | None, str]
     return {**t, **meta}, ""
 
 
-def start(root: Path, track: str, n: int, at: str) -> tuple[dict | None, str]:
+def start(root: Path, track: str, n: int, at: str, strict: bool = False) -> tuple[dict | None, str]:
     t, err = _get(root, track, n)
     if t is None:
         return None, err
     if t.get("done"):
         return None, f"to-do {n} is already done ({t.get('how') or 'no reason recorded'})"
+    if strict and t.get("asks") and not t.get("answer"):
+        # A DELEGATED ACTOR CANNOT REACH THE USER: what waits on them is not startable for
+        # it. A session may start it — the user answered in the conversation.
+        nxt = next((x for x in ready(root, track) if x["n"] != n), None)
+        return None, (f"to-do {n} waits on the user: {t['asks']}" + (f" — next ready: {nxt['n']} ({nxt['title']})" if nxt
+                      else " — nothing else is ready"))
     return _update(root, track, n, started=at)  # the question and its answer stay, as history
 
 
@@ -210,11 +217,11 @@ def _age(at: str) -> str:
     return age(at) if at else ""
 
 
-def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88) -> str:
+def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88, short_refs: bool = False) -> str:
     """The list as a person reads it: the title, where it stands, and any question below."""
     items = _all(root, track) if all_of_them else open_items(root, track)
     if not items:
-        return "  Nothing is waiting." if not all_of_them else "  No to-dos on this track."
+        return "  Nothing is waiting." if not all_of_them else "  No to-dos on this environment."
     out = []
     for t in items:
         if t.get("done"):
@@ -230,7 +237,7 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
         meta += " · has a brief" if t["body"] else " · title only"
         if t.get("doc"):
             import docs as docs_mod
-            meta += " · → " + docs_mod.ref_label(root, str(t["doc"]))
+            meta += " · → " + docs_mod.ref_label(root, str(t["doc"]), short=short_refs)
         entry = fmt.numbered(t["n"], t["title"], meta, struck=bool(t.get("done")), width=width)
         if t.get("asks") and not t.get("done") and not t.get("started"):
             entry += "\n" + fmt.wrap("? " + t["asks"], indent=5, width=width)
@@ -244,7 +251,7 @@ def show(root: Path, track: str, n: int, width: int = 88) -> tuple[bool, str]:
     t, err = _get(root, track, n)
     if t is None:
         return False, err
-    meta = [f"track {track}"]
+    meta = [f"environment {track}"]
     if t.get("at"):
         meta.append(f"written {_age(t['at'])} ({t['at'][:10]})")
     if t.get("line"):
@@ -284,12 +291,12 @@ AUTO = "auto"
 
 
 def auto(root: Path, track: str) -> bool:
-    """May the agent work through this track's list without asking?
+    """May the agent work through this environment's list without asking?
 
     OFF BY DEFAULT, AND THE DEFAULT IS THE POINT. A to-do is work the user put off, and
-    whether it gets picked up is their call — unless they have said, for this track, that
+    whether it gets picked up is their call — unless they have said, for this environment, that
     the agent should work through the list on its own. The flag is that saying, on the
-    record, per track: a track of chores can drain while a track of design questions waits.
+    record, per environment: an environment of chores can drain while an environment of design questions waits.
     """
     got = state.get(root, AUTO, {})
     return bool(isinstance(got, dict) and got.get(track))
@@ -336,7 +343,7 @@ def carry(root: Path, track: str) -> str:
             "first.\n" if unstuck else "")
     if auto(root, track):
         return (
-            f"TO DO on this track, {len(waiting)} waiting — AUTO MODE IS ON: this list is worked "
+            f"TO DO on this environment, {len(waiting)} waiting — AUTO MODE IS ON: this list is worked "
             "through without asking. Whenever nothing is open, pick up the next one with "
             "`journal todo start <n>`, solve it yourself, `journal work end` it, and keep going "
             "until the list is empty. Every choice a brief leaves open is yours: make it, write it "
@@ -349,7 +356,7 @@ def carry(root: Path, track: str) -> str:
             + "\n`journal todo <n>` reads the brief; `journal todo auto off` turns this off."
         )
     return (
-        f"TO DO on this track, {len(waiting)} waiting — delayed work, not an instruction to "
+        f"TO DO on this environment, {len(waiting)} waiting — delayed work, not an instruction to "
         "start any of it. Start one only when the user says so, or asks you to work through "
         "them (then offer `journal todo auto on`). A to-do the user has ANSWERED is theirs "
         "saying to do it: start it.\n" + lead + titles

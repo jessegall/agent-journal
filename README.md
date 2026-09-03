@@ -105,14 +105,25 @@ says what it does and how to call it, and `journal tools run <name>` runs it. Ev
 session is handed the catalogue, so the next agent uses the tool instead of writing it
 again.
 
-### Tracks
+### Environments
 
 Separate lines of work, each with its own pins and to-dos. Rules and docs are shared
-across all of them. Every session is bound to a track, so two sessions can work two
-tracks of one project at the same time. A switch from inside a session moves only that
+across all of them. Every session is bound to an environment, so two sessions can work two
+environments of one project at the same time. A switch from inside a session moves only that
 session; a switch from a terminal moves where new sessions start, and says which running
 sessions stayed where they were and how to move one along. One running session works a
-track: a second session that lands on a taken track is told, and switches.
+environment: a second session that lands on a taken environment is told, and switches.
+
+### Preparing and handing off
+
+When you ask for it, the agent prepares an environment for an issue or PR: the source
+as a doc with its files attached, a plan and its steps from two agents, pins for what
+must hold, and one to-do per unit of work. `journal environments "<name>"` is the page
+whoever picks it up reads first. `journal handoff "<name>" "<source>"` has agents do
+all of it: the agent dispatches one hand-off subagent, which plans with agents of its
+own, fills the environment and validates it, then one runner. What a hand-off means is
+`.journal/handoff.md`, yours to edit. `journal delegate "<name>"` lets any subagent work
+an environment with the journal and the hooks on, so its work is filed like a session's.
 
 ### Tags
 
@@ -123,7 +134,7 @@ readable by kind, and lets the journal show you only what mattered.
 ### Reading back
 
 The conversation since the last compaction, the exact stretch a summary
-replaced, your own words in full, and a search across every session of the track, all
+replaced, your own words in full, and a search across every session of the environment, all
 cited by line number.
 
 ### Context warnings
@@ -139,9 +150,9 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 
 ### Status
 
-    journal                              track, rules, pins, work, to-dos, docs, context
+    journal                              environment, rules, pins, work, to-dos, docs, context
     journal open                         the open work, with its notes
-    journal tracks                       every track, the current one marked
+    journal environments                       every environment, the current one marked
     journal verify                       wired, and fired in this session?
     journal help <verb>                  what one command does
 
@@ -165,13 +176,13 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 
 ### Pins and rules
 
-    journal pins                         the pins on this track
+    journal pins                         the pins on this environment
     journal pin "<claim>"           pin a fact; --doc=<doc> or --doc=<doc>.<p> cites a doc or one part
     journal pins <n> --full              the conversation around where a pin was written
     journal strike <n> "<why>"           retire a pin that stopped being true
     journal promote <n>                  lift a pin into a rule
     journal rules                        the rules
-    journal rule "<ruling>"              a rule for every track
+    journal rule "<ruling>"              a rule for every environment
     journal rule --strike <n> "<why>"    retire a rule
     journal nothing "<why>"              after a context warning: nothing to pin (agent)
 
@@ -209,15 +220,20 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal conversation                 what was said since the last compaction
     journal conversation --back=1        the stretch the last summary replaced
     journal user                         the user's own words, in full
-    journal search <term>                every mention on this track, every session
+    journal search <term>                every mention on this environment, every session
 
-### Tracks and maintenance
+### Environments and maintenance
 
-    journal tracks                       every track, this session's marked, and who is on which
-    journal switch "<name>"              this session onto that track; from a terminal, the project
+    journal environments                       every environment, this session's marked, and who is on which
+    journal switch "<name>"              this session onto that environment; from a terminal, the project
     journal switch "<name>" --project    this session, and where new sessions start (agent)
     journal switch "<name>" --session=<id>   move one running session; --all-sessions moves all
-    journal switch --back                the track this session came from
+    journal switch --back                the environment this session came from
+    journal environments "<name>"        the pickup page of one environment
+    journal prepare "<name>"             create an environment for a piece of work and switch to it (agent)
+    journal delegate "<name>" | --off    this session and its subagents act on it; a subagent journals there (agent)
+    journal handoff "<name>" "<source>"  an environment made ready by agents; --run for the runner's prompt (agent)
+    journal --env=<name> <command>       any command on a named environment, without switching
     journal loop set                     this session has a loop running the hook cannot see (agent)
     journal settings                     every setting and where it came from
     journal version                      the installed version; is a newer one out?
@@ -248,8 +264,8 @@ without anyone filing anything.
   until it is parked as a to-do.
 - **Work still open** at a stop: reminded; in auto mode, at every stop.
 - **Auto on and no loop running**: asked to start one before anything else.
-- **A second session on a track another session is working**: told at its start, held at
-  its stops and refused edits until it switches. One running session works a track.
+- **A second session on an environment another session is working**: told at its start, held at
+  its stops and refused edits until it switches. One running session works an environment.
 - **A pin over 400 characters, or one naming a temporary path**: refused before it runs.
 - **A markdown file written by hand**: a one-time hint that docs are catalogued.
 - **Something tool-shaped**: a script written into a scratch or scripts folder, the same
@@ -258,14 +274,14 @@ without anyone filing anything.
   that is not a source file of the project: a one-time hint to attach it to a doc.
 
 At a stop these form a queue: one subject per stop, each once per turn, in priority
-order (track, loop, context, deferral, untagged, work, auto), until nothing is pending.
+order (environment, loop, context, deferral, untagged, work, auto), until nothing is pending.
 Every hold names its way out. Subagents are outside all of it: they cannot write the
 journal, are never held, and are handed the rules on their first tool call.
 
 ## Where things live
 
-    .journal/record.json      pins, rules, work, tracks — committed
-    .journal/todo/<track>/    one file per to-do — committed
+    .journal/record.json      pins, rules, work, environments — committed
+    .journal/todo/<environment>/    one file per to-do — committed
     .journal/tools/<name>/    a tool.md and its script — committed
     .journal/docs/            the docs, one folder each — committed
     .journal/settings.json    only what you changed from the defaults
@@ -283,16 +299,16 @@ adds only the small record of what must survive.
   anyone filing them, and skip the routine ones.
 - **Line numbers.** Every message has a line. Pins record the line they were written at,
   search prints the line of every hit, and a line is something you can go and check.
-- **Tracks.** Each session is bound to a track in `.journal/runtime/bindings.map`, on this
-  machine only. Session starts and track switches leave marks in the transcript, so the
-  journal knows which lines belong to which track and can search one track across every
+- **Environments.** Each session is bound to an environment in `.journal/runtime/bindings.map`, on this
+  machine only. Session starts and environment switches leave marks in the transcript, so the
+  journal knows which lines belong to which environment and can search one environment across every
   session.
 - **Compaction.** A summary keeps what was done and drops what was decided; the transcript
   keeps everything. After a compaction the agent gets the record back and is pointed at
   the exact stretch the summary replaced.
 - **Hooks.** Five Claude Code hooks do the enforcing: at session start, at each prompt,
   before and after each tool call, and at each stop.
-- **Files.** Pins, rules, work and tracks in `.journal/record.json`, a file per to-do, a
+- **Files.** Pins, rules, work and environments in `.journal/record.json`, a file per to-do, a
   folder per doc. Committed, so the team and every later session read the same journal.
 
 ## Worktrees
@@ -313,7 +329,7 @@ journal is used instead, until `journal worktree link` replaces it.
     pin_max_chars        the cap on a pin, default 400
     stall_calls          tool calls on one to-do without progress before the agent is nudged, default 40
     attach_hint_reads    reads of a non-source file in one session before the attach hint, default 2
-    one_session_per_track   a second session on a taken track is told to switch, default true
+    one_session_per_track   a second session on a taken environment is told to switch, default true
     session_stale_hours  hours without a hook event before a session counts as gone, default 24
     stop_priority        the order of the stop queue by subject, e.g. {"work": 1}; lower first
     docs_dir             where docs live, default .journal/docs

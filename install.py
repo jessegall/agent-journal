@@ -47,12 +47,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
-EVENTS = ("Stop", "SessionStart", "SessionEnd", "PostToolUse", "PreToolUse", "UserPromptSubmit")
+EVENTS = ("Stop", "SubagentStop", "SessionStart", "SessionEnd", "PostToolUse", "PreToolUse", "UserPromptSubmit")
 #: What goes in settings.json. `$CLAUDE_PROJECT_DIR` is quoted because a path with a space
 #: in it otherwise splits into two arguments and the hook simply never runs.
 COMMAND = '"$CLAUDE_PROJECT_DIR"/.journal/hook.py'
 EXECUTABLE = ("hook.py", "journal.py", "install.py", "test_tracks.py", "test_gate.py",
-              "test_state.py", "test_auto.py", "test_docs.py", "test_tools.py", "test_worktree.py", "test_queue.py", "test_bind.py")
+              "test_state.py", "test_auto.py", "test_docs.py", "test_tools.py", "test_worktree.py", "test_queue.py", "test_bind.py", "test_delegate.py")
 
 #: THE SKILL IS PART OF THE PACKAGE, and it has to be installed rather than committed.
 #: It teaches the reasoning the injected block has no room for, so it belongs beside the
@@ -65,7 +65,7 @@ SKILL_DST = ".claude/skills/journal"
 
 #: What belongs to THIS project and never comes across on a pull.
 DATA = ("record.json", "record.json.lock", "settings.json", "state.json", "state.json.retired",
-        "runtime", "todo", "docs", "tools", ".journal", "__pycache__")
+        "runtime", "todo", "docs", "tools", "handoff.md", ".journal", "__pycache__")
 
 
 def _package_files(root: Path) -> list[Path]:

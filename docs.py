@@ -12,7 +12,7 @@ section of; a part is the unit of all three. A subagent's report lands as one pa
 section that turns out wrong is struck as one part, the rest stand. A single markdown
 file is a doc with no parts, so an existing docs/ folder is adopted in place.
 
-GLOBAL, LIKE RULES. Knowledge is the project's, not a track's; the track a doc came
+GLOBAL, LIKE RULES. Knowledge is the project's, not an environment's; the environment a doc came
 from is recorded as provenance. Nothing is deleted: a struck part moves to struck/ with
 its reason. Docs rot — a live project had five design files naming a class that no
 longer existed, "a map of a system that isn't there" — so age is shown and one doc can
@@ -573,7 +573,7 @@ def set_abstract(root: Path, ref: str, abstract: str) -> tuple[bool, str]:
 
 # ------------------------------------------------------------------ what cites a doc
 def cited_by(root: Path, n: int) -> list[str]:
-    """Every pin, rule and to-do that references doc n, on any track."""
+    """Every pin, rule and to-do that references doc n, on any environment."""
     import todo
     import tracks
     key = str(n)
@@ -586,7 +586,7 @@ def cited_by(root: Path, n: int) -> list[str]:
     def scan(items, label, track=None):
         for i, p in enumerate(items, 1):
             if not p.get("struck") and hit(str(p.get("doc") or "")):
-                hits.append(f"{label} {i}" + (f" on track {track}" if track else "") + f": {p['fact'][:70]}")
+                hits.append(f"{label} {i}" + (f" on environment {track}" if track else "") + f": {p['fact'][:70]}")
 
     scan(state.get(root, "rules", []) or [], "rule")
     here = tracks.current(root)
@@ -594,15 +594,20 @@ def cited_by(root: Path, n: int) -> list[str]:
         scan(held.get("pins", []), "pin", name)
     for t in todo.open_items(root, here):
         if hit(str(t.get("doc") or "")):
-            hits.append(f"to-do {t['n']} on track {here}: {t['title'][:70]}")
+            hits.append(f"to-do {t['n']} on environment {here}: {t['title'][:70]}")
     return hits
 
 
-def ref_label(root: Path, ref: str) -> str:
-    """'doc 4: title' or 'doc 4.2: part title', for showing beside a citing entry."""
+def ref_label(root: Path, ref: str, short: bool = False) -> str:
+    """'doc 4: title' or 'doc 4.2: title · part title', for showing beside a citing entry.
+
+    `short` drops the doc's title — for a page that has already listed the doc above.
+    """
     doc, prt, _ = get(root, ref)
     if doc is None:
         return f"doc {ref} (missing)"
+    if short:
+        return f"doc {doc['n']}.{prt['p']}: {prt['title']}" if prt else f"doc {doc['n']}"
     if prt:
         return f"doc {doc['n']}.{prt['p']}: {doc['title']} · {prt['title']}"
     return f"doc {doc['n']}: {doc['title']}"
@@ -652,7 +657,7 @@ def show(root: Path, ref: str, width: int = 88) -> tuple[bool, str]:
                               f"{_age(prt.get('at', ''))} · {prt['path'].relative_to(root.parent)}"), ""]
         out.append(prt["body"].rstrip())
         return True, "\n".join(out)
-    meta = [doc.get("status", "draft"), f"track {doc.get('track', '')}", doc.get("source", ""),
+    meta = [doc.get("status", "draft"), f"environment {doc.get('track', '')}", doc.get("source", ""),
             f"written {_age(doc.get('at', ''))}"]
     out = [fmt.title(f"DOC {doc['n']}", sub=doc["title"]),
            "  " + fmt.dim(" · ".join(m for m in meta if m)),

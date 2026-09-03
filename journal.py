@@ -4,19 +4,19 @@
 A compaction keeps what was DONE and loses what was DECIDED. The transcript on disk lost
 nothing. This is the index that gets you back to it.
 
-    journal                 where things stand: track, rules, pins, open work, to-dos, context
+    journal                 where things stand: environment, rules, pins, open work, to-dos, context
     journal conversation    what was said since the last compaction
     journal conversation --back=N   N compactions back; --back=1 is what the last summary REPLACED
     journal user            only the user's own words, in full
     journal open            work declared and never closed
-    journal search <term> [--all] [--page=N]   every line mentioning it on this track, in every session, 25 a page newest first; --all is every track
+    journal search <term> [--all] [--page=N]   every line mentioning it on this environment, in every session, 25 a page newest first; --all is every environment
     journal pin "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a claim that must survive a compaction; --doc ties it to a doc or a part
     journal nothing "<why>"  after a context warning: nothing here needs pinning, and why
-    journal rule "<ruling>" [--doc=<doc>[.<p>]]   a pin for EVERY track — what the project decided, not one line of work
+    journal rule "<ruling>" [--doc=<doc>[.<p>]]   a pin for EVERY environment — what the project decided, not one line of work
     journal rules [--all]    every rule, numbered; `rules N --full` reads around one
     journal rule --strike N "<why>"   repeal a rule that stopped being true
     journal promote N        lift pin N into a rule; the pin is struck and says where it went
-    journal todo "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this track; --brief reads a longer brief from stdin
+    journal todo "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this environment; --brief reads a longer brief from stdin
     journal todo [--all]     the titles, numbered
     journal todo N           the whole brief
     journal todo start N     open work with that title — `end` then closes both
@@ -40,7 +40,7 @@ nothing. This is the index that gets you back to it.
     journal docs index                         catalogue the files docs/ already holds
     journal docs search <term> [--page=N]      every line of every doc, and every attachment by name
     --doc=<doc> or --doc=<doc>.<p> on pin, rule and todo cites a doc (or one part) from the entry; the entry shows it, the doc shows what cites it
-    journal todo auto [on|off]    work through this track's list without asking, or wait for the user's word
+    journal todo auto [on|off]    work through this environment's list without asking, or wait for the user's word
     journal pins [--all]    every pin, numbered — the number is what --supersedes takes
     journal pins N --full   the conversation around where pin N was written
     journal strike N "<why>" retire a pin that stopped being true, no replacement needed
@@ -48,9 +48,15 @@ nothing. This is the index that gets you back to it.
     journal work update "<what moved>" [--on="<work>"]   progress on the open work
     journal work end "<what>"    the same words, to close it
     journal carry           exactly what a compaction will hand back — nothing is written
-    journal tracks          every track, this session's marked, which sessions are on which and whether they are running
+    journal environments          every environment, this session's marked, which sessions are on which and whether they are running
+    journal environments "<name>"   the pickup page of one: docs to read first, what stands, open work, to-dos in order, how to begin
+    journal prepare "<name>"      create an environment for a piece of work and switch to it; prints what preparing it means
+    journal delegate "<name>"     this session and its subagents act on that environment; a subagent's journal lands there. --off ends it
+    journal handoff "<name>" "<source>"   an environment made ready BY AGENTS: creates and delegates it, prints the hand-off agent's prompt — dispatch that one subagent
+    journal handoff "<name>" --run        when it reports READY: the runner's prompt — dispatch that one subagent; --off when the run is over
+    journal --env=<name> <command>   run any command on a named environment without switching to it
     journal loop set        this session has a loop running (the hook could not see it); `journal loop` says whether one is known
-    journal switch "<name>" [--project|--session=<id>|--all-sessions]   this session's track; --project also where new sessions start; from a terminal always the project
+    journal switch "<name>" [--project|--session=<id>|--all-sessions]   this session's environment; --project also where new sessions start; from a terminal always the project
     journal next            what to do now: the details of the last hold, or the next to-do
     journal worktree [link] is this a linked worktree, and does .journal link to the main checkout's? `link` makes it so
     journal tools           the tools: scripts kept for repeated work, with what each does and how to call it
@@ -114,6 +120,10 @@ def _stem() -> str | None:
 
 
 import state as _state
+_ENV_FLAG = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith(("--env=", "--environment=", "--track="))), "")
+if _ENV_FLAG:
+    _ENV_FLAG = _state.slug(_ENV_FLAG) or "default"
+    tracks.override(_ENV_FLAG)
 _state.use_track(tracks.current(_ROOT, _stem()))
 
 
@@ -176,7 +186,7 @@ def cmd_status() -> int:
 
     The bare command used to print the conversation, which is the one output nobody wants
     by accident: long, and not what a person glancing at the journal is asking. What they
-    are asking is "what is the state of this thing" — the track, what stands, what waits.
+    are asking is "what is the state of this thing" — the environment, what stands, what waits.
     """
     conf, problems = settings_mod.load(root())
     for p in problems:
@@ -189,9 +199,10 @@ def cmd_status() -> int:
     on_user = todo.asking(root(), here)
     others = [t["name"] for t in tracks.listing(root()) if not t["current"]]
     rows = [
-        ("track", here + (f"   (parked: {', '.join(others)})" if others else ""), "journal tracks"),
-        ("rules", f"{ruled} in force on every track" if ruled else "none", "journal rules"),
-        ("pins", f"{pinned} standing on this track" if pinned else "none", "journal pins"),
+        ("environment", here + ("   (delegated)" if tracks.delegated(root(), _stem()) else "")
+         + (f"   (parked: {', '.join(others)})" if others else ""), "journal environments"),
+        ("rules", f"{ruled} in force on every environment" if ruled else "none", "journal rules"),
+        ("pins", f"{pinned} standing on this environment" if pinned else "none", "journal pins"),
         ("open work", (f"{len(standing)} open: " + "; ".join(w["subject"] for w in standing))
          if standing else "none", "journal open"),
         ("docs", (lambda c: f"{len(c)} catalogued" + (f", {len([d for d in c if d.get('status') != 'final'])} draft(s)"
@@ -222,7 +233,7 @@ def cmd_status() -> int:
     have = update.current(root())
     rows.append(("version", have + (f"  ({up['version']} available: journal upgrade)"
                                     if up.get("version") and update.newer(up["version"], have) else ""), "journal version"))
-    fmt.say(fmt.title("JOURNAL", sub=f"track {here}"))
+    fmt.say(fmt.title("JOURNAL", sub=f"environment {here}"))
     fmt.say()
     fmt.say(fmt.facts(rows))
     if on_user:
@@ -233,7 +244,7 @@ def cmd_status() -> int:
     fmt.say()
     fmt.say(fmt.commands([
         ("journal conversation [--back=N]", "what was said, since the last compaction or before it"),
-        ("journal search <term>", "every line mentioning it on this track, and who said it"),
+        ("journal search <term>", "every line mentioning it on this environment, and who said it"),
         ('journal pin "<claim>" [--doc=<doc>]', "a fact that must outlive a compaction; --doc ties it to a doc, by number or name"),
         ("journal help", "every command"),
     ]))
@@ -334,11 +345,11 @@ PAGE = 25
 
 
 def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int = 1) -> int:
-    """Every line mentioning the term on this track, across every session of the project.
+    """Every line mentioning the term on this environment, across every session of the project.
 
-    A TRACK HAS A TRANSCRIPT — everything said while it was current, in every session —
-    and that is what is searched, because a ruling made on this track last week is as
-    much this track's as one made an hour ago. `--all` searches every track. The line
+    A ENVIRONMENT HAS A TRANSCRIPT — everything said while it was current, in every session —
+    and that is what is searched, because a ruling made on this environment last week is as
+    much this environment's as one made an hour ago. `--all` searches every environment. The line
     number is the citation and leads, with the session it belongs to; the passage is a
     window around the first mention, wrapped, with the term marked so the eye lands on it.
     """
@@ -351,7 +362,7 @@ def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int 
     needle = term.lower()
     found: list[tuple[Path, list]] = []
     total = 0
-    # ONLY THE SESSIONS THAT CARRIED THIS TRACK, from the index — plus any session the
+    # ONLY THE SESSIONS THAT CARRIED THIS ENVIRONMENT, from the index — plus any session the
     # index has never heard of, read the long way so a session older than the index is
     # not silently missing.
     idx = tracks.carried_by(root())
@@ -366,15 +377,15 @@ def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int 
         if hits:
             found.append((path, hits))
             total += len(hits)
-    scope = "every track, every session" if all_of_them else f"track {here}, every session"
+    scope = "every environment, every session" if all_of_them else f"environment {here}, every session"
     if not total:
         fmt.say(fmt.title(f"NOTHING MENTIONS {term!r}", sub=scope))
         fmt.say()
         fmt.say(fmt.wrap("The record does not have it. Say so rather than filling the gap."))
         if not all_of_them:
-            fmt.say(fmt.commands([(f"journal search {term} --all", "every track")]))
+            fmt.say(fmt.commands([(f"journal search {term} --all", "every environment")]))
         return 0
-    # A PAGE AT A TIME. A common term in a long track has hundreds of mentions, and the
+    # A PAGE AT A TIME. A common term in a long environment has hundreds of mentions, and the
     # reader is an agent whose window this lands in. Newest first, because a decision is
     # more likely recent than old, and a page number for the rest.
     pages = max(1, -(-total // PAGE))
@@ -428,6 +439,8 @@ def _where() -> dict:
     path, guessed = got
     lines, _ = transcript.read(path)
     where = {"line": lines[-1].n if lines else 0, "session": path.name}
+    if _stem() and tracks.delegated(root(), _stem()):
+        where["via"] = "delegation"   # the words may be a subagent's, one level under this transcript
     if guessed:
         where["guessed"] = True  # so `pins <n> --full` can say the citation may be off
     return where
@@ -520,7 +533,7 @@ def cmd_rules(all_of_them: bool, n: int | None, full: bool) -> int:
         return 0 if ok else 1
     live = len(pins.live(root(), pins.RULES))
     struck = len(pins._all(root(), pins.RULES)) - live
-    sub = f"{live} in force, on every track" + (
+    sub = f"{live} in force, on every environment" + (
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
     fmt.say(fmt.title("RULES OF THIS PROJECT", sub=sub))
     fmt.say()
@@ -546,7 +559,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         waiting = todo.open_items(root(), here)
         done = len(todo._all(root(), here)) - len(waiting)
         draining = todo.auto(root(), here)
-        sub = f"track {here} · {len(waiting)} waiting" + (
+        sub = f"environment {here} · {len(waiting)} waiting" + (
             f" · {done} done" + ("" if all_of_them else " (--all shows them)") if done else "") + (
             " · auto ON" if draining else "")
         fmt.say(fmt.title("TO-DO", sub=sub))
@@ -555,7 +568,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         fmt.say()
         fmt.say(fmt.wrap("Auto is on: with nothing open, the agent picks up the next one on its own."
                        if draining else
-                       "Delayed work on this track, listed at every session start. Not an "
+                       "Delayed work on this environment, listed at every session start. Not an "
                        "instruction to start one."))
         fmt.say(fmt.commands([
             ("journal todo <n>", "the brief, and the question if it waits on the user"),
@@ -599,10 +612,17 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         if verb in ("ask", "answer"):
             fn = todo.ask if verb == "ask" else todo.answer
             ok, msg = fn(root(), here, n, " ".join(rest[2:]))
+            if ok and verb == "ask":
+                # THE QUESTION CLOSES THE WORK the to-do opened: an agent that asks and moves
+                # on must not leave work standing, or its every stop is held for it.
+                t, _ = todo._get(root(), here, n)
+                if t and any(w["subject"] == t["title"] for w in work.open_work(root())):
+                    closed, note = work.end(root(), t["title"], _now())
+                    msg += "\n  " + (f"closed the work `{t['title']}` — it waits on the answer" if closed else note)
             fmt.say(msg, error=not ok)
             return 0 if ok else 1
         if verb == "start":
-            t, err = todo.start(root(), here, n, _now())
+            t, err = todo.start(root(), here, n, _now(), strict=bool(tracks.delegated(root(), _stem())))
             if t is None:
                 fmt.say(f"{err}", error=True)
                 return 1
@@ -883,10 +903,164 @@ def cmd_loop(args: list[str]) -> int:
     return 0
 
 
-def cmd_tracks() -> int:
+PREPARE = """\
+Preparing {name}: an environment ready to be picked up from A to Z, by you, by another
+session, or by a subagent. Only when the user asked for it. In order:
+
+  1  the source        the issue, the PR, the user's words — fetch it whole (gh, the tracker's tool, or ask)
+  2  the brief         journal docs add "{name}: <title>" --abstract "<one line>" --brief   < the source
+                       journal docs attach <doc> <path> "<what it is>"                   designs, screenshots, exports
+  3  the plan          a Plan agent: phases and the work in each, from the brief — file it: docs part <doc> "Plan" --brief
+  4  the steps         a second agent: concrete steps per phase, what is missing, what could go wrong — docs part <doc> "Steps" --brief
+  5  what must hold    journal pin "<constraint>" --doc=<doc>      the facts every later reader needs; rule if project-wide
+  6  the to-dos        one per unit of work, in order, the brief citing the doc:
+                       journal todo "<title>" --brief --doc=<doc>.<p>   < the brief
+                       journal todo ask <n> "<question>"                what only the user can answer
+                       the last one: verify and close — the definition of done
+  7  auto?             ask the user: journal todo auto on   works the list without asking
+  8  the page          journal environments "{name}"   — read it as the one who picks this up would
+
+Then offer: work it now (todo start 1), leave it for a session (journal switch "{name}"), or
+journal delegate "{name}" and dispatch a subagent with the page as its brief.
+"""
+
+
+def cmd_prepare(name: str) -> int:
+    name = _state.slug(name)
+    if not name:
+        fmt.say('prepare what? journal prepare "<environment>" — letters, digits and dashes', error=True)
+        return 1
+    stem = _stem() or ""
     conf, _ = settings_mod.load(root())
+    ok, msg = tracks.switch(root(), name, _now(), stem, project=not stem,
+                            exclusive=conf["one_session_per_environment"], stale_hours=conf["session_stale_hours"])
+    if not ok and "already on" not in msg:
+        fmt.say(msg, error=True)
+        return 1
+    fmt.say(fmt.title("PREPARE", sub=name))
+    fmt.say("")
+    fmt.say(PREPARE.format(name=name))
+    return 0
+
+
+def cmd_handoff(name: str, source: str, run: bool, off: bool, sessions: list[str] | None = None) -> int:
+    """The main agent's two dispatches: the hand-off agent, then the runner."""
+    import handoff
+    name = _state.slug(name)
+    stem = _stem()
+    if off:
+        return cmd_delegate("", True, sessions)
+    if not stem:
+        fmt.say("a hand-off is a session's: run it from inside one", error=True)
+        return 1
+    current = tracks.delegated(root(), stem)
+    if current and current != name:
+        fmt.say(f"this session is delegating `{current}` — `journal handoff --off` when that run is over, then again",
+                error=True)
+        return 1
+    if not name:
+        fmt.say('handoff what? journal handoff "<environment>" "<issue link, id or text>"', error=True)
+        return 1
+    conf, _ = settings_mod.load(root())
+    excl, stale = conf["one_session_per_environment"], conf["session_stale_hours"]
+    if not run:
+        if name not in tracks._all(root()):
+            ok, msg = tracks.switch(root(), name, _now(), stem, exclusive=excl, stale_hours=stale)
+            if not ok:
+                fmt.say(msg, error=True)
+                return 1
+        if tracks.delegated(root(), stem) != name:
+            ok, msg = tracks.delegate(root(), stem, name, stale, excl)
+            if not ok:
+                fmt.say(msg, error=True)
+                return 1
+        text, origin = handoff.prompt(root(), "handoff agent", name, source)
+        if not text:
+            fmt.say(f"the template at {origin} has no `# handoff agent` section", error=True)
+            return 1
+        fmt.say(fmt.title("HANDOFF", sub=f"{name} · delegated to this session · template: {origin}"))
+        fmt.say("")
+        fmt.say(fmt.wrap("Dispatch ONE subagent with the prompt below: subagent_type general-purpose, model opus. "
+                         "Do nothing else on this environment until it reports. READY: read "
+                         f"`journal environments \"{name}\"` yourself, then `journal handoff \"{name}\" --run` for the "
+                         "runner's prompt. BLOCKED: put its question to the user; dispatch no runner."))
+        fmt.say("")
+        fmt.say(fmt.section("prompt for the hand-off agent"))
+        fmt.say("")
+        fmt.say(text)
+        return 0
+    ok, page = tracks.page(root(), name, commands=False)
+    if not ok:
+        fmt.say(page, error=True)
+        return 1
+    if not todo.ready(root(), name):
+        fmt.say(f"nothing on `{name}` is ready to start — the hand-off agent reported BLOCKED, or every to-do "
+                f"waits on the user. `journal environments \"{name}\"` shows what there is; no runner is dispatched "
+                "for an empty list", error=True)
+        return 1
+    if tracks.delegated(root(), stem) != name:
+        ok, msg = tracks.delegate(root(), stem, name, stale, excl)
+        if not ok:
+            fmt.say(msg, error=True)
+            return 1
+    text, origin = handoff.prompt(root(), "runner agent", name, source, page)
+    if not text:
+        fmt.say(f"the template at {origin} has no `# runner agent` section", error=True)
+        return 1
+    fmt.say(fmt.title("HANDOFF", sub=f"{name} · the run · template: {origin}"))
+    fmt.say("")
+    fmt.say(fmt.wrap("Dispatch ONE subagent with the prompt below (a general-purpose agent; name the model — "
+                     "sonnet for careful work without invention, opus for judgement). When it reports, read "
+                     f"`journal environments \"{name}\"` before you file anything; `journal handoff --off` ends the delegation."))
+    fmt.say("")
+    fmt.say(fmt.section("prompt for the runner"))
+    fmt.say("")
+    fmt.say(text)
+    return 0
+
+
+def cmd_delegate(name: str, off: bool, sessions: list[str] | None = None) -> int:
+    conf, _ = settings_mod.load(root())
+    if off and sessions:
+        # FROM A TERMINAL, FOR A SESSION THAT DIED MID-RUN: its delegation would otherwise
+        # hold the environment until it goes stale.
+        done = 0
+        for sid in list(tracks._bindings(root())):
+            if any(sid.startswith(w) for w in sessions) and tracks.delegated(root(), sid):
+                ok, msg = tracks.undelegate(root(), sid)
+                fmt.say(f"{sid[:8]}: {msg}")
+                done += 1
+        if not done:
+            fmt.say("no session with that id is delegating anything", error=True)
+        return 0 if done else 1
+    stem = _stem()
+    if not stem:
+        fmt.say("delegation is a session's: run it from inside one (from a terminal: --off --session=<id>)", error=True)
+        return 1
+    if off:
+        was = tracks.delegated(root(), stem)
+        if was:
+            _state.use_track(was)
+            standing = [w["subject"] for w in work.open_work(root())]
+            left = todo.open_items(root(), was)
+            if standing or left:
+                fmt.say(fmt.wrap(f"on `{was}` still: " + "; ".join(
+                    ([f"open work — {', '.join(standing)}"] if standing else [])
+                    + ([f"{len(left)} to-do(s) waiting, {len(todo.asking(root(), was))} on the user"] if left else []))))
+    ok, msg = tracks.undelegate(root(), stem) if off else tracks.delegate(
+        root(), stem, name, conf["session_stale_hours"], conf["one_session_per_environment"])
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
+def cmd_tracks(name: str = "") -> int:
+    conf, _ = settings_mod.load(root())
+    if name:
+        ok, msg = tracks.page(root(), name, commands=tracks.delegated(root(), _stem()) != _state.slug(name))
+        fmt.say(msg, error=not ok)
+        return 0 if ok else 1
     rows = tracks.listing(root(), _stem(), conf["session_stale_hours"])
-    fmt.say(fmt.title("TRACKS", sub="* this session · > where new sessions start"))
+    fmt.say(fmt.title("ENVIRONMENTS", sub="* this session · > where new sessions start"))
     fmt.say()
     for t in rows:
         mark = ("*" if t["current"] else " ") + (">" if t["start"] else " ")
@@ -894,14 +1068,14 @@ def cmd_tracks() -> int:
         fmt.say(f" {mark} {t['name']:<28} {t['pins']} pin(s), {t['open']} open{who}")
     fmt.say()
     fmt.say(fmt.commands([
-        ('journal switch "<name>"', "this session onto that track (from a terminal: the project's start track)"),
+        ('journal switch "<name>"', "this session onto that environment (from a terminal: the project's start environment)"),
         ('journal switch "<name>" --project', "this session, and where new sessions start"),
         ('journal switch "<name>" --session=<id>', "move one bound session; --all-sessions moves every one"),
         ("journal switch --back", "the one you came from"),
     ]))
     fmt.say(fmt.wrap("Nothing is ever closed by switching." + (
-        " One running session works a track at a time; a stale session is one not seen for "
-        f"{conf['session_stale_hours']:g} h." if conf["one_session_per_track"] else "")))
+        " One running session works an environment at a time; a stale session is one not seen for "
+        f"{conf['session_stale_hours']:g} h." if conf["one_session_per_environment"] else "")))
     return 0
 
 
@@ -909,7 +1083,7 @@ def cmd_switch(name: str, go_back: bool, project_too: bool = False, sessions: li
                all_sessions: bool = False) -> int:
     stem = _stem() or ""
     conf, _ = settings_mod.load(root())
-    excl, stale = conf["one_session_per_track"], conf["session_stale_hours"]
+    excl, stale = conf["one_session_per_environment"], conf["session_stale_hours"]
     if all_sessions or sessions:
         ok, msg = tracks.switch(root(), name, _now(), "", project=True) if not go_back else (False, "--back takes no sessions")
         if not ok and "already on" not in msg:
@@ -918,7 +1092,7 @@ def cmd_switch(name: str, go_back: bool, project_too: bool = False, sessions: li
         moved, refused = tracks.move_sessions(root(), name, None if all_sessions else sessions, excl, stale)
         fmt.say(f"the project starts on {name}; moved {len(moved)} session(s): " + ", ".join(m[:8] for m in moved))
         if refused:
-            fmt.say("  ! not moved, one running session works a track: " + ", ".join(r[:8] for r in refused), error=True)
+            fmt.say("  ! not moved, one running session works an environment: " + ", ".join(r[:8] for r in refused), error=True)
             return 1
         return 0
     ok, msg = (tracks.back(root(), _now(), stem, excl, stale) if go_back
@@ -945,16 +1119,16 @@ def cmd_pins(all_of_them: bool) -> int:
     here = tracks.current(root(), _stem())
     n = len(pins.live(root()))
     struck = len(pins._all(root())) - n
-    sub = f"track {here} · {n} standing" + (
+    sub = f"environment {here} · {n} standing" + (
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
     fmt.say(fmt.title("PINS", sub=sub))
     fmt.say()
     fmt.say(pins.render(root(), all_of_them=all_of_them))
     fmt.say()
-    fmt.say(fmt.wrap("Handed to every session on this track."))
+    fmt.say(fmt.wrap("Handed to every session on this environment."))
     fmt.say(fmt.commands([
         ("journal pins <n> --full", "the conversation around one"),
-        ("journal promote <n>", "make one a rule for every track"),
+        ("journal promote <n>", "make one a rule for every environment"),
         ('journal strike <n> "<why>"', "retire one that stopped being true"),
     ]))
     got = transcript.session_transcript(project())
@@ -996,6 +1170,8 @@ def main(argv: list[str]) -> int:
     strike_n = None
     brief = False
     replace = False
+    off_flag = False
+    run_flag = False
     project_too = False
     all_sessions = False
     sessions: list[str] = []
@@ -1031,6 +1207,15 @@ def main(argv: list[str]) -> int:
             on = a.split("=", 1)[1]
         elif a == "--strike":
             strike_n = -1  # the number follows as the next word
+        elif a.startswith(("--env=", "--environment=", "--track=")):
+            if _state.slug(a.split("=", 1)[1]) not in tracks._all(root()):
+                fmt.say(f"no environment is called {_state.slug(a.split('=', 1)[1])!r}; `journal environments` lists them, "
+                        "`journal switch` or `journal prepare` creates one", error=True)
+                return 1
+        elif a == "--off":
+            off_flag = True
+        elif a == "--run":
+            run_flag = True
         elif a == "--replace":
             replace = True
         elif a == "--brief":
@@ -1129,8 +1314,15 @@ def main(argv: list[str]) -> int:
         return cmd_tools(rest[1:], brief, tool_meta)
     if verb == "carry":
         return cmd_carry(fresh)
-    if verb == "tracks":
-        return cmd_tracks()
+    if verb in ("environments", "envs", "tracks"):
+        return cmd_tracks(" ".join(rest[1:]))
+    if verb == "prepare":
+        return cmd_prepare(" ".join(rest[1:]))
+    if verb == "handoff":
+        args = [a for a in rest[1:] if a not in ("--run", "--off")]
+        return cmd_handoff(args[0] if args else "", " ".join(args[1:]), "--run" in rest or run_flag, "--off" in rest or off_flag, sessions or None)
+    if verb == "delegate":
+        return cmd_delegate(" ".join(a for a in rest[1:] if a != "--off"), "--off" in rest or off_flag, sessions or None)
     if verb == "loop":
         return cmd_loop(rest[1:])
     if verb == "switch":

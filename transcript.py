@@ -86,20 +86,20 @@ def sessions(cwd: Path) -> list[Path]:
                   key=lambda f: f.stat().st_mtime, reverse=True)
 
 
-_START_MARK = re.compile(r"you are on track `([^`]+)`")
+_START_MARK = re.compile(r"you are on environment `([^`]+)`")
 _SWITCH_MARK = re.compile(r"^\s*on (.+?) — ", re.M)
 _BEFORE_TRACKS = "default"
 
 
 def track_segments(lines: list[Line]) -> list[tuple[str, int, int]]:
-    """(track, first line, last line) for every stretch of this transcript, in order.
+    """(environment, first line, last line) for every stretch of this transcript, in order.
 
-    A TRACK HAS A TRANSCRIPT: everything ever said while it was current, across every
+    A ENVIRONMENT HAS A TRANSCRIPT: everything ever said while it was current, across every
     session. The transcript records where that is. Every session start injects "you are
-    on track `X`", and every switch prints "on X — …" as its own output, so the stretch
-    between one mark and the next belongs to the track the mark names. Before the first
-    mark — a session older than tracks, or older than the start block — the track is
-    `default`, which is the track every project had before anyone named one.
+    on environment `X`", and every switch prints "on X — …" as its own output, so the stretch
+    between one mark and the next belongs to the environment the mark names. Before the first
+    mark — a session older than environments, or older than the start block — the environment is
+    `default`, which is the environment every project had before anyone named one.
     """
     out: list[tuple[str, int, int]] = []
     here = _BEFORE_TRACKS
@@ -123,7 +123,7 @@ def track_segments(lines: list[Line]) -> list[tuple[str, int, int]]:
 
 
 def on_track(lines: list[Line], track: str) -> list[Line]:
-    """The lines of this transcript said while `track` was current."""
+    """The lines of this transcript said while `environment` was current."""
     keep = [(lo, hi) for t, lo, hi in track_segments(lines) if t == track]
     return [l for l in lines if any(lo <= l.n <= hi for lo, hi in keep)]
 

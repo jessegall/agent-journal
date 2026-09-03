@@ -98,7 +98,7 @@ for mode, label in (("runtime", "runtime"), ("record", "record")):
         check("all eight pins stand — none lost to a race",
               sorted(p["fact"] for p in pins.live(r)), sorted(f"pin {i}" for i in range(8)))
 
-# switch racing remember: the pin lands on the track that was current under the lock
+# switch racing remember: the pin lands on the environment that was current under the lock
 r = fresh()
 pins.add(r, "before", AT, 140)
 SWITCHER = f"""
@@ -121,7 +121,7 @@ check("switch and remember racing: neither crashes", [p.returncode for p in ps],
 rec = json.loads((r / "record.json").read_text())
 every = [p["fact"] for p in rec.get("pins", [])] + [
     p["fact"] for t in rec.get("tracks", {}).values() for p in t.get("pins", [])]
-check("every pin written under the race exists on SOME track, none vanished",
+check("every pin written under the race exists on SOME environment, none vanished",
       sorted(every), sorted(["before"] + [f"race {i}" for i in range(20)]))
 
 # the lock is reentrant
@@ -140,8 +140,8 @@ def project_with(lines: int, stem: str = "s1", tagged: bool = False):
     shutil.copytree(SRC, d / ".journal",
                     ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
                                                   "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
-    # this suite is not about the loop subject or the one-session-per-track rule
-    (d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True}))
+    # this suite is not about the loop subject or the one-session-per-environment rule
+    (d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True}))
     tdir = transcript.project_dir(d)
     tdir.mkdir(parents=True, exist_ok=True)
     path = tdir / f"{stem}.jsonl"
@@ -248,11 +248,11 @@ with path.open("a") as fh:
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
 check("120k tokens with the window unknown: no rung", "CONTEXT IS" in out, False)
-(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True, "context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 200000}))
 code, out, err = fire(d, "Stop", path)
 check("the same reading with a 200k window set: the 50% rung", "CONTEXT IS 60% FULL" in held(out)[1], True)
 check("the rung is this transcript's", runtime_of(d, "s1").get("warned_at"), 0.5)
-(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True, "context_window": 1000000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 1000000}))
 d2, path2 = project_with(4)
 with path2.open("a") as fh:
     fh.write(json.dumps({"type": "assistant", "message": {
@@ -268,7 +268,7 @@ with path.open("a") as fh:
     fh.write(json.dumps({"type": "assistant", "message": {
         "role": "assistant", "content": [{"type": "text", "text": "[!reply] fine"}],
         "usage": {"input_tokens": 120000}}}) + "\n")
-(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True, "context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 200000}))
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
 check("the rung says the gate is coming", "NOTHING ELSE RUNS UNTIL" in held(out)[1], True)
@@ -310,7 +310,7 @@ check("a pin citing a scratch path is refused, with the reason",
 p = subprocess.run([J, "remember", "a real claim"], env=env, capture_output=True, text=True, timeout=60)
 check("an accepted pin lifts the gate", runtime_of(d, "s1").get("pin_due"), None)
 # and the whole thing is a setting
-(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 200000,
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "context_window": 200000,
                                                           "gate_after_context_rung": False}))
 data = json.loads(runtime.read_text()); data["warned_at"] = 0.0; runtime.write_text(json.dumps(data))
 code, out, err = fire(d, "Stop", path)
@@ -428,23 +428,23 @@ for event, extra in (("Stop", {}), ("SessionStart", {"source": "startup"}),
     check(f"a subagent's {event} does nothing", (code, out.strip(), err.strip()), (0, "", ""))
 check("and writes no runtime file", state.runtime_files(d / ".journal"), [])
 
-# rules: a pin for every track, promote lifts a pin into one
+# rules: a pin for every environment, promote lifts a pin into one
 r = fresh()
-pins.add(r, "track fact", AT, 300)
-took, msg = pins.add(r, "every track obeys this", AT, 300, key=pins.RULES)
+pins.add(r, "environment fact", AT, 300)
+took, msg = pins.add(r, "every environment obeys this", AT, 300, key=pins.RULES)
 check("a rule is written", (took, msg.startswith("ruled 1")), (True, True))
 tracks.switch(r, "elsewhere", AT)
 check("switching parks the pins but not the rules",
       ([p["fact"] for p in pins.live(r)], [p["fact"] for p in pins.live(r, pins.RULES)]),
-      ([], ["every track obeys this"]))
-pins.add(r, "another track's fact", AT, 300)
+      ([], ["every environment obeys this"]))
+pins.add(r, "another environment's fact", AT, 300)
 took, msg = pins.promote(r, 1, AT)
 check("promote lifts the pin into a rule", (took, "rule 2, from pin 1" in msg), (True, True))
 check("the pin is struck and says where it went",
       pins._all(r)[0]["struck"], "promoted to rule 2")
 check("the rule carries the claim and remembers its origin",
       (pins.live(r, pins.RULES)[1]["fact"], pins.live(r, pins.RULES)[1]["promoted_from"]),
-      ("another track's fact", 1))
+      ("another environment's fact", 1))
 took, msg = pins.promote(r, 1, AT)
 check("promoting a struck pin is refused", (took, "already struck" in msg), (False, True))
 took, msg = pins.strike(r, 1, "repealed", key=pins.RULES)
@@ -453,7 +453,7 @@ check("rules --all still shows it", "repealed" in pins.render(r, all_of_them=Tru
 tracks.switch(r, "default", AT)
 check("back on default: its pin and the one standing rule",
       ([p["fact"] for p in pins.live(r)], [p["fact"] for p in pins.live(r, pins.RULES)]),
-      (["track fact"], ["another track's fact"]))
+      (["environment fact"], ["another environment's fact"]))
 took, msg = pins.add(r, "x" * 400, AT, 300, key=pins.RULES)
 check("a rule has the same cap", (took, "300" in msg), (False, True))
 
@@ -461,17 +461,17 @@ check("a rule has the same cap", (took, "300" in msg), (False, True))
 d, path = project_with(2)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
-subprocess.run([J, "remember", "a track fact"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "remember", "an environment fact"], env=env, capture_output=True, timeout=60)
 subprocess.run([J, "rule", "a project rule"], env=env, capture_output=True, timeout=60)
 for source in ("startup", "compact"):
     code, out, err = fire(d, "SessionStart", path, source=source)
     ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
     check(f"{source}: rules come before pins, under their own header",
-          (ctx.find("RULES OF THIS PROJECT") < ctx.find("a project rule") < ctx.find("a track fact")), True)
+          (ctx.find("RULES OF THIS PROJECT") < ctx.find("a project rule") < ctx.find("an environment fact")), True)
 p = subprocess.run([J, "promote", "1"], env=env, capture_output=True, text=True, timeout=60)
 check("cli promote", (p.returncode, "rule 2, from pin 1" in p.stdout), (0, True))
 p = subprocess.run([J, "rules"], env=env, capture_output=True, text=True, timeout=60)
-check("cli rules lists both", ("a project rule" in p.stdout, "a track fact" in p.stdout), (True, True))
+check("cli rules lists both", ("a project rule" in p.stdout, "an environment fact" in p.stdout), (True, True))
 p = subprocess.run([J, "rule", "--strike", "1", "no longer"], env=env, capture_output=True, text=True, timeout=60)
 check("cli rule --strike", (p.returncode, "struck rule 1" in p.stdout), (0, True))
 got = hook._pin_overflow({"tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py rule "{"x" * 400}"'}}, 300)
@@ -488,21 +488,21 @@ runtime.write_text(json.dumps(data))
 subprocess.run([J, "rule", "decided by ruling"], env=env, capture_output=True, timeout=60)
 check("a rule counts as the decision at a rung", runtime_of(d, "s1").get("pin_due"), None)
 
-# to-dos: titled files, one track each, closed by the work of the same name
+# to-dos: titled files, one environment each, closed by the work of the same name
 r = fresh()
 took, msg = todo.add(r, "default", "convert the remaining widgets", "why: they still read props\nstart in src/View", AT)
-check("a to-do is a file under its track", (took, (r / "todo" / "default" / "001-convert-the-remaining-widgets.md").is_file()), (True, True))
+check("a to-do is a file under its environment", (took, (r / "todo" / "default" / "001-convert-the-remaining-widgets.md").is_file()), (True, True))
 took, msg = todo.add(r, "default", "", "", AT)
 check("a to-do needs a title", (took, "needs a title" in msg), (False, True))
 took, msg = todo.add(r, "default", "Convert the remaining WIDGETS", "", AT)
 check("a duplicate open title is refused", (took, "already waiting" in msg), (False, True))
 todo.add(r, "default", "write the docs", "", AT)
-todo.add(r, "other track", "something else", "", AT)
+todo.add(r, "other environment", "something else", "", AT)
 listed = todo.render(r, "default")
-check("the list is the current track's titles only",
+check("the list is the current environment's titles only",
       ("  1  convert the remaining widgets" in listed, "  2  write the docs" in listed,
        "something else" in listed, "has a brief" in listed), (True, True, False, True))
-check("another track sees only its own", [t["title"] for t in todo.open_items(r, "other track")], ["something else"])
+check("another environment sees only its own", [t["title"] for t in todo.open_items(r, "other environment")], ["something else"])
 ok_, body = todo.show(r, "default", 1)
 check("the brief is the file's body", ("start in src/View" in body, "TO-DO 1" in body), (True, True))
 t, err = todo.start(r, "default", 1, AT)
@@ -519,10 +519,10 @@ took, msg = todo.done(r, "default", 2, "again", AT)
 check("done twice is refused", (took, "already done" in msg), (False, True))
 check("nothing waiting reads so", todo.render(r, "default").strip(), "Nothing is waiting.")
 check("carry names the titles and says it is not an instruction",
-      ("something else" in todo.carry(r, "other track"), "not an instruction" in todo.carry(r, "other track")), (True, True))
+      ("something else" in todo.carry(r, "other environment"), "not an instruction" in todo.carry(r, "other environment")), (True, True))
 check("carry is empty with nothing waiting", todo.carry(r, "default"), "")
-took, msg = todo.add(r, "a/b: weird  track", "spaced   title", "", AT)
-check("hostile track and title names slug safely", took and "spaced title" in msg, True)
+took, msg = todo.add(r, "a/b: weird  environment", "spaced   title", "", AT)
+check("hostile environment and title names slug safely", took and "spaced title" in msg, True)
 
 # the CLI, and the stop line
 d, path = project_with(4, tagged=True)
@@ -558,7 +558,7 @@ check("with none waiting the start block says nothing about to-dos", "TO DO" in 
 subprocess.run([J, "todo", "third"], env=env, capture_output=True, text=True, timeout=60)
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-check("the start block lists what is waiting", ("TO DO on this track" in ctx, "third" in ctx), (True, True))
+check("the start block lists what is waiting", ("TO DO on this environment" in ctx, "third" in ctx), (True, True))
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                       tool_input={"command": '.journal/journal.py todo "park this"'})
 check("a subagent's todo is refused", "from a subagent is refused" in out, True)
@@ -624,7 +624,7 @@ check("the last page holds the remainder and offers no next", ("number 0" in p.s
 p = subprocess.run([J, "search", "pagetest", "--page=9"], env=env, capture_output=True, text=True, timeout=60)
 check("a page past the end is the last page", "page 3 of 3" in p.stdout, True)
 
-# search is the whole transcript of the current track, across every session
+# search is the whole transcript of the current environment, across every session
 # this session: the start block put it on `default`; a switch moves it to beta mid-way
 with path.open("a") as fh:
     fh.write(json.dumps({"type": "user", "message": {"role": "user", "content": [
@@ -635,7 +635,7 @@ with path.open("a") as fh:
 older = path.with_name("00000000-older.jsonl")
 older.write_text("\n".join(json.dumps(r) for r in [
     {"type": "attachment", "attachment": {"type": "hook_additional_context", "hookEvent": "SessionStart",
-                                          "content": ["THE JOURNAL IS IN FORCE HERE — you are on track `beta`"]}},
+                                          "content": ["THE JOURNAL IS IN FORCE HERE — you are on environment `beta`"]}},
     {"type": "user", "origin": {"kind": "human"}, "timestamp": "2026-08-30T00:00:00Z",
      "message": {"role": "user", "content": "last week on beta: the heredoc ruling"}},
 ]) + "\n")
@@ -648,18 +648,18 @@ check("on beta, search finds this session's beta stretch and last week's beta se
       ("2 LINE(S)" in p.stdout, "THIS SESSION" in p.stdout, "SESSION 00000000" in p.stdout,
        "we ruled the heredoc body" in p.stdout), (True, True, True, False))
 p = subprocess.run([J, "search", "heredoc", "--all"], env=env, capture_output=True, text=True, timeout=60)
-check("--all sees every track in every session", "3 LINE(S)" in p.stdout, True)
+check("--all sees every environment in every session", "3 LINE(S)" in p.stdout, True)
 subprocess.run([J, "switch", "--back"], env=env, capture_output=True, timeout=60)
 idx = json.loads((d / ".journal" / "record.json").read_text()).get("sessions", {})
-check("the index records the session under every track it was on",
+check("the index records the session under every environment it was on",
       (("s1" in idx.get("default", [])), ("s1" in idx.get("beta", []))), (True, True))
-# a session the index knows to be on another track is not read for this one
+# a session the index knows to be on another environment is not read for this one
 other = path.with_name("11111111-other.jsonl")
 other.write_text(json.dumps({"type": "user", "origin": {"kind": "human"}, "timestamp": "2026-08-31T00:00:00Z",
                              "message": {"role": "user", "content": "heredoc said on gamma only"}}) + "\n")
 tracks.carried(d / ".journal", "gamma", "11111111-other")
 p = subprocess.run([J, "search", "heredoc"], env=env, capture_output=True, text=True, timeout=60)
-check("a session indexed under another track is skipped", "gamma only" in p.stdout, False)
+check("a session indexed under another environment is skipped", "gamma only" in p.stdout, False)
 p = subprocess.run([J, "search", "heredoc", "--all"], env=env, capture_output=True, text=True, timeout=60)
 check("but --all reads it", "gamma only" in p.stdout, True)
 
@@ -671,13 +671,13 @@ subprocess.run([J, "rule", "r"], env=env, capture_output=True, timeout=60)
 subprocess.run([J, "todo", "t"], env=env, capture_output=True, timeout=60)
 p = subprocess.run([J], env=env, capture_output=True, text=True, timeout=60)
 check("bare journal is the status page",
-      (p.returncode, "JOURNAL  track default" in p.stdout, "1 in force" in p.stdout,
+      (p.returncode, "JOURNAL  environment default" in p.stdout, "1 in force" in p.stdout,
        "1 waiting" in p.stdout, "since the last compaction" in p.stdout and "line 1" not in p.stdout),
       (0, True, True, True, True))
 p = subprocess.run([J, "conversation"], env=env, capture_output=True, text=True, timeout=60)
 check("journal conversation is the digest", "CONVERSATION  since the last compaction" in p.stdout, True)
 p = subprocess.run([J, "--back=1"], env=env, capture_output=True, text=True, timeout=60)
-check("--back alone still reads", ("CONVERSATION" in p.stdout and "JOURNAL  track" not in p.stdout), True)
+check("--back alone still reads", ("CONVERSATION" in p.stdout and "JOURNAL  environment" not in p.stdout), True)
 
 # the installer carries the whole skill folder, and removes what the package no longer ships
 d, path = project_with(2)
@@ -781,7 +781,7 @@ p2 = subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, tex
 check("with work open it says what the agent is working on",
       "Agent currently working on: some work" in p2.stdout, True)
 subprocess.run([J, "end", "some work"], env=env, capture_output=True, timeout=60)
-check("auto on is set on the record, per track",
+check("auto on is set on the record, per environment",
       (p.returncode, "auto ON" in p.stdout, json.loads((d / ".journal" / "record.json").read_text()).get("auto")),
       (0, True, {"default": True}))
 code, out, err = fire(d, "SessionStart", path, source="startup")
@@ -817,7 +817,7 @@ check("auto refuses anything but on or off", p.returncode, 1)
 subprocess.run([J, "switch", "chores"], env=env, capture_output=True, timeout=60)
 subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, timeout=60)
 subprocess.run([J, "switch", "--back"], env=env, capture_output=True, timeout=60)
-check("auto is per track", (todo.auto(d / ".journal", "chores"), todo.auto(d / ".journal", "default")), (True, False))
+check("auto is per environment", (todo.auto(d / ".journal", "chores"), todo.auto(d / ".journal", "default")), (True, False))
 
 # versions: the changelog since, the notice, the upgrade
 import update
@@ -887,14 +887,14 @@ check("a subagent's file goes with its transcript, and stays while it exists",
 d, path = project_with(2)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
-subprocess.run([J, "remember", "a pin of the track"], env=env, capture_output=True, timeout=60)
-subprocess.run([J, "rule", "a rule for every track"], env=env, capture_output=True, timeout=60)
-(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True, "context_window": 200000}))
+subprocess.run([J, "remember", "a pin of the environment"], env=env, capture_output=True, timeout=60)
+subprocess.run([J, "rule", "a rule for every environment"], env=env, capture_output=True, timeout=60)
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 200000}))
 call = {"tool_name": "Read", "tool_input": {}, "tool_response": "x"}
 code, out, err = fire(d, "PostToolUse", path, agent_id="abc", **call)
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("a subagent's first tool call hands it the rules and says whose journal it is",
-      ("YOU ARE A SUBAGENT" in ctx, "a rule for every track" in ctx, "a pin of the track" in ctx),
+      ("YOU ARE A SUBAGENT" in ctx, "a rule for every environment" in ctx, "a pin of the environment" in ctx),
       (True, True, False))
 code, out, err = fire(d, "PostToolUse", path, agent_id="abc", **call)
 check("the second call is silent", out.strip(), "")
@@ -905,7 +905,7 @@ sub = path.parent / "s1" / "subagents"; sub.mkdir(parents=True, exist_ok=True)
 code, out, err = fire(d, "PostToolUse", path, agent_id="abc", **call)
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("at 55% of ITS window the rules come back, once for the 25 and 50 marks together",
-      ("50% FULL" in ctx, "a rule for every track" in ctx), (True, True))
+      ("50% FULL" in ctx, "a rule for every environment" in ctx), (True, True))
 check("and every mark crossed is recorded", runtime_of(d, "agent-abc")["rules_at"], [0.0, 0.25, 0.5])
 code, out, err = fire(d, "PostToolUse", path, agent_id="abc", **call)
 check("then silence until the next mark", out.strip(), "")
@@ -923,7 +923,7 @@ with path.open("a") as fh:
     fh.write(json.dumps({"type": "assistant", "message": {
         "role": "assistant", "content": [{"type": "text", "text": "[!reply] fine"}],
         "usage": {"input_tokens": 120000}}}) + "\n")
-(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True, "context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 200000}))
 subprocess.run([J.replace(J.split("/.journal")[0], str(d)), "rule", "the standing rule"],
                env=env, capture_output=True, timeout=60)
 fire(d, "SessionStart", path, source="startup")
@@ -934,7 +934,7 @@ check("the rung hold carries the rules again",
 
 # the rung fires mid-work, from a tool call, with the same gate behind it
 d, path = project_with(4, tagged=True)
-(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True, "context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 200000}))
 fire(d, "SessionStart", path, source="startup")
 with path.open("a") as fh:
     fh.write(json.dumps({"type": "assistant", "message": {
@@ -957,7 +957,7 @@ check("decided: nothing else pending, the turn ends", out.strip(), "")
 
 # the window is learned at a compaction
 d, path = project_with(4, tagged=True)
-(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "context_window": 0}))  # no override: learn it
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "context_window": 0}))  # no override: learn it
 with path.open("a") as fh:
     fh.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "[!reply] x"}],
                          "usage": {"input_tokens": 930000}}}) + "\n")
@@ -996,9 +996,9 @@ check("and only once", out.strip(), "")
 d, path = project_with(2)
 subprocess.run([J.replace(str(J.split('/.journal')[0]), str(d)), "remember", "a standing fact"],
                env=env, capture_output=True, timeout=60)
-for source, head in (("startup", "FACTS THAT STAND ON THIS TRACK"),
-                     ("clear", "FACTS THAT STAND ON THIS TRACK"),
-                     ("fork", "FACTS THAT STAND ON THIS TRACK"),
+for source, head in (("startup", "FACTS THAT STAND ON THIS ENVIRONMENT"),
+                     ("clear", "FACTS THAT STAND ON THIS ENVIRONMENT"),
+                     ("fork", "FACTS THAT STAND ON THIS ENVIRONMENT"),
                      ("compact", "FACTS THE SUMMARY YOU ARE HOLDING DID NOT KEEP")):
     code, out, err = fire(d, "SessionStart", path, source=source)
     ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]

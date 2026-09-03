@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Everything switching a track must never get wrong.
+"""Everything switching an environment must never get wrong.
 
     .journal/test_tracks.py
 
 RUN IT BEFORE PUBLISHING A CHANGE TO ANOTHER PROJECT. Switching is the one operation here
 that moves somebody's whole record from one place to another, and it has already gone
-wrong once: renaming the key `threads` to `tracks` silently changed which FILE the data
-belonged to, because `state._file()` routes by name, and a fully parked track vanished
+wrong once: renaming the key `threads` to `environments` silently changed which FILE the data
+belonged to, because `state._file()` routes by name, and a fully parked environment vanished
 from the listing while sitting untouched on disk. Nothing was lost only because nothing
 here deletes.
 
@@ -48,7 +48,7 @@ def live(root):
 # ---------------------------------------------------------------- the basics
 r = fresh()
 check("defaults to `default` with no file", tracks.current(r), "default")
-check("listing shows one empty track", tracks.listing(r),
+check("listing shows one empty environment", tracks.listing(r),
       [{"name": "default", "current": True, "start": True, "pins": 0, "open": 0, "at": "", "sessions": [], "seen": {}}])
 
 pins.add(r, "fact A", AT, 12)
@@ -59,7 +59,7 @@ check("default holds its own", live(r), (["fact A"], ["work A"]))
 # ---------------------------------------------------------------- switching
 took, msg = tracks.switch(r, "beta", AT)
 check("switch reports success", took, True)
-check("new track is empty", live(r), ([], []))
+check("new environment is empty", live(r), ([], []))
 check("current is beta", tracks.current(r), "beta")
 
 pins.add(r, "fact B", AT, 12)
@@ -91,7 +91,7 @@ check("a refused switch changed nothing", live(r), (["fact B"], ["work B"]))
 
 r2 = fresh()
 took, msg = tracks.back(r2, AT)
-check("refuses --back with nowhere to go", (took, "no track" in msg), (False, True))
+check("refuses --back with nowhere to go", (took, "no environment" in msg), (False, True))
 
 # ------------------------------------------------- struck pins and closed work
 r3 = fresh()
@@ -109,13 +109,13 @@ check("a struck pin is still struck after a round trip",
       [p["fact"] for p in pins.live(r3)], ["keep me"])
 
 # --------------------------------------------- where the data actually lives
-# THE RENAME BUG: `state._file` routes by key NAME, so a track's data must sit in
+# THE RENAME BUG: `state._file` routes by key NAME, so an environment's data must sit in
 # record.json — the half that belongs to the project — and never in runtime state.
 r4 = fresh()
 pins.add(r4, "in the record", AT, 12)
 tracks.switch(r4, "other", AT)
 rec = json.loads((r4 / "record.json").read_text())
-check("parked tracks live in record.json", "tracks" in rec, True)
+check("parked environments live in record.json", "tracks" in rec, True)
 check("current lives in record.json", rec.get("current"), "other")
 check("no runtime file was written by a record operation", (r4 / "runtime").exists(), False)
 
@@ -127,7 +127,7 @@ for i in range(6):
 for i in range(6):
     tracks.switch(r5, f"t{i}", AT)
     check(f"t{i} kept exactly its own pin", [p["fact"] for p in pins.live(r5)], [f"pin {i}"])
-check("seven tracks exist after six switches", len(tracks.listing(r5)), 7)
+check("seven environments exist after six switches", len(tracks.listing(r5)), 7)
 
 # ------------------------------------------------------- the CLI, end to end
 d = Path(tempfile.mkdtemp()) / "proj"
@@ -152,7 +152,7 @@ code, out = run_cli("switch", "second")
 check("cli switch succeeds", code, 0)
 check("cli reports where the project starts now", "the project starts on second" in out, True)
 code, out = run_cli("pins")
-check("cli new track has no pins", "Nothing is pinned" in out, True)
+check("cli new environment has no pins", "Nothing is pinned" in out, True)
 run_cli("switch", "--back")
 code, out = run_cli("pins")
 check("cli --back restores the pin", "cli fact" in out, True)
@@ -161,38 +161,41 @@ check("cli --back restores the work", "cli work" in out, True)
 code, out = run_cli("tracks")
 check("cli lists both, current marked", ("*> default" in out, "second" in out), (True, True))
 
-# the hook names the right track and carries only its pins
+# the hook names the right environment and carries only its pins
 hook = str(d / ".journal" / "hook.py")
 START = json.dumps({"hook_event_name": "SessionStart", "source": "compact",
                     "session_id": "s1", "transcript_path": str(d / "s1.jsonl")})
 p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
-check("SessionStart names the session's track", "track `default`" in ctx, True)
-check("SessionStart carries this track's pin", "cli fact" in ctx, True)
+check("SessionStart names the session's environment", "environment `default`" in ctx, True)
+check("SessionStart carries this environment's pin", "cli fact" in ctx, True)
 code, out = run_cli("switch", "second")
 check("a switch from the terminal moves the project and names the session left behind", ("s1" in out, "--session=<id>" in out), (True, True))
 p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
-check("the bound session stays on its own track", ("track `default`" in ctx, "cli fact" in ctx), (True, True))
+check("the bound session stays on its own environment", ("environment `default`" in ctx, "cli fact" in ctx), (True, True))
 run_cli("switch", "second", "--session=s1")
 p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
-check("SessionStart on another track names it", "track `second`" in ctx, True)
-check("and does NOT leak the other track's pin", "cli fact" in ctx, False)
+check("SessionStart on another environment names it", "environment `second`" in ctx, True)
+check("and does NOT leak the other environment's pin", "cli fact" in ctx, False)
 
 # ------------------------------------------------------- hostile input
 r6 = fresh()
 pins.add(r6, "safe", AT, 12)
-for name in ("a/b", "..", "  spaced   out  ", "emoji 🎧", "x" * 300, "-–quote\"'"):
+for name in ("a/b", "  spaced   out  ", "emoji 🎧", "x" * 300, "-–quote\"'"):
     took, _ = tracks.switch(r6, name, AT)
     check(f"switch survives {name[:14]!r}", took, True)
     check(f"{name[:14]!r} starts empty", pins.live(r6), [])
-check("no file was created per track name",
+took, msg = tracks.switch(r6, "..", AT)
+check("a name that slugs to nothing is refused, not mapped onto default", (took, "letters" in msg), (False, True))
+check("every name on disk is a slug", all(n == state.slug(n) for n in tracks._all(r6)), True)
+check("no file was created per environment name",
       sorted(f.name for f in r6.iterdir()), ["record.json", "record.json.lock"])
 tracks.switch(r6, "default", AT)
 check("default still intact after hostile names", [p["fact"] for p in pins.live(r6)], ["safe"])
 check("a name is normalised, not duplicated",
-      len([t for t in tracks.listing(r6) if t["name"] == "spaced out"]), 1)
+      len([t for t in tracks.listing(r6) if t["name"] == "spaced-out"]), 1)
 
 r7 = fresh()
 (r7 / "record.json").write_text("{ this is not json")
@@ -202,19 +205,19 @@ check("and switching still works on top of it", took, True)
 
 r8 = fresh()
 (r8 / "record.json").write_text(json.dumps({"tracks": "not a dict", "current": None}))
-check("a wrong-typed tracks blob is ignored", tracks.listing(r8)[0]["name"], "default")
+check("a wrong-typed environments blob is ignored", tracks.listing(r8)[0]["name"], "default")
 
-# PINS ARE NOT RATIONED BY COUNT ANY MORE — the limit moved to LENGTH — so what a track
+# PINS ARE NOT RATIONED BY COUNT ANY MORE — the limit moved to LENGTH — so what an environment
 # owes is isolation, not a budget. This test used to assert the cap refused a thirteenth
-# pin; it now asserts that a track keeps exactly its own pins however many there are.
+# pin; it now asserts that an environment keeps exactly its own pins however many there are.
 r9 = fresh()
 for i in range(30):
     pins.add(r9, f"p{i}", AT, 140)
-check("thirty pins stand on one track", len(pins.live(r9)), 30)
+check("thirty pins stand on one environment", len(pins.live(r9)), 30)
 took, msg = pins.add(r9, "x" * 200, AT, 140)
 check("a pin longer than the limit is refused", (took, "140" in msg), (False, True))
 tracks.switch(r9, "empty one", AT)
-check("another track sees none of them", pins.live(r9), [])
+check("another environment sees none of them", pins.live(r9), [])
 took, _ = pins.add(r9, "room here", AT, 140)
 check("and can still be pinned to", took, True)
 tracks.switch(r9, "default", AT)

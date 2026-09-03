@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Every edge of `todo auto`: the switch that lets the agent work through a track on its own.
+"""Every edge of `todo auto`: the switch that lets the agent work through an environment on its own.
 
     .journal/test_auto.py
 
@@ -44,7 +44,7 @@ def project():
     shutil.copytree(SRC, d / ".journal",
                     ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
                                                   "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
-    (d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True, "context_window": 1000000}))
+    (d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 1000000}))
     tdir = transcript.project_dir(d)
     tdir.mkdir(parents=True, exist_ok=True)
     return d
@@ -206,17 +206,17 @@ s.journal("todo", "auto", "on")
 label, _ = s.stop()
 check("on again: held again", label, AUTO_NEXT + "1 to-do(s) waiting")
 
-# ---------------------------------------------------------------- per track
+# ---------------------------------------------------------------- per environment
 d = project(); s = Session(d, "s1")
 s.journal("todo", "default chore"); s.journal("todo", "auto", "on")
 s.journal("switch", "other")
 s.journal("todo", "other chore")
 s.start()
 label, text = s.stop()
-check("on a track with auto off, its own list is a reminder only", (label, "not an instruction" in text), ("", True))
+check("on an environment with auto off, its own list is a reminder only", (label, "not an instruction" in text), ("", True))
 s.journal("switch", "--back")
 label, text = s.stop()
-check("back on the auto track: held for its list", (label, "default chore" in text), (AUTO_NEXT + "1 to-do(s) waiting", True))
+check("back on the auto environment: held for its list", (label, "default chore" in text), (AUTO_NEXT + "1 to-do(s) waiting", True))
 
 # ---------------------------------------------------------------- other holds come first
 d = project(); s = Session(d, "s1")
@@ -368,7 +368,7 @@ check("then the open-work hold, and it keeps coming", (s.stop()[0], s.stop()[0])
 
 d = project(); s = Session(d, "s1")
 s.journal("todo", "auto", "on"); s.journal("start", "on default"); s.journal("switch", "other"); s.start()
-check("on another track, default's open work is not this track's: not held", s.stop()[0], "")
+check("on another environment, default's open work is not this environment's: not held", s.stop()[0], "")
 s.journal("switch", "--back")
 check("back on default: held", s.stop()[0], AUTO_OPEN)
 
@@ -380,7 +380,7 @@ check("and the stop right after a hold passes, but only that one",
 
 # ---------------------------------------------------------------- the stall nudge
 d = project(); s = Session(d, "s1")
-(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True, "context_window": 1000000, "stall_calls": 5}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 1000000, "stall_calls": 5}))
 s.journal("todo", "auto", "on"); s.journal("todo", "hard one"); s.journal("todo", "start", "1"); s.start()
 call = dict(tool_name="Read", tool_input={}, tool_response="x")
 outs = [s.fire("PostToolUse", **call) for _ in range(4)]
@@ -399,7 +399,7 @@ s.journal("end", "hard one")
 outs = [s.fire("PostToolUse", **call) for _ in range(6)]
 check("with no started to-do there is nothing to count", [o.strip() for o in outs], [""] * 6)
 d2 = project(); s2 = Session(d2, "s1")
-(d2 / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True, "context_window": 1000000, "stall_calls": 0}))
+(d2 / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 1000000, "stall_calls": 0}))
 s2.journal("todo", "x"); s2.journal("todo", "start", "1"); s2.start()
 outs = [s2.fire("PostToolUse", **call) for _ in range(50)]
 check("stall_calls 0 turns it off", any(o.strip() for o in outs), False)
@@ -459,7 +459,7 @@ check("after 2 is done, 1 remains answered: held for it", label, "journal remind
 
 # ---------------------------------------------------------------- after another hold, auto still speaks
 d = project(); s = Session(d, "s1")
-(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_track": False, "gate_after_context_rung": True, "context_window": 200000}))
+(d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 200000}))
 s.journal("todo", "chore"); s.journal("todo", "auto", "on"); s.start()
 s.say("go", "user")
 with s.path.open("a") as fh:

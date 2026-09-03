@@ -4,6 +4,35 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.18.0 — tracks are environments
+
+What was called a track is an environment: a session is bound to one, `journal
+environments` lists them, `journal switch "<name>"` moves between them, and
+`journal --env=<name> <command>` runs any command on a named one without switching. The
+old spellings still work — `journal tracks`, `--track=`, `one_session_per_track`, the
+`track` subject in `stop_priority` and `silenced` — and nothing on disk changes shape.
+
+An environment can be prepared and handed off. `journal prepare "<name>"` creates one,
+switches the session to it and prints what preparing means; the procedure — the source
+whole, the brief as a doc, a Plan agent and a second agent for the steps, pins, one
+to-do per unit of work — is in the skill and runs only when the user asks.
+`journal environments "<name>"` is the pickup page. `journal delegate "<name>"` makes
+the session and every subagent it dispatches act on that environment: a delegated
+subagent journals there under the hooks — the write gate, the hints, a hold at its
+SubagentStop for open work, the rules as its window fills — and may not switch,
+delegate or prepare. Undelegated subagents stay outside, as before. The update wires
+the SubagentStop event (the harness treats it as notification-only today; the write
+gate is what holds a delegated subagent to the journal).
+
+`journal handoff "<name>" "<source>"` has agents do all of it: it creates and delegates
+the environment and prints one prompt; the agent dispatches that one hand-off subagent,
+which fetches the source, writes the brief, runs its own planner and critic, pins,
+writes the to-dos and validates the page, then reports READY; `--run` prints the
+runner's prompt for the second dispatch. What a hand-off means is `.journal/handoff.md`,
+the project's copy of the shipped `handoff.default.md`, never touched by an update.
+
+After updating: reload the journal skill.
+
 ## 1.17.1 — the cross-checkout lookup is for session ids only
 
 Only a real session id (a UUID) is looked for across every project folder; a subagent's

@@ -50,7 +50,7 @@ def _dirty(project: Path, root: Path) -> bool:
     JUDGED BY WALKING, NOT BY ASKING GIT ALONE. The exclude written by `_hide_from_git`
     hides untracked files under .journal from `git status`, so a copy with a new file
     would read as clean and be deleted. So: a tracked file modified (git knows), or any
-    file present that git does not track and that is not a runtime artifact.
+    file present that git does not environment and that is not a runtime artifact.
     """
     status = _git(project, "status", "--porcelain", "--", ".journal")
     if status is None or status.strip():

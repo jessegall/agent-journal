@@ -1,9 +1,9 @@
-"""One journal, several tracks of work — and none of them a Claude Code session.
+"""One journal, several environments of work — and none of them a Claude Code session.
 
-A TRACK IS NOT A SESSION. A session belongs to the harness: it starts when somebody opens
-a terminal, it ends when they close it, and its id means nothing to anyone else. A track
+A ENVIRONMENT IS NOT A SESSION. A session belongs to the harness: it starts when somebody opens
+a terminal, it ends when they close it, and its id means nothing to anyone else. An environment
 is what the WORK is called, so a new agent joins whichever one is current without knowing
-anything about how it got there, and the same track survives any number of sessions,
+anything about how it got there, and the same environment survives any number of sessions,
 compactions and restarts.
 
 PARKED, NEVER CLOSED. Switching away keeps everything exactly as it stood — its pins, its
@@ -15,7 +15,7 @@ THE SWAP IS THE IMPLEMENTATION, and it is deliberate. `pins` and `work` keep mea
 current thread's pins and work", so every other module keeps reading exactly what it read
 before and none of them learn a new concept. Switching parks the live pair under the old
 name and lifts the new pair into its place. A design where `pins.py` had to know about
-tracks would have put the same idea in five files.
+environments would have put the same idea in five files.
 """
 from __future__ import annotations
 
@@ -25,14 +25,14 @@ from pathlib import Path
 
 import state
 
-#: The track every project already has before anyone names one. An existing journal
+#: The environment every project already has before anyone names one. An existing journal
 #: becomes this on the first switch, with nothing to migrate — `current` simply defaults.
 DEFAULT = "default"
 
 CURRENT, PARKED, PREVIOUS = "current", "tracks", "previous"
 
 
-BINDINGS = "runtime/bindings.map"   # {session stem: track}; not a .json, so the prune of per-transcript files never touches it
+BINDINGS = "runtime/bindings.map"   # {session stem: environment}; not a .json, so the prune of per-transcript files never touches it
 
 
 def _bindings(root: Path) -> dict:
@@ -47,13 +47,15 @@ def _bindings(root: Path) -> dict:
 
 
 def bound(root: Path, stem: str | None) -> str | None:
-    return _bindings(root).get(stem) if stem else None
+    got = _bindings(root).get(stem) if stem else None
+    return (state.slug(got) or "default") if got else None
 
 
 def bind(root: Path, stem: str, track: str) -> None:
-    """Bind one session to a track. The record's `current` is untouched."""
+    """Bind one session to an environment. The record's `current` is untouched."""
     if not stem:
         return
+    track = state.slug(track) or "default"
     with state.locked(root):
         b = _bindings(root)
         b[stem] = track
@@ -85,11 +87,11 @@ def prune(root: Path, keep) -> None:
 
 
 def live(root: Path, stale_hours: float = 24.0) -> dict[str, dict]:
-    """{stem: {track, age}} for every bound session still counted as running.
+    """{stem: {environment, age}} for every bound session still counted as running.
 
     RUNNING IS EVIDENCE, NOT A COUNTER: not ended by a SessionEnd, and seen by a hook event
     within `stale_hours`. A terminal closed without a SessionEnd goes stale and frees its
-    track; one that sits idle waiting for its user for an hour is still running, because
+    environment; one that sits idle waiting for its user for an hour is still running, because
     the user comes back to it.
     """
     now = time.time()
@@ -104,12 +106,12 @@ def live(root: Path, stale_hours: float = 24.0) -> dict[str, dict]:
         age = now - seen if seen else None
         if age is None or age > stale_hours * 3600:
             continue
-        out[sid] = {"track": track, "age": age}
+        out[sid] = {"track": delegated(root, sid) or track, "age": age}
     return out
 
 
 def occupants(root: Path, track: str, stem: str | None, stale_hours: float = 24.0) -> list[tuple[str, float]]:
-    """Other live sessions on `track`, most recently seen first: (stem, seconds since seen)."""
+    """Other live sessions on `environment`, most recently seen first: (stem, seconds since seen)."""
     got = [(sid, v["age"]) for sid, v in live(root, stale_hours).items() if v["track"] == track and sid != stem]
     return sorted(got, key=lambda x: x[1])
 
@@ -126,15 +128,83 @@ def age_text(seconds: float | None) -> str:
     return f"idle {seconds / 86400:.1f} d"
 
 
-def current(root: Path, stem: str | None = None) -> str:
-    """The track this session is on: its binding, else the project's start track.
+_OVERRIDE: list = []
 
-    A SESSION IS BOUND TO A TRACK; THE PROJECT HAS A START TRACK. At session start the
-    session is bound to the start track. A switch from inside a session moves that
-    session only, so two sessions can work two tracks of one project at once; a switch
-    from the terminal, or with --project, moves the start track for later sessions and
+
+def override(name: str) -> None:
+    """`--env=<name>`: every read and write of this process is about that environment."""
+    _OVERRIDE[:] = [name] if name else []
+
+
+def delegated(root: Path, stem: str | None) -> str | None:
+    """The environment this session (or this subagent's session) is acting on, if delegated."""
+    if not stem:
+        return None
+    got = state.get(root, "delegated", None, stem=stem)
+    return got if isinstance(got, str) and got else None
+
+
+def delegate(root: Path, stem: str, name: str, stale_hours: float = 24.0, exclusive: bool = True) -> tuple[bool, str]:
+    """This session, and every subagent it dispatches, acts on `name` until `--off`.
+
+    DELEGATION IS HOW A SUBAGENT JOURNALS. A subagent's shell carries its parent's session
+    id, so nothing it runs can tell the two apart — and a subagent's journal writes are
+    refused, because a pin nobody in the main conversation saw is a fact of unknown
+    provenance. With an environment delegated, the writes of this session's subagents
+    land there, under the hooks a session gets: the write gate, the hints, a hold at
+    their stop for open work. The parent stays bound where it was and files the outcome.
+    """
+    name = state.slug(name)
+    if not name:
+        return False, 'delegate what? `journal delegate "<environment>"`, or `--off`'
+    if name not in _all(root):
+        return False, f"no environment is called {name}; `journal prepare \"{name}\"` or `journal switch \"{name}\"` creates one"
+    if exclusive:
+        taken = occupants(root, name, stem, stale_hours)
+        if taken:
+            return False, (f"{name} is taken by session {taken[0][0][:8]} ({age_text(taken[0][1])}), and one "
+                           "session works an environment — wait for it, or pick another")
+    # ONE SESSION ID, ONE ENVIRONMENT. Delegating moves the session there for the duration
+    # — its own writes land there too — and `--off` moves it back.
+    was = bound(root, stem)
+    if was and was != name:
+        state.put(root, "previous_track", was, stem=stem)
+    bind(root, stem, name)
+    state.put(root, "delegated", name, stem=stem)
+    return True, (f"this session and its subagents act on {name} until `journal delegate --off`\n"
+                  f"  a subagent's journal commands land there; brief it with `journal environments \"{name}\"`")
+
+
+def undelegate(root: Path, stem: str) -> tuple[bool, str]:
+    was = delegated(root, stem)
+    if not was:
+        return False, "nothing is delegated in this session"
+    state.put(root, "delegated", None, stem=stem)
+    back = state.get(root, "previous_track", None, stem=stem)
+    if back and back in _all(root):
+        bind(root, stem, back)
+    # the subagents registered through this delegation are registered nowhere again
+    for sid, marks in state.runtime_files(root):
+        if sid.startswith("agent-") and (marks.get("delegated_by") == stem or marks.get("delegated") == was):
+            state.put(root, "delegated", None, stem=sid)
+            state.put(root, "delegated_by", None, stem=sid)
+    return True, f"delegation of {was} ended; this session is back on {current(root, stem)}"
+
+
+def current(root: Path, stem: str | None = None) -> str:
+    """The environment this session is on: its binding, else the project's start environment.
+
+    A SESSION IS BOUND TO A ENVIRONMENT; THE PROJECT HAS A START ENVIRONMENT. At session start the
+    session is bound to the start environment. A switch from inside a session moves that
+    session only, so two sessions can work two environments of one project at once; a switch
+    from the terminal, or with --project, moves the start environment for later sessions and
     leaves running ones where they are.
     """
+    if _OVERRIDE:
+        return _OVERRIDE[0]
+    acting = delegated(root, stem)
+    if acting:
+        return acting
     got = bound(root, stem)
     if got:
         return got
@@ -145,12 +215,12 @@ SESSIONS = "sessions"
 
 
 def carried_by(root: Path) -> dict[str, list[str]]:
-    """{track: [session stems that were ever on it]} — the index `search` reads.
+    """{environment: [session stems that were ever on it]} — the index `search` reads.
 
-    A TRACK HAS A TRANSCRIPT, spread over every session that was on it. Without this,
+    A ENVIRONMENT HAS A TRANSCRIPT, spread over every session that was on it. Without this,
     finding it means parsing every session the project ever had and segmenting each by
     its marks: correct, and growing with every session. So each session start records
-    the session under the current track, and each switch records it under the track
+    the session under the current environment, and each switch records it under the environment
     switched to. A session absent from every list predates the index and is read the
     long way, once, so nothing is lost while the index fills in.
     """
@@ -159,7 +229,7 @@ def carried_by(root: Path) -> dict[str, list[str]]:
 
 
 def carried(root: Path, track: str, stem: str) -> None:
-    """Record that `stem` was on `track`. Idempotent; a record write, under the lock."""
+    """Record that `stem` was on `environment`. Idempotent; a record write, under the lock."""
     if not stem:
         return
     with state.locked(root):
@@ -181,13 +251,80 @@ def _all(root: Path) -> dict:
     return got
 
 
+def page(root: Path, name: str, width: int = 88, commands: bool = True) -> tuple[bool, str]:
+    """One environment, ready to be picked up: its docs, pins, open work, to-dos, and how.
+
+    THE HAND-OFF IS A PAGE, NOT A CONVERSATION. Whoever picks the environment up — this
+    session later, another session, a colleague, a subagent — reads this and starts: the
+    docs to read first, the facts that stand, what is open, the to-dos in order, and the
+    one command that begins.
+    """
+    import docs as docs_mod
+    import fmt
+    import todo as todo_mod
+    import work as work_mod
+    name = state.slug(name)
+    if name not in _all(root):
+        return False, f"no environment is called {name}. `journal environments` lists them."
+    saved = list(_OVERRIDE)
+    override(name)
+    try:
+        held = _all(root).get(name, {})
+        numbered = [(i, p) for i, p in enumerate(held.get("pins", []), 1) if not p.get("struck")]
+        pins = [p for _, p in numbered]
+        open_ = [w for w in held.get("work", []) if not w.get("ended")]
+        items = todo_mod.open_items(root, name)
+        auto = todo_mod.auto(root, name)
+        cited = sorted({str(p.get("doc")).split(".")[0] for p in pins if p.get("doc")}
+                       | {str(t.get("doc")).split(".")[0] for t in items if t.get("doc")})
+        mine = [d for d in docs_mod._load(root) if d.get("track") == name or str(d["n"]) in cited]
+        who = [sid for sid, v in live(root).items() if v["track"] == name]
+        by = [s for s in who if delegated(root, s) == name]
+        state_ = (f"delegated by session {', '.join(s[:8] for s in by)} to its subagents" if by
+                  else f"held by session {', '.join(s[:8] for s in who)}" if who else "free")
+        out = [fmt.title(f"ENVIRONMENT {name}", sub=("auto on · " if auto else "") + state_), ""]
+        if mine:
+            out.append(fmt.section("read first"))
+            for d in mine:
+                files = docs_mod.attachments(d)
+                out.append(fmt.numbered(d["n"], d["title"], " · ".join(x for x in [
+                    d.get("status", "draft"), f"{len(d['parts'])} part(s)" if d["parts"] else "",
+                    f"{len(files)} file(s)" if files else "", f"read it: .journal/journal.py docs {d['n']}"] if x), width=width))
+                out.append(fmt.wrap(d.get("abstract", ""), indent=5, width=width))
+        if pins:
+            out.append(fmt.section("what stands"))
+            for i, p in numbered:   # the same numbers `journal pins`, `strike` and `--supersedes` use
+                out.append(fmt.numbered(i, p["fact"], "→ " + docs_mod.ref_label(root, str(p["doc"]), short=True) if p.get("doc") else "", width=width))
+        if open_:
+            out.append(fmt.section("open work"))
+            for w in open_:
+                out.append(fmt.wrap(w["subject"] + (f" — last: {w['notes'][-1]['text']}" if w.get("notes") else ""), width=width))
+        out.append(fmt.section(f"to do, in order ({len(items)})" if items else "to do"))
+        out.append(todo_mod.render(root, name, width=width, short_refs=True))
+        if items:
+            out.append("")
+            out.append(fmt.wrap("Each has a brief: .journal/journal.py todo <n> prints it. Start one with todo start <n>.", width=width))
+        out.append("")
+        if not commands:
+            return True, "\n".join(out).rstrip()
+        first = next((t for t in todo_mod.ready(root, name)), None)
+        rows = [(f'journal switch "{name}"', "this session works it"),
+                (f'journal delegate "{name}"', "then dispatch a subagent with this page as its brief; its journal lands here")]
+        if first:
+            rows.append((f'journal --env="{name}" todo start {first["n"]}', "begin without switching"))
+        out.append(fmt.commands(rows))
+        return True, "\n".join(out)
+    finally:
+        _OVERRIDE[:] = saved
+
+
 def listing(root: Path, stem: str | None = None, stale_hours: float = 24.0) -> list[dict]:
-    """Every track: the project's start track first, sessions bound to each, this one marked."""
+    """Every environment: the project's start environment first, sessions bound to each, this one marked."""
     start = state.get(root, CURRENT, DEFAULT) or DEFAULT
     mine = current(root, stem)
     by_track: dict[str, list[str]] = {}
     for sid, t in _bindings(root).items():
-        by_track.setdefault(t, []).append(sid)
+        by_track.setdefault(delegated(root, sid) or t, []).append(sid)
     alive = live(root, stale_hours)
     out = []
     for name, held in _all(root).items():
@@ -207,15 +344,16 @@ def listing(root: Path, stem: str | None = None, stale_hours: float = 24.0) -> l
 
 def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False,
            exclusive: bool = True, stale_hours: float = 24.0) -> tuple[bool, str]:
-    """Move this session to a track, or the project's start track, or both.
+    """Move this session to an environment, or the project's start environment, or both.
 
-    NOTHING IS SWAPPED ANY MORE. Every track's pins and work live under its name; a
-    switch only changes which name this process reads. A new track is a name with
+    NOTHING IS SWAPPED ANY MORE. Every environment's pins and work live under its name; a
+    switch only changes which name this process reads. A new environment is a name with
     nothing under it yet. Nothing is ever deleted by switching.
     """
-    name = " ".join((name or "").split())
+    name = state.slug(name)
     if not name:
-        return False, 'switch to what? `journal switch "<track>"`, or `--back`'
+        return False, ('switch to what? `journal switch "<environment>"`, or `--back` — a name is letters, '
+                       'digits and dashes; nothing of that was left')
     with state.locked(root):
         tracks = _all(root)
         fresh = name not in tracks
@@ -225,7 +363,7 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
             held_ = data.setdefault("tracks", {})
             if not isinstance(held_, dict):
                 held_ = data["tracks"] = {}
-            held_.setdefault(start, {"pins": [], "work": [], "at": at})   # the track left behind exists by name too
+            held_.setdefault(start, {"pins": [], "work": [], "at": at})   # the environment left behind exists by name too
             held_.setdefault(name, {"pins": [], "work": [], "at": at})
             state._write(state.record_file(root), data)
         held = tracks.get(name, {})
@@ -237,7 +375,7 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
             taken = occupants(root, name, stem, stale_hours)
             if taken:
                 return False, (f"{name} is taken by session {taken[0][0][:8]} ({age_text(taken[0][1])}), and one "
-                               "session works a track — pick another name; `journal tracks` shows who is where")
+                               "session works an environment — pick another name; `journal environments` shows who is where")
         if stem and not project:
             if was == name:
                 return False, f"this session is already on {name}"
@@ -264,9 +402,10 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
 
 def move_sessions(root: Path, name: str, which: list[str] | None,
                   exclusive: bool = True, stale_hours: float = 24.0) -> tuple[list[str], list[str]]:
+    name = state.slug(name)
     """Bind the named sessions (or every bound session) to `name`: (moved, refused).
 
-    With one session per track, at most one live session lands on `name`: the one already
+    With one session per environment, at most one live session lands on `name`: the one already
     there if any, else the first picked; the rest are refused and named.
     """
     b = _bindings(root)
@@ -294,5 +433,5 @@ def move_sessions(root: Path, name: str, which: list[str] | None,
 def back(root: Path, at: str, stem: str = "", exclusive: bool = True, stale_hours: float = 24.0) -> tuple[bool, str]:
     was = state.get(root, "previous_track", None, stem=stem) if stem else state.get(root, PREVIOUS)
     if not was:
-        return False, "no track to go back to — nothing has been switched away from yet"
+        return False, "no environment to go back to — nothing has been switched away from yet"
     return switch(root, was, at, stem, project=not stem, exclusive=exclusive, stale_hours=stale_hours)

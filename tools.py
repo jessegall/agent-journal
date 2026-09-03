@@ -231,7 +231,7 @@ def show(root: Path, name: str, width: int = 88) -> tuple[bool, str]:
     if t is None:
         return False, err
     out = [fmt.title(f"TOOL {t['name']}", sub=t.get("title", "")),
-           "  " + fmt.dim(" · ".join(x for x in (t.get("source", ""), f"track {t.get('track', '')}" if t.get("track") else "",
+           "  " + fmt.dim(" · ".join(x for x in (t.get("source", ""), f"environment {t.get('track', '')}" if t.get("track") else "",
                                                 _age(t.get("at", ""))) if x))]
     out.append(fmt.section("what it does"))
     out.append(fmt.wrap(t.get("summary", ""), width=width))

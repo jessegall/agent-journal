@@ -82,6 +82,13 @@ def _ctx(payload: dict) -> Ctx | None:
         stem = sid
     else:
         return None
+    if aid:
+        # A SUBAGENT'S TRANSCRIPT IS ITS OWN, one level under its parent's; the payload
+        # names the parent's. Before its first line exists there is none, and the handlers
+        # that need one wait for it.
+        own = payload.get("agent_transcript_path") or ""
+        path = Path(own) if own and Path(own).is_file() else transcript.find(ROOT.parent, stem)
+        return Ctx(stem, path)
     path = Path(tp) if tp else transcript.find(ROOT.parent, sid) if sid else None
     return Ctx(stem, path)
 
@@ -294,7 +301,7 @@ def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
 #: up the next" was owed. The user's rule: the hook runs them one by one.
 #: The subjects of the queue live below, each registered with `nudges.subject(name, priority)`;
 #: `nudges.ordered(conf)` is the order they run in. `SUBJECTS` is kept as the default order.
-SUBJECTS = ("track", "loop", "context", "deferral", "untagged", "work", "auto")
+SUBJECTS = ("environment", "loop", "context", "deferral", "untagged", "work", "auto")
 
 
 def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
@@ -339,7 +346,7 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
             state.put(ROOT, "todos_said", ids, stem=ctx.stem)
             return _context(
                 "Stop",
-                f"journal: {len(ids)} to-do(s) waiting on track `{here}` (`journal todo`). "
+                f"journal: {len(ids)} to-do(s) waiting on environment `{here}` (`journal todo`). "
                 "Delayed work, not an instruction to start any of it — the user decides.",
             )
     return 0
@@ -351,15 +358,15 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
 #: `stop_priority` in settings.json overrides it per project.
 
 
-@nudges.subject("track", 5)
+@nudges.subject("environment", 5)
 def _p_track(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     due = _track_due(conf, ctx)
     if not due:
         return None
-    return (f"track `{due['track']}` is taken by another session",
-            f"journal: track `{due['track']}` is taken by session {due['by'][:8]} ({due['age']}), and "
-            "one session works a track — ask the user which track this session works on, then "
-            '`.journal/journal.py switch "<name>"` (`journal tracks` lists them; a new name creates one)')
+    return (f"environment `{due['track']}` is taken by another session",
+            f"journal: environment `{due['track']}` is taken by session {due['by'][:8]} ({due['age']}), and "
+            "one session works an environment — ask the user which environment this session works on, then "
+            '`.journal/journal.py switch "<name>"` (`journal environments` lists them; a new name creates one)')
 
 
 @nudges.subject("loop", 10)
@@ -367,7 +374,7 @@ def _p_loop(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # THE LOOP COMES FIRST. With auto on, everything the queue asks after this depends on
     # a session that wakes up by itself; without a loop an idle stop is the end of the list.
     m = conf.get("auto_loop_minutes", 0)
-    if not m or not todo.auto(ROOT, here):
+    if not m or not todo.auto(ROOT, here) or ctx.stem.startswith("agent-"):
         return None
     if not (work.open_work(ROOT) or todo.ready(ROOT, here)):
         return None
@@ -451,10 +458,16 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # ONLY WORK THIS TRANSCRIPT OPENED, ONCE PER PIECE. Work opened elsewhere was told
     # at the start; work legitimately spans stops, and a hold that repeats until it
     # closes is a trap.
-    mine = ctx.path.name if ctx.path else None
+    owners = {ctx.path.name if ctx.path else None}
+    if ctx.stem.startswith("agent-"):
+        # A DELEGATED SUBAGENT'S WRITES CARRY ITS PARENT'S TRANSCRIPT NAME (its shell
+        # has the parent's session id), so its work is matched by that name too.
+        parent = state.get(ROOT, "delegated_by", None, stem=ctx.stem)
+        if parent:
+            owners.add(f"{parent}.jsonl")
     raw = state.get(ROOT, "held_work", {}, stem=ctx.stem)
     held = raw if isinstance(raw, dict) else {k: -1 for k in (raw or [])}
-    fresh = [w for w in standing if w.get("session") == mine and w["subject"] not in held]
+    fresh = [w for w in standing if w.get("session") in owners and w["subject"] not in held]
     if not fresh:
         return None
     for w in fresh:
@@ -543,16 +556,18 @@ def _loop_running(ctx: Ctx, lines) -> bool:
 
 
 def _track_due(conf: dict, ctx: Ctx) -> dict | None:
-    """Is this session on a track another live session holds? Written to runtime while it is.
+    """Is this session on an environment another live session holds? Written to runtime while it is.
 
-    ONE SESSION WORKS A TRACK. Two agents on one track share its open work and its to-do
+    ONE SESSION WORKS A ENVIRONMENT. Two agents on one environment share its open work and its to-do
     list, and two auto sessions would pick the same chore. So a session that starts on a
-    taken track — the project's start track, usually, because the user opened a second
+    taken environment — the project's start environment, usually, because the user opened a second
     terminal — is told at its start, held at its stops and refused edits until it has
     switched. A session that was here first is never moved.
     """
-    if not conf["one_session_per_track"] or "track" in conf["silenced"]:
+    if not conf["one_session_per_environment"] or "environment" in conf["silenced"] or "track" in conf["silenced"]:
         return None
+    if ctx.stem.startswith("agent-"):
+        return None   # a delegated subagent shares its session's claim on the environment
     here = tracks.current(ROOT, ctx.stem)
     others = tracks.occupants(ROOT, here, ctx.stem, conf["session_stale_hours"])
     if not others:
@@ -566,9 +581,9 @@ def _track_due(conf: dict, ctx: Ctx) -> dict | None:
 
 
 def _taken_block(due: dict) -> str:
-    return (f"TRACK `{due['track']}` IS TAKEN: session {due['by'][:8]} is on it ({due['age']}), and one "
-            "session works a track at a time. Before anything else, tell the user and ask which "
-            "track this session works on — a free one from `journal tracks`, or a new name — then\n"
+    return (f"ENVIRONMENT `{due['track']}` IS TAKEN: session {due['by'][:8]} is on it ({due['age']}), and one "
+            "session works an environment at a time. Before anything else, tell the user and ask which "
+            "environment this session works on — a free one from `journal environments`, or a new name — then\n"
             '  .journal/journal.py switch "<name>"\n'
             "Until then edits are refused and every stop asks again. Reads are fine.")
 
@@ -820,7 +835,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 
 #: Journal verbs that WRITE. A subagent may read the record; it may not change it.
 JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "remember", "strike", "switch", "nothing",
-                            "rule", "promote", "todo", "docs", "work", "tools", "loop"})
+                            "rule", "promote", "todo", "docs", "work", "tools", "loop", "delegate", "prepare", "handoff"})
 
 
 def _journal_write(payload: dict) -> str | None:
@@ -996,7 +1011,7 @@ def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
 
 
 #: SOURCE OR REFERENCE. A file the project is built from is source: it has a source
-#: extension, or git tracks it. A file the agent keeps coming back to for what it SAYS —
+#: extension, or git environments it. A file the agent keeps coming back to for what it SAYS —
 #: a rendered design, an export, a PDF the user sent, a log — is reference material, and
 #: the doc it belongs to is where it should be attached. Neither list has to be complete:
 #: an unknown untracked file inside the project is left alone, and only a file outside
@@ -1410,20 +1425,20 @@ def carried(source: str = "compact", stem: str | None = None) -> str:
         # reader that a rule is something that appears after a mistake — and this one is
         # supposed to be the opposite of that.
         #
-        # WHICH TRACK OF WORK THIS IS comes first: a fresh agent inherits a track it did
+        # WHICH ENVIRONMENT OF WORK THIS IS comes first: a fresh agent inherits an environment it did
         # not choose and cannot see, and every pin and open item below belongs to that one.
-        f"THE JOURNAL IS IN FORCE HERE — this session is bound to track `{here}`"
-        " (`journal tracks` for the others; `journal switch` moves this session only, "
-        "`--project` also the start track).\nOpen every message with exactly one tag:\n"
+        f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{here}`"
+        " (`journal environments` for the others; `journal switch` moves this session only, "
+        "`--project` also the start environment).\nOpen every message with exactly one tag:\n"
         + "\n".join(f"  [!{t.name}]  {t.line}" for t in tags.TAGS.values())
         + "\n\nThe tag is free — it rides on a message you were sending anyway. Work is "
         "not:\n"
         "  journal start \"<the work>\"     declare it\n"
         "  journal update \"<what moved>\"  progress on it — a command, never a tag\n"
         "  journal end \"<the same words>\" close it\n"
-        "  journal pin \"<fact>\"      survives a compaction, on this track\n"
-        "  journal rule \"<ruling>\"        survives on every track\n"
-        "  journal todo \"<title>\"         delayed work, on this track\n"
+        "  journal pin \"<fact>\"      survives a compaction, on this environment\n"
+        "  journal rule \"<ruling>\"        survives on every environment\n"
+        "  journal todo \"<title>\"         delayed work, on this environment\n"
         "WHEN THE USER ASKS FOR SOMETHING YOU ARE NOT WORKING ON AND IT CAN WAIT, park it: "
         "`journal todo \"<title>\"`, say you did, and carry on. It is listed at every start "
         "and picked up with `journal todo start <n>` when the user says so.\n\n"
@@ -1450,8 +1465,8 @@ def carried(source: str = "compact", stem: str | None = None) -> str:
         "this session — it says WHEN to do each, with examples — and again whenever a "
         "hook holds or denies you."
     ]
-    # RULES BEFORE PINS. A rule binds every track, so a reader meets the constraints
-    # before the facts of the one track they happen to be on.
+    # RULES BEFORE PINS. A rule binds every environment, so a reader meets the constraints
+    # before the facts of the one environment they happen to be on.
     ruled = pins.carry(ROOT, source, key=pins.RULES)
     if ruled:
         parts.append(ruled)
@@ -1485,7 +1500,12 @@ def carried(source: str = "compact", stem: str | None = None) -> str:
     return "\n\n".join(parts)
 
 
-def on_subagent_post(conf: dict, payload: dict) -> int:
+def on_subagent_post(conf: dict, payload: dict, acting: str = "") -> int:
+    text = _subagent_rules(conf, payload, acting)
+    return _context("PostToolUse", text) if text else 0
+
+
+def _subagent_rules(conf: dict, payload: dict, acting: str = "") -> str | None:
     """Hand a subagent the rules: on its first tool call, and again as its window fills.
 
     A RULE BINDS A SUBAGENT'S WORK. "A component is never a field on another component's
@@ -1502,8 +1522,8 @@ def on_subagent_post(conf: dict, payload: dict) -> int:
     aid = payload.get("agent_id") or ""
     stem = f"agent-{aid}"
     ruled = pins.live(ROOT, pins.RULES)
-    if not ruled:
-        return 0
+    if not ruled and not acting:
+        return None
     given = state.get(ROOT, "rules_at", None, stem=stem)
     passed: list[float] = []
     if given is None:
@@ -1514,20 +1534,28 @@ def on_subagent_post(conf: dict, payload: dict) -> int:
         if got and got[3]:
             passed = [r for r in sorted(conf["subagent_rules_ladder"]) if got[0] >= r and r not in given]
     if not passed:
-        return 0
+        return None
     # EVERY MARK CROSSED IS RECORDED, not only the highest: a step from 20% to 55% passes
     # two, and recording one would hand the block over again at the very next call.
     mark = passed[-1]
     state.put(ROOT, "rules_at", sorted(set(given) | set(passed)), stem=stem)
     lead = (
-        "YOU ARE A SUBAGENT. The journal here is the main conversation's, not yours to write: "
-        "report what you find and it decides what to file. These rules bind your work:"
+        (f"YOU ARE A SUBAGENT, DELEGATED THE ENVIRONMENT `{acting}`. The journal there is yours to "
+         "write, and the hooks hold you to it: declare work before you edit (`.journal/journal.py work start` "
+         "or `.journal/journal.py todo start <n>`), `work end` when it is done, pin what must outlive you, "
+         "and open every message with a tag (`[!reply]`, `[!info]`, `[!discovery]`, `[!blocked]`, "
+         "`[!correction]`) or your stop is held for it. Subagents of your own run NO journal command: "
+         f"they return text, you file it. `.journal/journal.py environments \"{acting}\"` is your brief. "
+         "These rules bind your work:"
+         if acting else
+         "YOU ARE A SUBAGENT. The journal here is the main conversation's, not yours to write: "
+         "report what you find and it decides what to file. These rules bind your work:")
         if mark == 0.0 else
         f"YOUR CONTEXT IS {mark:.0%} FULL. The rules of this project again, because a block "
         "read at the start is far behind you now:"
     )
-    body = "\n".join(f"  - {r['fact']}" for r in ruled)
-    return _context("PostToolUse", lead + "\n" + body)
+    body = "\n".join(f"  - {r['fact']}" for r in ruled) or "  (no rules yet)"
+    return lead + "\n" + body
 
 
 def _loop_line(conf: dict) -> str:
@@ -1572,7 +1600,7 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     source = payload.get("source") or "startup"
     _floor(ctx)
     state.put(ROOT, "session_started", source, stem=ctx.stem)
-    # BOUND AT THE START to the project's start track, if this session is not bound yet.
+    # BOUND AT THE START to the project's start environment, if this session is not bound yet.
     # A switch from inside the session rebinds it alone.
     if not tracks.bound(ROOT, ctx.stem):
         tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
@@ -1617,14 +1645,97 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
 #: are the same events as the harness has also spelled them; an unknown event is silence,
 #: because a doorbell that argues with a caller it does not recognise is worse than one
 #: that does not ring.
+#: Verbs a delegated subagent may still not run: an environment is the session's to move.
+_PARENT_ONLY = frozenset({"switch", "delegate", "prepare", "handoff"})
+
+
+_CONF: list = []
+
+
+def conf_of(payload: dict) -> dict:
+    return _CONF[0] if _CONF else settings_mod.load(ROOT)[0]
+
+
+def _register(payload: dict, ctx: Ctx) -> str | None:
+    """The environment this actor is registered on — registering it now if it may be."""
+    if not ctx.stem.startswith("agent-"):
+        if tracks.bound(ROOT, ctx.stem):
+            return tracks.current(ROOT, ctx.stem)
+        # A SESSION WITH NO BINDING YET — its start, or its first event after an update —
+        # registers on the project's start environment, UNLESS a running session holds
+        # it: then it is registered nowhere until it switches, told so at its start,
+        # refused edits and held at its stops meanwhile. That is how two agents never
+        # share an environment: the second one is simply not let in.
+        if _track_due(conf_of(payload), ctx):
+            return None
+        tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+        return tracks.current(ROOT, ctx.stem)
+    acting = tracks.delegated(ROOT, ctx.stem)
+    if acting:
+        return acting
+    tp = payload.get("transcript_path") or ""
+    parent = Path(tp).stem if tp else (payload.get("session_id") or "")
+    acting = tracks.delegated(ROOT, parent) if parent else None
+    if acting:
+        state.put(ROOT, "delegated", acting, stem=ctx.stem)
+        state.put(ROOT, "delegated_by", parent, stem=ctx.stem)
+    return acting
+
+
+def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) -> int:
+    """An actor registered nowhere: refused the journal's writes, handed the rules, else nothing.
+
+    A SESSION registered nowhere is one whose start environment another running session
+    holds. It is told at its start by whom, refused edits, held at its stops, and let
+    through to the one thing that registers it: `journal switch` (or `prepare`) onto a
+    free environment. Reads are fine.
+    """
+    if ctx is not None and not ctx.stem.startswith("agent-"):
+        due = state.get(ROOT, "track_due", None, stem=ctx.stem) or {}
+        if handler is on_session_start:
+            state.put(ROOT, "session_started", payload.get("source") or "startup", stem=ctx.stem)
+            _floor(ctx)
+            block = _taken_block(due) + "\n\n" + carried(payload.get("source") or "startup", ctx.stem)
+            return _context("SessionStart", (WORKTREE_NOTE + "\n\n" + block) if WORKTREE_NOTE else block)
+        if handler is on_pre_tool:
+            verb = _journal_write(payload)
+            if verb and verb not in ("switch", "prepare", "handoff", "delegate"):
+                return _deny(f"`journal {verb}` is refused: this session is registered on no environment — "
+                             + _taken_block(due))
+            if _is_write(payload) and not _is_journal(payload):
+                return _deny(_taken_block(due))
+            return 0
+        if handler is on_stop:
+            _HOLD_CTX[:] = [ctx.stem]
+            return _hold(f"environment `{due.get('track', '?')}` is taken by another session",
+                         f"journal: environment `{due.get('track', '?')}` is taken by session {str(due.get('by', ''))[:8]} "
+                         f"({due.get('age', '')}), and one session works an environment — ask the user which "
+                         'environment this session works on, then `.journal/journal.py switch "<name>"`')
+        return 0
+    if handler is on_pre_tool:
+        verb = _journal_write(payload)
+        if verb:
+            return _deny(
+                f"`journal {verb}` from a subagent is refused: the journal is the main "
+                f"conversation's. Report what you found and let it decide what to file. "
+                f"Reads (`search`, `pins`, `open`, `--back`) are fine."
+            )
+        return 0
+    if handler is on_post_tool:
+        return on_subagent_post(conf, payload)
+    return 0
+
+
 def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """The session is over: its track is free. A closed terminal skips this; staleness covers it."""
+    """The session is over: its environment is free. A closed terminal skips this; staleness covers it."""
     tracks.unbind(ROOT, ctx.stem)
     state.put(ROOT, "ended", payload.get("reason") or "exit", stem=ctx.stem)
     return 0
 
 
 HANDLERS = {
+    "SubagentStop": on_stop,       # reaches a DELEGATED subagent only; the door turns the rest away
+    "subagent-stop": on_stop,
     "SessionEnd": on_session_end,
     "session-end": on_session_end,
     "Stop": on_stop,
@@ -1654,40 +1765,40 @@ def main() -> int:
     if handler is None:
         return 0
     state.retire_old(ROOT)
-    # SUBAGENTS ARE OUT, AT THE DOOR. Measured across ten subagent transcripts: Stop does
-    # not fire for them today, only the tool events do. Closing every event here rather
-    # than inside two handlers means a harness that starts firing more of them changes
-    # nothing. The one thing a subagent's event can still do is be refused a journal write.
-    if _subagent(payload):
-        if handler is on_pre_tool:
-            verb = _journal_write(payload)
-            if verb:
-                return _deny(
-                    f"`journal {verb}` from a subagent is refused: the journal is the main "
-                    f"conversation's. Report what you found and let it decide what to file. "
-                    f"Reads (`search`, `pins`, `open`, `--back`) are fine."
-                )
-            return 0
-        if handler is on_post_tool:
-            return on_subagent_post(conf, payload)
-        return 0
     ctx = _ctx(payload)
     if ctx is None:
         print(f"journal: {event} payload names no session or transcript — nothing filed",
               file=sys.stderr)
         return 0
+    # ONE DOOR, ONE REGISTRY. Every actor — a session, a subagent — is registered on an
+    # environment or it is not. A session registers at its start (or at its first event
+    # after an update); a subagent registers on its first event if its session delegated
+    # an environment, and acts there. An actor registered nowhere is journaled for
+    # nothing: its journal writes are refused, because its shell carries its parent's
+    # session id and would write the parent's record; it is handed the rules, once; and
+    # that is all. No other line asks whether an actor is a subagent.
+    _CONF[:] = [conf]
+    env = _register(payload, ctx)
+    if env is None:
+        return _unregistered(conf, payload, handler, ctx)
     # A CRASH IS WORSE THAN SILENCE. A traceback here is rendered to the user as a hook
     # error, which teaches that the journal is broken where it was only surprised. Say
     # what happened on stderr and let the turn go on.
     try:
-        # A SESSION RUNNING WHEN THE UPDATE LANDED has no binding yet: bind it now, at
-        # whatever event comes first, to the project's start track — as its start would.
-        if not tracks.bound(ROOT, ctx.stem):
-            tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
-        state.use_track(tracks.current(ROOT, ctx.stem))
+        state.use_track(env)
         # ALIVE, AS OF NOW. What `tracks.occupants` reads to tell a running session from a
         # terminal that was closed without a SessionEnd.
         state.put(ROOT, "seen_at", int(time.time()), stem=ctx.stem)
+        if ctx.stem.startswith("agent-"):
+            if handler is on_pre_tool and _journal_write(payload) in _PARENT_ONLY:
+                return _deny(f"`journal {_journal_write(payload)}` from a subagent is refused even when delegated: "
+                             f"the environment is the session's to move. You work on `{env}`; report the rest.")
+            if handler is on_post_tool:
+                text = _subagent_rules(conf, payload, env)   # its first call, and at its own marks
+                if text:
+                    return _context("PostToolUse", text)
+            if handler is on_stop and ctx.path is None:
+                return 0
         return handler(conf, payload, ctx)
     except Exception as e:  # noqa: BLE001
         print(f"journal: {event} handler failed ({type(e).__name__}: {e}) — nothing filed",

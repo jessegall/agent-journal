@@ -116,12 +116,17 @@ def block(text: str, width: int = WIDTH) -> str:
     is indented, or is a command or a list item, is kept as it is, because wrapping a
     command breaks it and wrapping a column breaks the column.
     """
+    import re
     out = []
     for para in (text or "").split("\n"):
         # a `journal:` line is the hook's one-liner, one line by ruling: the user sees it
         # in the terminal as a single notice and opens `journal next` for the rest
-        if len(para) <= width or para.startswith((" ", "\t", "-", "•", "|", "journal:")):
+        if len(para) <= width or para.startswith((" ", "\t", "|", "journal:")):
             out.append(para)
+            continue
+        item = re.match(r"^(\d+\.\s+|[-•]\s+)", para)
+        if item:
+            out.append(textwrap.fill(para, width=width, subsequent_indent=" " * len(item.group(1))))
         else:
             out.append(textwrap.fill(para, width=width))
     return "\n".join(out)
