@@ -398,10 +398,10 @@ def add(root: Path, title: str, abstract: str, body: str, track: str, source: st
     title = " ".join((title or "").split())
     abstract = " ".join((abstract or "").split())
     if not title:
-        return False, 'a doc needs a title: journal docs add "<title>" --abstract "<one line>" --brief'
+        return False, 'a doc needs a title: journal docs add "<title>" --abstract="<one line>" --brief'
     if not abstract:
         return False, ('a doc needs an abstract — the one line every session is handed:\n'
-                       '  journal docs add "<title>" --abstract "<what it settles, in one line>" --brief')
+                       '  journal docs add "<title>" --abstract="<what it settles, in one line>" --brief')
     for d in _load(root):
         if d.get("title", "").lower() == title.lower():
             return False, f"doc {d['n']} already has that title"
@@ -624,10 +624,16 @@ def check_ref(root: Path, ref: str) -> str | None:
 
 
 # ------------------------------------------------------------------ rendering
-def catalogue(root: Path, width: int = 88) -> str:
+def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1) -> str:
+    """The catalogue, capped like `carry` (below) so a bare `journal docs` never grows
+    without bound; unlike carry — handed automatically, every session — this is asked
+    for, so it pages rather than just saying "N more"."""
     docs = _load(root)
     if not docs:
         return "  No docs are catalogued."
+    total = len(docs)
+    if cap:
+        docs = docs[(page - 1) * cap: page * cap]
     out = []
     for d in docs:
         meta = [d.get("status", "draft")]
@@ -644,7 +650,10 @@ def catalogue(root: Path, width: int = 88) -> str:
                              width=width)
         entry += "\n" + fmt.wrap(d.get("abstract", ""), indent=5, width=width)
         out.append(entry)
-    return "\n\n".join(out)
+    body = "\n\n".join(out)
+    if cap and total > page * cap:
+        body += f"\n\n  … and {total - page * cap} more; `journal docs --page={page + 1}` shows the rest."
+    return body
 
 
 def show(root: Path, ref: str, width: int = 88) -> tuple[bool, str]:

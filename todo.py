@@ -20,12 +20,14 @@ from __future__ import annotations
 
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import fmt
 import state
 
 DIR = "todo"
+STRUCK = "struck"
 FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how", "asks", "answer", "doc")
 
 
@@ -174,6 +176,112 @@ def _update(root: Path, track: str, n: int, **fields) -> tuple[dict | None, str]
     return {**t, **meta}, ""
 
 
+_HEADING = re.compile(r"^##\s+(.+?)\s*$")
+
+
+def _sections(body: str) -> list[tuple[str, str]]:
+    """[(title, text)], in the order they appear in the body.
+
+    A SECTION IS AN ATX `## <name>` HEADING plus everything up to the next one or the
+    end of the file — level 2, deliberately, so it never collides with a `# <title>` a
+    hand-written brief might already carry. The stretch before the first heading (most
+    briefs, today) is title "". `text` includes its own heading line for a named
+    section, so `"\\n".join(text for _, text in sections)` reproduces the body exactly —
+    that is what `replace_section` relies on to touch only the one section it names.
+    """
+    lines = (body or "").split("\n")
+    out: list[tuple[str, str]] = []
+    title = ""
+    buf: list[str] = []
+    for line in lines:
+        m = _HEADING.match(line)
+        if m:
+            out.append((title, "\n".join(buf)))
+            title, buf = m.group(1).strip(), [line]
+        else:
+            buf.append(line)
+    out.append((title, "\n".join(buf)))
+    return out
+
+
+def _snapshot(t: dict) -> Path:
+    """Copy the whole file, unchanged, to struck/ before it is rewritten.
+
+    A to-do has no per-part files to move individually the way a doc's part does, so the
+    whole file is the snapshot. NOTHING IS EVER DELETED holds here too: the file named
+    here is the pre-edit brief, in full, reachable after the edit that replaced it.
+    """
+    struck_dir = t["path"].parent / STRUCK
+    struck_dir.mkdir(exist_ok=True)
+    # MICROSECONDS, NOT SECONDS: two edits inside one automated run (a test, a script)
+    # land inside the same second often enough that a coarser stamp would make the
+    # second snapshot silently overwrite the first — the exact silent loss this whole
+    # mechanism exists to prevent.
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")
+    dst = struck_dir / f"{t['path'].stem}-{stamp}.md"
+    dst.write_text(t["path"].read_text())
+    return dst
+
+
+def amend(root: Path, track: str, n: int, title: str, addition: str) -> tuple[bool, str]:
+    """Append a NEW `## <title>` section to a brief. Mirrors `docs.part`.
+
+    Refuses a title that already names a section — journal todos replace updates one of
+    those — and refuses an empty addition, the same discipline `journal todos add`
+    already applies to an empty title: a write that reports success and lands wrong is
+    the one failure this project exists to prevent.
+    """
+    title = " ".join((title or "").split())
+    if not title:
+        return False, 'amend wants a section title: journal todos amend <n> "<section title>" --brief'
+    addition = (addition or "").rstrip("\n")
+    if not addition.strip():
+        return False, "amend wants a body on stdin — pass it with --brief"
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    if any(existing.lower() == title.lower() for existing, _ in _sections(t["body"]) if existing):
+        return False, (f'to-do {n} already has a section called "{title}" — '
+                        f'journal todos replace {n} "{title}" updates it')
+    _snapshot(t)
+    sep = "\n\n" if t["body"].strip() else ""
+    new_body = t["body"].rstrip("\n") + sep + f"## {title}\n{addition}\n"
+    _write(t["path"], {k: t.get(k, "") for k in FIELDS}, new_body)
+    return True, f'to-do {n}: added section "{title}"\n  the old brief is kept under {STRUCK}/'
+
+
+def replace_section(root: Path, track: str, n: int, title: str, new_text: str) -> tuple[bool, str]:
+    """Replace ONE named section, byte-for-byte elsewhere; without a title, the whole
+    body. Mirrors `docs.replace`. A title that names no section refuses and lists what
+    the brief does have, rather than guessing or silently appending.
+    """
+    new_text = (new_text or "").rstrip("\n")
+    if not new_text.strip():
+        return False, "replace wants a body on stdin — pass it with --brief"
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    title = " ".join((title or "").split())
+    sections = _sections(t["body"])
+    if not title:
+        _snapshot(t)
+        _write(t["path"], {k: t.get(k, "") for k in FIELDS}, new_text + "\n")
+        return True, f"to-do {n}: the whole brief replaced\n  the old one is kept under {STRUCK}/"
+    named = [s for s in sections if s[0]]
+    match = next((s for s in named if s[0].lower() == title.lower()), None)
+    if match is None:
+        have = ", ".join(f'"{s[0]}"' for s in named) or "none — this brief has no `## ` sections yet"
+        return False, f'to-do {n} has no section called "{title}". It has: {have}'
+    _snapshot(t)
+    rebuilt = [f"## {title}\n{new_text}" if existing.lower() == title.lower() else text
+               for existing, text in sections]
+    new_body = "\n".join(rebuilt)
+    if not new_body.endswith("\n"):
+        new_body += "\n"
+    _write(t["path"], {k: t.get(k, "") for k in FIELDS}, new_body)
+    return True, f'to-do {n}: section "{title}" replaced\n  the old brief is kept under {STRUCK}/'
+
+
 def start(root: Path, track: str, n: int, at: str, strict: bool = False) -> tuple[dict | None, str]:
     t, err = _get(root, track, n)
     if t is None:
@@ -217,11 +325,22 @@ def _age(at: str) -> str:
     return age(at) if at else ""
 
 
-def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88, short_refs: bool = False) -> str:
-    """The list as a person reads it: the title, where it stands, and any question below."""
+def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88, short_refs: bool = False,
+           cap: int | None = None, page: int = 1) -> str:
+    """The list as a person reads it: the title, where it stands, and any question below.
+
+    CAPPED LIKE `carry` (below), for the same reason: a bare `journal todo` is asked for
+    fresh each time rather than handed automatically, so it pages past the cap instead
+    of just saying how many more there are. `cap` is None by default — the environment
+    pickup page (`tracks.page`) calls this uncapped on purpose: a runner has to see the
+    WHOLE ordered list, not the first page of it.
+    """
     items = _all(root, track) if all_of_them else open_items(root, track)
     if not items:
         return "  Nothing is waiting." if not all_of_them else "  No to-dos on this environment."
+    total = len(items)
+    if cap:
+        items = items[(page - 1) * cap: page * cap]
     out = []
     for t in items:
         if t.get("done"):
@@ -244,7 +363,10 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
             if t.get("answer"):
                 entry += "\n" + fmt.wrap("→ " + t["answer"], indent=5, width=width)
         out.append(entry)
-    return "\n\n".join(out)
+    body = "\n\n".join(out)
+    if cap and total > page * cap:
+        body += f"\n\n  … and {total - page * cap} more; `journal todo --page={page + 1}` shows the rest."
+    return body
 
 
 def show(root: Path, track: str, n: int, width: int = 88) -> tuple[bool, str]:
@@ -271,7 +393,11 @@ def show(root: Path, track: str, n: int, width: int = 88) -> tuple[bool, str]:
             out.append("")
             out.append(fmt.wrap("→ " + t["answer"], width=width))
     out.append(fmt.section("brief"))
-    out.append(fmt.wrap(t["body"], width=width) if t["body"] else "  (title only; no brief was written)")
+    # fmt.BLOCK, NOT fmt.wrap: wrap joins every line of a paragraph into one, which
+    # swallows an indented list and a `## ` heading alike into run-on prose — and a
+    # brief has no reader-visible section structure until its headings survive being
+    # read back. block keeps an indented line, a list item and a command as written.
+    out.append(fmt.block(t["body"], width=width) if t["body"] else "  (title only; no brief was written)")
     out.append("")
     rows = []
     if not t.get("done"):

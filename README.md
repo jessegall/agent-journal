@@ -167,10 +167,10 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 
     journal todo                         the list
     journal todo <n>                     one, with its brief
-    journal todo "<title>" --brief       park work for later; brief from stdin
+    journal todo "<title>" --brief       park work for later; brief from stdin (also: `journal todo add "<title>"`)
     journal todo start <n>               pick it up as the open work (agent)
     journal todo done <n> "<how>"        close it without starting it
-    journal todo drop <n> "<why>"        abandon it, on the record
+    journal todo strike <n> "<why>"      abandon it, on the record (also: `todo drop`)
     journal todo ask <n> "<question>"    it needs the user; the list moves on (agent)
     journal todo answer <n> "<answer>"   answer it; the agent is told at its next stop
     journal todo auto on|off             on: the agent works through the list itself
@@ -178,13 +178,13 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 ### Pins and rules
 
     journal pins                         the pins on this environment
-    journal pin "<claim>"           pin a fact; --doc=<doc> or --doc=<doc>.<p> cites a doc or one part
+    journal pins add "<claim>"      pin a fact; --doc=<doc> or --doc=<doc>.<p> cites a doc or one part (also: `journal pin "<claim>"`)
     journal pins <n> --full              the conversation around where a pin was written
-    journal strike <n> "<why>"           retire a pin that stopped being true
-    journal promote <n>                  lift a pin into a rule
+    journal pins strike <n> "<why>"      retire a pin that stopped being true (also: bare `strike <n> "<why>"`)
+    journal pins promote <n>             lift a pin into a rule (also: bare `promote <n>`)
     journal rules                        the rules
-    journal rule "<ruling>"              a rule for every environment
-    journal rule --strike <n> "<why>"    retire a rule
+    journal rules add "<ruling>"         a rule for every environment (also: `journal rule "<ruling>"`)
+    journal rules strike <n> "<why>"     retire a rule (also: `journal rule --strike <n> "<why>"`)
     journal nothing "<why>"              after a context warning: nothing to pin (agent)
 
 ### Docs
@@ -193,7 +193,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 
     journal docs                         the catalogue
     journal docs <doc>                   read a doc; <doc>.<p> reads one part
-    journal docs <doc> files             its attachments, as a tree; `docs files` lists every doc's
+    journal docs files <doc>             its attachments, as a tree; `docs files` lists every doc's (also: `docs <doc> files`)
     journal docs add "<title>" --abstract="<one line>" --brief
                                          a new doc; the intro from stdin
     journal docs part <doc> "<title>" --brief

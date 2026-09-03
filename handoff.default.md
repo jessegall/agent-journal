@@ -38,7 +38,7 @@ Do this, in order, and file as you go.
    the description, the review threads that are unresolved, and the last ten.
 2. THE BRIEF AS A DOC. The source, whole, as the doc's intro — the doc IS the issue, not a
    paraphrase of it. `--brief` reads stdin, so pass it a heredoc:
-   `.journal/journal.py docs add "{name}: <title>" --abstract "<one line: what it settles>" --brief <<'EOF'`
+   `.journal/journal.py docs add "{name}: <title>" --abstract="<one line: what it settles>" --brief <<'EOF'`
    … the source … `EOF`. Attach what is not prose: `.journal/journal.py docs attach <doc> <path>
    "<what it is>"` for the design, the screenshot, the export. Acceptance criteria as a part if
    the source has them. Read the code the work touches before you go on.

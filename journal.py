@@ -14,21 +14,25 @@ nothing. This is the index that gets you back to it.
     journal nothing "<why>"  after a context warning: nothing here needs pinning, and why
     journal rule "<ruling>" [--doc=<doc>[.<p>]]   a pin for EVERY environment — what the project decided, not one line of work
     journal rules [--all]    every rule, numbered; `rules N --full` reads around one
-    journal rule --strike N "<why>"   repeal a rule that stopped being true
-    journal promote N        lift pin N into a rule; the pin is struck and says where it went
+    journal rule --strike N "<why>"   repeal a rule that stopped being true — `journal rules strike N "<why>"` is the same
+    journal rules add "<ruling>"   the explicit spelling of `journal rule "<ruling>"` above
+    journal promote N        lift pin N into a rule; the pin is struck and says where it went — `journal pins promote N` is the same
     journal todo "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this environment; --brief reads a longer brief from stdin
     journal todo [--all]     the titles, numbered
     journal todo N           the whole brief
     journal todo start N     open work with that title — `end` then closes both
     journal todo done N "<how>"   resolved without starting it
-    journal todo drop N "<why>"   abandoned, on the record
+    journal todo drop N "<why>"   abandoned, on the record — `strike` is the same word every other noun uses to retire
     journal todo ask N "<question>"   it waits on the user; auto moves on to the next
     journal todo answer N "<answer>"  the user answers it; the agent is told at its next stop and picks it up first
+    journal todo add|list|show   the explicit spellings of the three shapes above; `todos` is a twin of `todo` everywhere
+    journal todos amend N "<section title>" --brief    append a new section to a brief, from stdin
+    journal todos replace N ["<section title>"] --brief   swap one named section, or the whole brief with none; old text kept under struck/
     journal docs             the catalogue: every doc, its status, parts, files and abstract
     journal docs <doc>       read a doc — <doc> is its number or its name, here and everywhere below
     journal docs <doc>.<p>   read one part of it
-    journal docs <doc> files   its attachments, as a tree; `journal docs files` lists every doc's
-    journal docs add "<title>" --abstract "<one line>" --brief   a new doc; the brief on stdin is its intro
+    journal docs files <doc>   its attachments, as a tree; `journal docs <doc> files` and bare `journal docs files` still work
+    journal docs add "<title>" --abstract="<one line>" --brief   a new doc; the brief on stdin is its intro
     journal docs part <doc> "<title>" --brief   a new part, from stdin — a report, a section, a finding
     journal docs replace <doc>.<p> --brief     a new body for a part; the old one is kept under struck/
     journal docs strike <doc>.<p> "<why>"      drop a part, on the record
@@ -43,7 +47,8 @@ nothing. This is the index that gets you back to it.
     journal todo auto [on|off]    work through this environment's list without asking, or wait for the user's word
     journal pins [--all]    every pin, numbered — the number is what --supersedes takes
     journal pins N --full   the conversation around where pin N was written
-    journal strike N "<why>" retire a pin that stopped being true, no replacement needed
+    journal strike N "<why>" retire a pin that stopped being true, no replacement needed — `journal pins strike N "<why>"` is the same
+    journal pins add "<claim>"   the explicit spelling of `journal pin "<claim>"` above
     journal work start "<what>"  declare work — a commitment, which is why it costs a command
     journal work update "<what moved>" [--on="<work>"]   progress on the open work
     journal work end "<what>"    the same words, to close it
@@ -64,7 +69,7 @@ nothing. This is the index that gets you back to it.
     journal tools run <name> [args…]   run it from the project root
     journal tools add <name> "<title>" --summary="<one line>" [--usage="<how>"] [--when="<when>"] [--entry=<file>] [--brief]
     journal tools set <name> summary|usage|when|entry "<value>"
-    journal tools remove <name> "<why>"   retire it, kept under struck/
+    journal tools remove <name> "<why>"   retire it, kept under struck/ — `journal tools strike <name> "<why>"` is the same
     journal tools index     a tool.md for every folder under .journal/tools/ that has none
     journal verify          is any of this in force? wired is not the same as fired
     journal version         this project's version of the journal, and whether a newer one is out
@@ -376,6 +381,11 @@ def cmd_update(text: str, on: str | None) -> int:
 
 
 PAGE = 25
+#: A LISTING SHOWN BY DEFAULT COSTS CONTEXT EVERY TIME; a search was asked for. So the
+#: catalogues (`journal docs`, `journal tools`, `journal todo`, `journal pins`, `journal
+#: rules`) page at a smaller size than `search`'s 25 — ruling R7, applying the cap
+#: `docs.carry`/`tools.carry` already had to the five renderers that never got one.
+CATALOGUE_PAGE = 15
 
 
 def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int = 1) -> int:
@@ -559,7 +569,7 @@ def cmd_rule(fact: str, strike_n: int | None, why: str, doc_ref: str = "") -> in
     return 0 if ok else 1
 
 
-def cmd_rules(all_of_them: bool, n: int | None, full: bool) -> int:
+def cmd_rules(all_of_them: bool, n: int | None, full: bool, page: int = 1) -> int:
     if n is not None and full:
         conf, _ = settings_mod.load(root())
         ok, body = pins.around(root(), n, project(), conf["pin_context"], key=pins.RULES)
@@ -571,12 +581,12 @@ def cmd_rules(all_of_them: bool, n: int | None, full: bool) -> int:
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
     fmt.say(fmt.title("RULES OF THIS PROJECT", sub=sub))
     fmt.say()
-    fmt.say(pins.render(root(), all_of_them=all_of_them, key=pins.RULES))
+    fmt.say(pins.render(root(), all_of_them=all_of_them, key=pins.RULES, cap=CATALOGUE_PAGE, page=page))
     fmt.say()
     fmt.say(fmt.wrap("Handed first to every session and to every subagent."))
     fmt.say(fmt.commands([
         ("journal rules <n> --full", "the conversation around one"),
-        ('journal rule --strike <n> "<why>"', "repeal one"),
+        ('journal rules strike <n> "<why>"', "repeal one"),
     ]))
     return 0
 
@@ -587,8 +597,15 @@ def cmd_promote(n: int) -> int:
     return 0 if ok else 1
 
 
-def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "") -> int:
+def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", page: int = 1) -> int:
     here = tracks.current(root(), _stem())
+    # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
+    # what a bare noun and a bare noun+id already do; stripping them here means the
+    # existing bare-shape code below is the ONLY place either behaviour lives.
+    if rest and rest[0] == "list":
+        rest = rest[1:]
+    if rest and rest[0] == "show" and len(rest) > 1 and rest[1].isdigit():
+        rest = rest[1:]
     if not rest:
         waiting = todo.open_items(root(), here)
         done = len(todo._all(root(), here)) - len(waiting)
@@ -598,7 +615,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             " · auto ON" if draining else "")
         fmt.say(fmt.title("TO-DO", sub=sub))
         fmt.say()
-        fmt.say(todo.render(root(), here, all_of_them=all_of_them))
+        fmt.say(todo.render(root(), here, all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page))
         fmt.say()
         fmt.say(fmt.wrap("Auto is on: with nothing open, the agent picks up the next one on its own."
                        if draining else
@@ -637,7 +654,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             else:
                 fmt.say("  Nothing is open and nothing is waiting.")
         return 0
-    if verb in ("start", "done", "drop", "ask", "answer"):
+    if verb in ("start", "done", "drop", "strike", "ask", "answer"):
         if len(rest) < 2 or not rest[1].isdigit():
             fmt.say(f'todo {verb} wants a number: journal todo {verb} 3' + (
                 ' "<how>"' if verb != "start" else ""), error=True)
@@ -666,9 +683,9 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
                 fmt.say(f"  to-do {n} is started; `journal work end \"{t['title']}\"` closes both.")
             return 0 if ok else 1
         why = " ".join(rest[2:])
-        if verb == "drop":
+        if verb in ("drop", "strike"):  # ruling R4: `strike` is the one retire verb everywhere
             if not why.strip():
-                fmt.say('say why: journal todo drop <n> "<why it is abandoned>"', error=True)
+                fmt.say(f'say why: journal todo {verb} <n> "<why it is abandoned>"', error=True)
                 return 1
             why = "dropped: " + why
         ok, msg = todo.done(root(), here, n, why, _now())
@@ -678,6 +695,23 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         ok, body = todo.show(root(), here, int(verb))
         fmt.say(body, error=not ok)
         return 0 if ok else 1
+    if verb in ("amend", "replace"):  # ruling R5: the CLI gains a verb that CHANGES a brief
+        if len(rest) < 2 or not rest[1].isdigit():
+            fmt.say(f'todo {verb} wants a number: journal todos {verb} <n> ' + (
+                '"<section title>" --brief' if verb == "amend" else '["<section title>"] --brief'), error=True)
+            return 1
+        n = int(rest[1])
+        title = " ".join(rest[2:])
+        text = sys.stdin.read() if brief else ""
+        fn = todo.amend if verb == "amend" else todo.replace_section
+        ok, msg = fn(root(), here, n, title, text)
+        fmt.say(msg, error=not ok)
+        return 0 if ok else 1
+    if verb == "add":
+        rest = rest[1:]
+        if not rest:
+            fmt.say('a to-do needs a title: journal todo add "<what, in a few words>"', error=True)
+            return 1
     # adding: the title is the words; the brief comes on stdin ONLY when asked for with
     # --brief. Reading stdin whenever it is not a terminal hung under a test runner whose
     # stdin never closed, and a command that can hang is worse than one that asks.
@@ -701,7 +735,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         sub = f"{len(cat)} catalogued" + (f" · {drafts} draft(s)" if drafts else "")
         fmt.say(fmt.title("DOCS OF THIS PROJECT", sub=sub))
         fmt.say()
-        fmt.say(docs.catalogue(root()))
+        fmt.say(docs.catalogue(root(), cap=CATALOGUE_PAGE, page=page))
         if loose:
             fmt.say()
             fmt.say(fmt.wrap(f"{len(loose)} file(s) under {docs.folder(root()).name}/ are not catalogued: "
@@ -709,7 +743,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         fmt.say()
         fmt.say(fmt.commands([
             ("journal docs <doc>", "read one, by number or name; <doc>.<p> reads one part"),
-            ('journal docs add "<title>" --abstract "<one line>" --brief', "a new doc, its intro on stdin"),
+            ('journal docs add "<title>" --abstract="<one line>" --brief', "a new doc, its intro on stdin"),
             ('journal docs part <doc> "<title>" --brief', "a new part, from stdin"),
             ('journal docs attach <doc> <path> "<what it is>"', "copy a file or folder (HTML, a design, a PDF) into the doc"),
             ("journal docs <doc> files", "its attachments, as a tree; `docs files` lists every doc's"),
@@ -778,14 +812,14 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
     return 0 if ok else 1
 
 
-def cmd_tools(rest: list[str], brief: bool, meta: dict) -> int:
+def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1) -> int:
     here = tracks.current(root(), _stem())
     if not rest:
         cat = tools._all(root())
         loose = tools.uncatalogued(root())
         fmt.say(fmt.title("TOOLS OF THIS PROJECT", sub=f"{len(cat)} catalogued"))
         fmt.say()
-        fmt.say(tools.catalogue(root()))
+        fmt.say(tools.catalogue(root(), cap=CATALOGUE_PAGE, page=page))
         if loose:
             fmt.say()
             fmt.say(fmt.wrap(f"{len(loose)} folder(s) under .journal/tools/ have no tool.md: "
@@ -811,9 +845,9 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict) -> int:
             fmt.say('journal tools set <name> summary|usage|when|entry "<value>"', error=True)
             return 1
         ok, msg = tools.set_field(root(), rest[1], rest[2], " ".join(rest[3:]))
-    elif verb == "remove":
+    elif verb in ("remove", "strike"):  # ruling R4: `strike` is the one retire verb everywhere
         if len(rest) < 3:
-            fmt.say('journal tools remove <name> "<why>"', error=True)
+            fmt.say(f'journal tools {verb} <name> "<why>"', error=True)
             return 1
         ok, msg = tools.remove(root(), rest[1], " ".join(rest[2:]))
     elif verb == "index":
@@ -953,7 +987,7 @@ Preparing {name}: an environment ready to be picked up from A to Z, by you, by a
 session, or by a subagent. Only when the user asked for it. In order:
 
   1  the source        the issue, the PR, the user's words — fetch it whole (gh, the tracker's tool, or ask)
-  2  the brief         journal docs add "{name}: <title>" --abstract "<one line>" --brief   < the source
+  2  the brief         journal docs add "{name}: <title>" --abstract="<one line>" --brief   < the source
                        journal docs attach <doc> <path> "<what it is>"                   designs, screenshots, exports
   3  the plan          a Plan agent: phases and the work in each, from the brief — file it: docs part <doc> "Plan" --brief
   4  the steps         a second agent: concrete steps per phase, what is missing, what could go wrong — docs part <doc> "Steps" --brief
@@ -1176,7 +1210,7 @@ def cmd_pin_full(n: int) -> int:
     return 0 if ok else 1
 
 
-def cmd_pins(all_of_them: bool) -> int:
+def cmd_pins(all_of_them: bool, page: int = 1) -> int:
     conf, _ = settings_mod.load(root())
     here = tracks.current(root(), _stem())
     n = len(pins.live(root()))
@@ -1185,13 +1219,13 @@ def cmd_pins(all_of_them: bool) -> int:
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
     fmt.say(fmt.title("PINS", sub=sub))
     fmt.say()
-    fmt.say(pins.render(root(), all_of_them=all_of_them))
+    fmt.say(pins.render(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page))
     fmt.say()
     fmt.say(fmt.wrap("Handed to every session on this environment."))
     fmt.say(fmt.commands([
         ("journal pins <n> --full", "the conversation around one"),
-        ("journal promote <n>", "make one a rule for every environment"),
-        ('journal strike <n> "<why>"', "retire one that stopped being true"),
+        ("journal pins promote <n>", "make one a rule for every environment"),
+        ('journal pins strike <n> "<why>"', "retire one that stopped being true"),
     ]))
     got = transcript.session_transcript(project())
     if got:
@@ -1367,6 +1401,39 @@ def main(argv: list[str]) -> int:
             return 1
         return cmd_rule(" ".join(rest[1:]), None, "", doc_ref)
     if verb == "rules":
+        # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`list`/`show`
+        # call the exact same functions the old `rule`/`rule --strike` branches call, so
+        # the two spellings can never drift apart. Anything else falls to the unchanged
+        # shape below: bare `rules`, or `rules <n> --full`.
+        sub = rest[1] if len(rest) > 1 else ""
+        if sub == "add":
+            if len(rest) < 3:
+                fmt.say("rule wants the ruling, in one line", error=True)
+                return 1
+            return cmd_rule(" ".join(rest[2:]), None, "", doc_ref)
+        if sub == "strike":
+            if len(rest) < 4:
+                fmt.say('rules strike wants a rule number and why: journal rules strike 2 "<why>"',
+                      error=True)
+                return 1
+            try:
+                return cmd_rule("", int(rest[2]), " ".join(rest[3:]))
+            except ValueError:
+                fmt.say(f"rules strike wants a rule NUMBER, got {rest[2]!r}. `journal rules` numbers them.",
+                      error=True)
+                return 1
+        if sub == "list":
+            return cmd_rules(all_of_them, None, False, page)
+        if sub == "show":
+            if len(rest) < 3:
+                fmt.say("rules show wants a rule number: journal rules show 3", error=True)
+                return 1
+            try:
+                return cmd_rules(all_of_them, int(rest[2]), True)
+            except ValueError:
+                fmt.say(f"rules show wants a rule NUMBER, got {rest[2]!r}. `journal rules` numbers them.",
+                      error=True)
+                return 1
         n = None
         if len(rest) > 1:
             try:
@@ -1374,7 +1441,7 @@ def main(argv: list[str]) -> int:
             except ValueError:
                 fmt.say(f"rules wants a NUMBER with --full, got {rest[1]!r}", error=True)
                 return 1
-        return cmd_rules(all_of_them, n, full)
+        return cmd_rules(all_of_them, n, full, page)
     if verb == "promote":
         if len(rest) < 2:
             fmt.say("promote wants a pin number: journal promote 3", error=True)
@@ -1385,12 +1452,12 @@ def main(argv: list[str]) -> int:
             fmt.say(f"promote wants a pin NUMBER, got {rest[1]!r}. `journal pins` numbers them.",
                   error=True)
             return 1
-    if verb == "todo":
-        return cmd_todo(rest[1:], all_of_them, brief, doc_ref)
+    if verb in ("todo", "todos"):  # ruling R1: `todos` is a twin alias of `todo`, both ways
+        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, page)
     if verb == "docs":
         return cmd_docs(rest[1:], brief, abstract, page, replace)
     if verb == "tools":
-        return cmd_tools(rest[1:], brief, tool_meta)
+        return cmd_tools(rest[1:], brief, tool_meta, page)
     if verb == "carry":
         return cmd_carry(fresh)
     if verb in ("environments", "envs", "tracks"):
@@ -1419,13 +1486,58 @@ def main(argv: list[str]) -> int:
             return 1
         return cmd_strike(n, " ".join(rest[2:]))
     if verb == "pins":
+        # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`promote`/
+        # `list`/`show` call the exact same functions the old bare top-level `pin`,
+        # `strike` and `promote` verbs call, so the two spellings can never drift apart.
+        # Anything else falls to the unchanged shape below: bare `pins`, or `pins <n>
+        # --full`.
+        sub = rest[1] if len(rest) > 1 else ""
+        if sub == "add":
+            if len(rest) < 3:
+                fmt.say("pin wants the claim, in one line", error=True)
+                return 1
+            return cmd_remember(" ".join(rest[2:]), supersedes, doc_ref)
+        if sub == "strike":
+            if len(rest) < 4:
+                fmt.say('pins strike wants a pin number and why: journal pins strike 6 "<why>"',
+                      error=True)
+                return 1
+            try:
+                n = int(rest[2])
+            except ValueError:
+                fmt.say(f"pins strike wants a pin NUMBER, got {rest[2]!r}. `journal pins` numbers them.",
+                      error=True)
+                return 1
+            return cmd_strike(n, " ".join(rest[3:]))
+        if sub == "promote":
+            if len(rest) < 3:
+                fmt.say("pins promote wants a pin number: journal pins promote 3", error=True)
+                return 1
+            try:
+                return cmd_promote(int(rest[2]))
+            except ValueError:
+                fmt.say(f"pins promote wants a pin NUMBER, got {rest[2]!r}. `journal pins` numbers them.",
+                      error=True)
+                return 1
+        if sub == "list":
+            return cmd_pins(all_of_them, page)
+        if sub == "show":
+            if len(rest) < 3:
+                fmt.say("pins show wants a pin number: journal pins show 3", error=True)
+                return 1
+            try:
+                return cmd_pin_full(int(rest[2]))
+            except ValueError:
+                fmt.say(f"pins show wants a pin NUMBER, got {rest[2]!r}. `journal pins` numbers them.",
+                      error=True)
+                return 1
         if len(rest) > 1 and full:
             try:
                 return cmd_pin_full(int(rest[1]))
             except ValueError:
                 fmt.say(f"pins wants a NUMBER with --full, got {rest[1]!r}", error=True)
                 return 1
-        return cmd_pins(all_of_them)
+        return cmd_pins(all_of_them, page)
     if verb == "update" and len(rest) > 1:
         # `journal update` upgrades the journal; a note on the work is `journal work update`
         fmt.say('journal update upgrades the journal. Progress on the open work is:\n'

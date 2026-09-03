@@ -4,6 +4,59 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.23.0 — one pattern for every command: `journal <noun> <verb> [<id>] [<payload>]`
+
+Every command now takes its arguments the same way, and names what it does the same way.
+Nouns are plural — `pins`, `rules`, `docs`, `tools`, `todo`/`todos` (twins, either
+spelling) — and every mutating action has an explicit verb: `add`, `strike`, `promote`,
+`list`, `show`, plus each noun's own lifecycle verbs. `strike` is the one word for
+retiring anything, everywhere: a struck pin, a repealed rule, a dropped to-do, a removed
+tool. The old spellings still work — `journal pin "<x>"`, `journal remember "<x>"`,
+`journal rule "<x>"`, `journal rule --strike N "<why>"`, bare `journal strike N "<why>"`,
+bare `journal promote N`, `journal todo drop N "<why>"`, `journal tools remove <name>
+"<why>"` — calling the exact same function their new alias calls, so the two spellings
+can never drift apart; none of them is printed as deprecated. `switch`, `prepare`,
+`delegate`, `handoff` and `search` stay top-level verbs, not wrapped under an
+`environments` noun — they are lifecycle actions, not collection CRUD.
+
+A to-do's brief can be changed instead of rewritten by hand: `journal todos amend <n>
+"<section title>" --brief` appends a new `## <title>` section from stdin; `journal todos
+replace <n> ["<section title>"] --brief` swaps one named section, or the whole brief with
+no title given. The old text is always kept, copied whole to struck/ before the rewrite.
+This needed `todo.show` to stop collapsing an indented list or a `## ` heading into
+run-on prose — it renders with `fmt.block` now, the same renderer the hook already used.
+
+Five listings that grew without a cap now have the one `docs.carry`/`tools.carry`
+already used: a bare `journal docs`/`tools`/`todo`/`pins`/`rules` shows 15 and says
+"… and N more; `--page=2` shows the rest." A single item, a search result, and
+`journal environments "<name>"` — the page a runner picks work up from — are never
+capped; the cut targets a description or a listing, never a payload. The SessionStart
+block taught the retired `journal start`/`update`/`end` spelling in the one place every
+session actually learns from; it teaches `journal work start`/`update`/`end` now, and is
+shorter besides — one line of tags, with what each means in the `journal` skill. The
+unbound-session opening from 1.19.0 is untouched: a session that has taken no environment
+is still told so, in the same block.
+
+THE PLURAL IS TAUGHT FIRST, everywhere. Ruling R10 made plural nouns canonical, and the
+run that implemented it left `journal.py`'s synopsis and `commands.md` headlining the
+singular with the plural as a footnote while `SKILL.md` did the reverse — two shipped
+files teaching opposite orders. Every surface now leads with the canonical spelling and
+names the singular as a permanent alias.
+
+AND THREE DEFECTS FOUND BY WATCHING A RUNNER WORK. The session that DISPATCHES a runner is
+no longer nudged to work the same list: `handoff --run` turns auto on for the environment,
+and the dispatching session stops too, so both actors were told to pick up the next to-do
+and the record could not say which of them did what. A hold's details are read once —
+`journal next` served a snapshot written at the stop that sent you there, so a loop firing
+it every fifteen minutes went on offering to-dos that had been closed in between. And
+`/.journal` lost its trailing slash in `.gitignore`, because the slash matches a directory
+and a worktree's `.journal` is a SYMLINK: it showed as untracked in every worktree, and a
+`git add -A` there would have committed a path on one machine.
+
+Run `python3 install.py --check` before pulling. This entry carries the work that shipped
+on the branch as 1.18.1, which forked from 1.18.0 while 1.19.0–1.22.0 landed on main; the
+lineage is reconciled here, by hand, and there is no 1.18.1 to upgrade from.
+
 ## 1.22.0 — work that is waiting is not nudged
 
 `journal work await "<what you wait on>"` marks open work as in flight on something the

@@ -13,6 +13,13 @@ Contents: [Commands](#commands) · [Environments](#environments) · [Shared, and
 All of them run as `.journal/journal.py <command>`; `journal` is an alias. `journal help
 <verb>` prints one verb's lines.
 
+A bare listing — `journal docs`, `journal tools`, `journal todo`, `journal pins`,
+`journal rules` — shows 15 at a time and says "… and N more; `--page=2` shows the
+rest." if there are more; `--all` still shows struck ones on pins and rules. A single
+item read (`journal docs 4`, `journal todo 3`, a pin's `--full`), a search result, and
+the hand-off page (`journal environments "<name>"`) are never capped — that is the
+payload, not a description of it.
+
 **Where things stand**
 
     journal                          environment, rules, pins, open work, to-dos, context, hooks
@@ -43,30 +50,34 @@ All of them run as `.journal/journal.py <command>`; `journal` is an alias. `jour
 **Pins, for this environment**
 
     journal pin "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a fact that must survive a compaction; --doc: the doc or part it rests on
+    journal pins add "<claim>"       the explicit spelling of the line above — `pin` is a permanent alias, not deprecated
     journal pins [--all]             every pin, numbered; --all includes struck ones
     journal pins N --full            the conversation around where pin N was written
-    journal strike N "<why>"         retire a pin that stopped being true, no replacement needed
+    journal pins strike N "<why>"    retire a pin that stopped being true, no replacement needed (also: bare `journal strike N "<why>"`)
     journal nothing "<why>"          after a context warning: nothing here needs pinning, and why
-    journal promote N                lift pin N into a rule; the pin is struck and says where it went
+    journal pins promote N           lift pin N into a rule; the pin is struck and says where it went (also: bare `journal promote N`)
 
 **Rules, for every environment**
 
     journal rule "<ruling>" [--doc=<doc>[.<p>]]   a pin that every environment obeys
+    journal rules add "<ruling>"     the explicit spelling of the line above — `rule` is a permanent alias, not deprecated
     journal rules [--all]            every rule, numbered
     journal rules N --full           the conversation around one
-    journal rule --strike N "<why>"  repeal one, on the record
+    journal rules strike N "<why>"   repeal one, on the record (also: `journal rule --strike N "<why>"`)
 
-**To-dos, for this environment**
+**To-dos, for this environment** (`todos` is a twin of `todo` everywhere below — plural or singular, either works)
 
-    journal todo "<title>" [--brief] add one; --brief reads a longer brief from stdin
-    journal todo [--all]             the titles, numbered; --all includes done ones
-    journal todo N                   the whole brief
+    journal todo "<title>" [--brief] add one; --brief reads a longer brief from stdin — `journal todo add "<title>"` is the same
+    journal todo [--all]             the titles, numbered — `journal todo list` is the same
+    journal todo N                   the whole brief — `journal todo show N` is the same
     journal todo start N             open work with that title; `work end` closes both
     journal todo done N "<how>"      resolved without starting it
-    journal todo drop N "<why>"      abandoned, on the record
+    journal todo drop N "<why>"      abandoned, on the record — `journal todo strike N "<why>"` is the same
     journal todo ask N "<question>"  it waits on the user's answer; auto moves on to the next
     journal todo answer N "<answer>" the user answers from the terminal; the agent is told at its next stop and picks it up first
     journal todo auto [on|off]       per environment: work through the list without asking, or wait for the user's word
+    journal todos amend <n> "<section title>" --brief    append a new `## <title>` section to a brief, from stdin
+    journal todos replace <n> ["<section title>"] --brief   swap one named section (or, with no title, the whole brief); the old text is kept under struck/
 
 A brief on stdin:
 
@@ -79,7 +90,7 @@ A brief on stdin:
 
     journal docs                     the catalogue
     journal docs <doc>               read a doc; `<doc>.<p>` reads one part
-    journal docs <doc> files         its attachments, as a tree; `docs files` lists every doc's
+    journal docs files <doc>         its attachments, as a tree; `docs files` lists every doc's; `docs <doc> files` still works
     journal docs add "<title>" --abstract="<one line>" --brief   a new doc; the intro on stdin
     journal docs part <doc> "<title>" --brief   a new part, from stdin
     journal docs attach <doc> <path> "<what it is>" [--replace]   copy a file or a folder into the doc
@@ -100,7 +111,7 @@ A brief on stdin:
     journal tools run <name> [args]  run its entry point from the project root
     journal tools add <name> "<title>" --summary="…" --usage="…" --when="…" --entry=<file> [--brief]
     journal tools set <name> summary|usage|when|entry "<value>"
-    journal tools remove <name> "<why>"   retire it under struck/
+    journal tools remove <name> "<why>"   retire it under struck/ — `journal tools strike <name> "<why>"` is the same
     journal tools index              catalogue folders under .journal/tools/ that lack a tool.md
 
 **Environments**
@@ -213,3 +224,27 @@ with a reason.
 The gates exist because nudges were measured and did not land: a session tagged 843
 messages faithfully and ran `work start` zero times, and the user had to ask for a pin after a
 context warning. A rule becomes a gate only when its nudge has been shown not to work.
+
+**Every command takes its arguments the same way: `journal <noun> <verb> [<id>]
+[<payload>]`, noun first, plural nouns canonical.** `pins`, `rules`, `docs`, `tools` and
+`todo`/`todos` all read `<noun>` alone, read one with `<noun> <id>`, and act with an
+explicit verb — `add`, `strike`, `list`, `show`, and each noun's own lifecycle verbs
+(`start`/`done`/`ask`/`answer` for a to-do, `part`/`attach`/`final` for a doc). `strike`
+is the one verb for retiring anything, everywhere — a struck pin, a repealed rule, a
+dropped to-do, a removed tool are the same idea and now the same word. Every spelling
+that predates this — `pin`, `remember`, `rule`, bare `strike`, bare `promote`, `todo
+drop`, `tools remove` — still runs, forever, calling the exact same function its new
+alias calls; none of them is printed as deprecated.
+
+**Four kinds of command stay outside that pattern, on purpose, not by oversight.**
+`switch`, `prepare`, `delegate` and `handoff` stay top-level verbs rather than being
+wrapped under an `environments` noun: they are session/environment *lifecycle* actions,
+not collection CRUD — there is no list of them to add to or strike from — and they are
+burned into `hook.py`'s hold text, `handoff.default.md`, and every already-generated
+`.journal/handoff.md`. Wrapping them would cost every reader a word and buy nothing.
+`search` stays top-level for the same reason: it has no collection noun of its own. And
+the singleton reads — `conversation`, `user`, `open`, `carry`, `next`, `verify`,
+`settings`, `version`, `worktree`, `loop`, `nothing` — are one-shot, not a collection, so
+noun-first has nothing to attach to. Separately, `docs detach` keeps its own name rather
+than folding into `docs strike`: an attachment is not a part, and `docs strike <doc>
+<name>` would be ambiguous against `docs strike <doc>.<p>`.

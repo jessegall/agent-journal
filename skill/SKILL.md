@@ -127,11 +127,11 @@ an answer to. A line that opens the work first,
 
 ## Pin, rule, or nothing
 
-    journal pin "<the claim, in one line>"     a pin: for this environment
-    journal rule "<the ruling, in one line>"        a rule: for every environment
+    journal pins add "<the claim, in one line>"     a pin: for this environment (also: `journal pin "<claim>"`)
+    journal rules add "<the ruling, in one line>"   a rule: for every environment (also: `journal rule "<ruling>"`)
     ... --doc=N or --doc=N.P                        on either, and on todo: the doc (or part) it rests on
     journal nothing "<why nothing here needs pinning>"
-    journal promote <n>                             lift pin n into a rule
+    journal pins promote <n>                        lift pin n into a rule (also: bare `journal promote <n>`)
 
 Rules, pins, open work and to-dos are the **only** things handed back after a compaction
 and to every new session. Tagged messages become retrievable, not present.
@@ -162,7 +162,7 @@ moment to park any work you are holding for later, because that lives only in th
 
 ## Delayed work: the to-do
 
-    journal todo "<title>" [--brief]   add one; --brief reads a longer brief from stdin
+    journal todo "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `todo add "<title>"`)
     journal todo                       the titles
     journal todo <n>                   the brief
     journal todo start <n>             open work under that title; `work end` closes both
@@ -237,7 +237,7 @@ runner hands back.
 
     journal docs                                the catalogue: number, title, status, parts, files, abstract
     journal docs <doc>  |  journal docs <doc>.<p>   read a doc, or one part; <doc> is its number or its name
-    journal docs <doc> files                    its attachments, as a tree
+    journal docs files <doc>                    its attachments, as a tree (also: `docs <doc> files`)
     journal docs add "<title>" --abstract="<one line>" --brief    a new doc, its intro on stdin
     journal docs part <doc> "<title>" --brief   a report, a section, a finding — as one part
     journal docs attach <doc> <path> "<what it is>"   a file or a folder, copied in beside the parts
