@@ -137,6 +137,9 @@ d = Path(tempfile.mkdtemp()) / "proj"
 shutil.copytree(SRC, d / ".journal",
                 ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
                                               "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+# THIS SUITE IS ABOUT BINDING, so it binds at the start: the project default is now an
+# unbound session, which test_unbound.py covers.
+(d / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True}))
 J = str(d / ".journal" / "journal.py")
 
 

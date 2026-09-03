@@ -24,8 +24,8 @@ the tracker agree on what it is.
    them.
 3. **The plan.** Dispatch a Plan agent with the doc's text: phases, and the work in each,
    with the files it expects to touch. File the result as a part: `journal docs part
-   <doc> "Plan" --brief`. You file it, because a subagent cannot write the journal — and
-   that is the moment you judge whether it is right.
+   <doc> "Plan" --brief`. You file it, because a subagent that is not delegated cannot
+   write the journal — and that is the moment you judge whether it is right.
 4. **The steps.** Dispatch a second agent with the brief AND the plan: concrete steps per
    phase, what the plan missed, what could go wrong, what to verify. File it as a part,
    "Steps". Two agents, because the one that wrote the plan will not find its own gaps.
@@ -47,14 +47,30 @@ Then offer the three ways to run it and let the user choose:
     journal switch "<name>"             leave it for a session that starts later, or a colleague
     journal delegate "<name>"           then dispatch a subagent with the page as its brief
 
+## By agents: `journal handoff`
+
+`journal handoff "<name>" "<source>"` does steps 1–6 and 8 through agents; whether auto goes on stays yours to ask. It creates and
+delegates the environment and prints the hand-off agent's prompt; you dispatch that ONE
+subagent (opus) and do nothing else for the environment until it reports READY. The
+hand-off agent fetches the source, writes the brief, dispatches its own Plan agent and
+critic (a subagent may dispatch subagents), pins what must hold, writes the to-dos in
+order and validates the page. Then `journal handoff "<name>" --run` prints the runner's
+prompt with the page inside it: dispatch that one subagent, read `journal environments
+"<name>"` when it reports, and `journal handoff --off`. If the hand-off agent reports
+BLOCKED, put its question to the user and dispatch no runner; `--run` refuses an
+environment with nothing ready. A session that died mid-run is freed from a terminal with
+`journal handoff --off --session=<id>`. The two prompts are the two
+sections of `.journal/handoff.md`; the shipped `handoff.default.md` is the template, and
+the project's copy wins and is never touched by an update.
+
 ## Delegating
 
 `journal delegate "<name>"` makes this session, and every subagent it dispatches, act on
 that environment until `journal delegate --off`. A delegated subagent is journaled like
 a session: its journal commands land there, the write gate holds it to declared work,
 the hints reach it, its stop is held while work is open, and the rules come back as its
-window fills. It may not `switch`, `delegate` or `prepare` — the environment is the
-session's to move. Brief it with the page, and tell it to `journal todo start <n>`,
+window fills. It may not `switch`, `delegate`, `prepare` or `handoff` — the environment is
+the session's to move. Brief it with the page, and tell it to `journal todo start <n>`,
 `journal work update` as it goes, `journal work end` when done, and to pin what it
 learned. When it reports back, read `journal environments "<name>"` before you file
 anything: what it pinned is already there.

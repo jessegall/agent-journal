@@ -38,6 +38,15 @@ DEFAULTS = {
     # because a gate nobody turns on is the same as the setting that was never implemented.
     "gate_writes_on_start": True,
 
+    # A NEW SESSION CHOOSES ITS ENVIRONMENT; IT IS NOT GIVEN ONE. Binding at the start put
+    # every fresh session on the project's start environment — one it did not choose and
+    # could not see — and its pins, to-dos and work landed there because nothing had asked.
+    # So a session starts unbound: the user is shown one line saying so, the agent is told
+    # to infer the environment from the first prompt and say which it took, or to ask when
+    # the prompt names nothing, and writes are refused until one is chosen. True restores
+    # the old binding at start.
+    "bind_on_start": False,
+
     # A tool result bigger than this, and bigger than anything before it this session, is
     # reported once. Characters, not tokens: it is the transcript's own unit and roughly
     # four to one. 0 turns it off.

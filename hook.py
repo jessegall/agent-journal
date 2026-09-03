@@ -224,6 +224,12 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     here = tracks.current(ROOT, ctx.stem)
     state.put(ROOT, "prompt", {"asked": asked, "todos": len(todo.open_items(ROOT, here))},
               stem=ctx.stem)
+    # THE CHOICE COMES FIRST, and it rides the prompt because the prompt is what decides
+    # it. It is repeated on every prompt until an environment is taken: a session that
+    # answered three questions unbound has had three chances to notice, and the fourth
+    # message may be the one that writes.
+    if _unbound(conf, ctx):
+        return _context("UserPromptSubmit", _choose_block(" YET"))
     standing = work.open_work(ROOT)
     if not asked or not standing or "prompt_reminder" in conf["silenced"]:
         return 0
@@ -555,6 +561,49 @@ def _loop_running(ctx: Ctx, lines) -> bool:
     return False
 
 
+def _unbound(conf: dict, ctx: Ctx) -> bool:
+    """Has this session still not chosen an environment?
+
+    A SESSION IS UNBOUND UNTIL SOMEBODY CHOOSES. Not a subagent — a delegated one is put on
+    its environment by the session that dispatched it, and an undelegated one is outside all
+    of this — and not a session that has switched, delegated, or run under
+    `bind_on_start`. `tracks.current` still answers for reads, falling back to the start
+    environment, because a question about the record must not need a decision first; this
+    is what the writes are held on.
+    """
+    if conf["bind_on_start"] or ctx.stem.startswith("agent-"):
+        return False
+    return not tracks.delegated(ROOT, ctx.stem) and not tracks.bound(ROOT, ctx.stem)
+
+
+def _choice_line() -> str:
+    """The one line the USER sees when a session starts with no environment."""
+    names = tracks.choices(ROOT)
+    return ("journal: this session has no environment yet — "
+            + (", ".join(f"`{n}`" for n in names) if names else "none exist yet")
+            + ". It will take one from your first message, or ask.")
+
+
+def _choose_block(where: str) -> str:
+    """What the AGENT is told while the session is unbound. Said at the start and at each prompt."""
+    names = tracks.choices(ROOT)
+    have = "\n".join(f"  {n}" for n in names) if names else "  (none yet)"
+    return (
+        f"THIS SESSION HAS NO ENVIRONMENT{where}. Every pin, to-do and piece of work belongs "
+        "to one, so nothing can be written until this session is on one. It is not given "
+        "you: you choose it, because you are the one who has read what the user asked.\n"
+        "The environments that exist:\n" + have + "\n"
+        "DECIDE FROM WHAT THE USER JUST ASKED. If it names or plainly implies one of "
+        'these, take it — `journal switch "<name>"` — and say in one line which you took, '
+        "so a wrong guess costs the user one word to correct. If the work is real and "
+        'belongs on none of them, `journal prepare "<name>"` makes one. If the message '
+        "names nothing to work on — a greeting, a question about the record, anything you "
+        "can answer without writing — ASK which environment, listing the ones above, "
+        "before you answer it. Do not guess in the dark and do not fall back to the first "
+        "on the list: an environment nobody chose is how work lands where nobody looks."
+    )
+
+
 def _track_due(conf: dict, ctx: Ctx) -> dict | None:
     """Is this session on an environment another live session holds? Written to runtime while it is.
 
@@ -568,6 +617,8 @@ def _track_due(conf: dict, ctx: Ctx) -> dict | None:
         return None
     if ctx.stem.startswith("agent-"):
         return None   # a delegated subagent shares its session's claim on the environment
+    if _unbound(conf, ctx):
+        return None   # nothing is held until an environment is chosen
     here = tracks.current(ROOT, ctx.stem)
     others = tracks.occupants(ROOT, here, ctx.stem, conf["session_stale_hours"])
     if not others:
@@ -925,6 +976,11 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
             '  .journal/journal.py nothing "<why nothing here needs pinning>"\n'
             "Nothing is the right answer more often than not — say so and carry on. "
             "`journal search`, `journal conversation --back=1` and `journal pins` still run, to decide with."
+        )
+    if _is_write(payload) and not _is_journal(payload) and _unbound(conf, ctx):
+        return _deny(
+            _choose_block("") + "\n\nThis call is denied until one has been chosen. Reads "
+            "are never gated; only changes."
         )
     if _is_write(payload) and not _is_journal(payload):
         taken = _track_due(conf, ctx)
@@ -1371,23 +1427,34 @@ DELIVERS_CONTEXT = frozenset({
 })
 
 
-def _context(event: str, text: str) -> int:
-    """Hand the harness something to put in front of the agent.
+def _context(event: str, text: str, system: str | None = None) -> int:
+    """Hand the harness something to put in front of the agent, and the user.
+
+    `system` is the half the user sees. `additionalContext` reaches the agent and nothing
+    else: the user cannot read it, so a hook that needs the PERSON to know something —
+    that this session has no environment yet — has to say it in the one field the harness
+    shows them. It is a universal field, so it survives an event that cannot carry
+    context, and it is printed even then.
 
     Refuses an event that cannot carry it. A rejected payload looks identical to a
     delivered one from in here — same exit 0, same written state — so the refusal is
     LOUD: it goes to stderr and to the user, because a delivery that fails invisibly is
     the one shape this system exists to prevent.
     """
+    out: dict = {}
+    if system:
+        out["systemMessage"] = system
     if event not in DELIVERS_CONTEXT:
         print(
             f"journal: {event} cannot carry additionalContext — the harness rejects it. "
             f"{len(text.splitlines())} lines were NOT delivered.",
             file=sys.stderr,
         )
+        if out:
+            print(json.dumps(out))
         return 0
-    print(json.dumps({"hookSpecificOutput": {"hookEventName": event,
-                                             "additionalContext": fmt.block(text)}}))
+    out["hookSpecificOutput"] = {"hookEventName": event, "additionalContext": fmt.block(text)}
+    print(json.dumps(out))
     return 0
 
 
@@ -1399,7 +1466,7 @@ def _context(event: str, text: str) -> int:
 # exists to report, so the event is no longer wired at all.
 
 
-def carried(source: str = "compact", stem: str | None = None) -> str:
+def carried(source: str = "compact", stem: str | None = None, unbound: bool = False) -> str:
     """Exactly what a session is handed at its start, built without writing anything.
 
     THE INJECTED BLOCK IS THE ONE THING NOBODY COULD LOOK AT. It is assembled inside a
@@ -1427,9 +1494,17 @@ def carried(source: str = "compact", stem: str | None = None) -> str:
         #
         # WHICH ENVIRONMENT OF WORK THIS IS comes first: a fresh agent inherits an environment it did
         # not choose and cannot see, and every pin and open item below belongs to that one.
-        f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{here}`"
-        " (`journal environments` for the others; `journal switch` moves this session only, "
-        "`--project` also the start environment).\nOpen every message with exactly one tag:\n"
+        (f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{here}`"
+         " (`journal environments` for the others; `journal switch` moves this session only, "
+         "`--project` also the start environment)."
+         if not unbound else
+         "THE JOURNAL IS IN FORCE HERE — but this session is on NO ENVIRONMENT yet. What is "
+         f"listed below is the start environment's (`{here}`), shown so you can read; it is "
+         "not yours until you take it. Choose one from the user's first message — "
+         '`journal switch "<name>"`, `journal environments` for the list — and say which '
+         "you took. If that message asks for nothing, ask them which. Writes are refused "
+         "meanwhile.")
+        + "\nOpen every message with exactly one tag:\n"
         + "\n".join(f"  [!{t.name}]  {t.line}" for t in tags.TAGS.values())
         + "\n\nThe tag is free — it rides on a message you were sending anyway. Work is "
         "not:\n"
@@ -1600,9 +1675,11 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     source = payload.get("source") or "startup"
     _floor(ctx)
     state.put(ROOT, "session_started", source, stem=ctx.stem)
-    # BOUND AT THE START to the project's start environment, if this session is not bound yet.
-    # A switch from inside the session rebinds it alone.
-    if not tracks.bound(ROOT, ctx.stem):
+    # NOT BOUND AT THE START. A session used to be put on the project's start environment
+    # here, which meant every fresh session was working an environment it had never been
+    # asked about; `bind_on_start` restores that. Unbound, the choice is made on the first
+    # prompt, by the agent, out loud. A switch from inside the session rebinds it alone.
+    if conf["bind_on_start"] and not tracks.bound(ROOT, ctx.stem):
         tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
     state.use_track(tracks.current(ROOT, ctx.stem))
     if source == "compact" and ctx.path is not None and not conf["context_window"]:
@@ -1611,7 +1688,8 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
             state.put(ROOT, "window", context.window_from_peak(peak))
     tracks.carried(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem)
     _prune(ctx.stem)
-    block = carried(source, ctx.stem)
+    loose = _unbound(conf, ctx)
+    block = carried(source, ctx.stem, unbound=loose)
     taken = _track_due(conf, ctx)
     if taken:
         block = _taken_block(taken) + "\n\n" + block
@@ -1633,7 +1711,7 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
         note = update.notice(ROOT)
         if note:
             block += "\n\n" + note
-    return _context("SessionStart", block)
+    return _context("SessionStart", block, system=_choice_line() if loose else None)
 
 
 #: EVERY EVENT, IN ONE TABLE. The harness has to name this script once per event it should
@@ -1668,7 +1746,11 @@ def _register(payload: dict, ctx: Ctx) -> str | None:
         # share an environment: the second one is simply not let in.
         if _track_due(conf_of(payload), ctx):
             return None
-        tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+        # Registered on the start environment for READS, and bound to it only if the
+        # project still binds at the start: `tracks.current` already falls back there, so
+        # an unbound session is answered without a binding being written behind its back.
+        if conf_of(payload)["bind_on_start"]:
+            tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
         return tracks.current(ROOT, ctx.stem)
     acting = tracks.delegated(ROOT, ctx.stem)
     if acting:

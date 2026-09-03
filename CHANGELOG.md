@@ -4,6 +4,25 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.19.0 — a new session has no environment until it chooses one
+
+A session used to be bound at its start to the project's start environment — one it had
+never been asked about — so its pins, to-dos and work landed there because nothing had
+asked. Now it starts on none. The user is shown one line at the start saying so and
+naming the environments that exist; the agent is told the same, on the start block and
+again on every prompt while it stands, with the instruction to take an environment from
+what the user just asked and say in one line which it took, or to ask when the message
+names nothing to work on. Reads work unbound. Every write is refused, naming the way out,
+so nothing can land in an environment nobody chose.
+
+The old behaviour is one setting: `bind_on_start: true` binds a new session to the start
+environment as before. An unbound session holds no environment, so a second session is no
+longer told the start one is taken before anybody has taken it; `switch` still refuses one
+a live session holds. Subagents are untouched — a delegated one is put on its environment
+by the session that dispatched it, and an undelegated one is outside all of this.
+
+After updating: reload the journal skill.
+
 ## 1.18.0 — tracks are environments
 
 What was called a track is an environment: a session is bound to one, `journal

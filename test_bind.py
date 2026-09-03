@@ -28,7 +28,7 @@ d = Path(tempfile.mkdtemp()) / "proj"
 (d / ".claude").mkdir(parents=True)
 shutil.copytree(SRC, d / ".journal", ignore=shutil.ignore_patterns(
     "runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
-(d / ".journal" / "settings.json").write_text(json.dumps({"one_session_per_environment": False}))  # the rule has its own section below
+(d / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True, "one_session_per_environment": False}))  # the rule has its own section below
 root = d / ".journal"
 tdir = transcript.project_dir(d); tdir.mkdir(parents=True, exist_ok=True)
 J = str(root / "journal.py")
@@ -135,7 +135,7 @@ e = Path(tempfile.mkdtemp()) / "proj"
 (e / ".claude").mkdir(parents=True)
 shutil.copytree(SRC, e / ".journal", ignore=shutil.ignore_patterns(
     "runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
-(e / ".journal" / "settings.json").write_text("{}")
+(e / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True}))
 root2 = e / ".journal"
 tdir2 = transcript.project_dir(e); tdir2.mkdir(parents=True, exist_ok=True)
 J2 = str(root2 / "journal.py")
@@ -228,11 +228,11 @@ check("nor does it count as a session on one", "agent-ab12" in json.dumps(tracks
 p = subprocess.run([str(root2 / "hook.py")], input=json.dumps({**sub, "tool_input": {"command": '.journal/journal.py switch "elsewhere"'}, "tool_name": "Bash"}),
                    capture_output=True, text=True, timeout=60)
 check("a subagent switching environments is refused as a journal write, as before", "from a subagent is refused" in p.stdout, True)
-(root2 / "settings.json").write_text(json.dumps({"one_session_per_environment": False}))
+(root2 / "settings.json").write_text(json.dumps({"bind_on_start": True, "one_session_per_environment": False}))
 check("with the rule off, the same session is free", (q.fire("Stop"), "IS TAKEN" in q.write()), ("", False))
 code, out = x.j("switch", "default")
 check("and switches are not refused for it", code, 0)
-(root2 / "settings.json").write_text(json.dumps({"silenced": ["track"]}))
+(root2 / "settings.json").write_text(json.dumps({"bind_on_start": True, "silenced": ["track"]}))
 r = T("rrrrrrrr-5")
 check("silencing `environment` is the same as the rule off", "IS TAKEN" in r.ctx, False)
 

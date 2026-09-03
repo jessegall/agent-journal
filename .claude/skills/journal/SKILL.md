@@ -199,7 +199,14 @@ nothing else starts, and with auto on the stop hook will hold you to do exactly 
 
 Only when the user asks for it — "prepare an environment for this issue", "set up the
 journal for …", "make a hand-off" — never on your own: most work is a to-do or open work
-where you are. Then `journal prepare "<name>"` and follow
+where you are. Two ways. **By agents:** `journal handoff "<name>" "<link, id or text>"`
+creates and delegates the environment and prints one prompt; dispatch ONE subagent with
+it (opus) and do nothing else until it reports READY — it fetches the source, writes the
+brief, runs its own planner and critic, pins, writes the to-dos, validates the page. Then
+`journal handoff "<name>" --run` prints the runner's prompt: dispatch that one subagent,
+and `journal handoff --off` when it reports. What a hand-off means is
+`.journal/handoff.md`, the project's own copy of the shipped template. **By hand:**
+`journal prepare "<name>"` and follow
 [references/prepare.md](references/prepare.md): the source whole, the brief as a doc with
 its files attached, a Plan agent for the phases and a second agent for the steps (you file
 both as parts), pins for what must hold, one to-do per unit of work in order with "verify
@@ -297,10 +304,23 @@ have it rather than filling the space.
     journal open                    work declared and never closed, with its notes
 
 After a compaction, read `conversation --back=1` and `user` before you touch anything;
-they are precisely what the summary dropped. At a fresh start, the block names the environment
-this session is bound to and lists the standing rules, pins, open work and to-dos. If it
-leads with "ENVIRONMENT … IS TAKEN", another running session holds that environment: tell the user, ask
-which environment this session works on, and `switch` before anything else. Work opened by an
+they are precisely what the summary dropped. At a fresh start, the block lists the standing
+rules, pins, open work and to-dos, and says which environment this session is on.
+
+**A new session is on none.** It is not given one: you choose it, from the first thing the
+user says, because you are the one who has read it. If that message names or plainly implies
+an environment, take it — `journal switch "<name>"` — and say in one line which you took, so
+a wrong guess costs one word to correct. If the work is real and belongs on none of them,
+`journal prepare "<name>"`. If the message asks for nothing to work on — a greeting, a
+question about the record — ask which environment before you answer it. Never fall back to
+the first on the list: an environment nobody chose is how work lands where nobody looks.
+Reads work unbound; every write is refused until one is taken. The user sees a line saying
+so at the start, so the question is expected. `bind_on_start` puts the old behaviour back,
+where a session began on the project's start environment.
+
+If the block leads with "ENVIRONMENT … IS TAKEN", another running session holds that
+environment: tell the user, ask which environment this session works on, and `switch` before
+anything else. Work opened by an
 earlier session is listed so you know it exists, not held against you; before continuing
 it, `open` shows where it got to.
 
@@ -325,6 +345,7 @@ thing to do now.
 | *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`                  |
 | *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs |
 | *environment `x` is taken by another session*                        | ask the user which environment this session works on, then `switch "<name>"` |
+| *THIS SESSION HAS NO ENVIRONMENT*                              | take one from what the user just asked — `switch "<name>"` — and say which; ask them if it named none |
 | *That pin would be refused*                                    | cut it to the claim, or drop the scratch path          |
 | *`journal <verb>` from a subagent is refused*                  | you are a subagent: report; the main conversation files |
 | *THAT … CALL RETURNED N CHARACTERS*                            | nothing to undo; read narrower next time               |

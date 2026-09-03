@@ -329,6 +329,8 @@ journal is used instead, until `journal worktree link` replaces it.
     pin_max_chars        the cap on a pin, default 400
     stall_calls          tool calls on one to-do without progress before the agent is nudged, default 40
     attach_hint_reads    reads of a non-source file in one session before the attach hint, default 2
+    bind_on_start        bind a new session to the project's start environment, default false;
+                         false means it starts on none and chooses from the first prompt
     one_session_per_track   a second session on a taken environment is told to switch, default true
     session_stale_hours  hours without a hook event before a session counts as gone, default 24
     stop_priority        the order of the stop queue by subject, e.g. {"work": 1}; lower first

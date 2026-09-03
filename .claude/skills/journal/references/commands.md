@@ -110,6 +110,9 @@ A brief on stdin:
     journal environments "<name>"    the pickup page: docs to read first, what stands, open work, to-dos, how to begin
     journal prepare "<name>"         create an environment for a piece of work and switch to it (see prepare.md)
     journal delegate "<name>" | --off   this session and its subagents act on it; a subagent's journal lands there
+    journal handoff "<name>" "<source>"   an environment made ready BY AGENTS: creates and delegates it, prints the hand-off agent's prompt
+    journal handoff "<name>" --run   when it reports READY: the runner's prompt; --off when the run is over
+                                     what a hand-off means: .journal/handoff.md (copy of the shipped handoff.default.md)
     journal --env=<name> <command>   any command on a named environment, without switching
     journal loop set                 this session has a loop the hook cannot see; `journal loop` says what is known
 

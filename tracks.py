@@ -251,6 +251,17 @@ def _all(root: Path) -> dict:
     return got
 
 
+def choices(root: Path) -> list[str]:
+    """Every environment a session could bind to, the project's start environment first.
+
+    WHAT AN UNBOUND SESSION IS OFFERED. `listing` answers "where is everyone", which needs
+    the record, the bindings and the liveness of every session; this answers the smaller
+    question a session asks once, at its start, before it has chosen anything.
+    """
+    start = state.get(root, CURRENT, DEFAULT) or DEFAULT
+    return sorted(_all(root), key=lambda n: (n != start, n))
+
+
 def page(root: Path, name: str, width: int = 88, commands: bool = True) -> tuple[bool, str]:
     """One environment, ready to be picked up: its docs, pins, open work, to-dos, and how.
 
