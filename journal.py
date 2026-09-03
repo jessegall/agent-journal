@@ -32,7 +32,7 @@ nothing. This is the index that gets you back to it.
     journal docs <doc>       read a doc — <doc> is its number or its name, here and everywhere below
     journal docs <doc>.<p>   read one part of it
     journal docs files <doc>   its attachments, as a tree; `journal docs <doc> files` and bare `journal docs files` still work
-    journal docs add "<title>" --abstract "<one line>" --brief   a new doc; the brief on stdin is its intro
+    journal docs add "<title>" --abstract="<one line>" --brief   a new doc; the brief on stdin is its intro
     journal docs part <doc> "<title>" --brief   a new part, from stdin — a report, a section, a finding
     journal docs replace <doc>.<p> --brief     a new body for a part; the old one is kept under struck/
     journal docs strike <doc>.<p> "<why>"      drop a part, on the record
@@ -709,7 +709,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         fmt.say()
         fmt.say(fmt.commands([
             ("journal docs <doc>", "read one, by number or name; <doc>.<p> reads one part"),
-            ('journal docs add "<title>" --abstract "<one line>" --brief', "a new doc, its intro on stdin"),
+            ('journal docs add "<title>" --abstract="<one line>" --brief', "a new doc, its intro on stdin"),
             ('journal docs part <doc> "<title>" --brief', "a new part, from stdin"),
             ('journal docs attach <doc> <path> "<what it is>"', "copy a file or folder (HTML, a design, a PDF) into the doc"),
             ("journal docs <doc> files", "its attachments, as a tree; `docs files` lists every doc's"),
@@ -942,7 +942,7 @@ Preparing {name}: an environment ready to be picked up from A to Z, by you, by a
 session, or by a subagent. Only when the user asked for it. In order:
 
   1  the source        the issue, the PR, the user's words — fetch it whole (gh, the tracker's tool, or ask)
-  2  the brief         journal docs add "{name}: <title>" --abstract "<one line>" --brief   < the source
+  2  the brief         journal docs add "{name}: <title>" --abstract="<one line>" --brief   < the source
                        journal docs attach <doc> <path> "<what it is>"                   designs, screenshots, exports
   3  the plan          a Plan agent: phases and the work in each, from the brief — file it: docs part <doc> "Plan" --brief
   4  the steps         a second agent: concrete steps per phase, what is missing, what could go wrong — docs part <doc> "Steps" --brief

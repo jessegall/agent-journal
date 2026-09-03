@@ -1004,7 +1004,7 @@ def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
         f"journal: {rel} is a markdown file written outside the journal. Not a problem — but if "
         "it is a design, a report or a finding, the docs catalogue is where it is handed to every "
         "session and found by search:\n"
-        '  .journal/journal.py docs add "<title>" --abstract "<one line>" --brief < the file\n'
+        '  .journal/journal.py docs add "<title>" --abstract="<one line>" --brief < the file\n'
         '  .journal/journal.py docs part <n> "<title>" --brief < the file      as a part of doc n\n'
         "A README or a changelog is fine as it is. Said once per file."
     )

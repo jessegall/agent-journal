@@ -17,7 +17,7 @@ the tracker agree on what it is.
    `gh issue view`, `gh pr view`, the tracker's own tool when one is connected. Raw
    text: as given. Ask when only the user has it. Read the comments too; the ruling is
    often in the third one.
-2. **The brief, as a doc.** `journal docs add "<name>: <title>" --abstract "<one line>"
+2. **The brief, as a doc.** `journal docs add "<name>: <title>" --abstract="<one line>"
    --brief` with the source as the intro, so the doc IS the issue, not a paraphrase of it.
    Attach what is not prose: `journal docs attach <doc> <path> "<what it is>"` for the
    design, the screenshot, the export. Acceptance criteria as a part if the source has

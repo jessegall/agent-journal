@@ -398,10 +398,10 @@ def add(root: Path, title: str, abstract: str, body: str, track: str, source: st
     title = " ".join((title or "").split())
     abstract = " ".join((abstract or "").split())
     if not title:
-        return False, 'a doc needs a title: journal docs add "<title>" --abstract "<one line>" --brief'
+        return False, 'a doc needs a title: journal docs add "<title>" --abstract="<one line>" --brief'
     if not abstract:
         return False, ('a doc needs an abstract — the one line every session is handed:\n'
-                       '  journal docs add "<title>" --abstract "<what it settles, in one line>" --brief')
+                       '  journal docs add "<title>" --abstract="<what it settles, in one line>" --brief')
     for d in _load(root):
         if d.get("title", "").lower() == title.lower():
             return False, f"doc {d['n']} already has that title"
