@@ -165,15 +165,15 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 
 ### To-dos
 
-    journal todo                         the list
-    journal todo <n>                     one, with its brief
-    journal todo "<title>" --brief       park work for later; brief from stdin (also: `journal todo add "<title>"`)
-    journal todo start <n>               pick it up as the open work (agent)
-    journal todo done <n> "<how>"        close it without starting it
-    journal todo strike <n> "<why>"      abandon it, on the record (also: `todo drop`)
-    journal todo ask <n> "<question>"    it needs the user; the list moves on (agent)
-    journal todo answer <n> "<answer>"   answer it; the agent is told at its next stop
-    journal todo auto on|off             on: the agent works through the list itself
+    journal todos                        the list
+    journal todos show <n>               one, with its brief (also: `journal todo <n>`)
+    journal todos add "<title>" --brief  park work for later; brief from stdin (also: `journal todo "<title>"`)
+    journal todos start <n>              pick it up as the open work (agent)
+    journal todos done <n> "<how>"       close it without starting it
+    journal todos strike <n> "<why>"     abandon it, on the record (also: `todo drop`)
+    journal todos ask <n> "<question>"   it needs the user; the list moves on (agent)
+    journal todos answer <n> "<answer>"  answer it; the agent is told at its next stop
+    journal todos auto on|off            on: the agent works through the list itself
 
 ### Pins and rules
 
@@ -230,6 +230,8 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal switch "<name>" --project    this session, and where new sessions start (agent)
     journal switch "<name>" --session=<id>   move one running session; --all-sessions moves all
     journal switch --back                the environment this session came from
+    journal claim "<name>" "<why>"       take one a live session still holds: it is unbound and told at its next stop why, by whom, and how to take it back
+    journal environments switch|claim|prepare|delegate|handoff …   the noun+verb twin of each; both spellings call the same function
     journal environments "<name>"        the pickup page of one environment
     journal prepare "<name>"             create an environment for a piece of work and switch to it (agent)
     journal delegate "<name>" | --off    this session and its subagents act on it; a subagent journals there (agent)

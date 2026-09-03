@@ -189,5 +189,39 @@ check("the environment page's to-do list is whole, not capped -- to-do 19 is sti
 check("and it does not offer a --page=2 for that list (there is nothing more to page to)",
       "--page=2" not in out, True)
 
+# ---------------------------------------------------- the line-count caps, which this file
+# CLAIMED to carry and did not. Box 4 of the definition of done is a NUMBER, and the audit
+# found the docstring above promising to hold it while nothing here asserted it — which is
+# exactly how `journal --help` grew from 72 lines to 77 during the work that was supposed to
+# cut it to 30. A cap nobody measures is a cap that has already been lost.
+code, out = j2("--help")
+check("journal --help is under 30 printed lines (box 4)", (code, len(out.splitlines()) < 30), (0, True))
+code, out = j2("carry")
+# THE CAP IS ON THE BLOCK, NOT ON THE RECORD IT CARRIES. Rules, pins, open work and to-dos
+# are the payload — the one thing ruling R8 says is never cut — so a fixture holding twenty
+# of each would fail a cap that is really about the prose wrapped around them.
+block = out.split("RULES OF THIS PROJECT")[0]
+check("journal carry's own block is under 31 printed lines (box 4)",
+      (code, len(block.splitlines()) < 31), (0, True))
+for noun, mark in (("pins", "pin number"), ("rules", "rule number"), ("todos", "todo number"),
+                   ("tools", "Tool ")):
+    code, out = j2(noun)
+    shown = out.count(mark)
+    check(f"a bare `journal {noun}` shows at most 15 of 20 and offers the rest by page",
+          (code, shown, "--page=2" in out), (0, 15, True))
+
+# EVERY GROUP THE INDEX NAMES IS A GROUP THAT ANSWERS. The index is the only thing --help
+# prints now, so a group named there with no help behind it is a dead end at the one place
+# a reader is sent.
+import help as help_mod  # noqa: E402
+for group in help_mod.groups():
+    code, out = j2(group, "help")
+    check(f"the index's `{group}` group answers `journal {group} help`",
+          (code, "No such command" not in out), (0, True))
+for spelling in sorted(help_mod.ALIAS):
+    code, out = j2(spelling, "help")
+    check(f"the alias `{spelling}` answers, because it runs (ruling R3)",
+          (code, "No such command" not in out), (0, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
