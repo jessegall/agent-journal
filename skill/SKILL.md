@@ -368,7 +368,7 @@ thing to do now.
 | it says                                                        | do                                                     |
 |----------------------------------------------------------------|--------------------------------------------------------|
 | *N message(s) carried no tag*                                  | tag your next message; it will not hold for those lines again |
-| *N piece(s) of work still open*                                | `work end` it, or `update` where it got to                  |
+| *N piece(s) of work still open*                                | `work end` it, `update` where it got to, or `work await "<what>"` if it is in flight |
 | *Nothing is open, so this edit would not be filed*             | `work start` the work, then edit                            |
 | *context N% full — decide before any other tool runs*          | `pin`, `rule` or `nothing "<why>"`                |
 | *your reply puts work off — park it as a to-do*                | `todo "<title>" --brief`, then say so; or run the call again if nothing is deferred |

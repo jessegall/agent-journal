@@ -897,7 +897,9 @@ def cmd_next() -> int:
     standing = work.open_work(root())
     if standing:
         fmt.say("Open work: " + "; ".join(w["subject"] for w in standing))
-        fmt.say("Carry on with it; `journal work end \"<the same words>\"` when it is done.")
+        fmt.say("Carry on with it; `journal work end \"<the same words>\"` when it is done, or\n"
+                '`journal work await "<what you wait on>" --pid=<n>|--agent=<id>` if it is in '
+                "flight on\nsomething you cannot hurry.")
         return 0
     if todo.auto(root(), here):
         ready = todo.ready(root(), here)

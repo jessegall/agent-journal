@@ -4,6 +4,24 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.24.2 — `work await` is taught where it is needed
+
+`work await` shipped in 1.22.0, was documented in the skill and answered by `journal work
+help`, and an agent working this very project still had to be told by the USER that it
+exists. Both of those surfaces are opt-in, and the moment the command is needed is a stop —
+work open, something in flight — where the hold offered exactly two ways out: `work end` it,
+or `work update` where it got to. Neither is right when you are waiting on a build.
+
+The teaching model here is "the block is the rules, the skill is the reasoning", and
+`await` had been filed entirely under reasoning. It is in the rules now: the SessionStart
+block's work line names it beside start, update and end; the open-work hold and the auto-on
+work hold both offer it with `--pid=` and `--agent=`; so do `journal next` and the skill's
+hold table.
+
+And it is asserted, in both arms of the start block and in the hold text, because this is
+the same failure as a line-count cap that no test measures — a thing documented as true
+with nothing holding it true.
+
 ## 1.24.1 — the environments noun answers to `env`
 
 `journal env` is `journal environments`, and so are `envs`, `environment`, `tracks` and

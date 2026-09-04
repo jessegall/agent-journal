@@ -532,6 +532,7 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         listed = bool(todo.open_items(ROOT, here))
         return ("auto is on, work still open",
                 f"journal: auto is on, and `{names}` is still open — `work end` it if it is done, "
+                "`work await` it if it is in flight on something you cannot hurry, "
                 "or park what is left as a to-do and `work end` it"
                 + ("; then the list starts" if listed else "; open work is never left standing"),
                 f"Open: {names}\n\nAuto is on for `{here}`, and the next to-do starts only "
@@ -541,6 +542,9 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
                 "to-do, not open work: park it with the questions in its brief, then end the "
                 "work:\n"
                 '  .journal/journal.py todos add "<what is left, and on what it waits>" --brief\n'
+                "If it is IN FLIGHT on something you cannot hurry — a subagent, a build, a "
+                "review — say so and the nudging stops until it lands:\n"
+                '  .journal/journal.py work await "<what you wait on>" --pid=<n>|--agent=<id>\n'
                 "If you are mid-work and stopped to ask the user something, say so; the next "
                 "turn asks again.")
     # ONLY WORK THIS TRANSCRIPT OPENED, ONCE PER PIECE. Work opened elsewhere was told
@@ -555,9 +559,16 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     for w in fresh:
         held[w["subject"]] = len(w.get("notes", []))
     state.put(ROOT, "held_work", held, stem=ctx.stem)
+    # AWAIT IS OFFERED WHERE IT IS NEEDED, NOT ONLY WHERE IT IS DOCUMENTED. This hold fires
+    # at the one moment an agent is stopped with work in flight — a build running, a
+    # subagent out — and it used to offer only `end` and `update`, so an agent that had
+    # never read the skill learned `await` from the user or not at all. Measured: exactly
+    # that, twice in one session. A vocabulary taught only in a file nobody is required to
+    # open is a vocabulary that does not exist.
     return ("work still open",
-            f"journal: still open — {'; '.join(w['subject'] for w in fresh)} — `work end` it, or "
-            "`work update` where it got to")
+            f"journal: still open — {'; '.join(w['subject'] for w in fresh)} — `work end` it, "
+            "`work update` where it got to, or `work await \"<what you wait on>\" "
+            "--pid=<n>|--agent=<id>` if it is in flight on something you cannot hurry")
 
 
 @nudges.subject("auto", 60)
@@ -1593,7 +1604,9 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
         # are not stranded — but this block is what teaches every fresh one, and it must
         # not teach the spelling this project moved past.
         "Work is not a tag, it costs a command: `journal work start \"<the work>\"`, "
-        "`journal work update \"<what moved>\"`, `journal work end \"<the same words>\"`.\n"
+        "`journal work update \"<what moved>\"`, `journal work end \"<the same words>\"` — and "
+        "`journal work await \"<what you wait on>\" --pid=<n>|--agent=<id>` when it is in flight "
+        "on something you cannot hurry, which stops the nudging until it lands.\n"
         "WHEN THE USER ASKS FOR SOMETHING YOU ARE NOT WORKING ON AND IT CAN WAIT, park it: "
         "`journal todos \"<title>\"`, say you did, and carry on — `journal todos start <n>` "
         "picks it up later.\n\n"

@@ -1067,5 +1067,26 @@ p = subprocess.run([str(d / ".journal" / "install.py")], env=env_out, capture_ou
 check("install ends with a verdict and the next step, and no red marks",
       (("Installed." in p.stdout or "Already installed." in p.stdout), "Start Claude Code in this project" in p.stdout, "✗" in p.stdout), (True, True, False))
 
+# --------------------------------------------- `work await` is TAUGHT, not merely shipped
+# MEASURED, on this very project: an agent had to be told by the USER that `work await`
+# exists. It was in the skill and in `journal work help`, and neither of those is read at
+# the moment it is needed — a stop, with work open, while something is in flight. A command
+# nobody is told about where they need it does not exist, so the two surfaces that always
+# reach an agent must name it: the start block, and the hold that fires at exactly that stop.
+import hook as _hook  # noqa: E402
+for arm in (False, True):
+    block = _hook.carried("startup", stem=None, unbound=arm)
+    check(f"the start block names `work await` (unbound={arm})", "work await" in block, True)
+
+d, path = project_with(4)
+env = {**os.environ, transcript.SESSION_ENV: path.stem}
+J = str(d / ".journal" / "journal.py")
+fire(d, "SessionStart", path, source="startup")
+subprocess.run([J, "work", "start", "a thing in flight"], env=env, capture_output=True, timeout=60)
+code, out, err = fire(d, "Stop", path)
+brief, why = held(out)
+check("the open-work hold offers await beside end and update",
+      (brief, "work await" in why), ("journal reminded Claude: work still open", True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
