@@ -26,7 +26,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
     "work": (
         'journal work start "<what>"   declare work — a commitment, which is why it costs a command',
         'journal work update "<what moved>" [--on="<work>"]   progress on the open work',
-        'journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>]   in flight on something you cannot hurry; the stop stops nudging it',
+        'journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>]   in flight on something you cannot hurry; the stop stops nudging it until the first write, an update, or the wait expires',
         'journal work end "<what>"     the same words, to close it',
         "journal open                  work declared and never closed, with its notes",
         "journal next                  what to do now: the details of the last hold, or the next to-do",

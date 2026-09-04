@@ -1066,6 +1066,16 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
             "Nothing is the right answer more often than not — say so and carry on. "
             "`journal search`, `journal conversation --back=1` and `journal pins` still run, to decide with."
         )
+    # A WAIT ENDS WHEN THE WORK STARTS AGAIN, without being told. The user's ruling. `await`
+    # buys silence, and that silence is right while the agent is blocked and wrong the
+    # instant it is not — and the agent that has picked the work back up is the last thing
+    # that will remember to say so. A WRITE is the signal and a read is not: reading IS what
+    # waiting looks like (polling a log, checking a build), so a read leaves the wait
+    # standing, and this is the same line the gate below already draws.
+    if _is_write(payload) and not _is_journal(payload):
+        woke = work.resumed(ROOT, _owners(ctx))
+        if woke:
+            state.put(ROOT, "held_work", {}, stem=ctx.stem)   # it may be held for again
     if _is_write(payload) and not _is_journal(payload) and _unbound(conf, ctx):
         return _deny(
             _choose_block("") + "\n\nThis call is denied until one has been chosen. Reads "

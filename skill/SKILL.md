@@ -120,8 +120,10 @@ abandoned quietly — the awaited thing dies, nothing nudges, and the journal re
 forever. If you are waiting on a loop or a cron to wake you, set `--for=` past its next
 cycle, so the wake-up arrives before the hold does.
 
-Any `work update` or `work end` ends the wait early, because progress means the waiting is
-over. Never await something already finished, and never re-await to dodge a hold you owe
+**The wait ends by itself when the work resumes.** The first write — an edit, a `rm`, a
+command that changes something — cancels it, because nothing that is still blocked edits a
+file. Reading does not: polling a log or checking a build is what waiting LOOKS like. Any
+`work update` or `work end` ends it too, because progress means the waiting is over. Never await something already finished, and never re-await to dodge a hold you owe
 an answer to. A line that opens the work first,
 `journal work start "…" && …`, may write in the same line.
 

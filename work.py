@@ -150,8 +150,9 @@ def wait(root: Path, what: str, minutes: float, at: str, now: float,
     mins = int(minutes) if float(minutes).is_integer() else minutes
     who = f" ({named(picked[0][AWAIT])})" if named(picked[0][AWAIT]) else ""
     return True, (f"waiting on {what}{who} — `{picked[0]['subject']}` is not held for {mins} minute(s).\n"
-                  "  any `work update` or `work end` ends the wait; after that the hold returns "
-                  "and asks whether it is still coming"
+                  "  the FIRST WRITE ends it by itself — reading keeps waiting, editing is the "
+                  "work resuming — and so does any `work update` or `work end`; after that the "
+                  "hold returns and asks whether it is still coming"
                   + ("\n  the pid is watched: if it exits, the wait is over at the next stop"
                      if pid else ""))
 
@@ -191,6 +192,35 @@ def woke(root: Path, subject: str) -> None:
                 w.pop(AWAIT, None)
                 state.put(root, KEY, items)
                 return
+
+
+def resumed(root: Path, owners: set) -> str | None:
+    """The work moved again, so it is not waiting any more. Returns the subject it woke.
+
+    THE USER'S RULING: a wait ends when the work starts again, and it should not need a
+    command to say so. `await` says "this is in flight on something I cannot hurry", and it
+    buys silence — the stop stops nudging. That silence is correct while the agent is
+    genuinely blocked and wrong the moment it is not, and the agent that has picked the work
+    back up is the least likely thing in the system to remember to say so. Measured: a
+    runner awaited a subagent, resumed on its own, worked for eighteen minutes and stopped
+    into silence with the record still reading "in flight".
+
+    A WRITE IS THE SIGNAL, not any tool call. Reading is what waiting LOOKS like — polling a
+    log, checking whether the build is done, tailing an output file — so a read must leave
+    the wait standing or `await` would cancel itself on the first thing an agent does after
+    filing it. A write is different: nothing that is still blocked edits a file. It is the
+    same line this package already draws at its gate, where reads are never refused and
+    changes are.
+    """
+    with state.locked(root):
+        items = _all(root)
+        for w in items:
+            if w.get("ended") or not w.get(AWAIT) or w.get("session") not in owners:
+                continue
+            w.pop(AWAIT, None)
+            state.put(root, KEY, items)
+            return w["subject"]
+    return None
 
 
 def note(root: Path, text: str, at: str, on: str | None = None) -> tuple[bool, str]:

@@ -188,5 +188,49 @@ check("a wait past the cap is capped, and said", ("capped at 120" in out, "120 m
 code, out = s3.j("work", "await", "a review", "--for=nope")
 check("--for wants a number", (code, "--for wants minutes" in out), (1, True))
 
+# ------------------------------------------------ the wait ends when the work starts again
+# THE USER'S RULING. `await` buys silence, which is right while the agent is blocked and
+# wrong the moment it is not — and the agent that has picked the work back up is the last
+# thing that will remember to say so. Measured on the workflows runner: awaited a subagent,
+# resumed on its own, worked eighteen minutes and stopped into silence with the record still
+# reading "in flight".
+d4 = project()
+s4 = S(d4, "s4")
+s4.j("work", "start", "the thing being waited on")
+s4.j("work", "await", "a subagent", "--for=90")
+root4 = d4 / ".journal"
+
+
+def awaiting_now():
+    return [w.get("awaiting") for w in state.get(root4, "work", []) if not w.get("ended")][0]
+
+
+check("the wait is on the record", bool(awaiting_now()), True)
+s4.fire("PreToolUse", tool_name="Read", tool_input={"file_path": "x"})
+check("a READ leaves it standing — reading is what waiting looks like", bool(awaiting_now()), True)
+s4.fire("PreToolUse", tool_name="Bash", tool_input={"command": "tail -5 build.log"})
+check("so does a read-only command", bool(awaiting_now()), True)
+s4.fire("PreToolUse", tool_name="Bash",
+        tool_input={"command": '.journal/journal.py work update "still going"'})
+check("and so does the journal's own write, which is not the work resuming",
+      bool(awaiting_now()), True)
+s4.fire("PreToolUse", tool_name="Write", tool_input={"file_path": str(d4 / "f.txt"), "content": "x"})
+check("a WRITE cancels it: nothing that is still blocked edits a file", awaiting_now(), None)
+check("the work itself is untouched, only the wait is gone",
+      [w["subject"] for w in state.get(root4, "work", []) if not w.get("ended")],
+      ["the thing being waited on"])
+said = s4.stop()
+check("and the stop holds for it again, instead of passing in silence",
+      "still open" in said, True)
+
+# ONE SESSION'S WRITE DOES NOT WAKE ANOTHER'S WAIT.
+d5 = project()
+s5a, s5b = S(d5, "s5a"), S(d5, "s5b")
+s5a.j("work", "start", "a's work")
+s5a.j("work", "await", "a's build", "--for=90")
+s5b.fire("PreToolUse", tool_name="Write", tool_input={"file_path": str(d5 / "g.txt"), "content": "x"})
+still = [w.get("awaiting") for w in state.get(d5 / ".journal", "work", []) if not w.get("ended")][0]
+check("another session writing leaves the wait alone", bool(still), True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

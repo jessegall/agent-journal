@@ -4,6 +4,29 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.25.0 — a wait ends when the work starts again
+
+`work await` buys silence: the stop stops nudging work that is in flight on something the
+agent cannot hurry. That silence is right while the agent is blocked and wrong the moment it
+is not — and the agent that has picked the work back up is the last thing in the system that
+will remember to say so. The wait now ends by itself.
+
+A WRITE IS THE SIGNAL, AND A READ IS NOT. Reading is what waiting LOOKS like: polling a log,
+tailing an output file, checking whether the build is done. If any tool call cancelled the
+wait, `await` would cancel itself on the first thing an agent did after filing it. A write
+is different — nothing that is still blocked edits a file — and it is the same line this
+package already draws at its gate, where reads are never refused and changes are. The
+journal's own writes do not count either: `work update` while still waiting is a status
+report, not the work resuming. And only the owning session's write wakes its own wait.
+
+MEASURED, on the runner this came from: it awaited a subagent, resumed on its own, worked
+for eighteen minutes and stopped into silence with the record still reading "in flight".
+With this, its first edit ends the wait and the next stop holds it properly.
+
+`held_work` is cleared with the wait, so the work can be held for again rather than
+remembered as already-said. The `await` confirmation, `journal work help` and the skill all
+say so at the moment the command is used.
+
 ## 1.24.2 — `work await` is taught where it is needed
 
 `work await` shipped in 1.22.0, was documented in the skill and answered by `journal work
