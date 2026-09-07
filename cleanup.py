@@ -131,17 +131,24 @@ def _docs(root: Path) -> list[dict]:
         if d.get("superseded_by"):
             continue
         why = ""
+        gone = ""
         if d.get("track") and state.slug(d["track"]) not in {state.slug(n) for n in names}:
-            why = f"its environment `{d['track']}` is gone"
+            gone = why = f"its environment `{d['track']}` is gone"
         elif d.get("status") == "draft" and not d.get("parts"):
             days = _days(d.get("at", ""))
             if days is not None and days >= DRAFT_DAYS:
                 why = f"a draft with no parts, {int(days)}d old"
         if not why:
             continue
+        # THE FIX MUST ANSWER THE FINDING. An orphaned doc is not a finished doc, and
+        # offering `docs final` for it was the checker suggesting the one thing that does
+        # not address what it just reported — the field is what is stale, not the status.
         out.append({"kind": "doc", "n": d["n"], "where": "", "text": d.get("title", ""),
                     "why": why, "age": pins_mod.age(d.get("at", "")),
-                    "fix": f'journal docs final {d["n"]}   (or `docs strike {d["n"]}.<p> "<why>"`)'})
+                    "fix": (f"the doc still stands — edit `track:` in its index.md, or strike "
+                            f'what no longer holds: journal docs strike {d["n"]}.<p> "<why>"'
+                            if gone else
+                            f'journal docs final {d["n"]}   (or `docs strike {d["n"]}.<p> "<why>"`)')})
     return out
 
 

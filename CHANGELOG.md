@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.29.1 — the fix a finding offers has to answer the finding
+
+`cleanup` reported a doc whose environment had been removed and offered `journal docs
+final <n>` to resolve it. Marking a draft finished has nothing to do with a dangling
+environment: the stale thing is the field, not the status. A checker that suggests the one
+action which cannot help is worse than one that says nothing, because the reader trusts the
+suggestion and stops thinking. That case now says what is true — the doc still stands, edit
+its `track:`, or strike the parts that no longer hold.
+
+Found by running the command on this project's own record, which is also where the reading
+pass proved its point: pin 12 ruled on a documentation bug that has since been fixed. It
+named a real file and a real command, so every mechanical check passed it and always would
+have. Only reading it against the code retired it.
+
 ## 1.29.0 — auto without a loop is refused, not merely mentioned
 
 Auto is the promise that the list drains while the user is away. A session with no loop
