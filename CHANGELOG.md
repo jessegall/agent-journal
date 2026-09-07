@@ -4,6 +4,62 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.26.0 — an environment can be removed, and the record can be cleaned
+
+Two things the tool made the user do by hand.
+
+AN ENVIRONMENT CAN BE REMOVED. `tracks.py` opened with "there is no delete", and it meant
+it: the tool this package replaced dropped things quietly to stay tidy, and the answer was
+to drop nothing ever. That was the wrong half to keep. What matters is that somebody
+DECIDES, not that nothing can go — and a list that only grows is a list nobody reads, so
+every finished piece of work and every experiment stayed on it forever.
+
+    journal environments remove "<name>"            says what it holds, removes nothing
+    journal environments remove "<name>" --yes      archives it under .journal/removed/
+    journal environments remove "<name>" --yes --purge   deletes it outright
+
+`--yes` writes the environment's pins and work whole to `environment.json` and moves its
+to-do folder beside them, so what came off can be read or put back by hand. It refuses the
+project's start environment (a new session would land nowhere), an environment a live
+session is on, and this session's own. Docs are the project's and never go with it. The
+removal is logged on the record, and stale sessions bound to the dead name are unbound.
+`remove`, `rm`, `delete` and `forget` answer only under the noun: there is no top-level
+`journal remove`, because a bare deleting verb is the one spelling a mistyped name must
+never reach.
+
+THE RECORD CAN BE CLEANED. Rules and pins are re-asserted verbatim at the top of every
+compaction, in the highest authority the system has, and nothing revisits them — so the
+user was revisiting them, by hand, pasting the same paragraph into session after session:
+remove the obsolete rules, clear the docs nobody uses, strike the stale pins. A thing the
+user has to say every time is a thing the tool has not learned.
+
+    journal cleanup [--all]        (journal tidy is the same command)
+
+It gathers only what has CHECKABLE evidence against it: a rule or pin naming a file that is
+nowhere in the project or a backticked `journal <verb>` the CLI does not answer to, a doc
+whose environment is gone or a draft with no parts in a fortnight, a to-do that has waited
+on the user for a week, an environment with no pins, no open work, no to-dos and nobody on
+it. Each is printed beside the command that retires it, with the evidence in the line so
+the reader can disagree with it.
+
+AGE IS NEVER EVIDENCE, and neither is prose that merely contains the word. A three-month-old
+pin that still holds is the best kind of pin; a checker that flags it teaches the reader to
+skim, and the next real finding goes past with the noise. Both false positives found against
+a real record are now tests: the repo is named after the CLI, so a `journal <verb>` counts
+only inside backticks, and a file that MOVED is a stale path rather than a dead claim.
+
+WHAT NO CHECK CAN SEE is the rule that quietly stopped describing how anyone works — it
+names no file and misspells nothing. So the report always ends with every rule in force,
+numbered and aged, with its strike beside it, under a heading that says so. That part is a
+reading list, on purpose.
+
+Nothing is struck for anyone. A strike needs a reason and only hides the claim — `journal
+rules --all` and `journal pins --all` still show it — so striking one you have read and
+judged dead is cheap. The stop queue gained a `cleanup` subject, last and never held: when
+the candidate set changes it says once that the record has entries with evidence against
+them, because a command reachable only through the skill is a command the agent meets the
+moment and does not know exists.
+
 ## 1.25.0 — a wait ends when the work starts again
 
 `work await` buys silence: the stop stops nudging work that is in flight on something the

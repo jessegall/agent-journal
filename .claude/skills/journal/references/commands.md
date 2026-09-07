@@ -65,6 +65,16 @@ payload, not a description of it.
     journal rules N --full           the conversation around one
     journal rules strike N "<why>"   repeal one, on the record (also: `journal rule --strike N "<why>"`)
 
+**Cleanup: what has stopped being true**
+
+    journal cleanup [--all]          every entry with EVIDENCE against it — a rule or pin naming a file or a `journal <verb>` that is gone, a doc whose environment is gone or an untouched draft, a to-do that has waited on the user, an empty environment — each beside the command that retires it; --all reads every environment's pins, not just this one's
+    journal tidy                     the same command
+Nothing is struck for you, and age alone is never evidence: a checker that flags a true
+claim teaches the reader to skim, and the one real finding goes past with the noise. What
+no check can see is the rule that quietly stopped describing how anyone works, so the
+report always ends with every rule in force, to be READ. A strike needs a reason and hides
+the claim rather than erasing it, so being wrong about one is cheap.
+
 **To-dos, for this environment** (`todos` is a twin of `todo` everywhere below — plural or singular, either works)
 
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin — bare `journal todo "<title>"` is the same
@@ -124,6 +134,7 @@ A brief on stdin:
     journal switch --back            the environment this session came from
     journal claim "<name>" "<why>"   take one a live session still holds: it is unbound, told at its next stop why and by whom, and can claim it back. Nothing of the environment is deleted
     journal environments switch|claim|prepare|delegate|handoff …   the noun+verb twin of each of these; the top-level spelling stays (ruling R11) and both call the same function
+    journal environments remove "<name>" [--yes] [--purge]   take one off the list: bare it says what it holds, --yes archives it whole under .journal/removed/, --purge deletes it; never the start environment, never one a live session is on, and docs stay
     journal environments show "<name>"   the pickup page: docs to read first, what stands, open work, to-dos, how to begin (bare `journal environments "<name>"` is the same)
     journal prepare "<name>"         create an environment for a piece of work and switch to it (see prepare.md)
     journal delegate "<name>" | --off   this session and its subagents act on it; a subagent's journal lands there

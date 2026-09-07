@@ -12,7 +12,7 @@ here deletes.
 
 Every test runs against a throwaway directory. It never touches the real record.
 """
-import json, os, os, shutil, subprocess, sys, tempfile
+import json, os, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"  # no network from the hooks under test
@@ -233,6 +233,68 @@ check("the thirty are untouched", len(pins.live(r9)), 30)
 # synopsis and the synopsis no longer spells `tracks`. The same prefix match answered for
 # `journal doc` and `journal environment`, which are not commands at all — the CLI
 # disagreeing with its own help about what exists, in both directions at once.
+
+# ---------------------------------------------------------------- removing one
+import todo as todo_mod
+
+r7 = fresh()
+tracks.switch(r7, "gone", AT)
+pins.add(r7, "fact G", AT, 12)
+work.start(r7, "work on gone", AT)
+todo_mod.add(r7, "gone", "a to-do on gone", "the brief", AT)
+tracks.switch(r7, "default", AT)          # the project starts on default again
+pins.add(r7, "fact D", AT, 12)
+
+took, msg = tracks.remove(r7, "gone", AT)
+check("bare remove does nothing", took, False)
+check("bare remove says what would be lost", "1 pin(s), 1 open work, 1 open to-do(s)" in msg, True)
+check("bare remove leaves the environment standing",
+      sorted(t["name"] for t in tracks.listing(r7)), ["default", "gone"])
+
+took, msg = tracks.remove(r7, "default", AT, yes=True)
+check("the start environment is never removed", took, False)
+check("and it says why", "where new sessions start" in msg, True)
+took, msg = tracks.remove(r7, "never-existed", AT, yes=True)
+check("an unknown name is refused", (took, "no environment is called" in msg), (False, True))
+
+took, msg = tracks.remove(r7, "gone", AT, yes=True)
+check("--yes removes it", took, True)
+check("it is off the listing", [t["name"] for t in tracks.listing(r7)], ["default"])
+check("the other environment is untouched", live(r7), (["fact D"], []))
+check("its to-do folder is gone from todo/", (r7 / "todo" / "gone").exists(), False)
+box = sorted((r7 / "removed").glob("gone-*"))
+check("it is archived whole", len(box), 1)
+check("the archive holds its pins and work",
+      [p["fact"] for p in json.loads((box[0] / "environment.json").read_text())["pins"]],
+      ["fact G"])
+check("the archive holds its to-dos", len(list((box[0] / "todo").glob("*.md"))), 1)
+check("the removal is on the record",
+      [(x["track"], x["purged"]) for x in state.get(r7, "removals", [])], [("gone", False)])
+
+# --purge keeps nothing, and a stale session bound to the name is unbound
+r8 = fresh()
+tracks.switch(r8, "scratch", AT)
+todo_mod.add(r8, "scratch", "a to-do", "brief", AT)
+tracks.switch(r8, "default", AT)
+tracks.bind(r8, "deadbeef", "scratch")
+took, msg = tracks.remove(r8, "scratch", AT, yes=True, purge=True)
+check("--purge removes it", took, True)
+check("--purge archives nothing", (r8 / "removed").exists(), False)
+check("--purge takes the to-dos with it", (r8 / "todo" / "scratch").exists(), False)
+check("a session bound to it is unbound", tracks.bound(r8, "deadbeef"), None)
+check("and it is said", "1 stale session(s)" in msg, True)
+
+# a live session on it is protection enough
+r9 = fresh()
+tracks.switch(r9, "busy", AT)
+tracks.switch(r9, "default", AT)
+tracks.bind(r9, "livestem", "busy")
+state.put(r9, "seen", time.time(), stem="livestem")
+took, msg = tracks.remove(r9, "busy", AT, yes=True)
+check("an environment a live session is on is not removed", took, False)
+check("and the holder is named", "livestem"[:8] in msg, True)
+
+
 J = str(SRC / "journal.py")
 HELP_CWD = tempfile.mkdtemp()   # no record anywhere above it: help must not need one
 

@@ -162,6 +162,23 @@ other tool runs until `pin`, `rule` or `nothing "<why>"` has. It forces a decisi
 not a pin; `nothing` with a reason is the right answer more often than not. It is also the
 moment to park any work you are holding for later, because that lives only in the window.
 
+**Retire what has stopped being true, and do not wait to be asked.**
+
+    journal cleanup [--all]        what has EVIDENCE against it, beside the command that retires it
+    journal rules strike <n> "<why>"     |  journal pins strike <n> "<why>"
+
+Rules and pins are re-asserted verbatim at the top of every compaction, in the highest
+authority the system has, and nothing revisits them. `cleanup` finds the entries with
+something checkable against them — a claim naming a file that is gone or a `journal <verb>`
+the CLI does not answer to, a doc whose environment no longer exists, a to-do that has been
+waiting on the user, an environment with nothing on it. Age is never evidence on its own.
+
+What no command can find is the rule that quietly stopped describing how anyone works, so
+the report ends with every rule in force, to be read rather than checked. **Strike what you
+have read and judged dead**: the reason is required, and a strike hides the claim rather
+than erasing it — `journal rules --all` and `journal pins --all` still show it — so being
+wrong is cheap and leaving a dead rule standing is not.
+
 ## Delayed work: the to-do
 
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)
@@ -377,6 +394,7 @@ thing to do now.
 | *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
 | *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`                  |
 | *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs |
+| *N entr(ies) in the record have evidence against them*         | `journal cleanup`, then strike what you have read and judged dead |
 | *environment `x` is taken by another session*                        | ask the user which environment this session works on, then `switch "<name>"`; if the holder is gone and they say so, `claim "<name>" "<why>"` |
 | *environment `x` was claimed by another session*                     | another session took it and said why; you are bound to nothing — `switch "<name>"`, or `claim "<name>" "<why>"` to take it back |
 | *THIS SESSION HAS NO ENVIRONMENT*                              | take one from what the user just asked — `switch "<name>"` — and say which; ask them if it named none |

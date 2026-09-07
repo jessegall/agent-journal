@@ -521,3 +521,97 @@ def back(root: Path, at: str, stem: str = "", exclusive: bool = True, stale_hour
     if not was:
         return False, "no environment to go back to — nothing has been switched away from yet"
     return switch(root, was, at, stem, project=not stem, exclusive=exclusive, stale_hours=stale_hours)
+
+
+REMOVED = "removals"          # the record's log of what was taken away, and by whom
+ARCHIVE = "removed"           # .journal/removed/<name>-<stamp>.json, and the to-dos beside it
+
+
+def _held_summary(root: Path, name: str, held: dict) -> tuple[int, int, int]:
+    import todo as todo_mod
+    pins = len([p for p in held.get("pins", []) if not p.get("struck")])
+    work = len([w for w in held.get("work", []) if not w.get("ended")])
+    todos = len(todo_mod.open_items(root, name))
+    return pins, work, todos
+
+
+def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
+           purge: bool = False, stale_hours: float = 24.0) -> tuple[bool, str]:
+    """Take an environment off the list — archived by default, deleted only when asked.
+
+    A DELETE THAT KEEPS THE THING. This module's first rule is that nothing disappears
+    without somebody deciding it should, and for a long time that was read as "there is no
+    delete at all" — which left every experiment and every finished piece of work on the
+    list forever, and a list nobody trusts is a list nobody reads. So the decision is what
+    is required, not the permanence: `--yes` after seeing exactly what is on the
+    environment, and what comes off is written whole to `removed/` where it can be read or
+    put back by hand. `--purge` is the one that does not keep it, and it has to be typed.
+
+    WHAT IT REFUSES. The project's start environment, because a new session would land
+    nowhere. An environment a live session is on, including this one, because pulling the
+    ground out from under a running agent is exactly the quiet loss this guards against.
+    Docs are never touched: they belong to the project, not to one environment.
+    """
+    import shutil
+    import todo as todo_mod
+    name = state.slug(name)
+    if not name:
+        return False, 'remove what? `journal environments remove "<name>"`'
+    tracks = _all(root)
+    if name not in tracks:
+        return False, (f"no environment is called {name!r}; `journal environments` lists them")
+    start = state.get(root, CURRENT, DEFAULT) or DEFAULT
+    if name == start:
+        return False, (f"{name} is where new sessions start, so it cannot be removed — point the project "
+                       f'somewhere else first: `journal switch "<other>" --project`')
+    if bound(root, stem) == name:
+        return False, (f'this session is on {name} — switch away first: `journal switch "<other>"`, '
+                       f'then `journal environments remove "{name}"`')
+    taken = occupants(root, name, stem, stale_hours)
+    if taken:
+        return False, (f"{name} is taken by session {taken[0][0][:8]} ({age_text(taken[0][1])}) — an environment "
+                       "under a running session is not removed; wait for it, or move it with "
+                       f'`journal switch "<other>" --session={taken[0][0][:8]}`')
+    pins, work, todos = _held_summary(root, name, tracks.get(name, {}))
+    what = f"{pins} pin(s), {work} open work, {todos} open to-do(s)"
+    if not yes:
+        return False, (f"{name} holds {what}. Nothing is removed without --yes:\n"
+                       f'  journal environments remove "{name}" --yes        archive it under .journal/{ARCHIVE}/\n'
+                       f'  journal environments remove "{name}" --yes --purge   delete it outright\n'
+                       "  docs are the project's and are never removed with an environment")
+    kept = ""
+    with state.locked(root):
+        data = state._record(root)
+        held = (data.get("tracks") or {}).pop(name, {})
+        if data.get(PREVIOUS) == name:
+            data.pop(PREVIOUS, None)   # `--back` must not walk into a name that is gone
+        auto = data.get("auto")
+        if isinstance(auto, dict):
+            auto.pop(name, None)
+        sessions = data.get("sessions")
+        if isinstance(sessions, dict):
+            sessions.pop(name, None)
+        log = data.get(REMOVED) or []
+        log.append({"track": name, "by": stem or "", "at": at, "purged": bool(purge),
+                    "pins": pins, "work": work, "todos": todos})
+        data[REMOVED] = log[-50:]
+        state._write(state.record_file(root), data)
+        folder = todo_mod.folder(root, name)
+        if not purge:
+            box = root / ARCHIVE / f"{name}-{time.strftime('%Y%m%d-%H%M%S')}"
+            box.mkdir(parents=True, exist_ok=True)
+            (box / "environment.json").write_text(json.dumps(held, indent=2) + "\n")
+            if folder.is_dir():
+                shutil.move(str(folder), str(box / "todo"))
+            kept = f"\n  kept whole in {box.relative_to(root.parent)} — read it, or move it back by hand"
+        elif folder.is_dir():
+            shutil.rmtree(folder, ignore_errors=True)
+    # A STALE SESSION'S BINDING WOULD OUTLIVE THE ENVIRONMENT, and `current` would hand it a
+    # name that is gone; unbind those, so they choose again the way a new session does.
+    b = _bindings(root)
+    stragglers = [sid for sid, t in b.items() if t == name]
+    for sid in stragglers:
+        unbind(root, sid)
+    note = (f"\n  {len(stragglers)} stale session(s) were bound to it and are now bound to nothing"
+            if stragglers else "")
+    return True, (f"{name} is removed — it held {what}" + ("; purged" if purge else "") + kept + note)

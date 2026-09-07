@@ -307,7 +307,8 @@ def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
 #: up the next" was owed. The user's rule: the hook runs them one by one.
 #: The subjects of the queue live below, each registered with `nudges.subject(name, priority)`;
 #: `nudges.ordered(conf)` is the order they run in. `SUBJECTS` is kept as the default order.
-SUBJECTS = ("claimed", "environment", "loop", "context", "deferral", "untagged", "work", "auto")
+SUBJECTS = ("claimed", "environment", "loop", "context", "deferral", "untagged", "work",
+            "auto", "cleanup")
 
 
 def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
@@ -569,6 +570,41 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
             f"journal: still open — {'; '.join(w['subject'] for w in fresh)} — `work end` it, "
             "`work update` where it got to, or `work await \"<what you wait on>\" "
             "--pid=<n>|--agent=<id>` if it is in flight on something you cannot hurry")
+
+
+@nudges.subject("cleanup", 70)
+def _p_cleanup(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    """The record has entries with evidence against them — said once, never held.
+
+    TAUGHT AT THE MOMENT IT ANSWERS, which is the standing rule: a command reachable only
+    through the skill or its own help is a command the agent meets the moment and does not
+    know exists. `cleanup` was being done by the USER instead, pasted in by hand session
+    after session — remove the obsolete rules, clear the docs nobody uses, strike the
+    stale pins — which is the definition of a thing the tool never learned.
+
+    SAID, NOT HELD, and last in the queue. Nothing here blocks anyone: a stale pin is a
+    slow cost, and a hold that fires when nothing has to move is what teaches a reader to
+    clear a hold without reading it. It also repeats only when the set of candidates
+    CHANGES, so a reader who judged them and left them costs one line, once.
+    """
+    if work.open_work(ROOT):
+        return None
+    import cleanup as cleanup_mod
+    try:
+        found = cleanup_mod.candidates(ROOT, here, stale_hours=conf["session_stale_hours"])
+    except Exception:
+        return None
+    if not found:
+        return None
+    key = sorted(f"{f['kind']}{f['n']}{f['text'][:20]}" for f in found)
+    if key == state.get(ROOT, "cleanup_said", [], stem=ctx.stem):
+        return None
+    state.put(ROOT, "cleanup_said", key, stem=ctx.stem)
+    what = ", ".join(sorted({f["kind"] for f in found}))
+    return ("context-only",
+            f"journal: {len(found)} entr(ies) in the record have evidence against them ({what}) "
+            "— `.journal/journal.py cleanup` lists each beside the command that retires it. "
+            "Nothing is struck for you.")
 
 
 @nudges.subject("auto", 60)

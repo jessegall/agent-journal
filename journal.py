@@ -17,6 +17,7 @@ Every group below prints its own commands, and so does every spelling of them:
     docs           what was settled: findings, reports, the reasoning a pin cites
     tools          scripts kept for repeated work
     environments   where work lives: switch, prepare, delegate, handoff, worktree
+    cleanup        what has evidence against it: stale rules, pins, docs, empty environments
     transcript     read it back: conversation, user, search, carry
     system         verify, version, update, settings, loop
 
@@ -1142,6 +1143,7 @@ def cmd_tracks(name: str = "") -> int:
         ('journal switch "<name>" --project', "this session, and where new sessions start"),
         ('journal switch "<name>" --session=<id>', "move one bound session; --all-sessions moves every one"),
         ("journal switch --back", "the one you came from"),
+        ('journal environments remove "<name>"', "take one off the list — it says what it holds, --yes does it"),
     ]))
     fmt.say(fmt.wrap("Nothing is ever closed by switching." + (
         " One running session works an environment at a time; a stale session is one not seen for "
@@ -1167,6 +1169,22 @@ def cmd_switch(name: str, go_back: bool, project_too: bool = False, sessions: li
         return 0
     ok, msg = (tracks.back(root(), _now(), stem, excl, stale) if go_back
                else tracks.switch(root(), name, _now(), stem, project=project_too or not stem, exclusive=excl, stale_hours=stale))
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
+def cmd_cleanup(every: bool) -> int:
+    import cleanup
+    conf, _ = settings_mod.load(root())
+    fmt.say(cleanup.report(root(), tracks.current(root(), _stem()), every,
+                           conf["session_stale_hours"]))
+    return 0
+
+
+def cmd_track_remove(name: str, yes: bool, purge: bool) -> int:
+    conf, _ = settings_mod.load(root())
+    ok, msg = tracks.remove(root(), name, _now(), _stem() or "", yes=yes, purge=purge,
+                            stale_hours=conf["session_stale_hours"])
     fmt.say(msg, error=not ok)
     return 0 if ok else 1
 
@@ -1256,6 +1274,8 @@ def main(argv: list[str]) -> int:
     run_flag = False
     project_too = False
     all_sessions = False
+    yes_flag = False
+    purge = False
     sessions: list[str] = []
     page = 1
     abstract = ""
@@ -1323,6 +1343,10 @@ def main(argv: list[str]) -> int:
             brief = True
         elif a == "--project":
             project_too = True
+        elif a == "--yes":
+            yes_flag = True
+        elif a == "--purge":
+            purge = True
         elif a == "--all-sessions":
             all_sessions = True
         elif a.startswith("--session="):
@@ -1376,6 +1400,16 @@ def main(argv: list[str]) -> int:
         return cmd_tracks(" ".join(rest[2:]))
     if verb in ENV_NOUNS and len(rest) == 2 and rest[1] == "list":
         return cmd_tracks("")
+    # `remove` LIVES ONLY UNDER THE NOUN, like `show` and `list`. There is no top-level
+    # `journal remove`, and there should not be: an environment can be named anything, and
+    # a bare verb that deletes is the one spelling a mistyped name must never reach.
+    if verb in ENV_NOUNS and len(rest) > 1 and rest[1] in ("remove", "rm", "delete", "forget"):
+        if len(rest) < 3:
+            fmt.say('remove wants a name: journal environments remove "<name>"', error=True)
+            return 1
+        return cmd_track_remove(" ".join(rest[2:]), yes_flag, purge)
+    if verb in ("cleanup", "tidy"):
+        return cmd_cleanup(all_of_them)
     if verb == "user":
         return cmd_user(back)
     if verb == "open":

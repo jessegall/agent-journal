@@ -92,6 +92,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal environments show "<name>"   the pickup page of one: docs to read first, what stands, open work, to-dos in order, how to begin; bare `journal environments "<name>"` is the same',
         'journal environments switch "<name>" [--project|--session=<id>|--all-sessions]   this session\'s environment; --project also where new sessions start',
         "journal switch --back         the one you came from",
+        'journal environments remove "<name>" [--yes] [--purge]   take one off the list: bare it says what it holds, --yes archives it under .journal/removed/, --purge deletes it; never the start environment, never one a live session is on, and docs are the project\'s and stay',
         'journal environments claim "<name>" "<why>"   take one a live session still holds: it is unbound and told at its next stop',
         'journal environments prepare "<name>"   create an environment for a piece of work and switch to it',
         'journal environments delegate "<name>"  this session and its subagents act on that environment; --off ends it',
@@ -100,6 +101,11 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "switch, claim, prepare, delegate and handoff are also TOP-LEVEL verbs (ruling R11): `journal switch \"<name>\"` is the same command as `journal environments switch \"<name>\"`",
         "journal --env=<name> <command>   run any command on a named environment without switching to it",
         "journal worktree [link]       is this a linked worktree, and does .journal link to the main checkout's? `link` makes it so",
+    ),
+    "cleanup": (
+        "journal cleanup [--all]       what in the record has EVIDENCE against it: a rule or pin naming a file or a command that is gone, an orphaned or untouched doc, a to-do that has waited on the user, an empty environment — each beside the command that retires it; --all reads every environment's pins",
+        "nothing is struck for you: a strike needs a reason and hides a claim rather than erasing it, so the judgement stays with the reader",
+        '`journal rules strike <n> "<why>"` · `journal pins strike <n> "<why>"` · `journal docs strike <doc>.<p> "<why>"` · `journal environments remove "<name>" --yes`',
     ),
     "transcript": (
         "journal conversation          what was said since the last compaction",
@@ -130,6 +136,7 @@ ALIAS: dict[str, str] = {
     "nothing": "pins",
     "rule": "rules",
     "todo": "todos",
+    "tidy": "cleanup",
     "tracks": "environments", "track": "environments",
     "envs": "environments", "env": "environments", "environment": "environments",
     "switch": "environments", "prepare": "environments", "delegate": "environments",

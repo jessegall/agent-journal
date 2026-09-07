@@ -35,7 +35,7 @@ LOCK = "record.json.lock"
 #: write them into the session running the upgrade — the defect being fixed.
 RETIRED = "state.json"
 
-IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto", "docs_next", "upgraded", "window", "claims"}
+IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto", "docs_next", "upgraded", "window", "claims", "removals"}
 
 
 def is_record(key: str) -> bool:
