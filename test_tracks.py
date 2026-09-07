@@ -316,5 +316,21 @@ for not_a_command in ("doc", "pinn", "tool"):
 check("help needs no record: it reads the synopsis, not the store",
       (Path(HELP_CWD) / ".journal").exists(), False)
 
+# ------------------------------------------------------ work end --force
+rW = fresh()
+work.start(rW, "work nobody can name any more", AT)
+work.start(rW, "a second piece, equally orphaned", AT)
+took, msg = work.end(rW, "the wrong words", AT)
+check("without force the words must match", took, False)
+check("and it lists what is open", "work nobody can name any more" in msg, True)
+took, msg = work.end(rW, "the worktree that declared it is gone", AT, force=True)
+check("--force closes every open piece", (took, len(work.open_work(rW))), (True, 0))
+check("and says how many", "closed 2 with --force" in msg, True)
+check("the note is kept beside each",
+      sorted({w.get("ended_note") for w in state.get(rW, "work")}),
+      ["the worktree that declared it is gone"])
+took, msg = work.end(rW, "again", AT, force=True)
+check("with nothing open it refuses like any other close", (took, msg), (False, "nothing is open"))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

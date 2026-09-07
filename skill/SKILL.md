@@ -92,6 +92,7 @@ user interrupts you, nothing in that turn is judged.
     journal work update "<what moved>" [--on="<work>"]
     journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>] [--on="<work>"]
     journal work end "<the same words>"
+    journal work end --force ["<note>"]      close work whose declarer is GONE: a deleted worktree, a crashed session — its subject is unguessable, so the note replaces the match
 
 Declare before the first write, never before the first read: edits, `rm`, `git commit`
 are refused while nothing is open, and reads never are, because reading is what tells you

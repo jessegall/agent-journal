@@ -28,6 +28,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal work update "<what moved>" [--on="<work>"]   progress on the open work',
         'journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>]   in flight on something you cannot hurry; the stop stops nudging it until the first write, an update, or the wait expires',
         'journal work end "<what>"     the same words, to close it',
+        'journal work end --force ["<note>"]   close EVERY open piece whatever the words are — for work whose declarer is gone (a deleted worktree, a crashed session): its subject is unguessable and it would stand forever; the note is kept beside it',
         "journal open                  work declared and never closed, with its notes",
         "journal next                  what to do now: the details of the last hold, or the next to-do",
     ),

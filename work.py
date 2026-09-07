@@ -55,14 +55,38 @@ def start(root: Path, subject: str, at: str, where: dict | None = None) -> tuple
     return True, f"open: {subject}"
 
 
-def end(root: Path, subject: str, at: str) -> tuple[bool, str]:
-    """Close it by saying the same words.
+def end(root: Path, subject: str, at: str, force: bool = False) -> tuple[bool, str]:
+    """Close it by saying the same words — or, with --force, whatever the words are.
 
     A close that matched nothing is REFUSED and lists what is open. Silently accepting it
     would let the agent believe it had closed work that is still standing — and an open
     piece of work nobody knows about is exactly what this exists to prevent.
+
+    `--force` IS FOR WORK THAT IS NOT YOURS TO NAME. The matching rule assumes the closer
+    is the declarer, who can say the subject again. That breaks for exactly the case it was
+    never designed for: work declared by a session that is gone — a runner in a worktree
+    that was deleted, a crashed agent, a hand-off nobody picked up. Its subject is
+    unguessable, it can never be closed by saying the same words, and it stands forever
+    holding every stop hostage. With force, the message is a NOTE rather than a key: every
+    open piece is closed and the words are kept beside it, so the record still says who
+    closed it and why, and nothing is lost but the pretence that anyone remembers.
     """
     subject = " ".join(subject.split()).lower()
+    if force:
+        with state.locked(root):
+            items = _all(root)
+            closed = []
+            for w in items:
+                if not w.get("ended"):
+                    w["ended"] = at
+                    w["ended_note"] = subject or "closed with --force"
+                    closed.append(w["subject"])
+            if closed:
+                state.put(root, KEY, items)
+        if not closed:
+            return False, "nothing is open"
+        return True, (f"closed {len(closed)} with --force:\n"
+                      + "\n".join(f"  {s}" for s in closed))
     with state.locked(root):
         items = _all(root)
         for w in items:

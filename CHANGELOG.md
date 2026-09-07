@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.28.0 — work whose declarer is gone can still be closed
+
+`work end` closes by saying the same words, which assumes the closer is the declarer. That
+assumption breaks for the one case nobody planned: work declared by a session that no
+longer exists — a runner in a worktree that has been deleted, a crashed agent, a hand-off
+nobody picked up. Its subject is unguessable, so it can never be closed, and it stands
+forever holding every stop hostage with a hold nobody can answer.
+
+    journal work end --force ["<note>"]
+
+Every open piece closes, whatever the words are, and the words are kept beside each as
+`ended_note` — so the record still says who closed it and why. The note is optional,
+because requiring words for work nobody can name is the same trap one level down.
+
 ## 1.27.0 — a cleanup is two passes, and the mechanical one is the smaller
 
 `journal cleanup` finds what a check can see: a claim naming a file that is gone, a

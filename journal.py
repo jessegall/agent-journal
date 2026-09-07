@@ -297,7 +297,7 @@ def cmd_start(subject: str) -> int:
     return 0 if ok else 1
 
 
-def cmd_end(subject: str) -> int:
+def cmd_end(subject: str, force: bool = False) -> int:
     """Close the work, and ask the one question that is only answerable now.
 
     THE MOMENT WORK CLOSES IS THE MOMENT YOU KNOW WHAT IT TAUGHT. Before it, you cannot
@@ -308,7 +308,7 @@ def cmd_end(subject: str) -> int:
     It ASKS, it does not hold. A gate here would be a third rule, and this is a question
     with a legitimate answer of "nothing" — most work teaches nothing that outlives it.
     """
-    ok, msg = work.end(root(), subject, _now())
+    ok, msg = work.end(root(), subject, _now(), force)
     fmt.say(msg, error=not ok)
     if ok:
         closed = todo.close_titled(root(), tracks.current(root(), _stem()), subject, _now())
@@ -1283,6 +1283,7 @@ def main(argv: list[str]) -> int:
     all_sessions = False
     yes_flag = False
     purge = False
+    force = False
     sessions: list[str] = []
     page = 1
     abstract = ""
@@ -1354,6 +1355,8 @@ def main(argv: list[str]) -> int:
             yes_flag = True
         elif a == "--purge":
             purge = True
+        elif a == "--force":
+            force = True
         elif a == "--all-sessions":
             all_sessions = True
         elif a.startswith("--session="):
@@ -1608,7 +1611,8 @@ def main(argv: list[str]) -> int:
         if sub not in ("start", "end", "update", "await"):
             fmt.say('journal work start|update|end|await "<words>"', error=True)
             return 1
-        if len(rest) < 3:
+        # --force NEEDS NO WORDS: the case it exists for is work nobody can name any more.
+        if len(rest) < 3 and not (sub == "end" and force):
             fmt.say(f'work {sub} wants the words: journal work {sub} "<the work>"', error=True)
             return 1
         words = " ".join(rest[2:])
@@ -1616,14 +1620,14 @@ def main(argv: list[str]) -> int:
             return cmd_await(words, on, wait_for, await_agent, await_pid)
         if sub == "update":
             return cmd_update(words, on)
-        return cmd_start(words) if sub == "start" else cmd_end(words)
+        return cmd_start(words) if sub == "start" else cmd_end(words, force)
     if verb in ("start", "end"):
         # kept so a session that learned the old spelling is not stranded mid-work
         if len(rest) < 2:
             fmt.say(f"{verb} wants the words that name the work", error=True)
             return 1
         subject = " ".join(rest[1:])
-        return cmd_start(subject) if verb == "start" else cmd_end(subject)
+        return cmd_start(subject) if verb == "start" else cmd_end(subject, force)
     if verb == "verify":
         body, ok = verify.render(root())
         fmt.say(body)
