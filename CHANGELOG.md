@@ -4,6 +4,34 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.31.0 — a long stretch no longer ends in silence
+
+Seen on a live run: an agent finished four of fifty-six phases, wrote a full report and
+stopped — with auto on, fifty-two to-dos waiting, work open and a loop running. Nothing
+nudged it and the user had to continue it by hand. Its own footer said how long the stretch
+was: eight minutes fifty-five.
+
+`raised_this_turn` was the cause. It is read while `stop_hook_active` is true and cleared
+only when it is false, and the subject loop skips anything already in it — so the budget
+was ONE hold per stop-chain rather than one per unit of progress. An agent held once, that
+answers the hold and then works for nine minutes, meets a stop where every subject it needs
+is already marked raised. The longer the stretch, the more certain the silence, which is
+exactly backwards.
+
+The memory now expires on PROGRESS. Each subject records the transcript line it was raised
+at, and stays quiet only while the transcript has advanced fewer than
+`hold_again_after_lines` (25) since. A subject held a moment ago is still quiet; one held
+twenty-five lines of work ago is not being nagged about — it is being told at the next stop
+after real work. `hold_again_after_lines: 0` restores the old budget exactly.
+
+Raising at every stop instead was tried in 1.29.0 for the loop subject and starved the
+queue: a subject that never yields is a queue that never drains. The threshold is precisely
+what separates the two, and the suite now holds both ends — a stop straight after the hold
+stays silent, a stop after thirty lines speaks.
+
+An older record holding a bare list under that key is read as "raised just now", which is
+what it meant, and written back in the new shape at the next hold.
+
 ## 1.30.0 — every list that pages reads newest first
 
 Pins, rules, to-dos, docs and tools are append-only, so their natural order is oldest

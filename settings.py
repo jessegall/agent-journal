@@ -102,6 +102,15 @@ DEFAULTS = {
     # The measurement behind "too much time without result" when auto is on. 0 turns it off.
     "stall_calls": 40,
 
+    # TRANSCRIPT LINES OF PROGRESS BEFORE A HELD SUBJECT MAY BE RAISED AGAIN in the same
+    # stop-chain. The budget used to be one hold per CHAIN: an agent held once, that then
+    # answered and worked for nine minutes, met a stop where every subject it needed was
+    # already marked raised, and stopped in silence — the longer the stretch, the more
+    # certain the silence. A subject that never yields is no good either (it starves the
+    # queue), so the line between nagging and the next stop after real work is progress,
+    # measured in transcript lines. 0 restores one hold per chain.
+    "hold_again_after_lines": 25,
+
     # HOW OFTEN AN IDLE AUTO SESSION IS WOKEN. With auto on, the agent is asked to keep a
     # loop running that prompts `journal next` at this interval, so a session left alone
     # comes back and carries on until nothing is left it can do. Minutes; 0 asks for none.

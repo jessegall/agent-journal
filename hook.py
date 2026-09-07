@@ -319,6 +319,38 @@ SUBJECTS = ("claimed", "environment", "loop", "context", "deferral", "untagged",
 #: `_loop_owed`. The hold stays once per chain, like every other subject.
 
 
+def _still_raised(conf: dict, ctx: Ctx, lines, active: bool) -> dict:
+    """{subject: the line it was raised at} for the subjects this chain must stay quiet about.
+
+    ONE HOLD PER CHAIN WAS THE WRONG BUDGET, and it failed in the direction that costs most:
+    an agent held once, that answered the hold and then worked for nine minutes, met a stop
+    where every subject it needed was already marked raised and stopped in SILENCE. The
+    longer the stretch, the more certain the silence. Seen on a live run — four phases
+    finished, work open, 52 to-dos waiting, and nothing said.
+
+    So the memory expires on PROGRESS rather than on the chain. A subject held a moment ago
+    stays quiet; one held twenty-five lines of work ago is not being nagged about, it is
+    being told at the next stop after real work. Raising it at every stop was tried in
+    1.29.0 for the loop subject and starved the queue behind it — the threshold is exactly
+    what separates the two.
+
+    An older record holds a bare LIST here; it is read as "raised just now", which is what
+    it meant, and written back in the new shape at the next hold.
+    """
+    if not active:
+        return {}
+    got = state.get(ROOT, "raised_this_turn", {}, stem=ctx.stem) or {}
+    now = lines[-1].n if lines else 0
+    if isinstance(got, list):
+        got = {s: now for s in got}
+    if not isinstance(got, dict):
+        return {}
+    after = conf.get("hold_again_after_lines", 0)
+    if not after:
+        return got
+    return {s: at for s, at in got.items() if now - int(at or 0) < after}
+
+
 def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     if not conf["hold_stop_on_untagged"] or "untagged" in conf["silenced"]:
         return 0
@@ -326,8 +358,8 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
         return 0
     _HOLD_CTX[:] = [ctx.stem]
     active = bool(payload.get("stop_hook_active"))
-    raised = list(state.get(ROOT, "raised_this_turn", [], stem=ctx.stem) or []) if active else []
     lines, boundaries = transcript.read(ctx.path)
+    raised = _still_raised(conf, ctx, lines, active)
     stretch = transcript.since(lines, boundaries, 0)
     _floor(ctx, lines)
     here = tracks.current(ROOT, ctx.stem)
@@ -338,12 +370,13 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
         hold = pending(conf, ctx, lines, stretch, here, active)
         if hold is None:
             continue
-        state.put(ROOT, "raised_this_turn", raised + [subject], stem=ctx.stem)
+        raised[subject] = lines[-1].n if lines else 0
+        state.put(ROOT, "raised_this_turn", raised, stem=ctx.stem)
         if hold[0] == "context-only":
             return _context("Stop", hold[1])
         return _hold(*hold)
     if not active:
-        state.put(ROOT, "raised_this_turn", [], stem=ctx.stem)
+        state.put(ROOT, "raised_this_turn", {}, stem=ctx.stem)
 
     # NOTHING HELD. Two things are said as context, never held: a newer journal upstream,
     # and to-dos waiting while auto is off.

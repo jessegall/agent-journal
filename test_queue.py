@@ -184,5 +184,38 @@ s11 = S()
 s11.j("todo", "chore"); s11.j("todo", "auto", "on"); s11.user("go"); s11.say("[!reply] ok")
 check("a silenced subject is skipped", s11.stop().startswith("auto is on, 1 to-do(s) waiting"), True)
 
+# ------------------------------------------- a long stretch does not end in silence
+# SEEN IN THE WILD: an agent held once, that answered the hold and then worked for nine
+# minutes, met a stop where every subject it needed was already marked raised — and stopped
+# in silence with work open and a list waiting. One hold per CHAIN was the wrong budget.
+s12 = S()
+(s12.d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "context_window": 1000000}))
+s12.j("todo", "auto", "on")      # the wild case: auto on, work open, a loop running
+s12.j("loop", "set")
+s12.j("work", "start", "a long stretch")
+s12.user("carry on")
+s12.say("[!reply] starting")
+first = s12.stop()
+check("the open work is held for once", first.startswith("auto is on, work still open") or
+      first.startswith("1 piece") or "work still open" in first, True)
+check("and immediately after, in the same chain, it stays quiet", s12.stop(after=True), "")
+for i in range(30):                      # nine minutes of work, in transcript lines
+    s12.say(f"[!info] step {i}")
+check("but after real progress the same stop-chain speaks again",
+      "work still open" in s12.stop(after=True), True)
+
+s13 = S()
+(s13.d / ".journal" / "settings.json").write_text(json.dumps(
+    {"silenced": ["loop"], "context_window": 1000000, "hold_again_after_lines": 0}))
+s13.j("todo", "auto", "on")
+s13.j("loop", "set")
+s13.j("work", "start", "a long stretch")
+s13.user("carry on")
+s13.say("[!reply] starting")
+s13.stop()
+for i in range(30):
+    s13.say(f"[!info] step {i}")
+check("hold_again_after_lines: 0 restores one hold per chain", s13.stop(after=True), "")
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
