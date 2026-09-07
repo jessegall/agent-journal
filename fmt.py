@@ -147,3 +147,36 @@ def say(text="", *, error: bool = False) -> None:
             lines[0] = "  ! " + lines[0].strip()
         text = "\n".join(lines)
     print(block(text), file=sys.stderr if error else sys.stdout)
+
+
+DESC, ASC = "desc", "asc"
+ORDERS = (DESC, ASC)
+
+
+def ordered(rows: list, order: str = DESC) -> list:
+    """The rows as they should be READ: newest first unless asked otherwise.
+
+    EVERY LIST HERE IS APPEND-ONLY, so its natural order is oldest first — which is the
+    order nobody wants. A reader opening `journal pins` or `journal docs` is looking for
+    what happened recently, and with a cap they were being handed the oldest page and told
+    there were more. The store's order is not touched: only the reading is reversed, and
+    the NUMBER travels with the row, so `pin 3` is pin 3 on either setting.
+    """
+    return list(rows) if order == ASC else list(reversed(rows))
+
+
+def paged(rows: list, cap: int | None, page: int = 1, order: str = DESC) -> tuple[list, int]:
+    """(the slice to show, how many are left after it). Order first, then cut."""
+    rows = ordered(rows, order)
+    total = len(rows)
+    if not cap:
+        return rows, 0
+    return rows[(page - 1) * cap: page * cap], max(0, total - page * cap)
+
+
+def more(noun: str, left: int, page: int, order: str = DESC) -> str:
+    """The one line that says a page was cut, carrying the order so the next page keeps it."""
+    if left <= 0:
+        return ""
+    flag = f" --order={order}" if order != DESC else ""
+    return f"\n\n  … and {left} more; `journal {noun} --page={page + 1}{flag}` shows the rest."

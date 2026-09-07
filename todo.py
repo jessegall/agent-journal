@@ -326,7 +326,7 @@ def _age(at: str) -> str:
 
 
 def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88, short_refs: bool = False,
-           cap: int | None = None, page: int = 1) -> str:
+           cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
     """The list as a person reads it: the title, where it stands, and any question below.
 
     CAPPED LIKE `carry` (below), for the same reason: a bare `journal todo` is asked for
@@ -338,9 +338,7 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
     items = _all(root, track) if all_of_them else open_items(root, track)
     if not items:
         return "  Nothing is waiting." if not all_of_them else "  No to-dos on this environment."
-    total = len(items)
-    if cap:
-        items = items[(page - 1) * cap: page * cap]
+    items, left = fmt.paged(items, cap, page, order)
     out = []
     for t in items:
         if t.get("done"):
@@ -364,8 +362,7 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
                 entry += "\n" + fmt.wrap("→ " + t["answer"], indent=5, width=width)
         out.append(entry)
     body = "\n\n".join(out)
-    if cap and total > page * cap:
-        body += f"\n\n  … and {total - page * cap} more; `journal todos --page={page + 1}` shows the rest."
+    body += fmt.more("todos", left, page, order)
     return body
 
 

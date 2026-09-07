@@ -51,7 +51,7 @@ payload, not a description of it.
 
     journal pins add "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a fact that must survive a compaction; --doc: the doc or part it rests on
     journal pin "<claim>"            the same command, spelled the way it always was — a permanent alias, not deprecated; `remember` too
-    journal pins [--all]             every pin, numbered; --all includes struck ones
+    journal pins [--all] [--order=asc|desc]   every pin, numbered and NEWEST FIRST; --all includes struck ones, --order=asc reads oldest first. Every paginated list takes it: pins, rules, todos, docs, tools
     journal pins N --full            the conversation around where pin N was written
     journal pins strike N "<why>"    retire a pin that stopped being true, no replacement needed (also: bare `journal strike N "<why>"`)
     journal nothing "<why>"          after a context warning: nothing here needs pinning, and why

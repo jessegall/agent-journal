@@ -168,8 +168,12 @@ for i in range(20):
 
 code, out = j2("pins")
 check("`journal pins` caps at 15 and offers the rest", (code, out.count("\n  ") > 0, "and 5 more" in out, "--page=2" in out), (0, True, True, True))
+code, out = j2("pins")
+check("page 1 is the NEWEST fifteen, not the oldest", "pin number 19" in out, True)
 code, out = j2("pins", "--page=2")
-check("`journal pins --page=2` shows the remaining 5", "pin number 19" in out, True)
+check("`journal pins --page=2` shows the remaining 5 — the oldest", "pin number 0" in out, True)
+code, out = j2("pins", "--order=asc")
+check("--order=asc gives back the old reading", ("pin number 0" in out, "pin number 19" in out), (True, False))
 
 code, out = j2("rules")
 check("`journal rules` caps too", ("and 5 more" in out, "--page=2" in out), (True, True))

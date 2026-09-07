@@ -4,6 +4,26 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.30.0 — every list that pages reads newest first
+
+Pins, rules, to-dos, docs and tools are append-only, so their natural order is oldest
+first — and with a cap that meant page 1 was the oldest fifteen entries and everything
+recent was behind a `--page=2` nobody typed. The list a reader opens is a list they are
+reading for what happened lately.
+
+All five now read NEWEST FIRST, and `--order=asc` gives back exactly the old reading.
+`--order` takes only `asc` or `desc` and says so when given anything else.
+
+THE NUMBER TRAVELS WITH THE ROW. `pin 3` is pin 3 in either order: nothing is renumbered,
+the store is untouched, and only the reading is reversed — the same rule that already keeps
+a struck entry's number rather than closing the gap. The `… and N more` line carries the
+order into the next page, so `--order=asc --page=2` continues where page 1 left off instead
+of silently flipping.
+
+Four modules had each sliced their own page by hand, which is four places for "newest
+first" to drift apart. They share `fmt.paged` now, and `test_order.py` holds all four to
+the same three promises.
+
 ## 1.29.1 — the fix a finding offers has to answer the finding
 
 `cleanup` reported a doc whose environment had been removed and offered `journal docs

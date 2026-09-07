@@ -514,7 +514,8 @@ def cmd_rule(fact: str, strike_n: int | None, why: str, doc_ref: str = "") -> in
     return 0 if ok else 1
 
 
-def cmd_rules(all_of_them: bool, n: int | None, full: bool, page: int = 1) -> int:
+def cmd_rules(all_of_them: bool, n: int | None, full: bool, page: int = 1,
+              order: str = fmt.DESC) -> int:
     if n is not None and full:
         conf, _ = settings_mod.load(root())
         ok, body = pins.around(root(), n, project(), conf["pin_context"], key=pins.RULES)
@@ -526,7 +527,7 @@ def cmd_rules(all_of_them: bool, n: int | None, full: bool, page: int = 1) -> in
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
     fmt.say(fmt.title("RULES OF THIS PROJECT", sub=sub))
     fmt.say()
-    fmt.say(pins.render(root(), all_of_them=all_of_them, key=pins.RULES, cap=CATALOGUE_PAGE, page=page))
+    fmt.say(pins.render(root(), all_of_them=all_of_them, key=pins.RULES, cap=CATALOGUE_PAGE, page=page, order=order))
     fmt.say()
     fmt.say(fmt.wrap("Handed first to every session and to every subagent."))
     fmt.say(fmt.commands([
@@ -542,7 +543,8 @@ def cmd_promote(n: int) -> int:
     return 0 if ok else 1
 
 
-def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", page: int = 1) -> int:
+def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", page: int = 1,
+             order: str = fmt.DESC) -> int:
     here = tracks.current(root(), _stem())
     # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
     # what a bare noun and a bare noun+id already do; stripping them here means the
@@ -570,7 +572,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             " · auto ON" if draining else "")
         fmt.say(fmt.title("TO-DO", sub=sub))
         fmt.say()
-        fmt.say(todo.render(root(), here, all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page))
+        fmt.say(todo.render(root(), here, all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order))
         fmt.say()
         fmt.say(fmt.wrap("Auto is on: with nothing open, the agent picks up the next one on its own."
                        if draining else
@@ -680,7 +682,8 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
     return 0 if ok else 1
 
 
-def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bool = False) -> int:
+def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bool = False,
+             order: str = fmt.DESC) -> int:
     here = tracks.current(root(), _stem())
     body = sys.stdin.read() if brief else ""
     if not rest:
@@ -690,7 +693,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         sub = f"{len(cat)} catalogued" + (f" · {drafts} draft(s)" if drafts else "")
         fmt.say(fmt.title("DOCS OF THIS PROJECT", sub=sub))
         fmt.say()
-        fmt.say(docs.catalogue(root(), cap=CATALOGUE_PAGE, page=page))
+        fmt.say(docs.catalogue(root(), cap=CATALOGUE_PAGE, page=page, order=order))
         if loose:
             fmt.say()
             fmt.say(fmt.wrap(f"{len(loose)} file(s) under {docs.folder(root()).name}/ are not catalogued: "
@@ -766,7 +769,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         fmt.say(msg, error=not ok)
         return 0 if ok else 1
     elif verb == "list" and len(rest) == 1:
-        return cmd_docs([], brief, abstract, page, replace)
+        return cmd_docs([], brief, abstract, page, replace, order)
     else:
         ok, msg = docs.show(root(), " ".join(rest))
         fmt.say(msg, error=not ok)
@@ -775,14 +778,14 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
     return 0 if ok else 1
 
 
-def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1) -> int:
+def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1, order: str = fmt.DESC) -> int:
     here = tracks.current(root(), _stem())
     if not rest:
         cat = tools._all(root())
         loose = tools.uncatalogued(root())
         fmt.say(fmt.title("TOOLS OF THIS PROJECT", sub=f"{len(cat)} catalogued"))
         fmt.say()
-        fmt.say(tools.catalogue(root(), cap=CATALOGUE_PAGE, page=page))
+        fmt.say(tools.catalogue(root(), cap=CATALOGUE_PAGE, page=page, order=order))
         if loose:
             fmt.say()
             fmt.say(fmt.wrap(f"{len(loose)} folder(s) under .journal/tools/ have no tool.md: "
@@ -829,7 +832,7 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1) -> int:
     elif verb in ("show", "info", "read") and len(rest) > 1:
         ok, msg = tools.show(root(), rest[1])
     elif verb == "list" and len(rest) == 1:
-        return cmd_tools([], brief, meta, page)
+        return cmd_tools([], brief, meta, page, order)
     else:
         ok, msg = tools.show(root(), verb)
     fmt.say(msg, error=not ok)
@@ -1218,7 +1221,7 @@ def cmd_pin_full(n: int) -> int:
     return 0 if ok else 1
 
 
-def cmd_pins(all_of_them: bool, page: int = 1) -> int:
+def cmd_pins(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
     conf, _ = settings_mod.load(root())
     here = tracks.current(root(), _stem())
     n = len(pins.live(root()))
@@ -1227,7 +1230,7 @@ def cmd_pins(all_of_them: bool, page: int = 1) -> int:
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
     fmt.say(fmt.title("PINS", sub=sub))
     fmt.say()
-    fmt.say(pins.render(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page))
+    fmt.say(pins.render(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order))
     fmt.say()
     fmt.say(fmt.wrap("Handed to every session on this environment."))
     fmt.say(fmt.commands([
@@ -1284,6 +1287,7 @@ def main(argv: list[str]) -> int:
     yes_flag = False
     purge = False
     force = False
+    order = fmt.DESC
     sessions: list[str] = []
     page = 1
     abstract = ""
@@ -1357,6 +1361,12 @@ def main(argv: list[str]) -> int:
             purge = True
         elif a == "--force":
             force = True
+        elif a.startswith("--order="):
+            order = a.split("=", 1)[1].strip().lower()
+            if order not in fmt.ORDERS:
+                fmt.say(f"--order wants asc or desc, got {order!r}. Newest first is the "
+                        "default; --order=asc reads oldest first.", error=True)
+                return 1
         elif a == "--all-sessions":
             all_sessions = True
         elif a.startswith("--session="):
@@ -1484,7 +1494,7 @@ def main(argv: list[str]) -> int:
                       error=True)
                 return 1
         if sub == "list":
-            return cmd_rules(all_of_them, None, False, page)
+            return cmd_rules(all_of_them, None, False, page, order)
         if sub == "show":
             if len(rest) < 3:
                 fmt.say("rules show wants a rule number: journal rules show 3", error=True)
@@ -1502,7 +1512,7 @@ def main(argv: list[str]) -> int:
             except ValueError:
                 fmt.say(f"rules wants a NUMBER with --full, got {rest[1]!r}", error=True)
                 return 1
-        return cmd_rules(all_of_them, n, full, page)
+        return cmd_rules(all_of_them, n, full, page, order)
     if verb == "promote":
         if len(rest) < 2:
             fmt.say("promote wants a pin number: journal pins promote 3", error=True)
@@ -1514,11 +1524,11 @@ def main(argv: list[str]) -> int:
                   error=True)
             return 1
     if verb in ("todo", "todos"):  # ruling R1: `todos` is a twin alias of `todo`, both ways
-        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, page)
+        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, page, order)
     if verb == "docs":
-        return cmd_docs(rest[1:], brief, abstract, page, replace)
+        return cmd_docs(rest[1:], brief, abstract, page, replace, order)
     if verb == "tools":
-        return cmd_tools(rest[1:], brief, tool_meta, page)
+        return cmd_tools(rest[1:], brief, tool_meta, page, order)
     if verb == "carry":
         return cmd_carry(fresh)
     if verb == "claim":
@@ -1583,7 +1593,7 @@ def main(argv: list[str]) -> int:
                       error=True)
                 return 1
         if sub == "list":
-            return cmd_pins(all_of_them, page)
+            return cmd_pins(all_of_them, page, order)
         if sub == "show":
             if len(rest) < 3:
                 fmt.say("pins show wants a pin number: journal pins show 3", error=True)
@@ -1600,7 +1610,7 @@ def main(argv: list[str]) -> int:
             except ValueError:
                 fmt.say(f"pins wants a NUMBER with --full, got {rest[1]!r}", error=True)
                 return 1
-        return cmd_pins(all_of_them, page)
+        return cmd_pins(all_of_them, page, order)
     if verb == "update" and len(rest) > 1:
         # `journal update` upgrades the journal; a note on the work is `journal work update`
         fmt.say('journal update upgrades the journal. Progress on the open work is:\n'

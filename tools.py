@@ -209,16 +209,15 @@ def run(root: Path, name: str, args: list[str]) -> int:
 
 
 # ------------------------------------------------------------------ rendering
-def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1) -> str:
+def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1,
+              order: str = fmt.DESC) -> str:
     """The catalogue, capped like `carry` (below) so a bare `journal tools` never grows
     without bound; unlike carry — handed automatically, every session — this is asked
     for, so it pages rather than just saying "N more"."""
     tools = _all(root)
     if not tools:
         return "  No tools are catalogued."
-    total = len(tools)
-    if cap:
-        tools = tools[(page - 1) * cap: page * cap]
+    tools, left = fmt.paged(tools, cap, page, order)
     out = []
     for t in tools:
         head = f"{t['name']}  —  {t.get('title', '')}" if t.get("title") and t["title"] != t["name"] else t["name"]
@@ -230,8 +229,7 @@ def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1
         block += "\n     " + fmt.dim(" · ".join(meta))
         out.append(block)
     body = "\n\n".join(out)
-    if cap and total > page * cap:
-        body += f"\n\n  … and {total - page * cap} more; `journal tools --page={page + 1}` shows the rest."
+    body += fmt.more("tools", left, page, order)
     return body
 
 

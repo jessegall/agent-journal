@@ -35,7 +35,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
     "pins": (
         'journal pins add "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a claim that must survive a compaction',
         'journal pin "<claim>"         the same command; `remember` too. Permanent aliases, never deprecated',
-        "journal pins [--all]          every pin, numbered — the number is what --supersedes takes",
+        "journal pins [--all] [--order=asc|desc]   every pin, numbered, NEWEST FIRST — the number is what --supersedes takes and never changes with the order",
         "journal pins N --full         the conversation around where pin N was written",
         'journal pins strike N "<why>"   retire a pin that stopped being true — bare `journal strike N "<why>"` is the same',
         "journal pins promote N        lift pin N into a rule; the pin is struck and says where it went — bare `journal promote N` is the same",
@@ -44,13 +44,13 @@ GROUPS: dict[str, tuple[str, ...]] = {
     "rules": (
         'journal rules add "<ruling>" [--doc=<doc>[.<p>]]   a pin for EVERY environment — what the project decided, not one line of work',
         'journal rule "<ruling>"       the same command. A permanent alias, never deprecated',
-        "journal rules [--all]         every rule, numbered; `rules N --full` reads around one",
+        "journal rules [--all] [--order=asc|desc]   every rule, numbered, newest first; `rules N --full` reads around one",
         'journal rules strike N "<why>"   repeal a rule that stopped being true — `journal rule --strike N "<why>"` is the same',
     ),
     "todos": (
         'journal todos add "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this environment; --brief reads a longer brief from stdin',
         'journal todo "<title>"        the same command; `todo` and `todos` are twins everywhere',
-        "journal todos [--all] [--page=N]   the titles, numbered",
+        "journal todos [--all] [--page=N] [--order=asc|desc]   the titles, numbered, newest first",
         "journal todos show N          the whole brief — bare `journal todo N` is the same",
         "journal todos start N         open work with that title; `work end` closes both",
         'journal todos done N "<how>"    resolved without starting it',
@@ -62,7 +62,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal todo auto [on|off]    work through this environment's list without asking, or wait for the user's word",
     ),
     "docs": (
-        "journal docs                  the catalogue: every doc, its status, parts, files and abstract",
+        "journal docs [--order=asc|desc]   the catalogue, newest first: every doc, its status, parts, files and abstract",
         "journal docs show <doc>       read a doc — <doc> is its number or its name, here and everywhere below; bare `journal docs <doc>` is the same",
         "journal docs show <doc>.<p>   read one part of it",
         "journal docs files <doc>      its attachments, as a tree; `journal docs <doc> files` and bare `journal docs files` still work",
@@ -80,7 +80,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "--doc=<doc> or --doc=<doc>.<p> on pins, rules and todos cites a doc (or one part) from the entry",
     ),
     "tools": (
-        "journal tools                 the tools: scripts kept for repeated work, with what each does and how to call it",
+        "journal tools [--order=asc|desc]   the tools, newest first: scripts kept for repeated work, with what each does and how to call it",
         "journal tools show <name>     read one — bare `journal tools <name>` is the same, but `show` is the way to reach a tool NAMED after a verb",
         "journal tools run <name> [args…]   run it from the project root",
         'journal tools add <name> "<title>" --summary="<one line>" [--usage="<how>"] [--when="<when>"] [--entry=<file>] [--brief]',

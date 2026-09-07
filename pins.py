@@ -216,7 +216,7 @@ def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[boo
 
 
 def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int = 88,
-           cap: int | None = None, page: int = 1) -> str:
+           cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
     """The list as a person reads it: numbered, wrapped, the provenance on a quiet line.
 
     The number is what `--full`, `--supersedes`, `strike` and `promote` take, so it is
@@ -233,9 +233,7 @@ def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int 
     if not items:
         return "  No rules stand." if key == RULES else "  Nothing is pinned."
     shown = [(i, p) for i, p in enumerate(items, 1) if all_of_them or not p.get("struck")]
-    total = len(shown)
-    if cap:
-        shown = shown[(page - 1) * cap: page * cap]
+    shown, left = fmt.paged(shown, cap, page, order)
     out = []
     for i, p in shown:
         struck = p.get("struck")
@@ -253,11 +251,7 @@ def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int 
         if p.get("doc"):
             meta.append("→ " + docs_mod.ref_label(root, str(p["doc"])))
         out.append(fmt.numbered(i, p["fact"], " · ".join(meta), struck=bool(struck), width=width))
-    body = "\n\n".join(out)
-    if cap and total > page * cap:
-        noun = "rules" if key == RULES else "pins"
-        body += f"\n\n  … and {total - page * cap} more; `journal {noun} --page={page + 1}` shows the rest."
-    return body
+    return "\n\n".join(out) + fmt.more("rules" if key == RULES else "pins", left, page, order)
 
 
 def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tuple[bool, str]:
