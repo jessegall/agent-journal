@@ -1181,6 +1181,13 @@ def cmd_cleanup(every: bool) -> int:
     return 0
 
 
+def cmd_cleanup_read() -> int:
+    """The half no check can do: every rule and pin, in full, to be judged by a reader."""
+    import cleanup
+    fmt.say(cleanup.reading(root(), tracks.current(root(), _stem()), _now()))
+    return 0
+
+
 def cmd_track_remove(name: str, yes: bool, purge: bool) -> int:
     conf, _ = settings_mod.load(root())
     ok, msg = tracks.remove(root(), name, _now(), _stem() or "", yes=yes, purge=purge,
@@ -1409,6 +1416,15 @@ def main(argv: list[str]) -> int:
             return 1
         return cmd_track_remove(" ".join(rest[2:]), yes_flag, purge)
     if verb in ("cleanup", "tidy"):
+        # THE NOUN OWNS ITS VERBS (ruling R10/R11): the reading pass is an explicit `read`,
+        # never a bare `journal cleanup` that silently means something else.
+        if len(rest) > 1 and rest[1] in ("read", "reading"):
+            return cmd_cleanup_read()
+        if len(rest) > 1:
+            fmt.say(f"cleanup takes no argument (got {rest[1]!r}) — `journal cleanup` for what a "
+                    "check can see, `journal cleanup read` for the half only reading finds",
+                    error=True)
+            return 1
         return cmd_cleanup(all_of_them)
     if verb == "user":
         return cmd_user(back)

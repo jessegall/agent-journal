@@ -104,6 +104,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
     ),
     "cleanup": (
         "journal cleanup [--all]       what in the record has EVIDENCE against it: a rule or pin naming a file or a command that is gone, an orphaned or untouched doc, a to-do that has waited on the user, an empty environment — each beside the command that retires it; --all reads every environment's pins",
+        "journal cleanup read          THE SECOND HALF, and the one no check can do: every rule and every pin in full, with the three questions to ask of each, judged against the code you have just worked in — the record keeps when this was last done",
         "nothing is struck for you: a strike needs a reason and hides a claim rather than erasing it, so the judgement stays with the reader",
         '`journal rules strike <n> "<why>"` · `journal pins strike <n> "<why>"` · `journal docs strike <doc>.<p> "<why>"` · `journal environments remove "<name>" --yes`',
     ),

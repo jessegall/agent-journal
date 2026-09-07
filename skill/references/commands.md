@@ -68,6 +68,7 @@ payload, not a description of it.
 **Cleanup: what has stopped being true**
 
     journal cleanup [--all]          every entry with EVIDENCE against it — a rule or pin naming a file or a `journal <verb>` that is gone, a doc whose environment is gone or an untouched draft, a to-do that has waited on the user, an empty environment — each beside the command that retires it; --all reads every environment's pins, not just this one's
+    journal cleanup read             the second pass: every rule and every pin IN FULL, with the three questions to ask of each — the half a checker cannot do, and the record keeps when it was last done
     journal tidy                     the same command
 Nothing is struck for you, and age alone is never evidence: a checker that flags a true
 claim teaches the reader to skim, and the one real finding goes past with the noise. What

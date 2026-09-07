@@ -42,6 +42,11 @@ def fresh() -> Path:
     return d
 
 
+def flat(text):
+    """One line: the renderer wraps to 88 columns, and a test should not assert on that."""
+    return " ".join(text.split())
+
+
 def kinds(found):
     return sorted({f["kind"] for f in found})
 
@@ -139,13 +144,54 @@ check("an environment with open work on it is not empty",
 # ------------------------------------------------------------- the report itself
 r9 = fresh()
 pins.add(r9, "a rule that still holds", AT, 200, key=pins.RULES)
-out = cleanup.report(r9, "default")
+out = flat(cleanup.report(r9, "default"))
 check("with nothing to flag it still says so", "Nothing here has evidence against it" in out, True)
-check("and it still prints the rules to be judged", "a rule that still holds" in out, True)
-check("because no check can find a rule that merely stopped being true",
-      "no check can tell a rule" in out, True)
-check("the strike is spelled out beside each", 'journal rules strike 1 "<why>"' in out, True)
+check("it does not print the claims — that is the reading pass",
+      "a rule that still holds" in out, False)
+check("it says why an empty findings list is not a clean record",
+      "Only reading finds it" in out, True)
 check("nothing is struck by reporting", [p["struck"] for p in pins._all(r9, pins.RULES)], [None])
+
+# ------------------------------------------------------------- the reading pass
+r10 = fresh()
+pins.add(r10, "a rule that only a reader could judge", AT, 200, key=pins.RULES)
+pins.add(r10, "a pin that only a reader could judge", AT, 200)
+check("nothing mechanical to find", cleanup.candidates(r10, "default"), [])
+check("and the record says so", "never done on this environment" in flat(cleanup.report(r10, "default")), True)
+check("the report points at the second half", "journal cleanup read" in flat(cleanup.report(r10, "default")), True)
+
+out = flat(cleanup.reading(r10, "default", AT))
+check("the reading pass prints the rule whole", "a rule that only a reader could judge" in out, True)
+check("and the pin", "a pin that only a reader could judge" in out, True)
+check("with the strike beside each", 'journal rules strike 1 "<why>"' in out, True)
+check("and the questions to ask", flat(cleanup.QUESTIONS[0])[:30] in out, True)
+check("nothing is struck by reading it", [p["struck"] for p in pins._all(r10)], [None])
+check("the pass is stamped", cleanup.days_since_read(r10, "default") is not None, True)
+check("and the report stops saying never",
+      "never done" in flat(cleanup.report(r10, "default")), False)
+check("a stamp is per environment", cleanup.last_read(r10, "elsewhere"), "never done on this environment")
+check("reading with mark=False leaves no stamp",
+      (cleanup.reading(r10, "untouched", AT, mark=False),
+       cleanup.days_since_read(r10, "untouched")) [1], None)
+
+# NEVER-READ IS NOT OVERDUE: a young record is not nagged
+r12 = fresh()
+pins.add(r12, "a claim made just now", "2026-09-07T12:00:00+00:00", 200, key=pins.RULES)
+check("a record whose claims are new owes no reading pass", cleanup.owed(r12, "default"), False)
+r13 = fresh()
+pins.add(r13, "a claim nobody has re-read", OLD, 200, key=pins.RULES)
+check("one with old claims and no pass does", cleanup.owed(r13, "default"), True)
+cleanup.reading(r13, "default", "2026-09-07T12:00:00+00:00")
+check("and stops owing once it is done", cleanup.owed(r13, "default"), False)
+check("an empty record never owes one", cleanup.owed(fresh(), "default"), False)
+
+# a claim is never truncated in the reading pass: judging an opening is how a rule survives
+r11 = fresh()
+long_one = ("a rule long enough that the findings list would cut it at seventy characters, "
+            "which is exactly where the part that has stopped being true tends to live")
+pins.add(r11, long_one, AT, 400, key=pins.RULES)
+check("the reading pass keeps the whole claim",
+      long_one.split()[-1] in " ".join(cleanup.reading(r11, "default", AT).split()), True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

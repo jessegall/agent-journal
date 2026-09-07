@@ -594,17 +594,27 @@ def _p_cleanup(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         found = cleanup_mod.candidates(ROOT, here, stale_hours=conf["session_stale_hours"])
     except Exception:
         return None
-    if not found:
+    never = cleanup_mod.last_read(ROOT, here)
+    if not found and not cleanup_mod.owed(ROOT, here):
         return None
-    key = sorted(f"{f['kind']}{f['n']}{f['text'][:20]}" for f in found)
+    key = sorted(f"{f['kind']}{f['n']}{f['text'][:20]}" for f in found) + [never]
     if key == state.get(ROOT, "cleanup_said", [], stem=ctx.stem):
         return None
     state.put(ROOT, "cleanup_said", key, stem=ctx.stem)
-    what = ", ".join(sorted({f["kind"] for f in found}))
+    if found:
+        what = ", ".join(sorted({f["kind"] for f in found}))
+        return ("context-only",
+                f"journal: {len(found)} entr(ies) in the record have evidence against them "
+                f"({what}) — `.journal/journal.py cleanup` lists each beside the command that "
+                "retires it. Then `cleanup read`, which is the half no check can do: the "
+                f"reading pass on this environment was {never}.")
+    # NOTHING MECHANICAL TO SAY, AND STILL SOMETHING OWED. The rot that matters most leaves
+    # no trace a command can find, so an empty findings list is not a clean record — it is a
+    # record nobody has read. This is the only thing the hook can say about it: how long.
     return ("context-only",
-            f"journal: {len(found)} entr(ies) in the record have evidence against them ({what}) "
-            "— `.journal/journal.py cleanup` lists each beside the command that retires it. "
-            "Nothing is struck for you.")
+            f"journal: nothing in the record has evidence against it, but the reading pass — "
+            f"every rule and pin judged against the code — was {never}. "
+            "`.journal/journal.py cleanup read` when the work you just did touched what they claim.")
 
 
 @nudges.subject("auto", 60)

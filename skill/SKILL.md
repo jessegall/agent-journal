@@ -165,6 +165,7 @@ moment to park any work you are holding for later, because that lives only in th
 **Retire what has stopped being true, and do not wait to be asked.**
 
     journal cleanup [--all]        what has EVIDENCE against it, beside the command that retires it
+    journal cleanup read           every rule and pin in full — the half only reading finds
     journal rules strike <n> "<why>"     |  journal pins strike <n> "<why>"
 
 Rules and pins are re-asserted verbatim at the top of every compaction, in the highest
@@ -173,11 +174,18 @@ something checkable against them — a claim naming a file that is gone or a `jo
 the CLI does not answer to, a doc whose environment no longer exists, a to-do that has been
 waiting on the user, an environment with nothing on it. Age is never evidence on its own.
 
-What no command can find is the rule that quietly stopped describing how anyone works, so
-the report ends with every rule in force, to be read rather than checked. **Strike what you
-have read and judged dead**: the reason is required, and a strike hides the claim rather
-than erasing it — `journal rules --all` and `journal pins --all` still show it — so being
-wrong is cheap and leaving a dead rule standing is not.
+**A cleanup is two passes, and the mechanical one is the smaller.** What no command can
+find is the rule that quietly stopped describing how anyone works: it names no file,
+misspells nothing, and passes every check forever. `journal cleanup read` is the second
+pass — every rule and every pin in full, with the questions to ask of each — and it is not
+optional. Run it after the mechanical pass, judging each claim against the code you have
+just been working in, because you are the only reader who has both in front of them. The
+record keeps when it was last done, never what was decided.
+
+**Strike what you have read and judged dead**: the reason is required, and a strike hides
+the claim rather than erasing it — `journal rules --all` and `journal pins --all` still
+show it — so being wrong is cheap and leaving a dead rule standing is not. `pins add
+"<the claim now>" --supersedes=<n>` when it is right but out of date.
 
 ## Delayed work: the to-do
 
@@ -394,7 +402,8 @@ thing to do now.
 | *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
 | *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`                  |
 | *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs |
-| *N entr(ies) in the record have evidence against them*         | `journal cleanup`, then strike what you have read and judged dead |
+| *N entr(ies) in the record have evidence against them*         | `journal cleanup`, then `cleanup read`, then strike what you judged dead |
+| *the reading pass … was never done / N d ago*                  | `journal cleanup read` — judge every rule and pin against the code you just worked in |
 | *environment `x` is taken by another session*                        | ask the user which environment this session works on, then `switch "<name>"`; if the holder is gone and they say so, `claim "<name>" "<why>"` |
 | *environment `x` was claimed by another session*                     | another session took it and said why; you are bound to nothing — `switch "<name>"`, or `claim "<name>" "<why>"` to take it back |
 | *THIS SESSION HAS NO ENVIRONMENT*                              | take one from what the user just asked — `switch "<name>"` — and say which; ask them if it named none |

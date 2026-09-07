@@ -215,27 +215,147 @@ def report(root: Path, here: str, every: bool = False, stale_hours: float = 24.0
                             "pins --all` — so striking a claim you have read and judged dead is "
                             "cheap, and leaving one that still holds costs nothing but the line."))
     out.append("")
-    # WHAT NO CHECK CAN SEE is the whole reason this ends with a reading list rather than a
-    # verdict. The claim that sent this command into being — a rule about subagents that had
-    # stopped describing how anyone works — names no file, misspells no command, and would
-    # pass every test above forever. Evidence finds the DEAD references; only a reader finds
-    # the dead claims. So the rules are printed in full, every time: there are few of them,
-    # they bind every environment, and the ones that rot are the ones nobody re-reads.
-    out.append(fmt.dim("  RULES IN FORCE — no check can tell a rule that stopped being how anyone works"))
-    standing = [(i, r) for i, r in enumerate(_standing(root, pins_mod.RULES, ""), 1)
-                if not r.get("struck")]
-    for i, r in standing:
-        out.append(f"  {i:>3}  {r.get('fact', '')[:70]}")
-        out.append(fmt.dim(f"       {pins_mod.age(r.get('at', ''))} · "
-                           f'journal rules strike {i} "<why>"'))
-    mine = len([p for p in _standing(root, pins_mod.KEY, here) if not p.get("struck")])
-    out.append("")
-    out.append(fmt.wrap(f"Then the {mine} pin(s) standing on `{here}`: `journal pins` lists them, "
-                        '`journal pins strike <n> "<why>"` retires one. Read them as a reader '
-                        "handed them cold at the top of a session would — a claim that no longer "
-                        "describes how anyone works costs more than a gap, because nobody "
-                        "questions it."))
+    # THE SECOND HALF IS NOT PRINTED HERE, and that is the point of splitting them. What a
+    # check can see fits in a list; what only reading can see is every rule and every pin,
+    # one at a time, against the code they claim things about — and a wall of them appended
+    # to a findings list is a wall that gets skimmed. `cleanup read` is a separate act,
+    # taken deliberately, and the record remembers when it was last taken.
+    out.append(fmt.dim("  THE SECOND HALF — what no check can see"))
+    out.append(fmt.wrap("A rule that quietly stopped describing how anyone works names no file "
+                        "and misspells no command: it passes every check above and always will. "
+                        "Only reading finds it. `journal cleanup read` puts every rule and every "
+                        "pin in front of you with the questions to ask of each — "
+                        + last_read(root, here) + "."))
     if not every:
         out.append("")
         out.append(fmt.dim("  journal cleanup --all   the pins of every environment, not just this one"))
+    return "\n".join(out)
+
+
+READ = "cleanup_read"      # {environment: {"at": iso, "rules": n, "pins": n}}
+
+
+def _read_log(root: Path) -> dict:
+    got = state.get(root, READ, {})
+    return got if isinstance(got, dict) else {}
+
+
+#: HOW OFTEN A READING PASS IS OWED. Not a deadline and not an expiry — nothing here
+#: expires — just the interval after which the hook is allowed to mention that nobody has
+#: read the claims lately. Three weeks is roughly a working stretch of this project.
+READ_DAYS = 21
+
+
+def days_since_read(root: Path, here: str) -> float | None:
+    """Days since this environment's claims were last read, or None if they never were."""
+    got = _read_log(root).get(here) or {}
+    return _days(got.get("at", "")) if got.get("at") else None
+
+
+def last_read(root: Path, here: str) -> str:
+    """When this environment's claims were last READ, in words — never is a real answer."""
+    got = _read_log(root).get(here) or {}
+    days = _days(got.get("at", "")) if got.get("at") else None
+    if days is None:
+        return "never done on this environment"
+    if days < 1:
+        return "last done today"
+    return f"last done {int(days)}d ago"
+
+
+def owed(root: Path, here: str) -> bool:
+    """Is a reading pass actually owed here — or is this simply a young record?
+
+    NEVER-READ IS NOT THE SAME AS OVERDUE. Every record starts never-read, and a store that
+    says so from its first pin is a store that has taught its reader to ignore the line
+    before there is anything worth reading. A pass is owed when there is something to read
+    AND it has had time to rot: the oldest standing claim is at least READ_DAYS old, or a
+    pass was done and that long ago.
+    """
+    since = days_since_read(root, here)
+    if since is not None:
+        return since >= READ_DAYS
+    ages = [_days(c.get("at", "")) or 0.0
+            for c in (_standing(root, pins_mod.RULES, "") + _standing(root, pins_mod.KEY, here))
+            if not c.get("struck")]
+    return bool(ages) and max(ages) >= READ_DAYS
+
+
+def stamp(root: Path, here: str, at: str, rules: int, pins: int) -> None:
+    with state.locked(root):
+        log = _read_log(root)
+        log[here] = {"at": at, "rules": rules, "pins": pins}
+        state.put(root, READ, log)
+
+
+#: THE QUESTIONS, in the order they cost least to answer. The first is answerable from the
+#: claim alone; the second needs a grep; the third needs the reader to have worked here.
+#: They are printed rather than assumed because "read the pins" is not an instruction
+#: anyone can follow twice the same way, and the answers are what a strike reason says.
+QUESTIONS = (
+    "Is this still what the project does — or does it describe a version of the code that is gone?",
+    "Does the thing it asserts still hold? Grep for it before you decide; a claim about a "
+    "module is checkable in one command.",
+    "Would a reader handed this cold, at the top of a session, be MISLED by it? A claim that "
+    "is merely incomplete is fine. One that points the wrong way is not.",
+)
+
+
+def _entry(n: int, item: dict, noun: str) -> str:
+    """One claim, WHOLE. Nothing is truncated in the reading pass: a claim cut at 70
+    characters is a claim judged on its opening, which is how a rule survives every pass."""
+    import fmt
+    body = fmt.wrap(item.get("fact", ""), indent=7)
+    return (f"  {n:>3}" + body[5:] + "\n"
+            + fmt.dim(f"       {pins_mod.age(item.get('at', ''))} · "
+                      f'journal {noun} strike {n} "<why>"'))
+
+
+def reading(root: Path, here: str, at: str = "", mark: bool = True) -> str:
+    """Every rule and every pin, in full, to be judged by somebody who has read the code.
+
+    THE COMMAND CANNOT DO THIS AND DOES NOT PRETEND TO. Everything in `report` is a fact
+    about the world the claim points at — a file, a spelling, a folder. Nothing there is a
+    fact about what the claim MEANS, and the rot that matters most is entirely semantic:
+    the rule that was true when the code worked one way and was never revisited when it
+    stopped. So this half is a reading list, printed in full because a pointer to
+    `journal rules` is how it gets skipped, and stamped because "when did anyone last
+    actually read these" is the one thing the record can answer and a reader cannot.
+
+    THE STAMP IS NOT A CERTIFICATE. It records that the claims were put in front of a
+    reader, which is all a CLI can witness. It is there so the next session can be told
+    "never done on this environment" instead of nothing at all.
+    """
+    import fmt
+    rules = [(i, r) for i, r in enumerate(_standing(root, pins_mod.RULES, ""), 1)
+             if not r.get("struck")]
+    pins = [(i, p) for i, p in enumerate(_standing(root, pins_mod.KEY, here), 1)
+            if not p.get("struck")]
+    out = [fmt.title("CLEANUP: THE READING PASS", sub=here), ""]
+    out.append(fmt.wrap("Read every claim below against the code you have just been working in, "
+                        "and ask of each:"))
+    out.append("")
+    for i, q in enumerate(QUESTIONS, 1):
+        out.append(fmt.wrap(f"{i}. {q}", indent=5))
+    out.append("")
+    out.append(fmt.wrap("Strike what you have read and judged dead — the reason is the answer you "
+                        "just gave, and a strike hides the claim rather than erasing it, so being "
+                        "wrong is cheap. Leave what still holds; leaving is the common answer and "
+                        "it costs nothing. If a claim is right but out of date, `pins add "
+                        '"<the claim now>" --supersedes=<n>` replaces it in one move.'))
+    out.append("")
+    out.append(fmt.dim(f"  RULES — {len(rules)}, binding every environment"))
+    for i, r in rules:
+        out.append(_entry(i, r, "rules"))
+    out.append("")
+    out.append(fmt.dim(f"  PINS — {len(pins)}, standing on `{here}`"))
+    for i, p in pins:
+        out.append(_entry(i, p, "pins"))
+    out.append("")
+    out.append(fmt.wrap(f"That is {len(rules)} rule(s) and {len(pins)} pin(s) — the whole of what "
+                        "every later session is handed as true. When you have been through them, "
+                        "say what you struck and what you left; the record keeps when this was "
+                        "last done, not what was decided."))
+    if mark and at:
+        stamp(root, here, at, len(rules), len(pins))
     return "\n".join(out)

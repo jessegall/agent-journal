@@ -4,6 +4,34 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.27.0 — a cleanup is two passes, and the mechanical one is the smaller
+
+`journal cleanup` finds what a check can see: a claim naming a file that is gone, a
+spelling the CLI does not answer to, an orphaned doc, an empty environment. All of it is a
+fact about the world a claim POINTS AT, and none of it is a fact about what the claim
+means — which is where the rot that matters actually lives. The rule that sent this whole
+thread into being said subagents never write the journal. It named no file, misspelled no
+command, and passed every check in the tool forever; what made it false was `journal
+delegate` shipping, a fact living in another module's docstring. Only a reader connects
+those.
+
+    journal cleanup read      every rule and every pin, in full, with the questions to ask
+
+It prints the claims WHOLE — nothing truncated, because a claim cut at seventy characters
+is a claim judged on its opening, and the part that has stopped being true tends to live
+further in. Beside each is its strike. Above them are the three questions, cheapest first:
+is this still what the project does; does what it asserts still hold (grep before you
+decide); would a reader handed this cold be misled by it.
+
+THE RECORD KEEPS WHEN, NEVER WHAT. The pass is stamped per environment — that the claims
+were put in front of a reader is all a CLI can witness, and it is enough to tell the next
+session "never done on this environment" instead of nothing at all. Nothing expires and
+nothing is struck automatically; `READ_DAYS` is only how long before the hook may mention
+it.
+
+The stop subject now speaks for both halves, and speaks when there is nothing mechanical
+to say: an empty findings list is not a clean record, it is a record nobody has read.
+
 ## 1.26.0 — an environment can be removed, and the record can be cleaned
 
 Two things the tool made the user do by hand.
