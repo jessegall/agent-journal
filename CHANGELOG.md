@@ -4,6 +4,39 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.29.0 — auto without a loop is refused, not merely mentioned
+
+Auto is the promise that the list drains while the user is away. A session with no loop
+stops at its first idle stop and the list sits exactly where it was, which is the one thing
+auto exists to prevent — and the user measured the failure: agents turn auto on and forget
+the loop, over and over.
+
+It was a HOLD at the stop, and a hold leaks two ways. A subject fires at most once per
+stop-chain, so an agent that worked through it was not asked again for an hour; and a hold
+is advice arriving at the moment the agent is trying to finish, which is when advice is
+easiest to step over. Three changes, in the order they bite:
+
+`journal todos auto on` now prints the loop command in its own confirmation — the standing
+rule is that a command is taught where it is NEEDED, and the moment auto goes on is that
+moment, not the stop afterwards.
+
+THE NEXT WRITE IS REFUSED while auto is on, a to-do is ready, and no loop is known. A
+denial cannot be stepped over. Reads are never gated and neither is the journal's own CLI,
+because `journal loop set` and `journal todos auto off` are the ways out and must always
+run. A subagent and a delegated session are exempt, as they already were at the stop.
+
+A third change was tried and rejected, and the rejection is worth keeping: making the loop
+hold fire at EVERY stop rather than once per chain. The reasoning was that the loop is not
+a reminder but the condition under which every later hold can reach anybody. The suite
+answered in one run — it raised itself three stops running while the untagged message and
+the open work behind it were never reached, and the chain could not end at all. A subject
+that never yields is a queue that never drains. The hold stays once per chain like every
+other subject; the forcing lives in the gate, where it can neither be stepped over nor
+deadlock.
+
+The transcript is read only on the last step before a refusal: a loop the journal can SEE
+but has not recorded still counts, and that read is too expensive to do on every write.
+
 ## 1.28.1 — the hook stopped deleting the proof that it ran
 
 `journal verify` and the status page have been reading the journal as DEAD in sessions it

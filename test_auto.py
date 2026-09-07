@@ -506,5 +506,67 @@ check("it names the one that really is next", "the one that is really next" in a
 check("and `journal todo` agrees with it, which is the whole point",
       "the one that gets closed" in s.journal("todo")[1].split("done")[0], False)
 
+# ------------------------------------------------- auto without a loop refuses to write
+# The whole point of this one: a HOLD can be worked through — once per stop-chain, and it
+# arrives when the agent is trying to finish — so auto was being turned on with no loop
+# behind it. A denial cannot be stepped over.
+def loud():
+    """A project with the loop subject NOT silenced: this suite silences it everywhere else."""
+    d = project()
+    (d / ".journal" / "settings.json").write_text(json.dumps(
+        {"one_session_per_environment": False, "context_window": 1000000}))
+    return d
+
+
+def write_call(s):
+    out = s.fire("PreToolUse", tool_name="Write",
+                 tool_input={"file_path": str(s.d / "x.txt"), "content": "x"})
+    if not out.strip():
+        return ""
+    got = json.loads(out).get("hookSpecificOutput", {})
+    return got.get("permissionDecisionReason", "") if got.get("permissionDecision") == "deny" else ""
+
+d9 = loud()
+s9 = Session(d9, "s9")
+s9.fire("SessionStart", source="startup")
+s9.journal("switch", "default")          # unbound is refused for its own reason, first
+s9.journal("work", "start", "something to write under")
+check("with auto off, a write is not refused for a loop", write_call(s9), "")
+
+s9.journal("todo", "add", "a to-do the loop would pick up")
+s9.journal("todos", "auto", "on")
+denied = write_call(s9)
+check("auto on with no loop refuses the next write", bool(denied), True)
+check("and the refusal names the loop command", "journal next" in denied, True)
+check("and the two ways out", ("loop set" in denied, "auto off" in denied), (True, True))
+check("a READ is never gated",
+      s9.fire("PreToolUse", tool_name="Read", tool_input={"file_path": "x"}).strip(), "")
+check("and the journal's own CLI is never gated — it is the way out",
+      s9.fire("PreToolUse", tool_name="Bash",
+              tool_input={"command": ".journal/journal.py loop set"}).strip(), "")
+
+s9.journal("loop", "set")
+check("once a loop is known the same write goes through", write_call(s9), "")
+
+# turning auto ON says so at the moment it becomes true, not only at the next stop
+d10 = loud()
+s10 = Session(d10, "s10")
+s10.fire("SessionStart", source="startup")
+s10.journal("switch", "default")
+code, said = s10.journal("todos", "auto", "on")
+check("`auto on` teaches the loop in its own confirmation",
+      ("START A LOOP NOW" in said, "journal next" in said), (True, True))
+
+# THE HOLD STILL YIELDS. Forcing belongs in the gate, not in a subject that never steps
+# aside: a loop hold that re-raised itself every stop starved the queue behind it and the
+# chain could not end. It fires once per chain, like every other subject, and the WRITE is
+# what is refused meanwhile.
+s10.journal("todo", "add", "something for the loop to pick up")
+s10.say("working", who="assistant")
+first = s10.stop()[0]
+again = s10.stop(after_hold=True)[0]
+check("the loop hold fires", "loop" in first, True)
+check("and then yields, so the queue behind it still drains", "loop" in again, False)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

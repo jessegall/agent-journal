@@ -204,6 +204,12 @@ were told not to touch it yet. It is a titled file under `todo/<environment>/`, 
 what you will need in a week: what exactly, why, where to start, what the user said. Not
 for imagined work; "it might be nice to refactor this" is a message with a tag.
 
+**Turning auto on means starting a loop, in the same breath.** Auto says the list drains
+while the user is away; a session with no loop stops at its first idle stop and the list
+sits there — the one thing auto was turned on to prevent. So `journal todos auto on` prints
+the loop command, and the next write is REFUSED until a loop exists. `journal loop set` says one is running that the journal cannot
+see; `journal todos auto off` says the list should not drain on its own.
+
 **A to-do is not permission, unless the user has switched it on.** With `auto` off, the
 default, the start block lists what is waiting and an idle stop says so once; neither is
 an instruction to begin one. Start a to-do only when the user says so for that one, or
@@ -402,7 +408,7 @@ thing to do now.
 | *your reply puts work off — park it as a to-do*                | `todo "<title>" --brief`, then say so; or run the call again if nothing is deferred |
 | *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
 | *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`                  |
-| *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs |
+| *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs. While it stands the next WRITE is refused — auto without a loop is a promise nothing keeps |
 | *N entr(ies) in the record have evidence against them*         | `journal cleanup`, then `cleanup read`, then strike what you judged dead |
 | *the reading pass … was never done / N d ago*                  | `journal cleanup read` — judge every rule and pin against the code you just worked in |
 | *environment `x` is taken by another session*                        | ask the user which environment this session works on, then `switch "<name>"`; if the holder is gone and they say so, `claim "<name>" "<why>"` |

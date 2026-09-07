@@ -435,7 +435,12 @@ def set_auto(root: Path, track: str, on: bool) -> str:
         got[track] = bool(on)
         state.put(root, AUTO, got)
     return (f"auto ON for `{track}`: whenever no work is open, the agent picks up the next "
-            "to-do on its own and keeps going until the list is empty."
+            "to-do on its own and keeps going until the list is empty.\n"
+            "  START A LOOP NOW, or nothing will wake this session at its next idle stop and "
+            "the list will sit where it is:\n"
+            "    the `loop` skill with `15m journal next`\n"
+            "  Until one is running (or `journal loop set` says one is), the next write is "
+            "refused — auto without a loop is a promise nothing keeps."
             if on else
             f"auto OFF for `{track}`: to-dos are listed and never started without the user's word.")
 

@@ -310,6 +310,14 @@ def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
 SUBJECTS = ("claimed", "environment", "loop", "context", "deferral", "untagged", "work",
             "auto", "cleanup")
 
+#: A SUBJECT THAT NEVER YIELDS IS A QUEUE THAT NEVER DRAINS, and this is where that was
+#: tried and rejected. Making the loop hold fire at every stop — on the reasoning that it is
+#: the condition under which every later hold can reach anybody — meant it raised itself
+#: three stops running while the untagged message and the open work behind it were never
+#: reached, and the chain could not end at all. test_queue caught it in one run. The forcing
+#: belongs where it cannot be stepped over and cannot deadlock either: the WRITE GATE, in
+#: `_loop_owed`. The hold stays once per chain, like every other subject.
+
 
 def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     if not conf["hold_stop_on_untagged"] or "untagged" in conf["silenced"]:
@@ -694,6 +702,36 @@ def _loop_running(ctx: Ctx, lines) -> bool:
             state.put(ROOT, "loop_set", True, stem=ctx.stem)
             return True
     return False
+
+
+def _loop_owed(conf: dict, ctx: Ctx, here: str) -> str:
+    """The refusal owed when auto is on and nothing will wake this session, or "".
+
+    The same four exemptions the stop subject has, and for the same reasons: the setting
+    turned off, auto off, a subagent (its parent owns the loop), a delegated session. And
+    nothing is owed while the list has nothing ready — a loop that wakes to an empty list
+    is noise, so the demand starts when there is something for it to pick up.
+    """
+    m = conf.get("auto_loop_minutes", 0)
+    if not m or "loop" in conf["silenced"] or not todo.auto(ROOT, here):
+        return ""
+    if ctx.stem.startswith("agent-") or _delegating(ctx, here):
+        return ""
+    if not todo.ready(ROOT, here):
+        return ""
+    # THE TRANSCRIPT IS READ ONLY HERE, on the last step before a refusal. `_loop_running`
+    # also counts a loop it can SEE — the `/loop` the user typed, the tool that drives it —
+    # and a session that started one and has not stopped since would otherwise be refused
+    # for a loop it already has. That read costs real time on a large transcript, so it is
+    # reached only when every cheaper condition already says a denial is owed.
+    if _loop_running(ctx, transcript.read(ctx.path)[0] if ctx.path else []):
+        return ""
+    return (f"AUTO IS ON for `{here}` and this session has no loop, so the list would stop "
+            "at your next idle stop. Start one before writing anything else:\n"
+            f"  the `loop` skill with `{m}m journal next`\n"
+            "  .journal/journal.py loop set     if one is already running that the journal cannot see\n"
+            "  .journal/journal.py todos auto off   if the list should not drain on its own\n"
+            "Reads are never gated; only changes.")
 
 
 def _unbound(conf: dict, ctx: Ctx) -> bool:
@@ -1131,6 +1169,19 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
         taken = _track_due(conf, ctx)
         if taken:
             return _deny(_taken_block(taken))
+    # AUTO WITHOUT A LOOP IS A PROMISE NOTHING KEEPS. Auto says the list drains while the
+    # user is away; a session with no loop stops at its first idle stop and the list sits
+    # there until somebody comes back — which is the one thing auto was turned on to avoid.
+    # This was a HOLD at the stop, and it leaked twice over: a subject fires at most once
+    # per stop-chain, so an agent that worked through it was not asked again for an hour,
+    # and a hold is advice arriving at the moment the agent is trying to finish. Measured by
+    # the user: "the agent forgets to turn the loop on quite often after turning on auto".
+    # A denial cannot be stepped over. Reads are never gated, and neither is the journal's
+    # own CLI — `journal loop set` is the way out and must always run.
+    if _is_write(payload) and not _is_journal(payload):
+        owed = _loop_owed(conf, ctx, tracks.current(ROOT, ctx.stem))
+        if owed:
+            return _deny(owed)
     if not conf["gate_writes_on_start"] or "gate" in conf["silenced"]:
         return 0
     if not _is_write(payload) or work.open_work(ROOT) or _declared_first(payload):
