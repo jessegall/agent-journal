@@ -156,5 +156,34 @@ check("the user is told nothing", "systemMessage" in out, False)
 check("and no prompt carries a choice", context_of(
     fire(d4, "UserPromptSubmit", "s1", prompt="hello")), "")
 
+# ---------------------------------------------------------------- the mark survives
+# THE TRANSCRIPT MAY NOT BE ON DISK YET when SessionStart fires. Every other test here
+# creates the file first, which is exactly why this went unseen: the prune that runs at the
+# end of the same handler deleted the runtime file it had just written, and the only proof
+# the hook ever ran went with it.
+d5 = project()
+missing = transcript.project_dir(d5) / "s-late.jsonl"     # deliberately NOT created
+out = subprocess.run([str(d5 / ".journal" / "hook.py")],
+                     input=json.dumps({"hook_event_name": "SessionStart", "source": "startup",
+                                       "session_id": "s-late", "transcript_path": str(missing)}),
+                     capture_output=True, text=True, timeout=60)
+mark = d5 / ".journal" / "runtime" / "s-late.json"
+check("the start block is still handed over", "THE JOURNAL IS IN FORCE" in out.stdout, True)
+check("the runtime file survives a transcript that is not on disk yet", mark.is_file(), True)
+check("and it says the hook ran",
+      json.loads(mark.read_text()).get("session_started") if mark.is_file() else None, "startup")
+
+# a runtime file whose transcript really is gone is still pruned
+d6 = project()
+fire(d6, "SessionStart", "s-here", source="startup")
+(transcript.project_dir(d6) / "s-gone.jsonl").write_text("")
+fire(d6, "SessionStart", "s-gone", source="startup")
+(transcript.project_dir(d6) / "s-gone.jsonl").unlink()
+fire(d6, "SessionStart", "s-here", source="startup")   # the prune runs at a start
+check("the file of a transcript that is gone is dropped",
+      (d6 / ".journal" / "runtime" / "s-gone.json").is_file(), False)
+check("and the live session's is kept",
+      (d6 / ".journal" / "runtime" / "s-here.json").is_file(), True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

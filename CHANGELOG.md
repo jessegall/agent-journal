@@ -4,7 +4,26 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
-## 1.28.0 — work whose declarer is gone can still be closed
+## 1.28.1 — the hook stopped deleting the proof that it ran
+
+`journal verify` and the status page have been reading the journal as DEAD in sessions it
+was demonstrably running in, and the cause was the hook itself.
+
+`_prune` drops the runtime file of any transcript this machine no longer has. Its `keep`
+argument exists for the session that is starting — but only `tracks.prune` honoured it; the
+file loop did not. A transcript is not always on disk when SessionStart fires, since the
+harness writes it once there is something to write, so `transcript.find` reported the
+starting session as gone and the prune deleted the runtime file that the same handler had
+written one line earlier. `session_started` — the one mark that proves the hook fired —
+went with it, while keys written after the prune survived, which is why the file looked
+present and merely incomplete.
+
+Every test that fires SessionStart created the transcript first, which is exactly why this
+survived: the failing case is the one nobody wrote down. Two tests now cover it — the mark
+survives a transcript that is not yet on disk, and a runtime file whose transcript really
+is gone is still dropped.
+
+ work whose declarer is gone can still be closed
 
 `work end` closes by saying the same words, which assumes the closer is the declarer. That
 assumption breaks for the one case nobody planned: work declared by a session that no

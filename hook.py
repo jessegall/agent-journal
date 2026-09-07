@@ -1787,6 +1787,14 @@ def _prune(keep: str = "") -> None:
     """
     project = ROOT.parent
     for stem, _ in state.runtime_files(ROOT):
+        # NEVER THE SESSION THAT IS STARTING. A transcript is not always on disk when
+        # SessionStart fires — the harness writes it once there is something to write — so
+        # `find` says gone for the very session whose mark was written one line earlier,
+        # and the prune deleted the only evidence the hook had ever run. `verify` then read
+        # the journal as dead in a session it was demonstrably running in. `keep` was
+        # already threaded here for `tracks.prune`; the file loop simply ignored it.
+        if stem == keep:
+            continue
         if transcript.find(project, stem) is None:
             try:
                 state.runtime_file(ROOT, stem).unlink()
