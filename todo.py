@@ -28,7 +28,8 @@ import state
 
 DIR = "todo"
 STRUCK = "struck"
-FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how", "asks", "answer", "doc")
+FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how", "asks", "answer",
+          "doc", "reopened")
 
 
 def _slug(text: str, limit: int = 40) -> str:
@@ -310,6 +311,28 @@ def done(root: Path, track: str, n: int, how: str, at: str) -> tuple[bool, str]:
     return True, f"done {n}: {t['title']}\n  {how}"
 
 
+def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str]:
+    """Undo a close, on the record.
+
+    THE PRICE OF CLOSING A TO-DO AUTOMATICALLY. `done` is a field with no verb that cleared
+    it, so a wrong number — a typo in a commit trailer, a close that fired on the wrong
+    environment — could only be undone by hand-editing the markdown. Nothing that closes
+    without a human in the loop should be that expensive to reverse. The reason is required
+    and the old close is kept beside it, so a reopen is auditable rather than silent.
+    """
+    why = " ".join((why or "").split())
+    if not why:
+        return False, 'say why it is open again: journal todos reopen <n> "<why>"'
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    if not t.get("done"):
+        return False, f"to-do {n} is not done — nothing to reopen"
+    was = t.get("how") or "no reason recorded"
+    _update(root, track, n, done="", how="", reopened=f"{at} · {why} (was closed: {was})")
+    return True, f"reopened {n}: {t['title']}\n  {why}\n  the close it undoes: {was}"
+
+
 def close_titled(root: Path, track: str, title: str, at: str) -> str | None:
     """When work with a to-do's title ends, the to-do is done too. The number, if so."""
     want = " ".join(title.split()).lower()
@@ -318,6 +341,113 @@ def close_titled(root: Path, track: str, title: str, at: str) -> str | None:
             _update(root, track, t["n"], done=at, how="closed with the work of the same name")
             return str(t["n"])
     return None
+
+
+# ─────────────────────────────── closing from a commit message ────────────────────────────
+#: THE PROTOCOL. A commit that finishes a to-do says so in a trailer, in the CLI's own
+#: spelling, on its own line in the message:
+#:
+#:      Journal: todos done 990
+#:      Journal: todos done cli-streamline/4 the cap landed with the page
+#:
+#: A TRAILER, NEVER PROSE. Commit messages here argue, at length, about to-dos — "this
+#: closes the placement question" is a sentence, not an instruction, and a matcher loose
+#: enough to read it is loose enough to close the wrong thing. The line must start with the
+#: trailer and spell the command. `#990` is not used: it belongs to the forge.
+#:
+#: THE NUMBER IS PER ENVIRONMENT, so `990` alone is ambiguous across a project with several.
+#: It resolves against the session's environment first, then against the only environment that
+#: has that number — and REFUSES when more than one does, because a close nobody can see is
+#: worse than a close that did not happen. `<environment>/<n>` says it outright.
+def now() -> str:
+    """One timestamp shape, for the callers that write a to-do without going through the CLI."""
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+TRAILER = "Journal:"
+_TRAILER = re.compile(r"^[ \t]*Journal:[ \t]*todos?[ \t]+done[ \t]+"
+                      r"(?:(?P<env>[A-Za-z0-9][A-Za-z0-9 _.-]*?)/)?(?P<n>\d+)[ \t]*(?P<how>.*)$",
+                      re.IGNORECASE | re.MULTILINE)
+
+
+def commit_at(project: Path, ref: str = "HEAD") -> tuple[str, str, str] | None:
+    """A commit as (sha, subject, whole message), or None where there is no such commit.
+
+    READ THE COMMIT, NOT THE COMMAND that made it. The command is what was asked for; the
+    commit is what happened — so a commit a gate rejected closes nothing, and `-m`, `-F -`
+    and an editor session all parse the same, because none of them are parsed at all.
+    """
+    import subprocess
+    try:
+        p = subprocess.run(["git", "log", "-1", "--format=%H%n%s%n%B", ref], cwd=str(project),
+                           capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if p.returncode != 0 or not p.stdout.strip():
+        return None
+    sha, _, rest = p.stdout.partition("\n")
+    subject, _, body = rest.partition("\n")
+    return sha.strip(), subject.strip(), body
+
+
+def refs_in(message: str) -> list[tuple[str | None, int, str]]:
+    """Every close the message asks for: (environment or None, number, the how it gave)."""
+    out = []
+    for m in _TRAILER.finditer(message or ""):
+        out.append((" ".join(m.group("env").split()) if m.group("env") else None,
+                    int(m.group("n")), " ".join(m.group("how").split())))
+    return out
+
+
+def environments_with_todos(root: Path) -> list[str]:
+    """The environment names that own at least one to-do, read off the to-dos themselves."""
+    d = root / DIR
+    names = []
+    for sub in sorted(d.iterdir()) if d.is_dir() else []:
+        if not sub.is_dir():
+            continue
+        first = next((_parse(f) for f in sorted(sub.glob("*.md"))), None)
+        names.append((first or {}).get("track") or sub.name)
+    return names
+
+
+def close_from_commit(root: Path, message: str, how_default: str, at: str,
+                      here: str | None = None) -> list[tuple[bool, str]]:
+    """Act on every trailer in a commit message.
+
+    Back comes one (did it close, what to say) per ref — the caller writes the headline,
+    because "the trailer closed what it named" is a lie when the number was wrong, and a
+    hook that overstates what it did is one an agent learns to skim.
+    """
+    said: list[tuple[bool, str]] = []
+    for env, n, how in refs_in(message):
+        if env is None:
+            seen: set[str] = set()
+            owners = []
+            for e in ([here] if here else []) + environments_with_todos(root):
+                if e not in seen and _get(root, e, n)[0] is not None:
+                    seen.add(e)
+                    owners.append(e)
+            if not owners:
+                said.append((False, f"to-do {n}: no environment has one — nothing closed"))
+                continue
+            if len(owners) > 1 and (here not in owners):
+                said.append((False, f"to-do {n} is ambiguous — {', '.join(owners)} all have one. "
+                                    f"Spell it: {TRAILER} todos done <environment>/{n}"))
+                continue
+            env = here if here in owners else owners[0]
+        t, err = _get(root, env, n)
+        if t is None:
+            said.append((False, err))
+            continue
+        if t.get("done"):
+            # AN AMEND OR A REBASE RUNS THE HOOK AGAIN over the same message. That is a
+            # no-op with a note, not a failure: nothing about the record is wrong.
+            said.append((False, f"to-do {n} on `{env}` was already closed ({t.get('how')}) — left as it is"))
+            continue
+        ok, msg = done(root, env, n, how or how_default, at)
+        said.append((ok, msg.splitlines()[0] + f" (on `{env}`)" if ok else msg))
+    return said
 
 
 def _age(at: str) -> str:

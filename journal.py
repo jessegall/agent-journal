@@ -657,7 +657,25 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             else:
                 fmt.say("  Nothing is open and nothing is waiting.")
         return 0
-    if verb in ("start", "done", "drop", "strike", "ask", "answer"):
+    if verb in ("from-commit", "from_commit"):
+        # THE SAME PROTOCOL FROM OUTSIDE A SESSION: what the git post-commit hook calls, and
+        # what a person runs after committing by hand. The agent's own commits are already
+        # read at PostToolUse, and a second pass over the same sha closes nothing twice.
+        ref = rest[1] if len(rest) > 1 else "HEAD"
+        at = todo.commit_at(root().parent, ref)
+        if at is None:
+            fmt.say(f"no commit at {ref} to read", error=True)
+            return 1
+        sha, subject, message = at
+        said = todo.close_from_commit(root(), message, f"{subject} ({sha[:9]})", _now(), here)
+        if not said:
+            fmt.say(f"{sha[:9]} names no to-do — a commit closes one with a trailer:\n"
+                    f"  {todo.TRAILER} todos done <n>")
+            return 0
+        for ok, line in said:
+            fmt.say(("  " if ok else "  ! ") + line)
+        return 0 if any(ok for ok, _ in said) else 1
+    if verb in ("start", "done", "drop", "strike", "ask", "answer", "reopen"):
         if len(rest) < 2 or not rest[1].isdigit():
             fmt.say(f'todo {verb} wants a number: journal todos {verb} 3' + (
                 ' "<how>"' if verb != "start" else ""), error=True)
@@ -684,6 +702,11 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             fmt.say(msg, error=not ok)
             if ok:
                 fmt.say(f"  to-do {n} is started; `journal work end \"{t['title']}\"` closes both.")
+                # TAUGHT WHERE IT IS NEEDED: the trailer is only ever typed in a commit
+                # message, and the moment an agent learns which to-do it is on is the moment
+                # to hand it the line that closes it from there.
+                fmt.say(f"  or close it from the commit that finishes it, as a trailer:\n"
+                        f"    {todo.TRAILER} todos done {n}")
             return 0 if ok else 1
         why = " ".join(rest[2:])
         if verb in ("drop", "strike"):  # ruling R4: `strike` is the one retire verb everywhere
@@ -691,7 +714,10 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
                 fmt.say(f'say why: journal todos {verb} <n> "<why it is abandoned>"', error=True)
                 return 1
             why = "dropped: " + why
-        ok, msg = todo.done(root(), here, n, why, _now())
+        if verb == "reopen":
+            ok, msg = todo.reopen(root(), here, n, why, _now())
+        else:
+            ok, msg = todo.done(root(), here, n, why, _now())
         fmt.say(msg, error=not ok)
         return 0 if ok else 1
     if verb.isdigit():

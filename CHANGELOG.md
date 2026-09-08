@@ -4,6 +4,42 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.32.0 — a commit closes the to-do it finishes
+
+A to-do is finished by a commit, and closing it was a second command nobody owed anybody —
+so the list filled with work that was done. The commit can say so itself now, in a trailer
+on its own line, spelled as the command it performs:
+
+    Journal: todos done 990
+    Journal: todos done cli-streamline/4 the four corners are the vocabulary
+
+The message is read off the COMMIT, not off the command that made it. That is the whole
+design: a commit a gate rejected closes nothing, `-m` and `-F -` and an editor session all
+behave identically because none of them are parsed, and the sha and subject are right there
+to become the `how` — the record cites the change instead of summarising it.
+
+A TRAILER, NEVER PROSE. Commit messages here argue about to-dos at length; "this closes the
+placement question" is a sentence, and a matcher loose enough to read it is loose enough to
+close the wrong thing. The line starts with `Journal:` or nothing happens.
+
+THE NUMBER IS PER ENVIRONMENT. `990` resolves against the environment the session is on,
+then against the only environment that has one — and refuses, naming them, when more than
+one does. `<environment>/990` says it outright.
+
+`journal todos reopen <n> "<why>"` came first and is the reason the rest is affordable.
+`done` was a field with no verb that cleared it, so a wrong number could only be undone by
+hand-editing markdown, which is not a price to pay for a close nobody typed. The reason is
+required and the close it undoes is kept beside it.
+
+It is taught in three places, because a command an agent meets and does not know exists is
+a command that is not there: the skill, the `todos start N` output — which prints the exact
+trailer for that number — and once a session at the commit itself, when a commit lands with
+a to-do started and closes nothing.
+
+`journal todos from-commit [<ref>]` does the same for a commit made outside a session; it
+is what the git `post-commit` hook will call. An amend or a rebase re-running it is a no-op
+with a note: a sha is acted on once, and an already-closed to-do is left as it is.
+
 ## 1.31.1 — `--brief` refuses instead of hanging
 
 `journal todos add "<title>" --brief` with no heredoc behind it hung until the tool timed

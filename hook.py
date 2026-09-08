@@ -1343,6 +1343,75 @@ def _git_tracked(project: Path, path: Path) -> bool:
         return False
 
 
+#: `git commit`, in any of its moods — `git -C x commit`, `git commit -F -`, `git commit -m`.
+_GIT_COMMIT = re.compile(r"\bgit\b(?:\s+-{1,2}[^\s]+(?:\s+[^\s-]\S*)?)*\s+commit\b")
+
+
+def _closed_by_commit(conf: dict, payload: dict, ctx: Ctx) -> str | None:
+    """A commit that names a to-do in its trailer closes it, once the commit exists.
+
+    THE MESSAGE IS READ OFF HEAD, NOT OFF THE COMMAND. The command is what was asked for;
+    HEAD is what happened. Reading HEAD closes nothing when the commit was rejected by a
+    gate or aborted, costs no parsing of `-m` against `-F -` against a heredoc, and hands
+    back the sha and subject that become the `how` — a citation instead of a summary.
+
+    ONCE PER SHA. An `--amend`, a rebase, or a second commit in the same line runs this
+    again over a message it has already acted on; the sha it last closed against is kept,
+    and `todo.close_from_commit` treats an already-closed to-do as a no-op besides.
+    """
+    if (payload.get("tool_name") or "") != "Bash" or "commit_trailer" in conf["silenced"]:
+        return None
+    cmd = ((payload.get("tool_input") or {}).get("command") or "")
+    if not _GIT_COMMIT.search(cmd):
+        return None
+    head = todo.commit_at(Path(payload.get("cwd") or ROOT.parent))
+    if head is None:
+        return None
+    sha, subject, message = head
+    if not todo.refs_in(message):
+        return None
+    if state.get(ROOT, "commit_closed", "", stem=ctx.stem) == sha:
+        return None
+    state.put(ROOT, "commit_closed", sha, stem=ctx.stem)
+    said = todo.close_from_commit(ROOT, message, f"{subject} ({sha[:9]})", todo.now(),
+                                  tracks.current(ROOT, ctx.stem))
+    if not said:
+        return None
+    head = ("THE COMMIT'S TRAILER CLOSED WHAT IT NAMED" if any(ok for ok, _ in said)
+            else f"THE COMMIT'S TRAILER ({todo.TRAILER} todos done <n>) CLOSED NOTHING")
+    return head + ":\n  " + "\n  ".join(line for _, line in said)
+
+
+def _trailer_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
+    """A commit landed while a to-do is started, and its message closed nothing. Said once.
+
+    THE THIRD PLACE THE TRAILER IS TAUGHT, and the only one that fires at the moment it is
+    needed: the skill is read at a start, `todos start` prints it before there is anything
+    to commit, and this is the commit itself. Once per session — the point is that the
+    spelling exists, and an agent that has been told and chose otherwise is not wrong.
+    """
+    if (payload.get("tool_name") or "") != "Bash" or "commit_trailer" in conf["silenced"]:
+        return None
+    if not _GIT_COMMIT.search(((payload.get("tool_input") or {}).get("command") or "")):
+        return None
+    if state.get(ROOT, "trailer_taught", False, stem=ctx.stem):
+        return None
+    head = todo.commit_at(Path(payload.get("cwd") or ROOT.parent))
+    if head is None or todo.refs_in(head[2]):
+        return None
+    here = tracks.current(ROOT, ctx.stem)
+    started = [t for t in todo.open_items(ROOT, here) if t.get("started")]
+    if not started:
+        return None
+    state.put(ROOT, "trailer_taught", True, stem=ctx.stem)
+    t = started[0]
+    return (f"THAT COMMIT CLOSED NO TO-DO, and to-do {t['n']} ({t['title']}) is started. The commit "
+            f"that finishes it can close it from its own message, on a line of its own:\n"
+            f"    {todo.TRAILER} todos done {t['n']}\n"
+            f"The close then cites the commit. Said once a session; `journal todos done "
+            f"{t['n']} \"<how>\"` by hand is fine too.")
+
+
 def _attach_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
     """A non-source file read again and again: a hint to attach it to a doc, once per file.
 
@@ -1550,6 +1619,12 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     rules and nothing else.
     """
     _floor(ctx)
+    # AN ACTION BEATS A HINT: this one CHANGED the record, so it is said before any nudge
+    # that only advises, and it is said to the user too — an automatic close they cannot
+    # see is the one thing this protocol must never be.
+    closed = _closed_by_commit(conf, payload, ctx)
+    if closed:
+        return _context("PostToolUse", closed, system=closed.replace("\n  ", " · "))
     # THE CONTEXT LADDER, MID-WORK. Only with the window set: a tail reading has no peak
     # to infer one from, and the ladder never climbs a guess.
     window = conf["context_window"] or (state.get(ROOT, "window", 0) or 0)
@@ -1560,6 +1635,9 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
             rung = _rung(conf, ctx, got)
             if rung:
                 return _context("PostToolUse", rung[1] + "\n\n" + rung[2])
+    hint = _trailer_hint(conf, payload, ctx)
+    if hint:
+        return _context("PostToolUse", hint)
     hint = _raw_markdown(conf, payload, ctx)
     if hint:
         return _context("PostToolUse", hint)

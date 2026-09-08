@@ -83,12 +83,26 @@ the claim rather than erasing it, so being wrong about one is cheap.
     journal todos show N             the whole brief — bare `journal todo N` is the same
     journal todos start N             open work with that title; `work end` closes both
     journal todos done N "<how>"      resolved without starting it
+    journal todos reopen N "<why>"    undo a close; the reason and the close it undoes are kept
+    journal todos from-commit [<ref>]   act on a commit's trailer by hand — what the git post-commit hook runs
     journal todos strike N "<why>"   abandoned, on the record — `journal todo drop N "<why>"` is the same
     journal todos ask N "<question>"  it waits on the user's answer; auto moves on to the next
     journal todos answer N "<answer>" the user answers from the terminal; the agent is told at its next stop and picks it up first
     journal todos auto [on|off]       per environment: work through the list without asking, or wait for the user's word
     journal todos amend <n> "<section title>" --brief    append a new `## <title>` section to a brief, from stdin
     journal todos replace <n> ["<section title>"] --brief   swap one named section (or, with no title, the whole brief); the old text is kept under struck/
+
+A commit closes the to-do it finishes, with a trailer on its own line in the message:
+
+    Journal: todos done 4
+    Journal: todos done cli-streamline/4 the four corners are the vocabulary
+
+The message is read off the commit once it exists, so a commit that was rejected closes
+nothing and `-m`, `-F -` and an editor session all behave the same. The `how` becomes the
+commit's subject and sha. Prose never closes anything: the line must start with `Journal:`
+and spell the command. The number resolves against the environment you are on, then against
+the only environment that has it, and refuses when more than one does —
+`<environment>/N` says it outright.
 
 A brief on stdin:
 

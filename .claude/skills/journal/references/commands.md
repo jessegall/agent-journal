@@ -51,7 +51,7 @@ payload, not a description of it.
 
     journal pins add "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a fact that must survive a compaction; --doc: the doc or part it rests on
     journal pin "<claim>"            the same command, spelled the way it always was — a permanent alias, not deprecated; `remember` too
-    journal pins [--all]             every pin, numbered; --all includes struck ones
+    journal pins [--all] [--order=asc|desc]   every pin, numbered and NEWEST FIRST; --all includes struck ones, --order=asc reads oldest first. Every paginated list takes it: pins, rules, todos, docs, tools
     journal pins N --full            the conversation around where pin N was written
     journal pins strike N "<why>"    retire a pin that stopped being true, no replacement needed (also: bare `journal strike N "<why>"`)
     journal nothing "<why>"          after a context warning: nothing here needs pinning, and why
@@ -68,6 +68,7 @@ payload, not a description of it.
 **Cleanup: what has stopped being true**
 
     journal cleanup [--all]          every entry with EVIDENCE against it — a rule or pin naming a file or a `journal <verb>` that is gone, a doc whose environment is gone or an untouched draft, a to-do that has waited on the user, an empty environment — each beside the command that retires it; --all reads every environment's pins, not just this one's
+    journal cleanup read             the second pass: every rule and every pin IN FULL, with the three questions to ask of each — the half a checker cannot do, and the record keeps when it was last done
     journal tidy                     the same command
 Nothing is struck for you, and age alone is never evidence: a checker that flags a true
 claim teaches the reader to skim, and the one real finding goes past with the noise. What
@@ -82,12 +83,26 @@ the claim rather than erasing it, so being wrong about one is cheap.
     journal todos show N             the whole brief — bare `journal todo N` is the same
     journal todos start N             open work with that title; `work end` closes both
     journal todos done N "<how>"      resolved without starting it
+    journal todos reopen N "<why>"    undo a close; the reason and the close it undoes are kept
+    journal todos from-commit [<ref>]   act on a commit's trailer by hand — what the git post-commit hook runs
     journal todos strike N "<why>"   abandoned, on the record — `journal todo drop N "<why>"` is the same
     journal todos ask N "<question>"  it waits on the user's answer; auto moves on to the next
     journal todos answer N "<answer>" the user answers from the terminal; the agent is told at its next stop and picks it up first
     journal todos auto [on|off]       per environment: work through the list without asking, or wait for the user's word
     journal todos amend <n> "<section title>" --brief    append a new `## <title>` section to a brief, from stdin
     journal todos replace <n> ["<section title>"] --brief   swap one named section (or, with no title, the whole brief); the old text is kept under struck/
+
+A commit closes the to-do it finishes, with a trailer on its own line in the message:
+
+    Journal: todos done 4
+    Journal: todos done cli-streamline/4 the four corners are the vocabulary
+
+The message is read off the commit once it exists, so a commit that was rejected closes
+nothing and `-m`, `-F -` and an editor session all behave the same. The `how` becomes the
+commit's subject and sha. Prose never closes anything: the line must start with `Journal:`
+and spell the command. The number resolves against the environment you are on, then against
+the only environment that has it, and refuses when more than one does —
+`<environment>/N` says it outright.
 
 A brief on stdin:
 

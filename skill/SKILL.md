@@ -195,6 +195,7 @@ show it — so being wrong is cheap and leaving a dead rule standing is not. `pi
     journal todos show <n>             the brief (also: `journal todo <n>`)
     journal todos start <n>             open work under that title; `work end` closes both
     journal todos done <n> "<how>"      resolved without starting it
+    journal todos reopen <n> "<why>"    undo a close, on the record
     journal todos ask <n> "<question>"  it waits on the user; auto moves on to the next
     journal todos answer <n> "<answer>" the user's answer; the agent is told at its next stop
     journal todos auto [on|off]         work through the list without asking, or wait for the word
@@ -203,6 +204,27 @@ A to-do is work that was **put off**: the user said later, or you found somethin
 were told not to touch it yet. It is a titled file under `todo/<environment>/`, and the brief is
 what you will need in a week: what exactly, why, where to start, what the user said. Not
 for imagined work; "it might be nice to refactor this" is a message with a tag.
+
+**A commit closes the to-do it finishes.** Put a trailer on its own line in the commit
+message, in the CLI's own spelling:
+
+    Journal: todos done 4
+    Journal: todos done cli-streamline/4 the placement vocabulary is the Kit's four corners
+
+The journal reads the message off the commit once it exists and closes what it names, with
+the commit's subject and sha as the `how` — a citation instead of your summary of it. Write
+the trailer whenever the commit is what finishes the to-do; it saves nothing to close by
+hand afterwards, and the close is then tied to the change that earned it.
+
+**Prose does not close anything.** "This closes the placement question" is a sentence, and
+a matcher loose enough to read it would close the wrong to-do on a message that only argues
+about one. Only a line that starts with `Journal:` and spells the command counts.
+
+**The number is per environment.** `4` resolves against the environment you are on, then
+against the only environment that has a to-do 4 — and refuses when more than one does.
+`<environment>/4` says it outright, which is what a commit made from a worktree or another
+environment should say. If a trailer closed the wrong one, `journal todos reopen <n>
+"<why>"` puts it back with the close it undid kept beside it.
 
 **Turning auto on means starting a loop, in the same breath.** Auto says the list drains
 while the user is away; a session with no loop stops at its first idle stop and the list

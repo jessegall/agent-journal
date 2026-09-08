@@ -92,6 +92,7 @@ user interrupts you, nothing in that turn is judged.
     journal work update "<what moved>" [--on="<work>"]
     journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>] [--on="<work>"]
     journal work end "<the same words>"
+    journal work end --force ["<note>"]      close work whose declarer is GONE: a deleted worktree, a crashed session — its subject is unguessable, so the note replaces the match
 
 Declare before the first write, never before the first read: edits, `rm`, `git commit`
 are refused while nothing is open, and reads never are, because reading is what tells you
@@ -165,6 +166,7 @@ moment to park any work you are holding for later, because that lives only in th
 **Retire what has stopped being true, and do not wait to be asked.**
 
     journal cleanup [--all]        what has EVIDENCE against it, beside the command that retires it
+    journal cleanup read           every rule and pin in full — the half only reading finds
     journal rules strike <n> "<why>"     |  journal pins strike <n> "<why>"
 
 Rules and pins are re-asserted verbatim at the top of every compaction, in the highest
@@ -173,11 +175,18 @@ something checkable against them — a claim naming a file that is gone or a `jo
 the CLI does not answer to, a doc whose environment no longer exists, a to-do that has been
 waiting on the user, an environment with nothing on it. Age is never evidence on its own.
 
-What no command can find is the rule that quietly stopped describing how anyone works, so
-the report ends with every rule in force, to be read rather than checked. **Strike what you
-have read and judged dead**: the reason is required, and a strike hides the claim rather
-than erasing it — `journal rules --all` and `journal pins --all` still show it — so being
-wrong is cheap and leaving a dead rule standing is not.
+**A cleanup is two passes, and the mechanical one is the smaller.** What no command can
+find is the rule that quietly stopped describing how anyone works: it names no file,
+misspells nothing, and passes every check forever. `journal cleanup read` is the second
+pass — every rule and every pin in full, with the questions to ask of each — and it is not
+optional. Run it after the mechanical pass, judging each claim against the code you have
+just been working in, because you are the only reader who has both in front of them. The
+record keeps when it was last done, never what was decided.
+
+**Strike what you have read and judged dead**: the reason is required, and a strike hides
+the claim rather than erasing it — `journal rules --all` and `journal pins --all` still
+show it — so being wrong is cheap and leaving a dead rule standing is not. `pins add
+"<the claim now>" --supersedes=<n>` when it is right but out of date.
 
 ## Delayed work: the to-do
 
@@ -186,6 +195,7 @@ wrong is cheap and leaving a dead rule standing is not.
     journal todos show <n>             the brief (also: `journal todo <n>`)
     journal todos start <n>             open work under that title; `work end` closes both
     journal todos done <n> "<how>"      resolved without starting it
+    journal todos reopen <n> "<why>"    undo a close, on the record
     journal todos ask <n> "<question>"  it waits on the user; auto moves on to the next
     journal todos answer <n> "<answer>" the user's answer; the agent is told at its next stop
     journal todos auto [on|off]         work through the list without asking, or wait for the word
@@ -194,6 +204,33 @@ A to-do is work that was **put off**: the user said later, or you found somethin
 were told not to touch it yet. It is a titled file under `todo/<environment>/`, and the brief is
 what you will need in a week: what exactly, why, where to start, what the user said. Not
 for imagined work; "it might be nice to refactor this" is a message with a tag.
+
+**A commit closes the to-do it finishes.** Put a trailer on its own line in the commit
+message, in the CLI's own spelling:
+
+    Journal: todos done 4
+    Journal: todos done cli-streamline/4 the placement vocabulary is the Kit's four corners
+
+The journal reads the message off the commit once it exists and closes what it names, with
+the commit's subject and sha as the `how` — a citation instead of your summary of it. Write
+the trailer whenever the commit is what finishes the to-do; it saves nothing to close by
+hand afterwards, and the close is then tied to the change that earned it.
+
+**Prose does not close anything.** "This closes the placement question" is a sentence, and
+a matcher loose enough to read it would close the wrong to-do on a message that only argues
+about one. Only a line that starts with `Journal:` and spells the command counts.
+
+**The number is per environment.** `4` resolves against the environment you are on, then
+against the only environment that has a to-do 4 — and refuses when more than one does.
+`<environment>/4` says it outright, which is what a commit made from a worktree or another
+environment should say. If a trailer closed the wrong one, `journal todos reopen <n>
+"<why>"` puts it back with the close it undid kept beside it.
+
+**Turning auto on means starting a loop, in the same breath.** Auto says the list drains
+while the user is away; a session with no loop stops at its first idle stop and the list
+sits there — the one thing auto was turned on to prevent. So `journal todos auto on` prints
+the loop command, and the next write is REFUSED until a loop exists. `journal loop set` says one is running that the journal cannot
+see; `journal todos auto off` says the list should not drain on its own.
 
 **A to-do is not permission, unless the user has switched it on.** With `auto` off, the
 default, the start block lists what is waiting and an idle stop says so once; neither is
@@ -393,8 +430,9 @@ thing to do now.
 | *your reply puts work off — park it as a to-do*                | `todo "<title>" --brief`, then say so; or run the call again if nothing is deferred |
 | *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
 | *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`                  |
-| *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs |
-| *N entr(ies) in the record have evidence against them*         | `journal cleanup`, then strike what you have read and judged dead |
+| *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs. While it stands the next WRITE is refused — auto without a loop is a promise nothing keeps |
+| *N entr(ies) in the record have evidence against them*         | `journal cleanup`, then `cleanup read`, then strike what you judged dead |
+| *the reading pass … was never done / N d ago*                  | `journal cleanup read` — judge every rule and pin against the code you just worked in |
 | *environment `x` is taken by another session*                        | ask the user which environment this session works on, then `switch "<name>"`; if the holder is gone and they say so, `claim "<name>" "<why>"` |
 | *environment `x` was claimed by another session*                     | another session took it and said why; you are bound to nothing — `switch "<name>"`, or `claim "<name>" "<why>"` to take it back |
 | *THIS SESSION HAS NO ENVIRONMENT*                              | take one from what the user just asked — `switch "<name>"` — and say which; ask them if it named none |
