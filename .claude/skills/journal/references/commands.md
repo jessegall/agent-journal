@@ -92,7 +92,8 @@ the claim rather than erasing it, so being wrong about one is cheap.
     journal todos amend <n> "<section title>" --brief    append a new `## <title>` section to a brief, from stdin
     journal todos replace <n> ["<section title>"] --brief   swap one named section (or, with no title, the whole brief); the old text is kept under struck/
 
-A commit closes the to-do it finishes, with a trailer on its own line in the message:
+A commit closes the to-do it finishes, with a trailer of its own in the message, at the
+start of a line and unindented (an indented one is a quoted example and does nothing):
 
     Journal: todos done 4
     Journal: todos done cli-streamline/4 the four corners are the vocabulary

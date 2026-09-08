@@ -205,8 +205,9 @@ were told not to touch it yet. It is a titled file under `todo/<environment>/`, 
 what you will need in a week: what exactly, why, where to start, what the user said. Not
 for imagined work; "it might be nice to refactor this" is a message with a tag.
 
-**A commit closes the to-do it finishes.** Put a trailer on its own line in the commit
-message, in the CLI's own spelling:
+**A commit closes the to-do it finishes.** Put a trailer at the start of a line in the
+commit message — unindented, anywhere in it, the footer being where it is read — spelled as
+the command it performs:
 
     Journal: todos done 4
     Journal: todos done cli-streamline/4 the placement vocabulary is the Kit's four corners
@@ -216,9 +217,11 @@ the commit's subject and sha as the `how` — a citation instead of your summary
 the trailer whenever the commit is what finishes the to-do; it saves nothing to close by
 hand afterwards, and the close is then tied to the change that earned it.
 
-**Prose does not close anything.** "This closes the placement question" is a sentence, and
-a matcher loose enough to read it would close the wrong to-do on a message that only argues
-about one. Only a line that starts with `Journal:` and spells the command counts.
+**Prose does not close anything, and neither does an indented example.** "This closes the
+placement question" is a sentence, and a matcher loose enough to read it would close the
+wrong to-do on a message that only argues about one. Only a line beginning at column 0 with
+`Journal:` and spelling the command counts — which is what lets a commit message quote the
+protocol, indented, without acting on it.
 
 **The number is per environment.** `4` resolves against the environment you are on, then
 against the only environment that has a to-do 4 — and refuses when more than one does.

@@ -57,7 +57,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal todos strike N "<why>"  abandoned, on the record — `journal todo drop N "<why>"` is the same',
         'journal todos reopen N "<why>"  undo a close, with the reason and the close it undoes kept',
         "Journal: todos done N         not a command — the TRAILER a commit message closes a to-do with,",
-        "                              on its own line; `<environment>/N` when the number is ambiguous",
+        "                              at the start of a line, unindented; `<environment>/N` if ambiguous",
         "journal todos from-commit [<ref>]   act on that trailer for a commit made outside a session (the git post-commit hook)",
         'journal todos ask N "<question>"    it waits on the user; auto moves on to the next',
         'journal todos answer N "<answer>"   the user answers it; the agent is told at its next stop and picks it up first',

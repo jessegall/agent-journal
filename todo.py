@@ -355,6 +355,12 @@ def close_titled(root: Path, track: str, title: str, at: str) -> str | None:
 #: enough to read it is loose enough to close the wrong thing. The line must start with the
 #: trailer and spell the command. `#990` is not used: it belongs to the forge.
 #:
+#: AT COLUMN 0, AND FOR ONE REASON: a message that DOCUMENTS this protocol shows an example,
+#: and an example is indented. Leading whitespace was allowed at first and the commit that
+#: added the feature came within one line of closing a to-do numbered in its own changelog.
+#: Anywhere in the message is fine — the footer, beside the other trailers, is where it is
+#: read — but a line with a space in front of it is a quotation, not an instruction.
+#:
 #: THE NUMBER IS PER ENVIRONMENT, so `990` alone is ambiguous across a project with several.
 #: It resolves against the session's environment first, then against the only environment that
 #: has that number — and REFUSES when more than one does, because a close nobody can see is
@@ -365,7 +371,7 @@ def now() -> str:
 
 
 TRAILER = "Journal:"
-_TRAILER = re.compile(r"^[ \t]*Journal:[ \t]*todos?[ \t]+done[ \t]+"
+_TRAILER = re.compile(r"^Journal:[ \t]*todos?[ \t]+done[ \t]+"
                       r"(?:(?P<env>[A-Za-z0-9][A-Za-z0-9 _.-]*?)/)?(?P<n>\d+)[ \t]*(?P<how>.*)$",
                       re.IGNORECASE | re.MULTILINE)
 

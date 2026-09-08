@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.32.2 — the trailer is read at column 0, so a quoted example does nothing
+
+The match allowed leading whitespace. A commit message that DOCUMENTS this protocol shows
+an example, and an example is indented — so the changelog entry for 1.32.0, which quotes a
+trailer with a to-do number in it, was one line away from closing whatever to-do had that
+number. The line must now begin at column 0.
+
+Nothing else narrows. The trailer may sit anywhere in the message, above or below any other
+trailer; the footer is simply where a reader looks for it. What changed is that a line with
+a space in front of it is a quotation rather than an instruction, which is what lets this
+package's own commits explain the feature without triggering it.
+
 ## 1.32.1 — the commit trailer works for commits you type yourself
 
 1.32.0 read the trailer at PostToolUse, which covers every commit an agent makes and none

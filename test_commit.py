@@ -73,6 +73,11 @@ MSG = ("kit: the placement ruling landed\n\n"
 check("a trailer on its own line is read, prose naming a to-do is not",
       todo.refs_in(MSG), [(None, 1, ""), ("beta", 4, "the cap landed with it")])
 check("a message with no trailer reads as no refs", todo.refs_in("kit: closes to-do 3\n"), [])
+# A MESSAGE THAT DOCUMENTS THE PROTOCOL shows an example, and an example is indented.
+check("an indented example is a quotation, not an instruction",
+      todo.refs_in("kit: the protocol is\n\n    Journal: todos done 5\n\nand that is all.\n"), [])
+check("the footer is where it is read, above or below any other trailer",
+      todo.refs_in("kit: x\n\nClaude-Session: y\nJournal: todos done 5\n"), [(None, 5, "")])
 
 # ─────────────────────────────── a commit closes what it names ─────────────────────────────
 j("prepare", "alpha"); j("switch", "alpha")
