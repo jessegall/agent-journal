@@ -234,6 +234,15 @@ for cmd, want in (('.journal/journal.py remember "a fact"', True),
                   ('cd x && ./.journal/journal.py start "work"', True),
                   ('.journal/journal.py search remember', False),
                   ('.journal/journal.py pins', False),
+                  # the canonical plurals: the noun alone is a listing, the verb is the write
+                  ('.journal/journal.py pins add "a fact"', True),
+                  ('.journal/journal.py rules add "a ruling"', True),
+                  ('.journal/journal.py todos add "a title"', True),
+                  ('.journal/journal.py pins move 3 "elsewhere"', True),
+                  ('.journal/journal.py rules', False),
+                  ('.journal/journal.py todos', False),
+                  ('.journal/journal.py todos 3', False),
+                  ('.journal/journal.py rules 3 --full', False),
                   ('cat file.py', False)):
     code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                           tool_input={"command": cmd})
@@ -1092,6 +1101,40 @@ code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
 check("the open-work hold offers await beside end and update",
       (brief, "work await" in why), ("journal reminded Claude: work still open", True))
+
+# ───────────────── a claim's long form: written, read, carried, marked ─────────────────────
+import pins as _pins  # noqa: E402
+rB = fresh() if "fresh" in dir() else None
+if rB is not None:
+    _pins.add(rB, "a claim that keeps its argument", AT, 400, key=_pins.RULES,
+              long="The argument, which is never injected and has no cap.\n")
+    _pins.add(rB, "a claim with nothing behind it", AT, 400, key=_pins.RULES)
+    check("the long form is a file beside the rules, not a field in the record",
+          (rB / "rules" / "001-a-claim-that-keeps-its-argument.md").is_file(), True)
+    check("and reads back whole", "never injected" in _pins.body(rB, 1, _pins.RULES), True)
+    check("a claim with none reads back empty", _pins.body(rB, 2, _pins.RULES), "")
+    carried = _pins.carry(rB, key=_pins.RULES)
+    check("the carried block marks the one that has reasoning, in one short suffix",
+          ("·rules show 1" in carried, "·rules show 2" in carried), (True, False))
+    check("and the block still carries both claims in full",
+          ("a claim that keeps its argument" in carried, "a claim with nothing behind it" in carried),
+          (True, True))
+    check("the listing says so too", "has its reasoning" in _pins.render(rB, key=_pins.RULES), True)
+    ok2, _ = _pins.amend_body(rB, 1, "What it rules out", "Not this.", _pins.RULES, AT)
+    check("amend appends a section and keeps what was there",
+          (ok2, "## What it rules out" in _pins.body(rB, 1, _pins.RULES),
+           "never injected" in _pins.body(rB, 1, _pins.RULES)), (True, True, True))
+    ok3, _ = _pins.write_body(rB, 1, "Replaced outright.", _pins.RULES, AT)
+    check("replace swaps it and keeps the old text under struck/",
+          (ok3, "never injected" not in _pins.body(rB, 1, _pins.RULES),
+           any((rB / "rules" / "struck").glob("*.md"))), (True, True, True))
+    # promote must carry the argument across, or it is dropped while the strike says otherwise
+    _pins.add(rB, "a pin with an argument", AT, 400, long="Why it holds.\n")
+    n = len(_pins._all(rB))
+    tookP, _ = _pins.promote(rB, n, AT)
+    check("promote carries the reasoning into the rule it makes",
+          (tookP, "Why it holds." in _pins.body(rB, len(_pins._all(rB, _pins.RULES)), _pins.RULES)),
+          (True, True))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

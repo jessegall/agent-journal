@@ -115,6 +115,13 @@ def _claims(root: Path, key: str, where: str) -> list[dict]:
         if p.get("struck"):
             continue
         why = _dangling(root, p.get("fact", ""))
+        if not why and p.get("body"):
+            # THE SAME ROT, IN THE OTHER HALF. A dead path or a `journal <verb>` the CLI no
+            # longer answers to rots in an argument exactly as it does in a claim, and the
+            # argument is the half nobody re-reads.
+            why = _dangling(root, pins_mod.body(root, i, key))
+            if why:
+                why += " (in its reasoning)"
         if not why:
             continue
         out.append({"kind": "rule" if key == pins_mod.RULES else "pin", "n": i, "where": where,
@@ -310,12 +317,21 @@ QUESTIONS = (
 
 def _entry(n: int, item: dict, noun: str) -> str:
     """One claim, WHOLE. Nothing is truncated in the reading pass: a claim cut at 70
-    characters is a claim judged on its opening, which is how a rule survives every pass."""
+    characters is a claim judged on its opening, which is how a rule survives every pass.
+
+    THE LONG FORM IS NAMED, NOT PRINTED, and that is a deliberate deviation from the line
+    above — do not "fix" it. Printing 125 claims is the point; printing 125 claims AND 125
+    arguments is a wall nobody reads, which is the same failure as truncating, arrived at
+    from the other side. The claim is what is being judged; the argument is one command away
+    for the entries where the judgement is hard.
+    """
     import fmt
     body = fmt.wrap(item.get("fact", ""), indent=7)
+    plural = "rules" if noun == "rule" else "pins"
+    extra = f" · journal {plural} show {n}" if item.get("body") else ""
     return (f"  {n:>3}" + body[5:] + "\n"
             + fmt.dim(f"       {pins_mod.age(item.get('at', ''))} · "
-                      f'journal {noun} strike {n} "<why>"'))
+                      f'journal {noun} strike {n} "<why>"' + extra))
 
 
 def reading(root: Path, here: str, at: str = "", mark: bool = True) -> str:

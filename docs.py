@@ -67,6 +67,7 @@ def _parse(path: Path) -> tuple[dict, str]:
 
 
 def _write(path: Path, meta: dict, body: str, fields=FIELDS) -> None:
+    _CATALOGUE.clear()   # a doc changed: whatever was read before this is now a guess
     lines = ["---"] + [f"{k}: {meta.get(k, '') or ''}" for k in fields
                        if meta.get(k, "") != "" or k in ("n", "title")] + ["---", ""]
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -83,11 +84,30 @@ def _age(at: str) -> str:
 
 
 # ------------------------------------------------------------------ the catalogue
+#: str(docs folder) -> (its mtime_ns, the catalogue). ONE PROCESS, and dropped by any write.
+#:
+#: `_load` opens every index.md and every part body in the project. `ref_label` calls `get`,
+#: `get` calls `_load`, and `pins.carry` calls `ref_label` once per doc-citing entry — so a
+#: consumer with 78 docs and 27 citing rules read the whole catalogue 27 times to build ONE
+#: context block: 218ms on a hook event, against a 68ms whole CLI run. Nothing between those
+#: 27 reads can change a doc, and every write from this module drops the entry, so a part
+#: added mid-process is seen. The folder's mtime catches a doc added by anybody else.
+_CATALOGUE: dict = {}
+
+
 def _load(root: Path) -> list[dict]:
     """Every catalogued doc: folders with an index.md, and single files with frontmatter."""
     d = folder(root)
     if not d.is_dir():
         return []
+    key = str(d)
+    try:
+        stamp = d.stat().st_mtime_ns
+    except OSError:
+        stamp = 0
+    hit = _CATALOGUE.get(key)
+    if hit is not None and hit[0] == stamp:
+        return hit[1]
     out = []
     for f in sorted(d.iterdir()):
         if f.is_dir() and (f / INDEX).is_file():
@@ -101,7 +121,9 @@ def _load(root: Path) -> list[dict]:
                 continue
             if meta.get("n"):
                 out.append({**meta, "n": int(meta["n"]), "body": body, "path": f, "dir": None, "parts": []})
-    return sorted(out, key=lambda x: x["n"])
+    out = sorted(out, key=lambda x: x["n"])
+    _CATALOGUE[key] = (stamp, out)
+    return out
 
 
 def _parts(d: Path) -> list[dict]:

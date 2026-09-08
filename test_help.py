@@ -111,9 +111,18 @@ check("both rule-strikes landed", (rules[0]["struck"], rules[1]["struck"]),
 
 code, out = j("rules", "list")
 check("`rules list` is the same as bare `rules`", "RULES OF THIS PROJECT" in out, True)
+# 1.35.0 RULING: `show` reads its NOUN, everywhere. `docs show 4` prints the doc and
+# `todos show 3` prints the to-do; this was the one place `show` printed a stretch of
+# transcript instead, which is what `--full` means everywhere else. Both spellings still
+# run and `--full` still means the conversation — what changed is which one `show` is.
 code1, out1 = j("rules", "3", "--full")
+check("`rules <n> --full` still opens the conversation around it",
+      ("nothing to read around" in out1 or "written at line" in out1), True)
 code2, out2 = j("rules", "show", "3")
-check("`rules show <n>` is byte-identical to `rules <n> --full`", (code2, out2), (code1, out1))
+check("`rules show <n>` reads the RULE: the claim, and its reasoning if it has any",
+      (code2, "RULE 3" in out2, "the old way to rule" in out2,
+       "No reasoning is written down" in out2), (0, True, True, True))
+check("and the two are no longer the same page", out2 == out1, False)
 
 # ─────────────────────────────── todo / todos twin alias ──────────────────────────────────────
 code, out = j("todo", "the old bare spelling")

@@ -79,7 +79,7 @@ def live(root: Path, key: str = KEY) -> list[dict]:
 
 
 def add(root: Path, fact: str, at: str, limit: int, supersedes: int | None = None,
-        where: dict | None = None, key: str = KEY):
+        where: dict | None = None, key: str = KEY, long: str = ""):
     """Pin a fact. Refuses a paragraph, and records where it was said.
 
     THE LIMIT IS ON LENGTH, NOT ON COUNT, and that is the whole change. A pin is re-read in
@@ -118,7 +118,95 @@ def add(root: Path, fact: str, at: str, limit: int, supersedes: int | None = Non
         state.put(root, key, items)
         standing = len([p for p in items if not p.get("struck")])
     verb = "ruled" if key == RULES else "pinned"
-    return True, f"{verb} {len(items)} ({standing} standing)"
+    out = f"{verb} {len(items)} ({standing} standing)"
+    if (long or "").strip():
+        ok, msg = write_body(root, len(items), long, key, at)
+        out += "\n  " + msg
+    else:
+        # TAUGHT WHERE IT IS NEEDED: the claim has just landed and its argument is still in
+        # the window. This is the last moment it is cheap to write down.
+        out += f"\n  the reasoning behind it: journal {key} replace {len(items)} --brief"
+    return True, out
+
+
+# ─────────────────────────────── the long form of a claim ──────────────────────────────────
+#: A CLAIM IS ONE LINE AND ITS REASONING IS NOT. The cap exists because a rule is re-read in
+#: full at every session start, every compaction, every context rung and by every subagent —
+#: 125 rules is 30KB of that in a real consumer. But the reasoning has to go SOMEWHERE, and
+#: for want of anywhere it went into docs: 78 of them, 60 cited by nothing, and a rule citing
+#: a doc that exists while the doc is referenced by the rule, so neither could ever be
+#: retired. The body ends that. It belongs to the claim, it is never injected, it has no cap
+#: — text that is never re-read costs nothing to keep — and it dies when the claim is struck.
+#:
+#: A FILE, NOT A FIELD. record.json is 744KB in that consumer, JSON has no multi-line
+#: strings, and a person edits these by hand and reviews them in a diff. A to-do's brief and
+#: a doc's part are both files for the same reasons; a third shape here would be inventing a
+#: store this package has already rejected twice.
+STRUCK = "struck"
+
+
+def body_dir(root: Path, key: str = KEY) -> Path:
+    """Where the long forms live: beside the rules, or inside the environment for pins."""
+    if key == RULES:
+        return root / "rules"
+    return state.env_dir(root, state.get(root, "current", "default") or "default") / "pins"
+
+
+def _slug(text: str, limit: int = 40) -> str:
+    import re as _re
+    s = _re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
+    return (s[:limit].rstrip("-") or "claim")
+
+
+def body_path(root: Path, n: int, fact: str, key: str = KEY) -> Path:
+    return body_dir(root, key) / f"{n:03d}-{_slug(fact)}.md"
+
+
+def body(root: Path, n: int, key: str = KEY) -> str:
+    """The long form of claim n, or "" when it has none."""
+    items = _all(root, key)
+    if n < 1 or n > len(items):
+        return ""
+    name = items[n - 1].get("body")
+    if not name:
+        return ""
+    f = body_dir(root, key) / name
+    return f.read_text() if f.is_file() else ""
+
+
+def write_body(root: Path, n: int, text: str, key: str = KEY, at: str = "") -> tuple[bool, str]:
+    """Give claim n a long form, or replace the one it has. The old text is kept under struck/."""
+    noun = "rule" if key == RULES else "pin"
+    if not (text or "").strip():
+        return False, f"a long form needs a body — pass it on stdin with --brief"
+    with state.locked(root):
+        items = _all(root, key)
+        if n < 1 or n > len(items):
+            return False, f"there is no {noun} {n}. `journal {key}` numbers them."
+        item = items[n - 1]
+        f = body_dir(root, key) / (item.get("body") or body_path(root, n, item["fact"], key).name)
+        if f.is_file():
+            box = f.parent / STRUCK
+            box.mkdir(parents=True, exist_ok=True)
+            (box / f"{f.stem}-{(at or '').replace(':', '')}.md").write_text(f.read_text())
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(text.strip() + "\n")
+        item["body"] = f.name
+        state.put(root, key, items)
+    return True, f"{noun} {n} has its reasoning: {f.relative_to(root.parent)}"
+
+
+def amend_body(root: Path, n: int, title: str, text: str, key: str = KEY, at: str = "") -> tuple[bool, str]:
+    """Append a `## <title>` section to the long form, leaving what is there."""
+    title = " ".join((title or "").split())
+    if not title:
+        return False, f'a section needs a title: journal {key} amend {n} "<section title>" --brief'
+    had = body(root, n, key)
+    if f"## {title.lower()}" in had.lower():
+        return False, f"that long form already has a section called {title!r}"
+    joined = (had.rstrip() + "\n\n" if had.strip() else "") + f"## {title}\n\n{text.strip()}"
+    ok, msg = write_body(root, n, joined, key, at)
+    return ok, (msg + f"\n  added the section {title!r}" if ok else msg)
 
 
 #: Paths that exist for one session. A pin naming one is a citation to nothing: the
@@ -153,8 +241,9 @@ def refused(fact: str, limit: int) -> str | None:
         f"every compaction, so it has to be a CLAIM, not the reasoning behind it:\n"
         f"  keep  …{fact[:limit - 20]}\n"
         f"  cut   …{fact[limit - 20:][:120]}\n"
-        "The reasoning is already in the transcript. Pin the claim; "
-        "`journal pins <n> --full` reads the rest. Several claims are several pins."
+        "The reasoning is not cut, it is MOVED: `--brief` on the same command takes it on "
+        "stdin, and only the claim is printed into context. `journal pins show <n>` reads "
+        "it back. Several claims are still several pins."
     )
 
 
@@ -212,6 +301,12 @@ def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[boo
         items[i]["struck"] = f"promoted to rule {len(rules)}"
         state.put(root, RULES, rules)
         state.put(root, KEY, items)
+        # THE REASONING GOES WITH THE CLAIM. Copying the fact and leaving the body behind
+        # would drop the argument silently while the strike reason says it went to rule N —
+        # and the pin's file is about to belong to an environment the rule does not.
+        carried = body(root, n, KEY)
+    if carried.strip():
+        write_body(root, len(rules), carried, RULES, at)
     return True, f"rule {len(rules)}, from pin {n}: {items[i]['fact'][:70]}"
 
 
@@ -277,6 +372,8 @@ def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int 
             meta.append(f"replaces {p['replaced']}")
         if p.get("promoted_from"):
             meta.append(f"promoted from pin {p['promoted_from']}")
+        if p.get("body"):
+            meta.append(f"has its reasoning ({'rules' if key == RULES else 'pins'} show {i})")
         if p.get("doc"):
             meta.append("→ " + docs_mod.ref_label(root, str(p["doc"])))
         out.append(fmt.numbered(i, p["fact"], " · ".join(meta), struck=bool(struck), width=width))
@@ -375,7 +472,11 @@ def carry(root: Path, source: str = "compact", key: str = KEY) -> str:
         head + "\n"
         + "\n".join(
             f"  - {p['fact']}" + (f"  [{age(p.get('at', ''))}]" if age(p.get("at", "")) else "")
+            # THE MARKER IS ONE SUFFIX, because this block is the scarcest text in the
+            # system: a reader who wants the argument is told, in the fewest characters
+            # that can carry a command, where it is.
+            + (f"  ·{'rules' if key == RULES else 'pins'} show {i}" if p.get("body") else "")
             + (f"  → {docs_mod.ref_label(root, str(p['doc']))}" if p.get("doc") else "")
-            for p in standing
+            for i, p in enumerate(standing, 1)
         )
     )

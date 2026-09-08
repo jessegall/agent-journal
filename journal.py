@@ -498,12 +498,12 @@ def _doc_where(doc_ref: str) -> dict | None:
     return where
 
 
-def cmd_remember(fact: str, supersedes: int | None, doc_ref: str = "") -> int:
+def cmd_remember(fact: str, supersedes: int | None, doc_ref: str = "", long: str = "") -> int:
     conf, _ = settings_mod.load(root())
     where = _doc_where(doc_ref)
     if where is None:
         return 1
-    ok, msg = pins.add(root(), fact, _now(), conf["pin_max_chars"], supersedes, where)
+    ok, msg = pins.add(root(), fact, _now(), conf["pin_max_chars"], supersedes, where, long=long)
     fmt.say(msg, error=not ok)
     if ok:
         _decided("pinned")
@@ -547,7 +547,30 @@ def cmd_nothing(why: str) -> int:
     return 1
 
 
-def cmd_rule(fact: str, strike_n: int | None, why: str, doc_ref: str = "") -> int:
+def cmd_body(key: str, verb: str, rest: list[str], brief: bool) -> int:
+    """`<noun> amend <n> "<section>" --brief` and `<noun> replace <n> --brief`.
+
+    The same two verbs a to-do's brief already takes, over the same shape: one is additive
+    and one is not, and what is replaced is kept under `struck/` either way.
+    """
+    if not rest or not rest[0].isdigit():
+        fmt.say(f'{key} {verb} wants a number: journal {key} {verb} 3'
+                + (' "<section title>" --brief' if verb == "amend" else " --brief"), error=True)
+        return 1
+    n = int(rest[0])
+    text = _brief(brief)
+    if text is None:
+        fmt.say(BRIEF_REFUSED, error=True)
+        return 1
+    if verb == "amend":
+        ok, msg = pins.amend_body(root(), n, " ".join(rest[1:]), text, key, _now())
+    else:
+        ok, msg = pins.write_body(root(), n, text, key, _now())
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
+def cmd_rule(fact: str, strike_n: int | None, why: str, doc_ref: str = "", long: str = "") -> int:
     conf, _ = settings_mod.load(root())
     if strike_n is not None:
         ok, msg = pins.strike(root(), strike_n, why, key=pins.RULES)
@@ -556,7 +579,7 @@ def cmd_rule(fact: str, strike_n: int | None, why: str, doc_ref: str = "") -> in
         if where is None:
             return 1
         ok, msg = pins.add(root(), fact, _now(), conf["pin_max_chars"], None, where,
-                           key=pins.RULES)
+                           key=pins.RULES, long=long)
         if ok:
             _decided("ruled")
     fmt.say(msg, error=not ok)
@@ -582,6 +605,45 @@ def cmd_rules(all_of_them: bool, n: int | None, full: bool, page: int = 1,
     fmt.say(fmt.commands([
         ("journal rules <n> --full", "the conversation around one"),
         ('journal rules strike <n> "<why>"', "repeal one"),
+    ]))
+    return 0
+
+
+def cmd_claim_page(n: int, key: str) -> int:
+    """`rules show <n>` / `pins show <n>` — the CLAIM, not the conversation around it.
+
+    THE ONE PLACE `show` DID NOT READ ITS NOUN. `docs show 4` prints the doc and `todos show
+    3` prints the to-do; this printed a stretch of transcript, which is what `--full` means
+    everywhere else. With a long form there is something to read here, so `show` now reads
+    it and `<n> --full` still opens the conversation.
+    """
+    items = pins._all(root(), key)
+    noun = "rule" if key == pins.RULES else "pin"
+    if n < 1 or n > len(items):
+        fmt.say(f"there is no {noun} {n}. `journal {key}` numbers them.", error=True)
+        return 1
+    it = items[n - 1]
+    fmt.say(fmt.title(f"{noun.upper()} {n}", sub=pins.age(it.get("at", ""))))
+    fmt.say()
+    fmt.say(fmt.wrap(it["fact"]))
+    if it.get("struck"):
+        fmt.say()
+        fmt.say(fmt.wrap(f"STRUCK: {it['struck']}"))
+    if it.get("doc"):
+        fmt.say()
+        fmt.say("  → " + docs.ref_label(root(), str(it["doc"])))
+    long = pins.body(root(), n, key)
+    fmt.say()
+    if long.strip():
+        fmt.say(long.rstrip())
+    else:
+        fmt.say(fmt.wrap("No reasoning is written down. The claim is all there is, which is "
+                         "fine — and if the argument matters, this is where it goes."))
+    fmt.say()
+    fmt.say(fmt.commands([
+        (f"journal {key} {n} --full", "the conversation it was written in"),
+        (f'journal {key} amend {n} "<section title>" --brief', "add a section to the reasoning"),
+        (f"journal {key} replace {n} --brief", "replace the reasoning outright"),
     ]))
     return 0
 
@@ -1595,7 +1657,13 @@ def main(argv: list[str]) -> int:
             if len(rest) < 3:
                 fmt.say("rule wants the ruling, in one line", error=True)
                 return 1
-            return cmd_rule(" ".join(rest[2:]), None, "", doc_ref)
+            long = _brief(brief)
+            if long is None:
+                fmt.say(BRIEF_REFUSED, error=True)
+                return 1
+            return cmd_rule(" ".join(rest[2:]), None, "", doc_ref, long)
+        if sub in ("amend", "replace"):
+            return cmd_body(pins.RULES, sub, rest[2:], brief)
         if sub == "strike":
             if len(rest) < 4:
                 fmt.say('rules strike wants a rule number and why: journal rules strike 2 "<why>"',
@@ -1614,7 +1682,7 @@ def main(argv: list[str]) -> int:
                 fmt.say("rules show wants a rule number: journal rules show 3", error=True)
                 return 1
             try:
-                return cmd_rules(all_of_them, int(rest[2]), True)
+                return cmd_claim_page(int(rest[2]), pins.RULES)
             except ValueError:
                 fmt.say(f"rules show wants a rule NUMBER, got {rest[2]!r}. `journal rules` numbers them.",
                       error=True)
@@ -1683,7 +1751,13 @@ def main(argv: list[str]) -> int:
             if len(rest) < 3:
                 fmt.say("pin wants the claim, in one line", error=True)
                 return 1
-            return cmd_remember(" ".join(rest[2:]), supersedes, doc_ref)
+            long = _brief(brief)
+            if long is None:
+                fmt.say(BRIEF_REFUSED, error=True)
+                return 1
+            return cmd_remember(" ".join(rest[2:]), supersedes, doc_ref, long)
+        if sub in ("amend", "replace"):
+            return cmd_body(pins.KEY, sub, rest[2:], brief)
         if sub == "move":
             if len(rest) < 4 or not rest[2].isdigit():
                 fmt.say('pins move wants a pin number and an environment: '
@@ -1721,7 +1795,7 @@ def main(argv: list[str]) -> int:
                 fmt.say("pins show wants a pin number: journal pins show 3", error=True)
                 return 1
             try:
-                return cmd_pin_full(int(rest[2]))
+                return cmd_claim_page(int(rest[2]), pins.KEY)
             except ValueError:
                 fmt.say(f"pins show wants a pin NUMBER, got {rest[2]!r}. `journal pins` numbers them.",
                       error=True)

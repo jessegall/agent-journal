@@ -183,6 +183,16 @@ for cmd, want in (
     ('journal remember "the report is at scratchpad/report.md"', True),  # cites a session path
     ('journal remember "see /tmp/out.txt for the numbers"', True),
     ('journal rule "never cite the scratchpad in a pin"', True),  # the word alone is enough: refuse
+    # THE CANONICAL SPELLINGS. The gate matched only the bare singular verbs, so the two
+    # forms the skill teaches first went straight past it and were caught, if at all, by the
+    # CLI's own refusal after the command had already run.
+    (f'journal pins add "{LONG}"', True),
+    (f'journal rules add "{LONG}"', True),
+    ('journal pins add "short enough to keep"', False),
+    ('journal rules add "short enough to keep"', False),
+    ('journal pins add "cites the scratchpad/report.md"', True),
+    ('journal pins strike 4 "' + "x" * 320 + '"', False),   # a strike reason is not a claim
+    ('journal todos add "' + "x" * 320 + '"', False),       # nor is a to-do title
 ):
     got = hook._pin_overflow({"tool_name": "Bash", "tool_input": {"command": cmd}}, 300)
     if bool(got) == want:

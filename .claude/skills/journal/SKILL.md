@@ -155,10 +155,24 @@ falsehood wearing the same authority as the facts that still hold.
 never hold a component as a State field" binds every line of work; write it as a rule, or
 `promote` a pin that turns out to. Switching environments never moves a rule.
 
-**A pin is a claim, not its reasoning.** There is a length cap and no count cap. The
-reasoning stays in the transcript; `journal pins <n> --full` reads around it. Several
-claims are several pins. Never cite the scratchpad or `/tmp`: those paths exist for one
-session, and a pin naming one is refused.
+**A pin is a claim, and its reasoning goes underneath it.** There is a length cap on the
+claim and no count cap, because the claim is re-read in full at every session start, every
+compaction and by every subagent. The argument is not cut, it is MOVED: `--brief` on the
+same command takes it on stdin, uncapped, and it is never injected anywhere.
+
+    journal rules add "<the ruling>" --brief        the reasoning on stdin
+    journal rules show <n>                          the claim and its reasoning
+    journal rules <n> --full                        the conversation it was written in
+    journal rules amend <n> "<section>" --brief     append a section
+    journal rules replace <n> --brief               swap it; the old text goes to struck/
+
+Pins take all five too. **Write the long form when the argument is worth having and the
+transcript will not survive to carry it** — a rule promoted from a pin, a ruling another
+repo will read, anything a later reader would otherwise have to reconstruct. An empty one
+is honest: nothing asks for it and nothing nags.
+
+Several claims are still several pins. Never cite the scratchpad or `/tmp`: those paths
+exist for one session, and a pin naming one is refused.
 
 **When the context warning arrives, decide.** At 50%, 70%, 90% and 95% of the window, no
 other tool runs until `pin`, `rule` or `nothing "<why>"` has. It forces a decision,

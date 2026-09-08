@@ -4,6 +4,63 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.35.0 — a claim keeps its reasoning, and `show` reads its noun
+
+A rule is one line because it is re-read in full at every session start, every compaction,
+every context rung and by every subagent — 125 rules is 30KB of that in a real consumer.
+But the reasoning had to go somewhere, and for want of anywhere it went into docs: 78 of
+them, 60 cited by nothing, and a rule citing a doc that exists while the doc is referenced
+by the rule, so neither could ever be retired.
+
+    journal rules add "<the ruling>" --brief        the reasoning on stdin
+    journal rules show <n>                          the claim and its reasoning
+    journal rules <n> --full                        the conversation it was written in
+    journal rules amend <n> "<section>" --brief     append a section
+    journal rules replace <n> --brief               swap it; the old text goes to struck/
+
+Pins take all five too: `pins.py` is one code path over `key=`, pins are the bigger half in
+that consumer (159 entries to 125), and `promote` copies a pin into a rule — so rules-only
+would have meant every promoted rule arriving with an empty body. It carries the body across
+now, or the argument would be dropped silently while the strike reason claims it went to
+rule N.
+
+TWO FIELDS, NOT THREE. The claim stays the one injected line and there is no title: 60 of
+those 125 rules have no head clause that could become one, so an agent would invent it, and
+an invented title above the claim is a second unversioned claim in the highest-authority
+position this system has. `fact` cannot drift from itself. The writers had already invented
+titles with punctuation — "RULING: …", "A design file is a SPECIFICATION: …".
+
+THE BODY IS A FILE, uncapped, never injected: `.journal/rules/NNN-<slug>.md`, and
+`environments/<name>/pins/` for a pin. The cap exists because injected text is re-read
+forever; text that is never injected carries none of that cost, and capping it would only
+push the overflow back into a doc.
+
+AND IT DOES NOT SHRINK THE CONTEXT BLOCK. Say so plainly: even a brutal 120-character cap
+takes only 40% off, because that block is 30KB from the COUNT of rules, not their length —
+the longest standing rule is 345 against a cap of 400. This ships because the argument now
+has somewhere it can be judged, and because the doc explosion stops.
+
+`journal rules show <n>` READS THE RULE now, where it used to print a stretch of transcript.
+`docs show 4` prints the doc and `todos show 3` prints the to-do; this was the one place
+`show` did not read its noun. `rules <n> --full` still opens the conversation, and every
+existing spelling still runs.
+
+It is marked wherever a claim is printed — the carried block (one suffix, `·rules show 3`),
+the listing, the environment page, and `hook._subagent_rules`, which has its own renderer and
+would otherwise hand a subagent a rule with no way to know there is more. `cleanup` scans
+bodies for the same rot it scans claims for, and its reading pass NAMES the body rather than
+printing it: 125 claims is the point, 125 claims and 125 arguments is a wall nobody reads.
+
+Two pre-existing bugs found on the way and fixed with it. The pre-flight cap gate matched
+only `pin`, `remember` and `rule`, so `journal pins add` and `journal rules add` — the
+canonical spellings — never reached it; and `JOURNAL_WRITES` was missing the plurals, so a
+write spelled the way the skill teaches it was not recognised as a write at all. Both now
+match, with a guard so the bare nouns stay reads, which a subagent must keep.
+
+And `docs._load` caches the catalogue per process. `pins.carry` called `ref_label` once per
+doc-citing entry and each one re-read all 78 docs off disk: 218ms to build one context block,
+now 13ms.
+
 ## 1.34.1 — the CLI starts in two thirds of the time
 
 Every `journal` command and every hook event pays the interpreter's start plus this

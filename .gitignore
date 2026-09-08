@@ -13,5 +13,11 @@ __pycache__/
 # absolute path on somebody's machine. Without the slash the pattern matches both.
 /.journal
 
+# AN ENVIRONMENT'S CONTENTS ARE THIS PROJECT'S DATA, never the package. The repo root IS
+# the package source, so a stray `environments/` or `todo/` here is what a test or a
+# mis-rooted command left behind — 11 such files were committed in 1.34.0 before this line.
+/environments
+/todo
+
 # the IDE's own folder, never this project's
 /.idea

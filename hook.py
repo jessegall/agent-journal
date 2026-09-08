@@ -1069,17 +1069,28 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
     # lines was measured as 536 and refused, with the next four commands quoted back as
     # the part to cut.
     for line in _HEREDOC_BODY.sub(r"\1", cmd).splitlines():
-        if "journal" not in line or not ("pin" in line or "remember" in line or "rule" in line):
+        if "journal" not in line or not ("pin" in line or "remember" in line or "rule" in line):  # `pins`/`rules` contain both
             continue
         try:
             toks = shlex.split(line)
         except ValueError:
             continue
         for i, t in enumerate(toks):
-            if t not in ("pin", "remember", "rule") or i == 0 or "journal" not in toks[i - 1]:
+            # THE CANONICAL SPELLINGS REACH THIS GATE TOO. It matched only the bare singular
+            # verbs, so `journal pins add "…"` and `journal rules add "…"` — the plurals
+            # ruling R1 made canonical, and the ones the skill teaches first — tokenise as
+            # [journal, pins, add, …] and never matched. The gate was dark on the spelling
+            # everybody uses, and the CLI's own refusal was the only thing left catching it,
+            # after the command had already run.
+            if t in ("pins", "rules") and i > 0 and "journal" in toks[i - 1] \
+                    and i + 1 < len(toks) and toks[i + 1] == "add":
+                start = i + 2
+            elif t in ("pin", "remember", "rule") and i > 0 and "journal" in toks[i - 1]:
+                start = i + 1
+            else:
                 continue
             fact = []
-            for t2 in toks[i + 1:]:
+            for t2 in toks[start:]:
                 # A redirection ends the fact as surely as a pipe: `2>&1 | tail -1` was
                 # being counted as five characters of claim.
                 if t2 in _SEPARATORS or _REDIRECT.match(t2):
@@ -1094,8 +1105,12 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 
 
 #: Journal verbs that WRITE. A subagent may read the record; it may not change it.
-JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "remember", "strike", "switch", "nothing",
-                            "rule", "promote", "todo", "docs", "work", "tools", "loop", "delegate", "prepare", "handoff"})
+#: THE PLURALS ARE CANONICAL (ruling R1) and were missing here, so a write spelled the way
+#: the skill teaches it was not recognised AS a write — by the gate that refuses an
+#: undelegated subagent's journal writes, or by the one that answers an unregistered session.
+JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "pins", "remember", "strike", "switch",
+                            "nothing", "rule", "rules", "promote", "todo", "todos", "docs", "work",
+                            "tools", "loop", "delegate", "prepare", "handoff", "migrate"})
 
 
 def _journal_write(payload: dict) -> str | None:
@@ -1119,13 +1134,21 @@ def _journal_write(payload: dict) -> str | None:
             continue
         if verb == "tools" and nxt not in ("add", "set", "remove", "index"):
             continue  # reading or running a tool is not writing the journal
-        if verb == "todo" and (not nxt or nxt.isdigit() or nxt.startswith("-")):
+        if verb in ("todo", "todos") and (not nxt or nxt.isdigit() or nxt.startswith("-")):
+            continue
+        # THE PLURAL NOUNS ARE READS ON THEIR OWN. `journal pins` lists them and `journal
+        # rules 3 --full` reads one; only a verb after the noun changes anything, and a
+        # subagent must keep every read it had.
+        if verb in ("pins", "rules") and nxt not in PIN_WRITES:
             continue
         return verb
     return None
 
 
-DOCS_WRITES = frozenset({"add", "part", "replace", "strike", "final", "draft", "abstract", "supersede", "index", "attach", "detach"})
+DOCS_WRITES = frozenset({"add", "part", "replace", "strike", "final", "draft", "abstract",
+                         "supersede", "index", "attach", "detach", "move"})
+#: What turns `pins`/`rules` from a listing into a change.
+PIN_WRITES = frozenset({"add", "strike", "promote", "move"})
 
 
 def _subagent(payload: dict) -> bool:
@@ -1927,7 +1950,11 @@ def _subagent_rules(conf: dict, payload: dict, acting: str = "") -> str | None:
         f"YOUR CONTEXT IS {mark:.0%} FULL. The rules of this project again, because a block "
         "read at the start is far behind you now:"
     )
-    body = "\n".join(f"  - {r['fact']}" for r in ruled) or "  (no rules yet)"
+    # ITS OWN RENDERER, and that is the trap: this does not go through `pins.carry`, so a
+    # marker added there reaches every reader EXCEPT the subagent, which is the reader least
+    # able to go looking. `rules show <n>` is a read, and a subagent may read.
+    body = "\n".join(f"  - {r['fact']}" + (f"  ·rules show {i}" if r.get("body") else "")
+                     for i, r in enumerate(ruled, 1)) or "  (no rules yet)"
     return lead + "\n" + body
 
 
