@@ -275,6 +275,52 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+BRIEF_WAIT = 10.0
+BRIEF_REFUSED = ("--brief takes the brief on stdin and nothing arrived. Pipe it in — "
+                 "journal <command> --brief <<'MSG' … MSG — or drop --brief and pass the "
+                 "title alone.")
+
+
+def _brief(brief: bool) -> str | None:
+    """The body behind --brief, or None when the caller must be refused.
+
+    BOUNDED, for the same reason the record lock is: `sys.stdin.read()` runs to EOF, and an
+    agent's shell hands the command a stdin nobody ever closes. The flag then hangs until
+    the tool times out, saying nothing — the worst failure the CLI has, because it looks
+    like the journal is thinking. Wait a few seconds, then refuse with the spelling that
+    works. An empty read is refused too: a to-do or a part with a blank brief is the same
+    mistake, filed instead of caught.
+    """
+    if not brief:
+        return ""
+    if sys.stdin is None or sys.stdin.closed or sys.stdin.isatty():
+        return None
+    try:
+        import select
+        import time as _time
+        fd = sys.stdin.fileno()
+    except (ImportError, OSError, ValueError):  # not POSIX, or stdin has no fd: as before
+        return sys.stdin.read() or None
+    chunks: list[bytes] = []
+    deadline = _time.monotonic() + BRIEF_WAIT
+    while True:
+        left = deadline - _time.monotonic()
+        if left <= 0:
+            if not b"".join(chunks).strip():
+                return None
+            print(f"journal: stdin never closed — took the {len(b''.join(chunks))} character(s) "
+                  f"that arrived in {BRIEF_WAIT:.0f}s", file=sys.stderr)
+            break
+        if not select.select([fd], [], [], min(left, 0.1))[0]:
+            continue
+        blob = os.read(fd, 65536)
+        if not blob:
+            break
+        chunks.append(blob)
+    text = b"".join(chunks).decode("utf-8", "replace")
+    return text if text.strip() else None
+
+
 def cmd_await(what: str, on: str | None, minutes: float | None,
               agent: str | None = None, pid: int | None = None) -> int:
     """Mark the open work as waiting on something, with a deadline."""
@@ -659,7 +705,10 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             return 1
         n = int(rest[1])
         title = " ".join(rest[2:])
-        text = sys.stdin.read() if brief else ""
+        text = _brief(brief)
+        if text is None:
+            fmt.say(BRIEF_REFUSED, error=True)
+            return 1
         fn = todo.amend if verb == "amend" else todo.replace_section
         ok, msg = fn(root(), here, n, title, text)
         fmt.say(msg, error=not ok)
@@ -673,7 +722,10 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
     # --brief. Reading stdin whenever it is not a terminal hung under a test runner whose
     # stdin never closed, and a command that can hang is worse than one that asks.
     title = " ".join(rest)
-    body = sys.stdin.read() if brief else ""
+    body = _brief(brief)
+    if body is None:
+        fmt.say(BRIEF_REFUSED, error=True)
+        return 1
     where = _doc_where(doc_ref)
     if where is None:
         return 1
@@ -685,7 +737,10 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
 def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bool = False,
              order: str = fmt.DESC) -> int:
     here = tracks.current(root(), _stem())
-    body = sys.stdin.read() if brief else ""
+    body = _brief(brief)
+    if body is None:
+        fmt.say(BRIEF_REFUSED, error=True)
+        return 1
     if not rest:
         cat = docs._load(root())
         drafts = len([d for d in cat if d.get("status") != "final"])
@@ -803,7 +858,10 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1, order: st
             fmt.say('journal tools add <name> "<title>" --summary="<one line>" --usage="<how to call it>" [--entry=<file>] [--brief]',
                   error=True)
             return 1
-        body = sys.stdin.read() if brief else ""
+        body = _brief(brief)
+        if body is None:
+            fmt.say(BRIEF_REFUSED, error=True)
+            return 1
         ok, msg = tools.add(root(), rest[1], " ".join(rest[2:]), meta.get("summary", ""), meta.get("usage", ""),
                             meta.get("when", ""), meta.get("entry", ""), body, here)
     elif verb == "set":

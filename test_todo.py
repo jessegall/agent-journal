@@ -7,14 +7,14 @@ Owns what test_queue.py (the stop queue) and test_docs.py (docs, a different sha
 not: todo.py's own CRUD — a brief's rendering, and the amend/replace verbs that change
 one without rewriting the file by hand.
 """
-import os, shutil, subprocess, sys, tempfile
+import os, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import todo, transcript  # noqa: E402
+import journal, todo, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -109,6 +109,27 @@ code, out = j("todo", "replace", str(n), "--brief", stdin="Only this now.\n")
 check("a titleless replace swaps the whole body", (code, "the whole brief replaced" in out), (0, True))
 code, out = j("todo", str(n))
 check("and it reads back as exactly that", "Only this now." in out, True)
+
+# ───────────────── --brief never hangs: it is bounded, and an empty read refuses ─────────────
+# The flag reads to EOF, and an agent's shell hands the command a stdin nobody closes: the
+# hang looked like the journal thinking. Both shapes below returned nothing before this.
+code, out = j("todos", "add", "no brief came", "--brief", stdin="")
+check("--brief with nothing on stdin refuses, naming the spelling that works",
+      (code, "takes the brief on stdin" in out, "drop --brief" in out), (1, True, True))
+
+r, w = os.pipe()  # a stdin that is open and never closes: it must refuse, not wait forever
+started = time.time()
+p = subprocess.Popen([J, "todos", "add", "stdin never closes", "--brief"], env=env,
+                     stdin=r, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+os.close(r)
+try:
+    out = p.communicate(timeout=journal.BRIEF_WAIT + 20)[0]
+except subprocess.TimeoutExpired:
+    p.kill(); out = "HUNG"
+os.close(w)
+check("a stdin that never closes refuses inside the bound, instead of hanging",
+      (p.returncode, "takes the brief on stdin" in out,
+       time.time() - started < journal.BRIEF_WAIT + 10), (1, True, True))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

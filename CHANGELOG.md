@@ -4,6 +4,24 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.31.1 — `--brief` refuses instead of hanging
+
+`journal todos add "<title>" --brief` with no heredoc behind it hung until the tool timed
+out. `--brief` reads stdin to EOF, and the stdin an agent's shell hands a command is often
+one nobody ever closes — so the read never returned and the CLI looked like it was
+thinking. Reported from a live session: the agent's next several attempts were the same
+command again.
+
+The read is BOUNDED now, for the same reason the record lock is: ten seconds, then it
+refuses with the spelling that works — pipe the brief in, or drop the flag and pass the
+title alone. A read that ends at EOF with nothing in it refuses too, because a to-do or a
+doc part filed with a blank brief is the same mistake, filed instead of caught. If some of
+the brief arrived and the pipe simply never closed, what arrived is kept and a line on
+stderr says so.
+
+It covers every `--brief`: `todos add`, `todos amend`, `todos replace`, `docs add`, `docs
+part`, `docs replace` and `tools add`.
+
 ## 1.31.0 — a long stretch no longer ends in silence
 
 Seen on a live run: an agent finished four of fifty-six phases, wrote a full report and
