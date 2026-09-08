@@ -135,6 +135,8 @@ an answer to. A line that opens the work first,
     ... --doc=N or --doc=N.P                        on either, and on todo: the doc (or part) it rests on
     journal nothing "<why nothing here needs pinning>"
     journal pins promote <n>                        lift pin n into a rule (also: bare `journal promote <n>`)
+    journal pins move <n> "<env>"                   carry a claim to another environment
+    journal docs move <doc> "<env>"                 point a doc at another environment
 
 Rules, pins, open work and to-dos are the **only** things handed back after a compaction
 and to every new session. Tagged messages become retrievable, not present.
@@ -162,6 +164,15 @@ session, and a pin naming one is refused.
 other tool runs until `pin`, `rule` or `nothing "<why>"` has. It forces a decision,
 not a pin; `nothing` with a reason is the right answer more often than not. It is also the
 moment to park any work you are holding for later, because that lives only in the window.
+
+**When work is reframed, move what belongs to it.** A piece of work that turns out to be a
+different thing gets its own environment, and the to-dos, pins and docs already filed under
+the old name go with it: `todos move`, `pins move`, `docs move`. A to-do's file moves and
+its number changes, so the reply names both. A pin is STRUCK where it was and added where it
+went — a pin's number is its position in the list, and lifting one out would renumber every
+pin after it. A doc does not move at all: only its `track:` does, so every citation of it
+keeps working. A RULE cannot move: it binds every environment, so if it only describes one
+line of work it was never a rule — strike it and pin it there.
 
 **Retire what has stopped being true, and do not wait to be asked.**
 
@@ -196,6 +207,7 @@ show it — so being wrong is cheap and leaving a dead rule standing is not. `pi
     journal todos start <n>             open work under that title; `work end` closes both
     journal todos done <n> "<how>"      resolved without starting it
     journal todos reopen <n> "<why>"    undo a close, on the record
+    journal todos move <n> "<env>"      carry it to another environment
     journal todos ask <n> "<question>"  it waits on the user; auto moves on to the next
     journal todos answer <n> "<answer>" the user's answer; the agent is told at its next stop
     journal todos auto [on|off]         work through the list without asking, or wait for the word

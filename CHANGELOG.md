@@ -4,6 +4,39 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.33.0 — a to-do, a pin or a doc can move to another environment
+
+Work gets reframed. What was filed under one name turns out to be a different thing, and
+until now nothing moved: the only way to carry a to-do or a pin across was to edit
+`record.json` by hand, which is the one operation this package exists to prevent.
+
+    journal todos move <n> "<environment>"
+    journal pins move <n> "<environment>"
+    journal docs move <doc> "<environment>"
+
+EACH ONE MOVES WHAT IT HONESTLY CAN. A to-do's file moves and its number changes, because
+the number is the filename and numbering is per environment — so the reply names both
+sides, and `moved_from` keeps the old address for anything that cited it. A pin is STRUCK
+where it was and added where it went, which is `promote`'s decision for `promote`'s reason:
+a pin's number is its position in the list, and lifting one out would renumber every pin
+after it and make "pin 7" in an old transcript name a different fact. The strike says where
+it went, so `pins --all` shows the trail from both ends.
+
+A DOC BARELY MOVES AT ALL, and that is the point. A doc is the project's — every
+environment reads it, and `environments remove` already refuses to take docs with an
+environment. Its `track:` is provenance, not ownership: only that field changes, the folder
+and the number stay, and every citation keeps resolving.
+
+A RULE REFUSES TO MOVE. It binds every environment, so there is nowhere to move it to — and
+the refusal says what that means: a claim that only describes one line of work was never a
+rule. Strike it and pin it there.
+
+Also: `docs.carry` handed the OLDEST twenty docs at every session start. `_load` returns
+them ascending by number and `carry` sliced the front; 1.30.0 flipped every paged list to
+newest-first and did not reach this one. In a project with 78 docs that hid every doc the
+current work was about behind "and 58 more" — at exactly the moment the catalogue exists to
+stop somebody re-investigating what a doc settles.
+
 ## 1.32.4 — an out-of-date git hook is refreshed, and the CLI starts faster
 
 TWO THINGS. The hook's body is not part of the package a pull refreshes: it is written once

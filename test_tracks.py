@@ -12,7 +12,7 @@ here deletes.
 
 Every test runs against a throwaway directory. It never touches the real record.
 """
-import json, os, shutil, subprocess, sys, tempfile, time
+import json, os, re, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"  # no network from the hooks under test
@@ -331,6 +331,54 @@ check("the note is kept beside each",
       ["the worktree that declared it is gone"])
 took, msg = work.end(rW, "again", AT, force=True)
 check("with nothing open it refuses like any other close", (took, msg), (False, "nothing is open"))
+
+# ───────────────── moving what belongs to an environment: to-dos, pins, docs ───────────────
+# Work gets reframed, and what was filed under one name belongs under another. Nothing
+# moved between environments before this: it meant editing record.json by hand.
+run_cli("prepare", "moved-to")
+run_cli("prepare", "moved-from")   # prepare leaves the session ON it; switch to be sure
+run_cli("switch", "moved-from")
+# The numbers come back from the adds: this environment is not fresh, and a test that
+# assumes "1" is testing the fixture rather than the move.
+_, out = run_cli("todos", "add", "carried across")
+TN = re.search(r"to-do (\d+)", out).group(1)
+_, out = run_cli("pins", "add", "a claim that belongs to the other environment")
+PN = re.search(r"pinned (\d+)", out).group(1)
+_, out = run_cli("docs", "add", "a design that moves", "--abstract=what it settles")
+DN = re.search(r"doc (\d+)", out).group(1)
+
+code, out = run_cli("todos", "move", TN, "moved-to")
+check("a to-do moves, and says its number on both sides",
+      (code, "on `moved-from` is to-do" in out, "on `moved-to`" in out), (0, True, True))
+code, out = run_cli("todos", "move", TN, "moved-to")
+check("moving one that is not there refuses", (code, "there is no to-do" in out), (1, True))
+
+code, out = run_cli("pins", "move", PN, "moved-to")
+check("a pin moves", (code, "on `moved-to`" in out), (0, True))
+code, out = run_cli("pins", "--all")
+check("and is STRUCK here rather than lifted out, so no pin is renumbered",
+      "moved to `moved-to` as pin" in out, True)
+code, out = run_cli("pins", "move", PN, "moved-to")
+check("a struck pin does not move twice", (code, "already struck" in out), (1, True))
+
+code, out = run_cli("docs", "move", DN, "moved-to")
+check("a doc's environment moves, and the doc itself does not",
+      (code, "is on `moved-to` now" in out), (0, True))
+code, out = run_cli("docs", "show", DN)
+check("so every citation of it still resolves", (code, "a design that moves" in out), (0, True))
+
+code, out = run_cli("rules", "move", "1", "moved-to")
+check("a rule refuses to move, and says why a rule cannot have an environment",
+      (code, "binds EVERY environment" in out, "rules strike" in out), (1, True, True))
+code, out = run_cli("todos", "move", TN)
+check("move with no environment refuses rather than taking the number as the name",
+      (code, "say where" in out), (1, True))
+
+run_cli("switch", "moved-to")
+code, out = run_cli("todos")
+check("the to-do is waiting on the far side", "carried across" in out, True)
+code, out = run_cli("pins")
+check("and the pin stands there", "belongs to the other environment" in out, True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -29,7 +29,7 @@ import state
 DIR = "todo"
 STRUCK = "struck"
 FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how", "asks", "answer",
-          "doc", "reopened")
+          "doc", "reopened", "moved_from")
 
 
 def _slug(text: str, limit: int = 40) -> str:
@@ -309,6 +309,34 @@ def done(root: Path, track: str, n: int, how: str, at: str) -> tuple[bool, str]:
         return False, f"to-do {n} is already done ({t.get('how')})"
     _update(root, track, n, done=at, how=how)
     return True, f"done {n}: {t['title']}\n  {how}"
+
+
+def move(root: Path, track: str, n: int, dst: str, at: str) -> tuple[bool, str]:
+    """Move a to-do to another environment, brief and all.
+
+    THE FILE MOVES AND THE NUMBER CHANGES, because a to-do's number is its filename and the
+    numbering is per environment. What it was is kept in `moved_from`, so a to-do named by
+    an old message can still be found. Nothing is left behind: unlike a pin, a to-do is not
+    re-asserted into anybody's context, so a tombstone would only be a second entry to read.
+    """
+    dst = state.slug(dst)
+    if not dst:
+        return False, 'say where: journal todos move <n> "<environment>"'
+    if dst == state.slug(track):
+        return False, f"to-do {n} is already on `{dst}`"
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    there = _all(root, dst)
+    to = (there[-1]["n"] if there else 0) + 1
+    meta = {k: t.get(k, "") for k in FIELDS}
+    meta["track"] = dst
+    meta["moved_from"] = f"{track}/{n}"
+    path = folder(root, dst) / f"{to:03d}-{_slug(t['title'])}.md"
+    _write(path, meta, t["body"])
+    t["path"].unlink()
+    return True, (f"to-do {n} on `{track}` is to-do {to} on `{dst}`: {t['title']}\n"
+                  f"  {path.relative_to(root.parent)}")
 
 
 def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str]:

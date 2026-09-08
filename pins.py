@@ -215,6 +215,35 @@ def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[boo
     return True, f"rule {len(rules)}, from pin {n}: {items[i]['fact'][:70]}"
 
 
+def move(root: Path, n: int, dst: str, at: str) -> tuple[bool, str]:
+    """Move a pin to another environment.
+
+    STRUCK HERE, ADDED THERE — `promote`'s decision, for the same reason. A pin's number is
+    its position in the full list, so lifting one out would renumber every pin after it and
+    make "pin 7" in an old transcript name a different fact. The strike says where it went;
+    `pins --all` still shows it, so the trail survives on both sides.
+
+    Rules are not moved by this: a rule binds every environment, so there is nowhere to move
+    it to. That refusal lives at the CLI, where the noun is known.
+    """
+    dst = state.slug(dst)
+    if not dst:
+        return False, 'say where: journal pins move <n> "<environment>"'
+    with state.locked(root):
+        items = _all(root)
+        i = n - 1
+        if i < 0 or i >= len(items):
+            return False, f"there is no pin {n}. `journal pins` numbers them."
+        if items[i].get("struck"):
+            return False, f"pin {n} is already struck by: {items[i]['struck']}"
+        there = state.tracked(root, KEY, dst, []) or []
+        there.append({**items[i], "at": at, "struck": None, "moved_from": n})
+        items[i]["struck"] = f"moved to `{dst}` as pin {len(there)}"
+        state.put_tracked(root, KEY, dst, there)
+        state.put(root, KEY, items)
+    return True, f"pin {n} is pin {len(there)} on `{dst}`: {items[i]['fact'][:70]}"
+
+
 def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int = 88,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
     """The list as a person reads it: numbered, wrapped, the provenance on a quiet line.

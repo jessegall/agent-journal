@@ -485,6 +485,30 @@ def strike(root: Path, ref: str, why: str) -> tuple[bool, str]:
     return True, f"struck doc {doc['n']}.{prt['p']}: {prt['title']}\n  kept at {dst.relative_to(root.parent)}"
 
 
+def move(root: Path, ref: str, dst: str) -> tuple[bool, str]:
+    """Point a doc at another environment.
+
+    ONLY THE FIELD MOVES. A doc is the PROJECT's — its number, its folder and its parts stay
+    exactly where they are, and every citation of it keeps working. What `track:` says is
+    which line of work it came out of, which is what `cleanup` reads when it asks whether
+    the environment behind a doc still exists.
+    """
+    import state as _state
+    dst = _state.slug(dst)
+    if not dst:
+        return False, 'say where: journal docs move <n> "<environment>"'
+    doc, prt, err = get(root, ref)
+    if doc is None:
+        return False, err
+    if prt is not None:
+        return False, "a part belongs to its doc — move the doc"
+    was = doc.get("track") or "none"
+    meta = {k: doc.get(k, "") for k in FIELDS}
+    meta["track"] = dst
+    _write(doc["path"], meta, doc["body"])
+    return True, f"doc {doc['n']} is on `{dst}` now (was `{was}`): {doc['title']}"
+
+
 def set_status(root: Path, ref: str, status: str) -> tuple[bool, str]:
     doc, _, err = get(root, ref)
     if doc is None:
@@ -709,12 +733,19 @@ def show(root: Path, ref: str, width: int = 88) -> tuple[bool, str]:
 
 
 def carry(root: Path, cap: int = 20) -> str:
-    """The catalogue a session start hands over: number, title, abstract; drafts marked."""
+    """The catalogue a session start hands over: number, title, abstract; drafts marked.
+
+    NEWEST FIRST, like every other list that pages. 1.30.0 flipped the five renderers and
+    did not reach this one, so a session start handed docs 1 to 20 — the OLDEST twenty —
+    and hid everything since behind "and N more". In a project with 78 docs that is every
+    doc the current work is about, invisible at exactly the moment the catalogue exists to
+    stop somebody re-investigating what a doc settles.
+    """
     docs = [d for d in _load(root) if not d.get("superseded_by")]
     if not docs:
         return ""
     lines = []
-    for d in docs[:cap]:
+    for d in fmt.ordered(docs)[:cap]:
         mark = "  (draft)" if d.get("status") != "final" else ""
         files = attachments(d)
         if files:

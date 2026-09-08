@@ -38,6 +38,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal pins [--all] [--order=asc|desc]   every pin, numbered, NEWEST FIRST — the number is what --supersedes takes and never changes with the order",
         "journal pins N --full         the conversation around where pin N was written",
         'journal pins strike N "<why>"   retire a pin that stopped being true — bare `journal strike N "<why>"` is the same',
+        'journal pins move N "<environment>"   carry a claim to another environment; struck here, standing there',
         "journal pins promote N        lift pin N into a rule; the pin is struck and says where it went — bare `journal promote N` is the same",
         'journal nothing "<why>"       after a context warning: nothing here needs pinning, and why',
     ),
@@ -56,6 +57,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal todos done N "<how>"    resolved without starting it',
         'journal todos strike N "<why>"  abandoned, on the record — `journal todo drop N "<why>"` is the same',
         'journal todos reopen N "<why>"  undo a close, with the reason and the close it undoes kept',
+        'journal todos move N "<environment>"   carry it to another environment; the number changes, the brief does not',
         "Journal: todos done N         not a command — the TRAILER a commit message closes a to-do with,",
         "                              at the start of a line, unindented; `<environment>/N` if ambiguous",
         "journal todos from-commit [<ref>]   act on that trailer for a commit made outside a session (the git post-commit hook)",
@@ -81,6 +83,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal docs detach <doc> <name> "<why>"    drop an attachment; it is kept under struck/',
         "journal docs index            catalogue the files docs/ already holds",
         "journal docs search <term> [--page=N]       every line of every doc, and every attachment by name",
+        'journal docs move <doc> "<environment>"   point it at another environment; the doc, its number and its parts stay put',
         "--doc=<doc> or --doc=<doc>.<p> on pins, rules and todos cites a doc (or one part) from the entry",
     ),
     "tools": (

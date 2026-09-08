@@ -207,6 +207,27 @@ def put(root: Path, key: str, value, *, stem: str | None = None) -> None:
     _write(f, data)
 
 
+def tracked(root: Path, key: str, track: str, default=None):
+    """One TRACKED key, read off a named environment rather than the current one."""
+    data = _record(root)
+    return (data.get("tracks") or {}).get(slug(track), {}).get(key, default)
+
+
+def put_tracked(root: Path, key: str, track: str, value) -> None:
+    """Write one TRACKED key on a NAMED environment.
+
+    `get`/`put` resolve the environment from `current` or the `use_track` override, which is
+    right for everything a session does to its own environment and wrong for the one
+    operation that touches two: moving an entry from one to another. Swapping the override
+    around a pair of writes would do it, and would leave the process pointed at the wrong
+    environment if anything in between raised.
+    """
+    with locked(root):
+        data = _record(root)
+        data.setdefault("tracks", {}).setdefault(slug(track), {})[key] = value
+        _write(record_file(root), data)
+
+
 def retire_old(root: Path) -> bool:
     """Set the project-wide runtime file aside, once. True if this call did it."""
     old = root / RETIRED

@@ -679,7 +679,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         for ok, line in said:
             fmt.say(("  " if ok else "  ! ") + line)
         return 0 if any(ok for ok, _ in said) else 1
-    if verb in ("start", "done", "drop", "strike", "ask", "answer", "reopen"):
+    if verb in ("start", "done", "drop", "strike", "ask", "answer", "reopen", "move"):
         if len(rest) < 2 or not rest[1].isdigit():
             fmt.say(f'todo {verb} wants a number: journal todos {verb} 3' + (
                 ' "<how>"' if verb != "start" else ""), error=True)
@@ -718,7 +718,9 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
                 fmt.say(f'say why: journal todos {verb} <n> "<why it is abandoned>"', error=True)
                 return 1
             why = "dropped: " + why
-        if verb == "reopen":
+        if verb == "move":
+            ok, msg = todo.move(root(), here, n, why, _now())
+        elif verb == "reopen":
             ok, msg = todo.reopen(root(), here, n, why, _now())
         else:
             ok, msg = todo.done(root(), here, n, why, _now())
@@ -822,6 +824,11 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
             fmt.say('docs abstract wants a doc number and the line: journal docs abstract 4 "<one line>"', error=True)
             return 1
         ok, msg = docs.set_abstract(root(), rest[1], " ".join(rest[2:]))
+    elif verb == "move":
+        if len(rest) < 3:
+            fmt.say('journal docs move <doc> "<environment>"', error=True)
+            return 1
+        ok, msg = docs.move(root(), rest[1], " ".join(rest[2:]))
     elif verb == "supersede":
         if len(rest) < 4 or rest[2] != "by":
             fmt.say("journal docs supersede <old> by <new>", error=True)
@@ -1562,6 +1569,13 @@ def main(argv: list[str]) -> int:
             fmt.say("rule wants the ruling, in one line", error=True)
             return 1
         return cmd_rule(" ".join(rest[1:]), None, "", doc_ref)
+    if verb == "rules" and len(rest) > 1 and rest[1] == "move":
+        fmt.say("a rule binds EVERY environment, so there is nowhere to move it to. If it "
+                "only describes one line of work it was never a rule: strike it and pin it "
+                "there —\n"
+                '  journal rules strike <n> "<why>"\n'
+                '  journal pins add "<the claim>"', error=True)
+        return 1
     if verb == "rules":
         # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`list`/`show`
         # call the exact same functions the old `rule`/`rule --strike` branches call, so
@@ -1661,6 +1675,14 @@ def main(argv: list[str]) -> int:
                 fmt.say("pin wants the claim, in one line", error=True)
                 return 1
             return cmd_remember(" ".join(rest[2:]), supersedes, doc_ref)
+        if sub == "move":
+            if len(rest) < 4 or not rest[2].isdigit():
+                fmt.say('pins move wants a pin number and an environment: '
+                        'journal pins move 6 "<environment>"', error=True)
+                return 1
+            ok, msg = pins.move(root(), int(rest[2]), " ".join(rest[3:]), _now())
+            fmt.say(msg, error=not ok)
+            return 0 if ok else 1
         if sub == "strike":
             if len(rest) < 4:
                 fmt.say('pins strike wants a pin number and why: journal pins strike 6 "<why>"',
