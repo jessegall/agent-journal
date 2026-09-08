@@ -72,7 +72,8 @@ SKILLS = (("skill", ".claude/skills/journal"),
 
 #: What belongs to THIS project and never comes across on a pull.
 DATA = ("record.json", "record.json.lock", "settings.json", "state.json", "state.json.retired",
-        "runtime", "todo", "docs", "tools", "handoff.md", ".journal", "__pycache__")
+        "runtime", "todo", "environments", "docs", "tools", "handoff.md", ".journal",
+        "__pycache__")
 
 
 def _package_files(root: Path) -> list[Path]:

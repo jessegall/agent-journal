@@ -61,8 +61,16 @@ def terminal(*a):
 (root / "record.json").write_text(json.dumps({"pins": [{"fact": "old top-level pin", "at": "x", "struck": None}],
                                               "work": [], "current": "default",
                                               "tracks": {"side": {"pins": [{"fact": "parked pin", "at": "x", "struck": None}], "work": [], "at": "x"}}}))
-check("an old record is moved under its environment on first read",
-      ([p["fact"] for p in state.get(root, "pins")], "pins" in json.loads((root / "record.json").read_text())), (["old top-level pin"], False))
+# 1.34.0: the old TOP-LEVEL keys are still lifted out of the record on first read, and the
+# migration is what carries them the rest of the way, into the environment's own folder.
+import migrate  # noqa: E402
+migrate.run(root)
+check("an old record is moved under its environment, and out of the record",
+      ([p["fact"] for p in state.get(root, "pins")],
+       "pins" in json.loads((root / "record.json").read_text())),
+      (["old top-level pin"], False))
+check("and the environment that was parked keeps its own",
+      [p["fact"] for p in (state.tracked(root, "pins", "side", []) or [])], ["parked pin"])
 
 # ---------------------------------------------------------------- two sessions, two environments
 a = S("aaaaaaaa-1")
@@ -75,9 +83,13 @@ check("a switch from inside a session moves that session only",
 b = S("bbbbbbbb-2")
 check("a second session starts on the project's start environment, not on a's", tracks.bound(root, "bbbbbbbb-2"), "default")
 a.j("pin", "written from a on side"); b.j("pin", "written from b on default")
-rec = json.loads((root / "record.json").read_text())
+def held(name, key="pins"):
+    f = root / "environments" / name / f"{key}.json"
+    return json.loads(f.read_text())[key] if f.is_file() else []
+
+
 check("each session's pin landed on its own environment",
-      ([p["fact"] for p in rec["tracks"]["side"]["pins"]][-1], [p["fact"] for p in rec["tracks"]["default"]["pins"]][-1]),
+      ([p["fact"] for p in held("side")][-1], [p["fact"] for p in held("default")][-1]),
       ("written from a on side", "written from b on default"))
 code, out = a.j("pins")
 check("a lists side's pins", ("written from a on side" in out, "written from b on default" in out), (True, False))

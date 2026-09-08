@@ -157,6 +157,13 @@ def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
         import state
         with state.locked(root):
             state.put(root, "upgraded", {"from": had, "to": now})
+        # AND THE RECORD IS BROUGHT WITH IT. The upgrade is the moment the code changed, so
+        # it is the moment the shape it expects has to exist — not the next command, and not
+        # a step in a changelog entry somebody reads later.
+        import migrate
+        ran = migrate.run(root)
+        if ran:
+            out += "\n\n  Migrated:\n" + "\n".join(f"  {l}" for l in ran)
     elif now == had:
         out += f"\n\n  Already at {now}."
     return True, out

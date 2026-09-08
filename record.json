@@ -1,103 +1,17 @@
 {
   "tracks": {
     "default": {
-      "pins": [],
-      "work": [],
       "at": "2026-09-08T19:20:46+00:00"
     },
     "moved-to": {
-      "pins": [
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:20:47+00:00",
-          "struck": null,
-          "moved_from": 1
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:26:21+00:00",
-          "struck": null,
-          "moved_from": 9
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:26:25+00:00",
-          "struck": null,
-          "moved_from": 10
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:26:58+00:00",
-          "struck": null,
-          "moved_from": 11
-        }
-      ],
-      "work": [],
       "at": "2026-09-08T19:20:46+00:00"
     },
     "moved-from": {
-      "pins": [
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:20:46+00:00",
-          "struck": "moved to `moved-to` as pin 1"
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:21:30+00:00",
-          "struck": null
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:22:59+00:00",
-          "struck": null
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:24:31+00:00",
-          "struck": null
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:24:41+00:00",
-          "struck": null
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:25:30+00:00",
-          "struck": null
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:25:35+00:00",
-          "struck": null
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:25:51+00:00",
-          "struck": null
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:26:21+00:00",
-          "struck": "moved to `moved-to` as pin 2"
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:26:25+00:00",
-          "struck": "moved to `moved-to` as pin 3"
-        },
-        {
-          "fact": "a claim that belongs to the other environment",
-          "at": "2026-09-08T19:26:57+00:00",
-          "struck": "moved to `moved-to` as pin 4"
-        }
-      ],
-      "work": [],
       "at": "2026-09-08T19:20:46+00:00"
     }
   },
   "previous": "moved-from",
   "current": "moved-to",
-  "docs_next": 1
+  "docs_next": 1,
+  "schema": "1.34.0"
 }

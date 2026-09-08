@@ -38,8 +38,19 @@ def _slug(text: str, limit: int = 40) -> str:
 
 
 def folder(root: Path, track: str) -> Path:
-    track = state.slug(track) or "default"
-    return root / DIR / _slug(track, 60)
+    """Where this environment's to-dos live: inside the environment's own folder.
+
+    They sat in a parallel `todo/<name>/` tree, which meant "what is on this environment"
+    was answered in two places that could disagree. `migrate` moves an older layout across
+    on the first run after an upgrade; the old path is still read until it has, so nothing
+    is invisible in between.
+    """
+    d = state.env_dir(root, track) / DIR
+    if not d.is_dir():
+        was = root / DIR / _slug(state.slug(track) or "default", 60)
+        if was.is_dir():
+            return was
+    return d
 
 
 def _parse(path: Path) -> dict:

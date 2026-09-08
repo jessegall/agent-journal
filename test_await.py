@@ -112,7 +112,7 @@ check("with only the waiting piece open, the stop is silent", s.stop(), "")
 
 # ---------------------------------------------------------------- progress ends the wait
 s.j("work", "update", "the subagent reported", "--on=the first thing")
-items = json.loads((d / ".journal" / "record.json").read_text())["tracks"]["w"]["work"]
+items = json.loads((d / ".journal" / "environments" / "w" / "work.json").read_text())["work"]
 check("an update clears the wait, whatever the clock says",
       [w for w in items if w["subject"] == "the first thing"][0].get("awaiting"), None)
 s.say("[!info] filed")
@@ -124,9 +124,10 @@ s2 = S(d2, "bbbbbbbb-0000-4000-8000-000000000002")
 s2.j("switch", "w")
 s2.j("work", "start", "the long one")
 s2.j("work", "await", "a build that died", "--for=1")
-items = json.loads((d2 / ".journal" / "record.json").read_text())
-items["tracks"]["w"]["work"][0]["awaiting"]["until"] = time.time() - 300
-(d2 / ".journal" / "record.json").write_text(json.dumps(items))
+f2 = d2 / ".journal" / "environments" / "w" / "work.json"
+items = json.loads(f2.read_text())
+items["work"][0]["awaiting"]["until"] = time.time() - 300
+f2.write_text(json.dumps(items))
 s2.say("[!info] tagged")
 held = s2.stop()
 check("an expired wait holds, names what was awaited and for how long",

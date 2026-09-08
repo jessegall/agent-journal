@@ -351,9 +351,10 @@ def page(root: Path, name: str, width: int = 88, commands: bool = True) -> tuple
     override(name)
     try:
         held = _all(root).get(name, {})
-        numbered = [(i, p) for i, p in enumerate(held.get("pins", []), 1) if not p.get("struck")]
+        numbered = [(i, p) for i, p in enumerate(state.tracked(root, "pins", name, []) or [], 1)
+                    if not p.get("struck")]
         pins = [p for _, p in numbered]
-        open_ = [w for w in held.get("work", []) if not w.get("ended")]
+        open_ = [w for w in (state.tracked(root, "work", name, []) or []) if not w.get("ended")]
         items = todo_mod.open_items(root, name)
         auto = todo_mod.auto(root, name)
         cited = sorted({str(p.get("doc")).split(".")[0] for p in pins if p.get("doc")}
@@ -413,8 +414,8 @@ def listing(root: Path, stem: str | None = None, stale_hours: float = 24.0) -> l
             "name": name,
             "current": name == mine,
             "start": name == start,
-            "pins": len([p for p in held.get("pins", []) if not p.get("struck")]),
-            "open": len([w for w in held.get("work", []) if not w.get("ended")]),
+            "pins": len([p for p in (state.tracked(root, "pins", name, []) or []) if not p.get("struck")]),
+            "open": len([w for w in (state.tracked(root, "work", name, []) or []) if not w.get("ended")]),
             "at": held.get("at", ""),
             "sessions": sorted(by_track.get(name, [])),
             "seen": {sid: age_text(alive[sid]["age"]) if sid in alive else "stale" for sid in by_track.get(name, [])},
@@ -444,8 +445,8 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
             held_ = data.setdefault("tracks", {})
             if not isinstance(held_, dict):
                 held_ = data["tracks"] = {}
-            held_.setdefault(start, {"pins": [], "work": [], "at": at})   # the environment left behind exists by name too
-            held_.setdefault(name, {"pins": [], "work": [], "at": at})
+            held_.setdefault(start, {"at": at})   # the environment left behind exists by name too
+            held_.setdefault(name, {"at": at})     # the registry says it exists; its folder holds it
             state._write(state.record_file(root), data)
         held = tracks.get(name, {})
         kept = f"{name} is new" if fresh else (
@@ -529,8 +530,8 @@ ARCHIVE = "removed"           # .journal/removed/<name>-<stamp>.json, and the to
 
 def _held_summary(root: Path, name: str, held: dict) -> tuple[int, int, int]:
     import todo as todo_mod
-    pins = len([p for p in held.get("pins", []) if not p.get("struck")])
-    work = len([w for w in held.get("work", []) if not w.get("ended")])
+    pins = len([p for p in state.tracked(root, "pins", name, []) or [] if not p.get("struck")])
+    work = len([w for w in state.tracked(root, "work", name, []) or [] if not w.get("ended")])
     todos = len(todo_mod.open_items(root, name))
     return pins, work, todos
 
@@ -596,16 +597,23 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
                     "pins": pins, "work": work, "todos": todos})
         data[REMOVED] = log[-50:]
         state._write(state.record_file(root), data)
-        folder = todo_mod.folder(root, name)
+        # THE ENVIRONMENT IS A FOLDER NOW, so removing it is a folder move: its pins, its
+        # work and its to-dos travel together instead of being reassembled from two places.
+        home = state.env_dir(root, name)
+        folder = todo_mod.folder(root, name)     # the pre-1.34.0 path, if it is still there
         if not purge:
             box = root / ARCHIVE / f"{name}-{time.strftime('%Y%m%d-%H%M%S')}"
             box.mkdir(parents=True, exist_ok=True)
             (box / "environment.json").write_text(json.dumps(held, indent=2) + "\n")
-            if folder.is_dir():
+            if home.is_dir():
+                shutil.move(str(home), str(box / "environment"))
+            elif folder.is_dir():
                 shutil.move(str(folder), str(box / "todo"))
             kept = f"\n  kept whole in {box.relative_to(root.parent)} — read it, or move it back by hand"
-        elif folder.is_dir():
-            shutil.rmtree(folder, ignore_errors=True)
+        else:
+            for d in (home, folder):
+                if d.is_dir():
+                    shutil.rmtree(d, ignore_errors=True)
     # A STALE SESSION'S BINDING WOULD OUTLIVE THE ENVIRONMENT, and `current` would hand it a
     # name that is gone; unbind those, so they choose again the way a new session does.
     b = _bindings(root)

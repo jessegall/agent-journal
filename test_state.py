@@ -120,7 +120,10 @@ errs = [p.communicate()[1].decode() for p in ps]
 check("switch and remember racing: neither crashes", [p.returncode for p in ps], [0, 0])
 rec = json.loads((r / "record.json").read_text())
 every = [p["fact"] for p in rec.get("pins", [])] + [
-    p["fact"] for t in rec.get("tracks", {}).values() for p in t.get("pins", [])]
+    p["fact"] for t in rec.get("tracks", {}).values() if isinstance(t, dict)
+    for p in t.get("pins", [])] + [
+    p["fact"] for f in sorted((r / "environments").rglob("pins.json"))
+    for p in json.loads(f.read_text())["pins"]]
 check("every pin written under the race exists on SOME environment, none vanished",
       sorted(every), sorted(["before"] + [f"race {i}" for i in range(20)]))
 
@@ -491,7 +494,8 @@ check("a rule counts as the decision at a rung", runtime_of(d, "s1").get("pin_du
 # to-dos: titled files, one environment each, closed by the work of the same name
 r = fresh()
 took, msg = todo.add(r, "default", "convert the remaining widgets", "why: they still read props\nstart in src/View", AT)
-check("a to-do is a file under its environment", (took, (r / "todo" / "default" / "001-convert-the-remaining-widgets.md").is_file()), (True, True))
+check("a to-do is a file under its environment",
+      (took, (r / "environments" / "default" / "todo" / "001-convert-the-remaining-widgets.md").is_file()), (True, True))
 took, msg = todo.add(r, "default", "", "", AT)
 check("a to-do needs a title", (took, "needs a title" in msg), (False, True))
 took, msg = todo.add(r, "default", "Convert the remaining WIDGETS", "", AT)
@@ -1037,7 +1041,8 @@ J = str(d / ".journal" / "journal.py")
 p = subprocess.run([J, "remember", "cited"], env={**os.environ, transcript.SESSION_ENV: "s1"},
                    capture_output=True, text=True, timeout=60)
 def _pins(rec):
-    return rec["tracks"][rec.get("current") or "default"]["pins"]
+    f = d / ".journal" / "environments" / (rec.get("current") or "default") / "pins.json"
+    return json.loads(f.read_text())["pins"] if f.is_file() else []
 
 
 rec = json.loads((d / ".journal" / "record.json").read_text())

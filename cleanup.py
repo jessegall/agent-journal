@@ -105,7 +105,7 @@ def _standing(root: Path, key: str, where: str) -> list[dict]:
     if key == pins_mod.RULES:
         got = state.get(root, key, [])
         return got if isinstance(got, list) else []
-    got = (tracks._all(root).get(where) or {}).get("pins", [])
+    got = state.tracked(root, "pins", where, []) or []
     return got if isinstance(got, list) else []
 
 
@@ -171,9 +171,9 @@ def _environments(root: Path, here: str, stale_hours: float = 24.0) -> list[dict
     for name, held in tracks._all(root).items():
         if name in (start, here) or name in alive:
             continue
-        if [p for p in held.get("pins", []) if not p.get("struck")]:
+        if [p for p in (state.tracked(root, "pins", name, []) or []) if not p.get("struck")]:
             continue
-        if [w for w in held.get("work", []) if not w.get("ended")]:
+        if [w for w in (state.tracked(root, "work", name, []) or []) if not w.get("ended")]:
             continue
         if todo_mod.open_items(root, name):
             continue

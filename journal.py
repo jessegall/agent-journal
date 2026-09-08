@@ -45,6 +45,7 @@ import todo
 import tools
 import tracks
 import transcript
+import migrate
 import update
 import verify
 import work
@@ -1362,6 +1363,12 @@ def cmd_settings() -> int:
 
 
 def main(argv: list[str]) -> int:
+    # BEFORE ANY COMMAND READS THE RECORD. A record written by an older version is migrated
+    # by whichever process notices first; this is the one that notices most often. Except
+    # for `migrate` itself: a status that has already acted is a status nobody can read.
+    if not (argv and argv[0] in ("migrate", "migrations")):
+        for line in migrate.ensure(root()):
+            print(line, file=sys.stderr)
     back = 0
     supersedes = None
     all_of_them = False
@@ -1751,6 +1758,13 @@ def main(argv: list[str]) -> int:
             return 1
         subject = " ".join(rest[1:])
         return cmd_start(subject) if verb == "start" else cmd_end(subject, force)
+    if verb in ("migrate", "migrations"):
+        if len(rest) > 1 and rest[1] in ("run", "now"):
+            out = migrate.run(root()) or ["Nothing pending."]
+            fmt.say("\n".join(out))
+            return 0
+        fmt.say(migrate.report(root()))
+        return 0
     if verb == "verify":
         body, ok = verify.render(root())
         fmt.say(body)

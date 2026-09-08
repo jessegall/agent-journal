@@ -67,6 +67,12 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal todos replace N ["<section title>"] --brief   swap one named section, or the whole brief with none; old text kept under struck/',
         "journal todo auto [on|off]    work through this environment's list without asking, or wait for the user's word",
     ),
+    "migrate": (
+        "journal migrate               what the record's shape is, and what an upgrade still owes it",
+        "journal migrate run           run what is pending now, instead of waiting for the next command",
+        "                              Migrations run themselves: after `journal upgrade`, and otherwise",
+        "                              at the first command or hook that reads an older record.",
+    ),
     "docs": (
         "journal docs [--order=asc|desc]   the catalogue, newest first: every doc, its status, parts, files and abstract",
         "journal docs show <doc>       read a doc — <doc> is its number or its name, here and everywhere below; bare `journal docs <doc>` is the same",

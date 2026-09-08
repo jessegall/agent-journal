@@ -69,7 +69,7 @@ check("the indented command line survives exactly, not rewrapped",
       'journal todo edit 1 --section="What exactly" --brief' in out, True)
 
 # ─────────────────────────────── to-do 6: amend and replace ───────────────────────────────────
-struck_dir = root / "todo" / "default" / "struck"
+struck_dir = root / "environments" / "default" / "todo" / "struck"
 
 
 def struck_count():

@@ -35,7 +35,7 @@ LOCK = "record.json.lock"
 #: write them into the session running the upgrade — the defect being fixed.
 RETIRED = "state.json"
 
-IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto", "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read"}
+IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto", "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read", "schema"}
 
 
 def is_record(key: str) -> bool:
@@ -108,6 +108,29 @@ def runtime_files(root: Path) -> list[tuple[str, dict]]:
 TRACKED = ("pins", "work")
 _TRACK: list = []
 
+#: WHAT BELONGS TO AN ENVIRONMENT LIVES IN THE ENVIRONMENT'S FOLDER. Pins and work sat in
+#: `record.json` under `tracks.<name>`, and to-dos sat in a parallel `todo/<name>/` tree, so
+#: answering "what is on this environment" meant reading a 700KB JSON blob and a second
+#: folder somewhere else. One folder per environment says it instead:
+#:
+#:      .journal/environments/<name>/pins.json
+#:      .journal/environments/<name>/work.json
+#:      .journal/environments/<name>/todo/NNN-*.md
+#:
+#: The record keeps the REGISTRY — which environments exist, who holds them, where sessions
+#: are — because that is project-wide and is read on every event. What it no longer keeps is
+#: their contents. Reading one small file per environment is also less work than parsing the
+#: whole record for a list that only one environment needs.
+ENVS = "environments"
+
+
+def env_dir(root: Path, name: str) -> Path:
+    return root / ENVS / (slug(name) or "default")
+
+
+def _tracked_file(root: Path, name: str, key: str) -> Path:
+    return env_dir(root, name) / f"{key}.json"
+
 
 def use_track(name: str) -> None:
     _TRACK[:] = [name]
@@ -172,8 +195,7 @@ def _track_name(root: Path, data: dict) -> str:
 
 def get(root: Path, key: str, default=None, *, stem: str | None = None):
     if key in TRACKED:
-        data = _record(root)
-        return (data.get("tracks") or {}).get(_track_name(root, data), {}).get(key, default)
+        return tracked(root, key, _track_name(root, _record(root)), default)
     if is_record(key):
         return _read(record_file(root)).get(key, default)
     if not stem:
@@ -190,9 +212,7 @@ def put(root: Path, key: str, value, *, stem: str | None = None) -> None:
     rewritten to end.
     """
     if key in TRACKED:
-        data = _record(root)
-        data.setdefault("tracks", {}).setdefault(_track_name(root, data), {})[key] = value
-        _write(record_file(root), data)
+        put_tracked(root, key, _track_name(root, _record(root)), value)
         return
     if is_record(key):
         f = record_file(root)
@@ -209,8 +229,15 @@ def put(root: Path, key: str, value, *, stem: str | None = None) -> None:
 
 def tracked(root: Path, key: str, track: str, default=None):
     """One TRACKED key, read off a named environment rather than the current one."""
-    data = _record(root)
-    return (data.get("tracks") or {}).get(slug(track), {}).get(key, default)
+    got = _read(_tracked_file(root, track, key)).get(key)
+    if got is not None:
+        return got
+    # A RECORD THAT HAS NOT BEEN MIGRATED YET still answers. `migrate` moves these out on
+    # the first run after an upgrade, and until it has, every read has to keep working —
+    # a consumer that copies the package in by hand gets one CLI call before the move.
+    held = _record(root).get("tracks")
+    entry = held.get(slug(track)) if isinstance(held, dict) else None
+    return entry.get(key, default) if isinstance(entry, dict) else default
 
 
 def put_tracked(root: Path, key: str, track: str, value) -> None:
@@ -223,9 +250,9 @@ def put_tracked(root: Path, key: str, track: str, value) -> None:
     environment if anything in between raised.
     """
     with locked(root):
-        data = _record(root)
-        data.setdefault("tracks", {}).setdefault(slug(track), {})[key] = value
-        _write(record_file(root), data)
+        f = _tracked_file(root, track, key)
+        f.parent.mkdir(parents=True, exist_ok=True)
+        _write(f, {key: value})
 
 
 def retire_old(root: Path) -> bool:

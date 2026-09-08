@@ -614,8 +614,8 @@ def cited_by(root: Path, n: int) -> list[str]:
 
     scan(state.get(root, "rules", []) or [], "rule")
     here = tracks.current(root)
-    for name, held in tracks._all(root).items():
-        scan(held.get("pins", []), "pin", name)
+    for name in tracks._all(root):
+        scan(state.tracked(root, "pins", name, []) or [], "pin", name)
     for t in todo.open_items(root, here):
         if hit(str(t.get("doc") or "")):
             hits.append(f"to-do {t['n']} on environment {here}: {t['title'][:70]}")

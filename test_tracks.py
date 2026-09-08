@@ -193,8 +193,14 @@ for name in ("a/b", "  spaced   out  ", "emoji 🎧", "x" * 300, "-–quote\"'")
 took, msg = tracks.switch(r6, "..", AT)
 check("a name that slugs to nothing is refused, not mapped onto default", (took, "letters" in msg), (False, True))
 check("every name on disk is a slug", all(n == state.slug(n) for n in tracks._all(r6)), True)
-check("no file was created per environment name",
-      sorted(f.name for f in r6.iterdir()), ["record.json", "record.json.lock"])
+# 1.34.0: an environment IS a folder, so the guard moves rather than goes. What must never
+# happen is what did once — a file per environment at the root of .journal, because
+# `state._file()` routed by name and a fully parked environment vanished from the listing.
+check("nothing is created at the root but the record and one environments/ folder",
+      sorted(f.name for f in r6.iterdir()),
+      ["environments", "record.json", "record.json.lock"])
+check("and every environment folder is named by its slug",
+      all(n == state.slug(n) for n in (x.name for x in (r6 / "environments").iterdir())), True)
 tracks.switch(r6, "default", AT)
 check("default still intact after hostile names", [p["fact"] for p in pins.live(r6)], ["safe"])
 check("a name is normalised, not duplicated",
@@ -261,13 +267,13 @@ took, msg = tracks.remove(r7, "gone", AT, yes=True)
 check("--yes removes it", took, True)
 check("it is off the listing", [t["name"] for t in tracks.listing(r7)], ["default"])
 check("the other environment is untouched", live(r7), (["fact D"], []))
-check("its to-do folder is gone from todo/", (r7 / "todo" / "gone").exists(), False)
+check("its folder is gone from environments/", (r7 / "environments" / "gone").exists(), False)
 box = sorted((r7 / "removed").glob("gone-*"))
 check("it is archived whole", len(box), 1)
 check("the archive holds its pins and work",
-      [p["fact"] for p in json.loads((box[0] / "environment.json").read_text())["pins"]],
+      [p["fact"] for p in json.loads((box[0] / "environment" / "pins.json").read_text())["pins"]],
       ["fact G"])
-check("the archive holds its to-dos", len(list((box[0] / "todo").glob("*.md"))), 1)
+check("the archive holds its to-dos", len(list((box[0] / "environment" / "todo").glob("*.md"))), 1)
 check("the removal is on the record",
       [(x["track"], x["purged"]) for x in state.get(r7, "removals", [])], [("gone", False)])
 

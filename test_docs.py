@@ -242,8 +242,11 @@ code, out = j("docs", "attach", "attachments home", str(src / "design.html"), "b
 check("attach takes a name", code, 0)
 code, out = j("pin", "cited by name", "--doc=attachments home")
 rec = json.loads((root / "record.json").read_text())
-allpins = [p for t in rec["tracks"].values() for p in t["pins"]]
-check("--doc takes a name and stores the number", (code, allpins[-1].get("doc")), (0, str(n_att)))
+allpins = [p for f in sorted((d / ".journal" / "environments").rglob("pins.json"))
+           for p in json.loads(f.read_text())["pins"]]
+cited = [p for p in allpins if p.get("fact") == "cited by name"]
+check("--doc takes a name and stores the number",
+      (code, cited[-1].get("doc") if cited else None), (0, str(n_att)))
 code, out = j("docs", "search", "mockups")
 check("and an attachment by what it is", "attachment mock" in out, True)
 code, out = j("docs", "files", "1")

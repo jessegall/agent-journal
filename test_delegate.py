@@ -111,6 +111,13 @@ def rec():
     return json.loads((root / "record.json").read_text())
 
 
+def held(name, key="pins"):
+    """1.34.0: what belongs to an environment lives in the environment's folder."""
+    f = root / "environments" / name / f"{key}.json"
+    return json.loads(f.read_text())[key] if f.is_file() else []
+
+
+
 # ---------------------------------------------------------------- prepare
 main = S("aaaaaaaa-0000-4000-8000-000000000001")
 code, out = main.j("prepare", "wwm-1601")
@@ -141,7 +148,7 @@ check("a page for an environment that does not exist is refused", (code, "no env
 main.j("switch", "default")
 check("back on default", tracks.bound(root, main.stem), "default")
 code, out = main.j("--env=wwm-1601", "pin", "pinned from default onto 1601")
-check("--env= writes onto the named environment", (code, [p["fact"] for p in rec()["tracks"]["wwm-1601"]["pins"]][-1]), (0, "pinned from default onto 1601"))
+check("--env= writes onto the named environment", (code, [p["fact"] for p in held("wwm-1601")][-1]), (0, "pinned from default onto 1601"))
 check("and the session stays bound where it was", tracks.bound(root, main.stem), "default")
 code, out = main.j("--env=wwm-1601", "todo")
 check("--env= reads the named environment's list", ("add the guard" in out, "verify and close" in out), (True, True))
@@ -173,7 +180,7 @@ check("delegating a free environment works and says how a subagent is briefed",
 check("one session id, one environment: delegating binds the session there for the duration", tracks.bound(root, main.stem), "wwm-1601")
 code, out = main.j("pin", "filed by the parent while delegating")
 check("the parent's own writes land on the delegated environment meanwhile",
-      [p["fact"] for p in rec()["tracks"]["wwm-1601"]["pins"]][-1], "filed by the parent while delegating")
+      [p["fact"] for p in held("wwm-1601")][-1], "filed by the parent while delegating")
 code, out = main.j()
 check("the status page says the environment is delegated", ("wwm-1601" in out, "(delegated)" in out), (True, True))
 code, out = main.j("environments")
@@ -193,12 +200,12 @@ check("`journal prepare` too", "refused even when delegated" in w.bash('.journal
 check("`journal todo start` from it is allowed", w.bash(".journal/journal.py todo start 1"), "")
 code, out = w.j("todo", "start", "1")
 check("and it opens the to-do on the delegated environment",
-      (code, [x["subject"] for x in rec()["tracks"]["wwm-1601"]["work"] if not x.get("ended")]), (0, ["add the guard to DeleteItem"]))
+      (code, [x["subject"] for x in held("wwm-1601", "work") if not x.get("ended")]), (0, ["add the guard to DeleteItem"]))
 check("with work open its edit passes", w.tool("Write", file_path=str(d / "g.txt"), content="x"), "")
 check("`journal pin` from it is allowed", w.bash('.journal/journal.py pin "found by the subagent"'), "")
 code, out = w.j("pin", "found by the subagent", "--doc=1")
 check("and the pin lands on the delegated environment, citing the doc",
-      (code, rec()["tracks"]["wwm-1601"]["pins"][-1]["fact"], rec()["tracks"]["wwm-1601"]["pins"][-1].get("doc")), (0, "found by the subagent", "1"))
+      (code, held("wwm-1601")[-1]["fact"], held("wwm-1601")[-1].get("doc")), (0, "found by the subagent", "1"))
 check("the parent's own environment got nothing", [p["fact"] for p in rec()["tracks"].get("default", {}).get("pins", [])], [])
 w.say("[!reply] working on it")
 check("its stop with work open is held", "still open" in w.stop(), True)
@@ -233,7 +240,7 @@ check("the subagent is registered nowhere again", tracks.delegated(root, "agent-
 check("the subagent's writes are refused again", "from a subagent is refused" in w.bash('.journal/journal.py pin "late"'), True)
 check("and its stop holds nothing", w.stop(), "")
 code, out = main.j("pin", "back home")
-check("the parent's writes are back on its own environment", [p["fact"] for p in rec()["tracks"]["default"]["pins"]][-1], "back home")
+check("the parent's writes are back on its own environment", [p["fact"] for p in held("default")][-1], "back home")
 code, out = main.j("delegate", "--off")
 check("--off twice says nothing was delegated", code, 1)
 
@@ -295,7 +302,7 @@ c = S("99999999-0000-4000-8000-000000000007")
 c.j("switch", "wwm-1601")
 c.j("pin", "first"); c.j("pin", "second"); c.j("strike", "1", "wrong")
 code, out = c.j("environments", "wwm-1601")
-allp = rec()["tracks"]["wwm-1601"]["pins"]
+allp = held("wwm-1601")
 idx = max(i for i, p in enumerate(allp, 1) if p["fact"] == "second")
 check("the page numbers pins as `journal pins` does — the full list, struck ones skipped",
       (f"{idx:>3}  second" in out, f"{idx - 1:>3}  second" in out), (True, False))
@@ -356,7 +363,7 @@ main.j("pin", "provenance check")
 main.j("delegate", "wwm-1601"); main.j("pin", "written under delegation"); main.j("delegate", "--off")
 code, out = main.j("--env=wwm-1601", "pins")
 check("a pin written while delegating says so, for whoever reads around it later",
-      rec()["tracks"]["wwm-1601"]["pins"][-1].get("via"), "delegation")
+      held("wwm-1601")[-1].get("via"), "delegation")
 
 # ---------------------------------------------------------------- names are slugs, prompts are paragraphs
 n = S("ffffffff-0000-4000-8000-000000000006")
@@ -365,14 +372,15 @@ check("an environment's name becomes a slug on the way in", (code, tracks.bound(
 code, out = n.j("--env=Real Time Nudges!", "pins")
 check("--env= takes the unslugged spelling too", code, 0)
 n.j("todo", "a chore on it")
-check("the to-do folder is the slug", (root / "todo" / "real-time-nudges").is_dir(), True)
+check("the to-do folder is the slug", (root / "environments" / "real-time-nudges" / "todo").is_dir(), True)
 old = json.loads((root / "record.json").read_text())
 old["tracks"]["Old Name With Spaces"] = {"pins": [{"fact": "an old pin", "at": "x", "struck": None}], "work": [], "at": "x"}
 (root / "record.json").write_text(json.dumps(old))
-(root / "todo" / "Old Name With Spaces").mkdir(parents=True)
+(root / "todo" / "Old Name With Spaces").mkdir(parents=True)   # a pre-1.34.0 tree
 code, out = n.j("environments")
 check("an older record's names are migrated to slugs on first read, folders too",
-      ("old-name-with-spaces" in tracks._all(root), "Old Name With Spaces" in tracks._all(root), (root / "todo" / "old-name-with-spaces").is_dir()), (True, False, True))
+      ("old-name-with-spaces" in tracks._all(root), "Old Name With Spaces" in tracks._all(root), ((root / "todo" / "old-name-with-spaces").is_dir()
+        or (root / "environments" / "old-name-with-spaces" / "todo").is_dir())), (True, False, True))
 code, out = n.j("handoff", "real-time-nudges", "--run")
 joined = " ".join(out.split())
 check("the runner's prompt names the tags, the brief command and the forbidden verbs",

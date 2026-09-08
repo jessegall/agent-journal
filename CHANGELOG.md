@@ -4,6 +4,41 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.34.0 — an environment is a folder, and upgrades migrate themselves
+
+WHAT BELONGS TO AN ENVIRONMENT NOW LIVES IN THE ENVIRONMENT'S FOLDER:
+
+    .journal/environments/<name>/pins.json
+    .journal/environments/<name>/work.json
+    .journal/environments/<name>/todo/NNN-*.md
+
+Pins and work sat inside `record.json` under `tracks.<name>`, and to-dos sat in a parallel
+`todo/<name>/` tree — so "what is on this environment" was answered in two places that could
+disagree, one of them a 700KB JSON blob. The record keeps the REGISTRY: which environments
+exist, who holds them, where sessions are. It no longer keeps their contents. Removing an
+environment is a folder move now rather than record surgery, and reading one small file
+beats parsing the whole record for a list only one environment needs.
+
+Rules and docs do not move. A rule binds every environment and every environment reads
+every doc; both stay where they were.
+
+AND MIGRATIONS RUN THEMSELVES. `migrate.py` holds an ordered list of (version, what it does,
+how), and everything newer than the record's own `schema` runs, in order — because a
+consumer upgrades from whatever version it happens to be on, which is never the version
+before this one. A project pulled six weeks ago crosses four releases in one `journal
+upgrade`.
+
+It is not a flag and not a step in a changelog somebody reads later. `journal upgrade` runs
+it, and so does the first CLI command or hook event that reads an older record — the package
+is copied into consumers by file, not installed by a package manager, so "the upgrade
+command ran it" is not a guarantee anybody has. The guarantee is that the first process to
+notice does it. `journal migrate` says what is pending and what has run.
+
+EVERY MIGRATION IS IDEMPOTENT AND SURVIVES A HALF-RUN. It moves what it finds and leaves
+what it does not, so running it twice is a no-op, and a project that is half-migrated has
+what the record still holds APPENDED to what the folder already has, rather than either side
+being dropped.
+
 ## 1.33.0 — a to-do, a pin or a doc can move to another environment
 
 Work gets reframed. What was filed under one name turns out to be a different thing, and

@@ -304,6 +304,17 @@ dispatched with which model, that the runner gets its own worktree and the hand-
 does not, what may not happen between the two prompts, and what becomes of the branch the
 runner hands back.
 
+## What belongs to an environment lives in its folder
+
+    .journal/environments/<name>/pins.json    what is pinned there
+    .journal/environments/<name>/work.json    what is open there
+    .journal/environments/<name>/todo/        its to-dos, one file each
+
+Rules and docs are the PROJECT's and sit outside it — a rule binds every environment, and
+every environment reads every doc. Nothing here is edited by hand; the commands own these
+files. An older layout is carried across the first time a new version reads it, by whichever
+process gets there first — `journal migrate` says what is pending and what has run.
+
 ## Docs: what was settled, catalogued
 
     journal docs                                the catalogue: number, title, status, parts, files, abstract

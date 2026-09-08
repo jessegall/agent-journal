@@ -22,6 +22,7 @@ file writes is a fact about the transcript it was handed, and is filed under its
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import re
 import sys
@@ -52,6 +53,7 @@ import todo  # noqa: E402
 import tools  # noqa: E402
 import tracks  # noqa: E402
 import transcript  # noqa: E402
+import migrate  # noqa: E402
 import update  # noqa: E402
 
 
@@ -2175,6 +2177,10 @@ def main() -> int:
     for p in problems:
         print(f"journal: {p}", file=sys.stderr)
 
+    # THE HOOK MIGRATES TOO. A consumer whose agent never types a `journal` command still
+    # fires hooks on every tool call, so this is the entry point that reaches everybody.
+    with contextlib.suppress(Exception):
+        migrate.ensure(ROOT)
     event = payload.get("hook_event_name") or payload.get("event") or ""
     handler = HANDLERS.get(event)
     if handler is None:
