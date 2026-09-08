@@ -9,7 +9,6 @@ from __future__ import annotations
 import json
 import os
 import re
-from dataclasses import dataclass, field
 from pathlib import Path
 
 PROJECTS = Path.home() / ".claude" / "projects"
@@ -176,22 +175,30 @@ def session_transcript(cwd: Path) -> tuple[Path, bool] | None:
     return (got, True) if got is not None else None
 
 
-@dataclass
 class Line:
     """One thing somebody said, or one thing the machine did.
 
     `n` is the line's index in the transcript and is the citation the whole system quotes:
     a brief that says "turn 412" is checkable, and one that says "earlier" is not.
+
+    NOT A DATACLASS, and the reason is measured: `dataclasses` pulls `inspect`, ~6ms of
+    import on a module every command and every hook event loads, and a transcript makes
+    thousands of these — `__slots__` is faster to build and smaller to hold than the dict
+    a dataclass gives each one. What was lost is a generated `__repr__` nothing printed.
     """
 
-    n: int
-    role: str  # user | assistant | system
-    kind: str  # human | tool_result | injected | peer | task | text | superseded
-    text: str
-    ts: str
-    tags: list[str] = field(default_factory=list)
-    tools: list[str] = field(default_factory=list)
-    parent: str = ""  # the record this one answers; two prompts sharing it are one prompt
+    __slots__ = ("n", "role", "kind", "text", "ts", "tags", "tools", "parent")
+
+    def __init__(self, n: int, role: str, kind: str, text: str, ts: str,
+                 tags: list | None = None, tools: list | None = None, parent: str = ""):
+        self.n = n
+        self.role = role      # user | assistant | system
+        self.kind = kind      # human | tool_result | injected | peer | task | text | superseded
+        self.text = text
+        self.ts = ts
+        self.tags = tags if tags is not None else []
+        self.tools = tools if tools is not None else []
+        self.parent = parent  # the record this one answers; two prompts sharing it are one
 
     @property
     def spoken(self) -> bool:

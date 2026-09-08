@@ -19,7 +19,6 @@ renaming one makes every message already filed under it read back as untagged.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
 
 # THE TAG OPENS THE MESSAGE. Not a line — the message, before anything else but whitespace.
 #
@@ -34,10 +33,22 @@ from dataclasses import dataclass
 PATTERN = re.compile(r"\A\s*\[!([a-z]+)\]")
 
 
-@dataclass(frozen=True)
 class Tag:
-    name: str
-    line: str  # what it is for, shown by `journal instructions`
+    """A tag and what it is for. Deliberately NOT a dataclass.
+
+    `dataclasses` pulls `inspect`, which is 8.6ms of import on a module that hook.py loads
+    on every single event and journal.py loads on every command. Two attributes and an
+    equality nobody uses do not cost that.
+    """
+
+    __slots__ = ("name", "line")
+
+    def __init__(self, name: str, line: str):
+        self.name = name
+        self.line = line   # what it is for, shown by `journal instructions`
+
+    def __repr__(self) -> str:
+        return f"Tag({self.name!r})"
 
 
 TAGS = {

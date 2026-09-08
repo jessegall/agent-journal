@@ -33,7 +33,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import digest
 import docs
 import fmt
 import help
@@ -84,6 +83,7 @@ _state.use_track(tracks.current(_ROOT, _stem()))
 
 
 def _load(back: int = 0):
+    import digest      # only the transcript commands need it; it pulls tags and the rest
     conf, problems = settings_mod.load(root())
     for p in problems:
         fmt.say(f"{p}", error=True)
@@ -232,6 +232,7 @@ def cmd_read(back: int) -> int:
     where = "since the last compaction" if back == 0 else f"the stretch {back} summary/ies back replaced"
     fmt.say(fmt.title("CONVERSATION", sub=f"{where} · {len(seg)} lines · {n} compaction(s) in this session"))
     fmt.say()
+    import digest
     body = digest.render(seg)
     fmt.say(body if body.strip() else "  (nothing was said in this stretch)")
     if back == 0 and n:
@@ -242,6 +243,7 @@ def cmd_read(back: int) -> int:
 
 def cmd_user(back: int) -> int:
     _, _, _, seg, _ = _load(back)
+    import digest
     body = digest.users_only(seg)
     fmt.say(fmt.title("THE USER'S OWN WORDS", sub="in full, never trimmed"))
     fmt.say(body if body.strip() else "\n  (the user said nothing in this stretch)")

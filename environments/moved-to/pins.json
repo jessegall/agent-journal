@@ -47,6 +47,12 @@
       "at": "2026-09-08T19:54:48+00:00",
       "struck": null,
       "moved_from": 15
+    },
+    {
+      "fact": "a claim that belongs to the other environment",
+      "at": "2026-09-08T19:59:15+00:00",
+      "struck": null,
+      "moved_from": 16
     }
   ]
 }

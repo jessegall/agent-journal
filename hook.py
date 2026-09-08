@@ -27,7 +27,6 @@ import json
 import re
 import sys
 import time
-from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -57,7 +56,6 @@ import migrate  # noqa: E402
 import update  # noqa: E402
 
 
-@dataclass(frozen=True)
 class Ctx:
     """Which transcript this event is about, and where its marks go.
 
@@ -68,8 +66,11 @@ class Ctx:
     the handlers ignore subagents altogether (see `_subagent`), so no such file is written.
     """
 
-    stem: str
-    path: Path | None
+    __slots__ = ("stem", "path")   # not a dataclass: `inspect` is 6ms on every hook event
+
+    def __init__(self, stem: str, path: "Path | None"):
+        self.stem = stem
+        self.path = path
 
 
 def _ctx(payload: dict) -> Ctx | None:

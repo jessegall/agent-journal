@@ -4,6 +4,30 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.34.1 — the CLI starts in two thirds of the time
+
+Every `journal` command and every hook event pays the interpreter's start plus this
+package's imports, and the suites make a couple of thousand of them — so this is the
+slowest part of an iteration, and none of it was doing any work.
+
+`dataclasses` was the cost. It pulls `inspect`, ~6ms, and three modules on the hot path
+declared a dataclass for two attributes and an equality nobody uses: `tags.Tag`,
+`transcript.Line` and `hook.Ctx`. All three are plain classes with `__slots__` now — which
+is also smaller and faster to build, and a transcript makes thousands of `Line`s. `digest`
+is imported where it is used rather than at the top of `journal.py`, since only the
+transcript commands need it.
+
+And `state._read` caches by path within a process, validated by a stat on every hit. The
+record is read many times in one command — by the gate, by the renderer, by the command
+itself — and in a large consumer that was a 700KB parse each time. Another process's write
+changes the file's mtime or size, so the next read here misses and sees it.
+
+    one journal command   106ms -> 68ms
+    the whole suite        80s  -> 62s   (1265 assertions, 18 files)
+
+What is left is a floor: the suite's wall clock is now its slowest single file, and that
+file drives the real hook binary as a subprocess, which is what makes it worth having.
+
 ## 1.34.0 — an environment is a folder, and upgrades migrate themselves
 
 WHAT BELONGS TO AN ENVIRONMENT NOW LIVES IN THE ENVIRONMENT'S FOLDER:

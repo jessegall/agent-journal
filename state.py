@@ -50,14 +50,31 @@ def runtime_file(root: Path, stem: str) -> Path:
     return root / RUNTIME_DIR / f"{stem}.json"
 
 
+#: path -> (mtime_ns, size, data). ONE PROCESS, and validated by stat on every hit.
+#: `_record` is read many times in a single command — by the gate, by the renderer, by
+#: whatever the command itself does — and in a large consumer that is a 700KB parse each
+#: time. A stat is not free but it is two orders of magnitude cheaper, and it keeps the
+#: guarantee that matters: another process's write changes mtime or size, so the next read
+#: here misses the cache and sees it.
+_CACHE: dict = {}
+
+
 def _read(f: Path) -> dict:
-    if not f.is_file():
+    try:
+        st = f.stat()
+    except OSError:
         return {}
+    key = str(f)
+    hit = _CACHE.get(key)
+    if hit is not None and hit[0] == st.st_mtime_ns and hit[1] == st.st_size:
+        return hit[2]
     try:
         data = json.loads(f.read_text())
-        return data if isinstance(data, dict) else {}
+        data = data if isinstance(data, dict) else {}
     except (ValueError, OSError):
         return {}  # a corrupt handle file must never stop the record being read
+    _CACHE[key] = (st.st_mtime_ns, st.st_size, data)
+    return data
 
 
 def _write(f: Path, data: dict) -> None:
@@ -69,6 +86,7 @@ def _write(f: Path, data: dict) -> None:
     writers, three tracebacks. A crashing hook is rendered to the user as a hook error. So
     every writer gets its own tmp, and the loser of a race is overwritten, not killed.
     """
+    _CACHE.pop(str(f), None)
     f.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=f.parent, prefix=f".{f.name}.", suffix=".tmp")
     try:
