@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.32.4 — an out-of-date git hook is refreshed, and the CLI starts faster
+
+TWO THINGS. The hook's body is not part of the package a pull refreshes: it is written once
+into `.git/hooks` and stays there, so 1.32.3's `--quiet` reached nobody who had already
+installed it — the fix shipped and the noise continued. `--git-hook` now rewrites a
+`post-commit` that is ours and out of date, and still never touches one that is not.
+
+And `urllib.request` is imported where it is used instead of at the top of `update.py`. It
+costs 13ms and drags in `http.client` and the email package, on a CLI whose entire run is
+79ms and which almost never reaches the network: every invocation paid for the version
+check, and the suites alone make a couple of thousand of them. 79ms to 67ms per call.
+
 ## 1.32.3 — the git hook is silent unless it closed something
 
 Installed and used for one commit, the post-commit hook printed "f5dd46419 names no to-do —

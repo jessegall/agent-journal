@@ -17,7 +17,6 @@ import re
 import subprocess
 import tempfile
 import time
-import urllib.request
 from pathlib import Path
 
 REPO = "https://github.com/jessegall/agent-journal"
@@ -70,6 +69,11 @@ def render_since(text: str, had: str, now: str) -> str:
 # ------------------------------------------------------------------ the check
 def _fetch(url: str, timeout: float = 3.0) -> str | None:
     try:
+        # IMPORTED HERE, NOT AT THE TOP. `urllib.request` costs 13ms to import and pulls in
+        # http.client and the email package behind it — on a CLI whose whole run is 79ms,
+        # and which is spawned a couple of thousand times by the suites alone. Almost no
+        # invocation ever reaches the network.
+        import urllib.request
         with urllib.request.urlopen(url, timeout=timeout) as r:
             return r.read().decode("utf-8", "replace")
     except Exception:

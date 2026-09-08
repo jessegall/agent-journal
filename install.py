@@ -335,8 +335,17 @@ def git_hook(check: bool, remove: bool = False) -> list[str]:
         if not check:
             f.unlink()
         return [f"  - {f} removed"]
-    if ours:
+    if ours and have == GIT_HOOK:
         return ["  = post-commit hook already installed"]
+    if ours:
+        # A HOOK IS WRITTEN ONCE AND LIVES FOREVER. Its body is not part of the package a
+        # pull refreshes, so an install that leaves an older one in place ships a fix nobody
+        # receives — the `--quiet` that stopped it printing after every commit was exactly
+        # that. Ours and out of date is rewritten; anyone else's is still never touched.
+        if not check:
+            f.write_text(GIT_HOOK)
+            f.chmod(f.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        return ["  + post-commit hook brought up to date"]
     if have:
         # ONE STRING, because `main` prints only the lines that start with a mark: a
         # continuation printed as its own line is a continuation that never reaches anybody.

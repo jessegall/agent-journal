@@ -163,6 +163,10 @@ check("--git-hook installs an executable post-commit hook",
 check("and it names the journal, so a second run knows it is ours",
       "agent-journal" in hookfile.read_text(), True)
 check("installing twice changes nothing", "+ " + str(hookfile) not in install("--git-hook"), True)
+hookfile.write_text("#!/bin/sh\n# agent-journal: an older one, from an older version\nexit 0\n")
+out = install("--git-hook")
+check("an out-of-date hook of ours is rewritten, since its body is not what a pull refreshes",
+      ("brought up to date" in out, "from-commit" in hookfile.read_text()), (True, True))
 
 j("todos", "add", "closed by a commit typed by hand")
 subprocess.run(["git", "commit", "-q", "--allow-empty", "-F", "-"], cwd=str(d), env=env,
