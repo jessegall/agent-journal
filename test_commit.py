@@ -142,5 +142,39 @@ check("a commit that closed nothing, with a to-do started, teaches the trailer",
 commit("kit: another one with no trailer\n")
 check("and it is said once a session, not at every commit", fire(), "")
 
+# ───────────────────── the git hook: the same protocol for a commit typed by hand ──────────
+I = str(d / ".journal" / "install.py")
+
+
+def install(*flags):
+    p = subprocess.run([I, *flags], env=env, cwd=str(d), capture_output=True, text=True, timeout=120)
+    return p.stdout + p.stderr
+
+
+hookfile = d / ".git" / "hooks" / "post-commit"
+out = install("--git-hook")
+check("--git-hook installs an executable post-commit hook",
+      (hookfile.is_file(), os.access(hookfile, os.X_OK), "post-commit" in out), (True, True, True))
+check("and it names the journal, so a second run knows it is ours",
+      "agent-journal" in hookfile.read_text(), True)
+check("installing twice changes nothing", "+ " + str(hookfile) not in install("--git-hook"), True)
+
+j("todos", "add", "closed by a commit typed by hand")
+subprocess.run(["git", "commit", "-q", "--allow-empty", "-F", "-"], cwd=str(d), env=env,
+               input="kit: by hand\n\nJournal: todos done 5\n", text=True, capture_output=True, timeout=60)
+code, listed = j("todos", "--all")
+check("a commit made outside a session closes its to-do through the git hook",
+      "5  ~~closed by a commit typed by hand~~" in listed, True)
+
+install("--no-git-hook")
+check("--no-git-hook takes ours back out", hookfile.exists(), False)
+hookfile.write_text("#!/bin/sh\necho someone else's\n")
+out = install("--git-hook")
+check("a post-commit that is not ours is never clobbered — the line to add is printed instead",
+      ("not the journal's" in out, "someone else's" in hookfile.read_text(),
+       "todos from-commit" in out), (True, True, True))
+check("and --no-git-hook will not delete a hook it did not write",
+      ("not the journal's" in install("--no-git-hook"), hookfile.is_file()), (True, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

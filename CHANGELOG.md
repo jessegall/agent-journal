@@ -4,6 +4,24 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.32.1 — the commit trailer works for commits you type yourself
+
+1.32.0 read the trailer at PostToolUse, which covers every commit an agent makes and none
+of the ones a person makes in a terminal. `.journal/install.py --git-hook` installs a
+`post-commit` hook that runs `journal todos from-commit HEAD`, and `--no-git-hook` takes it
+back out.
+
+OPT-IN, AND IT NEVER CLOBBERS. `.git/hooks` is not the journal's to own — husky, lefthook
+and pre-commit all live there, and a hook is not committed, so overwriting one costs
+somebody a workflow with no diff to find it in. An existing `post-commit` that is not ours
+is left exactly as it is and the one line to add is printed instead; `--no-git-hook`
+likewise refuses to delete a hook it did not write. The hook itself cannot fail a commit:
+git ignores its exit code, and it exits 0 before doing anything if the checkout has no
+journal.
+
+The hooks directory is asked of git rather than assumed, so it is right inside a worktree,
+where `.git` is a file and not a directory.
+
 ## 1.32.0 — a commit closes the to-do it finishes
 
 A to-do is finished by a commit, and closing it was a second command nobody owed anybody —

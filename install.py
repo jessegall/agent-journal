@@ -3,6 +3,9 @@
 
     .journal/install.py           wire the hooks, make things executable
     .journal/install.py --alias   also put a `journal` command on your PATH (every shell)
+    .journal/install.py --git-hook    also install a git post-commit hook, so a commit you
+                                      make yourself closes the to-do its trailer names
+    .journal/install.py --no-git-hook remove that hook, if it is the one this wrote
     .journal/install.py --check   say what would change, write nothing
     .journal/install.py --from <path or git url>   pull that package in first (tests run before anything lands)
 
@@ -52,7 +55,7 @@ EVENTS = ("Stop", "SubagentStop", "SessionStart", "SessionEnd", "PostToolUse", "
 #: in it otherwise splits into two arguments and the hook simply never runs.
 COMMAND = '"$CLAUDE_PROJECT_DIR"/.journal/hook.py'
 EXECUTABLE = ("hook.py", "journal.py", "install.py", "test_tracks.py", "test_gate.py",
-              "test_state.py", "test_auto.py", "test_docs.py", "test_tools.py", "test_worktree.py", "test_queue.py", "test_bind.py", "test_delegate.py", "test_unbound.py", "test_await.py")
+              "test_state.py", "test_auto.py", "test_docs.py", "test_tools.py", "test_worktree.py", "test_queue.py", "test_commit.py", "test_bind.py", "test_delegate.py", "test_unbound.py", "test_await.py")
 
 #: THE SKILL IS PART OF THE PACKAGE, and it has to be installed rather than committed.
 #: It teaches the reasoning the injected block has no room for, so it belongs beside the
@@ -283,6 +286,70 @@ def _one_skill(SKILL_SRC: str, SKILL_DST: str, check: bool) -> list[str]:
 OLD_ALIAS_MARK = "# journal — added by .journal/install.py"
 
 
+#: The git hook, whole. `post-commit` cannot fail a commit — git ignores its exit code —
+#: and this one is written so that it could not anyway: nothing but a read and a close.
+GIT_HOOK_MARK = "agent-journal"
+GIT_HOOK = """#!/bin/sh
+# agent-journal: a commit that names a to-do in its message closes it.
+#   Journal: todos done 12
+# Remove this file to stop that. `.journal/install.py --no-git-hook` does the same.
+top=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+[ -x "$top/.journal/journal.py" ] || exit 0
+"$top/.journal/journal.py" todos from-commit HEAD || true
+"""
+
+
+def _git_hook_path() -> Path | None:
+    """Where this repo keeps its hooks — asked of git, because a worktree's `.git` is a file."""
+    try:
+        p = subprocess.run(["git", "rev-parse", "--git-path", "hooks"], cwd=str(PROJECT),
+                           capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if p.returncode != 0:
+        return None
+    d = Path(p.stdout.strip())
+    return (d if d.is_absolute() else PROJECT / d) / "post-commit"
+
+
+def git_hook(check: bool, remove: bool = False) -> list[str]:
+    """Install (or take back) the post-commit hook that acts on a commit's trailer.
+
+    OPT-IN, AND IT NEVER CLOBBERS. `.git/hooks` is not the journal's to own: husky, lefthook
+    and pre-commit all live there, a hook is not committed so it cannot be reviewed, and a
+    tool that overwrites one costs somebody a workflow with no diff to find it in. An
+    existing post-commit that is not ours is left exactly as it is and the line to add is
+    printed instead. The agent's own commits do not need this at all — those are read at
+    PostToolUse — so this is only for the commits a person types.
+    """
+    f = _git_hook_path()
+    if f is None:
+        return ["  ! not a git repository — no post-commit hook to install"]
+    have = f.read_text() if f.is_file() else ""
+    ours = GIT_HOOK_MARK in have
+    if remove:
+        if not have:
+            return ["  = no post-commit hook to remove"]
+        if not ours:
+            return [f"  ! {f} is not the journal's — left alone"]
+        if not check:
+            f.unlink()
+        return [f"  - {f} removed"]
+    if ours:
+        return ["  = post-commit hook already installed"]
+    if have:
+        # ONE STRING, because `main` prints only the lines that start with a mark: a
+        # continuation printed as its own line is a continuation that never reaches anybody.
+        return [f"  ! {f} already exists and is not the journal's — left alone.\n"
+                "    Add this line to it to close to-dos from commit trailers:\n"
+                '      "$(git rev-parse --show-toplevel)"/.journal/journal.py todos from-commit HEAD || true']
+    if not check:
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(GIT_HOOK)
+        f.chmod(f.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    return [f"  + {f} installed — a commit's `Journal: todos done N` trailer closes that to-do"]
+
+
 def _retire_rc_alias(check: bool) -> list[str]:
     """Remove the alias 1.3.x wrote into the shell rc; name any other `journal` alias.
 
@@ -374,6 +441,10 @@ def main(argv: list[str]) -> int:
     lines += executable(check) + wire(check) + skill(check)
     if "--alias" in argv:
         lines += alias(check)
+    if "--git-hook" in argv:
+        lines += git_hook(check)
+    if "--no-git-hook" in argv:
+        lines += git_hook(check, remove=True)
     # SAY ONLY WHAT CHANGED, then whether it is good, then the one next step.
     changed = [l for l in lines if l.startswith("  +") or l.startswith("  -") or l.startswith("  !")]
     sys.path.insert(0, str(ROOT))
