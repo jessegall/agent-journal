@@ -171,6 +171,12 @@ code, listed = j("todos", "--all")
 check("a commit made outside a session closes its to-do through the git hook",
       "5  ~~closed by a commit typed by hand~~" in listed, True)
 
+check("the git hook says nothing when a commit names no to-do",
+      subprocess.run(["git", "commit", "-q", "--allow-empty", "-m", "kit: quiet please"],
+                     cwd=str(d), env=env, capture_output=True, text=True, timeout=60).stdout.strip(), "")
+code, out = j("todos", "from-commit")
+check("but run by hand it still answers", "names no to-do" in out, True)
+
 install("--no-git-hook")
 check("--no-git-hook takes ours back out", hookfile.exists(), False)
 hookfile.write_text("#!/bin/sh\necho someone else's\n")

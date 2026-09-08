@@ -590,7 +590,7 @@ def cmd_promote(n: int) -> int:
 
 
 def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", page: int = 1,
-             order: str = fmt.DESC) -> int:
+             order: str = fmt.DESC, quiet: bool = False) -> int:
     here = tracks.current(root(), _stem())
     # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
     # what a bare noun and a bare noun+id already do; stripping them here means the
@@ -669,8 +669,12 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         sha, subject, message = at
         said = todo.close_from_commit(root(), message, f"{subject} ({sha[:9]})", _now(), here)
         if not said:
-            fmt.say(f"{sha[:9]} names no to-do — a commit closes one with a trailer:\n"
-                    f"  {todo.TRAILER} todos done <n>")
+            # SILENT FOR THE GIT HOOK. This runs after every commit a person makes, and a
+            # line printed on every one of them is a line they stop reading — including the
+            # one that says a to-do was closed. Run by hand, it still answers.
+            if not quiet:
+                fmt.say(f"{sha[:9]} names no to-do — a commit closes one with a trailer:\n"
+                        f"  {todo.TRAILER} todos done <n>")
             return 0
         for ok, line in said:
             fmt.say(("  " if ok else "  ! ") + line)
@@ -1363,6 +1367,7 @@ def main(argv: list[str]) -> int:
     on = None
     strike_n = None
     brief = False
+    quiet = False
     replace = False
     off_flag = False
     run_flag = False
@@ -1437,6 +1442,8 @@ def main(argv: list[str]) -> int:
             replace = True
         elif a == "--brief":
             brief = True
+        elif a == "--quiet":
+            quiet = True
         elif a == "--project":
             project_too = True
         elif a == "--yes":
@@ -1608,7 +1615,7 @@ def main(argv: list[str]) -> int:
                   error=True)
             return 1
     if verb in ("todo", "todos"):  # ruling R1: `todos` is a twin alias of `todo`, both ways
-        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, page, order)
+        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, page, order, quiet)
     if verb == "docs":
         return cmd_docs(rest[1:], brief, abstract, page, replace, order)
     if verb == "tools":

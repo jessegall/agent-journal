@@ -295,7 +295,7 @@ GIT_HOOK = """#!/bin/sh
 # Remove this file to stop that. `.journal/install.py --no-git-hook` does the same.
 top=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 [ -x "$top/.journal/journal.py" ] || exit 0
-"$top/.journal/journal.py" todos from-commit HEAD || true
+"$top/.journal/journal.py" todos from-commit HEAD --quiet || true
 """
 
 
@@ -342,7 +342,7 @@ def git_hook(check: bool, remove: bool = False) -> list[str]:
         # continuation printed as its own line is a continuation that never reaches anybody.
         return [f"  ! {f} already exists and is not the journal's — left alone.\n"
                 "    Add this line to it to close to-dos from commit trailers:\n"
-                '      "$(git rev-parse --show-toplevel)"/.journal/journal.py todos from-commit HEAD || true']
+                '      "$(git rev-parse --show-toplevel)"/.journal/journal.py todos from-commit HEAD --quiet || true']
     if not check:
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(GIT_HOOK)

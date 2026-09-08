@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.32.3 — the git hook is silent unless it closed something
+
+Installed and used for one commit, the post-commit hook printed "f5dd46419 names no to-do —
+a commit closes one with a trailer" on a commit that was never about a to-do. On every
+commit. A line printed after every commit is a line that stops being read, including the
+one that says a to-do WAS closed, which is the only line here worth anything.
+
+`journal todos from-commit --quiet` says nothing when the message names nothing; the hook
+passes it. Run by hand it still answers, because somebody typing it is asking.
+
 ## 1.32.2 — the trailer is read at column 0, so a quoted example does nothing
 
 The match allowed leading whitespace. A commit message that DOCUMENTS this protocol shows
