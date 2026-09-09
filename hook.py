@@ -1418,11 +1418,20 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
 
 
 def _deny(reason: str) -> int:
-    """Refuse the tool call, with the way out in the message. The one hold before an act."""
+    """Refuse the tool call, with the way out in the message. The one hold before an act.
+
+    IT SAYS WHICH JOURNAL IS SPEAKING. There can be more than one on a machine and more than
+    one in a session's reach: a subagent dispatched from here runs under THIS project's
+    hook, whatever directory it was sent to work in — so an agent working in another
+    project, against another journal, is refused by this one, judged against this one's
+    record. Measured: a dogfood agent spent most of its run trying flag after flag against a
+    journal that was never the one refusing it, and no message it received named either.
+    One word makes the mismatch legible in the line that reports it.
+    """
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
         "permissionDecision": "deny",
-        "permissionDecisionReason": fmt.block(reason),
+        "permissionDecisionReason": fmt.block(f"[{ROOT.parent.name}] " + reason),
     }}))
     return 0
 
