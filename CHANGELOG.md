@@ -4,6 +4,31 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.40.1 — a to-do that was ever asked a question stopped lying about itself
+
+`ask()` records a question and nothing ever clears it — correctly, because the exchange is
+the record of why a row is what it is. But the state ladder tested `t["asks"]` bare, third
+from the top, so any to-do that had EVER been asked a question shadowed every state below
+it: started, assigned, reported, blocked, after. A row could be picked up, worked, and
+reported finished while still printing "waits on the user", for the rest of the project.
+
+History was being read as state. The predicate is precise now: waiting on the user means a
+question with NO answer that nobody has picked up. Starting such a row is an agent saying it
+will proceed without an answer — legitimate, and previously invisible.
+
+AND THE LADDER SAYS WHAT IT IS. A first draft of the replacement claimed the nine predicates
+could not overlap; 237 of the 256 field combinations do. `blocked` and `started` are both
+true of a row that was picked up and then set aside, and that is not a defect — what a
+reader needs is why it is not moving NOW. So `_STATES` is a documented PRIORITY ORDER,
+answering one question top to bottom: what is the most recent thing that decides what
+happens to this row next? And `states_of` exposes every state that matched, because a ladder
+returns exactly one answer and a rung in the wrong place shows up only as a wrong answer in
+a case nobody thought of — which is how this bug survived as long as it did. The precedence
+is asserted in `test_todo` rather than left to the reader.
+
+Found by a dogfood agent folding this listing into the shared one, which preserved the
+behaviour and reported it rather than fixing it silently. That was the right call.
+
 ## 1.40.0 — journal lent, and the name was already on disk
 
 `journal lent` is the agent's half of `journal grant`, read as a question: what have I been

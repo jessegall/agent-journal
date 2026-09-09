@@ -186,5 +186,31 @@ check("`ready` counts it, which is what next and auto read",
 code, out = j("todos", "after", second, "--none")
 check("a prerequisite can be cleared", (code, "waits on nothing" in out), (0, True))
 
+# ─────────── a to-do's state is a priority order, and the order is the decision ────────────
+# `asks` was HISTORY read as STATE: `ask()` records the question and nothing ever clears it,
+# and the ladder tested it bare — so any row ever asked a question shadowed started,
+# assigned, reported, blocked and after, and printed "waits on the user" for the rest of the
+# project. Found by a dogfood agent, which preserved the behaviour and reported it.
+import todo as _t
+check("a row picked up after a question is STARTED, not still waiting on the user",
+      _t._state({"asks": "which way?", "started": "now"}), "started")
+check("and the question is still on the record — history is kept, it just is not the state",
+      _t._state({"asks": "q", "answer": "a", "started": "now", "reported": "done it"}), "reported")
+check("an unanswered question nobody picked up is the one thing that waits on the user",
+      (_t._state({"asks": "q"}), _t._state({"asks": "q", "answer": "a"})), ("asks", "answered"))
+check("every state is reachable — a rung nothing can reach is a rung that is wrong",
+      sorted({_t._state(row) for row in (
+          {"done": "d"}, {"asks": "q", "answer": "a"}, {"asks": "q"}, {"reported": "r"},
+          {"assigned": "z9"}, {"blocked": "b"}, {"after": "12"}, {"started": "s"}, {})}),
+      sorted(n for n, _ in _t._STATES))
+# THE PRECEDENCE IS THE DECISION, so it is asserted rather than left to the reader. A row
+# that is both blocked and started reports why it is not moving NOW.
+for _row, _first, _also in (({"blocked": "b", "started": "s"}, "blocked", ["started"]),
+                            ({"after": "12", "started": "s"}, "after", ["started"]),
+                            ({"assigned": "z9", "blocked": "b"}, "assigned", ["blocked"]),
+                            ({"reported": "r", "assigned": "z9"}, "reported", ["assigned"])):
+    check(f"{_first} outranks {_also[0]}",
+          (_t._state(_row), _t.states_of(_row)[1:]), (_first, _also))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

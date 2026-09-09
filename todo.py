@@ -1,3 +1,35 @@
+#: WHAT A TO-DO IS, IN PRIORITY ORDER, AND WHY THAT ORDER. Each row is a state and the
+#: predicate that puts a to-do in it; the FIRST match wins. The order is load-bearing and
+#: says so — a first draft of this table claimed the predicates could not overlap, and 237
+#: of the 256 field combinations do. `blocked` and `started` are both true of a row that was
+#: picked up and then set aside, and that is not a defect: what a reader needs is why it is
+#: not moving NOW, which is the later fact.
+#:
+#: SO THE ORDER IS THE ANSWER TO ONE QUESTION, asked top to bottom: what is the most recent
+#: thing that decides what happens to this row next?
+#:
+#:   done      it is over, and nothing below can change that
+#:   answered  the user has spoken and nobody has picked it up — the most actionable row
+#:             there is, which is why it outranks everything but being finished
+#:   asks      nobody can move it: a question with no answer, and not picked up anyway
+#:   reported  an agent says it is finished and only the parent may close it
+#:   assigned  held for a live agent; nobody else may take it
+#:   blocked   set aside on a condition the agent will re-judge
+#:   after     a prerequisite has not landed
+#:   started   in flight
+#:   waiting   none of the above
+#:
+#: `asks` WAS HISTORY BEING READ AS STATE, and that was the bug. `ask()` records the question
+#: and `answer()` the reply, and neither is ever cleared — correctly: the exchange is the
+#: record of why this row is what it is. But the ladder tested `t["asks"]` bare, so any to-do
+#: that had EVER been asked a question shadowed every state below it. A row could be picked
+#: up, worked, and reported finished while still printing "waits on the user", for the rest
+#: of the project. Found by a dogfood agent folding this listing into the shared one, which
+#: preserved the behaviour and reported it rather than fixing it silently.
+#:
+#: The predicate is precise now instead of the order being clever: waiting on the user means
+#: a question with NO answer and nobody has picked it up. Starting such a row is an agent
+#: saying it will proceed without one, which is legitimate and used to be invisible.
 """Delayed work — what the agent should remember TO DO. Not a rule, not a pin, not in flight.
 
 A pin is a claim, a rule binds, open work is in flight. None of them holds "do this later",
@@ -763,30 +795,52 @@ _STATES = ("done", "answered", "asks", "reported", "assigned", "blocked", "after
           "waiting")
 
 
-def _state(t: dict) -> str:
-    """Which of the mutually exclusive states this to-do is in — named, not re-derived.
+#: WHAT A TO-DO IS, AND THE TEST THAT SAYS SO. Each row is a state and the predicate that
+#: puts a to-do in it; the first match wins, and every predicate is written so that at most
+#: one CAN match. That second half is the whole point — a ladder whose rungs overlap makes
+#: its own ORDER load-bearing, and then the order is a decision nobody wrote down and
+#: everybody has to preserve.
+#:
+#: `asks` WAS HISTORY BEING READ AS STATE. `ask()` records the question and `answer()`
+#: records the reply, and neither is ever cleared — correctly: the exchange is the record of
+#: why this row is what it is. But the ladder tested `t["asks"]` third, so any to-do that had
+#: EVER been asked a question shadowed every state below it: started, assigned, reported,
+#: blocked, after. A row could be picked up, worked, and reported finished while still
+#: printing "waits on the user", for the rest of the project. Found by a dogfood agent that
+#: was folding this listing into the shared one and refused to fix it silently.
+#:
+#: SO THE PREDICATE IS PRECISE INSTEAD OF THE ORDER BEING CLEVER. Waiting on the user means
+#: a question with no answer AND nobody has picked it up. Starting a row is an agent saying
+#: it will proceed without the answer, which is a legitimate thing to do and used to be
+#: invisible.
+_STATES = (
+    ("done",     lambda t: bool(t.get("done"))),
+    ("answered", lambda t: answered_one(t)),
+    ("asks",     lambda t: bool(t.get("asks")) and not t.get("answer") and not t.get("started")),
+    ("reported", lambda t: bool(t.get("reported"))),
+    ("assigned", lambda t: bool(t.get("assigned"))),
+    ("blocked",  lambda t: bool(t.get("blocked"))),
+    ("after",    lambda t: bool(t.get("after"))),
+    ("started",  lambda t: bool(t.get("started"))),
+    ("waiting",  lambda t: True),
+)
 
-    THE SAME ORDER THE LADDER CHECKED, on purpose: naming it is this pass's job, not
-    reordering it. See the module note above for the one state that order makes
-    unreachable once `asks` has ever been set.
+
+def _state(t: dict) -> str:
+    """Which state this to-do is in. One name, from one table — see `_STATES`."""
+    return next(name for name, is_it in _STATES if is_it(t))
+
+
+def states_of(t: dict) -> list[str]:
+    """EVERY state whose predicate matches, most significant first.
+
+    A LADDER CANNOT BE CHECKED FROM THE OUTSIDE. It always returns exactly one answer, so a
+    rung in the wrong place shows up only as a wrong answer in a case nobody thought of —
+    which is precisely how `asks` shadowed five states for as long as it did. This exposes
+    what else was true, so a test can assert the PRECEDENCE itself rather than assert its
+    way through a handful of hand-picked rows.
     """
-    if t.get("done"):
-        return "done"
-    if answered_one(t):
-        return "answered"
-    if t.get("asks"):
-        return "asks"
-    if t.get("reported"):
-        return "reported"
-    if t.get("assigned"):
-        return "assigned"
-    if t.get("blocked"):
-        return "blocked"
-    if t.get("after"):
-        return "after"
-    if t.get("started"):
-        return "started"
-    return "waiting"
+    return [name for name, is_it in _STATES[:-1] if is_it(t)]
 
 
 def _held(root: Path, track: str, t: dict) -> str:
