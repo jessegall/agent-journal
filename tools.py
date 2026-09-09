@@ -21,7 +21,6 @@ from __future__ import annotations
 import os
 import re
 import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -190,19 +189,19 @@ def adopt(root: Path, track: str) -> list[str]:
 def run(root: Path, name: str, args: list[str]) -> int:
     t, err = get(root, name)
     if t is None:
-        print(f"  ! {err}", file=sys.stderr)
+        fmt.notice(err)
         return 1
     script = entry_path(root, t)
     if script is None:
-        print(f"  ! tool {name} has no entry point" + (f" ({t.get('entry')!r} not found)" if t.get("entry") else "")
-              + f". `journal tools set {name} entry <file>` names one.", file=sys.stderr)
+        fmt.notice(f"tool {name} has no entry point" + (f" ({t.get('entry')!r} not found)" if t.get("entry") else "")
+                   + f". `journal tools set {name} entry <file>` names one.")
         return 1
     if os.access(script, os.X_OK):
         cmd = [str(script)]
     else:
         interp = INTERPRETERS.get(script.suffix)
         if not interp:
-            print(f"  ! {script.name} is not executable and has no known interpreter; chmod +x it", file=sys.stderr)
+            fmt.notice(f"{script.name} is not executable and has no known interpreter; chmod +x it")
             return 1
         cmd = interp + [str(script)]
     return subprocess.call(cmd + list(args), cwd=root.parent)
