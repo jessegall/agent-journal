@@ -101,6 +101,9 @@ if _WT_NOTE:
     fmt.say(f"  {_WT_NOTE}", error=True)
 
 
+fmt.cli(_ROOT)   # the spelling every printed command uses, from here
+
+
 def root() -> Path:
     return _ROOT
 
