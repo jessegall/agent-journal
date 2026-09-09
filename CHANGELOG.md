@@ -4,6 +4,25 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.37.2 — the README documents the CLI that exists
+
+It described `journal handoff` and `journal delegate` as live features, with a paragraph
+each on how to use them, two releases after they were deleted — and said nothing at all
+about grants, sub-environments, assignment, reminders, or the rules the journal itself
+ships. `.journal/record.json` was still documented as holding pins and work, which stopped
+being true in 1.34.0 when an environment became a folder.
+
+Rewritten: what a grant is and why a subagent cannot simply be detected, what a
+sub-environment holds and what it may not touch, the reminder, the real storage layout
+including `environments/<name>/agents/<id>/work.json`, and the paragraph on worktrees now
+carries the half that was only assumed until it was measured — a subagent's FIRST TOOL
+CALL is what links a worktree's journal, because no session start fires for one.
+
+DOCUMENTATION DRIFTS SILENTLY: nothing fails when it goes stale, which is why it went stale
+for two releases. So a test now asserts that every `journal <verb>` the README prints is a
+verb the CLI answers to, and that no retired name is presented as a live one. It cannot
+check that prose is true; it can check that the commands are real.
+
 ## 1.37.1 — a removed command says what replaced it, and prose keeps its paragraphs
 
 `journal delegate` and `journal handoff` were removed in 1.37.0 and fell through to "No

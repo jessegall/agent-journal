@@ -31,6 +31,12 @@ your repo, you can read it, edit it and share it with your team.
 - **Enforces it with hooks.** An edit with nothing declared is refused. A context warning
   demands a decision before anything else runs. Work the agent promised "later" in words
   is parked or the next call is refused. These are mechanisms, not suggestions.
+- **Repeats what you asked to be repeated.** A reminder is said again at every stop and
+  every 50 tool calls, so a standing instruction survives the drift that a one-time
+  briefing does not.
+- **Lends work to subagents without losing the record.** The dispatching session lends an
+  environment; the subagent gets its own ledger inside it, inherits its pins read-only, and
+  reports rather than closes. Its worktree, if it has one, still writes the same journal.
 - **Lets the agent work on its own.** Switch a to-do list to auto and the agent works
   through it, decides what it can, parks the questions it cannot answer, and stops when
   everything left needs you. Answer from your terminal and it picks up where it left off.
@@ -114,17 +120,35 @@ session; a switch from a terminal moves where new sessions start, and says which
 sessions stayed where they were and how to move one along. One running session works a
 environment: a second session that lands on a taken environment is told, and switches.
 
-### Preparing and handing off
+### Preparing work, and lending it to subagents
 
-When you ask for it, the agent prepares an environment for an issue or PR: the source
-as a doc with its files attached, a plan and its steps from two agents, pins for what
-must hold, and one to-do per unit of work. `journal environments "<name>"` is the page
-whoever picks it up reads first. `journal handoff "<name>" "<source>"` has agents do
-all of it: the agent dispatches one hand-off subagent, which plans with agents of its
-own, fills the environment and validates it, then one runner — in its own worktree, so
-two runs never edit one checkout, and sharing this journal, so the record stays one. What a hand-off means is
-`.journal/handoff.md`, yours to edit. `journal delegate "<name>"` lets any subagent work
-an environment with the journal and the hooks on, so its work is filed like a session's.
+When you ask for it, the agent prepares an environment for an issue or PR: the source as a
+doc with its files attached, a plan and its steps, pins for what must hold, and one to-do
+per unit of work. `journal prepare "<name>"` creates it and switches to it;
+`journal environments "<name>"` is the page whoever picks it up reads first.
+
+A subagent cannot be detected — its shell carries the dispatching session's id, so nothing
+downstream can tell the two apart. What cannot be detected can be lent.
+`journal grant "<name>"` lends an environment to this session's subagents without moving
+the session itself, and prints the sentence to paste into the dispatch. The subagent
+declares the same grant back with `--env="<name>"` on every command, and the hook holds the
+two against each other at one door.
+
+A lent agent gets a **sub-environment**: its own work ledger under that environment, and
+the environment's pins and reminders read-only. It cannot write a pin, a rule, a doc or a
+tool, and it cannot switch environments — it reports upward and the session that dispatched
+it decides. `journal assign <n> --to="<agent>"` hands it one to-do; a held row leaves
+everyone else's list while that agent is alive, and it may report the row finished but
+never close it. Two subagents on one environment keep separate ledgers, so neither can
+close the other's work.
+
+### Reminders
+
+An instruction you want the agent told again — not once at the start, where it is read and
+then drifted from. A reminder is repeated at every stop and every 50 tool calls, for as
+long as it stands. `journal reminders add "<the instruction>"` writes one, with an optional
+`--until="<condition>"` the agent itself judges; `journal reminders done <n> "<why>"`
+retires it.
 
 ### Tags
 
@@ -187,6 +211,13 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal rules strike <n> "<why>"     retire a rule (also: `journal rule --strike <n> "<why>"`)
     journal nothing "<why>"              after a context warning: nothing to pin (agent)
 
+### Reminders
+
+    journal reminders                    what is being repeated at every stop
+    journal reminders add "<instruction>"   repeat it; --until="<condition>" the agent judges itself
+    journal reminders done <n> "<why>"   stop repeating it
+    journal reminders move <n> <env>     move one to another environment
+
 ### Docs
 
 `<doc>` is a doc's number or its name.
@@ -232,16 +263,20 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal switch "<name>" --session=<id>   move one running session; --all-sessions moves all
     journal switch --back                the environment this session came from
     journal claim "<name>" "<why>"       take one a live session still holds: it is unbound and told at its next stop why, by whom, and how to take it back
-    journal environments switch|claim|prepare|delegate|handoff …   the noun+verb twin of each; both spellings call the same function
+    journal environments switch|claim|prepare|grant …   the noun+verb twin of each; both spellings call the same function
     journal environments "<name>"        the pickup page of one environment
     journal prepare "<name>"             create an environment for a piece of work and switch to it (agent)
-    journal delegate "<name>" | --off    this session and its subagents act on it; a subagent journals there (agent)
-    journal handoff "<name>" "<source>"  an environment made ready by agents; --run for the runner's prompt (agent)
+    journal grant "<name>"               lend it to this session's subagents; this session does not move (agent)
+    journal grant                        what this session has lent; --off "<name>" takes it back (agent)
+    journal assign <n> --to="<agent>"    hand one to-do to one lent agent; --off gives it back (agent)
+    journal todos report <n> "<how>"     a lent agent says a row is finished; the parent closes it (agent)
     journal --env=<name> <command>       any command on a named environment, without switching
     journal loop set                     this session has a loop running the hook cannot see (agent)
     journal settings                     every setting and where it came from
     journal version                      the installed version; is a newer one out?
     journal update                       pull the latest journal and print what changed
+    journal cleanup                      what in the record has evidence against it; `cleanup read` is the half no check can do
+    journal migrate                      move a record written by an older version; ordinary commands do it on their way through
 
 ## The tags you will see
 
@@ -279,13 +314,20 @@ without anyone filing anything.
 
 At a stop these form a queue: one subject per stop, each once per turn, in priority
 order (environment, loop, context, deferral, untagged, work, auto), until nothing is pending.
-Every hold names its way out. Subagents are outside all of it: they cannot write the
-journal, are never held, and are handed the rules on their first tool call.
+Every hold names its way out.
+
+A subagent is never held and never nudged — a hold on an actor with no conversation to
+return to is a hold nobody reads. It writes nothing at all unless the session that
+dispatched it ran `journal grant`, and then only inside what it was lent: its own work
+ledger and the to-dos assigned to it. Rules, docs, tools and environment switches are
+refused with the reason, because each of those writes where every session reads.
 
 ## Where things live
 
-    .journal/record.json      pins, rules, work, environments — committed
-    .journal/todo/<environment>/    one file per to-do — committed
+    .journal/record.json      rules, the environment registry, session bookkeeping — committed
+    .journal/environments/<name>/   one folder per environment — committed
+        pins.json  work.json  reminders.json  todo/<one file per to-do>
+        agents/<id>/work.json       a lent subagent's own ledger
     .journal/tools/<name>/    a tool.md and its script — committed
     .journal/docs/            the docs, one folder each — committed
     .journal/settings.json    only what you changed from the defaults
@@ -322,6 +364,12 @@ the checked-out copy of `.journal/` is replaced with a symlink to the main check
 so both read and write one record; a copy with local changes is left alone and the main
 journal is used instead, until `journal worktree link` replaces it.
 
+A subagent working in a worktree of its own is covered by the same mechanism, and nothing
+extra is needed for it: no session start fires for a subagent, so the linking happens on
+its **first tool call** — the same event that tells it its name. Its ledger, its claim on a
+to-do and its report all land in the main checkout's record. The worktree decides where its
+files are and the grant decides what it may write; the two are independent.
+
 ## Settings
 
 `.journal/settings.json` holds only what you change; everything else is at its default.
@@ -337,7 +385,9 @@ journal is used instead, until `journal worktree link` replaces it.
     attach_hint_reads    reads of a non-source file in one session before the attach hint, default 2
     bind_on_start        bind a new session to the project's start environment, default false;
                          false means it starts on none and chooses from the first prompt
-    one_session_per_track   a second session on a taken environment is told to switch, default true
+    one_session_per_environment  a second session on a taken environment is told to switch, default true
+    reminder_every       tool calls between reminder firings, default 50
+    builtin_rules        the rules the journal itself ships, default true
     session_stale_hours  hours without a hook event before a session counts as gone, default 24
     stop_priority        the order of the stop queue by subject, e.g. {"work": 1}; lower first
     docs_dir             where docs live, default .journal/docs

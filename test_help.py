@@ -349,5 +349,18 @@ check("the block wraps every reminder inside the width",
 check("and puts a blank line between them, and after the heading",
       (_blk.splitlines()[1] == "", _blk.count("\n\n")), (True, 3))
 
+# ─────────── the README documents the CLI that exists ──────────────────────────────────────
+# It described `handoff` and `delegate` as live features for two releases after they were
+# deleted, and knew nothing of grants, reminders or sub-environments. Documentation drifts
+# silently — nothing fails when it goes stale — so the one part a check CAN make is that
+# every command it prints is a command, and no retired name is presented as one.
+_readme = (SRC / "README.md").read_text()
+_named = sorted({m.group(1) for m in __import__("re").finditer(r"^\s*journal ([a-z][a-z-]*)",
+                                                             _readme, __import__("re").M)})
+check("every `journal <verb>` the README prints is one the CLI answers",
+      [v for v in _named if not _h.lines(v) and v not in ("is", "knows", "help")], [])
+check("and no retired command is presented as a live one",
+      [v for v in _h.RETIRED if v in _named], [])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
