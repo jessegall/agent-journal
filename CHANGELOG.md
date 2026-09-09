@@ -4,6 +4,24 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.42.1 — a wait that names what it waits on survives a write about something else
+
+`work await` ends on the first write, on the reasoning that nothing still blocked edits a
+file. That is right about the common case and wrong about the case awaiting actually
+creates. Measured in this project's own session: it awaited a dispatched agent, shipped a
+release while the agent ran — commits, a version bump, four to-dos closed — and the wait was
+cancelled by its own writes; the next stop then asked about work that was still genuinely in
+flight. "Nothing still blocked edits a file" is true of the session's OTHER work and says
+nothing about this piece, and a wait cancelled by an unrelated write punishes exactly the
+behaviour awaiting was built to allow.
+
+A wait with `--agent=` or `--pid=` already had three endings that are not somebody typing:
+the clock, the process exiting, and an explicit `work update`/`work end` on that subject. It
+keeps those and gives up the fourth. A wait that names nothing — "waiting on the build",
+with nothing to check — still ends on the first write, because for that one a write really
+is the only signal there is. The two are told apart in the sentence `await` prints, so the
+reader knows which kind they just filed.
+
 ## 1.42.0 — the journal is found by walking up, and a new worktree is handed one
 
 THE LAYOUT THIS BROKE ON IS ORDINARY AND IN DAILY USE:
