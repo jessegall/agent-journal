@@ -40,6 +40,42 @@ with a flag in front of it — `journal --env=x pins add` passed every gate in t
 
 A grant dies with its session, which was a sentence before it was a fact.
 
+A LENT AGENT GETS A SUB-ENVIRONMENT, NOT A SHARE OF ONE. Two subagents on the same
+environment used to write one `work.json` between them, so either could close the other's
+declaration by saying its words. Work is now per-agent —
+`environments/<lent>/agents/<id>/work.json` — and only work is: pins and reminders stay the
+parent's, read-only, which is what keeps the inheritance one-directional instead of a
+cascade with two places to look. A subagent still cannot write a pin.
+
+    journal assign <n> --to="<agent>"     hand a to-do to one agent; --off gives it back
+    journal todos start <n> --as=<agent>  claim an unheld row and start it
+    journal todos report <n> "<how>"      say it is finished; the parent closes it
+
+A held row leaves the ready list, so nobody else is offered it, and the hold lapses on a
+heartbeat rather than a promise, because nothing can tell us a subagent died. It may report
+and it may never close: a runner that ticks its own box is a failure this project has
+already watched happen.
+
+The agent is TOLD ITS OWN NAME, once, on its first tool call — the CLI cannot see
+`agent_id` and the hook can, so the hook answers on the tool's result. `PreToolUse` cannot
+carry `additionalContext` in this harness, measured, whatever the reference claims.
+
+STARTING A ROW CLAIMS IT. Found by dogfooding: a subagent started a to-do, worked it, and
+was refused by `report` for holding nothing, because `started` and `assigned` were two
+facts and only a dispatcher set the second. The row it was working stayed offerable to
+anyone the whole time. `start` claims through `assign` now — one funnel for the hold, so
+the refusal is the same sentence whichever door it came in by.
+
+A SUBAGENT IN A WORKTREE OF ITS OWN WRITES THE ONE RECORD, and nothing had to change for
+that to be true. Nothing fires a `SessionStart` for a subagent, so the linking of a
+worktree's checked-out `.journal` cannot depend on one — `resolve` runs at the import of
+`hook.py`, so its FIRST TOOL CALL is both the event that names it and the event that
+replaces the copy with a symlink. Its ledger, its claim and its report land in the main
+checkout; the grant still refuses a rule from inside the worktree; git there sees nothing
+of `.journal`. The worktree decides where its files are and the grant decides what it may
+write — two mechanisms that do not know about each other, which is why they met without
+incident.
+
 ALSO IN THIS RELEASE
 
 `builtin.py` ships the journal's own rules — one today, that a subagent runs on the
