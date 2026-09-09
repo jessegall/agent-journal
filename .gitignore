@@ -26,5 +26,11 @@ __pycache__/
 /record.json
 /record.json.lock
 
+# AND THE RUNTIME MARKS OF ANY PROCESS THAT RAN THE PACKAGE IN PLACE. `.journal/runtime/`
+# is ignored above; the package root has its own `runtime/` for the same reason, and a
+# session or a probe that imported `hook.py` from a checkout leaves a file in it. They are
+# line numbers of one transcript on one machine and mean nothing anywhere else.
+/runtime/*.json
+
 # the IDE's own folder, never this project's
 /.idea

@@ -1140,5 +1140,19 @@ if rB is not None:
           (tookP, "Why it holds." in _pins.body(rB, len(_pins._all(rB, _pins.RULES)), _pins.RULES)),
           (True, True))
 
+# ─────────── the loose-markdown hint fires on a WRITE, not on a `.md` in a string ─────────
+# It matched the `>` inside a placeholder — `environments/<lent>/todo/NNN-*.md` in a
+# docstring — and told the reader they had written a loose file. A hint that fires on prose
+# teaches the reader to skim the next one that is right.
+_ctx = type("C", (), {"stem": "md-probe", "path": None})()
+_dir = Path(tempfile.mkdtemp()); (_dir / "real.md").write_text("x")
+for _cmd, _want, _why in (
+        (f"echo x > {_dir / 'real.md'}", True, "a redirect whose file is there"),
+        (f"echo x > {_dir / 'never.md'}", False, "a redirect that wrote nothing"),
+        ("echo 'echo x > notes.md'", False, "the same characters inside a quoted string"),
+        ("echo 'environments/<lent>/todo/NNN-1.md'", False, "a placeholder's angle bracket")):
+    _got = hook._raw_markdown({"silenced": []}, {"tool_name": "Bash", "tool_input": {"command": _cmd}}, _ctx)
+    check(f"the markdown hint on {_why}", bool(_got), _want)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

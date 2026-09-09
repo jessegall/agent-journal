@@ -179,6 +179,9 @@ out = fire("PostToolUse", tool_name="Edit", tool_input={"file_path": str(d / ".j
 check("editing a catalogued doc by hand is not hinted", out.strip(), "")
 out = fire("PostToolUse", tool_name="Write", tool_input={"file_path": str(d / "README.md")}, tool_response="ok")
 check("a README is not hinted", out.strip(), "")
+# THE HINT FIRES ON A WRITE THAT HAPPENED, so the fixture has to do what the redirect
+# would have done — the hook runs after the tool and looks for the file.
+(d / ".journal" / "docs" / "plan.md").write_text("x")
 out = fire("PostToolUse", tool_name="Bash", tool_input={"command": "cat > .journal/docs/plan.md <<'EOF'\nx\nEOF"}, tool_response="")
 check("a bash redirect into a markdown file is hinted", ".journal/docs/plan.md" in out, True)
 out = fire("PostToolUse", tool_name="Bash", tool_input={"command": ".journal/journal.py docs add x --brief < notes.md"}, tool_response="")

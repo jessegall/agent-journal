@@ -1393,7 +1393,13 @@ def _deny(reason: str) -> int:
     return 0
 
 
-_MD_WRITE = re.compile(r"(?:>>?|tee(?:\s+-a)?)\s*['\"]?([^\s'\"|;&]+\.md)\b")
+#: A REDIRECT, NOT ANY `>`. This matched the `>` inside a PLACEHOLDER — `environments/
+#: <lent>/todo/NNN-*.md`, written in a docstring — and told the reader they had written a
+#: loose markdown file. A shell redirect is preceded by whitespace or starts the command;
+#: a `>` closing an angle-bracket placeholder is preceded by a word character. One
+#: character of context separates a hint that is right from one that teaches the reader to
+#: skim every hint after it.
+_MD_WRITE = re.compile(r"(?:^|\s)(?:>>?|tee(?:\s+-a)?)\s*['\"]?([^\s'\"|;&]+\.md)\b")
 
 
 def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
@@ -1421,6 +1427,13 @@ def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
             return None
         m = _MD_WRITE.search(cmd)
         path = m.group(1) if m else ""
+        # AND THE FILE HAS TO BE THERE. A regex cannot tell a redirect the shell RAN from
+        # the same characters sitting inside a quoted string or a heredoc — `echo "x >
+        # notes.md"` writes nothing and reads identically. This runs after the tool did,
+        # so it can stop guessing and look: no file, no write, no hint.
+        if path and not (Path(path) if Path(path).is_absolute()
+                         else ROOT.parent / path).is_file():
+            return None
     if not path.endswith(".md"):
         return None
     try:
