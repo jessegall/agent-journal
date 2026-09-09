@@ -47,6 +47,7 @@ import docs  # noqa: E402
 import fmt  # noqa: E402
 import nudges  # noqa: E402
 import pins  # noqa: E402
+import reminders  # noqa: E402
 import work  # noqa: E402
 import todo  # noqa: E402
 import tools  # noqa: E402
@@ -355,10 +356,31 @@ def _still_raised(conf: dict, ctx: Ctx, lines, active: bool) -> dict:
 
 
 def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
+    # REMINDERS COME FIRST AND SPEND NOTHING. The queue below raises ONE subject per stop
+    # on purpose, and a reminder must not be able to lose that race: the whole point of it
+    # is that it is said EVERY time, so it is folded into whatever the stop was going to
+    # say — the hold's line, the context-only note, or nothing at all — rather than
+    # competing for the slot. It also survives `hold_stop_on_untagged: false`, which turns
+    # the queue off and was never a statement about what the user asked to be told again.
+    _REMIND[:] = []
+    # ONCE PER STOP CHAIN, NOT ONCE PER STOP EVENT. "Every stop" was measured against a
+    # live session and the measurement said something the design had not: a Stop that
+    # returns anything is re-entered with `stop_hook_active`, so a reminder that spoke
+    # unconditionally answered its own re-entry and woke the session again with nobody
+    # asking for anything. The queue's subjects already draw this line — the flag is what
+    # tells a fresh stop from the tail of one being worked — and a reminder has to draw it
+    # too. It still costs the queue nothing and still cannot be starved by it; it is said
+    # at the head of every chain, which is what "at every stop" meant to the person who
+    # asked for it.
+    if "reminders" not in conf["silenced"] and not payload.get("stop_hook_active"):
+        said = reminders.block(ROOT)
+        if said:
+            _REMIND[:] = [said, reminders.system_line(ROOT)]
+            state.put(ROOT, "since_remind", 0, stem=ctx.stem)   # just said; the count restarts
     if not conf["hold_stop_on_untagged"] or "untagged" in conf["silenced"]:
-        return 0
+        return _remind_only()
     if ctx.path is None:
-        return 0
+        return _remind_only()
     _HOLD_CTX[:] = [ctx.stem]
     active = bool(payload.get("stop_hook_active"))
     lines, boundaries = transcript.read(ctx.path)
@@ -376,7 +398,8 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
         raised[subject] = lines[-1].n if lines else 0
         state.put(ROOT, "raised_this_turn", raised, stem=ctx.stem)
         if hold[0] == "context-only":
-            return _context("Stop", hold[1])
+            text, line = _remembering(hold[1])
+            return _context("Stop", text, system=line)
         return _hold(*hold)
     if not active:
         state.put(ROOT, "raised_this_turn", {}, stem=ctx.stem)
@@ -389,18 +412,18 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
             latest = update.check(ROOT).get("version", "")
             if latest and latest != state.get(ROOT, "update_said", "", stem=ctx.stem):
                 state.put(ROOT, "update_said", latest, stem=ctx.stem)
-                return _context("Stop", note + " Run it now if nothing is mid-flight: "
-                                "`.journal/journal.py update`.")
+                text, line = _remembering(note + " Run it now if nothing is mid-flight: "
+                                          "`.journal/journal.py update`.")
+                return _context("Stop", text, system=line)
     if not work.open_work(ROOT) and not todo.auto(ROOT, here):
         ids = sorted(t["n"] for t in todo.open_items(ROOT, here))
         if ids and ids != state.get(ROOT, "todos_said", [], stem=ctx.stem):
             state.put(ROOT, "todos_said", ids, stem=ctx.stem)
-            return _context(
-                "Stop",
+            text, line = _remembering(
                 f"journal: {len(ids)} to-do(s) waiting on environment `{here}` (`journal todo`). "
-                "Delayed work, not an instruction to start any of it — the user decides.",
-            )
-    return 0
+                "Delayed work, not an instruction to start any of it — the user decides.")
+            return _context("Stop", text, system=line)
+    return _remind_only()
 
 
 #: THE SUBJECTS OF THE STOP QUEUE. Each returns None when nothing is pending, a
@@ -1622,6 +1645,29 @@ def _response_size(payload: dict) -> int:
     return len(json.dumps(r)) if r is not None else 0
 
 
+def _reminder_due(conf: dict, ctx: Ctx) -> str:
+    """Every `reminder_every` tool calls, the standing reminders again — or "".
+
+    THE COUNTER IS PER SESSION AND IT IS RESET BY THE STOP, so the interval measures the
+    distance from the last time the agent actually saw them rather than from an arbitrary
+    origin. With nothing standing it is held at zero: a reminder added mid-session then
+    gets its full interval instead of firing on whatever the count happened to be.
+    """
+    every = conf["reminder_every"]
+    if not every or "reminders" in conf["silenced"]:
+        return ""
+    said = reminders.block(ROOT)
+    if not said:
+        state.put(ROOT, "since_remind", 0, stem=ctx.stem)
+        return ""
+    n = state.get(ROOT, "since_remind", 0, stem=ctx.stem) + 1
+    if n < every:
+        state.put(ROOT, "since_remind", n, stem=ctx.stem)
+        return ""
+    state.put(ROOT, "since_remind", 0, stem=ctx.stem)
+    return said
+
+
 def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     """Say what a tool call cost, at the moment it cost it — and almost never say it.
 
@@ -1651,6 +1697,14 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     closed = _closed_by_commit(conf, payload, ctx)
     if closed:
         return _context("PostToolUse", closed, system=closed.replace("\n  ", " · "))
+    # THE OTHER HALF OF A REMINDER. The stop says it every time, and between two stops
+    # there can be an hour of tool calls — which is exactly the stretch the user wrote the
+    # reminder about. Agent-only here, deliberately: the stop is where the person gets
+    # their confirmation, and the same line in their terminal every fifteen calls is the
+    # wall of repetition this package refuses everywhere else.
+    due = _reminder_due(conf, ctx)
+    if due:
+        return _context("PostToolUse", due)
     # THE CONTEXT LADDER, MID-WORK. Only with the window set: a tail reading has no peak
     # to infer one from, and the ladder never climbs a guess.
     window = conf["context_window"] or (state.get(ROOT, "window", 0) or 0)
@@ -1703,6 +1757,28 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
 
 _HOLD_CTX: list = []   # the transcript stem of the hold in flight, set by on_stop
 
+#: THE STOP'S REMINDER IN FLIGHT: [what the agent reads, the one line the user sees].
+#: Set by `on_stop` before the queue runs and read by everything that answers that stop,
+#: so a reminder rides along with a hold instead of competing with it for the single slot.
+_REMIND: list = []
+
+
+def _remembering(text: str = "") -> tuple[str, str | None]:
+    """Fold this stop's reminder into whatever else the stop was going to say."""
+    if not _REMIND:
+        return text, None
+    said, line = _REMIND
+    return (said + ("\n\n" + text if text else "")), line
+
+
+def _remind_only() -> int:
+    """The stop had nothing else to say, and the reminder is reason enough to speak."""
+    if not _REMIND:
+        return 0
+    text, line = _remembering()
+    return _context("Stop", text, system=line)
+
+
 
 def _hold(label: str, brief: str, text: str = "") -> int:
     """Hold the stop: a small label for the user, the instruction and reasoning for the agent.
@@ -1745,7 +1821,17 @@ def _hold(label: str, brief: str, text: str = "") -> int:
     body = brief[len("journal: "):] if brief.startswith("journal: ") else brief
     if body.lower().startswith(label.lower()):
         body = body[len(label):].lstrip(" —-:,")   # the label is the body's own first words: once
-    print(json.dumps({"decision": "block", "reason": f"journal: {label} — {body}"}))
+    out: dict = {"decision": "block", "reason": f"journal: {label} — {body}"}
+    # THE ONE THING THAT IS ALLOWED TO MAKE THIS LONGER. Everything above is the argument
+    # for a hold being a single line in the user's terminal; a reminder is the exception
+    # they asked for, because they wrote it and seeing it come back is the confirmation
+    # that the agent was in fact reminded. The instruction itself goes to the agent in the
+    # field the harness folds away, so the terminal gets one added line, not the block.
+    if _REMIND:
+        out["reason"] = _REMIND[1] + "\n" + out["reason"]
+        out["hookSpecificOutput"] = {"hookEventName": "Stop",
+                                     "additionalContext": fmt.block(_REMIND[0])}
+    print(json.dumps(out))
     return 0
 
 
@@ -1861,6 +1947,12 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
         "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in "
         "this session, and again whenever a hook holds or denies you."
     ]
+    # REMINDERS LEAD. A rule is a constraint and a pin is a fact; a reminder is the thing
+    # the user has already had to say more than once, and a start — or the far side of a
+    # compaction — is the exact moment it was in danger of being lost.
+    repeated = reminders.block(ROOT)
+    if repeated:
+        parts.append(repeated)
     # RULES BEFORE PINS. A rule binds every environment, so a reader meets the constraints
     # before the facts of the one environment they happen to be on.
     ruled = pins.carry(ROOT, source, key=pins.RULES)

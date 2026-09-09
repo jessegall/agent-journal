@@ -301,12 +301,18 @@ check("an environment a live session is on is not removed", took, False)
 check("and the holder is named", "livestem"[:8] in msg, True)
 
 
-J = str(SRC / "journal.py")
+# A SEPARATE NAME, BECAUSE `J` IS THE FIXTURE'S. This block deliberately runs the package
+# in place — help must answer with no record anywhere — and for a while it did that by
+# rebinding `J` and never putting it back, so every `run_cli` AFTER it wrote to whatever
+# journal the developer's shell happened to be standing in. It left `moved-to` and
+# `moved-from` environments and a doc called "a design that moves" in this repo's own
+# record, which is a test suite editing the thing it is testing.
+HELP_J = str(SRC / "journal.py")
 HELP_CWD = tempfile.mkdtemp()   # no record anywhere above it: help must not need one
 
 
 def helped(verb):
-    p = subprocess.run([sys.executable, J, verb, "help"], cwd=HELP_CWD,
+    p = subprocess.run([sys.executable, HELP_J, verb, "help"], cwd=HELP_CWD,
                        capture_output=True, text=True, timeout=60)
     return p.returncode == 0 and "No such command" not in p.stdout + p.stderr
 

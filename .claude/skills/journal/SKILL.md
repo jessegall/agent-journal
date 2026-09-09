@@ -213,6 +213,39 @@ the claim rather than erasing it — `journal rules --all` and `journal pins --a
 show it — so being wrong is cheap and leaving a dead rule standing is not. `pins add
 "<the claim now>" --supersedes=<n>` when it is right but out of date.
 
+## When you keep having to be told: the reminder
+
+    journal reminders add "<the instruction>"                 said again at EVERY stop
+    journal reminders add "<…>" --until="<the condition>"     …until you judge that true
+    journal reminders                                         what is being repeated here
+    journal reminders done <n> "<what made it true>"          retire one; the reason is required
+    journal reminders move <n> "<env>"                        it belongs to an environment, like a pin
+
+**A pin is told once; a reminder is told again.** Everything else in the record is handed
+over at a start and on the far side of a compaction, and then it sits in a window that
+grows by tens of thousands of characters an hour — an instruction fifty tool calls back is
+read with less weight than the result that just landed. That is drift, and it is not
+solved by pinning harder. A reminder is the one channel here that repeats: it is said at
+every stop, ahead of the stop queue and without spending its one slot, and again every
+`reminder_every` tool calls (15 by default) in between.
+
+**Write one when the user has had to say something twice**, or says it in a way that means
+*keep doing this*: "always run the suites first", "stop asking me before you commit",
+"check the shipped skill copy after every edit". If the next reader would merely be
+*wrong* without it, that is a pin. If *you* will be wrong about it again in an hour, that
+is a reminder. If neither, it is a message, and a message is free.
+
+**The user sees it too, and that is the point.** They wrote it; the line that comes back at
+each stop is how they know it landed. So keep it to the instruction — the cap is tighter
+than a pin's, and the reasoning behind it belongs in a pin or a doc.
+
+**`--until` is prose, and YOU are what evaluates it.** Nothing in the CLI can check "the
+migration tests pass on CI" — the condition is handed back to you at every firing, and you
+retire the reminder yourself the moment it reads true, the way you strike a stale rule and
+without asking. The reason is required and the text stays under `--all`, so being wrong
+costs one line to undo. Nothing here ever expires on its own: a reminder the user wrote
+and nobody retired is one they are still owed.
+
 ## Delayed work: the to-do
 
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)

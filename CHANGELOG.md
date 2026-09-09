@@ -4,6 +4,43 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.36.0 — an instruction you keep having to give is said back to you
+
+A pin is told once. Every channel in this package hands the record over at a start and on
+the far side of a compaction, and then it sits in a window that grows by tens of thousands
+of characters an hour — an instruction fifty tool calls back is read with less weight than
+the result that just landed. That is drift, and pinning harder does not fix it.
+
+    journal reminders add "<the instruction>"                 said again at EVERY stop
+    journal reminders add "<…>" --until="<the condition>"     …until the agent judges that true
+    journal reminders                                         what is being repeated here
+    journal reminders done <n> "<what made it true>"          retire one; the reason is required
+    journal reminders move <n> "<env>"                        it belongs to an environment, like a pin
+
+A reminder is the ONE thing here that repeats. The stop queue raises one subject per stop
+on purpose — a wall of reminders is read past as one — so a reminder does not join it: it
+is folded into whatever the stop was already going to say, and it survives
+`hold_stop_on_untagged: false`, which turns the queue off and was never a statement about
+what the user asked to be told again. Between two stops there can be an hour of tool
+calls, which is the stretch the reminder was written about, so it comes back every
+`reminder_every` calls (15; 0 leaves it to the stop) — agent-only at that cadence.
+
+AND THE USER SEES IT AT THE STOP. Every other hook line is the agent's business rendered in
+somebody else's terminal, which is why a hold was cut to one line. This is the exception:
+they wrote it, and the line coming back is the confirmation it landed. The instruction goes
+to the agent in the field the harness folds away, so the terminal gets one added line.
+
+`--until` IS PROSE AND THE AGENT IS WHAT EVALUATES IT. Nothing in here can check "the
+migration tests pass on CI", and a condition language would only ever cover the conditions
+somebody thought to implement. The condition is handed back at every firing and the agent
+retires the reminder itself, the way it strikes a stale rule. Nothing expires on its own:
+the reason is required, the text stays under `--all`, and a reminder the user wrote and
+nobody retired is one they are still owed.
+
+Reminders belong to an environment, like pins — `reminder_max_chars` caps one (200, tighter
+than a pin's, because it is re-read dozens of times in a session), and `silenced:
+["reminders"]` turns both halves off.
+
 ## 1.35.0 — a claim keeps its reasoning, and `show` reads its noun
 
 A rule is one line because it is re-read in full at every session start, every compaction,

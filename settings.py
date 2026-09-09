@@ -79,6 +79,18 @@ DEFAULTS = {
     # Messages either side of a pin that `journal pins <n> --full` shows.
     "pin_context": 4,
 
+    # HOW OFTEN A REMINDER COMES BACK MID-TURN, in tool calls. A reminder is shown at
+    # every stop unconditionally; this is the other half, for the long agentic stretch
+    # where the next stop is an hour away and the instruction is fifty results back.
+    # Agent-only at this cadence — the same line in the user's terminal every fifteen
+    # calls is the wall the stop queue exists to avoid. 0 leaves reminders to the stop.
+    "reminder_every": 15,
+
+    # THE CAP ON ONE REMINDER, in characters — tighter than a pin's, because a pin is
+    # re-read at every compaction and a reminder is re-read dozens of times in one
+    # session. What does not fit in a line is a briefing, not an instruction. 0 removes it.
+    "reminder_max_chars": 200,
+
     # THE RUNGS AT WHICH THE CONTEXT NUDGE FIRES, each one once. A single warning could not
     # be both early enough to think in and late enough to feel urgent, so it is a ladder:
     # 50% is the cheap moment to decide what must outlive the window, 95% is the last word.

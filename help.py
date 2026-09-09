@@ -56,6 +56,15 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal rules replace N --brief   replace the reasoning outright; the old text goes to struck/",
         'journal rules strike N "<why>"   repeal a rule that stopped being true — `journal rule --strike N "<why>"` is the same',
     ),
+    "reminders": (
+        'journal reminders add "<instruction>" [--until="<condition>"]   an instruction said again at EVERY stop, and every reminder_every tool calls, until it is retired',
+        'journal reminder "<…>" / journal remind   the same noun; both are permanent aliases of `reminders`, never deprecated',
+        "journal reminders [--all] [--page=N] [--order=asc|desc]   what is being repeated, numbered, newest first — the number never shifts",
+        'journal reminders done N "<what made it true>"   retire one; the reason is required, and the text stays under --all',
+        'journal reminders move N "<environment>"   a reminder belongs to an environment, like a pin',
+        "--until is PROSE, and you are what evaluates it: it is read back at every firing and you retire the reminder yourself the moment it is true",
+        "settings: reminder_every (tool calls between mid-turn repeats, 0 for stops only), reminder_max_chars, silenced: [\"reminders\"]",
+    ),
     "todos": (
         'journal todos add "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this environment; --brief reads a longer brief from stdin',
         'journal todo "<title>"        the same command; `todo` and `todos` are twins everywhere',
@@ -158,6 +167,7 @@ ALIAS: dict[str, str] = {
     "pin": "pins", "remember": "pins", "promote": "pins", "strike": "pins",
     "nothing": "pins",
     "rule": "rules",
+    "reminder": "reminders", "remind": "reminders",
     "todo": "todos",
     "tidy": "cleanup",
     "tracks": "environments", "track": "environments",
