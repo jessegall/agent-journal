@@ -166,6 +166,58 @@ _st = subprocess.run(["git", "status", "--porcelain"], cwd=str(side), capture_ou
 check("and git in the worktree sees nothing of .journal",
       [l for l in _st.splitlines() if ".journal" in l], [])
 
+# ─────────── a SUBAGENT in a worktree of its own ──────────────────────────────────────────
+# NOTHING FIRES A SessionStart FOR A SUBAGENT, so the linking cannot depend on one. Its
+# first tool call is the first thing that reaches this checkout at all, and `resolve` runs
+# at the import of hook.py — so the same event that tells it its name is the one that
+# replaces the copy. If that were not true a subagent would work a SECOND record: its
+# ledger, its report and its pins would land in a directory the parent never reads and
+# `git status` in the worktree would carry them.
+far = wt_main.parent / "far"
+subprocess.run(["git", "worktree", "add", "-q", str(far), "-b", "far"], cwd=wt_main, capture_output=True)
+check("the worktree starts as a plain copy",
+      ((far / ".journal").is_dir(), (far / ".journal").is_symlink()), (True, False))
+_AID = "wa77"
+_p = subprocess.run([sys.executable, str(far / ".journal" / "hook.py")], cwd=str(far),
+                    input=json.dumps({"hook_event_name": "PostToolUse", "session_id": "m1",
+                                      "transcript_path": str(_td / "m1.jsonl"), "agent_id": _AID,
+                                      "tool_name": "Bash", "tool_input": {"command": "ls"},
+                                      "tool_response": {"stdout": ""}}),
+                    env=wt_env, capture_output=True, text=True, timeout=60)
+_ctx = (json.loads(_p.stdout or "{}").get("hookSpecificOutput") or {}).get("additionalContext", "")
+check("its first tool call tells it its name AND links the copy",
+      (f"YOU ARE AGENT `{_AID}`" in _ctx, (far / ".journal").is_symlink(),
+       (far / ".journal").resolve() == (wt_main / ".journal").resolve()), (True, True, True))
+
+
+def _far(*a):
+    r = subprocess.run([sys.executable, str(far / ".journal" / "journal.py"), "--env=scout",
+                           f"--as={_AID}", *a], env=wt_env, capture_output=True, text=True,
+                       cwd=str(far), timeout=60)
+    return r.stdout + r.stderr
+subprocess.run([sys.executable, _J, "--env=scout", "todos", "add", "the row it was sent for"],
+               env=wt_env, capture_output=True, cwd=str(wt_main))
+_started = _far("todos", "start", "1")   # `start` opens the work too; that is the funnel
+check("it claims and starts the row from the worktree", "held for `wa77`" in _started, True)
+check("and reports it finished, still unable to close",
+      ("reported finished" in _far("todos", "report", "1", "done in the worktree")), True)
+check("its ledger is under the MAIN checkout, in its own folder",
+      json.loads((wt_main / ".journal" / "environments" / "scout" / "agents" / _AID /
+                  "work.json").read_text())["work"][0]["subject"], "the row it was sent for")
+check("the parent, in the main checkout, sees the report",
+      [t["n"] for t in __import__("todo").reported(wt_main / ".journal", "scout")], [1])
+_deny = subprocess.run([sys.executable, str(far / ".journal" / "hook.py")], cwd=str(far),
+                       input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "m1",
+                                         "transcript_path": str(_td / "m1.jsonl"), "agent_id": _AID,
+                                         "tool_name": "Bash",
+                                         "tool_input": {"command": f'{far}/.journal/journal.py rule "x"'}}),
+                       env=wt_env, capture_output=True, text=True, timeout=60)
+check("a worktree is no way around the grant: a rule is still refused",
+      "deny" in (_deny.stdout + _deny.stderr).lower(), True)
+check("and git in ITS worktree sees nothing of .journal either",
+      [l for l in subprocess.run(["git", "status", "--porcelain"], cwd=str(far), capture_output=True,
+                                 text=True).stdout.splitlines() if ".journal" in l], [])
+
 # ─────────── the filesystem answers before git is asked ───────────────────────────────────
 # `resolve` runs at the import of journal.py and hook.py — every command, every tool call —
 # and shelled out to `git rev-parse` twice to learn something a stat already knows.
