@@ -105,8 +105,23 @@ for label, cwd in PLACES.items():
     check(f"the command the block prints runs from {label}",
           bool(line) and (Path(cwd) / line.split()[0]).is_file(), True)
 
-# ─────────── one record, whichever place wrote to it ───────────────────────────────────────
+# ─────────── every printed PATH, not only the executable ───────────────────────────────────
+# Found by a dogfood agent three directories down: a to-do's brief ends with the FILE it was
+# written to — `.journal/environments/x/todo/001-….md` — and that resolved only from the
+# project root. Every path this package prints starts with the same four characters, so
+# every one of them was wrong from the same places.
 J = str(base / ".journal" / "journal.py")
+subprocess.run([sys.executable, J, "todos", "add", "a row with a brief"], cwd=str(base),
+               input="the brief", capture_output=True, text=True,
+               env={**os.environ, "CLAUDE_CODE_SESSION_ID": "paths"})
+for label, cwd in PLACES.items():
+    out = subprocess.run([sys.executable, J, "todos", "1"], cwd=str(cwd), capture_output=True,
+                         text=True, env={**os.environ, "CLAUDE_CODE_SESSION_ID": "paths"}).stdout
+    said = [w for w in out.split() if ".journal/" in w and w.endswith(".md")]
+    check(f"the file path a brief prints resolves from {label}",
+          bool(said) and (Path(cwd) / said[0]).is_file(), True)
+
+# ─────────── one record, whichever place wrote to it ───────────────────────────────────────
 for i, (label, cwd) in enumerate(PLACES.items(), 1):
     subprocess.run([sys.executable, J, "todos", "add", f"from {label}"], cwd=str(cwd),
                    capture_output=True, text=True,

@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.42.2 — every printed path, not only the executable
+
+1.42.0 rewrote `.journal/journal.py` to whatever runs from where the reader is standing, and
+a dogfood agent three directories down found the gap the same afternoon: a to-do's brief
+ends with the FILE it was written to — `.journal/environments/x/todo/001-….md` — and that
+resolved only from the project root.
+
+Every path this package prints starts with the same four characters, so every one of them
+was wrong from the same places, and fixing the one that happened to be a command would have
+left the rest to be found one at a time. The rewrite is on the prefix now.
+
 ## 1.42.1 — a wait that names what it waits on survives a write about something else
 
 `work await` ends on the first write, on the reasoning that nothing still blocked edits a
