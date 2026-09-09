@@ -4,6 +4,86 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.39.0 — the start block is a doorway, and three agents found four bugs in the grant
+
+THE BLOCK STOPPED BEING DELIVERED AT ALL. Measured in a real project: 14,996 characters
+against the harness's documented 10,000 ceiling, so the whole of it was replaced with a FILE
+PATH — after every compaction that project's agent was handed a path instead of the record,
+which is the one delivery this package exists to make. 7,014 of those characters were two
+answered to-dos printing the user's answer in full, and no cap could reach them:
+`CARRY_CAPS` bounds the NUMBER of entries and nothing bounded the text inside one, so the
+halving loop hit its floor and gave up.
+
+So the injected block is a DOORWAY: where the session is, what the commands are, how many of
+each thing stands — and the agent reads what it needs.
+
+    journal carry     the full handover, uncapped, on demand
+
+    carried(BRIEF)    what the hook injects        5,067 characters on that same record
+    carried(FULL)     what `journal carry` prints
+
+ONE BUILDER WITH A DEPTH, not two functions: a separately written short version is the thing
+that drifts from the long one. Reminders leave the block entirely — they fire at every stop
+and every `reminder_every` calls, so injecting them paid for the same text twice. The
+answers, and the questions waiting on the user, leave with them; rules, pins and docs keep
+their last three; a counts block names what is left and the command that reads each. AUTO
+SURVIVES AS AN ORDER, not a listing — everything else the doorway drops is readable on
+demand, and a standing order is not readable at all: a session in auto that is not told so
+simply stops.
+
+LENDING MAKES THE ENVIRONMENT IT LENDS. `journal grant "<name>"` refused an unknown name and
+pointed at `prepare`, which CREATES AND SWITCHES — so lending three environments to
+subagents cost six moves of a session whose whole definition is "this session does not
+move". `tracks.create` is now the one place an environment starts, and `switch` and `grant`
+both call it.
+
+PINS AND REMINDERS ARE INHERITED, NEVER WRITTEN, BY A LENT AGENT — the user's ruling, and it
+was neither enforced nor true: both were allowed, and `journal grant` printed `pins add` as
+its example, so the briefing a dispatcher pastes into a prompt taught a command the design
+forbids. The reason is provenance, not blast radius: a pin belongs to one environment
+exactly as work does, but it is re-read in full at every compaction by every session that
+binds there and nothing revisits it, so a claim whose reasoning nobody in the main
+conversation saw would stand in the record's highest-authority position forever.
+
+FOUR BUGS, FOUND BY DOGFOODING. Three sonnet agents were dispatched into three git
+worktrees, each lent its own environment, each given a real refactor. They found:
+
+  THE HOOK TOLD ALL THREE THE WRONG ENVIRONMENT. `agents.briefing` took `lent[0]` — the
+  first environment the session happened to have lent — and stated it as fact, on the first
+  tool call, in the one sentence whose entire purpose is "here is the flag you must put on
+  every command". It is the same failure the refusal had and had already been fixed for: a
+  message that names an environment nobody told this agent to use will be obeyed. With one
+  grant standing it is named; with several it names none and says the dispatch decides.
+
+  `work end` CLOSED A ROW A SUBAGENT MAY ONLY REPORT. `report` refuses to close and says the
+  parent does it; then `work end`, on the subject `todos start` itself opened, closed the
+  same row through `close_titled` — unconditionally, with no idea who was calling. One agent
+  guessed the hint did not apply to it and worked around it; the other followed the
+  documented order exactly and marked its own homework. The guarantee held everywhere it was
+  written down and nowhere it was wired.
+
+  `todos start` WITHOUT `--as=` HELD NOTHING, SILENTLY. "open: …", no complaint, and then
+  `report` refused with "held by nobody" — the command that could have said it said nothing.
+
+  `journal reminders` — A LISTING — HAS COUNTED AS A WRITE for as long as the noun has
+  existed: gated behind open work, and refused outright to a lent agent told to read what it
+  inherits. It was missing from a chain of five `if verb == …: continue` branches. That is a
+  table now, so a noun with no entry is visible rather than silently a write.
+
+WHAT THE AGENTS BUILT
+
+`journal.py:main` is 85 lines, from 515: a flag table and a command table replace ~30
+`elif a == "--x"` branches and ~40 verb branches. Aliases are one row with several names —
+`environments`, `environment`, `envs`, `env`, `tracks`, `track` is one entry, not six.
+
+`entries.listing` is the loop every listing shares once it has its own items, and
+`todo.render`, `docs.catalogue` and `tools.catalogue` fold into it, each supplying only its
+own `facts`. The to-do's meta became `_state` plus a table.
+
+`fmt.notice` is the one shape for the `journal: …` line that six places each spelled
+differently, and `install.py`'s nine raw prints go through `fmt.say` — the installer had
+never touched the formatter at all.
+
 ## 1.38.1 — the duplicate 1.38.0 said it had removed
 
 `reminders.render` was still the hand-written 33-line listing that 1.38.0's entry claimed
