@@ -1656,7 +1656,7 @@ def _reminder_due(conf: dict, ctx: Ctx) -> str:
     every = conf["reminder_every"]
     if not every or "reminders" in conf["silenced"]:
         return ""
-    said = reminders.block(ROOT)
+    said = reminders.block(ROOT, terse=True)   # mid-turn: the instruction, not the manual
     if not said:
         state.put(ROOT, "since_remind", 0, stem=ctx.stem)
         return ""

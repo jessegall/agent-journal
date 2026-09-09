@@ -142,6 +142,19 @@ check("a stop restarts it too — the interval is from when it was last SEEN",
       [R in s5.tool() for _ in range(2)], [False, False])
 check("...and fires on the third after that", R in s5.tool(), True)
 
+# THE REPEATED FORM CARRIES NO FURNITURE. Three lines of scaffolding around one line of
+# instruction, delivered every N tool calls all session, is how a reader is taught to skim
+# the instruction itself.
+sT = S(reminder_every=1, hold_stop_on_untagged=False)
+sT.j("reminders", "add", R, "--until=the release is cut")
+mid = sT.tool()
+check("mid-turn: the instruction and its condition", (R in mid, "the release is cut" in mid), (True, True))
+check("and nothing else — no command, no gloss on what until means",
+      ("journal reminders done" in mid, "without asking" in mid), (False, False))
+seen, read = sT.stop()
+check("the stop's copy still teaches what ends it, once per chain",
+      "journal reminders done" in read, True)
+
 s6 = S(reminder_every=0, hold_stop_on_untagged=False)
 s6.j("reminders", "add", R)
 check("reminder_every 0 leaves it to the stop", [R in s6.tool() for _ in range(5)], [False] * 5)

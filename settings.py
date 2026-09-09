@@ -79,12 +79,21 @@ DEFAULTS = {
     # Messages either side of a pin that `journal pins <n> --full` shows.
     "pin_context": 4,
 
-    # HOW OFTEN A REMINDER COMES BACK MID-TURN, in tool calls. A reminder is shown at
-    # every stop unconditionally; this is the other half, for the long agentic stretch
-    # where the next stop is an hour away and the instruction is fifty results back.
-    # Agent-only at this cadence — the same line in the user's terminal every fifteen
-    # calls is the wall the stop queue exists to avoid. 0 leaves reminders to the stop.
-    "reminder_every": 15,
+    # HOW OFTEN A REMINDER COMES BACK MID-TURN, in tool calls. A reminder is shown at the
+    # head of every stop chain; this is the other half, for the long agentic stretch where
+    # the next stop is an hour away and the instruction is fifty results back. Agent-only
+    # at this cadence — the same line in the user's terminal at every interval is the wall
+    # the stop queue exists to avoid. 0 leaves reminders to the stop.
+    #
+    # IT WAS 15, AND THAT WAS THE WRONG FAILURE TO OPTIMISE AGAINST. A reminder is the one
+    # channel here with no condition on it, which makes it the one channel that can teach
+    # the reader to skim — and everything else in this package that fired on a condition
+    # rather than a record ended up doing exactly that, eleven wrong nudges to catch three.
+    # A repeated line is not read harder for repeating sooner; past some interval it stops
+    # being an instruction and becomes furniture, and the agent it was written for is the
+    # reader least able to say when that happened. 50 is far enough apart to still land as
+    # an interruption, and still several times in the kind of stretch a reminder is for.
+    "reminder_every": 50,
 
     # THE CAP ON ONE REMINDER, in characters — tighter than a pin's, because a pin is
     # re-read at every compaction and a reminder is re-read dozens of times in one

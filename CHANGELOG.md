@@ -4,6 +4,25 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.36.1 — a reminder comes back every 50 tool calls, not every 15
+
+`reminder_every`'s default. A reminder is the one channel in this package with no
+condition on it, which makes it the one channel that can teach the reader to skim — and
+everything here that fired on a condition rather than a record ended up doing exactly
+that. A repeated line is not read harder for repeating sooner; past some interval it stops
+being an instruction and becomes furniture, and the agent it was written for is the reader
+least able to notice when that happened. 50 is far enough apart to still land as an
+interruption, and still several times in the kind of stretch a reminder is written for.
+
+Set `reminder_every` to go back to 15, or to 0 to leave reminders to the stop entirely.
+
+AND THE REPEATED FORM CARRIES NO FURNITURE. Each firing used to wrap the instruction in a
+header, a gloss on what `--until` means and the command that retires one — three lines of
+scaffolding around one line of instruction, arriving all session long. That is how a
+reader is taught to skim, and what they learn to skim is the reminder. Mid-turn is now the
+instruction and its condition, full stop; the command that ends a reminder is still taught
+at the head of every stop chain, which is also the copy the user sees.
+
 ## 1.36.0 — an instruction you keep having to give is said back to you
 
 A pin is told once. Every channel in this package hands the record over at a start and on

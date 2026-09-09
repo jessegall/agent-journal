@@ -152,13 +152,24 @@ def move(root: Path, n: int, dst: str, at: str) -> tuple[bool, str]:
     return True, f"reminder {n} is reminder {len(there)} on `{dst}`: {items[i]['text'][:70]}"
 
 
-def block(root: Path) -> str:
-    """What the hook says: every standing reminder, in full, or "" when there are none.
+def block(root: Path, terse: bool = False) -> str:
+    """What the hook says: every standing reminder, or "" when there are none.
 
-    NEVER CAPPED AND NEVER PAGED. `render` below pages because a person asked for the list
-    and can ask for the next page; this is the injection, and a reminder trimmed out of it
-    is a reminder that silently stopped being one. If the list is long enough for that to
-    hurt, the answer is retiring some, which is one command and is said here every time.
+    THE SCAFFOLDING IS THE PART THAT GOES STALE, NOT THE INSTRUCTION. This block is
+    delivered at the head of every stop chain and again every `reminder_every` tool calls,
+    and the first version wrapped each firing in a header, a gloss on what `until` means
+    and the command that retires one — three lines of furniture around one line of
+    instruction, repeated all session. That is how a reader is taught to skim, and the
+    thing they learn to skim is the reminder itself. So `terse` is the repeated form: the
+    instruction, its condition, and nothing else.
+
+    The command that ends a reminder is still taught, once per chain, in the stop's copy —
+    which is also the copy the user sees. Mid-turn there is nothing to decide, only
+    something to remember.
+
+    NEVER CAPPED AND NEVER PAGED, in either form. `render` below pages because a person
+    asked for the list and can ask for the next page; this is the injection, and a reminder
+    trimmed out of it is a reminder that silently stopped being one.
     """
     items = live(root)
     if not items:
@@ -171,9 +182,11 @@ def block(root: Path) -> str:
             continue
         line = f"  {i}. {r['text']}"
         if r.get("until"):
-            line += f"\n     until: {r['until']} — retire it yourself the moment that reads true"
+            line += f"\n     until: {r['until']}"
         out.append(line)
-    out.append('  journal reminders done <n> "<why>"   when one has served its purpose')
+    if not terse:
+        out.append('  `journal reminders done <n> "<why>"` retires one — the condition above is '
+                   "yours to judge, and you do it without asking.")
     return "\n".join(out)
 
 
