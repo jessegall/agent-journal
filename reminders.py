@@ -44,11 +44,17 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
+import entries
 import fmt
 import state
 from pins import age
 
 KEY = "reminders"
+
+#: WHAT A REMINDER IS TO THE SHARED OPERATIONS. Retiring one and moving one are the same
+#: acts they are for a pin, so they are the same code — see `entries`.
+_STORE = entries.Store(key=KEY, noun="reminder", text="text", retired="done",
+                       verb="retired")
 
 
 def _all(root: Path) -> list[dict]:
@@ -99,60 +105,23 @@ def add(root: Path, text: str, at: str, limit: int, until: str = "") -> tuple[bo
 
 
 def done(root: Path, n: int, why: str, at: str = "") -> tuple[bool, str]:
-    """Retire a reminder. The reason is required, exactly as a strike's is.
+    """Retire a reminder. The reason is required, exactly as a strike's is — and for the
+    same reason, which is why both go through `entries.retire`.
 
     Nothing here expires on a counter. A reminder the agent quietly stopped showing is
     indistinguishable from one the user never wrote, so the only way out of the list is
     somebody saying what changed — and the text stays, under `--all`, so being wrong about
     a condition costs one line to undo.
     """
-    why = " ".join((why or "").split())
-    if not why:
-        return False, (
-            f'retiring a reminder needs a reason: journal reminders done {n} "<what made '
-            f'it true>". The reason is the whole safeguard — a reminder that vanishes '
-            f"without one is one the user is still owed."
-        )
-    with state.locked(root):
-        items = _all(root)
-        if n < 1 or n > len(items):
-            return False, f"there is no reminder {n}. `journal reminders` numbers them."
-        if items[n - 1].get("done"):
-            return False, f"reminder {n} was already retired: {items[n - 1]['done']}"
-        items[n - 1]["done"] = why
-        items[n - 1]["done_at"] = at
-        state.put(root, KEY, items)
-        standing = len([r for r in items if not r.get("done")])
-    return True, f"reminder {n} retired: {why} ({standing} still standing)"
+    return entries.retire(root, _STORE, n, why, at)
 
 
 def move(root: Path, n: int, dst: str, at: str) -> tuple[bool, str]:
-    """Move a reminder to another environment — retired here, standing there.
-
-    `pins.move`'s decision, for `pins.move`'s reason: the number is the position in the
-    full list, so lifting one out would renumber every reminder after it. The retirement
-    reason says where it went, and `--all` still shows it on both sides.
-    """
-    dst = state.slug(dst)
-    if not dst:
-        return False, 'say where: journal reminders move <n> "<environment>"'
-    with state.locked(root):
-        items = _all(root)
-        i = n - 1
-        if i < 0 or i >= len(items):
-            return False, f"there is no reminder {n}. `journal reminders` numbers them."
-        if items[i].get("done"):
-            return False, f"reminder {n} is already retired: {items[i]['done']}"
-        there = state.tracked(root, KEY, dst, []) or []
-        there.append({**items[i], "at": at, "done": None, "moved_from": n})
-        items[i]["done"] = f"moved to `{dst}` as reminder {len(there)}"
-        items[i]["done_at"] = at
-        state.put_tracked(root, KEY, dst, there)
-        state.put(root, KEY, items)
-    return True, f"reminder {n} is reminder {len(there)} on `{dst}`: {items[i]['text'][:70]}"
+    """Move a reminder to another environment — it belongs to one, like a pin."""
+    return entries.move(root, _STORE, n, dst, at)
 
 
-def block(root: Path, terse: bool = False) -> str:
+def block(root: Path) -> str:
     """What the hook says: every standing reminder, or "" when there are none.
 
     THE SCAFFOLDING IS THE PART THAT GOES STALE, NOT THE INSTRUCTION. This block is
@@ -160,44 +129,36 @@ def block(root: Path, terse: bool = False) -> str:
     and the first version wrapped each firing in a header, a gloss on what `until` means
     and the command that retires one — three lines of furniture around one line of
     instruction, repeated all session. That is how a reader is taught to skim, and the
-    thing they learn to skim is the reminder itself. So `terse` is the repeated form: the
-    instruction, its condition, and nothing else.
+    thing they learn to skim is the reminder itself.
 
-    The command that ends a reminder is still taught, once per chain, in the stop's copy —
-    which is also the copy the user sees. Mid-turn there is nothing to decide, only
-    something to remember.
+    ONE FORM, NOT TWO. The fix after that shipped kept the gloss for the stop and dropped it
+    only mid-turn, which was the same argument applied to half the firings: the stop copy
+    fires just as often over a long session, and it is the copy the USER sees, where the
+    gloss is furniture in their terminal too. `journal reminders done` is taught in the
+    skill, in `journal reminders`, and in the line printed when the reminder is written —
+    three places read on purpose rather than injected on a cadence.
 
-    NEVER CAPPED AND NEVER PAGED, in either form. `render` below pages because a person
-    asked for the list and can ask for the next page; this is the injection, and a reminder
-    trimmed out of it is a reminder that silently stopped being one.
+    NEVER CAPPED AND NEVER PAGED. `render` below pages because a person asked for the list
+    and can ask for the next page; this is the injection, and a reminder trimmed out of it
+    is a reminder that silently stopped being one.
     """
     items = live(root)
     if not items:
         return ""
-    head = "REMINDER — you asked to be told this again:" if len(items) == 1 else \
-           f"REMINDERS — {len(items)} things you asked to be told again:"
-    out = [head]
+    # A NUMBER IS FOR PICKING ONE OUT OF SEVERAL. With one standing it is furniture, and
+    # the number that matters — the one `reminders done` takes — is the position in the
+    # full list, which is what is printed here either way.
+    one = len(items) == 1
+    out = ["REMINDER — you asked to be told this again:" if one else
+           f"REMINDERS — {len(items)} things you asked to be told again:"]
     for i, r in enumerate(_all(root), 1):
         if r.get("done"):
             continue
-        line = f"  {i}. {r['text']}"
+        line = f"  {r['text']}" if one else f"  {i}. {r['text']}"
         if r.get("until"):
-            line += f"\n     until: {r['until']}"
+            line += f"\n  {'' if one else '   '}   until: {r['until']}"
         out.append(line)
-    if not terse:
-        out.append('  `journal reminders done <n> "<why>"` retires one — the condition above is '
-                   "yours to judge, and you do it without asking.")
     return "\n".join(out)
-
-
-def system_line(root: Path) -> str:
-    """The half the USER sees — the confirmation that the agent was in fact reminded."""
-    items = live(root)
-    if not items:
-        return ""
-    if len(items) == 1:
-        return f"journal: reminded — {items[0]['text']}"
-    return f"journal: reminded of {len(items)} things — " + " · ".join(r["text"] for r in items)
 
 
 def render(root: Path, *, all_of_them: bool = False, width: int = 88,

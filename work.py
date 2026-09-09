@@ -71,7 +71,11 @@ def end(root: Path, subject: str, at: str, force: bool = False) -> tuple[bool, s
     open piece is closed and the words are kept beside it, so the record still says who
     closed it and why, and nothing is lost but the pretence that anyone remembers.
     """
-    subject = " ".join(subject.split()).lower()
+    # THE LOWERCASE IS FOR MATCHING, AND ONLY FOR MATCHING. `--force` reuses this argument
+    # as prose — it is the note kept beside a forced close, and the only thing that survives
+    # one — so the raw text is kept and the fold is applied where the comparison happens.
+    said = " ".join((subject or "").split())
+    subject = said.lower()
     if force:
         with state.locked(root):
             items = _all(root)
@@ -79,7 +83,7 @@ def end(root: Path, subject: str, at: str, force: bool = False) -> tuple[bool, s
             for w in items:
                 if not w.get("ended"):
                     w["ended"] = at
-                    w["ended_note"] = subject or "closed with --force"
+                    w["ended_note"] = said or "closed with --force"
                     closed.append(w["subject"])
             if closed:
                 state.put(root, KEY, items)

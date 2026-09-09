@@ -1,6 +1,6 @@
 ---
 name: journal
-description: "The project's journal: how to file what happens so it survives a compaction and reaches every later session — the tag on each message, declared work, pins, rules, to-dos, and reading the transcript back instead of answering from memory. Use it whenever the user asks for a feature, a fix, an implementation or any piece of work, because the first decision is whether that is the current work, work to do now, or work to park as a to-do. Also use it whenever a hook holds your stop or denies a tool call; before your first pin, rule, declaration or search in a session; when a context warning asks for a decision; when the user says later, not yet, or after X; when the user rules something project-wide or asks to promote a pin; when you are about to say 'I think we decided…'; when the user asks to prepare an environment, set up the journal for an issue or PR, make a hand-off, or delegate an environment to a subagent; and at a fresh start or after a compaction. Load it even when the request seems small — the decision it teaches is the one most often skipped. Not for subagents: a subagent reports what it found and the main conversation files it."
+description: "The project's journal: how to file what happens so it survives a compaction and reaches every later session — the tag on each message, declared work, pins, rules, to-dos, and reading the transcript back instead of answering from memory. Use it whenever the user asks for a feature, a fix, an implementation or any piece of work, because the first decision is whether that is the current work, work to do now, or work to park as a to-do. Also use it whenever a hook holds your stop or denies a tool call; before your first pin, rule, declaration or search in a session; when a context warning asks for a decision; when the user says later, not yet, or after X; when the user rules something project-wide or asks to promote a pin; when you are about to say 'I think we decided…'; when the user asks to prepare an environment or set up the journal for an issue or PR; and at a fresh start or after a compaction. Load it even when the request seems small — the decision it teaches is the one most often skipped. Not for subagents: a subagent reports what it found and the main conversation files it."
 ---
 
 # The journal
@@ -141,6 +141,24 @@ an answer to. A line that opens the work first,
 Rules, pins, open work and to-dos are the **only** things handed back after a compaction
 and to every new session. Tagged messages become retrievable, not present.
 
+**A pin is a FACT. A reminder is an INSTRUCTION.** This is the line agents blur most, so
+here it is four ways:
+
+    would a later reader be WRONG without it?          a pin
+    will you stop DOING it, though you already know?   a reminder
+    is it one thing to do, later?                      a to-do
+    does it bind every environment?                    a rule
+
+A pin is true whether or not anyone acts on it — "a subagent's payload carries the parent's
+session_id", "the harness caps hook output at 10,000 characters". Nobody has to do anything
+for it to stay true. A reminder is not true or false; it is obeyed or forgotten — "run the
+suites before saying a change works". It exists because of drift, not ignorance.
+
+Getting it wrong costs both ways. An instruction written as a pin is re-read at every
+compaction and obeyed by nobody, because a pin is handed over as knowledge and nothing
+repeats it. A fact written as a reminder is shouted every fifty tool calls forever and can
+never be retired, because its `--until` will never come true — it was never a condition.
+
 **Pin only when all three hold.** Somebody *decided* it. The next reader would get it
 *wrong* without it, not merely not know it. It will still be true *tomorrow*. A status, a
 count, a percentage, or what you just did fails the third and rots into a confident
@@ -248,6 +266,55 @@ without asking. The reason is required and the text stays under `--all`, so bein
 costs one line to undo. Nothing here ever expires on its own: a reminder the user wrote
 and nobody retired is one they are still owed.
 
+## A subagent that must write: lend it an environment
+
+    journal grant "<environment>"        lend it to this session's subagents
+    journal grant                        what this session has lent
+    journal grant --off "<environment>"  take it back
+
+**A subagent cannot be detected, only granted.** Its shell carries the dispatching
+session's id — measured — so `journal pins add` run inside one is, to the machine, the same
+act as you running it. Nothing the CLI can look at tells them apart.
+
+So the grant is declared **twice**: by you, here, saying which environment you are lending;
+and by the subagent, putting `--env="<name>"` on every journal command it runs. The hook
+holds the two against each other, and refuses anything that fails either half. `journal
+grant` prints the sentence to paste into the dispatch prompt — paste it verbatim, because
+it carries the flag the whole mechanism turns on.
+
+**Granting does not move you.** You stay where you are; the subagent writes somewhere else;
+you read what it wrote with `journal environments "<name>"` when it reports.
+
+**Some verbs stay refused however you grant**, for two different reasons. `switch`, `claim`,
+`prepare`, `grant` and the `environments` spellings of them move a SESSION, and the session
+a subagent would move is *yours* — it is running under your id. `rules` binds every
+environment, and it was lent one. A subagent that needs either reports and lets you do it.
+
+**A subagent gets its own ledger, and is told its own name.** It cannot know it — nothing
+in its process carries an agent id — so on its first tool call the hook creates
+`environments/<lent>/agents/<id>/` and tells that agent the two flags to use:
+`--env="<name>" --as="<id>"`. Its work is its own file, so two subagents can never open or
+close each other's work.
+
+**It reads the environment's pins and cannot write one.** Findings go up in its report and
+you decide what becomes a claim. That is what keeps this one-directional: the child cannot
+write what it inherits, so there is only ever one answer to which pin applies.
+
+    journal assign <n> --to="<agent>"    hand it one row; nobody else may take it
+    journal assign <n> --off             put it back on the list
+
+**A held row lapses on a heartbeat, not on a promise.** Nothing can tell us a subagent
+died, so `active` is observed — every write it makes stamps it — and a dispatch that
+crashes releases its row on its own.
+
+**It may REPORT a row finished; only you close it.** `journal todos report <n> "<how>"`
+marks it done-pending and tells you; `journal todos done <n>` is yours. A runner marking
+its own homework is a failure this project has already watched happen.
+
+**Without a grant, a subagent writes nothing and that is the normal case.** Most subagents
+should report what they found and let this conversation file it; the grant is for the ones
+doing real work over a long stretch, where losing the record at the end is the loss.
+
 ## Delayed work: the to-do
 
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)
@@ -340,18 +407,47 @@ is a ruling or a review only the user can give, park that remainder as a to-do w
 questions in its brief, and `work end` the work. Otherwise the journal sees work in flight,
 nothing else starts, and with auto on the stop hook will hold you to do exactly this.
 
-## Handing work over: load the `journal-handoff` skill
+## The environment is chosen once, and never by you again
 
-Preparing an environment, handing it to agents, and delegating one are their own skill:
-**`journal-handoff`**. Load it before the first `journal prepare`, `journal handoff` or
-`journal delegate` of a session, and whenever the user asks to prepare an environment, set
-up the journal for an issue or a PR, make a hand-off, or hand work to a subagent.
+**You choose an environment at the START, by asking the user, and you never switch again on
+your own initiative.** Not to tidy up. Not to park work you cannot do. Not because another
+environment already exists and looks like a precedent for making one.
 
-Only when the user asks for it — never on your own: most work is a to-do or open work
-where you are. What the other skill adds is what the commands do not print: which agent is
-dispatched with which model, that the runner gets its own worktree and the hand-off agent
-does not, what may not happen between the two prompts, and what becomes of the branch the
-runner hands back.
+    at the start        `journal environments` lists them → ask the user which → `journal switch "<name>"`
+    ever after          only when the user names one
+
+This is not a style preference, and here is the failure it is written from. An agent met a
+to-do it was forbidden to start while the stop hook refused its stop. It reasoned, fairly,
+that the list should stop offering work it could not do — and then made a new environment
+to park it on. Two things made that feel sanctioned: a stray environment from its own
+earlier session was sitting there looking like an established convention, and `prepare`
+creates AND switches in one command, so the switch was a second effect it never looked for.
+**Reminders are per-environment. The moment it switched, every guardrail it had went
+silent**, and it only noticed by chance.
+
+So: an environment somebody's session left behind is not evidence that making one is
+normal. Housekeeping is not an exception. If the list is offering work you cannot do, the
+answer is on the to-do — `todos block` or `todos ask` — never a new place to put it.
+
+## A to-do you cannot do yet: block it, do not route around it
+
+    journal todos block <n> "<what has to be true first>"   set it aside on a condition
+    journal todos ask <n> "<the question>"                  it waits on the USER to answer
+    journal todos start <n>                                 picking it up ends the block
+
+**The list is not a sequence.** Work it in whatever order the work allows. A row you cannot
+do is skipped with its reason, and the reason is required — a skipped row with no reason
+reads as a gap.
+
+**`ask` waits on a person; `block` waits on a condition.** Nobody has to answer a block: a
+batch has not run, a release is not cut, another to-do must land first. You wrote the
+condition, you read it back when the row comes round again, and you decide when it is true
+— exactly as with a reminder's `--until`. `journal next` and auto mode both skip a blocked
+row, so the list stops handing you work you are not allowed to start.
+
+That last sentence is the whole point. When the list keeps offering something forbidden and
+there is no way to say "not now, because X", the row stops being a to-do and becomes a
+wall — and an agent routes around a wall.
 
 ## What belongs to an environment lives in its folder
 

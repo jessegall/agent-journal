@@ -15,7 +15,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, transcript  # noqa: E402
+import state, testkit, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -39,13 +39,12 @@ class S:
         tdir = transcript.project_dir(self.d); tdir.mkdir(parents=True, exist_ok=True)
         self.path = tdir / "s1.jsonl"; self.path.write_text("")
         self.J = str(self.d / ".journal" / "journal.py")
+        self.P = testkit.Project(self.d)
         self.env = {**os.environ, transcript.SESSION_ENV: "s1"}
         self.fire("SessionStart", source="startup")
 
     def fire(self, event, **extra):
-        payload = {"hook_event_name": event, "session_id": "s1", "transcript_path": str(self.path), **extra}
-        return subprocess.run([str(self.d / ".journal" / "hook.py")], input=json.dumps(payload),
-                              capture_output=True, text=True, timeout=60).stdout
+        return self.P.hook(event, session_id="s1", transcript_path=str(self.path), **extra)[1]
 
     def user(self, text):
         with self.path.open("a") as fh:
@@ -60,16 +59,13 @@ class S:
                 "usage": {"input_tokens": tokens}}}) + "\n")
 
     def j(self, *a):
-        return subprocess.run([self.J, *a], env=self.env, capture_output=True, text=True, timeout=60)
+        code, out = self.P.cli(*a, session="s1")
+        return subprocess.CompletedProcess(a, code, out, "")
 
     def stop(self, after=False):
-        out = self.fire("Stop", stop_hook_active=after)
-        if not out.strip():
-            return ""
-        got = json.loads(out)
-        if got.get("decision") == "block":
-            return got["reason"][len("journal: "):].partition(" — ")[0]
-        return "context:" + (got.get("hookSpecificOutput") or {}).get("additionalContext", "")[:40]
+        """The label of whatever this stop raised — one reader, in testkit, for every suite."""
+        label, _ = testkit.hold(self.fire("Stop", stop_hook_active=after))
+        return label
 
 
 # ---------------------------------------------------------------- the order, one per stop
@@ -134,7 +130,7 @@ s5 = S()
 s5.j("todo", "waiting one"); s5.user("go"); s5.say("no tag")
 check("a hold outranks the to-do reminder", s5.stop(), "1 untagged message(s)")
 s5.say("[!reply] tagged")
-check("with nothing held, the reminder is said as context", s5.stop().startswith("context:journal: 1 to-do(s) waiting"), True)
+check("with nothing held, the reminder is said as context", s5.stop(), "1 to-do(s) waiting on `default`")
 check("and once per state", s5.stop(), "")
 
 
@@ -161,7 +157,7 @@ with s8.path.open("a") as fh:
 check("a scheduling tool counts", s8.stop().startswith("auto is on, 1 to-do(s) waiting"), True)
 s9 = S()
 s9.j("todo", "chore"); s9.user("go"); s9.say("[!reply] ok")
-check("auto off: no loop is asked for", s9.stop().startswith("context:journal: 1 to-do(s) waiting"), True)
+check("auto off: no loop is asked for", s9.stop(), "1 to-do(s) waiting on `default`")
 s9.j("todo", "auto", "on"); s9.j("todo", "done", "1", "did it"); s9.user("again"); s9.say("[!reply] ok")
 check("auto on with nothing to do: no loop is asked for either", s9.stop(), "")
 code = s9.j("loop", "set").returncode
@@ -178,7 +174,7 @@ p = subprocess.run([sys.executable, "-c", "import hook, nudges, json; print(json
                    cwd=str(s10.d / ".journal"), capture_output=True, text=True, timeout=60)
 got = json.loads(p.stdout)
 check("the default order, an override, a bad override ignored, and the numbers",
-      (got[0], got[1][:2], got[2]), (["claimed", "environment", "loop", "context", "deferral", "untagged", "work", "auto", "cleanup"], ["work", "claimed"], [["claimed", 4], ["environment", 5]]))
+      (got[0], got[1][:2], got[2]), (["claimed", "environment", "loop", "context", "deferral", "untagged", "work", "auto", "recall", "cleanup"], ["work", "claimed"], [["claimed", 4], ["environment", 5]]))
 s11 = S()
 (s11.d / ".journal" / "settings.json").write_text(json.dumps({"gate_after_context_rung": True, "context_window": 200000, "silenced": ["loop"]}))
 s11.j("todo", "chore"); s11.j("todo", "auto", "on"); s11.user("go"); s11.say("[!reply] ok")
@@ -216,6 +212,41 @@ s13.stop()
 for i in range(30):
     s13.say(f"[!info] step {i}")
 check("hold_again_after_lines: 0 restores one hold per chain", s13.stop(after=True), "")
+
+# ---------------------------------------------------------------- one setting, one subject
+# `hold_stop_on_untagged: false` used to return before the queue ran, so it silenced open
+# work, the ladder, the loop, the deferral, cleanup and auto as well — none of which it names.
+sQ = S()
+(sQ.d / ".journal" / "settings.json").write_text(json.dumps(
+    {"hold_stop_on_untagged": False, "context_window": 200000}))
+sQ.j("work", "start", "the sweep")
+sQ.user("go"); sQ.say("no tag at all")
+check("the subject it names is off", sQ.stop(), "work still open")
+check("and the rest of the queue still runs", sQ.stop(True), "")
+
+# ---------------------------------------------------------------- the order is printed
+out = sQ.j("settings").stdout
+check("journal settings shows the stop queue in the order it runs, as it has always said it did",
+      ("THE STOP QUEUE" in out, "untagged" in out.split("THE STOP QUEUE")[1]), (True, True))
+
+# ---------------------------------------------------------------- the rules are recalled
+# Handed over at the start and never mentioned again until a compaction: a subagent was
+# treated better than the main agent, which runs longest.
+sR = S(window=200000)
+(sR.d / ".journal" / "settings.json").write_text(json.dumps(
+    {"context_window": 200000, "recall_ladder": [0.5], "silenced": ["untagged", "cleanup"]}))
+sR.j("rules", "add", "a ruling that binds every environment")
+sR.j("pins", "add", "a claim on this environment")
+sR.user("go"); sR.say("[!reply] small", tokens=1000)
+check("under the mark, nothing is said", sR.stop(), "")
+sR.say("[!reply] big now", tokens=150000)
+# THE CONTEXT LADDER OUTRANKS IT, and should: at 75% the rung is the more urgent thing to
+# say, and one subject is raised per stop. Recall comes at the next one.
+seen = [sR.stop(), sR.stop(True)]
+check("past it, the counts and the two commands — never the claims themselves",
+      (any("1 rule(s) and 1 pin(s) are in force" in x for x in seen),
+       any("a ruling that binds" in x for x in seen)), (True, False))
+check("and each mark fires once", sR.stop(True), "")
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

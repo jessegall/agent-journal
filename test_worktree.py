@@ -133,5 +133,120 @@ check("the shipped .gitignore carries the pattern without the trailing slash",
       [l for l in (SRC / ".gitignore").read_text().splitlines() if l.strip() in ("/.journal", "/.journal/")],
       ["/.journal"])
 
+# ─────────── a granted subagent writing from inside a worktree, end to end ────────────────
+# The actual use case: the dispatcher grants in the main checkout, the agent works in a
+# worktree, and one record holds both. Demonstrated rather than argued.
+wt_main = Path(tempfile.mkdtemp()) / "main"
+import testkit as _tk
+_tk.make(wt_main, SRC)
+for c in (["init", "-q"], ["config", "user.email", "t@t"], ["config", "user.name", "t"]):
+    subprocess.run(["git", *c], cwd=wt_main, capture_output=True)
+(wt_main / "f.txt").write_text("x")
+subprocess.run(["git", "add", "-A"], cwd=wt_main, capture_output=True)
+subprocess.run(["git", "commit", "-q", "-m", "kit: base"], cwd=wt_main, capture_output=True)
+side = wt_main.parent / "side"
+subprocess.run(["git", "worktree", "add", "-q", str(side), "-b", "side"], cwd=wt_main, capture_output=True)
+check("a worktree checks out its own copy of .journal", (side / ".journal").is_dir(), True)
+wt_env = {**os.environ, transcript.SESSION_ENV: "m1"}
+_td = transcript.project_dir(wt_main); _td.mkdir(parents=True, exist_ok=True); (_td / "m1.jsonl").write_text("")
+_J = str(wt_main / ".journal" / "journal.py")
+for a_ in (["prepare", "scout"], ["switch", "default"], ["grant", "scout"]):
+    subprocess.run([sys.executable, _J, *a_], env=wt_env, capture_output=True, cwd=str(wt_main))
+p = subprocess.run([sys.executable, str(side / ".journal" / "journal.py"), "--env=scout",
+                    "pins", "add", "written from the worktree"],
+                   env=wt_env, capture_output=True, text=True, cwd=str(side))
+check("a write from inside the worktree succeeds", "pinned 1" in p.stdout, True)
+check("and the worktree's copy became a symlink to the main checkout's",
+      (side / ".journal").is_symlink()
+      and Path(os.readlink(side / ".journal")).resolve() == (wt_main / ".journal").resolve(), True)
+_pins = json.loads((wt_main / ".journal" / "environments" / "scout" / "pins.json").read_text())["pins"]
+check("the pin landed in the MAIN checkout's record — one record, two checkouts",
+      [x["fact"] for x in _pins], ["written from the worktree"])
+_st = subprocess.run(["git", "status", "--porcelain"], cwd=str(side), capture_output=True, text=True).stdout
+check("and git in the worktree sees nothing of .journal",
+      [l for l in _st.splitlines() if ".journal" in l], [])
+
+# ─────────── a SUBAGENT in a worktree of its own ──────────────────────────────────────────
+# NOTHING FIRES A SessionStart FOR A SUBAGENT, so the linking cannot depend on one. Its
+# first tool call is the first thing that reaches this checkout at all, and `resolve` runs
+# at the import of hook.py — so the same event that tells it its name is the one that
+# replaces the copy. If that were not true a subagent would work a SECOND record: its
+# ledger, its report and its pins would land in a directory the parent never reads and
+# `git status` in the worktree would carry them.
+far = wt_main.parent / "far"
+subprocess.run(["git", "worktree", "add", "-q", str(far), "-b", "far"], cwd=wt_main, capture_output=True)
+check("the worktree starts as a plain copy",
+      ((far / ".journal").is_dir(), (far / ".journal").is_symlink()), (True, False))
+_AID = "wa77"
+_p = subprocess.run([sys.executable, str(far / ".journal" / "hook.py")], cwd=str(far),
+                    input=json.dumps({"hook_event_name": "PostToolUse", "session_id": "m1",
+                                      "transcript_path": str(_td / "m1.jsonl"), "agent_id": _AID,
+                                      "tool_name": "Bash", "tool_input": {"command": "ls"},
+                                      "tool_response": {"stdout": ""}}),
+                    env=wt_env, capture_output=True, text=True, timeout=60)
+_ctx = (json.loads(_p.stdout or "{}").get("hookSpecificOutput") or {}).get("additionalContext", "")
+check("its first tool call tells it its name AND links the copy",
+      (f"YOU ARE AGENT `{_AID}`" in _ctx, (far / ".journal").is_symlink(),
+       (far / ".journal").resolve() == (wt_main / ".journal").resolve()), (True, True, True))
+
+
+def _far(*a):
+    r = subprocess.run([sys.executable, str(far / ".journal" / "journal.py"), "--env=scout",
+                           f"--as={_AID}", *a], env=wt_env, capture_output=True, text=True,
+                       cwd=str(far), timeout=60)
+    return r.stdout + r.stderr
+subprocess.run([sys.executable, _J, "--env=scout", "todos", "add", "the row it was sent for"],
+               env=wt_env, capture_output=True, cwd=str(wt_main))
+_started = _far("todos", "start", "1")   # `start` opens the work too; that is the funnel
+check("it claims and starts the row from the worktree", "held for `wa77`" in _started, True)
+check("and reports it finished, still unable to close",
+      ("reported finished" in _far("todos", "report", "1", "done in the worktree")), True)
+check("its ledger is under the MAIN checkout, in its own folder",
+      json.loads((wt_main / ".journal" / "environments" / "scout" / "agents" / _AID /
+                  "work.json").read_text())["work"][0]["subject"], "the row it was sent for")
+check("the parent, in the main checkout, sees the report",
+      [t["n"] for t in __import__("todo").reported(wt_main / ".journal", "scout")], [1])
+_deny = subprocess.run([sys.executable, str(far / ".journal" / "hook.py")], cwd=str(far),
+                       input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "m1",
+                                         "transcript_path": str(_td / "m1.jsonl"), "agent_id": _AID,
+                                         "tool_name": "Bash",
+                                         "tool_input": {"command": f'{far}/.journal/journal.py rule "x"'}}),
+                       env=wt_env, capture_output=True, text=True, timeout=60)
+check("a worktree is no way around the grant: a rule is still refused",
+      "deny" in (_deny.stdout + _deny.stderr).lower(), True)
+check("and git in ITS worktree sees nothing of .journal either",
+      [l for l in subprocess.run(["git", "status", "--porcelain"], cwd=str(far), capture_output=True,
+                                 text=True).stdout.splitlines() if ".journal" in l], [])
+
+# ─────────── the filesystem answers before git is asked ───────────────────────────────────
+# `resolve` runs at the import of journal.py and hook.py — every command, every tool call —
+# and shelled out to `git rev-parse` twice to learn something a stat already knows.
+import worktree as _w
+_calls = {"n": 0}
+_real = subprocess.run
+
+
+def _counted(*a, **k):
+    _calls["n"] += 1
+    return _real(*a, **k)
+
+
+subprocess.run = _counted
+try:
+    _w._MAIN.clear()
+    _w.resolve(Path(SRC))                      # the package's own checkout: a .git DIRECTORY
+    check("a main checkout asks git nothing", _calls["n"], 0)
+    _calls["n"] = 0; _w._MAIN.clear()
+    _w.main_root(Path(tempfile.mkdtemp()))     # not a repository at all
+    check("nor does a directory that is no repository", _calls["n"], 0)
+    _calls["n"] = 0; _w._MAIN.clear()
+    _w.main_root(side)                         # the linked worktree made above
+    check("but a linked worktree still asks, because only git knows the common dir",
+          _calls["n"], 2)
+    _w.main_root(side)
+    check("and asks once per process, not once per caller", _calls["n"], 2)
+finally:
+    subprocess.run = _real
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

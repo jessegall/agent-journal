@@ -20,7 +20,7 @@ os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"  # a pull inside a suite runs no suit
 
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, pins, work, tracks, hook, transcript, digest, todo  # noqa: E402
+import state, pins, work, tracks, hook, testkit, transcript, digest, todo  # noqa: E402
 
 AT = "2026-09-01T12:00:00+00:00"
 ok = fail = 0
@@ -160,22 +160,31 @@ def project_with(lines: int, stem: str = "s1", tagged: bool = False):
     return d, path
 
 
+#: ONE INTERPRETER PER PROJECT, kept. This suite fires the hook seventy-odd times across a
+#: dozen fixtures, and each spawn was 480ms of importing the package before it did the one
+#: small thing under test.
+_PROJECTS: dict = {}
+
+
+def _project(d):
+    if str(d) not in _PROJECTS:
+        _PROJECTS[str(d)] = testkit.Project(d)
+    return _PROJECTS[str(d)]
+
+
 def fire(d, event, path, **extra):
-    payload = {"hook_event_name": event, "session_id": path.stem,
-               "transcript_path": str(path), **extra}
-    p = subprocess.run([str(d / ".journal" / "hook.py")], input=json.dumps(payload),
-                       capture_output=True, text=True, timeout=60)
-    return p.returncode, p.stdout, p.stderr
+    p = _project(d)
+    code, out = p.hook(event, session_id=path.stem, transcript_path=str(path), **extra)
+    return code, out, p.err
 
 
 def held(out: str) -> tuple[str, str]:
     """(the one line the user sees, the reasoning the agent reads) of a Stop hold."""
     if not out.strip():
         return "", ""
-    got = json.loads(out)
-    if got.get("decision") != "block":
-        return "", (got.get("hookSpecificOutput") or {}).get("additionalContext", "")
-    label, _, ctx = got["reason"][len("journal: "):].partition(" — ")
+    label, ctx = testkit.hold(out)
+    if not label:
+        return "", ctx
     details = state.get(d / ".journal", "next_text", "", stem=path.stem) if "journal.py next" in ctx else ""
     return "journal reminded Claude: " + label, "journal: " + ctx + ("\n" + details if details else "")
 
@@ -197,11 +206,11 @@ with path.open("a") as fh:
 code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
 check("a fresh transcript is held on its first untagged message",
-      (code, "carried no tag" in why), (0, True))
+      (code, "1 untagged message(s)" in brief), (0, True))
 check("the user's line is a small label",
       (brief.count("\n"), brief), (0, "journal reminded Claude: 1 untagged message(s)"))
 check("the context is the one-line instruction, naming the tags and the line",
-      (why.startswith("journal: 1 message(s) carried no tag"), "[!discovery]" in why, "line 2" in why, "\n" in why),
+      (why.startswith("journal: last at line 2"), "[!discovery]" in why, "line 2" in why, "\n" in why),
       (True, True, True, False))
 check("the hold is recorded in THIS transcript's file", runtime_of(d, "s1").get("held_at"), 2)
 check("and not in any other", runtime_of(d, "other"), {})
@@ -229,7 +238,7 @@ check("a subagent's read files nothing and is nudged for nothing",
       (out.strip(), runtime_of(d, "agent-abc"), runtime_of(d, "s1").get("biggest_result")),
       ("", {}, None))
 code, out, err = fire(d, "PostToolUse", path, **big)
-check("so the parent is still told about ITS first big read", "CHARACTERS" in out, True)
+check("so the parent is still told about ITS first big read", "characters, the largest" in out, True)
 for cmd, want in (('.journal/journal.py remember "a fact"', True),
                   ('cd x && ./.journal/journal.py start "work"', True),
                   ('.journal/journal.py search remember', False),
@@ -246,8 +255,10 @@ for cmd, want in (('.journal/journal.py remember "a fact"', True),
                   ('cat file.py', False)):
     code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                           tool_input={"command": cmd})
+    # UNGRANTED, EVERY WRITE IS REFUSED — but the sentence differs by why: a rule binds
+    # every environment, the rest simply have nowhere of their own to land.
     check(f"subagent journal write denied, reads and other tools not: {cmd[:40]}",
-          "from a subagent is refused" in out, want)
+          bool(testkit.denied(out)), want)
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Edit", tool_input={})
 check("a subagent's edit is not gated on open work", out.strip(), "")
 
@@ -284,7 +295,11 @@ with path.open("a") as fh:
 fire(d, "SessionStart", path, source="startup")
 code, out, err = fire(d, "Stop", path)
 check("the rung says the gate is coming", "NOTHING ELSE RUNS UNTIL" in held(out)[1], True)
-check("and says to park deferred work", ("HOLDING TO DO LATER" in held(out)[1], 'todos add "<title>"' in held(out)[1]), (True, True))
+# THE PARAGRAPH BECAME A LINE. Held work still has to be parked and the command still has
+# to be there; what went is the paragraph explaining why, which the skill and the start
+# block already say and which was repeating at every rung.
+check("and says to park deferred work",
+      ("lives only in this window" in held(out)[1], 'todos add "<title>"' in held(out)[1]), (True, True))
 check("and records that a pin is due", runtime_of(d, "s1").get("pin_due", {}).get("rung"), 0.5)
 code, out, err = fire(d, "PreToolUse", path, tool_name="Read", tool_input={"file_path": "x"})
 check("a Read is denied while a pin is due",
@@ -490,7 +505,9 @@ got = hook._pin_overflow({"tool_name": "Bash", "tool_input": {"command": f'.jour
 check("an over-long rule is denied at the gate", got is not None, True)
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                       tool_input={"command": ".journal/journal.py rule \"x\""})
-check("a subagent's rule is refused", "from a subagent is refused" in out, True)
+check("a subagent's rule is refused, and now says which of the two reasons it is",
+      ("is refused from a subagent" in testkit.denied(out),
+       "binds every environment" in testkit.denied(out)), (True, True))
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                       tool_input={"command": ".journal/journal.py promote 1"})
 check("and so is its promote", "from a subagent is refused" in out, True)
@@ -746,7 +763,7 @@ subprocess.run([J, "start", "fix the batch of failures"], env=env, capture_outpu
 code, out, err = prompt("Lets rename the Nothing component to Empty? or None? Suggestions?")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("a request while work is open carries the reminder",
-      ("work is open — fix the batch of failures" in ctx, "park it before answering" in ctx), (True, True))
+      ("work is open: fix the batch of failures" in ctx, "park it before answering" in ctx), (True, True))
 code, out, err = prompt("cool, thanks!")
 check("an acknowledgement carries none", out.strip(), "")
 code, out, err = prompt("is the alias installed automatically?")
@@ -771,7 +788,7 @@ reply("[!reply] I'll do the banner once this batch is green.")
 code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
 check("at a stop, the same deferral is held once",
-      (brief, "puts work off" in why), ("journal reminded Claude: work deferred in words, not parked", True))
+      (brief, "park it as a to-do" in why), ("journal reminded Claude: work deferred in words, not parked", True))
 code, out, err = fire(d, "Stop", path)
 check("and not twice", "deferred in words" in out, False)
 
@@ -897,39 +914,26 @@ fire(d, "SessionStart", path, source="startup")
 check("a subagent's file goes with its transcript, and stays while it exists",
       sorted(s for s, _ in state.runtime_files(d / ".journal")), ["agent-live", "s1"])
 
-# subagents receive the rules: first call, then at their own marks; never pins
+# A SUBAGENT REACHES THE HOOK FOR ONE THING ONLY: to be refused. The rules ladder, the
+# delegation, the per-agent runtime file and the stop that had to check for a transcript
+# are all gone with the machinery — what remains is the refusal, because a subagent's
+# shell carries the parent's session id and its writes would file under the parent's name.
 d, path = project_with(2)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
 subprocess.run([J, "remember", "a pin of the environment"], env=env, capture_output=True, timeout=60)
-subprocess.run([J, "rule", "a rule for every environment"], env=env, capture_output=True, timeout=60)
-(d / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True, "silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 200000}))
-call = {"tool_name": "Read", "tool_input": {}, "tool_response": "x"}
-code, out, err = fire(d, "PostToolUse", path, agent_id="abc", **call)
-ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-check("a subagent's first tool call hands it the rules and says whose journal it is",
-      ("YOU ARE A SUBAGENT" in ctx, "a rule for every environment" in ctx, "a pin of the environment" in ctx),
-      (True, True, False))
-code, out, err = fire(d, "PostToolUse", path, agent_id="abc", **call)
-check("the second call is silent", out.strip(), "")
-sub = path.parent / "s1" / "subagents"; sub.mkdir(parents=True, exist_ok=True)
-(sub / "agent-abc.jsonl").write_text(json.dumps({"type": "assistant", "message": {
-    "role": "assistant", "content": [{"type": "text", "text": "working"}],
-    "usage": {"input_tokens": 110000}}}) + "\n")
-code, out, err = fire(d, "PostToolUse", path, agent_id="abc", **call)
-ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-check("at 55% of ITS window the rules come back, once for the 25 and 50 marks together",
-      ("50% FULL" in ctx, "a rule for every environment" in ctx), (True, True))
-check("and every mark crossed is recorded", runtime_of(d, "agent-abc")["rules_at"], [0.0, 0.25, 0.5])
-code, out, err = fire(d, "PostToolUse", path, agent_id="abc", **call)
-check("then silence until the next mark", out.strip(), "")
-code, out, err = fire(d, "PostToolUse", path, agent_id="other", tool_name="Bash", tool_input={},
-                      tool_response={"stdout": "x" * 90000})
-ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-check("a subagent is never told about tool cost, only the rules", "CHARACTERS" in ctx, False)
-d2, path2 = project_with(2)
-code, out, err = fire(d2, "PostToolUse", path2, agent_id="abc", **call)
-check("with no rules a subagent hears nothing at all", out.strip(), "")
+code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
+                      tool_input={"command": f"{J} remember 'from a subagent'"})
+check("a subagent's journal write is refused, and told why",
+      ("deny" in out, "the journal is the main" in out), (True, True))
+code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
+                      tool_input={"command": f"{J} pins"})
+check("its reads are not", "deny" in out, False)
+code, out, err = fire(d, "PostToolUse", path, agent_id="abc", tool_name="Read",
+                      tool_input={}, tool_response="x")
+check("and nothing else is said to it at all", out.strip(), "")
+check("no runtime file is written for it",
+      any(s.startswith("agent-") for s, _ in state.runtime_files(d / ".journal")), False)
 
 # the main agent's rung carries the rules again
 d, path = project_with(4, tagged=True)
@@ -956,7 +960,7 @@ with path.open("a") as fh:
         "usage": {"input_tokens": 191000}}}) + "\n")
 code, out, err = fire(d, "PostToolUse", path, tool_name="Read", tool_input={}, tool_response="x")
 check("a tool call past 95% delivers the rung as context, mid-work",
-      ("CONTEXT IS 96% FULL" in out, "decide before any other tool runs" in out), (True, True))
+      ("CONTEXT IS 96% FULL" in out, "decide before any other tool runs" in out.replace("journal: context 96% full", "")), (True, True))
 check("and arms the same gate", runtime_of(d, "s1").get("pin_due", {}).get("rung"), 0.95)
 code, out, err = fire(d, "PreToolUse", path, tool_name="Read", tool_input={"file_path": "x"})
 check("so the next tool call is denied until a decision", "deny" in out, True)
@@ -1135,6 +1139,20 @@ if rB is not None:
     check("promote carries the reasoning into the rule it makes",
           (tookP, "Why it holds." in _pins.body(rB, len(_pins._all(rB, _pins.RULES)), _pins.RULES)),
           (True, True))
+
+# ─────────── the loose-markdown hint fires on a WRITE, not on a `.md` in a string ─────────
+# It matched the `>` inside a placeholder — `environments/<lent>/todo/NNN-*.md` in a
+# docstring — and told the reader they had written a loose file. A hint that fires on prose
+# teaches the reader to skim the next one that is right.
+_ctx = type("C", (), {"stem": "md-probe", "path": None})()
+_dir = Path(tempfile.mkdtemp()); (_dir / "real.md").write_text("x")
+for _cmd, _want, _why in (
+        (f"echo x > {_dir / 'real.md'}", True, "a redirect whose file is there"),
+        (f"echo x > {_dir / 'never.md'}", False, "a redirect that wrote nothing"),
+        ("echo 'echo x > notes.md'", False, "the same characters inside a quoted string"),
+        ("echo 'environments/<lent>/todo/NNN-1.md'", False, "a placeholder's angle bracket")):
+    _got = hook._raw_markdown({"silenced": []}, {"tool_name": "Bash", "tool_input": {"command": _cmd}}, _ctx)
+    check(f"the markdown hint on {_why}", bool(_got), _want)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

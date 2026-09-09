@@ -4,6 +4,106 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.37.0 — a subagent writes only what its dispatcher lent it
+
+A subagent cannot be DETECTED. Its shell carries the dispatching session's id, so a
+`journal pins add` inside one is, at the operating system, the same act as the parent
+running it; `agent_id` exists only in the JSON a hook receives, never in the process the
+subagent runs. `journal delegate` worked around that by binding the SESSION, so subagent
+writes landed somewhere by accident of sharing an id — and cost nine `is this a subagent`
+branches across six functions before it was deleted.
+
+What cannot be detected can be lent.
+
+    journal grant "<environment>"        lend it to this session's subagents
+    journal grant                        what this session has lent
+    journal grant --off "<environment>"  take it back
+
+The grant is declared TWICE: by the session, in the record; by the subagent, with
+`--env="<name>"` on every command. The hook holds the two against each other at ONE door,
+and no other line asks what kind of actor is calling. `journal grant` prints the sentence
+to paste into the dispatch, because that sentence carries the flag the mechanism turns on.
+
+WHAT A LENT AGENT MAY TOUCH, measured by hashing the tree before and after its whole write
+repertoire: `environments/<lent>/work.json`, `pins.json`, `reminders.json` and `todo/`.
+Nothing shared. That property is why `rules`, `docs` and `tools` are refused rather than
+discouraged — each writes where every session reads. `switch`, `claim`, `prepare`, `grant`
+and their `environments` spellings are refused too, for the other reason: they move a
+SESSION, and the session they would move is the dispatcher's.
+
+FIVE OF THOSE REFUSALS REFUSED NOTHING when this was first written. `claim`, `grant`,
+`environments`, `handoff` and `delegate` were named as forbidden while `_journal_write`
+classified them as not-a-write, so a granted subagent could have evicted a live session.
+`JOURNAL_WRITES` is the complete definition of a write now, including the noun spellings,
+and a test asserts the two lists cannot drift apart. `_journal_write` also missed any verb
+with a flag in front of it — `journal --env=x pins add` passed every gate in the package.
+
+A grant dies with its session, which was a sentence before it was a fact.
+
+A LENT AGENT GETS A SUB-ENVIRONMENT, NOT A SHARE OF ONE. Two subagents on the same
+environment used to write one `work.json` between them, so either could close the other's
+declaration by saying its words. Work is now per-agent —
+`environments/<lent>/agents/<id>/work.json` — and only work is: pins and reminders stay the
+parent's, read-only, which is what keeps the inheritance one-directional instead of a
+cascade with two places to look. A subagent still cannot write a pin.
+
+    journal assign <n> --to="<agent>"     hand a to-do to one agent; --off gives it back
+    journal todos start <n> --as=<agent>  claim an unheld row and start it
+    journal todos report <n> "<how>"      say it is finished; the parent closes it
+
+A held row leaves the ready list, so nobody else is offered it, and the hold lapses on a
+heartbeat rather than a promise, because nothing can tell us a subagent died. It may report
+and it may never close: a runner that ticks its own box is a failure this project has
+already watched happen.
+
+The agent is TOLD ITS OWN NAME, once, on its first tool call — the CLI cannot see
+`agent_id` and the hook can, so the hook answers on the tool's result. `PreToolUse` cannot
+carry `additionalContext` in this harness, measured, whatever the reference claims.
+
+STARTING A ROW CLAIMS IT. Found by dogfooding: a subagent started a to-do, worked it, and
+was refused by `report` for holding nothing, because `started` and `assigned` were two
+facts and only a dispatcher set the second. The row it was working stayed offerable to
+anyone the whole time. `start` claims through `assign` now — one funnel for the hold, so
+the refusal is the same sentence whichever door it came in by.
+
+A SUBAGENT IN A WORKTREE OF ITS OWN WRITES THE ONE RECORD, and nothing had to change for
+that to be true. Nothing fires a `SessionStart` for a subagent, so the linking of a
+worktree's checked-out `.journal` cannot depend on one — `resolve` runs at the import of
+`hook.py`, so its FIRST TOOL CALL is both the event that names it and the event that
+replaces the copy with a symlink. Its ledger, its claim and its report land in the main
+checkout; the grant still refuses a rule from inside the worktree; git there sees nothing
+of `.journal`. The worktree decides where its files are and the grant decides what it may
+write — two mechanisms that do not know about each other, which is why they met without
+incident.
+
+ALSO IN THIS RELEASE
+
+`builtin.py` ships the journal's own rules — one today, that a subagent runs on the
+cheapest model that meets the task. They cannot be struck, they are numbered apart so no
+citation moves, and `install.py` writes them into `AGENTS.md` and `CLAUDE.md` as a managed
+block between HTML markers, replaced on every update, everything outside them untouched.
+`builtin_rules: false` turns them off.
+
+`journal switch` has printed "0 pin(s), 0 open" since 1.34.0 — it counted from a registry
+that stopped holding those numbers. It reads the environment's own files now, and says
+which reminders it just silenced on the environment being left.
+
+`carried()` measures itself against the harness's documented 10,000-character ceiling and
+tightens its per-store caps until it fits: a record of 125 rules, 194 pins and 163 to-dos
+went from 120,360 characters — which the harness replaced with a file path nobody read —
+to 5,252, every cut naming what it left and the command that reads it. `journal verify`
+reads the transcript back and says whether the last start block ARRIVED.
+
+`journal todos block <n> "<condition>"` sets a row aside on something that is not a
+question for the user, and `journal todos after <n> 12,14` on to-dos that must land first;
+both are skipped by `next` and by auto, and the second goes ready on its own. `--doc=1.2#a-heading`
+cites one section of a doc. A `recall` subject says how many rules and pins stand, a few
+times a session, never their text.
+
+And the stop's output is a heading and an indented instruction rather than a run-on line,
+said once, in one field — guidance travels in `additionalContext`, which the reference says
+holds exactly as `decision: "block"` does without the harness calling it an error.
+
 ## 1.36.1 — a reminder comes back every 50 tool calls, not every 15
 
 `reminder_every`'s default. A reminder is the one channel in this package with no

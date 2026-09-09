@@ -16,7 +16,6 @@ from pathlib import Path
 #: The windows that exist, smallest first. The right one is the smallest that fits what
 #: this session has ALREADY held.
 WINDOWS = (200_000, 1_000_000)
-DEFAULT_WINDOW = WINDOWS[0]
 
 
 def window_for(peak: int, setting: int = 0, learned: int = 0) -> tuple[int, bool]:
@@ -249,33 +248,35 @@ def warning(used: int, window: int, pinned: int, made_of=(), rung: float = 0.0,
     """
     pct = 100 * used / window
     said = _RUNGS.get(rung, "A compaction is coming.")
+    # THE TEACHING IS FRONT-LOADED AND THEN DROPPED. At 50% there is room to explain what a
+    # pin is; at 95% there is not, and for a long time both rungs said nearly the same
+    # thing at nearly the same length — six to eight paragraphs, four times a session, into
+    # a context this very message is warning is nearly full. What repeats is the MEASURED
+    # half (the reading, the shape, the counts) because that is different every time and
+    # cannot be learned once. What a pin IS, and that nothing is a fine answer, is in the
+    # `journal` skill and in the start block, and is said here only at the first rung.
+    early = rung <= 0.5
     out = [
         f"CONTEXT IS {pct:.0f}% FULL — {used:,} of {window:,}. {said}",
-        "A compaction keeps what was DONE and drops what was DECIDED. Pins and open work "
-        "are what cross it; everything else has to be read back on purpose.",
     ]
+    if early:
+        out.append("A compaction keeps what was DONE and drops what was DECIDED. Pins and open "
+                   "work are what cross it; everything else has to be read back on purpose.")
     standing = f"{pinned} pin(s) stand" + (f", {since} written since the last warning" if since else "")
     out.append(
-        f"{standing}. A pin is a CLAIM a later reader would get WRONG without — a ruling, a "
-        f"constraint, a decision and why. Never a status, a count, or what you just did; "
-        f"those rot into confident falsehoods wearing the same authority as the facts that "
-        f"still hold."
+        f"{standing}. A pin is a CLAIM a later reader would get WRONG without."
+        + (" Never a status, a count, or what you just did; those rot into confident "
+           "falsehoods wearing the same authority as the facts that still hold." if early else "")
     )
-    if latest:
+    if latest and early:
         # THE STANDARD, SHOWN RATHER THAN DESCRIBED. "Short and concrete" is an instruction
         # nobody can check themselves against; the last pin that was accepted is one they can.
         out.append(f"The last one written, for the shape of it:\n  {latest}")
-    out.append('  .journal/journal.py pins add "<the claim, in one line>"')
-    out.append(_NOTHING_IS_FINE)
-    # DEFERRED WORK IS THE OTHER THING A COMPACTION EATS. "I'll do X after this" lives
-    # nowhere but the context, and the summary keeps what was done, not what was meant.
-    out.append(
-        "AND ANY WORK YOU ARE HOLDING TO DO LATER — the thing the user asked for that you "
-        "set aside, the follow-up you noticed — lives only in this window. Park it now:\n"
-        '  .journal/journal.py todos add "<title>" [--brief]\n'
-        "A to-do is not a pin and does not answer the question above; write both if both "
-        "apply."
-    )
+    out.append('  .journal/journal.py pins add "<the claim, in one line>"\n'
+               '  .journal/journal.py todos add "<title>"   work you are holding for later '
+               "lives only in this window")
+    if early:
+        out.append(_NOTHING_IS_FINE)
     if gated:
         # A DECISION IS REQUIRED, A PIN IS NOT. The gate is what makes this land — the
         # nudge alone was measured and did not — and "nothing" has to be as cheap a way

@@ -10,7 +10,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, tracks, transcript  # noqa: E402
+import state, testkit, tracks, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -135,7 +135,8 @@ check("and b's names b's", "bound to environment `side`" in ctx, True)
 b.j("todo", "chore on side"); b.j("todo", "auto", "on")
 out = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "Stop", "session_id": "bbbbbbbb-2", "transcript_path": str(b.path)}),
                      capture_output=True, text=True, timeout=60).stdout
-check("a stop hold reads the session's environment: b is held for side's list", "auto is on" in json.loads(out).get("reason", ""), True)
+check("a stop hold reads the session's environment: b is held for side's list",
+      "auto is on" in testkit.hold(out)[0], True)
 out = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "Stop", "session_id": "aaaaaaaa-1", "transcript_path": str(a.path)}),
                      capture_output=True, text=True, timeout=60).stdout
 check("a, on third, is not held for side's list", "auto is on" in (json.loads(out).get("reason", "") if out.strip() else ""), False)
@@ -239,7 +240,8 @@ check("and a subagent is never bound to an environment", tracks.bound(root2, "ag
 check("nor does it count as a session on one", "agent-ab12" in json.dumps(tracks.live(root2)), False)
 p = subprocess.run([str(root2 / "hook.py")], input=json.dumps({**sub, "tool_input": {"command": '.journal/journal.py switch "elsewhere"'}, "tool_name": "Bash"}),
                    capture_output=True, text=True, timeout=60)
-check("a subagent switching environments is refused as a journal write, as before", "from a subagent is refused" in p.stdout, True)
+check("a subagent switching environments is refused — and by verb, not only by grant",
+      "moves a SESSION" in testkit.denied(p.stdout), True)
 (root2 / "settings.json").write_text(json.dumps({"bind_on_start": True, "one_session_per_environment": False}))
 check("with the rule off, the same session is free", (q.fire("Stop"), "IS TAKEN" in q.write()), ("", False))
 code, out = x.j("switch", "default")
@@ -295,6 +297,206 @@ check("`journal environments claim` is the same command, eviction and all",
 code, out = a.j("environments", "switch", "held-env")
 check("and every other lifecycle verb answers under the noun too",
       (code, tracks.bound(root2, "aaaaaaaa-6")), (0, "held-env"))
+
+# ─────────────── a subagent writes only what its dispatcher lent it ───────────────────────
+# The grant is declared twice — by the session, in the record; by the subagent, on its
+# command line — because nothing can DETECT a subagent: its shell carries the parent's id.
+import grants as _g
+gd = Path(tempfile.mkdtemp()) / "proj"
+testkit.make(gd, Path(__file__).resolve().parent)
+groot = gd / ".journal"
+genv = {**os.environ, transcript.SESSION_ENV: "gs1"}
+gpath = transcript.project_dir(gd) / "gs1.jsonl"; gpath.parent.mkdir(parents=True, exist_ok=True); gpath.write_text("")
+gP = testkit.Project(gd)
+gP.hook("SessionStart", source="startup", session_id="gs1", transcript_path=str(gpath))
+gP.cli("prepare", "scout", session="gs1")
+gP.cli("switch", "default", session="gs1")
+
+
+def sub(cmd):
+    """One subagent tool call: the parent's session id, plus an agent_id."""
+    return gP.hook("PreToolUse", session_id="gs1", transcript_path=str(gpath), agent_id="a1",
+                   tool_name="Bash", tool_input={"command": cmd})[1]
+
+
+J2 = str(groot / "journal.py")
+check("ungranted, a subagent's write is refused",
+      "deny" in sub(f'{J2} pins add "from a subagent"'), True)
+gP.cli("grant", "scout", session="gs1")
+check("granted but unnamed, still refused — the flag is the subagent's half of the grant",
+      ("deny" in sub(f'{J2} pins add "x"'),
+       "needs the environment it was lent" in testkit.denied(sub(f'{J2} pins add "x"'))),
+      (True, True))
+# A REFUSAL MUST NOT OFFER A WAY ROUND ITSELF. This one used to list every environment the
+# session had lent and suggest the first: a trial subagent read the list, picked another
+# dispatch's environment, and filed eight pins into it. It was obeying a good message that
+# asked for the wrong thing.
+_wrong = testkit.denied(sub(f'{J2} --env="default" pins add "x"'))
+check("naming an environment nobody lent is refused too", bool(_wrong), True)
+check("and the refusal names no other environment, and says to report rather than choose",
+      ("scout" in _wrong, "not something to work around" in _wrong, "Report to the agent" in _wrong),
+      (False, True, True))
+check("granted AND named: it writes",
+      "deny" in sub(f'{J2} --env="scout" pins add "what I found"'), False)
+check("its reads were never gated", "deny" in sub(f"{J2} pins"), False)
+# THE ONE THE ADVERSARIAL PASS FOUND: a subagent has no session, so `switch` would move the
+# DISPATCHER's — the ground under the agent that sent it.
+check("switch stays refused even on the granted environment",
+      ("deny" in sub(f'{J2} --env="scout" switch "scout"'),
+       "moves a SESSION" in testkit.denied(sub(f'{J2} --env="scout" switch "scout"'))),
+      (True, True))
+check("and so does prepare", "deny" in sub(f'{J2} --env="scout" prepare "another"'), True)
+# A GRANT LENDS ONE ENVIRONMENT. Everything a subagent writes there is confined to it —
+# but a RULE binds every environment, for every session, forever, and lives in the shared
+# record. That is the fact-of-unknown-provenance the whole mechanism exists to prevent.
+check("a rule binds every environment, so a subagent may not write one",
+      ("binds every environment" in testkit.denied(sub(f'{J2} --env="scout" rules add "everyone must"'))),
+      True)
+check("but what belongs to the lent environment goes through",
+      [bool(testkit.denied(sub(f'{J2} --env="scout" {v}'))) for v in
+       ('pins add "a finding"', 'work start "digging"', 'todos add "later"')],
+      [False, False, False])
+# C2 — THE TWO LISTS CANNOT DRIFT APART. A verb named as forbidden that the gate cannot
+# reach is a refusal nothing enforces: five of them were, and a granted subagent could have
+# evicted a live session with `journal claim`.
+check("every verb NEVER refuses is one the gate can actually see", _g.unreachable(), set())
+# C1/C3 — the matrix: every never-verb, in both its spellings, granted, is refused
+for v, spelling in (("claim", f'{J2} --env="scout" claim "scout" "mine"'),
+                    ("grant", f'{J2} --env="scout" grant "scout"'),
+                    ("environments switch", f'{J2} --env="scout" environments switch "scout"'),
+                    ("environments remove", f'{J2} --env="scout" environments remove "scout"'),
+                    ("prepare", f'{J2} --env="scout" prepare "another"')):
+    check(f"granted, a subagent is still refused `{v}`", bool(testkit.denied(sub(spelling))), True)
+# L3 — what it wrote survives revocation; a revoke closes a door, it does not undo
+before = gP.cli("--env=scout", "pins", session="gs1")[1]
+gP.cli("grant", "--off", "scout", session="gs1")
+check("revoked: refused again", "deny" in sub(f'{J2} --env="scout" pins add "x"'), True)
+check("and what it wrote is untouched", gP.cli("--env=scout", "pins", session="gs1")[1], before)
+# L1 — the grant dies with the session, which was a sentence before it was a fact
+gP.cli("grant", "scout", session="gs1")
+check("granted again", "deny" in sub(f'{J2} --env="scout" pins add "y"'), False)
+gP.hook("SessionEnd", session_id="gs1", transcript_path=str(gpath), reason="exit")
+check("and SessionEnd takes it back — a resumed session lends nothing it is not watching",
+      "deny" in sub(f'{J2} --env="scout" pins add "z"'), True)
+# I1/I2 — WHAT IT MAY TOUCH, measured. A granted subagent's whole write repertoire changes
+# files under its own environment and nothing else: not the record, not another environment,
+# not the bindings. That property is why docs, tools and rules are refused rather than
+# merely discouraged — each writes somewhere every session reads.
+import hashlib as _h
+gP.cli("grant", "scout", session="gs1")
+
+
+def _snap():
+    out = {}
+    for f in (groot).rglob("*"):
+        if f.is_file() and "__pycache__" not in str(f) and not f.name.endswith(".py"):
+            out[str(f.relative_to(groot))] = _h.md5(f.read_bytes()).hexdigest()
+    return out
+
+
+_before = _snap()
+for args in (["--env=scout", "work", "start", "digging"], ["--env=scout", "pins", "add", "a finding"],
+             ["--env=scout", "todos", "add", "later"], ["--env=scout", "reminders", "add", "keep at it"]):
+    gP.cli(*args, session="gs1")
+_touched = sorted(k for k in set(_before) | set(_snap()) if _before.get(k) != _snap().get(k))
+check("a granted write touches only its own environment's files",
+      [k for k in _touched if not k.startswith("environments/scout/")], [])
+check("and it touches all four of them",
+      sorted({k.split("/")[2] for k in _touched}),
+      ["pins.json", "reminders.json", "todo", "work.json"])
+for v in ('docs add "r" --abstract=x', 'tools add t "T" --summary=s --usage=u --entry=x'):
+    check(f"a granted subagent may not write the project's own stores: {v[:9]}",
+          "the PROJECT's" in testkit.denied(sub(f'{J2} --env="scout" {v}')), True)
+
+# L4 — granting twice is idempotent and says so
+gP.cli("grant", "scout", session="gs1")
+code, out = gP.cli("grant", "scout", session="gs1")
+check("a second grant of the same environment is idempotent and says so",
+      (code, "already" in out, _g.granted(groot, "gs1").count("scout")), (0, True, 1))
+
+# ─────────── a subagent's OWN ledger, and a to-do assigned and held ───────────────────────
+# Two subagents lent one environment shared one work.json before this: B closed A's work by
+# saying A's words, and the record could not tell them apart.
+ad = Path(tempfile.mkdtemp()) / "proj"
+testkit.make(ad, Path(__file__).resolve().parent)
+aroot = ad / ".journal"
+apath = transcript.project_dir(ad) / "as1.jsonl"
+apath.parent.mkdir(parents=True, exist_ok=True); apath.write_text("")
+aP = testkit.Project(ad)
+aP.hook("SessionStart", source="startup", session_id="as1", transcript_path=str(apath))
+aP.cli("prepare", "shared", session="as1"); aP.cli("switch", "default", session="as1")
+aP.cli("grant", "shared", session="as1")
+aJ = str(aroot / "journal.py")
+
+
+def _agent(who, event="PreToolUse", **kw):
+    return aP.hook(event, session_id="as1", transcript_path=str(apath), agent_id=who, **kw)[1]
+
+
+# it is told its own name, once, on its first tool call
+_first = _agent("a3f9", "PostToolUse", tool_name="Bash", tool_input={"command": "ls"},
+                tool_response={"stdout": ""})
+_told = testkit.flat((json.loads(_first).get("hookSpecificOutput") or {}).get("additionalContext", ""))
+check("a subagent is told its own name on its first tool call",
+      ("YOU ARE AGENT `a3f9`" in _told, '--as="a3f9"' in _told), (True, True))
+check("and only once", _agent("a3f9", "PostToolUse", tool_name="Bash",
+                             tool_input={"command": "ls"}, tool_response={"stdout": ""}).strip(), "")
+check("a second agent is told its own",
+      "YOU ARE AGENT `b7c1`" in _agent("b7c1", "PostToolUse", tool_name="Bash",
+                                       tool_input={"command": "ls"}, tool_response={"stdout": ""}), True)
+# separate ledgers
+for _w in ("a3f9", "b7c1"):
+    aP.cli("--env=shared", f"--as={_w}", "work", "start", f"{_w} is on it", session="as1")
+check("each agent's work is its own file",
+      [json.loads((aroot / "environments" / "shared" / "agents" / w / "work.json").read_text())["work"][0]["subject"]
+       for w in ("a3f9", "b7c1")],
+      ["a3f9 is on it", "b7c1 is on it"])
+check("and one cannot close the other's by saying its words",
+      "closes nothing" in aP.cli("--env=shared", "--as=b7c1", "work", "end", "a3f9 is on it", session="as1")[1],
+      True)
+# a claimed name is checked against the payload
+check("claiming another agent's name is refused",
+      "is not you" in testkit.denied(_agent("b7c1", tool_name="Bash",
+          tool_input={"command": f'{aJ} --env="shared" --as="a3f9" work start "x"'})), True)
+# assignment and the hold
+aP.cli("--env=shared", "todos", "add", "refactor the parser", session="as1")
+check("a to-do is assigned to one agent",
+      "assigned to `a3f9`" in aP.cli("--env=shared", "assign", "1", "--to=a3f9", session="as1")[1], True)
+check("and held against a second agent",
+      "held by `a3f9`" in aP.cli("--env=shared", "assign", "1", "--to=b7c1", session="as1")[1], True)
+check("a held row is not offered to the list",
+      [t["n"] for t in __import__("todo").ready(aroot, "shared")], [])
+# report, but never close
+check("an agent it is not assigned to may not report it",
+      "not assigned to you" in aP.cli("--env=shared", "--as=b7c1", "todos", "report", "1", "done", session="as1")[1],
+      True)
+_r = aP.cli("--env=shared", "--as=a3f9", "todos", "report", "1", "split the two entry points", session="as1")[1]
+check("the agent holding it reports it finished, and is told the parent closes it",
+      ("reported finished" in _r, "closes it" in _r), (True, True))
+check("and the row is still OPEN, waiting on the parent",
+      [t["n"] for t in __import__("todo").reported(aroot, "shared")], [1])
+check("the parent closes it", aP.cli("--env=shared", "todos", "done", "1", "reviewed and merged", session="as1")[0], 0)
+
+# STARTING A ROW CLAIMS IT. Measured in a dogfood run: an agent ran `todos start`, worked
+# the row and was refused by `report` for holding nothing, because `started` and `assigned`
+# were two facts and only a dispatcher set the second.
+aP.cli("--env=shared", "todos", "add", "unpick the two entry points", session="as1")
+_s = aP.cli("--env=shared", "--as=a3f9", "todos", "start", "2", session="as1")[1]
+check("an agent that starts an unheld row claims it, and is told so",
+      ("held for `a3f9`" in _s, "todos done" in _s), (True, False))
+check("the hold is real: the row leaves the ready list",
+      [t["n"] for t in __import__("todo").ready(aroot, "shared")], [])
+check("and it can now report on it",
+      "reported finished" in aP.cli("--env=shared", "--as=a3f9", "todos", "report", "2",
+                                    "split them", session="as1")[1], True)
+aP.cli("--env=shared", "todos", "add", "another row", session="as1")
+aP.cli("--env=shared", "assign", "3", "--to=a3f9", session="as1")
+check("a row another live agent holds cannot be started out from under it",
+      "held by `a3f9`" in aP.cli("--env=shared", "--as=b7c1", "todos", "start", "3", session="as1")[1], True)
+check("reporting a row nobody holds says how to claim it",
+      "start 4 --as=b7c1" in (aP.cli("--env=shared", "todos", "add", "unheld", session="as1"),
+                              aP.cli("--env=shared", "--as=b7c1", "todos", "report", "4",
+                                     "x", session="as1"))[1][1], True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

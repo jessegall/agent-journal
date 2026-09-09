@@ -24,7 +24,7 @@ os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"  # a pull inside a suite runs no suit
 
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, todo, transcript  # noqa: E402
+import state, testkit, todo, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -59,14 +59,12 @@ class Session:
         self.path.write_text("")
         self.J = str(d / ".journal" / "journal.py")
         self.env = {**os.environ, transcript.SESSION_ENV: stem}
+        self.P = testkit.Project(d)
         self.n = 0
 
     def fire(self, event, **extra):
-        payload = {"hook_event_name": event, "session_id": self.stem,
-                   "transcript_path": str(self.path), **extra}
-        p = subprocess.run([str(self.d / ".journal" / "hook.py")], input=json.dumps(payload),
-                           capture_output=True, text=True, timeout=60)
-        return p.stdout
+        return self.P.hook(event, session_id=self.stem,
+                           transcript_path=str(self.path), **extra)[1]
 
     def say(self, text, who="assistant"):
         self.n += 1
@@ -80,8 +78,7 @@ class Session:
                     "usage": {"input_tokens": 1000}}}) + "\n")
 
     def journal(self, *args):
-        p = subprocess.run([self.J, *args], env=self.env, capture_output=True, text=True, timeout=60)
-        return p.returncode, p.stdout + p.stderr
+        return self.P.cli(*args, session=self.stem)
 
     def stop(self, after_hold=False):
         """(label the user sees, text the agent reads) of this stop, or ('', '') if silent.
@@ -92,11 +89,9 @@ class Session:
         out = self.fire("Stop", stop_hook_active=after_hold)
         if not out.strip():
             return "", ""
-        got = json.loads(out)
-        if got.get("decision") != "block":
-            return "", (got.get("hookSpecificOutput") or {}).get("additionalContext", "")
-        # the hold is ONE line, "journal: <label> — <body>"; its details sit behind `journal next`
-        label, _, ctx = got["reason"][len("journal: "):].partition(" — ")
+        label, ctx = testkit.hold(out)
+        if not label:
+            return "", ctx
         details = state.get(self.d / ".journal", "next_text", "", stem=self.stem) if "journal.py next" in ctx else ""
         return "journal reminded Claude: " + label, "journal: " + ctx + ("\n" + details if details else "")
 
@@ -118,7 +113,12 @@ s.journal("todo", "third chore")
 s.start()
 s.say("hello", "user"); s.say("[!reply] hi")
 label, text = s.stop()
-check("auto off: an idle stop says what waits as context, never a hold", (label, "not an instruction" in text), ("", True))
+# HELD AND SAID ARE THE SAME SHAPE NOW. Both travel in additionalContext and both re-open
+# the turn — the reference is explicit about it — so an empty label no longer means "said
+# rather than held". What is worth asserting is which subject spoke, and that it does not
+# read as an instruction.
+check("auto off: an idle stop says what waits, and does not instruct",
+      (label, "not an instruction" in text), ("journal reminded Claude: 3 to-do(s) waiting on `default`", True))
 s.journal("todo", "auto", "on")
 label, text = s.stop()
 check("auto on with the same list: the flag change is a new state, held, naming to-do 1",
@@ -198,8 +198,8 @@ label, _ = s.stop()
 check("held with auto on", label, AUTO_NEXT + "1 to-do(s) waiting")
 s.journal("todo", "auto", "off")
 label, text = s.stop()
-check("auto off is a new state: the plain reminder, as context, not an instruction",
-      (label, "not an instruction" in text), ("", True))
+check("auto off is a new state: the plain reminder, not an instruction",
+      (label.endswith("to-do(s) waiting on `default`"), "not an instruction" in text), (True, True))
 label, text = s.stop()
 check("and silent after", (label, text), ("", ""))
 s.journal("todo", "auto", "on")
@@ -214,7 +214,8 @@ s.journal("switch", "other")
 s.journal("todo", "other chore")
 s.start()
 label, text = s.stop()
-check("on an environment with auto off, its own list is a reminder only", (label, "not an instruction" in text), ("", True))
+check("on an environment with auto off, its own list is a reminder only",
+      (label.endswith("waiting on `other`"), "not an instruction" in text), (True, True))
 s.journal("switch", "--back")
 label, text = s.stop()
 check("back on the auto environment: held for its list", (label, "default chore" in text), (AUTO_NEXT + "1 to-do(s) waiting", True))
@@ -297,8 +298,8 @@ check("the start block lists the question for the user", ("waiting on the user: 
 s.journal("todo", "start", "2"); s.journal("end", "plain chore")
 s.journal("todo", "ask", "3", "keep or drop the abstract Wizard factory?")
 label, text = s.stop()
-check("every remaining to-do waits on the user: said as context, not held",
-      (label, "every waiting to-do waits on the user" in text), ("", True))
+check("every remaining to-do waits on the user, and nothing is asked of the agent",
+      ("nothing on the list can be picked up" in label, "what each waits on" in text), (True, True))
 label, text = s.stop()
 check("and not repeated for the same state", (label, text), ("", ""))
 s.say("None. And drop the factory.", "user")
@@ -308,7 +309,8 @@ label, text = s.stop()
 check("that to-do is open work now: the open hold", label, AUTO_OPEN)
 s.journal("end", "needs a ruling")
 label, text = s.stop()
-check("with 3 still waiting on the user, the idle stop says so once more", (label, "every waiting to-do waits" in text), ("", True))
+check("with 3 still waiting on the user, the idle stop says so once more",
+      "nothing on the list can be picked up" in label, True)
 s.journal("todo", "auto", "off")
 code, out = s.journal("todo", "ask", "3", "still?")
 check("ask works with auto off too — it is a fact about the to-do", code, 0)
@@ -443,7 +445,8 @@ d = project(); s = Session(d, "s1")
 s.journal("todo", "q one"); s.journal("todo", "q two"); s.start()
 s.journal("todo", "ask", "1", "a or b?"); s.journal("todo", "ask", "2", "c or d?")
 label, text = s.stop()
-check("auto off, both waiting on the user: nothing held", label, "")
+check("auto off, both waiting on the user: the list is reported, not started",
+      label.endswith("to-do(s) waiting on `default`"), True)
 s.journal("todo", "answer", "2", "d")
 label, text = s.stop()
 check("auto off: an answered to-do is held once, as the user's word to do it",

@@ -90,28 +90,29 @@ s = S(hold_stop_on_untagged=False)
 s.user("go"); s.say("[!reply] fine")
 check("nothing standing: the stop says nothing", s.stop(), ("", ""))
 s.j("reminders", "add", R)
+# WITH NOTHING ELSE PENDING, THE STOP TELLS THE USER AND NOBODY ELSE. `additionalContext`
+# at a stop re-opens the turn — the reference says so and this session watched it happen —
+# so a reminder with nothing to do would wake the session for no reason. The person gets
+# their confirmation in `systemMessage`; the agent is reminded mid-turn and at every start,
+# where reminding costs no turn.
 chain = [s.stop(), s.stop(True), s.stop(True)]
-check("said at the head of the chain", R in chain[0][1], True)
-check("and the user sees it too, in their own line", R in chain[0][0], True)
-check("the agent's copy names the command that ends it",
-      'journal reminders done' in chain[0][1], True)
-# THE LOOP THIS COST A LIVE SESSION. A Stop that returns anything is re-entered with
-# `stop_hook_active`, so a reminder that answered its own re-entry woke the session again
-# with nobody asking for anything — three times, in front of the user.
-check("NOT on the re-entries it would otherwise cause",
-      [R in read for _, read in chain[1:]], [False, False])
-s.say("[!reply] and again"); s.user("more"); s.say("[!reply] fine")
-check("but at the head of the NEXT chain, every time", R in s.stop()[1], True)
+check("the user is told", R in chain[0][0], True)
+check("and the turn is not re-opened for it", chain[0][1], "")
+check("no furniture rides with it: the retire command is taught where it is read on purpose",
+      'journal reminders done' in chain[0][0], False)
 
 # ------------------------------------------------------------------ it rides a hold, never competes with it
 s2 = S()
 s2.j("reminders", "add", R)
 s2.user("go"); s2.say("no tag at all")
 seen, read = s2.stop()
-check("the queue still raises its subject", "untagged" in seen, True)
+# WHEN SOMETHING IS ALREADY HOLDING, the reminder rides along for free: the turn is being
+# re-opened anyway, so the agent reads it there.
+check("the queue still raises its subject", "untagged" in read, True)
 check("and the reminder rides along in the same reply", R in read, True)
-check("the user's line carries the reminder above the hold's own",
-      seen.splitlines()[0].startswith("journal: reminded"), True)
+# A REMINDER IS NOT AN ERROR, AND NEITHER IS A NUDGE. Guidance goes in the field the
+# harness does not announce as a failure.
+check("and nothing is labelled an error", json.loads(s2.fire("Stop")).get("decision"), None)
 
 # ------------------------------------------------------------------ retiring it, and only with a reason
 s3 = S(hold_stop_on_untagged=False)
@@ -152,13 +153,15 @@ check("mid-turn: the instruction and its condition", (R in mid, "the release is 
 check("and nothing else — no command, no gloss on what until means",
       ("journal reminders done" in mid, "without asking" in mid), (False, False))
 seen, read = sT.stop()
-check("the stop's copy still teaches what ends it, once per chain",
-      "journal reminders done" in read, True)
+check("the stop's copy is the same one form — no gloss there either",
+      "journal reminders done" in seen, False)
+check("and it is still the instruction and its condition",
+      (R in seen, "the release is cut" in seen), (True, True))
 
 s6 = S(reminder_every=0, hold_stop_on_untagged=False)
 s6.j("reminders", "add", R)
 check("reminder_every 0 leaves it to the stop", [R in s6.tool() for _ in range(5)], [False] * 5)
-check("the stop still says it", R in s6.stop()[1], True)
+check("the stop still says it", R in "".join(s6.stop()), True)
 
 s7 = S(reminder_every=2, silenced=["reminders"], hold_stop_on_untagged=False)
 s7.j("reminders", "add", R)
@@ -171,11 +174,13 @@ s8.j("prepare", "elsewhere"); s8.j("switch", "elsewhere")
 check("another environment does not inherit it", s8.stop(), ("", ""))
 check("nor does its list", "Nothing is being repeated" in s8.j("reminders").stdout, True)
 s8.j("switch", "default")
-check("back where it was written, it is said again", R in s8.stop()[1], True)
+# THESE ARE ABOUT SCOPE, NOT ABOUT WHICH FIELD: whether something else happens to be
+# holding at the same stop decides that, and it is not what is under test here.
+check("back where it was written, it is said again", R in "".join(s8.stop()), True)
 check("moved", s8.j("reminders", "move", "1", "elsewhere").returncode, 0)
-check("gone from here", s8.stop(), ("", ""))
+check("gone from here", R in "".join(s8.stop()), False)
 s8.j("switch", "elsewhere")
-check("and standing there", R in s8.stop()[1], True)
+check("and standing there", R in "".join(s8.stop()), True)
 
 # ------------------------------------------------------------------ the cap
 s9 = S(reminder_max_chars=40, hold_stop_on_untagged=False)

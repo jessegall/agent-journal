@@ -135,6 +135,41 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
             "" if here else "this session has no runtime file — nothing has reached the hook here",
         ))
 
+    import hook as hook_mod   # the constants and the assembled block both live there
+
+    # DID IT ARRIVE? Everything above answers whether the hook is wired and whether it ran.
+    # A consumer had both green while its start block — 120,360 characters against a
+    # documented 10,000-character ceiling — was replaced by a path to a file nobody was told
+    # to open. The hook fired, reported success, and delivered a preview of its own header.
+    # This is the row that would have said so.
+    if sid:
+        try:
+            got = transcript.start_context(transcript.find(project, sid))
+        except Exception:  # a checker must never be the thing that breaks
+            got = None
+        if got is None:
+            out.append(("the start block's delivery", None,
+                        "no SessionStart context in this transcript yet — nothing to check"))
+        elif got[1]:
+            out.append(("the start block ARRIVED, not just fired", False,
+                        f"the harness replaced it with a persisted-output path: it was over "
+                        f"{hook_mod.INLINE_CAP:,} characters and the agent never read it. "
+                        "`journal carry` prints it now; `journal cleanup read` is how the "
+                        "record gets smaller."))
+        else:
+            out.append((f"the start block arrived, not just fired ({len(got[0]):,} chars)", True, ""))
+
+    # AND IS THE NEXT ONE GOING TO FIT? Measured, in the same spirit as the window: the
+    # block is assembled here without writing anything, and compared against the budget.
+    try:
+        block = hook_mod.carried("startup")
+        room = len(block) <= hook_mod.INLINE_BUDGET
+        out.append((f"the next start block is {len(block):,} chars", room or None,
+                    "" if room else (f"over the {hook_mod.INLINE_BUDGET:,} budget and heading for the "
+                                     f"{hook_mod.INLINE_CAP:,} ceiling — `journal cleanup read`")))
+    except Exception:
+        pass
+
     # A COMMITTED RUNTIME FOLDER FORGES THE EVIDENCE ABOVE on every clone. Checked, not
     # assumed; and only where there is a repository to ask.
     ign = _ignored(project, ".journal/runtime/x.json")

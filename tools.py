@@ -271,7 +271,7 @@ def carry(root: Path, cap: int = 20) -> str:
     for t in tools[:cap]:
         lines.append(f"  {t['name']:<22} {t.get('summary', '')}"
                      + (f"\n{'':24} {t['usage']}" if t.get("usage") else ""))
-    more = f"\n  … and {len(tools) - cap} more; `journal tools` lists them." if len(tools) > cap else ""
+    more = fmt.cut(cap, len(tools), "journal tools")
     return (f"TOOLS OF THIS PROJECT, {len(tools)} — scripts kept for repeated work; use one before "
             "writing it again. `journal tools <name>` reads it, `journal tools run <name> …` runs it:\n"
             + "\n".join(lines) + more)

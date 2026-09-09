@@ -93,7 +93,7 @@ _BEFORE_TRACKS = "default"
 def track_segments(lines: list[Line]) -> list[tuple[str, int, int]]:
     """(environment, first line, last line) for every stretch of this transcript, in order.
 
-    A ENVIRONMENT HAS A TRANSCRIPT: everything ever said while it was current, across every
+    AN ENVIRONMENT HAS A TRANSCRIPT: everything ever said while it was current, across every
     session. The transcript records where that is. Every session start injects "you are
     on environment `X`", and every switch prints "on X — …" as its own output, so the stretch
     between one mark and the next belongs to the environment the mark names. Before the first
@@ -280,8 +280,11 @@ def _hook_line(rec: dict) -> tuple[str, str] | None:
     ended. The check went quiet and every green light stayed green.
 
     `hook_additional_context` is what actually reached the model. `hook_success` is the raw
-    result and would double every event, so it is taken only for a Stop — which cannot carry
-    additionalContext at all, and whose hold therefore appears nowhere else.
+    result and would double every event, so it is taken only for a Stop, whose BLOCKED hold
+    travels in `reason` and appears nowhere else. (This docstring used to say a Stop "cannot
+    carry additionalContext at all". It can — `DELIVERS_CONTEXT` has listed it since it was
+    measured, and the reference documents it — so the sentence described a belief the code
+    had already stopped holding.)
     """
     a = rec.get("attachment") or {}
     kind, event = a.get("type"), a.get("hookEvent")
@@ -294,6 +297,43 @@ def _hook_line(rec: dict) -> tuple[str, str] | None:
     if kind == "hook_success" and event in ("Stop", "SubagentStop"):
         return str(a.get("stdout") or ""), rec.get("timestamp", "")
     return None
+
+
+#: WHAT THE HARNESS LEAVES BEHIND when a hook's output was too big to inline. Both must be
+#: present: `<persisted-output>` is the harness's own wrapper and appears in nothing this
+#: package writes, and requiring the second string as well means ordinary prose that happens
+#: to mention a large output cannot raise a false alarm.
+PERSISTED = ("<persisted-output>", "Output too large")
+
+
+def start_context(path: Path) -> tuple[str, bool] | None:
+    """(what the last SessionStart injection actually delivered, whether it was persisted).
+
+    THE THIRD FACT PAST WIRED AND FIRED. `verify` could say a hook is configured and that it
+    has run, and a real consumer had both green while its 120,360-character start block was
+    replaced by a path to a file nobody was told to open. Firing is not arriving, and this
+    is the only place the difference is written down: the transcript records what reached
+    the model, so it can be read back and checked.
+    """
+    if not path or not path.is_file():
+        return None
+    got = None
+    with path.open() as fh:
+        for line in fh:
+            if "hook_additional_context" not in line:
+                continue
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            a = rec.get("attachment") or {}
+            if a.get("type") != "hook_additional_context" or a.get("hookEvent") != "SessionStart":
+                continue
+            c = a.get("content")
+            text = ("\n".join(x for x in c if isinstance(x, str)) if isinstance(c, list)
+                    else str(c or ""))
+            got = (text, all(m in text for m in PERSISTED))
+    return got
 
 
 def _kind(rec: dict, has_tool_result: bool) -> str:

@@ -89,7 +89,7 @@ git("init", "-q"); git("config", "user.email", "t@t"); git("config", "user.name"
 commit("kit: the placement ruling landed\n\nProse about to-do 2 that must not match.\n\nJournal: todos done 1\n")
 out = fire()
 check("the commit's trailer closes the to-do, naming its environment",
-      ("CLOSED WHAT IT NAMED" in out, "done 1: the placement vocabulary" in out, "`alpha`" in out),
+      ("closed what it named" in out, "done 1: the placement vocabulary" in out, "`alpha`" in out),
       (True, True, True))
 code, listed = j("todos", "--all")
 check("and the close cites the commit, not a summary of it",
@@ -100,7 +100,7 @@ check("a second event on the same sha says nothing", fire(), "")
 commit("kit: again\n\nJournal: todos done 1\n")
 out = fire()
 check("a new commit naming an already-closed to-do is a no-op with a note, not a failure",
-      ("was already closed" in out, "CLOSED NOTHING" in out), (True, True))
+      ("was already closed" in out, "closed nothing" in out), (True, True))
 
 commit("kit: nothing there\n\nJournal: todos done 77\n")
 check("a number no environment has closes nothing, and says so",
@@ -143,7 +143,7 @@ check("todos start hands over the trailer that closes it",
 commit("kit: a commit with no trailer at all\n")
 out = fire()
 check("a commit that closed nothing, with a to-do started, teaches the trailer",
-      ("CLOSED NO TO-DO" in out, "Journal: todos done 4" in out), (True, True))
+      ("that commit closed no to-do" in out, "Journal: todos done 4" in out), (True, True))
 commit("kit: another one with no trailer\n")
 check("and it is said once a session, not at every commit", fire(), "")
 
@@ -190,6 +190,21 @@ check("a post-commit that is not ours is never clobbered — the line to add is 
        "todos from-commit" in out), (True, True, True))
 check("and --no-git-hook will not delete a hook it did not write",
       ("not the journal's" in install("--no-git-hook"), hookfile.is_file()), (True, True))
+
+# ─────────────── two trailers, and a headline that tells both halves ──────────────────────
+j("todos", "add", "the first of two"); j("todos", "add", "the second of two")
+first = [l for l in j("todos")[1].splitlines() if "the first of two" in l][0].split()[0]
+second = [l for l in j("todos")[1].splitlines() if "the second of two" in l][0].split()[0]
+commit(f"kit: finishes two at once\n\nJournal: todos done {first}\nJournal: todos done {second}\n")
+out = fire()
+check("both trailers close, not just the first",
+      (f"done {first}:" in out, f"done {second}:" in out), (True, True))
+j("todos", "add", "one that closes")
+n = [l for l in j("todos")[1].splitlines() if "one that closes" in l][0].split()[0]
+commit(f"kit: one real, one bogus\n\nJournal: todos done {n}\nJournal: todos done 9999\n")
+out = fire()
+check("when some close and some do not, the headline says BOTH halves",
+      ("closed 1, and could not close 1" in out, "! " in out), (True, True))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -10,14 +10,14 @@ reads and the journal's own commands are never refused; `switch` ends all of it;
 session holds no environment, so a second session is not told the start one is taken; a
 delegated subagent is never asked to choose; and `bind_on_start` puts the old binding back.
 """
-import json, os, shutil, subprocess, sys, tempfile
+import json, os, shutil, sys, tempfile
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, tracks, transcript  # noqa: E402
+import state, testkit, tracks, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -43,15 +43,23 @@ def project(settings: dict | None = None) -> Path:
     return d
 
 
+#: ONE INTERPRETER PER PROJECT. This suite makes six throwaway projects (d, d2 .. d6), each
+#: needing its own long-lived server bound to its own `.journal`.
+_PROJECTS: dict = {}
+
+
+def _project(d):
+    if str(d) not in _PROJECTS:
+        _PROJECTS[str(d)] = testkit.Project(d)
+    return _PROJECTS[str(d)]
+
+
 def fire(d, event, stem, **extra):
     path = transcript.project_dir(d) / f"{stem}.jsonl"
     if not path.exists():
         path.write_text("")
-    payload = {"hook_event_name": event, "session_id": stem,
-               "transcript_path": str(path), **extra}
-    p = subprocess.run([str(d / ".journal" / "hook.py")], input=json.dumps(payload),
-                       capture_output=True, text=True, timeout=60)
-    return json.loads(p.stdout) if p.stdout.strip() else {}
+    code, out = _project(d).hook(event, session_id=stem, transcript_path=str(path), **extra)
+    return json.loads(out) if out.strip() else {}
 
 
 def context_of(out: dict) -> str:
@@ -64,10 +72,7 @@ def flat(text: str) -> str:
 
 
 def journal(d, stem, *args):
-    env = {**os.environ, transcript.SESSION_ENV: stem}
-    p = subprocess.run([str(d / ".journal" / "journal.py"), *args],
-                       env=env, capture_output=True, text=True, timeout=60)
-    return p.returncode, p.stdout + p.stderr
+    return _project(d).cli(*args, session=stem)
 
 
 # ------------------------------------------------- a fresh session is bound to nothing
@@ -163,12 +168,10 @@ check("and no prompt carries a choice", context_of(
 # the hook ever ran went with it.
 d5 = project()
 missing = transcript.project_dir(d5) / "s-late.jsonl"     # deliberately NOT created
-out = subprocess.run([str(d5 / ".journal" / "hook.py")],
-                     input=json.dumps({"hook_event_name": "SessionStart", "source": "startup",
-                                       "session_id": "s-late", "transcript_path": str(missing)}),
-                     capture_output=True, text=True, timeout=60)
+_, out_hook = _project(d5).hook("SessionStart", source="startup", session_id="s-late",
+                                transcript_path=str(missing))
 mark = d5 / ".journal" / "runtime" / "s-late.json"
-check("the start block is still handed over", "THE JOURNAL IS IN FORCE" in out.stdout, True)
+check("the start block is still handed over", "THE JOURNAL IS IN FORCE" in out_hook, True)
 check("the runtime file survives a transcript that is not on disk yet", mark.is_file(), True)
 check("and it says the hook ran",
       json.loads(mark.read_text()).get("session_started") if mark.is_file() else None, "startup")

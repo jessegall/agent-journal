@@ -35,7 +35,9 @@ LOCK = "record.json.lock"
 #: write them into the session running the upgrade — the defect being fixed.
 RETIRED = "state.json"
 
-IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto", "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read", "schema"}
+IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto",
+             "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read",
+             "agent_seen", "schema"}
 
 
 def is_record(key: str) -> bool:
@@ -146,7 +148,35 @@ def env_dir(root: Path, name: str) -> Path:
     return root / ENVS / (slug(name) or "default")
 
 
+#: THE SUBAGENT THIS PROCESS IS ACTING AS, if any. A subagent gets its own ledger UNDER the
+#: environment it was lent — `environments/<name>/agents/<id>/work.json` — so two of them can
+#: never open or close each other's work. Measured before this existed: agent B closed
+#: agent A's work by saying A's words, and the record could not tell them apart, because
+#: both writes carried the dispatching session's id.
+#:
+#: ONLY `work` IS SCOPED THIS WAY. Pins and reminders stay the PARENT's: a subagent reads
+#: them and cannot write one, which is what makes the inheritance one-directional and keeps
+#: it from becoming a cascade with two places to look.
+_AGENT: list = []
+
+AGENTS = "agents"
+
+
+def use_agent(name: str) -> None:
+    _AGENT[:] = [name] if name else []
+
+
+def agent_dir(root: Path, track: str, agent: str) -> Path:
+    return env_dir(root, track) / AGENTS / (slug(agent) or "unnamed")
+
+
+#: What a subagent keeps of its own. Everything else it reads from the environment it is in.
+PER_AGENT = ("work",)
+
+
 def _tracked_file(root: Path, name: str, key: str) -> Path:
+    if _AGENT and key in PER_AGENT:
+        return agent_dir(root, name, _AGENT[0]) / f"{key}.json"
     return env_dir(root, name) / f"{key}.json"
 
 
@@ -181,7 +211,11 @@ def _record(root: Path) -> dict:
         for k, v in held.items():
             s = slug(k) or "default"
             if s in fixed and isinstance(fixed[s], dict) and isinstance(v, dict):
-                for key in ("pins", "work"):
+                # EVERY TRACKED KEY, NOT THE TWO THAT EXISTED WHEN THIS WAS WRITTEN. The
+                # literal pair here silently dropped the loser's reminders the day a third
+                # key was added, which is the quiet loss this package refuses everywhere
+                # else. Iterating TRACKED makes the next key covered by construction.
+                for key in TRACKED:
                     fixed[s][key] = (fixed[s].get(key) or []) + (v.get(key) or [])
             else:
                 fixed[s] = v
@@ -305,6 +339,15 @@ def locked(root: Path, wait: float = 3.0):
     has a timeout of its own and a wedged `journal remember` is a stalled tool with no
     message. A lost race under contention that long is a lost pin, which is visible in
     `pins`; a hang is not visible anywhere.
+
+    ONE LOCK FOR THE PROJECT, NOT ONE PER ENVIRONMENT, and that is deliberate now rather
+    than by default. Granted subagents write concurrently, so the question was asked
+    properly and MEASURED: thirty writers across three environments, and twelve at once to
+    the shared record, lost nothing and never reached the three-second wait — the whole
+    thirty finished in 1.3 seconds. The critical section is a read, a list append and an
+    atomic replace of one small file; it is microseconds, and the wait exists for a wedged
+    process, not for contention. A per-environment lock would buy nothing measurable and
+    would need its own answer for `record.json`, which every environment shares.
     """
     global _depth, _held
     if _depth:

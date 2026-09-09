@@ -193,5 +193,33 @@ pins.add(r11, long_one, AT, 400, key=pins.RULES)
 check("the reading pass keeps the whole claim",
       long_one.split()[-1] in " ".join(cleanup.reading(r11, "default", AT).split()), True)
 
+# THE READING PASS MUST POINT AT THE STORE IT IS READING. A rule with a long form was
+# offered `journal pins show <n>` — a different claim, in a different store, same number.
+r14 = fresh()
+pins.add(r14, "a ruling with reasoning behind it", AT, 400, key=pins.RULES, long="the argument")
+pins.add(r14, "a pin with reasoning behind it", AT, 400, long="the argument")
+out = cleanup.reading(r14, "default", AT)
+check("a rule's long form is read with `rules show`", "journal rules show 1" in out, True)
+check("and never with `pins show`, which is another claim entirely",
+      "journal pins show 1" in out.split("PINS")[0], False)
+check("a pin's long form is still read with `pins show`", "journal pins show 1" in out, True)
+
+# THE STORE THAT IS READ ALOUD MOST OFTEN was the one the checker did not look at.
+import reminders as reminders_mod
+r15 = fresh()
+reminders_mod.add(r15, "run `journal nosuchverb` before every commit", AT, 200)
+reminders_mod.add(r15, "keep touching gone_forever_xyz.py", AT, 200)
+reminders_mod.add(r15, "a reminder that names nothing at all", AT, 200)
+found = {f["text"] for f in cleanup.candidates(r15, "default")}
+check("a reminder naming a verb the CLI does not answer to is a candidate",
+      "run `journal nosuchverb` before every commit" in found, True)
+check("so is one naming a file that is not in the project",
+      "keep touching gone_forever_xyz.py" in found, True)
+check("and one that names nothing checkable is left alone",
+      "a reminder that names nothing at all" in found, False)
+out = cleanup.reading(r15, "default", AT)
+check("the reading pass lists them, because only a reader can judge an --until",
+      ("REMINDERS — 3" in out, "3 reminder(s)" in out), (True, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

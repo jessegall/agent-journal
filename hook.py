@@ -45,7 +45,10 @@ import tags  # noqa: E402
 import context  # noqa: E402
 import docs  # noqa: E402
 import fmt  # noqa: E402
+import agents  # noqa: E402
+import grants  # noqa: E402
 import nudges  # noqa: E402
+import builtin  # noqa: E402
 import pins  # noqa: E402
 import reminders  # noqa: E402
 import work  # noqa: E402
@@ -64,7 +67,8 @@ class Ctx:
     stem. A SUBAGENT's tool call carries the PARENT's transcript and session — measured —
     and only `agent_id` tells them apart; it is keyed `agent-<id>`, the name of its own
     transcript on disk, so that nothing it does can land in the parent's file. In practice
-    the handlers ignore subagents altogether (see `_subagent`), so no such file is written.
+    the handlers ignore subagents altogether (each checks `payload.get("agent_id")` where
+    it matters), so no such file is written.
     """
 
     __slots__ = ("stem", "path")   # not a dataclass: `inspect` is 6ms on every hook event
@@ -204,8 +208,7 @@ def _deferral(conf: dict, ctx: Ctx) -> tuple[str, str] | None:
         return None
     state.put(ROOT, "deferral_at", uid, stem=ctx.stem)
     return (
-        "journal: your reply puts work off — park it as a to-do before going on, or run this "
-        "again if nothing is actually deferred",
+        "park it as a to-do before going on, or run this call again if nothing is deferred",
         f"You wrote:\n  …{said}…\n\nThe user asked for something and this says it will happen "
         "later. Work held only in words lives in this window, and one distraction or one "
         "compaction loses it. Park it now:\n"
@@ -237,13 +240,14 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     standing = work.open_work(ROOT)
     if not asked or not standing or "prompt_reminder" in conf["silenced"]:
         return 0
-    return _context(
-        "UserPromptSubmit",
-        "journal: work is open — " + "; ".join(w["subject"] for w in standing) + ". If this "
-        "asks for something else that can wait, park it before answering: "
-        '`.journal/journal.py todos add "<title>" --brief`, and say it is parked. If it cannot '
-        "wait, `update` the open work and `start` the new one. If it is the same work, carry on.",
-    )
+    # `_say` SUPPLIES THE DASH. A fact that carries its own gets two of them before the
+    # reader reaches the instruction.
+    return _context("UserPromptSubmit", _say(
+        "work is open: " + "; ".join(w["subject"] for w in standing),
+        "if this asks for something else that can wait, park it before answering:",
+        '`.journal/journal.py todos add "<title>" --brief`, and say it is parked;',
+        "if it cannot, `update` the open work and `start` the new one; if it is the same work,",
+        "carry on")[1])
 
 
 def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
@@ -292,12 +296,11 @@ def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
         text += "\n\n" + ruled.replace(
             "Decided, and still in force:",
             "Again, because the block you read at the start is far behind you:")
-    return (
+    return _say(
         f"context {pct:.0f}% full",
-        f"journal: context {pct:.0f}% full — "
-        + ("decide before any other tool runs: `pin \"<claim>\"` or `nothing \"<why>\"`"
-           if gated else "consider what must outlive it"),
-        text,
+        ('decide before any other tool runs: `pin "<claim>"` or `nothing "<why>"`'
+         if gated else "consider what must outlive it"),
+        note=text,
     )
 
 
@@ -310,9 +313,10 @@ def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
 #: gone; and later a resolved context warning followed by silence where "auto is on, pick
 #: up the next" was owed. The user's rule: the hook runs them one by one.
 #: The subjects of the queue live below, each registered with `nudges.subject(name, priority)`;
-#: `nudges.ordered(conf)` is the order they run in. `SUBJECTS` is kept as the default order.
-SUBJECTS = ("claimed", "environment", "loop", "context", "deferral", "untagged", "work",
-            "auto", "cleanup")
+#: `nudges.ordered(conf)` is the order they run in, and it is the ONLY answer: the order
+#: comes from the decorators plus `stop_priority`, so a tuple listing the names here could
+#: only ever drift out of agreement with it. One lived here saying it "is kept as the
+#: default order", read by nothing, and already missing two subjects.
 
 #: A SUBJECT THAT NEVER YIELDS IS A QUEUE THAT NEVER DRAINS, and this is where that was
 #: tried and rejected. Making the loop hold fire at every stop — on the reasoning that it is
@@ -375,10 +379,14 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     if "reminders" not in conf["silenced"] and not payload.get("stop_hook_active"):
         said = reminders.block(ROOT)
         if said:
-            _REMIND[:] = [said, reminders.system_line(ROOT)]
+            _REMIND[:] = [said]
             state.put(ROOT, "since_remind", 0, stem=ctx.stem)   # just said; the count restarts
-    if not conf["hold_stop_on_untagged"] or "untagged" in conf["silenced"]:
-        return _remind_only()
+    # THE SETTING NAMES ONE SUBJECT AND USED TO SILENCE ALL OF THEM. This guard returned
+    # before the queue ran, so `hold_stop_on_untagged: false` — set by somebody who wanted
+    # the tag nudge to stop — also switched off open work, the context ladder, the loop, the
+    # deferral, cleanup and auto, without saying so. `silenced: ["untagged"]` is the
+    # spelling that turns one subject off, and it already works; the setting belongs where
+    # the untagged subject reads it, and nowhere else.
     if ctx.path is None:
         return _remind_only()
     _HOLD_CTX[:] = [ctx.stem]
@@ -398,9 +406,8 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
         raised[subject] = lines[-1].n if lines else 0
         state.put(ROOT, "raised_this_turn", raised, stem=ctx.stem)
         if hold[0] == "context-only":
-            text, line = _remembering(hold[1])
-            return _context("Stop", text, system=line)
-        return _hold(*hold)
+            return _context("Stop", _remembering(hold[1]))
+        return _hold(*hold, subject=subject)
     if not active:
         state.put(ROOT, "raised_this_turn", {}, stem=ctx.stem)
 
@@ -412,18 +419,69 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
             latest = update.check(ROOT).get("version", "")
             if latest and latest != state.get(ROOT, "update_said", "", stem=ctx.stem):
                 state.put(ROOT, "update_said", latest, stem=ctx.stem)
-                text, line = _remembering(note + " Run it now if nothing is mid-flight: "
-                                          "`.journal/journal.py update`.")
-                return _context("Stop", text, system=line)
+                return _context("Stop", _remembering(
+                    note + " Run it now if nothing is mid-flight: `.journal/journal.py update`."))
     if not work.open_work(ROOT) and not todo.auto(ROOT, here):
         ids = sorted(t["n"] for t in todo.open_items(ROOT, here))
         if ids and ids != state.get(ROOT, "todos_said", [], stem=ctx.stem):
             state.put(ROOT, "todos_said", ids, stem=ctx.stem)
-            text, line = _remembering(
-                f"journal: {len(ids)} to-do(s) waiting on environment `{here}` (`journal todo`). "
-                "Delayed work, not an instruction to start any of it — the user decides.")
-            return _context("Stop", text, system=line)
+            return _context("Stop", _remembering(_say(
+                f"{len(ids)} to-do(s) waiting on `{here}`",
+                "delayed work, not an instruction to start any of it; `journal todo` lists them")[1]))
     return _remind_only()
+
+
+#: ────────────────────────────── the one place a message is shaped ──────────────────────────
+#:
+#: EVERY STOP MESSAGE GOES THROUGH `_say`, and only stop messages: a PreToolUse denial and
+#: the start block are their own shapes for their own reasons, and saying "every message"
+#: here was an overclaim that was false the moment it was written. Before it, each subject
+#: wrote its own
+#: string: its own `journal: ` prefix, its own em dash, its own idea of where the command
+#: goes — nine implementations of one sentence shape, which had already drifted into five
+#: subjects stating their fact twice, one shouting in capitals with no prefix at all, and
+#: three ending with a coda about the hook's own throttling that the others did not have.
+#: Every one of those was fixed once by hand and would have drifted again by the next noun.
+#:
+#: THE FACT IS WRITTEN ONCE AND USED TWICE. `_hold` renders `journal: <label> — <body>`, and
+#: the label used to be a second string somebody wrote to match the body. Here it IS the
+#: body's own opening, passed once — so the two cannot disagree, and the de-duplication that
+#: used to be a fragile prefix match is now a property of how the message was built.
+#:
+#: WHAT GOES WHERE: `fact` is the one line — what happened, no prefix, no dash. `do` is what
+#: to do about it, one or more fragments joined into that line. `note` is the long half, and
+#: it never rides in the line: `_hold` files it and the line says `journal next`.
+
+
+def _say(fact: str, *do: str, note: str = "") -> tuple:
+    """One stop message: the fact on its own line, what to do about it under it.
+
+    IT USED TO BE ONE LINE AND IT READ AS A WALL. Fact, em dash, instruction, semicolon,
+    second instruction, all run together and wrapped by the terminal wherever it happened
+    to end — so the reader had to parse a sentence to find the command. The user's word for
+    it: a shit ton of text. What is on the screen now is a heading and an indented
+    instruction, which is the same information and can be skimmed in one glance:
+
+        journal: 1 untagged message(s)
+          last at line 928; open the next with [!discovery] [!correction] [!blocked]
+          [!info] [!reply]
+
+    THE FACT IS STILL WRITTEN ONCE. It is the first line here and the short label the user
+    sees, so the two cannot disagree — that was the point of this function and it survives
+    the reshaping intact.
+    """
+    body = " ".join(d.strip() for d in do if d and d.strip())
+    return (fact, f"journal: {fact}" + (f"\n{fmt.wrap(body, indent=2)}" if body else ""), note)
+
+
+def _said(fact: str, *do: str) -> tuple:
+    """The same message, SAID rather than held — the queue's `context-only` answer.
+
+    The same shaper deliberately: a subject that only reports still opens `journal: `, still
+    puts the fact before what to do about it, and still must not be a place where the house
+    style is re-invented because the delivery happens to differ.
+    """
+    return ("context-only", _say(fact, *do)[1])
 
 
 #: THE SUBJECTS OF THE STOP QUEUE. Each returns None when nothing is pending, a
@@ -453,29 +511,12 @@ def _p_track(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     due = _track_due(conf, ctx)
     if not due:
         return None
-    return (f"environment `{due['track']}` is taken by another session",
-            f"journal: environment `{due['track']}` is taken by session {due['by'][:8]} ({due['age']}), and "
-            "one session works an environment — ask the user which environment this session works on, then "
-            '`.journal/journal.py switch "<name>"` (`journal environments` lists them; a new name creates one)')
-
-
-def _delegating(ctx: Ctx, here: str) -> bool:
-    """THIS SESSION HANDED `here` TO A RUNNER, so the list is not this session's to work.
-
-    `journal handoff --run` turns auto ON for the environment itself, because a runner
-    exists to work a list to its end without stopping to ask. But auto is read by whoever
-    stops, and the session that DISPATCHED the runner stops too: it sees auto on and
-    to-dos waiting, and is told to start a loop and pick up the next one. Both actors then
-    work the same list, and the record cannot say which of them did what.
-
-    Measured: a session that had delegated `cli-streamline` to a runner in its own
-    worktree was held at every stop for a loop it had no business running, while the
-    runner was already eight to-dos deep in that same list.
-
-    The delegated SUBAGENT is kept out of these two subjects by its `agent-` stem; this is
-    the other half of that exclusion, for the actor on the other end of the dispatch.
-    """
-    return tracks.delegated(ROOT, ctx.stem) == here
+    # THE LABEL IS THE FACT; THE BODY IS WHAT TO DO ABOUT IT. `_hold` prints them as one
+    # line, so a body that opens by restating its own label says the fact twice in the
+    # user's terminal — which four other subjects were also doing.
+    return _say(f"environment `{due['track']}` is taken by another session",
+                f"session {due['by'][:8]} has it ({due['age']}); ask the user which environment this",
+                'session works on, then `.journal/journal.py switch "<name>"`')
 
 
 @nudges.subject("loop", 10)
@@ -483,18 +524,15 @@ def _p_loop(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # THE LOOP COMES FIRST. With auto on, everything the queue asks after this depends on
     # a session that wakes up by itself; without a loop an idle stop is the end of the list.
     m = conf.get("auto_loop_minutes", 0)
-    if not m or not todo.auto(ROOT, here) or ctx.stem.startswith("agent-"):
-        return None
-    if _delegating(ctx, here):
+    if not m or not todo.auto(ROOT, here):
         return None
     if not (work.open_work(ROOT) or todo.ready(ROOT, here)):
         return None
     if _loop_running(ctx, lines):
         return None
-    return ("auto is on, no loop running",
-            f"journal: auto is on for `{here}` and this session has no loop — start one first: "
-            f"the `loop` skill with `{m}m journal next`; if one is already running that the "
-            "journal cannot see, `.journal/journal.py loop set`")
+    return _say("auto is on, no loop running",
+                f"start one before the list can drain: the `loop` skill with `{m}m journal next`,",
+                "or `.journal/journal.py loop set` if one is running that the journal cannot see")
 
 
 @nudges.subject("context", 20)
@@ -509,21 +547,26 @@ def _p_context(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     due = state.get(ROOT, "pin_due", None, stem=ctx.stem)
     if due:
         pct = 100 * due["used"] / due["window"] if due.get("window") else 0
-        return (f"context {pct:.0f}% full, still undecided",
-                f"journal: the context warning is unanswered — `.journal/journal.py pin \"<claim>\"` "
-                f"or `.journal/journal.py nothing \"<why>\"` before anything else; details: "
-                "`.journal/journal.py next`")
+        return _say(f"context {pct:.0f}% full, still undecided",
+                    'the warning is unanswered: `.journal/journal.py pin "<claim>"` or',
+                    '`.journal/journal.py nothing "<why>"` before anything else')
     return None
 
 
 @nudges.subject("deferral", 30)
 def _p_deferral(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     due = _deferral(conf, ctx)
-    return ("work deferred in words, not parked", due[0]) if due else None
+    # BOTH HALVES. `_deferral` builds the evidence — the agent's own deferring sentence,
+    # quoted back — and for a while this line returned only the instruction and dropped it.
+    # The evidence is what lets a reader tell a real deferral from a false positive, and a
+    # message assembled and thrown away is the wired-and-silent shape `verify` reports.
+    return _say("work deferred in words, not parked", due[0], note=due[1]) if due else None
 
 
 @nudges.subject("untagged", 40)
 def _p_untagged(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    if not conf["hold_stop_on_untagged"]:
+        return None
     missing = untagged(stretch, transcript.filing_units(lines))
     if not missing:
         return None
@@ -537,24 +580,21 @@ def _p_untagged(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     taught = state.get(ROOT, "taught_vocabulary", False, stem=ctx.stem)
     if not taught:
         state.put(ROOT, "taught_vocabulary", True, stem=ctx.stem)
-    return (f"{len(fresh)} untagged message(s)",
-            f"journal: {len(fresh)} message(s) carried no tag (last: line {fresh[-1].n}) — open the "
-            "next one with " + " ".join(f"[!{t}]" for t in tags.TAGS)
-            + ("" if taught else "; the tag is the first thing in the message, nothing before it"))
+    return _say(f"{len(fresh)} untagged message(s)",
+                f"last at line {fresh[-1].n}; open the next with "
+                + " ".join(f"[!{t}]" for t in tags.TAGS)
+                + ("" if taught else "; the tag is the first thing in the message, nothing before it"))
 
 
 def _owners(ctx: Ctx) -> set:
-    """The transcript names whose work this actor is answerable for.
+    """The transcript name whose work this session is answerable for.
 
-    A DELEGATED SUBAGENT'S WRITES CARRY ITS PARENT'S TRANSCRIPT NAME — its shell has the
-    parent's session id — so its work is matched by that name too.
+    IT WAS A SET FOR ONE REASON, and that reason is gone: a delegated subagent's writes
+    carried its parent's transcript name, so the parent's name had to be matched too. A
+    subagent no longer reaches the hook at all, so there is one owner and it is this one.
+    The set survives because every caller asks `in` of it.
     """
-    owners = {ctx.path.name if ctx.path else None}
-    if ctx.stem.startswith("agent-"):
-        parent = state.get(ROOT, "delegated_by", None, stem=ctx.stem)
-        if parent:
-            owners.add(f"{parent}.jsonl")
-    return owners
+    return {ctx.path.name if ctx.path else None}
 
 
 @nudges.subject("work", 50)
@@ -576,20 +616,20 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         dead = work.gone(w) is not None
         who = work.named(got)
         work.woke(ROOT, w["subject"])   # said once; saying it again needs a new `await`
-        return ("work waited out",
-                (f"journal: {who} has exited — `{w['subject']}` was waiting on {got['what']}. "
-                 if dead else
-                 f"journal: `{w['subject']}` has been waiting {mins} minute(s) on {got['what']}"
-                 + (f" ({who})" if who else "") + " — is it still coming? ")
-                + "`work update` what you know, `work await` again to keep "
-                "waiting, or `work end` it",
-                f"Open: {w['subject']}\nAwaited: {got['what']}"
-                + (f" ({who})" if who else "")
-                + (" — that process has EXITED.\n\n" if dead else f", for {mins} minute(s).\n\n")
-                + "A wait expires so that work cannot be abandoned quietly. Decide:\n"
-                '  .journal/journal.py work update "<what you know now>"   it moved, or it did not\n'
-                '  .journal/journal.py work await "<the same thing>" --for=<minutes>   still coming\n'
-                '  .journal/journal.py work end "<the same words>"   it is over, or it is not coming')
+        return _say(
+            "work waited out",
+            (f"{who} has exited; `{w['subject']}` was waiting on {got['what']}"
+             if dead else
+             f"`{w['subject']}` has waited {mins} minute(s) on {got['what']}"
+             + (f" ({who})" if who else "")),
+            "is it still coming? `work update` what you know, `work await` again, or `work end` it",
+            note=f"Open: {w['subject']}\nAwaited: {got['what']}"
+                 + (f" ({who})" if who else "")
+                 + (" — that process has EXITED.\n\n" if dead else f", for {mins} minute(s).\n\n")
+                 + "A wait expires so that work cannot be abandoned quietly. Decide:\n"
+                 '  .journal/journal.py work update "<what you know now>"   it moved, or it did not\n'
+                 '  .journal/journal.py work await "<the same thing>" --for=<minutes>   still coming\n'
+                 '  .journal/journal.py work end "<the same words>"   it is over, or it is not coming')
     standing = [w for w in standing if not work.awaiting(w, now) or work.gone(w)]
     if not standing:
         return None
@@ -598,12 +638,12 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         # is left as a to-do and end it; open work is never left standing.
         names = "; ".join(w["subject"] for w in standing)
         listed = bool(todo.open_items(ROOT, here))
-        return ("auto is on, work still open",
-                f"journal: auto is on, and `{names}` is still open — `work end` it if it is done, "
-                "`work await` it if it is in flight on something you cannot hurry, "
-                "or park what is left as a to-do and `work end` it"
+        return _say(
+                "auto is on, work still open",
+                f"{names}: `work end` it if it is done, `work await` it if it is in flight on something you",
+                "cannot hurry, or park what is left as a to-do and end it"
                 + ("; then the list starts" if listed else "; open work is never left standing"),
-                f"Open: {names}\n\nAuto is on for `{here}`, and the next to-do starts only "
+                note=f"Open: {names}\n\nAuto is on for `{here}`, and the next to-do starts only "
                 "when nothing is open. If this work is finished, close it:\n"
                 '  .journal/journal.py work end "<the same words>"\n'
                 "If part of it is waiting on the user — a ruling, a review — that part is a "
@@ -633,10 +673,49 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # never read the skill learned `await` from the user or not at all. Measured: exactly
     # that, twice in one session. A vocabulary taught only in a file nobody is required to
     # open is a vocabulary that does not exist.
-    return ("work still open",
-            f"journal: still open — {'; '.join(w['subject'] for w in fresh)} — `work end` it, "
-            "`work update` where it got to, or `work await \"<what you wait on>\" "
-            "--pid=<n>|--agent=<id>` if it is in flight on something you cannot hurry")
+    return _say("work still open",
+                f"{'; '.join(w['subject'] for w in fresh)}: `work end` it, `work update` where it",
+                "got to, or",
+                '`work await "<what you wait on>" --pid=<n>|--agent=<id>` if it is in flight on',
+                "something you cannot hurry")
+
+
+@nudges.subject("recall", 65)
+def _p_recall(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    """Say that the rules and pins exist, a few times a session. Never say what they are.
+
+    THEY ARE HANDED OVER ONCE AND THEN LEFT TO ROT IN THE WINDOW. A session gets its rules
+    and pins in full at its start, and after that nothing mentions them again until a
+    compaction re-delivers them. A subagent is treated better than this — it gets the rules
+    from the start is far behind and attention fades, and the main agent, which runs
+    longest and holds the most, was told nothing.
+
+    A POINTER, AND ONLY A POINTER. Re-injecting the claims would spend the context to fight
+    a symptom of the context being full, and the user's instruction was explicit: remind the
+    agent to look, do not print them all. So this is two numbers and two commands. What
+    makes it land is that reading them is one command and being wrong about one is not.
+    """
+    if "recall" in conf["silenced"] or not conf["recall_ladder"]:
+        return None
+    ruled, pinned = len(pins.live(ROOT, pins.RULES)), len(pins.live(ROOT))
+    if not (ruled or pinned):
+        return None
+    window = conf["context_window"] or (state.get(ROOT, "window", 0) or 0)
+    if not window or ctx.path is None:
+        return None
+    used = context.reading_tail(ctx.path)
+    if used is None:
+        return None
+    done = state.get(ROOT, "recalled", [], stem=ctx.stem)
+    passed = [m for m in sorted(conf["recall_ladder"]) if used / window >= m and m not in done]
+    if not passed:
+        return None
+    state.put(ROOT, "recalled", list(done) + passed, stem=ctx.stem)
+    counted = " and ".join(x for x in (f"{ruled} rule(s)" if ruled else "",
+                                       f"{pinned} pin(s)" if pinned else "") if x)
+    return _said(f"{counted} are in force here, and the block that handed them to you is far behind",
+                 "`journal rules` and `journal pins` read them back in one command each —",
+                 "cheaper than being wrong about one")
 
 
 @nudges.subject("cleanup", 70)
@@ -670,25 +749,20 @@ def _p_cleanup(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     state.put(ROOT, "cleanup_said", key, stem=ctx.stem)
     if found:
         what = ", ".join(sorted({f["kind"] for f in found}))
-        return ("context-only",
-                f"journal: {len(found)} entr(ies) in the record have evidence against them "
-                f"({what}) — `.journal/journal.py cleanup` lists each beside the command that "
-                "retires it. Then `cleanup read`, which is the half no check can do: the "
-                f"reading pass on this environment was {never}.")
+        return _said(f"{len(found)} thing(s) in the record have evidence against them ({what})",
+                     "`.journal/journal.py cleanup` lists each beside the command that retires it;",
+                     f"`cleanup read` is the half no check can do, and was {never}")
     # NOTHING MECHANICAL TO SAY, AND STILL SOMETHING OWED. The rot that matters most leaves
     # no trace a command can find, so an empty findings list is not a clean record — it is a
     # record nobody has read. This is the only thing the hook can say about it: how long.
-    return ("context-only",
-            f"journal: nothing in the record has evidence against it, but the reading pass — "
-            f"every rule and pin judged against the code — was {never}. "
-            "`.journal/journal.py cleanup read` when the work you just did touched what they claim.")
+    return _said(f"nothing in the record has evidence against it, but the reading pass was {never}",
+                 "`.journal/journal.py cleanup read` — every rule and pin judged against the code —",
+                 "when the work you just did touched what they claim")
 
 
 @nudges.subject("auto", 60)
 def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     if work.open_work(ROOT):
-        return None
-    if _delegating(ctx, here):
         return None
     waiting = todo.open_items(ROOT, here)
     ids = sorted(t["n"] for t in waiting)
@@ -698,12 +772,25 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     ready = todo.ready(ROOT, here)
     unstuck = todo.answered(ROOT, here)
     if auto and not ready:
-        # every waiting to-do waits on the user: nothing to hold for, said once per state
+        # NOTHING TO PICK UP, AND THE TWO REASONS ARE DIFFERENT. Waiting on the user means
+        # somebody must answer; set aside means a condition is not true yet and the agent
+        # itself decides when it is. Said once per state, and it must NAME which, or a list
+        # that has quietly stopped offering anything looks like a list that is finished.
+        held_back = todo.blocked(ROOT, here)
+        owed = [t for t in todo.open_items(ROOT, here) if todo.waiting_on(ROOT, here, t)]
         if ids != state.get(ROOT, "todos_said", [], stem=ctx.stem):
             state.put(ROOT, "todos_said", ids, stem=ctx.stem)
-            return ("context-only",
-                    f"journal: auto is on for `{here}`, but every waiting to-do waits on the "
-                    "user (`journal todo` shows the questions). Nothing to pick up until they answer.")
+            if held_back and not todo.asking(ROOT, here):
+                return _said(f"auto is on for `{here}`, and every waiting to-do is set aside",
+                             "nothing is blocked on the user — these wait on conditions you judge:",
+                             "; ".join(f"{t['n']} ({t['blocked']})" for t in held_back[:3]),
+                             "`journal todos start <n>` when one comes true")
+            why = ", ".join(x for x in (
+                f"{len(held_back)} set aside on a condition" if held_back else "",
+                f"{len(owed)} waiting on a to-do that must land first" if owed else "",
+            ) if x)
+            return _said(f"auto is on for `{here}`, but nothing on the list can be picked up",
+                         (why + "; " if why else "") + "`journal todo` shows what each waits on")
         return None
     if not auto:
         if not unstuck:
@@ -713,37 +800,35 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
             return None
         state.put(ROOT, "answered_said", key, stem=ctx.stem)
         t = unstuck[0]
-        return (f"the user answered to-do {t['n']}",
-                f"journal: the user answered to-do {t['n']} ({t['title']}) — that is their "
-                f"word to do it: `.journal/journal.py todos start {t['n']}`",
+        return _say(f"the user answered to-do {t['n']}",
+                f"({t['title']}) — that is their word to do it: "
+                f"`.journal/journal.py todos start {t['n']}`",
+                note=
                 "\n".join(f"To-do {u['n']}: {u['title']}\n  asked:    {u['asks']}\n"
                           f"  answered: {u['answer']}" for u in unstuck)
                 + "\n\nStart it, do it, end it. The answer stays on the to-do; "
                 f"`journal todos {t['n']}` shows both.")
     nxt = ready[0]
     if todo.answered_one(nxt):
-        return (f"auto is on, the user answered to-do {nxt['n']}",
-                f"journal: the user answered to-do {nxt['n']} ({nxt['title']}) — you are "
-                f"unstuck: `.journal/journal.py todos start {nxt['n']}`",
+        return _say(f"auto is on, the user answered to-do {nxt['n']}",
+                f"({nxt['title']}) — you are unstuck: `.journal/journal.py todos start {nxt['n']}`",
+                note=
                 "\n".join(f"To-do {u['n']}: {u['title']}\n  asked:    {u['asks']}\n"
                           f"  answered: {u['answer']}" for u in unstuck)
                 + f"\n\nStart with to-do {nxt['n']}: the answer is above, the brief is "
                 f"`journal todos {nxt['n']}`. Then the rest of the list:\n"
                 + "\n".join(f"  {t['n']:>3}  {t['title']}" for t in waiting if not todo.answered_one(t)))
-    return (f"auto is on, {len(ids)} to-do(s) waiting",
-            f"journal: auto is on for `{here}` and nothing is open — pick up the next to-do: "
-            f"`.journal/journal.py todos start {nxt['n']}`",
+    return _say(f"auto is on, {len(ids)} to-do(s) waiting",
+            f"nothing is open — pick up the next: `.journal/journal.py todos start {nxt['n']}`",
+            note=
             f"Waiting on `{here}`:\n" + "\n".join(
                 f"  {t['n']:>3}  {t['title']}" + (f"  (waits on the user: {t['asks']})" if t.get("asks") else "")
                 for t in waiting)
-            + f"\n\nAuto mode is on: this list is worked through without asking. Read "
-            f"the brief (`journal todos {nxt['n']}`), start it, SOLVE IT YOURSELF, `work end` it, "
-            "and the next idle stop brings the next one. " + _loop_line(conf)
-            + " Every choice the brief leaves open is yours to make: make it, write it in "
-            "`journal work update`, carry on. Ask the user only if you cannot proceed without "
-            "something only they can supply, or the hook tells you that you are stalled — then "
-            f"`work update` what was tried, `work end`, `journal todos ask {nxt['n']} \"<what is stuck>\"`, "
-            "and the next stop names the next to-do.")
+            + f"\n\nRead the brief (`journal todos {nxt['n']}`), start it, solve it, `work end` "
+            "it; the next idle stop brings the next one. Every choice the brief leaves open is "
+            "yours. " + _loop_line(conf)
+            + f"\nStuck on something only the user can supply: `work update` what was tried, "
+            f"`work end`, `journal todos ask {nxt['n']} \"<what is stuck>\"`.")
 
 
 
@@ -774,8 +859,6 @@ def _loop_owed(conf: dict, ctx: Ctx, here: str) -> str:
     m = conf.get("auto_loop_minutes", 0)
     if not m or "loop" in conf["silenced"] or not todo.auto(ROOT, here):
         return ""
-    if ctx.stem.startswith("agent-") or _delegating(ctx, here):
-        return ""
     if not todo.ready(ROOT, here):
         return ""
     # THE TRANSCRIPT IS READ ONLY HERE, on the last step before a refusal. `_loop_running`
@@ -803,9 +886,9 @@ def _unbound(conf: dict, ctx: Ctx) -> bool:
     environment, because a question about the record must not need a decision first; this
     is what the writes are held on.
     """
-    if conf["bind_on_start"] or ctx.stem.startswith("agent-"):
+    if conf["bind_on_start"]:
         return False
-    return not tracks.delegated(ROOT, ctx.stem) and not tracks.bound(ROOT, ctx.stem)
+    return not tracks.bound(ROOT, ctx.stem)
 
 
 def _choice_line() -> str:
@@ -839,7 +922,7 @@ def _choose_block(where: str) -> str:
 def _track_due(conf: dict, ctx: Ctx) -> dict | None:
     """Is this session on an environment another live session holds? Written to runtime while it is.
 
-    ONE SESSION WORKS A ENVIRONMENT. Two agents on one environment share its open work and its to-do
+    ONE SESSION WORKS AN ENVIRONMENT. Two agents on one environment share its open work and its to-do
     list, and two auto sessions would pick the same chore. So a session that starts on a
     taken environment — the project's start environment, usually, because the user opened a second
     terminal — is told at its start, held at its stops and refused edits until it has
@@ -847,8 +930,6 @@ def _track_due(conf: dict, ctx: Ctx) -> dict | None:
     """
     if not conf["one_session_per_environment"] or "environment" in conf["silenced"] or "track" in conf["silenced"]:
         return None
-    if ctx.stem.startswith("agent-"):
-        return None   # a delegated subagent shares its session's claim on the environment
     if _unbound(conf, ctx):
         return None   # nothing is held until an environment is chosen
     here = tracks.current(ROOT, ctx.stem)
@@ -1131,9 +1212,26 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 #: THE PLURALS ARE CANONICAL (ruling R1) and were missing here, so a write spelled the way
 #: the skill teaches it was not recognised AS a write — by the gate that refuses an
 #: undelegated subagent's journal writes, or by the one that answers an unregistered session.
+#: EVERY VERB THAT CHANGES ANYTHING, under every spelling the CLI answers to. A verb missing
+#: here is invisible to every gate this set feeds — the write gate, the context rung's hold,
+#: and the subagent refusal — so it is not a list of interesting commands, it is the
+#: definition of "a write" and it has to be complete.
+#:
+#: FIVE WERE MISSING AND THE HOLE WAS REAL: `claim`, `grant`, `environments`, `handoff` and
+#: `delegate` were named in `grants.NEVER` as verbs a subagent may never run, and none of
+#: them reached that check, because `_journal_write` returned None first. A granted subagent
+#: could evict a live session with `journal claim`, or lend an environment on its
+#: dispatcher's behalf with `journal grant`. `test_bind` now asserts NEVER ⊆ this set, so
+#: the two lists cannot drift apart again.
+#:
+#: AND `environments` IS HERE FOR THE NOUN+VERB SPELLING. `journal environments switch "x"`
+#: is the documented twin of `journal switch "x"` (ruling R11) and presents `environments`
+#: as its verb, so without it half of every lifecycle command was ungated.
 JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "pins", "remember", "strike", "switch",
                             "nothing", "rule", "rules", "promote", "todo", "todos", "docs", "work",
-                            "tools", "loop", "delegate", "prepare", "handoff", "migrate"})
+                            "tools", "loop", "prepare", "migrate", "claim", "grant", "grants",
+                            "environments", "environment", "envs", "env", "tracks", "track",
+                            "remind", "reminder", "reminders", "cleanup", "worktree", "upgrade"})
 
 
 def _journal_write(payload: dict) -> str | None:
@@ -1148,9 +1246,20 @@ def _journal_write(payload: dict) -> str | None:
     except ValueError:
         return None
     for i, t in enumerate(toks[:-1]):
-        verb = toks[i + 1]
-        if "journal" not in t or verb not in JOURNAL_WRITES:
+        if "journal" not in t:
             continue
+        # THE VERB IS THE FIRST WORD THAT IS NOT A FLAG. It was read as the token
+        # IMMEDIATELY after the path, so anything with an option in front of it — `journal
+        # --env=other pins add "x"` — parsed as no write at all and sailed through every
+        # gate this function guards: the write gate, the context rung's hold, and the
+        # subagent refusal. Found by a test that expected a refusal and got silence.
+        j = i + 1
+        while j < len(toks) and toks[j].startswith("-"):
+            j += 1
+        verb = toks[j] if j < len(toks) else ""
+        if verb not in JOURNAL_WRITES:
+            continue
+        i = j - 1
         nxt = toks[i + 2] if i + 2 < len(toks) else ""
         # `docs` and `todo` are read verbs too: `docs`, `docs 4`, `todo`, `todo 3` change nothing.
         if verb == "docs" and nxt not in DOCS_WRITES:
@@ -1172,19 +1281,6 @@ DOCS_WRITES = frozenset({"add", "part", "replace", "strike", "final", "draft", "
                          "supersede", "index", "attach", "detach", "move"})
 #: What turns `pins`/`rules` from a listing into a change.
 PIN_WRITES = frozenset({"add", "strike", "promote", "move"})
-
-
-def _subagent(payload: dict) -> bool:
-    """Is this event a subagent's? Its payload carries `agent_id`; the session's own do not.
-
-    THE JOURNAL IS THE ORCHESTRATOR'S. A subagent is dispatched with a brief and reports
-    back; what it decides is the orchestrator's to file, and what it reads fills its own
-    window, not the one the marks are about. So a subagent's events file nothing, are held
-    for nothing, and are nudged for nothing — and a subagent's attempt to WRITE the record
-    is denied, because a pin nobody in the main conversation saw written is a fact of
-    unknown provenance in the highest-authority position the system has.
-    """
-    return bool(payload.get("agent_id"))
 
 
 def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
@@ -1286,7 +1382,13 @@ def _deny(reason: str) -> int:
     return 0
 
 
-_MD_WRITE = re.compile(r"(?:>>?|tee(?:\s+-a)?)\s*['\"]?([^\s'\"|;&]+\.md)\b")
+#: A REDIRECT, NOT ANY `>`. This matched the `>` inside a PLACEHOLDER — `environments/
+#: <lent>/todo/NNN-*.md`, written in a docstring — and told the reader they had written a
+#: loose markdown file. A shell redirect is preceded by whitespace or starts the command;
+#: a `>` closing an angle-bracket placeholder is preceded by a word character. One
+#: character of context separates a hint that is right from one that teaches the reader to
+#: skim every hint after it.
+_MD_WRITE = re.compile(r"(?:^|\s)(?:>>?|tee(?:\s+-a)?)\s*['\"]?([^\s'\"|;&]+\.md)\b")
 
 
 def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
@@ -1314,6 +1416,13 @@ def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
             return None
         m = _MD_WRITE.search(cmd)
         path = m.group(1) if m else ""
+        # AND THE FILE HAS TO BE THERE. A regex cannot tell a redirect the shell RAN from
+        # the same characters sitting inside a quoted string or a heredoc — `echo "x >
+        # notes.md"` writes nothing and reads identically. This runs after the tool did,
+        # so it can stop guessing and look: no file, no write, no hint.
+        if path and not (Path(path) if Path(path).is_absolute()
+                         else ROOT.parent / path).is_file():
+            return None
     if not path.endswith(".md"):
         return None
     try:
@@ -1340,7 +1449,7 @@ def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
         "session and found by search:\n"
         '  .journal/journal.py docs add "<title>" --abstract="<one line>" --brief < the file\n'
         '  .journal/journal.py docs part <n> "<title>" --brief < the file      as a part of doc n\n'
-        "A README or a changelog is fine as it is. Said once per file."
+        "A README or a changelog is fine as it is."
     )
 
 
@@ -1426,9 +1535,22 @@ def _closed_by_commit(conf: dict, payload: dict, ctx: Ctx) -> str | None:
                                   tracks.current(ROOT, ctx.stem))
     if not said:
         return None
-    head = ("THE COMMIT'S TRAILER CLOSED WHAT IT NAMED" if any(ok for ok, _ in said)
-            else f"THE COMMIT'S TRAILER ({todo.TRAILER} todos done <n>) CLOSED NOTHING")
-    return head + ":\n  " + "\n  ".join(line for _, line in said)
+    # BOTH HALVES, ALWAYS. "Closed what it named" was printed whenever ANY ref closed, so a
+    # commit carrying two trailers where the second was refused — an unknown number, an
+    # ambiguous one, one already done — reported success and the reader never learned a
+    # close had been lost. A user reported exactly that symptom. Whatever the cause in
+    # their case, a hook that overstates what it did is one an agent learns to skim, which
+    # is this package's own rule turned against itself.
+    shut = [line for ok, line in said if ok]
+    kept = [line for ok, line in said if not ok]
+    if shut and kept:
+        fact = f"the commit closed {len(shut)}, and could not close {len(kept)}"
+    elif shut:
+        fact = "the commit's trailer closed what it named"
+    else:
+        fact = f"the commit's trailer ({todo.TRAILER} todos done <n>) closed nothing"
+    lines = [f"  {l}" for l in shut] + [f"  ! {l}" for l in kept]
+    return f"journal: {fact}\n" + "\n".join(lines)
 
 
 def _trailer_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
@@ -1454,11 +1576,12 @@ def _trailer_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
         return None
     state.put(ROOT, "trailer_taught", True, stem=ctx.stem)
     t = started[0]
-    return (f"THAT COMMIT CLOSED NO TO-DO, and to-do {t['n']} ({t['title']}) is started. The commit "
-            f"that finishes it can close it from its own message, on a line of its own:\n"
+    # `journal: ` LIKE EVERY OTHER LINE. This one opened with unprefixed shouting, which
+    # made it the only message in the package a reader could not place at a glance.
+    return (f"journal: that commit closed no to-do, and to-do {t['n']} ({t['title']}) is started — "
+            f"the commit that finishes it can close it from its own message, on a line of its own:\n"
             f"    {todo.TRAILER} todos done {t['n']}\n"
-            f"The close then cites the commit. Said once a session; `journal todos done "
-            f"{t['n']} \"<how>\"` by hand is fine too.")
+            f"  the close then cites the commit; `journal todos done {t['n']} \"<how>\"` by hand is fine too")
 
 
 def _attach_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
@@ -1521,7 +1644,7 @@ def _attach_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
         "handed to the next session instead of re-read:\n"
         f'  .journal/journal.py docs attach <doc> "{shown}" "<what it is>"\n'
         "(`journal docs add` first if no doc fits; a markdown file may be a doc or a part instead.) "
-        "A scratch file is fine as it is. Said once per file."
+        "A scratch file is fine as it is."
     )
 
 
@@ -1586,7 +1709,7 @@ def _tool_shaped(conf: dict, payload: dict, ctx: Ctx) -> str | None:
         ".journal/tools/<name>/ (or leave it and point --entry at it) and catalogue it, so every "
         "session is handed it instead of writing it again:\n"
         '  .journal/journal.py tools add <name> "<title>" --summary="<what it does>" --usage="<how to call it>" --entry=<file>\n'
-        "A one-off is fine as it is. Said once."
+        "A one-off is fine as it is."
     )
 
 
@@ -1656,7 +1779,7 @@ def _reminder_due(conf: dict, ctx: Ctx) -> str:
     every = conf["reminder_every"]
     if not every or "reminders" in conf["silenced"]:
         return ""
-    said = reminders.block(ROOT, terse=True)   # mid-turn: the instruction, not the manual
+    said = reminders.block(ROOT)
     if not said:
         state.put(ROOT, "since_remind", 0, stem=ctx.stem)
         return ""
@@ -1687,8 +1810,7 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
 
     SUBAGENTS ARE OUT OF THIS. When this mark was project-wide, three critics reading the
     package raised it from 28,780 to 83,700 and the parent session was silenced by output
-    it never saw. A subagent's events go to `on_subagent_post` instead, which hands it the
-    rules and nothing else.
+    it never saw. A subagent no longer reaches the hook at all — see `main`.
     """
     _floor(ctx)
     # AN ACTION BEATS A HINT: this one CHANGED the record, so it is said before any nudge
@@ -1714,7 +1836,15 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
             got = (used / window, used, window, True)
             rung = _rung(conf, ctx, got)
             if rung:
-                return _context("PostToolUse", rung[1] + "\n\n" + rung[2])
+                # THE PERCENTAGE WAS SAID TWICE — "journal: context 72% full — consider what
+                # must outlive it", then two lines later "CONTEXT IS 72% FULL — 720,000 of
+                # 1,000,000". The block says it better, so what survives from the line is
+                # only its instruction: the half after the dash, which is what to DO and is
+                # load-bearing when the gate is armed.
+                # THE INSTRUCTION IS THE INDENTED HALF now that a message is a heading and
+                # a body — it was read off an em dash, which `_say` no longer writes.
+                _, _, told = rung[1].partition("\n")
+                return _context("PostToolUse", rung[2] + ("\n\n" + told if told else ""))
     hint = _trailer_hint(conf, payload, ctx)
     if hint:
         return _context("PostToolUse", hint)
@@ -1740,14 +1870,10 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
         return 0
     state.put(ROOT, "biggest_result", size, stem=ctx.stem)
     name = payload.get("tool_name") or "that tool"
-    return _context(
-        "PostToolUse",
-        f"THAT {name} CALL RETURNED {size:,} CHARACTERS — the largest this session, and it "
-        f"is in the context now for good.\n"
-        f"If you need it, fine. If you were looking for one thing in it, the next one can "
-        f"be narrower: grep for the line, sed a range, head the file. Nothing to run and "
-        f"nothing to undo — this is said once per new record, not per call.",
-    )
+    return _context("PostToolUse", _say(
+        f"that {name} call returned {size:,} characters, the largest this session",
+        "it is in the context for good; if you were after one thing in it, the next read can",
+        "be narrower — grep for the line, sed a range, head the file. Nothing to undo.")[1])
 
 
 # `on_message_display` LIVED HERE and wrote `last_untagged`, which nothing ever read. The
@@ -1763,24 +1889,68 @@ _HOLD_CTX: list = []   # the transcript stem of the hold in flight, set by on_st
 _REMIND: list = []
 
 
-def _remembering(text: str = "") -> tuple[str, str | None]:
-    """Fold this stop's reminder into whatever else the stop was going to say."""
+def _remembering(text: str = "") -> str:
+    """Fold this stop's reminder into whatever else the stop was going to say.
+
+    ONE COPY. `additionalContext` is rendered to the user as well as to the agent, so a
+    `systemMessage` twin of the same words was the same sentence printed twice in one stop.
+    """
     if not _REMIND:
-        return text, None
-    said, line = _REMIND
-    return (said + ("\n\n" + text if text else "")), line
+        return text
+    return _REMIND[0] + ("\n\n" + text if text else "")
 
 
 def _remind_only() -> int:
-    """The stop had nothing else to say, and the reminder is reason enough to speak."""
+    """The stop had nothing else to say — so the reminder is said to the USER and no more.
+
+    A REMINDER IS NOT A REASON TO CARRY ON WORKING. `additionalContext` at a stop re-opens
+    the turn (see `_hold`), so a standing reminder emitted there with nothing else pending
+    woke this very session three times with nothing to do — the user watching it happen.
+    The agent is reminded where reminding is free: mid-turn every `reminder_every` calls,
+    and in the block it is handed at every start. What is owed at the stop is the person's
+    confirmation that their instruction is still in force, and `systemMessage` is the field
+    for exactly that: shown to them, no turn re-opened.
+    """
     if not _REMIND:
         return 0
-    text, line = _remembering()
-    return _context("Stop", text, system=line)
+    print(json.dumps({"systemMessage": _REMIND[0]}))
+    return 0
 
 
 
-def _hold(label: str, brief: str, text: str = "") -> int:
+#: TWO WAYS TO HOLD A STOP, AND THEY ARE NOT THE SAME ONE. From the reference
+#: (code.claude.com/docs/en/hooks, "Stop decision control"), quoted:
+#:
+#:   "Use `additionalContext` when the hook is working as designed and giving Claude
+#:    guidance, such as 'run the test suite before finishing'. It keeps the conversation
+#:    going through the same loop protections as `decision: \"block\"` ... but the transcript
+#:    labels it `Stop hook feedback` and no hook error notification is shown"
+#:
+#: SO `additionalContext` AT A STOP IS A HOLD. Not a quiet aside — it re-opens the turn,
+#: exactly as a block does. That sentence explains something this session watched happen:
+#: a reminder was emitted as `additionalContext` with nothing else pending, and the session
+#: woke three times over with nobody asking for anything. It was not a stray loop; it was
+#: the documented behaviour of the field, used as though it were free.
+#:
+#: WHICH MEANS THE CHOICE IS ABOUT THE LABEL, NOT THE EFFECT. Both hold. `decision: "block"`
+#: is announced to the user as an error; `additionalContext` is not. Nothing this package
+#: says at a stop is an error — every subject is guidance — so guidance goes in the field
+#: that is not called a failure, and `decision: "block"` is kept for the one case where the
+#: turn genuinely must not end quietly: a write that would land in the wrong place.
+#:
+#: AND A HOLD IS NOT FREE. The harness overrides a Stop hook after eight consecutive blocks
+#: without progress (`CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` raises it), which is the ceiling this
+#: queue's one-subject-per-stop discipline was already keeping well under.
+_ERROR_LABELLED = frozenset({"claimed", "environment"})
+
+
+def _parent_of(payload: dict) -> str:
+    """The DISPATCHING session's stem. A subagent's events carry it, not its own."""
+    tp = payload.get("transcript_path") or ""
+    return Path(tp).stem if tp else (payload.get("session_id") or "")
+
+
+def _hold(label: str, brief: str, text: str = "", subject: str = "") -> int:
     """Hold the stop: a small label for the user, the instruction and reasoning for the agent.
 
     The user asked for less: the one-line instruction was still the agent's business
@@ -1817,18 +1987,30 @@ def _hold(label: str, brief: str, text: str = "") -> int:
     # So the hold is the reason alone — label, then the instruction — and nothing else.
     if text and _HOLD_CTX:
         state.put(ROOT, "next_text", text, stem=_HOLD_CTX[0])
-        brief += " — details: `.journal/journal.py next`"
-    body = brief[len("journal: "):] if brief.startswith("journal: ") else brief
-    if body.lower().startswith(label.lower()):
-        body = body[len(label):].lstrip(" —-:,")   # the label is the body's own first words: once
-    out: dict = {"decision": "block", "reason": f"journal: {label} — {body}"}
-    # THE ONE THING THAT IS ALLOWED TO MAKE THIS LONGER. Everything above is the argument
-    # for a hold being a single line in the user's terminal; a reminder is the exception
-    # they asked for, because they wrote it and seeing it come back is the confirmation
-    # that the agent was in fact reminded. The instruction itself goes to the agent in the
-    # field the harness folds away, so the terminal gets one added line, not the block.
+        # ITS OWN LINE. Appended with an em dash it ran onto the end of a wrapped
+        # instruction, which is the one place a reader stops looking.
+        brief += "\n  details: `.journal/journal.py next`"
+    # `_say` ALREADY BUILT THE LINE. This used to strip a `journal: ` prefix and then try to
+    # spot the label repeated at the start of the body — a textual reconciliation of two
+    # strings somebody wrote separately. They are one string now, so there is nothing to
+    # reconcile and nothing to get wrong.
+    #
+    # THE FIELD IS CHOSEN BY WHAT THE SUBJECT IS, not by what it wants to achieve — both
+    # fields hold. Only the two subjects about writing to the wrong environment keep the
+    # error shape, because for those the alarm IS the message.
+    if subject not in _ERROR_LABELLED:
+        return _context("Stop", brief + (f"\n\n{_REMIND[0]}" if _REMIND else ""))
+    out: dict = {"decision": "block", "reason": brief.replace("\n", " ")}
+    # A REMINDER IS NOT AN ERROR, SO IT NEVER GOES IN `reason`. The harness prints that
+    # field under the words "Stop hook error", and for one release this line prepended the
+    # reminder to it — so a user who had asked to be reminded of something was told their
+    # own instruction had failed. `additionalContext` is printed too, under "Stop hook
+    # feedback", so the reminder is seen without being called a failure.
+    #
+    # AND ONCE. It used to be mirrored into `reason` AND `additionalContext`, which the
+    # harness renders as two labelled blocks — the same sentence, twice, in one stop.
+    # One fact, one field, whichever field is right for what it is.
     if _REMIND:
-        out["reason"] = _REMIND[1] + "\n" + out["reason"]
         out["hookSpecificOutput"] = {"hookEventName": "Stop",
                                      "additionalContext": fmt.block(_REMIND[0])}
     print(json.dumps(out))
@@ -1841,8 +2023,7 @@ def _hold(label: str, brief: str, text: str = "") -> int:
 #: That is a third state past wired-and-fired: ACCEPTED. This list is the one place it
 #: lives, so a handler cannot quietly address an event that will not listen.
 DELIVERS_CONTEXT = frozenset({
-    "UserPromptSubmit", "PostToolUse", "PostToolBatch", "Stop", "SubagentStop",
-    "SessionStart",
+    "UserPromptSubmit", "PostToolUse", "PostToolBatch", "Stop", "SessionStart",
 })
 
 
@@ -1885,7 +2066,60 @@ def _context(event: str, text: str, system: str | None = None) -> int:
 # exists to report, so the event is no longer wired at all.
 
 
+#: THE HARNESS'S OWN CEILING, and it is documented — not measured, not folklore:
+#:
+#:   "Hook output strings, including `additionalContext`, `systemMessage`, and plain
+#:    stdout, are capped at 10,000 characters. Output that exceeds this limit is saved to a
+#:    file and replaced with a preview and file path."
+#:                                    — code.claude.com/docs/en/hooks, "JSON output"
+#:
+#: WHAT HAPPENS PAST IT IS THE WORST FAILURE THIS PACKAGE HAS HAD. A real consumer's start
+#: block reached 120,360 characters — 125 rules, 194 pins, 82 docs, 163 to-dos — and the
+#: harness replaced the whole thing with a path to a file nobody was told to open. The hook
+#: fired, reported success, and delivered a 2KB preview of its own header. `verify` said all
+#: green, because it checks that the hook FIRED, not that its output ARRIVED.
+#:
+#: THE BUDGET SITS WELL UNDER IT. The ceiling is a fact about today's harness, not a
+#: contract, and the block is assembled from stores that grow — so the caps below are sized
+#: for the worst case with room to spare, and `carried` measures itself afterwards.
+INLINE_CAP = 10_000
+INLINE_BUDGET = 7_000
+
+#: HOW MANY ENTRIES OF EACH STORE ARE INJECTED, at full generosity. Nothing is dropped from
+#: the record — every cut says so and names the command that reads the rest (`fmt.cut`).
+#: Rules bind every environment, so they keep the biggest allowance.
+#:
+#: THESE ARE A STARTING POINT, NOT THE GUARANTEE. A count is the wrong unit for a character
+#: ceiling: forty short rules and forty long ones are the same number and four times the
+#: text. `carried` therefore builds, MEASURES, and tightens until it fits — so the promise
+#: is kept by arithmetic rather than by whoever last guessed how long a rule is.
+CARRY_CAPS = {"rules": 40, "pins": 30, "docs": 20, "tools": 20, "todos": 25}
+
+
 def carried(source: str = "compact", stem: str | None = None, unbound: bool = False) -> str:
+    """The start block, built to fit. See `_carried` for what goes in it.
+
+    IT TIGHTENS UNTIL IT FITS. The caps are halved and rebuilt until the block is inside the
+    budget or there is nothing left to give — measured, not assumed, because the thing that
+    broke was somebody's assumption about how big a record gets. A store never falls below
+    three entries: past that the block stops being a hand-over and becomes a footnote, and
+    the reader is better served by the honest over-budget notice at the end.
+    """
+    caps = dict(CARRY_CAPS)
+    for _ in range(6):
+        block = _carried(source, stem, unbound, caps)
+        if len(block) <= INLINE_BUDGET or all(v <= 3 for v in caps.values()):
+            break
+        caps = {k: max(3, v // 2) for k, v in caps.items()}
+    if len(block) > INLINE_BUDGET:
+        block += (f"\n\nTHIS BLOCK IS {len(block):,} CHARACTERS and the harness saves anything over "
+                  f"{INLINE_CAP:,} to a file, handing you a path instead of the text — so if what you "
+                  "are reading looks cut off, it was. `journal carry` prints it in full, and "
+                  "`journal cleanup read` is how the record gets smaller.")
+    return block
+
+
+def _carried(source: str, stem: str | None, unbound: bool, caps: dict) -> str:
     """Exactly what a session is handed at its start, built without writing anything.
 
     THE INJECTED BLOCK IS THE ONE THING NOBODY COULD LOOK AT. It is assembled inside a
@@ -1947,6 +2181,12 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
         "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in "
         "this session, and again whenever a hook holds or denies you."
     ]
+    # THE PACKAGE'S OWN RULES FIRST OF ALL, before anything this project decided: they bind
+    # every project, so a reader meets what is true everywhere before what is true here.
+    if conf_of({})["builtin_rules"]:
+        shipped = builtin.carry()
+        if shipped:
+            parts.append(shipped)
     # REMINDERS LEAD. A rule is a constraint and a pin is a fact; a reminder is the thing
     # the user has already had to say more than once, and a start — or the far side of a
     # compaction — is the exact moment it was in danger of being lost.
@@ -1955,18 +2195,18 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
         parts.append(repeated)
     # RULES BEFORE PINS. A rule binds every environment, so a reader meets the constraints
     # before the facts of the one environment they happen to be on.
-    ruled = pins.carry(ROOT, source, key=pins.RULES)
+    ruled = pins.carry(ROOT, source, key=pins.RULES, cap=caps["rules"])
     if ruled:
         parts.append(ruled)
     # THE DOCS CATALOGUE, not the docs. One line each, so an agent knows what has been
     # settled before it re-investigates it; the doc itself is read on demand.
-    catalogued = docs.carry(ROOT)
+    catalogued = docs.carry(ROOT, cap=caps["docs"])
     if catalogued:
         parts.append(catalogued + "\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.")
-    kept = tools.carry(ROOT)
+    kept = tools.carry(ROOT, cap=caps["tools"])
     if kept:
         parts.append(kept)
-    pinned = pins.carry(ROOT, source)
+    pinned = pins.carry(ROOT, source, cap=caps["pins"])
     if pinned:
         parts.append(pinned)
     standing = work.open_work(ROOT)
@@ -1974,7 +2214,7 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
         parts.append("STILL OPEN, from this or an earlier session:\n"
                      + "\n".join(f"  - {w['subject']}" for w in standing)
                      + "\n`journal open` shows where each got to.")
-    waiting = todo.carry(ROOT, here)
+    waiting = todo.carry(ROOT, here, cap=caps["todos"])
     if waiting:
         parts.append(waiting)
     if source == "compact":
@@ -1986,68 +2226,6 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
             "The transcript lost nothing. Read it rather than half-remembering it."
         )
     return "\n\n".join(parts)
-
-
-def on_subagent_post(conf: dict, payload: dict, acting: str = "") -> int:
-    text = _subagent_rules(conf, payload, acting)
-    return _context("PostToolUse", text) if text else 0
-
-
-def _subagent_rules(conf: dict, payload: dict, acting: str = "") -> str | None:
-    """Hand a subagent the rules: on its first tool call, and again as its window fills.
-
-    A RULE BINDS A SUBAGENT'S WORK. "A component is never a field on another component's
-    State" is as true for the agent editing the PHP as for the one that dispatched it, and
-    until this a subagent never saw it. Pins and open work stay out — those are the main
-    conversation's, and the subagent cannot write the journal anyway — so this is rules
-    only, with one line saying whose journal it is.
-
-    NO SESSIONSTART FIRES FOR A SUBAGENT, so the block rides the first PostToolUse, which
-    is measured to reach it. It comes back at the marks in `subagent_rules_ladder`, read
-    from the SUBAGENT'S OWN transcript: the payload names the parent's, and the agent's
-    sits one level down under it. Context, never a hold: there is nothing to decide.
-    """
-    aid = payload.get("agent_id") or ""
-    stem = f"agent-{aid}"
-    ruled = pins.live(ROOT, pins.RULES)
-    if not ruled and not acting:
-        return None
-    given = state.get(ROOT, "rules_at", None, stem=stem)
-    passed: list[float] = []
-    if given is None:
-        given, passed = [], [0.0]
-    else:
-        own = transcript.find(ROOT.parent, stem)
-        got = context.pressure(own, conf["context_window"]) if own else None
-        if got and got[3]:
-            passed = [r for r in sorted(conf["subagent_rules_ladder"]) if got[0] >= r and r not in given]
-    if not passed:
-        return None
-    # EVERY MARK CROSSED IS RECORDED, not only the highest: a step from 20% to 55% passes
-    # two, and recording one would hand the block over again at the very next call.
-    mark = passed[-1]
-    state.put(ROOT, "rules_at", sorted(set(given) | set(passed)), stem=stem)
-    lead = (
-        (f"YOU ARE A SUBAGENT, DELEGATED THE ENVIRONMENT `{acting}`. The journal there is yours to "
-         "write, and the hooks hold you to it: declare work before you edit (`.journal/journal.py work start` "
-         "or `.journal/journal.py todos start <n>`), `work end` when it is done, pin what must outlive you, "
-         "and open every message with a tag (`[!reply]`, `[!info]`, `[!discovery]`, `[!blocked]`, "
-         "`[!correction]`) or your stop is held for it. Subagents of your own run NO journal command: "
-         f"they return text, you file it. `.journal/journal.py environments \"{acting}\"` is your brief. "
-         "These rules bind your work:"
-         if acting else
-         "YOU ARE A SUBAGENT. The journal here is the main conversation's, not yours to write: "
-         "report what you find and it decides what to file. These rules bind your work:")
-        if mark == 0.0 else
-        f"YOUR CONTEXT IS {mark:.0%} FULL. The rules of this project again, because a block "
-        "read at the start is far behind you now:"
-    )
-    # ITS OWN RENDERER, and that is the trap: this does not go through `pins.carry`, so a
-    # marker added there reaches every reader EXCEPT the subagent, which is the reader least
-    # able to go looking. `rules show <n>` is a read, and a subagent may read.
-    body = "\n".join(f"  - {r['fact']}" + (f"  ·rules show {i}" if r.get("body") else "")
-                     for i, r in enumerate(ruled, 1)) or "  (no rules yet)"
-    return lead + "\n" + body
 
 
 def _loop_line(conf: dict) -> str:
@@ -2148,10 +2326,6 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
 #: are the same events as the harness has also spelled them; an unknown event is silence,
 #: because a doorbell that argues with a caller it does not recognise is worse than one
 #: that does not ring.
-#: Verbs a delegated subagent may still not run: an environment is the session's to move.
-_PARENT_ONLY = frozenset({"switch", "delegate", "prepare", "handoff"})
-
-
 _CONF: list = []
 
 
@@ -2160,33 +2334,24 @@ def conf_of(payload: dict) -> dict:
 
 
 def _register(payload: dict, ctx: Ctx) -> str | None:
-    """The environment this actor is registered on — registering it now if it may be."""
-    if not ctx.stem.startswith("agent-"):
-        if tracks.bound(ROOT, ctx.stem):
-            return tracks.current(ROOT, ctx.stem)
-        # A SESSION WITH NO BINDING YET — its start, or its first event after an update —
-        # registers on the project's start environment, UNLESS a running session holds
-        # it: then it is registered nowhere until it switches, told so at its start,
-        # refused edits and held at its stops meanwhile. That is how two agents never
-        # share an environment: the second one is simply not let in.
-        if _track_due(conf_of(payload), ctx):
-            return None
-        # Registered on the start environment for READS, and bound to it only if the
-        # project still binds at the start: `tracks.current` already falls back there, so
-        # an unbound session is answered without a binding being written behind its back.
-        if conf_of(payload)["bind_on_start"]:
-            tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+    """The environment this session is registered on — registering it now if it may be.
+
+    A SESSION WITH NO BINDING YET — its start, or its first event after an update —
+    registers on the project's start environment, UNLESS a running session holds it: then
+    it is registered nowhere until it switches, told so at its start, refused edits and
+    held at its stops meanwhile. That is how two agents never share an environment: the
+    second one is simply not let in.
+    """
+    if tracks.bound(ROOT, ctx.stem):
         return tracks.current(ROOT, ctx.stem)
-    acting = tracks.delegated(ROOT, ctx.stem)
-    if acting:
-        return acting
-    tp = payload.get("transcript_path") or ""
-    parent = Path(tp).stem if tp else (payload.get("session_id") or "")
-    acting = tracks.delegated(ROOT, parent) if parent else None
-    if acting:
-        state.put(ROOT, "delegated", acting, stem=ctx.stem)
-        state.put(ROOT, "delegated_by", parent, stem=ctx.stem)
-    return acting
+    if _track_due(conf_of(payload), ctx):
+        return None
+    # Registered on the start environment for READS, and bound to it only if the project
+    # still binds at the start: `tracks.current` already falls back there, so an unbound
+    # session is answered without a binding being written behind its back.
+    if conf_of(payload)["bind_on_start"]:
+        tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+    return tracks.current(ROOT, ctx.stem)
 
 
 def _claimed_note(ctx: Ctx | None, clear: bool = True) -> tuple[str, str] | None:
@@ -2199,7 +2364,7 @@ def _claimed_note(ctx: Ctx | None, clear: bool = True) -> tuple[str, str] | None
     environment, and another session took it. Wrong causes are worse than none: the reader
     switches somewhere else and never learns its work moved.
     """
-    if ctx is None or not ctx.stem or ctx.stem.startswith("agent-"):
+    if ctx is None or not ctx.stem:
         return None
     got = state.get(ROOT, "claimed_away", {}, stem=ctx.stem)
     if not isinstance(got, dict) or not got.get("track"):
@@ -2207,11 +2372,13 @@ def _claimed_note(ctx: Ctx | None, clear: bool = True) -> tuple[str, str] | None
     if clear:
         state.put(ROOT, "claimed_away", {}, stem=ctx.stem)
     by = (got.get("by") or "")[:8] or "another session"
-    return (f"environment `{got['track']}` was claimed by another session",
-            f"journal: session {by} claimed environment `{got['track']}` — {got.get('why', '')}\n"
-            "  this session is bound to nothing now; nothing of that environment was deleted, and "
-            f'`.journal/journal.py claim "{got["track"]}" "<why>"` takes it back.\n'
-            '  otherwise pick one: `.journal/journal.py switch "<name>"`, `journal environments` lists them')
+    return _say(f"environment `{got['track']}` was claimed by another session",
+                f"by session {by}: " + got.get("why", ""),
+                note="This session is bound to nothing now, and nothing of that environment was "
+                     "deleted.\n"
+                     f'  .journal/journal.py claim "{got["track"]}" "<why>"   take it back\n'
+                     '  .journal/journal.py switch "<name>"   pick another; `journal environments` '
+                     "lists them")
 
 
 def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) -> int:
@@ -2222,7 +2389,7 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
     through to the one thing that registers it: `journal switch` (or `prepare`) onto a
     free environment. Reads are fine.
     """
-    if ctx is not None and not ctx.stem.startswith("agent-"):
+    if ctx is not None:
         due = state.get(ROOT, "track_due", None, stem=ctx.stem) or {}
         if handler is on_session_start:
             state.put(ROOT, "session_started", payload.get("source") or "startup", stem=ctx.stem)
@@ -2233,7 +2400,7 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
             return _context("SessionStart", (WORKTREE_NOTE + "\n\n" + block) if WORKTREE_NOTE else block)
         if handler is on_pre_tool:
             verb = _journal_write(payload)
-            if verb and verb not in ("switch", "prepare", "handoff", "delegate"):
+            if verb and verb not in ("switch", "prepare"):
                 return _deny(f"`journal {verb}` is refused: this session is registered on no environment — "
                              + _taken_block(due))
             if _is_write(payload) and not _is_journal(payload):
@@ -2249,30 +2416,25 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
                          f"({due.get('age', '')}), and one session works an environment — ask the user which "
                          'environment this session works on, then `.journal/journal.py switch "<name>"`')
         return 0
-    if handler is on_pre_tool:
-        verb = _journal_write(payload)
-        if verb:
-            return _deny(
-                f"`journal {verb}` from a subagent is refused: the journal is the main "
-                f"conversation's. Report what you found and let it decide what to file. "
-                f"Reads (`search`, `pins`, `open`, `--back`) are fine."
-            )
-        return 0
-    if handler is on_post_tool:
-        return on_subagent_post(conf, payload)
     return 0
 
 
 def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """The session is over: its environment is free. A closed terminal skips this; staleness covers it."""
+    """The session is over: its environment is free, and so is anything it lent.
+
+    A GRANT DIES WITH THE SESSION, and for one release that was a sentence rather than a
+    fact: `granted` is a runtime key, the runtime file outlives the session, and nothing
+    cleared it — so a `claude --resume` woke up still lending an environment to subagents
+    nobody was watching. That is a door left open by a session that has stopped looking,
+    which is the exact failure the grant exists to prevent.
+    """
     tracks.unbind(ROOT, ctx.stem)
+    state.put(ROOT, "granted", [], stem=ctx.stem)
     state.put(ROOT, "ended", payload.get("reason") or "exit", stem=ctx.stem)
     return 0
 
 
 HANDLERS = {
-    "SubagentStop": on_stop,       # reaches a DELEGATED subagent only; the door turns the rest away
-    "subagent-stop": on_stop,
     "SessionEnd": on_session_end,
     "session-end": on_session_end,
     "Stop": on_stop,
@@ -2288,9 +2450,11 @@ HANDLERS = {
 }
 
 
-def main() -> int:
+def main(raw: str | None = None) -> int:
+    """One hook event. `raw` is the payload; without it, stdin — which is how the harness
+    calls it, and how a test can answer many events in one interpreter instead of one."""
     try:
-        payload = json.load(sys.stdin)
+        payload = json.loads(raw) if raw is not None else json.load(sys.stdin)
     except Exception:
         return 0  # a doorbell that crashes on a payload it did not expect is worse than none
     conf, problems = settings_mod.load(ROOT)
@@ -2311,13 +2475,67 @@ def main() -> int:
         print(f"journal: {event} payload names no session or transcript — nothing filed",
               file=sys.stderr)
         return 0
-    # ONE DOOR, ONE REGISTRY. Every actor — a session, a subagent — is registered on an
-    # environment or it is not. A session registers at its start (or at its first event
-    # after an update); a subagent registers on its first event if its session delegated
-    # an environment, and acts there. An actor registered nowhere is journaled for
-    # nothing: its journal writes are refused, because its shell carries its parent's
-    # session id and would write the parent's record; it is handed the rules, once; and
-    # that is all. No other line asks whether an actor is a subagent.
+    # A SUBAGENT IS TURNED AWAY AT THE DOOR, AND THAT IS THE WHOLE OF IT. It used to be let
+    # in and then handled: a delegation to bind it to an environment, a rules ladder on its
+    # own window, a refusal list for the verbs it may not run, a stop that had to check
+    # whether it had a transcript. Nine branches, in six functions, all asking the same
+    # question — and the question belongs here, once, where the answer is "no".
+    #
+    # A subagent's shell carries its PARENT's session id, so anything it wrote would land
+    # in the parent's record under the parent's name. It reports what it found; the main
+    # conversation files it. That was always the rule; now it is also the implementation.
+    if payload.get("agent_id"):
+        # THE ONE PLACE THAT ASKS WHETHER AN ACTOR IS A SUBAGENT, and it asks once. What it
+        # decides is narrow: a subagent's journal WRITE goes through only if the dispatching
+        # session lent it an environment and the command names that environment. Everything
+        # else about it — its stop, its context, its registration — is nothing to the
+        # journal, which is why there is no second branch anywhere below.
+        #
+        # THE SESSION ID IS THE DISPATCHER'S. That is the whole reason the grant exists and
+        # also the reason `switch` and its kin stay refused however it is granted: they move
+        # a session, and the session they would move is the one that dispatched this agent.
+        # ITS OWN NAME, FROM THE ONLY THING THAT KNOWS IT. A subagent cannot identify
+        # itself — nothing in its process carries `agent_id`, and two concurrent ones have
+        # byte-identical environments. This does, on every call, so the first one creates
+        # its ledger, stamps the heartbeat and tells it the two flags to use. Said once:
+        # after that it has been told, and repeating it every call is the wall this package
+        # spends its whole design avoiding.
+        aid = state.slug(str(payload.get("agent_id") or ""))
+        here = tracks.current(ROOT, ctx.stem if ctx else None)
+        lent = grants.granted(ROOT, _parent_of(payload))
+        # ON THE TOOL'S RESULT, NOT BEFORE IT. `DELIVERS_CONTEXT` does not list PreToolUse
+        # — the harness rejects `additionalContext` there, measured, and the reference
+        # disagrees with that; where the two differ this package trusts what it watched
+        # happen. PostToolUse carries it, and the first tool call is still long before the
+        # subagent's first journal command, which is the only moment the name has to exist.
+        if aid and lent and handler is on_post_tool:
+            told = state.get(ROOT, "agents_told", [], stem=_parent_of(payload)) or []
+            if aid not in told:
+                state.put(ROOT, "agents_told", told + [aid], stem=_parent_of(payload))
+                agents.touch(ROOT, lent[0], aid)
+                agents.dir_of(ROOT, lent[0], aid).mkdir(parents=True, exist_ok=True)
+                return _context("PostToolUse", agents.briefing(lent[0], aid))
+        verb = _journal_write(payload) if handler is on_pre_tool else ""
+        if verb:
+            command = str((payload.get("tool_input") or {}).get("command", ""))
+            # THE GRANT LIVES ON THE DISPATCHER, and `ctx.stem` here is `agent-<id>` — the
+            # subagent's own runtime name. The session that lent the environment is the one
+            # whose transcript this event carries, which is the parent's: the same identity
+            # collision that makes the whole grant necessary, showing up in the lookup.
+            ok, why = grants.allows(ROOT, _parent_of(payload), verb, command)
+            if not ok:
+                return _deny(why)
+            # `--as=` IS CHECKED, NEVER TRUSTED. It is the only way a subagent's ledger can
+            # be named on a command line, and an unchecked one would let any subagent claim
+            # another's — its work, and the to-do that is held for it.
+            said = grants.acting_in(command)
+            if said and said != aid:
+                return _deny(
+                    f"`--as=\"{said}\"` is not you: this call is agent `{aid}`. Use your own "
+                    "name — you were told it on your first tool call — or leave the flag off "
+                    "and write nothing."
+                )
+        return 0
     _CONF[:] = [conf]
     env = _register(payload, ctx)
     if env is None:
@@ -2330,16 +2548,6 @@ def main() -> int:
         # ALIVE, AS OF NOW. What `tracks.occupants` reads to tell a running session from a
         # terminal that was closed without a SessionEnd.
         state.put(ROOT, "seen_at", int(time.time()), stem=ctx.stem)
-        if ctx.stem.startswith("agent-"):
-            if handler is on_pre_tool and _journal_write(payload) in _PARENT_ONLY:
-                return _deny(f"`journal {_journal_write(payload)}` from a subagent is refused even when delegated: "
-                             f"the environment is the session's to move. You work on `{env}`; report the rest.")
-            if handler is on_post_tool:
-                text = _subagent_rules(conf, payload, env)   # its first call, and at its own marks
-                if text:
-                    return _context("PostToolUse", text)
-            if handler is on_stop and ctx.path is None:
-                return 0
         return handler(conf, payload, ctx)
     except Exception as e:  # noqa: BLE001
         print(f"journal: {event} handler failed ({type(e).__name__}: {e}) — nothing filed",

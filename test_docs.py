@@ -9,7 +9,7 @@ single file is a doc and becomes a folder without breaking what cites it; nothin
 deleted, only struck with a reason; the catalogue, not the docs, is what a session is
 handed; a loose markdown file earns a hint, once, never a hold.
 """
-import json, os, os, shutil, subprocess, sys, tempfile
+import json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"  # no network from the hooks under test
@@ -17,7 +17,7 @@ os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"  # a pull inside a suite runs no suit
 
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import docs, transcript  # noqa: E402
+import testkit, docs, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -43,9 +43,11 @@ env = {**os.environ, transcript.SESSION_ENV: "s1"}
 root = d / ".journal"
 
 
+P = testkit.Project(d)
+
+
 def j(*args, stdin=""):
-    p = subprocess.run([J, *args], env=env, input=stdin, capture_output=True, text=True, timeout=60)
-    return p.returncode, p.stdout + p.stderr
+    return P.cli(*args, session="s1", stdin=stdin)
 
 
 def fire(event, **extra):
@@ -177,6 +179,9 @@ out = fire("PostToolUse", tool_name="Edit", tool_input={"file_path": str(d / ".j
 check("editing a catalogued doc by hand is not hinted", out.strip(), "")
 out = fire("PostToolUse", tool_name="Write", tool_input={"file_path": str(d / "README.md")}, tool_response="ok")
 check("a README is not hinted", out.strip(), "")
+# THE HINT FIRES ON A WRITE THAT HAPPENED, so the fixture has to do what the redirect
+# would have done — the hook runs after the tool and looks for the file.
+(d / ".journal" / "docs" / "plan.md").write_text("x")
 out = fire("PostToolUse", tool_name="Bash", tool_input={"command": "cat > .journal/docs/plan.md <<'EOF'\nx\nEOF"}, tool_response="")
 check("a bash redirect into a markdown file is hinted", ".journal/docs/plan.md" in out, True)
 out = fire("PostToolUse", tool_name="Bash", tool_input={"command": ".journal/journal.py docs add x --brief < notes.md"}, tool_response="")
@@ -184,7 +189,8 @@ check("the journal's own writes are not", out.strip(), "")
 
 # ---------------------------------------------------------------- subagents
 out = fire("PreToolUse", agent_id="abc", tool_name="Bash", tool_input={"command": '.journal/journal.py docs add "x" --abstract=y'})
-check("a subagent cannot write docs", "from a subagent is refused" in out, True)
+check("a subagent cannot write docs — every environment reads them",
+      "is refused from a subagent" in testkit.denied(out), True)
 out = fire("PreToolUse", agent_id="abc", tool_name="Bash", tool_input={"command": ".journal/journal.py docs 1"})
 check("but may read them", out.strip(), "")
 
@@ -272,7 +278,8 @@ check("the session start catalogue says which docs carry files", "2 file(s): des
 # a subagent may not attach
 p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "z9", "transcript_path": str(path),
                    "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attach {n_att} x.html "x"'}}), capture_output=True, text=True, timeout=60)
-check("a subagent attaching is refused as a journal write", "from a subagent is refused" in p.stdout, True)
+check("a subagent attaching is refused as a journal write",
+      "is refused from a subagent" in testkit.denied(p.stdout), True)
 p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "z9", "transcript_path": str(path),
                    "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attachments {n_att}'}}), capture_output=True, text=True, timeout=60)
 check("a subagent listing them is not", "refused" in p.stdout, False)
@@ -319,6 +326,20 @@ check("a piped line is not a plain read", read(None, cmd=f"cat {outside / 'notes
 read(outside / "other.csv"); read(outside / "other.csv")
 check("silenced: nothing", read(outside / "other.csv"), "")
 (root / "settings.json").write_text(json.dumps({"context_window": 1000000}))
+
+# ─────────────────── citing a HEADING, one level below the part ───────────────────────────
+code, out = j("docs", "add", "one with sections", "--abstract=x", "--brief",
+              stdin="opening\n\n## The measurements\n\nwhat\n\n## The two bugs\n\nand\n")
+dn = re.search(r"doc (\d+)", out).group(1)
+code, out = j("pins", "add", "a claim resting on one section", f"--doc={dn}#the-measurements")
+check("a pin can cite a heading", code, 0)
+code, out = j("pins")
+check("and it renders as a section, not a slug", "§ The measurements" in out, True)
+code, out = j("pins", "add", "another", f"--doc={dn}#nope")
+check("an unknown heading is refused, naming the ones that exist",
+      (code, "#the-measurements" in out, "#the-two-bugs" in out), (1, True, True))
+code, out = j("todos", "add", "a row on one section", f"--doc={dn}#the-two-bugs")
+check("a to-do cites one the same way, through the same flag", code, 0)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
