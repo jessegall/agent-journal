@@ -365,5 +365,33 @@ check("every `journal <verb>` the README prints is one the CLI answers",
 check("and no retired command is presented as a live one",
       [v for v in _h.RETIRED if v in _named], [])
 
+# ─────────── one object, one renderer ──────────────────────────────────────────────────────
+# The house style used to live in 546 decisions: `say` was the one exit, but every caller
+# assembled its own string first, so the blank lines, the order and the indent were
+# re-decided at every site. That is why the same wall-of-text complaint came back in a
+# different screen three times — there was no place to fix it once.
+check("a page is described, not formatted: title, rows, footer",
+      _f.render(_f.Out(title="PINS", sub="2 standing",
+                       items=(_f.Item(n=1, text="a claim", meta="3h ago"),),
+                       footer="`journal pins add` writes one.")),
+      "PINS  2 standing\n\n  1  a claim\n     3h ago\n\n  `journal pins add` writes one.")
+check("a row's shape comes from what was filled in, never from a flag",
+      (_f.Item(text="x").layout, _f.Item(n=1, text="x").layout,
+       _f.Item(title="a", text="x").layout), (_f.PROSE, _f.NUMBERED, _f.COLUMN))
+check("every shape has a layout, and no layout is unreachable",
+      sorted(_f._LAYOUTS), sorted({_f.COLUMN, _f.NUMBERED, _f.PROSE}))
+check("a group of columns aligns to its widest name, not to each row's own",
+      [l[:22] for l in _f.render(_f.Out(items=(_f.Item(title="a", text="1"),
+                                               _f.Item(title="a-much-longer", text="2")))).splitlines()],
+      ["  a               1", "  a-much-longer   2"])
+check("an Out among the items is a section, rendered by the same function",
+      "SECTION" in _f.render(_f.Out(title="TOP", items=(_f.Out(title="SECTION"),))), True)
+check("a refusal is marked once, on the first line, before the wrap",
+      _f.render(_f.Out(lead="no.", items=(_f.Item(text="and here is why"),), error=True)),
+      "  ! no.\n\n  and here is why")
+check("the numbered stores share one listing: only what goes beneath differs",
+      (__import__("pins")._store().facts is not None,
+       __import__("reminders")._STORE.facts is not None), (True, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

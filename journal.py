@@ -1403,6 +1403,28 @@ def cmd_reminder_done(n: int, why: str) -> int:
     return 0 if ok else 1
 
 
+def _catalogue(title: str, sub: str, listed, empty: str, lead: str, rows,
+               noun: str = "", page: int = 1, order: str = fmt.DESC) -> int:
+    """A numbered catalogue page: heading, the list, why it matters, what to type.
+
+    `pins` and `reminders` were this function written twice — same heading, same list, same
+    footer, differing only in the noun and the commands. A third would have been a third
+    copy, which is how the last four drifted apart.
+
+    IT TAKES ROWS, NOT A RENDERED LIST. Handed text, the page could only paste it in as a
+    paragraph — which reflowed a numbered list into prose the first time it was tried here.
+    Rows keep their shape because the renderer, not the caller, decides what a row is.
+    """
+    items, left = listed
+    fmt.say(fmt.Out(title=title, sub=sub,
+                    items=(tuple(items) or (fmt.Item(text=empty),))
+                          + ((fmt.Item(text=fmt.more(noun, left, page, order).strip()),)
+                             if left else ())
+                          + (fmt.Item(text=lead),)
+                          + tuple(fmt.Item(title=c, text=w) for c, w in rows)))
+    return 0
+
+
 def cmd_reminders(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
     """The list, and what it costs — the one catalogue whose entries are re-read for free
     by nobody. Every line here is said at every stop, so the count is the headline."""
@@ -1412,22 +1434,18 @@ def cmd_reminders(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> in
     sub = f"environment {tracks.current(root(), _stem())} · {n} repeated"
     if all_of_them and retired:
         sub += f", {retired} retired"
-    fmt.say(fmt.title("REMINDERS", sub=sub))
-    fmt.say()
-    fmt.say(reminders.render(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE,
-                             page=page, order=order))
-    fmt.say()
     every = f", and every {conf['reminder_every']} tool calls in between" if conf["reminder_every"] else ""
-    fmt.say(fmt.wrap(f"Said to you at every stop{every}, and to the user with it — they wrote "
-                     "it, and seeing it come back is how they know it landed. Nothing here "
-                     "expires on its own."))
-    fmt.say(fmt.commands([
-        ('journal reminders add "<instruction>" [--until="<condition>"]', "start repeating one; --until is prose YOU judge"),
-        ('journal reminders done <n> "<why>"', "retire one whose condition came true"),
-        ('journal reminders move <n> "<environment>"', "it belongs to an environment, like a pin"),
-        ("journal reminders --all", "the retired ones too"),
-    ]))
-    return 0
+    return _catalogue(
+        "REMINDERS", sub,
+        reminders.listing(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order),
+        "Nothing is being repeated.",
+        f"Said to you at every stop{every}, and to the user with it — they wrote it, and "
+        "seeing it come back is how they know it landed. Nothing here expires on its own.",
+        [('journal reminders add "<instruction>" [--until="<condition>"]', "start repeating one; --until is prose YOU judge"),
+         ('journal reminders done <n> "<why>"', "retire one whose condition came true"),
+         ('journal reminders move <n> "<environment>"', "it belongs to an environment, like a pin"),
+         ("journal reminders --all", "the retired ones too")],
+        noun="reminders", page=page, order=order)
 
 
 def cmd_pins(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
@@ -1437,26 +1455,24 @@ def cmd_pins(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
     struck = len(pins._all(root())) - n
     sub = f"environment {here} · {n} standing" + (
         f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
-    fmt.say(fmt.title("PINS", sub=sub))
-    fmt.say()
-    fmt.say(pins.render(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order))
-    fmt.say()
-    fmt.say(fmt.wrap("Handed to every session on this environment."))
-    fmt.say(fmt.commands([
-        ("journal pins <n> --full", "the conversation around one"),
-        ("journal pins promote <n>", "make one a rule for every environment"),
-        ('journal pins strike <n> "<why>"', "retire one that stopped being true"),
-    ]))
+    code = _catalogue(
+        "PINS", sub,
+        pins.listing(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order),
+        "Nothing is pinned.",
+        "Handed to every session on this environment.",
+        [("journal pins <n> --full", "the conversation around one"),
+         ("journal pins promote <n>", "make one a rule for every environment"),
+         ('journal pins strike <n> "<why>"', "retire one that stopped being true")],
+        noun="pins", page=page, order=order)
     got = transcript.session_transcript(project())
     if got:
         import state as _st
         read = context.pressure(got[0], conf["context_window"], _st.get(root(), "window", 0) or 0)
-        if read and read[3]:
-            fmt.say(fmt.wrap(f"Context {read[0]:.0%} full ({read[1]:,} of {read[2]:,})."))
-        elif read:
-            fmt.say(fmt.wrap(f"Context: {read[1]:,} tokens; the window is learned at the first "
-                           "compaction, or set context_window in .journal/settings.json."))
-    return 0
+        if read:
+            fmt.say(f"Context {read[0]:.0%} full ({read[1]:,} of {read[2]:,})." if read[3] else
+                    f"Context: {read[1]:,} tokens; the window is learned at the first "
+                    "compaction, or set context_window in .journal/settings.json.")
+    return code
 
 
 def cmd_grant(name: str, off: bool, listing: bool) -> int:
@@ -1470,15 +1486,14 @@ def cmd_grant(name: str, off: bool, listing: bool) -> int:
     stem = _stem()
     if listing or (not name and not off):
         lent = grants.granted(root(), stem)
-        fmt.say(fmt.title("GRANTED", sub=f"{len(lent)} lent by this session"))
-        fmt.say()
-        if not lent:
-            fmt.say("  This session has lent nothing. A subagent's journal writes are refused.")
-        else:
-            fmt.say(fmt.commands([(n, "its subagents may write there with --env") for n in lent]))
-        fmt.say()
-        fmt.say(fmt.wrap('`journal grant "<environment>"` lends one; `--off` takes it back. '
-                         "A grant belongs to this session and dies with it."))
+        fmt.say(fmt.Out(
+            title="GRANTED", sub=f"{len(lent)} lent by this session",
+            lead="" if lent else
+                 "This session has lent nothing. A subagent's journal writes are refused.",
+            items=tuple(fmt.Item(title=n, text="its subagents may write there with --env")
+                        for n in lent),
+            footer='`journal grant "<environment>"` lends one; `--off` takes it back. '
+                   "A grant belongs to this session and dies with it."))
         return 0
     if off:
         ok, msg = grants.revoke(root(), stem or "", name)
@@ -1505,29 +1520,31 @@ def cmd_settings() -> int:
     import hook  # noqa: F401 — registers the subjects
     conf, problems = settings_mod.load(root())
     f = root() / settings_mod.PATH
-    fmt.say(fmt.title("SETTINGS", sub=str(f) if f.is_file() else "no file, every default in force"))
-    fmt.say()
-    wide = max(len(k) for k in settings_mod.DEFAULTS)
-    val = min(30, max(len(str(v)) for v in conf.values()))
-    for key, default in settings_mod.DEFAULTS.items():
-        mark = " " if conf[key] == default else "*"
-        fmt.say(f" {mark} {key:<{wide}}  {str(conf[key]):<{val}}  {fmt.dim('default ' + str(default))}")
-    if any(conf[k] != settings_mod.DEFAULTS[k] for k in settings_mod.DEFAULTS):
-        fmt.say()
-        fmt.say(fmt.wrap("* set in settings.json"))
+    changed = [k for k in settings_mod.DEFAULTS if conf[k] != settings_mod.DEFAULTS[k]]
     # THE ORDER IS A SETTING WITH NO ROW OF ITS OWN. `stop_priority` prints as `{}` like any
     # other key, while settings.py has promised since it was written that "`journal
-    # settings` shows the order in force" — and `nudges.priorities()`, which exists to
-    # answer exactly that, was called by nothing but a test. A setting whose effect cannot
-    # be seen is the failure this module was built to report.
-    fmt.say(fmt.section("the stop queue, in the order it runs"))
-    fmt.say(fmt.table([(name, f"{n}") for name, n in nudges.priorities(conf)]))
-    fmt.say()
-    fmt.say(fmt.wrap("One subject is raised per stop, lowest number first. `stop_priority` "
-                     'moves one: {"work": 1} puts open work at the head. `silenced` turns '
-                     "one off by name, and is the way to quiet a single subject."))
+    # settings` shows the order in force". A setting whose effect cannot be seen is the
+    # failure this module was built to report, so the queue is a section of its own.
+    fmt.say(fmt.Out(
+        title="SETTINGS",
+        sub=str(f) if f.is_file() else "no file, every default in force",
+        items=tuple(
+            fmt.Item(title=("* " if k in changed else "  ") + k, text=str(conf[k]),
+                     meta=f"default {d}" if k in changed else "")
+            for k, d in settings_mod.DEFAULTS.items()
+        ) + (
+            fmt.Item(text="* set in settings.json"),
+        ) * bool(changed) + (
+            fmt.Out(title="THE STOP QUEUE, IN THE ORDER IT RUNS",
+                    items=tuple(fmt.Item(title=name, text=str(n))
+                                for name, n in nudges.priorities(conf))),
+        ),
+        footer='One subject is raised per stop, lowest number first. `stop_priority` moves '
+               'one: {"work": 1} puts open work at the head. `silenced` turns one off by '
+               "name, and is the way to quiet a single subject.",
+    ))
     for p in problems:
-        fmt.say(f"\n  ! {p}")
+        fmt.say(p, error=True)
     return 1 if problems else 0
 
 

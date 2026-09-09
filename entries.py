@@ -35,6 +35,11 @@ class Store(NamedTuple):
     text: str           # the field holding what the entry says
     retired: str        # the field that holds the reason it is no longer standing
     verb: str = ""      # what retiring is called here; defaults to "retired"
+    #: THE ONE THING A LISTING CANNOT SHARE: what a reader is told BENEATH an entry. A pin
+    #: cites the line it was written at and what it replaced; a reminder shows its condition
+    #: and where it moved from. So the loop is shared and the facts are a strategy — the
+    #: store supplies them, and `rows` never asks which store it is holding.
+    facts: object = None   # (entry, number) -> list[str], the fragments under the text
 
     @property
     def plural(self) -> str:
@@ -48,6 +53,29 @@ def all_of(root: Path, store: Store) -> list[dict]:
 
 def live(root: Path, store: Store) -> list[dict]:
     return [e for e in all_of(root, store) if not e.get(store.retired)]
+
+
+def rows(root: Path, store: Store, *, all_of_them: bool = False, cap: int | None = None,
+         page: int = 1, order: str = "desc") -> tuple[list, int]:
+    """(the entries as rows, how many were left off). The listing every numbered store shares.
+
+    IT WAS WRITTEN OUT ONCE PER NOUN and had drifted exactly as `retire` and `move` had:
+    the same enumerate, the same paging, the same struck-keeps-its-number rule, the same
+    `fmt.numbered` call, in two functions that differed only in which fields went into the
+    line beneath. A third noun would have been a third copy.
+
+    THE NUMBER IS THE POSITION IN THE FULL LIST, always — a retired entry keeps its number
+    and is simply not shown. Renumbering the standing ones would make "pin 3" in an old
+    transcript name a different fact.
+    """
+    import fmt
+    items = all_of(root, store)
+    kept = [(i, e) for i, e in enumerate(items, 1)
+            if all_of_them or not e.get(store.retired)]
+    shown, left = fmt.paged(kept, cap, page, order)
+    facts = store.facts or (lambda e, n: [])
+    return [fmt.Item(n=i, text=e[store.text], meta=" · ".join(facts(e, i)),
+                     struck=bool(e.get(store.retired))) for i, e in shown], left
 
 
 def _find(items: list[dict], n: int, store: Store) -> tuple[dict | None, str]:

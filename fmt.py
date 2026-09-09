@@ -15,6 +15,7 @@ from __future__ import annotations
 import sys
 import re
 import textwrap
+from typing import NamedTuple
 
 WIDTH = 88
 
@@ -197,21 +198,204 @@ def block(text: str, width: int = WIDTH) -> str:
     return "\n".join(out)
 
 
-def say(text="", *, error: bool = False) -> None:
-    """THE ONE WAY OUT OF EVERY COMMAND. Whatever a command has to say passes through here.
+class Item(NamedTuple):
+    """ONE ROW, WHATEVER KIND OF ROW IT IS. The renderer decides how it looks.
 
-    So the house style is enforced in one place: an error is one line with `!` in front
-    on stderr, a plain paragraph longer than the width is wrapped, and a line that is
-    already shaped — indented, in columns, a command — is printed as it is. A command
-    that formats its own output is a command whose output nobody checked.
+    Every list this package prints is one of four things, and they differed only in which
+    fields were filled — so they are one shape, and the four renderers that used to be
+    chosen by the CALLER are chosen here instead:
+
+        Item(n=2, text="the claim", meta="3h ago")        a pin, a to-do, a reminder
+        Item(title='journal pins add "<x>"', text="…")    a command and what it does
+        Item(title="context_window", text="1000000")      a setting and its value
+        Item(text="a paragraph")                          prose
+
+    That is the whole vocabulary. A caller that wants a number gives a number; one that
+    wants a column gives a title; one that wants prose gives neither.
     """
-    text = "" if text is None else str(text)
-    if error:
-        lines = text.split("\n")
-        if lines and lines[0].strip() and not lines[0].lstrip().startswith("!"):
-            lines[0] = "  ! " + lines[0].strip()
-        text = "\n".join(lines)
-    print(block(text), file=sys.stderr if error else sys.stdout)
+    text: str = ""
+    n: int = 0
+    title: str = ""
+    meta: str = ""
+    struck: bool = False
+
+    @property
+    def layout(self) -> str:
+        """Which of the four shapes this row is — from what was filled in, not from a flag.
+
+        A caller that wants a column gives a title; one that wants a number gives a number;
+        one that wants prose gives neither. There is no way to ask for a shape and no way to
+        ask for one the fields do not support, which is what keeps the vocabulary at four.
+        """
+        return COLUMN if self.title else NUMBERED if self.n else PROSE
+
+
+class Out(NamedTuple):
+    """WHAT A COMMAND RETURNS, AND THE ONLY THING `say` ACCEPTS.
+
+    THE HOUSE STYLE USED TO LIVE IN 546 DECISIONS. `say` was the one exit, but every one of
+    its callers assembled its own string first — a `title`, a `\n\n`, a `commands` block,
+    another `\n\n`, a footer — so the blank lines, the order, the indent and the trimming
+    were re-decided at every site. That is why the same complaint about a wall of text kept
+    coming back in a different screen each time: there was no place to fix it once.
+
+    So a command describes WHAT it is saying and never how. `render` below is the only code
+    in the package that decides what a heading looks like, where the air goes, and how a row
+    is laid out — and `say` is the only thing that writes to a stream.
+
+    `items` may hold an `Out` as well as an `Item`: that is a section, rendered by the same
+    function one level in, which is how a page with several groups is built without any
+    caller joining two rendered strings together.
+    """
+    lead: str = ""              # the paragraph under the heading — or the whole message
+    title: str = ""             # "PINS"
+    sub: str = ""               # "environment reminders · 7 standing"
+    items: tuple = ()           # Item | Out
+    footer: str = ""            # the prose or the commands under the body
+    error: bool = False         # the marker and the stream. Nothing else.
+
+
+#: THE FOUR SHAPES A ROW CAN TAKE, and the function that lays each one out. A dispatch
+#: table rather than a chain of `if`s: adding a shape is adding an entry, the signatures
+#: are uniform, and no caller can reach a half-applied branch. Which shape a row is comes
+#: from `Item.layout` — decided by what the caller filled in, never asked for by name.
+COLUMN, NUMBERED, PROSE = "column", "numbered", "prose"
+
+#: The narrowest a value column may be before its group stacks instead.
+_ROOM = 34
+
+
+def _column(i: "Item", width: int) -> str:
+    """A name, its value beside it in a column, its facts beneath.
+
+    COLUMNS ARE A PROPERTY OF THE GROUP. `width` is the widest title in the group, passed
+    in rather than measured here, so every row of one group aligns and no caller can get
+    half a table. The name itself is never broken: it is what the reader copies.
+    """
+    if not i.text:
+        return f"  {i.title}"
+    # STACKED WHEN THE COLUMN WOULD NOT LEAVE ROOM TO READ. `width` is 0 when the group
+    # decided that — see `_rows`. The name keeps its own line whole, because it is what the
+    # reader copies, and the value goes underneath it.
+    if not width:
+        return f"  {i.title}\n" + dim(_fill(i.text, "      ")) + (
+            f"\n      {dim(i.meta)}" if i.meta else "")
+    head = f"  {i.title:<{width}}   "
+    body = dim_body(_fill(i.text, head), len(head))
+    return body + (f"\n{' ' * len(head)}{dim(i.meta)}" if i.meta else "")
+
+
+def _numbered(i: "Item", width: int) -> str:
+    """A numbered entry: a pin, a to-do, a reminder. The number is what commands take."""
+    return numbered(i.n, i.text, i.meta, struck=i.struck)
+
+
+def _prose(i: "Item", width: int) -> str:
+    """A paragraph, with anything qualifying it indented beneath."""
+    return wrap(i.text) + (f"\n{wrap(i.meta, indent=4)}" if i.meta else "")
+
+
+_LAYOUTS = {COLUMN: _column, NUMBERED: _numbered, PROSE: _prose}
+
+#: HOW MUCH AIR GOES BETWEEN TWO ROWS, and it is a property of the rows, not of the caller.
+#: A column group is a table and reads as one block; numbered entries and paragraphs each
+#: need a line of their own to be findable. So: two columns sit together, and anything else
+#: is separated. One rule, applied between every adjacent pair, with no run-detection and
+#: nothing for a caller to pass in.
+def _air(a, b) -> str:
+    return "\n" if getattr(a, "layout", None) == COLUMN == getattr(b, "layout", None) else "\n\n"
+
+
+def _fill(text: str, head: str) -> str:
+    """One paragraph wrapped under a hanging indent, with backticked runs kept whole."""
+    return _unknit(textwrap.fill(_knit(" ".join((text or "").split())), width=WIDTH,
+                                 initial_indent=head, subsequent_indent=" " * len(head)))
+
+
+def _rows(items) -> str:
+    """A group of items as text, with one blank line between them.
+
+    The only branch here is structural: an `Out` among the items is a SECTION, and it is
+    rendered by the same function one level in. Everything else is a row, and which kind
+    of row it is was decided when it was written.
+    """
+    rows = [i for i in items if i is not None]
+    width = max((len(i.title) for i in rows if isinstance(i, Item)), default=0)
+    # THE GROUP DECIDES, ONCE, FOR ALL OF ITS ROWS. One 58-character command in
+    # `journal reminders` left 20 columns for every description in the group and turned each
+    # into a four-line sliver. Below `_ROOM`, the whole group stacks instead — a table that
+    # is unreadable in the columns it needs is not a table, and a group where some rows are
+    # columns and others are stacked is worse than either.
+    if width and WIDTH - width - 5 < _ROOM:
+        width = 0
+    laid = [(i, render(i) if isinstance(i, Out) else _LAYOUTS[i.layout](i, width))
+            for i in rows]
+    laid = [(i, t) for i, t in laid if t]
+    out = laid[0][1] if laid else ""
+    for (prev, _), (this, text) in zip(laid, laid[1:]):
+        out += _air(prev, this) + text
+    return out
+
+
+def render(out) -> str:
+    """AN `Out` AS TEXT. The only code that decides where the air goes.
+
+    One blank line after a heading, one between groups, none at the ends. A refusal is
+    marked once — `say(error=True)` puts `!` on the first line of whatever it is given, so
+    a refusal built from five calls announced itself five times, and a marker repeated down
+    a page means nothing.
+    """
+    if isinstance(out, str):
+        out = Out(lead=out)
+    parts = []
+    if out.title:
+        parts.append(title(out.title, sub=out.sub))
+    if out.lead:
+        parts.append(wrap(out.lead))
+    body = _rows(out.items)
+    if body:
+        parts.append(body)
+    if out.footer:
+        parts.append(wrap(out.footer))
+    return block(_marked("\n\n".join(p for p in parts if p).rstrip(), out.error))
+
+
+def _marked(text: str, error: bool) -> str:
+    """A refusal announces itself ONCE, on its first line, BEFORE the text is wrapped.
+
+    Both halves of that matter and both were learned by breaking them. Marking every call
+    made a refusal built from five `say`s announce itself five times. Marking AFTER the
+    wrap shifts the first line by four characters without re-wrapping it, so the break
+    points move and a command splits across two lines — which is the one thing this
+    package will not do to a command.
+    """
+    if not error:
+        return text
+    lines = text.split("\n")
+    if lines and lines[0].strip() and not lines[0].lstrip().startswith("!"):
+        lines[0] = "  ! " + lines[0].strip()
+    return "\n".join(lines)
+
+
+def say(out="", *, error: bool = False) -> None:
+    """THE ONE WAY OUT OF EVERY COMMAND, and the one SHAPE for everything migrated to it.
+
+    An `Out` is DESCRIBED — a title, rows, a footer — and `render` decides where the air
+    goes. That is the destination for every caller.
+
+    A BARE STRING IS A SITE NOT YET MIGRATED, and it is passed through `block` exactly as
+    it always was, because a string arriving here is already shaped: it has been through
+    `commands` or `table` or `numbered` at the call site, and wrapping it as prose would
+    reflow a column into a paragraph. Both forms end at `block`, which is the one gate that
+    decides what a line may look like — so this is one funnel with a queue behind it, not
+    two paths.
+    """
+    if isinstance(out, Out):
+        out = out._replace(error=out.error or error)
+        text, error = render(out), out.error
+    else:
+        text = block(_marked("" if out is None else str(out), error))
+    print(text, file=sys.stderr if error else sys.stdout)
 
 
 DESC, ASC = "desc", "asc"

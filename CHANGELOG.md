@@ -4,6 +4,50 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.38.0 — output is described, never formatted at the call site
+
+`fmt.say` was one exit and no shape. Every one of its 546 callers assembled its own string
+first — a title, a `\n\n`, a command block, another `\n\n`, a footer — so the blank lines,
+the order, the indent and the trimming were re-decided at every site. That is why the same
+complaint about a wall of text came back in a different screen three times: there was no
+place to fix it once.
+
+A command now describes WHAT it is saying and never how.
+
+    Item(text="…")                    a paragraph
+    Item(n=2, text="…", meta="…")     a pin, a to-do, a reminder
+    Item(title="journal x", text="…") a command, a setting — anything in a column
+    Out(title=, sub=, lead=, items=, footer=, error=)
+
+Which shape a row takes comes from `Item.layout`, decided by what the caller filled in —
+there is no way to ask for a shape by name and no way to ask for one the fields do not
+support, which is what keeps the vocabulary at three. `fmt._LAYOUTS` maps each to the
+function that lays it out: adding a shape is adding an entry, the signatures are uniform,
+and no caller can reach a half-applied branch. An `Out` among the items is a SECTION,
+rendered by the same function one level in, so a page with several groups is built without
+any caller joining two rendered strings together.
+
+`fmt.render` is the only code that decides where the air goes, and it decides it from the
+rows: two columns sit together, anything else is separated. A group whose widest name would
+leave less than 34 columns to read in stacks instead of columning — measured on
+`journal reminders`, where one 58-character command turned every description into a
+four-line sliver.
+
+THE THIRD SHARED OPERATION ON A NUMBERED STORE. `entries` already held one `retire` and one
+`move` for pins, rules and reminders; the LISTING was still written out per noun — same
+enumerate, same paging, same struck-keeps-its-number rule, differing only in which fields
+went into the line beneath. `entries.rows` is that loop, and a store supplies its own
+`facts` strategy. `pins.listing` and `reminders.listing` return rows rather than text,
+because a page handed rendered text can only paste it in as a paragraph — which reflowed a
+numbered list into prose the first time it was tried.
+
+A refusal is marked once, on its first line, BEFORE the wrap. Marking after it shifts the
+line by four characters without re-wrapping, so the break points move and a command splits
+across two lines.
+
+Rule 3 is written into the journal: clean, DRY and idiomatic before it is committed, never
+after it is complained about.
+
 ## 1.37.3 — the reminder is the message
 
 The block read `REMINDERS — 3 things you asked to be told again:` above the instructions.

@@ -53,8 +53,24 @@ KEY = "reminders"
 
 #: WHAT A REMINDER IS TO THE SHARED OPERATIONS. Retiring one and moving one are the same
 #: acts they are for a pin, so they are the same code — see `entries`.
+def _facts(r: dict, n: int) -> list[str]:
+    """What is said beneath a reminder. The condition is META, never text: `numbered`
+    rewraps the text, so a newline inside it is lost and the condition would run on into
+    the instruction as one sentence — the misreading that retires the wrong reminder."""
+    out = []
+    if r.get("done"):
+        out.append(f"retired: {r['done']}")
+    if age(r.get("at", "")):
+        out.append(age(r.get("at", "")))
+    if r.get("moved_from"):
+        out.append(f"moved from {r['moved_from']}")
+    if r.get("until"):
+        out.append(f"until: {r['until']}")
+    return out
+
+
 _STORE = entries.Store(key=KEY, noun="reminder", text="text", retired="done",
-                       verb="retired")
+                       verb="retired", facts=_facts)
 
 
 def _all(root: Path) -> list[dict]:
@@ -168,6 +184,12 @@ def block(root: Path) -> str:
             continue
         out.append(fmt.numbered(i, r["text"], f"until: {r['until']}" if r.get("until") else ""))
     return "\n\n".join(out)
+
+
+def listing(root: Path, *, all_of_them: bool = False, cap: int | None = None,
+            page: int = 1, order: str = fmt.DESC):
+    """(the rows, how many were left off). See `pins.listing` — the same funnel."""
+    return entries.rows(root, _STORE, all_of_them=all_of_them, cap=cap, page=page, order=order)
 
 
 def render(root: Path, *, all_of_them: bool = False, width: int = 88,

@@ -34,11 +34,36 @@ import state
 KEY = "pins"
 
 
-def _store(key: str = KEY):
-    """What `entries` needs to know about a pin — or a rule, which is a pin everywhere."""
+def _store(key: str = KEY, root: Path | None = None):
+    """What `entries` needs to know about a pin — or a rule, which is a pin everywhere.
+
+    `facts` closes over the root and the key because the line beneath a pin cites a doc by
+    its label, which only the record can resolve. The signature stays uniform — every
+    store's `facts` is `(entry, number) -> fragments` — so `entries.rows` never learns
+    which noun it is holding.
+    """
     import entries
-    return entries.Store(key=key, noun="rule" if key == "rules" else "pin",
-                         text="fact", retired="struck", verb="struck")
+    noun = "rule" if key == RULES else "pin"
+
+    def facts(p: dict, n: int) -> list[str]:
+        out = []
+        if p.get("struck"):
+            out.append(f"struck: {p['struck']}")
+        if age(p.get("at", "")):
+            out.append(age(p.get("at", "")))
+        out.append(f"line {p['line']}" if p.get("line") else "before lines were kept")
+        if p.get("replaced"):
+            out.append(f"replaces {p['replaced']}")
+        if p.get("promoted_from"):
+            out.append(f"promoted from pin {p['promoted_from']}")
+        if p.get("body"):
+            out.append(f"has its reasoning ({key} show {n})")
+        if p.get("doc") and root is not None:
+            out.append("→ " + docs_mod.ref_label(root, str(p["doc"])))
+        return out
+
+    return entries.Store(key=key, noun=noun, text="fact", retired="struck",
+                         verb="struck", facts=facts)
 #: A RULE IS A PIN FOR EVERY ENVIRONMENT. Pins say what this line of work decided; a rule says
 #: what the project decided, and `tracks.switch` never moves it. Same shape, same cap,
 #: same citation into the transcript — one more question before writing one: would it
@@ -310,45 +335,29 @@ def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[boo
     return True, f"rule {len(rules)}, from pin {n}: {items[i]['fact'][:70]}"
 
 
+def listing(root: Path, *, all_of_them: bool = False, key: str = KEY,
+            cap: int | None = None, page: int = 1, order: str = fmt.DESC):
+    """(the rows, how many were left off). What a page is BUILT from — see `entries.rows`.
+
+    A page that is handed rendered TEXT can only print it; one handed rows can put them
+    under a heading, beside a footer, inside a section. The catalogue pages take these, and
+    `render` below is for the two callers that genuinely want a finished string.
+    """
+    import entries
+    return entries.rows(root, _store(key, root), all_of_them=all_of_them, cap=cap,
+                        page=page, order=order)
+
+
 def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int = 88,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
-    """The list as a person reads it: numbered, wrapped, the provenance on a quiet line.
-
-    The number is what `--full`, `--supersedes`, `strike` and `promote` take, so it is
-    always the position in the FULL list — a struck entry keeps its number and is simply
-    not shown unless asked for. Renumbering the standing ones would make "pin 3" mean a
-    different fact after every strike.
-
-    CAPPED LIKE `carry`, for a bare `journal pins`/`journal rules` — asked for fresh each
-    time, so it pages rather than just saying how many more there are. `carry` itself
-    (below) is never capped: nothing that reaches the far side of a compaction is
-    trimmed, ever, by this module's own rule.
-    """
-    items = _all(root, key)
-    if not items:
+    """The list as a person reads it. See `entries.rows` — the loop is shared with every
+    other numbered store, and only what goes BENEATH an entry is this module's."""
+    import entries
+    if not _all(root, key):
         return "  No rules stand." if key == RULES else "  Nothing is pinned."
-    shown = [(i, p) for i, p in enumerate(items, 1) if all_of_them or not p.get("struck")]
-    shown, left = fmt.paged(shown, cap, page, order)
-    out = []
-    for i, p in shown:
-        struck = p.get("struck")
-        meta = []
-        if struck:
-            meta.append(f"struck: {struck}")
-        when = age(p.get("at", ""))
-        if when:
-            meta.append(when)
-        meta.append(f"line {p['line']}" if p.get("line") else "before lines were kept")
-        if p.get("replaced"):
-            meta.append(f"replaces {p['replaced']}")
-        if p.get("promoted_from"):
-            meta.append(f"promoted from pin {p['promoted_from']}")
-        if p.get("body"):
-            meta.append(f"has its reasoning ({'rules' if key == RULES else 'pins'} show {i})")
-        if p.get("doc"):
-            meta.append("→ " + docs_mod.ref_label(root, str(p["doc"])))
-        out.append(fmt.numbered(i, p["fact"], " · ".join(meta), struck=bool(struck), width=width))
-    return "\n\n".join(out) + fmt.more("rules" if key == RULES else "pins", left, page, order)
+    items, left = entries.rows(root, _store(key, root), all_of_them=all_of_them,
+                               cap=cap, page=page, order=order)
+    return fmt.render(fmt.Out(items=tuple(items))) + fmt.more(key, left, page, order)
 
 
 def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tuple[bool, str]:
