@@ -606,5 +606,20 @@ check("with every row unstartable it says so, rather than naming one or claiming
       ("none of the 2 waiting to-do(s) can be started" in " ".join(out.split()),
        "nothing is waiting" in out), (True, False))
 
+# ─────────── an unstartable list names EVERY reason, not the first two ─────────────────────
+# Measured live: a list holding one to-do waiting on the user and one set aside reported
+# "1 set aside on a condition" and never mentioned the question — while `journal next`, asked
+# the same thing one command later, reported the question and never mentioned the set-aside
+# row. Two messages, two different halves of the truth, neither wrong on its own.
+d = project(); s = Session(d, "s1")
+s.journal("todo", "one that waits on a person"); s.journal("todo", "one set aside")
+s.journal("todo", "auto", "on")
+s.journal("todo", "ask", "1", "which way?")
+s.journal("todo", "block", "2", "the release has to land first")
+label, text = s.stop()
+_flat = " ".join((label + " " + text).split())
+check("both reasons are counted, and the one the user can act on is first",
+      ("1 waiting on your answer" in _flat, "1 set aside on a condition" in _flat), (True, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

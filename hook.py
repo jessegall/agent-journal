@@ -785,10 +785,21 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
                              "nothing is blocked on the user — these wait on conditions you judge:",
                              "; ".join(f"{t['n']} ({t['blocked']})" for t in held_back[:3]),
                              "`journal todos start <n>` when one comes true")
-            why = ", ".join(x for x in (
-                f"{len(held_back)} set aside on a condition" if held_back else "",
-                f"{len(owed)} waiting on a to-do that must land first" if owed else "",
-            ) if x)
+            # EVERY REASON, OR THE COUNT IS A LIE BY OMISSION. This named two of the four
+            # ways a row can be unstartable and left out the one the reader can actually
+            # act on — measured here: a list with a to-do waiting on the user and one set
+            # aside reported "1 set aside on a condition" and never mentioned the question,
+            # while `journal next`, asked the same thing one command later, reported the
+            # question and never mentioned the set-aside row. Two messages, two different
+            # halves of the truth, neither of them wrong on its own.
+            reasons = (
+                (todo.asking(ROOT, here), "waiting on your answer"),
+                (held_back, "set aside on a condition"),
+                (owed, "waiting on a to-do that must land first"),
+                ([t for t in todo.open_items(ROOT, here) if t.get("assigned")],
+                 "held by an agent still working"),
+            )
+            why = ", ".join(f"{len(rows)} {what}" for rows, what in reasons if rows)
             return _said(f"auto is on for `{here}`, but nothing on the list can be picked up",
                          (why + "; " if why else "") + "`journal todo` shows what each waits on")
         return None

@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.40.2 — an unstartable list names every reason it is unstartable
+
+The stop's "nothing on the list can be picked up" counted two of the four ways a row can be
+unstartable and left out the one the reader can actually act on. Measured here: a list
+holding one to-do waiting on the user and one set aside reported "1 set aside on a
+condition" and never mentioned the question — while `journal next`, asked the same thing one
+command later, reported the question and never mentioned the set-aside row. Two messages,
+two different halves of the truth, neither of them wrong on its own, and between them no way
+for the reader to learn that both were true.
+
+All four are counted now — waiting on your answer, set aside on a condition, waiting on a
+to-do that must land first, held by an agent still working — from one table, with the one
+the user can act on first.
+
 ## 1.40.1 — a to-do that was ever asked a question stopped lying about itself
 
 `ask()` records a question and nothing ever clears it — correctly, because the exchange is
