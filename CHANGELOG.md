@@ -4,6 +4,55 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.42.0 — the journal is found by walking up, and a new worktree is handed one
+
+THE LAYOUT THIS BROKE ON IS ORDINARY AND IN DAILY USE:
+
+    worldwatchmarket/        no git here at all — but this is where .journal lives
+      chronos/               a repository
+        .claude/worktrees/…  Claude Code's own worktrees, three levels down
+      site/                  another repository
+      site-shopify-fix/      a linked worktree of `site`, sitting as a sibling
+
+Every piece was correct for a session standing at the root and silently wrong from the four
+other places an agent actually works. The journal found itself by where its own script sat.
+The hook was registered as `"$CLAUDE_PROJECT_DIR"/.journal/hook.py` — and
+`.claude/settings.json` is read from the STARTING DIRECTORY'S OWN `.claude/`, with no
+parent-directory fallback, so in a repository under that root the hook was simply never
+registered. And every printed line said `.journal/journal.py`, a path that exists only at
+the top: an agent in `chronos/` ran what it was told and got "No such file or directory",
+from a system whose entire job is telling an agent what to run. None of it announced itself,
+because a hook that is not registered is silent by definition.
+
+THREE FIXES, AND THEY ARE THE SAME FIX SEEN FROM THREE SIDES.
+
+`worktree.nearest()` walks up for the closest `.journal`. No git, no remote, no assumption
+about layout — and it is what a person does: the journal is the nearest one above you.
+
+THE REGISTERED COMMAND WALKS UP TOO, from `${CLAUDE_PROJECT_DIR:-$PWD}`, bounded at forty
+levels, exiting 0 in silence when there is nothing above — a journal that is not installed
+above you is a different project, not an error. AND EXISTING INSTALLS ARE REWIRED: `install`
+used to skip any event that already mentioned `hook.py`, so every project installed before
+this would have kept the old command through every upgrade, for ever. It rewrites anything
+that runs `hook.py` now, and leaves the rest of the file alone.
+
+EVERY PRINTED COMMAND IS SPELLED FOR WHERE THE READER IS. `fmt.cli()` computes it once from
+the journal's real location and the reader's directory: the relative form survives while it
+is honest, and the absolute path takes over the moment it would lie. The rewrite happens as
+the text leaves, in `fmt.block`, rather than at each of the forty sites that spell it — a
+line written tomorrow is right without its author knowing there was a question.
+
+AND A WORKTREE CLAUDE CODE MAKES IS HANDED THE JOURNAL AT CREATION. `WorktreeCreate` fires
+for `--worktree`, for `isolation: "worktree"` and for a background session, and it is the
+only announcement there is: no hook fires for ENTERING a worktree that already exists. The
+new worktree's `.journal` becomes a symlink to the one above it, git in it is made blind to
+that, and it is said once. A worktree that checked out its own copy is left exactly alone.
+
+`test_nested.py` builds the whole shape — a non-repository root, two repositories, a
+worktree under one and a worktree beside the other — and asserts from all four places that
+the hook finds the journal, that the command the block prints runs from there, and that four
+directories writing produce one record.
+
 ## 1.41.1 — nineteen modules imported for a command that uses two
 
 `journal.py` imported docs, tools, context, migrate, update and verify at module scope for
