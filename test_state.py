@@ -160,12 +160,22 @@ def project_with(lines: int, stem: str = "s1", tagged: bool = False):
     return d, path
 
 
+#: ONE INTERPRETER PER PROJECT, kept. This suite fires the hook seventy-odd times across a
+#: dozen fixtures, and each spawn was 480ms of importing the package before it did the one
+#: small thing under test.
+_PROJECTS: dict = {}
+
+
+def _project(d):
+    if str(d) not in _PROJECTS:
+        _PROJECTS[str(d)] = testkit.Project(d)
+    return _PROJECTS[str(d)]
+
+
 def fire(d, event, path, **extra):
-    payload = {"hook_event_name": event, "session_id": path.stem,
-               "transcript_path": str(path), **extra}
-    p = subprocess.run([str(d / ".journal" / "hook.py")], input=json.dumps(payload),
-                       capture_output=True, text=True, timeout=60)
-    return p.returncode, p.stdout, p.stderr
+    p = _project(d)
+    code, out = p.hook(event, session_id=path.stem, transcript_path=str(path), **extra)
+    return code, out, p.err
 
 
 def held(out: str) -> tuple[str, str]:

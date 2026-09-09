@@ -46,10 +46,12 @@ for line in sys.stdin:
         _os.environ["CLAUDE_CODE_SESSION_ID"] = req["session"]
     else:
         _os.environ.pop("CLAUDE_CODE_SESSION_ID", None)
-    buf = io.StringIO()
+    if req.get("stdin") is not None:
+        sys.stdin = io.StringIO(req.get("stdin") or "")
+    buf, err = io.StringIO(), io.StringIO()
     code = 0
     try:
-        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(err):
             if req["kind"] == "cli":
                 code = journal.run(req["argv"])
             else:
@@ -58,8 +60,9 @@ for line in sys.stdin:
         code = int(e.code or 0)
     except BaseException as e:                      # a crash is a result, not a hang
         code = 99
-        buf.write("\n%%s: %%s" %% (type(e).__name__, e))
-    sys.__stdout__.write(json.dumps({"code": code, "out": buf.getvalue()}) + "\n")
+        err.write("\n%%s: %%s" %% (type(e).__name__, e))
+    sys.__stdout__.write(json.dumps({"code": code, "out": buf.getvalue(),
+                                     "err": err.getvalue()}) + "\n")
     sys.__stdout__.flush()
 '''
 
@@ -68,6 +71,7 @@ class Project:
     """One test project, and the one interpreter that answers for it."""
 
     def __init__(self, root: Path):
+        self.err = ""            # the last call's stderr, for the tests that read it
         self.root = Path(root)
         self.journal = self.root / ".journal"
         self._p = None
@@ -88,13 +92,23 @@ class Project:
         p.stdin.flush()
         line = p.stdout.readline()
         if not line:                                 # the server died: say so, do not hang
-            return 99, "the journal server exited"
+            self.err = "the journal server exited"
+            return 99, self.err
         got = json.loads(line)
+        self.err = got.get("err", "")
         return got["code"], got["out"]
 
-    def cli(self, *argv: str, session: str = "") -> tuple[int, str]:
-        """`journal <argv>`, as a terminal would run it."""
-        return self._ask({"kind": "cli", "argv": list(argv), "session": session})
+    def cli(self, *argv: str, session: str = "", stdin: str = "") -> tuple[int, str]:
+        """`journal <argv>`, as a terminal would run it: (exit code, stdout AND stderr).
+
+        BOTH STREAMS, because a refusal goes to stderr and a refusal is what half the
+        assertions in these suites read. Every suite's own helper joined them before this
+        harness existed; joining here keeps that true in one place instead of four. The
+        streams are still captured apart — `.err` has the last call's stderr alone, which
+        is what `test_state` needs to tell a handler's crash from its output.
+        """
+        code, out = self._ask({"kind": "cli", "argv": list(argv), "session": session, "stdin": stdin})
+        return code, out + self.err
 
     def hook(self, event: str, **payload) -> tuple[int, str]:
         """One hook event, its JSON on stdin."""

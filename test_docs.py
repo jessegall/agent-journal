@@ -17,7 +17,7 @@ os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"  # a pull inside a suite runs no suit
 
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import docs, transcript  # noqa: E402
+import testkit, docs, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -43,9 +43,11 @@ env = {**os.environ, transcript.SESSION_ENV: "s1"}
 root = d / ".journal"
 
 
+P = testkit.Project(d)
+
+
 def j(*args, stdin=""):
-    p = subprocess.run([J, *args], env=env, input=stdin, capture_output=True, text=True, timeout=60)
-    return p.returncode, p.stdout + p.stderr
+    return P.cli(*args, session="s1", stdin=stdin)
 
 
 def fire(event, **extra):

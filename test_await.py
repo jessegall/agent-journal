@@ -16,7 +16,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, transcript, work  # noqa: E402
+import state, testkit, transcript, work  # noqa: E402
 
 ok = fail = 0
 
@@ -49,15 +49,13 @@ class S:
         self.path.write_text("")
         self.env = {**os.environ, transcript.SESSION_ENV: stem}
         self.J = str(d / ".journal" / "journal.py")
+        self.P = testkit.Project(d)
         self.n = 0
         self.fire("SessionStart", source="startup")
 
     def fire(self, event, **extra):
-        payload = {"hook_event_name": event, "session_id": self.stem,
-                   "transcript_path": str(self.path), **extra}
-        p = subprocess.run([str(self.d / ".journal" / "hook.py")], input=json.dumps(payload),
-                           capture_output=True, text=True, timeout=60)
-        return p.stdout
+        return self.P.hook(event, session_id=self.stem,
+                           transcript_path=str(self.path), **extra)[1]
 
     def say(self, text):
         self.n += 1
@@ -73,9 +71,8 @@ class S:
         return got.get("hookSpecificOutput", {}).get("additionalContext", "") or got.get("reason", "")
 
     def j(self, *a, stdin=None):
-        p = subprocess.run([self.J, *a], env=self.env, input=stdin,
-                           capture_output=True, text=True, timeout=60)
-        return p.returncode, (p.stdout + p.stderr).strip()
+        code, out = self.P.cli(*a, session=self.stem, stdin=stdin or "")
+        return code, out.strip()
 
 
 # ---------------------------------------------------------------- it refuses what it must

@@ -389,11 +389,26 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
             held_.setdefault(name, {"at": at})     # the registry says it exists; its folder holds it
             state._write(state.record_file(root), data)
         held = tracks.get(name, {})
+        # READ THE ENVIRONMENT'S OWN FILES, not the registry. 1.34.0 moved pins and work out
+        # of `tracks.<name>` into `environments/<name>/`, and updated every call site that
+        # needed these counts — `page`, `listing`, `_held_summary` — except this one, three
+        # hunks below in the same file, in the same commit. It has printed "0 pin(s), 0
+        # open" for every switch since, on environments holding both.
         kept = f"{name} is new" if fresh else (
-            f"{len([p for p in held.get('pins', []) if not p.get('struck')])} pin(s), "
-            f"{len([w for w in held.get('work', []) if not w.get('ended')])} open")
+            f"{len([p for p in (state.tracked(root, 'pins', name, []) or []) if not p.get('struck')])} pin(s), "
+            f"{len([w for w in (state.tracked(root, 'work', name, []) or []) if not w.get('ended')])} open")
         bound_before = bound(root, stem)   # None while the session has chosen nothing
         was = current(root, stem)
+        # WHAT THE SWITCH SILENCES, said at the moment it silences it. Reminders belong to
+        # an environment, so leaving one turns every reminder on it off — and an agent
+        # discovered that the hard way: it switched, seven guardrails went quiet, and it
+        # noticed by chance. One line here is the whole fix, and it names the environment
+        # being LEFT, which is the half no other line in this function looks at.
+        silenced = [r for r in (state.tracked(root, "reminders", was, []) or [])
+                    if not r.get("done")] if was and was != name else []
+        lost = (f"\n  {len(silenced)} reminder(s) on `{was}` are not in force here: "
+                + "; ".join(r["text"][:60] for r in silenced[:2])
+                + (" …" if len(silenced) > 2 else "")) if silenced else ""
         if stem and exclusive and bound_before != name:
             taken = occupants(root, name, stem, stale_hours)
             if taken:
@@ -409,7 +424,8 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
             # never chose — which is the whole thing an unbound start exists to prevent.
             state.put(root, "previous_track", bound_before, stem=stem)
             carried(root, name, stem)
-            return True, f"this session is on {name} — {kept}\n  {was} is where it was; the project still starts on {state.get(root, CURRENT, DEFAULT) or DEFAULT}"
+            return True, (f"this session is on {name} — {kept}\n  {was} is where it was; "
+                          f"the project still starts on {state.get(root, CURRENT, DEFAULT) or DEFAULT}" + lost)
         if stem:
             bind(root, stem, name)
             state.put(root, "previous_track", bound_before, stem=stem)
@@ -424,7 +440,8 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
         note = ("\n  running sessions bound elsewhere stay there:\n"
                 + "\n".join(f"    {sid[:8]}…  on {t}" for sid, t in sorted(others.items()))
                 + f"\n  move one: `journal switch \"{name}\" --session=<id>`; all: `--all-sessions`")
-    return True, (f"the project starts on {name} now — {kept}" + (f"; this session too" if stem else "") + note)
+    return True, (f"the project starts on {name} now — {kept}" + (f"; this session too" if stem else "")
+                  + lost + note)
 
 
 def move_sessions(root: Path, name: str, which: list[str] | None,

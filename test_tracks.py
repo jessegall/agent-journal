@@ -20,7 +20,7 @@ os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"  # a pull inside a suite runs no suit
 
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, pins, work, tracks, transcript  # noqa: E402
+import state, pins, testkit, work, tracks, transcript  # noqa: E402
 
 AT = "2026-09-01T12:00:00+00:00"
 ok = fail = 0
@@ -143,10 +143,12 @@ shutil.copytree(SRC, d / ".journal",
 J = str(d / ".journal" / "journal.py")
 
 
+P = testkit.Project(d)
+
+
 def run_cli(*args):
-    env = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}  # a terminal, not a session
-    p = subprocess.run([J, *args], env=env, capture_output=True, text=True, timeout=60)
-    return p.returncode, p.stdout + p.stderr
+    """A terminal, not a session: no session id in the environment."""
+    return P.cli(*args)
 
 
 run_cli("remember", "cli fact")
@@ -402,6 +404,21 @@ code, out = run_cli("todos")
 check("the to-do is waiting on the far side", "carried across" in out, True)
 code, out = run_cli("pins")
 check("and the pin stands there", "belongs to the other environment" in out, True)
+
+# ───────────── the switch line: what is there, and what it just silenced ──────────────────
+# It counted pins and work out of the REGISTRY, which stopped holding them in 1.34.0 — every
+# switch since has printed "0 pin(s), 0 open" on environments holding both.
+rS = fresh()
+pins.add(rS, "a claim on default", AT, 400)
+work.start(rS, "something open", AT)
+import reminders as reminders_mod
+reminders_mod.add(rS, "a reminder that belongs to default", AT, 200)
+tracks.switch(rS, "elsewhere", AT, stem="sS")
+took, msg = tracks.switch(rS, "default", AT, stem="sS")
+check("the counts are read from the environment's own files", "1 pin(s), 1 open" in msg, True)
+took, msg = tracks.switch(rS, "elsewhere", AT, stem="sS")
+check("and leaving says which reminders it just silenced",
+      ("1 reminder(s) on `default`" in msg, "belongs to default" in msg), (True, True))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
