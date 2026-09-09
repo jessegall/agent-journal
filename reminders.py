@@ -138,6 +138,14 @@ def block(root: Path) -> str:
     skill, in `journal reminders`, and in the line printed when the reminder is written —
     three places read on purpose rather than injected on a cadence.
 
+    AND THE HEADING IS ONE WORD. It read `REMINDERS — 3 things you asked to be told again:`,
+    which is the package narrating its own delivery: who asked, how many, and that this is a
+    repeat. None of that is the instruction, all of it is charged to the reader every stop
+    for the whole session, and the user's answer to it was blunt and is the right one — the
+    reminders are what was asked for, so the reminders are what is said. What survives is a
+    label, because a block of numbered lines dropped into a stop with no label at all is a
+    list of unattributed orders.
+
     NEVER CAPPED AND NEVER PAGED. `render` below pages because a person asked for the list
     and can ask for the next page; this is the injection, and a reminder trimmed out of it
     is a reminder that silently stopped being one.
@@ -148,9 +156,7 @@ def block(root: Path) -> str:
     # A NUMBER IS FOR PICKING ONE OUT OF SEVERAL. With one standing it is furniture, and
     # the number that matters — the one `reminders done` takes — is the position in the
     # full list, which is what is printed here either way.
-    one = len(items) == 1
-    out = ["REMINDER — you asked to be told this again:" if one else
-           f"REMINDERS — {len(items)} things you asked to be told again:"]
+    out = ["REMINDER:" if len(items) == 1 else "REMINDERS:"]
     # THROUGH THE SAME RENDERER THE LIST USES, AND WITH AIR BETWEEN THE ITEMS. This built
     # its own lines and never wrapped one, so seven reminders arrived as seven unbroken
     # 180-character strings stacked with no gap — the user's word for it, twice now: a wall

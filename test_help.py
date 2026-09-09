@@ -346,8 +346,11 @@ for _i in range(3):
 _blk = _r.block(root)
 check("the block wraps every reminder inside the width",
       max(len(l) for l in _blk.splitlines()) <= _f.WIDTH, True)
-check("and puts a blank line between them, and after the heading",
+check("and puts a blank line between them, and after the one-word heading",
       (_blk.splitlines()[1] == "", _blk.count("\n\n")), (True, 3))
+check("the heading is a label, not the package narrating its own delivery",
+      (_blk.splitlines()[0], "you asked" in _blk, "things" in _blk.splitlines()[0]),
+      ("REMINDERS:", False, False))
 
 # ─────────── the README documents the CLI that exists ──────────────────────────────────────
 # It described `handoff` and `delegate` as live features for two releases after they were

@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.37.3 — the reminder is the message
+
+The block read `REMINDERS — 3 things you asked to be told again:` above the instructions.
+That is the package narrating its own delivery — who asked for them, how many there are,
+and that this is a repeat — none of which is the instruction, all of it charged to the
+reader at every stop for the whole session. The heading is one word now: `REMINDERS:`. A
+label survives because a block of numbered lines dropped into a stop with nothing above it
+is a list of unattributed orders; the sentence does not.
+
 ## 1.37.2 — the README documents the CLI that exists
 
 It described `journal handoff` and `journal delegate` as live features, with a paragraph
