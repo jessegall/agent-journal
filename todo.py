@@ -596,14 +596,34 @@ def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str
     return True, f"reopened {n}: {t['title']}\n  {why}\n  the close it undoes: {was}"
 
 
-def close_titled(root: Path, track: str, title: str, at: str) -> str | None:
-    """When work with a to-do's title ends, the to-do is done too. The number, if so."""
+def close_titled(root: Path, track: str, title: str, at: str,
+                 agent: str = "") -> tuple[str, str]:
+    """When work with a to-do's title ends, the to-do is done too. (the number, a note).
+
+    A SUBAGENT CLOSES NOTHING, AND THIS IS THE DOOR IT WENT THROUGH. `report` refuses to
+    close and says the parent does it; then `work end`, on the subject `todos start` itself
+    opened, closed the row here — unconditionally, with no idea who was calling. Two agents
+    in one dogfood run found it: one guessed the hint did not apply to it and worked around
+    it, the other followed the documented order exactly — report, then `work end` — and
+    marked its own homework. The guarantee held everywhere it was written down and nowhere
+    it was wired.
+
+    SO THE CHECK GOES WHERE THE WRITE IS. It was in `report` alone, which is the door that
+    announces the rule; the row is `assigned` either way, and that field is what says a
+    close is not this caller's to make. The work still ends — that is the agent's own
+    ledger and nobody else's — and the row stays standing for whoever dispatched it.
+    """
     want = " ".join(title.split()).lower()
     for t in open_items(root, track):
-        if t["title"].lower() == want and t.get("started"):
-            _update(root, track, t["n"], done=at, how="closed with the work of the same name")
-            return str(t["n"])
-    return None
+        if t["title"].lower() != want or not t.get("started"):
+            continue
+        held = t.get("assigned") or ""
+        if held and state.slug(agent) == held:
+            return "", (f"to-do {t['n']} stays open: it is held for `{held}`, and the agent "
+                        "that dispatched you closes it. Your work is closed.")
+        _update(root, track, t["n"], done=at, how="closed with the work of the same name")
+        return str(t["n"]), ""
+    return "", ""
 
 
 # ─────────────────────────────── closing from a commit message ────────────────────────────

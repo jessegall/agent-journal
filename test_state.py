@@ -537,7 +537,21 @@ ok_, body = todo.show(r, "default", 1)
 check("the brief is the file's body", ("start in src/View" in body, "TO-DO 1" in body), (True, True))
 t, err = todo.start(r, "default", 1, AT)
 check("start marks it", bool(t and t.get("started")), True)
-check("ending work with the title closes it", todo.close_titled(r, "default", "convert the remaining widgets", AT), "1")
+check("ending work with the title closes it",
+      todo.close_titled(r, "default", "convert the remaining widgets", AT), ("1", ""))
+# A SUBAGENT CLOSES NOTHING, AND `work end` WAS THE DOOR IT WENT THROUGH. `report` refuses
+# and says the parent closes it; then `work end`, on the subject `todos start` itself opened,
+# closed the row unconditionally. Two agents in one dogfood run found it — one worked around
+# the hint, the other followed the documented order exactly and marked its own homework.
+todo.add(r, "default", "a row a subagent holds", "", AT)
+_n = [t["n"] for t in todo.open_items(r, "default") if t["title"] == "a row a subagent holds"][0]
+todo.start(r, "default", _n, AT, agent="z9")
+_num, _note = todo.close_titled(r, "default", "a row a subagent holds", AT, agent="z9")
+check("the agent holding it cannot close it with `work end`, and is told who does",
+      (_num, "stays open" in _note, "dispatched you closes it" in _note), ("", True, True))
+check("and the row is still open", any(t["n"] == _n for t in todo.open_items(r, "default")), True)
+check("the parent, with no --as, closes it",
+      todo.close_titled(r, "default", "a row a subagent holds", AT)[0], str(_n))
 check("it is gone from the open list", [t["n"] for t in todo.open_items(r, "default")], [2])
 check("and its number holds in --all, struck through",
       "  1  ~~convert the remaining widgets~~" in todo.render(r, "default", all_of_them=True), True)

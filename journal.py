@@ -400,7 +400,7 @@ def cmd_start(subject: str) -> int:
     return 0 if ok else 1
 
 
-def cmd_end(subject: str, force: bool = False) -> int:
+def cmd_end(subject: str, force: bool = False, acting: str = "") -> int:
     """Close the work, and ask the one question that is only answerable now.
 
     THE MOMENT WORK CLOSES IS THE MOMENT YOU KNOW WHAT IT TAUGHT. Before it, you cannot
@@ -414,9 +414,12 @@ def cmd_end(subject: str, force: bool = False) -> int:
     ok, msg = work.end(root(), subject, _now(), force)
     fmt.say(msg, error=not ok)
     if ok:
-        closed = todo.close_titled(root(), tracks.current(root(), _stem()), subject, _now())
+        closed, note = todo.close_titled(root(), tracks.current(root(), _stem()), subject,
+                                         _now(), acting)
         if closed:
             fmt.say(f"  to-do {closed} is done with it.")
+        elif note:
+            fmt.say("  " + note)
         fmt.say('  did that teach anything a later reader would get wrong without?\n'
               '    journal pins add "<the claim, in one line>"   (or nothing, which is fine)')
     return 0 if ok else 1
@@ -877,6 +880,19 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
                     # with the verb it will need, because the one thing it cannot do is close.
                     fmt.say(f"  it is held for `{acting}` while you are writing; "
                             f"`journal todos report {n} \"<how>\" --as={acting}` says it is finished.")
+                elif grants.granted(root(), _stem()):
+                    # AN UNATTRIBUTED START HOLDS NOTHING, AND SAYS SO NOW RATHER THAN LATER.
+                    # Measured: a dispatched agent ran `todos start 1` with no `--as`, was
+                    # told "open: …" with no complaint, worked the row, and was refused by
+                    # `report` with "held by nobody". The command that could have said it
+                    # said nothing, and the one that had to say it said it too late to help.
+                    #
+                    # ONLY WHERE IT COULD BE TRUE. A session with nothing lent has no agents
+                    # to be one of, and a line about `--as` there is noise on every start.
+                    fmt.say("  nobody holds this row — you started it as the session. If you "
+                            "are a dispatched agent, `journal todos start "
+                            f"{n} --as=<your name>` claims it; `report` refuses a row you "
+                            "do not hold.")
                 # TAUGHT WHERE IT IS NEEDED, AND NOT WHERE IT CANNOT BE USED: the trailer is
                 # only ever typed in a commit message, and the moment an agent learns which
                 # to-do it is on is the moment to hand it the line that closes it from there.
@@ -2065,14 +2081,14 @@ def main(argv: list[str]) -> int:
             return cmd_await(words, on, wait_for, await_agent, await_pid)
         if sub == "update":
             return cmd_update(words, on)
-        return cmd_start(words) if sub == "start" else cmd_end(words, force)
+        return cmd_start(words) if sub == "start" else cmd_end(words, force, acting)
     if verb in ("start", "end"):
         # kept so a session that learned the old spelling is not stranded mid-work
         if len(rest) < 2:
             fmt.say(f"{verb} wants the words that name the work", error=True)
             return 1
         subject = " ".join(rest[1:])
-        return cmd_start(subject) if verb == "start" else cmd_end(subject, force)
+        return cmd_start(subject) if verb == "start" else cmd_end(subject, force, acting)
     if verb in ("migrate", "migrations"):
         if len(rest) > 1 and rest[1] in ("run", "now"):
             out = migrate.run(root()) or ["Nothing pending."]
