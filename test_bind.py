@@ -477,5 +477,26 @@ check("and the row is still OPEN, waiting on the parent",
       [t["n"] for t in __import__("todo").reported(aroot, "shared")], [1])
 check("the parent closes it", aP.cli("--env=shared", "todos", "done", "1", "reviewed and merged", session="as1")[0], 0)
 
+# STARTING A ROW CLAIMS IT. Measured in a dogfood run: an agent ran `todos start`, worked
+# the row and was refused by `report` for holding nothing, because `started` and `assigned`
+# were two facts and only a dispatcher set the second.
+aP.cli("--env=shared", "todos", "add", "unpick the two entry points", session="as1")
+_s = aP.cli("--env=shared", "--as=a3f9", "todos", "start", "2", session="as1")[1]
+check("an agent that starts an unheld row claims it, and is told so",
+      ("held for `a3f9`" in _s, "todos done" in _s), (True, False))
+check("the hold is real: the row leaves the ready list",
+      [t["n"] for t in __import__("todo").ready(aroot, "shared")], [])
+check("and it can now report on it",
+      "reported finished" in aP.cli("--env=shared", "--as=a3f9", "todos", "report", "2",
+                                    "split them", session="as1")[1], True)
+aP.cli("--env=shared", "todos", "add", "another row", session="as1")
+aP.cli("--env=shared", "assign", "3", "--to=a3f9", session="as1")
+check("a row another live agent holds cannot be started out from under it",
+      "held by `a3f9`" in aP.cli("--env=shared", "--as=b7c1", "todos", "start", "3", session="as1")[1], True)
+check("reporting a row nobody holds says how to claim it",
+      "start 4 --as=b7c1" in (aP.cli("--env=shared", "todos", "add", "unheld", session="as1"),
+                              aP.cli("--env=shared", "--as=b7c1", "todos", "report", "4",
+                                     "x", session="as1"))[1][1], True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

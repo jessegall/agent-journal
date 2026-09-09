@@ -31,7 +31,6 @@ from pathlib import Path
 import state
 
 SEEN = "agent_seen"      # {track: {agent: unix seconds}} — the heartbeat, in the record
-ASSIGNED = "assigned"    # a to-do's field: the agent it is held for
 
 
 def dir_of(root: Path, track: str, agent: str) -> Path:

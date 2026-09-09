@@ -32,7 +32,7 @@ import state
 #: becomes this on the first switch, with nothing to migrate — `current` simply defaults.
 DEFAULT = "default"
 
-CURRENT, PARKED, PREVIOUS = "current", "tracks", "previous"
+CURRENT, PREVIOUS = "current", "previous"
 
 
 BINDINGS = "runtime/bindings.map"   # {session stem: environment}; not a .json, so the prune of per-transcript files never touches it
@@ -283,7 +283,6 @@ def page(root: Path, name: str, width: int = 88, commands: bool = True) -> tuple
     import docs as docs_mod
     import fmt
     import todo as todo_mod
-    import work as work_mod
     name = state.slug(name)
     if name not in _all(root):
         return False, f"no environment is called {name}. `journal environments` lists them."

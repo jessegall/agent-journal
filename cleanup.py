@@ -34,7 +34,6 @@ import reminders as reminders_mod
 import state
 import todo as todo_mod
 import tracks
-import work as work_mod
 
 #: A path inside a claim: `hook.py:342`, `.journal/todo/`, `src/a/b.ts`. The suffix list is
 #: what this project's claims actually cite; anything without one is prose, not a path.

@@ -167,8 +167,12 @@ def report(root: Path, track: str, n: int, how: str, agent: str) -> tuple[bool, 
     if t.get("done"):
         return False, f"to-do {n} is already closed ({t.get('how')})"
     if state.slug(agent) != (t.get("assigned") or ""):
-        return False, (f"to-do {n} is not assigned to you — it is held by "
-                       f"`{t.get('assigned') or 'nobody'}`. Report what you found instead.")
+        held = t.get("assigned")
+        return False, (
+            f"to-do {n} is not assigned to you — it is held by `{held}`. Report what you "
+            "found instead." if held else
+            f"to-do {n} is held by nobody, so there is nothing of yours to report. "
+            f"`journal todos start {n} --as={state.slug(agent)}` claims it and starts it.")
     _update(root, track, n, reported=how, by=state.slug(agent))
     return True, (f"to-do {n} is reported finished: {how}\n"
                   "  the agent that dispatched you closes it; you are done with this row")
@@ -177,12 +181,6 @@ def report(root: Path, track: str, n: int, how: str, agent: str) -> tuple[bool, 
 def reported(root: Path, track: str) -> list[dict]:
     """Rows a subagent has finished and the parent has not yet closed."""
     return [t for t in open_items(root, track) if t.get("reported")]
-
-
-def assigned_to(root: Path, track: str, agent: str) -> list[dict]:
-    """What this agent may work: its own rows and nothing else."""
-    agent = state.slug(agent)
-    return [t for t in open_items(root, track) if (t.get("assigned") or "") == agent]
 
 
 def after_of(t: dict) -> list[int]:
@@ -499,7 +497,21 @@ def replace_section(root: Path, track: str, n: int, title: str, new_text: str) -
     return True, f'to-do {n}: section "{title}" replaced\n  the old brief is kept under {STRUCK}/'
 
 
-def start(root: Path, track: str, n: int, at: str, strict: bool = False) -> tuple[dict | None, str]:
+def start(root: Path, track: str, n: int, at: str, strict: bool = False,
+          agent: str = "") -> tuple[dict | None, str]:
+    """Pick a to-do up. An AGENT picking one up also claims it, through `assign`.
+
+    PICKING IT UP IS CLAIMING IT, and the absence of that cost a dogfood run its report: a
+    subagent ran `todos start 1`, worked the row, and was then refused by `report` with
+    "held by `nobody`" — because `started` and `assigned` were two facts and only a
+    dispatcher set the second. Nothing in the flow told it to assign itself, so the hold
+    that `ready` checks was never taken and the row stayed offerable to anyone the whole
+    time it was being worked.
+
+    THE CLAIM GOES THROUGH `assign` RATHER THAN BESIDE IT. One funnel holds a row, so the
+    refusal an agent gets for a row another live agent holds is the same sentence whichever
+    door it came in by, and the lapse-on-heartbeat rule has one implementation.
+    """
     t, err = _get(root, track, n)
     if t is None:
         return None, err
@@ -511,6 +523,10 @@ def start(root: Path, track: str, n: int, at: str, strict: bool = False) -> tupl
         nxt = next((x for x in ready(root, track) if x["n"] != n), None)
         return None, (f"to-do {n} waits on the user: {t['asks']}" + (f" — next ready: {nxt['n']} ({nxt['title']})" if nxt
                       else " — nothing else is ready"))
+    if agent:
+        ok, why = assign(root, track, n, agent)
+        if not ok:
+            return None, why
     # PICKING IT UP ENDS THE BLOCK. A to-do set aside on a condition is being started, so
     # the condition is over by the only judgement that can decide it. The question and its
     # answer stay, as history.

@@ -16,7 +16,6 @@ from pathlib import Path
 #: The windows that exist, smallest first. The right one is the smallest that fits what
 #: this session has ALREADY held.
 WINDOWS = (200_000, 1_000_000)
-DEFAULT_WINDOW = WINDOWS[0]
 
 
 def window_for(peak: int, setting: int = 0, learned: int = 0) -> tuple[int, bool]:

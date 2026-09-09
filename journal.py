@@ -860,7 +860,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             fmt.say(msg, error=not ok)
             return 0 if ok else 1
         if verb == "start":
-            t, err = todo.start(root(), here, n, _now())
+            t, err = todo.start(root(), here, n, _now(), agent=acting)
             if t is None:
                 fmt.say(f"{err}", error=True)
                 return 1
@@ -868,11 +868,20 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             fmt.say(msg, error=not ok)
             if ok:
                 fmt.say(f"  to-do {n} is started; `journal work end \"{t['title']}\"` closes both.")
-                # TAUGHT WHERE IT IS NEEDED: the trailer is only ever typed in a commit
-                # message, and the moment an agent learns which to-do it is on is the moment
-                # to hand it the line that closes it from there.
-                fmt.say(f"  or close it from the commit that finishes it, as a trailer:\n"
-                        f"    {todo.TRAILER} todos done {n}")
+                if acting:
+                    # THE HOLD IS THE HALF AN AGENT CANNOT SEE. `assign` said it to the
+                    # dispatcher; the agent that claimed the row by starting it is told here,
+                    # with the verb it will need, because the one thing it cannot do is close.
+                    fmt.say(f"  it is held for `{acting}` while you are writing; "
+                            f"`journal todos report {n} \"<how>\" --as={acting}` says it is finished.")
+                # TAUGHT WHERE IT IS NEEDED, AND NOT WHERE IT CANNOT BE USED: the trailer is
+                # only ever typed in a commit message, and the moment an agent learns which
+                # to-do it is on is the moment to hand it the line that closes it from there.
+                # A subagent is not shown it — closing is the parent's, so a close verb in
+                # front of an agent that may not close is an instruction it will try.
+                if not acting:
+                    fmt.say(f"  or close it from the commit that finishes it, as a trailer:\n"
+                            f"    {todo.TRAILER} todos done {n}")
             return 0 if ok else 1
         why = " ".join(rest[2:])
         if verb in ("drop", "strike"):  # ruling R4: `strike` is the one retire verb everywhere
@@ -1579,7 +1588,6 @@ def main(argv: list[str]) -> int:
     quiet = False
     replace = False
     off_flag = False
-    run_flag = False
     project_too = False
     all_sessions = False
     yes_flag = False
@@ -1657,8 +1665,6 @@ def main(argv: list[str]) -> int:
             pass   # applied and refused at the top of this file, before any command reads the record
         elif a == "--off":
             off_flag = True
-        elif a == "--run":
-            run_flag = True
         elif a == "--replace":
             replace = True
         elif a == "--brief":

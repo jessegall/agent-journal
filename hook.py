@@ -67,7 +67,8 @@ class Ctx:
     stem. A SUBAGENT's tool call carries the PARENT's transcript and session — measured —
     and only `agent_id` tells them apart; it is keyed `agent-<id>`, the name of its own
     transcript on disk, so that nothing it does can land in the parent's file. In practice
-    the handlers ignore subagents altogether (see `_subagent`), so no such file is written.
+    the handlers ignore subagents altogether (each checks `payload.get("agent_id")` where
+    it matters), so no such file is written.
     """
 
     __slots__ = ("stem", "path")   # not a dataclass: `inspect` is 6ms on every hook event
@@ -1280,19 +1281,6 @@ DOCS_WRITES = frozenset({"add", "part", "replace", "strike", "final", "draft", "
                          "supersede", "index", "attach", "detach", "move"})
 #: What turns `pins`/`rules` from a listing into a change.
 PIN_WRITES = frozenset({"add", "strike", "promote", "move"})
-
-
-def _subagent(payload: dict) -> bool:
-    """Is this event a subagent's? Its payload carries `agent_id`; the session's own do not.
-
-    THE JOURNAL IS THE ORCHESTRATOR'S. A subagent is dispatched with a brief and reports
-    back; what it decides is the orchestrator's to file, and what it reads fills its own
-    window, not the one the marks are about. So a subagent's events file nothing, are held
-    for nothing, and are nudged for nothing — and a subagent's attempt to WRITE the record
-    is denied, because a pin nobody in the main conversation saw written is a fact of
-    unknown provenance in the highest-authority position the system has.
-    """
-    return bool(payload.get("agent_id"))
 
 
 def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
