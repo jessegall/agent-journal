@@ -175,15 +175,25 @@ def allows(root: Path, stem: str | None, verb: str, command: str) -> tuple[bool,
     )
 
 
+def acting_in(command: str) -> str:
+    """The agent a command claims to be, with `--as=` — slugged, or ""."""
+    return _flag_in(command, ("--as=",))
+
+
 def _env_in(command: str) -> str:
     """The environment a command names with `--env=`, slugged — or ""."""
+    return _flag_in(command, ("--env=", "--environment=", "--track="))
+
+
+def _flag_in(command: str, prefixes: tuple) -> str:
+    """The slugged value of the first of `prefixes` on this command line — one reader."""
     import shlex
     try:
         toks = shlex.split(command or "")
     except ValueError:
         toks = (command or "").split()
     for t in toks:
-        if t.startswith(("--env=", "--environment=", "--track=")):
+        if t.startswith(prefixes):
             return state.slug(t.split("=", 1)[1])
     return ""
 

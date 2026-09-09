@@ -35,7 +35,9 @@ LOCK = "record.json.lock"
 #: write them into the session running the upgrade — the defect being fixed.
 RETIRED = "state.json"
 
-IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto", "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read", "schema"}
+IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto",
+             "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read",
+             "agent_seen", "schema"}
 
 
 def is_record(key: str) -> bool:
@@ -146,7 +148,35 @@ def env_dir(root: Path, name: str) -> Path:
     return root / ENVS / (slug(name) or "default")
 
 
+#: THE SUBAGENT THIS PROCESS IS ACTING AS, if any. A subagent gets its own ledger UNDER the
+#: environment it was lent — `environments/<name>/agents/<id>/work.json` — so two of them can
+#: never open or close each other's work. Measured before this existed: agent B closed
+#: agent A's work by saying A's words, and the record could not tell them apart, because
+#: both writes carried the dispatching session's id.
+#:
+#: ONLY `work` IS SCOPED THIS WAY. Pins and reminders stay the PARENT's: a subagent reads
+#: them and cannot write one, which is what makes the inheritance one-directional and keeps
+#: it from becoming a cascade with two places to look.
+_AGENT: list = []
+
+AGENTS = "agents"
+
+
+def use_agent(name: str) -> None:
+    _AGENT[:] = [name] if name else []
+
+
+def agent_dir(root: Path, track: str, agent: str) -> Path:
+    return env_dir(root, track) / AGENTS / (slug(agent) or "unnamed")
+
+
+#: What a subagent keeps of its own. Everything else it reads from the environment it is in.
+PER_AGENT = ("work",)
+
+
 def _tracked_file(root: Path, name: str, key: str) -> Path:
+    if _AGENT and key in PER_AGENT:
+        return agent_dir(root, name, _AGENT[0]) / f"{key}.json"
     return env_dir(root, name) / f"{key}.json"
 
 

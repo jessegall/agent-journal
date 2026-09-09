@@ -28,6 +28,7 @@ answers `help`, and calls the very same function. None of them is deprecated.
 """
 from __future__ import annotations
 
+import contextlib as _contextlib
 import os
 import sys
 from pathlib import Path
@@ -96,6 +97,15 @@ if _ENV_FLAG:
         raise SystemExit(1)
     tracks.override(_ENV_FLAG)
 _state.use_track(tracks.current(_ROOT, _stem()))
+#: `--as=<agent>` POINTS THE LEDGER AT A SUBAGENT'S OWN FOLDER, and nothing else: pins and
+#: reminders stay the environment's. Read here beside `--env=` because both have to be in
+#: force before any command reads the record.
+_AS = next((a.split("=", 1)[1] for a in _ARGV if a.startswith("--as=")), "")
+if _AS:
+    _state.use_agent(_AS)
+    with _contextlib.suppress(Exception):
+        import agents as _ag
+        _ag.touch(_ROOT, tracks.current(_ROOT, _stem()), _AS)
 
 
 def _load(back: int = 0):
@@ -799,12 +809,23 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             fmt.say(("  " if ok else "  ! ") + line)
         return 0 if any(ok for ok, _ in said) else 1
     if verb in ("start", "done", "drop", "strike", "ask", "answer", "reopen", "move",
-                "block", "unblock", "skip", "after", "needs"):
+                "block", "unblock", "skip", "after", "needs", "report"):
         if len(rest) < 2 or not rest[1].isdigit():
             fmt.say(f'todo {verb} wants a number: journal todos {verb} 3' + (
                 ' "<how>"' if verb != "start" else ""), error=True)
             return 1
         n = int(rest[1])
+        if verb == "report":
+            # A SUBAGENT SAYS FINISHED; THE PARENT SAYS CLOSED. Two phases, and the second
+            # is where the judgement is — a runner that ticked its own box is a failure this
+            # project has already watched happen.
+            if not acting:
+                return _refuse(f'`todos report` is a subagent saying a row is finished — put '
+                               f'--as="<your agent name>" on it. If you are the agent that '
+                               f'dispatched one, `journal todos done {n} "<how>"` closes it.')
+            ok, msg = todo.report(root(), here, n, " ".join(rest[2:]), acting)
+            fmt.say(msg, error=not ok)
+            return 0 if ok else 1
         if verb in ("after", "needs"):
             ok, msg = todo.after(root(), here, n, after if after == "--none" else " ".join(rest[2:]))
             fmt.say(msg, error=not ok)
@@ -1570,6 +1591,8 @@ def main(argv: list[str]) -> int:
     abstract = ""
     until = ""
     after = ""
+    acting = ""
+    to_agent = ""
     doc_ref = ""
     tool_meta = {}
     rest = []
@@ -1666,6 +1689,16 @@ def main(argv: list[str]) -> int:
             until = a.split("=", 1)[1]
         elif a.startswith(("--after=", "--needs=")):
             after = a.split("=", 1)[1]
+        elif a.startswith("--as="):
+            # `--agent=` IS `work await`'s AND STAYS ITS OWN. The flag loop here is global,
+            # not per verb, so one token sets one field for every command — and a subagent
+            # running `work await --agent=<what it waits on>` while also being an agent
+            # itself would make that token mean two things in one parse. `--as=` is the
+            # subagent saying which ledger it writes; the hook checks it against the
+            # payload's real `agent_id` rather than trusting it.
+            acting = a.split("=", 1)[1]
+        elif a.startswith("--to="):
+            to_agent = a.split("=", 1)[1]
         elif a.startswith(("--summary=", "--usage=", "--when=", "--entry=")):
             tool_meta[a[2:].split("=", 1)[0]] = a.split("=", 1)[1]
         elif a.startswith("--doc="):
@@ -1735,6 +1768,18 @@ def main(argv: list[str]) -> int:
                     error=True)
             return 1
         return cmd_cleanup(all_of_them)
+    if verb == "assign":
+        n, why = _number(rest, 1, "assign", "to-do", "journal todos")
+        if why:
+            return _refuse(why)
+        who = to_agent or " ".join(x for x in rest[2:] if not x.startswith("--"))
+        if not who and not (off_flag or "--off" in rest):
+            return _refuse(f'assign wants an agent: `journal assign {n} --to="<agent>"`, '
+                           f"or `journal assign {n} --off` to put it back on the list")
+        here = tracks.current(root(), _stem())
+        ok, msg = todo.assign(root(), here, n, "--off" if (off_flag or "--off" in rest) else who)
+        fmt.say(msg, error=not ok)
+        return 0 if ok else 1
     if verb in ("grant", "grants"):
         return cmd_grant(" ".join(x for x in rest[1:] if x != "--off"),
                          off_flag or "--off" in rest, len(rest) == 1)
@@ -2055,6 +2100,14 @@ def run(argv: list[str]) -> int:
             return 1
         tracks.override(name)
     _state.use_track(tracks.current(_ROOT, _stem()))
+    # THE SAME SET-UP AS THE MODULE-LEVEL BLOCK, for the same reason: `--as=` has to be in
+    # force before any command reads the record, and this door is how the suites call in.
+    _state.use_agent("")
+    acting = next((a.split("=", 1)[1] for a in argv if a.startswith("--as=")), "")
+    if acting:
+        _state.use_agent(acting)
+        import agents as _ag
+        _ag.touch(_ROOT, tracks.current(_ROOT, _stem()), acting)
     return main(argv)
 
 

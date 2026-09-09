@@ -29,7 +29,7 @@ import state
 DIR = "todo"
 STRUCK = "struck"
 FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how", "asks", "answer",
-          "blocked", "after", "doc", "reopened", "moved_from")
+          "blocked", "after", "assigned", "reported", "by", "doc", "reopened", "moved_from")
 
 
 def _slug(text: str, limit: int = 40) -> str:
@@ -105,8 +105,13 @@ def ready(root: Path, track: str) -> list[dict]:
     list was a wall and it went around. A wall is what an agent routes around; a skip is
     what it uses.
     """
+    # A ROW HELD BY A LIVE AGENT IS NOT READY FOR ANYONE ELSE. The hold lapses on a
+    # heartbeat, so a dispatch that died releases its row without anybody remembering to.
+    import agents as ag
     items = [t for t in open_items(root, track)
              if (not t.get("asks") or t.get("answer")) and not t.get("blocked")
+             and not t.get("reported")
+             and not (t.get("assigned") and ag.active(root, track, t["assigned"], 30))
              and not waiting_on(root, track, t)]
     return sorted(items, key=lambda t: 0 if answered_one(t) else 1)
 
@@ -114,6 +119,70 @@ def ready(root: Path, track: str) -> list[dict]:
 def blocked(root: Path, track: str) -> list[dict]:
     """Open to-dos set aside on a condition, with the reason each is waiting on."""
     return [t for t in open_items(root, track) if t.get("blocked")]
+
+
+def assign(root: Path, track: str, n: int, agent: str) -> tuple[bool, str]:
+    """Hand a to-do to one named subagent. `--off` gives it back to the list.
+
+    A HELD ROW IS NOT A LOCKED ONE. The hold means: while that agent is still writing, this
+    is theirs to work and theirs alone. It lapses on a heartbeat rather than on a promise,
+    because nothing can tell us a subagent died — see `agents.touch`.
+    """
+    import agents as ag
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    if t.get("done"):
+        return False, f"to-do {n} is already done ({t.get('how')})"
+    if agent in ("--off", "off", ""):
+        was = t.get("assigned")
+        if not was:
+            return False, f"to-do {n} is assigned to nobody"
+        _update(root, track, n, assigned="", reported="", by="")
+        return True, f"to-do {n} is back on the list; it was held by `{was}`"
+    agent = state.slug(agent)
+    held = t.get("assigned")
+    if held and held != agent:
+        return False, (f"to-do {n} is held by `{held}` — one agent works a row. "
+                       f'`journal assign {n} --off` takes it back first.')
+    _update(root, track, n, assigned=agent)
+    return True, (f"to-do {n} is assigned to `{agent}`: {t['title']}\n"
+                  f"  it is theirs while they are writing; nobody else may take or complete it")
+
+
+def report(root: Path, track: str, n: int, how: str, agent: str) -> tuple[bool, str]:
+    """A subagent says a to-do is finished. Only the parent may CLOSE one.
+
+    TWO PHASES, AND THE SECOND IS THE PARENT'S. A subagent that could close its own row
+    would be marking its own homework — the failure this project already watched happen
+    once, where a runner ticked its own box and the record read as done while a step was
+    missed. So it reports, with how, and the close stays where the judgement is.
+    """
+    how = " ".join((how or "").split())
+    if not how:
+        return False, f'say how it was finished: `journal todos report {n} "<how>"`'
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    if t.get("done"):
+        return False, f"to-do {n} is already closed ({t.get('how')})"
+    if state.slug(agent) != (t.get("assigned") or ""):
+        return False, (f"to-do {n} is not assigned to you — it is held by "
+                       f"`{t.get('assigned') or 'nobody'}`. Report what you found instead.")
+    _update(root, track, n, reported=how, by=state.slug(agent))
+    return True, (f"to-do {n} is reported finished: {how}\n"
+                  "  the agent that dispatched you closes it; you are done with this row")
+
+
+def reported(root: Path, track: str) -> list[dict]:
+    """Rows a subagent has finished and the parent has not yet closed."""
+    return [t for t in open_items(root, track) if t.get("reported")]
+
+
+def assigned_to(root: Path, track: str, agent: str) -> list[dict]:
+    """What this agent may work: its own rows and nothing else."""
+    agent = state.slug(agent)
+    return [t for t in open_items(root, track) if (t.get("assigned") or "") == agent]
 
 
 def after_of(t: dict) -> list[int]:
@@ -666,6 +735,11 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
             meta = "answered by the user, not yet picked up"
         elif t.get("asks"):
             meta = "waits on the user"
+        elif t.get("reported"):
+            meta = f"reported finished by `{t.get('by') or '?'}` — yours to close: {t['reported']}"
+        elif t.get("assigned"):
+            import agents as ag
+            meta = (f"held by `{t['assigned']}` ({ag.age(root, track, t['assigned'])})")
         elif t.get("blocked"):
             meta = f"set aside: {t['blocked']}"
         elif t.get("after"):

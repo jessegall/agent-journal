@@ -45,6 +45,7 @@ import tags  # noqa: E402
 import context  # noqa: E402
 import docs  # noqa: E402
 import fmt  # noqa: E402
+import agents  # noqa: E402
 import grants  # noqa: E402
 import nudges  # noqa: E402
 import builtin  # noqa: E402
@@ -1955,6 +1956,12 @@ def _remind_only() -> int:
 _ERROR_LABELLED = frozenset({"claimed", "environment"})
 
 
+def _parent_of(payload: dict) -> str:
+    """The DISPATCHING session's stem. A subagent's events carry it, not its own."""
+    tp = payload.get("transcript_path") or ""
+    return Path(tp).stem if tp else (payload.get("session_id") or "")
+
+
 def _hold(label: str, brief: str, text: str = "", subject: str = "") -> int:
     """Hold the stop: a small label for the user, the instruction and reasoning for the agent.
 
@@ -2499,6 +2506,27 @@ def main(raw: str | None = None) -> int:
         # THE SESSION ID IS THE DISPATCHER'S. That is the whole reason the grant exists and
         # also the reason `switch` and its kin stay refused however it is granted: they move
         # a session, and the session they would move is the one that dispatched this agent.
+        # ITS OWN NAME, FROM THE ONLY THING THAT KNOWS IT. A subagent cannot identify
+        # itself — nothing in its process carries `agent_id`, and two concurrent ones have
+        # byte-identical environments. This does, on every call, so the first one creates
+        # its ledger, stamps the heartbeat and tells it the two flags to use. Said once:
+        # after that it has been told, and repeating it every call is the wall this package
+        # spends its whole design avoiding.
+        aid = state.slug(str(payload.get("agent_id") or ""))
+        here = tracks.current(ROOT, ctx.stem if ctx else None)
+        lent = grants.granted(ROOT, _parent_of(payload))
+        # ON THE TOOL'S RESULT, NOT BEFORE IT. `DELIVERS_CONTEXT` does not list PreToolUse
+        # — the harness rejects `additionalContext` there, measured, and the reference
+        # disagrees with that; where the two differ this package trusts what it watched
+        # happen. PostToolUse carries it, and the first tool call is still long before the
+        # subagent's first journal command, which is the only moment the name has to exist.
+        if aid and lent and handler is on_post_tool:
+            told = state.get(ROOT, "agents_told", [], stem=_parent_of(payload)) or []
+            if aid not in told:
+                state.put(ROOT, "agents_told", told + [aid], stem=_parent_of(payload))
+                agents.touch(ROOT, lent[0], aid)
+                agents.dir_of(ROOT, lent[0], aid).mkdir(parents=True, exist_ok=True)
+                return _context("PostToolUse", agents.briefing(lent[0], aid))
         verb = _journal_write(payload) if handler is on_pre_tool else ""
         if verb:
             command = str((payload.get("tool_input") or {}).get("command", ""))
@@ -2506,11 +2534,19 @@ def main(raw: str | None = None) -> int:
             # subagent's own runtime name. The session that lent the environment is the one
             # whose transcript this event carries, which is the parent's: the same identity
             # collision that makes the whole grant necessary, showing up in the lookup.
-            tp = payload.get("transcript_path") or ""
-            parent = Path(tp).stem if tp else (payload.get("session_id") or "")
-            ok, why = grants.allows(ROOT, parent, verb, command)
+            ok, why = grants.allows(ROOT, _parent_of(payload), verb, command)
             if not ok:
                 return _deny(why)
+            # `--as=` IS CHECKED, NEVER TRUSTED. It is the only way a subagent's ledger can
+            # be named on a command line, and an unchecked one would let any subagent claim
+            # another's — its work, and the to-do that is held for it.
+            said = grants.acting_in(command)
+            if said and said != aid:
+                return _deny(
+                    f"`--as=\"{said}\"` is not you: this call is agent `{aid}`. Use your own "
+                    "name — you were told it on your first tool call — or leave the flag off "
+                    "and write nothing."
+                )
         return 0
     _CONF[:] = [conf]
     env = _register(payload, ctx)
