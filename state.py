@@ -22,10 +22,11 @@ import contextlib
 import json
 import re
 import os
-import sys
 import tempfile
 import time
 from pathlib import Path
+
+import fmt
 
 RECORD = "record.json"
 RUNTIME_DIR = "runtime"
@@ -269,8 +270,7 @@ def put(root: Path, key: str, value, *, stem: str | None = None) -> None:
     if is_record(key):
         f = record_file(root)
     elif not stem:
-        print(f"journal: no transcript to file {key!r} under — mark not written",
-              file=sys.stderr)
+        fmt.notice(f"no transcript to file {key!r} under — mark not written")
         return
     else:
         f = runtime_file(root, stem)
@@ -373,8 +373,7 @@ def locked(root: Path, wait: float = 3.0):
             break
         except OSError:
             if time.monotonic() >= deadline:
-                print(f"journal: record locked for over {wait:.0f}s — proceeding without it",
-                      file=sys.stderr)
+                fmt.notice(f"record locked for over {wait:.0f}s — proceeding without it")
                 break
             time.sleep(0.02)
     _depth, _held = 1, fh
