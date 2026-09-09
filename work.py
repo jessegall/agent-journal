@@ -178,9 +178,13 @@ def wait(root: Path, what: str, minutes: float, at: str, now: float,
     mins = int(minutes) if float(minutes).is_integer() else minutes
     who = f" ({named(picked[0][AWAIT])})" if named(picked[0][AWAIT]) else ""
     return True, (f"waiting on {what}{who} — `{picked[0]['subject']}` is not held for {mins} minute(s).\n"
-                  "  the FIRST WRITE ends it by itself — reading keeps waiting, editing is the "
-                  "work resuming — and so does any `work update` or `work end`; after that the "
-                  "hold returns and asks whether it is still coming"
+                  + ("  it names what it waits on, so it ends when THAT does: the clock, the pid "
+                     "exiting, or your own `work update`/`work end`. A write about something else "
+                     "leaves it standing, which is the whole point of waiting"
+                     if who else
+                     "  the FIRST WRITE ends it by itself — reading keeps waiting, editing is the "
+                     "work resuming — and so does any `work update` or `work end`; after that the "
+                     "hold returns and asks whether it is still coming")
                   + ("\n  the pid is watched: if it exits, the wait is over at the next stop"
                      if pid else ""))
 
@@ -239,11 +243,28 @@ def resumed(root: Path, owners: set) -> str | None:
     filing it. A write is different: nothing that is still blocked edits a file. It is the
     same line this package already draws at its gate, where reads are never refused and
     changes are.
+
+    EXCEPT WHEN THE WAIT NAMES WHAT IT IS WAITING FOR. `--agent=` and `--pid=` say the wait
+    is on something identifiable, and those are precisely the waits a session gets on with
+    something else alongside — which is what awaiting is FOR. Measured here: this session
+    awaited a dispatched agent, shipped a release while it ran, and the wait was cancelled by
+    its own commits; the next stop then asked about work that was still genuinely in flight.
+    "Nothing still blocked edits a file" is true of the session's OTHER work and says nothing
+    about this piece, and a wait cancelled by an unrelated write punishes exactly the
+    behaviour it was built to allow.
+
+    A NAMED WAIT ALREADY HAD AN ENDING THAT IS NOT SOMEBODY TYPING. `gone` ends a pid's wait
+    the moment the process exits, and the clock ends any of them; `work update` and `work
+    end` on that subject end it deliberately. So a named wait keeps those three and gives up
+    the fourth, and an unnamed one — "waiting on the build", with nothing to check — still
+    ends on the first write, because for that one a write really is the only signal there is.
     """
     with state.locked(root):
         items = _all(root)
         for w in items:
             if w.get("ended") or not w.get(AWAIT) or w.get("session") not in owners:
+                continue
+            if named(w[AWAIT]):
                 continue
             w.pop(AWAIT, None)
             state.put(root, KEY, items)

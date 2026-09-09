@@ -230,5 +230,32 @@ s5b.fire("PreToolUse", tool_name="Write", tool_input={"file_path": str(d5 / "g.t
 still = [w.get("awaiting") for w in state.get(d5 / ".journal", "work", []) if not w.get("ended")][0]
 check("another session writing leaves the wait alone", bool(still), True)
 
+# ─────────── a NAMED wait survives a write about something else ────────────────────────────
+# Measured in this project's own session: it awaited a dispatched agent, shipped a release
+# while the agent ran — commits, a version bump, four to-dos closed — and the wait was
+# cancelled by its own writes. The next stop then asked about work that was still genuinely
+# in flight. "Nothing still blocked edits a file" is true of the session's OTHER work and
+# says nothing about this piece, and awaiting exists so a session can get on with something
+# else.
+import work as _w
+_r = project() / ".journal"; _now = 1_000_000.0
+AT = "2026-09-09T21:00:00+00:00"
+_w.start(_r, "one thing in flight", AT, {"session": "s1"})
+_w.wait(_r, "a dispatched agent", 30, AT, _now, agent="a3f9")
+check("a named wait is not cancelled by a write about other work",
+      (_w.resumed(_r, {"s1"}), bool(_w.awaiting(_w.open_work(_r)[0], _now + 60))), (None, True))
+check("and `work update` on that subject still ends it deliberately",
+      (_w.note(_r, "it landed", AT)[0], _w.awaiting(_w.open_work(_r)[0], _now + 60)), (True, None))
+_w.end(_r, "one thing in flight", AT)
+
+_w.start(_r, "waiting on nothing nameable", AT, {"session": "s1"})
+_w.wait(_r, "the build, somewhere", 30, AT, _now)
+check("an UNNAMED wait still ends on the first write — for that one a write is the only signal",
+      (_w.resumed(_r, {"s1"}), _w.awaiting(_w.open_work(_r)[0], _now + 60)),
+      ("waiting on nothing nameable", None))
+check("and the two are told apart when the wait is filed",
+      ("names what it waits on" in _w.wait(_r, "an agent", 5, AT, _now, agent="z9")[1],
+       "FIRST WRITE ends it" in _w.wait(_r, "a build", 5, AT, _now)[1]), (True, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
