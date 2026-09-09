@@ -342,7 +342,15 @@ check("and the refusal names no other environment, and says to report rather tha
       ("scout" in _wrong, "not something to work around" in _wrong, "Report to the agent" in _wrong),
       (False, True, True))
 check("granted AND named: it writes",
-      "deny" in sub(f'{J2} --env="scout" work start "what I am doing"'), False)
+      "deny" in sub(f'{J2} --env="scout" --as="a1" work start "what I am doing"'), False)
+# BOTH FLAGS OR NEITHER. Without `--as` the write lands in the environment's shared ledger
+# instead of the agent's own — the collision the sub-environment exists to prevent, arriving
+# silently. Measured: an agent started a to-do with no `--as`, was told "open: …", worked it,
+# and was refused by `report` with "held by nobody".
+check("named but unattributed is refused, and told why the flag matters",
+      ("needs `--as=<your name>`" in testkit.denied(sub(f'{J2} --env="scout" work start "x"')),
+       "held by nobody" in testkit.denied(sub(f'{J2} --env="scout" work start "x"'))),
+      (True, True))
 check("its reads were never gated", "deny" in sub(f"{J2} pins"), False)
 # THE ONE THE ADVERSARIAL PASS FOUND: a subagent has no session, so `switch` would move the
 # DISPATCHER's — the ground under the agent that sent it.
@@ -358,7 +366,7 @@ check("a rule binds every environment, so a subagent may not write one",
       ("binds every environment" in testkit.denied(sub(f'{J2} --env="scout" rules add "everyone must"'))),
       True)
 check("but what belongs to the lent environment goes through",
-      [bool(testkit.denied(sub(f'{J2} --env="scout" {v}'))) for v in
+      [bool(testkit.denied(sub(f'{J2} --env="scout" --as="a1" {v}'))) for v in
        ('work start "digging"', 'todos add "later"')],
       [False, False])
 # THE USER'S RULING: a lent agent INHERITS this environment's pins and reminders and writes
@@ -392,11 +400,11 @@ for v, spelling in (("claim", f'{J2} --env="scout" claim "scout" "mine"'),
 # L3 — what it wrote survives revocation; a revoke closes a door, it does not undo
 before = gP.cli("--env=scout", "todos", session="gs1")[1]
 gP.cli("grant", "--off", "scout", session="gs1")
-check("revoked: refused again", "deny" in sub(f'{J2} --env="scout" work start "x"'), True)
+check("revoked: refused again", "deny" in sub(f'{J2} --env="scout" --as="a1" work start "x"'), True)
 check("and what it wrote is untouched", gP.cli("--env=scout", "todos", session="gs1")[1], before)
 # L1 — the grant dies with the session, which was a sentence before it was a fact
 gP.cli("grant", "scout", session="gs1")
-check("granted again", "deny" in sub(f'{J2} --env="scout" todos add "y"'), False)
+check("granted again", "deny" in sub(f'{J2} --env="scout" --as="a1" todos add "y"'), False)
 gP.hook("SessionEnd", session_id="gs1", transcript_path=str(gpath), reason="exit")
 check("and SessionEnd takes it back — a resumed session lends nothing it is not watching",
       "deny" in sub(f'{J2} --env="scout" pins add "z"'), True)
@@ -482,6 +490,42 @@ aP.cli("grant", "--off", "second-loan", session="as1")
 check("a second agent is told its own",
       "YOU ARE AGENT `b7c1`" in _agent("b7c1", "PostToolUse", tool_name="Bash",
                                        tool_input={"command": "ls"}, tool_response={"stdout": ""}), True)
+# THE READABLE NAME WAS ALREADY ON DISK. The open question was how an agent comes by a name
+# a person can read — the id being hex, and the alternative being to let it invent one,
+# which then needs collision-checking against every live agent and binding back to the real
+# id anyway. None of that: the harness writes `.../subagents/agent-<id>.meta.json` with the
+# DESCRIPTION the dispatcher typed, before the agent's first tool call.
+import agents as _ag, json as _json
+_meta = transcript.project_dir(ad) / "as1" / "subagents"
+_meta.mkdir(parents=True, exist_ok=True)
+(_meta / "agent-a3f9.meta.json").write_text(_json.dumps({"description": "Flag and command tables",
+                                                        "model": "sonnet"}))
+check("the dispatcher's own words are the agent's readable name",
+      _ag.described(ad, "as1", "a3f9"), "Flag and command tables")
+check("and a missing one is normal, not an error",
+      (_ag.described(ad, "as1", "nope"), _ag.described(ad, "", "a3f9")), ("", ""))
+check("the briefing wears it beside the id, which is still what the gate decides on",
+      ('YOU ARE AGENT `a3f9` — "Flag and command tables"' in _ag.briefing(["shared"], "a3f9",
+                                                                         "Flag and command tables")),
+      True)
+
+# `journal lent` — THE DELIBERATE CHECK-IN. An agent used to learn its name as a side effect
+# of whatever tool it happened to run first. This is it asking, and the CLI cannot answer:
+# `agent_id` reaches the hook and never the process, which is the collision the whole grant
+# exists for and does not stop applying to the command that asks about it.
+_lent = testkit.flat((json.loads(aP.hook("PostToolUse", session_id="as1", transcript_path=str(apath),
+    agent_id="a3f9", tool_name="Bash", tool_input={"command": f"{aJ} lent"},
+    tool_response={"stdout": ""})[1]).get("hookSpecificOutput") or {}).get("additionalContext", ""))
+check("`journal lent` is answered by the hook, with the agent's own name",
+      ("YOU ARE AGENT `a3f9`" in _lent, '--as="a3f9"' in _lent), (True, True))
+check("and it answers every time it is asked, unlike the one-shot briefing",
+      "YOU ARE AGENT `a3f9`" in testkit.flat((json.loads(aP.hook("PostToolUse", session_id="as1",
+          transcript_path=str(apath), agent_id="a3f9", tool_name="Bash",
+          tool_input={"command": f"{aJ} lent"}, tool_response={"stdout": ""})[1])
+          .get("hookSpecificOutput") or {}).get("additionalContext", "")), True)
+check("a session running it is told plainly that nothing lent this to it",
+      "You are a SESSION" in aP.cli("lent", session="as1")[1], True)
+
 # separate ledgers
 for _w in ("a3f9", "b7c1"):
     aP.cli("--env=shared", f"--as={_w}", "work", "start", f"{_w} is on it", session="as1")

@@ -896,19 +896,11 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
                     # with the verb it will need, because the one thing it cannot do is close.
                     fmt.say(f"  it is held for `{acting}` while you are writing; "
                             f"`journal todos report {n} \"<how>\" --as={acting}` says it is finished.")
-                elif grants.granted(root(), _stem()):
-                    # AN UNATTRIBUTED START HOLDS NOTHING, AND SAYS SO NOW RATHER THAN LATER.
-                    # Measured: a dispatched agent ran `todos start 1` with no `--as`, was
-                    # told "open: …" with no complaint, worked the row, and was refused by
-                    # `report` with "held by nobody". The command that could have said it
-                    # said nothing, and the one that had to say it said it too late to help.
-                    #
-                    # ONLY WHERE IT COULD BE TRUE. A session with nothing lent has no agents
-                    # to be one of, and a line about `--as` there is noise on every start.
-                    fmt.say("  nobody holds this row — you started it as the session. If you "
-                            "are a dispatched agent, `journal todos start "
-                            f"{n} --as=<your name>` claims it; `report` refuses a row you "
-                            "do not hold.")
+                # THE UNATTRIBUTED-START WARNING LIVED HERE AND COULD NOT BE TRUE HERE.
+                # The CLI cannot see `agent_id`, so "you may be a dispatched agent" was said
+                # to every session that had lent anything — noise for the parent, and still
+                # only a guess for the agent. It is a refusal at the grant door now, where
+                # the identity actually exists: see `grants.allows`.
                 # TAUGHT WHERE IT IS NEEDED, AND NOT WHERE IT CANNOT BE USED: the trailer is
                 # only ever typed in a commit message, and the moment an agent learns which
                 # to-do it is on is the moment to hand it the line that closes it from there.
@@ -1513,6 +1505,47 @@ def cmd_pins(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
     return code
 
 
+def cmd_lent() -> int:
+    """`journal lent` — a dispatched agent asking what it has been given.
+
+    THE CHECK-IN THAT `grant` IS ON THE PARENT'S SIDE. An agent used to learn its own name
+    as a side effect: it ran whatever tool it ran first, and the hook attached the briefing
+    to that tool's result. It worked, but the moment was an accident of whatever the agent
+    happened to do, and nothing initialised anything on purpose.
+
+    THE CLI CANNOT ANSWER THIS AND SAYS SO PLAINLY. `agent_id` reaches the hook and never
+    the process — that is the identity collision this whole mechanism exists for, and it
+    does not stop applying to the command that asks about it. So the CLI half prints what a
+    SESSION should hear, and the hook half answers an agent on the tool's result, where
+    `agent_id` exists. One command, two readers, and the one who cannot be told here is told
+    a line later.
+    """
+    stem = _stem()
+    lent = grants.granted(root(), stem)
+    fmt.say(fmt.Out(
+        title="LENT", sub=f"{len(lent)} environment(s) this session has lent",
+        lead="You are a SESSION, not a dispatched agent — nothing lent this to you, and the "
+             "journal is yours. `journal lent` is the command an agent you dispatch runs to "
+             "learn its own name and its environment; put it first in the prompt you give it."
+             if not _stem_is_agent() else "",
+        items=tuple(fmt.Item(title=n, text="its agents write here with --env and --as")
+                    for n in lent) or (fmt.Item(text="This session has lent nothing."),),
+        footer='`journal grant "<environment>"` lends one and prints the sentence to paste '
+               "into the dispatch.".strip()))
+    return 0
+
+
+def _stem_is_agent() -> bool:
+    """Is this process a dispatched agent's? It cannot be, and that is the point.
+
+    `agent_id` lives in the hook's payload and nowhere in the environment a subagent's shell
+    inherits — measured, and the reason `--as=` has to be typed at all. Kept as a named
+    function rather than a bare `False` because the question is asked here on purpose: if a
+    future harness ever puts an agent id in the process, this is the one place that changes.
+    """
+    return False
+
+
 def cmd_grant(name: str, off: bool, listing: bool) -> int:
     """`journal grant "<env>"` — lend an environment to this session's subagents.
 
@@ -2112,6 +2145,7 @@ def _v_version(verb: str, rest: list[str], opts: Opts) -> int:
 _ALIASES: dict[tuple[str, ...], object] = {
     ("cleanup", "tidy"): _v_cleanup,
     ("grant", "grants"): _v_grant,
+    ("lent",): lambda verb, rest, opts: cmd_lent(),
     ("pin", "remember"): _v_pin,
     ("todo", "todos"): lambda verb, rest, opts: cmd_todo(
         rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,

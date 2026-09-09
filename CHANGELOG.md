@@ -4,6 +4,53 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.40.0 — journal lent, and the name was already on disk
+
+`journal lent` is the agent's half of `journal grant`, read as a question: what have I been
+lent? It answers with the agent's own name, the environment, and the flags every command of
+its needs. Until now an agent learned its name as a SIDE EFFECT — it ran whatever tool it
+ran first, and the hook attached the briefing to that result. It worked, and the moment was
+an accident of whatever the agent happened to do.
+
+    journal lent      what am I, and what was I given
+
+THE CLI CANNOT ANSWER IT, AND SAYS SO. `agent_id` reaches the hook and never the process —
+the identity collision this whole mechanism exists for does not stop applying to the command
+that asks about it. So the CLI half prints what a SESSION should hear, and the hook answers
+an agent on the tool's result, where the id exists. One command, two readers. It answers
+every time it is asked, unlike the one-shot briefing, which stays as the rescue for an agent
+that never thought to ask.
+
+THE READABLE NAME WAS ALREADY ON DISK AND NOBODY HAD LOOKED. The open question was how a
+subagent comes by a name a person can read: `agent_id` is a hex string, and the obvious
+alternative was to let the agent invent one — which then has to be checked for collisions
+against every live agent and bound back to the real id anyway. None of that is needed.
+Claude Code writes each subagent's transcript to `<project>/<session>/subagents/agent-<id>.jsonl`
+with a `.meta.json` beside it holding the DESCRIPTION the dispatcher typed. It is unique per
+dispatch, written by the one party with the context to name the work, and on disk before the
+agent's first tool call. The briefing wears it beside the id:
+
+    YOU ARE AGENT `afdfe440` — "Flag and command tables" WORKING UNDER `flags`
+
+A label on a verified identity, never a substitute for one: every gate still turns on
+`agent_id` from the payload.
+
+BOTH FLAGS OR NEITHER. A lent agent's write now needs `--as=<its name>` as well as `--env`.
+Without it the write lands in the environment's shared `work.json` instead of the agent's own
+ledger — the collision the sub-environment exists to prevent, arriving silently. Measured in
+the last release's dogfood: an agent ran `todos start 1` with no `--as`, was answered
+"open: …" with no complaint, worked the row, and was refused by `report` with "held by
+nobody". THE CHECK IS AT THE GRANT DOOR BECAUSE THE IDENTITY IS THERE — a first attempt put
+it in the CLI, where it fired for the parent session too and was still only a guess.
+
+AUTO PREDICTS THE STOP, SO IT ASKS THE STOP'S QUESTION. `todos auto on` named the first OPEN
+to-do while the stop hook it was describing picks the first READY one, so it promised to
+start rows that wait on the user, are blocked, are held by a live agent, or have unmet
+prerequisites. Measured the moment auto was switched on here: it named a to-do that had been
+waiting on the user for five hours. And a list that is full but entirely unstartable now says
+so, rather than naming one or claiming the list is empty — from the outside those look
+identical, and the difference is the half the user has to act on.
+
 ## 1.39.0 — the start block is a doorway, and three agents found four bugs in the grant
 
 THE BLOCK STOPPED BEING DELIVERED AT ALL. Measured in a real project: 14,996 characters

@@ -68,6 +68,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
     "grant": (
         'journal grant "<environment>"   lend it to this session\'s subagents, and print the sentence to paste into the dispatch',
         "journal grant                   what this session has lent",
+        "journal lent                    the agent's own half: its name, its environment, its ledger (agent)",
         'journal grant --off "<environment>"   take one back; bare --off takes back all of them',
         'journal assign <n> --to="<agent>"   hand one to-do to one subagent; nobody else may take or complete it',
         "journal assign <n> --off            put it back on the list",

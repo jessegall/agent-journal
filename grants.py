@@ -194,6 +194,25 @@ def allows(root: Path, stem: str | None, verb: str, command: str) -> tuple[bool,
         )
     named = _env_in(command)
     if named and named in lent:
+        # BOTH FLAGS OR NEITHER. `--env` says which environment; `--as` says which AGENT,
+        # and without it the write lands in the environment's shared `work.json` instead of
+        # this agent's own ledger — which is the collision the sub-environment exists to
+        # prevent, arriving silently. Measured in a dogfood run: an agent ran `todos start 1`
+        # with no `--as`, was answered "open: …" with no complaint, worked the row, and was
+        # refused by `report` with "held by nobody". The command that could have said it
+        # said nothing, and the one that had to say it said it far too late to help.
+        #
+        # THE CHECK IS HERE BECAUSE THE IDENTITY IS HERE. The CLI cannot see `agent_id` and
+        # so cannot tell a session from an agent; this door is the one place that can, which
+        # is why the CLI's own version of this warning fired for the parent too.
+        if not acting_in(command):
+            return False, (
+                f"`journal {verb}` from a lent agent needs `--as=<your name>` as well as "
+                "`--env`. Without it the write files under the environment rather than under "
+                "you: your ledger is not yours, a to-do you start is held by nobody, and "
+                "`report` will refuse it later. Your name was given to you on your first "
+                "tool call."
+            )
         return True, ""
     # IT NEVER NAMES THE OTHERS, and that is not tidiness — it is the fix for a live
     # failure. This refusal used to list every environment the session had lent and then
@@ -257,6 +276,7 @@ def _briefing(name: str, already: bool = False, fresh: bool = False) -> str:
     # teaches the agent to hit a wall on its first useful act, and it is copied verbatim
     # into the prompt, so the error arrives with the dispatcher's own authority behind it.
     return (head + "\n\n  TELL THE AGENT, IN ITS PROMPT:\n"
+            "    Run `.journal/journal.py lent` first: it answers with your own name.\n"
             f'    You work on your own journal: environment `{name}`. Every journal command\n'
             f'    you run must carry --env="{name}", e.g.\n'
             f'      .journal/journal.py --env="{name}" work start "<what you are doing>"\n'

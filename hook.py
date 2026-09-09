@@ -1976,6 +1976,28 @@ def _remind_only() -> int:
 _ERROR_LABELLED = frozenset({"claimed", "environment"})
 
 
+def _asked_lent(payload: dict) -> bool:
+    """Did this tool call run `journal lent`? The one command whose answer is the hook's.
+
+    The CLI cannot see `agent_id`, so it cannot answer "who am I" — it prints what a SESSION
+    should hear and this supplies the rest on the tool's result. `PostToolUse` because
+    `DELIVERS_CONTEXT` does not list `PreToolUse`: the harness rejects context there,
+    measured, whatever the reference says.
+    """
+    if (payload.get("tool_name") or "") != "Bash":
+        return False
+    cmd = str((payload.get("tool_input") or {}).get("command", ""))
+    if "journal" not in cmd:
+        return False
+    try:
+        import shlex
+        toks = shlex.split(cmd)
+    except ValueError:
+        return False
+    return any("journal" in t and j + 1 <= len(toks) - 1 and toks[j + 1] == "lent"
+               for j, t in enumerate(toks[:-1]))
+
+
 def _parent_of(payload: dict) -> str:
     """The DISPATCHING session's stem. A subagent's events carry it, not its own."""
     tp = payload.get("transcript_path") or ""
@@ -2641,6 +2663,13 @@ def main(raw: str | None = None) -> int:
         # subagent's first journal command, which is the only moment the name has to exist.
         if aid and lent and handler is on_post_tool:
             told = state.get(ROOT, "agents_told", [], stem=_parent_of(payload)) or []
+            # `journal lent` IS THE DELIBERATE ASK, and it is answered however often it is
+            # asked. The briefing on a first tool call is a rescue for an agent that never
+            # thought to ask; this is the agent asking, and an answer that came once and
+            # then stopped would be worse than no command at all.
+            called = agents.described(ROOT.parent, _parent_of(payload), aid)
+            if _asked_lent(payload):
+                return _context("PostToolUse", agents.briefing(lent, aid, called))
             if aid not in told:
                 state.put(ROOT, "agents_told", told + [aid], stem=_parent_of(payload))
                 # THE LEDGER GOES WHERE THE AGENT ACTUALLY WRITES, and until it names an
@@ -2650,7 +2679,7 @@ def main(raw: str | None = None) -> int:
                 for env in (lent if len(lent) == 1 else ()):
                     agents.touch(ROOT, env, aid)
                     agents.dir_of(ROOT, env, aid).mkdir(parents=True, exist_ok=True)
-                return _context("PostToolUse", agents.briefing(lent, aid))
+                return _context("PostToolUse", agents.briefing(lent, aid, called))
         verb = _journal_write(payload) if handler is on_pre_tool else ""
         if verb:
             command = str((payload.get("tool_input") or {}).get("command", ""))

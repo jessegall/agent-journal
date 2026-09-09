@@ -85,7 +85,41 @@ def age(root: Path, track: str, agent: str) -> str:
     return f"last wrote {secs / 3600:.1f} h ago"
 
 
-def briefing(lent: list, agent: str) -> str:
+def described(project: Path, parent: str, agent: str) -> str:
+    """The DISPATCHER'S OWN WORDS for this agent, if the harness kept them, else "".
+
+    THE READABLE NAME WAS ALREADY THERE AND NOBODY HAD LOOKED. The open question was how a
+    subagent could come by a name a person can read — `agent_id` being a hex string, and the
+    obvious alternative being to let the agent invent one, which then has to be checked for
+    collisions against every other live agent and bound back to the real id anyway.
+
+    None of that is needed. Claude Code writes each subagent's transcript to
+    `<project>/<parent session>/subagents/agent-<id>.jsonl` and a `.meta.json` beside it
+    holding the `description` the DISPATCHER typed — "Flag and command tables", "Close the
+    leaks past fmt.say". It is already unique per dispatch, already written by the one party
+    with the context to name the work, and already on disk before the agent's first tool
+    call. A name nobody has to invent cannot collide with one somebody else invented.
+
+    IT IS A LABEL ON A VERIFIED IDENTITY, NEVER A SUBSTITUTE FOR ONE. Everything the gate
+    decides still turns on `agent_id` from the payload; this only makes the ledger readable
+    by a person, which is the whole reason the ledger is separate.
+
+    ABSENT IS NORMAL. Another harness, an older one, a payload with no parent — all of them
+    give "" and the caller falls back to the id, which always exists.
+    """
+    import json
+    import transcript
+    if not (parent and agent):
+        return ""
+    meta = (transcript.project_dir(project) / parent / "subagents" / f"agent-{agent}.meta.json")
+    try:
+        got = json.loads(meta.read_text())
+    except (OSError, ValueError):
+        return ""
+    return " ".join(str(got.get("description") or "").split())[:60]
+
+
+def briefing(lent: list, agent: str, called: str = "") -> str:
     """What the hook says to a subagent on its first tool call: its own name, and the flags.
 
     IT IS TOLD, RATHER THAN ASKED TO REMEMBER. The dispatcher pastes the grant's sentence
@@ -112,10 +146,11 @@ def briefing(lent: list, agent: str) -> str:
     place that knowledge exists.
     """
     one = lent[0] if len(lent) == 1 else ""
+    named = f' — "{called}"' if called else ""
     env = f'--env="{one}"' if one else '--env="<the environment your dispatch named>"'
-    head = (f"YOU ARE AGENT `{agent}` WORKING UNDER `{one}`, and you have your own ledger."
+    head = (f"YOU ARE AGENT `{agent}`{named} WORKING UNDER `{one}`, and you have your own ledger."
             if one else
-            f"YOU ARE AGENT `{agent}`, and you have your own ledger under the environment "
+            f"YOU ARE AGENT `{agent}`{named}, and you have your own ledger under the environment "
             f"your dispatch lent you. This session has lent {len(lent)}, so only your own "
             f"prompt says which is yours — use that name and no other.")
     return (head + "\n"
