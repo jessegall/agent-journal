@@ -414,5 +414,68 @@ code, out = gP.cli("grant", "scout", session="gs1")
 check("a second grant of the same environment is idempotent and says so",
       (code, "already" in out, _g.granted(groot, "gs1").count("scout")), (0, True, 1))
 
+# ─────────── a subagent's OWN ledger, and a to-do assigned and held ───────────────────────
+# Two subagents lent one environment shared one work.json before this: B closed A's work by
+# saying A's words, and the record could not tell them apart.
+ad = Path(tempfile.mkdtemp()) / "proj"
+testkit.make(ad, Path(__file__).resolve().parent)
+aroot = ad / ".journal"
+apath = transcript.project_dir(ad) / "as1.jsonl"
+apath.parent.mkdir(parents=True, exist_ok=True); apath.write_text("")
+aP = testkit.Project(ad)
+aP.hook("SessionStart", source="startup", session_id="as1", transcript_path=str(apath))
+aP.cli("prepare", "shared", session="as1"); aP.cli("switch", "default", session="as1")
+aP.cli("grant", "shared", session="as1")
+aJ = str(aroot / "journal.py")
+
+
+def _agent(who, event="PreToolUse", **kw):
+    return aP.hook(event, session_id="as1", transcript_path=str(apath), agent_id=who, **kw)[1]
+
+
+# it is told its own name, once, on its first tool call
+_first = _agent("a3f9", "PostToolUse", tool_name="Bash", tool_input={"command": "ls"},
+                tool_response={"stdout": ""})
+_told = testkit.flat((json.loads(_first).get("hookSpecificOutput") or {}).get("additionalContext", ""))
+check("a subagent is told its own name on its first tool call",
+      ("YOU ARE AGENT `a3f9`" in _told, '--as="a3f9"' in _told), (True, True))
+check("and only once", _agent("a3f9", "PostToolUse", tool_name="Bash",
+                             tool_input={"command": "ls"}, tool_response={"stdout": ""}).strip(), "")
+check("a second agent is told its own",
+      "YOU ARE AGENT `b7c1`" in _agent("b7c1", "PostToolUse", tool_name="Bash",
+                                       tool_input={"command": "ls"}, tool_response={"stdout": ""}), True)
+# separate ledgers
+for _w in ("a3f9", "b7c1"):
+    aP.cli("--env=shared", f"--as={_w}", "work", "start", f"{_w} is on it", session="as1")
+check("each agent's work is its own file",
+      [json.loads((aroot / "environments" / "shared" / "agents" / w / "work.json").read_text())["work"][0]["subject"]
+       for w in ("a3f9", "b7c1")],
+      ["a3f9 is on it", "b7c1 is on it"])
+check("and one cannot close the other's by saying its words",
+      "closes nothing" in aP.cli("--env=shared", "--as=b7c1", "work", "end", "a3f9 is on it", session="as1")[1],
+      True)
+# a claimed name is checked against the payload
+check("claiming another agent's name is refused",
+      "is not you" in testkit.denied(_agent("b7c1", tool_name="Bash",
+          tool_input={"command": f'{aJ} --env="shared" --as="a3f9" work start "x"'})), True)
+# assignment and the hold
+aP.cli("--env=shared", "todos", "add", "refactor the parser", session="as1")
+check("a to-do is assigned to one agent",
+      "assigned to `a3f9`" in aP.cli("--env=shared", "assign", "1", "--to=a3f9", session="as1")[1], True)
+check("and held against a second agent",
+      "held by `a3f9`" in aP.cli("--env=shared", "assign", "1", "--to=b7c1", session="as1")[1], True)
+check("a held row is not offered to the list",
+      [t["n"] for t in __import__("todo").ready(aroot, "shared")], [])
+# report, but never close
+check("an agent it is not assigned to may not report it",
+      "not assigned to you" in aP.cli("--env=shared", "--as=b7c1", "todos", "report", "1", "done", session="as1")[1],
+      True)
+_r = aP.cli("--env=shared", "--as=a3f9", "todos", "report", "1", "split the two entry points", session="as1")[1]
+check("the agent holding it reports it finished, and is told the parent closes it",
+      ("reported finished" in _r, "closes it" in _r), (True, True))
+check("and the row is still OPEN, waiting on the parent",
+      [t["n"] for t in __import__("todo").reported(aroot, "shared")], [1])
+check("the parent closes it", aP.cli("--env=shared", "todos", "done", "1", "reviewed and merged", session="as1")[0], 0)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

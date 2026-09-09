@@ -718,7 +718,7 @@ def cmd_promote(n: int) -> int:
     return 0 if ok else 1
 
 
-def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", after: str = "", page: int = 1,
+def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", after: str = "", acting: str = "", page: int = 1,
              order: str = fmt.DESC, quiet: bool = False) -> int:
     here = tracks.current(root(), _stem())
     # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
@@ -1881,7 +1881,7 @@ def main(argv: list[str]) -> int:
         except ValueError:
             return _refuse(_number(rest, 1, "promote", "pin", "journal pins")[1])
     if verb in ("todo", "todos"):  # ruling R1: `todos` is a twin alias of `todo`, both ways
-        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, after, page, order, quiet)
+        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, after, acting, page, order, quiet)
     if verb == "docs":
         return cmd_docs(rest[1:], brief, abstract, page, replace, order)
     if verb == "tools":
