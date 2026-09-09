@@ -44,21 +44,25 @@ _CLI: list = []
 
 
 def cli(root=None) -> str:
-    """`.journal/journal.py` when that runs from here, and the absolute path when it does not."""
+    """The prefix every printed path needs to start with, to resolve from where we are.
+
+    `.journal/` when that is honest, and the journal's absolute location when it is not.
+    """
     if _CLI:
         return _CLI[0]
     import os
     from pathlib import Path as _P
     if root is None:
-        return ".journal/journal.py"
-    exe = _P(root) / "journal.py"
+        return CANON
+    here = _P(root)
     try:
-        rel = os.path.relpath(exe, _P.cwd())
+        rel = os.path.relpath(here, _P.cwd())
     except (OSError, ValueError):
-        rel = str(exe)
+        rel = str(here)
+    rel = rel.rstrip("/") + "/"
     # A PATH THAT CLIMBS OUT OF THE CURRENT DIRECTORY IS NOT WORTH THE PRETTINESS. `../../..`
     # is correct and unreadable, and it stops being correct the moment the reader cds.
-    _CLI.append(rel if not rel.startswith("..") else str(exe))
+    _CLI.append(rel if not rel.startswith("..") else str(here).rstrip("/") + "/")
     return _CLI[0]
 
 
@@ -209,11 +213,19 @@ def table(rows: list[tuple[str, str]], indent: int = 2, gap: int = 3, col: int =
     return "\n".join(out)
 
 
-#: THE SPELLING EVERY LINE IS AUTHORED IN. Rewritten as the text leaves, to whatever runs
-#: from where the reader is standing — see `cli`. Doing it here rather than at each of the
-#: ~40 sites is the difference between a rule and a habit: a line written tomorrow is right
-#: without its author knowing there was a question.
-CANON = ".journal/journal.py"
+#: THE PREFIX EVERY PATH IS AUTHORED WITH. Rewritten as the text leaves, to whatever
+#: resolves from where the reader is standing — see `cli`. Doing it here rather than at each
+#: of the sites that spell it is the difference between a rule and a habit: a line written
+#: tomorrow is right without its author knowing there was a question.
+#:
+#: THE WHOLE PREFIX, NOT JUST THE EXECUTABLE. The first version rewrote `.journal/journal.py`
+#: alone, and a dogfood agent three directories down found the gap the same afternoon: a
+#: to-do's brief ends with the FILE it was written to —
+#: `.journal/environments/x/todo/001-….md` — and that path resolved only from the project
+#: root. Every path this package prints starts with the same four characters, so every one
+#: of them was wrong from the same places, and fixing only the one that happened to be a
+#: command would have left the rest to be found one at a time.
+CANON = ".journal/"
 
 
 def block(text: str, width: int = WIDTH) -> str:
