@@ -290,6 +290,27 @@ you read what it wrote with `journal environments "<name>"` when it reports.
 a subagent would move is *yours* — it is running under your id. `rules` binds every
 environment, and it was lent one. A subagent that needs either reports and lets you do it.
 
+**A subagent gets its own ledger, and is told its own name.** It cannot know it — nothing
+in its process carries an agent id — so on its first tool call the hook creates
+`environments/<lent>/agents/<id>/` and tells that agent the two flags to use:
+`--env="<name>" --as="<id>"`. Its work is its own file, so two subagents can never open or
+close each other's work.
+
+**It reads the environment's pins and cannot write one.** Findings go up in its report and
+you decide what becomes a claim. That is what keeps this one-directional: the child cannot
+write what it inherits, so there is only ever one answer to which pin applies.
+
+    journal assign <n> --to="<agent>"    hand it one row; nobody else may take it
+    journal assign <n> --off             put it back on the list
+
+**A held row lapses on a heartbeat, not on a promise.** Nothing can tell us a subagent
+died, so `active` is observed — every write it makes stamps it — and a dispatch that
+crashes releases its row on its own.
+
+**It may REPORT a row finished; only you close it.** `journal todos report <n> "<how>"`
+marks it done-pending and tells you; `journal todos done <n>` is yours. A runner marking
+its own homework is a failure this project has already watched happen.
+
 **Without a grant, a subagent writes nothing and that is the normal case.** Most subagents
 should report what they found and let this conversation file it; the grant is for the ones
 doing real work over a long stretch, where losing the record at the end is the loss.
