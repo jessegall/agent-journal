@@ -227,7 +227,9 @@ grows by tens of thousands of characters an hour — an instruction fifty tool c
 read with less weight than the result that just landed. That is drift, and it is not
 solved by pinning harder. A reminder is the one channel here that repeats: it is said at
 every stop, ahead of the stop queue and without spending its one slot, and again every
-`reminder_every` tool calls (15 by default) in between.
+`reminder_every` tool calls (15 by default) in between. Once per stop CHAIN, not per stop
+event — a stop that returns anything is re-entered, and a reminder that answered its own
+re-entry would wake the session in a loop with nobody asking for anything.
 
 **Write one when the user has had to say something twice**, or says it in a way that means
 *keep doing this*: "always run the suites first", "stop asking me before you commit",

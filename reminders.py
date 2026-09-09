@@ -11,9 +11,16 @@ SO A REMINDER IS THE ONE THING HERE THAT REPEATS. Every other channel in this pa
 fires on a condition and yields once it has fired — the stop queue raises one subject per
 stop precisely so a wall of reminders is not read past as one, `on_post_tool` speaks only
 on a new record, a rung climbs once. A reminder has no condition. It is shown at every
-stop, unconditionally, ahead of the queue and without spending the queue's one slot, and
-again mid-turn every `reminder_every` tool calls, because the stop where the queue lives
-can be an hour of tool calls away.
+stop, ahead of the queue and without spending the queue's one slot, and again mid-turn
+every `reminder_every` tool calls, because the stop where the queue lives can be an hour
+of tool calls away.
+
+ONCE PER STOP CHAIN, THOUGH, AND THAT IS NOT A HEDGE. A Stop that returns anything is
+re-entered with `stop_hook_active`; the first shape of this answered its own re-entry and
+woke a live session three times over with nobody asking for anything. The flag is what
+tells a fresh stop from the tail of one already being worked, and the queue's subjects
+already draw that line. A reminder draws it too and loses nothing: every stop a person
+actually sees is the head of a chain.
 
 AND THE USER SEES IT. Everything else the hook says to the agent is the agent's business
 rendered in somebody else's terminal, which is why `_hold` was cut to one line. A reminder
