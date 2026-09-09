@@ -153,11 +153,25 @@ def allows(root: Path, stem: str | None, verb: str, command: str) -> tuple[bool,
     named = _env_in(command)
     if named and named in lent:
         return True, ""
+    # IT NEVER NAMES THE OTHERS, and that is not tidiness — it is the fix for a live
+    # failure. This refusal used to list every environment the session had lent and then
+    # suggest the first one. A trial subagent, dispatched for `trial-two` before the grant
+    # existed, read that list, picked `scout-run` — a different dispatch's environment —
+    # and filed eight pins into it. The message did exactly what a good message should and
+    # was obeyed; what it asked for was wrong. A subagent that was not lent what it was
+    # told to use has hit a mistake in its DISPATCH, and the only correct next move is to
+    # report that upward, never to choose an environment for itself.
+    if named:
+        return False, (
+            f"`journal {verb}`: you were not lent `{named}`. That is a mistake in your "
+            "dispatch, not something to work around — do NOT pick a different environment. "
+            "Report to the agent that dispatched you that the grant is missing, and let it "
+            "run `journal grant` before you try again."
+        )
     return False, (
-        f"`journal {verb}` needs the environment it was lent: "
-        + f"this session granted {', '.join(lent)}, and "
-        + (f"you named {named!r}" if named else "you named none")
-        + '. Put `--env="' + lent[0] + '"` on the command, exactly as the dispatch told you.'
+        f"`journal {verb}` needs the environment it was lent, and this command names none. "
+        'Put `--env="<name>"` on it, exactly as your dispatch told you — the name is in the '
+        "prompt you were given. If it is not, report that upward rather than guessing."
     )
 
 

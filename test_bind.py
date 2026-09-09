@@ -327,8 +327,15 @@ check("granted but unnamed, still refused — the flag is the subagent's half of
       ("deny" in sub(f'{J2} pins add "x"'),
        "needs the environment it was lent" in testkit.denied(sub(f'{J2} pins add "x"'))),
       (True, True))
-check("naming an environment nobody lent is refused too",
-      "deny" in sub(f'{J2} --env="default" pins add "x"'), True)
+# A REFUSAL MUST NOT OFFER A WAY ROUND ITSELF. This one used to list every environment the
+# session had lent and suggest the first: a trial subagent read the list, picked another
+# dispatch's environment, and filed eight pins into it. It was obeying a good message that
+# asked for the wrong thing.
+_wrong = testkit.denied(sub(f'{J2} --env="default" pins add "x"'))
+check("naming an environment nobody lent is refused too", bool(_wrong), True)
+check("and the refusal names no other environment, and says to report rather than choose",
+      ("scout" in _wrong, "not something to work around" in _wrong, "Report to the agent" in _wrong),
+      (False, True, True))
 check("granted AND named: it writes",
       "deny" in sub(f'{J2} --env="scout" pins add "what I found"'), False)
 check("its reads were never gated", "deny" in sub(f"{J2} pins"), False)
