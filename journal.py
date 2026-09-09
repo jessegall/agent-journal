@@ -29,6 +29,7 @@ answers `help`, and calls the very same function. None of them is deprecated.
 from __future__ import annotations
 
 import contextlib as _contextlib
+import dataclasses
 import os
 import sys
 from pathlib import Path
@@ -1605,6 +1606,516 @@ def _retired(verb: str) -> int | None:
     return _refuse("\n\n".join((fmt.wrap(why), fmt.commands(commands), fmt.wrap(then))))
 
 
+@dataclasses.dataclass
+class Opts:
+    """Everywhere a flag's value lands. One instance per invocation, built by the loop
+    below from FLAGS/BARE_FLAGS, and read by whichever verb handler needs a field —
+    most read two or three of these, none read them all.
+    """
+    back: int = 0
+    supersedes: int | None = None
+    all_of_them: bool = False
+    go_back: bool = False
+    fresh: bool = False
+    full: bool = False
+    wait_for: float | None = None
+    await_agent: str | None = None
+    await_pid: int | None = None
+    on: str | None = None
+    strike_n: int | None = None
+    brief: bool = False
+    quiet: bool = False
+    replace: bool = False
+    off_flag: bool = False
+    project_too: bool = False
+    all_sessions: bool = False
+    yes_flag: bool = False
+    purge: bool = False
+    force: bool = False
+    order: str = fmt.DESC
+    sessions: list[str] = dataclasses.field(default_factory=list)
+    page: int = 1
+    abstract: str = ""
+    until: str = ""
+    after: str = ""
+    acting: str = ""
+    to_agent: str = ""
+    doc_ref: str = ""
+    from_src: str | None = None
+    tool_meta: dict = dataclasses.field(default_factory=dict)
+
+
+@dataclasses.dataclass(frozen=True)
+class _Flag:
+    """One row of the flag table. `dest` is the Opts field it fills; None means the
+    option is recognised and consumed here but read elsewhere (`--env=`, `--from=`).
+    `type` converts a `--x=value`'s text — raising ValueError with the refusal to print
+    if it cannot. `append`/`keyed` are the two shapes a value can land in besides a
+    plain assignment: a list that grows, or a dict keyed by the flag's own name. `set`
+    is what a bare flag (no value at all) writes into its dest.
+    """
+    dest: str | None = None
+    type: object = str
+    append: bool = False
+    keyed: bool = False
+    set: object = True
+
+
+def _int_flag(spelling: str):
+    def conv(v: str) -> int:
+        try:
+            return int(v)
+        except ValueError:
+            raise ValueError(f"{spelling} wants a number, got {v!r}")
+    return conv
+
+
+def _page_flag(v: str) -> int:
+    try:
+        return int(v)
+    except ValueError:
+        raise ValueError("--page wants a number")
+
+
+def _supersedes_flag(v: str) -> int:
+    try:
+        return int(v)
+    except ValueError:
+        raise ValueError("--supersedes wants a pin number; `journal pins` numbers them")
+
+
+def _for_flag(v: str) -> float:
+    try:
+        return float(v)
+    except ValueError:
+        raise ValueError(f"--for wants minutes, got {v!r}")
+
+
+def _order_flag(v: str) -> str:
+    v = v.strip().lower()
+    if v not in fmt.ORDERS:
+        raise ValueError(f"--order wants asc or desc, got {v!r}. Newest first is the "
+                          "default; --order=asc reads oldest first.")
+    return v
+
+
+def _agent_flag(v: str) -> str | None:
+    return v.strip() or None
+
+
+# `--x=value` FLAGS. Aliases share one `_Flag` instance — `--after` and `--needs` are
+# one entry with two names, the way the to-do asks, not two branches that could drift.
+_AFTER = _Flag(dest="after")
+_ENV_NOOP = _Flag(dest=None)      # applied and refused in run(), before any command reads the record
+_TOOL_META = _Flag(dest="tool_meta", keyed=True)
+
+VALUE_FLAGS: dict[str, _Flag] = {
+    "--back": _Flag(dest="back", type=_int_flag("--back")),
+    "--supersedes": _Flag(dest="supersedes", type=_supersedes_flag),
+    "--agent": _Flag(dest="await_agent", type=_agent_flag),
+    "--pid": _Flag(dest="await_pid", type=_int_flag("--pid")),
+    "--for": _Flag(dest="wait_for", type=_for_flag),
+    "--on": _Flag(dest="on"),
+    "--env": _ENV_NOOP, "--environment": _ENV_NOOP, "--track": _ENV_NOOP,
+    "--order": _Flag(dest="order", type=_order_flag),
+    "--session": _Flag(dest="sessions", append=True),
+    "--abstract": _Flag(dest="abstract"),
+    "--until": _Flag(dest="until"),
+    "--after": _AFTER, "--needs": _AFTER,
+    "--as": _Flag(dest="acting"),
+    "--to": _Flag(dest="to_agent"),
+    "--summary": _TOOL_META, "--usage": _TOOL_META, "--when": _TOOL_META, "--entry": _TOOL_META,
+    "--doc": _Flag(dest="doc_ref"),
+    "--from": _Flag(dest="from_src"),
+    "--page": _Flag(dest="page", type=_page_flag),
+}
+
+# BARE FLAGS: no value, presence is the value. `set` is what lands in `dest`; every
+# flag not listed writes `True`, so only the two exceptions (`--strike`, `--none`) name
+# theirs.
+BARE_FLAGS: dict[str, _Flag] = {
+    "--strike": _Flag(dest="strike_n", set=-1),    # the number follows as the next word
+    "--off": _Flag(dest="off_flag"),
+    "--replace": _Flag(dest="replace"),
+    "--brief": _Flag(dest="brief"),
+    "--quiet": _Flag(dest="quiet"),
+    "--project": _Flag(dest="project_too"),
+    "--yes": _Flag(dest="yes_flag"),
+    "--purge": _Flag(dest="purge"),
+    "--force": _Flag(dest="force"),
+    "--all-sessions": _Flag(dest="all_sessions"),
+    "--none": _Flag(dest="after", set="--none"),    # `todos after <n> --none` clears the prerequisites
+    "--full": _Flag(dest="full"),
+    "--fresh": _Flag(dest="fresh"),
+    "--back": _Flag(dest="go_back"),
+    "--all": _Flag(dest="all_of_them"),
+}
+
+
+# ─────────────────────────────────── VERB HANDLERS ────────────────────────────────────
+# Every handler takes (verb, rest, opts) and returns the exit code — the shape COMMANDS
+# below dispatches to. `rest[0] is verb`; a handler slices `rest[1:]`, `rest[2:]` etc.
+# for its own sub-words, exactly as the code it replaces did. Nothing here changes what
+# any command does — only how main() finds it.
+
+def _v_cleanup(verb: str, rest: list[str], opts: Opts) -> int:
+    # THE NOUN OWNS ITS VERBS (ruling R10/R11): the reading pass is an explicit `read`,
+    # never a bare `journal cleanup` that silently means something else.
+    if len(rest) > 1 and rest[1] in ("read", "reading"):
+        return cmd_cleanup_read()
+    if len(rest) > 1:
+        return _refuse(f"cleanup takes no argument (got {rest[1]!r}) — `journal cleanup` for what a "
+                       "check can see, `journal cleanup read` for the half only reading finds")
+    return cmd_cleanup(opts.all_of_them)
+
+
+def _v_assign(verb: str, rest: list[str], opts: Opts) -> int:
+    n, why = _number(rest, 1, "assign", "to-do", "journal todos")
+    if why:
+        return _refuse(why)
+    who = opts.to_agent or " ".join(x for x in rest[2:] if not x.startswith("--"))
+    off = opts.off_flag or "--off" in rest
+    if not who and not off:
+        return _refuse(f'assign wants an agent: `journal assign {n} --to="<agent>"`, '
+                       f"or `journal assign {n} --off` to put it back on the list")
+    here = tracks.current(root(), _stem())
+    ok, msg = todo.assign(root(), here, n, "--off" if off else who)
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
+def _v_grant(verb: str, rest: list[str], opts: Opts) -> int:
+    return cmd_grant(" ".join(x for x in rest[1:] if x != "--off"),
+                     opts.off_flag or "--off" in rest, len(rest) == 1)
+
+
+def _v_search(verb: str, rest: list[str], opts: Opts) -> int:
+    if len(rest) < 2:
+        return _refuse("search wants a term")
+    return cmd_search(" ".join(rest[1:]), opts.all_of_them, page=opts.page)
+
+
+def _v_pin(verb: str, rest: list[str], opts: Opts) -> int:
+    if len(rest) < 2:
+        return _refuse("pin wants the claim, in one line")
+    return cmd_remember(" ".join(rest[1:]), opts.supersedes, opts.doc_ref)
+
+
+def _v_rule(verb: str, rest: list[str], opts: Opts) -> int:
+    if opts.strike_n is not None:
+        if len(rest) < 3:
+            return _refuse('rule --strike wants a number and why: journal rule --strike 2 "<why>"')
+        n, why = _number(rest, 1, "rule --strike", "rule", "journal rules")
+        return _refuse(why) if why else cmd_rule("", n, " ".join(rest[2:]))
+    if len(rest) < 2:
+        return _refuse("rule wants the ruling, in one line")
+    return cmd_rule(" ".join(rest[1:]), None, "", opts.doc_ref)
+
+
+def _v_rules(verb: str, rest: list[str], opts: Opts) -> int:
+    # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`list`/`show`
+    # call the exact same functions the old `rule`/`rule --strike` branches call, so
+    # the two spellings can never drift apart.
+    sub = rest[1] if len(rest) > 1 else ""
+    if sub == "move":
+        return _refuse("a rule binds EVERY environment, so there is nowhere to move it to. If it "
+                "only describes one line of work it was never a rule: strike it and pin it "
+                "there —\n"
+                '  journal rules strike <n> "<why>"\n'
+                '  journal pins add "<the claim>"')
+    if sub == "add":
+        said, why = _words(rest, 2, "rules add", "the ruling, in one line")
+        if why:
+            return _refuse(why)
+        long = _brief(opts.brief)
+        if long is None:
+            return _refuse(BRIEF_REFUSED)
+        return cmd_rule(" ".join(rest[2:]), None, "", opts.doc_ref, long)
+    if sub in ("amend", "replace"):
+        return cmd_body(pins.RULES, sub, rest[2:], opts.brief)
+    if sub == "strike":
+        if len(rest) > 2 and builtin.by_id(rest[2]):
+            return _refuse(f"{rest[2].upper()} is the journal's own rule, not this "
+                           "project's — it holds wherever the journal is installed, so "
+                           "striking it here would be a local opinion wearing the tool's "
+                           "authority. `builtin_rules: false` in settings.json turns them "
+                           "all off.")
+        if len(rest) < 4:
+            return _refuse('rules strike wants a rule number and why: journal rules strike 2 "<why>"')
+        n, why = _number(rest, 2, "rules strike", "rule", "journal rules")
+        return _refuse(why) if why else cmd_rule("", n, " ".join(rest[3:]))
+    if sub == "list":
+        return cmd_rules(opts.all_of_them, None, False, opts.page, opts.order)
+    if sub == "show":
+        if len(rest) < 3:
+            return _refuse("rules show wants a rule number: journal rules show 3")
+        shipped = builtin.by_id(rest[2])
+        if shipped:
+            fmt.say(fmt.title(f"RULE {shipped['id']}", sub="the journal's own, in every project"))
+            fmt.say()
+            fmt.say(fmt.wrap(shipped["fact"]))
+            fmt.say()
+            fmt.say(fmt.block(shipped["body"]))
+            return 0
+        n, why = _number(rest, 2, "rules show", "rule", "journal rules")
+        return _refuse(why) if why else cmd_claim_page(n, pins.RULES)
+    n = None
+    if len(rest) > 1:
+        try:
+            n = int(rest[1])
+        except ValueError:
+            return _refuse(f"rules wants a NUMBER with --full, got {rest[1]!r}")
+    return cmd_rules(opts.all_of_them, n, opts.full, opts.page, opts.order)
+
+
+def _v_promote(verb: str, rest: list[str], opts: Opts) -> int:
+    if len(rest) < 2:
+        return _refuse("promote wants a pin number: journal pins promote 3")
+    try:
+        return cmd_promote(int(rest[1]))
+    except ValueError:
+        return _refuse(_number(rest, 1, "promote", "pin", "journal pins")[1])
+
+
+def _v_environments(verb: str, rest: list[str], opts: Opts) -> int:
+    # `show` AND `list` STAY UNDER THE NOUN: there is no `journal show`. An environment
+    # can be named anything, `switch` and `claim` included, so `journal environments
+    # show "claim"` is how its page is read. `remove` lives only under the noun too,
+    # like `show` — a bare verb that deletes is the one spelling a mistyped name must
+    # never reach.
+    if len(rest) > 1 and rest[1] in ("show", "read"):
+        if len(rest) < 3:
+            return _refuse('environments show wants a name: journal environments show "<name>"')
+        return cmd_tracks(" ".join(rest[2:]))
+    if len(rest) == 2 and rest[1] == "list":
+        return cmd_tracks("")
+    if len(rest) > 1 and rest[1] in ("remove", "rm", "delete", "forget"):
+        if len(rest) < 3:
+            return _refuse('remove wants a name: journal environments remove "<name>"')
+        return cmd_track_remove(" ".join(rest[2:]), opts.yes_flag, opts.purge)
+    return cmd_tracks(" ".join(rest[1:]))
+
+
+def _v_strike(verb: str, rest: list[str], opts: Opts) -> int:
+    if len(rest) < 3:
+        return _refuse('strike wants a pin number and why: journal pins strike 6 "<why>"')
+    try:
+        n = int(rest[1])
+    except ValueError:
+        return _refuse(_number(rest, 1, "strike", "pin", "journal pins")[1])
+    return cmd_strike(n, " ".join(rest[2:]))
+
+
+def _v_reminders(verb: str, rest: list[str], opts: Opts) -> int:
+    # THE NOUN OWNS ITS VERBS, and the bare singular is an ALIAS of the list rather
+    # than a shortcut for `add`: `journal remind` printing the reminders is a read, and
+    # a verb whose argument is missing must never take the payload's place.
+    sub = rest[1] if len(rest) > 1 else ""
+    if sub == "add":
+        said, why = _words(rest, 2, "reminders add", 'the instruction, in one line: '
+                            'journal reminders add "<what to keep telling you>"')
+        if why:
+            return _refuse(why)
+        return cmd_remind(" ".join(rest[2:]), opts.until)
+    if sub in ("done", "retire", "strike", "stop"):
+        if len(rest) < 4:
+            return _refuse('reminders done wants a number and why: '
+                    'journal reminders done 2 "<what made it true>"')
+        n, why = _number(rest, 2, "reminders done", "reminder", "journal reminders")
+        return _refuse(why) if why else cmd_reminder_done(n, " ".join(rest[3:]))
+    if sub == "move":
+        if len(rest) < 4 or not rest[2].isdigit():
+            return _refuse('reminders move wants a number and an environment: '
+                    'journal reminders move 2 "<environment>"')
+        ok, msg = reminders.move(root(), int(rest[2]), " ".join(rest[3:]), _now())
+        fmt.say(msg, error=not ok)
+        return 0 if ok else 1
+    if sub == "list":
+        return cmd_reminders(opts.all_of_them, opts.page, opts.order)
+    if sub:
+        return _refuse(f"reminders has no {sub!r}. It takes add, done, move, list — and a "
+                "bare `journal reminders` reads them.")
+    return cmd_reminders(opts.all_of_them, opts.page, opts.order)
+
+
+def _v_pins(verb: str, rest: list[str], opts: Opts) -> int:
+    # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`promote`/
+    # `list`/`show` call the exact same functions the old bare top-level `pin`,
+    # `strike` and `promote` verbs call, so the two spellings can never drift apart.
+    sub = rest[1] if len(rest) > 1 else ""
+    if sub == "add":
+        said, why = _words(rest, 2, "pins add", "the claim, in one line")
+        if why:
+            return _refuse(why)
+        long = _brief(opts.brief)
+        if long is None:
+            return _refuse(BRIEF_REFUSED)
+        return cmd_remember(" ".join(rest[2:]), opts.supersedes, opts.doc_ref, long)
+    if sub in ("amend", "replace"):
+        return cmd_body(pins.KEY, sub, rest[2:], opts.brief)
+    if sub == "move":
+        if len(rest) < 4 or not rest[2].isdigit():
+            return _refuse('pins move wants a pin number and an environment: '
+                    'journal pins move 6 "<environment>"')
+        ok, msg = pins.move(root(), int(rest[2]), " ".join(rest[3:]), _now())
+        fmt.say(msg, error=not ok)
+        return 0 if ok else 1
+    if sub == "strike":
+        if len(rest) < 4:
+            return _refuse('pins strike wants a pin number and why: journal pins strike 6 "<why>"')
+        n, why = _number(rest, 2, "pins strike", "pin", "journal pins")
+        return _refuse(why) if why else cmd_strike(n, " ".join(rest[3:]))
+    if sub == "promote":
+        if len(rest) < 3:
+            return _refuse("pins promote wants a pin number: journal pins promote 3")
+        n, why = _number(rest, 2, "pins promote", "pin", "journal pins")
+        return _refuse(why) if why else cmd_promote(n)
+    if sub == "list":
+        return cmd_pins(opts.all_of_them, opts.page, opts.order)
+    if sub == "show":
+        if len(rest) < 3:
+            return _refuse("pins show wants a pin number: journal pins show 3")
+        n, why = _number(rest, 2, "pins show", "pin", "journal pins")
+        return _refuse(why) if why else cmd_claim_page(n, pins.KEY)
+    if len(rest) > 1 and opts.full:
+        try:
+            return cmd_pin_full(int(rest[1]))
+        except ValueError:
+            return _refuse(f"pins wants a NUMBER with --full, got {rest[1]!r}")
+    return cmd_pins(opts.all_of_them, opts.page, opts.order)
+
+
+def _v_upgrade(verb: str, rest: list[str], opts: Opts) -> int:
+    ok, msg = update.upgrade(root(), opts.from_src)
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
+def _v_update(verb: str, rest: list[str], opts: Opts) -> int:
+    # `journal update` upgrades the journal; a note on the work is `journal work
+    # update`. `journal upgrade` never carries this ambiguity, so extra words after it
+    # are simply ignored — only the shorter, overloaded spelling is checked.
+    if len(rest) > 1:
+        return _refuse('journal update upgrades the journal. Progress on the open work is:\n'
+              '  journal work update "<what moved>"')
+    return _v_upgrade(verb, rest, opts)
+
+
+def _v_work(verb: str, rest: list[str], opts: Opts) -> int:
+    sub = rest[1] if len(rest) > 1 else ""
+    if sub not in ("start", "end", "update", "await"):
+        return _refuse('journal work start|update|end|await "<words>"')
+    # --force NEEDS NO WORDS: the case it exists for is work nobody can name any more.
+    if len(rest) < 3 and not (sub == "end" and opts.force):
+        return _refuse(f'work {sub} wants the words: journal work {sub} "<the work>"')
+    words = " ".join(rest[2:])
+    if sub == "await":
+        return cmd_await(words, opts.on, opts.wait_for, opts.await_agent, opts.await_pid)
+    if sub == "update":
+        return cmd_update(words, opts.on)
+    return cmd_start(words) if sub == "start" else cmd_end(words, opts.force)
+
+
+def _v_start_end(verb: str, rest: list[str], opts: Opts) -> int:
+    # kept so a session that learned the old spelling is not stranded mid-work
+    if len(rest) < 2:
+        return _refuse(f"{verb} wants the words that name the work")
+    subject = " ".join(rest[1:])
+    return cmd_start(subject) if verb == "start" else cmd_end(subject, opts.force)
+
+
+def _v_migrate(verb: str, rest: list[str], opts: Opts) -> int:
+    if len(rest) > 1 and rest[1] in ("run", "now"):
+        out = migrate.run(root()) or ["Nothing pending."]
+        fmt.say("\n".join(out))
+        return 0
+    fmt.say(migrate.report(root()))
+    return 0
+
+
+def _v_verify(verb: str, rest: list[str], opts: Opts) -> int:
+    body, ok = verify.render(root())
+    fmt.say(body)
+    return 0 if ok else 1
+
+
+def _v_worktree(verb: str, rest: list[str], opts: Opts) -> int:
+    if len(rest) > 1 and rest[1] == "link":
+        ok, msg = _wt.link(Path(__file__).parent if Path(__file__).parent.is_symlink()
+                           else Path(__file__).resolve().parent)
+        fmt.say(msg, error=not ok)
+        return 0 if ok else 1
+    main_root = _wt.main_root(project())
+    fmt.say(f"a linked worktree of {main_root}; .journal " + ("is a symlink to its journal" if (project() / ".journal").is_symlink() else "is a COPY — `journal worktree link` fixes that")
+          if main_root else "not a linked worktree")
+    return 0
+
+
+def _v_version(verb: str, rest: list[str], opts: Opts) -> int:
+    have = update.current(root())
+    got = update.check(root(), force=True)
+    fmt.say(fmt.title(f"AGENT-JOURNAL {have}"))
+    if got.get("version") and update.newer(got["version"], have):
+        fmt.say(fmt.wrap(f"{got['version']} is available" + (f": {got['headline']}" if got.get("headline") else "")))
+        fmt.say(fmt.commands([("journal upgrade", "pull it, tests first, and print what changed")]))
+    elif got.get("version"):
+        fmt.say(fmt.wrap("This is the latest."))
+    else:
+        fmt.say(fmt.wrap("Could not reach the repository to check for a newer one."))
+    return 0
+
+
+# ─────────────────────────────────── COMMAND TABLE ────────────────────────────────────
+# Verb (and every spelling of it) -> the function that handles it. A group of aliases is
+# ONE key — a tuple of names — so `journal env`, `envs`, `environment`, `tracks`,
+# `track` are one entry with five names, not five branches; ENV_NOUNS is that tuple
+# already, reused rather than retyped. `update` and `upgrade` stay separate entries
+# because they are NOT the same behaviour (see `_v_update`), the one place a verb here
+# earns its own row instead of joining another's.
+_ALIASES: dict[tuple[str, ...], object] = {
+    ("cleanup", "tidy"): _v_cleanup,
+    ("grant", "grants"): _v_grant,
+    ("pin", "remember"): _v_pin,
+    ("todo", "todos"): lambda verb, rest, opts: cmd_todo(
+        rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,
+        opts.page, opts.order, opts.quiet),
+    ("reminders", "reminder", "remind"): _v_reminders,
+    ("start", "end"): _v_start_end,
+    ("migrate", "migrations"): _v_migrate,
+    ENV_NOUNS: _v_environments,
+}
+
+COMMANDS: dict[str, object] = {name: fn for names, fn in _ALIASES.items() for name in names}
+COMMANDS.update({
+    "assign": _v_assign,
+    "user": lambda verb, rest, opts: cmd_user(opts.back),
+    "open": lambda verb, rest, opts: cmd_open(),
+    "search": _v_search,
+    "nothing": lambda verb, rest, opts: cmd_nothing(" ".join(rest[1:])),
+    "rule": _v_rule,
+    "rules": _v_rules,
+    "promote": _v_promote,
+    "docs": lambda verb, rest, opts: cmd_docs(rest[1:], opts.brief, opts.abstract, opts.page, opts.replace, opts.order),
+    "tools": lambda verb, rest, opts: cmd_tools(rest[1:], opts.brief, opts.tool_meta, opts.page, opts.order),
+    "carry": lambda verb, rest, opts: cmd_carry(opts.fresh),
+    "claim": lambda verb, rest, opts: cmd_claim(rest[1] if len(rest) > 1 else "", " ".join(rest[2:])),
+    "prepare": lambda verb, rest, opts: cmd_prepare(" ".join(rest[1:])),
+    "loop": lambda verb, rest, opts: cmd_loop(rest[1:]),
+    "switch": lambda verb, rest, opts: cmd_switch(" ".join(rest[1:]), opts.go_back, opts.project_too, opts.sessions or None, opts.all_sessions),
+    "strike": _v_strike,
+    "pins": _v_pins,
+    "update": _v_update,
+    "upgrade": _v_upgrade,
+    "work": _v_work,
+    "verify": _v_verify,
+    "settings": lambda verb, rest, opts: cmd_settings(),
+    "worktree": _v_worktree,
+    "next": lambda verb, rest, opts: cmd_next(),
+    "version": _v_version,
+    "conversation": lambda verb, rest, opts: cmd_read(opts.back),
+})
+
+
 def main(argv: list[str]) -> int:
     # BEFORE ANY COMMAND READS THE RECORD. A record written by an older version is migrated
     # by whichever process notices first; this is the one that notices most often. Except
@@ -1612,37 +2123,6 @@ def main(argv: list[str]) -> int:
     if not (argv and argv[0] in ("migrate", "migrations")):
         for line in migrate.ensure(root()):
             print(line, file=sys.stderr)
-    back = 0
-    supersedes = None
-    all_of_them = False
-    go_back = False
-    fresh = False
-    full = False
-    wait_for = None
-    await_agent = None
-    await_pid = None
-    on = None
-    strike_n = None
-    brief = False
-    quiet = False
-    replace = False
-    off_flag = False
-    project_too = False
-    all_sessions = False
-    yes_flag = False
-    purge = False
-    force = False
-    order = fmt.DESC
-    sessions: list[str] = []
-    page = 1
-    abstract = ""
-    until = ""
-    after = ""
-    acting = ""
-    to_agent = ""
-    doc_ref = ""
-    tool_meta = {}
-    rest = []
     # HELP WORKS AFTER ANY VERB, and an unknown option is refused rather than kept as
     # words. `journal todos --help` used to add a to-do titled "--help": help was only
     # recognised as the first word, and anything else starting with `--` fell through
@@ -1669,448 +2149,49 @@ def main(argv: list[str]) -> int:
         argv, payload = argv[:cut], argv[cut + 1:]
     else:
         payload = []
+    # ONE LOOP OVER THE FLAG TABLE. `--x=value` and bare `--x` are the same shape with
+    # different fields (VALUE_FLAGS / BARE_FLAGS), looked up by the token itself — never
+    # a chain of `elif a == ...`. Adding a flag means adding a row, never a branch.
+    opts = Opts()
+    rest: list[str] = []
     for a in argv:
-        if a.startswith("--back="):
-            try:
-                back = int(a.split("=", 1)[1])
-            except ValueError:
-                fmt.say(f"--back wants a number, got {a.split('=', 1)[1]!r}", error=True)
-                return 1
-        elif a.startswith("--supersedes="):
-            try:
-                supersedes = int(a.split("=", 1)[1])
-            except ValueError:
-                fmt.say("--supersedes wants a pin number; `journal pins` numbers them", error=True)
-                return 1
-        elif a.startswith("--agent="):
-            await_agent = a.split("=", 1)[1].strip() or None
-        elif a.startswith("--pid="):
-            try:
-                await_pid = int(a.split("=", 1)[1])
-            except ValueError:
-                fmt.say(f"--pid wants a number, got {a.split('=', 1)[1]!r}", error=True)
-                return 1
-        elif a.startswith("--for="):
-            try:
-                wait_for = float(a.split("=", 1)[1])
-            except ValueError:
-                fmt.say(f"--for wants minutes, got {a.split('=', 1)[1]!r}", error=True)
-                return 1
-        elif a.startswith("--on="):
-            on = a.split("=", 1)[1]
-        elif a == "--strike":
-            strike_n = -1  # the number follows as the next word
-        elif a.startswith(("--env=", "--environment=", "--track=")):
-            pass   # applied and refused at the top of this file, before any command reads the record
-        elif a == "--off":
-            off_flag = True
-        elif a == "--replace":
-            replace = True
-        elif a == "--brief":
-            brief = True
-        elif a == "--quiet":
-            quiet = True
-        elif a == "--project":
-            project_too = True
-        elif a == "--yes":
-            yes_flag = True
-        elif a == "--purge":
-            purge = True
-        elif a == "--force":
-            force = True
-        elif a.startswith("--order="):
-            order = a.split("=", 1)[1].strip().lower()
-            if order not in fmt.ORDERS:
-                fmt.say(f"--order wants asc or desc, got {order!r}. Newest first is the "
-                        "default; --order=asc reads oldest first.", error=True)
-                return 1
-        elif a == "--all-sessions":
-            all_sessions = True
-        elif a.startswith("--session="):
-            sessions.append(a.split("=", 1)[1])
-        elif a.startswith("--abstract="):
-            abstract = a.split("=", 1)[1]
-        elif a.startswith("--until="):
-            until = a.split("=", 1)[1]
-        elif a.startswith(("--after=", "--needs=")):
-            after = a.split("=", 1)[1]
-        elif a.startswith("--as="):
-            # `--agent=` IS `work await`'s AND STAYS ITS OWN. The flag loop here is global,
-            # not per verb, so one token sets one field for every command — and a subagent
-            # running `work await --agent=<what it waits on>` while also being an agent
-            # itself would make that token mean two things in one parse. `--as=` is the
-            # subagent saying which ledger it writes; the hook checks it against the
-            # payload's real `agent_id` rather than trusting it.
-            acting = a.split("=", 1)[1]
-        elif a.startswith("--to="):
-            to_agent = a.split("=", 1)[1]
-        elif a.startswith(("--summary=", "--usage=", "--when=", "--entry=")):
-            tool_meta[a[2:].split("=", 1)[0]] = a.split("=", 1)[1]
-        elif a.startswith("--doc="):
-            doc_ref = a.split("=", 1)[1]
-        elif a.startswith("--from="):
-            pass  # read by `upgrade`
-        elif a.startswith("--page="):
-            try:
-                page = int(a.split("=", 1)[1])
-            except ValueError:
-                fmt.say("--page wants a number", error=True)
-                return 1
-        elif a == "--none":
-            after = "--none"      # `todos after <n> --none` clears the prerequisites
-        elif a == "--full":
-            full = True
-        elif a == "--fresh":
-            fresh = True
-        elif a == "--back":
-            go_back = True
-        elif a == "--all":
-            all_of_them = True
+        if a.startswith("--") and "=" in a:
+            name, val = a.split("=", 1)
+            spec = VALUE_FLAGS.get(name)
+            if spec is None:
+                return _refuse(f"unknown option {a!r}. `journal help` lists the commands and their options.")
+            if spec.dest is not None:
+                try:
+                    converted = spec.type(val)
+                except ValueError as e:
+                    return _refuse(str(e))
+                if spec.keyed:
+                    opts.tool_meta[name[2:]] = converted
+                elif spec.append:
+                    getattr(opts, spec.dest).append(converted)
+                else:
+                    setattr(opts, spec.dest, converted)
         elif a.startswith("--") and len(a) > 2:
-            fmt.say(f"unknown option {a!r}. `journal help` lists the commands and their options.",
-                  error=True)
-            return 1
+            spec = BARE_FLAGS.get(a)
+            if spec is None:
+                return _refuse(f"unknown option {a!r}. `journal help` lists the commands and their options.")
+            setattr(opts, spec.dest, spec.set)
         else:
             rest.append(a)
     rest += payload
     verb = rest[0] if rest else ""
     # THE NOUN OWNS ITS VERBS, and `environments` is a noun like every other. Ruling R11
     # keeps switch, claim and prepare as TOP-LEVEL verbs, because they are burned into
-    # hook.py and into what every session is handed at its start
-    # — but top-level was never meant to be the ONLY spelling. A reader who learned
-    # `journal todos start` and `journal pins add` looks for `journal environments switch`,
-    # and finding nothing there is the inconsistency this whole pass exists to end. Both
-    # spellings dispatch to the same function, the way `todo` and `todos` already do.
+    # hook.py and into what every session is handed at its start — but top-level was
+    # never meant to be the ONLY spelling. This rewrite has to happen before the command
+    # table is consulted: it is what turns `environments switch "x"` into `switch "x"`
+    # so the same handler runs whichever spelling was typed.
     if verb in ENV_NOUNS and len(rest) > 1 and rest[1] in ENV_VERBS:
         rest = rest[1:]
         verb = rest[0]
-    # `show` AND `list` STAY UNDER THE NOUN, because neither is a top-level verb: there is
-    # no `journal show`. An environment can be named anything, `switch` and `claim`
-    # included, so `journal environments show "claim"` is how its page is read.
-    if verb in ENV_NOUNS and len(rest) > 1 and rest[1] in ("show", "read"):
-        if len(rest) < 3:
-            fmt.say('environments show wants a name: journal environments show "<name>"', error=True)
-            return 1
-        return cmd_tracks(" ".join(rest[2:]))
-    if verb in ENV_NOUNS and len(rest) == 2 and rest[1] == "list":
-        return cmd_tracks("")
-    # `remove` LIVES ONLY UNDER THE NOUN, like `show` and `list`. There is no top-level
-    # `journal remove`, and there should not be: an environment can be named anything, and
-    # a bare verb that deletes is the one spelling a mistyped name must never reach.
-    if verb in ENV_NOUNS and len(rest) > 1 and rest[1] in ("remove", "rm", "delete", "forget"):
-        if len(rest) < 3:
-            fmt.say('remove wants a name: journal environments remove "<name>"', error=True)
-            return 1
-        return cmd_track_remove(" ".join(rest[2:]), yes_flag, purge)
-    if verb in ("cleanup", "tidy"):
-        # THE NOUN OWNS ITS VERBS (ruling R10/R11): the reading pass is an explicit `read`,
-        # never a bare `journal cleanup` that silently means something else.
-        if len(rest) > 1 and rest[1] in ("read", "reading"):
-            return cmd_cleanup_read()
-        if len(rest) > 1:
-            fmt.say(f"cleanup takes no argument (got {rest[1]!r}) — `journal cleanup` for what a "
-                    "check can see, `journal cleanup read` for the half only reading finds",
-                    error=True)
-            return 1
-        return cmd_cleanup(all_of_them)
-    if verb == "assign":
-        n, why = _number(rest, 1, "assign", "to-do", "journal todos")
-        if why:
-            return _refuse(why)
-        who = to_agent or " ".join(x for x in rest[2:] if not x.startswith("--"))
-        if not who and not (off_flag or "--off" in rest):
-            return _refuse(f'assign wants an agent: `journal assign {n} --to="<agent>"`, '
-                           f"or `journal assign {n} --off` to put it back on the list")
-        here = tracks.current(root(), _stem())
-        ok, msg = todo.assign(root(), here, n, "--off" if (off_flag or "--off" in rest) else who)
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    if verb in ("grant", "grants"):
-        return cmd_grant(" ".join(x for x in rest[1:] if x != "--off"),
-                         off_flag or "--off" in rest, len(rest) == 1)
-    if verb == "user":
-        return cmd_user(back)
-    if verb == "open":
-        return cmd_open()
-    if verb == "search":
-        if len(rest) < 2:
-            fmt.say("search wants a term", error=True)
-            return 1
-        return cmd_search(" ".join(rest[1:]), all_of_them, page=page)
-    if verb in ("pin", "remember"):
-        if len(rest) < 2:
-            fmt.say("pin wants the claim, in one line", error=True)
-            return 1
-        return cmd_remember(" ".join(rest[1:]), supersedes, doc_ref)
-    if verb == "nothing":
-        return cmd_nothing(" ".join(rest[1:]))
-    if verb == "rule":
-        if strike_n is not None:
-            if len(rest) < 3:
-                fmt.say('rule --strike wants a number and why: journal rule --strike 2 "<why>"',
-                      error=True)
-                return 1
-            n, why = _number(rest, 1, "rule --strike", "rule", "journal rules")
-            return _refuse(why) if why else cmd_rule("", n, " ".join(rest[2:]))
-        if len(rest) < 2:
-            fmt.say("rule wants the ruling, in one line", error=True)
-            return 1
-        return cmd_rule(" ".join(rest[1:]), None, "", doc_ref)
-    if verb == "rules" and len(rest) > 1 and rest[1] == "move":
-        fmt.say("a rule binds EVERY environment, so there is nowhere to move it to. If it "
-                "only describes one line of work it was never a rule: strike it and pin it "
-                "there —\n"
-                '  journal rules strike <n> "<why>"\n'
-                '  journal pins add "<the claim>"', error=True)
-        return 1
-    if verb == "rules":
-        # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`list`/`show`
-        # call the exact same functions the old `rule`/`rule --strike` branches call, so
-        # the two spellings can never drift apart. Anything else falls to the unchanged
-        # shape below: bare `rules`, or `rules <n> --full`.
-        sub = rest[1] if len(rest) > 1 else ""
-        if sub == "add":
-            said, why = _words(rest, 2, "rules add", "the ruling, in one line")
-            if why:
-                return _refuse(why)
-            long = _brief(brief)
-            if long is None:
-                fmt.say(BRIEF_REFUSED, error=True)
-                return 1
-            return cmd_rule(" ".join(rest[2:]), None, "", doc_ref, long)
-        if sub in ("amend", "replace"):
-            return cmd_body(pins.RULES, sub, rest[2:], brief)
-        if sub == "strike":
-            if len(rest) > 2 and builtin.by_id(rest[2]):
-                return _refuse(f"{rest[2].upper()} is the journal's own rule, not this "
-                               "project's — it holds wherever the journal is installed, so "
-                               "striking it here would be a local opinion wearing the tool's "
-                               "authority. `builtin_rules: false` in settings.json turns them "
-                               "all off.")
-            if len(rest) < 4:
-                fmt.say('rules strike wants a rule number and why: journal rules strike 2 "<why>"',
-                      error=True)
-                return 1
-            n, why = _number(rest, 2, "rules strike", "rule", "journal rules")
-            return _refuse(why) if why else cmd_rule("", n, " ".join(rest[3:]))
-        if sub == "list":
-            return cmd_rules(all_of_them, None, False, page, order)
-        if sub == "show":
-            if len(rest) < 3:
-                fmt.say("rules show wants a rule number: journal rules show 3", error=True)
-                return 1
-            shipped = builtin.by_id(rest[2])
-            if shipped:
-                fmt.say(fmt.title(f"RULE {shipped['id']}", sub="the journal's own, in every project"))
-                fmt.say()
-                fmt.say(fmt.wrap(shipped["fact"]))
-                fmt.say()
-                fmt.say(fmt.block(shipped["body"]))
-                return 0
-            n, why = _number(rest, 2, "rules show", "rule", "journal rules")
-            return _refuse(why) if why else cmd_claim_page(n, pins.RULES)
-        n = None
-        if len(rest) > 1:
-            try:
-                n = int(rest[1])
-            except ValueError:
-                fmt.say(f"rules wants a NUMBER with --full, got {rest[1]!r}", error=True)
-                return 1
-        return cmd_rules(all_of_them, n, full, page, order)
-    if verb == "promote":
-        if len(rest) < 2:
-            fmt.say("promote wants a pin number: journal pins promote 3", error=True)
-            return 1
-        try:
-            return cmd_promote(int(rest[1]))
-        except ValueError:
-            return _refuse(_number(rest, 1, "promote", "pin", "journal pins")[1])
-    if verb in ("todo", "todos"):  # ruling R1: `todos` is a twin alias of `todo`, both ways
-        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, after, acting, page, order, quiet)
-    if verb == "docs":
-        return cmd_docs(rest[1:], brief, abstract, page, replace, order)
-    if verb == "tools":
-        return cmd_tools(rest[1:], brief, tool_meta, page, order)
-    if verb == "carry":
-        return cmd_carry(fresh)
-    if verb == "claim":
-        return cmd_claim(rest[1] if len(rest) > 1 else "", " ".join(rest[2:]))
-    if verb in ENV_NOUNS:
-        return cmd_tracks(" ".join(rest[1:]))
-    if verb == "prepare":
-        return cmd_prepare(" ".join(rest[1:]))
-    if verb == "loop":
-        return cmd_loop(rest[1:])
-    if verb == "switch":
-        return cmd_switch(" ".join(rest[1:]), go_back, project_too, sessions or None, all_sessions)
-    if verb == "strike":
-        if len(rest) < 3:
-            fmt.say('strike wants a pin number and why: journal pins strike 6 "<why>"',
-                  error=True)
-            return 1
-        try:
-            n = int(rest[1])
-        except ValueError:
-            return _refuse(_number(rest, 1, "strike", "pin", "journal pins")[1])
-        return cmd_strike(n, " ".join(rest[2:]))
-    if verb in ("reminders", "reminder", "remind"):
-        # THE NOUN OWNS ITS VERBS (R10/R11), and the bare singular is an ALIAS of the list
-        # rather than a shortcut for `add`: `journal remind` printing the reminders is a
-        # read, and a verb whose argument is missing must never take the payload's place.
-        sub = rest[1] if len(rest) > 1 else ""
-        if sub == "add":
-            said, why = _words(rest, 2, "reminders add", 'the instruction, in one line: '
-                                'journal reminders add "<what to keep telling you>"')
-            if why:
-                return _refuse(why)
-            return cmd_remind(" ".join(rest[2:]), until)
-        if sub in ("done", "retire", "strike", "stop"):
-            if len(rest) < 4:
-                fmt.say('reminders done wants a number and why: '
-                        'journal reminders done 2 "<what made it true>"', error=True)
-                return 1
-            n, why = _number(rest, 2, "reminders done", "reminder", "journal reminders")
-            return _refuse(why) if why else cmd_reminder_done(n, " ".join(rest[3:]))
-        if sub == "move":
-            if len(rest) < 4 or not rest[2].isdigit():
-                fmt.say('reminders move wants a number and an environment: '
-                        'journal reminders move 2 "<environment>"', error=True)
-                return 1
-            ok, msg = reminders.move(root(), int(rest[2]), " ".join(rest[3:]), _now())
-            fmt.say(msg, error=not ok)
-            return 0 if ok else 1
-        if sub == "list":
-            return cmd_reminders(all_of_them, page, order)
-        if sub:
-            fmt.say(f"reminders has no {sub!r}. It takes add, done, move, list — and a "
-                    "bare `journal reminders` reads them.", error=True)
-            return 1
-        return cmd_reminders(all_of_them, page, order)
-    if verb == "pins":
-        # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`promote`/
-        # `list`/`show` call the exact same functions the old bare top-level `pin`,
-        # `strike` and `promote` verbs call, so the two spellings can never drift apart.
-        # Anything else falls to the unchanged shape below: bare `pins`, or `pins <n>
-        # --full`.
-        sub = rest[1] if len(rest) > 1 else ""
-        if sub == "add":
-            said, why = _words(rest, 2, "pins add", "the claim, in one line")
-            if why:
-                return _refuse(why)
-            long = _brief(brief)
-            if long is None:
-                fmt.say(BRIEF_REFUSED, error=True)
-                return 1
-            return cmd_remember(" ".join(rest[2:]), supersedes, doc_ref, long)
-        if sub in ("amend", "replace"):
-            return cmd_body(pins.KEY, sub, rest[2:], brief)
-        if sub == "move":
-            if len(rest) < 4 or not rest[2].isdigit():
-                fmt.say('pins move wants a pin number and an environment: '
-                        'journal pins move 6 "<environment>"', error=True)
-                return 1
-            ok, msg = pins.move(root(), int(rest[2]), " ".join(rest[3:]), _now())
-            fmt.say(msg, error=not ok)
-            return 0 if ok else 1
-        if sub == "strike":
-            if len(rest) < 4:
-                fmt.say('pins strike wants a pin number and why: journal pins strike 6 "<why>"',
-                      error=True)
-                return 1
-            n, why = _number(rest, 2, "pins strike", "pin", "journal pins")
-            return _refuse(why) if why else cmd_strike(n, " ".join(rest[3:]))
-        if sub == "promote":
-            if len(rest) < 3:
-                fmt.say("pins promote wants a pin number: journal pins promote 3", error=True)
-                return 1
-            n, why = _number(rest, 2, "pins promote", "pin", "journal pins")
-            return _refuse(why) if why else cmd_promote(n)
-        if sub == "list":
-            return cmd_pins(all_of_them, page, order)
-        if sub == "show":
-            if len(rest) < 3:
-                fmt.say("pins show wants a pin number: journal pins show 3", error=True)
-                return 1
-            n, why = _number(rest, 2, "pins show", "pin", "journal pins")
-            return _refuse(why) if why else cmd_claim_page(n, pins.KEY)
-        if len(rest) > 1 and full:
-            try:
-                return cmd_pin_full(int(rest[1]))
-            except ValueError:
-                fmt.say(f"pins wants a NUMBER with --full, got {rest[1]!r}", error=True)
-                return 1
-        return cmd_pins(all_of_them, page, order)
-    if verb == "update" and len(rest) > 1:
-        # `journal update` upgrades the journal; a note on the work is `journal work update`
-        fmt.say('journal update upgrades the journal. Progress on the open work is:\n'
-              '  journal work update "<what moved>"', error=True)
-        return 1
-    if verb == "work":
-        sub = rest[1] if len(rest) > 1 else ""
-        if sub not in ("start", "end", "update", "await"):
-            fmt.say('journal work start|update|end|await "<words>"', error=True)
-            return 1
-        # --force NEEDS NO WORDS: the case it exists for is work nobody can name any more.
-        if len(rest) < 3 and not (sub == "end" and force):
-            fmt.say(f'work {sub} wants the words: journal work {sub} "<the work>"', error=True)
-            return 1
-        words = " ".join(rest[2:])
-        if sub == "await":
-            return cmd_await(words, on, wait_for, await_agent, await_pid)
-        if sub == "update":
-            return cmd_update(words, on)
-        return cmd_start(words) if sub == "start" else cmd_end(words, force)
-    if verb in ("start", "end"):
-        # kept so a session that learned the old spelling is not stranded mid-work
-        if len(rest) < 2:
-            fmt.say(f"{verb} wants the words that name the work", error=True)
-            return 1
-        subject = " ".join(rest[1:])
-        return cmd_start(subject) if verb == "start" else cmd_end(subject, force)
-    if verb in ("migrate", "migrations"):
-        if len(rest) > 1 and rest[1] in ("run", "now"):
-            out = migrate.run(root()) or ["Nothing pending."]
-            fmt.say("\n".join(out))
-            return 0
-        fmt.say(migrate.report(root()))
-        return 0
-    if verb == "verify":
-        body, ok = verify.render(root())
-        fmt.say(body)
-        return 0 if ok else 1
-    if verb == "settings":
-        return cmd_settings()
-    if verb == "worktree":
-        if len(rest) > 1 and rest[1] == "link":
-            ok, msg = _wt.link(Path(__file__).parent if Path(__file__).parent.is_symlink()
-                               else Path(__file__).resolve().parent)
-            fmt.say(msg, error=not ok)
-            return 0 if ok else 1
-        main = _wt.main_root(project())
-        fmt.say(f"a linked worktree of {main}; .journal " + ("is a symlink to its journal" if (project() / ".journal").is_symlink() else "is a COPY — `journal worktree link` fixes that")
-              if main else "not a linked worktree")
-        return 0
-    if verb == "next":
-        return cmd_next()
-    if verb == "version":
-        have = update.current(root())
-        got = update.check(root(), force=True)
-        fmt.say(fmt.title(f"AGENT-JOURNAL {have}"))
-        if got.get("version") and update.newer(got["version"], have):
-            fmt.say(fmt.wrap(f"{got['version']} is available" + (f": {got['headline']}" if got.get("headline") else "")))
-            fmt.say(fmt.commands([("journal upgrade", "pull it, tests first, and print what changed")]))
-        elif got.get("version"):
-            fmt.say(fmt.wrap("This is the latest."))
-        else:
-            fmt.say(fmt.wrap("Could not reach the repository to check for a newer one."))
-        return 0
-    if verb in ("upgrade", "update"):
-        src = next((a.split("=", 1)[1] for a in argv if a.startswith("--from=")), None)
-        ok, msg = update.upgrade(root(), src)
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    if verb == "conversation":
-        return cmd_read(back)
+    handler = COMMANDS.get(verb)
+    if handler is not None:
+        return handler(verb, rest, opts)
     if verb:
         gone = _retired(verb)
         if gone is not None:
@@ -2120,7 +2201,7 @@ def main(argv: list[str]) -> int:
         return 1
     # `journal --back=1` alone still reads: the block and the skill said it for a day,
     # and a reader with the old words in mind must not land on a status page instead.
-    return cmd_read(back) if any(a.startswith("--back") for a in argv) else cmd_status()
+    return cmd_read(opts.back) if any(a.startswith("--back") for a in argv) else cmd_status()
 
 
 def run(argv: list[str]) -> int:
