@@ -27,8 +27,40 @@ def _git(cwd: Path, *args: str) -> str | None:
     return p.stdout.strip() if p.returncode == 0 else None
 
 
+#: THE ANSWER FOR ONE CHECKOUT, REMEMBERED. `main_root` shells out to git TWICE, and it is
+#: called from `resolve`, which runs at the import of `journal.py` and `hook.py` — so every
+#: journal command and every hook event on every tool call paid ~85ms of `git rev-parse`
+#: before its payload was even parsed, to answer a question whose answer is a fact about the
+#: checkout on disk and cannot change between two tool calls in the same second.
+#:
+#: PER PROCESS, not per session: a file cache would have to be invalidated by something, and
+#: there is nothing to invalidate it with. One process asks once, which is the whole saving —
+#: the second and third callers within a command get it free.
+_MAIN: dict = {}
+
+
 def main_root(project: Path) -> Path | None:
     """The main checkout's root if `project` is a LINKED worktree, else None."""
+    key = str(project)
+    if key in _MAIN:
+        return _MAIN[key]
+    _MAIN[key] = _main_root(project)
+    return _MAIN[key]
+
+
+def _main_root(project: Path) -> Path | None:
+    # THE FILESYSTEM ANSWERS FIRST, AND USUALLY ANSWERS NO. A linked worktree's `.git` is a
+    # FILE holding `gitdir: <path>`; a main checkout's is a directory, and a project that is
+    # not a repository at all has neither. Both of those are "not a linked worktree", and
+    # both were costing two `git rev-parse` subprocesses — about 85ms — at the import of
+    # `journal.py` and of `hook.py`, which is every command and every tool call, to learn
+    # something a single `stat` already knows.
+    #
+    # GIT IS STILL ASKED WHERE IT MATTERS. A `.git` file means this may really be a linked
+    # worktree, and only git can say where the common dir is; that path is unchanged.
+    dot = project / ".git"
+    if not dot.is_file():
+        return None
     common = _git(project, "rev-parse", "--git-common-dir")
     own = _git(project, "rev-parse", "--git-dir")
     if not common or not own:

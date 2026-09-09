@@ -166,5 +166,35 @@ _st = subprocess.run(["git", "status", "--porcelain"], cwd=str(side), capture_ou
 check("and git in the worktree sees nothing of .journal",
       [l for l in _st.splitlines() if ".journal" in l], [])
 
+# ─────────── the filesystem answers before git is asked ───────────────────────────────────
+# `resolve` runs at the import of journal.py and hook.py — every command, every tool call —
+# and shelled out to `git rev-parse` twice to learn something a stat already knows.
+import worktree as _w
+_calls = {"n": 0}
+_real = subprocess.run
+
+
+def _counted(*a, **k):
+    _calls["n"] += 1
+    return _real(*a, **k)
+
+
+subprocess.run = _counted
+try:
+    _w._MAIN.clear()
+    _w.resolve(Path(SRC))                      # the package's own checkout: a .git DIRECTORY
+    check("a main checkout asks git nothing", _calls["n"], 0)
+    _calls["n"] = 0; _w._MAIN.clear()
+    _w.main_root(Path(tempfile.mkdtemp()))     # not a repository at all
+    check("nor does a directory that is no repository", _calls["n"], 0)
+    _calls["n"] = 0; _w._MAIN.clear()
+    _w.main_root(side)                         # the linked worktree made above
+    check("but a linked worktree still asks, because only git knows the common dir",
+          _calls["n"], 2)
+    _w.main_root(side)
+    check("and asks once per process, not once per caller", _calls["n"], 2)
+finally:
+    subprocess.run = _real
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
