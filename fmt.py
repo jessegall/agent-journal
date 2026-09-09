@@ -27,6 +27,41 @@ def _tty() -> bool:
         return False
 
 
+#: HOW THE CLI IS SPELLED TO A READER, and it is not a constant because it depends on where
+#: the reader is standing.
+#:
+#: `.journal/journal.py` IS ONLY RIGHT FROM THE FOLDER THAT HOLDS THE JOURNAL. The layout
+#: this broke on is ordinary and in daily use: a root that is not a repository, holding the
+#: journal and several repositories under it. An agent working in `chronos/`, or in
+#: `chronos/.claude/worktrees/x/`, ran the command every one of these lines told it to run
+#: and got "No such file or directory" — from a system whose entire job is telling an agent
+#: what to run.
+#:
+#: SO IT IS COMPUTED, ONCE, AGAINST THE JOURNAL'S REAL LOCATION AND THE READER'S CWD. The
+#: relative spelling survives while it is honest — it is what a person recognises and what
+#: every doc says — and the absolute path takes over the moment the relative one would lie.
+_CLI: list = []
+
+
+def cli(root=None) -> str:
+    """`.journal/journal.py` when that runs from here, and the absolute path when it does not."""
+    if _CLI:
+        return _CLI[0]
+    import os
+    from pathlib import Path as _P
+    if root is None:
+        return ".journal/journal.py"
+    exe = _P(root) / "journal.py"
+    try:
+        rel = os.path.relpath(exe, _P.cwd())
+    except (OSError, ValueError):
+        rel = str(exe)
+    # A PATH THAT CLIMBS OUT OF THE CURRENT DIRECTORY IS NOT WORTH THE PRETTINESS. `../../..`
+    # is correct and unreadable, and it stops being correct the moment the reader cds.
+    _CLI.append(rel if not rel.startswith("..") else str(exe))
+    return _CLI[0]
+
+
 def bold(text: str) -> str:
     return f"\033[1m{text}\033[0m" if _tty() else text
 
@@ -174,6 +209,13 @@ def table(rows: list[tuple[str, str]], indent: int = 2, gap: int = 3, col: int =
     return "\n".join(out)
 
 
+#: THE SPELLING EVERY LINE IS AUTHORED IN. Rewritten as the text leaves, to whatever runs
+#: from where the reader is standing — see `cli`. Doing it here rather than at each of the
+#: ~40 sites is the difference between a rule and a habit: a line written tomorrow is right
+#: without its author knowing there was a question.
+CANON = ".journal/journal.py"
+
+
 def block(text: str, width: int = WIDTH) -> str:
     """What the hook hands the harness, made readable: paragraphs wrapped, commands kept.
 
@@ -183,6 +225,9 @@ def block(text: str, width: int = WIDTH) -> str:
     command breaks it and wrapping a column breaks the column.
     """
     import re
+    said = cli()
+    if said != CANON:
+        text = (text or "").replace(CANON, said)
     out = []
     for para in (text or "").split("\n"):
         # a `journal:` line is the hook's one-liner, one line by ruling: the user sees it

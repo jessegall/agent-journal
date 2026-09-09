@@ -45,6 +45,8 @@ import tags  # noqa: E402
 import context  # noqa: E402
 import docs  # noqa: E402
 import fmt  # noqa: E402
+
+fmt.cli(ROOT)   # the spelling every printed command prints, computed from where we are
 import agents  # noqa: E402
 import grants  # noqa: E402
 import nudges  # noqa: E402
@@ -2089,6 +2091,7 @@ def _hold(label: str, brief: str, text: str = "", subject: str = "") -> int:
 #: lives, so a handler cannot quietly address an event that will not listen.
 DELIVERS_CONTEXT = frozenset({
     "UserPromptSubmit", "PostToolUse", "PostToolBatch", "Stop", "SessionStart",
+    "WorktreeCreate",
 })
 
 
@@ -2583,6 +2586,50 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
     return 0
 
 
+def on_worktree_create(conf: dict, payload: dict, ctx: Ctx) -> int:
+    """Claude Code just made a worktree. Give it the journal before anyone works in it.
+
+    A WORKTREE IS ORTHOGONAL TO THE JOURNAL — it changes where the files are and never which
+    environment anyone is on — but that is a statement about the RECORD, not about whether
+    the tooling reaches the new directory. It does not, by default, and the reasons are
+    structural rather than accidental:
+
+      `.claude/settings.json` IS READ FROM THE STARTING DIRECTORY'S OWN `.claude/`, with no
+      parent-directory fallback. A worktree gets the hooks only because that file is TRACKED
+      and git checked it out — so a project whose `.journal` is gitignored, or whose settings
+      live above the repository, gets a worktree with no journal at all.
+
+      AND NOTHING ELSE FIRES. There is no hook for ENTERING an existing worktree; this event
+      is the only announcement, and it happens once, at creation.
+
+    SO THIS IS THE ONE PLACE THAT CAN ACT. It links the new worktree's `.journal` to the one
+    above it and says so once. It never overwrites: a worktree that checked out its own copy
+    is left exactly alone, because `worktree.resolve` already owns that case and deleting a
+    copy somebody may have edited is not a thing to do unasked.
+    """
+    new = payload.get("worktree_path") or payload.get("path") or payload.get("cwd") or ""
+    if not new:
+        return 0
+    place = Path(new)
+    link = place / ".journal"
+    if not place.is_dir() or link.exists() or link.is_symlink():
+        return 0            # no such directory, or it already has one — either way, nothing to do
+    target = worktree.nearest(place.parent)
+    if target is None:
+        return 0            # no journal above it: a different project, not an error
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except OSError:
+        return 0            # a filesystem that will not link is not a failure worth shouting about
+    worktree.hide_from_git(place)
+    return _context(
+        "WorktreeCreate",
+        f"journal: this worktree now shares {target.parent.name}'s journal — `.journal` here "
+        "is a symlink, so what you write is in the one record and git in this worktree sees "
+        "nothing of it. The environment is whatever the session is on; a worktree does not "
+        "change that.")
+
+
 def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
     """The session is over: its environment is free, and so is anything it lent.
 
@@ -2611,6 +2658,8 @@ HANDLERS = {
     "pre-tool-use": on_pre_tool,
     "PostToolUse": on_post_tool,
     "post-tool-use": on_post_tool,
+    "WorktreeCreate": on_worktree_create,
+    "worktree-create": on_worktree_create,
 }
 
 

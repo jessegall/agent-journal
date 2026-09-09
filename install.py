@@ -51,10 +51,43 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
-EVENTS = ("Stop", "SessionStart", "SessionEnd", "PostToolUse", "PreToolUse", "UserPromptSubmit")
-#: What goes in settings.json. `$CLAUDE_PROJECT_DIR` is quoted because a path with a space
-#: in it otherwise splits into two arguments and the hook simply never runs.
-COMMAND = '"$CLAUDE_PROJECT_DIR"/.journal/hook.py'
+#: `WorktreeCreate` FIRES WHEN CLAUDE CODE MAKES A WORKTREE — for `--worktree`, for
+#: `isolation: "worktree"`, and for a background session. It is the one moment a worktree
+#: can be handed the journal without anybody remembering to, which is exactly what a
+#: worktree's whole point makes unlikely: it exists so work can happen somewhere else.
+EVENTS = ("Stop", "SessionStart", "SessionEnd", "PostToolUse", "PreToolUse",
+          "UserPromptSubmit", "WorktreeCreate")
+#: What goes in settings.json — and it WALKS UP, because the journal is not always beside
+#: the directory Claude Code was started in.
+#:
+#: IT USED TO BE `"$CLAUDE_PROJECT_DIR"/.journal/hook.py`, which is right exactly when the
+#: session starts at the folder holding `.journal`. Two ordinary layouts break it and both
+#: are in daily use:
+#:
+#:   A ROOT THAT IS NOT A REPOSITORY, with the repositories under it — `worldwatchmarket/`
+#:   holds the journal, and `chronos/`, `site/` and `help-center/` are separate repositories
+#:   inside it. An agent working in `chronos/` has no `.journal` beside it and the hook
+#:   never fires; nothing announces that, because a hook that is not registered is silent by
+#:   definition.
+#:
+#:   A WORKTREE, including the ones Claude Code makes itself under `.claude/worktrees/`.
+#:   Three levels below a repository that is itself below the journal.
+#:
+#: So the command walks up from wherever it starts until it finds an installation, and execs
+#: it. `$CLAUDE_PROJECT_DIR` is still the starting point and still quoted — a path with a
+#: space in it otherwise splits into two arguments and the hook simply never runs — but it
+#: is now the first place looked rather than the only one. `${CLAUDE_PROJECT_DIR:-$PWD}`
+#: because a harness that does not set it at all should still work.
+#:
+#: BOUNDED, AND SILENT WHEN THERE IS NOTHING. Forty levels is far above any real project,
+#: and exiting 0 with no output is what a hook does when it has nothing to say — a journal
+#: that is not installed above you is not an error, it is a different project.
+COMMAND = (
+    'd="${CLAUDE_PROJECT_DIR:-$PWD}"; n=0; '
+    'while [ -n "$d" ] && [ "$d" != "/" ] && [ "$n" -lt 40 ]; do '
+    'if [ -x "$d/.journal/hook.py" ]; then exec "$d/.journal/hook.py"; fi; '
+    'd=$(dirname "$d"); n=$((n+1)); done; exit 0'
+)
 #: WHICH FILES MUST BE EXECUTABLE — asked of the files, not of a list beside them. It was a
 #: hand-kept tuple of sixteen names, and it went stale the day a suite was deleted: install
 #: reported "test_delegate.py is missing" about a file nobody wanted any more. A list that
@@ -252,20 +285,27 @@ def wire(check: bool) -> list[str]:
         blocks = data["hooks"].setdefault(ev, [])
         if not isinstance(blocks, list):
             raise SystemExit(f"  ! {f}: hooks.{ev} is not a list, refusing to touch it")
-        already = any(
-            "hook.py" in str(h.get("command", ""))
-            for b in blocks
-            if isinstance(b, dict)
-            for h in (b.get("hooks") or [])
-            if isinstance(h, dict)
-        )
-        if already:
+        # OURS IS ANYTHING THAT RUNS `hook.py`, AND IT IS REWRITTEN, NOT LEFT ALONE. This
+        # only ever checked whether SOMETHING mentioning hook.py was wired and then skipped
+        # the event — so a project installed before the command learned to walk up would
+        # have kept the old one through every upgrade, for ever, and the breakage it fixes
+        # is invisible: a hook that is not registered says nothing by definition. The
+        # projects that most need this change are exactly the ones already installed.
+        ours = [h for b in blocks if isinstance(b, dict)
+                for h in (b.get("hooks") or [])
+                if isinstance(h, dict) and "hook.py" in str(h.get("command", ""))]
+        if ours and all(h.get("command") == COMMAND for h in ours):
             done.append(f"  = {ev} already wired")
+            continue
+        if ours:
+            for h in ours:
+                h["command"] = COMMAND
+            done.append(f"  ~ {ev} rewired — the old command did not look above its own folder")
             continue
         blocks.append({"hooks": [{"type": "command", "command": COMMAND}]})
         done.append(f"  + {ev} wired")
 
-    if not check and any(d.startswith("  +") for d in done):
+    if not check and any(d.startswith(("  +", "  ~")) for d in done):
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(json.dumps(data, indent=2) + "\n")
     return done

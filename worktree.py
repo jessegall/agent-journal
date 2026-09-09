@@ -25,6 +25,41 @@ from pathlib import Path
 #: it is not in.
 
 
+#: HOW HIGH TO WALK BEFORE GIVING UP. A project is never forty directories deep, and a
+#: bounded loop cannot hang on a symlink cycle or a mount that never reaches `/`.
+_UP = 40
+
+
+def nearest(start: Path) -> Path | None:
+    """The closest `.journal/` at or above `start`, or None. The one way a journal is found.
+
+    A PROJECT IS NOT ALWAYS A REPOSITORY, AND THE JOURNAL IS NOT ALWAYS BESIDE ONE. The real
+    shape this was written for:
+
+        worldwatchmarket/        no git here at all — but this is where .journal lives
+          chronos/               a repository
+            .claude/worktrees/…  Claude Code's own worktrees, three levels down
+          site/                  another repository
+          site-shopify-fix/      a linked worktree of `site`, sitting as a sibling
+
+    Every one of those is a place an agent works, and every one of them belongs to the
+    journal at the top. Locating it by git — the only way this module knew — answers
+    correctly for exactly one of them, because four of the five are not the repository the
+    journal sits beside, and the top one is not a repository at all.
+
+    WALKING UP ANSWERS ALL FIVE, and needs no git, no remote and no assumption about layout.
+    It is also what a person does: the journal is the nearest one above you.
+    """
+    here = start if start.is_dir() else start.parent
+    for _ in range(_UP):
+        if (here / ".journal" / "journal.py").is_file():
+            return here / ".journal"
+        if here.parent == here:
+            break
+        here = here.parent
+    return None
+
+
 def _git(cwd: Path, *args: str) -> str | None:
     import subprocess
     try:
@@ -86,7 +121,7 @@ _ARTIFACTS = ("runtime", "__pycache__")
 def _dirty(project: Path, root: Path) -> bool:
     """Does this copy hold anything a delete would lose?
 
-    JUDGED BY WALKING, NOT BY ASKING GIT ALONE. The exclude written by `_hide_from_git`
+    JUDGED BY WALKING, NOT BY ASKING GIT ALONE. The exclude written by `hide_from_git`
     hides untracked files under .journal from `git status`, so a copy with a new file
     would read as clean and be deleted. So: a tracked file modified (git knows), or any
     file present that git does not track and that is not a runtime artifact.
@@ -107,7 +142,7 @@ def _dirty(project: Path, root: Path) -> bool:
     return False
 
 
-def _hide_from_git(project: Path) -> None:
+def hide_from_git(project: Path) -> None:
     """After the symlink: git in this worktree must never see .journal as changed.
 
     THE SYMLINK REPLACES A TRACKED DIRECTORY, so without this git sees every tracked file
@@ -150,7 +185,7 @@ def resolve(root: Path) -> tuple[Path, str]:
             import shutil
             shutil.rmtree(root)
             root.symlink_to(target, target_is_directory=True)
-            _hide_from_git(project)
+            hide_from_git(project)
             return target, (f"journal: this is a worktree of {main.name}; its checked-out copy of .journal was "
                             f"replaced with a symlink to the main checkout's, so both share one record.")
         except OSError as e:
@@ -175,6 +210,6 @@ def link(root: Path) -> tuple[bool, str]:
         shutil.rmtree(keep)
     root.rename(keep)
     root.symlink_to(target, target_is_directory=True)
-    _hide_from_git(project)
+    hide_from_git(project)
     return True, (f".journal now links to {target}\n  the old copy is at .journal.copy — delete it once "
                   "nothing in it is missed")
