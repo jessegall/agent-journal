@@ -20,17 +20,24 @@ nothing moves it, and no other line of the package asks whether an actor is a su
 one place that ever asks is the door in `hook.main`, and it asks once.
 
 WHAT A GRANTED SUBAGENT CAN TOUCH, measured rather than asserted: its full write repertoire
-— `work start`, `pins add`, `todos add`, `reminders add` — changes these files and no others:
+— `work start`, `todos add`, `todos start`, `todos report` — changes these files and no
+others:
 
-    environments/<lent>/work.json
-    environments/<lent>/pins.json
-    environments/<lent>/reminders.json
+    environments/<lent>/agents/<its own id>/work.json
     environments/<lent>/todo/NNN-*.md
 
-Nothing shared. Not `record.json`, not another environment, not the bindings. That is the
-whole property, and it is why `rules`, `docs` and `tools` are refused above rather than
-merely discouraged: each of them writes somewhere every session reads, and allowing any one
-of them would be the single exception that makes the sentence above untrue.
+Nothing shared. Not `record.json`, not another environment, not the bindings, and not
+another agent's ledger. That is the whole property, and it is why `rules`, `docs` and
+`tools` are refused rather than merely discouraged: each writes somewhere every session
+reads, and allowing one would be the single exception that makes the sentence untrue.
+
+PINS AND REMINDERS ARE INHERITED AND NOT WRITTEN, which is a different reason and the
+user's own ruling. They are not shared across environments — a pin belongs to one
+environment exactly as work does — so this is not about blast radius. It is about
+PROVENANCE: a pin is re-read in full at the top of every compaction by every session that
+binds here, and nothing revisits it, so a claim whose reasoning nobody in the main
+conversation saw would stand in the highest-authority position the system has, forever. The
+lent agent reads them and reports; the session that dispatched it decides what is kept.
 
 AND NO HIERARCHY. There is no parent field on an environment. Five agents argued it and the
 evidence went the other way: this codebase has never kept a field inert — `docs.track` was
@@ -46,6 +53,11 @@ from pathlib import Path
 import state
 
 KEY = "granted"
+
+
+def _now() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 #: VERBS A SUBAGENT MAY NEVER RUN, granted or not — each with the reason it may not, because
 #: there are two different reasons and one sentence for both would be wrong about one of them.
@@ -67,11 +79,32 @@ _BINDS_EVERYTHING = ("a rule binds every environment, for every session, and you
 _THE_PROJECT_S = ("docs and tools are the PROJECT's — every environment reads them and every "
                   "session runs them — and you were lent one environment. Report what you "
                   "found; the agent that dispatched you decides what the project keeps")
+#: THE INHERITED ONES, AND THIS IS THE USER'S RULING, NOT AN INFERENCE. A lent agent reads
+#: the environment's pins and reminders and writes neither: "it will have all the pins, it
+#: cannot create pins itself, but it will inherit the pins from the parent."
+#:
+#: THE REASON IS PROVENANCE. A pin is re-read in full at the top of every compaction, in the
+#: highest-authority position this system has, by every session that ever binds to that
+#: environment — and nothing revisits it. A claim written by an actor whose reasoning nobody
+#: in the main conversation saw is a fact of unknown origin sitting in that position
+#: forever. A reminder is worse: the user wrote every one of them, and seeing it come back
+#: is how they know it landed. An agent that adds one is putting words in their mouth.
+#:
+#: WHAT IT DOES INSTEAD IS NOT A LESSER THING. It reports, and the session that dispatched
+#: it — which has the conversation, and the user in it — decides what the record keeps.
+_INHERITED = ("a {noun} is inherited, never written, by a lent agent: it is re-read by every "
+              "session that binds to this environment and nothing revisits it, so a claim "
+              "whose reasoning nobody saw would stand in the record's highest-authority "
+              "position forever. Report what you found and let the agent that dispatched "
+              "you decide what is kept — `--env` reads are never refused")
 NEVER = {
     "switch": _MOVES_A_SESSION, "claim": _MOVES_A_SESSION, "prepare": _MOVES_A_SESSION,
     "grant": _MOVES_A_SESSION, "environments": _MOVES_A_SESSION,
     "rule": _BINDS_EVERYTHING, "rules": _BINDS_EVERYTHING,
     "docs": _THE_PROJECT_S, "tools": _THE_PROJECT_S,
+    "pins": _INHERITED.format(noun="pin"), "pin": _INHERITED.format(noun="pin"),
+    "reminders": _INHERITED.format(noun="reminder"),
+    "reminder": _INHERITED.format(noun="reminder"),
     # THE NOUN SPELLINGS OF THE SAME LIFECYCLE VERBS. `journal environments switch "x"` is
     # the documented twin of `journal switch "x"`, so refusing one and not the other would
     # be refusing a spelling rather than an act.
@@ -104,9 +137,18 @@ def grant(root: Path, stem: str, name: str) -> tuple[bool, str]:
     name = state.slug(name)
     if not name:
         return False, 'grant what? `journal grant "<environment>"`'
-    if name not in tracks._all(root):
-        return False, (f"no environment is called {name!r} — `journal prepare \"{name}\"` makes "
-                       "one, and `journal environments` lists them")
+    # LENDING MAKES THE ENVIRONMENT IT LENDS. This refused an unknown name and pointed at
+    # `prepare`, which CREATES AND SWITCHES — so handing out three environments meant
+    # prepare, switch back, prepare, switch back, prepare, switch back: six moves of a
+    # session that was never going anywhere, to do a thing whose whole definition is "this
+    # session does not move". The refusal was correct about the state and wrong about the
+    # intent. A name nobody has used before, given to `grant`, is a request for a new
+    # environment to lend — so it is made, and the answer says so rather than pretending
+    # it was already there.
+    fresh = name not in tracks._all(root)
+    if fresh:
+        with state.locked(root):
+            tracks.create(root, name, at=_now())
     if not stem:
         return False, ("a grant belongs to a session, and this process is not in one — run it "
                        "from the session that will dispatch the subagent")
@@ -114,7 +156,7 @@ def grant(root: Path, stem: str, name: str) -> tuple[bool, str]:
     if name in have:
         return True, _briefing(name, already=True)
     state.put(root, KEY, have + [name], stem=stem)
-    return True, _briefing(name)
+    return True, _briefing(name, fresh=fresh)
 
 
 def revoke(root: Path, stem: str, name: str = "") -> tuple[bool, str]:
@@ -198,21 +240,30 @@ def _flag_in(command: str, prefixes: tuple) -> str:
     return ""
 
 
-def _briefing(name: str, already: bool = False) -> str:
+def _briefing(name: str, already: bool = False, fresh: bool = False) -> str:
     """What the dispatcher must pass on, verbatim. The whole point of the command.
 
     IT PRINTS THE SENTENCE RATHER THAN DESCRIBING IT, because the dispatcher's job is to
     copy it into the prompt, and a sentence somebody paraphrases is a sentence that loses
     the flag the entire mechanism turns on.
     """
-    head = (f"`{name}` is already lent to this session's subagents." if already
-            else f"`{name}` is lent to this session's subagents. This session has not moved.")
+    head = (f"`{name}` is already lent to this session's subagents." if already else
+            (f"`{name}` is a new environment, made and lent to this session's subagents. "
+             "This session has not moved." if fresh else
+             f"`{name}` is lent to this session's subagents. This session has not moved."))
+    # EVERY EXAMPLE HERE IS A WRITE THE AGENT MAY ACTUALLY MAKE. It used to offer
+    # `pins add` — which a lent agent is refused, by the user's ruling that pins are
+    # inherited and never written by one. A briefing that teaches a forbidden command
+    # teaches the agent to hit a wall on its first useful act, and it is copied verbatim
+    # into the prompt, so the error arrives with the dispatcher's own authority behind it.
     return (head + "\n\n  TELL THE AGENT, IN ITS PROMPT:\n"
             f'    You work on your own journal: environment `{name}`. Every journal command\n'
             f'    you run must carry --env="{name}", e.g.\n'
             f'      .journal/journal.py --env="{name}" work start "<what you are doing>"\n'
-            f'      .journal/journal.py --env="{name}" pins add "<what you found>"\n'
+            f'      .journal/journal.py --env="{name}" todos report <n> "<how it was done>"\n'
             "    Without the flag your writes are refused, because your shell carries the\n"
-            "    dispatching session's id and would file under its name.\n\n"
+            "    dispatching session's id and would file under its name.\n"
+            f'    You INHERIT this environment\'s pins and reminders — `--env="{name}" pins`\n'
+            "    reads them — and write neither: report what you found instead.\n\n"
             f'  read what it wrote: `journal environments "{name}"`\n'
             f'  take it back:       `journal grant --off "{name}"`')

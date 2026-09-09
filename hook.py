@@ -1261,17 +1261,17 @@ def _journal_write(payload: dict) -> str | None:
             continue
         i = j - 1
         nxt = toks[i + 2] if i + 2 < len(toks) else ""
-        # `docs` and `todo` are read verbs too: `docs`, `docs 4`, `todo`, `todo 3` change nothing.
-        if verb == "docs" and nxt not in DOCS_WRITES:
-            continue
-        if verb == "tools" and nxt not in ("add", "set", "remove", "index"):
-            continue  # reading or running a tool is not writing the journal
-        if verb in ("todo", "todos") and (not nxt or nxt.isdigit() or nxt.startswith("-")):
-            continue
-        # THE PLURAL NOUNS ARE READS ON THEIR OWN. `journal pins` lists them and `journal
-        # rules 3 --full` reads one; only a verb after the noun changes anything, and a
-        # subagent must keep every read it had.
-        if verb in ("pins", "rules") and nxt not in PIN_WRITES:
+        # A NOUN IS A READ UNTIL A VERB AFTER IT SAYS OTHERWISE. `journal pins` lists them,
+        # `journal docs 4` reads one, `journal todos` shows the list — none of them change
+        # anything, and a subagent must keep every read it had.
+        #
+        # THIS WAS FIVE `if verb == …: continue` BRANCHES AND A NOUN WAS MISSING FROM IT.
+        # `reminders` was never listed, so `journal reminders` — a listing — has counted as
+        # a WRITE since the noun existed: gated behind open work, and refused outright to a
+        # lent agent that was told to read what it inherited. A table cannot have that kind
+        # of hole silently, because the nouns and their write-verbs are in one place and a
+        # noun with no entry is visible.
+        if verb in NOUN_WRITES and not NOUN_WRITES[verb](nxt):
             continue
         return verb
     return None
@@ -1281,6 +1281,38 @@ DOCS_WRITES = frozenset({"add", "part", "replace", "strike", "final", "draft", "
                          "supersede", "index", "attach", "detach", "move"})
 #: What turns `pins`/`rules` from a listing into a change.
 PIN_WRITES = frozenset({"add", "strike", "promote", "move"})
+TODO_WRITES = frozenset({"add", "start", "done", "drop", "strike", "skip", "ask", "answer",
+                         "reopen", "move", "block", "unblock", "after", "needs", "report",
+                         "amend", "replace", "auto", "from-commit", "from_commit"})
+REMINDER_WRITES = frozenset({"add", "done", "retire", "strike", "stop", "move"})
+TOOL_WRITES = frozenset({"add", "set", "remove", "index"})
+
+def _titled(nxt: str) -> bool:
+    """`journal todo "park this"` writes; `journal todo`, `todo 3` and `todo --all` read.
+
+    THE ONE NOUN WHOSE BARE FORM TAKES A PAYLOAD. Everything after `todos` that is not a
+    number, a flag or a known verb is a TITLE, and filing it is a write — so this noun
+    cannot be a list of verbs like the others, and pretending it could was how a `journal
+    todo "park this"` from a subagent stopped being refused.
+    """
+    return bool(nxt) and not nxt.isdigit() and not nxt.startswith("-")
+
+
+#: EVERY NOUN THAT IS A READ ON ITS OWN, AND WHAT TURNS IT INTO A WRITE — as a predicate on
+#: the word after the noun, because one noun's answer is not a list. One table, so a noun
+#: missing from it is visible rather than silently classified as a write, which is what
+#: happened to `reminders` for as long as the noun has existed: `journal reminders`, a
+#: listing, has counted as a write, gated behind open work and refused to a lent agent that
+#: was told to read what it inherited.
+NOUN_WRITES = {
+    "docs": DOCS_WRITES.__contains__,
+    "tools": TOOL_WRITES.__contains__,
+    "todo": _titled, "todos": _titled,
+    "pins": PIN_WRITES.__contains__, "rules": PIN_WRITES.__contains__,
+    "reminders": REMINDER_WRITES.__contains__,
+    "reminder": REMINDER_WRITES.__contains__,
+    "remind": REMINDER_WRITES.__contains__,
+}
 
 
 def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:

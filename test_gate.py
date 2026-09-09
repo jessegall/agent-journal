@@ -275,5 +275,26 @@ out = fire_dd("PreToolUse", tool_name="Write", tool_input={"file_path": str(dd /
 check("and the next tool call is NOT denied for it — the context rung never gates by default",
       "CONTEXT IS" in out, False)
 
+# ─────────── a noun is a read until a verb says otherwise ──────────────────────────────────
+# This was five `if verb == …: continue` branches, and `reminders` was missing from all of
+# them — so `journal reminders`, a listing, counted as a WRITE for as long as the noun has
+# existed: gated behind open work, and refused outright to a lent agent told to read what it
+# inherits. A table makes a missing noun visible; a chain of branches never can.
+import hook as _h
+check("every noun that reads on its own is in the table",
+      sorted(set(_h.NOUN_WRITES)),
+      sorted({"docs", "tools", "todo", "todos", "pins", "rules",
+              "reminders", "reminder", "remind"}))
+check("and every one of them is a verb the gate can actually see",
+      [n for n in _h.NOUN_WRITES if n not in _h.JOURNAL_WRITES], [])
+for _noun, _read, _write in (("pins", "", "add"), ("rules", "3", "strike"),
+                             ("reminders", "", "add"), ("docs", "4", "add"),
+                             ("tools", "", "add")):
+    check(f"`journal {_noun} {_read}`.strip() reads and `{_noun} {_write}` writes",
+          (_h.NOUN_WRITES[_noun](_read), _h.NOUN_WRITES[_noun](_write)), (False, True))
+check("`todos` is the one noun whose bare form takes a title, so text is a write",
+      [_h.NOUN_WRITES["todos"](x) for x in ("", "3", "--all", "park this", "start")],
+      [False, False, False, True, True])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

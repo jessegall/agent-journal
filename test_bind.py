@@ -321,23 +321,28 @@ def sub(cmd):
 
 J2 = str(groot / "journal.py")
 check("ungranted, a subagent's write is refused",
-      "deny" in sub(f'{J2} pins add "from a subagent"'), True)
+      "deny" in sub(f'{J2} work start "from a subagent"'), True)
 gP.cli("grant", "scout", session="gs1")
 check("granted but unnamed, still refused — the flag is the subagent's half of the grant",
-      ("deny" in sub(f'{J2} pins add "x"'),
-       "needs the environment it was lent" in testkit.denied(sub(f'{J2} pins add "x"'))),
+      ("deny" in sub(f'{J2} work start "x"'),
+       "needs the environment it was lent" in testkit.denied(sub(f'{J2} work start "x"'))),
       (True, True))
+# A FORBIDDEN VERB IS REFUSED FOR ITS OWN REASON, BEFORE THE ENVIRONMENT IS EVEN CONSIDERED.
+# Otherwise an agent that forgot `--env` would be told to add the flag and then refused
+# again for the real reason — two walls where one honest sentence belongs.
+check("and a verb it may never run says so, flag or no flag",
+      "inherited, never written" in testkit.denied(sub(f'{J2} pins add "x"')), True)
 # A REFUSAL MUST NOT OFFER A WAY ROUND ITSELF. This one used to list every environment the
 # session had lent and suggest the first: a trial subagent read the list, picked another
 # dispatch's environment, and filed eight pins into it. It was obeying a good message that
 # asked for the wrong thing.
-_wrong = testkit.denied(sub(f'{J2} --env="default" pins add "x"'))
+_wrong = testkit.denied(sub(f'{J2} --env="default" work start "x"'))
 check("naming an environment nobody lent is refused too", bool(_wrong), True)
 check("and the refusal names no other environment, and says to report rather than choose",
       ("scout" in _wrong, "not something to work around" in _wrong, "Report to the agent" in _wrong),
       (False, True, True))
 check("granted AND named: it writes",
-      "deny" in sub(f'{J2} --env="scout" pins add "what I found"'), False)
+      "deny" in sub(f'{J2} --env="scout" work start "what I am doing"'), False)
 check("its reads were never gated", "deny" in sub(f"{J2} pins"), False)
 # THE ONE THE ADVERSARIAL PASS FOUND: a subagent has no session, so `switch` would move the
 # DISPATCHER's — the ground under the agent that sent it.
@@ -354,8 +359,25 @@ check("a rule binds every environment, so a subagent may not write one",
       True)
 check("but what belongs to the lent environment goes through",
       [bool(testkit.denied(sub(f'{J2} --env="scout" {v}'))) for v in
-       ('pins add "a finding"', 'work start "digging"', 'todos add "later"')],
-      [False, False, False])
+       ('work start "digging"', 'todos add "later"')],
+      [False, False])
+# THE USER'S RULING: a lent agent INHERITS this environment's pins and reminders and writes
+# neither. Not for blast radius — a pin belongs to one environment exactly as work does —
+# but for PROVENANCE: a pin is re-read in full at every compaction by every session that
+# binds here, and nothing revisits it, so a claim whose reasoning nobody in the main
+# conversation saw would stand in the record's highest-authority position forever.
+for _v in ('pins add "a finding"', 'pin "a finding"', 'reminders add "do this always"'):
+    check(f"a lent agent may not write `{_v.split()[0]}`",
+          "inherited, never written" in testkit.denied(sub(f'{J2} --env="scout" {_v}')), True)
+check("but it READS them freely — that is what inheriting means",
+      [bool(testkit.denied(sub(f'{J2} --env="scout" {v}'))) for v in ("pins", "reminders")],
+      [False, False])
+# AND THE BRIEFING TEACHES ONLY WHAT IT MAY DO. It offered `pins add` as its example, which
+# is refused — a wall on the agent's first useful act, carrying the dispatcher's authority.
+_brief = gP.cli("grant", "scout", session="gs1")[1]
+check("the dispatch sentence names no command the agent would be refused",
+      ("pins add" in _brief, "work start" in _brief, "INHERIT" in _brief),
+      (False, True, True))
 # C2 — THE TWO LISTS CANNOT DRIFT APART. A verb named as forbidden that the gate cannot
 # reach is a refusal nothing enforces: five of them were, and a granted subagent could have
 # evicted a live session with `journal claim`.
@@ -368,13 +390,13 @@ for v, spelling in (("claim", f'{J2} --env="scout" claim "scout" "mine"'),
                     ("prepare", f'{J2} --env="scout" prepare "another"')):
     check(f"granted, a subagent is still refused `{v}`", bool(testkit.denied(sub(spelling))), True)
 # L3 — what it wrote survives revocation; a revoke closes a door, it does not undo
-before = gP.cli("--env=scout", "pins", session="gs1")[1]
+before = gP.cli("--env=scout", "todos", session="gs1")[1]
 gP.cli("grant", "--off", "scout", session="gs1")
-check("revoked: refused again", "deny" in sub(f'{J2} --env="scout" pins add "x"'), True)
-check("and what it wrote is untouched", gP.cli("--env=scout", "pins", session="gs1")[1], before)
+check("revoked: refused again", "deny" in sub(f'{J2} --env="scout" work start "x"'), True)
+check("and what it wrote is untouched", gP.cli("--env=scout", "todos", session="gs1")[1], before)
 # L1 — the grant dies with the session, which was a sentence before it was a fact
 gP.cli("grant", "scout", session="gs1")
-check("granted again", "deny" in sub(f'{J2} --env="scout" pins add "y"'), False)
+check("granted again", "deny" in sub(f'{J2} --env="scout" todos add "y"'), False)
 gP.hook("SessionEnd", session_id="gs1", transcript_path=str(gpath), reason="exit")
 check("and SessionEnd takes it back — a resumed session lends nothing it is not watching",
       "deny" in sub(f'{J2} --env="scout" pins add "z"'), True)

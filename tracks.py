@@ -261,6 +261,30 @@ def _all(root: Path) -> dict:
     return got
 
 
+def create(root: Path, *names: str, at: str = "") -> None:
+    """Bring an environment into existence in the registry, if it is not there already.
+
+    THE ONE PLACE AN ENVIRONMENT STARTS. It lived inside `switch`, which meant the only way
+    to make one was to MOVE A SESSION TO IT — so lending three environments to subagents
+    cost six session moves, to do a thing whose definition is "this session does not move".
+    Making it and going there are two acts; this is the first, and `switch` and `grant` both
+    call it rather than each knowing how a registry entry is shaped.
+
+    NOT LOCKED HERE. Both callers already hold the record lock across a larger read-modify-
+    write, and taking it again inside would deadlock on the one they hold.
+    """
+    data = state._record(root)
+    held = data.setdefault("tracks", {})
+    if not isinstance(held, dict):
+        held = data["tracks"] = {}
+    before = len(held)
+    for name in names:
+        if name:
+            held.setdefault(name, {"at": at})
+    if len(held) != before:
+        state._write(state.record_file(root), data)
+
+
 def choices(root: Path) -> list[str]:
     """Every environment a session could bind to, the project's start environment first.
 
@@ -380,13 +404,9 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
         fresh = name not in tracks
         start = state.get(root, CURRENT, DEFAULT) or DEFAULT
         if fresh or start not in state._record(root).get("tracks", {}):
-            data = state._record(root)
-            held_ = data.setdefault("tracks", {})
-            if not isinstance(held_, dict):
-                held_ = data["tracks"] = {}
-            held_.setdefault(start, {"at": at})   # the environment left behind exists by name too
-            held_.setdefault(name, {"at": at})     # the registry says it exists; its folder holds it
-            state._write(state.record_file(root), data)
+            # the environment left behind exists by name too; the registry says both do,
+            # and each one's folder holds what belongs to it
+            create(root, start, name, at=at)
         held = tracks.get(name, {})
         # READ THE ENVIRONMENT'S OWN FILES, not the registry. 1.34.0 moved pins and work out
         # of `tracks.<name>` into `environments/<name>/`, and updated every call site that
