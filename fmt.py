@@ -398,6 +398,25 @@ def say(out="", *, error: bool = False) -> None:
     print(text, file=sys.stderr if error else sys.stdout)
 
 
+def notice(text: str) -> None:
+    """`journal: <text>` — one line, always to stderr, for something that happened off to
+    the side of whatever a command is answering: a mark that could not be filed because
+    there was no transcript to file it under, a lock that timed out and was proceeded
+    past, a tool that failed to run.
+
+    SIX PLACES SPELLED THIS DIFFERENTLY. Most wrote `journal: ...` to stderr by hand, each
+    with its own idea of the wording; `tools.py` wrote the `  ! ` error marker instead —
+    a second implementation of what `say(error=True)` already does, for a message that was
+    never part of any command's `Out`. Both are the same thing: a warning, one line, aside
+    from the command's own output. This is its one shape now.
+
+    `block` is still the gate — a `journal:` line is kept whole rather than wrapped, same as
+    every other line this package marks that way — so a long interpolated reason still
+    reads as one notice instead of breaking across two.
+    """
+    print(block(f"journal: {text}"), file=sys.stderr)
+
+
 DESC, ASC = "desc", "asc"
 ORDERS = (DESC, ASC)
 
