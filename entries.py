@@ -59,6 +59,10 @@ def rows(root: Path, store: Store, *, all_of_them: bool = False, cap: int | None
          page: int = 1, order: str = "desc") -> tuple[list, int]:
     """(the entries as rows, how many were left off). The listing every numbered store shares.
 
+    ONE LOOP, THREE NOUNS, AND NOTHING ABOUT WHAT EACH IS VISIBLE TO. A pin and a
+    reminder each belong to one environment; a rule belongs to the project. That is
+    decided by where each is stored, never by who renders it.
+
     IT WAS WRITTEN OUT ONCE PER NOUN and had drifted exactly as `retire` and `move` had:
     the same enumerate, the same paging, the same struck-keeps-its-number rule, the same
     `fmt.numbered` call, in two functions that differed only in which fields went into the

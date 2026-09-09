@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.38.1 — the duplicate 1.38.0 said it had removed
+
+`reminders.render` was still the hand-written 33-line listing that 1.38.0's entry claimed
+had been replaced by the shared loop. The new `listing` was added beside it and the old
+body was never deleted, so the module carried both and the tests passed because `render`
+still worked — nothing asserted it went through `entries.rows`. It does now, and a test
+asserts the module holds no second copy.
+
+AND THE WORD "SHARED" IS WRONG FOR CODE IN THIS PACKAGE. Three docstrings said the listing
+was "shared with pins and rules", where "shared" has a settled meaning: a rule is visible on
+every environment, a pin and a reminder are not. Nothing about scope changed — `state.TRACKED`
+still puts pins, work and reminders in the environment's folder and `rules` still lives in
+the record, untouched by a switch — but a docstring that borrows the vocabulary of the data
+model to describe a refactor is a docstring that will be believed. They say "one loop, three
+nouns" now, and say outright that it decides nothing about visibility.
+
 ## 1.38.0 — output is described, never formatted at the call site
 
 `fmt.say` was one exit and no shape. Every one of its 546 callers assembled its own string

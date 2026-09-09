@@ -196,5 +196,18 @@ carry = s10.j("carry").stdout
 check("handed to a fresh session at its start", R in carry, True)
 check("with the condition it is judged against", "the release is cut" in carry, True)
 
+# THE LISTING IS ONE LOOP, AND SCOPE IS NOT WHAT THAT MEANS. A reminder belongs to one
+# environment exactly as a pin does; a rule belongs to the project. Sharing `entries.rows`
+# says nothing about any of that, and the first version of this refactor left the old copy
+# in the file while the changelog said it was gone.
+import inspect as _i, reminders as _r, pins as _p, state as _s
+check("reminders has no second copy of the listing",
+      ("entries.rows" in _i.getsource(_r.listing), "listing(" in _i.getsource(_r.render),
+       "fmt.numbered" in _i.getsource(_r.render)), (True, True, False))
+check("and neither does pins", "entries.rows" in _i.getsource(_p.listing), True)
+check("a reminder is bound to its environment, like a pin, and a rule is not",
+      (sorted(_s.TRACKED), "rules" in _s.TRACKED, "rules" in _s.IN_RECORD),
+      (["pins", "reminders", "work"], False, True))
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

@@ -188,40 +188,25 @@ def block(root: Path) -> str:
 
 def listing(root: Path, *, all_of_them: bool = False, cap: int | None = None,
             page: int = 1, order: str = fmt.DESC):
-    """(the rows, how many were left off). See `pins.listing` — the same funnel."""
+    """(the rows, how many were left off). The same LOOP as `pins.listing`, which is a
+    fact about the code: a reminder belongs to one environment, exactly like a pin."""
     return entries.rows(root, _STORE, all_of_them=all_of_them, cap=cap, page=page, order=order)
 
 
 def render(root: Path, *, all_of_them: bool = False, width: int = 88,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
-    """The list as a person reads it. The number is the position in the FULL list.
+    """The list as text, for the callers that want a finished string rather than rows.
 
-    A retired reminder keeps its number and is simply not shown, for the reason a struck
-    pin does: renumbering would make "reminder 3" mean a different instruction after every
-    retirement, and the number is what `done` and `move` take.
+    THE LOOP IS `entries.rows`, NOT A SECOND COPY OF IT. That is a statement about CODE and
+    about nothing else: a reminder is bound to its environment exactly as a pin is, and
+    neither is visible from another one. What pins, rules and reminders have in common is
+    that each is a numbered store whose listing enumerates, pages, keeps a retired entry's
+    number and prints facts beneath the text — one loop, three nouns, and the only thing any
+    of them supplies is which facts.
     """
-    items = _all(root)
-    if not items:
+    if not _all(root):
         return "  Nothing is being repeated."
-    shown = [(i, r) for i, r in enumerate(items, 1) if all_of_them or not r.get("done")]
-    if not shown:
+    items, left = listing(root, all_of_them=all_of_them, cap=cap, page=page, order=order)
+    if not items:
         return "  Nothing is being repeated. `journal reminders --all` shows the retired ones."
-    shown, left = fmt.paged(shown, cap, page, order)
-    out = []
-    for i, r in shown:
-        gone = r.get("done")
-        meta = []
-        if gone:
-            meta.append(f"retired: {gone}")
-        when = age(r.get("at", ""))
-        if when:
-            meta.append(when)
-        if r.get("moved_from"):
-            meta.append(f"moved from {r['moved_from']}")
-        # THE CONDITION IS META, NOT TEXT. `fmt.numbered` rewraps the claim, so a newline
-        # inside it is lost and the condition runs on into the instruction as one sentence
-        # — which is exactly the misreading that would retire the wrong reminder.
-        if r.get("until"):
-            meta.append(f"until: {r['until']}")
-        out.append(fmt.numbered(i, r["text"], " · ".join(meta), struck=bool(gone), width=width))
-    return "\n\n".join(out) + fmt.more(KEY, left, page, order)
+    return fmt.render(fmt.Out(items=tuple(items))) + fmt.more(KEY, left, page, order)

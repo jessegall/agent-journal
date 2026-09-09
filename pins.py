@@ -350,8 +350,13 @@ def listing(root: Path, *, all_of_them: bool = False, key: str = KEY,
 
 def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int = 88,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
-    """The list as a person reads it. See `entries.rows` — the loop is shared with every
-    other numbered store, and only what goes BENEATH an entry is this module's."""
+    """The list as a person reads it. The loop is `entries.rows`, used by every numbered
+    store; only what goes BENEATH an entry is this module's.
+
+    NOTHING HERE IS ABOUT SCOPE. A pin belongs to ONE environment and a rule to the whole
+    project — `state.TRACKED` puts pins in the environment's folder and `rules` stays in the
+    record, and `tracks.switch` moves the one and never the other. Using the same renderer
+    changes neither, and the word "shared" belongs to that distinction, not to this one."""
     import entries
     if not _all(root, key):
         return "  No rules stand." if key == RULES else "  Nothing is pinned."
