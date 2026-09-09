@@ -1241,6 +1241,13 @@ def cmd_next() -> int:
     stem = _stem()
     here = tracks.current(root(), _stem())
     held = _st.get(root(), "next_text", "", stem=stem) if stem else ""
+    # A SNAPSHOT IS SHOWN ONLY WHILE IT IS STILL TRUE. The hold recorded which to-dos were
+    # open when it wrote this; if that has changed, the text may be offering finished work
+    # and the live answer below is the honest one.
+    if held and _st.get(root(), "next_rows", None, stem=stem) not in (
+            None, sorted(t["n"] for t in todo.open_items(root(), here))):
+        held = ""
+        _st.put(root(), "next_text", "", stem=stem)
     if held:
         # A HOLD'S DETAILS ARE READ ONCE, AND THE SNAPSHOT DIES WITH THE READING. This text
         # was written by the hold that sent you here, and it describes the list AS IT WAS AT
