@@ -1553,9 +1553,21 @@ def cmd_grant(name: str, off: bool, listing: bool) -> int:
     switches, and from the deleted `delegate`, which bound the session so that its
     subagents' writes landed there by accident of sharing an id. This lends, and says so
     out loud in a sentence the dispatcher is meant to paste into the prompt.
+
+    BARE, IT LENDS THE ENVIRONMENT YOU ARE ON, because that is the ordinary case and it was
+    the one thing this command could not do. The user's ruling: a dispatched agent works its
+    dispatcher's environment, with its own ledger under it — a worktree changes where the
+    files are and never which environment anyone is on. Requiring a name made the unusual
+    case (a separate line of work for the agent) the only case, and this session lent three
+    brand-new environments to three agents that afternoon because naming one was the only
+    way to lend anything.
+
+    `--list` IS THE LISTING NOW, and `journal grants` still is: the bare form had to give up
+    one of its two meanings, and "show me what I lent" is the one a reader can ask for by
+    another name.
     """
     stem = _stem()
-    if listing or (not name and not off):
+    if listing:
         lent = grants.granted(root(), stem)
         fmt.say(fmt.Out(
             title="GRANTED", sub=f"{len(lent)} lent by this session",
@@ -1563,9 +1575,12 @@ def cmd_grant(name: str, off: bool, listing: bool) -> int:
                  "This session has lent nothing. A subagent's journal writes are refused.",
             items=tuple(fmt.Item(title=n, text="its subagents may write there with --env")
                         for n in lent),
-            footer='`journal grant "<environment>"` lends one; `--off` takes it back. '
+            footer='`journal grant` lends the environment you are on; `journal grant '
+                   '"<other>"` lends a different one, and `--off` takes one back. '
                    "A grant belongs to this session and dies with it."))
         return 0
+    if not name and not off:
+        name = tracks.current(root(), stem)
     if off:
         ok, msg = grants.revoke(root(), stem or "", name)
     else:
@@ -1697,6 +1712,7 @@ class Opts:
     quiet: bool = False
     replace: bool = False
     off_flag: bool = False
+    list_flag: bool = False
     project_too: bool = False
     all_sessions: bool = False
     yes_flag: bool = False
@@ -1806,6 +1822,8 @@ VALUE_FLAGS: dict[str, _Flag] = {
 BARE_FLAGS: dict[str, _Flag] = {
     "--strike": _Flag(dest="strike_n", set=-1),    # the number follows as the next word
     "--off": _Flag(dest="off_flag"),
+    #: `grant` LENDS BARE now, so its listing needed a spelling of its own — `_v_grant`.
+    "--list": _Flag(dest="list_flag"),
     "--replace": _Flag(dest="replace"),
     "--brief": _Flag(dest="brief"),
     "--quiet": _Flag(dest="quiet"),
@@ -1855,8 +1873,12 @@ def _v_assign(verb: str, rest: list[str], opts: Opts) -> int:
 
 
 def _v_grant(verb: str, rest: list[str], opts: Opts) -> int:
-    return cmd_grant(" ".join(x for x in rest[1:] if x != "--off"),
-                     opts.off_flag or "--off" in rest, len(rest) == 1)
+    # `grants` IS THE LISTING SPELLING, and so is `--list`. Bare `grant` lends the
+    # environment this session is on; the plural noun reads as a question about what stands,
+    # which is exactly what it now answers.
+    listing = opts.list_flag or verb == "grants"
+    return cmd_grant(" ".join(x for x in rest[1:] if x not in ("--off", "--list")),
+                     opts.off_flag or "--off" in rest, listing)
 
 
 def _v_search(verb: str, rest: list[str], opts: Opts) -> int:

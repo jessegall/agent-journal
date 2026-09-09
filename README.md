@@ -364,11 +364,18 @@ the checked-out copy of `.journal/` is replaced with a symlink to the main check
 so both read and write one record; a copy with local changes is left alone and the main
 journal is used instead, until `journal worktree link` replaces it.
 
-A subagent working in a worktree of its own is covered by the same mechanism, and nothing
-extra is needed for it: no session start fires for a subagent, so the linking happens on
-its **first tool call** — the same event that tells it its name. Its ledger, its claim on a
-to-do and its report all land in the main checkout's record. The worktree decides where its
-files are and the grant decides what it may write; the two are independent.
+**A worktree is orthogonal to the journal.** It is not an environment, it does not hold
+one, and it never decides one. It exists so several agents can work one project at once
+without touching each other's files — a fact about the filesystem, not about the record.
+Whoever enters a worktree keeps the environment they were on, and an agent dispatched from a
+session works that session's environment, with its own ledger under it.
+
+So "an agent with its own journal" and "an agent in a worktree" are two different things,
+and they were once conflated: the ledger comes from the GRANT, the files come from the
+worktree. A subagent in a worktree of its own needs nothing extra — no session start fires
+for a subagent, so the linking happens on its **first tool call**, the same event that tells
+it its name, and its ledger, its claim on a to-do and its report all land in the main
+checkout's record.
 
 ## Settings
 

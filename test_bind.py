@@ -509,6 +509,23 @@ check("the briefing wears it beside the id, which is still what the gate decides
                                                                          "Flag and command tables")),
       True)
 
+# BARE, `grant` LENDS THE ENVIRONMENT YOU ARE ON. The user's ruling: a dispatched agent
+# works its dispatcher's environment, with its own ledger under it — a worktree changes
+# where the files are and never which environment anyone is on. Requiring a name made the
+# unusual case the only case, and this session lent three brand-new environments in an
+# afternoon because naming one was the only way to lend anything.
+aP.cli("switch", "here-now", session="as1")
+check("bare, it lends the one this session is on",
+      "`here-now` is lent" in aP.cli("grant", session="as1")[1], True)
+aP.cli("grant", "--off", "here-now", session="as1")
+check("and the listing moved to a spelling of its own, both of them",
+      ("GRANTED" in aP.cli("grants", session="as1")[1],
+       "GRANTED" in aP.cli("grant", "--list", session="as1")[1]), (True, True))
+check("a named one still lends a separate line of work",
+      "`elsewhere` is a new environment" in aP.cli("grant", "elsewhere", session="as1")[1], True)
+aP.cli("grant", "--off", "elsewhere", session="as1")
+aP.cli("switch", "default", session="as1")
+
 # `journal lent` — THE DELIBERATE CHECK-IN. An agent used to learn its name as a side effect
 # of whatever tool it happened to run first. This is it asking, and the CLI cannot answer:
 # `agent_id` reaches the hook and never the process, which is the collision the whole grant

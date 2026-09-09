@@ -4,6 +4,30 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.41.0 — a worktree is orthogonal, and `grant` lends the environment you are on
+
+THE RULING, and it settles a question that had been open since worktrees and subagents were
+built in the same week: A WORKTREE IS ORTHOGONAL TO THE JOURNAL. It is not an environment,
+it does not hold one, and it never decides one. It exists so several agents can work one
+project at once without touching each other's files — a fact about the filesystem, not about
+the record. Whoever enters a worktree keeps the environment they were on, and an agent
+dispatched from a session works that session's environment with its own ledger under it.
+
+"An agent with its own journal" and "an agent in a worktree" were conflated and are two
+different things: THE LEDGER COMES FROM THE GRANT, THE FILES COME FROM THE WORKTREE. The two
+meet without knowing about each other, which is why nothing had to change when they did —
+`worktree.py` names neither environments nor tracks, and never did.
+
+    journal grant            lend the environment you are on
+    journal grant "<other>"  lend a different one — a separate line of work for the agent
+    journal grants           what this session has lent; `grant --list` is the same
+
+BARE, IT LENDS WHERE YOU ARE, because that is the ordinary case and it was the one thing the
+command could not do. Requiring a name made the unusual case the only case: this session lent
+three brand-new environments to three agents in an afternoon because naming one was the only
+way to lend anything at all. The bare form had to give up one of its two meanings, and "show
+me what I lent" is the one a reader can ask for by another name.
+
 ## 1.40.2 — an unstartable list names every reason it is unstartable
 
 The stop's "nothing on the list can be picked up" counted two of the four ways a row can be
