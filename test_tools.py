@@ -110,8 +110,14 @@ check("remove retires under struck/ with the reason",
 # what a session is handed
 out = fire("SessionStart", source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-check("the start block carries the tools catalogue with usage",
-      ("TOOLS OF THIS PROJECT" in ctx, "mover" in ctx, "journal tools run mover Old New" in ctx, "Lists the callers" in ctx), (True, True, True, False))
+# THE DOORWAY NAMES THE COUNT AND THE COMMAND; `journal carry` carries the catalogue. A
+# tool is discoverable on demand — an agent that wonders whether a script exists runs the
+# command — so it is exactly the kind of section a doorway points at rather than inlines.
+check("the doorway counts the tools and names the command",
+      ("TOOLS OF THIS PROJECT" in ctx, "journal tools" in ctx), (False, True))
+check("and `journal carry` carries the catalogue with its usage",
+      [x in j("carry")[1] for x in ("TOOLS OF THIS PROJECT", "mover", "journal tools run mover Old New")],
+      [True, True, True])
 code, out = j()
 check("the status page has a tools row", "tools" in out and "2 catalogued" in out, True)
 # gates

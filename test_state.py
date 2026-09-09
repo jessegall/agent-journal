@@ -588,7 +588,10 @@ check("with none waiting the start block says nothing about to-dos", "TO DO" in 
 subprocess.run([J, "todo", "third"], env=env, capture_output=True, text=True, timeout=60)
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-check("the start block lists what is waiting", ("TO DO on this environment" in ctx, "third" in ctx), (True, True))
+# THE DOORWAY COUNTS, `journal carry` LISTS. The block was 14,996 characters in a real
+# project against a 10,000 ceiling, so the harness replaced the whole of it with a file path.
+check("the doorway counts what is waiting and names the command",
+      ("journal todos" in ctx, "third" in ctx), (True, False))
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                       tool_input={"command": '.journal/journal.py todo "park this"'})
 check("a subagent's todo is refused", "from a subagent is refused" in out, True)
@@ -818,7 +821,7 @@ check("auto on is set on the record, per environment",
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("the start block says auto is on and to pick up the next one",
-      ("AUTO MODE IS ON" in ctx, "todos start <n>" in ctx, "not an instruction" in ctx), (True, True, False))
+      ("AUTO IS ON" in ctx, "todos start <n>" in ctx, "not an instruction" in ctx), (True, True, False))
 code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
 check("auto on: an idle stop is held, naming the next to-do",

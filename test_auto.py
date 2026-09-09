@@ -245,16 +245,21 @@ check("then the auto hold", label, AUTO_NEXT + "1 to-do(s) waiting")
 d = project(); s1 = Session(d, "s1")
 s1.journal("todo", "chore one"); s1.journal("todo", "chore two"); s1.journal("todo", "auto", "on")
 ctx = s1.start()
-check("the start block says auto is on and how to proceed",
-      ("AUTO MODE IS ON" in ctx, "todos start <n>" in ctx, "not an instruction" in ctx), (True, True, False))
+# THE DOORWAY SAYS AUTO IS ON, AND THAT IS THE ONE LISTING IT REPLACES WITH AN ORDER.
+# Everything else the block used to inline is readable on demand; a standing order is not
+# readable at all — a session in auto that is not told so simply stops.
+check("the doorway says auto is on and how to proceed",
+      ("AUTO IS ON" in ctx, "todos start <n>" in ctx, "not an instruction" in ctx), (True, True, False))
+check("and it does NOT list the to-dos — the count and the command stand in for them",
+      ("chore one" in ctx, "journal todos" in ctx), (False, True))
 s1.stop()
 s2 = Session(d, "s2")
 ctx = s2.start()
-check("a fresh session gets the same block", "AUTO MODE IS ON" in ctx, True)
+check("a fresh session gets the same block", "AUTO IS ON" in ctx, True)
 label, text = s2.stop()
 check("and its first idle stop is held, its own marks being clean", label, AUTO_NEXT + "2 to-do(s) waiting")
 ctx = s1.start("compact")
-check("after a compaction the block still says auto is on", "AUTO MODE IS ON" in ctx, True)
+check("after a compaction the block still says auto is on", "AUTO IS ON" in ctx, True)
 label, text = s1.stop()
 check("and its next stop is held, as every stop is with auto on", label, AUTO_NEXT + "2 to-do(s) waiting")
 s1.journal("todo", "start", "1"); s1.journal("end", "chore one")
@@ -294,7 +299,13 @@ check("the list shows the question under the to-do", ("waits on the user" in out
 code, out = s.journal()
 check("the status page counts it", "3 waiting, 1 on the user, auto on" in out, True)
 ctx = s.start()
-check("the start block lists the question for the user", ("waiting on the user: Empty" in ctx, "1 of these wait on the user" in ctx), (True, True))
+# THE QUESTIONS DO NOT CROSS, THE FACT THAT THERE ARE SOME DOES. A question's text is
+# readable on demand; injecting it charged the window for something the agent could not act
+# on until the user had spoken anyway.
+check("the doorway counts what waits on the user rather than quoting it",
+      ("waiting on the user: Empty" in ctx, "journal todos" in ctx), (False, True))
+check("and `journal carry` still has it in full",
+      "waiting on the user: Empty" in s.journal("carry")[1], True)
 s.journal("todo", "start", "2"); s.journal("end", "plain chore")
 s.journal("todo", "ask", "3", "keep or drop the abstract Wizard factory?")
 label, text = s.stop()
@@ -431,7 +442,14 @@ check("the status page counts it", "2 waiting, 1 answered, auto on" in out, True
 code, out = s.journal("todo", "1")
 check("the brief shows the exchange", ("THE USER ANSWERED" in out, "→ None — it matches" in out), (True, True))
 ctx = s.start()
-check("the start block leads with the answered one", ("ANSWERED by the user: None" in ctx, "pick those up first" in ctx), (True, True))
+# AN ANSWERED TO-DO IS THE USER SAYING TO DO IT, so the doorway must say there IS one — a
+# count of 2 waiting and a count of 2 waiting with 1 answered look identical otherwise. The
+# ANSWER itself is what broke the block: two of them measured 7,014 characters.
+check("the doorway says an answered one exists, and does not quote the answer",
+      ("ANSWERED by the user: None" in ctx, "has ANSWERED" in " ".join(ctx.split())), (False, True))
+check("and `journal carry` still leads with it in full",
+      ("ANSWERED by the user: None" in s.journal("carry")[1],
+       "pick those up first" in s.journal("carry")[1]), (True, True))
 s.journal("todo", "start", "1")
 check("started: the answer stays on the record", todo._get(d / ".journal", "default", 1)[0].get("answer"), "None — it matches Option::none")
 label, text = s.stop()

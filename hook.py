@@ -2127,8 +2127,33 @@ INLINE_BUDGET = 7_000
 #: is kept by arithmetic rather than by whoever last guessed how long a rule is.
 CARRY_CAPS = {"rules": 40, "pins": 30, "docs": 20, "tools": 20, "todos": 25}
 
+#: THE TWO DEPTHS, AND ONE BUILDER FOR BOTH.
+#:
+#: THE BLOCK WAS TRYING TO BE A BRIEFING AND IT IS A DOORWAY. Measured in a real project:
+#: 14,996 characters against the harness's documented 10,000 ceiling, so the whole thing was
+#: replaced with a FILE PATH — after every compaction that project's agent was handed a path
+#: instead of the record, which is the one delivery this package exists to make. 7,014 of
+#: those characters were two answered to-dos printing the user's answer in full, and no cap
+#: could reach them: `CARRY_CAPS` bounds the NUMBER of entries and nothing bounded the text
+#: inside one, so the halving loop hit its floor and gave up.
+#:
+#: THE USER'S RULING: say where the session is, say what the commands are, say how many of
+#: each thing there is — and let the agent read what it needs. Reminders go out entirely
+#: (they fire at every stop, so injecting them here pays twice), the answered to-dos and the
+#: questions waiting on the user go out, rules and docs keep their last few. Pins stay, at
+#: three, for the one reason that does not apply to anything else: a pin is by definition the
+#: fact the reader does not know it is missing, so an agent that feels no gap never runs
+#: `journal pins`.
+#:
+#: NOT A SECOND FUNCTION. A separately written short version is the thing that drifts from
+#: the long one — this package has paid for that twice in a day — so the depth is an argument
+#: and the sections, their order and their wording are one piece of code.
+BRIEF, FULL = "brief", "full"
+DOORWAY_CAPS = {"rules": 3, "pins": 3, "docs": 3, "tools": 0, "todos": 0}
 
-def carried(source: str = "compact", stem: str | None = None, unbound: bool = False) -> str:
+
+def carried(source: str = "compact", stem: str | None = None, unbound: bool = False,
+            depth: str = BRIEF) -> str:
     """The start block, built to fit. See `_carried` for what goes in it.
 
     IT TIGHTENS UNTIL IT FITS. The caps are halved and rebuilt until the block is inside the
@@ -2137,6 +2162,10 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
     three entries: past that the block stops being a hand-over and becomes a footnote, and
     the reader is better served by the honest over-budget notice at the end.
     """
+    if depth == BRIEF:
+        # THE DOORWAY IS BOUNDED BY WHAT IT LEAVES OUT, not by a loop. It is short because
+        # the long half is a command away, so there is nothing to tighten.
+        return _carried(source, stem, unbound, DOORWAY_CAPS, BRIEF)
     caps = dict(CARRY_CAPS)
     for _ in range(6):
         block = _carried(source, stem, unbound, caps)
@@ -2151,7 +2180,8 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
     return block
 
 
-def _carried(source: str, stem: str | None, unbound: bool, caps: dict) -> str:
+def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
+             depth: str = FULL) -> str:
     """Exactly what a session is handed at its start, built without writing anything.
 
     THE INJECTED BLOCK IS THE ONE THING NOBODY COULD LOOK AT. It is assembled inside a
@@ -2219,12 +2249,14 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict) -> str:
         shipped = builtin.carry()
         if shipped:
             parts.append(shipped)
-    # REMINDERS LEAD. A rule is a constraint and a pin is a fact; a reminder is the thing
-    # the user has already had to say more than once, and a start — or the far side of a
-    # compaction — is the exact moment it was in danger of being lost.
-    repeated = reminders.block(ROOT)
-    if repeated:
-        parts.append(repeated)
+    # REMINDERS ARE NOT INJECTED AT A START. They fire at every stop and every
+    # `reminder_every` tool calls, so putting them here pays for the same text twice — and
+    # they were the second-largest thing in a block that had stopped being delivered at all.
+    # The count below names them; the stop says them.
+    if depth == FULL:
+        repeated = reminders.block(ROOT)
+        if repeated:
+            parts.append(repeated)
     # RULES BEFORE PINS. A rule binds every environment, so a reader meets the constraints
     # before the facts of the one environment they happen to be on.
     ruled = pins.carry(ROOT, source, key=pins.RULES, cap=caps["rules"])
@@ -2235,7 +2267,10 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict) -> str:
     catalogued = docs.carry(ROOT, cap=caps["docs"])
     if catalogued:
         parts.append(catalogued + "\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.")
-    kept = tools.carry(ROOT, cap=caps["tools"])
+    # A CAP OF ZERO MEANS THE SECTION IS NOT IN THIS DEPTH AT ALL. Passed through, it
+    # printed the heading and a bare "… and 23 more of 23" under it — a section announcing
+    # that it had shown the reader nothing.
+    kept = tools.carry(ROOT, cap=caps["tools"]) if caps["tools"] else ""
     if kept:
         parts.append(kept)
     pinned = pins.carry(ROOT, source, cap=caps["pins"])
@@ -2246,9 +2281,14 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict) -> str:
         parts.append("STILL OPEN, from this or an earlier session:\n"
                      + "\n".join(f"  - {w['subject']}" for w in standing)
                      + "\n`journal open` shows where each got to.")
-    waiting = todo.carry(ROOT, here, cap=caps["todos"])
+    waiting = todo.carry(ROOT, here, cap=caps["todos"]) if caps["todos"] else ""
     if waiting:
         parts.append(waiting)
+    # THE COUNTS ARE THE MECHANISM OF THE DOORWAY. A number beside a command is a fact an
+    # agent acts on; a section silently left out is one it never learns about. Each row
+    # names the command that reads that store in full, so it reads only what it needs.
+    if depth == BRIEF:
+        parts.append(_counts(here))
     if source == "compact":
         parts.append(
             "THE SUMMARY YOU ARE HOLDING DROPPED WHAT WAS DECIDED. Before you touch anything:\n"
@@ -2258,6 +2298,65 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict) -> str:
             "The transcript lost nothing. Read it rather than half-remembering it."
         )
     return "\n\n".join(parts)
+
+
+def _todo_note(here: str) -> str:
+    """What the to-do count needs said beside it — and it is never the to-dos themselves.
+
+    THE ANSWERED ONES ARE WHY THIS ROW MATTERS. A to-do the user has answered is them saying
+    to do it, and it is the one thing in the record that is actionable now and invisible from
+    a count: 117 waiting and 2 answered look identical unless the second number is said. The
+    ANSWERS are what broke the block — two of them were 7,014 characters — so what crosses
+    here is that they exist and the command that reads them.
+
+    AND AUTO IS AN INSTRUCTION, NOT A LISTING. A session in auto that is not told so simply
+    stops, which is the one omission a doorway cannot afford: everything else it leaves out
+    is readable on demand, and this one is not readable at all — it is a standing order.
+    """
+    # TWO FACTS THAT BOTH APPLY. Auto is a standing order and an answered to-do is the user
+    # saying to do that one — an early return on the first dropped the second, and an
+    # answered row under auto is the most actionable thing in the record.
+    answered_n = len(todo.answered(ROOT, here))
+    asks_n = len(todo.asking(ROOT, here))
+    said = []
+    if todo.auto(ROOT, here):
+        said.append("AUTO IS ON — work the list without asking: `todos start <n>`, solve it, "
+                    "`work end`, repeat. `todos auto off` stops it")
+    if answered_n:
+        said.append(f"{answered_n} the user has ANSWERED — theirs saying to do it, read those first")
+    elif asks_n:
+        said.append(f"{asks_n} of them wait on the user")
+    return "; ".join(said) or "delayed work, not an instruction to start any of it"
+
+
+def _counts(here: str) -> str:
+    """How much of each store stands, and the one command that reads it.
+
+    ONLY WHAT IS NOT ALREADY ABOVE. Rules, pins and docs show their most recent few inline,
+    each with its own count and its own "reads the rest" line, so repeating them here would
+    print the same number twice and teach the reader that this block is filler. What is left
+    is exactly what the doorway drops: the reminders, the to-dos, the open work, the tools.
+
+    ROWS WITH NOTHING BEHIND THEM ARE NOT PRINTED. A zero teaches the reader these lines are
+    noise, and the next line they skip is the one that mattered. `journal carry` is last
+    because "I would rather read it all at once" is a real preference, and cheaper offered
+    than discovered.
+    """
+    import reminders as rem
+    rows = [
+        (len(rem.live(ROOT)), "journal reminders", "said again at every stop; not repeated here"),
+        (len(todo.open_items(ROOT, here)), "journal todos", _todo_note(here)),
+        (len(tools._all(ROOT)), "journal tools",
+         "scripts this project keeps; run them, do not rewrite them"),
+    ]
+    have = [(f"{n:>4}  {cmd}", what) for n, cmd, what in rows if n]
+    # THE HEADING BELONGS TO THE ROWS. With none of them standing it announced an empty
+    # list and then offered `journal carry` under it — a heading over nothing, which is the
+    # exact shape that teaches a reader to skip headings.
+    if not have:
+        return ""
+    return ("WHAT ELSE STANDS HERE — the number is the command's, not a summary:\n"
+            + fmt.commands(have + [("      journal carry", "all of it, in full, in one read")]))
 
 
 def _loop_line(conf: dict) -> str:
@@ -2544,9 +2643,14 @@ def main(raw: str | None = None) -> int:
             told = state.get(ROOT, "agents_told", [], stem=_parent_of(payload)) or []
             if aid not in told:
                 state.put(ROOT, "agents_told", told + [aid], stem=_parent_of(payload))
-                agents.touch(ROOT, lent[0], aid)
-                agents.dir_of(ROOT, lent[0], aid).mkdir(parents=True, exist_ok=True)
-                return _context("PostToolUse", agents.briefing(lent[0], aid))
+                # THE LEDGER GOES WHERE THE AGENT ACTUALLY WRITES, and until it names an
+                # environment there is nothing to create. With one grant standing that is
+                # knowable now; with several it is not, and `state.use_agent` makes the
+                # folder on the first write anyway.
+                for env in (lent if len(lent) == 1 else ()):
+                    agents.touch(ROOT, env, aid)
+                    agents.dir_of(ROOT, env, aid).mkdir(parents=True, exist_ok=True)
+                return _context("PostToolUse", agents.briefing(lent, aid))
         verb = _journal_write(payload) if handler is on_pre_tool else ""
         if verb:
             command = str((payload.get("tool_input") or {}).get("command", ""))

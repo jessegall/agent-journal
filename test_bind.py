@@ -463,6 +463,22 @@ check("a subagent is told its own name on its first tool call",
       ("YOU ARE AGENT `a3f9`" in _told, '--as="a3f9"' in _told), (True, True))
 check("and only once", _agent("a3f9", "PostToolUse", tool_name="Bash",
                              tool_input={"command": "ls"}, tool_response={"stdout": ""}).strip(), "")
+# IT NEVER NAMES AN ENVIRONMENT IT IS GUESSING AT. Measured in this package's own dogfood
+# run: three agents dispatched to three environments were each told, on their first tool
+# call, that they worked under a FOURTH — an older grant that happened to be `lent[0]`. The
+# agent id was right and the environment was wrong, stated with the hook's full authority
+# against a dispatch prompt that had just named the correct one. It is the same failure the
+# refusal already had and had already been fixed for.
+aP.cli("grant", "second-loan", session="as1")
+_two = testkit.flat((json.loads(aP.hook("PostToolUse", session_id="as1", transcript_path=str(apath),
+    agent_id="c4d2", tool_name="Bash", tool_input={"command": "ls"}, tool_response={"stdout": ""})[1])
+    .get("hookSpecificOutput") or {}).get("additionalContext", ""))
+check("with several lent, the briefing names none of them and says the dispatch does",
+      ("shared" in _two, "second-loan" in _two, "your dispatch named" in _two,
+       "YOU ARE AGENT `c4d2`" in _two),
+      (False, False, True, True))
+aP.cli("grant", "--off", "second-loan", session="as1")
+
 check("a second agent is told its own",
       "YOU ARE AGENT `b7c1`" in _agent("b7c1", "PostToolUse", tool_name="Bash",
                                        tool_input={"command": "ls"}, tool_response={"stdout": ""}), True)

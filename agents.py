@@ -85,19 +85,45 @@ def age(root: Path, track: str, agent: str) -> str:
     return f"last wrote {secs / 3600:.1f} h ago"
 
 
-def briefing(track: str, agent: str) -> str:
+def briefing(lent: list, agent: str) -> str:
     """What the hook says to a subagent on its first tool call: its own name, and the flags.
 
     IT IS TOLD, RATHER THAN ASKED TO REMEMBER. The dispatcher pastes the grant's sentence
     into the prompt and that names the environment; this names the AGENT, which the
     dispatcher could not have known when it wrote the prompt. Both halves have to reach the
     command line, and only one of them can come from a human.
+
+    AND IT NEVER GUESSES WHICH ENVIRONMENT. This took `lent[0]` — the first environment the
+    session happened to have lent — and stated it as fact. Measured, in this package's own
+    dogfood run: three agents were dispatched to `flags`, `listings` and `leaks` while an
+    older grant still stood, and every one of them was told, on its first tool call, that it
+    was working under `cleanup-run`. The agent id was right and the environment was wrong,
+    in a sentence written with the hook's full authority, contradicting the dispatch prompt
+    that had just named the correct one.
+
+    THIS IS THE SAME FAILURE THE REFUSAL ALREADY HAD, in a second place. That one listed the
+    other lent environments and suggested one, and a trial agent picked a different
+    dispatch's and filed eight pins into it. The lesson was written down — a message that
+    names an environment nobody told this agent to use is a message that will be obeyed —
+    and then this function did it again by picking an index.
+
+    So: one grant standing, and it can be named, because there is nothing to be wrong about.
+    Several, and the agent is told to use the one its own dispatch named — which is the only
+    place that knowledge exists.
     """
-    return (f"YOU ARE AGENT `{agent}` WORKING UNDER `{track}`, and you have your own ledger.\n"
+    one = lent[0] if len(lent) == 1 else ""
+    env = f'--env="{one}"' if one else '--env="<the environment your dispatch named>"'
+    head = (f"YOU ARE AGENT `{agent}` WORKING UNDER `{one}`, and you have your own ledger."
+            if one else
+            f"YOU ARE AGENT `{agent}`, and you have your own ledger under the environment "
+            f"your dispatch lent you. This session has lent {len(lent)}, so only your own "
+            f"prompt says which is yours — use that name and no other.")
+    return (head + "\n"
             f"  Put both flags on every journal command you run:\n"
-            f'    .journal/journal.py --env="{track}" --as="{agent}" work start "<what you are doing>"\n'
-            f'    .journal/journal.py --env="{track}" --as="{agent}" todos          what was assigned to you\n'
-            f'    .journal/journal.py --env="{track}" --as="{agent}" todos report <n> "<how>"\n'
+            f'    .journal/journal.py {env} --as="{agent}" work start "<what you are doing>"\n'
+            f'    .journal/journal.py {env} --as="{agent}" todos          what was assigned to you\n'
+            f'    .journal/journal.py {env} --as="{agent}" todos report <n> "<how>"\n'
             "  Your work is yours: no other agent can open or close it. The environment's\n"
-            "  PINS are the parent's — read them, and report what you find rather than\n"
-            "  pinning it. You may REPORT a to-do complete; only the parent closes one.")
+            "  PINS and REMINDERS are the parent's — read them, and report what you find\n"
+            "  rather than writing either. You may REPORT a to-do complete; only the parent\n"
+            "  closes one.")

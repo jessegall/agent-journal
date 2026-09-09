@@ -1215,15 +1215,21 @@ def cmd_next() -> int:
 
 
 def cmd_carry(fresh: bool) -> int:
-    """Show the block a compaction hands back, without being a compaction.
+    """THE FULL HANDOVER, on demand. What the doorway points at.
 
-    Worth a command of its own because it is the one output nobody could see: assembled
-    inside a hook, delivered into a context the user does not read, and previously visible
-    only by piping a fake payload into `hook.py` — which wrote state, so looking at it
-    changed it.
+    THE TWO STOPPED BEING THE SAME THING. This printed exactly what the hook injected, which
+    made it a way to LOOK at the block — worth a command on its own, because that block is
+    assembled inside a hook and delivered into a context the user never reads. Now the hook
+    injects a doorway: where you are, what the commands are, how many of each thing stands.
+    The rest is here, uncapped, for a session that would rather read it once than run six
+    commands.
+
+    NO `--unfold`. A flag would exist only to tell this apart from the injected form, and
+    there is nothing to tell apart any more: nobody types the doorway. `carry` means the
+    whole handover, and that is its only meaning.
     """
     import hook
-    fmt.say(hook.carried("startup" if fresh else "compact"))
+    fmt.say(hook.carried("startup" if fresh else "compact", depth=hook.FULL))
     return 0
 
 
