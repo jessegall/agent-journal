@@ -66,6 +66,54 @@ def cli(root=None) -> str:
     return _CLI[0]
 
 
+#: THE FLAGS THIS INVOCATION CARRIED, put back on every command it prints. Empty for a
+#: session, which is the common case and must stay clean.
+_FLAGS: list = []
+
+
+def acting_as(env: str = "", agent: str = "") -> str:
+    """Remember the flags this invocation used, so printed commands carry them back.
+
+    A LENT AGENT MUST PUT `--env` AND `--as` ON EVERY COMMAND, and the journal's own printed
+    remediation said none of them: `journal todos 1` ends its brief with `journal todos start
+    1`, `journal todos done 1 "<how>"` and the rest, and an agent that ran what was printed
+    hit a refusal it had just been told how to avoid. The dispatch prompt says it; the
+    printed line contradicts it by omission; and the reader has no way to know which to
+    believe. Found by a dogfood agent working three directories down.
+
+    THE CLI CANNOT KNOW IT IS TALKING TO AN AGENT — that is the identity collision the whole
+    grant exists for, and it does not stop applying here. But it knows what THIS command
+    line carried: an agent that got far enough to be reading a brief typed the flags to get
+    it, so every command printed back to it is spelled the way the one it just ran was.
+
+    A SESSION PASSES NOTHING AND SEES NOTHING ADDED, which is the case that must stay clean:
+    the flags are noise to the reader who does not need them, and this package has spent a
+    day removing exactly that kind of noise.
+    """
+    bits = " ".join(x for x in (f'--env="{env}"' if env else "",
+                                f'--as="{agent}"' if agent else "") if x)
+    _FLAGS[:] = [bits] if bits else []
+    return bits
+
+
+def _flagged(text: str) -> str:
+    """Put this invocation's flags back into every printed `journal <verb>`.
+
+    ONLY BEFORE A VERB THE CLI ANSWERS TO, because `journal` is also an ordinary word in
+    every other sentence this package prints — "the journal is in force here" must not
+    become "the --env=… journal is". A table of verbs is the difference between a rewrite
+    and a corruption, and `help` already keeps that table for its own reasons.
+    """
+    if not _FLAGS:
+        return text
+    import re
+    import help as _h
+    verbs = set(_h.GROUPS) | set(_h.ALIAS)
+    return re.sub(r"\bjournal (?=([a-z-]+))",
+                  lambda m: f"journal {_FLAGS[0]} " if m.group(1) in verbs else m.group(0),
+                  text)
+
+
 def bold(text: str) -> str:
     return f"\033[1m{text}\033[0m" if _tty() else text
 
@@ -240,6 +288,7 @@ def block(text: str, width: int = WIDTH) -> str:
     said = cli()
     if said != CANON:
         text = (text or "").replace(CANON, said)
+    text = _flagged(text or "")
     out = []
     for para in (text or "").split("\n"):
         # a `journal:` line is the hook's one-liner, one line by ruling: the user sees it

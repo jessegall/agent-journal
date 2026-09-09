@@ -526,6 +526,22 @@ check("a named one still lends a separate line of work",
 aP.cli("grant", "--off", "elsewhere", session="as1")
 aP.cli("switch", "default", session="as1")
 
+# WHAT IS PRINTED BACK CARRIES THE FLAGS THAT WERE TYPED. `journal todos 1` ended its brief
+# with `journal todos start 1` and the rest, none of them carrying `--env`/`--as` — so the
+# dispatch prompt said one thing, the journal's own printed line said another by omission,
+# and an agent that ran what was printed hit a refusal it had just been told how to avoid.
+# Found by a dogfood agent working three directories down.
+_as_agent = aP.cli("--env=shared", "--as=k9", "todos", session="as1")[1]
+_as_session = aP.cli("--env=shared", "todos", session="as1")[1]
+check("an agent is shown the flags it must use, on every command printed back",
+      ('journal --env="shared" --as="k9" todos' in _as_agent,
+       'journal --env="shared" --as="k9" todos' in _as_session), (True, False))
+check("and a session sees them nowhere — that reader does not need them",
+      "--as=" in _as_session, False)
+check("prose is not a command: `journal` as an ordinary word is left alone",
+      _f.block("the journal is in force here") if (_f := __import__("fmt")) else "",
+      "the journal is in force here")
+
 # `journal lent` — THE DELIBERATE CHECK-IN. An agent used to learn its name as a side effect
 # of whatever tool it happened to run first. This is it asking, and the CLI cannot answer:
 # `agent_id` reaches the hook and never the process, which is the collision the whole grant

@@ -4,6 +4,26 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.43.0 — a printed command carries the flags the reader has to type
+
+`journal todos 1` ended its brief with the commands that act on that row — `journal todos
+start 1`, `journal todos done 1 "<how>"`, and the rest — and none of them carried `--env` or
+`--as`. A lent agent must put both on every command it runs. So the dispatch prompt said one
+thing, the journal's own printed line said another by omission, and an agent that ran what
+was printed hit a refusal it had just been told how to avoid. Found by a dogfood agent
+working three directories down from the journal.
+
+THE CLI CANNOT KNOW IT IS TALKING TO AN AGENT — that is the identity collision the grant
+exists for, and it does not stop applying here. But it knows what THIS command line carried:
+an agent that got as far as reading a brief typed the flags to get there, so every command
+printed back to it is now spelled the way the one it just ran was. A session passes nothing
+and sees nothing added, which is the case that has to stay clean.
+
+ONLY BEFORE A VERB THE CLI ANSWERS TO, from the table `help` already keeps. `journal` is an
+ordinary word in most of the sentences this package prints, and "the journal is in force
+here" must not become "the --env=… journal is". A table is the difference between a rewrite
+and a corruption.
+
 ## 1.42.2 — every printed path, not only the executable
 
 1.42.0 rewrote `.journal/journal.py` to whatever runs from where the reader is standing, and

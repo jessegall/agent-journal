@@ -142,11 +142,16 @@ _state.use_track(tracks.current(_ROOT, _stem()))
 #: reminders stay the environment's. Read here beside `--env=` because both have to be in
 #: force before any command reads the record.
 _AS = next((a.split("=", 1)[1] for a in _ARGV if a.startswith("--as=")), "")
+#: AND THEY GO BACK ON EVERY COMMAND THIS INVOCATION PRINTS — see `fmt.acting_as`. Here
+#: because it is where both flags are known, and because a refusal's text is built long
+#: before the option loop three hundred lines down has run.
+fmt.acting_as(_ENV_FLAG, _AS)
 if _AS:
     _state.use_agent(_AS)
     with _contextlib.suppress(Exception):
         import agents as _ag
         _ag.touch(_ROOT, tracks.current(_ROOT, _stem()), _AS)
+
 
 
 def _load(back: int = 0):
@@ -2383,6 +2388,10 @@ def run(argv: list[str]) -> int:
         _state.use_agent(acting)
         import agents as _ag
         _ag.touch(_ROOT, tracks.current(_ROOT, _stem()), acting)
+    # AND THE FLAGS THIS INVOCATION CARRIED, PER INVOCATION. The module-level call is right
+    # for the CLI, where a process is one command; in here it would be read once and then be
+    # wrong for every command after the first — which is exactly what the suites do.
+    fmt.acting_as(flag, acting)
     return main(argv)
 
 
