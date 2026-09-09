@@ -267,7 +267,7 @@ with pd.open("w") as fh:
                          "usage": {"input_tokens": 720000}}}) + "\n")
 def fire_dd(event, **extra):
     p = subprocess.run([str(dd / ".journal" / "hook.py")], input=json.dumps({"hook_event_name": event, "session_id": "s1", "transcript_path": str(pd), **extra}),
-                       capture_output=True, text=True, timeout=60)
+                       capture_output=True, text=True, timeout=180)
     return p.stdout
 out = fire_dd("Stop")
 check("with no settings at all the window is 1,000,000: 720k is the 70% rung", "context 72% full" in out, True)

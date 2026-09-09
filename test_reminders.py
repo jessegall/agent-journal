@@ -48,7 +48,7 @@ class S:
         payload = {"hook_event_name": event, "session_id": "s1",
                    "transcript_path": str(self.path), **extra}
         return subprocess.run([str(self.d / ".journal" / "hook.py")], input=json.dumps(payload),
-                              capture_output=True, text=True, timeout=60).stdout
+                              capture_output=True, text=True, timeout=180).stdout
 
     def user(self, text):
         with self.path.open("a") as fh:
@@ -63,7 +63,7 @@ class S:
                 "usage": {"input_tokens": tokens}}}) + "\n")
 
     def j(self, *a):
-        return subprocess.run([self.J, *a], env=self.env, capture_output=True, text=True, timeout=60)
+        return subprocess.run([self.J, *a], env=self.env, capture_output=True, text=True, timeout=180)
 
     def stop(self, after=False):
         """The whole reply: (what the user sees, what the agent reads)."""

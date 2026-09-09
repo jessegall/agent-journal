@@ -167,7 +167,7 @@ root2 = d2 / ".journal"
 
 
 def j2(*args, stdin=""):
-    p = subprocess.run([J2, *args], env=env, input=stdin, capture_output=True, text=True, timeout=60)
+    p = subprocess.run([J2, *args], env=env, input=stdin, capture_output=True, text=True, timeout=180)
     return p.returncode, p.stdout + p.stderr
 
 
@@ -249,7 +249,7 @@ env3 = {**os.environ, transcript.SESSION_ENV: "s1"}
 
 
 def j3(*args, stdin=""):
-    p = subprocess.run([J3, *args], env=env3, input=stdin, capture_output=True, text=True, timeout=60)
+    p = subprocess.run([J3, *args], env=env3, input=stdin, capture_output=True, text=True, timeout=180)
     return p.returncode, p.stdout + p.stderr
 
 

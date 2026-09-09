@@ -43,17 +43,17 @@ class S:
 
     def start(self):
         out = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "SessionStart", "source": "startup",
-                             "session_id": self.stem, "transcript_path": str(self.path)}), capture_output=True, text=True, timeout=60).stdout
+                             "session_id": self.stem, "transcript_path": str(self.path)}), capture_output=True, text=True, timeout=180).stdout
         return json.loads(out)["hookSpecificOutput"]["additionalContext"]
 
     def j(self, *a):
-        p = subprocess.run([J, *a], env=self.env, capture_output=True, text=True, timeout=60)
+        p = subprocess.run([J, *a], env=self.env, capture_output=True, text=True, timeout=180)
         return p.returncode, p.stdout + p.stderr
 
 
 def terminal(*a):
     env = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}
-    p = subprocess.run([J, *a], env=env, capture_output=True, text=True, timeout=60)
+    p = subprocess.run([J, *a], env=env, capture_output=True, text=True, timeout=180)
     return p.returncode, p.stdout + p.stderr
 
 
@@ -134,11 +134,11 @@ ctx = b.start()
 check("and b's names b's", "bound to environment `side`" in ctx, True)
 b.j("todo", "chore on side"); b.j("todo", "auto", "on")
 out = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "Stop", "session_id": "bbbbbbbb-2", "transcript_path": str(b.path)}),
-                     capture_output=True, text=True, timeout=60).stdout
+                     capture_output=True, text=True, timeout=180).stdout
 check("a stop hold reads the session's environment: b is held for side's list",
       "auto is on" in testkit.hold(out)[0], True)
 out = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "Stop", "session_id": "aaaaaaaa-1", "transcript_path": str(a.path)}),
-                     capture_output=True, text=True, timeout=60).stdout
+                     capture_output=True, text=True, timeout=180).stdout
 check("a, on third, is not held for side's list", "auto is on" in (json.loads(out).get("reason", "") if out.strip() else ""), False)
 check("bindings are runtime, not record", (root / "runtime" / "bindings.map").is_file() and "bindings" not in (root / "record.json").read_text(), True)
 
@@ -163,7 +163,7 @@ class T:
 
     def fire(self, event, **extra):
         out = subprocess.run([str(root2 / "hook.py")], input=json.dumps({"hook_event_name": event, "session_id": self.stem,
-                             "transcript_path": str(self.path), **extra}), capture_output=True, text=True, timeout=60).stdout
+                             "transcript_path": str(self.path), **extra}), capture_output=True, text=True, timeout=180).stdout
         if not out.strip():
             return ""
         got = json.loads(out)
@@ -171,7 +171,7 @@ class T:
             (got.get("hookSpecificOutput") or {}).get("permissionDecisionReason") or ""
 
     def j(self, *a):
-        p = subprocess.run([J2, *a], env=self.env, capture_output=True, text=True, timeout=60)
+        p = subprocess.run([J2, *a], env=self.env, capture_output=True, text=True, timeout=180)
         return p.returncode, p.stdout + p.stderr
 
     def write(self):
@@ -186,7 +186,7 @@ class T:
 
 def term2(*a):
     env = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}
-    p = subprocess.run([J2, *a], env=env, capture_output=True, text=True, timeout=60)
+    p = subprocess.run([J2, *a], env=env, capture_output=True, text=True, timeout=180)
     return p.returncode, p.stdout + p.stderr
 
 
@@ -232,14 +232,14 @@ check("the start block names the holder and how it was seen", ("IS TAKEN" in q.c
 # is never bound, and the parent's environment holder is not disturbed by it
 sub = {"hook_event_name": "PreToolUse", "session_id": "qqqqqqqq-4", "agent_id": "ab12", "transcript_path": str(q.path),
        "tool_name": "Write", "tool_input": {"file_path": str(e / "g.txt"), "content": "x"}}
-p = subprocess.run([str(root2 / "hook.py")], input=json.dumps(sub), capture_output=True, text=True, timeout=60)
+p = subprocess.run([str(root2 / "hook.py")], input=json.dumps(sub), capture_output=True, text=True, timeout=180)
 check("a subagent's edit on a taken environment is not refused", ("deny" in p.stdout, p.returncode), (False, 0))
-p = subprocess.run([str(root2 / "hook.py")], input=json.dumps({**sub, "hook_event_name": "Stop"}), capture_output=True, text=True, timeout=60)
+p = subprocess.run([str(root2 / "hook.py")], input=json.dumps({**sub, "hook_event_name": "Stop"}), capture_output=True, text=True, timeout=180)
 check("a subagent's stop is never held", p.stdout.strip(), "")
 check("and a subagent is never bound to an environment", tracks.bound(root2, "agent-ab12"), None)
 check("nor does it count as a session on one", "agent-ab12" in json.dumps(tracks.live(root2)), False)
 p = subprocess.run([str(root2 / "hook.py")], input=json.dumps({**sub, "tool_input": {"command": '.journal/journal.py switch "elsewhere"'}, "tool_name": "Bash"}),
-                   capture_output=True, text=True, timeout=60)
+                   capture_output=True, text=True, timeout=180)
 check("a subagent switching environments is refused — and by verb, not only by grant",
       "moves a SESSION" in testkit.denied(p.stdout), True)
 (root2 / "settings.json").write_text(json.dumps({"bind_on_start": True, "one_session_per_environment": False}))

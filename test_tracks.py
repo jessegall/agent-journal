@@ -170,17 +170,17 @@ check("cli lists both, current marked", ("*> default" in out, "second" in out), 
 hook = str(d / ".journal" / "hook.py")
 START = json.dumps({"hook_event_name": "SessionStart", "source": "compact",
                     "session_id": "s1", "transcript_path": str(d / "s1.jsonl")})
-p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
+p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=180)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
 check("SessionStart names the session's environment", "environment `default`" in ctx, True)
 check("SessionStart carries this environment's pin", "cli fact" in ctx, True)
 code, out = run_cli("switch", "second")
 check("a switch from the terminal moves the project and names the session left behind", ("s1" in out, "--session=<id>" in out), (True, True))
-p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
+p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=180)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
 check("the bound session stays on its own environment", ("environment `default`" in ctx, "cli fact" in ctx), (True, True))
 run_cli("switch", "second", "--session=s1")
-p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=60)
+p = subprocess.run([hook], input=START, capture_output=True, text=True, timeout=180)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
 check("SessionStart on another environment names it", "environment `second`" in ctx, True)
 check("and does NOT leak the other environment's pin", "cli fact" in ctx, False)
@@ -315,7 +315,7 @@ HELP_CWD = tempfile.mkdtemp()   # no record anywhere above it: help must not nee
 
 def helped(verb):
     p = subprocess.run([sys.executable, HELP_J, verb, "help"], cwd=HELP_CWD,
-                       capture_output=True, text=True, timeout=60)
+                       capture_output=True, text=True, timeout=180)
     return p.returncode == 0 and "No such command" not in p.stdout + p.stderr
 
 

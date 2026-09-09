@@ -29,6 +29,21 @@ def check(label, got, want):
         print(f"  FAIL {label}\n       got  {got!r}\n       want {want!r}")
 
 
+#: THIS SUITE FAILED FOUR TIMES IN ONE DAY AND NEVER ON DEMAND. Every failure was inside a
+#: batch, on a machine that was also running three dispatched agents; ninety runs afterwards
+#: — alone, six at a time, and four full rounds of every suite in parallel — were green.
+#:
+#: SO IT IS TREATED AS LOAD, AND SAID SO RATHER THAN DRESSED UP AS LOGIC. Every command here
+#: spawns a real CLI, and the package's own start is ~90ms before it does anything; a
+#: 60-second ceiling is generous until a dozen of them are competing for the same disk, and
+#: a timeout there raises inside `check`'s caller and is counted as a failed check with no
+#: line printed — which is exactly the shape that was seen. The ceiling is 180s now.
+#:
+#: IF IT COMES BACK WITH THE NEW CEILING, the theory is wrong and the answer is elsewhere:
+#: run the batch in a loop capturing full output per run, and do not close it again until a
+#: failure has been caught with its own text beside it.
+
+
 AT = "2026-09-01T00:00:00+00:00"
 
 
@@ -63,7 +78,7 @@ def project(with_record=True):
 def j(d, *args):
     env = {**os.environ, transcript.SESSION_ENV: "s1"}
     p = subprocess.run([str(d / ".journal" / "journal.py"), *args], env=env, cwd=str(d),
-                       capture_output=True, text=True, timeout=60)
+                       capture_output=True, text=True, timeout=180)
     return p.returncode, (p.stdout + p.stderr).strip()
 
 
