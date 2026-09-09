@@ -309,6 +309,15 @@ def locked(root: Path, wait: float = 3.0):
     has a timeout of its own and a wedged `journal remember` is a stalled tool with no
     message. A lost race under contention that long is a lost pin, which is visible in
     `pins`; a hang is not visible anywhere.
+
+    ONE LOCK FOR THE PROJECT, NOT ONE PER ENVIRONMENT, and that is deliberate now rather
+    than by default. Granted subagents write concurrently, so the question was asked
+    properly and MEASURED: thirty writers across three environments, and twelve at once to
+    the shared record, lost nothing and never reached the three-second wait — the whole
+    thirty finished in 1.3 seconds. The critical section is a read, a list append and an
+    atomic replace of one small file; it is microseconds, and the wait exists for a wedged
+    process, not for contention. A per-environment lock would buy nothing measurable and
+    would need its own answer for `record.json`, which every environment shares.
     """
     global _depth, _held
     if _depth:

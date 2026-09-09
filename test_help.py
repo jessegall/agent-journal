@@ -287,5 +287,21 @@ check("`journal environments show` with no name refuses", (code, "wants a name" 
 code, out = j3("environments", "list")
 check("`journal environments list` is the listing", (code, "ENVIRONMENTS" in out), (0, True))
 
+# ─────────────────── the rules the package ships, which nobody can strike ─────────────────
+code, out = j("rules")
+check("a shipped rule is listed, marked as the journal's own",
+      ("THE JOURNAL'S OWN" in out, "B1" in out, "cheapest" in out or "naming its model" in out),
+      (True, True, True))
+code, out = j("rules", "strike", "B1", "I disagree")
+check("and cannot be struck here", (code, "the journal's own rule" in out), (1, True))
+code, out = j("rules", "show", "B1")
+check("its reasoning reads back", (code, "haiku" in out and "opus" in out), (0, True))
+import builtin as _b
+check("the start block carries the claim, not the reasoning",
+      (_b.RULES[0]["fact"][:30] in _b.carry(), "**haiku**" in _b.carry()), (True, False))
+check("the managed block is delimited the way the user's own tooling delimits its blocks",
+      (_b.block().startswith("<!-- BEGIN: agent-journal"), _b.block().rstrip().endswith("-->"),
+       "run `journal update`" in _b.block()), (True, True, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

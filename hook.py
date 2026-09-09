@@ -45,7 +45,9 @@ import tags  # noqa: E402
 import context  # noqa: E402
 import docs  # noqa: E402
 import fmt  # noqa: E402
+import grants  # noqa: E402
 import nudges  # noqa: E402
+import builtin  # noqa: E402
 import pins  # noqa: E402
 import reminders  # noqa: E402
 import work  # noqa: E402
@@ -1208,9 +1210,26 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 #: THE PLURALS ARE CANONICAL (ruling R1) and were missing here, so a write spelled the way
 #: the skill teaches it was not recognised AS a write — by the gate that refuses an
 #: undelegated subagent's journal writes, or by the one that answers an unregistered session.
+#: EVERY VERB THAT CHANGES ANYTHING, under every spelling the CLI answers to. A verb missing
+#: here is invisible to every gate this set feeds — the write gate, the context rung's hold,
+#: and the subagent refusal — so it is not a list of interesting commands, it is the
+#: definition of "a write" and it has to be complete.
+#:
+#: FIVE WERE MISSING AND THE HOLE WAS REAL: `claim`, `grant`, `environments`, `handoff` and
+#: `delegate` were named in `grants.NEVER` as verbs a subagent may never run, and none of
+#: them reached that check, because `_journal_write` returned None first. A granted subagent
+#: could evict a live session with `journal claim`, or lend an environment on its
+#: dispatcher's behalf with `journal grant`. `test_bind` now asserts NEVER ⊆ this set, so
+#: the two lists cannot drift apart again.
+#:
+#: AND `environments` IS HERE FOR THE NOUN+VERB SPELLING. `journal environments switch "x"`
+#: is the documented twin of `journal switch "x"` (ruling R11) and presents `environments`
+#: as its verb, so without it half of every lifecycle command was ungated.
 JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "pins", "remember", "strike", "switch",
                             "nothing", "rule", "rules", "promote", "todo", "todos", "docs", "work",
-                            "tools", "loop", "prepare", "migrate"})
+                            "tools", "loop", "prepare", "migrate", "claim", "grant", "grants",
+                            "environments", "environment", "envs", "env", "tracks", "track",
+                            "remind", "reminder", "reminders", "cleanup", "worktree", "upgrade"})
 
 
 def _journal_write(payload: dict) -> str | None:
@@ -1225,9 +1244,20 @@ def _journal_write(payload: dict) -> str | None:
     except ValueError:
         return None
     for i, t in enumerate(toks[:-1]):
-        verb = toks[i + 1]
-        if "journal" not in t or verb not in JOURNAL_WRITES:
+        if "journal" not in t:
             continue
+        # THE VERB IS THE FIRST WORD THAT IS NOT A FLAG. It was read as the token
+        # IMMEDIATELY after the path, so anything with an option in front of it — `journal
+        # --env=other pins add "x"` — parsed as no write at all and sailed through every
+        # gate this function guards: the write gate, the context rung's hold, and the
+        # subagent refusal. Found by a test that expected a refusal and got silence.
+        j = i + 1
+        while j < len(toks) and toks[j].startswith("-"):
+            j += 1
+        verb = toks[j] if j < len(toks) else ""
+        if verb not in JOURNAL_WRITES:
+            continue
+        i = j - 1
         nxt = toks[i + 2] if i + 2 < len(toks) else ""
         # `docs` and `todo` are read verbs too: `docs`, `docs 4`, `todo`, `todo 3` change nothing.
         if verb == "docs" and nxt not in DOCS_WRITES:
@@ -2143,6 +2173,12 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict) -> str:
         "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in "
         "this session, and again whenever a hook holds or denies you."
     ]
+    # THE PACKAGE'S OWN RULES FIRST OF ALL, before anything this project decided: they bind
+    # every project, so a reader meets what is true everywhere before what is true here.
+    if conf_of({})["builtin_rules"]:
+        shipped = builtin.carry()
+        if shipped:
+            parts.append(shipped)
     # REMINDERS LEAD. A rule is a constraint and a pin is a fact; a reminder is the thing
     # the user has already had to say more than once, and a start — or the far side of a
     # compaction — is the exact moment it was in danger of being lost.
@@ -2376,8 +2412,16 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
 
 
 def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """The session is over: its environment is free. A closed terminal skips this; staleness covers it."""
+    """The session is over: its environment is free, and so is anything it lent.
+
+    A GRANT DIES WITH THE SESSION, and for one release that was a sentence rather than a
+    fact: `granted` is a runtime key, the runtime file outlives the session, and nothing
+    cleared it — so a `claude --resume` woke up still lending an environment to subagents
+    nobody was watching. That is a door left open by a session that has stopped looking,
+    which is the exact failure the grant exists to prevent.
+    """
     tracks.unbind(ROOT, ctx.stem)
+    state.put(ROOT, "granted", [], stem=ctx.stem)
     state.put(ROOT, "ended", payload.get("reason") or "exit", stem=ctx.stem)
     return 0
 
@@ -2433,20 +2477,27 @@ def main(raw: str | None = None) -> int:
     # in the parent's record under the parent's name. It reports what it found; the main
     # conversation files it. That was always the rule; now it is also the implementation.
     if payload.get("agent_id"):
-        # TURNED AWAY, NOT IGNORED. The one thing still owed a subagent is the refusal: its
-        # shell carries the PARENT's session id, so a `journal pins add` from inside it
-        # would land in the parent's record under the parent's name — a fact of unknown
-        # provenance in the one store whose whole value is that its provenance is known.
-        # Deleting the machinery without keeping this would have opened that door, and did
-        # for the length of one edit; the suites said so.
+        # THE ONE PLACE THAT ASKS WHETHER AN ACTOR IS A SUBAGENT, and it asks once. What it
+        # decides is narrow: a subagent's journal WRITE goes through only if the dispatching
+        # session lent it an environment and the command names that environment. Everything
+        # else about it — its stop, its context, its registration — is nothing to the
+        # journal, which is why there is no second branch anywhere below.
+        #
+        # THE SESSION ID IS THE DISPATCHER'S. That is the whole reason the grant exists and
+        # also the reason `switch` and its kin stay refused however it is granted: they move
+        # a session, and the session they would move is the one that dispatched this agent.
         verb = _journal_write(payload) if handler is on_pre_tool else ""
         if verb:
-            return _deny(
-                f"`journal {verb}` from a subagent is refused: the journal is the main "
-                "conversation's, and your shell carries its session id, so this would file "
-                "under its name. Report what you found and let it decide what to keep. "
-                "Reads (`search`, `pins`, `open`, `--back`) are fine."
-            )
+            command = str((payload.get("tool_input") or {}).get("command", ""))
+            # THE GRANT LIVES ON THE DISPATCHER, and `ctx.stem` here is `agent-<id>` — the
+            # subagent's own runtime name. The session that lent the environment is the one
+            # whose transcript this event carries, which is the parent's: the same identity
+            # collision that makes the whole grant necessary, showing up in the lookup.
+            tp = payload.get("transcript_path") or ""
+            parent = Path(tp).stem if tp else (payload.get("session_id") or "")
+            ok, why = grants.allows(ROOT, parent, verb, command)
+            if not ok:
+                return _deny(why)
         return 0
     _CONF[:] = [conf]
     env = _register(payload, ctx)

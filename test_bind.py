@@ -240,7 +240,8 @@ check("and a subagent is never bound to an environment", tracks.bound(root2, "ag
 check("nor does it count as a session on one", "agent-ab12" in json.dumps(tracks.live(root2)), False)
 p = subprocess.run([str(root2 / "hook.py")], input=json.dumps({**sub, "tool_input": {"command": '.journal/journal.py switch "elsewhere"'}, "tool_name": "Bash"}),
                    capture_output=True, text=True, timeout=60)
-check("a subagent switching environments is refused as a journal write, as before", "from a subagent is refused" in p.stdout, True)
+check("a subagent switching environments is refused — and by verb, not only by grant",
+      "moves a SESSION" in testkit.denied(p.stdout), True)
 (root2 / "settings.json").write_text(json.dumps({"bind_on_start": True, "one_session_per_environment": False}))
 check("with the rule off, the same session is free", (q.fire("Stop"), "IS TAKEN" in q.write()), ("", False))
 code, out = x.j("switch", "default")
@@ -296,6 +297,115 @@ check("`journal environments claim` is the same command, eviction and all",
 code, out = a.j("environments", "switch", "held-env")
 check("and every other lifecycle verb answers under the noun too",
       (code, tracks.bound(root2, "aaaaaaaa-6")), (0, "held-env"))
+
+# ─────────────── a subagent writes only what its dispatcher lent it ───────────────────────
+# The grant is declared twice — by the session, in the record; by the subagent, on its
+# command line — because nothing can DETECT a subagent: its shell carries the parent's id.
+import grants as _g
+gd = Path(tempfile.mkdtemp()) / "proj"
+testkit.make(gd, Path(__file__).resolve().parent)
+groot = gd / ".journal"
+genv = {**os.environ, transcript.SESSION_ENV: "gs1"}
+gpath = transcript.project_dir(gd) / "gs1.jsonl"; gpath.parent.mkdir(parents=True, exist_ok=True); gpath.write_text("")
+gP = testkit.Project(gd)
+gP.hook("SessionStart", source="startup", session_id="gs1", transcript_path=str(gpath))
+gP.cli("prepare", "scout", session="gs1")
+gP.cli("switch", "default", session="gs1")
+
+
+def sub(cmd):
+    """One subagent tool call: the parent's session id, plus an agent_id."""
+    return gP.hook("PreToolUse", session_id="gs1", transcript_path=str(gpath), agent_id="a1",
+                   tool_name="Bash", tool_input={"command": cmd})[1]
+
+
+J2 = str(groot / "journal.py")
+check("ungranted, a subagent's write is refused",
+      "deny" in sub(f'{J2} pins add "from a subagent"'), True)
+gP.cli("grant", "scout", session="gs1")
+check("granted but unnamed, still refused — the flag is the subagent's half of the grant",
+      ("deny" in sub(f'{J2} pins add "x"'),
+       "needs the environment it was lent" in testkit.denied(sub(f'{J2} pins add "x"'))),
+      (True, True))
+check("naming an environment nobody lent is refused too",
+      "deny" in sub(f'{J2} --env="default" pins add "x"'), True)
+check("granted AND named: it writes",
+      "deny" in sub(f'{J2} --env="scout" pins add "what I found"'), False)
+check("its reads were never gated", "deny" in sub(f"{J2} pins"), False)
+# THE ONE THE ADVERSARIAL PASS FOUND: a subagent has no session, so `switch` would move the
+# DISPATCHER's — the ground under the agent that sent it.
+check("switch stays refused even on the granted environment",
+      ("deny" in sub(f'{J2} --env="scout" switch "scout"'),
+       "moves a SESSION" in testkit.denied(sub(f'{J2} --env="scout" switch "scout"'))),
+      (True, True))
+check("and so does prepare", "deny" in sub(f'{J2} --env="scout" prepare "another"'), True)
+# A GRANT LENDS ONE ENVIRONMENT. Everything a subagent writes there is confined to it —
+# but a RULE binds every environment, for every session, forever, and lives in the shared
+# record. That is the fact-of-unknown-provenance the whole mechanism exists to prevent.
+check("a rule binds every environment, so a subagent may not write one",
+      ("binds every environment" in testkit.denied(sub(f'{J2} --env="scout" rules add "everyone must"'))),
+      True)
+check("but what belongs to the lent environment goes through",
+      [bool(testkit.denied(sub(f'{J2} --env="scout" {v}'))) for v in
+       ('pins add "a finding"', 'work start "digging"', 'todos add "later"')],
+      [False, False, False])
+# C2 — THE TWO LISTS CANNOT DRIFT APART. A verb named as forbidden that the gate cannot
+# reach is a refusal nothing enforces: five of them were, and a granted subagent could have
+# evicted a live session with `journal claim`.
+check("every verb NEVER refuses is one the gate can actually see", _g.unreachable(), set())
+# C1/C3 — the matrix: every never-verb, in both its spellings, granted, is refused
+for v, spelling in (("claim", f'{J2} --env="scout" claim "scout" "mine"'),
+                    ("grant", f'{J2} --env="scout" grant "scout"'),
+                    ("environments switch", f'{J2} --env="scout" environments switch "scout"'),
+                    ("environments remove", f'{J2} --env="scout" environments remove "scout"'),
+                    ("prepare", f'{J2} --env="scout" prepare "another"')):
+    check(f"granted, a subagent is still refused `{v}`", bool(testkit.denied(sub(spelling))), True)
+# L3 — what it wrote survives revocation; a revoke closes a door, it does not undo
+before = gP.cli("--env=scout", "pins", session="gs1")[1]
+gP.cli("grant", "--off", "scout", session="gs1")
+check("revoked: refused again", "deny" in sub(f'{J2} --env="scout" pins add "x"'), True)
+check("and what it wrote is untouched", gP.cli("--env=scout", "pins", session="gs1")[1], before)
+# L1 — the grant dies with the session, which was a sentence before it was a fact
+gP.cli("grant", "scout", session="gs1")
+check("granted again", "deny" in sub(f'{J2} --env="scout" pins add "y"'), False)
+gP.hook("SessionEnd", session_id="gs1", transcript_path=str(gpath), reason="exit")
+check("and SessionEnd takes it back — a resumed session lends nothing it is not watching",
+      "deny" in sub(f'{J2} --env="scout" pins add "z"'), True)
+# I1/I2 — WHAT IT MAY TOUCH, measured. A granted subagent's whole write repertoire changes
+# files under its own environment and nothing else: not the record, not another environment,
+# not the bindings. That property is why docs, tools and rules are refused rather than
+# merely discouraged — each writes somewhere every session reads.
+import hashlib as _h
+gP.cli("grant", "scout", session="gs1")
+
+
+def _snap():
+    out = {}
+    for f in (groot).rglob("*"):
+        if f.is_file() and "__pycache__" not in str(f) and not f.name.endswith(".py"):
+            out[str(f.relative_to(groot))] = _h.md5(f.read_bytes()).hexdigest()
+    return out
+
+
+_before = _snap()
+for args in (["--env=scout", "work", "start", "digging"], ["--env=scout", "pins", "add", "a finding"],
+             ["--env=scout", "todos", "add", "later"], ["--env=scout", "reminders", "add", "keep at it"]):
+    gP.cli(*args, session="gs1")
+_touched = sorted(k for k in set(_before) | set(_snap()) if _before.get(k) != _snap().get(k))
+check("a granted write touches only its own environment's files",
+      [k for k in _touched if not k.startswith("environments/scout/")], [])
+check("and it touches all four of them",
+      sorted({k.split("/")[2] for k in _touched}),
+      ["pins.json", "reminders.json", "todo", "work.json"])
+for v in ('docs add "r" --abstract=x', 'tools add t "T" --summary=s --usage=u --entry=x'):
+    check(f"a granted subagent may not write the project's own stores: {v[:9]}",
+          "the PROJECT's" in testkit.denied(sub(f'{J2} --env="scout" {v}')), True)
+
+# L4 — granting twice is idempotent and says so
+gP.cli("grant", "scout", session="gs1")
+code, out = gP.cli("grant", "scout", session="gs1")
+check("a second grant of the same environment is idempotent and says so",
+      (code, "already" in out, _g.granted(groot, "gs1").count("scout")), (0, True, 1))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

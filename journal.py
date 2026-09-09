@@ -36,9 +36,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import docs
 import fmt
+import grants
 import help
 import settings as settings_mod
 import context
+import builtin
 import pins
 import reminders
 import tags
@@ -642,6 +644,16 @@ def cmd_rules(all_of_them: bool, n: int | None, full: bool, page: int = 1,
     fmt.say(fmt.title("RULES OF THIS PROJECT", sub=sub))
     fmt.say()
     fmt.say(pins.render(root(), all_of_them=all_of_them, key=pins.RULES, cap=CATALOGUE_PAGE, page=page, order=order))
+    # THE PACKAGE'S OWN, MARKED AS ITS OWN. A reader must be able to tell "this project
+    # decided" from "the tool ships this": a rule whose provenance is unclear is one nobody
+    # can find the argument for, and the argument for these is in `builtin.py`.
+    conf, _ = settings_mod.load(root())
+    if conf["builtin_rules"] and builtin.RULES:
+        fmt.say()
+        fmt.say(fmt.dim(f"  THE JOURNAL'S OWN — {len(builtin.RULES)}, in every project that installs it"))
+        for r in builtin.RULES:
+            fmt.say(fmt.numbered(r["id"], r["fact"]).replace(f"  {r['id']}", f"  {r['id']}", 1))
+        fmt.say(fmt.dim("       they cannot be struck; `journal rules show B1` reads the reasoning"))
     fmt.say()
     fmt.say(fmt.wrap("Handed to every session, before anything else."))
     fmt.say(fmt.commands([
@@ -1414,6 +1426,35 @@ def cmd_pins(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
     return 0
 
 
+def cmd_grant(name: str, off: bool, listing: bool) -> int:
+    """`journal grant "<env>"` — lend an environment to this session's subagents.
+
+    THE SESSION DOES NOT MOVE. That is the difference from `prepare`, which creates AND
+    switches, and from the deleted `delegate`, which bound the session so that its
+    subagents' writes landed there by accident of sharing an id. This lends, and says so
+    out loud in a sentence the dispatcher is meant to paste into the prompt.
+    """
+    stem = _stem()
+    if listing or (not name and not off):
+        lent = grants.granted(root(), stem)
+        fmt.say(fmt.title("GRANTED", sub=f"{len(lent)} lent by this session"))
+        fmt.say()
+        if not lent:
+            fmt.say("  This session has lent nothing. A subagent's journal writes are refused.")
+        else:
+            fmt.say(fmt.commands([(n, "its subagents may write there with --env") for n in lent]))
+        fmt.say()
+        fmt.say(fmt.wrap('`journal grant "<environment>"` lends one; `--off` takes it back. '
+                         "A grant belongs to this session and dies with it."))
+        return 0
+    if off:
+        ok, msg = grants.revoke(root(), stem or "", name)
+    else:
+        ok, msg = grants.grant(root(), stem or "", name)
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
 def cmd_settings() -> int:
     """Every setting, what it is, and — the half this used to promise and not print — the
     order the stop queue runs in.
@@ -1694,6 +1735,9 @@ def main(argv: list[str]) -> int:
                     error=True)
             return 1
         return cmd_cleanup(all_of_them)
+    if verb in ("grant", "grants"):
+        return cmd_grant(" ".join(x for x in rest[1:] if x != "--off"),
+                         off_flag or "--off" in rest, len(rest) == 1)
     if verb == "user":
         return cmd_user(back)
     if verb == "open":
@@ -1747,6 +1791,12 @@ def main(argv: list[str]) -> int:
         if sub in ("amend", "replace"):
             return cmd_body(pins.RULES, sub, rest[2:], brief)
         if sub == "strike":
+            if len(rest) > 2 and builtin.by_id(rest[2]):
+                return _refuse(f"{rest[2].upper()} is the journal's own rule, not this "
+                               "project's — it holds wherever the journal is installed, so "
+                               "striking it here would be a local opinion wearing the tool's "
+                               "authority. `builtin_rules: false` in settings.json turns them "
+                               "all off.")
             if len(rest) < 4:
                 fmt.say('rules strike wants a rule number and why: journal rules strike 2 "<why>"',
                       error=True)
@@ -1759,6 +1809,14 @@ def main(argv: list[str]) -> int:
             if len(rest) < 3:
                 fmt.say("rules show wants a rule number: journal rules show 3", error=True)
                 return 1
+            shipped = builtin.by_id(rest[2])
+            if shipped:
+                fmt.say(fmt.title(f"RULE {shipped['id']}", sub="the journal's own, in every project"))
+                fmt.say()
+                fmt.say(fmt.wrap(shipped["fact"]))
+                fmt.say()
+                fmt.say(fmt.block(shipped["body"]))
+                return 0
             n, why = _number(rest, 2, "rules show", "rule", "journal rules")
             return _refuse(why) if why else cmd_claim_page(n, pins.RULES)
         n = None

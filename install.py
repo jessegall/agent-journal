@@ -80,6 +80,53 @@ def _executable(root: Path) -> set[str]:
 #: (`journal-handoff`) was deleted with the machinery it documented.
 SKILLS = (("skill", ".claude/skills/journal"),)
 
+#: WHERE THE PACKAGE'S OWN RULES ARE WRITTEN, besides the block the hook injects. The hook
+#: reaches Claude Code and nothing else; these rules bind every agent, and an agent that
+#: reads the repo without hooks is exactly the reader they are for. `AGENTS.md` is the
+#: harness-agnostic one and `CLAUDE.md` the Claude Code one; both get the same block, and a
+#: project that keeps only one gets it there.
+BRIEFED = ("AGENTS.md", "CLAUDE.md")
+
+
+def briefing(project: Path, check: bool, conf: dict) -> list[str]:
+    """Write the managed block into each briefing file. Replaced between markers, never merged.
+
+    THE CONVENTION IS THE USER'S OWN, from `code-commandments`: an HTML comment so the
+    markers are invisible in rendered markdown, naming the package AND the command that
+    regenerates the block — so a reader who edits inside it is told, in the block, why their
+    edit will vanish. Everything outside the markers is theirs and is never touched, which
+    is what makes this safe to run on every update.
+
+    THREE CASES, ONE FUNCTION: no file, a file with no markers, a file with markers. Create,
+    append, replace between.
+    """
+    import builtin
+    out = []
+    if not conf.get("builtin_rules", True):
+        return out
+    block = builtin.block()
+    for name in BRIEFED:
+        f = project / name
+        had = f.read_text() if f.is_file() else ""
+        if builtin.BEGIN in had and builtin.END in had:
+            head, _, rest = had.partition(builtin.BEGIN)
+            _, _, tail = rest.partition(builtin.END)
+            want = head + block + tail
+        elif had.strip():
+            want = had.rstrip() + "\n\n" + block + "\n"
+        elif f.is_file():
+            want = block + "\n"
+        else:
+            want = f"# {project.name}\n\n" + block + "\n"
+        if want == had:
+            out.append(f"  = {name} briefing up to date")
+            continue
+        if not check:
+            f.write_text(want)
+        out.append(f"  + {name} briefing written" if had else f"  + {name} created with the briefing")
+    return out
+
+
 #: What belongs to THIS project and never comes across on a pull.
 DATA = ("record.json", "record.json.lock", "settings.json", "state.json", "state.json.retired",
         "runtime", "todo", "environments", "docs", "tools", ".journal",
@@ -430,6 +477,19 @@ def alias(check: bool) -> list[str]:
     return out
 
 
+def _installed_at(root: Path) -> bool:
+    """Is this an installed copy, or the package's own source?
+
+    THE PACKAGE LIVES AT `<project>/.journal/`, so `PROJECT` is `ROOT.parent` — right for an
+    install, and one level too high when `install.py` is run from a checkout of the package
+    itself. Run there, it writes `.claude/settings.json`, the skill and the briefing into
+    whatever directory happens to hold the checkout. Measured, by doing it: a `.claude/`
+    with hooks and a skill, and two briefing files, appeared in the folder ABOVE this repo.
+    Nothing was lost — they were new files — but nothing asked, either.
+    """
+    return root.name == ".journal"
+
+
 def main(argv: list[str]) -> int:
     if any(a in ("-h", "--help", "help") for a in argv):
         print(__doc__)
@@ -455,7 +515,20 @@ def main(argv: list[str]) -> int:
                 raise SystemExit(f"  ! could not clone {src}:\n{p.stderr.strip()}")
             src = tmp
         lines += pull(Path(src), check)
-    lines += executable(check) + wire(check) + skill(check)
+    sys.path.insert(0, str(ROOT))
+    import settings as _settings
+    _conf, _ = _settings.load(ROOT)
+    lines += executable(check)
+    # A CHECKOUT OF THE PACKAGE IS NOT A PROJECT TO INSTALL INTO. Everything below writes
+    # into `PROJECT`, and from a source checkout that is the directory above the checkout.
+    # The executable bits are the exception: they are on the package's own files.
+    if not _installed_at(ROOT):
+        lines.append(f"  · {ROOT.name}/ is the package's source, not an install — wiring, "
+                     "the skill and the briefing are for a project's `.journal/`, and were "
+                     "skipped so they do not land in "
+                     f"{PROJECT.name}/")
+    else:
+        lines += wire(check) + skill(check) + briefing(PROJECT, check, _conf)
     if "--alias" in argv:
         lines += alias(check)
     if "--git-hook" in argv:

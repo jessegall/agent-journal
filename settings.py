@@ -172,6 +172,13 @@ DEFAULTS = {
     "context_window": 1_000_000,
 
 
+    # THE RULES THE PACKAGE SHIPS, in force on every project that installs it. One today:
+    # a subagent runs on the cheapest model that meets the task. They are the journal's own
+    # rather than the project's, they cannot be struck, and they are handed over with the
+    # project's rules at every start — see `builtin.py` for what qualifies and what does
+    # not. false turns them off, and turns off the block written into CLAUDE.md with them.
+    "builtin_rules": True,
+
     # Reminders to silence, by name, e.g. ["quiet"].
     "silenced": [],
 }

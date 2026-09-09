@@ -16,8 +16,15 @@ __pycache__/
 # AN ENVIRONMENT'S CONTENTS ARE THIS PROJECT'S DATA, never the package. The repo root IS
 # the package source, so a stray `environments/` or `todo/` here is what a test or a
 # mis-rooted command left behind — 11 such files were committed in 1.34.0 before this line.
+#
+# AND THE RECORD ITSELF, which that line missed. `record.json` was committed in the same
+# 1.34.0 that added the two above, carrying `moved-to` and `moved-from` — environment names
+# from `test_tracks`'s fixtures — so every clone of the package has shipped with a stranger's
+# test data in its registry ever since. Same cause, same day, one file further out.
 /environments
 /todo
+/record.json
+/record.json.lock
 
 # the IDE's own folder, never this project's
 /.idea

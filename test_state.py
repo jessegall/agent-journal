@@ -255,8 +255,10 @@ for cmd, want in (('.journal/journal.py remember "a fact"', True),
                   ('cat file.py', False)):
     code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                           tool_input={"command": cmd})
+    # UNGRANTED, EVERY WRITE IS REFUSED — but the sentence differs by why: a rule binds
+    # every environment, the rest simply have nowhere of their own to land.
     check(f"subagent journal write denied, reads and other tools not: {cmd[:40]}",
-          "from a subagent is refused" in out, want)
+          bool(testkit.denied(out)), want)
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Edit", tool_input={})
 check("a subagent's edit is not gated on open work", out.strip(), "")
 
@@ -503,7 +505,9 @@ got = hook._pin_overflow({"tool_name": "Bash", "tool_input": {"command": f'.jour
 check("an over-long rule is denied at the gate", got is not None, True)
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                       tool_input={"command": ".journal/journal.py rule \"x\""})
-check("a subagent's rule is refused", "from a subagent is refused" in out, True)
+check("a subagent's rule is refused, and now says which of the two reasons it is",
+      ("is refused from a subagent" in testkit.denied(out),
+       "binds every environment" in testkit.denied(out)), (True, True))
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                       tool_input={"command": ".journal/journal.py promote 1"})
 check("and so is its promote", "from a subagent is refused" in out, True)

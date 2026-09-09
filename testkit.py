@@ -156,6 +156,36 @@ def make(project: Path, src: Path, settings: dict | None = None) -> Path:
     return root
 
 
+def flat(text: str) -> str:
+    """Text with its line breaks collapsed, for asserting on a PHRASE.
+
+    A message is wrapped before it is delivered, so where it breaks depends on how long the
+    environment's name happens to be. An assertion that searches for "moves a SESSION" fails
+    the day the wrap lands between the two words, which is a test measuring the terminal
+    width rather than the behaviour.
+    """
+    return " ".join((text or "").split())
+
+
+def denied(out: str) -> str:
+    """The refusal a PreToolUse denial carries, on one line — "" when nothing was denied.
+
+    THE REASON TRAVELS INSIDE JSON, so its line breaks are escaped and `flat` on the raw
+    stdout sees none of them. Parse first, then flatten: an assertion about what a refusal
+    SAYS should not depend on where the wrap happened to land.
+    """
+    if not (out or "").strip():
+        return ""
+    try:
+        got = json.loads(out)
+    except ValueError:
+        return flat(out)
+    spec = got.get("hookSpecificOutput") or {}
+    if spec.get("permissionDecision") != "deny":
+        return ""
+    return flat(spec.get("permissionDecisionReason", ""))
+
+
 def hold(out: str) -> tuple[str, str]:
     """(the short label, the text the agent reads) of a Stop's answer — either shape.
 

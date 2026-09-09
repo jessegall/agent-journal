@@ -186,7 +186,8 @@ check("the journal's own writes are not", out.strip(), "")
 
 # ---------------------------------------------------------------- subagents
 out = fire("PreToolUse", agent_id="abc", tool_name="Bash", tool_input={"command": '.journal/journal.py docs add "x" --abstract=y'})
-check("a subagent cannot write docs", "from a subagent is refused" in out, True)
+check("a subagent cannot write docs — every environment reads them",
+      "is refused from a subagent" in testkit.denied(out), True)
 out = fire("PreToolUse", agent_id="abc", tool_name="Bash", tool_input={"command": ".journal/journal.py docs 1"})
 check("but may read them", out.strip(), "")
 
@@ -274,7 +275,8 @@ check("the session start catalogue says which docs carry files", "2 file(s): des
 # a subagent may not attach
 p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "z9", "transcript_path": str(path),
                    "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attach {n_att} x.html "x"'}}), capture_output=True, text=True, timeout=60)
-check("a subagent attaching is refused as a journal write", "from a subagent is refused" in p.stdout, True)
+check("a subagent attaching is refused as a journal write",
+      "is refused from a subagent" in testkit.denied(p.stdout), True)
 p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "z9", "transcript_path": str(path),
                    "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attachments {n_att}'}}), capture_output=True, text=True, timeout=60)
 check("a subagent listing them is not", "refused" in p.stdout, False)

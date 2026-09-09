@@ -133,5 +133,38 @@ check("the shipped .gitignore carries the pattern without the trailing slash",
       [l for l in (SRC / ".gitignore").read_text().splitlines() if l.strip() in ("/.journal", "/.journal/")],
       ["/.journal"])
 
+# ─────────── a granted subagent writing from inside a worktree, end to end ────────────────
+# The actual use case: the dispatcher grants in the main checkout, the agent works in a
+# worktree, and one record holds both. Demonstrated rather than argued.
+wt_main = Path(tempfile.mkdtemp()) / "main"
+import testkit as _tk
+_tk.make(wt_main, SRC)
+for c in (["init", "-q"], ["config", "user.email", "t@t"], ["config", "user.name", "t"]):
+    subprocess.run(["git", *c], cwd=wt_main, capture_output=True)
+(wt_main / "f.txt").write_text("x")
+subprocess.run(["git", "add", "-A"], cwd=wt_main, capture_output=True)
+subprocess.run(["git", "commit", "-q", "-m", "kit: base"], cwd=wt_main, capture_output=True)
+side = wt_main.parent / "side"
+subprocess.run(["git", "worktree", "add", "-q", str(side), "-b", "side"], cwd=wt_main, capture_output=True)
+check("a worktree checks out its own copy of .journal", (side / ".journal").is_dir(), True)
+wt_env = {**os.environ, transcript.SESSION_ENV: "m1"}
+_td = transcript.project_dir(wt_main); _td.mkdir(parents=True, exist_ok=True); (_td / "m1.jsonl").write_text("")
+_J = str(wt_main / ".journal" / "journal.py")
+for a_ in (["prepare", "scout"], ["switch", "default"], ["grant", "scout"]):
+    subprocess.run([sys.executable, _J, *a_], env=wt_env, capture_output=True, cwd=str(wt_main))
+p = subprocess.run([sys.executable, str(side / ".journal" / "journal.py"), "--env=scout",
+                    "pins", "add", "written from the worktree"],
+                   env=wt_env, capture_output=True, text=True, cwd=str(side))
+check("a write from inside the worktree succeeds", "pinned 1" in p.stdout, True)
+check("and the worktree's copy became a symlink to the main checkout's",
+      (side / ".journal").is_symlink()
+      and Path(os.readlink(side / ".journal")).resolve() == (wt_main / ".journal").resolve(), True)
+_pins = json.loads((wt_main / ".journal" / "environments" / "scout" / "pins.json").read_text())["pins"]
+check("the pin landed in the MAIN checkout's record — one record, two checkouts",
+      [x["fact"] for x in _pins], ["written from the worktree"])
+_st = subprocess.run(["git", "status", "--porcelain"], cwd=str(side), capture_output=True, text=True).stdout
+check("and git in the worktree sees nothing of .journal",
+      [l for l in _st.splitlines() if ".journal" in l], [])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

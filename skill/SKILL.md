@@ -266,6 +266,34 @@ without asking. The reason is required and the text stays under `--all`, so bein
 costs one line to undo. Nothing here ever expires on its own: a reminder the user wrote
 and nobody retired is one they are still owed.
 
+## A subagent that must write: lend it an environment
+
+    journal grant "<environment>"        lend it to this session's subagents
+    journal grant                        what this session has lent
+    journal grant --off "<environment>"  take it back
+
+**A subagent cannot be detected, only granted.** Its shell carries the dispatching
+session's id — measured — so `journal pins add` run inside one is, to the machine, the same
+act as you running it. Nothing the CLI can look at tells them apart.
+
+So the grant is declared **twice**: by you, here, saying which environment you are lending;
+and by the subagent, putting `--env="<name>"` on every journal command it runs. The hook
+holds the two against each other, and refuses anything that fails either half. `journal
+grant` prints the sentence to paste into the dispatch prompt — paste it verbatim, because
+it carries the flag the whole mechanism turns on.
+
+**Granting does not move you.** You stay where you are; the subagent writes somewhere else;
+you read what it wrote with `journal environments "<name>"` when it reports.
+
+**Some verbs stay refused however you grant**, for two different reasons. `switch`, `claim`,
+`prepare`, `grant` and the `environments` spellings of them move a SESSION, and the session
+a subagent would move is *yours* — it is running under your id. `rules` binds every
+environment, and it was lent one. A subagent that needs either reports and lets you do it.
+
+**Without a grant, a subagent writes nothing and that is the normal case.** Most subagents
+should report what they found and let this conversation file it; the grant is for the ones
+doing real work over a long stretch, where losing the record at the end is the loss.
+
 ## Delayed work: the to-do
 
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)

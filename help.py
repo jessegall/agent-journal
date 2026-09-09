@@ -65,6 +65,13 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "--until is PROSE, and you are what evaluates it: it is read back at every firing and you retire the reminder yourself the moment it is true",
         "settings: reminder_every (tool calls between mid-turn repeats, 0 for stops only), reminder_max_chars, silenced: [\"reminders\"]",
     ),
+    "grant": (
+        'journal grant "<environment>"   lend it to this session\'s subagents, and print the sentence to paste into the dispatch',
+        "journal grant                   what this session has lent",
+        'journal grant --off "<environment>"   take one back; bare --off takes back all of them',
+        "A subagent cannot be DETECTED: its shell carries the dispatching session's id, so nothing it runs can tell the two apart. The grant is declared twice — here, and by the subagent putting --env=<name> on every journal command — and the hook holds the two against each other.",
+        "Refused from a subagent however it is granted, for two reasons: switch, claim, prepare, grant and the environments spellings MOVE A SESSION — its dispatcher's, since it runs under that id; and rules BINDS EVERY ENVIRONMENT when it was lent one.",
+    ),
     "todos": (
         'journal todos add "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this environment; --brief reads a longer brief from stdin',
         'journal todo "<title>"        the same command; `todo` and `todos` are twins everywhere',
@@ -169,6 +176,7 @@ ALIAS: dict[str, str] = {
     "tracks": "environments", "track": "environments",
     "envs": "environments", "env": "environments", "environment": "environments",
     "claim": "environments", "prepare": "environments",
+    "grants": "grant",
     "conversation": "transcript", "user": "transcript", "search": "transcript",
     "carry": "transcript",
     "verify": "system", "version": "system", "update": "system", "settings": "system",
