@@ -621,5 +621,27 @@ _flat = " ".join((label + " " + text).split())
 check("both reasons are counted, and the one the user can act on is first",
       ("1 waiting on your answer" in _flat, "1 set aside on a condition" in _flat), (True, True))
 
+# ─────────── a held listing is shown only while it is still true ───────────────────────────
+# `journal next` prints the detail the last hold wrote, and a LISTING of what is waiting goes
+# on being handed back after the rows in it are closed. Seen twice in one session: `work end`
+# closed a row, printed "to-do N is done with it", and the very next `journal next` offered N
+# as the thing to start. Reading it cleared the snapshot, so the second call was right —
+# which is how it stayed hidden. `next` is the command auto tells an agent to run, so the one
+# stale read lands on the reader least able to notice it.
+d = project(); s = Session(d, "s1")
+s.journal("todo", "the first row"); s.journal("todo", "the second row")
+s.journal("todo", "auto", "on")
+label, text = s.stop()
+check("the hold's detail lists both rows", ("the first row" in text, "the second row" in text),
+      (True, True))
+s.journal("todo", "done", "1", "closed behind the snapshot's back")
+code, out = s.journal("next")
+check("with a row closed since, `next` drops the snapshot and answers live",
+      ("the first row" in out, "to-do 2" in out), (False, True))
+label, text = s.stop()
+s.journal("todo", "add", "a third row")
+check("a snapshot the record has not moved past is still shown in full",
+      "the second row" in s.journal("next")[1] or "to-do 2" in s.journal("next")[1], True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

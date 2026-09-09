@@ -1998,6 +1998,12 @@ def _remind_only() -> int:
 _ERROR_LABELLED = frozenset({"claimed", "environment"})
 
 
+def _open_ids() -> list:
+    """The open to-do numbers on this environment — what a held listing was true of."""
+    here = tracks.current(ROOT, _HOLD_CTX[0] if _HOLD_CTX else None)
+    return sorted(t["n"] for t in todo.open_items(ROOT, here))
+
+
 def _asked_lent(payload: dict) -> bool:
     """Did this tool call run `journal lent`? The one command whose answer is the hook's.
 
@@ -2061,8 +2067,36 @@ def _hold(label: str, brief: str, text: str = "", subject: str = "") -> int:
     # ONE LINE, IN ONE FIELD. The harness prints `reason` as "Stop hook error" and
     # `additionalContext` as "Stop hook feedback": two lines per hold when both are sent.
     # So the hold is the reason alone — label, then the instruction — and nothing else.
+    # A SNAPSHOT OF SOMETHING STILL CHANGING IS A LIE WITH A TIMESTAMP. Most held details
+    # are facts about the MOMENT — the line an untagged message was at, the reading that
+    # tripped a context rung — and those are exactly as true when read later. A LISTING of
+    # what is waiting is not: it goes on being handed back after the rows in it have been
+    # closed, and `journal next` is the command auto mode tells an agent to run, so the one
+    # stale read lands on the reader least able to notice.
+    #
+    # Seen twice in one session: `work end` closed a row, printed "to-do N is done with it",
+    # and the very next `journal next` offered N as the thing to start. Reading it cleared
+    # the snapshot, so the second call was right — which is how it stayed hidden.
+    #
+    # So a subject whose detail is a listing stores nothing, and `next` recomputes. The
+    # subject knows which it is; nothing here has to guess.
     if text and _HOLD_CTX:
         state.put(ROOT, "next_text", text, stem=_HOLD_CTX[0])
+        # AND WHAT THE RECORD LOOKED LIKE WHEN IT WAS WRITTEN. A held detail is a snapshot,
+        # and most of them are facts about the MOMENT — the line an untagged message was at,
+        # the reading that tripped a context rung — as true later as they were then. A
+        # LISTING of what is waiting is not: it goes on being handed back after the rows in
+        # it are closed, and `journal next` is the command auto mode tells an agent to run,
+        # so the stale read lands on the reader least able to notice it.
+        #
+        # Seen twice in one session: `work end` closed a row, printed "to-do N is done with
+        # it", and the very next `journal next` offered N as the thing to start. Reading it
+        # cleared the snapshot, so the second call was right — which is how it stayed hidden.
+        #
+        # So the open rows are recorded beside the text, and `next` shows the snapshot only
+        # while they still describe the list. Nothing has to know WHICH subjects list rows:
+        # a hold whose detail never mentioned the list is simply never contradicted by it.
+        state.put(ROOT, "next_rows", _open_ids(), stem=_HOLD_CTX[0])
         # ITS OWN LINE. Appended with an em dash it ran onto the end of a wrapped
         # instruction, which is the one place a reader stops looking.
         brief += "\n  details: `.journal/journal.py next`"

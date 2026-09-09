@@ -4,6 +4,24 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.43.2 — `journal next` stops handing back a list the record has moved past
+
+A hold's long half is written to the transcript's runtime file and `journal next` prints it.
+Most held details are facts about the MOMENT — the line an untagged message was at, the
+reading that tripped a context rung — and are as true later as they were then. A LISTING of
+what is waiting is not.
+
+Seen twice in one session: `work end` closed a row, printed "to-do N is done with it", and
+the very next `journal next` offered N as the thing to start. Reading the snapshot cleared
+it, so the second call was right — which is how it stayed hidden, and why the first attempt
+to reproduce it through `todos done` found nothing. `next` is the command auto mode tells an
+agent to run, so the one stale read lands on the reader least able to notice it.
+
+The hold now records which to-dos were open when it wrote the text, and `next` shows the
+snapshot only while that still describes the list; otherwise it drops it and answers from
+the record. Nothing has to know which subjects list rows — a hold whose detail never
+mentioned the list is simply never contradicted by it.
+
 ## 1.43.1 — a refusal says which journal is speaking
 
 There can be more than one journal within a session's reach, and a subagent dispatched from
