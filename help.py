@@ -211,3 +211,51 @@ def lines(verb: str) -> list[str]:
 def groups() -> list[str]:
     """The group names, for the index and for anything that needs to list them."""
     return list(GROUPS)
+
+
+#: COMMANDS THAT WERE REMOVED, AND WHAT TO DO INSTEAD. A removed command that falls through
+#: to "No such command" reads as a TYPO, and the reader's next move is to guess the
+#: spelling — which is the one thing that cannot work. It is also the reader most likely to
+#: be an agent following an older prompt, a shipped skill, or a colleague's runbook written
+#: against a version that is still installed somewhere: it will retry, and retry differently,
+#: and eventually route around the journal altogether. So a name this package used to answer
+#: to keeps answering, with the shape of the thing that replaced it.
+#:
+#: THE REPLACEMENT IS PRINTED, NOT NAMED. "use `journal grant` instead" is a lookup the
+#: reader then has to make; the commands in order, with the sentence to paste into the
+#: dispatch, is the migration itself.
+RETIRED = {
+    "delegate": (
+        "`journal delegate` was removed in 1.37.0. It bound the SESSION so a subagent's "
+        "writes landed somewhere by accident of sharing its id — a subagent's shell carries "
+        "the dispatching session's id, so nothing downstream could tell the two apart.\n\n"
+        "WHAT CANNOT BE DETECTED CAN BE LENT. Lend the environment instead, and the subagent "
+        "declares it back:",
+        [("journal grant \"<environment>\"", "lend it to this session's subagents; this session does not move"),
+         ("journal grant", "what this session has lent"),
+         ("journal grant --off \"<environment>\"", "take it back")],
+        "Then tell the agent you dispatch, in the prompt, the sentence `journal grant` "
+        "printed: it must put `--env=\"<environment>\"` on every journal command, and "
+        "`--as=<its own name>`, which the journal hands it on its first tool call. It gets "
+        "its own work ledger under that environment and inherits its pins read-only; "
+        "`journal assign <n> --to=\"<agent>\"` hands it a to-do, and it reports rather than "
+        "closes.",
+    ),
+    "handoff": (
+        "`journal handoff` was removed in 1.37.0. It prepared an environment AND wrote a "
+        "runner's prompt AND bound the session, which is three decisions in one command and "
+        "left no way to do any of them alone.\n\nThe two halves are separate now:",
+        [("journal prepare \"<environment>\"", "create it and switch this session to it"),
+         ("journal grant \"<environment>\"", "lend it to this session's subagents instead, without moving"),
+         ("journal assign <n> --to=\"<agent>\"", "hand one to-do to one agent; it is held while that agent is live")],
+        "There is no generated prompt any more: `journal grant` prints the one sentence the "
+        "dispatch actually needs, and the rest of the brief is yours to write. A lent agent "
+        "may not write rules, docs, tools, or switch environments — it reports upward and "
+        "the session that dispatched it decides.",
+    ),
+}
+
+
+def retired(verb: str) -> tuple[str, list, str] | None:
+    """(why it is gone, the commands that replace it, what to do next) — or None."""
+    return RETIRED.get(verb)

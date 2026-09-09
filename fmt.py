@@ -57,10 +57,19 @@ def _unknit(text: str) -> str:
 
 
 def wrap(text: str, indent: int = 2, width: int = WIDTH) -> str:
-    """A paragraph, or several, at an indent. Blank lines between paragraphs survive."""
+    """A paragraph, or several, at an indent. Blank lines between paragraphs survive.
+
+    THEY DID NOT SURVIVE. This split on the blank line, wrapped each paragraph, and then
+    joined them with ONE newline — so every multi-paragraph message this package prints
+    arrived as a single block with the breaks its author put in silently removed. The
+    docstring above has claimed otherwise since the function was written, which is why
+    nobody looked: the separator was read once, believed, and never measured against what
+    came out. It is the funnel every command's prose goes through, so it is also the
+    reason the same complaint kept coming back about different screens.
+    """
     pad = " " * indent
     paras = [_knit(" ".join(p.split())) for p in (text or "").split("\n\n") if p.strip()]
-    return _unknit("\n".join(
+    return _unknit("\n\n".join(
         textwrap.fill(p, width=width, initial_indent=pad, subsequent_indent=pad)
         for p in paras))
 

@@ -168,6 +168,9 @@ def _help(verb: str = "") -> int:
         return 0
     lines = help.lines(verb)
     if not lines:
+        gone = _retired(verb)
+        if gone is not None:
+            return gone
         fmt.say(f"No such command: {verb}\n", error=True)
         fmt.say(__doc__, error=True)
         return 1
@@ -1566,6 +1569,25 @@ def _refuse(why: str) -> int:
     return 1
 
 
+def _retired(verb: str) -> int | None:
+    """A command that was removed says what replaced it, or None if it is simply unknown.
+
+    IT FAILS, AND IT TEACHES. Non-zero because the command did not run and a script must
+    not read this as success; the replacement in full because the reader is most often an
+    agent working from a prompt, a skill or a runbook written against a version still
+    installed somewhere — and an agent told only "no such command" retries the spelling,
+    which is the one thing that cannot work, and then routes around the journal.
+    """
+    got = help.retired(verb)
+    if not got:
+        return None
+    why, commands, then = got
+    # ONE `say`, BECAUSE `say` MARKS WHAT IT IS GIVEN. It puts `! ` on the first line of
+    # every call, so five calls made five refusals out of one — the marker means "this is
+    # the refusal", and repeated down a page it means nothing.
+    return _refuse("\n\n".join((fmt.wrap(why), fmt.commands(commands), fmt.wrap(then))))
+
+
 def main(argv: list[str]) -> int:
     # BEFORE ANY COMMAND READS THE RECORD. A record written by an older version is migrated
     # by whichever process notices first; this is the one that notices most often. Except
@@ -2073,6 +2095,9 @@ def main(argv: list[str]) -> int:
     if verb == "conversation":
         return cmd_read(back)
     if verb:
+        gone = _retired(verb)
+        if gone is not None:
+            return gone
         fmt.say(f"No such command: {verb}\n", error=True)
         fmt.say(__doc__, error=True)
         return 1

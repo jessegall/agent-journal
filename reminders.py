@@ -151,14 +151,17 @@ def block(root: Path) -> str:
     one = len(items) == 1
     out = ["REMINDER — you asked to be told this again:" if one else
            f"REMINDERS — {len(items)} things you asked to be told again:"]
+    # THROUGH THE SAME RENDERER THE LIST USES, AND WITH AIR BETWEEN THE ITEMS. This built
+    # its own lines and never wrapped one, so seven reminders arrived as seven unbroken
+    # 180-character strings stacked with no gap — the user's word for it, twice now: a wall
+    # of text. An instruction nobody can find the start of is not being delivered, however
+    # reliably it is printed. `fmt.numbered` already wraps a numbered entry under its own
+    # number and puts the meta beneath it; this is the same shape, so it is the same code.
     for i, r in enumerate(_all(root), 1):
         if r.get("done"):
             continue
-        line = f"  {r['text']}" if one else f"  {i}. {r['text']}"
-        if r.get("until"):
-            line += f"\n  {'' if one else '   '}   until: {r['until']}"
-        out.append(line)
-    return "\n".join(out)
+        out.append(fmt.numbered(i, r["text"], f"until: {r['until']}" if r.get("until") else ""))
+    return "\n\n".join(out)
 
 
 def render(root: Path, *, all_of_them: bool = False, width: int = 88,

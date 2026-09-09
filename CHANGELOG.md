@@ -4,6 +4,36 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.37.1 — a removed command says what replaced it, and prose keeps its paragraphs
+
+`journal delegate` and `journal handoff` were removed in 1.37.0 and fell through to "No
+such command", which reads as a TYPO. The reader is most often an agent working from an
+older prompt, a shipped skill, or a colleague's runbook written against a version still
+installed somewhere — and an agent told only that a command does not exist retries the
+spelling, which is the one thing that cannot work, and then routes around the journal
+altogether. Both names still answer, with the shape of what replaced them: the commands
+themselves, in order, and what to put in the dispatch. `help.RETIRED` is the one place a
+removed name lives, and a test asserts no name in it is one the package still answers to.
+
+PROSE KEEPS THE BREAKS ITS AUTHOR WROTE. `fmt.wrap` is the funnel every command's prose
+goes through. It split on the blank line, wrapped each paragraph, and rejoined them with
+ONE newline — so every multi-paragraph message in the package arrived as a single block
+with its breaks silently removed. Its docstring had claimed the opposite since it was
+written, which is why nobody looked: the separator was read once, believed, and never
+measured against what came out. It is also why the same complaint kept coming back about
+different screens.
+
+AND SEVEN REMINDERS ARE SEVEN READABLE THINGS. The stop's reminder block built its own
+lines and wrapped none of them, so seven reminders arrived as seven unbroken
+180-character strings stacked with no gap. The user's word for it, twice: a wall of text.
+It goes through `fmt.numbered` now — the same renderer the list itself uses — with a blank
+line between items. An instruction nobody can find the start of is not being delivered,
+however reliably it is printed.
+
+A refusal is also marked once rather than once per paragraph: `fmt.say(error=True)` puts
+`!` on the first line of every call, so a refusal built from five calls announced itself
+five times, and a marker repeated down a page means nothing.
+
 ## 1.37.0 — a subagent writes only what its dispatcher lent it
 
 A subagent cannot be DETECTED. Its shell carries the dispatching session's id, so a

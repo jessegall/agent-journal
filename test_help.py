@@ -303,5 +303,51 @@ check("the managed block is delimited the way the user's own tooling delimits it
       (_b.block().startswith("<!-- BEGIN: agent-journal"), _b.block().rstrip().endswith("-->"),
        "run `journal update`" in _b.block()), (True, True, True))
 
+# ─────────── a removed command explains itself ────────────────────────────────────────────
+# A command that was taken away and answers "No such command" reads as a TYPO, and the
+# reader — most often an agent working from an older prompt or a colleague's runbook —
+# retries the spelling, which is the one thing that cannot work.
+import help as _h
+_gone = P.cli("delegate")
+check("a removed command fails", _gone[0], 1)
+check("and says what replaced it, with the commands themselves",
+      ("was removed in 1.37.0" in _gone[1], "journal grant" in _gone[1],
+       '--env=' in _gone[1], "No such command" in _gone[1]), (True, True, True, False))
+check("`journal handoff` points at the two halves it was split into",
+      ("journal prepare" in P.cli("handoff")[1], "journal grant" in P.cli("handoff")[1]),
+      (True, True))
+check("its help does the same rather than answering nothing",
+      "was removed" in P.cli("help", "delegate")[1], True)
+check("one refusal marker, not one per paragraph",
+      P.cli("delegate")[1].count("!"), 1)
+check("a command that never existed is still an unknown one",
+      "No such command" in P.cli("frobnicate")[1], True)
+check("every retired name is a name this package no longer answers to",
+      [v for v in _h.RETIRED if _h.lines(v)], [])
+
+# ─────────── prose keeps the breaks its author wrote ───────────────────────────────────────
+# `wrap` is the funnel every command's prose goes through. It split on the blank line,
+# wrapped each paragraph and rejoined them with ONE newline, so every multi-paragraph
+# message in the package arrived as a block with its breaks silently removed — while the
+# docstring said they survived.
+import fmt as _f
+check("a blank line between paragraphs survives wrapping",
+      _f.wrap("One.\n\nTwo.\n\nThree."), "  One.\n\n  Two.\n\n  Three.")
+check("and a single newline inside a paragraph is still reflowed",
+      _f.wrap("One\ntwo three."), "  One two three.")
+
+# ─────────── seven reminders are seven readable things ─────────────────────────────────────
+# The user's word for the old shape, twice: a wall of text. Seven unbroken 180-character
+# lines with no gap. An instruction nobody can find the start of is not delivered.
+import reminders as _r
+for _i in range(3):
+    j("reminders", "add", "A reminder long enough that it must wrap at least once to "
+      f"be shown properly in a terminal that is only eighty-eight columns wide, number {_i}.")
+_blk = _r.block(root)
+check("the block wraps every reminder inside the width",
+      max(len(l) for l in _blk.splitlines()) <= _f.WIDTH, True)
+check("and puts a blank line between them, and after the heading",
+      (_blk.splitlines()[1] == "", _blk.count("\n\n")), (True, 3))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
