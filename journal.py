@@ -782,14 +782,29 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         on = want in ("on", "true", "yes")
         fmt.say(todo.set_auto(root(), here, on))
         standing = work.open_work(root())
+        # WHAT IS NEXT IS ONE QUESTION WITH ONE ANSWER: `todo.ready`. This asked
+        # `open_items` and named its first row, while the stop hook it was predicting asks
+        # `ready` — so it promised to start a to-do that waits on the user, is blocked, is
+        # held by a live agent, or has an unmet prerequisite, none of which the stop would
+        # ever pick up. Measured the moment auto was switched on here: it named to-do 40,
+        # which has been waiting on the user for five hours.
         waiting = todo.open_items(root(), here)
+        nxt = todo.ready(root(), here)
         if on:
             if standing:
                 fmt.say("  Agent currently working on: " + "; ".join(w["subject"] for w in standing))
-                fmt.say(f"  {len(waiting)} to-do(s) waiting; the first is picked up when that work ends.")
+                fmt.say(f"  {len(waiting)} to-do(s) waiting; the first ready one is picked up "
+                        "when that work ends.")
+            elif nxt:
+                fmt.say(f"  Nothing is open, {len(waiting)} to-do(s) waiting: the next idle stop "
+                        f"starts to-do {nxt[0]['n']}, {nxt[0]['title']}.")
             elif waiting:
-                fmt.say(f"  Nothing is open, {len(waiting)} to-do(s) waiting: the next idle stop starts "
-                      f"to-do {waiting[0]['n']}, {waiting[0]['title']}.")
+                # NOT THE SAME AS AN EMPTY LIST, and saying so is the whole point: a list
+                # that is full and entirely unstartable looks identical to a finished one
+                # from the outside, and the difference is what the user has to act on.
+                fmt.say(f"  Nothing is open and none of the {len(waiting)} waiting to-do(s) can "
+                        "be started — they wait on you, on a condition, or on each other. "
+                        "`journal todos` says which.")
             else:
                 fmt.say("  Nothing is open and nothing is waiting.")
         return 0

@@ -589,5 +589,22 @@ again = s10.stop(after_hold=True)[0]
 check("the loop hold fires", "loop" in first, True)
 check("and then yields, so the queue behind it still drains", "loop" in again, False)
 
+# ─────────── auto predicts the stop, so it must ask the stop's question ────────────────────
+# `todos auto on` named the first OPEN to-do while the stop hook it was predicting picks the
+# first READY one — so it promised to start a row that waits on the user. Measured live: it
+# named a to-do that had been waiting on the user for five hours.
+d = project(); s = Session(d, "s1")
+s.journal("todo", "waits on a person"); s.journal("todo", "can be worked")
+s.journal("todo", "ask", "1", "which way?")
+code, out = s.journal("todo", "auto", "on")
+check("auto names the first READY to-do, never one the stop would skip",
+      ("starts to-do 2" in out, "starts to-do 1" in out), (True, False))
+s.journal("todo", "ask", "2", "and this one too?")
+s.journal("todo", "auto", "off")
+code, out = s.journal("todo", "auto", "on")
+check("with every row unstartable it says so, rather than naming one or claiming the list is empty",
+      ("none of the 2 waiting to-do(s) can be started" in " ".join(out.split()),
+       "nothing is waiting" in out), (True, False))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
