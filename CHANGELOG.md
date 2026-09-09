@@ -4,6 +4,35 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.41.1 — nineteen modules imported for a command that uses two
+
+`journal.py` imported docs, tools, context, migrate, update and verify at module scope for
+every invocation, and `import dataclasses` — 5.9ms, pulling `inspect` behind it — for a
+decorator whose only work was writing an `__init__` that assigns thirty defaults. `Opts` is
+a plain class now; the class body still reads as the declaration it was.
+
+The six modules load on first use, through one small proxy rather than an `import` inside
+each of the forty functions that touch them — the same decision written forty times is one
+more thing to forget on the forty-first. What is NOT deferred is anything the module-level
+block needs while it runs: deferring one of those moves a side effect rather than removing a
+cost, and a CLI that resolves its environment lazily is one whose commands can disagree
+about which environment they are on.
+
+A LAZY IMPORT IS ONLY AS LAZY AS THE EAGEREST THING ON THE PATH TO IT, and the first attempt
+proved it by changing nothing: `pins` imported `docs` at module scope and `journal.py`
+imports pins on every invocation, so `docs` loaded anyway. `pins` imports it in the two
+places that render a doc citation now.
+
+AND THE ESTIMATE IN THE TO-DO WAS WRONG. It said ~145ms of the CLI's start was those
+imports. Measured, interleaved, twenty-four runs a side: 96.2ms to 91.8ms — 4.5ms, or 5%.
+The rest of what `-X importtime` attributes to `docs` and `tools` is `shutil`, `subprocess`
+and `tempfile`, which `state` and `worktree` pull in regardless and which nothing here can
+avoid. `worktree` no longer imports either at module scope — correct on its own terms, since
+a main checkout never reaches the code that needs them — but it buys nothing yet, because
+`hook.py` still imports `tools` eagerly. That one is left alone deliberately: its handlers
+register by decorator at import, and rearranging that at the end of a long session is how a
+fast CLI becomes a broken one.
+
 ## 1.41.0 — a worktree is orthogonal, and `grant` lends the environment you are on
 
 THE RULING, and it settles a question that had been open since worktrees and subagents were

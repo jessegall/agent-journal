@@ -29,31 +29,68 @@ answers `help`, and calls the very same function. None of them is deprecated.
 from __future__ import annotations
 
 import contextlib as _contextlib
-import dataclasses
 import os
 import sys
 from pathlib import Path
+from typing import NamedTuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import docs
 import fmt
 import grants
 import help
 import settings as settings_mod
-import context
 import builtin
 import pins
 import reminders
 import tags
 import todo
-import tools
 import tracks
 import transcript
-import migrate
-import update
-import verify
 import work
+
+
+class _Lazy:
+    """A module imported the first time something is read from it, and not before.
+
+    NINETEEN MODULES WERE IMPORTED FOR A COMMAND THAT USES TWO. `journal open` paid 7.7ms
+    for `docs` (which pulls `shutil`), 3.4ms for `tools` (`subprocess`), and more for
+    `migrate`, `update`, `verify` and `context` — none of which it touches — out of a start
+    that is ~110ms in total. The cost is charged to every hook event and every command.
+
+    ONE OBJECT INSTEAD OF FORTY EDITS. The alternative was `import docs` inside each of the
+    twenty-eight functions that use it, which is the same decision written twenty-eight
+    times and one more thing to forget on the twenty-ninth. This keeps every call site
+    exactly as it reads — `docs.get(...)` — and moves the import to first use.
+
+    WHAT IS NOT LAZY, AND WHY. Anything the module-level block below needs while it runs:
+    the environment resolution, the `--env=` scan, the record. Deferring one of those would
+    not remove a cost, it would move a SIDE EFFECT — and a CLI that resolves its environment
+    lazily is one whose commands can disagree about which environment they are on. That is
+    the failure 1.34.0 was spent fixing, and it is not worth 7ms.
+    """
+
+    __slots__ = ("_name", "_mod")
+
+    def __init__(self, name: str):
+        self._name = name
+        self._mod = None
+
+    def __getattr__(self, attr: str):
+        if self._mod is None:
+            import importlib
+            object.__setattr__(self, "_mod", importlib.import_module(self._name))
+        return getattr(self._mod, attr)
+
+
+#: Imported on first use — see `_Lazy`. Each is touched by a handful of commands and by no
+#: code path that runs on every invocation.
+docs = _Lazy("docs")
+tools = _Lazy("tools")
+context = _Lazy("context")
+migrate = _Lazy("migrate")
+update = _Lazy("update")
+verify = _Lazy("verify")
 
 
 import worktree as _wt
@@ -1691,11 +1728,18 @@ def _retired(verb: str) -> int | None:
     return _refuse("\n\n".join((fmt.wrap(why), fmt.commands(commands), fmt.wrap(then))))
 
 
-@dataclasses.dataclass
 class Opts:
     """Everywhere a flag's value lands. One instance per invocation, built by the loop
     below from FLAGS/BARE_FLAGS, and read by whichever verb handler needs a field —
     most read two or three of these, none read them all.
+
+    NOT A DATACLASS, FOR ONE MEASURED REASON: `import dataclasses` costs 5.9ms and pulls
+    `inspect` (4.8ms) in behind it, on EVERY invocation of a CLI whose whole start is
+    ~110ms — for a decorator whose only work here is writing an `__init__` that assigns
+    thirty defaults. The class body below still reads as the declaration it was; the
+    defaults are class attributes, which is what a dataclass would have produced, and the
+    two fields that need a fresh container per instance say so in `__init__` because a
+    mutable class attribute is shared by every instance.
     """
     back: int = 0
     supersedes: int | None = None
@@ -1719,7 +1763,7 @@ class Opts:
     purge: bool = False
     force: bool = False
     order: str = fmt.DESC
-    sessions: list[str] = dataclasses.field(default_factory=list)
+    sessions: list
     page: int = 1
     abstract: str = ""
     until: str = ""
@@ -1728,11 +1772,17 @@ class Opts:
     to_agent: str = ""
     doc_ref: str = ""
     from_src: str | None = None
-    tool_meta: dict = dataclasses.field(default_factory=dict)
+    tool_meta: dict
+
+    def __init__(self):
+        # THE TWO THAT MUST NOT BE SHARED. Everything above is immutable and safe as a
+        # class attribute; a list and a dict are not, and a default_factory is exactly what
+        # a dataclass would have generated here.
+        self.sessions = []
+        self.tool_meta = {}
 
 
-@dataclasses.dataclass(frozen=True)
-class _Flag:
+class _Flag(NamedTuple):
     """One row of the flag table. `dest` is the Opts field it fills; None means the
     option is recognised and consumed here but read elsewhere (`--env=`, `--from=`).
     `type` converts a `--x=value`'s text — raising ValueError with the refusal to print

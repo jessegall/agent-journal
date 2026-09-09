@@ -393,5 +393,23 @@ check("the numbered stores share one listing: only what goes beneath differs",
       (__import__("pins")._store().facts is not None,
        __import__("reminders")._STORE.facts is not None), (True, True))
 
+# ─────────── a lazy import is only as lazy as the eagerest thing on the path ───────────────
+# `journal.py` was made lazy about `docs` and it changed nothing, because `pins` imported it
+# at module scope and `journal.py` imports pins on every invocation. The saving is real but
+# it is 5%, not the ~145ms the to-do estimated: these modules share their heavy stdlib
+# dependencies (shutil, subprocess, tempfile) with modules that must load anyway.
+import subprocess as _sp, sys as _sys
+def _eager(module):
+    """Which of the deferred modules `import <module>` actually pulls in."""
+    watch = ("docs", "tools", "context", "migrate", "update", "verify", "dataclasses", "inspect")
+    code = (f"import sys; sys.path.insert(0, {str(SRC)!r}); import {module}; "
+            f"print(','.join(m for m in {watch!r} if m in sys.modules))")
+    return [x for x in _sp.run([_sys.executable, "-c", code], capture_output=True,
+                               text=True).stdout.strip().split(",") if x]
+check("importing the CLI pulls none of the modules a given command may never touch",
+      _eager("journal"), [])
+check("and importing pins is not importing docs — the link that made the first attempt moot",
+      _eager("pins"), [])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

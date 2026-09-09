@@ -14,12 +14,19 @@ the notice says the copy should go. Either way one record.
 """
 from __future__ import annotations
 
-import shutil
-import subprocess
 from pathlib import Path
+
+#: `shutil` AND `subprocess` ARE IMPORTED WHERE THEY ARE USED, and that is almost nowhere.
+#: This module is imported at the top of `hook.py` and `journal.py` — every tool call and
+#: every command — and cost 5.3ms of the hook's 48, entirely in two stdlib modules needed
+#: only to LINK a worktree. `_main_root` already returns before touching git unless `.git`
+#: is a file, which it is only in a linked worktree; the overwhelmingly common path here is
+#: "this is a main checkout, there is nothing to do", and it now pays nothing for the case
+#: it is not in.
 
 
 def _git(cwd: Path, *args: str) -> str | None:
+    import subprocess
     try:
         p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, timeout=10)
     except (OSError, subprocess.TimeoutExpired):
@@ -140,6 +147,7 @@ def resolve(root: Path) -> tuple[Path, str]:
         return root, ""
     if not _dirty(project, root):
         try:
+            import shutil
             shutil.rmtree(root)
             root.symlink_to(target, target_is_directory=True)
             _hide_from_git(project)
@@ -163,6 +171,7 @@ def link(root: Path) -> tuple[bool, str]:
     target = main / ".journal"
     keep = project / ".journal.copy"
     if keep.exists():
+        import shutil
         shutil.rmtree(keep)
     root.rename(keep)
     root.symlink_to(target, target_is_directory=True)

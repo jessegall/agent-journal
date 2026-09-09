@@ -28,8 +28,12 @@ from pathlib import Path
 
 import entries
 import fmt
-import docs as docs_mod
 import state
+
+#: `docs` IS IMPORTED WHERE IT IS USED, in the two places that render a pin's doc citation.
+#: At module scope it made `import pins` an `import docs` as well — and `journal.py` imports
+#: pins on every invocation, so deferring docs THERE bought nothing while this line stood.
+#: A lazy import is only as lazy as the eagerest thing on the path to it.
 
 KEY = "pins"
 
@@ -59,6 +63,7 @@ def _store(key: str = KEY, root: Path | None = None):
         if p.get("body"):
             out.append(f"has its reasoning ({key} show {n})")
         if p.get("doc") and root is not None:
+            import docs as docs_mod
             out.append("→ " + docs_mod.ref_label(root, str(p["doc"])))
         return out
 
@@ -69,6 +74,12 @@ def _store(key: str = KEY, root: Path | None = None):
 #: same citation into the transcript — one more question before writing one: would it
 #: be wrong on any OTHER environment? If only on this one, it is a pin.
 RULES = "rules"
+
+
+def _doc_label(root: Path, ref) -> str:
+    """A pin's doc citation, rendered. Imported here so `import pins` is not `import docs`."""
+    import docs as docs_mod
+    return docs_mod.ref_label(root, str(ref))
 
 
 def age(at: str, now: datetime | None = None) -> str:
@@ -472,7 +483,7 @@ def carry(root: Path, source: str = "compact", key: str = KEY, cap: int = 0) -> 
             # system: a reader who wants the argument is told, in the fewest characters
             # that can carry a command, where it is.
             + (f"  ·{noun} show {i}" if p.get("body") else "")
-            + (f"  → {docs_mod.ref_label(root, str(p['doc']))}" if p.get("doc") else "")
+            + (f"  → {_doc_label(root, p['doc'])}" if p.get("doc") else "")
             for i, p in numbered
         )
         + fmt.cut(len(numbered), total, f"journal {noun}")
