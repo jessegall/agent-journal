@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.43.1 — a refusal says which journal is speaking
+
+There can be more than one journal within a session's reach, and a subagent dispatched from
+here runs under THIS project's hook whatever directory it was sent to work in. So an agent
+working in another project, against another journal, is refused by this one and judged
+against this one's record — and nothing in the refusal said so.
+
+Measured: a dogfood agent sent to work three directories down in a scratch project spent
+most of its run trying flag after flag against a journal that was never the one refusing it.
+Every refusal it received was correct and none of them was answerable, because the two
+halves of the sentence belonged to different projects. Every refusal now opens with the
+project whose journal wrote it.
+
 ## 1.43.0 — a printed command carries the flags the reader has to type
 
 `journal todos 1` ended its brief with the commands that act on that row — `journal todos

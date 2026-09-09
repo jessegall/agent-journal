@@ -296,5 +296,16 @@ check("`todos` is the one noun whose bare form takes a title, so text is a write
       [_h.NOUN_WRITES["todos"](x) for x in ("", "3", "--all", "park this", "start")],
       [False, False, False, True, True])
 
+# ─────────── a refusal says which journal is speaking ──────────────────────────────────────
+# There can be more than one journal in a session's reach: a subagent dispatched from here
+# runs under THIS project's hook whatever directory it was sent to work in, so an agent
+# working in another project is refused by this one, judged against this one's record.
+# Measured: a dogfood agent spent most of its run trying flag after flag against a journal
+# that was never the one refusing it, and nothing it was told named either.
+_out = fire_dd("PreToolUse", tool_name="Write",
+               tool_input={"file_path": str(dd / "gated.py"), "content": "x"})
+check("the refusal names the project whose journal refused",
+      f"[{dd.name}]" in _out, True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
