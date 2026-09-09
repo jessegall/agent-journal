@@ -55,6 +55,28 @@ def live(root: Path, store: Store) -> list[dict]:
     return [e for e in all_of(root, store) if not e.get(store.retired)]
 
 
+def listing(items: list, item_of, *, cap: int | None = None, page: int = 1,
+            order: str = "desc") -> tuple[list, int]:
+    """(the rows, how many were left off) — for a noun that already HAS its items.
+
+    THE HALF THAT EVERY NUMBERED LISTING SHARES, once loading is out of the way: page
+    them, then turn what is left into a row. `todo.render`, `docs.catalogue` and
+    `tools.catalogue` were each `fmt.paged` followed by a hand-written loop that built a
+    meta string and called `fmt.numbered` itself — the same shape `rows` below already
+    was for pins, rules and reminders, just written out three more times because a to-do
+    is a file and a doc is a folder of parts and neither loads the way a pin does.
+
+    THAT IS THE WHOLE SPLIT. Loading cannot be shared — see the module docstring — so it
+    is not asked to be: this takes the items as given, and `item_of` is the caller's own
+    `facts` strategy, closed over whatever the row needs (an environment, a doc lookup,
+    an age), producing the `fmt.Item` the renderer lays out. `rows` is `listing` with the
+    one loading a numbered STORE still needs, and now delegates to it.
+    """
+    import fmt
+    shown, left = fmt.paged(items, cap, page, order)
+    return [item_of(e) for e in shown], left
+
+
 def rows(root: Path, store: Store, *, all_of_them: bool = False, cap: int | None = None,
          page: int = 1, order: str = "desc") -> tuple[list, int]:
     """(the entries as rows, how many were left off). The listing every numbered store shares.
@@ -76,10 +98,10 @@ def rows(root: Path, store: Store, *, all_of_them: bool = False, cap: int | None
     items = all_of(root, store)
     kept = [(i, e) for i, e in enumerate(items, 1)
             if all_of_them or not e.get(store.retired)]
-    shown, left = fmt.paged(kept, cap, page, order)
     facts = store.facts or (lambda e, n: [])
-    return [fmt.Item(n=i, text=e[store.text], meta=" · ".join(facts(e, i)),
-                     struck=bool(e.get(store.retired))) for i, e in shown], left
+    return listing(kept, lambda pair: fmt.Item(
+        n=pair[0], text=pair[1][store.text], meta=" · ".join(facts(pair[1], pair[0])),
+        struck=bool(pair[1].get(store.retired))), cap=cap, page=page, order=order)
 
 
 def _find(items: list[dict], n: int, store: Store) -> tuple[dict | None, str]:

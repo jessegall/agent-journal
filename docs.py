@@ -725,30 +725,38 @@ def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1
               order: str = fmt.DESC) -> str:
     """The catalogue, capped like `carry` (below) so a bare `journal docs` never grows
     without bound; unlike carry — handed automatically, every session — this is asked
-    for, so it pages rather than just saying "N more"."""
+    for, so it pages rather than just saying "N more".
+
+    THE LOOP IS `entries.listing`, shared with `todo.render` and `tools.catalogue` — only
+    `facts` below is a doc's own, the same strategy `pins._store` already supplies for a
+    pin, a rule and a reminder.
+    """
+    import entries
     docs = _load(root)
     if not docs:
         return "  No docs are catalogued."
-    docs, left = fmt.paged(docs, cap, page, order)
-    out = []
-    for d in docs:
-        meta = [d.get("status", "draft")]
+
+    def facts(d: dict) -> list[str]:
+        out = [d.get("status", "draft")]
         if d["parts"]:
-            meta.append(f"{len(d['parts'])} part(s)")
+            out.append(f"{len(d['parts'])} part(s)")
         files = attachments(d)
         if files:
-            meta.append(f"{len(files)} file(s)")
+            out.append(f"{len(files)} file(s)")
         if _age(d.get("at", "")):
-            meta.append(_age(d.get("at", "")))
+            out.append(_age(d.get("at", "")))
         if d.get("superseded_by"):
-            meta.append(f"SUPERSEDED by doc {d['superseded_by']}")
-        entry = fmt.numbered(d["n"], d["title"], " · ".join(meta), struck=bool(d.get("superseded_by")),
-                             width=width)
-        entry += "\n" + fmt.wrap(d.get("abstract", ""), indent=5, width=width)
-        out.append(entry)
-    body = "\n\n".join(out)
-    body += fmt.more("docs", left, page, order)
-    return body
+            out.append(f"SUPERSEDED by doc {d['superseded_by']}")
+        if d.get("abstract"):
+            out.append(d["abstract"])
+        return out
+
+    def item_of(d: dict):
+        return fmt.Item(n=d["n"], text=d["title"], meta=" · ".join(facts(d)),
+                        struck=bool(d.get("superseded_by")))
+
+    rows, left = entries.listing(docs, item_of, cap=cap, page=page, order=order)
+    return fmt.render(fmt.Out(items=tuple(rows))) + fmt.more("docs", left, page, order)
 
 
 def show(root: Path, ref: str, width: int = 88) -> tuple[bool, str]:

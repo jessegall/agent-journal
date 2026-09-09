@@ -749,6 +749,70 @@ def _age(at: str) -> str:
     return age(at) if at else ""
 
 
+# ─────────────────────────── the to-do's meta: a state, not a chain ────────────────────────
+#: A TO-DO IS IN EXACTLY ONE OF THESE, and `_state` is the one place that decides which. It
+#: used to be an if/elif ladder inline in `render`, nine branches deep, checked in this same
+#: order — and the order is not free: `asks` is set by `ask` and NOTHING EVER CLEARS IT, so
+#: a to-do that was once asked a question and has since been started, assigned, reported,
+#: blocked or given an `after` carries `asks` right along. Checked this early, it shadows
+#: every one of those: `started`, `assigned`, `reported`, `blocked` and `after` are each
+#: UNREACHABLE for the rest of that to-do's life, and it reads "waits on the user" forever
+#: even mid-work. That is a real bug, reported rather than fixed here — fixing it changes
+#: what a live to-do prints, and this pass promised the rendered text would not move.
+_STATES = ("done", "answered", "asks", "reported", "assigned", "blocked", "after", "started",
+          "waiting")
+
+
+def _state(t: dict) -> str:
+    """Which of the mutually exclusive states this to-do is in — named, not re-derived.
+
+    THE SAME ORDER THE LADDER CHECKED, on purpose: naming it is this pass's job, not
+    reordering it. See the module note above for the one state that order makes
+    unreachable once `asks` has ever been set.
+    """
+    if t.get("done"):
+        return "done"
+    if answered_one(t):
+        return "answered"
+    if t.get("asks"):
+        return "asks"
+    if t.get("reported"):
+        return "reported"
+    if t.get("assigned"):
+        return "assigned"
+    if t.get("blocked"):
+        return "blocked"
+    if t.get("after"):
+        return "after"
+    if t.get("started"):
+        return "started"
+    return "waiting"
+
+
+def _held(root: Path, track: str, t: dict) -> str:
+    import agents as ag
+    return f"held by `{t['assigned']}` ({ag.age(root, track, t['assigned'])})"
+
+
+#: THE TABLE FROM STATE TO SENTENCE. One entry per name `_state` can return, and every name
+#: it can return has one: adding a state means adding a row here, not another `elif`.
+_STATE_TEXT = {
+    "done": lambda root, track, t: f"done {_age(t['done'])}: {t.get('how') or 'no reason recorded'}",
+    "answered": lambda root, track, t: "answered by the user, not yet picked up",
+    "asks": lambda root, track, t: "waits on the user",
+    "reported": lambda root, track, t: (
+        f"reported finished by `{t.get('by') or '?'}` — yours to close: {t['reported']}"),
+    "assigned": _held,
+    "blocked": lambda root, track, t: f"set aside: {t['blocked']}",
+    "after": lambda root, track, t: (
+        f"after {t['after']}" + (f" — {len(waiting_on(root, track, t))} still open"
+                                 if waiting_on(root, track, t) else ", all done: ready")),
+    "started": lambda root, track, t: f"started {_age(t['started'])}, work is open",
+    "waiting": lambda root, track, t: (
+        f"waiting {_age(t.get('at', ''))}" if _age(t.get("at", "")) else "waiting"),
+}
+
+
 def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88, short_refs: bool = False,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
     """The list as a person reads it: the title, where it stands, and any question below.
@@ -758,49 +822,47 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
     of just saying how many more there are. `cap` is None by default — the environment
     pickup page (`tracks.page`) calls this uncapped on purpose: a runner has to see the
     WHOLE ordered list, not the first page of it.
+
+    THE LOOP IS `entries.listing`, shared with `docs.catalogue` and `tools.catalogue` —
+    only `facts` below is this noun's own, exactly the strategy `pins._store` already
+    supplies for a pin, a rule and a reminder.
+
+    THE QUESTION AND ITS ANSWER ARE NOT A FACT, and stay out of `facts`: a fact is a short
+    fragment joined into one line with " · ", and a wrapped line breaks wherever it must —
+    measured, folding a long answer in with the rest put the wrap point inside the arrow
+    itself, on this exact to-do, and the test that reads "→ " off the front of it failed.
+    They get their own wrapped block beneath, exactly as they always did.
     """
+    import entries
     items = _all(root, track) if all_of_them else open_items(root, track)
     if not items:
         return "  Nothing is waiting." if not all_of_them else "  No to-dos on this environment."
-    items, left = fmt.paged(items, cap, page, order)
-    out = []
-    for t in items:
-        if t.get("done"):
-            meta = f"done {_age(t['done'])}: {t.get('how') or 'no reason recorded'}"
-        elif answered_one(t):
-            meta = "answered by the user, not yet picked up"
-        elif t.get("asks"):
-            meta = "waits on the user"
-        elif t.get("reported"):
-            meta = f"reported finished by `{t.get('by') or '?'}` — yours to close: {t['reported']}"
-        elif t.get("assigned"):
-            import agents as ag
-            meta = (f"held by `{t['assigned']}` ({ag.age(root, track, t['assigned'])})")
-        elif t.get("blocked"):
-            meta = f"set aside: {t['blocked']}"
-        elif t.get("after"):
-            # `left` IS THE PAGER'S NAME in this function; shadowing it turned the paging
-            # arithmetic into a comparison against a list.
-            owed = waiting_on(root, track, t)
-            meta = (f"after {t['after']}" + (f" — {len(owed)} still open" if owed
-                                             else ", all done: ready"))
-        elif t.get("started"):
-            meta = f"started {_age(t['started'])}, work is open"
-        else:
-            meta = f"waiting {_age(t.get('at', ''))}" if _age(t.get("at", "")) else "waiting"
-        meta += " · has a brief" if t["body"] else " · title only"
+
+    def facts(t: dict) -> list[str]:
+        out = [_STATE_TEXT[_state(t)](root, track, t)]
+        out.append("has a brief" if t["body"] else "title only")
         if t.get("doc"):
             import docs as docs_mod
-            meta += " · → " + docs_mod.ref_label(root, str(t["doc"]), short=short_refs)
-        entry = fmt.numbered(t["n"], t["title"], meta, struck=bool(t.get("done")), width=width)
+            out.append("→ " + docs_mod.ref_label(root, str(t["doc"]), short=short_refs))
+        return out
+
+    def item_of(t: dict):
+        return fmt.Item(n=t["n"], text=t["title"], meta=" · ".join(facts(t)),
+                        struck=bool(t.get("done")))
+
+    rows, left = entries.listing(items, item_of, cap=cap, page=page, order=order)
+    paged, _ = fmt.paged(items, cap, page, order)
+    blocks = []
+    for t, it in zip(paged, rows):
+        entry = fmt.render(fmt.Out(items=(it,)))
+        # SAME CONDITION THE LADDER GATED ITS OWN EXTRA LINES ON: still waiting, not yet
+        # started, not done.
         if t.get("asks") and not t.get("done") and not t.get("started"):
             entry += "\n" + fmt.wrap("? " + t["asks"], indent=5, width=width)
             if t.get("answer"):
                 entry += "\n" + fmt.wrap("→ " + t["answer"], indent=5, width=width)
-        out.append(entry)
-    body = "\n\n".join(out)
-    body += fmt.more("todos", left, page, order)
-    return body
+        blocks.append(entry)
+    return "\n\n".join(blocks) + fmt.more("todos", left, page, order)
 
 
 def show(root: Path, track: str, n: int, width: int = 88) -> tuple[bool, str]:
