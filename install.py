@@ -11,30 +11,31 @@
 
 WHAT THIS IS CAREFUL ABOUT, and why each one is a real way to lose somebody's work:
 
-MERGE, NEVER OVERWRITE. `.claude/settings.json` is the user's file and this is a guest in
-it. There may be other hooks in there, on these very events, that matter more than this
-one. So the file is read, the journal's entries are added to whatever is already there, and
-everything else is passed through untouched. A tool that writes its own config over yours
-is a tool you cannot adopt incrementally.
+MERGE, NEVER OVERWRITE. `.claude/settings.json` is the user's file and this is a guest
+in it. There may be other hooks in there, on these very events, that matter more than
+this one. So the file is read, the journal's entries are added to whatever is already
+there, and everything else is passed through untouched. A tool that writes its own
+config over yours is a tool you cannot adopt incrementally.
 
 IDEMPOTENT. Running it twice must not wire the hook twice — a duplicated Stop hook fires
 twice per stop, holds twice, and reads like the check is broken rather than like the
 install is. So an entry already pointing at `hook.py` counts as done.
 
-IT REFUSES TO GUESS ABOUT MALFORMED JSON. If `settings.json` does not parse, this stops and
-says so rather than starting from `{}`. Starting fresh would silently delete every hook the
-user had, and the failure would look like an install that worked.
+IT REFUSES TO GUESS ABOUT MALFORMED JSON. If `settings.json` does not parse, this stops
+and says so rather than starting from `{}`. Starting fresh would silently delete every
+hook the user had, and the failure would look like an install that worked.
 
 --from PULLS THE PACKAGE, NEVER THE DATA. The code, the tests and the skill come across;
 the record, the settings and the runtime files are this project's and stay. A pull is a
 copy: the package is tested where it is developed, not in every consumer. `--test` runs
-the pulled copy's suites first, for the one time you want that. Until this existed every update to a consumer was an rsync by hand, and
-"the consumer has the latest" was a belief.
+the pulled copy's suites first, for the one time you want that. Until this existed every
+update to a consumer was an rsync by hand, and "the consumer has the latest" was a
+belief.
 
-AND IT DOES NOT CLAIM SUCCESS. The last thing it does is run `verify`, which reports WIRED
-and FIRED as two separate facts. Installing can only ever prove the first one. The tool this
-replaces sat wired and silent for seventeen hours, so `install` finishing is deliberately
-not the same as the journal being in force.
+AND IT DOES NOT CLAIM SUCCESS. The last thing it does is run `verify`, which reports
+WIRED and FIRED as two separate facts. Installing can only ever prove the first one. The
+tool this replaces sat wired and silent for seventeen hours, so `install` finishing is
+deliberately not the same as the journal being in force.
 """
 from __future__ import annotations
 
@@ -491,8 +492,10 @@ def _installed_at(root: Path) -> bool:
 
 
 def main(argv: list[str]) -> int:
+    sys.path.insert(0, str(ROOT))
+    import fmt
     if any(a in ("-h", "--help", "help") for a in argv):
-        print(__doc__)
+        fmt.say(__doc__)
         return 0
     check = "--check" in argv
     if "--test" in argv:
@@ -515,7 +518,6 @@ def main(argv: list[str]) -> int:
                 raise SystemExit(f"  ! could not clone {src}:\n{p.stderr.strip()}")
             src = tmp
         lines += pull(Path(src), check)
-    sys.path.insert(0, str(ROOT))
     import settings as _settings
     _conf, _ = _settings.load(ROOT)
     lines += executable(check)
@@ -537,25 +539,21 @@ def main(argv: list[str]) -> int:
         lines += git_hook(check, remove=True)
     # SAY ONLY WHAT CHANGED, then whether it is good, then the one next step.
     changed = [l for l in lines if l.startswith("  +") or l.startswith("  -") or l.startswith("  !")]
-    sys.path.insert(0, str(ROOT))
     import verify
     rows, _ = verify.check(ROOT)
     bad = [(n, note) for n, ok, note in rows if ok is False]
     if check:
-        print("Would change:" if changed else "Nothing to change.")
-        for l in changed:
-            print(l)
+        fmt.say("\n".join(["Would change:" if changed else "Nothing to change.", *changed]))
         return 0
-    for l in changed:
-        print(l)
+    if changed:
+        fmt.say("\n".join(changed))
     if bad:
-        print("\nNot installed:")
-        for n, note in bad:
-            print(f"  ✗ {n}" + (f"\n      {note}" if note else ""))
+        fmt.say("\n".join(["", "Not installed:",
+                           *(f"  ✗ {n}" + (f"\n      {note}" if note else "") for n, note in bad)]))
         return 1
-    print(("Updated." if src is not None else "Installed.") if changed else "Already installed.")
-    print("Start Claude Code in this project and the journal is on: the agent is handed the")
-    print("record at its first message. Run `journal` any time to see where things stand.")
+    fmt.say(("Updated." if src is not None else "Installed.") if changed else "Already installed.")
+    fmt.say("Start Claude Code in this project and the journal is on: the agent is handed the\n"
+            "record at its first message. Run `journal` any time to see where things stand.")
     return 0
 
 
