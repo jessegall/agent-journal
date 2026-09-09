@@ -42,17 +42,17 @@ root = d / ".journal"
 
 
 def j(*args):
-    p = subprocess.run([J, *args], env=env, cwd=str(d), capture_output=True, text=True, timeout=60)
+    p = subprocess.run([J, *args], env=env, cwd=str(d), capture_output=True, text=True, timeout=180)
     return p.returncode, (p.stdout + p.stderr).strip()
 
 
 def git(*args):
-    return subprocess.run(["git", *args], cwd=str(d), capture_output=True, text=True, timeout=60)
+    return subprocess.run(["git", *args], cwd=str(d), capture_output=True, text=True, timeout=180)
 
 
 def commit(message):
     subprocess.run(["git", "commit", "-q", "--allow-empty", "-F", "-"], cwd=str(d),
-                   input=message, text=True, capture_output=True, timeout=60)
+                   input=message, text=True, capture_output=True, timeout=180)
 
 
 def fire(command="git commit -q -F - <<'MSG'\nx\nMSG"):
@@ -170,14 +170,14 @@ check("an out-of-date hook of ours is rewritten, since its body is not what a pu
 
 j("todos", "add", "closed by a commit typed by hand")
 subprocess.run(["git", "commit", "-q", "--allow-empty", "-F", "-"], cwd=str(d), env=env,
-               input="kit: by hand\n\nJournal: todos done 5\n", text=True, capture_output=True, timeout=60)
+               input="kit: by hand\n\nJournal: todos done 5\n", text=True, capture_output=True, timeout=180)
 code, listed = j("todos", "--all")
 check("a commit made outside a session closes its to-do through the git hook",
       "5  ~~closed by a commit typed by hand~~" in listed, True)
 
 check("the git hook says nothing when a commit names no to-do",
       subprocess.run(["git", "commit", "-q", "--allow-empty", "-m", "kit: quiet please"],
-                     cwd=str(d), env=env, capture_output=True, text=True, timeout=60).stdout.strip(), "")
+                     cwd=str(d), env=env, capture_output=True, text=True, timeout=180).stdout.strip(), "")
 code, out = j("todos", "from-commit")
 check("but run by hand it still answers", "names no to-do" in out, True)
 

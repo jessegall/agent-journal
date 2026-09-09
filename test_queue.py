@@ -171,7 +171,7 @@ check("stop_priority reorders the queue: the untagged message before the loop", 
       ["1 untagged message(s)", "auto is on, no loop running"])
 p = subprocess.run([sys.executable, "-c", "import hook, nudges, json; print(json.dumps([nudges.names(), "
                     "nudges.names({'stop_priority': {'work': 1, 'auto': 'x'}}), nudges.priorities()[:2]]))"],
-                   cwd=str(s10.d / ".journal"), capture_output=True, text=True, timeout=60)
+                   cwd=str(s10.d / ".journal"), capture_output=True, text=True, timeout=180)
 got = json.loads(p.stdout)
 check("the default order, an override, a bad override ignored, and the numbers",
       (got[0], got[1][:2], got[2]), (["claimed", "environment", "loop", "context", "deferral", "untagged", "work", "auto", "recall", "cleanup"], ["work", "claimed"], [["claimed", 4], ["environment", 5]]))

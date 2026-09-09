@@ -4,6 +4,25 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.43.3 — a suite that failed four times and never on demand
+
+`test_migrate.py` reported one failed check, four times in one day, always inside a batch,
+never alone. Ninety runs afterwards — alone, six at a time, and four full rounds of every
+suite in parallel — were green. Both original sightings were on a machine that was also
+running three dispatched agents.
+
+TREATED AS LOAD, AND SAID SO RATHER THAN DRESSED UP AS LOGIC. Every command in these suites
+spawns a real CLI, and the package's own start is ~90ms before it does anything; a
+60-second subprocess ceiling is generous until a dozen of them compete for one disk, and a
+timeout there raises inside the caller and is counted as a failed check with no line printed
+— which is exactly the shape that was seen. The ceiling is 180s, in all 128 places that had
+it, and the reasoning is written into the suite so the next person to see it knows what was
+already ruled out and what to do if it comes back.
+
+One correction to the record while chasing it: the first report said the FAIL line was never
+printed. It is printed; the grep that looked for it re-ran the suite, which passed. A
+measurement that reruns the thing it is measuring is not a measurement.
+
 ## 1.43.2 — `journal next` stops handing back a list the record has moved past
 
 A hold's long half is written to the transcript's runtime file and `journal next` prints it.

@@ -52,7 +52,7 @@ def j(*args, stdin=""):
 
 def fire(event, **extra):
     payload = {"hook_event_name": event, "session_id": "s1", "transcript_path": str(path), **extra}
-    p = subprocess.run([str(root / "hook.py")], input=json.dumps(payload), capture_output=True, text=True, timeout=60)
+    p = subprocess.run([str(root / "hook.py")], input=json.dumps(payload), capture_output=True, text=True, timeout=180)
     return p.stdout
 
 
@@ -272,16 +272,16 @@ code, out = j("docs", "attachments", str(n_att))
 check("and listed after", "by-hand.html" in out, True)
 # the start block names them
 p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "session_id": "s1", "transcript_path": str(path)}),
-                   capture_output=True, text=True, timeout=60)
+                   capture_output=True, text=True, timeout=180)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
 check("the session start catalogue says which docs carry files", "2 file(s): design.html, by-hand.html" in ctx or "2 file(s): by-hand.html, design.html" in ctx, True)
 # a subagent may not attach
 p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "z9", "transcript_path": str(path),
-                   "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attach {n_att} x.html "x"'}}), capture_output=True, text=True, timeout=60)
+                   "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attach {n_att} x.html "x"'}}), capture_output=True, text=True, timeout=180)
 check("a subagent attaching is refused as a journal write",
       "is refused from a subagent" in testkit.denied(p.stdout), True)
 p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "z9", "transcript_path": str(path),
-                   "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attachments {n_att}'}}), capture_output=True, text=True, timeout=60)
+                   "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attachments {n_att}'}}), capture_output=True, text=True, timeout=180)
 check("a subagent listing them is not", "refused" in p.stdout, False)
 
 
@@ -289,15 +289,15 @@ check("a subagent listing them is not", "refused" in p.stdout, False)
 def read(fp, tool="Read", cmd=None):
     inp = {"command": cmd} if cmd else {"file_path": str(fp)}
     p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PostToolUse", "session_id": "s1", "transcript_path": str(path),
-                       "tool_name": "Bash" if cmd else tool, "tool_input": inp, "tool_response": "x"}), capture_output=True, text=True, timeout=60)
+                       "tool_name": "Bash" if cmd else tool, "tool_input": inp, "tool_response": "x"}), capture_output=True, text=True, timeout=180)
     return (json.loads(p.stdout).get("hookSpecificOutput") or {}).get("additionalContext", "") if p.stdout.strip() else ""
 
 
-subprocess.run(["git", "init", "-q"], cwd=str(d), capture_output=True, timeout=60)
+subprocess.run(["git", "init", "-q"], cwd=str(d), capture_output=True, timeout=180)
 (d / "resources").mkdir(); (d / "resources" / "welcome.blade.php").write_text("<h1>hi</h1>")
 (d / "public").mkdir(); (d / "public" / "index.html").write_text("<p>tracked</p>")
-subprocess.run(["git", "add", "public/index.html"], cwd=str(d), capture_output=True, timeout=60)
-subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "x"], cwd=str(d), capture_output=True, timeout=60)
+subprocess.run(["git", "add", "public/index.html"], cwd=str(d), capture_output=True, timeout=180)
+subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "x"], cwd=str(d), capture_output=True, timeout=180)
 (d / "export.html").write_text("<p>untracked export</p>")
 (d / "Comp.vue").write_text("<template/>")
 outside = Path(tempfile.mkdtemp()); (outside / "sent-by-user.pdf").write_bytes(b"%PDF"); (outside / "example.py").write_text("x=1")

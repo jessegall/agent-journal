@@ -42,7 +42,7 @@ root = d / ".journal"
 
 
 def j(*args, stdin=""):
-    p = subprocess.run([J, *args], env=env, input=stdin, capture_output=True, text=True, timeout=60)
+    p = subprocess.run([J, *args], env=env, input=stdin, capture_output=True, text=True, timeout=180)
     return p.returncode, p.stdout + p.stderr
 
 
