@@ -213,22 +213,35 @@ def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1
               order: str = fmt.DESC) -> str:
     """The catalogue, capped like `carry` (below) so a bare `journal tools` never grows
     without bound; unlike carry — handed automatically, every session — this is asked
-    for, so it pages rather than just saying "N more"."""
+    for, so it pages rather than just saying "N more".
+
+    THE LOOP IS `entries.listing`, shared with `todo.render` and `docs.catalogue` — only
+    `facts` below is a tool's own, the same strategy `pins._store` already supplies for a
+    pin, a rule and a reminder. A tool has no number, so its row is a name beside its
+    summary — `fmt.Item(title=…)` — rather than the numbered shape the other two use; and
+    each is rendered on its own rather than as one group, because `fmt`'s COLUMN rows sit
+    tight as a table and a tool's own multi-line block never was one.
+    """
+    import entries
     tools = _all(root)
     if not tools:
         return "  No tools are catalogued."
-    tools, left = fmt.paged(tools, cap, page, order)
-    out = []
-    for t in tools:
-        head = f"{t['name']}  —  {t.get('title', '')}" if t.get("title") and t["title"] != t["name"] else t["name"]
-        block = "  " + fmt.bold(head)
-        block += "\n" + fmt.wrap(t.get("summary", ""), indent=5, width=width)
+
+    def facts(t: dict) -> list[str]:
+        out = []
         if t.get("usage"):
-            block += "\n     " + fmt.dim(t["usage"])
-        meta = [x for x in (("entry " + t["entry"]) if t.get("entry") else "no entry point", _age(t.get("at", ""))) if x]
-        block += "\n     " + fmt.dim(" · ".join(meta))
-        out.append(block)
-    body = "\n\n".join(out)
+            out.append(t["usage"])
+        out.append(("entry " + t["entry"]) if t.get("entry") else "no entry point")
+        if _age(t.get("at", "")):
+            out.append(_age(t.get("at", "")))
+        return out
+
+    def item_of(t: dict):
+        head = f"{t['name']}  —  {t.get('title', '')}" if t.get("title") and t["title"] != t["name"] else t["name"]
+        return fmt.Item(title=head, text=t.get("summary", ""), meta=" · ".join(facts(t)))
+
+    rows, left = entries.listing(tools, item_of, cap=cap, page=page, order=order)
+    body = "\n\n".join(fmt.render(fmt.Out(items=(it,))) for it in rows)
     body += fmt.more("tools", left, page, order)
     return body
 
