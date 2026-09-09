@@ -9,7 +9,7 @@ single file is a doc and becomes a folder without breaking what cites it; nothin
 deleted, only struck with a reason; the catalogue, not the docs, is what a session is
 handed; a loose markdown file earns a hint, once, never a hold.
 """
-import json, os, os, shutil, subprocess, sys, tempfile
+import json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"  # no network from the hooks under test
@@ -319,6 +319,20 @@ check("a piped line is not a plain read", read(None, cmd=f"cat {outside / 'notes
 read(outside / "other.csv"); read(outside / "other.csv")
 check("silenced: nothing", read(outside / "other.csv"), "")
 (root / "settings.json").write_text(json.dumps({"context_window": 1000000}))
+
+# ─────────────────── citing a HEADING, one level below the part ───────────────────────────
+code, out = j("docs", "add", "one with sections", "--abstract=x", "--brief",
+              stdin="opening\n\n## The measurements\n\nwhat\n\n## The two bugs\n\nand\n")
+dn = re.search(r"doc (\d+)", out).group(1)
+code, out = j("pins", "add", "a claim resting on one section", f"--doc={dn}#the-measurements")
+check("a pin can cite a heading", code, 0)
+code, out = j("pins")
+check("and it renders as a section, not a slug", "§ The measurements" in out, True)
+code, out = j("pins", "add", "another", f"--doc={dn}#nope")
+check("an unknown heading is refused, naming the ones that exist",
+      (code, "#the-measurements" in out, "#the-two-bugs" in out), (1, True, True))
+code, out = j("todos", "add", "a row on one section", f"--doc={dn}#the-two-bugs")
+check("a to-do cites one the same way, through the same flag", code, 0)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

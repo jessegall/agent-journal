@@ -13,6 +13,7 @@ are printed as they are typed, in a column with what they do. Nothing is decorat
 from __future__ import annotations
 
 import sys
+import re
 import textwrap
 
 WIDTH = 88
@@ -43,12 +44,25 @@ def section(name: str) -> str:
     return "\n" + bold(name.upper())
 
 
+#: A COMMAND IS NOT PROSE AND MUST NOT BE BROKEN ACROSS LINES. `\u00a0` is a space to the
+#: reader and not a break point to `textwrap`, so a backticked run survives the fill whole
+#: and can be copied out of the terminal in one go. Measured the hard way: "`work update`"
+#: came back as "`work" on one line and "update`" on the next.
+def _knit(text: str) -> str:
+    return re.sub(r"`[^`\n]+`", lambda m: m.group(0).replace(" ", "\u00a0"), text)
+
+
+def _unknit(text: str) -> str:
+    return text.replace("\u00a0", " ")
+
+
 def wrap(text: str, indent: int = 2, width: int = WIDTH) -> str:
     """A paragraph, or several, at an indent. Blank lines between paragraphs survive."""
     pad = " " * indent
-    paras = [" ".join(p.split()) for p in (text or "").split("\n\n") if p.strip()]
-    return "\n".join(textwrap.fill(p, width=width, initial_indent=pad, subsequent_indent=pad)
-                     for p in paras)
+    paras = [_knit(" ".join(p.split())) for p in (text or "").split("\n\n") if p.strip()]
+    return _unknit("\n".join(
+        textwrap.fill(p, width=width, initial_indent=pad, subsequent_indent=pad)
+        for p in paras))
 
 
 def numbered(n: int, text: str, meta: str = "", *, struck: bool = False, width: int = WIDTH) -> str:
@@ -64,18 +78,59 @@ def numbered(n: int, text: str, meta: str = "", *, struck: bool = False, width: 
     return out
 
 
-def commands(rows: list[tuple[str, str]], indent: int = 2) -> str:
-    """Commands as they are typed, in a column, with what each does."""
+def commands(rows: list[tuple[str, str]], indent: int = 2, width: int = WIDTH) -> str:
+    """Commands as they are typed, in a column, with what each does — inside `width`.
+
+    IT USED TO BOUND NOTHING. `wrap`, `numbered` and `table` all keep to the width; this one
+    took no width at all and never wrapped a description, so six of the eight trailing
+    command lists in the CLI ran past 88 columns — `journal tools` to 131 characters — and
+    the two that fitted did so because their descriptions happened to be short. A guarantee
+    that holds by accident of content is not a guarantee.
+
+    THE COMMAND ITSELF IS NEVER BROKEN. It is what the reader copies, so a line that cannot
+    fit puts its description underneath rather than wrapping the command mid-flag.
+    """
     pad = " " * indent
     w = max((len(c) for c, _ in rows), default=0)
-    return "\n".join(f"{pad}{c:<{w}}   {dim(what)}" if what else f"{pad}{c}" for c, what in rows)
+    out = []
+    for c, what in rows:
+        if not what:
+            out.append(f"{pad}{c}")
+            continue
+        head = f"{pad}{c:<{w}}   "
+        if len(head) + len(what) <= width:
+            out.append(head + dim(what))
+        elif len(head) < width - 20:
+            out.append(_unknit(textwrap.fill(_knit(what), width=width, initial_indent=head,
+                                             subsequent_indent=" " * len(head))))
+            out[-1] = dim_body(out[-1], len(head))
+        else:
+            out.append(f"{pad}{c}")
+            out.append(textwrap.fill(what, width=width, initial_indent=pad + "    ",
+                                     subsequent_indent=pad + "    "))
+            out[-1] = dim(out[-1])
+    return "\n".join(out)
 
 
-def facts(rows: list[tuple[str, str, str]], indent: int = 2) -> str:
-    """label   value   command — the status page's shape."""
+def dim_body(line: str, head: int) -> str:
+    """Dim everything after the command column, keeping the command bright."""
+    return line[:head] + dim(line[head:]) if _tty() else line
+
+
+def facts(rows: list[tuple[str, str, str]], indent: int = 2, width: int = WIDTH) -> str:
+    """label   value   command — the status page's shape, inside `width`.
+
+    IT BOUNDED THE VALUE AND NOTHING ELSE. The value column was capped at 58 and the label
+    and trailing command were not, so the bare `journal` screen ran to 97 characters — a
+    second renderer with the same defect `commands` had, which the known one did not
+    explain. The value is what gives now, because it is the only column that can be cut
+    without taking away something the reader has to type.
+    """
     pad = " " * indent
     lw = max((len(l) for l, _, _ in rows), default=0)
-    vw = min(58, max((len(v) for _, v, _ in rows), default=0))
+    cw = max((len(c) for _, _, c in rows), default=0)
+    room = width - indent - lw - cw - 6
+    vw = min(max(room, 12), max((len(v) for _, v, _ in rows), default=0))
     out = []
     for label, value, cmd in rows:
         if len(value) > vw:
@@ -104,7 +159,8 @@ def table(rows: list[tuple[str, str]], indent: int = 2, gap: int = 3, col: int =
         if not body:
             out.append(first.rstrip())
             continue
-        out.append(textwrap.fill(body, width=width, initial_indent=first, subsequent_indent=rest))
+        out.append(_unknit(textwrap.fill(_knit(body), width=width,
+                                         initial_indent=first, subsequent_indent=rest)))
     return "\n".join(out)
 
 
@@ -172,6 +228,27 @@ def paged(rows: list, cap: int | None, page: int = 1, order: str = DESC) -> tupl
     if not cap:
         return rows, 0
     return rows[(page - 1) * cap: page * cap], max(0, total - page * cap)
+
+
+def cut(shown: int, total: int, command: str) -> str:
+    """The line that says what an injected block left out — "" when it left out nothing.
+
+    NOTHING IS DROPPED, AND THIS IS THE SENTENCE THAT KEEPS THAT TRUE. What crosses a
+    compaction used to be uncapped on principle: `pins.py` swears that a tier which
+    silently forgets is the failure the whole system exists to prevent. Then a real record
+    grew to 125 rules and 194 pins, the assembled block hit 120,360 characters against a
+    documented 10,000-character ceiling, and the harness replaced the whole thing with a
+    path to a file nobody was told to open. The uncapped rule did not protect the record;
+    it lost it.
+
+    So the store is still never trimmed — only one injection is, and the trim SAYS SO,
+    counts both halves, and names the command that reads the rest in full. The reader is
+    never left to infer that something is missing.
+    """
+    if shown >= total:
+        return ""
+    return (f"\n  … and {total - shown} more of {total} — none dropped: "
+            f"`{command}` reads every one, in full, right now.")
 
 
 def more(noun: str, left: int, page: int, order: str = DESC) -> str:

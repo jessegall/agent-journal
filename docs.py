@@ -170,8 +170,53 @@ def by_name(root: Path, name: str) -> tuple[dict | None, str]:
     return None, f"{name!r} could be " + " or ".join(f"doc {d['n']} ({d['title']})" for d in hits[:6]) + " — say which"
 
 
+#: A HEADING INSIDE A DOC OR A PART: `4.2#the-measurements`. The citation used to stop at
+#: the part, and a part of any size has `## sections` inside it — so the reader was handed a
+#: chapter and left to find the paragraph, which is the problem parts themselves were added
+#: to solve, one level down.
+_ANCHOR = re.compile(r"^(?P<ref>[^#]*)#(?P<head>.+)$")
+
+
+def slug_of(text: str) -> str:
+    """A heading's slug: what a citation spells, and what a heading is matched by."""
+    return re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
+
+
+def headings(root: Path, ref: str) -> list[str]:
+    """Every `##` heading in what `ref` names, in order — the titles, not the slugs."""
+    doc, prt, _ = get(root, ref)
+    if doc is None:
+        return []
+    path = prt["path"] if prt else (doc["dir"] / INDEX if doc.get("dir") else None)
+    if path is None or not Path(path).is_file():
+        return []
+    return [l.lstrip("#").strip() for l in Path(path).read_text().splitlines()
+            if re.match(r"^#{2,3} +\S", l)]
+
+
+def anchor(root: Path, ref: str) -> tuple[str, str, str]:
+    """(the ref without its anchor, the heading's title, the refusal) for `<ref>#<slug>`.
+
+    REFUSED WHEN THE HEADING IS NOT THERE, and the refusal names the ones that are. A
+    citation that silently points at nothing is the failure this package refuses everywhere
+    else — and a slug is exactly the kind of thing that is mistyped once and never checked.
+    """
+    m = _ANCHOR.match((ref or "").strip())
+    if not m:
+        return ref, "", ""
+    base, want = m.group("ref").strip(), slug_of(m.group("head"))
+    found = {slug_of(h): h for h in headings(root, base)}
+    if want in found:
+        return base, found[want], ""
+    if not found:
+        return base, "", f"doc {base} has no headings to cite; drop the `#{m.group('head')}`"
+    return base, "", (f"doc {base} has no heading `{m.group('head')}`. It has: "
+                      + ", ".join(f"#{s}" for s in found))
+
+
 def get(root: Path, ref: str) -> tuple[dict | None, dict | None, str]:
-    """(doc, part or None, error) for a reference like `4`, `4.2`, or the doc's name."""
+    """(doc, part or None, error) for a reference like `4`, `4.2`, `4.2#a-heading`, or a name."""
+    ref = _ANCHOR.match((ref or "").strip()).group("ref").strip() if "#" in (ref or "") else ref
     m = re.fullmatch(r"(\d+)(?:\.(\d+))?", (ref or "").strip())
     if not m:
         doc, err = by_name(root, ref)
@@ -649,21 +694,27 @@ def ref_label(root: Path, ref: str, short: bool = False) -> str:
 
     `short` drops the doc's title — for a page that has already listed the doc above.
     """
-    doc, prt, _ = get(root, ref)
+    base, head, _ = anchor(root, ref)
+    doc, prt, _ = get(root, base)
     if doc is None:
         return f"doc {ref} (missing)"
+    sec = f" § {head}" if head else ""
     if short:
-        return f"doc {doc['n']}.{prt['p']}: {prt['title']}" if prt else f"doc {doc['n']}"
+        return (f"doc {doc['n']}.{prt['p']}: {prt['title']}{sec}" if prt
+                else f"doc {doc['n']}{sec}")
     if prt:
-        return f"doc {doc['n']}.{prt['p']}: {doc['title']} · {prt['title']}"
-    return f"doc {doc['n']}: {doc['title']}"
+        return f"doc {doc['n']}.{prt['p']}: {doc['title']} · {prt['title']}{sec}"
+    return f"doc {doc['n']}: {doc['title']}{sec}"
 
 
 def check_ref(root: Path, ref: str) -> str | None:
     """The reason a --doc reference cannot be taken, or None."""
     if not ref:
         return None
-    doc, prt, err = get(root, ref)
+    base, _, bad = anchor(root, ref)
+    if bad:
+        return bad
+    doc, prt, err = get(root, base)
     if doc is None or (prt is None and "." in ref):
         return err
     return None
@@ -773,7 +824,7 @@ def carry(root: Path, cap: int = 20) -> str:
         if files:
             mark += f"  ({len(files)} file(s): " + ", ".join(a["name"] for a in files[:3]) + ("…" if len(files) > 3 else "") + ")"
         lines.append(f"  {d['n']:>3}  {d['title']}{mark}\n       {d.get('abstract', '')}")
-    more = f"\n  … and {len(docs) - cap} more; `journal docs` lists them." if len(docs) > cap else ""
+    more = fmt.cut(cap, len(docs), "journal docs")
     return (f"DOCS OF THIS PROJECT, {len(docs)} catalogued — read one before you re-investigate what "
             "it settles; `journal docs <n>` reads it, `journal docs search <term>` finds a line:\n"
             + "\n".join(lines) + more)

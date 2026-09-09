@@ -131,7 +131,7 @@ f2.write_text(json.dumps(items))
 s2.say("[!info] tagged")
 held = s2.stop()
 check("an expired wait holds, names what was awaited and for how long",
-      ("a build that died" in held, "has been waiting" in held, "the long one" in held),
+      ("a build that died" in held, "has waited" in held, "the long one" in held),
       (True, True, True))
 check("it offers all three ways out", ("work update" in held, "work await" in held, "work end" in held),
       (True, True, True))

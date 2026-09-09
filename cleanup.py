@@ -30,6 +30,7 @@ from pathlib import Path
 import docs as docs_mod
 import help as help_mod
 import pins as pins_mod
+import reminders as reminders_mod
 import state
 import todo as todo_mod
 import tracks
@@ -131,6 +132,37 @@ def _claims(root: Path, key: str, where: str) -> list[dict]:
     return out
 
 
+def _standing_reminders(root: Path, here: str) -> list[dict]:
+    got = state.tracked(root, reminders_mod.KEY, here, []) or []
+    return got if isinstance(got, list) else []
+
+
+def _reminders(root: Path, here: str) -> list[dict]:
+    """Reminders that name something gone — the same rot, in the store that repeats most.
+
+    A REMINDER IS READ ALOUD MORE OFTEN THAN ANY CLAIM HERE: at the head of every stop
+    chain and again every `reminder_every` tool calls, where a rule or a pin is handed over
+    once a session. So a dead path, or a `journal <verb>` the CLI no longer answers to,
+    costs more per day here than anywhere else — and this was the one store the checker did
+    not look at.
+
+    THE CONDITION IS NOT CHECKED, AND CANNOT BE. `--until` is prose by design — "the
+    migration tests pass on CI" — so nothing here can say whether it came true. That is what
+    the reading pass is for; this half checks only what is checkable.
+    """
+    out = []
+    for i, r in enumerate(_standing_reminders(root, here), 1):
+        if r.get("done"):
+            continue
+        why = _dangling(root, r.get("text", "")) or _dangling(root, r.get("until", ""))
+        if not why:
+            continue
+        out.append({"kind": "reminder", "n": i, "where": here, "text": r.get("text", ""),
+                    "why": why, "age": pins_mod.age(r.get("at", "")),
+                    "fix": f'journal reminders done {i} "<why>"'})
+    return out
+
+
 def _docs(root: Path) -> list[dict]:
     out = []
     names = set(tracks._all(root))
@@ -198,6 +230,7 @@ def candidates(root: Path, here: str, every: bool = False, stale_hours: float = 
             found += _claims(root, pins_mod.KEY, name)
     else:
         found += _claims(root, pins_mod.KEY, here)
+    found += _reminders(root, here)
     return found + _docs(root) + _todos(root, here) + _environments(root, here, stale_hours)
 
 
@@ -206,11 +239,11 @@ def report(root: Path, here: str, every: bool = False, stale_hours: float = 24.0
     found = candidates(root, here, every, stale_hours)
     out = [fmt.title("CLEANUP", sub=("every environment" if every else here)), ""]
     if not found:
-        out.append(fmt.wrap("Nothing here has evidence against it: every rule and pin names "
-                            "something that still exists, no doc is orphaned, no to-do has been "
-                            "waiting on the user, and no environment is empty."))
+        out.append(fmt.wrap("Nothing here has evidence against it: every rule, pin and reminder "
+                            "names something that still exists, no doc is orphaned, no to-do has "
+                            "been waiting on the user, and no environment is empty."))
         out.append("")
-    for kind in ("rule", "pin", "doc", "to-do", "environment"):
+    for kind in ("rule", "pin", "reminder", "doc", "to-do", "environment"):
         rows = [f for f in found if f["kind"] == kind]
         if not rows:
             continue
@@ -327,8 +360,13 @@ def _entry(n: int, item: dict, noun: str) -> str:
     """
     import fmt
     body = fmt.wrap(item.get("fact", ""), indent=7)
-    plural = "rules" if noun == "rule" else "pins"
-    extra = f" · journal {plural} show {n}" if item.get("body") else ""
+    # THE NOUN IS ALREADY PLURAL, and for a while this line did not believe it. Both callers
+    # pass "rules" or "pins" — the CLI's own spellings — so `noun == "rule"` was never true
+    # and every claim, rule or pin, was offered `journal pins show <n>`. For a rule that is
+    # a different claim, in a different store, under the same number: the reading pass sent
+    # the reader to the wrong text at the one moment its whole design says they must read
+    # the claim before judging it.
+    extra = f" · journal {noun} show {n}" if item.get("body") else ""
     return (f"  {n:>3}" + body[5:] + "\n"
             + fmt.dim(f"       {pins_mod.age(item.get('at', ''))} · "
                       f'journal {noun} strike {n} "<why>"' + extra))
@@ -375,7 +413,22 @@ def reading(root: Path, here: str, at: str = "", mark: bool = True) -> str:
     for i, p in pins:
         out.append(_entry(i, p, "pins"))
     out.append("")
-    out.append(fmt.wrap(f"That is {len(rules)} rule(s) and {len(pins)} pin(s) — the whole of what "
+    # THE ONE STORE WHOSE CONDITION ONLY A READER CAN JUDGE. `--until` is prose on purpose,
+    # so no check will ever retire a reminder whose moment has passed — and it is injected
+    # more often than anything else here. Omitted from the reading pass, nothing in the
+    # system ever asks whether it is still worth saying.
+    said = [(i, r) for i, r in enumerate(_standing_reminders(root, here), 1) if not r.get("done")]
+    if said:
+        out.append(fmt.dim(f"  REMINDERS — {len(said)}, repeated at every stop on `{here}`"))
+        for i, r in said:
+            body = fmt.wrap(r.get("text", ""), indent=7)
+            out.append(f"  {i:>3}" + body[5:] + "\n"
+                       + fmt.dim(f"       {pins_mod.age(r.get('at', ''))}"
+                                 + (f" · until: {r['until']}" if r.get("until") else "")
+                                 + f' · journal reminders done {i} "<why>"'))
+        out.append("")
+    out.append(fmt.wrap(f"That is {len(rules)} rule(s), {len(pins)} pin(s) and {len(said)} "
+                        "reminder(s) — the whole of what "
                         "every later session is handed as true. When you have been through them, "
                         "say what you struck and what you left; the record keeps when this was "
                         "last done, not what was decided."))

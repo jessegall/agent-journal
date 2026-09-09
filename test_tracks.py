@@ -320,9 +320,12 @@ def helped(verb):
 for alias in ("environments", "environment", "envs", "env", "tracks", "track"):
     check(f"`journal {alias} help` answers", helped(alias), True)
 for alias in ("pins", "pin", "remember", "rules", "rule", "todo", "docs", "tools",
-              "work", "start", "end", "switch", "prepare", "delegate", "handoff"):
+              "work", "start", "end", "switch", "prepare", "claim"):
     check(f"`journal {alias} help` answers", helped(alias), True)
-for not_a_command in ("doc", "pinn", "tool"):
+# HELP ANSWERS FOR EXACTLY WHAT DISPATCHES, and `delegate`/`handoff` no longer do: the
+# hand-off machinery was deleted, so a help entry for either would be the CLI disagreeing
+# with itself about what exists — which is what this block has always guarded.
+for not_a_command in ("doc", "pinn", "tool", "delegate", "handoff"):
     check(f"`journal {not_a_command} help` refuses: it is a prefix, not a verb",
           helped(not_a_command), False)
 check("help needs no record: it reads the synopsis, not the store",
@@ -343,6 +346,14 @@ check("the note is kept beside each",
       ["the worktree that declared it is gone"])
 took, msg = work.end(rW, "again", AT, force=True)
 check("with nothing open it refuses like any other close", (took, msg), (False, "nothing is open"))
+# THE NOTE IS PROSE, NOT A KEY. The subject is lowercased to MATCH on; --force reuses it as
+# the note kept beside the close, and for a while that note was stored folded.
+rF = fresh()
+work.start(rF, "something a gone session left open", AT)
+work.end(rF, "The Runner's Worktree Was Deleted", AT, force=True)
+check("--force keeps the note's own casing",
+      [w.get("ended_note") for w in state.get(rF, "work")],
+      ["The Runner's Worktree Was Deleted"])
 
 # ───────────────── moving what belongs to an environment: to-dos, pins, docs ───────────────
 # Work gets reframed, and what was filed under one name belongs under another. Nothing

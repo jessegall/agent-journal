@@ -5,7 +5,6 @@ the wrong environment, when something seems broken, or when a rule of the journa
 arbitrary and you want the reason.
 
 Contents: [Commands](#commands) · [Environments](#environments) · [Shared, and not shared](#shared-and-not-shared)
-· [Subagents](#subagents) · [When something seems broken](#when-something-seems-broken)
 · [Why it works this way](#why-it-works-this-way)
 
 ## Commands
@@ -149,16 +148,10 @@ A brief on stdin:
     journal switch "<name>" --session=<id> | --all-sessions   move other sessions (a terminal's switch offers these)
     journal switch --back            the environment this session came from
     journal claim "<name>" "<why>"   take one a live session still holds: it is unbound, told at its next stop why and by whom, and can claim it back. Nothing of the environment is deleted
-    journal environments switch|claim|prepare|delegate|handoff …   the noun+verb twin of each of these; the top-level spelling stays (ruling R11) and both call the same function
     journal environments remove "<name>" [--yes] [--purge]   take one off the list: bare it says what it holds, --yes archives it whole under .journal/removed/, --purge deletes it; never the start environment, never one a live session is on, and docs stay
     journal environments show "<name>"   the pickup page: docs to read first, what stands, open work, to-dos, how to begin (bare `journal environments "<name>"` is the same)
     journal prepare "<name>"         create an environment for a piece of work and switch to it (see prepare.md)
-    journal delegate "<name>" | --off   this session and its subagents act on it; a subagent's journal lands there
-  LOAD THE `journal-handoff` SKILL before any of these five: they dispatch agents, and it
   says which model, which gets a worktree, and what happens to the branch.
-    journal handoff "<name>" "<source>"   an environment made ready BY AGENTS: creates and delegates it, prints the hand-off agent's prompt
-    journal handoff "<name>" --run   when it reports READY: the runner's prompt; --off when the run is over
-                                     what a hand-off means: .journal/handoff.md (copy of the shipped handoff.default.md)
     journal --env=<name> <command>   any command on a named environment, without switching
     journal loop set                 this session has a loop the hook cannot see; `journal loop` says what is known
 
@@ -215,13 +208,10 @@ A linked git worktree shares the main checkout's journal: its `.journal/` is a s
 made at session start when the checked-out copy is clean. `journal worktree` says which
 case you are in; `journal worktree link` replaces a copy by hand. Never write to a copy.
 
-## Subagents
 
-Subagents do not write the journal. Their `work start`, `remember`, `todo`, `switch` and the
 rest are denied with a line saying to report back; `search`, `pins`, `open` and other reads
 are fine. Their tool calls are neither gated nor nudged. They are handed the rules on their
 first tool call and again at 25%, 50% and 75% of their own window, because a rule binds
-their work as much as the main agent's. If you are a subagent, report what you found; the
 main conversation files it.
 
 ## When something seems broken
@@ -267,11 +257,8 @@ drop`, `tools remove` — still runs, forever, calling the exact same function i
 alias calls; none of them is printed as deprecated.
 
 **Four kinds of command stay outside that pattern, on purpose, not by oversight.**
-`switch`, `prepare`, `delegate` and `handoff` stay top-level verbs rather than being
 wrapped under an `environments` noun: they are session/environment *lifecycle* actions,
 not collection CRUD — there is no list of them to add to or strike from — and they are
-burned into `hook.py`'s hold text, `handoff.default.md`, and every already-generated
-`.journal/handoff.md`. Wrapping them would cost every reader a word and buy nothing.
 `search` stays top-level for the same reason: it has no collection noun of its own. And
 the singleton reads — `conversation`, `user`, `open`, `carry`, `next`, `verify`,
 `settings`, `version`, `worktree`, `loop`, `nothing` — are one-shot, not a collection, so

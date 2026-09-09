@@ -29,7 +29,7 @@ import state
 DIR = "todo"
 STRUCK = "struck"
 FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how", "asks", "answer",
-          "doc", "reopened", "moved_from")
+          "blocked", "after", "doc", "reopened", "moved_from")
 
 
 def _slug(text: str, limit: int = 40) -> str:
@@ -92,9 +92,51 @@ def open_items(root: Path, track: str) -> list[dict]:
 
 
 def ready(root: Path, track: str) -> list[dict]:
-    """Open to-dos that are NOT waiting on the user: what auto may pick up. Answered first."""
-    items = [t for t in open_items(root, track) if not t.get("asks") or t.get("answer")]
+    """Open to-dos nothing is waiting on: what auto may pick up. Answered first.
+
+    TWO WAYS TO BE UNREADY AND THEY ARE NOT THE SAME. `asks` waits on a PERSON — somebody
+    must answer, and the list surfaces it to them. `blocked` waits on a CONDITION — a batch
+    that must run together, a release, another to-do — and nobody has to do anything; the
+    agent re-judges it itself when it comes round again.
+
+    THE SECOND ONE EXISTS BECAUSE ITS ABSENCE COST A REAL SESSION. With no way to say "not
+    now, because X", an agent whose reminder forbade the work the list kept offering built
+    a parking-bay environment, switched to it, and silenced every reminder it had — the
+    list was a wall and it went around. A wall is what an agent routes around; a skip is
+    what it uses.
+    """
+    items = [t for t in open_items(root, track)
+             if (not t.get("asks") or t.get("answer")) and not t.get("blocked")
+             and not waiting_on(root, track, t)]
     return sorted(items, key=lambda t: 0 if answered_one(t) else 1)
+
+
+def blocked(root: Path, track: str) -> list[dict]:
+    """Open to-dos set aside on a condition, with the reason each is waiting on."""
+    return [t for t in open_items(root, track) if t.get("blocked")]
+
+
+def after_of(t: dict) -> list[int]:
+    """The to-do numbers this one must follow, as numbers."""
+    raw = (t.get("after") or "").replace(",", " ").split()
+    return [int(x) for x in raw if x.isdigit()]
+
+
+def waiting_on(root: Path, track: str, t: dict) -> list[int]:
+    """Which of this to-do's prerequisites are not done yet — [] when it is free to start.
+
+    A PREREQUISITE IS A `blocked` WHOSE CONDITION THE CODE CAN CHECK. `blocked` is prose the
+    agent re-judges; this is a list of numbers, so when the last one closes the row becomes
+    ready ON ITS OWN and nobody has to remember to release it. That is the whole reason to
+    have both.
+
+    A STRUCK PREREQUISITE IS NOT A DONE ONE. It was abandoned, not finished, so the row that
+    depended on it may no longer make sense — it stays waiting and `journal todos` says which
+    number it is waiting on, rather than quietly becoming ready because the blocker vanished.
+    """
+    by_n = {x["n"]: x for x in _all(root, track)}
+    return [n for n in after_of(t)
+            if n in by_n and not (by_n[n].get("done") and not by_n[n].get("struck"))]
 
 
 def asking(root: Path, track: str) -> list[dict]:
@@ -153,6 +195,100 @@ def ask(root: Path, track: str, n: int, question: str) -> tuple[bool, str]:
         return False, f"to-do {n} is already done ({t.get('how')})"
     _update(root, track, n, asks=question, started="")
     return True, f"to-do {n} waits on the user: {question}"
+
+
+def block(root: Path, track: str, n: int, why: str) -> tuple[bool, str]:
+    """Set a to-do aside on a condition. Not done, not abandoned, not the user's problem.
+
+    THE REASON IS REQUIRED, like every retirement here — and unlike them this one is not a
+    retirement at all: the to-do stays open, stays counted, and comes back. What the reason
+    buys is a later reader knowing WHY a row was skipped rather than finding a gap, and the
+    agent that meets it again reading the condition at the moment it is judging whether the
+    condition still holds.
+
+    IT IS THE AGENT'S OWN JUDGEMENT, exactly like a reminder's `--until`. Nothing here can
+    evaluate "the rig batch has run"; the agent wrote it, the agent reads it back, and the
+    agent unblocks it. `journal todos start <n>` does that in one move, deliberately: if
+    you are picking it up, the block is over.
+    """
+    why = " ".join((why or "").split())
+    if not why:
+        return False, ('say what it waits on: `journal todos block <n> "<what has to be true '
+                       'first>"` — a skipped row with no reason reads as a gap')
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    if t.get("done"):
+        return False, f"to-do {n} is already done ({t.get('how')})"
+    _update(root, track, n, blocked=why, started="")
+    return True, (f"to-do {n} is set aside: {why}\n"
+                  f"  the list skips it and `journal next` will not offer it; "
+                  f"`journal todos start {n}` picks it up when the condition is true")
+
+
+def after(root: Path, track: str, n: int, names: str) -> tuple[bool, str]:
+    """Say which to-dos must land before this one. `--none` clears it.
+
+    REFUSED RATHER THAN DISCOVERED. A dependency rots in ways a flat list cannot: a number
+    that is not a to-do, a row waiting on itself, or a CYCLE — 12 after 14 after 12 — which
+    is a list that can never be worked and whose only symptom is a `next` that returns
+    nothing forever. All three are caught here, when they are written, because that is the
+    only moment somebody is looking.
+    """
+    names = " ".join((names or "").replace(",", " ").split())
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    if names in ("--none", "none", ""):
+        _update(root, track, n, after="")
+        return True, f"to-do {n} waits on nothing now"
+    want = [x for x in names.split()]
+    if any(not x.isdigit() for x in want):
+        return False, f'a prerequisite is a to-do number: `journal todos after {n} 12,14`'
+    nums = [int(x) for x in want]
+    by_n = {x["n"]: x for x in _all(root, track)}
+    missing = [x for x in nums if x not in by_n]
+    if missing:
+        return False, (f"no to-do on `{track}` is numbered {', '.join(map(str, missing))}; "
+                       "`journal todos` numbers them")
+    if n in nums:
+        return False, f"to-do {n} cannot wait on itself"
+    cycle = _cycle(by_n, n, nums)
+    if cycle:
+        return False, (f"that is a cycle: {' → '.join(map(str, cycle))} — a list where each "
+                       "waits on the next can never be worked")
+    _update(root, track, n, after=",".join(map(str, nums)))
+    left = waiting_on(root, track, {**t, "after": ",".join(map(str, nums))})
+    return True, (f"to-do {n} waits on {', '.join(map(str, nums))}"
+                  + (f"; {len(left)} still open, and it becomes ready when the last one closes"
+                     if left else " — all of them are done, so it is ready now"))
+
+
+def _cycle(by_n: dict, start: int, nums: list[int]) -> list[int] | None:
+    """The path back to `start`, if these prerequisites would close a loop."""
+    seen, stack = set(), [(x, [start, x]) for x in nums]
+    while stack:
+        cur, path = stack.pop()
+        if cur == start:
+            return path
+        if cur in seen:
+            continue
+        seen.add(cur)
+        for nxt in after_of(by_n.get(cur, {})):
+            stack.append((nxt, path + [nxt]))
+    return None
+
+
+def unblock(root: Path, track: str, n: int) -> tuple[bool, str]:
+    """The condition came true. Also what `start` does, so picking one up is enough."""
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    if not t.get("blocked"):
+        return False, f"to-do {n} is not set aside"
+    was = t["blocked"]
+    _update(root, track, n, blocked="")
+    return True, f"to-do {n} is back on the list; it was set aside on: {was}"
 
 
 def _get(root: Path, track: str, n: int) -> tuple[dict | None, str]:
@@ -306,7 +442,10 @@ def start(root: Path, track: str, n: int, at: str, strict: bool = False) -> tupl
         nxt = next((x for x in ready(root, track) if x["n"] != n), None)
         return None, (f"to-do {n} waits on the user: {t['asks']}" + (f" — next ready: {nxt['n']} ({nxt['title']})" if nxt
                       else " — nothing else is ready"))
-    return _update(root, track, n, started=at)  # the question and its answer stay, as history
+    # PICKING IT UP ENDS THE BLOCK. A to-do set aside on a condition is being started, so
+    # the condition is over by the only judgement that can decide it. The question and its
+    # answer stay, as history.
+    return _update(root, track, n, started=at, blocked="")
 
 
 def done(root: Path, track: str, n: int, how: str, at: str) -> tuple[bool, str]:
@@ -410,6 +549,11 @@ def now() -> str:
 
 
 TRAILER = "Journal:"
+#: COLUMN ZERO, AND THAT IS DELIBERATE — do not "fix" it. Allowing leading whitespace was
+#: tried, on the theory that an indented second trailer explained a report of only the first
+#: one closing; test_commit holds the opposite and is right: commit messages here discuss
+#: to-dos at length, and an INDENTED line is how this project quotes one. A quotation that
+#: closes a to-do is worse than a trailer that has to be unindented.
 _TRAILER = re.compile(r"^Journal:[ \t]*todos?[ \t]+done[ \t]+"
                       r"(?:(?P<env>[A-Za-z0-9][A-Za-z0-9 _.-]*?)/)?(?P<n>\d+)[ \t]*(?P<how>.*)$",
                       re.IGNORECASE | re.MULTILINE)
@@ -522,6 +666,14 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
             meta = "answered by the user, not yet picked up"
         elif t.get("asks"):
             meta = "waits on the user"
+        elif t.get("blocked"):
+            meta = f"set aside: {t['blocked']}"
+        elif t.get("after"):
+            # `left` IS THE PAGER'S NAME in this function; shadowing it turned the paging
+            # arithmetic into a comparison against a list.
+            owed = waiting_on(root, track, t)
+            meta = (f"after {t['after']}" + (f" — {len(owed)} still open" if owed
+                                             else ", all done: ready"))
         elif t.get("started"):
             meta = f"started {_age(t['started'])}, work is open"
         else:
@@ -579,6 +731,10 @@ def show(root: Path, track: str, n: int, width: int = 88) -> tuple[bool, str]:
             rows.append((f'journal todos answer {n} "<answer>"', "answer it (the user)"))
         elif not t.get("asks"):
             rows.append((f'journal todos ask {n} "<question>"', "it waits on the user"))
+            rows.append((f'journal todos block {n} "<what has to be true first>"',
+                         "you cannot do it yet, and it is not a question for them"))
+            rows.append((f"journal todos after {n} 12,14",
+                         "it must follow those; it goes ready when the last one closes"))
     if rows:
         out.append(fmt.commands(rows))
     out.append("  " + fmt.dim(str(t["path"].relative_to(root.parent))))
@@ -627,8 +783,15 @@ def _loop_line(root: Path) -> str:
             "on until nothing is left it can do.")
 
 
-def carry(root: Path, track: str) -> str:
-    """The block a session start hands over. Titles only; what it asks depends on auto."""
+def carry(root: Path, track: str, cap: int = 0) -> str:
+    """The block a session start hands over. Titles only; what it asks depends on auto.
+
+    CAPPED AFTER THE SORT, NEVER BEFORE. The answered ones come first because they are the
+    user's word to proceed, and the ones waiting on the user carry their question — so
+    those are exactly the entries a trim must never take. Sorting first and cutting the
+    tail means what is dropped is the ordinary end of the list, and `fmt.cut` says how many
+    and which command reads them.
+    """
     waiting = open_items(root, track)
     if not waiting:
         return ""
@@ -639,7 +802,9 @@ def carry(root: Path, track: str) -> str:
         elif t.get("asks") and not t.get("started"):
             s += f"\n       waiting on the user: {t['asks']}"
         return s
-    titles = "\n".join(line(t) for t in sorted(waiting, key=lambda t: 0 if answered_one(t) else 1))
+    ordered = sorted(waiting, key=lambda t: 0 if answered_one(t) else 1)
+    shown = ordered[:cap] if cap else ordered
+    titles = "\n".join(line(t) for t in shown) + fmt.cut(len(shown), len(ordered), "journal todos")
     blocked = asking(root, track)
     unstuck = answered(root, track)
     lead = (f"{len(unstuck)} of these the user has ANSWERED since they were parked — pick those up "

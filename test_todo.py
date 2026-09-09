@@ -7,7 +7,7 @@ Owns what test_queue.py (the stop queue) and test_docs.py (docs, a different sha
 not: todo.py's own CRUD — a brief's rendering, and the amend/replace verbs that change
 one without rewriting the file by hand.
 """
-import os, shutil, subprocess, sys, tempfile, time
+import os, re, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
@@ -130,6 +130,61 @@ os.close(w)
 check("a stdin that never closes refuses inside the bound, instead of hanging",
       (p.returncode, "takes the brief on stdin" in out,
        time.time() - started < journal.BRIEF_WAIT + 10), (1, True, True))
+
+# A PAYLOAD THAT OPENS WITH `--` IS PAYLOAD, after a bare `--`. Without it, a title
+# beginning with a known flag was parsed as that flag: `todos add "--env= is validated
+# twice"` was refused with a message about environments, and nothing was written.
+code, out = j("todos", "add", "--", "--env= is validated in one place")
+check("a title that opens with a flag lands after `--`", (code, "--env= is validated" in out), (0, True))
+code, out = j("todos")
+check("and it is in the list", "--env= is validated in one place" in out, True)
+code, out = j("todos", "add", "--nonsense=1", "a title")
+check("an unknown option is still refused rather than kept as words", code, 1)
+
+# ─────────────── set aside on a CONDITION: not done, not abandoned, not the user's ────────
+# The state whose absence built a parking-bay environment: a row the agent cannot do now,
+# for a reason that is nobody's to answer.
+code, out = j("todos", "add", "needs the rig batch")
+n = re.search(r"to-do (\d+)", out).group(1)
+code, out = j("todos", "block", n)
+check("a block wants its reason, like every retirement here", (code, "what has to be true" in out), (1, True))
+code, out = j("todos", "block", n, "the rig batch has not run")
+check("set aside, with what it waits on", (code, "set aside" in out), (0, True))
+code, out = j("todos")
+check("the list still shows it, and says why", ("set aside: the rig batch has not run" in out), True)
+code, out = j("next")
+check("but `next` does not offer it", f"to-do {n}," in out, False)
+code, out = j("todos", "start", n)
+check("starting it ends the block: picking it up IS the judgement", code, 0)
+code, out = j("todos")
+check("and it reads as started, not set aside", "set aside" in out, False)
+
+# ─────────────────── a prerequisite: a block whose condition the code can check ───────────
+code, out = j("todos", "add", "the groundwork")
+first = re.search(r"to-do (\d+)", out).group(1)
+code, out = j("todos", "add", "the part that follows", f"--after={first}")
+second = re.search(r"to-do (\d+)", out).group(1)
+check("a row can be filed already knowing what it follows",
+      (code, f"waits on {first}" in out), (0, True))
+code, out = j("next")
+check("`next` does not offer it while the groundwork is open", f"to-do {second}," in out, False)
+code, out = j("todos", "after", second, "9999")
+check("an unknown prerequisite is refused", (code, "numbered 9999" in out), (1, True))
+code, out = j("todos", "after", second, second)
+check("so is waiting on itself", (code, "cannot wait on itself" in out), (1, True))
+code, out = j("todos", "after", first, second)
+check("and so is a cycle, when it is written rather than when next goes quiet",
+      (code, "that is a cycle" in out), (1, True))
+j("todos", "done", first, "landed")
+code, out = j("todos")
+check("with the groundwork done the row reads as ready", "all done: ready" in out, True)
+code, out = j("todos")
+check("and the row is ready — nobody had to release it", "all done: ready" in out, True)
+import todo as _todo
+check("`ready` counts it, which is what next and auto read",
+      str(second) in [str(x["n"]) for x in _todo.ready(d / ".journal", "default")], True)
+code, out = j("todos", "after", second, "--none")
+check("a prerequisite can be cleared", (code, "waits on nothing" in out), (0, True))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

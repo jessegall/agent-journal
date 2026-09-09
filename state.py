@@ -181,7 +181,11 @@ def _record(root: Path) -> dict:
         for k, v in held.items():
             s = slug(k) or "default"
             if s in fixed and isinstance(fixed[s], dict) and isinstance(v, dict):
-                for key in ("pins", "work"):
+                # EVERY TRACKED KEY, NOT THE TWO THAT EXISTED WHEN THIS WAS WRITTEN. The
+                # literal pair here silently dropped the loser's reminders the day a third
+                # key was added, which is the quiet loss this package refuses everywhere
+                # else. Iterating TRACKED makes the next key covered by construction.
+                for key in TRACKED:
                     fixed[s][key] = (fixed[s].get(key) or []) + (v.get(key) or [])
             else:
                 fixed[s] = v

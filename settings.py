@@ -112,12 +112,17 @@ DEFAULTS = {
     # because a gate that manufactures pins is the padding the ladder warns against.
     "gate_after_context_rung": False,
 
-    # WHERE A SUBAGENT IS HANDED THE RULES AGAIN, as a share of ITS OWN window. Subagents
-    # get no SessionStart and write no journal, but a rule binds their work as much as the
-    # main agent's, so the rules ride their first tool call and come back at these marks:
-    # in a long context the block from the start is far behind and attention fades.
-    # Delivered as context, never a hold — a subagent has nothing to decide about pins.
-    "subagent_rules_ladder": [0.25, 0.5, 0.75],
+    # WHERE THE MAIN AGENT IS REMINDED THAT RULES AND PINS EXIST, as a share of its window.
+    # It is handed them in full at its start and then never again until a compaction, so by
+    # the time a session is long enough to drift, the block that carried them is tens of
+    # thousands of characters behind — which is exactly when the drift happens. A subagent
+    # was told nothing until this existed.
+    #
+    # A POINTER, NOT THE TEXT. The claims are already in this context; re-injecting them
+    # would spend the window to fight a symptom of the window being full, and the count is
+    # what a reader needs to decide whether to look. Empty disables it.
+    "recall_ladder": [0.35, 0.6, 0.85],
+
 
     # TOOL CALLS ON ONE STARTED TO-DO WITH NO `update` FILED before the hook says so, once.
     # The measurement behind "too much time without result" when auto is on. 0 turns it off.
@@ -146,9 +151,11 @@ DEFAULTS = {
     # terminal closed without a SessionEnd — and its environment is free again.
     "session_stale_hours": 24.0,
 
-    # THE ORDER OF THE STOP QUEUE, by subject: lower runs first. The defaults are environment 5,
-    # loop 10, context 20, deferral 30, untagged 40, work 50, auto 60; {"work": 1} puts
-    # open work at the head. `journal settings` shows the order in force.
+    # THE ORDER OF THE STOP QUEUE, by subject: lower runs first. {"work": 1} puts open work
+    # at the head. The defaults are NOT restated here — a list in a comment beside a
+    # registry it does not read is a list that drifts, and this one had: it named seven of
+    # the nine subjects, omitting `claimed`, which runs FIRST. `journal settings` prints the
+    # order in force, from the registry itself.
     "stop_priority": {},
 
     # WHERE THE PROJECT'S DOCS LIVE, relative to the project root. The journal catalogues

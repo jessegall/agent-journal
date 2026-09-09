@@ -17,7 +17,7 @@ Every group below prints its own commands, and so does every spelling of them:
     todos          delayed work, parked with the brief you will need in a week
     docs           what was settled: findings, reports, the reasoning a pin cites
     tools          scripts kept for repeated work
-    environments   where work lives: switch, prepare, delegate, handoff, worktree
+    environments   where work lives: switch, prepare, claim, worktree
     cleanup        what has evidence against it: stale rules, pins, docs, empty environments
     transcript     read it back: conversation, user, search, carry
     system         verify, version, update, settings, loop
@@ -77,9 +77,21 @@ def _stem() -> str | None:
 
 
 import state as _state
-_ENV_FLAG = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith(("--env=", "--environment=", "--track="))), "")
+#: `--env=` IS READ BEFORE ANYTHING ELSE, so it has to honour the `--` separator here too:
+#: the flag loop in `main` stops at a bare `--`, and a module-level scan that did not would
+#: still eat an `--env=` that was meant as payload. Same rule, both places.
+_ARGV = sys.argv[1:sys.argv.index("--")] if "--" in sys.argv[1:] else sys.argv[1:]
+_ENV_FLAG = next((a.split("=", 1)[1] for a in _ARGV if a.startswith(("--env=", "--environment=", "--track="))), "")
 if _ENV_FLAG:
+    # THE REFUSAL LIVES WHERE THE FLAG IS HANDLED, and for a while it did not: the flag was
+    # applied here and validated again, to no effect, in the option loop three hundred lines
+    # down. Two places to change, one of which only complained — and a reader looking for
+    # how the flag works found the half that does nothing.
     _ENV_FLAG = _state.slug(_ENV_FLAG) or "default"
+    if _ENV_FLAG not in tracks._all(_ROOT):
+        fmt.say(f"no environment is called {_ENV_FLAG!r}; `journal environments` lists them, "
+                "`journal switch` or `journal prepare` creates one", error=True)
+        raise SystemExit(1)
     tracks.override(_ENV_FLAG)
 _state.use_track(tracks.current(_ROOT, _stem()))
 
@@ -122,7 +134,7 @@ def _resolved() -> tuple[Path, bool] | None:
 #: The lifecycle verbs `journal environments <verb>` hands to their top-level twins. Reads
 #: (`journal environments`, `journal environments show "<name>"`) are not here: they are the
 #: noun itself, and a name is not a verb.
-ENV_VERBS = ("switch", "claim", "prepare", "delegate", "handoff")
+ENV_VERBS = ("switch", "claim", "prepare")
 
 #: EVERY SPELLING OF THE NOUN, in ONE list, because it was written out four times and a
 #: fifth site would have been the one that forgot an alias. `environments` is canonical
@@ -148,7 +160,30 @@ def _help(verb: str = "") -> int:
         fmt.say(__doc__, error=True)
         return 1
     fmt.say(f"journal {verb}\n")
-    fmt.say("\n".join("    " + l for l in lines))
+    # THROUGH THE SAME RENDERER AS EVERY OTHER COMMAND LIST. These lines were printed with a
+    # four-space prefix straight to `say`, and `block` passes an already-indented line
+    # through untouched however long it is — so no help screen was ever wrapped by anything.
+    # Measured: `journal cleanup help` had a 302-character line, `environments help` 271,
+    # and most lines in every group sat between 90 and 160. Splitting on the run of spaces
+    # the lines already use to separate a command from its description turns them into the
+    # rows `fmt.commands` was built for, and one width guarantee now covers both surfaces.
+    # A GROUP IS COMMANDS AND SOMETIMES A SENTENCE. A line with no description column is
+    # prose — a ruling, a note about a setting — and it wraps rather than pretending to be a
+    # command nobody can type. The command rows either side of it stay aligned as one block.
+    rows: list = []
+    out: list = []
+    for l in lines:
+        cmd, sep, what = l.partition("   ")
+        if sep and what.strip():
+            rows.append((cmd.rstrip(), what.strip()))
+            continue
+        if rows:
+            out.append(fmt.commands(rows, indent=4))
+            rows = []
+        out.append(fmt.wrap(l.strip(), indent=4))
+    if rows:
+        out.append(fmt.commands(rows, indent=4))
+    fmt.say("\n".join(out))
     return 0
 
 
@@ -170,7 +205,7 @@ def cmd_status() -> int:
     on_user = todo.asking(root(), here)
     others = [t["name"] for t in tracks.listing(root()) if not t["current"]]
     rows = [
-        ("environment", here + ("   (delegated)" if tracks.delegated(root(), _stem()) else "")
+        ("environment", here + ""
          + (f"   (parked: {', '.join(others)})" if others else ""), "journal environments"),
         ("rules", f"{ruled} in force on every environment" if ruled else "none", "journal rules"),
         ("pins", f"{pinned} standing on this environment" if pinned else "none", "journal pins"),
@@ -389,7 +424,7 @@ CATALOGUE_PAGE = 15
 def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int = 1) -> int:
     """Every line mentioning the term on this environment, across every session of the project.
 
-    A ENVIRONMENT HAS A TRANSCRIPT — everything said while it was current, in every session —
+    AN ENVIRONMENT HAS A TRANSCRIPT — everything said while it was current, in every session —
     and that is what is searched, because a ruling made on this environment last week is as
     much this environment's as one made an hour ago. `--all` searches every environment. The line
     number is the citation and leads, with the session it belongs to; the passage is a
@@ -481,8 +516,6 @@ def _where() -> dict:
     path, guessed = got
     lines, _ = transcript.read(path)
     where = {"line": lines[-1].n if lines else 0, "session": path.name}
-    if _stem() and tracks.delegated(root(), _stem()):
-        where["via"] = "delegation"   # the words may be a subagent's, one level under this transcript
     if guessed:
         where["guessed"] = True  # so `pins <n> --full` can say the citation may be off
     return where
@@ -496,8 +529,13 @@ def _doc_where(doc_ref: str) -> dict | None:
         if err:
             fmt.say(f"--doc: {err}", error=True)
             return None
-        doc, prt, _ = docs.get(root(), doc_ref)
-        doc_ref = f"{doc['n']}.{prt['p']}" if prt else str(doc["n"])   # a name resolves once; the number stays
+        base, head, _ = docs.anchor(root(), doc_ref)
+        doc, prt, _ = docs.get(root(), base)
+        # A NAME RESOLVES ONCE AND THE NUMBER STAYS — and so does the heading's slug, which
+        # is what makes the citation survive the doc being renamed.
+        doc_ref = f"{doc['n']}.{prt['p']}" if prt else str(doc["n"])
+        if head:
+            doc_ref += "#" + docs.slug_of(head)
         where["doc"] = doc_ref
     return where
 
@@ -605,7 +643,7 @@ def cmd_rules(all_of_them: bool, n: int | None, full: bool, page: int = 1,
     fmt.say()
     fmt.say(pins.render(root(), all_of_them=all_of_them, key=pins.RULES, cap=CATALOGUE_PAGE, page=page, order=order))
     fmt.say()
-    fmt.say(fmt.wrap("Handed first to every session and to every subagent."))
+    fmt.say(fmt.wrap("Handed to every session, before anything else."))
     fmt.say(fmt.commands([
         ("journal rules <n> --full", "the conversation around one"),
         ('journal rules strike <n> "<why>"', "repeal one"),
@@ -658,7 +696,7 @@ def cmd_promote(n: int) -> int:
     return 0 if ok else 1
 
 
-def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", page: int = 1,
+def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", after: str = "", page: int = 1,
              order: str = fmt.DESC, quiet: bool = False) -> int:
     here = tracks.current(root(), _stem())
     # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
@@ -748,12 +786,34 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         for ok, line in said:
             fmt.say(("  " if ok else "  ! ") + line)
         return 0 if any(ok for ok, _ in said) else 1
-    if verb in ("start", "done", "drop", "strike", "ask", "answer", "reopen", "move"):
+    if verb in ("start", "done", "drop", "strike", "ask", "answer", "reopen", "move",
+                "block", "unblock", "skip", "after", "needs"):
         if len(rest) < 2 or not rest[1].isdigit():
             fmt.say(f'todo {verb} wants a number: journal todos {verb} 3' + (
                 ' "<how>"' if verb != "start" else ""), error=True)
             return 1
         n = int(rest[1])
+        if verb in ("after", "needs"):
+            ok, msg = todo.after(root(), here, n, after if after == "--none" else " ".join(rest[2:]))
+            fmt.say(msg, error=not ok)
+            return 0 if ok else 1
+        if verb in ("block", "skip", "unblock"):
+            # A CONDITION, NOT A QUESTION. `ask` waits on the user; this waits on a fact
+            # about the world and is the agent's own to re-judge. Both close the work the
+            # to-do opened, for the same reason: an agent that sets something aside must
+            # not leave work standing behind it.
+            if verb == "unblock":
+                ok, msg = todo.unblock(root(), here, n)
+            else:
+                ok, msg = todo.block(root(), here, n, " ".join(rest[2:]))
+            if ok and verb != "unblock":
+                t, _ = todo._get(root(), here, n)
+                if t and any(w["subject"] == t["title"] for w in work.open_work(root())):
+                    closed, note = work.end(root(), t["title"], _now())
+                    msg += "\n  " + (f"closed the work `{t['title']}` — it is set aside"
+                                     if closed else note)
+            fmt.say(msg, error=not ok)
+            return 0 if ok else 1
         if verb in ("ask", "answer"):
             fn = todo.ask if verb == "ask" else todo.answer
             ok, msg = fn(root(), here, n, " ".join(rest[2:]))
@@ -767,7 +827,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             fmt.say(msg, error=not ok)
             return 0 if ok else 1
         if verb == "start":
-            t, err = todo.start(root(), here, n, _now(), strict=bool(tracks.delegated(root(), _stem())))
+            t, err = todo.start(root(), here, n, _now())
             if t is None:
                 fmt.say(f"{err}", error=True)
                 return 1
@@ -832,6 +892,15 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
         return 1
     ok, msg = todo.add(root(), here, title, body, _now(), where)
     fmt.say(msg, error=not ok)
+    # `--after=` ON THE SAME COMMAND, because the moment you write a row that must follow
+    # another is the moment you know it — and going back to say so is the step that gets
+    # skipped. It is applied after the add, through the one function that validates it.
+    if ok and after:
+        import re as _re
+        m = _re.search(r"to-do (\d+)", msg)
+        if m:
+            good, note = todo.after(root(), here, int(m.group(1)), after)
+            fmt.say("  " + note, error=not good)
     return 0 if ok else 1
 
 
@@ -855,6 +924,13 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
             fmt.say(fmt.wrap(f"{len(loose)} file(s) under {docs.folder(root()).name}/ are not catalogued: "
                            + ", ".join(x.name for x in loose)))
         fmt.say()
+        # THE SENTENCE EVERY OTHER CATALOGUE HAS. Four of seven screens said what their
+        # store is and what it costs before listing its commands; docs and tools said
+        # nothing, so a reader met the commands without ever being told what they are for.
+        fmt.say(fmt.wrap("What was settled, so it is not re-investigated: a doc is read on "
+                         "demand and never injected, and one line of its catalogue reaches "
+                         "every session. A pin, rule or to-do that rests on one cites it "
+                         "with --doc=N."))
         fmt.say(fmt.commands([
             ("journal docs show <doc>", "read one, by number or name; <doc>.<p> reads one part"),
             ('journal docs add "<title>" --abstract="<one line>" --brief', "a new doc, its intro on stdin"),
@@ -952,6 +1028,9 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1, order: st
             fmt.say(fmt.wrap(f"{len(loose)} folder(s) under .journal/tools/ have no tool.md: "
                            + ", ".join(x.name for x in loose) + " — `journal tools index` catalogues them."))
         fmt.say()
+        fmt.say(fmt.wrap("Scripts kept for repeated work, so the next session runs one "
+                         "instead of writing it again. A tool is the project's, like a doc; "
+                         "one line of this catalogue reaches every session."))
         fmt.say(fmt.commands([
             ("journal tools show <name>", "read one — `show` reaches a tool named after a verb"),
             ("journal tools run <name> …", "run it from the project root"),
@@ -1126,7 +1205,7 @@ def cmd_loop(args: list[str]) -> int:
 
 PREPARE = """\
 Preparing {name}: an environment ready to be picked up from A to Z, by you, by another
-session, or by a subagent. Only when the user asked for it. In order:
+session. Only when the user asked for it. In order:
 
   1  the source        the issue, the PR, the user's words — fetch it whole (gh, the tracker's tool, or ask)
   2  the brief         journal docs add "{name}: <title>" --abstract="<one line>" --brief   < the source
@@ -1142,7 +1221,7 @@ session, or by a subagent. Only when the user asked for it. In order:
   8  the page          journal environments "{name}"   — read it as the one who picks this up would
 
 Then offer: work it now (todo start 1), leave it for a session (journal switch "{name}"), or
-journal delegate "{name}" and dispatch a subagent with the page as its brief.
+or leave it for a later session.
 """
 
 
@@ -1164,147 +1243,27 @@ def cmd_prepare(name: str) -> int:
     return 0
 
 
-def cmd_handoff(name: str, source: str, run: bool, off: bool, sessions: list[str] | None = None) -> int:
-    """The main agent's two dispatches: the hand-off agent, then the runner."""
-    import handoff
-    name = _state.slug(name)
-    stem = _stem()
-    if off:
-        return cmd_delegate("", True, sessions)
-    if not stem:
-        fmt.say("a hand-off is a session's: run it from inside one", error=True)
-        return 1
-    current = tracks.delegated(root(), stem)
-    if current and current != name:
-        fmt.say(f"this session is delegating `{current}` — `journal handoff --off` when that run is over, then again",
-                error=True)
-        return 1
-    if not name:
-        fmt.say('handoff what? journal handoff "<environment>" "<issue link, id or text>"', error=True)
-        return 1
-    conf, _ = settings_mod.load(root())
-    excl, stale = conf["one_session_per_environment"], conf["session_stale_hours"]
-    if not run:
-        if name not in tracks._all(root()):
-            ok, msg = tracks.switch(root(), name, _now(), stem, exclusive=excl, stale_hours=stale)
-            if not ok:
-                fmt.say(msg, error=True)
-                return 1
-        if tracks.delegated(root(), stem) != name:
-            ok, msg = tracks.delegate(root(), stem, name, stale, excl)
-            if not ok:
-                fmt.say(msg, error=True)
-                return 1
-        text, origin = handoff.prompt(root(), "handoff agent", name, source)
-        if not text:
-            fmt.say(f"the template at {origin} has no `# handoff agent` section", error=True)
-            return 1
-        fmt.say(fmt.title("HANDOFF", sub=f"{name} · delegated to this session · template: {origin}"))
-        fmt.say("")
-        fmt.say(fmt.wrap("Dispatch ONE subagent with the prompt below: subagent_type general-purpose, model opus. "
-                         "Do nothing else on this environment until it reports. READY: read "
-                         f"`journal environments \"{name}\"` yourself, then `journal handoff \"{name}\" --run` for the "
-                         "runner's prompt. BLOCKED: put its question to the user; dispatch no runner."))
-        fmt.say("")
-        fmt.say(fmt.section("prompt for the hand-off agent"))
-        fmt.say("")
-        fmt.say(text)
-        return 0
-    ok, page = tracks.page(root(), name, commands=False)
-    if not ok:
-        fmt.say(page, error=True)
-        return 1
-    if not todo.ready(root(), name):
-        fmt.say(f"nothing on `{name}` is ready to start — the hand-off agent reported BLOCKED, or every to-do "
-                f"waits on the user. `journal environments \"{name}\"` shows what there is; no runner is dispatched "
-                "for an empty list", error=True)
-        return 1
-    if tracks.delegated(root(), stem) != name:
-        ok, msg = tracks.delegate(root(), stem, name, stale, excl)
-        if not ok:
-            fmt.say(msg, error=True)
-            return 1
-    # AUTO GOES ON FOR THE RUN, and the command does it rather than trusting the prompt.
-    # A runner exists to work a list to its end; with auto off its stop is not held for the
-    # next to-do and it must be told to continue, which is a conversation the session is not
-    # having — it dispatched an agent precisely so it would not have to. `handoff --off`
-    # does not switch it back: the environment keeps whatever the run left, and the user
-    # turns it off with `journal todos auto off` if the leftovers are theirs to decide.
-    was_auto = todo.auto(root(), name)
-    if not was_auto:
-        todo.set_auto(root(), name, True)
-    text, origin = handoff.prompt(root(), "runner agent", name, source, page)
-    if not text:
-        fmt.say(f"the template at {origin} has no `# runner agent` section", error=True)
-        return 1
-    fmt.say(fmt.title("HANDOFF", sub=f"{name} · the run · auto {'was already on' if was_auto else 'is now ON'} · template: {origin}"))
-    fmt.say("")
-    fmt.say(fmt.wrap("Dispatch ONE subagent with the prompt below (a general-purpose agent; name the model — "
-                     "sonnet for careful work without invention, opus for judgement) AND GIVE IT ITS OWN "
-                     "WORKTREE — `isolation: \"worktree\"` — so that two runs of two environments never edit one "
-                     "checkout. Its journal still lands here: a linked worktree's `.journal` is a symlink to "
-                     "this one."))
-    fmt.say("")
-    fmt.say(fmt.wrap("It hands back a BRANCH, and what becomes of that is yours to settle. If the user has "
-                     "already asked for the work to be merged, say so in the prompt — add a line granting it — "
-                     "and it merges when it is done. If they have not, do not merge on your own: when it "
-                     "reports, tell the user what is on the branch and OFFER the merge. Either way, read "
-                     f"`journal environments \"{name}\"` before you file anything; `journal handoff --off` ends the delegation."))
-    fmt.say("")
-    fmt.say(fmt.section("prompt for the runner"))
-    fmt.say("")
-    fmt.say(text)
-    return 0
-
-
-def cmd_delegate(name: str, off: bool, sessions: list[str] | None = None) -> int:
-    conf, _ = settings_mod.load(root())
-    if off and sessions:
-        # FROM A TERMINAL, FOR A SESSION THAT DIED MID-RUN: its delegation would otherwise
-        # hold the environment until it goes stale.
-        done = 0
-        for sid in list(tracks._bindings(root())):
-            if any(sid.startswith(w) for w in sessions) and tracks.delegated(root(), sid):
-                ok, msg = tracks.undelegate(root(), sid)
-                fmt.say(f"{sid[:8]}: {msg}")
-                done += 1
-        if not done:
-            fmt.say("no session with that id is delegating anything", error=True)
-        return 0 if done else 1
-    stem = _stem()
-    if not stem:
-        fmt.say("delegation is a session's: run it from inside one (from a terminal: --off --session=<id>)", error=True)
-        return 1
-    if off:
-        was = tracks.delegated(root(), stem)
-        if was:
-            _state.use_track(was)
-            standing = [w["subject"] for w in work.open_work(root())]
-            left = todo.open_items(root(), was)
-            if standing or left:
-                fmt.say(fmt.wrap(f"on `{was}` still: " + "; ".join(
-                    ([f"open work — {', '.join(standing)}"] if standing else [])
-                    + ([f"{len(left)} to-do(s) waiting, {len(todo.asking(root(), was))} on the user"] if left else []))))
-    ok, msg = tracks.undelegate(root(), stem) if off else tracks.delegate(
-        root(), stem, name, conf["session_stale_hours"], conf["one_session_per_environment"])
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
 def cmd_tracks(name: str = "") -> int:
     conf, _ = settings_mod.load(root())
     if name:
-        ok, msg = tracks.page(root(), name, commands=tracks.delegated(root(), _stem()) != _state.slug(name))
+        ok, msg = tracks.page(root(), name, commands=True)
         fmt.say(msg, error=not ok)
         return 0 if ok else 1
     rows = tracks.listing(root(), _stem(), conf["session_stale_hours"])
     fmt.say(fmt.title("ENVIRONMENTS", sub="* this session · > where new sessions start"))
     fmt.say()
+    wide = max([len(t["name"]) for t in rows] + [12])   # measured, not a hardcoded 28
     for t in rows:
         mark = ("*" if t["current"] else " ") + (">" if t["start"] else " ")
         who = ("   sessions: " + ", ".join(f"{sid[:8]} ({t['seen'].get(sid, '')})" for sid in t["sessions"])) if t["sessions"] else ""
-        fmt.say(f" {mark} {t['name']:<28} {t['pins']} pin(s), {t['open']} open{who}")
+        fmt.say(f" {mark} {t['name']:<{wide}} {t['pins']} pin(s), {t['open']} open{who}")
     fmt.say()
+    # THE SHAPE EVERY OTHER CATALOGUE HAS: the sentence that says what this store is, a
+    # blank line, then the commands. This screen had them the other way round and with no
+    # blank between, so its closing prose read as a continuation of the last command.
+    fmt.say(fmt.wrap("Nothing is ever closed by switching." + (
+        " One running session works an environment at a time; a stale session is one not seen for "
+        f"{conf['session_stale_hours']:g} h." if conf["one_session_per_environment"] else "")))
     fmt.say(fmt.commands([
         ('journal switch "<name>"', "this session onto that environment (from a terminal: the project's start environment)"),
         ('journal switch "<name>" --project', "this session, and where new sessions start"),
@@ -1312,9 +1271,6 @@ def cmd_tracks(name: str = "") -> int:
         ("journal switch --back", "the one you came from"),
         ('journal environments remove "<name>"', "take one off the list — it says what it holds, --yes does it"),
     ]))
-    fmt.say(fmt.wrap("Nothing is ever closed by switching." + (
-        " One running session works an environment at a time; a stale session is one not seen for "
-        f"{conf['session_stale_hours']:g} h." if conf["one_session_per_environment"] else "")))
     return 0
 
 
@@ -1459,19 +1415,84 @@ def cmd_pins(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
 
 
 def cmd_settings() -> int:
+    """Every setting, what it is, and — the half this used to promise and not print — the
+    order the stop queue runs in.
+
+    THE COLUMNS ARE MEASURED, NOT GUESSED. They were padded to a hardcoded 24 and 22, and
+    `one_session_per_environment` is 27 characters, so that one row shoved its value column
+    three places right and the table stopped being a table. Nothing here knows how long the
+    longest key is except the keys.
+    """
+    # THE REGISTRY IS FILLED BY hook.py's DECORATORS, so `nudges` alone answers with an
+    # empty list — which is how this printed a heading and no rows the first time it was
+    # written. Imported here rather than at module scope: the CLI's start-up time is a
+    # measured thing, and one command needs this.
+    import nudges
+    import hook  # noqa: F401 — registers the subjects
     conf, problems = settings_mod.load(root())
     f = root() / settings_mod.PATH
     fmt.say(fmt.title("SETTINGS", sub=str(f) if f.is_file() else "no file, every default in force"))
     fmt.say()
+    wide = max(len(k) for k in settings_mod.DEFAULTS)
+    val = min(30, max(len(str(v)) for v in conf.values()))
     for key, default in settings_mod.DEFAULTS.items():
         mark = " " if conf[key] == default else "*"
-        fmt.say(f" {mark} {key:<24} {str(conf[key]):<22} {fmt.dim('default ' + str(default))}")
+        fmt.say(f" {mark} {key:<{wide}}  {str(conf[key]):<{val}}  {fmt.dim('default ' + str(default))}")
     if any(conf[k] != settings_mod.DEFAULTS[k] for k in settings_mod.DEFAULTS):
         fmt.say()
         fmt.say(fmt.wrap("* set in settings.json"))
+    # THE ORDER IS A SETTING WITH NO ROW OF ITS OWN. `stop_priority` prints as `{}` like any
+    # other key, while settings.py has promised since it was written that "`journal
+    # settings` shows the order in force" — and `nudges.priorities()`, which exists to
+    # answer exactly that, was called by nothing but a test. A setting whose effect cannot
+    # be seen is the failure this module was built to report.
+    fmt.say(fmt.section("the stop queue, in the order it runs"))
+    fmt.say(fmt.table([(name, f"{n}") for name, n in nudges.priorities(conf)]))
+    fmt.say()
+    fmt.say(fmt.wrap("One subject is raised per stop, lowest number first. `stop_priority` "
+                     'moves one: {"work": 1} puts open work at the head. `silenced` turns '
+                     "one off by name, and is the way to quiet a single subject."))
     for p in problems:
         fmt.say(f"\n  ! {p}")
     return 1 if problems else 0
+
+
+#: ─────────────────────────── one refusal, for every missing argument ────────────────────
+#:
+#: THIRTY HAND-WRITTEN REFUSALS SAYING THE SAME TWO THINGS. Every noun's verbs checked their
+#: own arguments and wrote their own complaint — "pins strike wants a pin NUMBER, got 'x'.
+#: `journal pins` numbers them." — thirty times, with ten separate spellings of "numbers
+#: them" that had already drifted in capitalisation, punctuation and whether the offending
+#: word was quoted back. A refusal is the thing a reader meets at their worst moment; it is
+#: the last text in this package that should be improvised per site.
+#:
+#: THE TWO SHAPES ARE ALL THERE ARE. A verb wants WORDS (a claim, a reason, a title), or it
+#: wants a NUMBER that indexes a numbered store. Both refusals name the verb, show what was
+#: typed, and name the command that lists what is available.
+
+
+def _words(rest: list, at: int, spelling: str, what: str) -> tuple[str, str]:
+    """(the words from `at` onward, "") — or ("", the refusal that says what is missing)."""
+    said = " ".join(rest[at:]).strip()
+    if said:
+        return said, ""
+    return "", f"{spelling} wants {what}"
+
+
+def _number(rest: list, at: int, spelling: str, noun: str, lists: str) -> tuple[int, str]:
+    """(the number at `at`, "") — or (0, the refusal). One spelling of "that is not a number"."""
+    if len(rest) <= at:
+        return 0, f"{spelling} wants a {noun} number, e.g. `{spelling} 3`; `{lists}` numbers them"
+    try:
+        return int(rest[at]), ""
+    except ValueError:
+        return 0, (f"{spelling} wants a {noun} NUMBER, got {rest[at]!r}; `{lists}` numbers them")
+
+
+def _refuse(why: str) -> int:
+    """Say one refusal and fail. The only place a refusal is printed."""
+    fmt.say(why, error=True)
+    return 1
 
 
 def main(argv: list[str]) -> int:
@@ -1507,6 +1528,7 @@ def main(argv: list[str]) -> int:
     page = 1
     abstract = ""
     until = ""
+    after = ""
     doc_ref = ""
     tool_meta = {}
     rest = []
@@ -1525,6 +1547,17 @@ def main(argv: list[str]) -> int:
     if any(a in ("-h", "--help") for a in argv) or "help" in argv[:2]:
         verb = next((a for a in argv if not a.startswith("-") and a != "help"), "")
         return _help(verb)
+    # EVERYTHING AFTER A BARE `--` IS PAYLOAD. The loop below matches options by prefix, so
+    # a title, a claim, a reminder or a strike reason that opens with `--` was parsed as a
+    # flag and never reached the command — and `--env=` is a KNOWN one, so
+    # `todos add "--env= is validated twice"` was refused with a message about environments.
+    # Refusing an unknown option is right and stays; what was missing is the way every other
+    # CLI lets you say the next word is not an option.
+    if "--" in argv:
+        cut = argv.index("--")
+        argv, payload = argv[:cut], argv[cut + 1:]
+    else:
+        payload = []
     for a in argv:
         if a.startswith("--back="):
             try:
@@ -1557,10 +1590,7 @@ def main(argv: list[str]) -> int:
         elif a == "--strike":
             strike_n = -1  # the number follows as the next word
         elif a.startswith(("--env=", "--environment=", "--track=")):
-            if _state.slug(a.split("=", 1)[1]) not in tracks._all(root()):
-                fmt.say(f"no environment is called {_state.slug(a.split('=', 1)[1])!r}; `journal environments` lists them, "
-                        "`journal switch` or `journal prepare` creates one", error=True)
-                return 1
+            pass   # applied and refused at the top of this file, before any command reads the record
         elif a == "--off":
             off_flag = True
         elif a == "--run":
@@ -1593,6 +1623,8 @@ def main(argv: list[str]) -> int:
             abstract = a.split("=", 1)[1]
         elif a.startswith("--until="):
             until = a.split("=", 1)[1]
+        elif a.startswith(("--after=", "--needs=")):
+            after = a.split("=", 1)[1]
         elif a.startswith(("--summary=", "--usage=", "--when=", "--entry=")):
             tool_meta[a[2:].split("=", 1)[0]] = a.split("=", 1)[1]
         elif a.startswith("--doc="):
@@ -1605,6 +1637,8 @@ def main(argv: list[str]) -> int:
             except ValueError:
                 fmt.say("--page wants a number", error=True)
                 return 1
+        elif a == "--none":
+            after = "--none"      # `todos after <n> --none` clears the prerequisites
         elif a == "--full":
             full = True
         elif a == "--fresh":
@@ -1619,10 +1653,11 @@ def main(argv: list[str]) -> int:
             return 1
         else:
             rest.append(a)
+    rest += payload
     verb = rest[0] if rest else ""
     # THE NOUN OWNS ITS VERBS, and `environments` is a noun like every other. Ruling R11
-    # keeps switch, claim, prepare, delegate and handoff as TOP-LEVEL verbs, because they
-    # are burned into hook.py, handoff.default.md and every generated .journal/handoff.md
+    # keeps switch, claim and prepare as TOP-LEVEL verbs, because they are burned into
+    # hook.py and into what every session is handed at its start
     # — but top-level was never meant to be the ONLY spelling. A reader who learned
     # `journal todos start` and `journal pins add` looks for `journal environments switch`,
     # and finding nothing there is the inconsistency this whole pass exists to end. Both
@@ -1681,12 +1716,8 @@ def main(argv: list[str]) -> int:
                 fmt.say('rule --strike wants a number and why: journal rule --strike 2 "<why>"',
                       error=True)
                 return 1
-            try:
-                return cmd_rule("", int(rest[1]), " ".join(rest[2:]))
-            except ValueError:
-                fmt.say(f"rule --strike wants a NUMBER, got {rest[1]!r}. `journal rules` numbers them.",
-                      error=True)
-                return 1
+            n, why = _number(rest, 1, "rule --strike", "rule", "journal rules")
+            return _refuse(why) if why else cmd_rule("", n, " ".join(rest[2:]))
         if len(rest) < 2:
             fmt.say("rule wants the ruling, in one line", error=True)
             return 1
@@ -1705,9 +1736,9 @@ def main(argv: list[str]) -> int:
         # shape below: bare `rules`, or `rules <n> --full`.
         sub = rest[1] if len(rest) > 1 else ""
         if sub == "add":
-            if len(rest) < 3:
-                fmt.say("rule wants the ruling, in one line", error=True)
-                return 1
+            said, why = _words(rest, 2, "rules add", "the ruling, in one line")
+            if why:
+                return _refuse(why)
             long = _brief(brief)
             if long is None:
                 fmt.say(BRIEF_REFUSED, error=True)
@@ -1720,24 +1751,16 @@ def main(argv: list[str]) -> int:
                 fmt.say('rules strike wants a rule number and why: journal rules strike 2 "<why>"',
                       error=True)
                 return 1
-            try:
-                return cmd_rule("", int(rest[2]), " ".join(rest[3:]))
-            except ValueError:
-                fmt.say(f"rules strike wants a rule NUMBER, got {rest[2]!r}. `journal rules` numbers them.",
-                      error=True)
-                return 1
+            n, why = _number(rest, 2, "rules strike", "rule", "journal rules")
+            return _refuse(why) if why else cmd_rule("", n, " ".join(rest[3:]))
         if sub == "list":
             return cmd_rules(all_of_them, None, False, page, order)
         if sub == "show":
             if len(rest) < 3:
                 fmt.say("rules show wants a rule number: journal rules show 3", error=True)
                 return 1
-            try:
-                return cmd_claim_page(int(rest[2]), pins.RULES)
-            except ValueError:
-                fmt.say(f"rules show wants a rule NUMBER, got {rest[2]!r}. `journal rules` numbers them.",
-                      error=True)
-                return 1
+            n, why = _number(rest, 2, "rules show", "rule", "journal rules")
+            return _refuse(why) if why else cmd_claim_page(n, pins.RULES)
         n = None
         if len(rest) > 1:
             try:
@@ -1753,11 +1776,9 @@ def main(argv: list[str]) -> int:
         try:
             return cmd_promote(int(rest[1]))
         except ValueError:
-            fmt.say(f"promote wants a pin NUMBER, got {rest[1]!r}. `journal pins` numbers them.",
-                  error=True)
-            return 1
+            return _refuse(_number(rest, 1, "promote", "pin", "journal pins")[1])
     if verb in ("todo", "todos"):  # ruling R1: `todos` is a twin alias of `todo`, both ways
-        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, page, order, quiet)
+        return cmd_todo(rest[1:], all_of_them, brief, doc_ref, after, page, order, quiet)
     if verb == "docs":
         return cmd_docs(rest[1:], brief, abstract, page, replace, order)
     if verb == "tools":
@@ -1770,11 +1791,6 @@ def main(argv: list[str]) -> int:
         return cmd_tracks(" ".join(rest[1:]))
     if verb == "prepare":
         return cmd_prepare(" ".join(rest[1:]))
-    if verb == "handoff":
-        args = [a for a in rest[1:] if a not in ("--run", "--off")]
-        return cmd_handoff(args[0] if args else "", " ".join(args[1:]), "--run" in rest or run_flag, "--off" in rest or off_flag, sessions or None)
-    if verb == "delegate":
-        return cmd_delegate(" ".join(a for a in rest[1:] if a != "--off"), "--off" in rest or off_flag, sessions or None)
     if verb == "loop":
         return cmd_loop(rest[1:])
     if verb == "switch":
@@ -1787,9 +1803,7 @@ def main(argv: list[str]) -> int:
         try:
             n = int(rest[1])
         except ValueError:
-            fmt.say(f"strike wants a pin NUMBER, got {rest[1]!r}. `journal pins` numbers them.",
-                  error=True)
-            return 1
+            return _refuse(_number(rest, 1, "strike", "pin", "journal pins")[1])
         return cmd_strike(n, " ".join(rest[2:]))
     if verb in ("reminders", "reminder", "remind"):
         # THE NOUN OWNS ITS VERBS (R10/R11), and the bare singular is an ALIAS of the list
@@ -1797,23 +1811,18 @@ def main(argv: list[str]) -> int:
         # read, and a verb whose argument is missing must never take the payload's place.
         sub = rest[1] if len(rest) > 1 else ""
         if sub == "add":
-            if len(rest) < 3:
-                fmt.say('reminders add wants the instruction, in one line: '
-                        'journal reminders add "<what to keep telling you>"', error=True)
-                return 1
+            said, why = _words(rest, 2, "reminders add", 'the instruction, in one line: '
+                                'journal reminders add "<what to keep telling you>"')
+            if why:
+                return _refuse(why)
             return cmd_remind(" ".join(rest[2:]), until)
         if sub in ("done", "retire", "strike", "stop"):
             if len(rest) < 4:
                 fmt.say('reminders done wants a number and why: '
                         'journal reminders done 2 "<what made it true>"', error=True)
                 return 1
-            try:
-                n = int(rest[2])
-            except ValueError:
-                fmt.say(f"reminders done wants a reminder NUMBER, got {rest[2]!r}. "
-                        "`journal reminders` numbers them.", error=True)
-                return 1
-            return cmd_reminder_done(n, " ".join(rest[3:]))
+            n, why = _number(rest, 2, "reminders done", "reminder", "journal reminders")
+            return _refuse(why) if why else cmd_reminder_done(n, " ".join(rest[3:]))
         if sub == "move":
             if len(rest) < 4 or not rest[2].isdigit():
                 fmt.say('reminders move wants a number and an environment: '
@@ -1837,9 +1846,9 @@ def main(argv: list[str]) -> int:
         # --full`.
         sub = rest[1] if len(rest) > 1 else ""
         if sub == "add":
-            if len(rest) < 3:
-                fmt.say("pin wants the claim, in one line", error=True)
-                return 1
+            said, why = _words(rest, 2, "pins add", "the claim, in one line")
+            if why:
+                return _refuse(why)
             long = _brief(brief)
             if long is None:
                 fmt.say(BRIEF_REFUSED, error=True)
@@ -1860,35 +1869,22 @@ def main(argv: list[str]) -> int:
                 fmt.say('pins strike wants a pin number and why: journal pins strike 6 "<why>"',
                       error=True)
                 return 1
-            try:
-                n = int(rest[2])
-            except ValueError:
-                fmt.say(f"pins strike wants a pin NUMBER, got {rest[2]!r}. `journal pins` numbers them.",
-                      error=True)
-                return 1
-            return cmd_strike(n, " ".join(rest[3:]))
+            n, why = _number(rest, 2, "pins strike", "pin", "journal pins")
+            return _refuse(why) if why else cmd_strike(n, " ".join(rest[3:]))
         if sub == "promote":
             if len(rest) < 3:
                 fmt.say("pins promote wants a pin number: journal pins promote 3", error=True)
                 return 1
-            try:
-                return cmd_promote(int(rest[2]))
-            except ValueError:
-                fmt.say(f"pins promote wants a pin NUMBER, got {rest[2]!r}. `journal pins` numbers them.",
-                      error=True)
-                return 1
+            n, why = _number(rest, 2, "pins promote", "pin", "journal pins")
+            return _refuse(why) if why else cmd_promote(n)
         if sub == "list":
             return cmd_pins(all_of_them, page, order)
         if sub == "show":
             if len(rest) < 3:
                 fmt.say("pins show wants a pin number: journal pins show 3", error=True)
                 return 1
-            try:
-                return cmd_claim_page(int(rest[2]), pins.KEY)
-            except ValueError:
-                fmt.say(f"pins show wants a pin NUMBER, got {rest[2]!r}. `journal pins` numbers them.",
-                      error=True)
-                return 1
+            n, why = _number(rest, 2, "pins show", "pin", "journal pins")
+            return _refuse(why) if why else cmd_claim_page(n, pins.KEY)
         if len(rest) > 1 and full:
             try:
                 return cmd_pin_full(int(rest[1]))
@@ -1974,6 +1970,34 @@ def main(argv: list[str]) -> int:
     # `journal --back=1` alone still reads: the block and the skill said it for a day,
     # and a reader with the old words in mind must not land on a status page instead.
     return cmd_read(back) if any(a.startswith("--back") for a in argv) else cmd_status()
+
+
+def run(argv: list[str]) -> int:
+    """One CLI invocation, from scratch, in this process.
+
+    THE MODULE-LEVEL SET-UP IS PART OF A COMMAND, not part of an import: `--env=` is read
+    off argv, the environment override is applied, and the process says which environment
+    it is on. Running twice in one interpreter therefore has to do that twice, or the
+    second command silently inherits the first one's environment.
+
+    It exists for the test harness, which pays the package's 420ms import once per project
+    instead of once per check — but it is also the honest shape: everything below `main`
+    was always per-invocation, and only the file it lived in said otherwise.
+    """
+    _state._CACHE.clear()
+    tracks.override("")
+    flag = next((a.split("=", 1)[1] for a in argv
+                 if a.startswith(("--env=", "--environment=", "--track="))
+                 and "--" not in argv[:argv.index(a)]), "")
+    if flag:
+        name = _state.slug(flag) or "default"
+        if name not in tracks._all(_ROOT):
+            fmt.say(f"no environment is called {name!r}; `journal environments` lists them, "
+                    "`journal switch` or `journal prepare` creates one", error=True)
+            return 1
+        tracks.override(name)
+    _state.use_track(tracks.current(_ROOT, _stem()))
+    return main(argv)
 
 
 if __name__ == "__main__":

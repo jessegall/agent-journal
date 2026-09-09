@@ -10,7 +10,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, tracks, transcript  # noqa: E402
+import state, testkit, tracks, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -135,7 +135,8 @@ check("and b's names b's", "bound to environment `side`" in ctx, True)
 b.j("todo", "chore on side"); b.j("todo", "auto", "on")
 out = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "Stop", "session_id": "bbbbbbbb-2", "transcript_path": str(b.path)}),
                      capture_output=True, text=True, timeout=60).stdout
-check("a stop hold reads the session's environment: b is held for side's list", "auto is on" in json.loads(out).get("reason", ""), True)
+check("a stop hold reads the session's environment: b is held for side's list",
+      "auto is on" in testkit.hold(out)[0], True)
 out = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "Stop", "session_id": "aaaaaaaa-1", "transcript_path": str(a.path)}),
                      capture_output=True, text=True, timeout=60).stdout
 check("a, on third, is not held for side's list", "auto is on" in (json.loads(out).get("reason", "") if out.strip() else ""), False)

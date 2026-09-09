@@ -50,12 +50,25 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
-EVENTS = ("Stop", "SubagentStop", "SessionStart", "SessionEnd", "PostToolUse", "PreToolUse", "UserPromptSubmit")
+EVENTS = ("Stop", "SessionStart", "SessionEnd", "PostToolUse", "PreToolUse", "UserPromptSubmit")
 #: What goes in settings.json. `$CLAUDE_PROJECT_DIR` is quoted because a path with a space
 #: in it otherwise splits into two arguments and the hook simply never runs.
 COMMAND = '"$CLAUDE_PROJECT_DIR"/.journal/hook.py'
-EXECUTABLE = ("hook.py", "journal.py", "install.py", "test_tracks.py", "test_gate.py",
-              "test_state.py", "test_auto.py", "test_docs.py", "test_tools.py", "test_worktree.py", "test_queue.py", "test_commit.py", "test_bind.py", "test_delegate.py", "test_unbound.py", "test_await.py")
+#: WHICH FILES MUST BE EXECUTABLE — asked of the files, not of a list beside them. It was a
+#: hand-kept tuple of sixteen names, and it went stale the day a suite was deleted: install
+#: reported "test_delegate.py is missing" about a file nobody wanted any more. A list that
+#: has to be edited whenever the directory changes is a second source of truth for what the
+#: directory contains, and the directory always wins.
+def _executable(root: Path) -> set[str]:
+    """Every .py at the package root that starts with a shebang — that is what makes one."""
+    out = set()
+    for f in root.glob("*.py"):
+        try:
+            if f.read_bytes()[:2] == b"#!":
+                out.add(f.name)
+        except OSError:
+            continue
+    return out
 
 #: THE SKILL IS PART OF THE PACKAGE, and it has to be installed rather than committed.
 #: It teaches the reasoning the injected block has no room for, so it belongs beside the
@@ -63,16 +76,13 @@ EXECUTABLE = ("hook.py", "journal.py", "install.py", "test_tracks.py", "test_gat
 #: harness owns and which several projects gitignore. A skill that only exists where it was
 #: first written is one that silently goes missing on the next clone, and nothing about a
 #: missing skill looks broken: the agent simply never learns why any of this is here.
-#: TWO SKILLS, because they are read at different moments. `journal` is the one every
-#: session needs; `journal-handoff` is loaded only when work is being handed over, and
-#: keeping it out of the first means the session that never hands anything off never pays
-#: for the procedure that does it.
-SKILLS = (("skill", ".claude/skills/journal"),
-          ("skill-handoff", ".claude/skills/journal-handoff"))
+#: THE SKILL SHIPS WITH THE PACKAGE. One skill, loaded by every session; the second one
+#: (`journal-handoff`) was deleted with the machinery it documented.
+SKILLS = (("skill", ".claude/skills/journal"),)
 
 #: What belongs to THIS project and never comes across on a pull.
 DATA = ("record.json", "record.json.lock", "settings.json", "state.json", "state.json.retired",
-        "runtime", "todo", "environments", "docs", "tools", "handoff.md", ".journal",
+        "runtime", "todo", "environments", "docs", "tools", ".journal",
         "__pycache__")
 
 
@@ -216,11 +226,8 @@ def wire(check: bool) -> list[str]:
 def executable(check: bool) -> list[str]:
     """A hook that is not executable fails silently — the harness just gets nothing."""
     out = []
-    for name in EXECUTABLE:
+    for name in sorted(_executable(ROOT)):
         p = ROOT / name
-        if not p.is_file():
-            out.append(f"  ! {name} is missing")
-            continue
         if os.access(p, os.X_OK):
             out.append(f"  = {name} already executable")
             continue

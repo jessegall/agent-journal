@@ -26,11 +26,19 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
+import entries
 import fmt
 import docs as docs_mod
 import state
 
 KEY = "pins"
+
+
+def _store(key: str = KEY):
+    """What `entries` needs to know about a pin — or a rule, which is a pin everywhere."""
+    import entries
+    return entries.Store(key=key, noun="rule" if key == "rules" else "pin",
+                         text="fact", retired="struck", verb="struck")
 #: A RULE IS A PIN FOR EVERY ENVIRONMENT. Pins say what this line of work decided; a rule says
 #: what the project decided, and `tracks.switch` never moves it. Same shape, same cap,
 #: same citation into the transcript — one more question before writing one: would it
@@ -257,27 +265,19 @@ def strike(root: Path, n: int, why: str, key: str = KEY) -> tuple[bool, str]:
     fact I did not have in order to delete one I did not want, and a store that makes you
     invent an entry to remove an entry will accumulate inventions.
 
-    THE REASON IS REQUIRED, and it is the whole safeguard. Nothing here evicts on a counter
-    — there is no counter — because the tool this replaces silently dropped the oldest pin
-    and cost a build two hours. A strike is a person deciding, and a decision with a reason
-    attached can be read back and argued with.
-    The struck text stays on disk under `journal pins --all`, so this hides a fact, never
-    erases one.
+    THE REASON IS REQUIRED, and it is the whole safeguard — see `entries.retire`, which is
+    where that safeguard lives for every store that has it.
     """
-    why = " ".join((why or "").split())
-    if not why:
-        return False, "strike what for? say why it stopped being true, in one line"
-    noun = "rule" if key == RULES else "pin"
-    with state.locked(root):
-        items = _all(root, key)
-        i = n - 1
-        if i < 0 or i >= len(items):
-            return False, f"there is no {noun} {n}. `journal {key}` numbers them."
-        if items[i].get("struck"):
-            return False, f"{noun} {n} is already struck by: {items[i]['struck']}"
-        items[i]["struck"] = why
-        state.put(root, key, items)
-    return True, f"struck {noun} {n}: {items[i]['fact'][:60]}\n  because: {why}"
+    return entries.retire(root, _store(key), n, why)
+
+
+def move(root: Path, n: int, dst: str, at: str) -> tuple[bool, str]:
+    """Move a pin to another environment. Struck here, added there — see `entries.move`.
+
+    Rules are not moved by this: a rule binds every environment, so there is nowhere to move
+    it to. That refusal lives at the CLI, where the noun is known.
+    """
+    return entries.move(root, _store(KEY), n, dst, at)
 
 
 def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[bool, str]:
@@ -308,35 +308,6 @@ def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[boo
     if carried.strip():
         write_body(root, len(rules), carried, RULES, at)
     return True, f"rule {len(rules)}, from pin {n}: {items[i]['fact'][:70]}"
-
-
-def move(root: Path, n: int, dst: str, at: str) -> tuple[bool, str]:
-    """Move a pin to another environment.
-
-    STRUCK HERE, ADDED THERE — `promote`'s decision, for the same reason. A pin's number is
-    its position in the full list, so lifting one out would renumber every pin after it and
-    make "pin 7" in an old transcript name a different fact. The strike says where it went;
-    `pins --all` still shows it, so the trail survives on both sides.
-
-    Rules are not moved by this: a rule binds every environment, so there is nowhere to move
-    it to. That refusal lives at the CLI, where the noun is known.
-    """
-    dst = state.slug(dst)
-    if not dst:
-        return False, 'say where: journal pins move <n> "<environment>"'
-    with state.locked(root):
-        items = _all(root)
-        i = n - 1
-        if i < 0 or i >= len(items):
-            return False, f"there is no pin {n}. `journal pins` numbers them."
-        if items[i].get("struck"):
-            return False, f"pin {n} is already struck by: {items[i]['struck']}"
-        there = state.tracked(root, KEY, dst, []) or []
-        there.append({**items[i], "at": at, "struck": None, "moved_from": n})
-        items[i]["struck"] = f"moved to `{dst}` as pin {len(there)}"
-        state.put_tracked(root, KEY, dst, there)
-        state.put(root, KEY, items)
-    return True, f"pin {n} is pin {len(there)} on `{dst}`: {items[i]['fact'][:70]}"
 
 
 def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int = 88,
@@ -445,7 +416,7 @@ def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tu
     )
 
 
-def carry(root: Path, source: str = "compact", key: str = KEY) -> str:
+def carry(root: Path, source: str = "compact", key: str = KEY, cap: int = 0) -> str:
     """What a compaction cannot be trusted to keep, handed back AFTER it. Empty if none.
 
     Not "told to keep" — the summariser is unreachable, so this never shapes the summary.
@@ -458,9 +429,19 @@ def carry(root: Path, source: str = "compact", key: str = KEY) -> str:
     header that says "the summary you are holding" to a session that has none is a claim
     about an event that did not happen, in the highest-authority position the system has.
     """
-    standing = live(root, key)
-    if not standing:
+    # THE NUMBER IS THE POSITION IN THE FULL LIST, and here it was not. `render` numbers
+    # over every entry so a struck one keeps its number; this block numbered over the LIVE
+    # ones, so `·pins show 3` in a session's start block pointed at a different pin from
+    # `journal pins show 3` the moment anything had been struck. Same defect the reading
+    # pass had, in the other direction.
+    numbered = [(i, p) for i, p in enumerate(_all(root, key), 1) if not p.get("struck")]
+    if not numbered:
         return ""
+    # CAPPED, AND THE CAP SAYS SO. See `fmt.cut`: the store keeps everything, one injection
+    # may not, and the line that reports the trim is what keeps the old promise honest.
+    total = len(numbered)
+    if cap and total > cap:
+        numbered = numbered[-cap:]
     if key == RULES:
         head = "RULES OF THIS PROJECT, on every environment. Decided, and still in force:"
     elif source == "compact":
@@ -468,6 +449,7 @@ def carry(root: Path, source: str = "compact", key: str = KEY) -> str:
                 "compaction and are true now:")
     else:
         head = "FACTS THAT STAND ON THIS ENVIRONMENT, decided in earlier sessions and still true:"
+    noun = "rules" if key == RULES else "pins"
     return (
         head + "\n"
         + "\n".join(
@@ -475,8 +457,9 @@ def carry(root: Path, source: str = "compact", key: str = KEY) -> str:
             # THE MARKER IS ONE SUFFIX, because this block is the scarcest text in the
             # system: a reader who wants the argument is told, in the fewest characters
             # that can carry a command, where it is.
-            + (f"  ·{'rules' if key == RULES else 'pins'} show {i}" if p.get("body") else "")
+            + (f"  ·{noun} show {i}" if p.get("body") else "")
             + (f"  → {docs_mod.ref_label(root, str(p['doc']))}" if p.get("doc") else "")
-            for i, p in enumerate(standing, 1)
+            for i, p in numbered
         )
+        + fmt.cut(len(numbered), total, f"journal {noun}")
     )
