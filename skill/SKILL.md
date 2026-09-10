@@ -26,20 +26,24 @@ Every request is one of three things, and deciding which comes before anything e
 
 1. **It is the current work**, a step of it, or a correction to it. Carry on. If the
    direction changes, `journal work update "<what changed>"` says so.
-2. **It is different, and it can wait.** Park it and keep going:
-   `journal todos add "<title>" --brief` with the brief on stdin, then say in your reply that it
-   is parked as to-do n. This is the usual case when something is open and the request is
-   about something else.
-3. **It is different, and it cannot wait.** The user said so ("now", "first", "stop"), or
-   it blocks the open work, or it makes the open work wrong. `update` the open work with
-   where it got to, `work end` it if it is being abandoned, then `work start` the new one.
+2. **It is different. This is a to-do — the default, and it needs no justification.**
+   `journal todos add "<title>" --brief` with the brief on stdin, then say in your reply
+   that it is parked as to-do n, and carry on with what is open. **Do not `work end` to
+   make room**: ending work is not finishing a row, and the row you are on stays yours.
+3. **It is different and the user said to do it NOW.** That is the exception and it is
+   THEIR word, not your judgement — "now", "first", "stop", "instead", "actually" — or it
+   blocks the open work, or it makes the open work wrong. `update` the open work with where
+   it got to, then `work start` the new one. If you are genuinely abandoning the old work,
+   `work end` it — and know that the to-do of that title STAYS OPEN unless you pass
+   `--todo`, because abandoning work is not finishing a row.
 
 With nothing open, the request *is* the work: read until you can name it, `work start` it, go.
 
-"Can wait" means finishing the open work first loses nothing: the request does not depend
-on it, does not invalidate it, and was not asked for first. The words settle most cases.
-"Later", "after this", "also", "by the way", "when you get to it" mean it can wait.
-"Wait", "actually", "instead", "first" mean it cannot.
+**THE DEFAULT IS 2, AND THE BURDEN IS ON 3.** The question is not "can this wait?" — that
+puts the call on you, and you will get it wrong in the user's favour every time, because
+answering feels helpful. The question is "did they tell me to do it now?" If the sentence
+does not say so, it is a to-do. "Later", "after this", "also", "by the way", "when you get
+to it" are not needed to make it one; they only confirm what was already true.
 
 **"I'll do it after this" is a to-do, every time**, even when "after this" is five
 minutes away. The sentence you are about to write — "once the agent finishes", "next",
@@ -92,6 +96,7 @@ user interrupts you, nothing in that turn is judged.
     journal work update "<what moved>" [--on="<work>"]
     journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>] [--on="<work>"]
     journal work end "<the same words>"
+    journal work end "<the same words>" --todo   and close the to-do of that title; without it the row stays open, because ending work is not finishing a row
     journal work end --force ["<note>"]      close work whose declarer is GONE: a deleted worktree, a crashed session — its subject is unguessable, so the note replaces the match
 
 Declare before the first write, never before the first read: edits, `rm`, `git commit`
@@ -322,7 +327,9 @@ doing real work over a long stretch, where losing the record at the end is the l
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)
     journal todos                      the titles
     journal todos show <n>             the brief (also: `journal todo <n>`)
-    journal todos start <n>             open work under that title; `work end` closes both
+    journal todos start <n>             open work under that title; the row stays open until you close it
+    journal todos done <n> "<how>"      the row is finished — always explicit, never a side effect
+    journal work end "<title>" --todo   closes the work AND the row, in one command
     journal todos done <n> "<how>"      resolved without starting it
     journal todos reopen <n> "<why>"    undo a close, on the record
     journal todos move <n> "<env>"      carry it to another environment
@@ -370,7 +377,8 @@ default, the start block COUNTS what is waiting — `journal todos` is what list
 idle stop says so once; neither is an instruction to begin one. Start a to-do only when the user says so for that one, or
 asks you to work through them, in which case offer `journal todos auto on`. With auto on
 for the environment, the user has already said it: whenever nothing is open, pick up the next
-one with `todo start <n>`, do it, `work end` it, and the next idle stop brings the next. Auto
+one with `todo start <n>`, do it, `work end "<title>" --todo` it — the row does not close on
+its own — and the next idle stop brings the next. Auto
 also means a loop: start one with the `loop` skill, `15m journal next`, so an idle session
 comes back every fifteen minutes and carries on until nothing is left it can do, and stop
 it when the list is empty or everything left waits on the user.
@@ -395,7 +403,7 @@ reason to ask; it is the case auto exists for.
 In either case:
 
     journal work update "<where it got to, and what was tried>"     if you had started it
-    journal work end "<the to-do's title>"                          so nothing stays open
+    journal work end "<the to-do's title>" --todo                   so nothing stays open
     journal todos ask <n> "<what is stuck, and what was tried>"
 
 Say that in your reply, naming the to-do, and stop. The next hold names the next to-do

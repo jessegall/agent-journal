@@ -196,6 +196,36 @@ def _docs(root: Path) -> list[dict]:
     return out
 
 
+#: THE MARK THE OLD AUTO-CLOSE LEFT. `work end` used to close any started to-do whose title
+#: matched, and wrote this reason on the way past. Nothing else ever writes it, and the
+#: current code writes "closed with the work that finished it", so the two eras are
+#: distinguishable in the store without a migration — which is what makes an audit possible
+#: rather than a guess.
+AUTO_CLOSED = "closed with the work of the same name"
+
+
+def _auto_closed(root: Path, here: str) -> list[dict]:
+    """Rows the retired auto-close closed, counted — never reopened, and never listed one by one.
+
+    ONE LINE FOR ALL OF THEM. In the project this was found in there are 710, and a findings
+    list with 710 entries is a wall nobody reads — the same argument `cleanup` makes about
+    every other tier. The count and the command are what a reader acts on.
+
+    NOTHING IS REOPENED AUTOMATICALLY. Most of them were probably finished; the point is to
+    make the ambiguous ones findable, not to guess which. A sweep that changes what a reader
+    sees without being asked is the defect this whole tier exists to catch.
+    """
+    hit = [t for t in todo_mod._all(root, here)
+           if t.get("done") and (t.get("how") or "") == AUTO_CLOSED]
+    if not hit:
+        return []
+    return [{"kind": "to-do", "n": "", "where": here,
+             "text": f"{len(hit)} row(s) were closed by a work-end matching their title",
+             "why": "that is no longer how a row closes — ending work is not finishing one",
+             "age": "",
+             "fix": 'journal todos --all   read them; journal todos reopen <n> "<why>" what is not done'}]
+
+
 def _todos(root: Path, here: str) -> list[dict]:
     out = []
     for t in todo_mod.asking(root, here):
@@ -236,7 +266,8 @@ def candidates(root: Path, here: str, every: bool = False, stale_hours: float = 
     else:
         found += _claims(root, pins_mod.KEY, here)
     found += _reminders(root, here)
-    return found + _docs(root) + _todos(root, here) + _environments(root, here, stale_hours)
+    return (found + _docs(root) + _todos(root, here) + _auto_closed(root, here)
+            + _environments(root, here, stale_hours))
 
 
 def report(root: Path, here: str, every: bool = False, stale_hours: float = 24.0) -> str:

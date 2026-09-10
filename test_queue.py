@@ -113,7 +113,11 @@ check("then passes", s3.stop(True), "")
 s3.j("todo", "start", "1")
 check("a new turn with the to-do open: the auto-open hold", s3.stop(), "auto is on, work still open")
 check("once", s3.stop(True), "")
+# ENDING WORK IS NOT FINISHING A ROW — the ruling in rule 4. The row stays until somebody
+# says it is done, and `--todo` is how a work end says both in one command.
 s3.j("work", "end", "chore")
+check("ending the work alone leaves the row standing", s3.stop().startswith("auto is on, 1 to-do(s) waiting"), True)
+s3.j("todos", "done", "1", "it is finished")
 check("done: list empty, silence", s3.stop(), "")
 
 # ---------------------------------------------------------------- auto off: open work once per piece, ever

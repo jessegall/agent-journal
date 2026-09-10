@@ -244,5 +244,30 @@ out = cleanup.reading(r15, "default", AT)
 check("the reading pass lists them, because only a reader can judge an --until",
       ("REMINDERS — 3" in out, "3 reminder(s)" in out), (True, True))
 
+# ────────── the rows the retired auto-close closed are countable, not guessable ────────────
+# `work end` used to close any started to-do whose title matched, unconditionally, and wrote
+# "closed with the work of the same name" on the way past. In one real project that is 710 of
+# 1,810 closed rows. Nothing else writes that phrase and the current code writes a different
+# one, so the two eras are separable in the store without a migration.
+r11 = fresh()
+todo_mod.add(r11, "default", "a row closed the old way", "brief", AT)
+_n11 = todo_mod.open_items(r11, "default")[0]["n"]
+todo_mod.start(r11, "default", _n11, AT)
+todo_mod._update(r11, "default", _n11, done=AT, how=cleanup.AUTO_CLOSED)
+_found = cleanup.candidates(r11, "default")
+check("the auto-closed rows are counted", [f["text"] for f in _found],
+      ["1 row(s) were closed by a work-end matching their title"])
+check("as ONE line, not one per row — 710 findings is a wall nobody reads",
+      len(_found), 1)
+check("and nothing is reopened for you",
+      [t["n"] for t in todo_mod.open_items(r11, "default")], [])
+# a row closed the new way is not a candidate: the phrase is the whole discriminator
+r12 = fresh()
+todo_mod.add(r12, "default", "a row closed deliberately", "brief", AT)
+_n12 = todo_mod.open_items(r12, "default")[0]["n"]
+todo_mod.start(r12, "default", _n12, AT)
+todo_mod.close_titled(r12, "default", "a row closed deliberately", AT)
+check("a row closed the new way is not flagged", cleanup.candidates(r12, "default"), [])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
