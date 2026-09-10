@@ -202,6 +202,9 @@ def _docs(root: Path) -> list[dict]:
 #: distinguishable in the store without a migration — which is what makes an audit possible
 #: rather than a guess.
 AUTO_CLOSED = "closed with the work of the same name"
+#: What `cleanup keep` is told, to mark this finding read. A finding is keepable only if it
+#: has one: the others are mistakes with their own fix, and a mistake is not "kept".
+AUTO_MARK = "auto-closed"
 
 
 def _auto_closed(root: Path, here: str) -> list[dict]:
@@ -217,13 +220,14 @@ def _auto_closed(root: Path, here: str) -> list[dict]:
     """
     hit = [t for t in todo_mod._all(root, here)
            if t.get("done") and (t.get("how") or "") == AUTO_CLOSED]
-    if not hit:
+    if not hit or len(hit) <= (_kept(root, here).get(AUTO_MARK) or {}).get("n", -1):
         return []
-    return [{"kind": "to-do", "n": "", "where": here,
+    return [{"kind": "to-do", "n": "", "where": here, "mark": AUTO_MARK,
              "text": f"{len(hit)} row(s) were closed by a work-end matching their title",
              "why": "that is no longer how a row closes — ending work is not finishing one",
              "age": "",
-             "fix": 'journal todos --all   read them; journal todos reopen <n> "<why>" what is not done'}]
+             "fix": 'journal todos --all   read them; journal todos reopen <n> "<why>" what is '
+                    f'not done, then `journal cleanup keep {AUTO_MARK}`'}]
 
 
 def _todos(root: Path, here: str) -> list[dict]:
@@ -316,6 +320,36 @@ def report(root: Path, here: str, every: bool = False, stale_hours: float = 24.0
 
 
 READ = "cleanup_read"      # {environment: {"at": iso, "rules": n, "pins": n}}
+KEPT = "cleanup_kept"      # {environment: {mark: {"at": iso, "n": how many were audited}}}
+
+
+def _kept(root: Path, here: str) -> dict:
+    got = state.get(root, KEPT, {})
+    got = got.get(here) if isinstance(got, dict) else None
+    return got if isinstance(got, dict) else {}
+
+
+def keep(root: Path, here: str, mark: str, at: str, n: int) -> str:
+    """Record that a countable finding was read and kept. It returns when the count grows.
+
+    A FINDING WITH NO WAY TO BE DONE WITH IS A FINDING THAT STOPS BEING READ. The auto-closed
+    count is the first candidate that is not a mistake to fix — it says how a row closed,
+    which is a fact about the past — so a reader who audits all 21 and finds nothing to
+    reopen has no way to say so, and the line says 21 forever.
+
+    IT STAMPS RATHER THAN EDITS, which is the whole difference. The tempting fix is to
+    rewrite `how:` on those rows so the report stops matching them; that is editing the
+    record to satisfy a report about the record, and the record is the thing being protected.
+
+    THE COUNT IS PART OF THE STAMP, so this is not a mute button: audit 21 and the line goes
+    quiet, and it comes back the moment there are 22.
+    """
+    with state.locked(root):
+        log = state.get(root, KEPT, {})
+        log = log if isinstance(log, dict) else {}
+        log.setdefault(here, {})[mark] = {"at": at, "n": int(n)}
+        state.put(root, KEPT, log)
+    return f"{n} {mark} finding(s) are marked read; this returns if the count grows"
 
 
 def _read_log(root: Path) -> dict:

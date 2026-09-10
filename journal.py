@@ -1983,14 +1983,44 @@ BARE_FLAGS: dict[str, _Flag] = {
 # for its own sub-words, exactly as the code it replaces did. Nothing here changes what
 # any command does — only how main() finds it.
 
+def cmd_cleanup_keep(mark: str) -> int:
+    """Say a countable finding was read and kept, so it stops being reported until it grows.
+
+    NOT EVERY FINDING IS A MISTAKE. Most of what `cleanup` lists has a fix beside it — strike
+    the claim, remove the environment — and running the fix is how it stops being listed. The
+    rows the retired auto-close closed are different: how a row closed is a fact about the
+    past, so a reader who audits all of them and finds nothing to reopen has nothing to DO,
+    and the line would say the same number forever.
+
+    ONLY A FINDING THAT CARRIES A `mark` IS KEEPABLE, which is what keeps this from becoming a
+    mute button for the tier: a mistake is fixed, never kept.
+    """
+    import cleanup as cleanup_mod
+    here = tracks.current(root(), _stem())
+    found = [c for c in cleanup_mod.candidates(root(), here) if c.get("mark")]
+    hit = next((c for c in found if c["mark"] == mark), None)
+    if hit:
+        fmt.say(cleanup_mod.keep(root(), here, mark, _now(),
+                                 int(str(hit["text"]).split()[0])))
+        return 0
+    names = ", ".join(f"`{c['mark']}`" for c in found)
+    return _refuse(
+        (f"nothing is reported as {mark!r} here. " if mark else "keep which finding? ")
+        + (f"What can be kept: {names}" if names
+           else "Nothing countable is being reported — `journal cleanup` shows what is."))
+
+
 def _v_cleanup(verb: str, rest: list[str], opts: Opts) -> int:
     # THE NOUN OWNS ITS VERBS (ruling R10/R11): the reading pass is an explicit `read`,
     # never a bare `journal cleanup` that silently means something else.
     if len(rest) > 1 and rest[1] in ("read", "reading"):
         return cmd_cleanup_read()
+    if len(rest) > 1 and rest[1] in ("keep", "kept"):
+        return cmd_cleanup_keep(rest[2] if len(rest) > 2 else "")
     if len(rest) > 1:
         return _refuse(f"cleanup takes no argument (got {rest[1]!r}) — `journal cleanup` for what a "
-                       "check can see, `journal cleanup read` for the half only reading finds")
+                       "check can see, `journal cleanup read` for the half only reading finds, "
+                       "`journal cleanup keep <finding>` to mark a countable one read")
     return cmd_cleanup(opts.all_of_them)
 
 
