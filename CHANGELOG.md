@@ -4,6 +4,44 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.48.0 — a paragraph is one continuous thing, and a list is a list
+
+Two screenshots, two renderers, the same root: text laid out for a width nobody was reading
+at.
+
+A BRIEF FRAYED INTO ORPHANS. A to-do's brief is written in an editor at whatever width its
+author had. `block` printed every stored line as written — deliberately, so a list and a
+command survive — so in a narrower terminal each line wrapped a SECOND time and left a one-
+or two-word stub beneath it: "timezone", "clock time", "compares", "against.". Six orphans
+in one brief, and it took a screenshot to see, because from inside the process the text
+looked perfectly wrapped.
+
+`fmt.prose` is the funnel for text a PERSON wrote: a paragraph is joined back into one
+logical line and re-flowed once, and everything whose shape carries meaning is passed
+through untouched — a fenced or four-space-indented code block, a list, a table, a heading,
+a command. A quoted passage is the interesting case, and it is prose that happens to be
+inset: the indent is kept and the words inside it flow.
+
+`fmt.block` STAYS LINE-WISE, which is not an oversight. `render` and `say` hand it a page
+that is already laid out, so joining adjacent lines there merges two column rows into one —
+which is exactly what the first attempt did, across ten suites.
+
+WIDTH WAS A CONSTANT AND A TERMINAL IS NOT. Every page asked for 88 columns whatever the
+reader's window was. `fmt.room` resolves it once — the caller's width, or the terminal's,
+whichever is smaller — and only when somebody is looking: a hook writes to the harness and a
+test to a pipe, where the constant stands and the layout stays reproducible. A long heading
+now drops its subtitle to its own line rather than off the edge.
+
+NINE OPEN WORK SUBJECTS JOINED WITH "; " IS A PARAGRAPH, NOT A LIST. The second screenshot:
+nine declarations run together, wrapped wherever each happened to end, with the instruction
+buried at the far end. `_say` takes `rows` now and prints one per line, with air between the
+list and what to do about it. The fact stays one line, because it is also the hold's label.
+
+AND THE STOP LINES NO LONGER SAY `journal:` FIRST. The harness already labels them "Stop
+hook feedback:" before a word of ours is printed, so it was the second label on the same
+line. Asked for twice, and it survived both times because it is written in `hook.py` and
+complained about on a screen.
+
 ## 1.47.0 — three things a field report saw that no check could
 
 An agent working in another project wrote up what the journal did and did not do for it over

@@ -867,7 +867,7 @@ _STATE_TEXT = {
 }
 
 
-def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88, short_refs: bool = False,
+def render(root: Path, track: str, *, all_of_them: bool = False, width: int | None = None, short_refs: bool = False,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
     """The list as a person reads it: the title, where it stands, and any question below.
 
@@ -887,6 +887,7 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
     itself, on this exact to-do, and the test that reads "→ " off the front of it failed.
     They get their own wrapped block beneath, exactly as they always did.
     """
+    width = fmt.room(width)
     import entries
     items = _all(root, track) if all_of_them else open_items(root, track)
     if not items:
@@ -919,7 +920,8 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int = 88
     return "\n\n".join(blocks) + fmt.more("todos", left, page, order)
 
 
-def show(root: Path, track: str, n: int, width: int = 88) -> tuple[bool, str]:
+def show(root: Path, track: str, n: int, width: int | None = None) -> tuple[bool, str]:
+    width = fmt.room(width)
     t, err = _get(root, track, n)
     if t is None:
         return False, err
@@ -943,11 +945,13 @@ def show(root: Path, track: str, n: int, width: int = 88) -> tuple[bool, str]:
             out.append("")
             out.append(fmt.wrap("→ " + t["answer"], width=width))
     out.append(fmt.section("brief"))
-    # fmt.BLOCK, NOT fmt.wrap: wrap joins every line of a paragraph into one, which
-    # swallows an indented list and a `## ` heading alike into run-on prose — and a
-    # brief has no reader-visible section structure until its headings survive being
-    # read back. block keeps an indented line, a list item and a command as written.
-    out.append(fmt.block(t["body"], width=width) if t["body"] else "  (title only; no brief was written)")
+    # fmt.PROSE, NOT fmt.wrap AND NOT fmt.block. `wrap` joins every line of the brief into
+    # one, which swallows an indented list and a `## ` heading alike into run-on prose.
+    # `block` was the other extreme: it kept every stored line exactly as written, so a
+    # paragraph hard-wrapped by its author at whatever width their editor had wrapped a
+    # SECOND time in a narrower terminal and left a stub under each line. `prose` is the
+    # distinction — a paragraph flows, a list and a code block and a table do not.
+    out.append(fmt.prose(t["body"], width=width) if t["body"] else "  (title only; no brief was written)")
     out.append("")
     rows = []
     if not t.get("done"):

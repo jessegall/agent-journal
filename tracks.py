@@ -296,7 +296,7 @@ def choices(root: Path) -> list[str]:
     return sorted(_all(root), key=lambda n: (n != start, n))
 
 
-def page(root: Path, name: str, width: int = 88, commands: bool = True) -> tuple[bool, str]:
+def page(root: Path, name: str, width: int | None = None, commands: bool = True) -> tuple[bool, str]:
     """One environment, ready to be picked up: its docs, pins, open work, to-dos, and how.
 
     THE HAND-OFF IS A PAGE, NOT A CONVERSATION. Whoever picks the environment up — this
@@ -307,6 +307,7 @@ def page(root: Path, name: str, width: int = 88, commands: bool = True) -> tuple
     import docs as docs_mod
     import fmt
     import todo as todo_mod
+    width = fmt.room(width)
     name = state.slug(name)
     if name not in _all(root):
         return False, f"no environment is called {name}. `journal environments` lists them."

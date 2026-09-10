@@ -779,8 +779,9 @@ check("a request with nothing open: no reminder (the request is the work)", out.
 subprocess.run([J, "start", "fix the batch of failures"], env=env, capture_output=True, timeout=180)
 code, out, err = prompt("Lets rename the Nothing component to Empty? or None? Suggestions?")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-check("a request while work is open carries the reminder",
-      ("work is open: fix the batch of failures" in ctx, "park it before answering" in ctx), (True, True))
+check("a request while work is open carries the reminder, the work on its own line",
+      ("1 piece(s) of work open" in ctx, "  - fix the batch of failures" in ctx,
+       "park it before answering" in ctx), (True, True, True))
 code, out, err = prompt("cool, thanks!")
 check("an acknowledgement carries none", out.strip(), "")
 code, out, err = prompt("is the alias installed automatically?")

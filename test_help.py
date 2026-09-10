@@ -15,7 +15,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, testkit, todo, transcript  # noqa: E402
+import state, testkit, todo, transcript, fmt  # noqa: E402
 
 ok = fail = 0
 
@@ -410,6 +410,51 @@ check("importing the CLI pulls none of the modules a given command may never tou
       _eager("journal"), [])
 check("and importing pins is not importing docs — the link that made the first attempt moot",
       _eager("pins"), [])
+
+
+# ─────────────── prose reflows, structure does not, and neither frays ──────────────────────
+# A brief is written in an editor at whatever width its author had. Printed verbatim into a
+# narrower terminal, every stored line wrapped a SECOND time and left a one- or two-word stub
+# beneath it — six orphans in one to-do, and it took a screenshot to see, because from inside
+# the process the text looked perfectly wrapped.
+_SRC = """A paragraph written at one width and read at another, long enough that where its
+author happened to break the line has nothing to do with where this reader needs it broken.
+
+  "an inset quotation, which is prose that happens to be indented, and so flows inside its
+  own indent rather than fraying at the edge of it"
+
+- a list item
+- another list item
+
+    journal todos block 1893 "a command long enough that reflowing it would break it in half"
+
+| a | table |
+"""
+_out = fmt.prose(_SRC, width=60)
+_lines = _out.split("\n")
+# only the PROSE is bounded: the indented command is deliberately over width, which is the
+# whole point of leaving it alone.
+_flowed = [l for l in _lines if l.strip() and not l.startswith(("    ", "|", "-"))]
+check("a prose paragraph is reflowed to the reader's width, not the author's",
+      max(len(l) for l in _flowed) <= 60, True)
+check("and no line is left an orphan stub",
+      [l for l in _lines if l.strip() and len(l.strip().split()) == 1 and not l.startswith(("|", "    "))], [])
+check("an inset quotation flows INSIDE its indent", "  \"an inset quotation, which is" in _out, True)
+check("a list keeps its items adjacent, not one paragraph each",
+      "- a list item\n- another list item" in _out, True)
+check("an indented command is never reflowed",
+      '    journal todos block 1893 "a command long enough that reflowing it would break it in half"' in _out, True)
+check("a table row is kept as written", "| a | table |" in _out, True)
+# `block` IS THE OTHER FUNNEL AND MUST STAY LINE-WISE: `render` and `say` hand it a page that
+# is already laid out, and joining adjacent lines there merges two column rows into one.
+check("block leaves an already-laid-out page alone",
+      fmt.block("  a               1\n  a-much-longer   2"), "  a               1\n  a-much-longer   2")
+_titled = fmt.title("TO-DO 65", sub="a title long enough that it cannot sit beside its number",
+                    width=60).split("\n")
+check("a long sub drops to its own line rather than off the edge",
+      (_titled[0].strip(), len(_titled) > 1, max(len(l) for l in _titled) <= 60),
+      ("TO-DO 65", True, True))
+check("and a short one stays beside the title", fmt.title("PINS", sub="7 standing", width=60).count("\n"), 0)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

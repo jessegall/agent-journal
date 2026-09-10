@@ -208,7 +208,7 @@ def run(root: Path, name: str, args: list[str]) -> int:
 
 
 # ------------------------------------------------------------------ rendering
-def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1,
+def catalogue(root: Path, width: int | None = None, cap: int | None = None, page: int = 1,
               order: str = fmt.DESC) -> str:
     """The catalogue, capped like `carry` (below) so a bare `journal tools` never grows
     without bound; unlike carry — handed automatically, every session — this is asked
@@ -221,6 +221,7 @@ def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1
     each is rendered on its own rather than as one group, because `fmt`'s COLUMN rows sit
     tight as a table and a tool's own multi-line block never was one.
     """
+    width = fmt.room(width)
     import entries
     tools = _all(root)
     if not tools:
@@ -245,7 +246,8 @@ def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1
     return body
 
 
-def show(root: Path, name: str, width: int = 88) -> tuple[bool, str]:
+def show(root: Path, name: str, width: int | None = None) -> tuple[bool, str]:
+    width = fmt.room(width)
     t, err = get(root, name)
     if t is None:
         return False, err

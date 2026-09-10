@@ -193,7 +193,7 @@ def listing(root: Path, *, all_of_them: bool = False, cap: int | None = None,
     return entries.rows(root, _STORE, all_of_them=all_of_them, cap=cap, page=page, order=order)
 
 
-def render(root: Path, *, all_of_them: bool = False, width: int = 88,
+def render(root: Path, *, all_of_them: bool = False, width: int | None = None,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
     """The list as text, for the callers that want a finished string rather than rows.
 
@@ -204,6 +204,7 @@ def render(root: Path, *, all_of_them: bool = False, width: int = 88,
     number and prints facts beneath the text — one loop, three nouns, and the only thing any
     of them supplies is which facts.
     """
+    width = fmt.room(width)
     if not _all(root):
         return "  Nothing is being repeated."
     items, left = listing(root, all_of_them=all_of_them, cap=cap, page=page, order=order)
