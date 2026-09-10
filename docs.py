@@ -855,8 +855,13 @@ def show(root: Path, ref: str, width: int = 88) -> tuple[bool, str]:
     return True, "\n".join(out)
 
 
-def carry(root: Path, cap: int = 20, track: str = "") -> str:
+def carry(root: Path, cap: int = 20, track: str = "", brief: bool = False) -> str:
     """The catalogue a session start hands over: number, title, abstract; drafts marked.
+
+    BRIEF IS THE TITLE AND NOTHING ELSE. A doorway carries pointers, and an abstract is
+    content — the two sentences that explain a doc belong to `journal docs <n>`, which is
+    printed right beside the title. Three abstracts were the largest content in a block
+    whose entire purpose is to be small enough to survive.
 
     NEWEST FIRST, like every other list that pages. 1.30.0 flipped the five renderers and
     did not reach this one, so a session start handed docs 1 to 20 — the OLDEST twenty —
@@ -876,11 +881,14 @@ def carry(root: Path, cap: int = 20, track: str = "") -> str:
     lines = []
     for d in fmt.ordered(docs)[:cap]:
         mark = "  (draft)" if d.get("status") != "final" else ""
-        files = attachments(d)
+        files = [] if brief else attachments(d)
         if files:
             mark += f"  ({len(files)} file(s): " + ", ".join(a["name"] for a in files[:3]) + ("…" if len(files) > 3 else "") + ")"
-        lines.append(f"  {d['n']:>3}  {d['title']}{mark}\n       {d.get('abstract', '')}")
-    more = fmt.cut(cap, len(docs), "journal docs")
+        if brief:
+            lines.append(f"  {d['n']:>3}  {fmt.gist(d['title'])}{'  (draft)' if d.get('status') != 'final' else ''}")
+        else:
+            lines.append(f"  {d['n']:>3}  {d['title']}{mark}\n       {d.get('abstract', '')}")
+    more = fmt.cut(cap, len(docs), "journal docs", shortened=brief)
     return (f"DOCS OF THIS PROJECT, {len(docs)} catalogued — read one before you re-investigate what "
             "it settles; `journal docs <n>` reads it, `journal docs search <term>` finds a line:\n"
             + "\n".join(lines) + more)

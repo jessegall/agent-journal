@@ -2286,6 +2286,7 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
     is a nudge about an event that did not happen.
     """
     here = tracks.current(ROOT, stem)
+    short = depth == BRIEF
     parts = [
         # THE RULES ARE SAID AT THE START, NOT ONLY ENFORCED AT THE STOP. Until this, the
         # vocabulary reached the agent exactly one way: by being held for breaking it. A
@@ -2329,10 +2330,11 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
         "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in "
         "this session, and again whenever a hook holds or denies you."
     ]
+    parts.append(_standing(short))
     # THE PACKAGE'S OWN RULES FIRST OF ALL, before anything this project decided: they bind
     # every project, so a reader meets what is true everywhere before what is true here.
     if conf_of({})["builtin_rules"]:
-        shipped = builtin.carry()
+        shipped = builtin.carry(brief=short)
         if shipped:
             parts.append(shipped)
     # REMINDERS ARE NOT INJECTED AT A START. They fire at every stop and every
@@ -2345,12 +2347,12 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
             parts.append(repeated)
     # RULES BEFORE PINS. A rule binds every environment, so a reader meets the constraints
     # before the facts of the one environment they happen to be on.
-    ruled = pins.carry(ROOT, source, key=pins.RULES, cap=caps["rules"])
+    ruled = pins.carry(ROOT, source, key=pins.RULES, cap=caps["rules"], brief=short) if caps["rules"] else ""
     if ruled:
         parts.append(ruled)
     # THE DOCS CATALOGUE, not the docs. One line each, so an agent knows what has been
     # settled before it re-investigates it; the doc itself is read on demand.
-    catalogued = docs.carry(ROOT, cap=caps["docs"], track=here)
+    catalogued = docs.carry(ROOT, cap=caps["docs"], track=here, brief=short) if caps["docs"] else ""
     if catalogued:
         parts.append(catalogued + "\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.")
     # A CAP OF ZERO MEANS THE SECTION IS NOT IN THIS DEPTH AT ALL. Passed through, it
@@ -2359,14 +2361,9 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
     kept = tools.carry(ROOT, cap=caps["tools"]) if caps["tools"] else ""
     if kept:
         parts.append(kept)
-    pinned = pins.carry(ROOT, source, cap=caps["pins"])
+    pinned = pins.carry(ROOT, source, cap=caps["pins"], brief=short) if caps["pins"] else ""
     if pinned:
         parts.append(pinned)
-    standing = work.open_work(ROOT)
-    if standing:
-        parts.append("STILL OPEN, from this or an earlier session:\n"
-                     + "\n".join(f"  - {w['subject']}" for w in standing)
-                     + "\n`journal open` shows where each got to.")
     waiting = todo.carry(ROOT, here, cap=caps["todos"]) if caps["todos"] else ""
     if waiting:
         parts.append(waiting)
@@ -2384,6 +2381,30 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
             "The transcript lost nothing. Read it rather than half-remembering it."
         )
     return "\n\n".join(parts)
+
+
+def _standing(short: bool) -> str:
+    """The work this session declared and never closed — the first record fact it meets.
+
+    IT IS SECOND IN THE BLOCK, ABOVE THE RULES, because a summary is worst at exactly this.
+    It is passable at narrative and hopeless at standing orders, and open work is the one
+    standing order that decides what the next thirty seconds are spent on. Buried seventh,
+    under three rules and three doc abstracts, it was read as trivia.
+
+    THE TITLE, NOT THE UPDATES. The doorway carries pointers; `journal open` carries where
+    each got to. A section that grows with how much was written about the work is the same
+    defect as an uncapped pin, one noun over.
+
+    AND SILENCE IS NOT AN ANSWER. An omitted section reads as "not mentioned", which leaves
+    a reader unable to tell no open work from a doorway that did not say. So the brief block
+    says nothing is open when nothing is, in the fewest words that settle it.
+    """
+    standing = work.open_work(ROOT)
+    if not standing:
+        return "NOTHING IS OPEN — declare what you pick up: `journal work start \"<the work>\"`." if short else ""
+    lines = "\n".join(f"  - {fmt.gist(w['subject']) if short else w['subject']}" for w in standing)
+    return ("STILL OPEN, from this or an earlier session:\n" + lines
+            + "\n`journal open` shows where each got to.")
 
 
 def _todo_note(here: str) -> str:

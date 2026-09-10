@@ -441,7 +441,8 @@ def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tu
     )
 
 
-def carry(root: Path, source: str = "compact", key: str = KEY, cap: int = 0) -> str:
+def carry(root: Path, source: str = "compact", key: str = KEY, cap: int = 0,
+          brief: bool = False) -> str:
     """What a compaction cannot be trusted to keep, handed back AFTER it. Empty if none.
 
     Not "told to keep" — the summariser is unreachable, so this never shapes the summary.
@@ -478,13 +479,19 @@ def carry(root: Path, source: str = "compact", key: str = KEY, cap: int = 0) -> 
     return (
         head + "\n"
         + "\n".join(
-            f"  - {p['fact']}" + (f"  [{age(p.get('at', ''))}]" if age(p.get("at", "")) else "")
+            f"  - {fmt.gist(p['fact']) if brief else p['fact']}"
+            + (f"  [{age(p.get('at', ''))}]" if age(p.get("at", "")) else "")
             # THE MARKER IS ONE SUFFIX, because this block is the scarcest text in the
             # system: a reader who wants the argument is told, in the fewest characters
             # that can carry a command, where it is.
             + (f"  ·{noun} show {i}" if p.get("body") else "")
-            + (f"  → {_doc_label(root, p['doc'])}" if p.get("doc") else "")
+            # THE CITATION IS A REFERENCE, AND IN THE DOORWAY THAT IS ALL IT IS. The
+            # label carries the doc's title and the part's — 150 characters of content
+            # hanging off an entry that was just capped at 180, which is how a bounded
+            # line grew back to 267. `journal docs 88.1` is the half that reads.
+            + (f"  → {'doc ' + str(p['doc']) if brief else _doc_label(root, p['doc'])}"
+               if p.get("doc") else "")
             for i, p in numbered
         )
-        + fmt.cut(len(numbered), total, f"journal {noun}")
+        + fmt.cut(len(numbered), total, f"journal {noun}", shortened=brief)
     )

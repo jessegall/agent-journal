@@ -20,7 +20,7 @@ os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"  # a pull inside a suite runs no suit
 
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import state, pins, work, tracks, hook, testkit, transcript, digest, todo  # noqa: E402
+import state, pins, work, tracks, hook, testkit, transcript, digest, todo, fmt  # noqa: E402
 
 AT = "2026-09-01T12:00:00+00:00"
 ok = fail = 0
@@ -1190,20 +1190,45 @@ from pathlib import Path
 sys.path.insert(0, %r)
 import pins, hook
 r = Path(%r)
-for i in range(12):
+for i in range(int(sys.argv[1])):
     pins.add(r, str(i) + " " + "x" * 395, %r, 400, key=pins.KEY)
     pins.add(r, str(i) + " " + "x" * 395, %r, 400, key=pins.RULES)
 b = hook.carried("compact", None, False, hook.BRIEF)
-print(len(b), "more of" in b, hook.INLINE_CAP)
+widest = max((len(l) for l in b.splitlines() if l.startswith("  - ")), default=0)
+hushed = hook._carried("compact", None, False, dict(hook.DOORWAY_CAPS, rules=0), hook.BRIEF)
+print(len(b), "more of" in b, hook.INLINE_CAP, widest, len(hushed))
 """ % (str(_cap / ".journal"), str(_cap / ".journal"), AT, AT)
-_got = subprocess.run([sys.executable, "-c", _probe], capture_output=True, text=True,
-                      env={**os.environ, "AGENT_JOURNAL_OFFLINE": "1"}).stdout.split()
+
+
+def _doorway(n):
+    """The doorway's measurements on a record of `n` pins and `n` rules, each at the cap."""
+    out = subprocess.run([sys.executable, "-c", _probe, str(n)], capture_output=True, text=True,
+                         env={**os.environ, "AGENT_JOURNAL_OFFLINE": "1"}).stdout.split()
+    return (int(out[0]), out[1] == "True", int(out[2]), int(out[3]), int(out[4])) if out else (0, False, 0, 0, 0)
+
+
+_small = _doorway(12)
 check("the doorway fits the harness's ceiling with every entry at its maximum length",
-      bool(_got) and int(_got[0]) <= int(_got[2]), True)
-check("and it says what it left out rather than dropping it silently",
-      bool(_got) and _got[1] == "True", True)
+      _small[0] and _small[0] <= _small[2], True)
+check("and it says what it left out rather than dropping it silently", _small[1], True)
+# A COUNT CAP IS NOT A CHARACTER CAP. Three pins bounds the block only until the three are
+# 400 characters each; `fmt.gist` is the other half, and this is what watches it.
+check("no entry in the doorway is longer than one line",
+      bool(_small[3]) and _small[3] <= fmt.GIST + 60, True)
+# THE PROPERTY THE WHOLE DESIGN RESTS ON. A doorway is a pointer, so its size answers to the
+# fixed prose in it and never to how much the record has grown. Ninety more of everything is
+# ninety more characters of counting, not ninety more entries.
+_big = _doorway(120)
+check("and the doorway is flat against the size of the record it points at",
+      _big[0] - _small[0] < 60, True)
+
 check("its floor is one entry, not three — a doorway is a pointer at any size",
       _hk.DOORWAY_CAPS["pins"] >= 1, True)
+# A CAP OF ZERO MEANT TWO OPPOSITE THINGS. Tools and to-dos read it as "not at this depth";
+# `pins.carry` read it as "no limit", so the store that fell to zero became the unbounded one.
+check("a cap of zero silences a section, never unlimits it", _small[4] < _small[0], True)
+check("gist cuts at a word and says it cut",
+      (fmt.gist("one two three", 40), fmt.gist("a" * 30 + " tail", 34)), ("one two three", "a" * 30 + "…"))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

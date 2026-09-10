@@ -548,7 +548,7 @@ def paged(rows: list, cap: int | None, page: int = 1, order: str = DESC) -> tupl
     return rows[(page - 1) * cap: page * cap], max(0, total - page * cap)
 
 
-def cut(shown: int, total: int, command: str) -> str:
+def cut(shown: int, total: int, command: str, shortened: bool = False) -> str:
     """The line that says what an injected block left out — "" when it left out nothing.
 
     NOTHING IS DROPPED, AND THIS IS THE SENTENCE THAT KEEPS THAT TRUE. What crosses a
@@ -563,10 +563,39 @@ def cut(shown: int, total: int, command: str) -> str:
     counts both halves, and names the command that reads the rest in full. The reader is
     never left to infer that something is missing.
     """
+    # A LINE CUT SHORT NEEDS THE SAME SENTENCE AS AN ENTRY LEFT OUT. This named the reading
+    # command only when the COUNT was trimmed, so a doorway showing three of three rules —
+    # every one of them shortened to a line by `gist` — printed no command at all. The
+    # reader was left holding three half-sentences and no way to finish them, which is the
+    # silent-forgetting failure this function was written to make impossible, arrived at
+    # through the other cap.
     if shown >= total:
-        return ""
-    return (f"\n  … and {total - shown} more of {total} — none dropped: "
-            f"`{command}` reads every one, in full, right now.")
+        return (f"\n  … shortened to a line each — `{command}` reads every one, in full, "
+                "right now." if shortened else "")
+    return (f"\n  … and {total - shown} more of {total}, and these shortened to a line each"
+            if shortened else f"\n  … and {total - shown} more of {total}") + (
+            f" — none dropped: `{command}` reads every one, in full, right now.")
+
+
+GIST = 180
+
+
+def gist(text: str, cap: int = GIST) -> str:
+    """One entry as one line, never longer than `cap` — the character half of `cut`.
+
+    `cut` BOUNDS THE COUNT AND THIS BOUNDS THE LINE, and for a long time only the first
+    existed. A cap of three pins reads like a bound until the three are 400 characters
+    each, and then a section that looks capped is 1,200 characters of prose in a block
+    whose whole job is to be short. A count is the wrong unit for a character ceiling —
+    the sentence is already written above `cut`, about the same bug one level up.
+
+    IT CUTS AT A WORD AND SAYS IT CUT. The ellipsis is the promise that the rest exists,
+    and every caller that uses this prints a command beside it that reads the entry whole.
+    """
+    text = " ".join(text.split())
+    if len(text) <= cap:
+        return text
+    return text[:cap].rsplit(" ", 1)[0].rstrip(",;:—-") + "…"
 
 
 def more(noun: str, left: int, page: int, order: str = DESC) -> str:
