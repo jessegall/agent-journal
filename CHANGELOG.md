@@ -4,6 +4,28 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.44.1 — the block that goes into context is bounded in characters, not entries
+
+The harness replaces a hook string over 10,000 characters with a FILE PATH, so a block that
+overflows is not truncated — it is not delivered at all. `carried` has measured itself and
+tightened since that was found. The DOORWAY, added in 1.42.0, returned before that loop: it
+was short because the long half is a command away, which bounds the NUMBER of entries and
+says nothing about their length. Three pins at the 400-character cap, three rules, three doc
+abstracts of no fixed length — nothing was watching, and it measured 4,708 against the
+ceiling by luck of content.
+
+"A count is the wrong unit for a character ceiling" is written above `CARRY_CAPS` about this
+exact bug, one shape earlier. Both depths run the same loop now.
+
+ITS FLOOR IS ONE, NOT THREE. The full block stops at three because below that it stops being
+a hand-over; a doorway is not a hand-over at any size — it is a pointer, and one of each
+with the count beside it still points. What it trims, it says it trimmed, with the command
+that reads the rest.
+
+AND ONLY THE DOORWAY IS INJECTED, which has been true since 1.42.0 and is now asserted:
+`journal carry` is the full hand-over and prints to a terminal, where the ceiling does not
+apply.
+
 ## 1.44.0 — a doc belongs to an environment, or to the project
 
 `track:` on a doc was provenance and nothing filtered by it, so every environment was handed

@@ -2241,16 +2241,23 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
     three entries: past that the block stops being a hand-over and becomes a footnote, and
     the reader is better served by the honest over-budget notice at the end.
     """
-    if depth == BRIEF:
-        # THE DOORWAY IS BOUNDED BY WHAT IT LEAVES OUT, not by a loop. It is short because
-        # the long half is a command away, so there is nothing to tighten.
-        return _carried(source, stem, unbound, DOORWAY_CAPS, BRIEF)
-    caps = dict(CARRY_CAPS)
+    # THE DOORWAY IS THE HALF THAT GOES INTO CONTEXT, so it is the half that must fit. It
+    # used to return here without measuring, on the reasoning that it is short because the
+    # long half is a command away — which is a bound on the NUMBER of entries and not on
+    # their length, and "a count is the wrong unit for a character ceiling" is the sentence
+    # written above `CARRY_CAPS` about the exact bug this reintroduced. Three pins at the
+    # 400-character cap, three rules, three doc abstracts of no fixed length: nothing was
+    # watching. It was 4,708 characters against a 10,000 ceiling by luck of content.
+    #
+    # ITS FLOOR IS ONE, NOT THREE. The full block stops at three because below that it stops
+    # being a hand-over; a doorway is not a hand-over at any size — it is a pointer, and one
+    # of each with the count beside it still points.
+    caps, floor = (dict(DOORWAY_CAPS), 1) if depth == BRIEF else (dict(CARRY_CAPS), 3)
     for _ in range(6):
-        block = _carried(source, stem, unbound, caps)
-        if len(block) <= INLINE_BUDGET or all(v <= 3 for v in caps.values()):
+        block = _carried(source, stem, unbound, caps, depth)
+        if len(block) <= INLINE_BUDGET or all(v <= floor for v in caps.values()):
             break
-        caps = {k: max(3, v // 2) for k, v in caps.items()}
+        caps = {k: max(floor, v // 2) if v else v for k, v in caps.items()}
     if len(block) > INLINE_BUDGET:
         block += (f"\n\nTHIS BLOCK IS {len(block):,} CHARACTERS and the harness saves anything over "
                   f"{INLINE_CAP:,} to a file, handing you a path instead of the text — so if what you "
