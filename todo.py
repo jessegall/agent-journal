@@ -169,7 +169,15 @@ def _index_file(root: Path, track: str) -> Path:
 
 
 def _stamped(d: Path) -> dict:
-    """{name: [mtime_ns, size]} for every row in the folder, from ONE scandir."""
+    """{name: [mtime_ns, size]} for every row in the folder, from ONE scandir.
+
+    THIS IS NOT CACHED, AND THAT IS THE POINT. Caching it per process saves 0.14s of a
+    one-second command and was tried: the suite caught it immediately, because a row written
+    by anything that does not go through `_write` — a hand edit, a sibling process, a git
+    checkout mid-command — is then invisible for the life of the process. The ledger is
+    allowed to be a cache precisely because THIS re-reads the folder every time and checks
+    it; caching the check as well leaves nothing checking anything.
+    """
     import os
     out = {}
     try:
@@ -212,7 +220,9 @@ def _all(root: Path, track: str) -> list[dict]:
     out = []
     for name, row in rows.items():
         meta = dict(row["meta"])
-        meta["path"] = d / name
+        # BUILT ONCE AND KEPT. `d / name` for 1,891 rows, four times a command, was 8,041
+        # Path constructions — more time than reading the ledger it came from.
+        meta["path"] = row.get("_p") or row.setdefault("_p", d / name)
         meta["brief"] = row["brief"]
         out.append(meta)
     return sorted(out, key=lambda m: m["n"])
@@ -235,7 +245,8 @@ def _read_index(f: Path) -> dict:
 def _write_index(f: Path, rows: dict) -> None:
     try:
         f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(json.dumps({"v": INDEX_VERSION, "rows": rows}))
+        keep = {n: {k: v for k, v in r.items() if k != "_p"} for n, r in rows.items()}
+        f.write_text(json.dumps({"v": INDEX_VERSION, "rows": keep}))
     except OSError:
         pass  # a ledger that cannot be written is a slow command, never a failed one
 
