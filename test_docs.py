@@ -75,8 +75,11 @@ check("a part needs a body", (code, "needs a body" in out), (1, True))
 
 # ---------------------------------------------------------------- reading
 code, out = j("docs")
-check("the catalogue lists number, title, status, parts, abstract",
-      ("1  Reactivity" in out, "draft · 2 part(s)" in out, "dependency graph" in out), (True, True, True))
+# THE SCOPE SITS BESIDE THE STATUS, because it is a property of the doc rather than a fact
+# about its contents — and the catalogue never said it at all until 1.49.0.
+check("the catalogue lists number, title, status, SCOPE, parts, abstract",
+      ("1  Reactivity" in out, "draft · environment default · 2 part(s)" in out,
+       "dependency graph" in out), (True, True, True))
 code, out = j("docs", "1")
 check("reading a doc prints the abstract, the intro and the parts in order",
       ("DOC 1" in out, "ABSTRACT" in out, "Ruled today" in out, "1.1  THE THREE TIERS" in out, "1.2  CONTENT HASHES" in out,
@@ -377,6 +380,12 @@ check("the catalogue on an environment holds its own and the project's, and says
        "belongs to default" in _here, "on other environments (--all)" in _here),
       (True, True, False, True))
 check("`--all` is the whole shelf", "belongs to default" in j("docs", "--all")[1], True)
+# A READER CANNOT TELL "GLOBAL" FROM "THE RENDERER SAID NOTHING". `show` interpolated the raw
+# field, so a global doc read "environment " with nothing after it, or "environment *".
+_glob = next(l.split()[0] for l in j("docs", "--all")[1].splitlines() if "belongs to the project" in l)
+check("a global doc says so in words, in the catalogue and when read",
+      ("the project's" in j("docs", "--all")[1], "the project's" in j("docs", _glob)[1],
+       "environment *" in j("docs", _glob)[1]), (True, True, False))
 _n = next(l.split()[0] for l in j("docs", "--all")[1].splitlines()
           if "belongs to default" in l)
 check("a doc scoped elsewhere is still readable by number, which is what keeps --doc= honest",

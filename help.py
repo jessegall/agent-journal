@@ -103,7 +103,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "                              at the first command or hook that reads an older record.",
     ),
     "docs": (
-        "journal docs [--order=asc|desc]   the catalogue, newest first: every doc, its status, parts, files and abstract",
+        "journal docs [--all] [--order=asc|desc]   the catalogue, newest first: every doc, its SCOPE — the project's, or one environment's — status, parts, files and abstract. This environment's and the project's; --all is every environment's, and the heading says how many are hidden",
         "journal docs show <doc>       read a doc — <doc> is its number or its name, here and everywhere below; bare `journal docs <doc>` is the same",
         "journal docs show <doc>.<p>   read one part of it",
         "journal docs files <doc>      its attachments, as a tree; `journal docs <doc> files` and bare `journal docs files` still work",
