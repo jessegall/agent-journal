@@ -1171,5 +1171,39 @@ for _cmd, _want, _why in (
     _got = hook._raw_markdown({"silenced": []}, {"tool_name": "Bash", "tool_input": {"command": _cmd}}, _ctx)
     check(f"the markdown hint on {_why}", bool(_got), _want)
 
+# ─────────── the block that goes into context is bounded in CHARACTERS ─────────────────────
+# The harness replaces a hook string over 10,000 characters with a file path, so a block that
+# overflows is not truncated — it is not delivered at all. `carried` has measured and
+# tightened since that was found; the DOORWAY, added later, returned before the loop and was
+# bounded by the NUMBER of entries instead. "A count is the wrong unit for a character
+# ceiling" is written above CARRY_CAPS about this exact bug, one shape earlier.
+import hook as _hk
+_LONG = "x" * 395
+# BUILT IN A SUBPROCESS because `hook` is already imported here bound to another project,
+# and a module's ROOT is fixed at its import — the same thing that makes the CLI honest
+# about which journal it is on makes it impossible to re-point in place.
+_cap = Path(tempfile.mkdtemp()) / "cap"
+testkit.make(_cap, SRC)
+_probe = """
+import sys
+from pathlib import Path
+sys.path.insert(0, %r)
+import pins, hook
+r = Path(%r)
+for i in range(12):
+    pins.add(r, str(i) + " " + "x" * 395, %r, 400, key=pins.KEY)
+    pins.add(r, str(i) + " " + "x" * 395, %r, 400, key=pins.RULES)
+b = hook.carried("compact", None, False, hook.BRIEF)
+print(len(b), "more of" in b, hook.INLINE_CAP)
+""" % (str(_cap / ".journal"), str(_cap / ".journal"), AT, AT)
+_got = subprocess.run([sys.executable, "-c", _probe], capture_output=True, text=True,
+                      env={**os.environ, "AGENT_JOURNAL_OFFLINE": "1"}).stdout.split()
+check("the doorway fits the harness's ceiling with every entry at its maximum length",
+      bool(_got) and int(_got[0]) <= int(_got[2]), True)
+check("and it says what it left out rather than dropping it silently",
+      bool(_got) and _got[1] == "True", True)
+check("its floor is one entry, not three — a doorway is a pointer at any size",
+      _hk.DOORWAY_CAPS["pins"] >= 1, True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
