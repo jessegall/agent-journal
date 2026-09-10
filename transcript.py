@@ -132,12 +132,32 @@ def on_track(lines: list[Line], track: str) -> list[Line]:
 _SESSION_ID = re.compile(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
 
 
+#: (cwd, stem) -> the path. WHERE A TRANSCRIPT IS DOES NOT CHANGE INSIDE ONE COMMAND, and
+#: this was answered three times per invocation — 0.82 of a 2.24-second `journal` in a real
+#: project, because the last resort is a glob across EVERY project's folder for a session
+#: that moved into a worktree. Correct, and not worth paying three times for one answer.
+_FOUND: dict = {}
+
+
 def find(cwd: Path, stem: str) -> Path | None:
     """The transcript with this stem: a session's own file, or a subagent's under it.
 
     Subagent transcripts live one level down, at `<session>/subagents/agent-<id>.jsonl`,
     and a check that only looked at the top level would call every one of them gone.
     """
+    key = (str(cwd), stem)
+    if key in _FOUND:
+        return _FOUND[key]
+    got = _find(cwd, stem)
+    # ONLY A HIT IS REMEMBERED. A miss is the interesting case: a transcript that does not
+    # exist yet is written moments later by the harness, and a process that cached "no" would
+    # go on refusing to file marks for the rest of its life.
+    if got is not None:
+        _FOUND[key] = got
+    return got
+
+
+def _find(cwd: Path, stem: str) -> Path | None:
     d = project_dir(cwd)
     top = d / f"{stem}.jsonl"
     if top.is_file():
