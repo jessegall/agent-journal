@@ -50,14 +50,39 @@ def window_for(peak: int, setting: int = 0, learned: int = 0) -> tuple[int, bool
     return fits[0], len(fits) == 1
 
 
+#: path -> (size read, used, peak). A TRANSCRIPT ONLY GROWS, so the answer for the first N
+#: bytes never changes and re-reading them cannot say anything new. Kept per process: the
+#: hook reads this several times in one event and every read was a full pass.
+_READ: dict = {}
+
+
 def reading(path: Path) -> tuple[int, int] | None:
-    """(tokens in context, peak this transcript has held) from the assistant's own `usage`."""
-    used = None
-    peak = 0
+    """(tokens in context, peak this transcript has held) from the assistant's own `usage`.
+
+    IT RESUMES WHERE IT STOPPED. The file is append-only — the harness writes one record per
+    line and never rewrites one — so a scan that has already covered the first N bytes starts
+    at N next time and takes the larger peak. A file that got SHORTER is not a transcript
+    that shrank, it is a different file at the same path, so that case starts over.
+    """
     if not path.is_file():
         return None
+    size = path.stat().st_size
+    had = _READ.get(str(path))
+    start, used, peak = (had if had and had[0] <= size else (0, None, 0))
+    if had and had[0] == size:
+        return (used, peak) if used is not None else None
     with path.open() as fh:
+        if start:
+            fh.seek(start)
         for line in fh:
+            # A LINE THAT CANNOT CARRY THE FIELD IS NOT PARSED. `reading_tail` has done this
+            # since it was written; this one parsed every record of the transcript to find the
+            # few that are assistant turns with usage — 10,780 `json.loads` calls and 0.23s of
+            # a 0.81s command in a real project, to read a number that lives on maybe 400 of
+            # them. A substring test on the raw line is two orders of magnitude cheaper, and
+            # it can only ever admit MORE candidates than it should, never fewer.
+            if '"usage"' not in line:
+                continue
             try:
                 rec = json.loads(line)
             except ValueError:
@@ -74,6 +99,7 @@ def reading(path: Path) -> tuple[int, int] | None:
                 + usage.get("cache_creation_input_tokens", 0)
             )
             peak = max(peak, used)
+    _READ[str(path)] = (size, used, peak)
     if used is None:
         return None
     return used, peak
