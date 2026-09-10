@@ -269,5 +269,24 @@ todo_mod.start(r12, "default", _n12, AT)
 todo_mod.close_titled(r12, "default", "a row closed deliberately", AT)
 check("a row closed the new way is not flagged", cleanup.candidates(r12, "default"), [])
 
+# A FINDING WITH NO WAY TO BE DONE WITH IS A FINDING THAT STOPS BEING READ. How a row closed
+# is a fact about the past, so a reader who audits them all and reopens nothing has nothing
+# to DO — and the line would say the same number forever. The stamp carries the COUNT, so it
+# is not a mute button.
+check("the finding carries a mark, which is what makes it keepable",
+      [f.get("mark") for f in cleanup.candidates(r11, "default")], [cleanup.AUTO_MARK])
+cleanup.keep(r11, "default", cleanup.AUTO_MARK, AT, 1)
+check("kept, it stops being reported", cleanup.candidates(r11, "default"), [])
+todo_mod.add(r11, "default", "a second row closed the old way", "brief", AT)
+_n11b = todo_mod.open_items(r11, "default")[0]["n"]
+todo_mod.start(r11, "default", _n11b, AT)
+todo_mod._update(r11, "default", _n11b, done=AT, how=cleanup.AUTO_CLOSED)
+check("and it comes back the moment the count grows",
+      [f["text"] for f in cleanup.candidates(r11, "default")],
+      ["2 row(s) were closed by a work-end matching their title"])
+check("nothing was rewritten to make it quiet — the rows still say how they closed",
+      sorted((t.get("how") or "") for t in todo_mod._all(r11, "default")),
+      [cleanup.AUTO_CLOSED, cleanup.AUTO_CLOSED])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

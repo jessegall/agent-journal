@@ -72,10 +72,56 @@ def _environment_folders(root: Path) -> list[str]:
     return said or ["  nothing to move — already one folder per environment"]
 
 
+
+#: WHEN 1.44.0 SHIPPED, in UTC, from its own tag. Every doc written before this had `track:`
+#: filled in as PROVENANCE — which line of work it came out of — and every doc written after
+#: had it chosen as SCOPE. The field is the same; only the intent behind a value differs, and
+#: the timestamp is the only thing that separates the two populations.
+SCOPE_ERA = "2026-09-10T00:07:01+00:00"
+
+
+def _docs_written_as_provenance(root: Path) -> list[str]:
+    """1.52.0 — a doc written before 1.44.0 keeps its `track:` as a note, not as a scope.
+
+    1.44.0 TURNED `track:` FROM PROVENANCE INTO SCOPE and concluded the migration was
+    nothing: "a doc with no track at all is treated as global, which is what every doc
+    written before this release has." That is false for any version that filled the field
+    in, and they all did. So docs silently stopped being listed on every environment but one:
+    in this project both docs were invisible on three of four environments; in another, 88
+    docs existed and the default environment's catalogue counted 85.
+
+    WHY THE CUT IS A TIMESTAMP AND NOT THE FIELD. Three repairs were possible: make every
+    tracked doc global, which also un-scopes the ones somebody chose deliberately after
+    1.44.0; leave them, which keeps the harm; or use `at:`, which separates "the field was
+    provenance" from "somebody chose this scope" exactly. The last one's worst case is a
+    pre-1.44.0 doc whose track happened to be the right scope becoming visible everywhere
+    instead of in one place — over-visibility, undone by one `journal docs move`. The other
+    two are wrong in the lossy direction.
+
+    IT SAYS WHAT IT MOVED, per doc. A migration that changes what a reader can see and
+    reports a number is the same defect one level up.
+    """
+    import docs as docs_mod
+    said = []
+    for d in docs_mod._load(root):
+        at_text = (d.get("at") or "").strip()
+        if not at_text or at_text >= SCOPE_ERA:
+            continue
+        if docs_mod.scope_of(d) == docs_mod.GLOBAL:
+            continue
+        was = d["track"]
+        ok, _ = docs_mod.move(root, str(d["n"]), docs_mod.GLOBAL)
+        if ok:
+            said.append(f"  doc {d['n']} was `{was}`, now the project's — {d['title'][:60]}")
+    return said or ["  no doc carries a track from before scope meant scope"]
+
+
 #: (the version it belongs to, what it does, the function). Ordered oldest first.
 MIGRATIONS: list[tuple[str, str, object]] = [
     ("1.34.0", "pins, work and to-dos move into each environment's own folder",
      _environment_folders),
+    ("1.52.0", "a doc written before 1.44.0 carried provenance in `track:`, not a scope",
+     _docs_written_as_provenance),
 ]
 
 

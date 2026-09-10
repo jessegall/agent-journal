@@ -4,6 +4,53 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.52.0 — the docs 1.44.0 silently scoped, and a finding that can be done with
+
+TWO OPEN QUESTIONS, ANSWERED. Both were parked for the user and both were handed back with
+"answer them yourself, with a reason" — so the reasons are here rather than in a message
+nobody will find again.
+
+### A doc written before 1.44.0 carried provenance, not a scope
+
+1.44.0 turned `track:` from provenance into scope and concluded the migration was nothing:
+"a doc with no track at all is treated as global, which is what every doc written before this
+release has." That is false for any version that filled the field in, and they all did. Both
+docs in this project were invisible on three of its four environments; in another, 88 docs
+existed while the default environment's catalogue counted 85.
+
+THE CUT IS THE TIMESTAMP, NOT THE FIELD. Three repairs were possible. Make every tracked doc
+global — correct for the old ones, but it un-scopes every doc somebody deliberately scoped
+since. Leave them — keeps the harm. Or use `at:` against 1.44.0's own tag
+(`2026-09-10T00:07:01Z`), which separates "the field was provenance" from "somebody chose
+this scope" exactly. The third is taken, because its worst case is a pre-1.44.0 doc whose
+track happened to be the right scope becoming visible everywhere instead of in one place —
+over-visibility, undone by one `journal docs move`. The other two are wrong in the lossy
+direction, and wrong-but-recoverable beats wrong-and-lossy.
+
+It says which docs it moved, one line each. A migration that changes what a reader can see
+and reports a number is the same defect one level up.
+
+### `journal cleanup keep <finding>`
+
+1.51.0 added a count of the rows the retired auto-close closed. Dogfooding it here produced
+"21 row(s) were closed by a work-end matching their title" — all 21 audited, all genuinely
+finished, and the line would have said 21 forever, because how a row closed is a fact about
+the past and there was nothing to DO about it.
+
+MOST FINDINGS ARE MISTAKES AND THIS ONE IS NOT. Everything else `cleanup` lists has a fix
+beside it, and running the fix is how it stops being listed. So a countable finding now
+carries a `mark`, and `journal cleanup keep <mark>` stamps it read — mirroring
+`cleanup.stamp`/`last_read`, which already had this shape for the reading pass.
+
+THE COUNT IS PART OF THE STAMP, so it is not a mute button: audit 21 and it goes quiet, and
+it returns the moment there are 22. And it stamps rather than edits — the tempting fix is to
+rewrite `how:` on those rows so the report stops matching them, which is editing the record
+to satisfy a report about the record.
+
+`cleanup_kept` also had to be added to `state.IN_RECORD`, and the omission announced itself:
+the write fell through to per-session runtime and said "no transcript to file 'cleanup_kept'
+under — mark not written" rather than failing silently.
+
 ## 1.51.0 — ending work is not finishing a row
 
 `work end` closed any started to-do whose title matched the subject. In `workflows`, **710 of

@@ -75,18 +75,21 @@ def project(with_record=True):
     return d
 
 
-def j(d, *args):
+def j(d, *args, stdin=""):
     env = {**os.environ, transcript.SESSION_ENV: "s1"}
     p = subprocess.run([str(d / ".journal" / "journal.py"), *args], env=env, cwd=str(d),
-                       capture_output=True, text=True, timeout=180)
+                       input=stdin, capture_output=True, text=True, timeout=180)
     return p.returncode, (p.stdout + p.stderr).strip()
 
 
 # ─────────────────── the first command migrates, and everything still reads ────────────────
 d = project()
 code, out = j(d, "migrate")
+# the COUNT is not the contract — a migration added later changes it and says nothing about
+# whether the report works. That it reports without acting is.
 check("status reports pending without acting on it",
-      ("1 pending" in out, "1.34.0" in out), (True, True))
+      ("pending" in out, "1.34.0" in out, (d / ".journal" / "environments").exists()),
+      (True, True, False))
 
 code, out = j(d, "pins")
 check("the first ordinary command migrates on its way through",
@@ -143,6 +146,36 @@ check("removing an environment removes it", (code, "are deleted" in out), (0, Tr
 check("its folder is gone from environments/", (envs / "beta").exists(), False)
 check("its pre-1.34.0 to-do folder is gone too", (d / ".journal" / "todo" / "beta").exists(), False)
 check("and nothing was archived under either name", (d / ".journal" / "removed").exists(), False)
+
+# ──────── a doc written before 1.44.0 carried provenance in `track:`, not a scope ───────────
+# 1.44.0 turned the field's meaning around and declared the migration empty, on the reasoning
+# that older docs have no track. Every version that filled it in breaks that: in this project
+# both docs were invisible on three of four environments, and in another 88 docs existed
+# while the default environment's catalogue counted 85.
+d3 = project(with_record=False)
+j(d3, "prepare", "alpha")
+j(d3, "docs", "add", "written when track meant provenance", "--abstract=one", "--brief", stdin="x")
+j(d3, "docs", "add", "scoped on purpose, after 1.44.0", "--abstract=two", "--brief", stdin="x")
+j(d3, "docs", "add", "always the project's", "--abstract=three", "--global", "--brief", stdin="x")
+_docs_dir = d3 / ".journal" / "docs"
+for _f in _docs_dir.rglob("index.md"):
+    _t = _f.read_text()
+    if "written when track meant provenance" in _t:
+        _f.write_text(_t.replace(_t.split("at: ")[1].split("\n")[0], "2026-09-09T10:00:00+00:00"))
+# the record is at the current schema, so wind it back to before this step to make it pending
+_rec = json.loads((d3 / ".journal" / "record.json").read_text())
+_rec["schema"] = "1.34.0"
+(d3 / ".journal" / "record.json").write_text(json.dumps(_rec))
+code, out = j(d3, "migrate", "run")
+check("the pre-1.44.0 doc is given to the project, and it says which",
+      ("was `alpha`, now the project's" in out, "written when track meant provenance" in out),
+      (True, True))
+_cat = j(d3, "docs", "--all")[1]
+check("the one scoped after 1.44.0 keeps its scope — a deliberate choice is not undone",
+      "environment alpha" in _cat, True)
+check("and running it twice moves nothing",
+      "no doc carries a track from before" in j(d3, "migrate", "run")[1]
+      or "Nothing pending" in j(d3, "migrate")[1], True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

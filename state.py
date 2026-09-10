@@ -38,6 +38,7 @@ RETIRED = "state.json"
 
 IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto",
              "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read",
+             "cleanup_kept",
              "agent_seen", "schema"}
 
 
