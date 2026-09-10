@@ -163,9 +163,17 @@ check("an empty docs search points at the transcript", "NO DOC MENTIONS" in out,
 fire("SessionStart", source="startup")
 out = fire("SessionStart", source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-check("the start block carries the catalogue, not the docs",
-      ("DOCS OF THIS PROJECT" in ctx, "Children are slots; State" in ctx, "mounted is a slot fact" in ctx, "Reactivity v2" in ctx, "  1  Reactivity" in ctx),
-      (True, True, False, True, False))
+# THE DOORWAY CARRIES TITLES, THE HAND-OVER CARRIES ABSTRACTS. An abstract is content and
+# the injected block is a pointer: three of them were the largest content in it.
+check("the start block carries the titles, not the abstracts or the docs",
+      ("DOCS OF THIS PROJECT" in ctx, "Reactivity v2" in ctx,
+       "Children are slots; State" in ctx, "mounted is a slot fact" in ctx),
+      (True, True, False, False))
+check("and it says the line was shortened, naming what reads it whole",
+      "shortened to a line each" in ctx and "`journal docs`" in ctx, True)
+code, whole = j("carry")
+check("`journal carry` still carries the abstract the doorway left out",
+      "Children are slots; State" in whole, True)
 code, out = j()
 check("the status page has a docs row", "docs" in out and "catalogued" in out, True)
 
@@ -274,7 +282,11 @@ check("and listed after", "by-hand.html" in out, True)
 p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "session_id": "s1", "transcript_path": str(path)}),
                    capture_output=True, text=True, timeout=180)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
-check("the session start catalogue says which docs carry files", "2 file(s): design.html, by-hand.html" in ctx or "2 file(s): by-hand.html, design.html" in ctx, True)
+names = "2 file(s): design.html, by-hand.html", "2 file(s): by-hand.html, design.html"
+check("the doorway does not name a doc's files — that is content, and `docs <n>` has it",
+      any(n in ctx for n in names), False)
+code, whole = j("carry")
+check("the full hand-over still says which docs carry files", any(n in whole for n in names), True)
 # a subagent may not attach
 p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "z9", "transcript_path": str(path),
                    "tool_name": "Bash", "tool_input": {"command": f'.journal/journal.py docs attach {n_att} x.html "x"'}}), capture_output=True, text=True, timeout=180)

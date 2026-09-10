@@ -20,6 +20,8 @@ find the argument for.
 """
 from __future__ import annotations
 
+import fmt
+
 #: EACH ONE IS A CLAIM AND ITS REASONING, exactly as a written rule is: the claim is the
 #: line injected everywhere, the body is read on demand. The body is not injected — the same
 #: bargain `rules add --brief` strikes, for the same reason.
@@ -70,12 +72,20 @@ def block() -> str:
     return "\n".join(out)
 
 
-def carry() -> str:
-    """The one-line claims, for the block a session is handed at its start."""
+def carry(brief: bool = False) -> str:
+    """The one-line claims, for the block a session is handed at its start.
+
+    THE SHIPPED RULE IS AN ENTRY LIKE ANY OTHER, and it was the one that escaped the cap:
+    every project's rules and pins were shortened to a line while this sat above them at
+    275 characters, because it is written here rather than read from a store. A bound that
+    the hardcoded case walks around is not a bound.
+    """
     if not RULES:
         return ""
     return ("RULES THE JOURNAL ITSELF SHIPS, in force here as in every project:\n"
-            + "\n".join(f"  - {r['fact']}  [{r['id']}]" for r in RULES))
+            + "\n".join(f"  - {fmt.gist(r['fact']) if brief else r['fact']}  [{r['id']}]"
+                        for r in RULES)
+            + fmt.cut(len(RULES), len(RULES), "journal rules", shortened=brief))
 
 
 def by_id(ref: str):

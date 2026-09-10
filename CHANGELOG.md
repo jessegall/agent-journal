@@ -4,6 +4,47 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.45.0 — the doorway carries pointers, and a pointer has a fixed size
+
+1.44.1 bounded the injected block by measuring it and tightening until it fit. That is a
+ceiling, and a ceiling is not a design: it says what the block may not exceed, not what
+belongs in it. This says what belongs in it.
+
+A DOORWAY IS A POINTER. Every entry is one line, capped at 180 characters by `fmt.gist`,
+and beside it the command that reads it whole. Nothing in it is content:
+
+  - A doc is its TITLE. The abstract was the largest content in the block — three of them,
+    of no fixed length — and it is what `journal docs <n>` is for.
+  - A pin's doc citation is `→ doc 88.1`, not the doc's title and its part's. That suffix
+    was 150 characters hanging off an entry that had just been capped at 180, which is how
+    a bounded line grew back to 267.
+  - The shipped rule is gisted like any other. It is written in `builtin.py` rather than
+    read from a store, and it escaped every cap by being hardcoded — a bound the special
+    case walks around is not a bound.
+
+OPEN WORK MOVED TO SECOND, above the rules, and is its title alone. A summary is passable at
+narrative and hopeless at standing orders, and open work is the standing order that decides
+what the next thirty seconds are spent on; it sat seventh, under three rules and three doc
+abstracts, where it read as trivia. And when nothing is open the brief block SAYS nothing is
+open: an omitted section reads as "not mentioned", which leaves a reader unable to tell the
+two apart.
+
+`fmt.cut` NOW REPORTS A SHORTENED LINE, not only a dropped entry. It named the reading
+command when the COUNT was trimmed, so a doorway showing three of three rules — every one
+of them cut to a line — printed no command at all, and the reader held three half-sentences
+with no way to finish them. That is the silent-forgetting failure `cut` exists to prevent,
+arrived at through the other cap.
+
+A CAP OF ZERO MEANT TWO OPPOSITE THINGS. Tools and to-dos read it as "not at this depth";
+`pins.carry` read it as "no limit". So the store the tightening loop pushed to zero became
+the unbounded one: dropping rules to 0 grew a real block from 14,755 characters to 44,988.
+Zero silences a section everywhere now.
+
+WHAT IT MEASURES. On this project the doorway went 4,706 → 1,915; on a real record with 130
+rules, 85 docs and 125 to-dos, 5,266 → 4,529. The property that matters is not the number:
+a test now asserts the doorway is FLAT against the record it points at — ten times the
+entries, under 60 more characters.
+
 ## 1.44.1 — the block that goes into context is bounded in characters, not entries
 
 The harness replaces a hook string over 10,000 characters with a FILE PATH, so a block that
