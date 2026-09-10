@@ -4,6 +4,32 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.46.1 — the pages that describe the block, describing the block that exists
+
+1.45.0 changed what a session is handed and did not change what the README and the skill say
+it is handed. Six claims, each of them false the moment that shipped, and every one of them
+in a page written to be believed:
+
+  - "the abstract is all a later session sees until it opens the doc" — it is the TITLE.
+    The instruction that told agents where to spend their care was pointing at the half the
+    doorway no longer carries, so the guidance is now: write a title that survives alone.
+  - "the claim is re-read in full at every session start" — it is shortened to a line there.
+    Which changes how a pin should be WRITTEN: what it rules goes first, the qualification
+    after, because the first line is what crosses.
+  - "the start block lists what is waiting" — it counts them; `journal todos` lists them.
+  - "every session is handed the catalogue" of tools — it is handed the count, twice, in
+    both the README and the skill.
+  - "Five Claude Code hooks do the enforcing" — seven, since 1.42.0 added WorktreeCreate and
+    SessionEnd was never counted.
+
+AND `environments remove` WAS NEVER IN THE README at all, which mattered little while it
+archived and matters now that it deletes. It is there with what it destroys spelled out.
+
+A DOC THAT DESCRIBES A MECHANISM IS PART OF THE MECHANISM. This package's whole argument is
+that a claim nobody re-reads goes stale silently; five of these had gone stale in one commit
+and none of the 1,453 checks could see it, because a test asserts what the code does and
+nothing asserts what the prose says the code does.
+
 ## 1.46.0 — remove means remove
 
 `journal environments remove --yes` deleted nothing. It MOVED the environment to

@@ -22,8 +22,11 @@ your repo, you can read it, edit it and share it with your team.
   not be lost are pinned. Rules that hold everywhere are recorded. Designs and reports are
   filed as docs.
 - **Hands it all back to every session.** A new session, or the agent right after a
-  compaction, starts with the rules, the pins, the open work, the to-dos and a catalogue of
-  the docs. Nothing depends on the agent remembering to save.
+  compaction, starts with what it is in the middle of, the rules and pins that bind it, the
+  titles of the docs, and a count of everything else beside the command that reads it. It is
+  a pointer, not a payload: one line per entry, so it stays the same size on a record of
+  five pins and one of five thousand. `journal carry` is the same thing in full, on demand.
+  Nothing depends on the agent remembering to save.
 - **Reads the real transcript.** Claude Code writes every message and tool call to disk.
   The journal reads that file instead of keeping a copy, so the agent can search every
   session of a piece of work by line number, and read back exactly the stretch a summary
@@ -107,9 +110,9 @@ Docs hold files too: a design's HTML, a screenshot, a PDF, a CSV, a whole folder
 
 Scripts the agent writes for jobs that come back: a class mover, a coverage report, a
 fixer for one directory. Each lives under `.journal/tools/<name>/` with a `tool.md` that
-says what it does and how to call it, and `journal tools run <name>` runs it. Every
-session is handed the catalogue, so the next agent uses the tool instead of writing it
-again.
+says what it does and how to call it, and `journal tools run <name>` runs it. Every session
+is handed how many there are beside `journal tools`, so the next agent uses the tool instead
+of writing it again.
 
 ### Environments
 
@@ -270,6 +273,11 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal prepare "<name>"             create an environment for a piece of work and switch to it (agent)
     journal grant "<name>"               lend it to this session's subagents; this session does not move (agent)
     journal grant                        what this session has lent; --off "<name>" takes it back (agent)
+    journal environments remove "<name>"        what it holds, and what removing it destroys
+    journal environments remove "<name>" --yes  DELETE it: its pins, its work and its to-dos go, and the
+                                                record keeps one line saying it existed and what it held.
+                                                Never the start environment, never one a live session is
+                                                on; its docs become the project's rather than going with it
     journal assign <n> --to="<agent>"    hand one to-do to one lent agent; --off gives it back (agent)
     journal todos report <n> "<how>"     a lent agent says a row is finished; the parent closes it (agent)
     journal --env=<name> <command>       any command on a named environment, without switching
@@ -354,8 +362,8 @@ adds only the small record of what must survive.
 - **Compaction.** A summary keeps what was done and drops what was decided; the transcript
   keeps everything. After a compaction the agent gets the record back and is pointed at
   the exact stretch the summary replaced.
-- **Hooks.** Five Claude Code hooks do the enforcing: at session start, at each prompt,
-  before and after each tool call, and at each stop.
+- **Hooks.** Seven Claude Code hooks do the enforcing: at session start and end, at each
+  prompt, before and after each tool call, at each stop, and when a worktree is created.
 - **Files.** Pins, rules, work and environments in `.journal/record.json`, a file per to-do, a
   folder per doc. Committed, so the team and every later session read the same journal.
 

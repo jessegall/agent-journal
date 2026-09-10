@@ -174,9 +174,11 @@ never hold a component as a State field" binds every line of work; write it as a
 `promote` a pin that turns out to. Switching environments never moves a rule.
 
 **A pin is a claim, and its reasoning goes underneath it.** There is a length cap on the
-claim and no count cap, because the claim is re-read in full at every session start, every
-compaction and by every subagent. The argument is not cut, it is MOVED: `--brief` on the
-same command takes it on stdin, uncapped, and it is never injected anywhere.
+claim, because the claim is what is re-read at every session start, every compaction and by
+every subagent — shortened there to a line, with `journal pins` beside it reading every one
+in full. So write the claim to survive being cut to its first line: put what it rules FIRST
+and the qualification after. The argument is not cut, it is MOVED: `--brief` on the same
+command takes it on stdin, uncapped, and it is never injected anywhere.
 
     journal rules add "<the ruling>" --brief        the reasoning on stdin
     journal rules show <n>                          the claim and its reasoning
@@ -364,8 +366,8 @@ the loop command, and the next write is REFUSED until a loop exists. `journal lo
 see; `journal todos auto off` says the list should not drain on its own.
 
 **A to-do is not permission, unless the user has switched it on.** With `auto` off, the
-default, the start block lists what is waiting and an idle stop says so once; neither is
-an instruction to begin one. Start a to-do only when the user says so for that one, or
+default, the start block COUNTS what is waiting — `journal todos` is what lists it — and an
+idle stop says so once; neither is an instruction to begin one. Start a to-do only when the user says so for that one, or
 asks you to work through them, in which case offer `journal todos auto on`. With auto on
 for the environment, the user has already said it: whenever nothing is open, pick up the next
 one with `todo start <n>`, do it, `work end` it, and the next idle stop brings the next. Auto
@@ -482,8 +484,10 @@ catalogues it: every session is handed the catalogue, one line per doc, so nobod
 re-investigates what a doc settles.
 
 **Write a doc at the moment something is ruled**, with the ruling as its first line, and
-give it an abstract that says what it settles, because the abstract is all a later
-session sees until it opens the doc. A subagent's report goes in as a part of the doc it
+give it a TITLE that says what it settles, because the title is all a later session sees
+until it opens the doc — the injected block carries titles only, and the abstract waits in
+`journal carry` and `journal docs`. A title that needs its abstract to make sense is a
+title nobody will follow. A subagent's report goes in as a part of the doc it
 belongs to, filed by you, which is the moment to judge whether it is worth keeping.
 Everything else that is long — a survey, the numbers behind a decision — is a part too.
 One doc, many parts; a part is what you replace or strike when it stops being true.
@@ -524,9 +528,9 @@ but if it is a design or a report, file it as a doc so it is handed on and found
 A script you wrote for a job that will come again — move a class with every reference,
 list uncovered methods, run a fixer on one directory — is a tool. Put it under
 `.journal/tools/<name>/`, or leave it where it is and point `--entry` at it, and
-catalogue it with its summary and usage. Every session is handed the catalogue, so the
-next agent runs yours instead of writing it again. Before writing a script, read the
-catalogue. Running a tool is a write: declare the work first.
+catalogue it with its summary and usage. Every session is handed the COUNT of them beside
+`journal tools`, which is the catalogue, so the next agent runs yours instead of writing it
+again. Before writing a script, read the catalogue. Running a tool is a write: declare the work first.
 
 ## Look before you answer
 
