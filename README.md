@@ -191,6 +191,9 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal work start "<the work>"      declare it; edits are refused until then (agent)
     journal work update "<what moved>"   add a note to the open work (agent)
     journal work end "<the same words>"  close it (agent)
+    journal work end "<the same words>" --todo   and close the to-do of that title; without
+                                         it the row stays open — closing a to-do is always
+                                         explicit, never a side effect of ending work
 
 ### To-dos
 

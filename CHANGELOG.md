@@ -4,6 +4,53 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.51.0 — ending work is not finishing a row
+
+`work end` closed any started to-do whose title matched the subject. In `workflows`, **710 of
+1,810 closed rows — 39% — closed that way**, and not because anyone decided they were done.
+Thirty-six were caught and reopened by an agent that noticed; the reopen reasons name the
+mechanism in their own words:
+
+    1197 · "it was closed by a work-end of the same name while I was filing, not by any
+           implementation — nothing has been done to it"
+    1258 · "parked on a Kit gap, not done — the work-end closed it"
+    1725 · "closed by work end matching the title; the extraction is stashed and red"
+    1847 · "the pre-check is answered, but mountedWhen(Matches) is not built -- ending the
+           work declaration of the same name closed the row AGAIN"
+
+The other 674 have never been looked at.
+
+THE CAUSE WAS ONE MISSING DISTINCTION. `work end` meant two things and had one spelling:
+"this is finished", and "I am putting this down". An agent interrupted by a new request does
+the tidy thing — closes its declaration before switching — and the record heard the first
+when the agent meant the second. A title match is evidence about NAMES and whether a row is
+finished is a fact about WORK; no amount of matching gets from one to the other, which is why
+the fix is a spelling for the distinction rather than a better heuristic.
+
+CLOSING A TO-DO IS NOW ALWAYS EXPLICIT, and there are three ways, all deliberate:
+`journal todos done <n> "<how>"`, a `Journal: todos done <n>` commit trailer, and
+`journal work end "<subject>" --todo`, which is the one-command form. A bare `work end` that
+matches a row REPORTS the match and leaves the row standing, naming both closes.
+
+AND THE DEFAULT IS PARK, NOT SWITCH. The prompt nudge said "if this asks for something else
+that CAN WAIT, park it" — which puts the call on the agent, and an agent gets that wrong in
+the user's favour every time, because answering feels helpful. It now reads: a NEW request is
+a to-do unless the user said to do it NOW, and *do not `work end` to make room*. The skill
+says the same and adds why: the question is not "can this wait", it is "did they tell me to
+do it now".
+
+A SUBAGENT IS TOLD THE OPPOSITE, deliberately. `todos start` names `todos done` to whoever
+started the row — except to an agent, whose one prohibition is closing a row. Offering it
+that verb is how this package got caught teaching a subagent to mark its own homework once
+already.
+
+`journal cleanup` COUNTS THE OLD CLOSES. The retired path wrote "closed with the work of the
+same name" and the new one writes "closed with the work that finished it", so the two eras
+are separable in the store without a migration. Cleanup reports the count and the command
+that reads them — one line, not 710 — and reopens nothing: most of them were probably
+finished, and a sweep that changes what a reader sees without being asked is the defect, not
+the fix.
+
 ## 1.50.0 — a search is a listing, and listings honour scope
 
 `journal docs` has filtered by scope since 1.44.0. `journal docs search` did not: it read

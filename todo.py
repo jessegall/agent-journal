@@ -628,9 +628,36 @@ def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str
     return True, f"reopened {n}: {t['title']}\n  {why}\n  the close it undoes: {was}"
 
 
+def titled(root: Path, track: str, title: str) -> dict | None:
+    """The started to-do whose title is these words, if there is one. Reads, decides nothing.
+
+    THE MATCH AND THE CLOSE ARE TWO QUESTIONS, and for a long time one function answered
+    both. Ending work said whether a row existed AND marked it done in the same breath, so
+    the only way to learn a row was about to close was to close it.
+    """
+    want = " ".join(title.split()).lower()
+    return next((t for t in open_items(root, track)
+                 if t["title"].lower() == want and t.get("started")), None)
+
+
 def close_titled(root: Path, track: str, title: str, at: str,
                  agent: str = "") -> tuple[str, str]:
-    """When work with a to-do's title ends, the to-do is done too. (the number, a note).
+    """Close the to-do whose title these words are. ASKED FOR, never automatic.
+
+    IT USED TO FIRE ON EVERY `work end` AND IT WAS WRONG 36 TIMES. In one real project 710
+    of 1,810 closed rows — 39% — were closed by this and not by anyone deciding they were
+    done; the 36 are only the ones an agent later noticed and reopened, in words that say
+    exactly what happened: "parked on a Kit gap, not done — the work-end closed it", "closed
+    by a work-end of the same name while I was filing, not by any implementation", "five of
+    seven sites remain; the work end matched its title and closed it". One row had it happen
+    twice.
+
+    THE CAUSE WAS ONE MISSING DISTINCTION. `work end` meant both "this is finished" and "I
+    am putting this down", because there was no verb for the second. An agent interrupted
+    mid-row does the tidy thing — closes its declaration before switching — and the record
+    heard "done". The user's ruling: closing a to-do is always explicit. `journal todos done
+    <n>`, a `Journal: todos done <n>` commit trailer, or `work end "<subject>" --todo`, which
+    is the one-command form and still says so out loud.
 
     A SUBAGENT CLOSES NOTHING, AND THIS IS THE DOOR IT WENT THROUGH. `report` refuses to
     close and says the parent does it; then `work end`, on the subject `todos start` itself
@@ -645,17 +672,15 @@ def close_titled(root: Path, track: str, title: str, at: str,
     close is not this caller's to make. The work still ends — that is the agent's own
     ledger and nobody else's — and the row stays standing for whoever dispatched it.
     """
-    want = " ".join(title.split()).lower()
-    for t in open_items(root, track):
-        if t["title"].lower() != want or not t.get("started"):
-            continue
-        held = t.get("assigned") or ""
-        if held and state.slug(agent) == held:
-            return "", (f"to-do {t['n']} stays open: it is held for `{held}`, and the agent "
-                        "that dispatched you closes it. Your work is closed.")
-        _update(root, track, t["n"], done=at, how="closed with the work of the same name")
-        return str(t["n"]), ""
-    return "", ""
+    t = titled(root, track, title)
+    if not t:
+        return "", ""
+    held = t.get("assigned") or ""
+    if held and state.slug(agent) == held:
+        return "", (f"to-do {t['n']} stays open: it is held for `{held}`, and the agent "
+                    "that dispatched you closes it. Your work is closed.")
+    _update(root, track, t["n"], done=at, how="closed with the work that finished it")
+    return str(t["n"]), ""
 
 
 # ─────────────────────────────── closing from a commit message ────────────────────────────

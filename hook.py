@@ -246,10 +246,11 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     # reader reaches the instruction.
     return _context("UserPromptSubmit", _say(
         f"{len(standing)} piece(s) of work open",
-        "if this asks for something else that can wait, park it before answering:",
-        '`.journal/journal.py todos add "<title>" --brief`, and say it is parked;',
-        "if it cannot, `update` the open work and `start` the new one; if it is the same work,",
-        "carry on",
+        "a NEW request is a to-do unless the user said to do it NOW:",
+        '`.journal/journal.py todos add "<title>" --brief`, say you parked it, and carry on',
+        "with what is open. Do NOT `work end` to make room — ending work is not finishing a",
+        "row, and the row you are on stays yours. Same work? carry on. Told to do it now?",
+        "`update` the open work and `start` the new one.",
         rows=[w["subject"] for w in standing])[1])
 
 
@@ -2353,9 +2354,9 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
         "`journal work update \"<what moved>\"`, `journal work end \"<the same words>\"` — and "
         "`journal work await \"<what you wait on>\" --pid=<n>|--agent=<id>` when it is in flight "
         "on something you cannot hurry, which stops the nudging until it lands.\n"
-        "WHEN THE USER ASKS FOR SOMETHING YOU ARE NOT WORKING ON AND IT CAN WAIT, park it: "
-        "`journal todos \"<title>\"`, say you did, and carry on — `journal todos start <n>` "
-        "picks it up later.\n\n"
+        "A NEW REQUEST IS A TO-DO UNLESS THE USER SAID TO DO IT NOW. Park it — `journal todos "
+        "\"<title>\"` — say you parked it, and carry on with what is open. Do not end your work "
+        "to make room: ending work is not finishing a row.\n\n"
         # THE REFLEX. Everything above is how to WRITE the record; this is when to READ
         # one instead of answering from whatever survived the summary.
         "IF YOU ARE UNSURE WHAT WAS DECIDED, LOOK — do not answer from what survived: "

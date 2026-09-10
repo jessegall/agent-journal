@@ -82,7 +82,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal todo "<title>"        the same command; `todo` and `todos` are twins everywhere',
         "journal todos [--all] [--page=N] [--order=asc|desc]   the titles, numbered, newest first",
         "journal todos show N          the whole brief — bare `journal todo N` is the same",
-        "journal todos start N         open work with that title; `work end` closes both",
+        "journal todos start N         open work with that title; the row stays open until you close it — `journal todos done N \"<how>\"`, a `Journal: todos done N` commit trailer, or `journal work end \"<title>\" --todo` for both in one command",
         'journal todos done N "<how>"    resolved without starting it',
         'journal todos strike N "<why>"  abandoned, on the record — `journal todo drop N "<why>"` is the same',
         'journal todos reopen N "<why>"  undo a close, with the reason and the close it undoes kept',

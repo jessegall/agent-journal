@@ -592,13 +592,16 @@ p = subprocess.run([J, "todo", "start", "1"], env=env, capture_output=True, text
 check("cli todo start opens the work", (p.returncode, "open: convert the remaining widgets" in p.stdout), (0, True))
 code, out, err = fire(d, "Stop", path)
 check("with work open the to-do line is not said", "to-do(s) waiting" in out, False)
-p = subprocess.run([J, "end", "convert the remaining widgets"], env=env, capture_output=True, text=True, timeout=180)
+p = subprocess.run([J, "end", "convert the remaining widgets", "--todo"], env=env, capture_output=True, text=True, timeout=180)
 check("end closes the work and the to-do", "to-do 1 is done with it" in p.stdout, True)
 p = subprocess.run([J, "todo", "drop", "2", "no longer wanted"], env=env, capture_output=True, text=True, timeout=180)
 check("cli todo drop", (p.returncode, "dropped: no longer wanted" in p.stdout), (0, True))
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-check("with none waiting the start block says nothing about to-dos", "TO DO" in ctx, False)
+# the doorway's own INSTRUCTION says "to-do" and names the command, always; what must be
+# absent when nothing waits is the counts ROW, whose note is this sentence.
+check("with none waiting the start block says nothing about to-dos",
+      "delayed work, not an instruction" in ctx, False)
 subprocess.run([J, "todo", "third"], env=env, capture_output=True, text=True, timeout=180)
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
@@ -779,9 +782,12 @@ check("a request with nothing open: no reminder (the request is the work)", out.
 subprocess.run([J, "start", "fix the batch of failures"], env=env, capture_output=True, timeout=180)
 code, out, err = prompt("Lets rename the Nothing component to Empty? or None? Suggestions?")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
+# THE DEFAULT IS PARK, AND THE BURDEN IS ON DOING IT NOW — the user's ruling, after agents
+# read "if it can wait" as a judgement call and switched.
 check("a request while work is open carries the reminder, the work on its own line",
       ("1 piece(s) of work open" in ctx, "  - fix the batch of failures" in ctx,
-       "park it before answering" in ctx), (True, True, True))
+       "a NEW request is a to-do unless the user said to do it NOW" in ctx,
+       "Do NOT `work end` to make room" in ctx), (True, True, True, True))
 code, out, err = prompt("cool, thanks!")
 check("an acknowledgement carries none", out.strip(), "")
 code, out, err = prompt("is the alias installed automatically?")
@@ -852,7 +858,8 @@ check("with the to-do started, work is open: auto holds once to end it or park t
       (brief, "first chore" in why, "park what is left" in why), ("journal reminded Claude: auto is on, work still open", True, True))
 code, out, err = fire(d, "Stop", path, stop_hook_active=True)
 check("and the stop after it passes", out.strip(), "")
-subprocess.run([J, "end", "first chore"], env=env, capture_output=True, timeout=180)
+# `--todo` because the row really is finished here; a bare `end` leaves it standing (rule 4).
+subprocess.run([J, "end", "first chore", "--todo"], env=env, capture_output=True, timeout=180)
 code, out, err = fire(d, "Stop", path)
 brief, why = held(out)
 check("once it ends, the next idle stop brings the next one",

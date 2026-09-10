@@ -446,7 +446,8 @@ def cmd_start(subject: str) -> int:
     return 0 if ok else 1
 
 
-def cmd_end(subject: str, force: bool = False, acting: str = "") -> int:
+def cmd_end(subject: str, force: bool = False, acting: str = "",
+            close_todo: bool = False) -> int:
     """Close the work, and ask the one question that is only answerable now.
 
     THE MOMENT WORK CLOSES IS THE MOMENT YOU KNOW WHAT IT TAUGHT. Before it, you cannot
@@ -460,12 +461,22 @@ def cmd_end(subject: str, force: bool = False, acting: str = "") -> int:
     ok, msg = work.end(root(), subject, _now(), force)
     fmt.say(msg, error=not ok)
     if ok:
-        closed, note = todo.close_titled(root(), tracks.current(root(), _stem()), subject,
-                                         _now(), acting)
-        if closed:
-            fmt.say(f"  to-do {closed} is done with it.")
-        elif note:
-            fmt.say("  " + note)
+        here = tracks.current(root(), _stem())
+        # CLOSING A TO-DO IS ALWAYS EXPLICIT — the user's ruling, after 710 of one project's
+        # 1,810 closed rows turned out to have been closed by a `work end` matching a title
+        # rather than by anyone deciding they were done. `work end` meant both "finished" and
+        # "I am putting this down", and an agent interrupted mid-row does the tidy thing:
+        # closes its declaration before switching. The record heard "done". So the match is
+        # REPORTED and the close is asked for.
+        row = todo.titled(root(), here, subject)
+        if row and close_todo:
+            closed, note = todo.close_titled(root(), here, subject, _now(), acting)
+            fmt.say(f"  to-do {closed} is done with it." if closed else "  " + note)
+        elif row:
+            fmt.say(f'  to-do {row["n"]} has this title and STAYS OPEN — ending work is not '
+                    "finishing a row:\n"
+                    f'    journal todos done {row["n"]} "<how>"   it is finished\n'
+                    f'    journal work end "<the same words>" --todo   both, in one command')
         # AND THE OTHER DIRECTION, which this asked for two years of sessions and never once.
         # A field report named the gap: "pins go stale precisely when a stretch of work
         # changes the code they describe. Pin 1 was written before the fix and was false the
@@ -946,7 +957,20 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             ok, msg = work.start(root(), t["title"], _now(), _where())
             fmt.say(msg, error=not ok)
             if ok:
-                fmt.say(f"  to-do {n} is started; `journal work end \"{t['title']}\"` closes both.")
+                # THE SENTENCE THAT TAUGHT THE HABIT. It told every agent that ending the
+                # work closes the row, which is what 710 of one project's closes did without
+                # anyone deciding anything. Closing is explicit now, and this says which —
+                # EXCEPT TO A SUBAGENT, whose one prohibition is closing a row: naming
+                # `todos done` to it is offering the exact verb it may not use, and this
+                # package has already been caught once teaching a subagent to close its own
+                # homework. The `report` line below is its half.
+                if acting:
+                    fmt.say(f"  to-do {n} is started, and it stays open — a row closes when "
+                            "whoever dispatched you closes it.")
+                else:
+                    fmt.say(f'  to-do {n} is started. It stays open until you say it is done:\n'
+                            f'    journal todos done {n} "<how>"\n'
+                            f'    journal work end "{t["title"]}" --todo   closes the work AND the row')
                 if acting:
                     # THE HOLD IS THE HALF AN AGENT CANNOT SEE. `assign` said it to the
                     # dispatcher; the agent that claimed the row by starting it is told here,
@@ -1821,6 +1845,7 @@ class Opts:
     all_sessions: bool = False
     yes_flag: bool = False
     force: bool = False
+    close_todo: bool = False
     order: str = fmt.DESC
     sessions: list
     page: int = 1
@@ -1941,6 +1966,8 @@ BARE_FLAGS: dict[str, _Flag] = {
     "--project": _Flag(dest="project_too"),
     "--yes": _Flag(dest="yes_flag"),
     "--force": _Flag(dest="force"),
+    "--todo": _Flag(dest="close_todo"),
+    "--todos": _Flag(dest="close_todo"),
     "--all-sessions": _Flag(dest="all_sessions"),
     "--none": _Flag(dest="after", set="--none"),    # `todos after <n> --none` clears the prerequisites
     "--full": _Flag(dest="full"),
@@ -2215,7 +2242,7 @@ def _v_work(verb: str, rest: list[str], opts: Opts) -> int:
         return cmd_await(words, opts.on, opts.wait_for, opts.await_agent, opts.await_pid)
     if sub == "update":
         return cmd_update(words, opts.on)
-    return cmd_start(words) if sub == "start" else cmd_end(words, opts.force, opts.acting)
+    return cmd_start(words) if sub == "start" else cmd_end(words, opts.force, opts.acting, opts.close_todo)
 
 
 def _v_start_end(verb: str, rest: list[str], opts: Opts) -> int:
@@ -2223,7 +2250,7 @@ def _v_start_end(verb: str, rest: list[str], opts: Opts) -> int:
     if len(rest) < 2:
         return _refuse(f"{verb} wants the words that name the work")
     subject = " ".join(rest[1:])
-    return cmd_start(subject) if verb == "start" else cmd_end(subject, opts.force, opts.acting)
+    return cmd_start(subject) if verb == "start" else cmd_end(subject, opts.force, opts.acting, opts.close_todo)
 
 
 def _v_migrate(verb: str, rest: list[str], opts: Opts) -> int:

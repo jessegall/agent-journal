@@ -212,5 +212,27 @@ for _row, _first, _also in (({"blocked": "b", "started": "s"}, "blocked", ["star
     check(f"{_first} outranks {_also[0]}",
           (_t._state(_row), _t.states_of(_row)[1:]), (_first, _also))
 
+# ────────────── ending work is not finishing a row (rule 4) ────────────────────────────────
+# `work end` closed any started to-do whose title matched, unconditionally. In one real
+# project 710 of 1,810 closed rows closed that way rather than because anyone decided they
+# were done, and 36 were caught and reopened: "parked on a Kit gap, not done — the work-end
+# closed it". The cause was one spelling for two meanings — "this is finished" and "I am
+# putting this down" — and an agent interrupted mid-row does the tidy thing.
+_n = re.search(r"to-do (\d+)", j("todos", "add", "a row somebody is in the middle of")[1]).group(1)
+j("todos", "start", _n)
+_code, _out = j("work", "end", "a row somebody is in the middle of")
+check("a bare work end leaves the row standing, and says so",
+      (f"to-do {_n} has this title and STAYS OPEN" in _out,
+       "a row somebody is in the middle of" in j("todos")[1]), (True, True))
+check("and it names both ways to close it",
+      (f'journal todos done {_n}' in _out, "--todo" in _out), (True, True))
+j("todos", "start", _n)
+_code, _out = j("work", "end", "a row somebody is in the middle of", "--todo")
+check("--todo closes both", (f"to-do {_n} is done with it" in _out,
+                             "a row somebody is in the middle of" in j("todos")[1]), (True, False))
+check("and the reason distinguishes this era from the auto-closed one",
+      ("same name" in j("todos", "--all")[1], "the work that finished it" in j("todos", str(_n))[1]),
+      (False, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
