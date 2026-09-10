@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.49.1 — `*` is a scope, not an environment that went missing
+
+`journal cleanup` flags a doc whose environment no longer exists. It found that by reading
+`track:` as the name of an environment and asking whether one still goes by it — correct
+while the field meant provenance, and wrong for every `--global` doc the moment it means
+scope, because `*` is not an environment and never was one.
+
+Found by dogfooding: doc 3 was this project's first global doc, and the next stop reported
+it as belonging to a missing environment.
+
+THIS IS THE THIRD THING TO READ `track:` WITHOUT KNOWING ITS MEANING HAD CHANGED. `cleanup`
+started reading it while it was still provenance (which is what 1.44.0 cited as the reason to
+make it a scope), 1.44.0's own migration assumed it was empty (to-do 66, still open), and now
+this. A field that describes something always ends up deciding something — and the ones
+deciding are never all in one place.
+
 ## 1.49.0 — a doc says which environment it belongs to
 
 1.44.0 gave docs a scope and no way to see it. `journal docs` printed number, title, status,

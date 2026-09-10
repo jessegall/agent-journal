@@ -170,7 +170,13 @@ def _docs(root: Path) -> list[dict]:
             continue
         why = ""
         gone = ""
-        if d.get("track") and state.slug(d["track"]) not in {state.slug(n) for n in names}:
+        # GLOBAL IS A SCOPE, NOT AN ENVIRONMENT THAT WENT MISSING. This read `track:` as the
+        # name of an environment and asked whether it still exists — which was right while
+        # the field meant provenance, and flags every `--global` doc the moment it means
+        # scope: `*` is not an environment and never was one. Third time this field has
+        # been read by something that did not know its meaning had changed.
+        if (docs_mod.scope_of(d) != docs_mod.GLOBAL
+                and state.slug(d["track"]) not in {state.slug(n) for n in names}):
             gone = why = f"its environment `{d['track']}` is gone"
         elif d.get("status") == "draft" and not d.get("parts"):
             days = _days(d.get("at", ""))
