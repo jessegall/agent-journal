@@ -139,27 +139,46 @@ check("four places wrote, and there is one record holding all four",
 fresh = base / "alpha" / ".claude" / "worktrees" / "made"
 git(base / "alpha", "worktree", "add", "-q", str(fresh), "-b", "made")
 check("a fresh worktree has no journal of its own", (fresh / ".journal").exists(), False)
-_said = subprocess.run([sys.executable, str(base / ".journal/hook.py")], capture_output=True,
+# THE EVENT'S CONTRACT IS A PATH, NOT CONTEXT, and this suite asserted the opposite: that the
+# hook "says so once" in additionalContext and "says nothing" when there is nothing to do.
+# Saying nothing is precisely the failure —
+#
+#     WorktreeCreate hook failed: hook succeeded but returned no worktree path
+#     (command: echo the path to stdout; http/callback: return hookSpecificOutput.worktreePath)
+#
+# — and the harness then refuses to make the worktree at all. Three dispatches in a row died
+# at creation in a real project. Every branch answers now, including the ones with nothing to
+# do, because a hook that returns early is a hook that returned no path.
+
+
+def _created(where):
+    p = subprocess.run([sys.executable, str(base / ".journal/hook.py")], capture_output=True,
                        text=True, input=json.dumps({"hook_event_name": "WorktreeCreate",
-                                                    "worktree_path": str(fresh),
-                                                    "session_id": "wc1"})).stdout
-check("the create hook links it to the journal above, and says so once",
-      ((fresh / ".journal").is_symlink(),
-       (fresh / ".journal").resolve() == (base / ".journal").resolve(),
-       "shares" in (json.loads(_said or "{}").get("hookSpecificOutput") or {}).get("additionalContext", "")),
-      (True, True, True))
+                                                    "worktree_path": str(where),
+                                                    "session_id": "wc1"}))
+    got = json.loads(p.stdout or "{}").get("hookSpecificOutput") or {}
+    return p.returncode, got.get("worktreePath", "")
+
+
+check("the create hook links it to the journal above AND answers with the path",
+      (_created(fresh), (fresh / ".journal").is_symlink(),
+       (fresh / ".journal").resolve() == (base / ".journal").resolve()),
+      ((0, str(fresh)), True, True))
 check("and git in it sees nothing of .journal",
       [l for l in git(fresh, "status", "--porcelain").splitlines() if ".journal" in l], [])
-check("run again, it changes nothing and says nothing — a copy is never overwritten",
-      subprocess.run([sys.executable, str(base / ".journal/hook.py")], capture_output=True,
-                     text=True, input=json.dumps({"hook_event_name": "WorktreeCreate",
-                                                  "worktree_path": str(fresh),
-                                                  "session_id": "wc1"})).stdout.strip(), "")
-check("a worktree with no journal anywhere above it is left alone, not an error",
-      subprocess.run([sys.executable, str(base / ".journal/hook.py")], capture_output=True,
-                     text=True, input=json.dumps({"hook_event_name": "WorktreeCreate",
-                                                  "worktree_path": tempfile.mkdtemp(),
-                                                  "session_id": "wc2"})).returncode, 0)
+check("run again it changes nothing — and STILL answers with the path, or the worktree fails",
+      _created(fresh), (0, str(fresh)))
+_elsewhere = tempfile.mkdtemp()
+check("a worktree with no journal above it is left alone and still gets its path back",
+      _created(_elsewhere), (0, _elsewhere))
+check("and nothing was linked into it", (Path(_elsewhere) / ".journal").exists(), False)
+# THE EVENT IS NOT IN DELIVERS_CONTEXT ANY MORE. It was, which is what made a context reply
+# look correct from inside the hook: `_context` refuses an event that cannot carry one, and
+# this one was on the list by assumption rather than by measurement.
+sys.path.insert(0, str(base / ".journal"))
+import hook as _hk  # noqa: E402
+check("WorktreeCreate is not treated as an event that carries context",
+      "WorktreeCreate" in _hk.DELIVERS_CONTEXT, False)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
