@@ -168,10 +168,18 @@ def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
         return False, str(e)
     for line in install.skill(False):
         lines.append(line)
-    # AN EVENT THE NEW VERSION LISTENS TO IS WIRED BY THE UPDATE. Idempotent: what is
-    # wired already is left alone.
+    # AN EVENT THE NEW VERSION LISTENS TO IS WIRED BY THE UPDATE, and one it has RETIRED is
+    # unwired. Idempotent: what is already right is left alone.
+    #
+    # RELOADED FIRST, because `install` was imported before `pull` replaced it on disk and the
+    # module in memory is the OLD one. Measured: 1.57.0 retired `WorktreeCreate`, the upgrade
+    # ran the previous `wire()`, and the event stayed in settings.json until something else
+    # happened to call it — so the release that removes a broken hook would not remove it, in
+    # exactly the projects it is broken in.
+    import importlib
+    install = importlib.reload(install)
     for line in install.wire(False):
-        if line.startswith("  +"):
+        if line.startswith(("  +", "  -")):
             lines.append(line)
     now = current(root)
     (root / CACHE).unlink(missing_ok=True)  # the next check is a real one
