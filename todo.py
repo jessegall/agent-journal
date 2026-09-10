@@ -85,7 +85,33 @@ def folder(root: Path, track: str) -> Path:
     return d
 
 
+#: path -> (mtime_ns, size, parsed). SAME SHAPE AS `state._read`, for the same reason and
+#: validated the same way: another process's write changes mtime or size, so the next read
+#: here misses and sees it.
+#:
+#: ONE COMMAND READ EVERY TO-DO FOUR TIMES. `open_items` is called by the status page, by
+#: the auto check, by `answered` and by `asking`, and each one walked the whole folder and
+#: re-parsed it. In a project with 1,891 rows that is 7,564 file reads for one bare
+#: `journal` — 1.09 seconds of the 2.27 the command took, measured with cProfile. The
+#: callers are all correct; reading the same unchanged file four times is what was wrong.
+_PARSED: dict = {}
+
+
 def _parse(path: Path) -> dict:
+    try:
+        st = path.stat()
+    except OSError:
+        return {"title": path.stem, "body": "", "path": path, "n": 0}
+    key = str(path)
+    hit = _PARSED.get(key)
+    if hit is not None and hit[0] == st.st_mtime_ns and hit[1] == st.st_size:
+        return dict(hit[2])
+    got = _read_todo(path)
+    _PARSED[key] = (st.st_mtime_ns, st.st_size, got)
+    return dict(got)
+
+
+def _read_todo(path: Path) -> dict:
     text = path.read_text()
     meta: dict = {"title": "", "body": "", "path": path}
     if text.startswith("---\n"):
@@ -105,6 +131,7 @@ def _parse(path: Path) -> dict:
 
 
 def _write(path: Path, meta: dict, body: str) -> None:
+    _PARSED.pop(str(path), None)
     lines = ["---"] + [f"{k}: {meta.get(k, '') or ''}" for k in FIELDS] + ["---", ""]
     if body.strip():
         lines += [body.strip(), ""]
@@ -112,11 +139,34 @@ def _write(path: Path, meta: dict, body: str) -> None:
     path.write_text("\n".join(lines))
 
 
+#: dir -> (mtime_ns, the files in it). THE LISTING IS THE OTHER HALF OF THE COST. `_parse`
+#: is cached per file, so the four `open_items` calls in one command stopped re-reading —
+#: but each still globbed the folder, and a glob over 1,891 entries is 1,891 lstats. A
+#: directory's mtime changes when a file is added or removed, which is exactly when this
+#: answer changes; editing a row's contents leaves the LIST identical and is caught by
+#: `_parse`'s own stat.
+_LISTED: dict = {}
+
+
+def _files(d: Path) -> list:
+    try:
+        st = d.stat()
+    except OSError:
+        return []
+    key = str(d)
+    hit = _LISTED.get(key)
+    if hit is not None and hit[0] == st.st_mtime_ns:
+        return hit[1]
+    files = sorted(d.glob("*.md"))
+    _LISTED[key] = (st.st_mtime_ns, files)
+    return files
+
+
 def _all(root: Path, track: str) -> list[dict]:
     d = folder(root, track)
     if not d.is_dir():
         return []
-    return sorted((_parse(f) for f in d.glob("*.md")), key=lambda m: m["n"])
+    return sorted((_parse(f) for f in _files(d)), key=lambda m: m["n"])
 
 
 def open_items(root: Path, track: str) -> list[dict]:
