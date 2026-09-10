@@ -1146,7 +1146,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
             fmt.say(line)
         return 0
     elif verb == "search":
-        return cmd_docs_search(" ".join(rest[1:]), page)
+        return cmd_docs_search(" ".join(rest[1:]), page, all_of_them=all_of_them)
     # A DOC IS NAMED BY THE USER, so it can be called anything — `journal docs show search`
     # is how you read a doc called "search" when the bare form would dispatch the verb.
     elif verb in ("show", "read") and len(rest) > 1:
@@ -1230,24 +1230,33 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1, order: st
     return 0 if ok else 1
 
 
-def cmd_docs_search(term: str, page: int = 1, width: int | None = None) -> int:
+def cmd_docs_search(term: str, page: int = 1, width: int | None = None,
+                    all_of_them: bool = False) -> int:
     width = fmt.room(width)
     import textwrap
     needle = term.lower()
     if not needle:
         fmt.say("docs search wants a term", error=True)
         return 1
-    hits = [(ref, title, i, line) for ref, title, i, line in docs.search_lines(root())
-            if needle in line.lower()]
+    here = tracks.current(root(), _stem())
+    every = docs.search_lines(root(), all_of_them=True)
+    lines = every if all_of_them else docs.search_lines(root(), track=here)
+    hits = [(ref, title, i, line) for ref, title, i, line in lines if needle in line.lower()]
+    elsewhere = len([1 for r, t, i, l in every if needle in l.lower()]) - len(hits)
     if not hits:
-        fmt.say(fmt.title(f"NO DOC MENTIONS {term!r}"))
-        fmt.say(fmt.commands([(f"journal search {term}", "the transcript instead")]))
+        fmt.say(fmt.title(f"NO DOC MENTIONS {term!r}",
+                          sub=f"{elsewhere} on other environments (--all)" if elsewhere else ""))
+        fmt.say(fmt.commands([(f"journal search {term}", "the transcript instead")]
+                             + ([(f"journal docs search {term} --all", "every environment's docs")]
+                                if elsewhere else [])))
         return 0
     pages = max(1, -(-len(hits) // PAGE))
     page = min(max(1, page), pages)
     lo, hi = (page - 1) * PAGE, page * PAGE
-    fmt.say(fmt.title(f"{len(hits)} DOC LINE(S) MENTION {term!r}",
-                    sub=f"page {page} of {pages}" if pages > 1 else ""))
+    said = [f"page {page} of {pages}"] if pages > 1 else []
+    if elsewhere:
+        said.append(f"{elsewhere} on other environments (--all)")
+    fmt.say(fmt.title(f"{len(hits)} DOC LINE(S) MENTION {term!r}", sub=" · ".join(said)))
     last = None
     for ref, title, i, line in hits[lo:hi]:
         if ref != last:

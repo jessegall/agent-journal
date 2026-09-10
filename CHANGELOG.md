@@ -4,6 +4,23 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.50.0 — a search is a listing, and listings honour scope
+
+`journal docs` has filtered by scope since 1.44.0. `journal docs search` did not: it read
+every line of every doc in the project, so a doc deliberately absent from the catalogue
+surfaced in the results anyway — with its LINES quoted, which is more than the catalogue
+would have shown of it. Scope decides what is listed, and this is one of the places that
+lists.
+
+It now searches this environment's docs and the project's, says in its heading how many
+matches are on other environments, and takes `--all` to reach them — the same shape
+`journal docs` already had.
+
+READING BY NUMBER IS STILL UNSCOPED, deliberately and unchanged. `journal docs 88` works
+from any environment, because a rule binds every environment and may cite a doc: a reference
+that stopped resolving outside one environment would make `--doc=N` a trap. What the search
+declines to return is still something `journal docs <n>` will read.
+
 ## 1.49.1 — `*` is a scope, not an environment that went missing
 
 `journal cleanup` flags a doc whose environment no longer exists. It found that by reading

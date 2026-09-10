@@ -117,7 +117,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal docs attach <doc> <path> ["<what it is>"] [--replace]   copy a file or a folder into the doc, beside its parts',
         'journal docs detach <doc> <name> "<why>"    drop an attachment; it is kept under struck/',
         "journal docs index            catalogue the files docs/ already holds",
-        "journal docs search <term> [--page=N]       every line of every doc, and every attachment by name",
+        "journal docs search <term> [--all] [--page=N]       every line of every doc IN SCOPE — this environment's and the project's — and every attachment by name; --all is every environment's, and the heading says how many are hidden",
         'journal docs move <doc> "<environment>"|--global   which environment lists it, or the project; the doc, its number and its parts stay put',
         "--doc=<doc> or --doc=<doc>.<p> on pins, rules and todos cites a doc (or one part) from the entry",
     ),

@@ -911,10 +911,23 @@ def carry(root: Path, cap: int = 20, track: str = "", brief: bool = False) -> st
             + "\n".join(lines) + more)
 
 
-def search_lines(root: Path) -> list[tuple[str, str, int, str]]:
-    """(reference, title, line number, text) for every line of every doc and part."""
+def search_lines(root: Path, track: str = "",
+                 all_of_them: bool = False) -> list[tuple[str, str, int, str]]:
+    """(reference, title, line number, text) for every line of every doc in scope.
+
+    A SEARCH IS A LISTING. `journal docs` has filtered by scope since 1.44.0 and this read
+    every doc in the project, so a doc that is deliberately absent from the catalogue turned
+    up in the results anyway — with its lines quoted, which is more than the catalogue would
+    have shown. Scope decides what is LISTED, and this is one of the places that lists.
+
+    READING BY NUMBER IS STILL UNSCOPED, which is the property that keeps `--doc=N` honest
+    from any environment. Nothing here changes that: a reference the search does not return
+    is still a reference `journal docs <n>` will read.
+    """
     out = []
     for d in _load(root):
+        if track and not all_of_them and not here(d, track):
+            continue
         for i, line in enumerate(d["body"].splitlines(), 1):
             out.append((str(d["n"]), d["title"], i, line))
         for p in d["parts"]:
