@@ -715,6 +715,20 @@ def _p_recall(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     state.put(ROOT, "recalled", list(done) + passed, stem=ctx.stem)
     counted = " and ".join(x for x in (f"{ruled} rule(s)" if ruled else "",
                                        f"{pinned} pin(s)" if pinned else "") if x)
+    # READING THEM IS THE MOMENT TO JUDGE THEM, and the two are one command apart. A field
+    # report: "Both times I obeyed it, spotted one wrong pin, fixed that one, and moved on.
+    # It never occurred to me to run the full cleanup, because nothing in the nudge said
+    # cleanup — and re-reading pins is exactly the moment you'd catch a dead one." So when
+    # a pass is owed this points at the pass, and when it is not it stays two commands.
+    import cleanup as cleanup_mod
+    try:
+        due = cleanup_mod.owed(ROOT, here)
+    except Exception:
+        due = False
+    if due:
+        return _said(f"{counted} are in force here, and the block that handed them to you is far behind",
+                     "`.journal/journal.py cleanup read` reads every one AND asks the three questions —",
+                     "the reading pass is owed here, and reading them is the moment to judge them")
     return _said(f"{counted} are in force here, and the block that handed them to you is far behind",
                  "`journal rules` and `journal pins` read them back in one command each —",
                  "cheaper than being wrong about one")

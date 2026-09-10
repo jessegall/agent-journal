@@ -466,8 +466,19 @@ def cmd_end(subject: str, force: bool = False, acting: str = "") -> int:
             fmt.say(f"  to-do {closed} is done with it.")
         elif note:
             fmt.say("  " + note)
+        # AND THE OTHER DIRECTION, which this asked for two years of sessions and never once.
+        # A field report named the gap: "pins go stale precisely when a stretch of work
+        # changes the code they describe. Pin 1 was written before the fix and was false the
+        # instant the fix landed — about eight hours before anyone noticed." The moment work
+        # closes is the moment you know what it taught AND what it just made untrue, and only
+        # the first half was ever asked. It asks; a gate here would be a third rule.
         fmt.say('  did that teach anything a later reader would get wrong without?\n'
               '    journal pins add "<the claim, in one line>"   (or nothing, which is fine)')
+        standing = len(pins.live(root(), pins.RULES)) + len(pins.live(root()))
+        if standing:
+            fmt.say(f'  and did it make any of the {standing} standing claim(s) FALSE? work that '
+                    "changes code\n    is what makes a pin describe a version that is gone:\n"
+                    '    journal pins strike <n> "<why>"   ·   journal rules strike <n> "<why>"')
     return 0 if ok else 1
 
 

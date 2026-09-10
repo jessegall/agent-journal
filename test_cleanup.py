@@ -152,12 +152,28 @@ check("it says why an empty findings list is not a clean record",
       "Only reading finds it" in out, True)
 check("nothing is struck by reporting", [p["struck"] for p in pins._all(r9, pins.RULES)], [None])
 
+def _aged():
+    """A record whose oldest standing claim is past READ_DAYS, so a pass is genuinely owed."""
+    import datetime
+    r = fresh()
+    old_at = (datetime.datetime.now() - datetime.timedelta(days=cleanup.READ_DAYS + 1)).isoformat()
+    pins.add(r, "a claim old enough that reading it is owed", old_at, 200)
+    return r
+
+
 # ------------------------------------------------------------- the reading pass
 r10 = fresh()
 pins.add(r10, "a rule that only a reader could judge", AT, 200, key=pins.RULES)
 pins.add(r10, "a pin that only a reader could judge", AT, 200)
 check("nothing mechanical to find", cleanup.candidates(r10, "default"), [])
-check("and the record says so", "never done on this environment" in flat(cleanup.report(r10, "default")), True)
+# "NEVER" WITHOUT "NOT OWED YET" READS AS A BUG. A field report worked back from this line
+# to the conclusion that the reading-pass nudge was broken — the record said never, the nudge
+# never fired, and nothing connected the two. `owed` is the gate and it is deliberate.
+check("and the record says so, with why it is not nagging about it",
+      ("never done here" in flat(cleanup.report(r10, "default")),
+       "not owed yet" in flat(cleanup.report(r10, "default"))), (True, True))
+check("a record old enough to be owed drops the qualification",
+      cleanup.last_read(_aged(), "default"), "never done on this environment")
 check("the report points at the second half", "journal cleanup read" in flat(cleanup.report(r10, "default")), True)
 
 out = flat(cleanup.reading(r10, "default", AT))
@@ -169,7 +185,7 @@ check("nothing is struck by reading it", [p["struck"] for p in pins._all(r10)], 
 check("the pass is stamped", cleanup.days_since_read(r10, "default") is not None, True)
 check("and the report stops saying never",
       "never done" in flat(cleanup.report(r10, "default")), False)
-check("a stamp is per environment", cleanup.last_read(r10, "elsewhere"), "never done on this environment")
+check("a stamp is per environment", "never done here" in cleanup.last_read(r10, "elsewhere"), True)
 check("reading with mark=False leaves no stamp",
       (cleanup.reading(r10, "untouched", AT, mark=False),
        cleanup.days_since_read(r10, "untouched")) [1], None)

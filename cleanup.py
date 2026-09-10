@@ -299,11 +299,22 @@ def days_since_read(root: Path, here: str) -> float | None:
 
 
 def last_read(root: Path, here: str) -> str:
-    """When this environment's claims were last READ, in words — never is a real answer."""
+    """When this environment's claims were last READ, in words — never is a real answer.
+
+    AND "NEVER" SAYS WHETHER IT IS OWED, because on its own it reads as a bug. A field
+    report worked back from this line to the conclusion that the reading-pass nudge was
+    broken: the record said the pass had never been done, the nudge never fired, and
+    nothing on the page connected the two. `owed` is the gate and it is deliberate — every
+    record starts never-read, and a store that nags from its first pin teaches its reader
+    to ignore the line before there is anything worth reading. The condition was right and
+    only the sentence was silent about it, which is the same defect one level up: a fact
+    stated without the qualification that makes it mean anything.
+    """
     got = _read_log(root).get(here) or {}
     days = _days(got.get("at", "")) if got.get("at") else None
     if days is None:
-        return "never done on this environment"
+        return ("never done on this environment" if owed(root, here) else
+                f"never done here, and not owed yet — nothing standing is {READ_DAYS} days old")
     if days < 1:
         return "last done today"
     return f"last done {int(days)}d ago"
