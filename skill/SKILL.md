@@ -455,8 +455,11 @@ wall — and an agent routes around a wall.
     .journal/environments/<name>/work.json    what is open there
     .journal/environments/<name>/todo/        its to-dos, one file each
 
-Rules and docs are the PROJECT's and sit outside it — a rule binds every environment, and
-every environment reads every doc. Nothing here is edited by hand; the commands own these
+A RULE IS THE PROJECT'S and sits outside the environments — it binds all of them. A DOC HAS
+A SCOPE: it belongs to the environment it was written on, or to the project with
+`--global`, and `journal docs move <n> "<env>"|--global` changes which. Scope decides what
+is LISTED, never what can be read: every doc stays readable by number from every
+environment, so a rule that binds everywhere can cite one without the citation going dark. Nothing here is edited by hand; the commands own these
 files. An older layout is carried across the first time a new version reads it, by whichever
 process gets there first — `journal migrate` says what is pending and what has run.
 

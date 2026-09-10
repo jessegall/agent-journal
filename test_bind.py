@@ -435,8 +435,9 @@ check("and it touches all four of them",
       sorted({k.split("/")[2] for k in _touched}),
       ["pins.json", "reminders.json", "todo", "work.json"])
 for v in ('docs add "r" --abstract=x', 'tools add t "T" --summary=s --usage=u --entry=x'):
+    _why = testkit.denied(sub(f'{J2} --env="scout" {v}'))
     check(f"a granted subagent may not write the project's own stores: {v[:9]}",
-          "the PROJECT's" in testkit.denied(sub(f'{J2} --env="scout" {v}')), True)
+          (bool(_why), "where every session reads them" in _why), (True, True))
 
 # L4 — granting twice is idempotent and says so
 gP.cli("grant", "scout", session="gs1")

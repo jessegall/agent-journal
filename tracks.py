@@ -555,7 +555,8 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
         return False, (f"{name} holds {what}. Nothing is removed without --yes:\n"
                        f'  journal environments remove "{name}" --yes        archive it under .journal/{ARCHIVE}/\n'
                        f'  journal environments remove "{name}" --yes --purge   delete it outright\n'
-                       "  docs are the project's and are never removed with an environment")
+                       "  its docs are not deleted: a doc scoped here becomes the project's, because an\n"
+                       "  environment ending does not unmake what it settled")
     kept = ""
     with state.locked(root):
         data = state._record(root)

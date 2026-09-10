@@ -341,5 +341,34 @@ check("an unknown heading is refused, naming the ones that exist",
 code, out = j("todos", "add", "a row on one section", f"--doc={dn}#the-two-bugs")
 check("a to-do cites one the same way, through the same flag", code, 0)
 
+# ─────────── a doc has a SCOPE: one environment, or the project ────────────────────────────
+# `track:` was provenance and nothing filtered by it, so every environment was handed every
+# doc — eighty-four titles at a session start in one real project, almost none about the
+# work in front of the reader. A catalogue nobody can skim is the one thing a catalogue
+# exists to prevent.
+import docs as _dc
+check("an unset track has always meant the project, so nothing written before this moves",
+      (_dc.scope_of({}), _dc.scope_of({"track": ""}), _dc.scope_of({"track": _dc.GLOBAL})),
+      (_dc.GLOBAL, _dc.GLOBAL, _dc.GLOBAL))
+check("a doc is shown on its own environment and on none of the others",
+      (_dc.here({"track": "a"}, "a"), _dc.here({"track": "a"}, "b")), (True, False))
+check("and a global one is shown on every environment",
+      [_dc.here({"track": _dc.GLOBAL}, x) for x in ("a", "b")], [True, True])
+
+j("docs", "add", "belongs to default", "--abstract=one", "--brief", stdin="x")
+j("docs", "add", "belongs to the project", "--abstract=two", "--global", "--brief", stdin="x")
+j("prepare", "elsewhere")
+j("docs", "add", "belongs to elsewhere", "--abstract=three", "--brief", stdin="x")
+_here = j("docs")[1]
+check("the catalogue on an environment holds its own and the project's, and says how many are not shown",
+      ("belongs to elsewhere" in _here, "belongs to the project" in _here,
+       "belongs to default" in _here, "on other environments (--all)" in _here),
+      (True, True, False, True))
+check("`--all` is the whole shelf", "belongs to default" in j("docs", "--all")[1], True)
+_n = next(l.split()[0] for l in j("docs", "--all")[1].splitlines()
+          if "belongs to default" in l)
+check("a doc scoped elsewhere is still readable by number, which is what keeps --doc= honest",
+      "belongs to default" in j("docs", _n)[1], True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -113,8 +113,10 @@ again.
 
 ### Environments
 
-Separate lines of work, each with its own pins and to-dos. Rules and docs are shared
-across all of them. Every session is bound to an environment, so two sessions can work two
+Separate lines of work, each with its own pins, reminders and to-dos. Rules are shared
+across all of them; a DOC has a scope — it belongs to the environment it was written on,
+or to the project with `--global` — and either way stays readable by number from
+everywhere, so a citation never goes dark. Every session is bound to an environment, so two sessions can work two
 environments of one project at the same time. A switch from inside a session moves only that
 session; a switch from a terminal moves where new sessions start, and says which running
 sessions stayed where they were and how to move one along. One running session works a

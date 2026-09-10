@@ -36,6 +36,40 @@ STRUCK = "struck"
 FILES = "files"                 # a doc's attachments: any file or folder, copied in, listed in a manifest
 MANIFEST = "manifest.json"
 FIELDS = ("n", "title", "abstract", "status", "track", "source", "at", "supersedes", "superseded_by", "adopted")
+
+#: WHAT `track:` MEANS ON A DOC, and it is a SCOPE now rather than a note about where the
+#: doc came from.
+#:
+#: IT WAS PROVENANCE AND IT WAS ALREADY DRIFTING. The field recorded which line of work a
+#: doc came out of and nothing filtered by it, so every environment was handed every doc —
+#: in one real project, eighty-four titles at every session start, almost none of them about
+#: the work in front of the reader. Meanwhile `cleanup` had quietly started reading it to
+#: decide what to flag. This codebase has never kept a field inert; a field that describes
+#: something always ends up deciding something.
+#:
+#: GLOBAL IS A SCOPE, NOT AN ABSENCE. `journal docs add --global` writes GLOBAL here, and a
+#: doc with no track at all is treated the same — which is what every doc written before
+#: this release has, and they must all stay visible everywhere. So the migration is nothing:
+#: the empty value already means what it needs to mean.
+#:
+#: AND A SCOPED DOC IS STILL READABLE FROM ANYWHERE, by number. That is the whole reason
+#: scope is a property of the DOC rather than a filter on the store: a rule binds every
+#: environment and may cite a doc, so a citation that stops resolving outside one
+#: environment would make `--doc=` a trap. Scope decides what is LISTED, never what can be
+#: read.
+GLOBAL = "*"
+
+
+def scope_of(doc: dict) -> str:
+    """The environment a doc belongs to, or GLOBAL. An unset track has always meant global."""
+    got = (doc.get("track") or "").strip()
+    return got if got and got != GLOBAL else GLOBAL
+
+
+def here(doc: dict, track: str) -> bool:
+    """Is this doc one that `track` should be shown? Its own, or the project's."""
+    got = scope_of(doc)
+    return got == GLOBAL or got == track
 PART_FIELDS = ("title", "at", "source", "track")
 _PART = re.compile(r"^(\d{2,})-(.+)\.md$")
 
@@ -553,27 +587,33 @@ def strike(root: Path, ref: str, why: str) -> tuple[bool, str]:
 
 
 def move(root: Path, ref: str, dst: str) -> tuple[bool, str]:
-    """Point a doc at another environment.
+    """Change a doc's SCOPE: to another environment, or to the project with `--global`.
 
-    ONLY THE FIELD MOVES. A doc is the PROJECT's — its number, its folder and its parts stay
-    exactly where they are, and every citation of it keeps working. What `track:` says is
-    which line of work it came out of, which is what `cleanup` reads when it asks whether
-    the environment behind a doc still exists.
+    ONLY THE FIELD MOVES, and that is the point. Its number, its folder and its parts stay
+    exactly where they are, so every citation of it keeps working from every environment —
+    a rule binds all of them and may cite a doc, so a citation that stopped resolving
+    outside one environment would make `--doc=` a trap. Scope decides what is LISTED.
     """
     import state as _state
-    dst = _state.slug(dst)
+    to_global = dst in ("--global", "global", GLOBAL)
+    dst = GLOBAL if to_global else _state.slug(dst)
     if not dst:
-        return False, 'say where: journal docs move <n> "<environment>"'
+        return False, ('say where: `journal docs move <n> "<environment>"`, or '
+                       "`journal docs move <n> --global` to give it to the project")
     doc, prt, err = get(root, ref)
     if doc is None:
         return False, err
     if prt is not None:
         return False, "a part belongs to its doc — move the doc"
-    was = doc.get("track") or "none"
+    was = scope_of(doc)
+    was_said = "the project" if was == GLOBAL else f"`{was}`"
     meta = {k: doc.get(k, "") for k in FIELDS}
     meta["track"] = dst
     _write(doc["path"], meta, doc["body"])
-    return True, f"doc {doc['n']} is on `{dst}` now (was `{was}`): {doc['title']}"
+    now_said = "the project — every environment lists it" if to_global else f"`{dst}`"
+    return True, (f"doc {doc['n']} belongs to {now_said} now (was {was_said}): {doc['title']}\n"
+                  "  it was always readable from anywhere by number, and still is — scope is "
+                  "what a catalogue LISTS")
 
 
 def set_status(root: Path, ref: str, status: str) -> tuple[bool, str]:
@@ -722,7 +762,7 @@ def check_ref(root: Path, ref: str) -> str | None:
 
 # ------------------------------------------------------------------ rendering
 def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1,
-              order: str = fmt.DESC) -> str:
+              order: str = fmt.DESC, track: str = "", all_of_them: bool = False) -> str:
     """The catalogue, capped like `carry` (below) so a bare `journal docs` never grows
     without bound; unlike carry — handed automatically, every session — this is asked
     for, so it pages rather than just saying "N more".
@@ -733,6 +773,8 @@ def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1
     """
     import entries
     docs = _load(root)
+    if track and not all_of_them:
+        docs = [d for d in docs if here(d, track)]
     if not docs:
         return "  No docs are catalogued."
 
@@ -813,7 +855,7 @@ def show(root: Path, ref: str, width: int = 88) -> tuple[bool, str]:
     return True, "\n".join(out)
 
 
-def carry(root: Path, cap: int = 20) -> str:
+def carry(root: Path, cap: int = 20, track: str = "") -> str:
     """The catalogue a session start hands over: number, title, abstract; drafts marked.
 
     NEWEST FIRST, like every other list that pages. 1.30.0 flipped the five renderers and
@@ -822,7 +864,13 @@ def carry(root: Path, cap: int = 20) -> str:
     doc the current work is about, invisible at exactly the moment the catalogue exists to
     stop somebody re-investigating what a doc settles.
     """
-    docs = [d for d in _load(root) if not d.get("superseded_by")]
+    # THE CATALOGUE A SESSION IS HANDED IS THE ONE FOR ITS OWN WORK, plus the project's.
+    # Every environment used to be handed every doc: eighty-four titles at a session start
+    # in one real project, almost none of them about the work in front of the reader — and
+    # a catalogue nobody can skim is a catalogue nobody reads, which is the one thing it
+    # exists to prevent.
+    docs = [d for d in _load(root)
+            if not d.get("superseded_by") and (not track or here(d, track))]
     if not docs:
         return ""
     lines = []
