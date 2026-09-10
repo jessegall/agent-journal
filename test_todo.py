@@ -7,7 +7,7 @@ Owns what test_queue.py (the stop queue) and test_docs.py (docs, a different sha
 not: todo.py's own CRUD — a brief's rendering, and the amend/replace verbs that change
 one without rewriting the file by hand.
 """
-import os, re, shutil, subprocess, sys, tempfile, time
+import json, os, re, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
@@ -233,6 +233,52 @@ check("--todo closes both", (f"to-do {_n} is done with it" in _out,
 check("and the reason distinguishes this era from the auto-closed one",
       ("same name" in j("todos", "--all")[1], "the work that finished it" in j("todos", str(_n))[1]),
       (False, True))
+
+# ─────────── the ledger is a reading of the files, and must prove itself against them ──────
+# One file holds every row's front matter so a count costs one scandir instead of 1,891 file
+# opens. That is a cache over the store this package exists to keep honest, so the only thing
+# that makes it acceptable is that a stale one is DETECTED — per file, by mtime and size, so
+# a hand edit, another process's write and a git checkout are all caught the same way.
+import todo as _tm
+_r = root
+_dir = _tm.folder(_r, "default")
+_open_before = len(_tm.open_items(_r, "default"))
+_led = _tm._index_file(_r, "default")
+check("the ledger is written, and under runtime/ where derived things live",
+      (_led.is_file(), "runtime" in str(_led)), (True, True))
+check("nothing in it is the body — a listing says 'has a brief' and never prints one",
+      any("body" in row.get("meta", {}) for row in json.loads(_led.read_text())["rows"].values()),
+      False)
+
+# a row edited BY HAND, with nothing in memory — the shape a second process sees
+_f = sorted(_dir.glob("*.md"))[0]
+_was = _f.read_text()
+_f.write_text(_was.replace("done: ", "done: 2020-01-01T00:00:00+00:00"))
+_tm._LISTED.clear()
+check("a hand edit outside the CLI is caught", len(_tm.open_items(_r, "default")), _open_before - 1)
+_f.write_text(_was)
+_tm._LISTED.clear()
+check("and undoing it is caught too", len(_tm.open_items(_r, "default")), _open_before)
+
+# a row that disappears and comes back
+_g = sorted(_dir.glob("*.md"))[-1]
+_kept = _g.read_text(); _n_before = len(_tm._all(_r, "default"))
+_g.unlink(); _tm._LISTED.clear()
+check("a deleted row leaves the ledger", len(_tm._all(_r, "default")), _n_before - 1)
+_g.write_text(_kept); _tm._LISTED.clear()
+check("and a restored one comes back", len(_tm._all(_r, "default")), _n_before)
+
+# a ledger from an older shape is discarded, never interpreted
+_led.write_text(json.dumps({"v": -1, "rows": {"nonsense.md": {"stamp": [0, 0], "meta": {"n": 999}}}}))
+_tm._LISTED.clear()
+check("a ledger in an unknown shape is thrown away, not read",
+      [t["n"] for t in _tm._all(_r, "default") if t["n"] == 999], [])
+# and one that is corrupt outright
+_led.write_text("{not json")
+_tm._LISTED.clear()
+check("a corrupt ledger is a rebuild, never a failure", len(_tm._all(_r, "default")), _n_before)
+check("the body is still there for whoever asks for one row",
+      bool(_tm._get(_r, "default", _tm._all(_r, "default")[0]["n"])[0].get("body") is not None), True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -50,6 +50,7 @@ wallpaper within the hour.
 """
 from __future__ import annotations
 
+import json
 import re
 import sys
 from datetime import datetime, timezone
@@ -139,34 +140,104 @@ def _write(path: Path, meta: dict, body: str) -> None:
     path.write_text("\n".join(lines))
 
 
-#: dir -> (mtime_ns, the files in it). THE LISTING IS THE OTHER HALF OF THE COST. `_parse`
-#: is cached per file, so the four `open_items` calls in one command stopped re-reading —
-#: but each still globbed the folder, and a glob over 1,891 entries is 1,891 lstats. A
-#: directory's mtime changes when a file is added or removed, which is exactly when this
-#: answer changes; editing a row's contents leaves the LIST identical and is caught by
-#: `_parse`'s own stat.
+#: THE LEDGER. One file holding the front matter of every row, so answering "how many are
+#: open" costs one directory scan and one small read instead of 1,891 file opens. Measured in
+#: a real project before it existed: a bare `journal` did 7,564 reads and spent 1.09s of a
+#: 3.30s command in `_parse`.
+#:
+#: IT IS DERIVED, SO IT LIVES IN `runtime/` — gitignored, per project, rebuilt by whoever
+#: notices. Nothing in it is the truth; the markdown files are the truth, and this is a
+#: reading of them that must prove itself against them every time.
+#:
+#: A STALE INDEX IS DETECTED, NEVER TRUSTED BECAUSE IT IS THERE. That is the whole risk of
+#: caching a store this package exists to keep honest, so the check is per FILE and not per
+#: directory: one `scandir` gives every name with its mtime and size — the stat comes back
+#: with the entry, so it is one syscall's worth of work, not 1,891 — and any row whose stamp
+#: does not match is re-read from disk. A row edited by hand, by another process, or by a
+#: `git checkout` is caught the same way, because none of them can change a file without
+#: changing its mtime or its size.
+#:
+#: THE BODY IS NOT IN IT. A brief runs to thousands of characters and the listing never shows
+#: one — it says "has a brief" — so the ledger keeps a flag and `_get` reads the single file
+#: whose body somebody actually asked for.
+INDEX_VERSION = 3
 _LISTED: dict = {}
 
 
-def _files(d: Path) -> list:
+def _index_file(root: Path, track: str) -> Path:
+    return root / state.RUNTIME_DIR / f"todo-{state.slug(track) or 'default'}.index.json"
+
+
+def _stamped(d: Path) -> dict:
+    """{name: [mtime_ns, size]} for every row in the folder, from ONE scandir."""
+    import os
+    out = {}
     try:
-        st = d.stat()
+        with os.scandir(d) as it:
+            for e in it:
+                if e.name.endswith(".md") and e.is_file():
+                    st = e.stat()
+                    out[e.name] = [st.st_mtime_ns, st.st_size]
     except OSError:
-        return []
-    key = str(d)
-    hit = _LISTED.get(key)
-    if hit is not None and hit[0] == st.st_mtime_ns:
-        return hit[1]
-    files = sorted(d.glob("*.md"))
-    _LISTED[key] = (st.st_mtime_ns, files)
-    return files
+        return {}
+    return out
 
 
 def _all(root: Path, track: str) -> list[dict]:
     d = folder(root, track)
     if not d.is_dir():
         return []
-    return sorted((_parse(f) for f in _files(d)), key=lambda m: m["n"])
+    key = str(d)
+    now = _stamped(d)
+    held = _LISTED.get(key)
+    if held is None:
+        held = _read_index(_index_file(root, track))
+        _LISTED[key] = held
+    rows, changed = {}, False
+    for name, stamp in now.items():
+        was = held.get(name)
+        if was and was.get("stamp") == stamp:
+            rows[name] = was
+            continue
+        # RE-READ EXACTLY WHAT MOVED. A hand edit, another session's write, a git checkout:
+        # each changes an mtime or a size, and each costs one file, not the folder.
+        got = _read_todo(d / name)
+        rows[name] = {"stamp": stamp, "meta": {k: v for k, v in got.items()
+                                               if k not in ("path", "body")},
+                      "brief": bool(got["body"].strip())}
+        changed = True
+    if changed or len(rows) != len(held):
+        _LISTED[key] = rows
+        _write_index(_index_file(root, track), rows)
+    out = []
+    for name, row in rows.items():
+        meta = dict(row["meta"])
+        meta["path"] = d / name
+        meta["brief"] = row["brief"]
+        out.append(meta)
+    return sorted(out, key=lambda m: m["n"])
+
+
+def _read_index(f: Path) -> dict:
+    try:
+        got = json.loads(f.read_text())
+    except (OSError, ValueError):
+        return {}
+    # A LEDGER FROM AN OLDER SHAPE IS DISCARDED, NOT INTERPRETED. It is derived data; the
+    # cost of throwing it away is one rebuild, and the cost of guessing at it is a wrong count
+    # nobody can see is wrong.
+    if not isinstance(got, dict) or got.get("v") != INDEX_VERSION:
+        return {}
+    rows = got.get("rows")
+    return rows if isinstance(rows, dict) else {}
+
+
+def _write_index(f: Path, rows: dict) -> None:
+    try:
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(json.dumps({"v": INDEX_VERSION, "rows": rows}))
+    except OSError:
+        pass  # a ledger that cannot be written is a slow command, never a failed one
 
 
 def open_items(root: Path, track: str) -> list[dict]:
@@ -441,10 +512,19 @@ def unblock(root: Path, track: str, n: int) -> tuple[bool, str]:
 
 
 def _get(root: Path, track: str, n: int) -> tuple[dict | None, str]:
+    """One row, WITH its body — the only reader that needs one, and the only one that pays.
+
+    The ledger keeps front matter and a `brief` flag, because a listing says "has a brief"
+    and never prints one. Whoever asks for a specific row is asking to read it, so this is
+    the one place a body is fetched, and it is one file.
+    """
     items = {t["n"]: t for t in _all(root, track)}
     if n not in items:
         return None, f"there is no to-do {n} on environment `{track}`. `journal todo` numbers them."
-    return items[n], ""
+    got = items[n]
+    if "body" not in got:
+        got = dict(got, body=_read_todo(got["path"])["body"])
+    return got, ""
 
 
 def add(root: Path, track: str, title: str, body: str, at: str, where: dict | None = None) -> tuple[bool, str]:
@@ -970,7 +1050,7 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int | No
 
     def facts(t: dict) -> list[str]:
         out = [_STATE_TEXT[_state(t)](root, track, t)]
-        out.append("has a brief" if t["body"] else "title only")
+        out.append("has a brief" if t.get("brief") or t.get("body") else "title only")
         if t.get("doc"):
             import docs as docs_mod
             out.append("→ " + docs_mod.ref_label(root, str(t["doc"]), short=short_refs))
