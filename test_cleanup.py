@@ -108,6 +108,13 @@ docs_mod.add(r5, "a doc on a dead environment", "abstract", "body", "vanished")
 found = cleanup.candidates(r5, "default")
 check("a doc whose environment is gone is a candidate", texts(found, "doc"), ["a doc on a dead environment"])
 check("a doc on a live environment is not", "a doc on a live environment" in str(found), False)
+# GLOBAL IS A SCOPE, NOT AN ENVIRONMENT THAT WENT MISSING. `*` is not the name of anything
+# and never was, so asking whether it still exists flagged every --global doc the moment
+# `track:` stopped meaning provenance. Third time this field was read by something that did
+# not know its meaning had changed.
+docs_mod.add(r5, "a doc that belongs to the project", "abstract", "body", docs_mod.GLOBAL)
+check("and a global doc is never orphaned — `*` is a scope, not a name",
+      "belongs to the project" in str(cleanup.candidates(r5, "default")), False)
 
 # ------------------------------------------------------------- to-dos
 r6 = fresh()
