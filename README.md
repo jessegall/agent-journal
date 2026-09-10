@@ -230,7 +230,9 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal docs                         the catalogue
     journal docs show <doc>                   read a doc; <doc>.<p> reads one part
     journal docs files <doc>             its attachments, as a tree; `docs files` lists every doc's (also: `docs <doc> files`)
-    journal docs add "<title>" --abstract="<one line>" --brief
+    journal docs [--all]                 the catalogue; --all is every environment's, not just this one
+    journal docs add "<title>" --abstract="<one line>" [--global] --brief
+    journal docs move <n> "<environment>" | --global    change a doc's scope after the fact
                                          a new doc; the intro from stdin
     journal docs part <doc> "<title>" --brief
                                          add a part: a section, a report

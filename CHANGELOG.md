@@ -4,6 +4,32 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.49.0 — a doc says which environment it belongs to
+
+1.44.0 gave docs a scope and no way to see it. `journal docs` printed number, title, status,
+parts, files, age and abstract — never the scope — so the one command whose job is to show
+you the docs could not answer whether one was the project's or this environment's. The only
+way to find out was `journal docs show <n>`, one doc at a time.
+
+AND `show` SAID IT WRONG. It interpolated the raw field, so a global doc read "environment "
+with nothing after it, or "environment *" — and a reader cannot tell "global" from "the
+renderer said nothing", which is the same ambiguity an omitted section has. `docs.scope_text`
+is the one funnel now, used by both: "the project's", or "environment <name>".
+
+`journal docs --all` IS DOCUMENTED. It has worked since 1.44.0 and appeared in neither
+`journal docs help` nor the README, so a reader who could not see a doc had no way to learn it
+exists elsewhere. `journal docs move <n> "<environment>" | --global` is in the README for the
+same reason, and it matters more now than it did: it is the repair tool for a doc whose scope
+is wrong.
+
+WHAT IS NOT CHANGING, and it is worth writing down because the natural assumption is the
+opposite: a scoped doc does NOT live inside the environment's folder. Every doc is in one
+project-wide directory and the scope is a field on it. A rule binds every environment and may
+cite a doc, so a citation that stopped resolving outside one environment would make `--doc=N`
+a trap — scope decides what is LISTED, never what can be read. And since 1.46.0 an
+environment removal DELETES; docs in that folder would go with it, against the promise the
+refusal already makes.
+
 ## 1.48.0 — a paragraph is one continuous thing, and a list is a list
 
 Two screenshots, two renderers, the same root: text laid out for a width nobody was reading

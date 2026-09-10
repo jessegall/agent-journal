@@ -66,6 +66,20 @@ def scope_of(doc: dict) -> str:
     return got if got and got != GLOBAL else GLOBAL
 
 
+def scope_text(doc: dict) -> str:
+    """A doc's scope in the words a reader uses — for every renderer, not one.
+
+    THE CATALOGUE NEVER SAID IT AT ALL and `show` said it wrong. `show` interpolated the raw
+    field, so a global doc read "environment " with nothing after it, or "environment *" —
+    and a reader cannot tell "global" from "the renderer said nothing", which is the same
+    ambiguity an omitted section has. `journal docs` said nothing either way, so the one
+    command whose job is to show you the docs could not answer whether one was the
+    project's or this environment's.
+    """
+    got = scope_of(doc)
+    return "the project's" if got == GLOBAL else f"environment {got}"
+
+
 def here(doc: dict, track: str) -> bool:
     """Is this doc one that `track` should be shown? Its own, or the project's."""
     got = scope_of(doc)
@@ -781,7 +795,7 @@ def catalogue(root: Path, width: int | None = None, cap: int | None = None, page
         return "  No docs are catalogued."
 
     def facts(d: dict) -> list[str]:
-        out = [d.get("status", "draft")]
+        out = [d.get("status", "draft"), scope_text(d)]
         if d["parts"]:
             out.append(f"{len(d['parts'])} part(s)")
         files = attachments(d)
@@ -814,7 +828,7 @@ def show(root: Path, ref: str, width: int | None = None) -> tuple[bool, str]:
                               f"{_age(prt.get('at', ''))} · {prt['path'].relative_to(root.parent)}"), ""]
         out.append(fmt.prose(prt["body"].rstrip(), width=width))
         return True, "\n".join(out)
-    meta = [doc.get("status", "draft"), f"environment {doc.get('track', '')}", doc.get("source", ""),
+    meta = [doc.get("status", "draft"), scope_text(doc), doc.get("source", ""),
             f"written {_age(doc.get('at', ''))}"]
     out = [fmt.title(f"DOC {doc['n']}", sub=doc["title"]),
            "  " + fmt.dim(" · ".join(m for m in meta if m)),
