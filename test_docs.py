@@ -391,5 +391,19 @@ _n = next(l.split()[0] for l in j("docs", "--all")[1].splitlines()
 check("a doc scoped elsewhere is still readable by number, which is what keeps --doc= honest",
       "belongs to default" in j("docs", _n)[1], True)
 
+# A SEARCH IS A LISTING. `journal docs` filtered by scope from 1.44.0 and `docs search` read
+# every doc in the project — so a doc deliberately absent from the catalogue turned up in the
+# results anyway, with its LINES quoted, which is more than the catalogue would have shown.
+j("docs", "part", _n, "a part of the other environment's doc", "--brief", stdin="the needle is spiritwood")
+_found = j("docs", "search", "spiritwood")[1]
+# the TERM is echoed in the heading whether or not anything matched, so the test is whether a
+# LINE came back — "NO DOC MENTIONS" is the miss.
+check("docs search does not reach another environment's doc",
+      ("NO DOC MENTIONS" in _found, "the needle is" in _found,
+       "on other environments (--all)" in _found), (True, False, True))
+check("and --all reaches it", "spiritwood" in j("docs", "search", "spiritwood", "--all")[1], True)
+check("while reading it by number still works, from here",
+      "spiritwood" in j("docs", "show", f"{_n}.1")[1] or "spiritwood" in j("docs", _n)[1], True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
