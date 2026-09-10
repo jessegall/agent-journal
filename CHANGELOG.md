@@ -4,6 +4,37 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.44.0 — a doc belongs to an environment, or to the project
+
+`track:` on a doc was provenance and nothing filtered by it, so every environment was handed
+every doc: eighty-four titles at a session start in one real project, almost none of them
+about the work in front of the reader. A catalogue nobody can skim is the one thing a
+catalogue exists to prevent. Meanwhile `cleanup` had quietly started reading the field to
+decide what to flag — this codebase has never kept a field inert, and a field that describes
+something always ends up deciding something.
+
+It is a SCOPE now.
+
+    journal docs add "<title>" --abstract="…" --brief      belongs to this environment
+    journal docs add … --global                            belongs to the project
+    journal docs move <n> "<environment>"|--global         change which
+    journal docs --all                                     the whole shelf
+
+SCOPE DECIDES WHAT IS LISTED, NEVER WHAT CAN BE READ, and that is why the scope lives on the
+DOC rather than as a filter over the store. A rule binds every environment and may cite a
+doc; a citation that stopped resolving outside one environment would make `--doc=` a trap.
+Every doc stays readable by number from everywhere, and `journal docs` says how many are not
+being shown, because a filtered list that does not announce itself is one somebody will
+trust as complete.
+
+NOTHING WRITTEN BEFORE THIS MOVES. An unset `track:` has always meant the project, and that
+is what every doc written before this release has — so they are all global already and the
+migration is nothing at all.
+
+An environment that is removed no longer takes a promise with it: its docs are not deleted
+and not archived away, they become the project's, because an environment ending does not
+unmake what it settled.
+
 ## 1.43.3 — a suite that failed four times and never on demand
 
 `test_migrate.py` reported one failed check, four times in one day, always inside a batch,

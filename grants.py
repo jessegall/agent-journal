@@ -76,9 +76,11 @@ _MOVES_A_SESSION = ("it moves a SESSION, and you are running under your dispatch
                     "id — this would move the agent that dispatched you, not you")
 _BINDS_EVERYTHING = ("a rule binds every environment, for every session, and you were lent "
                      "ONE — report the ruling and let the agent that dispatched you make it")
-_THE_PROJECT_S = ("docs and tools are the PROJECT's — every environment reads them and every "
-                  "session runs them — and you were lent one environment. Report what you "
-                  "found; the agent that dispatched you decides what the project keeps")
+_THE_PROJECT_S = ("docs and tools are written where every session reads them — a doc is "
+                  "catalogued for the whole project or for one environment, and either way "
+                  "it is readable from all of them — and you were lent one environment. "
+                  "Report what you found; the agent that dispatched you decides what the "
+                  "project keeps")
 #: THE INHERITED ONES, AND THIS IS THE USER'S RULING, NOT AN INFERENCE. A lent agent reads
 #: the environment's pins and reminders and writes neither: "it will have all the pins, it
 #: cannot create pins itself, but it will inherit the pins from the parent."

@@ -2343,7 +2343,7 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
         parts.append(ruled)
     # THE DOCS CATALOGUE, not the docs. One line each, so an agent knows what has been
     # settled before it re-investigates it; the doc itself is read on demand.
-    catalogued = docs.carry(ROOT, cap=caps["docs"])
+    catalogued = docs.carry(ROOT, cap=caps["docs"], track=here)
     if catalogued:
         parts.append(catalogued + "\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.")
     # A CAP OF ZERO MEANS THE SECTION IS NOT IN THIS DEPTH AT ALL. Passed through, it

@@ -387,8 +387,20 @@ code, out = run_cli("pins", "move", PN, "moved-to")
 check("a struck pin does not move twice", (code, "already struck" in out), (1, True))
 
 code, out = run_cli("docs", "move", DN, "moved-to")
-check("a doc's environment moves, and the doc itself does not",
-      (code, "is on `moved-to` now" in out), (0, True))
+check("a doc's SCOPE moves, and the doc itself does not",
+      (code, "belongs to `moved-to` now" in out), (0, True))
+# SCOPE DECIDES WHAT IS LISTED, NEVER WHAT CAN BE READ. A rule binds every environment and
+# may cite a doc, so a citation that stopped resolving outside one environment would make
+# `--doc=` a trap.
+_code, _read = run_cli("docs", DN)
+check("and it is still readable by number from an environment it does not belong to",
+      _code, 0)
+_code, _g = run_cli("docs", "move", DN, "--global")
+check("`--global` gives it to the project, which lists it everywhere",
+      (_code, "belongs to the project" in _g), (0, True))
+_code, _both = run_cli("docs", "move", DN, "moved-to", "--global")
+check("and asking for both at once is refused rather than guessed",
+      (_code, "belongs to the project or to one environment" in _both), (1, True))
 code, out = run_cli("docs", "show", DN)
 check("so every citation of it still resolves", (code, "a design that moves" in out), (0, True))
 

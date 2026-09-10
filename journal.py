@@ -1019,20 +1019,29 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
 
 
 def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bool = False,
-             order: str = fmt.DESC) -> int:
+             order: str = fmt.DESC, all_of_them: bool = False, global_flag: bool = False) -> int:
     here = tracks.current(root(), _stem())
     body = _brief(brief)
     if body is None:
         fmt.say(BRIEF_REFUSED, error=True)
         return 1
     if not rest:
-        cat = docs._load(root())
+        # THE CATALOGUE FOR THIS ENVIRONMENT: its own docs and the project's. `--all` is the
+        # whole shelf, and the sub-heading says which of the two you are looking at, because
+        # a filtered list that does not announce itself is a list somebody will trust as
+        # complete.
+        every = docs._load(root())
+        cat = every if all_of_them else [d for d in every if docs.here(d, here)]
         drafts = len([d for d in cat if d.get("status") != "final"])
         loose = docs.uncatalogued(root())
+        elsewhere = len(every) - len(cat)
         sub = f"{len(cat)} catalogued" + (f" · {drafts} draft(s)" if drafts else "")
+        if elsewhere:
+            sub += f" · {elsewhere} on other environments (--all)"
         fmt.say(fmt.title("DOCS OF THIS PROJECT", sub=sub))
         fmt.say()
-        fmt.say(docs.catalogue(root(), cap=CATALOGUE_PAGE, page=page, order=order))
+        fmt.say(docs.catalogue(root(), cap=CATALOGUE_PAGE, page=page, order=order,
+                               track=here, all_of_them=all_of_them))
         if loose:
             fmt.say()
             fmt.say(fmt.wrap(f"{len(loose)} file(s) under {docs.folder(root()).name}/ are not catalogued: "
@@ -1057,7 +1066,12 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         return 0
     verb = rest[0]
     if verb == "add":
-        ok, msg = docs.add(root(), " ".join(rest[1:]), abstract, body, here)
+        # A DOC BELONGS TO THE WORK IT CAME OUT OF, unless it is the project's. `--global`
+        # is the opt-out, and it is a deliberate one: a doc every environment is handed at
+        # every start is a charge on every session, so the reader who wants that should have
+        # said so.
+        ok, msg = docs.add(root(), " ".join(rest[1:]), abstract, body,
+                           docs.GLOBAL if global_flag else here)
     elif verb == "part":
         if len(rest) < 3:
             fmt.say('docs part wants a doc number and a title: journal docs part 4 "<title>" --brief', error=True)
@@ -1084,10 +1098,18 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
             return 1
         ok, msg = docs.set_abstract(root(), rest[1], " ".join(rest[2:]))
     elif verb == "move":
-        if len(rest) < 3:
-            fmt.say('journal docs move <doc> "<environment>"', error=True)
-            return 1
-        ok, msg = docs.move(root(), rest[1], " ".join(rest[2:]))
+        # `--global` IS A FLAG, so it never reaches `rest` — the destination is either the
+        # name that was typed or the project. Saying both is a contradiction, and a command
+        # that quietly picks one of two things the user asked for is worse than a refusal.
+        dst = " ".join(rest[2:])
+        if global_flag and dst:
+            return _refuse(f'`docs move {rest[1] if len(rest) > 1 else "<doc>"}` was given both '
+                           f'`--global` and `{dst}`. A doc belongs to the project or to one '
+                           "environment; say which.")
+        if len(rest) < 2 or not (dst or global_flag):
+            return _refuse('`journal docs move <doc> "<environment>"` — or `--global` to give '
+                           "it to the project, which lists it on every environment")
+        ok, msg = docs.move(root(), rest[1], docs.GLOBAL if global_flag else dst)
     elif verb == "supersede":
         if len(rest) < 4 or rest[2] != "by":
             fmt.say("journal docs supersede <old> by <new>", error=True)
@@ -1120,7 +1142,7 @@ def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bo
         fmt.say(msg, error=not ok)
         return 0 if ok else 1
     elif verb == "list" and len(rest) == 1:
-        return cmd_docs([], brief, abstract, page, replace, order)
+        return cmd_docs([], brief, abstract, page, replace, order, all_of_them, global_flag)
     else:
         ok, msg = docs.show(root(), " ".join(rest))
         fmt.say(msg, error=not ok)
@@ -1772,6 +1794,7 @@ class Opts:
     replace: bool = False
     off_flag: bool = False
     list_flag: bool = False
+    global_flag: bool = False
     project_too: bool = False
     all_sessions: bool = False
     yes_flag: bool = False
@@ -1887,6 +1910,8 @@ VALUE_FLAGS: dict[str, _Flag] = {
 BARE_FLAGS: dict[str, _Flag] = {
     "--strike": _Flag(dest="strike_n", set=-1),    # the number follows as the next word
     "--off": _Flag(dest="off_flag"),
+    #: A DOC BELONGS TO ITS ENVIRONMENT UNLESS THIS SAYS THE PROJECT'S — see `docs.GLOBAL`.
+    "--global": _Flag(dest="global_flag"),
     #: `grant` LENDS BARE now, so its listing needed a spelling of its own — `_v_grant`.
     "--list": _Flag(dest="list_flag"),
     "--replace": _Flag(dest="replace"),
@@ -2253,7 +2278,9 @@ COMMANDS.update({
     "rule": _v_rule,
     "rules": _v_rules,
     "promote": _v_promote,
-    "docs": lambda verb, rest, opts: cmd_docs(rest[1:], opts.brief, opts.abstract, opts.page, opts.replace, opts.order),
+    "docs": lambda verb, rest, opts: cmd_docs(rest[1:], opts.brief, opts.abstract, opts.page,
+                                              opts.replace, opts.order, opts.all_of_them,
+                                              opts.global_flag),
     "tools": lambda verb, rest, opts: cmd_tools(rest[1:], opts.brief, opts.tool_meta, opts.page, opts.order),
     "carry": lambda verb, rest, opts: cmd_carry(opts.fresh),
     "claim": lambda verb, rest, opts: cmd_claim(rest[1] if len(rest) > 1 else "", " ".join(rest[2:])),
