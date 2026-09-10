@@ -2167,7 +2167,6 @@ def _hold(label: str, brief: str, text: str = "", subject: str = "") -> int:
 #: lives, so a handler cannot quietly address an event that will not listen.
 DELIVERS_CONTEXT = frozenset({
     "UserPromptSubmit", "PostToolUse", "PostToolBatch", "Stop", "SessionStart",
-    "WorktreeCreate",
 })
 
 
@@ -2690,6 +2689,31 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
     return 0
 
 
+def _made(path: str) -> int:
+    """The ONE answer `WorktreeCreate` accepts: the path of the worktree, echoed back.
+
+    THIS EVENT IS NOT A CONTEXT EVENT AND TREATING IT AS ONE BROKE WORKTREE CREATION
+    OUTRIGHT. It was wired in 1.42.0 to return `additionalContext`, on the assumption that
+    every event this package addresses is one it can speak into. The harness answered:
+
+        WorktreeCreate hook failed: hook succeeded but returned no worktree path
+        (command: echo the path to stdout; http/callback: return hookSpecificOutput.worktreePath)
+
+    — and refused to make the worktree. Three dispatches in a row died at creation in a real
+    project before anyone connected them to the journal, because the message names the hook
+    and not which one.
+
+    EVERY PATH ANSWERS, including the ones where there is nothing to do. A hook that returns
+    early is a hook that returned no path, so a worktree in a project with no journal above
+    it failed exactly as hard as one with. There is no branch here that may stay silent.
+    """
+    if not path:
+        return 0            # nothing was told to us: say nothing rather than echo a lie
+    print(json.dumps({"hookSpecificOutput": {"hookEventName": "WorktreeCreate",
+                                             "worktreePath": path}}))
+    return 0
+
+
 def on_worktree_create(conf: dict, payload: dict, ctx: Ctx) -> int:
     """Claude Code just made a worktree. Give it the journal before anyone works in it.
 
@@ -2713,25 +2737,20 @@ def on_worktree_create(conf: dict, payload: dict, ctx: Ctx) -> int:
     """
     new = payload.get("worktree_path") or payload.get("path") or payload.get("cwd") or ""
     if not new:
-        return 0
+        return _made("")
     place = Path(new)
     link = place / ".journal"
     if not place.is_dir() or link.exists() or link.is_symlink():
-        return 0            # no such directory, or it already has one — either way, nothing to do
+        return _made(new)   # no such directory, or it already has one — either way, nothing to do
     target = worktree.nearest(place.parent)
     if target is None:
-        return 0            # no journal above it: a different project, not an error
+        return _made(new)   # no journal above it: a different project, not an error
     try:
         link.symlink_to(target, target_is_directory=True)
     except OSError:
-        return 0            # a filesystem that will not link is not a failure worth shouting about
+        return _made(new)   # a filesystem that will not link is not a failure worth shouting about
     worktree.hide_from_git(place)
-    return _context(
-        "WorktreeCreate",
-        f"journal: this worktree now shares {target.parent.name}'s journal — `.journal` here "
-        "is a symlink, so what you write is in the one record and git in this worktree sees "
-        "nothing of it. The environment is whatever the session is on; a worktree does not "
-        "change that.")
+    return _made(new)
 
 
 def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
