@@ -2689,68 +2689,16 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
     return 0
 
 
-def _made(path: str) -> int:
-    """The ONE answer `WorktreeCreate` accepts: the path of the worktree, echoed back.
-
-    THIS EVENT IS NOT A CONTEXT EVENT AND TREATING IT AS ONE BROKE WORKTREE CREATION
-    OUTRIGHT. It was wired in 1.42.0 to return `additionalContext`, on the assumption that
-    every event this package addresses is one it can speak into. The harness answered:
-
-        WorktreeCreate hook failed: hook succeeded but returned no worktree path
-        (command: echo the path to stdout; http/callback: return hookSpecificOutput.worktreePath)
-
-    — and refused to make the worktree. Three dispatches in a row died at creation in a real
-    project before anyone connected them to the journal, because the message names the hook
-    and not which one.
-
-    EVERY PATH ANSWERS, including the ones where there is nothing to do. A hook that returns
-    early is a hook that returned no path, so a worktree in a project with no journal above
-    it failed exactly as hard as one with. There is no branch here that may stay silent.
-    """
-    if not path:
-        return 0            # nothing was told to us: say nothing rather than echo a lie
-    print(json.dumps({"hookSpecificOutput": {"hookEventName": "WorktreeCreate",
-                                             "worktreePath": path}}))
-    return 0
-
-
-def on_worktree_create(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """Claude Code just made a worktree. Give it the journal before anyone works in it.
-
-    A WORKTREE IS ORTHOGONAL TO THE JOURNAL — it changes where the files are and never which
-    environment anyone is on — but that is a statement about the RECORD, not about whether
-    the tooling reaches the new directory. It does not, by default, and the reasons are
-    structural rather than accidental:
-
-      `.claude/settings.json` IS READ FROM THE STARTING DIRECTORY'S OWN `.claude/`, with no
-      parent-directory fallback. A worktree gets the hooks only because that file is TRACKED
-      and git checked it out — so a project whose `.journal` is gitignored, or whose settings
-      live above the repository, gets a worktree with no journal at all.
-
-      AND NOTHING ELSE FIRES. There is no hook for ENTERING an existing worktree; this event
-      is the only announcement, and it happens once, at creation.
-
-    SO THIS IS THE ONE PLACE THAT CAN ACT. It links the new worktree's `.journal` to the one
-    above it and says so once. It never overwrites: a worktree that checked out its own copy
-    is left exactly alone, because `worktree.resolve` already owns that case and deleting a
-    copy somebody may have edited is not a thing to do unasked.
-    """
-    new = payload.get("worktree_path") or payload.get("path") or payload.get("cwd") or ""
-    if not new:
-        return _made("")
-    place = Path(new)
-    link = place / ".journal"
-    if not place.is_dir() or link.exists() or link.is_symlink():
-        return _made(new)   # no such directory, or it already has one — either way, nothing to do
-    target = worktree.nearest(place.parent)
-    if target is None:
-        return _made(new)   # no journal above it: a different project, not an error
-    try:
-        link.symlink_to(target, target_is_directory=True)
-    except OSError:
-        return _made(new)   # a filesystem that will not link is not a failure worth shouting about
-    worktree.hide_from_git(place)
-    return _made(new)
+#: `WorktreeCreate` HAD A HANDLER HERE AND MUST NOT HAVE ONE. The event does not announce a
+#: worktree Claude Code made — it is asked to MAKE it and echo the path, and the harness uses
+#: what comes back. Wiring it hijacked worktree creation and broke every worktree-backed
+#: dispatch in any project with the journal installed. `install.RETIRED_EVENTS` takes it back
+#: out of settings.json on the next upgrade.
+#:
+#: A WORKTREE IS STILL HANDED THE JOURNAL, by the thing that always did it: `worktree.resolve`
+#: runs at the import of this file, so the first tool call anybody makes inside a worktree
+#: links it. That is also the only mechanism that works for a subagent, since nothing fires a
+#: SessionStart for one.
 
 
 def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
@@ -2781,8 +2729,6 @@ HANDLERS = {
     "pre-tool-use": on_pre_tool,
     "PostToolUse": on_post_tool,
     "post-tool-use": on_post_tool,
-    "WorktreeCreate": on_worktree_create,
-    "worktree-create": on_worktree_create,
 }
 
 

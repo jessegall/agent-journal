@@ -51,12 +51,28 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
-#: `WorktreeCreate` FIRES WHEN CLAUDE CODE MAKES A WORKTREE — for `--worktree`, for
-#: `isolation: "worktree"`, and for a background session. It is the one moment a worktree
-#: can be handed the journal without anybody remembering to, which is exactly what a
-#: worktree's whole point makes unlikely: it exists so work can happen somewhere else.
 EVENTS = ("Stop", "SessionStart", "SessionEnd", "PostToolUse", "PreToolUse",
-          "UserPromptSubmit", "WorktreeCreate")
+          "UserPromptSubmit")
+
+#: EVENTS THIS PACKAGE ONCE WIRED AND MUST NOW UNWIRE, because leaving them is worse than
+#: never having added them.
+#:
+#: `WorktreeCreate` IS NOT AN OBSERVER EVENT — IT IS THE PROVIDER OF THE WORKTREE. 1.42.0
+#: read the name and assumed it announced a worktree Claude Code had made; it does the
+#: opposite. The hook is expected to CREATE the directory and echo its path, and the harness
+#: uses what comes back:
+#:
+#:     WorktreeCreate hook returned a path that is not a directory: …
+#:     The hook must create the directory before echoing its path.
+#:
+#: So wiring it did not observe worktree creation, it HIJACKED it — every worktree-backed
+#: dispatch failed at creation in any project with the journal installed.
+#:
+#: AND IT WAS NEVER NEEDED. `worktree.resolve` runs at the import of `hook.py`, so a
+#: worktree's journal is linked by the first tool call anybody makes inside it — which is
+#: also the only thing that works for a subagent, since nothing fires a SessionStart for one.
+#: The event bought nothing and cost the feature it was named after.
+RETIRED_EVENTS = ("WorktreeCreate",)
 #: What goes in settings.json — and it WALKS UP, because the journal is not always beside
 #: the directory Claude Code was started in.
 #:
@@ -305,7 +321,36 @@ def wire(check: bool) -> list[str]:
         blocks.append({"hooks": [{"type": "command", "command": COMMAND}]})
         done.append(f"  + {ev} wired")
 
-    if not check and any(d.startswith(("  +", "  ~")) for d in done):
+    # AND WHAT THIS PACKAGE ONCE WIRED AND SHOULD NOT HAVE, IS TAKEN OUT. Only ours: a block
+    # that runs `hook.py`. Anything the user wired themselves on the same event is left
+    # exactly as it is, because removing what somebody else put there is the mirror of the
+    # mistake being undone.
+    for ev in RETIRED_EVENTS:
+        blocks = data["hooks"].get(ev)
+        if not isinstance(blocks, list):
+            continue
+        keep = []
+        dropped = 0
+        for b in blocks:
+            hooks = (b.get("hooks") or []) if isinstance(b, dict) else []
+            mine = [h for h in hooks if isinstance(h, dict) and "hook.py" in str(h.get("command", ""))]
+            if mine and len(mine) == len(hooks):
+                dropped += 1
+                continue
+            if mine:
+                b["hooks"] = [h for h in hooks if h not in mine]
+                dropped += 1
+            keep.append(b)
+        if not dropped:
+            continue
+        if keep:
+            data["hooks"][ev] = keep
+        else:
+            data["hooks"].pop(ev, None)
+        done.append(f"  - {ev} UNWIRED — that event creates the worktree, it does not "
+                    "announce one, and ours was breaking every worktree dispatch")
+
+    if not check and any(d.startswith(("  +", "  ~", "  -")) for d in done):
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(json.dumps(data, indent=2) + "\n")
     return done

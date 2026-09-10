@@ -273,6 +273,24 @@ without asking. The reason is required and the text stays under `--all`, so bein
 costs one line to undo. Nothing here ever expires on its own: a reminder the user wrote
 and nobody retired is one they are still owed.
 
+## Dispatching a subagent
+
+**Name the model, every time.** It is the one rule this package ships to every project
+(`journal rules`, B1): `haiku` for mechanical work with a known answer, `sonnet` for care
+without invention, `opus` only where the task turns on judgement. Unset hands out the
+orchestrator's own, which is the most expensive model in the room. The user naming a model
+is not an exception to this — it is the rule being followed; what it forbids is dispatching
+without deciding.
+
+**A dispatched agent works YOUR environment, and a worktree does not change that.** A
+worktree is orthogonal to the journal: it is not an environment, does not hold one, and
+never decides one. Whoever enters one keeps the environment they were on. What a subagent
+gets from a worktree is its FILES; what it gets from the grant is its LEDGER. Those two are
+easy to conflate and they are unrelated.
+
+**Most subagents need no grant at all.** They report what they found and this conversation
+files it — that is the normal case, and the section below is for the exception.
+
 ## A subagent that must write: lend it an environment
 
     journal grant "<environment>"        lend it to this session's subagents
@@ -292,10 +310,17 @@ it carries the flag the whole mechanism turns on.
 **Granting does not move you.** You stay where you are; the subagent writes somewhere else;
 you read what it wrote with `journal environments "<name>"` when it reports.
 
-**Some verbs stay refused however you grant**, for two different reasons. `switch`, `claim`,
-`prepare`, `grant` and the `environments` spellings of them move a SESSION, and the session
-a subagent would move is *yours* — it is running under your id. `rules` binds every
-environment, and it was lent one. A subagent that needs either reports and lets you do it.
+**Some verbs stay refused however you grant**, for four different reasons, and a subagent
+that needs any of them reports and lets you do it:
+
+| refused | why |
+|---|---|
+| `switch` `claim` `prepare` `grant` `grants` `environments` (and `environment`, `env`, `envs`, `track`, `tracks`) | they move a SESSION, and the session a subagent would move is *yours* — it runs under your id |
+| `rules` `rule` | a rule binds every environment, and it was lent one |
+| `docs` `tools` | they belong to the project, not to the environment it was lent |
+| `pins` `pin` `reminders` `reminder` | inherited, never written: re-read by every session that binds here, so a claim whose reasoning nobody saw would stand in the record's highest-authority position forever |
+
+Reads are never refused — `--env="<name>" pins` shows it what it inherits.
 
 **A subagent gets its own ledger, and is told its own name.** It cannot know it — nothing
 in its process carries an agent id — so on its first tool call the hook creates

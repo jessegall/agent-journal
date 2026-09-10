@@ -456,5 +456,17 @@ check("a long sub drops to its own line rather than off the edge",
       ("TO-DO 65", True, True))
 check("and a short one stays beside the title", fmt.title("PINS", sub="7 standing", width=60).count("\n"), 0)
 
+# ─────────── the skill names every verb a lent agent is refused ────────────────────────────
+# The code refused `docs`, `tools`, `pins` and `reminders` and the skill listed none of them:
+# an agent reads the skill, dispatches, and its subagent hits a denial the page never
+# mentioned. A refusal the documentation does not name is one the reader learns by tripping
+# over it, which is the shape this whole package argues against.
+import grants as _g  # noqa: E402
+_skill = (SRC / "skill" / "SKILL.md").read_text()
+check("every verb NEVER refuses is named in the skill",
+      [v for v in sorted(_g.NEVER) if f"`{v}`" not in _skill], [])
+check("and the skill teaches the one rule the package ships: name the model",
+      all(w in _skill for w in ("haiku", "sonnet", "opus")), True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
