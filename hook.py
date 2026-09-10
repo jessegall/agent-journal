@@ -418,9 +418,8 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     # NOTHING HELD. Two things are said as context, never held: a newer journal upstream,
     # and to-dos waiting while auto is off.
     if "update_check" not in conf["silenced"]:
-        note = update.notice(ROOT)
+        note, latest = update.available(ROOT)
         if note:
-            latest = update.check(ROOT).get("version", "")
             if latest and latest != state.get(ROOT, "update_said", "", stem=ctx.stem):
                 state.put(ROOT, "update_said", latest, stem=ctx.stem)
                 return _context("Stop", _remembering(

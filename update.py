@@ -80,8 +80,17 @@ def _fetch(url: str, timeout: float = 3.0) -> str | None:
         return None
 
 
+#: HOW LONG AN ANSWER STANDS. The check used to run on every command, on the ruling that
+#: every check asks the repository — and the cost of that ruling was not visible until a real
+#: project measured it: a bare `journal` took 4.5 seconds of which 3 were network, and a
+#: single turn fires the hook at session start, at the prompt and at the stop, so the same
+#: two round trips were paid three or more times for one exchange. The user's revised
+#: ruling: fifteen minutes. A version that went up eleven minutes ago can wait four more.
+CACHE_SECONDS = 900
+
+
 def check(root: Path, force: bool = False) -> dict:
-    """{'version': latest upstream, 'headline': …} — asked every time; the file is the last answer."""
+    """{'version': latest upstream, 'headline': …} — cached for CACHE_SECONDS; `force` asks now."""
     f = root / CACHE
     cached = {}
     if f.is_file():
@@ -89,37 +98,54 @@ def check(root: Path, force: bool = False) -> dict:
             cached = json.loads(f.read_text())
         except ValueError:
             cached = {}
-    # NO CACHE WINDOW. The user's ruling: every check asks the repository. The file only
-    # keeps the last answer for when the network is down, so a known newer version is
-    # still said. A fetch is one small file with a short timeout.
     import os
     if os.environ.get("AGENT_JOURNAL_OFFLINE"):
         return cached  # the test suites, and anyone who wants no network from a hook
+    fresh = cached.get("at") and (time.time() - cached["at"]) < CACHE_SECONDS
+    if fresh and not force:
+        return cached
     version = _fetch(f"{RAW}/VERSION", timeout=2.0)
     if version is None:
         cached.setdefault("version", "")
     else:
         version = version.strip()
+        # THE CHANGELOG IS 124KB AND IS ONLY READABLE WHEN THERE IS SOMETHING TO READ. It
+        # was fetched on every successful check, up to date or not, to find a headline that
+        # is thrown away unless the version is newer — so the overwhelmingly common case,
+        # a project that is current, paid the whole file to learn nothing.
         head = ""
-        log = _fetch(f"{RAW}/CHANGELOG.md")
-        if log:
-            got = entries(log)
-            head = got[0][1] if got and got[0][0] == version else ""
+        if newer(version, current(root)):
+            log = _fetch(f"{RAW}/CHANGELOG.md")
+            if log:
+                got = entries(log)
+                head = got[0][1] if got and got[0][0] == version else ""
         cached = {"version": version, "headline": head, "at": time.time()}
     f.parent.mkdir(parents=True, exist_ok=True)
     f.write_text(json.dumps(cached))
     return cached
 
 
-def notice(root: Path) -> str:
-    """One line if a newer version is upstream, else empty."""
+def available(root: Path) -> tuple[str, str]:
+    """(the sentence to say, the version it names) — or ("", "") when this project is current.
+
+    ONE CALL, TWO ANSWERS. The stop hook wanted both — the line to print, and the version to
+    compare against what it said last time — and asked twice: `notice()` and then `check()`,
+    each a round trip of its own before there was a cache. Two questions about one fact are
+    one function.
+    """
     got = check(root)
     have = current(root)
-    if got.get("version") and newer(got["version"], have):
-        head = f" — {got['headline']}" if got.get("headline") else ""
-        return (f"AGENT-JOURNAL {got['version']} IS AVAILABLE (this project has {have}){head}. "
-                "`journal upgrade` pulls it, runs its tests first, and prints what changed.")
-    return ""
+    if not (got.get("version") and newer(got["version"], have)):
+        return "", ""
+    head = f" — {got['headline']}" if got.get("headline") else ""
+    return (f"AGENT-JOURNAL {got['version']} IS AVAILABLE (this project has {have}){head}. "
+            "`journal upgrade` pulls it, runs its tests first, and prints what changed.",
+            got["version"])
+
+
+def notice(root: Path) -> str:
+    """One line if a newer version is upstream, else empty."""
+    return available(root)[0]
 
 
 # ------------------------------------------------------------------ the upgrade
