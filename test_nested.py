@@ -131,54 +131,53 @@ listed = subprocess.run([sys.executable, J, "todos"], cwd=str(base), capture_out
 check("four places wrote, and there is one record holding all four",
       [f"from {label}" in listed for label in PLACES], [True] * 4)
 
-# ─────────── a worktree Claude Code makes is handed the journal at creation ────────────────
-# `WorktreeCreate` is the ONE moment this can happen without anybody remembering to, and
-# there is no hook for entering a worktree that already exists. A worktree gets the hooks at
-# all only because `.claude/settings.json` is tracked and git checked it out — so a project
-# whose journal is gitignored, or whose settings live above the repository, gets nothing.
-fresh = base / "alpha" / ".claude" / "worktrees" / "made"
-git(base / "alpha", "worktree", "add", "-q", str(fresh), "-b", "made")
-check("a fresh worktree has no journal of its own", (fresh / ".journal").exists(), False)
-# THE EVENT'S CONTRACT IS A PATH, NOT CONTEXT, and this suite asserted the opposite: that the
-# hook "says so once" in additionalContext and "says nothing" when there is nothing to do.
-# Saying nothing is precisely the failure —
+# ─────────── the journal does not answer WorktreeCreate, and unwires itself from it ────────
+# 1.42.0 read the event's name and assumed it ANNOUNCED a worktree Claude Code had made. It
+# does the opposite: the hook is asked to CREATE the directory and echo its bare path, and
+# the harness uses what comes back —
 #
-#     WorktreeCreate hook failed: hook succeeded but returned no worktree path
-#     (command: echo the path to stdout; http/callback: return hookSpecificOutput.worktreePath)
+#     WorktreeCreate hook returned a path that is not a directory: <project>{"hookSpecificOutput"…}
+#     The hook must create the directory before echoing its path.
 #
-# — and the harness then refuses to make the worktree at all. Three dispatches in a row died
-# at creation in a real project. Every branch answers now, including the ones with nothing to
-# do, because a hook that returns early is a hook that returned no path.
+# — so wiring it did not observe worktree creation, it HIJACKED it, and every worktree-backed
+# dispatch failed at creation in any project with the journal installed. Minting worktrees is
+# not this package's job, so the answer is not a better reply; it is no reply.
+_probe = subprocess.run([sys.executable, str(base / ".journal/hook.py")], capture_output=True,
+                        text=True, input=json.dumps({"hook_event_name": "WorktreeCreate",
+                                                     "worktree_path": str(base / "alpha"),
+                                                     "cwd": str(base / "alpha"),
+                                                     "session_id": "wc1"}))
+check("the hook says NOTHING on WorktreeCreate and exits clean",
+      (_probe.stdout.strip(), _probe.returncode), ("", 0))
+check("it is not an event this package wires", "WorktreeCreate" in install.EVENTS, False)
+check("and it is on the list that gets taken back OUT of settings.json",
+      "WorktreeCreate" in install.RETIRED_EVENTS, True)
 
-
-def _created(where):
-    p = subprocess.run([sys.executable, str(base / ".journal/hook.py")], capture_output=True,
-                       text=True, input=json.dumps({"hook_event_name": "WorktreeCreate",
-                                                    "worktree_path": str(where),
-                                                    "session_id": "wc1"}))
-    got = json.loads(p.stdout or "{}").get("hookSpecificOutput") or {}
-    return p.returncode, got.get("worktreePath", "")
-
-
-check("the create hook links it to the journal above AND answers with the path",
-      (_created(fresh), (fresh / ".journal").is_symlink(),
-       (fresh / ".journal").resolve() == (base / ".journal").resolve()),
-      ((0, str(fresh)), True, True))
-check("and git in it sees nothing of .journal",
-      [l for l in git(fresh, "status", "--porcelain").splitlines() if ".journal" in l], [])
-check("run again it changes nothing — and STILL answers with the path, or the worktree fails",
-      _created(fresh), (0, str(fresh)))
-_elsewhere = tempfile.mkdtemp()
-check("a worktree with no journal above it is left alone and still gets its path back",
-      _created(_elsewhere), (0, _elsewhere))
-check("and nothing was linked into it", (Path(_elsewhere) / ".journal").exists(), False)
-# THE EVENT IS NOT IN DELIVERS_CONTEXT ANY MORE. It was, which is what made a context reply
-# look correct from inside the hook: `_context` refuses an event that cannot carry one, and
-# this one was on the list by assumption rather than by measurement.
-sys.path.insert(0, str(base / ".journal"))
-import hook as _hk  # noqa: E402
-check("WorktreeCreate is not treated as an event that carries context",
-      "WorktreeCreate" in _hk.DELIVERS_CONTEXT, False)
+# A project wired by an older version has it removed on the next upgrade, and anything the
+# USER wired on the same event is left exactly as it is — removing what somebody else put
+# there is the mirror of the mistake being undone.
+#
+# IN A SUBPROCESS, because `install.PROJECT` is fixed at import from the module's own
+# location: importing it a second time from the temp project returns the copy already loaded
+# from THIS checkout, and `wire()` would then rewrite the real repository's settings. Caught
+# by reading the module rather than by anything failing.
+_probe_conf = base / ".claude" / "settings.json"
+_probe_conf.parent.mkdir(parents=True, exist_ok=True)
+_probe_conf.write_text(json.dumps({"hooks": {"WorktreeCreate": [
+    {"hooks": [{"type": "command", "command": "/somewhere/.journal/hook.py"}]},
+    {"hooks": [{"type": "command", "command": "echo mine"}]},
+]}}))
+_said = subprocess.run(
+    [sys.executable, "-c",
+     f"import sys; sys.path.insert(0, {str(base / '.journal')!r});"
+     "import install; print(chr(10).join(install.wire(False)))"],
+    capture_output=True, text=True, timeout=120).stdout
+_after = json.loads(_probe_conf.read_text())["hooks"].get("WorktreeCreate", [])
+_cmds = [h["command"] for b in _after for h in b.get("hooks", [])]
+check("the journal's own WorktreeCreate hook is removed, the user's is kept",
+      (any("hook.py" in c for c in _cmds), "echo mine" in _cmds), (False, True))
+check("and the upgrade says it took one out",
+      any(l.startswith("  - WorktreeCreate") for l in _said.splitlines()), True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
