@@ -245,11 +245,12 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     # `_say` SUPPLIES THE DASH. A fact that carries its own gets two of them before the
     # reader reaches the instruction.
     return _context("UserPromptSubmit", _say(
-        "work is open: " + "; ".join(w["subject"] for w in standing),
+        f"{len(standing)} piece(s) of work open",
         "if this asks for something else that can wait, park it before answering:",
         '`.journal/journal.py todos add "<title>" --brief`, and say it is parked;',
         "if it cannot, `update` the open work and `start` the new one; if it is the same work,",
-        "carry on")[1])
+        "carry on",
+        rows=[w["subject"] for w in standing])[1])
 
 
 def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
@@ -455,7 +456,7 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
 #: it never rides in the line: `_hold` files it and the line says `journal next`.
 
 
-def _say(fact: str, *do: str, note: str = "") -> tuple:
+def _say(fact: str, *do: str, rows=(), note: str = "") -> tuple:
     """One stop message: the fact on its own line, what to do about it under it.
 
     IT USED TO BE ONE LINE AND IT READ AS A WALL. Fact, em dash, instruction, semicolon,
@@ -464,24 +465,41 @@ def _say(fact: str, *do: str, note: str = "") -> tuple:
     it: a shit ton of text. What is on the screen now is a heading and an indented
     instruction, which is the same information and can be skimmed in one glance:
 
-        journal: 1 untagged message(s)
+        1 untagged message(s)
           last at line 928; open the next with [!discovery] [!correction] [!blocked]
           [!info] [!reply]
+
+    AND IT DOES NOT SAY `journal:` FIRST. The harness already labels this "Stop hook
+    feedback:" before a word of ours is printed, so the prefix was the second label on the
+    same line — the user has asked for it gone twice, and it survived both times because it
+    is written here and complained about over there.
 
     THE FACT IS STILL WRITTEN ONCE. It is the first line here and the short label the user
     sees, so the two cannot disagree — that was the point of this function and it survives
     the reshaping intact.
     """
+    # SEVERAL THINGS ARE A LIST, NOT A SENTENCE. `rows` is how a subject says "these N
+    # things", and they are printed one per line under the fact. Nine open work subjects
+    # joined with "; " and dropped mid-paragraph is what the user sent a screenshot of:
+    # every one of them is a separate thing to act on, and a reader cannot count what is
+    # not on its own line. The FACT stays one line, because it is also the hold's label.
     body = " ".join(d.strip() for d in do if d and d.strip())
-    return (fact, f"journal: {fact}" + (f"\n{fmt.wrap(body, indent=2)}" if body else ""), note)
+    parts = [fact]
+    if rows:
+        parts.append("\n".join(f"  - {fmt.gist(r)}" for r in rows))
+    if body:
+        parts.append(fmt.wrap(body, indent=2))
+    # AIR BETWEEN THE LIST AND WHAT TO DO ABOUT IT. The user's standing instruction about
+    # every screen this package prints: on a new line, with some white space between.
+    return (fact, ("\n\n" if rows and body else "\n").join(parts), note)
 
 
 def _said(fact: str, *do: str) -> tuple:
     """The same message, SAID rather than held — the queue's `context-only` answer.
 
-    The same shaper deliberately: a subject that only reports still opens `journal: `, still
-    puts the fact before what to do about it, and still must not be a place where the house
-    style is re-invented because the delivery happens to differ.
+    The same shaper deliberately: a subject that only reports still puts the fact before what
+    to do about it, and still must not be a place where the house style is re-invented
+    because the delivery happens to differ.
     """
     return ("context-only", _say(fact, *do)[1])
 
@@ -638,14 +656,15 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     if todo.auto(ROOT, here):
         # AUTO IS ON AND WORK IS OPEN AT A STOP: every turn, once. End it, or park what
         # is left as a to-do and end it; open work is never left standing.
-        names = "; ".join(w["subject"] for w in standing)
+        names = "\n".join(f"  - {w['subject']}" for w in standing)
         listed = bool(todo.open_items(ROOT, here))
         return _say(
                 "auto is on, work still open",
-                f"{names}: `work end` it if it is done, `work await` it if it is in flight on something you",
+                "`work end` each if it is done, `work await` it if it is in flight on something you",
                 "cannot hurry, or park what is left as a to-do and end it"
                 + ("; then the list starts" if listed else "; open work is never left standing"),
-                note=f"Open: {names}\n\nAuto is on for `{here}`, and the next to-do starts only "
+                rows=[w["subject"] for w in standing],
+                note=f"Open:\n{names}\n\nAuto is on for `{here}`, and the next to-do starts only "
                 "when nothing is open. If this work is finished, close it:\n"
                 '  .journal/journal.py work end "<the same words>"\n'
                 "If part of it is waiting on the user — a ruling, a review — that part is a "

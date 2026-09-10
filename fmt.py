@@ -18,6 +18,27 @@ import textwrap
 from typing import NamedTuple
 
 WIDTH = 88
+#: Below this a reflowed paragraph is worse than the hard wrap it replaced.
+_FLOOR = 46
+
+
+def room(width: int | None = None) -> int:
+    """The width to lay text out in — the caller's, or the terminal's, whichever is smaller.
+
+    WIDTH WAS A CONSTANT AND THE TERMINAL IS NOT. Every page asked for 88 columns whatever
+    the reader's window was, so in anything narrower every line wrapped a SECOND time and
+    left a one- or two-word stub under it. `block` was already careful not to re-wrap what
+    it printed; it was the terminal doing it, downstream of anything this package could see.
+
+    ONLY WHEN SOMEBODY IS LOOKING. A hook writes to the harness and a test writes to a pipe,
+    where a terminal size is either absent or meaningless, so the constant stands there and
+    the layout stays reproducible.
+    """
+    want = WIDTH if width is None else width
+    if not _tty():
+        return want
+    import shutil
+    return max(_FLOOR, min(want, shutil.get_terminal_size((WIDTH, 24)).columns - 2))
 
 
 def _tty() -> bool:
@@ -122,10 +143,22 @@ def dim(text: str) -> str:
     return f"\033[2m{text}\033[0m" if _tty() else text
 
 
-def title(text: str, *, sub: str = "") -> str:
-    """The first line of an output: what this is, and the one fact that scopes it."""
-    line = bold(text)
-    return line + (f"  {dim(sub)}" if sub else "")
+def title(text: str, *, sub: str = "", width: int | None = None) -> str:
+    """The first line of an output: what this is, and the one fact that scopes it.
+
+    THE SUB DROPS TO ITS OWN LINE RATHER THAN OFF THE EDGE. A to-do's heading is its number
+    and its title, and a long title pushed the pair past the terminal, where it wrapped at
+    whatever character happened to land there — a broken word in the first line the reader
+    sees. Measured on the plain text, before `bold` and `dim` add bytes that occupy no
+    columns: counting those is how a line that fits gets wrapped anyway.
+    """
+    width = room(width)
+    if not sub:
+        return bold(text)
+    if len(text) + 2 + len(sub) <= width:
+        return f"{bold(text)}  {dim(sub)}"
+    return bold(text) + "\n" + dim(textwrap.fill(sub, width=width,
+                                                 initial_indent="  ", subsequent_indent="  "))
 
 
 def section(name: str) -> str:
@@ -144,7 +177,7 @@ def _unknit(text: str) -> str:
     return text.replace("\u00a0", " ")
 
 
-def wrap(text: str, indent: int = 2, width: int = WIDTH) -> str:
+def wrap(text: str, indent: int = 2, width: int | None = None) -> str:
     """A paragraph, or several, at an indent. Blank lines between paragraphs survive.
 
     THEY DID NOT SURVIVE. This split on the blank line, wrapped each paragraph, and then
@@ -155,6 +188,7 @@ def wrap(text: str, indent: int = 2, width: int = WIDTH) -> str:
     came out. It is the funnel every command's prose goes through, so it is also the
     reason the same complaint kept coming back about different screens.
     """
+    width = room(width)
     pad = " " * indent
     paras = [_knit(" ".join(p.split())) for p in (text or "").split("\n\n") if p.strip()]
     return _unknit("\n\n".join(
@@ -162,8 +196,9 @@ def wrap(text: str, indent: int = 2, width: int = WIDTH) -> str:
         for p in paras))
 
 
-def numbered(n: int, text: str, meta: str = "", *, struck: bool = False, width: int = WIDTH) -> str:
+def numbered(n: int, text: str, meta: str = "", *, struck: bool = False, width: int | None = None) -> str:
     """One entry of a list: the number, the text wrapped under it, the facts beneath."""
+    width = room(width)
     num = f"{n:>3}  "
     pad = " " * len(num)
     body = " ".join(text.split())
@@ -175,7 +210,7 @@ def numbered(n: int, text: str, meta: str = "", *, struck: bool = False, width: 
     return out
 
 
-def commands(rows: list[tuple[str, str]], indent: int = 2, width: int = WIDTH) -> str:
+def commands(rows: list[tuple[str, str]], indent: int = 2, width: int | None = None) -> str:
     """Commands as they are typed, in a column, with what each does — inside `width`.
 
     IT USED TO BOUND NOTHING. `wrap`, `numbered` and `table` all keep to the width; this one
@@ -187,6 +222,7 @@ def commands(rows: list[tuple[str, str]], indent: int = 2, width: int = WIDTH) -
     THE COMMAND ITSELF IS NEVER BROKEN. It is what the reader copies, so a line that cannot
     fit puts its description underneath rather than wrapping the command mid-flag.
     """
+    width = room(width)
     pad = " " * indent
     w = max((len(c) for c, _ in rows), default=0)
     out = []
@@ -214,7 +250,7 @@ def dim_body(line: str, head: int) -> str:
     return line[:head] + dim(line[head:]) if _tty() else line
 
 
-def facts(rows: list[tuple[str, str, str]], indent: int = 2, width: int = WIDTH) -> str:
+def facts(rows: list[tuple[str, str, str]], indent: int = 2, width: int | None = None) -> str:
     """label   value   command — the status page's shape, inside `width`.
 
     IT BOUNDED THE VALUE AND NOTHING ELSE. The value column was capped at 58 and the label
@@ -223,11 +259,12 @@ def facts(rows: list[tuple[str, str, str]], indent: int = 2, width: int = WIDTH)
     explain. The value is what gives now, because it is the only column that can be cut
     without taking away something the reader has to type.
     """
+    width = room(width)
     pad = " " * indent
     lw = max((len(l) for l, _, _ in rows), default=0)
     cw = max((len(c) for _, _, c in rows), default=0)
-    room = width - indent - lw - cw - 6
-    vw = min(max(room, 12), max((len(v) for _, v, _ in rows), default=0))
+    spare = width - indent - lw - cw - 6
+    vw = min(max(spare, 12), max((len(v) for _, v, _ in rows), default=0))
     out = []
     for label, value, cmd in rows:
         if len(value) > vw:
@@ -236,13 +273,14 @@ def facts(rows: list[tuple[str, str, str]], indent: int = 2, width: int = WIDTH)
     return "\n".join(out)
 
 
-def table(rows: list[tuple[str, str]], indent: int = 2, gap: int = 3, col: int = 26, width: int = WIDTH) -> str:
+def table(rows: list[tuple[str, str]], indent: int = 2, gap: int = 3, col: int = 26, width: int | None = None) -> str:
     """Two columns: a name on the left, what it is on the right, wrapped in its column.
 
     A row whose name is empty continues the row above: metadata, a path, a file inside a
     folder — anything that belongs under the name without repeating it. The left column
     is as wide as the widest name, up to `col`; a longer name gets its own line.
     """
+    width = room(width)
     pad = " " * indent
     w = min(col, max((len(n) for n, _ in rows if n), default=0))
     out = []
@@ -276,32 +314,102 @@ def table(rows: list[tuple[str, str]], indent: int = 2, gap: int = 3, col: int =
 CANON = ".journal/"
 
 
-def block(text: str, width: int = WIDTH) -> str:
-    """What the hook hands the harness, made readable: paragraphs wrapped, commands kept.
+#: A LINE THAT MEANS SOMETHING BY ITS SHAPE, and so cannot be joined to its neighbour. An
+#: indent is a quotation or a code block, a bullet or a number is a list, a pipe is a table,
+#: a backtick fence is code, a `#` is a heading, and `journal:` is the hook's one-liner,
+#: which is one line by ruling. Everything else is prose.
+#: FOUR SPACES IS A CODE BLOCK, fewer is a quotation. Both are indented and only one may be
+#: reflowed: a long command re-flowed at the reader's width is a command that no longer runs,
+#: while a quoted paragraph left verbatim frays into stubs exactly like an un-indented one.
+_CODE = re.compile(r"^(\s{4,}|\t)")
+_KEEP = re.compile(r"^\s*(\||#|>|```|journal:|\d+\.\s|[-•*]\s)")
 
-    A hold, a denial, a start block, a hint — each is text the agent (and, in the
-    terminal, the user) reads. A paragraph longer than the width is wrapped; a line that
-    is indented, or is a command or a list item, is kept as it is, because wrapping a
-    command breaks it and wrapping a column breaks the column.
+
+def _paragraphs(text: str):
+    """The lines of `text` grouped into paragraphs, each marked prose or structure.
+
+    A BLANK LINE IS THE ONLY PARAGRAPH BREAK — which is what a writer means by one, and what
+    `block` did not believe. It split on every newline and called each LINE a paragraph, so
+    prose that had already been hard-wrapped once arrived as a dozen short paragraphs, each
+    under the width, each passed through untouched. Then the reader's terminal wrapped them
+    a second time and left a stub under each: "timezone", "clock time", "compares",
+    "against." — six orphans in one to-do brief, and the user had to send a screenshot,
+    because from inside the process the text looked perfectly wrapped.
     """
-    import re
+    for para in re.split(r"\n\s*\n", text):
+        lines = para.split("\n")
+        if lines and any(l.strip() for l in lines):
+            said = [l for l in lines if l.strip()]
+            yield lines, not any(_KEEP.match(l) or _CODE.match(l) for l in said)
+
+
+def _indent(lines: list) -> str:
+    """The indent every line of a paragraph shares — "" when they do not share one."""
+    filled = [l for l in lines if l.strip()]
+    common = min((len(l) - len(l.lstrip()) for l in filled), default=0)
+    return " " * common
+
+
+def block(text: str, width: int | None = None) -> str:
+    """What the hook hands the harness, made readable: a long line wrapped, layout kept.
+
+    A hold, a denial, a start block, a hint — each is text the agent (and, in the terminal,
+    the user) reads. A line longer than the width is wrapped; a line that is indented, or is
+    a command or a list item, is kept as it is, because wrapping a command breaks it and
+    wrapping a column breaks the column.
+
+    IT IS LINE-WISE ON PURPOSE, AND THAT IS NOT AN OVERSIGHT. `render` and `say` pass an
+    already-laid-out page through here, so anything cleverer destroys the layout it is
+    handed: joining adjacent lines into paragraphs merges two column rows into one. Prose
+    that a person WROTE — a to-do's brief, a doc's body — is reflowed by `prose` instead,
+    which is only ever given text nobody has laid out yet.
+    """
     said = cli()
     if said != CANON:
         text = (text or "").replace(CANON, said)
     text = _flagged(text or "")
+    width = room(width)
     out = []
-    for para in (text or "").split("\n"):
-        # a `journal:` line is the hook's one-liner, one line by ruling: the user sees it
-        # in the terminal as a single notice and opens `journal next` for the rest
-        if len(para) <= width or para.startswith((" ", "\t", "|", "journal:")):
-            out.append(para)
+    for line in (text or "").split("\n"):
+        if len(line) <= width or line.startswith((" ", "\t", "|", "journal:")):
+            out.append(line)
             continue
-        item = re.match(r"^(\d+\.\s+|[-•]\s+)", para)
-        if item:
-            out.append(textwrap.fill(para, width=width, subsequent_indent=" " * len(item.group(1))))
-        else:
-            out.append(textwrap.fill(para, width=width))
+        item = re.match(r"^(\d+\.\s+|[-•]\s+)", line)
+        out.append(textwrap.fill(line, width=width,
+                                 subsequent_indent=" " * len(item.group(1)) if item else ""))
     return "\n".join(out)
+
+
+def prose(text: str, width: int | None = None) -> str:
+    """Authored markdown, reflowed to the reader: prose flows, structure is kept as written.
+
+    A PROSE PARAGRAPH IS ONE CONTINUOUS THING, whatever line breaks it happens to be stored
+    with. A brief is written in an editor at whatever width its author had, and printing it
+    verbatim into a narrower terminal wraps every stored line a SECOND time and leaves a
+    one- or two-word stub beneath each: "timezone", "clock time", "compares", "against." —
+    six orphans in one to-do, and it took a screenshot to see, because from inside the
+    process the text looked perfectly wrapped.
+
+    AND NOT EVERYTHING IS PROSE, which is the whole difficulty. A fenced or indented code
+    block, a list, a table, a heading and a command all mean something by their shape, and
+    reflowing them destroys it. A quoted passage is the interesting case: it is prose that
+    happens to be inset, so the indent is preserved and the words inside it flow.
+    """
+    width = room(width)
+    out = []
+    for lines, flows in _paragraphs(text or ""):
+        if not flows:
+            # STRUCTURE IS PRINTED AS WRITTEN, AND ITS LINES STAY ADJACENT. Joining the whole
+            # block with the paragraph separator put a blank line between every list item.
+            out.append("\n".join(
+                textwrap.fill(l, width=width, subsequent_indent=" " * len(m.group(0)))
+                if (m := re.match(r"^(\s*(?:\d+\.|[-•*])\s+)", l)) and len(l) > width else l
+                for l in lines))
+            continue
+        pad = _indent(lines)
+        out.append(textwrap.fill(" ".join(l.strip() for l in lines), width=width,
+                                 initial_indent=pad, subsequent_indent=pad))
+    return "\n\n".join(out)
 
 
 class Item(NamedTuple):

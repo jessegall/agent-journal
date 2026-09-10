@@ -496,7 +496,7 @@ PAGE = 25
 CATALOGUE_PAGE = 15
 
 
-def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int = 1) -> int:
+def cmd_search(term: str, all_of_them: bool = False, width: int | None = None, page: int = 1) -> int:
     """Every line mentioning the term on this environment, across every session of the project.
 
     AN ENVIRONMENT HAS A TRANSCRIPT — everything said while it was current, in every session —
@@ -505,6 +505,7 @@ def cmd_search(term: str, all_of_them: bool = False, width: int = 88, page: int 
     number is the citation and leads, with the session it belongs to; the passage is a
     window around the first mention, wrapped, with the term marked so the eye lands on it.
     """
+    width = fmt.room(width)
     import textwrap
     from pins import age
     conf, problems = settings_mod.load(root())
@@ -1229,7 +1230,8 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1, order: st
     return 0 if ok else 1
 
 
-def cmd_docs_search(term: str, page: int = 1, width: int = 88) -> int:
+def cmd_docs_search(term: str, page: int = 1, width: int | None = None) -> int:
+    width = fmt.room(width)
     import textwrap
     needle = term.lower()
     if not needle:

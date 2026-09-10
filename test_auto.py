@@ -344,7 +344,11 @@ check("end with the wrong words closes nothing", code, 1)
 check("and it is still held", s.stop()[0], AUTO_OPEN)
 s.journal("start", "second piece")
 label, text = s.stop()
-check("two pieces open: held, naming both", (label, "w; second piece" in text or "second piece; w" in text), (AUTO_OPEN, True))
+# ONE PER LINE, NOT JOINED INTO A SENTENCE. They used to arrive as "w; second piece" inside
+# the instruction; nine of them was a paragraph the user sent a screenshot of.
+check("two pieces open: held, naming both, one per line",
+      (label, "\n  - w\n" in text + "\n", "\n  - second piece\n" in text + "\n"),
+      (AUTO_OPEN, True, True))
 s.journal("end", "w")
 check("one ended, one still open: held", s.stop()[0], AUTO_OPEN)
 s.journal("end", "second piece")

@@ -436,8 +436,9 @@ def _attachment_lines(root: Path, files: list[dict]) -> list[str]:
     return [fmt.table(rows[:-1])] if rows else []
 
 
-def list_attachments(root: Path, ref: str = "", width: int = 88) -> tuple[bool, str]:
+def list_attachments(root: Path, ref: str = "", width: int | None = None) -> tuple[bool, str]:
     """Every attachment of one doc, or of every doc: name, what it is, size, where."""
+    width = fmt.room(width)
     if ref:
         doc, _, err = get(root, ref)
         if doc is None:
@@ -761,7 +762,7 @@ def check_ref(root: Path, ref: str) -> str | None:
 
 
 # ------------------------------------------------------------------ rendering
-def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1,
+def catalogue(root: Path, width: int | None = None, cap: int | None = None, page: int = 1,
               order: str = fmt.DESC, track: str = "", all_of_them: bool = False) -> str:
     """The catalogue, capped like `carry` (below) so a bare `journal docs` never grows
     without bound; unlike carry — handed automatically, every session — this is asked
@@ -771,6 +772,7 @@ def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1
     `facts` below is a doc's own, the same strategy `pins._store` already supplies for a
     pin, a rule and a reminder.
     """
+    width = fmt.room(width)
     import entries
     docs = _load(root)
     if track and not all_of_them:
@@ -801,7 +803,8 @@ def catalogue(root: Path, width: int = 88, cap: int | None = None, page: int = 1
     return fmt.render(fmt.Out(items=tuple(rows))) + fmt.more("docs", left, page, order)
 
 
-def show(root: Path, ref: str, width: int = 88) -> tuple[bool, str]:
+def show(root: Path, ref: str, width: int | None = None) -> tuple[bool, str]:
+    width = fmt.room(width)
     doc, prt, err = get(root, ref)
     if doc is None or (prt is None and "." in ref):
         return False, err
@@ -809,7 +812,7 @@ def show(root: Path, ref: str, width: int = 88) -> tuple[bool, str]:
         out = [fmt.title(f"DOC {doc['n']}.{prt['p']}", sub=prt["title"]),
                "  " + fmt.dim(f"of doc {doc['n']}: {doc['title']} · {prt.get('source', '')} · "
                               f"{_age(prt.get('at', ''))} · {prt['path'].relative_to(root.parent)}"), ""]
-        out.append(prt["body"].rstrip())
+        out.append(fmt.prose(prt["body"].rstrip(), width=width))
         return True, "\n".join(out)
     meta = [doc.get("status", "draft"), f"environment {doc.get('track', '')}", doc.get("source", ""),
             f"written {_age(doc.get('at', ''))}"]
@@ -826,13 +829,13 @@ def show(root: Path, ref: str, width: int = 88) -> tuple[bool, str]:
     out.append(fmt.wrap(doc.get("abstract", ""), width=width))
     if doc["body"].strip():
         out.append("")
-        out.append(doc["body"].rstrip())
+        out.append(fmt.prose(doc["body"].rstrip(), width=width))
     for p in doc["parts"]:
         out.append(fmt.section(f"{doc['n']}.{p['p']}  {p['title']}"))
         out.append("  " + fmt.dim(f"{p.get('source', '')} · {_age(p.get('at', ''))} · "
                                   f"{p['path'].relative_to(root.parent)}"))
         out.append("")
-        out.append(p["body"].rstrip())
+        out.append(fmt.prose(p["body"].rstrip(), width=width))
     files = attachments(doc)
     if files:
         out.append(fmt.section("attachments"))
