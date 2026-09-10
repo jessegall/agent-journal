@@ -4,6 +4,38 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.47.0 — three things a field report saw that no check could
+
+An agent working in another project wrote up what the journal did and did not do for it over
+a session. One of its three findings was a misreading, and saying so is worth as much as the
+two that were right.
+
+"THE READING-PASS HOLD NEVER FIRED, AND `journal cleanup` CONFIRMS IT SHOULD HAVE — it
+printed 'never done on this environment'." The hold is working. `owed()` gates it on the
+oldest standing claim being at least READ_DAYS (21) old, deliberately: every record starts
+never-read, and a store that nags from its first pin teaches its reader to ignore the line
+before there is anything worth reading. Verified both ways — a 2-day-old claim gives
+`owed=False`, a 30-day-old one `owed=True`.
+
+But the reader had no way to know that, because the line stated a fact and withheld the
+qualification that makes it mean something. It now reads "never done here, and not owed yet
+— nothing standing is 21 days old" until a pass actually is owed. The condition was right
+and only the sentence was silent, which is the same defect as the six stale claims in 1.46.1,
+one level down.
+
+"POINT THE PINS NUDGE AT `cleanup read`, NOT `pins`." Right, and cheap. In their words:
+"Both times I obeyed it, spotted one wrong pin, fixed that one, and moved on. It never
+occurred to me to run the full cleanup, because nothing in the nudge said cleanup — and
+re-reading pins is exactly the moment you'd catch a dead one." When a pass is owed the recall
+nudge now names the pass; when it is not, it stays the two read commands.
+
+"PINS GO STALE PRECISELY WHEN A STRETCH OF WORK CHANGES THE CODE THEY DESCRIBE." The sharpest
+of the three. `work end` has asked "did that teach anything a later reader would get wrong
+without?" since 1.19.0 and never once asked the other direction — and their pin 1 "was false
+the instant the fix landed, about eight hours before anyone noticed". Closing work now asks
+both: what it taught, and what it just made untrue, with the strike commands beside it. It
+asks; a gate there would be a third rule.
+
 ## 1.46.1 — the pages that describe the block, describing the block that exists
 
 1.45.0 changed what a session is handed and did not change what the README and the skill say
