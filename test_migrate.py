@@ -131,14 +131,18 @@ code, out = j(d2, "migrate")
 check("a project that never had the old shape is already up to date",
       ("Nothing pending" in out, code), (True, 0))
 
-# ────────────────────────── an environment removes as one folder ───────────────────────────
+# ────────────────────────── remove means remove, whichever layout it is ────────────────────
+# THIS IS THE CHECK THAT FAILED FOUR TIMES AND NEVER ON DEMAND. It asserted the folder had
+# been archived under `removed/<name>-<stamp>/environment`, and the old code wrote there only
+# when `environments/<name>/` already existed — which is created lazily, so whether a to-do
+# had been written yet decided which of two paths a user's work went to. Removing both
+# layouts unconditionally is what makes the outcome the same every run.
 j(d, "switch", "alpha")
 code, out = j(d, "environments", "remove", "beta", "--yes")
-check("removing an environment takes its whole folder", (code, "kept whole" in out), (0, True))
-check("and the folder is gone from environments/", (envs / "beta").exists(), False)
-box = next((d / ".journal" / "removed").iterdir(), None)
-check("archived whole, pins and to-dos together",
-      (box is not None, (box / "environment").is_dir() if box else False), (True, True))
+check("removing an environment removes it", (code, "are deleted" in out), (0, True))
+check("its folder is gone from environments/", (envs / "beta").exists(), False)
+check("its pre-1.34.0 to-do folder is gone too", (d / ".journal" / "todo" / "beta").exists(), False)
+check("and nothing was archived under either name", (d / ".journal" / "removed").exists(), False)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

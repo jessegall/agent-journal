@@ -135,7 +135,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal environments show "<name>"   the pickup page of one: docs to read first, what stands, open work, to-dos in order, how to begin; bare `journal environments "<name>"` is the same',
         'journal environments switch "<name>" [--project|--session=<id>|--all-sessions]   this session\'s environment; --project also where new sessions start',
         "journal switch --back         the one you came from",
-        'journal environments remove "<name>" [--yes] [--purge]   take one off the list: bare it says what it holds, --yes archives it under .journal/removed/, --purge deletes it; never the start environment, never one a live session is on, and a doc scoped to it becomes the project\'s rather than going with it',
+        'journal environments remove "<name>" [--yes]   take one off the list: bare it says what it holds, --yes DELETES it — the pins, the work and the to-dos go, and the record keeps one line saying it existed; never the start environment, never one a live session is on, and a doc scoped to it becomes the project\'s rather than going with it',
         'journal environments claim "<name>" "<why>"   take one a live session still holds: it is unbound and told at its next stop',
         'journal environments prepare "<name>"   create an environment for a piece of work and switch to it',
         "journal --env=<name> <command>   run any command on a named environment without switching to it",

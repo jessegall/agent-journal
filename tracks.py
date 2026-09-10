@@ -501,7 +501,6 @@ def back(root: Path, at: str, stem: str = "", exclusive: bool = True, stale_hour
 
 
 REMOVED = "removals"          # the record's log of what was taken away, and by whom
-ARCHIVE = "removed"           # .journal/removed/<name>-<stamp>.json, and the to-dos beside it
 
 
 def _held_summary(root: Path, name: str, held: dict) -> tuple[int, int, int]:
@@ -513,16 +512,21 @@ def _held_summary(root: Path, name: str, held: dict) -> tuple[int, int, int]:
 
 
 def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
-           purge: bool = False, stale_hours: float = 24.0) -> tuple[bool, str]:
-    """Take an environment off the list — archived by default, deleted only when asked.
+           stale_hours: float = 24.0) -> tuple[bool, str]:
+    """Take an environment off the list. Remove means remove.
 
-    A DELETE THAT KEEPS THE THING. This module's first rule is that nothing disappears
-    without somebody deciding it should, and for a long time that was read as "there is no
-    delete at all" — which left every experiment and every finished piece of work on the
-    list forever, and a list nobody trusts is a list nobody reads. So the decision is what
-    is required, not the permanence: `--yes` after seeing exactly what is on the
-    environment, and what comes off is written whole to `removed/` where it can be read or
-    put back by hand. `--purge` is the one that does not keep it, and it has to be typed.
+    IT USED TO ARCHIVE, AND THE ARCHIVE HAD TWO SHAPES. A folder-shaped environment moved to
+    `removed/<name>-<stamp>/environment`, a pre-1.34.0 one to `.../todo` — and which you got
+    depended on whether `environments/<name>/` had been created yet, which is lazy. So the
+    place a user's work went to be recoverable was decided by a race. That is worse than not
+    keeping it: a promise of recovery you cannot follow to one path is not a promise.
+
+    THE DECISION IS REQUIRED, THE COPY IS NOT. This module's first rule is that nothing
+    disappears without somebody deciding it should, and for a long time that was read as
+    "keep a copy of everything" — which is a different rule, and the one that grew the second
+    shape. What it needs is that the user SEES what they are destroying and types `--yes`
+    knowing it: the count of pins, open work and to-dos is printed first, and a one-line row
+    of what it held is kept in the record, which is an audit trail and not a hiding place.
 
     WHAT IT REFUSES. The project's start environment, because a new session would land
     nowhere. An environment a live session is on, including this one, because pulling the
@@ -552,15 +556,15 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
     pins, work, todos = _held_summary(root, name, tracks.get(name, {}))
     what = f"{pins} pin(s), {work} open work, {todos} open to-do(s)"
     if not yes:
-        return False, (f"{name} holds {what}. Nothing is removed without --yes:\n"
-                       f'  journal environments remove "{name}" --yes        archive it under .journal/{ARCHIVE}/\n'
-                       f'  journal environments remove "{name}" --yes --purge   delete it outright\n'
+        return False, (f"{name} holds {what}, and removing it DELETES them:\n"
+                       f'  journal environments remove "{name}" --yes\n'
+                       "  the record keeps one line saying it existed and what it held; the pins, the\n"
+                       "  work and the to-dos are gone. Move anything worth keeping first.\n"
                        "  its docs are not deleted: a doc scoped here becomes the project's, because an\n"
                        "  environment ending does not unmake what it settled")
-    kept = ""
     with state.locked(root):
         data = state._record(root)
-        held = (data.get("tracks") or {}).pop(name, {})
+        (data.get("tracks") or {}).pop(name, None)
         if data.get(PREVIOUS) == name:
             data.pop(PREVIOUS, None)   # `--back` must not walk into a name that is gone
         auto = data.get("auto")
@@ -570,27 +574,18 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
         if isinstance(sessions, dict):
             sessions.pop(name, None)
         log = data.get(REMOVED) or []
-        log.append({"track": name, "by": stem or "", "at": at, "purged": bool(purge),
+        log.append({"track": name, "by": stem or "", "at": at,
                     "pins": pins, "work": work, "todos": todos})
         data[REMOVED] = log[-50:]
         state._write(state.record_file(root), data)
-        # THE ENVIRONMENT IS A FOLDER NOW, so removing it is a folder move: its pins, its
-        # work and its to-dos travel together instead of being reassembled from two places.
-        home = state.env_dir(root, name)
-        folder = todo_mod.folder(root, name)     # the pre-1.34.0 path, if it is still there
-        if not purge:
-            box = root / ARCHIVE / f"{name}-{time.strftime('%Y%m%d-%H%M%S')}"
-            box.mkdir(parents=True, exist_ok=True)
-            (box / "environment.json").write_text(json.dumps(held, indent=2) + "\n")
-            if home.is_dir():
-                shutil.move(str(home), str(box / "environment"))
-            elif folder.is_dir():
-                shutil.move(str(folder), str(box / "todo"))
-            kept = f"\n  kept whole in {box.relative_to(root.parent)} — read it, or move it back by hand"
-        else:
-            for d in (home, folder):
-                if d.is_dir():
-                    shutil.rmtree(d, ignore_errors=True)
+        # BOTH LAYOUTS, UNCONDITIONALLY. `home` is the folder an environment is today and
+        # `folder` the to-dos of one from before 1.34.0. Removing both every time is what
+        # makes this one path: the old code branched on which existed, and the branch was
+        # the bug — `environments/<name>/` is created lazily, so a removal seconds apart
+        # could take either one.
+        for d in (state.env_dir(root, name), todo_mod.folder(root, name)):
+            if d.is_dir():
+                shutil.rmtree(d, ignore_errors=True)
     # A STALE SESSION'S BINDING WOULD OUTLIVE THE ENVIRONMENT, and `current` would hand it a
     # name that is gone; unbind those, so they choose again the way a new session does.
     b = _bindings(root)
@@ -599,4 +594,4 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
         unbind(root, sid)
     note = (f"\n  {len(stragglers)} stale session(s) were bound to it and are now bound to nothing"
             if stragglers else "")
-    return True, (f"{name} is removed — it held {what}" + ("; purged" if purge else "") + kept + note)
+    return True, (f"{name} is removed — it held {what}, and they are deleted" + note)
