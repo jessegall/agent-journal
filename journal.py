@@ -1460,9 +1460,9 @@ def cmd_cleanup_read() -> int:
     return 0
 
 
-def cmd_track_remove(name: str, yes: bool, purge: bool) -> int:
+def cmd_track_remove(name: str, yes: bool) -> int:
     conf, _ = settings_mod.load(root())
-    ok, msg = tracks.remove(root(), name, _now(), _stem() or "", yes=yes, purge=purge,
+    ok, msg = tracks.remove(root(), name, _now(), _stem() or "", yes=yes,
                             stale_hours=conf["session_stale_hours"])
     fmt.say(msg, error=not ok)
     return 0 if ok else 1
@@ -1798,7 +1798,6 @@ class Opts:
     project_too: bool = False
     all_sessions: bool = False
     yes_flag: bool = False
-    purge: bool = False
     force: bool = False
     order: str = fmt.DESC
     sessions: list
@@ -1919,7 +1918,6 @@ BARE_FLAGS: dict[str, _Flag] = {
     "--quiet": _Flag(dest="quiet"),
     "--project": _Flag(dest="project_too"),
     "--yes": _Flag(dest="yes_flag"),
-    "--purge": _Flag(dest="purge"),
     "--force": _Flag(dest="force"),
     "--all-sessions": _Flag(dest="all_sessions"),
     "--none": _Flag(dest="after", set="--none"),    # `todos after <n> --none` clears the prerequisites
@@ -2074,7 +2072,7 @@ def _v_environments(verb: str, rest: list[str], opts: Opts) -> int:
     if len(rest) > 1 and rest[1] in ("remove", "rm", "delete", "forget"):
         if len(rest) < 3:
             return _refuse('remove wants a name: journal environments remove "<name>"')
-        return cmd_track_remove(" ".join(rest[2:]), opts.yes_flag, opts.purge)
+        return cmd_track_remove(" ".join(rest[2:]), opts.yes_flag)
     return cmd_tracks(" ".join(rest[1:]))
 
 

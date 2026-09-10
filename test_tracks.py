@@ -270,27 +270,27 @@ check("--yes removes it", took, True)
 check("it is off the listing", [t["name"] for t in tracks.listing(r7)], ["default"])
 check("the other environment is untouched", live(r7), (["fact D"], []))
 check("its folder is gone from environments/", (r7 / "environments" / "gone").exists(), False)
-box = sorted((r7 / "removed").glob("gone-*"))
-check("it is archived whole", len(box), 1)
-check("the archive holds its pins and work",
-      [p["fact"] for p in json.loads((box[0] / "environment" / "pins.json").read_text())["pins"]],
-      ["fact G"])
-check("the archive holds its to-dos", len(list((box[0] / "environment" / "todo").glob("*.md"))), 1)
-check("the removal is on the record",
-      [(x["track"], x["purged"]) for x in state.get(r7, "removals", [])], [("gone", False)])
+# REMOVE MEANS REMOVE. It used to move the folder to `removed/<name>-<stamp>/` — under
+# `environment` or under `todo`, depending on whether the lazily-created environment folder
+# existed yet. A recovery path decided by a race is not a recovery path.
+check("nothing is archived", (r7 / "removed").exists(), False)
+check("the removal is on the record, as one line and not a copy",
+      [(x["track"], x["pins"], x["todos"]) for x in state.get(r7, "removals", [])],
+      [("gone", 1, 1)])
 
-# --purge keeps nothing, and a stale session bound to the name is unbound
+# the pre-1.34.0 to-do folder goes too, and a stale session bound to the name is unbound
 r8 = fresh()
 tracks.switch(r8, "scratch", AT)
 todo_mod.add(r8, "scratch", "a to-do", "brief", AT)
 tracks.switch(r8, "default", AT)
 tracks.bind(r8, "deadbeef", "scratch")
-took, msg = tracks.remove(r8, "scratch", AT, yes=True, purge=True)
-check("--purge removes it", took, True)
-check("--purge archives nothing", (r8 / "removed").exists(), False)
-check("--purge takes the to-dos with it", (r8 / "todo" / "scratch").exists(), False)
+took, msg = tracks.remove(r8, "scratch", AT, yes=True)
+check("it removes", took, True)
+check("it keeps nothing", (r8 / "removed").exists(), False)
+check("it takes the to-dos with it", (r8 / "todo" / "scratch").exists(), False)
 check("a session bound to it is unbound", tracks.bound(r8, "deadbeef"), None)
 check("and it is said", "1 stale session(s)" in msg, True)
+check("and the message says they are deleted, not kept", "are deleted" in msg, True)
 
 # a live session on it is protection enough
 r9 = fresh()

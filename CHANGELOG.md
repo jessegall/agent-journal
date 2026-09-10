@@ -4,6 +4,39 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.46.0 — remove means remove
+
+`journal environments remove --yes` deleted nothing. It MOVED the environment to
+`.journal/removed/<name>-<stamp>/` — under `environment` if `environments/<name>/` had been
+created, under `todo` if it had not. That folder is created lazily, so the same command
+seconds apart put a user's pins and to-dos in either of two places. `--purge` was the flag
+you had to type to get an actual delete.
+
+A RECOVERY PATH DECIDED BY A RACE IS NOT A RECOVERY PATH. This was the intermittent
+`test_migrate` failure that took eight rounds to catch, and the fix is not to pick one of
+the two shapes: it is that keeping a copy was never what the rule required. "Nothing
+disappears without somebody deciding it should" asks that the user SEE what they are
+destroying and type `--yes` knowing it. It does not ask for a hiding place, and the hiding
+place is where the second shape grew.
+
+So: bare `remove` prints what the environment holds — pins, open work, to-dos — and says
+plainly that `--yes` deletes them. `--yes` deletes them, both layouts, unconditionally. The
+record keeps one line saying the environment existed and what it held, which is an audit
+trail. `--purge` is gone; there is one path.
+
+Docs are still never touched: a doc scoped to the environment becomes the project's, because
+an environment ending does not unmake what it settled.
+
+AND A STRAY ARCHIVE WAS SHIPPED IN THE PACKAGE. `removed/dogfood-probe-20260909-211951/`
+was committed from a dogfood run, and `testkit` copies the source tree, so every test
+project was born with a `removed/` folder already in it. Deleted.
+
+`journal carry` KEEPS NO CHARACTER CAP, and that is now a decision rather than an omission.
+Only the doorway is injected — both hook call sites use the brief depth, and a test fails if
+that changes. `carry` prints to a terminal, where the 10,000-character ceiling does not
+exist, and it is meant to be read INSTEAD of the record; cutting its entries to a line would
+defeat the one thing it is for.
+
 ## 1.45.0 — the doorway carries pointers, and a pointer has a fixed size
 
 1.44.1 bounded the injected block by measuring it and tightening until it fit. That is a
