@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.59.2 — `journal enable` / `journal disable`, not `enable true|false`
+
+Same kill switch as 1.59.0, split into two plain verbs instead of one taking an
+argument: `journal disable` turns every hook inert, `journal enable` turns it back on.
+Bare `journal` now shows DISABLED on its own status line when it is off, instead of a
+separate status subcommand.
+
 ## 1.59.1 — a rule's reasoning survived an upgrade for the first time
 
 `install.py`'s `DATA` exclusion list — what a pull never touches — was missing `rules`.

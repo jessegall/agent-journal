@@ -287,7 +287,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal todos report <n> "<how>"     a lent agent says a row is finished; the parent closes it (agent)
     journal --env=<name> <command>       any command on a named environment, without switching
     journal loop set                     this session has a loop running the hook cannot see (agent)
-    journal enable true|false            the kill switch — false makes every hook inert until true; the user's call, never the agent's own idea
+    journal enable | journal disable     the kill switch — disable makes every hook inert until enable; the user's call, never the agent's own idea
     journal settings                     every setting and where it came from
     journal version                      the installed version; is a newer one out?
     journal update                       pull the latest journal and print what changed

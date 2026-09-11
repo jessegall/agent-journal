@@ -296,8 +296,11 @@ def cmd_status() -> int:
     import state as state_mod
     sid = os.environ.get(transcript.SESSION_ENV, "")
     mine = dict(state_mod.runtime_files(root())).get(sid, {}) if sid else {}
-    rows.append(("hooks", "fired in this session" if mine else "nothing has reached the hook in this session",
-                 "journal verify"))
+    disabled = not _state.hooks_enabled(root())
+    rows.append(("hooks",
+                 "DISABLED — nothing is held, gated or filed" if disabled else
+                 "fired in this session" if mine else "nothing has reached the hook in this session",
+                 "journal enable" if disabled else "journal verify"))
     up = update.check(root())
     have = update.current(root())
     rows.append(("version", have + (f"  ({up['version']} available: journal upgrade)"
@@ -1709,36 +1712,35 @@ def cmd_grant(name: str, off: bool, listing: bool) -> int:
     return 0 if ok else 1
 
 
-def cmd_enable(rest: list[str]) -> int:
-    """`journal enable true|false` — the kill switch for every hook this package wires.
-
-    ONLY THE USER TYPES THIS. `false` makes every hook event inert — no hold, no gate,
-    no context, nothing filed — silently, and that is exactly the shape of thing an
-    agent must never reach for on its own to get past a hold it does not like. An agent
-    reading this: run `enable false` ONLY when the user has explicitly asked for it, by
-    name, in the conversation — never to route around a hold, a gate or a refusal.
-
-    Bare `journal enable` reports the state rather than guessing what was meant; the
-    CLI itself is never gated by this switch, on or off — it is the hook that goes
-    quiet, not the commands you type.
-    """
-    word = (rest[1] if len(rest) > 1 else "").strip().lower()
-    if not word:
-        on = _state.hooks_enabled(root())
-        fmt.say(f"hooks are {'ON' if on else 'OFF'}. `journal enable true|false` changes it.")
-        return 0
-    if word in ("true", "on", "1", "yes"):
-        on = True
-    elif word in ("false", "off", "0", "no"):
-        on = False
-    else:
-        return _refuse(f"enable wants true or false, got {word!r}")
+def _set_enabled(on: bool) -> int:
     _state.set_hooks_enabled(root(), on)
     fmt.say("hooks ENABLED: every hold, gate and reminder is back in force."
             if on else
             "hooks DISABLED: nothing is held, gated, filed or reminded until "
-            "`journal enable true` — only run this because the user asked for it, by name.")
+            "`journal enable` — only run this because the user asked for it, by name.")
     return 0
+
+
+def cmd_enable() -> int:
+    """`journal enable` — turn every hook this package wires back on. The undo for
+    `journal disable`; see its docstring for what "off" means and who may say so."""
+    return _set_enabled(True)
+
+
+def cmd_disable() -> int:
+    """`journal disable` — the kill switch for every hook this package wires.
+
+    ONLY THE USER TYPES THIS. It makes every hook event inert — no hold, no gate, no
+    context, nothing filed — silently, and that is exactly the shape of thing an agent
+    must never reach for on its own to get past a hold it does not like. An agent
+    reading this: run `disable` ONLY when the user has explicitly asked for it, by
+    name, in the conversation — never to route around a hold, a gate or a refusal.
+
+    The CLI itself is never gated by this switch, on or off — it is the hook that goes
+    quiet, not the commands you type; `journal enable` is exactly as unblocked while
+    disabled as everything else, which is what makes turning it back on always possible.
+    """
+    return _set_enabled(False)
 
 
 def cmd_settings() -> int:
@@ -2405,7 +2407,8 @@ COMMANDS.update({
     "settings": lambda verb, rest, opts: cmd_settings(),
     "worktree": _v_worktree,
     "next": lambda verb, rest, opts: cmd_next(),
-    "enable": lambda verb, rest, opts: cmd_enable(rest),
+    "enable": lambda verb, rest, opts: cmd_enable(),
+    "disable": lambda verb, rest, opts: cmd_disable(),
     "version": _v_version,
     "conversation": lambda verb, rest, opts: cmd_read(opts.back),
 })
