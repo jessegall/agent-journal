@@ -18,7 +18,7 @@ else
   mkdir -p .journal
   for f in "$TMP"/pkg/* "$TMP"/pkg/.gitignore; do
     case "$(basename "$f")" in
-      record.json|settings.json|todo|runtime|__pycache__|install.sh) ;;
+      record.json|settings.json|todo|runtime|__pycache__|install.sh|test_*.py|testkit.py) ;;
       *) cp -R "$f" .journal/ ;;
     esac
   done

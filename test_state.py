@@ -624,6 +624,10 @@ todo.add(r, "default", "mine", "", AT)
 (r / "hook.py").write_text("")
 check("to-dos and the record are data the pull leaves behind",
       [str(f) for f in install._package_files(r)], ["hook.py"])
+# and neither are the suites: they run where the package is developed, and an agent in a
+# consumer project that finds a red suite starts fixing the tool instead of its own work
+(r / "test_x.py").write_text(""); (r / "testkit.py").write_text("")
+check("the suites are not package files", [str(f) for f in install._package_files(r)], ["hook.py"])
 
 # with nothing open, a line that starts work first may write; one that writes first may not
 d, path = project_with(2)
