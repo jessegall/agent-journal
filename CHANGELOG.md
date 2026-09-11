@@ -1,9 +1,5 @@
 # Changelog
 
-## 9.0.0 — the test release
-
-A line about it.
-
 Newest first. Each entry is what changed, what it makes possible, and what to do about it.
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
