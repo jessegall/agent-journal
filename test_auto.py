@@ -573,6 +573,23 @@ check("and the journal's own CLI is never gated — it is the way out",
 s9.journal("loop", "set")
 check("once a loop is known the same write goes through", write_call(s9), "")
 
+def ask_call(s):
+    out = s.fire("PreToolUse", tool_name="AskUserQuestion",
+                 tool_input={"questions": [{"question": "Which path?", "header": "Path",
+                                            "options": [], "multiSelect": False}]})
+    if not out.strip():
+        return ""
+    got = json.loads(out).get("hookSpecificOutput", {})
+    return got.get("permissionDecisionReason", "") if got.get("permissionDecision") == "deny" else ""
+
+# A QUESTION TO THE USER HALTS THE SESSION, and auto was switched on to be away.
+denied = ask_call(s9)
+check("with auto on, AskUserQuestion is refused", bool(denied), True)
+check("and the refusal names the two ways out", ("todos ask" in denied, "work update" in denied), (True, True))
+s9.journal("todos", "auto", "off")
+check("with auto off, the same question goes through", ask_call(s9), "")
+s9.journal("todos", "auto", "on")
+
 # turning auto ON says so at the moment it becomes true, not only at the next stop
 d10 = loud()
 s10 = Session(d10, "s10")
