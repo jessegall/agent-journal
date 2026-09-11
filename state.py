@@ -39,11 +39,31 @@ RETIRED = "state.json"
 IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto",
              "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read",
              "cleanup_kept",
-             "agent_seen", "schema"}
+             "agent_seen", "schema", "hooks_enabled"}
 
 
 def is_record(key: str) -> bool:
     return key in IN_RECORD
+
+
+#: THE KILL SWITCH. `journal enable true|false`, on the record, project-wide — not
+#: per-environment, because a disabled hook is disabled everywhere at once. Default is
+#: ON: a missing key means nothing has ever turned it off.
+#:
+#: THIS IS FOR THE USER TO FLIP, NOT AN AGENT. `journal enable false` makes every hook
+#: event inert — no holds, no gates, no context, no writes filed — silently, which is
+#: exactly the shape of thing an agent must never reach for on its own to get past a
+#: hold it does not like. Only run this command when the user has explicitly asked for
+#: it, by name, in this conversation.
+HOOKS_ENABLED = "hooks_enabled"
+
+
+def hooks_enabled(root: Path) -> bool:
+    return get(root, HOOKS_ENABLED, True) is not False
+
+
+def set_hooks_enabled(root: Path, on: bool) -> None:
+    put(root, HOOKS_ENABLED, bool(on))
 
 
 def record_file(root: Path) -> Path:

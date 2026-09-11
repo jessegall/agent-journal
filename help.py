@@ -160,6 +160,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal update [--from=<path or git url>]    pull the latest journal and print what changed",
         "journal settings              every setting, its value, and where it came from",
         "journal loop set              this session has a loop running (the hook could not see it); `journal loop` says whether one is known",
+        "journal enable true|false     the kill switch: false makes every hook inert — no hold, no gate, no context — until true; the USER's call, never the agent's own idea",
     ),
 }
 
@@ -185,7 +186,7 @@ ALIAS: dict[str, str] = {
     "conversation": "transcript", "user": "transcript", "search": "transcript",
     "carry": "transcript",
     "verify": "system", "version": "system", "update": "system", "settings": "system",
-    "loop": "system",
+    "loop": "system", "enable": "system",
 }
 
 
