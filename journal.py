@@ -797,7 +797,7 @@ def cmd_promote(n: int) -> int:
 
 
 def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", after: str = "", acting: str = "", page: int = 1,
-             order: str = fmt.DESC, quiet: bool = False) -> int:
+             order: str = fmt.DESC, quiet: bool = False, order_by_id: bool = False) -> int:
     here = tracks.current(root(), _stem())
     # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
     # what a bare noun and a bare noun+id already do; stripping them here means the
@@ -825,7 +825,8 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             " · auto ON" if draining else "")
         fmt.say(fmt.title("TO-DO", sub=sub))
         fmt.say()
-        fmt.say(todo.render(root(), here, all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order))
+        fmt.say(todo.render(root(), here, all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page,
+                           order=order, order_by_id=order_by_id))
         fmt.say()
         fmt.say(fmt.wrap("Auto is on: with nothing open, the agent picks up the next one on its own."
                        if draining else
@@ -902,7 +903,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             fmt.say(("  " if ok else "  ! ") + line)
         return 0 if any(ok for ok, _ in said) else 1
     if verb in ("start", "done", "drop", "strike", "ask", "answer", "reopen", "move",
-                "block", "unblock", "skip", "after", "needs", "report"):
+                "block", "unblock", "skip", "after", "needs", "report", "priority"):
         if len(rest) < 2 or not rest[1].isdigit():
             fmt.say(f'todo {verb} wants a number: journal todos {verb} 3' + (
                 ' "<how>"' if verb != "start" else ""), error=True)
@@ -921,6 +922,10 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             return 0 if ok else 1
         if verb in ("after", "needs"):
             ok, msg = todo.after(root(), here, n, after if after == "--none" else " ".join(rest[2:]))
+            fmt.say(msg, error=not ok)
+            return 0 if ok else 1
+        if verb == "priority":
+            ok, msg = todo.priority(root(), here, n, " ".join(rest[2:]))
             fmt.say(msg, error=not ok)
             return 0 if ok else 1
         if verb in ("block", "skip", "unblock"):
@@ -1869,6 +1874,7 @@ class Opts:
     back: int = 0
     supersedes: int | None = None
     all_of_them: bool = False
+    order_by_id: bool = False
     go_back: bool = False
     fresh: bool = False
     full: bool = False
@@ -2016,6 +2022,7 @@ BARE_FLAGS: dict[str, _Flag] = {
     "--fresh": _Flag(dest="fresh"),
     "--back": _Flag(dest="go_back"),
     "--all": _Flag(dest="all_of_them"),
+    "--order-by-id": _Flag(dest="order_by_id"),
 }
 
 
@@ -2380,7 +2387,7 @@ _ALIASES: dict[tuple[str, ...], object] = {
     ("pin", "remember"): _v_pin,
     ("todo", "todos"): lambda verb, rest, opts: cmd_todo(
         rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,
-        opts.page, opts.order, opts.quiet),
+        opts.page, opts.order, opts.quiet, opts.order_by_id),
     ("reminders", "reminder", "remind"): _v_reminders,
     ("start", "end"): _v_start_end,
     ("migrate", "migrations"): _v_migrate,

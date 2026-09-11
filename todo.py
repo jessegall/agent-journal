@@ -62,7 +62,8 @@ import state
 DIR = "todo"
 STRUCK = "struck"
 FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how", "asks", "answer",
-          "blocked", "after", "assigned", "reported", "by", "doc", "reopened", "moved_from")
+          "blocked", "after", "assigned", "reported", "by", "doc", "reopened", "moved_from",
+          "priority")
 
 
 def _slug(text: str, limit: int = 40) -> str:
@@ -277,7 +278,11 @@ def ready(root: Path, track: str) -> list[dict]:
              and not t.get("reported")
              and not (t.get("assigned") and ag.active(root, track, t["assigned"], 30))
              and not waiting_on(root, track, t)]
-    return sorted(items, key=lambda t: 0 if answered_one(t) else 1)
+    # ANSWERED STILL OUTRANKS PRIORITY. The user replying to a question is their own
+    # word to do it now — that is a stronger signal than a number nobody has looked at
+    # since it was set, so it stays the first sort key. Priority decides the rest: the
+    # highest-priority ready row is what auto picks up and what `journal next` names.
+    return sorted(items, key=lambda t: (0 if answered_one(t) else 1, -priority_of(t)))
 
 
 def blocked(root: Path, track: str) -> list[dict]:
@@ -345,6 +350,70 @@ def report(root: Path, track: str, n: int, how: str, agent: str) -> tuple[bool, 
 def reported(root: Path, track: str) -> list[dict]:
     """Rows a subagent has finished and the parent has not yet closed."""
     return [t for t in open_items(root, track) if t.get("reported")]
+
+
+#: WHAT "PRIORITY" MEANS HERE: A SCORE, NOT A RANK. Bigger is more important — the
+#: user's own words for it: "everything below [the default] is less important than
+#: everything above." 100 is the middle of the scale on purpose, so a to-do can be
+#: pushed either more urgent (above it) or less (below it) from the same starting
+#: point, the way `nice` does it in the opposite direction.
+DEFAULT_PRIORITY = 100
+
+#: NAMED LEVELS ARE SUGAR OVER THE SAME NUMBER, NOT A SEPARATE SCALE. No `medium` —
+#: `default` already names the middle of the scale, and a to-do nobody has touched IS
+#: that. A raw number still works for anything finer than these four words.
+PRIORITY_LEVELS = {"low": 50, "default": DEFAULT_PRIORITY, "high": 150, "critical": 200}
+
+
+def priority_of(t: dict) -> int:
+    """This to-do's priority — `DEFAULT_PRIORITY` for one that has never had it set,
+    and for a value that somehow ended up unreadable, because a broken number here
+    must never crash the list that is supposed to be showing it."""
+    got = t.get("priority")
+    if got in (None, ""):
+        return DEFAULT_PRIORITY
+    try:
+        return int(got)
+    except (TypeError, ValueError):
+        return DEFAULT_PRIORITY
+
+
+def parse_priority(word: str) -> tuple[int | None, str]:
+    """(the number, "") for a raw integer or a named level — or (None, the refusal)."""
+    word = (word or "").strip()
+    if not word:
+        return None, 'say a number or a level: journal todos priority <n> <50|low|medium|high|100|...>'
+    named = PRIORITY_LEVELS.get(word.lower())
+    if named is not None:
+        return named, ""
+    try:
+        return int(word), ""
+    except ValueError:
+        levels = ", ".join(sorted(set(PRIORITY_LEVELS) - {"default"}))
+        return None, f"priority wants a number or one of {levels}, got {word!r}"
+
+
+def priority_label(value: int) -> str:
+    """The named level this number matches, or the number itself — for the CLI to
+    show a reader the word they set rather than making them recompute it."""
+    for name, num in PRIORITY_LEVELS.items():
+        if num == value and name != "default":
+            return f"{name} ({value})"
+    return str(value)
+
+
+def priority(root: Path, track: str, n: int, word: str) -> tuple[bool, str]:
+    """Set a to-do's priority. `word` is a raw number or a named level (low/medium/
+    high/...) — see `parse_priority`. Bigger means more important; `journal todos`
+    orders by it, highest first, unless told `--order-by-id`."""
+    value, err = parse_priority(word)
+    if value is None:
+        return False, err
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    _update(root, track, n, priority=str(value))
+    return True, f"to-do {n} is priority {priority_label(value)}"
 
 
 def after_of(t: dict) -> list[int]:
@@ -1045,7 +1114,7 @@ _STATE_TEXT = {
 
 
 def render(root: Path, track: str, *, all_of_them: bool = False, width: int | None = None, short_refs: bool = False,
-           cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
+           cap: int | None = None, page: int = 1, order: str = fmt.DESC, order_by_id: bool = False) -> str:
     """The list as a person reads it: the title, where it stands, and any question below.
 
     CAPPED LIKE `carry` (below), for the same reason: a bare `journal todo` is asked for
@@ -1058,6 +1127,12 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int | No
     only `facts` below is this noun's own, exactly the strategy `pins._store` already
     supplies for a pin, a rule and a reminder.
 
+    ORDERED BY PRIORITY UNLESS `order_by_id` SAYS OTHERWISE. `entries.listing`/
+    `fmt.paged` order and page whatever list they are handed; the only change here is
+    WHICH list that is — pre-sorted by priority (ascending, ties keeping their number
+    order) so the existing `order=asc|desc` reversal still means what it already means:
+    DESC (the default) reads highest-first, exactly as it read newest-first before.
+
     THE QUESTION AND ITS ANSWER ARE NOT A FACT, and stay out of `facts`: a fact is a short
     fragment joined into one line with " · ", and a wrapped line breaks wherever it must —
     measured, folding a long answer in with the rest put the wrap point inside the arrow
@@ -1069,9 +1144,13 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int | No
     items = _all(root, track) if all_of_them else open_items(root, track)
     if not items:
         return "  Nothing is waiting." if not all_of_them else "  No to-dos on this environment."
+    if not order_by_id:
+        items = sorted(items, key=priority_of)
 
     def facts(t: dict) -> list[str]:
         out = [_STATE_TEXT[_state(t)](root, track, t)]
+        if priority_of(t) != DEFAULT_PRIORITY:
+            out.append(f"priority {priority_label(priority_of(t))}")
         out.append("has a brief" if t.get("brief") or t.get("body") else "title only")
         if t.get("doc"):
             import docs as docs_mod
