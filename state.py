@@ -46,11 +46,11 @@ def is_record(key: str) -> bool:
     return key in IN_RECORD
 
 
-#: THE KILL SWITCH. `journal enable true|false`, on the record, project-wide — not
+#: THE KILL SWITCH. `journal enable` / `journal disable`, on the record, project-wide — not
 #: per-environment, because a disabled hook is disabled everywhere at once. Default is
 #: ON: a missing key means nothing has ever turned it off.
 #:
-#: THIS IS FOR THE USER TO FLIP, NOT AN AGENT. `journal enable false` makes every hook
+#: THIS IS FOR THE USER TO FLIP, NOT AN AGENT. `journal disable` makes every hook
 #: event inert — no holds, no gates, no context, no writes filed — silently, which is
 #: exactly the shape of thing an agent must never reach for on its own to get past a
 #: hold it does not like. Only run this command when the user has explicitly asked for

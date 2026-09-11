@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""`journal enable true|false`: the kill switch, and that it actually silences every hook.
+"""`journal enable` / `journal disable`: the kill switch, and that it actually
+silences every hook.
 
     .journal/test_enable.py
 """
@@ -44,20 +45,17 @@ def fire(event, **extra):
 
 
 # ------------------------------------------------------------------ default is ON
-code, out = j("enable")
-check("default is ON", "ON" in out, True)
-
-code, out = j("enable", "maybe")
-check("a nonsense value is refused", code, 1)
+code, out = j()
+check("bare status does not mention DISABLED by default", "DISABLED" in out, False)
 
 out_on = fire("SessionStart", source="startup")
 check("hooks fire normally while enabled (a SessionStart briefing comes back)", bool(out_on.strip()), True)
 
-# ------------------------------------------------------------------ turning it off silences EVERY event
-code, out = j("enable", "false")
+# ------------------------------------------------------------------ disable silences EVERY event
+code, out = j("disable")
 check("disabling reports it plainly", (code, "DISABLED" in out), (0, True))
-code, out = j("enable")
-check("and reads back as OFF", "OFF" in out, True)
+code, out = j()
+check("bare status now says so too", "DISABLED" in out, True)
 
 check("SessionStart: nothing at all while disabled", fire("SessionStart", source="startup").strip(), "")
 check("Stop: nothing at all while disabled", fire("Stop").strip(), "")
@@ -65,7 +63,7 @@ check("PreToolUse: nothing at all — not even a hold on something it would norm
       fire("PreToolUse", tool_name="Bash", tool_input={"command": "echo hi"}).strip(), "")
 
 # ------------------------------------------------------------------ the CLI itself is never gated by this
-code, out = j("enable", "true")
+code, out = j("enable")
 check("re-enabling works from the same, unaffected CLI", (code, "ENABLED" in out), (0, True))
 out_on2 = fire("SessionStart", source="startup")
 check("hooks fire again once re-enabled", bool(out_on2.strip()), True)
