@@ -79,6 +79,12 @@ DEFAULTS = {
     # Messages either side of a pin that `journal pins <n> --full` shows.
     "pin_context": 4,
 
+    # AN IDEA IS A NOTE, NOT A BRIEF — one line, jotted and moved past. Tighter than a
+    # pin's cap for the same reason a reminder's is: this is meant to be read as a list of
+    # titles, not a list of paragraphs. What does not fit is a to-do, not an idea. 0
+    # removes the limit.
+    "idea_max_chars": 200,
+
     # HOW OFTEN A REMINDER COMES BACK MID-TURN, in tool calls. A reminder is shown at the
     # head of every stop chain; this is the other half, for the long agentic stretch where
     # the next stop is an hour away and the instruction is fifty results back. Agent-only

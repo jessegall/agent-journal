@@ -1167,6 +1167,39 @@ if rB is not None:
           (tookP, "Why it holds." in _pins.body(rB, len(_pins._all(rB, _pins.RULES)), _pins.RULES)),
           (True, True))
 
+# ──────── a pin's body lands under the environment THIS PROCESS is tracked as ──────────────
+# `body_dir` used to read the record's `current` (the PROJECT's start environment) directly,
+# instead of resolving the same way `pins.add` resolves where the pin ENTRY itself goes. A
+# session bound to any other environment — the normal case; `journal.py` sets `state.use_track`
+# from the session's own binding on every invocation — wrote the entry on its own environment
+# and the body file under the project's start environment's folder instead: the same claim,
+# split across two folders, and `pins.body` came back empty because it looked in the entry's
+# environment for a file that was never written there.
+import tracks as _tracks  # noqa: E402
+rC = fresh() if "fresh" in dir() else None
+if rC is not None:
+    import state as _state2  # noqa: E402
+    _tracks.create(rC, "alpha", "beta", at=AT)
+    _tracks.switch(rC, "alpha", AT)   # the project's start environment
+    check("current_track follows the record's current with no override",
+          _state2.current_track(rC), "alpha")
+    _state2.use_track("beta")   # a session bound elsewhere, as journal.py sets it per-invocation
+    try:
+        check("current_track follows the override, not the record's current",
+              _state2.current_track(rC), "beta")
+        _pins.add(rC, "a pin written while tracked as beta", AT, 400, long="Its argument.\n")
+        check("the entry lands on beta, the environment this process is tracked as, not alpha",
+              ("a pin written while tracked as beta" in [p["fact"] for p in _pins._all(rC, track="beta")],
+               "a pin written while tracked as beta" in [p["fact"] for p in _pins._all(rC, track="alpha")]),
+              (True, False))
+        check("its body file lands beside beta, not alpha (the record's current)",
+              ((rC / "environments" / "beta" / "pins").is_dir(),
+               (rC / "environments" / "alpha" / "pins").is_dir()), (True, False))
+        check("and reads back whole through the same process",
+              "Its argument." in _pins.body(rC, 1), True)
+    finally:
+        _state2.use_track("")   # do not leak the override into whatever runs next
+
 # ─────────── the loose-markdown hint fires on a WRITE, not on a `.md` in a string ─────────
 # It matched the `>` inside a placeholder — `environments/<lent>/todo/NNN-*.md` in a
 # docstring — and told the reader they had written a loose file. A hint that fires on prose

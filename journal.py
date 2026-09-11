@@ -11,6 +11,7 @@ Every group below prints its own commands, and so does every spelling of them:
 `journal <noun> help`.
 
     work           declare it, move it, wait on something, close it
+    ideas          a stray line, global, no promise attached — not a pin, not a to-do
     pins           a claim that must survive a compaction, on this environment
     rules          a pin that every environment obeys
     reminders      an instruction said again at every stop, until you retire it
@@ -41,6 +42,7 @@ import grants
 import help
 import settings as settings_mod
 import builtin
+import ideas
 import pins
 import reminders
 import tags
@@ -1298,6 +1300,22 @@ def cmd_docs_search(term: str, page: int = 1, width: int | None = None,
     return 0
 
 
+def cmd_serve(port: int | None, open_browser: bool) -> int:
+    """Start the local web viewer: a read-only browser over this journal.
+
+    A THIN WRAPPER, DELIBERATELY. `serve.py` knows how to bind a socket and answer JSON;
+    this only supplies the two paths every command already has (`root()`, `project()`)
+    and turns the module's own refusal (a busy port raises `SystemExit`) into this
+    command's exit code, the same as every other verb here.
+    """
+    import serve
+    try:
+        serve.run(root(), project(), port=port or serve.DEFAULT_PORT, open_browser=open_browser)
+    except SystemExit as e:
+        return e.code if isinstance(e.code, int) else 1
+    return 0
+
+
 def cmd_next() -> int:
     """What to do now: the details of the last hold, or the state of the list.
 
@@ -1551,6 +1569,42 @@ def cmd_reminder_done(n: int, why: str) -> int:
     ok, msg = reminders.done(root(), n, why, _now())
     fmt.say(msg, error=not ok)
     return 0 if ok else 1
+
+
+def cmd_idea_add(text: str) -> int:
+    """`journal ideas add` — one line, jotted and moved past."""
+    conf, _ = settings_mod.load(root())
+    ok, msg = ideas.add(root(), text, _now(), conf["idea_max_chars"])
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
+def cmd_idea_drop(n: int, why: str) -> int:
+    ok, msg = ideas.drop(root(), n, why, _now())
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
+def cmd_idea_promote(n: int, title: str) -> int:
+    ok, msg = ideas.promote(root(), n, _now(), tracks.current(root(), _stem()), title)
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
+def cmd_ideas(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
+    n = len(ideas.live(root()))
+    dropped = len(ideas._all(root())) - n
+    sub = f"{n} standing" + (f", {dropped} dropped" if all_of_them and dropped else "")
+    return _catalogue(
+        "IDEAS", sub,
+        ideas.listing(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order),
+        "Nothing jotted down yet.",
+        "The project's, not one environment's — unstructured, no owner, no promise. "
+        "Write one down small; decide later whether it becomes real work.",
+        [('journal ideas add "<the idea>"', "jot one down"),
+         ('journal ideas promote <n> --title="<to-do title>"', "it became real work, filed on this environment"),
+         ('journal ideas drop <n> "<why>"', "tried, superseded, or not worth it")],
+        noun="ideas", page=page, order=order)
 
 
 def _catalogue(title: str, sub: str, listed, empty: str, lead: str, rows,
@@ -1856,6 +1910,9 @@ class Opts:
     to_agent: str = ""
     doc_ref: str = ""
     from_src: str | None = None
+    serve_port: int | None = None
+    open_browser: bool = False
+    title: str = ""
     tool_meta: dict
 
     def __init__(self):
@@ -1948,6 +2005,8 @@ VALUE_FLAGS: dict[str, _Flag] = {
     "--doc": _Flag(dest="doc_ref"),
     "--from": _Flag(dest="from_src"),
     "--page": _Flag(dest="page", type=_page_flag),
+    "--port": _Flag(dest="serve_port", type=_int_flag("--port")),
+    "--title": _Flag(dest="title"),
 }
 
 # BARE FLAGS: no value, presence is the value. `set` is what lands in `dest`; every
@@ -1974,6 +2033,7 @@ BARE_FLAGS: dict[str, _Flag] = {
     "--fresh": _Flag(dest="fresh"),
     "--back": _Flag(dest="go_back"),
     "--all": _Flag(dest="all_of_them"),
+    "--open": _Flag(dest="open_browser"),
 }
 
 
@@ -2197,6 +2257,31 @@ def _v_reminders(verb: str, rest: list[str], opts: Opts) -> int:
     return cmd_reminders(opts.all_of_them, opts.page, opts.order)
 
 
+def _v_ideas(verb: str, rest: list[str], opts: Opts) -> int:
+    sub = rest[1] if len(rest) > 1 else ""
+    if sub == "add":
+        said, why = _words(rest, 2, "ideas add", "the idea, in one line")
+        if why:
+            return _refuse(why)
+        return cmd_idea_add(said)
+    if sub in ("drop", "strike"):
+        if len(rest) < 4:
+            return _refuse('ideas drop wants a number and why: journal ideas drop 2 "<why>"')
+        n, why = _number(rest, 2, "ideas drop", "idea", "journal ideas")
+        return _refuse(why) if why else cmd_idea_drop(n, " ".join(rest[3:]))
+    if sub == "promote":
+        n, why = _number(rest, 2, "ideas promote", "idea", "journal ideas")
+        if why:
+            return _refuse(why)
+        return cmd_idea_promote(n, opts.title)
+    if sub == "list":
+        return cmd_ideas(opts.all_of_them, opts.page, opts.order)
+    if sub:
+        return _refuse(f"ideas has no {sub!r}. It takes add, drop, promote, list — and a "
+                "bare `journal ideas` reads them.")
+    return cmd_ideas(opts.all_of_them, opts.page, opts.order)
+
+
 def _v_pins(verb: str, rest: list[str], opts: Opts) -> int:
     # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`promote`/
     # `list`/`show` call the exact same functions the old bare top-level `pin`,
@@ -2340,6 +2425,7 @@ _ALIASES: dict[tuple[str, ...], object] = {
         rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,
         opts.page, opts.order, opts.quiet),
     ("reminders", "reminder", "remind"): _v_reminders,
+    ("ideas", "idea"): _v_ideas,
     ("start", "end"): _v_start_end,
     ("migrate", "migrations"): _v_migrate,
     ENV_NOUNS: _v_environments,
@@ -2373,6 +2459,7 @@ COMMANDS.update({
     "settings": lambda verb, rest, opts: cmd_settings(),
     "worktree": _v_worktree,
     "next": lambda verb, rest, opts: cmd_next(),
+    "serve": lambda verb, rest, opts: cmd_serve(opts.serve_port, opts.open_browser),
     "version": _v_version,
     "conversation": lambda verb, rest, opts: cmd_read(opts.back),
 })

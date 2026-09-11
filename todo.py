@@ -251,6 +251,17 @@ def _write_index(f: Path, rows: dict) -> None:
         pass  # a ledger that cannot be written is a slow command, never a failed one
 
 
+def all_items(root: Path, track: str) -> list[dict]:
+    """Every to-do on this environment, open and done — the public entry point `_all` is
+    read through."""
+    return _all(root, track)
+
+
+def item(root: Path, track: str, n: int) -> tuple[dict | None, str]:
+    """One to-do, with its body — the public entry point `_get` is read through."""
+    return _get(root, track, n)
+
+
 def open_items(root: Path, track: str) -> list[dict]:
     return [t for t in _all(root, track) if not t.get("done")]
 
@@ -1018,6 +1029,36 @@ def states_of(t: dict) -> list[str]:
     way through a handful of hand-picked rows.
     """
     return [name for name, is_it in _STATES[:-1] if is_it(t)]
+
+
+def row_response(root: Path, track: str, t: dict) -> dict:
+    """One to-do as a plain, JSON-safe dict — the shape the web viewer serves, built
+    from the SAME predicates (`states_of`, `after_of`, `waiting_on`) the terminal
+    renderer's own `facts()` reads to build its one-line sentence per row. Neither
+    re-derives what counts as blocked, after or waiting on the user; only how that
+    is finally SAID differs — a joined sentence for a terminal, separate fields for
+    a page that renders its own badges and links from them.
+    """
+    return {
+        "n": t["n"],
+        "title": t.get("title", ""),
+        "states": states_of(t),
+        "at": t.get("at", ""),
+        "age": _age(t.get("at", "")),
+        "blocked": t.get("blocked") or "",
+        "after": after_of(t),
+        "waiting_on": waiting_on(root, track, t),
+        "asks": t.get("asks") or "",
+        "answer": t.get("answer") or "",
+        "doc": str(t["doc"]) if t.get("doc") else "",
+    }
+
+
+def rows_response(root: Path, track: str) -> list[dict]:
+    """Every to-do on this environment, as plain dicts, newest first — what
+    `views.todos` serves; `views.todo_detail` starts from `row_response` for one."""
+    rows = [row_response(root, track, t) for t in _all(root, track)]
+    return sorted(rows, key=lambda r: r["n"], reverse=True)
 
 
 def _held(root: Path, track: str, t: dict) -> str:

@@ -22,16 +22,17 @@ import state
 KEY = "work"
 
 
-def _all(root: Path) -> list[dict]:
-    got = state.get(root, KEY, [])
+def _all(root: Path, track: str | None = None) -> list[dict]:
+    """Every work item — the current environment, or a named one."""
+    got = state.tracked(root, KEY, track, []) if track else state.get(root, KEY, [])
     return got if isinstance(got, list) else []
 
 
 AWAIT = "awaiting"
 
 
-def open_work(root: Path) -> list[dict]:
-    return [w for w in _all(root) if not w.get("ended")]
+def open_work(root: Path, track: str | None = None) -> list[dict]:
+    return [w for w in _all(root, track) if not w.get("ended")]
 
 
 def start(root: Path, subject: str, at: str, where: dict | None = None) -> tuple[bool, str]:

@@ -32,6 +32,13 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal open                  work declared and never closed, with its notes",
         "journal next                  what to do now: the details of the last hold, or the next to-do",
     ),
+    "ideas": (
+        'journal ideas add "<the idea>"   one line, global — not a pin (no decision), not a to-do (no brief, no owner)',
+        "journal idea \"<the idea>\"       the same command; `idea` and `ideas` are twins",
+        "journal ideas [--all] [--order=asc|desc]   every idea, numbered, newest first",
+        'journal ideas promote N --title="<to-do title>"   it became real work — filed as a to-do on THIS environment, the idea dropped and says where it went',
+        'journal ideas drop N "<why>"     tried, superseded, or not worth it — bare `journal ideas strike N "<why>"` is the same',
+    ),
     "pins": (
         'journal pins add "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a claim that must survive a compaction',
         'journal pin "<claim>"         the same command; `remember` too. Permanent aliases, never deprecated',
@@ -160,6 +167,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal update [--from=<path or git url>]    pull the latest journal and print what changed",
         "journal settings              every setting, its value, and where it came from",
         "journal loop set              this session has a loop running (the hook could not see it); `journal loop` says whether one is known",
+        "journal serve [--port=<n>] [--open]   a local, read-only web viewer over this journal — 127.0.0.1 only, Ctrl-C to stop",
     ),
 }
 
@@ -172,6 +180,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
 #: RUNS gets an entry here; test_tracks.py holds all five to their refusal.
 ALIAS: dict[str, str] = {
     "start": "work", "end": "work", "open": "work", "next": "work",
+    "idea": "ideas",
     "pin": "pins", "remember": "pins", "promote": "pins", "strike": "pins",
     "nothing": "pins",
     "rule": "rules",
@@ -185,7 +194,7 @@ ALIAS: dict[str, str] = {
     "conversation": "transcript", "user": "transcript", "search": "transcript",
     "carry": "transcript",
     "verify": "system", "version": "system", "update": "system", "settings": "system",
-    "loop": "system",
+    "loop": "system", "serve": "system",
 }
 
 

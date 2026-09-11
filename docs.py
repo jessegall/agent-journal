@@ -202,6 +202,11 @@ def uncatalogued(root: Path) -> list[Path]:
     return out
 
 
+def all_docs(root: Path) -> list[dict]:
+    """The whole catalogue — the public entry point `_load` is read through."""
+    return _load(root)
+
+
 def by_name(root: Path, name: str) -> tuple[dict | None, str]:
     """The doc called `name`: its title, case-insensitive; else the one title containing it."""
     key = " ".join((name or "").split()).lower()
@@ -718,8 +723,19 @@ def set_abstract(root: Path, ref: str, abstract: str) -> tuple[bool, str]:
 
 
 # ------------------------------------------------------------------ what cites a doc
-def cited_by(root: Path, n: int) -> list[str]:
-    """Every pin, rule and to-do that references doc n, on any environment."""
+def cited_by_rows(root: Path, n: int) -> list[dict]:
+    """Every pin, rule and to-do that references doc n, on ANY environment, as
+    structured rows — {kind, env, n, text}, env=None for a rule. `cited_by` below
+    is the text form built from this; a web page turns a row into a link instead
+    (a rule to /rules, a pin to its environment's pins, a to-do to its own page) —
+    the SAME rows, never re-parsed back out of the formatted string.
+
+    EVERY ENVIRONMENT, INCLUDING FOR TO-DOS. The pin scan already walked
+    `tracks._all(root)`; the to-do scan used to check only `tracks.current(root)`,
+    so a to-do citing this doc on any OTHER environment was invisible here despite
+    the docstring's own claim. Walking to-dos the same way the pins loop already
+    does is the fix, not a new behaviour.
+    """
     import todo
     import tracks
     key = str(n)
@@ -727,21 +743,28 @@ def cited_by(root: Path, n: int) -> list[str]:
     def hit(ref: str) -> bool:
         return ref == key or ref.startswith(key + ".")
 
-    hits = []
-
-    def scan(items, label, track=None):
-        for i, p in enumerate(items, 1):
-            if not p.get("struck") and hit(str(p.get("doc") or "")):
-                hits.append(f"{label} {i}" + (f" on environment {track}" if track else "") + f": {p['fact'][:70]}")
-
-    scan(state.get(root, "rules", []) or [], "rule")
-    here = tracks.current(root)
+    hits: list[dict] = []
+    for i, p in enumerate(state.get(root, "rules", []) or [], 1):
+        if not p.get("struck") and hit(str(p.get("doc") or "")):
+            hits.append({"kind": "rule", "env": None, "n": i, "text": p["fact"][:70]})
     for name in tracks._all(root):
-        scan(state.tracked(root, "pins", name, []) or [], "pin", name)
-    for t in todo.open_items(root, here):
-        if hit(str(t.get("doc") or "")):
-            hits.append(f"to-do {t['n']} on environment {here}: {t['title'][:70]}")
+        for i, p in enumerate(state.tracked(root, "pins", name, []) or [], 1):
+            if not p.get("struck") and hit(str(p.get("doc") or "")):
+                hits.append({"kind": "pin", "env": name, "n": i, "text": p["fact"][:70]})
+        for t in todo.open_items(root, name):
+            if hit(str(t.get("doc") or "")):
+                hits.append({"kind": "to-do", "env": name, "n": t["n"], "text": t["title"][:70]})
     return hits
+
+
+def cited_by(root: Path, n: int) -> list[str]:
+    """Every pin, rule and to-do that references doc n, on any environment — the
+    text form; see `cited_by_rows` for the structured rows this is built from."""
+    def label(r: dict) -> str:
+        if r["kind"] == "rule":
+            return f"rule {r['n']}: {r['text']}"
+        return f"{r['kind']} {r['n']} on environment {r['env']}: {r['text']}"
+    return [label(r) for r in cited_by_rows(root, n)]
 
 
 def ref_label(root: Path, ref: str, short: bool = False) -> str:
@@ -773,6 +796,48 @@ def check_ref(root: Path, ref: str) -> str | None:
     if doc is None or (prt is None and "." in ref):
         return err
     return None
+
+
+# ------------------------------------------------------------------ as data
+#: A DOC/PART/ATTACHMENT AS A PLAIN DICT — the shape the web viewer serves. Built
+#: from the same primitives (`scope_text`, `attachments`, `_age`) `catalogue`'s own
+#: `facts()` reads to build its joined line for a terminal; only the final shaping
+#: differs — a sentence there, separate fields here for a page that renders its
+#: own badges and links from them.
+def row(root: Path, d: dict) -> dict:
+    return {
+        "n": d["n"],
+        "title": d.get("title", ""),
+        "abstract": d.get("abstract", ""),
+        "status": d.get("status") or "draft",
+        "scope": scope_text(d),
+        "at": d.get("at", ""),
+        "age": _age(d.get("at", "")),
+        "parts": len(d.get("parts") or []),
+        "attachments": len(attachments(d)),
+        "superseded_by": d.get("superseded_by") or "",
+        "supersedes": d.get("supersedes") or "",
+    }
+
+
+def part_row(p: dict) -> dict:
+    return {
+        "p": p["p"],
+        "title": p.get("title", ""),
+        "body": p.get("body", ""),
+        "at": p.get("at", ""),
+        "age": _age(p.get("at", "")),
+        "source": p.get("source", ""),
+    }
+
+
+def attachment_row(a: dict) -> dict:
+    return {
+        "name": a.get("name", ""),
+        "title": a.get("title", ""),
+        "dir": bool(a.get("dir")),
+        "size": int(a.get("size") or 0),
+    }
 
 
 # ------------------------------------------------------------------ rendering

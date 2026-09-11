@@ -84,6 +84,11 @@ def _all(root: Path) -> list[dict]:
     return out
 
 
+def all_tools(root: Path) -> list[dict]:
+    """The whole catalogue — the public entry point `_all` is read through."""
+    return _all(root)
+
+
 def uncatalogued(root: Path) -> list[Path]:
     d = folder(root)
     if not d.is_dir():

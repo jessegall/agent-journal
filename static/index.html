@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>journal</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --fg: #1c1c1e;
+    --fg-muted: rgba(60,60,67,.6);
+    --border: rgba(127,127,127,.22);
+    --border-soft: rgba(127,127,127,.16);
+    --surface: rgba(127,127,127,.07);
+    --accent: #3d6690;
+    --error: #b3492f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181c;
+      --fg: #e7e7ea;
+      --fg-muted: rgba(235,235,245,.58);
+      --border: rgba(148,148,158,.26);
+      --border-soft: rgba(148,148,158,.18);
+      --surface: rgba(148,148,158,.1);
+      --accent: #85a8cc;
+      --error: #e08267;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 860px; margin: 0 auto; padding: 24px 16px 64px;
+    background: var(--bg); color: var(--fg);
+  }
+
+  /* CALM, ON PURPOSE. Ordinary text/links stay near-black/near-white — weight
+     signals "clickable", not color; the muted accent is spent only on hover
+     and on marking where you are (the current environment, the active nav
+     item), so it still means something when it shows up. */
+  h1, h2, h3 { line-height: 1.25; margin: 1.4em 0 .5em; font-weight: 600; }
+  h1:first-child, h2:first-child, h3:first-child { margin-top: 0; }
+  h1 { font-size: 1.4em; }
+
+  a { color: var(--fg); text-decoration: none; font-weight: 500; }
+  a:hover { color: var(--accent); text-decoration: underline; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  .meta { color: var(--fg-muted); font-size: .88em; font-weight: 400; }
+  .meta a { font-weight: 400; }
+  /* the environment summary line (N to-dos · N pins · ...) is several joined
+     counts, not prose — it should stay one line and shrink before it wraps */
+  .meta-tight { font-size: .78em; white-space: nowrap; }
+
+  /* the secondary-facts disclosure (to-do 15) — a native <details>, no JS */
+  .meta-more { margin-top: .3em; }
+  .meta-more summary { cursor: pointer; color: var(--fg-muted); list-style: none; }
+  .meta-more summary::-webkit-details-marker { display: none; }
+  .meta-more summary::before { content: "▸ "; }
+  .meta-more[open] summary::before { content: "▾ "; }
+  .meta-more div { margin-top: .2em; padding-left: 1em; }
+
+  /* rows: a real grid so the meta column lines up down the page instead of
+     trailing wherever the title/badges happened to end */
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(120px, 34vw, 340px);
+    column-gap: 20px;
+    align-items: start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .row:last-child { border-bottom: none; }
+  /* deliberately NOT flex: badges + link need to wrap together, word by word,
+     like normal text — a flex row wraps whole items, which strands a long
+     title on its own line below the badges */
+  .row-main { min-width: 0; }
+  .row-badges { margin-bottom: .3em; }
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 1fr; row-gap: 4px; }
+  }
+
+  /* TAGS, NOT BUTTONS. Small, muted, uppercase labels — a dashboard's status
+     chip, not a call to action. margin-right spaces a badge from what
+     follows; the sibling rule adds the matching gap BEFORE one only when it
+     follows something that isn't already a badge (badge+badge already have
+     their own margin-right between them — a second left margin would double
+     the gap right where it should stay tight). */
+  .badge {
+    display: inline-block; font-size: .68em; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .04em;
+    padding: .22em .5em; border-radius: 4px;
+    background: var(--surface); color: var(--fg-muted);
+    white-space: nowrap; margin-right: .45em; vertical-align: middle;
+  }
+  *:not(.badge) + .badge { margin-left: .45em; }
+
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: var(--bg);
+    margin: -24px -16px 28px; padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav a { color: var(--fg-muted); text-decoration: none; font-weight: 500; }
+  nav a:hover { color: var(--fg); text-decoration: none; }
+  nav a.active { color: var(--fg); }
+  nav .brand { font-weight: 700; font-size: 1.05em; letter-spacing: -.01em; color: var(--fg) !important; }
+  nav .brand-group { display: flex; align-items: center; gap: .5em; min-width: 0; }
+  nav .nav-links { display: flex; align-items: center; gap: 1.25em; flex: none; }
+
+  /* READS AS TEXT, OPENS AS A SELECT: the browser's native picker is what
+     makes this a dropdown at all — appearance:none only strips the boxed
+     look, a native <select> still opens its option list on click/tap with
+     no extra script. The caret is drawn on the WRAPPER (::after on <select>
+     itself isn't reliable across browsers), so the select just needs room
+     on the right to not sit under it. */
+  .env-jump-wrap { position: relative; display: inline-flex; align-items: center; min-width: 0; }
+  .env-jump-wrap::after {
+    content: ""; position: absolute; right: 7px; top: 50%; width: 5px; height: 5px;
+    border-right: 1.5px solid var(--fg-muted); border-bottom: 1.5px solid var(--fg-muted);
+    transform: translateY(-65%) rotate(45deg); pointer-events: none;
+  }
+  .env-jump {
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    font: inherit; font-size: .95em; font-weight: 500; color: var(--fg-muted);
+    background: transparent; border: none; border-radius: 6px;
+    padding: .3em 1.4em .3em .5em; margin: 0; cursor: pointer;
+    max-width: 40vw; overflow: hidden; text-overflow: ellipsis;
+  }
+  .env-jump:hover, .env-jump:focus-visible { color: var(--fg); background: var(--surface); }
+
+  pre {
+    white-space: pre-wrap; word-wrap: break-word;
+    background: var(--surface); border: 1px solid var(--border-soft);
+    padding: 12px 14px; border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .88em; line-height: 1.5;
+  }
+
+  /* rendered markdown (see renderMarkdown in app.js) — scoped so a doc's own
+     headings read as CONTENT, not as loud as the page's own <h1> */
+  .md :is(h1, h2, h3, h4, h5, h6) { font-size: 1.05em; margin: 1.1em 0 .4em; }
+  .md :is(h1, h2, h3, h4, h5, h6):first-child { margin-top: 0; }
+  .md p { margin: .7em 0; }
+  .md ul, .md ol { margin: .5em 0 .9em; padding-left: 1.4em; }
+  .md li { margin: .25em 0; }
+  .md pre { margin: .8em 0; }
+  .md code { background: var(--surface); border-radius: 4px; padding: .1em .4em;
+             font-size: .88em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .md pre code { background: none; padding: 0; font-size: 1em; }
+
+  /* a labelled block — a to-do's brief, a doc's body — reads as its OWN
+     section, not just more text running down the page */
+  .card {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 0 18px 18px; margin: 1.2em 0; overflow: hidden;
+  }
+  .card-title {
+    margin: 0 -18px .8em; padding: 12px 18px; font-size: .95em;
+    border-bottom: 1px solid var(--border); background: var(--surface);
+  }
+  .card .card-body > :first-child { margin-top: 0; }
+  .card .md :is(h1, h2, h3, h4, h5, h6):first-child { margin-top: 0; }
+
+  /* a doc's attachments, as small cards rather than plain rows — the link
+     to download one should read as the main event of its card, not just
+     another line of text among several */
+  .attachment-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: .8em 0; }
+  .attachment-card {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px;
+    min-width: 180px; max-width: 100%;
+  }
+  .attachment-icon { width: 22px; height: 22px; flex: none; color: var(--fg-muted); }
+  .attachment-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .attachment-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .error { color: var(--error); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
