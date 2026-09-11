@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.59.3 — `journal next` stays honest while disabled
+
+`journal disable` only reaches the hook layer — it cannot see or stop a session's own
+scheduled `/loop` wakeup, so a loop firing `journal next` every few minutes kept running
+its full hold/to-do advisory logic regardless, which can read as actively contradictory
+right after the journal was silenced. `journal next` now checks first and prints one
+line — "hooks are disabled. `journal enable` turns them back on." — instead.
+
 ## 1.59.2 — `journal enable` / `journal disable`, not `enable true|false`
 
 Same kill switch as 1.59.0, split into two plain verbs instead of one taking an
