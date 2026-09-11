@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.58.2 — an answered to-do still waits for the rows it was sequenced after
+
+The user's answer is their word to do a to-do — but a row given `after 1717,1704` waits
+on those landing, and the answer does not close them. The hold said "the user answered
+to-do 1410: start it" while both prerequisites were open. `answered` now skips a row
+whose prerequisites are unmet, as `ready` already did; the answer counts the moment the
+last one lands.
+
 ## 1.58.1 — the suites do not ship to consumers
 
 A pull and a fresh install copied `test_*.py` and `testkit.py` into every consumer's
