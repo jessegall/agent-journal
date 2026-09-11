@@ -178,8 +178,17 @@ def briefing(project: Path, check: bool, conf: dict) -> list[str]:
 
 
 #: What belongs to THIS project and never comes across on a pull.
+#:
+#: "rules" WAS MISSING HERE, AND A PULL DELETED IT. `pins.write_body` puts a rule's
+#: long-form reasoning under `.journal/rules/`, project data exactly like a pin's under
+#: `environments/<name>/pins/` — but pins.py's rule-body folder was never added to this
+#: exclusion list the way docs/tools/environments/todo were. `shutil.copytree(...,
+#: ignore=shutil.ignore_patterns(*DATA, ...))` on a fresh clone (which ships no rule
+#: bodies — they are this project's own decisions, not source) then deletes every rule's
+#: reasoning that existed before the pull. Caught by running `journal upgrade` against
+#: this very project and watching three rules lose their reasoning in the same second.
 DATA = ("record.json", "record.json.lock", "settings.json", "state.json", "state.json.retired",
-        "runtime", "todo", "environments", "docs", "tools", ".journal",
+        "runtime", "todo", "environments", "docs", "tools", "rules", ".journal",
         "__pycache__")
 
 

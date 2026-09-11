@@ -26,20 +26,24 @@ Every request is one of three things, and deciding which comes before anything e
 
 1. **It is the current work**, a step of it, or a correction to it. Carry on. If the
    direction changes, `journal work update "<what changed>"` says so.
-2. **It is different, and it can wait.** Park it and keep going:
-   `journal todos add "<title>" --brief` with the brief on stdin, then say in your reply that it
-   is parked as to-do n. This is the usual case when something is open and the request is
-   about something else.
-3. **It is different, and it cannot wait.** The user said so ("now", "first", "stop"), or
-   it blocks the open work, or it makes the open work wrong. `update` the open work with
-   where it got to, `work end` it if it is being abandoned, then `work start` the new one.
+2. **It is different. This is a to-do — the default, and it needs no justification.**
+   `journal todos add "<title>" --brief` with the brief on stdin, then say in your reply
+   that it is parked as to-do n, and carry on with what is open. **Do not `work end` to
+   make room**: ending work is not finishing a row, and the row you are on stays yours.
+3. **It is different and the user said to do it NOW.** That is the exception and it is
+   THEIR word, not your judgement — "now", "first", "stop", "instead", "actually" — or it
+   blocks the open work, or it makes the open work wrong. `update` the open work with where
+   it got to, then `work start` the new one. If you are genuinely abandoning the old work,
+   `work end` it — and know that the to-do of that title STAYS OPEN unless you pass
+   `--todo`, because abandoning work is not finishing a row.
 
 With nothing open, the request *is* the work: read until you can name it, `work start` it, go.
 
-"Can wait" means finishing the open work first loses nothing: the request does not depend
-on it, does not invalidate it, and was not asked for first. The words settle most cases.
-"Later", "after this", "also", "by the way", "when you get to it" mean it can wait.
-"Wait", "actually", "instead", "first" mean it cannot.
+**THE DEFAULT IS 2, AND THE BURDEN IS ON 3.** The question is not "can this wait?" — that
+puts the call on you, and you will get it wrong in the user's favour every time, because
+answering feels helpful. The question is "did they tell me to do it now?" If the sentence
+does not say so, it is a to-do. "Later", "after this", "also", "by the way", "when you get
+to it" are not needed to make it one; they only confirm what was already true.
 
 **"I'll do it after this" is a to-do, every time**, even when "after this" is five
 minutes away. The sentence you are about to write — "once the agent finishes", "next",
@@ -92,6 +96,7 @@ user interrupts you, nothing in that turn is judged.
     journal work update "<what moved>" [--on="<work>"]
     journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>] [--on="<work>"]
     journal work end "<the same words>"
+    journal work end "<the same words>" --todo   and close the to-do of that title; without it the row stays open, because ending work is not finishing a row
     journal work end --force ["<note>"]      close work whose declarer is GONE: a deleted worktree, a crashed session — its subject is unguessable, so the note replaces the match
 
 Declare before the first write, never before the first read: edits, `rm`, `git commit`
@@ -174,9 +179,11 @@ never hold a component as a State field" binds every line of work; write it as a
 `promote` a pin that turns out to. Switching environments never moves a rule.
 
 **A pin is a claim, and its reasoning goes underneath it.** There is a length cap on the
-claim and no count cap, because the claim is re-read in full at every session start, every
-compaction and by every subagent. The argument is not cut, it is MOVED: `--brief` on the
-same command takes it on stdin, uncapped, and it is never injected anywhere.
+claim, because the claim is what is re-read at every session start, every compaction and by
+every subagent — shortened there to a line, with `journal pins` beside it reading every one
+in full. So write the claim to survive being cut to its first line: put what it rules FIRST
+and the qualification after. The argument is not cut, it is MOVED: `--brief` on the same
+command takes it on stdin, uncapped, and it is never injected anywhere.
 
     journal rules add "<the ruling>" --brief        the reasoning on stdin
     journal rules show <n>                          the claim and its reasoning
@@ -266,6 +273,24 @@ without asking. The reason is required and the text stays under `--all`, so bein
 costs one line to undo. Nothing here ever expires on its own: a reminder the user wrote
 and nobody retired is one they are still owed.
 
+## Dispatching a subagent
+
+**Name the model, every time.** It is the one rule this package ships to every project
+(`journal rules`, B1): `haiku` for mechanical work with a known answer, `sonnet` for care
+without invention, `opus` only where the task turns on judgement. Unset hands out the
+orchestrator's own, which is the most expensive model in the room. The user naming a model
+is not an exception to this — it is the rule being followed; what it forbids is dispatching
+without deciding.
+
+**A dispatched agent works YOUR environment, and a worktree does not change that.** A
+worktree is orthogonal to the journal: it is not an environment, does not hold one, and
+never decides one. Whoever enters one keeps the environment they were on. What a subagent
+gets from a worktree is its FILES; what it gets from the grant is its LEDGER. Those two are
+easy to conflate and they are unrelated.
+
+**Most subagents need no grant at all.** They report what they found and this conversation
+files it — that is the normal case, and the section below is for the exception.
+
 ## A subagent that must write: lend it an environment
 
     journal grant "<environment>"        lend it to this session's subagents
@@ -285,10 +310,17 @@ it carries the flag the whole mechanism turns on.
 **Granting does not move you.** You stay where you are; the subagent writes somewhere else;
 you read what it wrote with `journal environments "<name>"` when it reports.
 
-**Some verbs stay refused however you grant**, for two different reasons. `switch`, `claim`,
-`prepare`, `grant` and the `environments` spellings of them move a SESSION, and the session
-a subagent would move is *yours* — it is running under your id. `rules` binds every
-environment, and it was lent one. A subagent that needs either reports and lets you do it.
+**Some verbs stay refused however you grant**, for four different reasons, and a subagent
+that needs any of them reports and lets you do it:
+
+| refused | why |
+|---|---|
+| `switch` `claim` `prepare` `grant` `grants` `environments` (and `environment`, `env`, `envs`, `track`, `tracks`) | they move a SESSION, and the session a subagent would move is *yours* — it runs under your id |
+| `rules` `rule` | a rule binds every environment, and it was lent one |
+| `docs` `tools` | they belong to the project, not to the environment it was lent |
+| `pins` `pin` `reminders` `reminder` | inherited, never written: re-read by every session that binds here, so a claim whose reasoning nobody saw would stand in the record's highest-authority position forever |
+
+Reads are never refused — `--env="<name>" pins` shows it what it inherits.
 
 **A subagent gets its own ledger, and is told its own name.** It cannot know it — nothing
 in its process carries an agent id — so on its first tool call the hook creates
@@ -320,7 +352,9 @@ doing real work over a long stretch, where losing the record at the end is the l
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)
     journal todos                      the titles
     journal todos show <n>             the brief (also: `journal todo <n>`)
-    journal todos start <n>             open work under that title; `work end` closes both
+    journal todos start <n>             open work under that title; the row stays open until you close it
+    journal todos done <n> "<how>"      the row is finished — always explicit, never a side effect
+    journal work end "<title>" --todo   closes the work AND the row, in one command
     journal todos done <n> "<how>"      resolved without starting it
     journal todos reopen <n> "<why>"    undo a close, on the record
     journal todos move <n> "<env>"      carry it to another environment
@@ -364,11 +398,12 @@ the loop command, and the next write is REFUSED until a loop exists. `journal lo
 see; `journal todos auto off` says the list should not drain on its own.
 
 **A to-do is not permission, unless the user has switched it on.** With `auto` off, the
-default, the start block lists what is waiting and an idle stop says so once; neither is
-an instruction to begin one. Start a to-do only when the user says so for that one, or
+default, the start block COUNTS what is waiting — `journal todos` is what lists it — and an
+idle stop says so once; neither is an instruction to begin one. Start a to-do only when the user says so for that one, or
 asks you to work through them, in which case offer `journal todos auto on`. With auto on
 for the environment, the user has already said it: whenever nothing is open, pick up the next
-one with `todo start <n>`, do it, `work end` it, and the next idle stop brings the next. Auto
+one with `todo start <n>`, do it, `work end "<title>" --todo` it — the row does not close on
+its own — and the next idle stop brings the next. Auto
 also means a loop: start one with the `loop` skill, `15m journal next`, so an idle session
 comes back every fifteen minutes and carries on until nothing is left it can do, and stop
 it when the list is empty or everything left waits on the user.
@@ -393,7 +428,7 @@ reason to ask; it is the case auto exists for.
 In either case:
 
     journal work update "<where it got to, and what was tried>"     if you had started it
-    journal work end "<the to-do's title>"                          so nothing stays open
+    journal work end "<the to-do's title>" --todo                   so nothing stays open
     journal todos ask <n> "<what is stuck, and what was tried>"
 
 Say that in your reply, naming the to-do, and stop. The next hold names the next to-do
@@ -401,6 +436,11 @@ that is not waiting on the user. The user answers from their terminal with `jour
 answer <n> "…"`; the next stop tells you which question was answered and what the answer
 was, and hands you that to-do first. With auto off, an answer is the user's word to do
 that one: start it.
+
+**And ask THAT way only.** With auto on, the `AskUserQuestion` tool is refused at the
+gate: it halts the session until the user is back, which is the one thing auto was
+switched on to prevent. `todos ask` is the question that does not halt — the list moves
+on to the next row and the answer is waiting at a later stop.
 
 **Work that waits on the user is not open work.** When what is left of a piece of work
 is a ruling or a review only the user can give, park that remainder as a to-do with the
@@ -482,8 +522,10 @@ catalogues it: every session is handed the catalogue, one line per doc, so nobod
 re-investigates what a doc settles.
 
 **Write a doc at the moment something is ruled**, with the ruling as its first line, and
-give it an abstract that says what it settles, because the abstract is all a later
-session sees until it opens the doc. A subagent's report goes in as a part of the doc it
+give it a TITLE that says what it settles, because the title is all a later session sees
+until it opens the doc — the injected block carries titles only, and the abstract waits in
+`journal carry` and `journal docs`. A title that needs its abstract to make sense is a
+title nobody will follow. A subagent's report goes in as a part of the doc it
 belongs to, filed by you, which is the moment to judge whether it is worth keeping.
 Everything else that is long — a survey, the numbers behind a decision — is a part too.
 One doc, many parts; a part is what you replace or strike when it stops being true.
@@ -524,9 +566,9 @@ but if it is a design or a report, file it as a doc so it is handed on and found
 A script you wrote for a job that will come again — move a class with every reference,
 list uncovered methods, run a fixer on one directory — is a tool. Put it under
 `.journal/tools/<name>/`, or leave it where it is and point `--entry` at it, and
-catalogue it with its summary and usage. Every session is handed the catalogue, so the
-next agent runs yours instead of writing it again. Before writing a script, read the
-catalogue. Running a tool is a write: declare the work first.
+catalogue it with its summary and usage. Every session is handed the COUNT of them beside
+`journal tools`, which is the catalogue, so the next agent runs yours instead of writing it
+again. Before writing a script, read the catalogue. Running a tool is a write: declare the work first.
 
 ## Look before you answer
 
