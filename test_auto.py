@@ -454,6 +454,15 @@ check("and `journal carry` still leads with it in full",
        "pick those up first" in s.journal("carry")[1]), (True, True))
 s.journal("todo", "start", "1")
 check("started: the answer stays on the record", todo._get(d / ".journal", "default", 1)[0].get("answer"), "None — it matches Option::none")
+# a re-asked row is asking again, not answered: the old answer goes with the old question
+d2 = project(); s2 = Session(d2, "s2")
+s2.journal("todo", "colour"); s2.journal("todo", "ask", "1", "red or blue?"); s2.journal("todo", "answer", "1", "red")
+s2.journal("todo", "ask", "1", "which red?")
+t = todo._get(d2 / ".journal", "default", 1)[0]
+check("ask again clears the answer and carries the new question", (t.get("answer"), t.get("asks")), ("", "which red?"))
+check("so it is not listed as answered", todo.answered(d2 / ".journal", "default"), [])
+code, out = s2.journal("todo", "1")
+check("and show prints the question without the old answer", ("which red?" in out, "red or blue?" in out, "→ red" in out), (True, False, False))
 label, text = s.stop()
 check("it is open work now", label, AUTO_OPEN)
 s.journal("end", "needs a ruling", "--todo")

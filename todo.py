@@ -432,7 +432,10 @@ def ask(root: Path, track: str, n: int, question: str) -> tuple[bool, str]:
         return False, err
     if t.get("done"):
         return False, f"to-do {n} is already done ({t.get('how')})"
-    _update(root, track, n, asks=question, started="")
+    # A NEW QUESTION RETIRES THE OLD ANSWER. Left standing, a re-asked row read as
+    # answered: the hold announced a reply nobody had given and `show` printed the new
+    # question above the old answer. Found in workflows on 1.58.0.
+    _update(root, track, n, asks=question, started="", answer="")
     return True, f"to-do {n} waits on the user: {question}"
 
 
