@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.58.1 — the suites do not ship to consumers
+
+A pull and a fresh install copied `test_*.py` and `testkit.py` into every consumer's
+`.journal/`. They are tested where the package is developed; in a consumer they are a red
+suite an agent finds and starts fixing — the tool, instead of its own work.
+
+`install --from` and `journal upgrade` now leave them out, and remove the ones an earlier
+pull left behind, saying so by name. `install.sh` skips them on a fresh clone. The
+development checkout — the one that is a git repository — keeps its suites.
+
 ## 1.58.0 — with auto on, a question to the user is refused
 
 Auto says the list drains while the user is away. `AskUserQuestion` halts the session

@@ -183,14 +183,25 @@ DATA = ("record.json", "record.json.lock", "settings.json", "state.json", "state
         "__pycache__")
 
 
+#: THE SUITES ARE NOT THE PACKAGE. They are tested where the package is developed, before it
+#: is published; what a consumer gets is a copy of the code. Shipping them anyway put a
+#: red suite in front of an agent in a consumer project, and it started fixing the tool
+#: instead of doing its own work — a job it was never given. So a pull leaves them out,
+#: and removes the ones an earlier pull left behind.
+def _is_test(rel: Path) -> bool:
+    return len(rel.parts) == 1 and (rel.name == "testkit.py" or (rel.name.startswith("test_") and rel.suffix == ".py"))
+
+
 def _package_files(root: Path) -> list[Path]:
-    """Every file of the package under `root`, relative — code, tests, skill, gitignore."""
+    """Every file of the package under `root`, relative — code, skill, gitignore; never the suites."""
     out = []
     for f in root.rglob("*"):
         rel = f.relative_to(root)
         # a clone's .git is not the package: copying it once put a nested repository
         # into a consumer's .journal
         if not f.is_file() or rel.parts[0] in DATA or rel.parts[0] == ".git" or f.suffix in (".tmp", ".pyc"):
+            continue
+        if _is_test(rel):
             continue
         out.append(rel)
     return sorted(out)
@@ -244,7 +255,15 @@ def pull(src: Path, check: bool) -> list[str]:
         if not check:
             (ROOT / rel).unlink()
         out.append(f"  - {rel} (no longer in the package)")
-    if not changed and not gone:
+    # SUITES AN EARLIER PULL LEFT HERE GO TOO — but only in a consumer. The development
+    # checkout is the one place the suites belong, and it is the one that is a git
+    # repository; a consumer's .journal never is, because install.sh strips the clone's .git.
+    stale = [] if (ROOT / ".git").exists() else sorted(f.relative_to(ROOT) for f in ROOT.glob("*.py") if _is_test(f.relative_to(ROOT)))
+    for rel in stale:
+        if not check:
+            (ROOT / rel).unlink()
+        out.append(f"  - {rel} (the suites do not ship; they run where the package is developed)")
+    if not changed and not gone and not stale:
         out.append("  = already at the source's version")
     shutil.rmtree(stage.parent, ignore_errors=True)
     return out
