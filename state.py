@@ -38,7 +38,7 @@ RETIRED = "state.json"
 
 IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto",
              "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read",
-             "cleanup_kept",
+             "cleanup_kept", "ideas",
              "agent_seen", "schema"}
 
 
@@ -245,6 +245,19 @@ def _rename_todo_folder(root: Path, old: str, new: str) -> None:
 
 def _track_name(root: Path, data: dict) -> str:
     return _TRACK[0] if _TRACK else (data.get("current") or "default")
+
+
+def current_track(root: Path) -> str:
+    """The environment this process reads and writes TRACKED keys under, right now.
+
+    NOT THE RECORD'S `current`. That is the PROJECT's start environment, and a session
+    bound to a different one (`use_track`, set from its own binding at every CLI
+    invocation — see `journal.py`) reads and writes its own, not the project's. Anything
+    that decides where a TRACKED key's data belongs — `get`/`put` already do, through
+    `_track_name` — must resolve it the same way, or it silently writes into the wrong
+    environment's folder while the entry itself lands in the right one.
+    """
+    return _track_name(root, _record(root))
 
 
 def get(root: Path, key: str, default=None, *, stem: str | None = None):

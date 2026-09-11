@@ -199,9 +199,14 @@ check("with the condition it is judged against", "the release is cut" in carry, 
 # says nothing about any of that, and the first version of this refactor left the old copy
 # in the file while the changelog said it was gone.
 import inspect as _i, reminders as _r, pins as _p, state as _s
+# to-do 11 (2026-09-11): `render` now goes through `rows_response` — the same response
+# the web viewer serves as JSON — rather than `listing` directly; the chain still ends
+# at `entries.rows` and still never rebuilds a row's text by hand.
 check("reminders has no second copy of the listing",
-      ("entries.rows" in _i.getsource(_r.listing), "listing(" in _i.getsource(_r.render),
-       "fmt.numbered" in _i.getsource(_r.render)), (True, True, False))
+      ("entries.rows" in _i.getsource(_r.listing),
+       "rows_response(" in _i.getsource(_r.render),
+       "listing(" in _i.getsource(_r.rows_response),
+       "fmt.numbered" in _i.getsource(_r.render)), (True, True, True, False))
 check("and neither does pins", "entries.rows" in _i.getsource(_p.listing), True)
 check("a reminder is bound to its environment, like a pin, and a rule is not",
       (sorted(_s.TRACKED), "rules" in _s.TRACKED, "rules" in _s.IN_RECORD),

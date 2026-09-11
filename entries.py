@@ -46,13 +46,23 @@ class Store(NamedTuple):
         return self.key
 
 
-def all_of(root: Path, store: Store) -> list[dict]:
-    got = state.get(root, store.key, [])
+def all_of(root: Path, store: Store, *, track: str | None = None) -> list[dict]:
+    """Every entry in the store — the CURRENT environment, or a named one.
+
+    `track` reads a store OTHER than the one this process is on, through
+    `state.tracked`, for a store that is actually per-environment (`state.TRACKED`).
+    Rules are not: they bind every environment, so a track naming one is ignored and
+    this falls back to the plain project-wide read.
+    """
+    if track and store.key in state.TRACKED:
+        got = state.tracked(root, store.key, track, [])
+    else:
+        got = state.get(root, store.key, [])
     return got if isinstance(got, list) else []
 
 
-def live(root: Path, store: Store) -> list[dict]:
-    return [e for e in all_of(root, store) if not e.get(store.retired)]
+def live(root: Path, store: Store, *, track: str | None = None) -> list[dict]:
+    return [e for e in all_of(root, store, track=track) if not e.get(store.retired)]
 
 
 def listing(items: list, item_of, *, cap: int | None = None, page: int = 1,
@@ -78,7 +88,7 @@ def listing(items: list, item_of, *, cap: int | None = None, page: int = 1,
 
 
 def rows(root: Path, store: Store, *, all_of_them: bool = False, cap: int | None = None,
-         page: int = 1, order: str = "desc") -> tuple[list, int]:
+         page: int = 1, order: str = "desc", track: str | None = None) -> tuple[list, int]:
     """(the entries as rows, how many were left off). The listing every numbered store shares.
 
     ONE LOOP, THREE NOUNS, AND NOTHING ABOUT WHAT EACH IS VISIBLE TO. A pin and a
@@ -93,9 +103,11 @@ def rows(root: Path, store: Store, *, all_of_them: bool = False, cap: int | None
     THE NUMBER IS THE POSITION IN THE FULL LIST, always — a retired entry keeps its number
     and is simply not shown. Renumbering the standing ones would make "pin 3" in an old
     transcript name a different fact.
+
+    `track` reads another environment's store instead of the current one — see `all_of`.
     """
     import fmt
-    items = all_of(root, store)
+    items = all_of(root, store, track=track)
     kept = [(i, e) for i, e in enumerate(items, 1)
             if all_of_them or not e.get(store.retired)]
     facts = store.facts or (lambda e, n: [])

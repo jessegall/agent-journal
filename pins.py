@@ -113,13 +113,17 @@ def age(at: str, now: datetime | None = None) -> str:
     return f"{int(secs // 86400)}d ago"
 
 
-def _all(root: Path, key: str = KEY) -> list[dict]:
-    got = state.get(root, key, [])
+def _all(root: Path, key: str = KEY, track: str | None = None) -> list[dict]:
+    """Every entry — the current environment, or a named one (rules ignore `track`)."""
+    if track and key in state.TRACKED:
+        got = state.tracked(root, key, track, [])
+    else:
+        got = state.get(root, key, [])
     return got if isinstance(got, list) else []
 
 
-def live(root: Path, key: str = KEY) -> list[dict]:
-    return [p for p in _all(root, key) if not p.get("struck")]
+def live(root: Path, key: str = KEY, track: str | None = None) -> list[dict]:
+    return [p for p in _all(root, key, track) if not p.get("struck")]
 
 
 def add(root: Path, fact: str, at: str, limit: int, supersedes: int | None = None,
@@ -189,11 +193,22 @@ def add(root: Path, fact: str, at: str, limit: int, supersedes: int | None = Non
 STRUCK = "struck"
 
 
-def body_dir(root: Path, key: str = KEY) -> Path:
-    """Where the long forms live: beside the rules, or inside the environment for pins."""
+def body_dir(root: Path, key: str = KEY, track: str | None = None) -> Path:
+    """Where the long forms live: beside the rules, or inside the environment for pins.
+
+    THE ENVIRONMENT THIS PROCESS IS ON, NOT THE PROJECT'S — by default. `state.
+    current_track` is the same resolution `_all`/`add` already go through for the pin
+    ENTRY itself; reading the record's `current` directly — the project's start
+    environment — put the entry on one environment and its body file under another's
+    folder the moment a session was bound to any other one.
+
+    `track` overrides that default for a caller reading a NAMED environment rather
+    than whichever one this process happens to be on — the web viewer, which answers
+    for any environment in one request, never just its own.
+    """
     if key == RULES:
         return root / "rules"
-    return state.env_dir(root, state.get(root, "current", "default") or "default") / "pins"
+    return state.env_dir(root, track or state.current_track(root)) / "pins"
 
 
 def _slug(text: str, limit: int = 40) -> str:
@@ -206,15 +221,16 @@ def body_path(root: Path, n: int, fact: str, key: str = KEY) -> Path:
     return body_dir(root, key) / f"{n:03d}-{_slug(fact)}.md"
 
 
-def body(root: Path, n: int, key: str = KEY) -> str:
-    """The long form of claim n, or "" when it has none."""
-    items = _all(root, key)
+def body(root: Path, n: int, key: str = KEY, track: str | None = None) -> str:
+    """The long form of claim n, or "" when it has none. `track` reads a NAMED
+    environment's pins instead of this process's own — see `body_dir`."""
+    items = _all(root, key, track)
     if n < 1 or n > len(items):
         return ""
     name = items[n - 1].get("body")
     if not name:
         return ""
-    f = body_dir(root, key) / name
+    f = body_dir(root, key, track) / name
     return f.read_text() if f.is_file() else ""
 
 
@@ -347,33 +363,51 @@ def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[boo
 
 
 def listing(root: Path, *, all_of_them: bool = False, key: str = KEY,
-            cap: int | None = None, page: int = 1, order: str = fmt.DESC):
+            cap: int | None = None, page: int = 1, order: str = fmt.DESC,
+            track: str | None = None):
     """(the rows, how many were left off). What a page is BUILT from — see `entries.rows`.
 
     A page that is handed rendered TEXT can only print it; one handed rows can put them
     under a heading, beside a footer, inside a section. The catalogue pages take these, and
     `render` below is for the two callers that genuinely want a finished string.
+
+    `track` reads another environment's pins instead of the current one (ignored for
+    rules, which bind every environment) — see `entries.all_of`.
     """
     import entries
     return entries.rows(root, _store(key, root), all_of_them=all_of_them, cap=cap,
-                        page=page, order=order)
+                        page=page, order=order, track=track)
+
+
+def rows_response(root: Path, *, all_of_them: bool = False, key: str = KEY,
+                  cap: int | None = None, page: int = 1, order: str = fmt.DESC,
+                  track: str | None = None) -> tuple[list[dict], int]:
+    """(the rows as plain, JSON-safe dicts, how many were left off) — the ONE place a
+    pin or rule becomes DATA instead of an `fmt.Item`. `render` below turns this same
+    response into terminal text; the web viewer's `views.pins_on`/`rules` turn it into
+    the API's JSON, unchanged apart from a web-only display choice (dropping the
+    transcript line, which means nothing outside a terminal — see `views._drop_line_
+    segment`). Neither caller re-derives a row from `listing`/`entries.rows` itself."""
+    items, left = listing(root, all_of_them=all_of_them, key=key, cap=cap, page=page,
+                          order=order, track=track)
+    return [{"n": it.n, "fact": it.text, "meta": it.meta, "struck": it.struck} for it in items], left
 
 
 def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int | None = None,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
-    """The list as a person reads it. The loop is `entries.rows`, used by every numbered
-    store; only what goes BENEATH an entry is this module's.
+    """The list as a person reads it — built on `rows_response`, the same response the
+    web viewer serves as JSON; only what goes BENEATH an entry is this module's, and
+    only turning the response into fmt.Item/text is what this function still does.
 
     NOTHING HERE IS ABOUT SCOPE. A pin belongs to ONE environment and a rule to the whole
     project — `state.TRACKED` puts pins in the environment's folder and `rules` stays in the
     record, and `tracks.switch` moves the one and never the other. Using the same renderer
     changes neither, and the word "shared" belongs to that distinction, not to this one."""
     width = fmt.room(width)
-    import entries
     if not _all(root, key):
         return "  No rules stand." if key == RULES else "  Nothing is pinned."
-    items, left = entries.rows(root, _store(key, root), all_of_them=all_of_them,
-                               cap=cap, page=page, order=order)
+    rows, left = rows_response(root, all_of_them=all_of_them, key=key, cap=cap, page=page, order=order)
+    items = [fmt.Item(n=r["n"], text=r["fact"], meta=r["meta"], struck=r["struck"]) for r in rows]
     return fmt.render(fmt.Out(items=tuple(items))) + fmt.more(key, left, page, order)
 
 

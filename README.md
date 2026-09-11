@@ -288,6 +288,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal --env=<name> <command>       any command on a named environment, without switching
     journal loop set                     this session has a loop running the hook cannot see (agent)
     journal settings                     every setting and where it came from
+    journal serve [--port=<n>] [--open]  a local, read-only web viewer over this journal
     journal version                      the installed version; is a newer one out?
     journal update                       pull the latest journal and print what changed
     journal cleanup                      what in the record has evidence against it; `cleanup read` is the half no check can do

@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.59.0 — `journal serve`: a browser over the journal
+
+`journal serve [--port=<n>] [--open]` starts a local, read-only web viewer — every
+environment's to-dos, pins, open work and reminders, plus the project's docs and rules,
+browsable instead of typed. Stdlib only (`http.server`, bound to 127.0.0.1): the server
+answers a thin JSON API (`serve.py`, built on a new `views.py` read layer), and a small
+Vue 3 app (loaded from a CDN, no build step) renders it in the browser. Read-only in this
+release — writing from the browser needs an attribution story the CLI already has and a
+web click does not, and stays a later decision.
+
 ## 1.58.3 — asking a to-do again retires the old answer
 
 `todos ask` set the question and cleared `started`, but left the previous `answer`

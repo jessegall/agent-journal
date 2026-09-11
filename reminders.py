@@ -73,13 +73,14 @@ _STORE = entries.Store(key=KEY, noun="reminder", text="text", retired="done",
                        verb="retired", facts=_facts)
 
 
-def _all(root: Path) -> list[dict]:
-    got = state.get(root, KEY, [])
+def _all(root: Path, track: str | None = None) -> list[dict]:
+    """Every reminder — the current environment, or a named one."""
+    got = state.tracked(root, KEY, track, []) if track else state.get(root, KEY, [])
     return got if isinstance(got, list) else []
 
 
-def live(root: Path) -> list[dict]:
-    return [r for r in _all(root) if not r.get("done")]
+def live(root: Path, track: str | None = None) -> list[dict]:
+    return [r for r in _all(root, track) if not r.get("done")]
 
 
 def add(root: Path, text: str, at: str, limit: int, until: str = "") -> tuple[bool, str]:
@@ -187,15 +188,26 @@ def block(root: Path) -> str:
 
 
 def listing(root: Path, *, all_of_them: bool = False, cap: int | None = None,
-            page: int = 1, order: str = fmt.DESC):
+            page: int = 1, order: str = fmt.DESC, track: str | None = None):
     """(the rows, how many were left off). The same LOOP as `pins.listing`, which is a
     fact about the code: a reminder belongs to one environment, exactly like a pin."""
-    return entries.rows(root, _STORE, all_of_them=all_of_them, cap=cap, page=page, order=order)
+    return entries.rows(root, _STORE, all_of_them=all_of_them, cap=cap, page=page,
+                        order=order, track=track)
+
+
+def rows_response(root: Path, *, all_of_them: bool = False, cap: int | None = None,
+                  page: int = 1, order: str = fmt.DESC, track: str | None = None) -> tuple[list[dict], int]:
+    """(the rows as plain, JSON-safe dicts, how many were left off) — the ONE place a
+    reminder becomes DATA. `render` turns this same response into terminal text;
+    `views.reminders_on` serves it as JSON, unchanged."""
+    items, left = listing(root, all_of_them=all_of_them, cap=cap, page=page, order=order, track=track)
+    return [{"n": it.n, "text": it.text, "meta": it.meta, "struck": it.struck} for it in items], left
 
 
 def render(root: Path, *, all_of_them: bool = False, width: int | None = None,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
-    """The list as text, for the callers that want a finished string rather than rows.
+    """The list as text, built on `rows_response` — the same response the web viewer
+    serves as JSON; only turning it into fmt.Item/text is left here.
 
     THE LOOP IS `entries.rows`, NOT A SECOND COPY OF IT. That is a statement about CODE and
     about nothing else: a reminder is bound to its environment exactly as a pin is, and
@@ -207,7 +219,8 @@ def render(root: Path, *, all_of_them: bool = False, width: int | None = None,
     width = fmt.room(width)
     if not _all(root):
         return "  Nothing is being repeated."
-    items, left = listing(root, all_of_them=all_of_them, cap=cap, page=page, order=order)
-    if not items:
+    rows, left = rows_response(root, all_of_them=all_of_them, cap=cap, page=page, order=order)
+    if not rows:
         return "  Nothing is being repeated. `journal reminders --all` shows the retired ones."
+    items = [fmt.Item(n=r["n"], text=r["text"], meta=r["meta"], struck=r["struck"]) for r in rows]
     return fmt.render(fmt.Out(items=tuple(items))) + fmt.more(KEY, left, page, order)
