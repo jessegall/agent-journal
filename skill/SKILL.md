@@ -437,6 +437,11 @@ answer <n> "…"`; the next stop tells you which question was answered and what 
 was, and hands you that to-do first. With auto off, an answer is the user's word to do
 that one: start it.
 
+**And ask THAT way only.** With auto on, the `AskUserQuestion` tool is refused at the
+gate: it halts the session until the user is back, which is the one thing auto was
+switched on to prevent. `todos ask` is the question that does not halt — the list moves
+on to the next row and the answer is waiting at a later stop.
+
 **Work that waits on the user is not open work.** When what is left of a piece of work
 is a ruling or a review only the user can give, park that remainder as a to-do with the
 questions in its brief, and `work end` the work. Otherwise the journal sees work in flight,

@@ -1406,6 +1406,22 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
             "Nothing is the right answer more often than not — say so and carry on. "
             "`journal search`, `journal conversation --back=1` and `journal pins` still run, to decide with."
         )
+    # WITH AUTO ON, A QUESTION TO THE USER IS THE ONE MOVE THAT STOPS THE LIST. The user
+    # switched auto on to be away; AskUserQuestion halts the session until they are back,
+    # which is exactly what auto was turned on to prevent. The skill says to decide and
+    # file the choice, or `todos ask` so the list moves on to the next row — so those are
+    # the two ways out, and this is a denial rather than a hold because a hold arrives
+    # after the question is already on screen.
+    if payload.get("tool_name") == "AskUserQuestion" and todo.auto(ROOT, tracks.current(ROOT, ctx.stem)):
+        return _deny(
+            "AUTO IS ON, so a question to the user is refused: it would halt the session "
+            "until they return, which auto exists to prevent. Decide it yourself and file "
+            "the choice, or put the question on the to-do and move on:\n"
+            '  .journal/journal.py work update "<what you chose, and why>"\n'
+            '  .journal/journal.py todos ask <n> "<what is stuck, and what was tried>"\n'
+            "The user answers with `journal todos answer <n>` and the next stop hands that "
+            "to-do back first."
+        )
     # A WAIT ENDS WHEN THE WORK STARTS AGAIN, without being told. The user's ruling. `await`
     # buys silence, and that silence is right while the agent is blocked and wrong the
     # instant it is not — and the agent that has picked the work back up is the last thing

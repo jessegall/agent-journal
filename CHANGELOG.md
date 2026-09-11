@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.58.0 — with auto on, a question to the user is refused
+
+Auto says the list drains while the user is away. `AskUserQuestion` halts the session
+until they are back — which the skill already said not to do, and a skill is advice read
+once. Measured: the agent asked, the list sat there.
+
+Now the PreToolUse gate refuses `AskUserQuestion` while `todos auto` is on for the
+session's environment, naming the two ways out: decide it and file the choice with `work
+update`, or `todos ask <n>` so the row waits on the user and the list moves on. Reads,
+the journal's own CLI, and every other tool are untouched; with auto off nothing changes.
+
 ## 1.52.0 — the docs 1.44.0 silently scoped, and a finding that can be done with
 
 TWO OPEN QUESTIONS, ANSWERED. Both were parked for the user and both were handed back with
