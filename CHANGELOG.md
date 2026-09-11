@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.58.3 — asking a to-do again retires the old answer
+
+`todos ask` set the question and cleared `started`, but left the previous `answer`
+standing — so a re-asked row read as answered: the hold announced a reply nobody had
+given and `show` printed the new question above the old answer. A new question now
+clears the answer; the exchange stays in the row's history.
+
 ## 1.58.2 — an answered to-do still waits for the rows it was sequenced after
 
 The user's answer is their word to do a to-do — but a row given `after 1717,1704` waits
