@@ -14,7 +14,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import todo, transcript  # noqa: E402
+import testkit, todo, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -30,9 +30,7 @@ def check(label, got, want):
 
 d = Path(tempfile.mkdtemp()) / "proj"
 (d / ".claude").mkdir(parents=True)
-shutil.copytree(SRC, d / ".journal", ignore=shutil.ignore_patterns(
-    "runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal",
-    ".git", ".claude", "__pycache__"))
+testkit.make(d, SRC)
 (d / ".journal" / "settings.json").write_text("{}")
 tdir = transcript.project_dir(d); tdir.mkdir(parents=True, exist_ok=True)
 pd = tdir / "s1.jsonl"; pd.write_text("")

@@ -140,9 +140,7 @@ def project_with(lines: int, stem: str = "s1", tagged: bool = False):
     """A throwaway project whose transcript dir the hook will resolve from its own path."""
     d = Path(tempfile.mkdtemp()) / "proj"
     (d / ".claude").mkdir(parents=True)
-    shutil.copytree(SRC, d / ".journal",
-                    ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
-                                                  "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+    testkit.make(d, SRC)
     # this suite is not about the loop subject or the one-session-per-environment rule
     (d / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True, "silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True}))
     tdir = transcript.project_dir(d)

@@ -32,9 +32,7 @@ def check(label, got, want):
 def fresh():
     d = Path(tempfile.mkdtemp()) / "proj"
     (d / ".claude").mkdir(parents=True)
-    shutil.copytree(SRC, d / ".journal", ignore=shutil.ignore_patterns(
-        "runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal",
-        ".git", ".claude", "__pycache__"))
+    testkit.make(d, SRC)
     (d / ".journal" / "settings.json").write_text("{}")
     tdir = transcript.project_dir(d); tdir.mkdir(parents=True, exist_ok=True)
     (tdir / "s1.jsonl").write_text("")

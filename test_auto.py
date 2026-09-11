@@ -41,9 +41,7 @@ def check(label, got, want):
 def project():
     d = Path(tempfile.mkdtemp()) / "proj"
     (d / ".claude").mkdir(parents=True)
-    shutil.copytree(SRC, d / ".journal",
-                    ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
-                                                  "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+    testkit.make(d, SRC)
     (d / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 1000000}))
     tdir = transcript.project_dir(d)
     tdir.mkdir(parents=True, exist_ok=True)

@@ -26,7 +26,7 @@ import json, os, shutil, subprocess, tempfile
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import hook  # noqa: E402
+import hook, testkit  # noqa: E402
 SRC = Path(__file__).resolve().parent
 import transcript  # noqa: E402
 
@@ -257,7 +257,7 @@ def check(label, got, want):
 # ---------------------------------------------------------------- the defaults: a 1M window, and never a gate on context
 dd = Path(tempfile.mkdtemp()) / "proj"
 (dd / ".claude").mkdir(parents=True)
-shutil.copytree(SRC, dd / ".journal", ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+testkit.make(dd, SRC)
 (dd / ".journal" / "settings.json").write_text("{}")
 tdd = transcript.project_dir(dd); tdd.mkdir(parents=True, exist_ok=True)
 pd = tdd / "s1.jsonl"
