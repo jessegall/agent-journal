@@ -380,8 +380,16 @@ def answered_one(t: dict) -> bool:
 
 
 def answered(root: Path, track: str) -> list[dict]:
-    """To-dos the user has answered and nobody has picked up yet: the agent is unstuck."""
-    return [t for t in open_items(root, track) if answered_one(t)]
+    """To-dos the user has answered and nobody has picked up yet: the agent is unstuck.
+
+    AN ANSWER DOES NOT OUTRANK THE ROW'S OWN SEQUENCING. The user's reply is their word to
+    do it — but a row given `after 1717,1704` waits on those landing, and the answer does
+    not close them. Measured in workflows: the hold said "the user answered to-do 1410 —
+    that is their word to do it: todos start 1410" while both prerequisites were open and
+    the answer's own text said the work waits behind them. `ready` already skips such a
+    row; this list is what the hold and the doorway read, so it skips it too.
+    """
+    return [t for t in open_items(root, track) if answered_one(t) and not waiting_on(root, track, t)]
 
 
 def answer(root: Path, track: str, n: int, text: str) -> tuple[bool, str]:

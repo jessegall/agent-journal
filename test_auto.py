@@ -481,6 +481,13 @@ check("a new answer is a new state: held again, naming the first answered", labe
 s.journal("todo", "start", "2"); s.journal("end", "q two", "--todo")
 label, text = s.stop()
 check("after 2 is done, 1 remains answered: held for it", label, "journal reminded Claude: the user answered to-do 1")
+# an answer is the user's word to do it — but not before the rows it was sequenced after
+s.journal("todo", "three"); s.journal("todo", "four"); s.journal("todo", "after", "1", "3")
+label, text = s.stop()
+check("answered but sequenced after an open row: not held as answered", "the user answered to-do 1" in label, False)
+check("and not listed as unstuck", [t["n"] for t in todo.answered(d / ".journal", "default")], [])
+s.journal("todo", "start", "3"); s.journal("end", "three", "--todo")
+check("once the prerequisite lands the answer counts again", [t["n"] for t in todo.answered(d / ".journal", "default")], [1])
 
 # ---------------------------------------------------------------- after another hold, auto still speaks
 d = project(); s = Session(d, "s1")
