@@ -245,8 +245,14 @@ def pull(src: Path, check: bool) -> list[str]:
                if not (ROOT / rel).is_file() or not filecmp.cmp(stage / rel, ROOT / rel, shallow=False)]
     gone = sorted(mine - set(theirs))
     for rel in changed:
+        # REPLACED, NOT OVERWRITTEN. copy2 onto an existing file writes into that inode,
+        # and the suites hardlink the package into their fixtures — so a pull inside a test
+        # wrote 9.0.0 into the development checkout's VERSION, and a release was tagged
+        # with it. Unlinking first breaks the link; the fixture gets a new file, the source
+        # keeps its own.
         if not check:
             (ROOT / rel).parent.mkdir(parents=True, exist_ok=True)
+            (ROOT / rel).unlink(missing_ok=True)
             shutil.copy2(stage / rel, ROOT / rel)
         out.append(f"  + {rel}" + (" (would update)" if check else ""))
     for rel in gone:
