@@ -2755,6 +2755,13 @@ def main(raw: str | None = None) -> int:
         payload = json.loads(raw) if raw is not None else json.load(sys.stdin)
     except Exception:
         return 0  # a doorbell that crashes on a payload it did not expect is worse than none
+    # THE KILL SWITCH, CHECKED BEFORE ANYTHING ELSE. `journal enable false` — the
+    # user's own command, never the agent's to reach for — and every hook event is
+    # inert from here on: no hold, no gate, no context, nothing filed. The CLI itself
+    # is untouched (this is the hook, not `journal.py`), so `journal enable true` is
+    # never blocked by the very switch it is turning back on.
+    if not state.hooks_enabled(ROOT):
+        return 0
     conf, problems = settings_mod.load(ROOT)
     for p in problems:
         print(f"journal: {p}", file=sys.stderr)

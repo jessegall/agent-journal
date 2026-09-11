@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.59.0 — `journal enable`: a kill switch for the hooks
+
+`journal enable false` makes every hook event inert — no hold, no gate, no context, no
+write filed — until `journal enable true`. Bare `journal enable` reports which. The CLI
+itself is never gated by it either way; only the hook goes quiet. This is the user's
+switch, never an agent's: run `enable false` only because the user explicitly asked for
+it, by name — never to get past a hold, a gate or a refusal.
+
 ## 1.58.3 — asking a to-do again retires the old answer
 
 `todos ask` set the question and cleared `started`, but left the previous `answer`
