@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.59.1 — a rule's reasoning survived an upgrade for the first time
+
+`install.py`'s `DATA` exclusion list — what a pull never touches — was missing `rules`.
+docs/tools/environments/todo were already protected as project data; a rule's long-form
+reasoning (written by `pins.write_body` under `.journal/rules/`) was not, so upgrading
+deleted every rule's body that existed before the pull. Caught by running the upgrade
+against this project itself, which lost two rules' reasoning before the fix landed (a
+third was recovered). If you have rules with a written-out `--brief`, upgrading to
+1.59.1 is what stops losing them; nothing before this fixes what already happened.
+
 ## 1.59.0 — `journal enable`: a kill switch for the hooks
 
 `journal enable false` makes every hook event inert — no hold, no gate, no context, no
