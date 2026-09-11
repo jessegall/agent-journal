@@ -350,8 +350,9 @@ doing real work over a long stretch, where losing the record at the end is the l
 ## Delayed work: the to-do
 
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)
-    journal todos                      the titles
+    journal todos                      the titles, HIGHEST PRIORITY FIRST (--order-by-id for plain number order)
     journal todos show <n>             the brief (also: `journal todo <n>`)
+    journal todos priority <n> <value>  bigger is more important; a number or a name (low/default/high/critical); 100 unless set
     journal todos start <n>             open work under that title; the row stays open until you close it
     journal todos done <n> "<how>"      the row is finished — always explicit, never a side effect
     journal work end "<title>" --todo   closes the work AND the row, in one command

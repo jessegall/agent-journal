@@ -80,7 +80,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
     "todos": (
         'journal todos add "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this environment; --brief reads a longer brief from stdin',
         'journal todo "<title>"        the same command; `todo` and `todos` are twins everywhere',
-        "journal todos [--all] [--page=N] [--order=asc|desc]   the titles, numbered, newest first",
+        "journal todos [--all] [--page=N] [--order=asc|desc] [--order-by-id]   the titles, numbered, HIGHEST PRIORITY FIRST (--order=asc for lowest-first; --order-by-id for the old newest-first-by-number)",
+        'journal todos priority N <low|default|high|critical|70|...>   bigger is more important; a name or a raw number; 100 (default) unless set; `journal todos` and `journal next` read it',
         "journal todos show N          the whole brief — bare `journal todo N` is the same",
         "journal todos start N         open work with that title; the row stays open until you close it — `journal todos done N \"<how>\"`, a `Journal: todos done N` commit trailer, or `journal work end \"<title>\" --todo` for both in one command",
         'journal todos done N "<how>"    resolved without starting it',

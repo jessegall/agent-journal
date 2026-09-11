@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.60.0 — a to-do has a priority now
+
+`journal todos priority <n> <value>` sets it — a raw number or a name (`low`=50,
+`default`/unset=100, `high`=150, `critical`=200). Bigger is more important. `journal
+todos` now lists highest priority first by default (`--order=asc` for lowest first,
+`--order-by-id` for the old plain-number order), and `ready()` — what `journal next` and
+auto mode pick up next — sorts by it too, so the most important ready to-do is always
+suggested first. An answered to-do still comes before an unanswered one regardless of
+priority: the user replying to a question is their own word to do it now. Existing
+to-dos with no priority set behave exactly as priority 100 — nothing to migrate.
+
 ## 1.59.3 — `journal next` stays honest while disabled
 
 `journal disable` only reaches the hook layer — it cannot see or stop a session's own
