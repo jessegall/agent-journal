@@ -62,6 +62,12 @@ check("Stop: nothing at all while disabled", fire("Stop").strip(), "")
 check("PreToolUse: nothing at all — not even a hold on something it would normally gate",
       fire("PreToolUse", tool_name="Bash", tool_input={"command": "echo hi"}).strip(), "")
 
+# a loop firing `journal next` while disabled gets one honest line, not the usual
+# hold/to-do advisory — see to-do 20.
+code, out = j("next")
+check("journal next: one honest line while disabled, not its normal advisory logic",
+      (code, "disabled" in out, "journal enable" in out), (0, True, True))
+
 # ------------------------------------------------------------------ the CLI itself is never gated by this
 code, out = j("enable")
 check("re-enabling works from the same, unaffected CLI", (code, "ENABLED" in out), (0, True))

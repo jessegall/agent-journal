@@ -1309,6 +1309,14 @@ def cmd_next() -> int:
     minutes; both land here, and here says the one thing to do.
     """
     import state as _st
+    if not _st.hooks_enabled(root()):
+        # A LOOP KEEPS FIRING THIS EVEN WHILE DISABLED — `journal disable` only reaches
+        # the hook layer, never a session's own scheduled wakeups, which this package
+        # cannot see or stop. So each firing still ran the full hold/to-do advisory
+        # logic below, which can read as actively contradictory right after the user
+        # silenced the journal. One honest line instead.
+        fmt.say("hooks are disabled. `journal enable` turns them back on.")
+        return 0
     stem = _stem()
     here = tracks.current(root(), _stem())
     held = _st.get(root(), "next_text", "", stem=stem) if stem else ""
