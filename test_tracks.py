@@ -134,9 +134,7 @@ d = Path(tempfile.mkdtemp()) / "proj"
 (d / ".claude").mkdir(parents=True)
 # THE REAL RUNTIME NEVER TRAVELS. A copied `runtime/` would make the hook under test
 # inherit marks it did not write, and `verify` would count them as evidence.
-shutil.copytree(SRC, d / ".journal",
-                ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*",
-                                              "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+testkit.make(d, SRC)
 # THIS SUITE IS ABOUT BINDING, so it binds at the start: the project default is now an
 # unbound session, which test_unbound.py covers.
 (d / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True}))

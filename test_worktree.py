@@ -7,7 +7,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import transcript  # noqa: E402
+import testkit, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -30,7 +30,7 @@ main = base / "main"
 main.mkdir()
 git(main, "init", "-q", "-b", "main")
 git(main, "config", "user.email", "t@t"); git(main, "config", "user.name", "t")
-shutil.copytree(SRC, main / ".journal", ignore=shutil.ignore_patterns("runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+testkit.make(main, SRC)
 (main / ".journal" / "settings.json").write_text("{}")
 (main / "README").write_text("x\n")
 git(main, "add", "-A"); git(main, "commit", "-q", "-m", "init")

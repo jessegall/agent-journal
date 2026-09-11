@@ -26,8 +26,7 @@ def check(label, got, want):
 
 d = Path(tempfile.mkdtemp()) / "proj"
 (d / ".claude").mkdir(parents=True)
-shutil.copytree(SRC, d / ".journal", ignore=shutil.ignore_patterns(
-    "runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+testkit.make(d, SRC)
 (d / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True, "one_session_per_environment": False}))  # the rule has its own section below
 root = d / ".journal"
 tdir = transcript.project_dir(d); tdir.mkdir(parents=True, exist_ok=True)
@@ -146,8 +145,7 @@ check("bindings are runtime, not record", (root / "runtime" / "bindings.map").is
 # ---------------------------------------------------------------- one live session per environment
 e = Path(tempfile.mkdtemp()) / "proj"
 (e / ".claude").mkdir(parents=True)
-shutil.copytree(SRC, e / ".journal", ignore=shutil.ignore_patterns(
-    "runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+testkit.make(e, SRC)
 (e / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True}))
 root2 = e / ".journal"
 tdir2 = transcript.project_dir(e); tdir2.mkdir(parents=True, exist_ok=True)

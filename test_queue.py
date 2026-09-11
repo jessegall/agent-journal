@@ -33,8 +33,7 @@ class S:
     def __init__(self, window=200000):
         self.d = Path(tempfile.mkdtemp()) / "proj"
         (self.d / ".claude").mkdir(parents=True)
-        shutil.copytree(SRC, self.d / ".journal", ignore=shutil.ignore_patterns(
-            "runtime", "state.json*", "record.json*", "todo", "docs", "tools", ".journal", ".git", ".claude", "__pycache__"))
+        testkit.make(self.d, SRC)
         (self.d / ".journal" / "settings.json").write_text(json.dumps({"gate_after_context_rung": True, "context_window": window}))
         tdir = transcript.project_dir(self.d); tdir.mkdir(parents=True, exist_ok=True)
         self.path = tdir / "s1.jsonl"; self.path.write_text("")

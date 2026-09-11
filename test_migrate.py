@@ -15,7 +15,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import transcript  # noqa: E402
+import testkit, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -51,9 +51,7 @@ def project(with_record=True):
     """A checkout holding a record in the PRE-1.34.0 shape: pins in the blob, todo/ beside it."""
     d = Path(tempfile.mkdtemp()) / "proj"
     (d / ".claude").mkdir(parents=True)
-    shutil.copytree(SRC, d / ".journal", ignore=shutil.ignore_patterns(
-        "runtime", "state.json*", "record.json*", "todo", "environments", "docs", "tools",
-        ".journal", ".git", ".claude", "__pycache__"))
+    testkit.make(d, SRC)
     (d / ".journal" / "settings.json").write_text("{}")
     t = transcript.project_dir(d); t.mkdir(parents=True, exist_ok=True)
     (t / "s1.jsonl").write_text("")

@@ -129,7 +129,7 @@ class Project:
 #: A hardlink gives exactly that: one inode, two paths, and `resolve()` stays in the
 #: fixture because a hardlink is not a symlink. Editing a fixture's copy would edit the
 #: real file, so nothing here may write to a `.py` under a fixture — and nothing does.
-_SKIP = {"runtime", "todo", "docs", "tools", "environments", ".journal", ".git",
+_SKIP = {"runtime", "todo", "docs", "tools", "environments", ".journal", ".git", ".idea",
          ".claude", "__pycache__"}
 
 
