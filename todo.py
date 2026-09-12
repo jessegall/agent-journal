@@ -1010,8 +1010,20 @@ TRAILER = "Journal:"
 #: one closing; test_commit holds the opposite and is right: commit messages here discuss
 #: to-dos at length, and an INDENTED line is how this project quotes one. A quotation that
 #: closes a to-do is worse than a trailer that has to be unindented.
+#:
+#: A RUN OF BARE NUMBERS AFTER THE FIRST IS MORE REFS, NOT THE START OF `how`. One
+#: commit, `Journal: todos done 2263 2264`, closed 2263 and read "2264" as free text —
+#: silently, with nothing in the reply saying a second number had been swallowed. The
+#: number closes; only the FIRST ref may carry an `<environment>/`, because a bulk close
+#: on one line means "these, in the environment I already named or the one this session
+#: is on" — repeating the environment per number buys nothing a second trailer line
+#: didn't already offer. The tradeoff this accepts: a `how` that happens to start with a
+#: bare number ("4 files touched") now reads as a second ref too. That ref then fails or
+#: closes something unintended — visibly, in the reply `close_from_commit` returns for
+#: every ref — which is still better than the silent swallow this replaces.
 _TRAILER = re.compile(r"^Journal:[ \t]*todos?[ \t]+done[ \t]+"
-                      r"(?:(?P<env>[A-Za-z0-9][A-Za-z0-9 _.-]*?)/)?(?P<n>\d+)[ \t]*(?P<how>.*)$",
+                      r"(?:(?P<env>[A-Za-z0-9][A-Za-z0-9 _.-]*?)/)?(?P<n>\d+)"
+                      r"(?P<more>(?:[ \t]+\d+)*)[ \t]*(?P<how>.*)$",
                       re.IGNORECASE | re.MULTILINE)
 
 
@@ -1036,11 +1048,18 @@ def commit_at(project: Path, ref: str = "HEAD") -> tuple[str, str, str] | None:
 
 
 def refs_in(message: str) -> list[tuple[str | None, int, str]]:
-    """Every close the message asks for: (environment or None, number, the how it gave)."""
+    """Every close the message asks for: (environment or None, number, the how it gave).
+
+    A line naming several numbers yields several refs, all with the same `how` and the
+    same environment (or none) — see the comment on `_TRAILER`.
+    """
     out = []
     for m in _TRAILER.finditer(message or ""):
-        out.append((" ".join(m.group("env").split()) if m.group("env") else None,
-                    int(m.group("n")), " ".join(m.group("how").split())))
+        env = " ".join(m.group("env").split()) if m.group("env") else None
+        how = " ".join(m.group("how").split())
+        out.append((env, int(m.group("n")), how))
+        for extra in m.group("more").split():
+            out.append((env, int(extra), how))
     return out
 
 

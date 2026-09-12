@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.61.2 — a commit trailer can close several to-dos on one line
+
+`Journal: todos done 2263 2264` used to close 2263 and silently read "2264" as part of
+2263's `how` text — the second number vanished with no sign anything was swallowed. A
+run of bare numbers right after the first is now read as more refs, all sharing the same
+environment and `how` text as the first. Found by a peer session that had to close the
+second one by hand after the trailer's reply said only "closed what it named: done
+2263". `<environment>/N` still only applies to the first number in the run — a bulk
+close on one line means "these, in the environment I already named."
+
 ## 1.61.1 — `journal next` stopped calling a non-empty list empty
 
 With auto on and nothing ready, `journal next` checked only whether a to-do was waiting
