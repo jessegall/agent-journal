@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.61.0 — `journal todos prune`: clear old done to-dos off the list
+
+`journal todos prune --older-than=30d` (or `--before=<date>`) moves every done or
+dropped to-do older than that under `todo/<env>/archived/` — invisible to the normal
+list from then on, but never deleted; `--force` actually deletes instead. An open to-do
+is never touched, whatever its age, and there is no silent default: an age or date is
+required every time. Found the need for this in a project whose default environment had
+2163 to-do files on disk with only 47 still open — nothing ever pruned a finished one
+before.
+
 ## 1.60.0 — a to-do has a priority now
 
 `journal todos priority <n> <value>` sets it — a raw number or a name (`low`=50,

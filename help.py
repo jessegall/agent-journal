@@ -96,6 +96,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal todos amend N "<section title>" --brief     append a new section to a brief, from stdin',
         'journal todos replace N ["<section title>"] --brief   swap one named section, or the whole brief with none; old text kept under struck/',
         "journal todo auto [on|off]    work through this environment's list without asking, or wait for the user's word",
+        "journal todos prune --older-than=<30d|2h|6w>|--before=<date> [--force]   done/dropped to-dos older than that, ARCHIVED under todo/<env>/archived/ (or actually deleted with --force) — an open to-do is never touched; no silent default age",
     ),
     "migrate": (
         "journal migrate               what the record's shape is, and what an upgrade still owes it",
