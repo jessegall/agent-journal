@@ -224,6 +224,14 @@ check("a bare work end leaves the row standing, and says so",
        "a row somebody is in the middle of" in j("todos")[1]), (True, True))
 check("and it names both ways to close it",
       (f'journal todos done {_n}' in _out, "--todo" in _out), (True, True))
+# `started` is never cleared by a bare `work end`, so the listing used to keep claiming
+# "work is open" for a row that plainly is not — `journal open` said nothing was, right
+# beside a to-do insisting otherwise.
+_listing = j("todos")[1]
+_block = _listing[_listing.index("a row somebody is in the middle of"):]
+check("the row no longer claims work is open once it plainly is not",
+      ("work is open" in _block.splitlines()[1], "ended without closing this row" in _block.splitlines()[1]),
+      (False, True))
 j("todos", "start", _n)
 _code, _out = j("work", "end", "a row somebody is in the middle of", "--todo")
 check("--todo closes both", (f"to-do {_n} is done with it" in _out,
