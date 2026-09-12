@@ -50,9 +50,12 @@ wallpaper within the hour.
 """
 from __future__ import annotations
 
+import contextlib
 import json
+import os
 import re
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -133,12 +136,30 @@ def _read_todo(path: Path) -> dict:
 
 
 def _write(path: Path, meta: dict, body: str) -> None:
+    """Atomic, and SAFE UNDER A CONCURRENT READER — see `state._write`, which this mirrors.
+
+    `path.write_text` opens with truncation, then writes: a reader that lands in that
+    window — a background loop's `journal next`, a hook firing on a different tool call —
+    sees a short or empty file. `_read_todo` treats a front matter with no closing `---`
+    as NO front matter at all, so a reader catching this row mid-write reads it as if
+    `started` and `done` had never been set. Each writer gets its own tmp file, exactly
+    as `state._write` does, for the same reason: two writers sharing one tmp path killed
+    the loser with FileNotFoundError.
+    """
     _PARSED.pop(str(path), None)
     lines = ["---"] + [f"{k}: {meta.get(k, '') or ''}" for k in FIELDS] + ["---", ""]
     if body.strip():
         lines += [body.strip(), ""]
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines))
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as fh:
+            fh.write("\n".join(lines))
+        os.replace(tmp, path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp)
+        raise
 
 
 #: THE LEDGER. One file holding the front matter of every row, so answering "how many are

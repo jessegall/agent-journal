@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.61.5 — a to-do's `.md` file is written atomically now
+
+`todo._write` used to `path.write_text(...)` in place — open-with-truncate, then write —
+with a window in between where a row started and then closed moments later (`todos
+start` followed by a commit trailer's close, exactly the shape a hook produces) could be
+read by a concurrent reader (a background loop's `journal next`, a second hook) as empty
+or with an unclosed front matter, which `_read_todo` treats as no front matter parsed at
+all. Reported live: `journal todos` showed an already-DONE row (confirmed done by
+`journal todos <n>`) as merely "started ... but the work was ended without closing this
+row". Demonstrated with a hammering-thread test — 2,672 torn reads in 2 seconds of the
+old code, 0 after the fix. `_write` now writes its own tmp file and `os.replace`s it in,
+the same pattern `state._write` already uses for exactly this reason.
+
 ## 1.61.4 — the to-do listing stopped claiming "work is open" for a row that isn't
 
 Same shape of bug as 1.61.3, different code path: `journal todos` said "started N ago,
