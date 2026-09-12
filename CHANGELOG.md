@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.61.1 — `journal next` stopped calling a non-empty list empty
+
+With auto on and nothing ready, `journal next` checked only whether a to-do was waiting
+on the user's answer — if none was, it said "The list is empty. Stop the loop if one is
+running." even when every remaining row was set aside on a condition, waiting on a
+prerequisite, or held by a live agent. `hook.py`'s idle-stop advisory already named all
+four reasons correctly; `journal next` predates the set-aside feature and was never
+updated to match. It now reports every reason a row can't be picked up, the same way the
+stop hook does, instead of only "asking" or "empty".
+
 ## 1.61.0 — `journal todos prune`: clear old done to-dos off the list
 
 `journal todos prune --older-than=30d` (or `--before=<date>`) moves every done or
