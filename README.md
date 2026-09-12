@@ -210,6 +210,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal todos ask <n> "<question>"   it needs the user; the list moves on (agent)
     journal todos answer <n> "<answer>"  answer it; the agent is told at its next stop
     journal todos auto on|off            on: the agent works through the list itself
+    journal todos prune --older-than=<age>|--before=<date> [--force]   done/dropped to-dos older than that — ARCHIVED under todo/<env>/archived/, or actually deleted with --force; an open to-do is never touched
 
 ### Pins and rules
 

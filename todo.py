@@ -849,6 +849,79 @@ def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str
     return True, f"reopened {n}: {t['title']}\n  {why}\n  the close it undoes: {was}"
 
 
+#: WHERE A PRUNED FILE GOES BY DEFAULT — never `STRUCK`, which already means something
+#: else here (a pre-edit SNAPSHOT of a brief that is about to be overwritten, kept
+#: beside the row it belongs to; see `_snapshot`). A pruned to-do is the whole ROW
+#: leaving the counted list, so it gets its own folder rather than crowding a name that
+#: already has a job.
+ARCHIVE = "archived"
+
+
+def _prune_cutoff(word: str, now: str) -> tuple[str | None, str]:
+    """(the ISO cutoff, "") from a duration ("30d", "2h", "6w") or a date/timestamp
+    typed as-is — or (None, the refusal). Nothing here guesses a default age: pruning
+    clears rows off the list for good, and a silent number would be the one time this
+    package's "ask, don't assume" habit matters most.
+    """
+    import re as _re
+    from datetime import datetime, timedelta, timezone
+    word = (word or "").strip()
+    if not word:
+        return None, ('say how old: journal todos prune --older-than=30d (h/d/w) or '
+                      '--before=<date>')
+    m = _re.fullmatch(r"(\d+)([hdw])", word.lower())
+    if m:
+        n, unit = int(m.group(1)), m.group(2)
+        hours = {"h": 1, "d": 24, "w": 24 * 7}[unit]
+        try:
+            when = datetime.now(timezone.utc) - timedelta(hours=n * hours)
+        except OverflowError:
+            return None, f"{word} is too large a span"
+        return when.isoformat(timespec="seconds"), ""
+    try:
+        when = datetime.fromisoformat(word.replace("Z", "+00:00"))
+    except ValueError:
+        return None, f"{word!r} is not a duration (30d, 2h, 6w) or a date `journal` writes (e.g. 2026-08-01)"
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    return when.isoformat(timespec="seconds"), ""
+
+
+def prune(root: Path, track: str, word: str, at: str, force: bool = False) -> tuple[bool, str]:
+    """Clear DONE to-dos older than `word` off the list — archived under `archived/`
+    by default, actually removed with `force`. An OPEN to-do is never touched, whatever
+    its age; "done" already covers a dropped one too, since `strike`/`drop` close a
+    to-do through the same `done` field a normal finish does.
+
+    ARCHIVED, NOT STRUCK — a moved file is invisible to `_all` for free: it scans the
+    folder itself, not subfolders (see `_stamped`), so nothing here has to teach the
+    read path a new exclusion. `force` is the one real deletion this package does
+    anywhere; everywhere else "gone" means "hidden, on purpose, and still on disk."
+    """
+    cutoff, err = _prune_cutoff(word, at)
+    if cutoff is None:
+        return False, err
+    items = _all(root, track)
+    candidates = [t for t in items if t.get("done") and t["done"] < cutoff]
+    if not candidates:
+        return True, f"nothing to prune — no done to-do here closed before {cutoff[:10]}"
+    d = folder(root, track)
+    if force:
+        for t in candidates:
+            t["path"].unlink(missing_ok=True)
+        said = f"deleted {len(candidates)} done to-do(s)"
+    else:
+        arc = d / ARCHIVE
+        arc.mkdir(exist_ok=True)
+        for t in candidates:
+            t["path"].rename(arc / t["path"].name)
+        said = f"archived {len(candidates)} done to-do(s) under {ARCHIVE}/"
+    _LISTED.pop(str(d), None)
+    nums = ", ".join(str(t["n"]) for t in candidates[:12])
+    more = f" …and {len(candidates) - 12} more" if len(candidates) > 12 else ""
+    return True, f"{said}, closed before {cutoff[:10]}: {nums}{more}"
+
+
 def titled(root: Path, track: str, title: str) -> dict | None:
     """The started to-do whose title is these words, if there is one. Reads, decides nothing.
 

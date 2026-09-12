@@ -797,7 +797,8 @@ def cmd_promote(n: int) -> int:
 
 
 def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", after: str = "", acting: str = "", page: int = 1,
-             order: str = fmt.DESC, quiet: bool = False, order_by_id: bool = False) -> int:
+             order: str = fmt.DESC, quiet: bool = False, order_by_id: bool = False,
+             prune_before: str = "", force: bool = False) -> int:
     here = tracks.current(root(), _stem())
     # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
     # what a bare noun and a bare noun+id already do; stripping them here means the
@@ -880,6 +881,12 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             else:
                 fmt.say("  Nothing is open and nothing is waiting.")
         return 0
+    if verb == "prune":
+        # NO TO-DO NUMBER — this clears a whole batch, so it does not join the
+        # numbered-verb group above; it reads its own two flags instead.
+        ok, msg = todo.prune(root(), here, prune_before, _now(), force)
+        fmt.say(msg, error=not ok)
+        return 0 if ok else 1
     if verb in ("from-commit", "from_commit"):
         # THE SAME PROTOCOL FROM OUTSIDE A SESSION: what the git post-commit hook calls, and
         # what a person runs after committing by hand. The agent's own commits are already
@@ -1903,6 +1910,7 @@ class Opts:
     acting: str = ""
     to_agent: str = ""
     doc_ref: str = ""
+    prune_before: str = ""
     from_src: str | None = None
     tool_meta: dict
 
@@ -1976,6 +1984,7 @@ def _agent_flag(v: str) -> str | None:
 _AFTER = _Flag(dest="after")
 _ENV_NOOP = _Flag(dest=None)      # applied and refused in run(), before any command reads the record
 _TOOL_META = _Flag(dest="tool_meta", keyed=True)
+_PRUNE_BEFORE = _Flag(dest="prune_before")   # --older-than=30d and --before=<date> are one cutoff, two words for it
 
 VALUE_FLAGS: dict[str, _Flag] = {
     "--back": _Flag(dest="back", type=_int_flag("--back")),
@@ -1996,6 +2005,7 @@ VALUE_FLAGS: dict[str, _Flag] = {
     "--doc": _Flag(dest="doc_ref"),
     "--from": _Flag(dest="from_src"),
     "--page": _Flag(dest="page", type=_page_flag),
+    "--older-than": _PRUNE_BEFORE, "--before": _PRUNE_BEFORE,
 }
 
 # BARE FLAGS: no value, presence is the value. `set` is what lands in `dest`; every
@@ -2387,7 +2397,7 @@ _ALIASES: dict[tuple[str, ...], object] = {
     ("pin", "remember"): _v_pin,
     ("todo", "todos"): lambda verb, rest, opts: cmd_todo(
         rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,
-        opts.page, opts.order, opts.quiet, opts.order_by_id),
+        opts.page, opts.order, opts.quiet, opts.order_by_id, opts.prune_before, opts.force),
     ("reminders", "reminder", "remind"): _v_reminders,
     ("start", "end"): _v_start_end,
     ("migrate", "migrations"): _v_migrate,
