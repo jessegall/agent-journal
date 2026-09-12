@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.61.3 — the stall nudge names the row actually open, not the last one `started`
+
+"N tool calls on to-do X with no progress filed" could name the wrong to-do: a row's
+`started` stamp is never cleared by a plain `work end` (only `--todo`/`done` clears the
+row), so a row that was started, ended, and then touched again (`todos after`, `todos
+block`) still carried `started` and could sort after the row genuinely open. The nudge
+now matches the started to-dos against `work.open_work()`'s subject instead of just
+taking the last row with a `started` timestamp. Found by a peer session: the nudge named
+to-do 2269 (ended, then chained onto another to-do) while the real open work, per
+`journal open`, was to-do 1417.
+
 ## 1.61.2 — a commit trailer can close several to-dos on one line
 
 `Journal: todos done 2263 2264` used to close 2263 and silently read "2264" as part of

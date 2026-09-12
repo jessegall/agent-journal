@@ -1826,21 +1826,39 @@ def _stall(conf: dict, ctx: Ctx) -> str | None:
     work since the last count, which is the agent saying it moved. A nudge, not a hold: the
     agent may well be one call from done. Fires at most once per to-do per multiple of
     the setting, so a long to-do with real progress notes is left alone.
+
+    THE ROW THAT STALLS IS WHICHEVER ONE HAS WORK OPEN, NOT WHICHEVER WAS `started` LAST.
+    A to-do's `started` stamp is never cleared by a plain `work end` (only `--todo`/`done`
+    clears the row), so a row that was started, ended without `--todo`, and then touched
+    again — `todos after`, `todos block` — still carries `started` and can sort after the
+    row genuinely open. Measured live: the nudge named to-do 2269, ended and chained
+    onto another to-do earlier, while the session's actual open work — per `journal
+    open` — was to-do 1417. Matching the open work's subject against the started to-dos,
+    instead of taking the last started to-do and hoping it is the open one, is what the
+    line below did two steps later anyway, to count progress notes — just too late to
+    fix which row got named.
     """
     limit = conf["stall_calls"]
     if not limit or "stall" in conf["silenced"]:
         return None
     here = tracks.current(ROOT, ctx.stem)
-    started = [t for t in todo.open_items(ROOT, here) if t.get("started")]
-    if not started:
+    standing = work.open_work(ROOT)
+    if not standing:
         return None
-    t = started[-1]
+    started = {row["title"].lower(): row for row in todo.open_items(ROOT, here) if row.get("started")}
+    t = w = None
+    for candidate in standing:
+        match = started.get(candidate["subject"].lower())
+        if match:
+            t, w = match, candidate
+            break
+    if t is None:
+        return None
     mark = state.get(ROOT, "stall", {}, stem=ctx.stem) or {}
     if mark.get("n") != t["n"]:
         mark = {"n": t["n"], "calls": 0, "updates": 0, "said": 0}
     mark["calls"] = mark.get("calls", 0) + 1
-    standing = [w for w in work.open_work(ROOT) if w["subject"].lower() == t["title"].lower()]
-    updates = len(standing[0].get("notes", [])) if standing else 0
+    updates = len(w.get("notes", []))
     if updates > mark.get("updates", 0):
         mark.update({"updates": updates, "calls": 1, "said": 0})  # progress was filed: this call starts a new count
     state.put(ROOT, "stall", mark, stem=ctx.stem)
