@@ -1368,12 +1368,27 @@ def cmd_next() -> int:
             fmt.say(f"  journal todos {t['n']}          the brief")
             fmt.say(f"  journal todos start {t['n']}    pick it up")
             return 0
-        blocked = todo.asking(root(), here)
-        if blocked:
-            fmt.say(f"Nothing to pick up: {len(blocked)} to-do(s) wait on the user's answer. "
-                  "Stop the loop if one is running; `journal todo` shows the questions.")
-        else:
+        waiting = todo.open_items(root(), here)
+        if not waiting:
             fmt.say("The list is empty. Stop the loop if one is running.")
+            return 0
+        # THE LIST WAS NOT EMPTY, AND THIS SAID IT WAS. `asking` is one of four ways a row
+        # can be unready — a to-do set aside on a condition (`blocked`), one waiting on a
+        # prerequisite, or one held by a live agent are none of them "asking" and none of
+        # them make the list empty. This checked only `asking` and fell through to "empty"
+        # for the other three, which is exactly what a session waiting on 18 set-aside rows
+        # was told. `hook.py`'s `_p_auto` already draws this distinction correctly; this
+        # matches it instead of contradicting it one command later.
+        held_back = todo.blocked(root(), here)
+        owed = [t for t in waiting if todo.waiting_on(root(), here, t)]
+        reasons = (
+            (todo.asking(root(), here), "waiting on your answer"),
+            (held_back, "set aside on a condition"),
+            (owed, "waiting on a to-do that must land first"),
+            ([t for t in waiting if t.get("assigned")], "held by an agent still working"),
+        )
+        why = ", ".join(f"{len(rows)} {what}" for rows, what in reasons if rows)
+        fmt.say(f"Nothing to pick up: {why}. `journal todo` shows what each waits on.")
         return 0
     waiting = todo.open_items(root(), here)
     fmt.say(f"Nothing is open. {len(waiting)} to-do(s) waiting; auto is off, so none starts "
