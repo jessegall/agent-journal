@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.61.4 — the to-do listing stopped claiming "work is open" for a row that isn't
+
+Same shape of bug as 1.61.3, different code path: `journal todos` said "started N ago,
+work is open" for ANY row with a `started` stamp, never checking whether work was
+actually still open for it. Since a plain `work end` (no `--todo`) never clears
+`started`, a row that was started and then ended without closing the row kept claiming
+open work forever after. Found live, in this project's own dogfood instance, right
+after fixing 1.61.3 — `journal todos` said to-do 6's work was open while `journal open`
+correctly said nothing was. Now checks `work.open_work()` for a matching subject and
+says so honestly either way.
+
 ## 1.61.3 — the stall nudge names the row actually open, not the last one `started`
 
 "N tool calls on to-do X with no progress filed" could name the wrong to-do: a row's

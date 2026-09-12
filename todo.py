@@ -1186,6 +1186,18 @@ def _held(root: Path, track: str, t: dict) -> str:
     return f"held by `{t['assigned']}` ({ag.age(root, track, t['assigned'])})"
 
 
+def _started(root: Path, track: str, t: dict) -> str:
+    """`started` is never cleared by a plain `work end` — only `--todo`/`done` clears the
+    row — so a row that was started and then ended without closing it still says
+    `started`, and claiming "work is open" for it unconditionally was a lie the moment
+    that happened. Say so only when `work.open_work` actually has a matching subject.
+    """
+    import work
+    live = any(w["subject"].lower() == t["title"].lower() for w in work.open_work(root))
+    return (f"started {_age(t['started'])}, work is open" if live else
+            f"started {_age(t['started'])}, but the work was ended without closing this row")
+
+
 #: THE TABLE FROM STATE TO SENTENCE. One entry per name `_state` can return, and every name
 #: it can return has one: adding a state means adding a row here, not another `elif`.
 _STATE_TEXT = {
@@ -1199,7 +1211,7 @@ _STATE_TEXT = {
     "after": lambda root, track, t: (
         f"after {t['after']}" + (f" — {len(waiting_on(root, track, t))} still open"
                                  if waiting_on(root, track, t) else ", all done: ready")),
-    "started": lambda root, track, t: f"started {_age(t['started'])}, work is open",
+    "started": _started,
     "waiting": lambda root, track, t: (
         f"waiting {_age(t.get('at', ''))}" if _age(t.get("at", "")) else "waiting"),
 }
