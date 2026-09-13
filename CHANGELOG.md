@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.15 — docs says what it says from templates
+
+Every message `docs.py` returns or prints — refusals, confirmations, the catalogue, a doc's
+page, citation labels, the carry block — is declared once in `MESSAGES` and filled by `say`.
+The wording is unchanged.
+
 ## 1.62.14 — tools and pins say what they say from templates
 
 Every message `tools.py` and `pins.py` return or print is declared once in the module's

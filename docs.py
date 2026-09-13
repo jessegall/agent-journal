@@ -28,6 +28,7 @@ from pathlib import Path
 
 import fmt
 import state
+from templates import render as fill
 
 DIR_SETTING = "docs_dir"
 COUNTER = "docs_next"           # record key: the next doc number, never reused
@@ -59,6 +60,117 @@ FIELDS = ("n", "title", "abstract", "status", "track", "source", "at", "supersed
 #: read.
 GLOBAL = "*"
 
+MESSAGES = {
+    "scope_project": "the project's",
+    "scope_env": "environment {env}",
+    "name_empty": "a doc is referenced by number or by name; got nothing",
+    "name_none": "no doc is called {name}. `journal docs` lists them.",
+    "name_many": "{name} could be {options: or } — say which",
+    "name_option": "doc {n} ({title})",
+    "no_headings": "doc {ref} has no headings to cite; drop the `#{head}`",
+    "no_heading": "doc {ref} has no heading `{head}`. It has: {found:, }",
+    "heading": "#{slug}",
+    "no_doc": "there is no doc {n}. `journal docs` lists them.",
+    "no_part": "doc {n} has no part {p}. `journal docs {n}` lists its parts.",
+    "no_file": "there is no file at {src}",
+    "inside": "{src} is already inside doc {n}'s files; `journal docs index` lists it",
+    "has_file": "doc {n} already has {name} — `--replace` to swap it (the old one is kept under {struck}/), "
+                "or attach it under another name by copying it first",
+    "attached": "doc {n} · {name}: {title} ({kind})\n  {path}",
+    "kind_folder": "folder",
+    "detach_why": 'say why: journal docs detach <n> <name> "<why it no longer belongs>"',
+    "no_attachment": "doc {n} has no attachment named {name}; `journal docs {n}` lists them",
+    "detached": "detached {name} from doc {n}\n  kept at {path}",
+    "tree_more": "… and {n} more",
+    "folder_of": "folder of {n} file(s), {size}",
+    "added_by": "{kind} · added by {source} {age}",
+    "doc_section": "doc {n}  {title}",
+    "no_attachments_one": "  doc {n} has no attachments. `journal docs attach <n> <path> \"<what it is>\"` copies a file or a folder in.",
+    "no_attachments": "  no doc has no attachments. `journal docs attach <n> <path> \"<what it is>\"` copies a file or a folder in.",
+    "attachments_title": "ATTACHMENTS",
+    "attachments_one": "{total} file(s) of doc {n}",
+    "attachments_all": "{total} file(s) across {docs} doc(s)",
+    "adopted_file": "  + doc {n} · {name} (say what it is: journal docs attach {n} … or edit files/{manifest})",
+    "needs_title": 'a doc needs a title: journal docs add "<title>" --abstract="<one line>" --brief',
+    "needs_abstract": 'a doc needs an abstract — the one line every session is handed:\n'
+                      '  journal docs add "<title>" --abstract="<what it settles, in one line>" --brief',
+    "title_taken": "doc {n} already has that title",
+    "added": "doc {n}: {title}\n  {path} — a draft; journal docs final {n} when it is",
+    "pointer": "---\npointer: {target}\n---\n\nMoved to `{target}` when it gained parts. `journal docs {n}` reads it.\n",
+    "part_title": 'a part needs a title: journal docs part <n> "<title>" --brief',
+    "part_body": "a part needs a body — pass it on stdin with --brief",
+    "part_added": "doc {n}.{p}: {title}\n  {path}",
+    "replace_part": "replace wants a part, like {ref}.1",
+    "replace_body": "a replacement needs a body — pass it on stdin with --brief",
+    "replaced": "doc {n}.{p} replaced; the old body is in {struck}/",
+    "strike_why": 'say why: journal docs strike <n>.<p> "<why it no longer holds>"',
+    "strike_part": "strike wants a part, like {ref}.1 — a whole doc is superseded, not struck",
+    "struck": "struck doc {n}.{p}: {title}\n  kept at {path}",
+    "move_where": 'say where: `journal docs move <n> "<environment>"`, or `journal docs move <n> --global` to give it to the project',
+    "move_part": "a part belongs to its doc — move the doc",
+    "was_project": "the project",
+    "to_project": "the project — every environment lists it",
+    "env_quoted": "`{env}`",
+    "moved": "doc {n} belongs to {now} now (was {was}): {title}\n"
+             "  it was always readable from anywhere by number, and still is — scope is what a catalogue LISTS",
+    "status_set": "doc {n} is {status}: {title}",
+    "self_supersede": "a doc cannot supersede itself",
+    "superseded": "doc {old} is superseded by doc {new}; readers of {old} are pointed there",
+    "adopted_folder": "  + doc {n}: {title} — folder, {parts} part(s)",
+    "adopted_doc": "  + doc {n}: {title}",
+    "all_adopted": "  = every file under docs/ is catalogued",
+    "no_abstract": '(no abstract yet — journal docs abstract <n> "…" gives it one)',
+    "abstract_usage": 'journal docs abstract <n> "<one line>"',
+    "abstract_set": "doc {n}: {abstract}",
+    "cite_rule": "rule {n}: {text}",
+    "cite_other": "{kind} {n} on environment {env}: {text}",
+    "missing": "doc {ref} (missing)",
+    "section_mark": " § {head}",
+    "label_part_short": "doc {n}.{p}: {part}{sec}",
+    "label_short": "doc {n}{sec}",
+    "label_part": "doc {n}.{p}: {title} · {part}{sec}",
+    "label": "doc {n}: {title}{sec}",
+    "empty": "  No docs are catalogued.",
+    "fact_parts": "{n} part(s)",
+    "fact_files": "{n} file(s)",
+    "fact_superseded": "SUPERSEDED by doc {n}",
+    "part_heading": "DOC {n}.{p}",
+    "part_meta": "of doc {n}: {title} · {source} · {age} · {path}",
+    "doc_heading": "DOC {n}",
+    "written": "written {age}",
+    "superseded_section": "superseded",
+    "superseded_note": "Doc {n} replaces this one. Read that instead: journal docs {n}",
+    "supersedes_note": "supersedes doc {n}",
+    "abstract_section": "abstract",
+    "part_section": "{n}.{p}  {title}",
+    "part_line": "{source} · {age} · {path}",
+    "attachments_section": "attachments",
+    "cited_section": "cited by",
+    "cite_line": "  {cite}",
+    "cmd_part": 'journal docs part {n} "<title>" --brief',
+    "cmd_part_what": "add a part from stdin",
+    "cmd_attach": 'journal docs attach {n} <path> "<what it is>"',
+    "cmd_attach_what": "copy a file or folder in, beside the parts",
+    "cmd_detach": 'journal docs detach {n} <name> "<why>"',
+    "cmd_detach_what": "drop an attachment, kept under struck/",
+    "cmd_strike": 'journal docs strike {n}.<p> "<why>"',
+    "cmd_strike_what": "drop a part, on the record",
+    "cmd_status": "journal docs {status} {n}",
+    "cmd_status_what": "change its status",
+    "draft_mark": "  (draft)",
+    "files_mark": "  ({n} file(s): {names:, }{more})",
+    "carry_brief": "  {n}  {title}{draft}",
+    "carry_row": "  {n}  {title}{mark}\n       {abstract}",
+    "carry": "DOCS OF THIS PROJECT, {total} catalogued — read one before you re-investigate what it settles; "
+             "`journal docs <n>` reads it, `journal docs search <term>` finds a line:\n{rows:\n}{more}",
+    "search_attachment": "attachment {name} — {title} ({path})",
+    "search_inside": "attachment {name}/{file} — in {title}",
+}
+
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
+
 
 def scope_of(doc: dict) -> str:
     """The environment a doc belongs to, or GLOBAL. An unset track has always meant global."""
@@ -77,7 +189,7 @@ def scope_text(doc: dict) -> str:
     project's or this environment's.
     """
     got = scope_of(doc)
-    return "the project's" if got == GLOBAL else f"environment {got}"
+    return say("scope_project") if got == GLOBAL else say("scope_env", env=got)
 
 
 def here(doc: dict, track: str) -> bool:
@@ -211,7 +323,7 @@ def by_name(root: Path, name: str) -> tuple[dict | None, str]:
     """The doc called `name`: its title, case-insensitive; else the one title containing it."""
     key = " ".join((name or "").split()).lower()
     if not key:
-        return None, "a doc is referenced by number or by name; got nothing"
+        return None, say("name_empty")
     docs = _load(root)
     hits = [d for d in docs if d["title"].lower() == key or _slug(d["title"]) == _slug(key)]
     if not hits:
@@ -219,8 +331,8 @@ def by_name(root: Path, name: str) -> tuple[dict | None, str]:
     if len(hits) == 1:
         return hits[0], ""
     if not hits:
-        return None, f"no doc is called {name!r}. `journal docs` lists them."
-    return None, f"{name!r} could be " + " or ".join(f"doc {d['n']} ({d['title']})" for d in hits[:6]) + " — say which"
+        return None, say("name_none", name=repr(name))
+    return None, say("name_many", name=repr(name), options=[say("name_option", n=d["n"], title=d["title"]) for d in hits[:6]])
 
 
 #: A HEADING INSIDE A DOC OR A PART: `4.2#the-measurements`. The citation used to stop at
@@ -262,9 +374,8 @@ def anchor(root: Path, ref: str) -> tuple[str, str, str]:
     if want in found:
         return base, found[want], ""
     if not found:
-        return base, "", f"doc {base} has no headings to cite; drop the `#{m.group('head')}`"
-    return base, "", (f"doc {base} has no heading `{m.group('head')}`. It has: "
-                      + ", ".join(f"#{s}" for s in found))
+        return base, "", say("no_headings", ref=base, head=m.group("head"))
+    return base, "", say("no_heading", ref=base, head=m.group("head"), found=[say("heading", slug=s) for s in found])
 
 
 def get(root: Path, ref: str) -> tuple[dict | None, dict | None, str]:
@@ -285,12 +396,12 @@ def get(root: Path, ref: str) -> tuple[dict | None, dict | None, str]:
     n, p = int(m.group(1)), m.group(2)
     doc = next((d for d in _load(root) if d["n"] == n), None)
     if doc is None:
-        return None, None, f"there is no doc {n}. `journal docs` lists them."
+        return None, None, say("no_doc", n=n)
     if p is None:
         return doc, None, ""
     part = next((x for x in doc["parts"] if x["p"] == int(p)), None)
     if part is None:
-        return doc, None, f"doc {n} has no part {int(p)}. `journal docs {n}` lists its parts."
+        return doc, None, say("no_part", n=n, p=int(p))
     return doc, part, ""
 
 
@@ -356,18 +467,17 @@ def attach(root: Path, ref: str, src: str, title: str, track: str, source: str =
     if not p.is_absolute():
         p = Path.cwd() / p
     if not p.exists():
-        return False, f"there is no file at {src}"
+        return False, say("no_file", src=src)
     doc = _to_folder(root, doc)
     dst_dir = doc["dir"] / FILES
     if p.resolve() == dst_dir.resolve() or dst_dir.resolve() in p.resolve().parents:
-        return False, f"{src} is already inside doc {doc['n']}'s files; `journal docs index` lists it"
+        return False, say("inside", src=src, n=doc["n"])
     name = p.name
     dst = dst_dir / name
     items = _manifest(doc)
     if dst.exists():
         if not replace:
-            return False, (f"doc {doc['n']} already has {name} — `--replace` to swap it (the old one is "
-                           f"kept under {STRUCK}/), or attach it under another name by copying it first")
+            return False, say("has_file", n=doc["n"], name=name, struck=STRUCK)
         _strike_attachment(doc, name, "replaced", items)
         items = [x for x in items if x.get("name") != name]
     dst_dir.mkdir(exist_ok=True)
@@ -379,8 +489,8 @@ def attach(root: Path, ref: str, src: str, title: str, track: str, source: str =
     items.append({"name": name, "title": title, "from": str(p), "at": _now(), "source": source or "the agent",
                   "track": track})
     _save_manifest(doc, items)
-    kind = "folder" if dst.is_dir() else _human(_size(dst))
-    return True, f"doc {doc['n']} · {name}: {title} ({kind})\n  {dst.relative_to(root.parent)}"
+    kind = say("kind_folder") if dst.is_dir() else _human(_size(dst))
+    return True, say("attached", n=doc["n"], name=name, title=title, kind=kind, path=dst.relative_to(root.parent))
 
 
 def _strike_attachment(doc: dict, name: str, why: str, items: list[dict]) -> Path:
@@ -408,17 +518,17 @@ def _strike_attachment(doc: dict, name: str, why: str, items: list[dict]) -> Pat
 def detach(root: Path, ref: str, name: str, why: str) -> tuple[bool, str]:
     why = " ".join((why or "").split())
     if not why:
-        return False, 'say why: journal docs detach <n> <name> "<why it no longer belongs>"'
+        return False, say("detach_why")
     doc, _, err = get(root, ref)
     if doc is None:
         return False, err
     have = [a for a in attachments(doc) if a["name"] == name]
     if not have:
-        return False, f"doc {doc['n']} has no attachment named {name}; `journal docs {doc['n']}` lists them"
+        return False, say("no_attachment", n=doc["n"], name=name)
     items = _manifest(doc)
     dst = _strike_attachment(doc, name, why, items)
     _save_manifest(doc, [x for x in items if x.get("name") != name])
-    return True, f"detached {name} from doc {doc['n']}\n  kept at {dst.relative_to(root.parent)}"
+    return True, say("detached", name=name, n=doc["n"], path=dst.relative_to(root.parent))
 
 
 def _tree(p: Path, cap: int = 40) -> list[str]:
@@ -430,7 +540,7 @@ def _tree(p: Path, cap: int = 40) -> list[str]:
         depth = len(x.relative_to(p).parts) - 1
         rows.append("  " * depth + x.name + ("/" if x.is_dir() else f"  {_human(x.stat().st_size)}"))
     if len(rows) > cap:
-        rows = rows[:cap] + [f"… and {len(rows) - cap} more"]
+        rows = rows[:cap] + [say("tree_more", n=len(rows) - cap)]
     return rows
 
 
@@ -440,11 +550,11 @@ def _attachment_lines(root: Path, files: list[dict]) -> list[str]:
     for a in files:
         if a["dir"]:
             inside = [x for x in a["path"].rglob("*") if x.is_file() and not x.name.startswith(".")]
-            kind = f"folder of {len(inside)} file(s), {_human(a['size'])}"
+            kind = say("folder_of", n=len(inside), size=_human(a["size"]))
         else:
             kind = _human(a["size"])
         rows.append((a["name"] + ("/" if a["dir"] else ""), a["title"]))
-        rows.append(("", f"{kind} · added by {a.get('source', '')} {_age(a.get('at', ''))}"))
+        rows.append(("", say("added_by", kind=kind, source=a.get("source", ""), age=_age(a.get("at", "")))))
         rows.append(("", str(a["path"].relative_to(root.parent))))
         if a["dir"]:
             for r in _tree(a["path"]):
@@ -472,14 +582,14 @@ def list_attachments(root: Path, ref: str = "", width: int | None = None) -> tup
         if not files:
             continue
         total += len(files)
-        out.append(fmt.section(f"doc {d['n']}  {d['title']}"))
+        out.append(fmt.section(say("doc_section", n=d["n"], title=d["title"])))
         out.append("")
         out.extend(_attachment_lines(root, files))
     if not out:
-        where = f"doc {chosen[0]['n']} has" if ref else "no doc has"
-        return True, (f"  {where} no attachments. `journal docs attach <n> <path> \"<what it is>\"` "
-                      "copies a file or a folder in.")
-    head = fmt.title("ATTACHMENTS", sub=f"{total} file(s)" + (f" of doc {chosen[0]['n']}" if ref else f" across {len([d for d in chosen if attachments(d)])} doc(s)"))
+        return True, say("no_attachments_one", n=chosen[0]["n"]) if ref else say("no_attachments")
+    sub = (say("attachments_one", total=total, n=chosen[0]["n"]) if ref
+           else say("attachments_all", total=total, docs=len([d for d in chosen if attachments(d)])))
+    head = fmt.title(say("attachments_title"), sub=sub)
     return True, head + "\n" + "\n".join(out)
 
 
@@ -498,7 +608,7 @@ def adopt_attachments(root: Path) -> list[str]:
             if f.name == MANIFEST or f.name in known or f.name.startswith("."):
                 continue
             items.append({"name": f.name, "title": f.name, "from": "", "at": _now(), "source": "adopted", "track": doc.get("track", "")})
-            out.append(f"  + doc {doc['n']} · {f.name} (say what it is: journal docs attach {doc['n']} … or edit files/{MANIFEST})")
+            out.append(say("adopted_file", n=doc["n"], name=f.name, manifest=MANIFEST))
         if len(items) != len(known):
             _save_manifest(doc, items)
     return out
@@ -519,13 +629,12 @@ def add(root: Path, title: str, abstract: str, body: str, track: str, source: st
     title = " ".join((title or "").split())
     abstract = " ".join((abstract or "").split())
     if not title:
-        return False, 'a doc needs a title: journal docs add "<title>" --abstract="<one line>" --brief'
+        return False, say("needs_title")
     if not abstract:
-        return False, ('a doc needs an abstract — the one line every session is handed:\n'
-                       '  journal docs add "<title>" --abstract="<what it settles, in one line>" --brief')
+        return False, say("needs_abstract")
     for d in _load(root):
         if d.get("title", "").lower() == title.lower():
-            return False, f"doc {d['n']} already has that title"
+            return False, say("title_taken", n=d["n"])
     n = _next_number(root)
     d = folder(root) / _slug(title)
     if d.exists():
@@ -533,8 +642,7 @@ def add(root: Path, title: str, abstract: str, body: str, track: str, source: st
     meta = {"n": n, "title": title, "abstract": abstract, "status": "draft", "track": track,
             "source": source or "the agent", "at": _now()}
     _write(d / INDEX, meta, body)
-    return True, (f"doc {n}: {title}\n  {d.relative_to(root.parent)}/{INDEX} — a draft; "
-                  f"journal docs final {n} when it is")
+    return True, say("added", n=n, title=title, path=d.relative_to(root.parent) / INDEX)
 
 
 def _to_folder(root: Path, doc: dict) -> dict:
@@ -546,17 +654,16 @@ def _to_folder(root: Path, doc: dict) -> dict:
     d.mkdir(exist_ok=True)
     meta = {k: doc.get(k, "") for k in FIELDS}
     _write(d / INDEX, meta, doc["body"])
-    f.write_text(f"---\npointer: {d.name}/{INDEX}\n---\n\nMoved to `{d.name}/{INDEX}` when it gained "
-                 f"parts. `journal docs {doc['n']}` reads it.\n")
+    f.write_text(say("pointer", target=f"{d.name}/{INDEX}", n=doc["n"]))
     return {**doc, "path": d / INDEX, "dir": d, "parts": []}
 
 
 def part(root: Path, ref: str, title: str, body: str, track: str, source: str = "") -> tuple[bool, str]:
     title = " ".join((title or "").split())
     if not title:
-        return False, 'a part needs a title: journal docs part <n> "<title>" --brief'
+        return False, say("part_title")
     if not (body or "").strip():
-        return False, "a part needs a body — pass it on stdin with --brief"
+        return False, say("part_body")
     doc, _, err = get(root, ref)
     if doc is None:
         return False, err
@@ -569,19 +676,19 @@ def part(root: Path, ref: str, title: str, body: str, track: str, source: str = 
     path = doc["dir"] / f"{p:02d}-{_slug(title)}.md"
     _write(path, {"title": title, "at": _now(), "source": source or "the agent", "track": track},
            body, PART_FIELDS)
-    return True, f"doc {doc['n']}.{p}: {title}\n  {path.relative_to(root.parent)}"
+    return True, say("part_added", n=doc["n"], p=p, title=title, path=path.relative_to(root.parent))
 
 
 def replace(root: Path, ref: str, body: str, track: str, source: str = "") -> tuple[bool, str]:
     doc, prt, err = get(root, ref)
     if doc is None or prt is None:
-        return False, err or f"replace wants a part, like {ref}.1"
+        return False, err or say("replace_part", ref=ref)
     if not (body or "").strip():
-        return False, "a replacement needs a body — pass it on stdin with --brief"
+        return False, say("replace_body")
     _strike_file(doc, prt, "replaced")
     _write(prt["path"], {"title": prt["title"], "at": _now(), "source": source or "the agent",
                          "track": track}, body, PART_FIELDS)
-    return True, f"doc {doc['n']}.{prt['p']} replaced; the old body is in {STRUCK}/"
+    return True, say("replaced", n=doc["n"], p=prt["p"], struck=STRUCK)
 
 
 def _strike_file(doc: dict, prt: dict, why: str) -> Path:
@@ -598,12 +705,12 @@ def _strike_file(doc: dict, prt: dict, why: str) -> Path:
 def strike(root: Path, ref: str, why: str) -> tuple[bool, str]:
     why = " ".join((why or "").split())
     if not why:
-        return False, 'say why: journal docs strike <n>.<p> "<why it no longer holds>"'
+        return False, say("strike_why")
     doc, prt, err = get(root, ref)
     if doc is None or prt is None:
-        return False, err or f"strike wants a part, like {ref}.1 — a whole doc is superseded, not struck"
+        return False, err or say("strike_part", ref=ref)
     dst = _strike_file(doc, prt, why)
-    return True, f"struck doc {doc['n']}.{prt['p']}: {prt['title']}\n  kept at {dst.relative_to(root.parent)}"
+    return True, say("struck", n=doc["n"], p=prt["p"], title=prt["title"], path=dst.relative_to(root.parent))
 
 
 def move(root: Path, ref: str, dst: str) -> tuple[bool, str]:
@@ -618,22 +725,19 @@ def move(root: Path, ref: str, dst: str) -> tuple[bool, str]:
     to_global = dst in ("--global", "global", GLOBAL)
     dst = GLOBAL if to_global else _state.slug(dst)
     if not dst:
-        return False, ('say where: `journal docs move <n> "<environment>"`, or '
-                       "`journal docs move <n> --global` to give it to the project")
+        return False, say("move_where")
     doc, prt, err = get(root, ref)
     if doc is None:
         return False, err
     if prt is not None:
-        return False, "a part belongs to its doc — move the doc"
+        return False, say("move_part")
     was = scope_of(doc)
-    was_said = "the project" if was == GLOBAL else f"`{was}`"
+    was_said = say("was_project") if was == GLOBAL else say("env_quoted", env=was)
     meta = {k: doc.get(k, "") for k in FIELDS}
     meta["track"] = dst
     _write(doc["path"], meta, doc["body"])
-    now_said = "the project — every environment lists it" if to_global else f"`{dst}`"
-    return True, (f"doc {doc['n']} belongs to {now_said} now (was {was_said}): {doc['title']}\n"
-                  "  it was always readable from anywhere by number, and still is — scope is "
-                  "what a catalogue LISTS")
+    now_said = say("to_project") if to_global else say("env_quoted", env=dst)
+    return True, say("moved", n=doc["n"], now=now_said, was=was_said, title=doc["title"])
 
 
 def set_status(root: Path, ref: str, status: str) -> tuple[bool, str]:
@@ -643,7 +747,7 @@ def set_status(root: Path, ref: str, status: str) -> tuple[bool, str]:
     meta = {k: doc.get(k, "") for k in FIELDS}
     meta["status"] = status
     _write(doc["path"], meta, doc["body"])
-    return True, f"doc {doc['n']} is {status}: {doc['title']}"
+    return True, say("status_set", n=doc["n"], status=status, title=doc["title"])
 
 
 def supersede(root: Path, old_ref: str, new_ref: str) -> tuple[bool, str]:
@@ -654,14 +758,14 @@ def supersede(root: Path, old_ref: str, new_ref: str) -> tuple[bool, str]:
     if new is None:
         return False, err
     if old["n"] == new["n"]:
-        return False, "a doc cannot supersede itself"
+        return False, say("self_supersede")
     m = {k: old.get(k, "") for k in FIELDS}
     m["superseded_by"] = str(new["n"])
     _write(old["path"], m, old["body"])
     m = {k: new.get(k, "") for k in FIELDS}
     m["supersedes"] = str(old["n"])
     _write(new["path"], m, new["body"])
-    return True, f"doc {old['n']} is superseded by doc {new['n']}; readers of {old['n']} are pointed there"
+    return True, say("superseded", old=old["n"], new=new["n"])
 
 
 def adopt(root: Path, track: str) -> list[str]:
@@ -682,16 +786,16 @@ def adopt(root: Path, track: str) -> list[str]:
                 _write(dst, {"title": _title_of(body) or x.stem.replace("-", " "), "at": _now(),
                              "source": "adopted", "track": track}, body, PART_FIELDS)
                 x.unlink()
-            out.append(f"  + doc {n}: {title} — folder, {len(files)} part(s)")
+            out.append(say("adopted_folder", n=n, title=title, parts=len(files)))
             continue
         _, body = _parse(f)
         n = _next_number(root)
         title = _title_of(body) or f.stem.replace("-", " ")
         _write(f, {"n": n, "title": title, "abstract": _abstract_of(body), "status": "final",
                    "track": track, "source": "adopted", "at": _now(), "adopted": _now()}, body)
-        out.append(f"  + doc {n}: {title}")
+        out.append(say("adopted_doc", n=n, title=title))
     out += adopt_attachments(root)
-    return out or ["  = every file under docs/ is catalogued"]
+    return out or [say("all_adopted")]
 
 
 def _title_of(body: str) -> str:
@@ -704,7 +808,7 @@ def _title_of(body: str) -> str:
 def _abstract_of(body: str, limit: int = 240) -> str:
     paras = [p for p in body.split("\n\n") if p.strip() and not p.lstrip().startswith("#")]
     if not paras:
-        return "(no abstract yet — journal docs abstract <n> \"…\" gives it one)"
+        return say("no_abstract")
     text = " ".join(paras[0].split()).replace("**", "")
     return text if len(text) <= limit else text[:limit - 1].rstrip() + "…"
 
@@ -712,14 +816,14 @@ def _abstract_of(body: str, limit: int = 240) -> str:
 def set_abstract(root: Path, ref: str, abstract: str) -> tuple[bool, str]:
     abstract = " ".join((abstract or "").split())
     if not abstract:
-        return False, 'journal docs abstract <n> "<one line>"'
+        return False, say("abstract_usage")
     doc, _, err = get(root, ref)
     if doc is None:
         return False, err
     meta = {k: doc.get(k, "") for k in FIELDS}
     meta["abstract"] = abstract
     _write(doc["path"], meta, doc["body"])
-    return True, f"doc {doc['n']}: {abstract}"
+    return True, say("abstract_set", n=doc["n"], abstract=abstract)
 
 
 # ------------------------------------------------------------------ what cites a doc
@@ -762,8 +866,8 @@ def cited_by(root: Path, n: int) -> list[str]:
     text form; see `cited_by_rows` for the structured rows this is built from."""
     def label(r: dict) -> str:
         if r["kind"] == "rule":
-            return f"rule {r['n']}: {r['text']}"
-        return f"{r['kind']} {r['n']} on environment {r['env']}: {r['text']}"
+            return say("cite_rule", n=r["n"], text=r["text"])
+        return say("cite_other", kind=r["kind"], n=r["n"], env=r["env"], text=r["text"])
     return [label(r) for r in cited_by_rows(root, n)]
 
 
@@ -775,14 +879,14 @@ def ref_label(root: Path, ref: str, short: bool = False) -> str:
     base, head, _ = anchor(root, ref)
     doc, prt, _ = get(root, base)
     if doc is None:
-        return f"doc {ref} (missing)"
-    sec = f" § {head}" if head else ""
+        return say("missing", ref=ref)
+    sec = say("section_mark", head=head) if head else ""
     if short:
-        return (f"doc {doc['n']}.{prt['p']}: {prt['title']}{sec}" if prt
-                else f"doc {doc['n']}{sec}")
+        return (say("label_part_short", n=doc["n"], p=prt["p"], part=prt["title"], sec=sec) if prt
+                else say("label_short", n=doc["n"], sec=sec))
     if prt:
-        return f"doc {doc['n']}.{prt['p']}: {doc['title']} · {prt['title']}{sec}"
-    return f"doc {doc['n']}: {doc['title']}{sec}"
+        return say("label_part", n=doc["n"], p=prt["p"], title=doc["title"], part=prt["title"], sec=sec)
+    return say("label", n=doc["n"], title=doc["title"], sec=sec)
 
 
 def check_ref(root: Path, ref: str) -> str | None:
@@ -857,19 +961,19 @@ def catalogue(root: Path, width: int | None = None, cap: int | None = None, page
     if track and not all_of_them:
         docs = [d for d in docs if here(d, track)]
     if not docs:
-        return "  No docs are catalogued."
+        return say("empty")
 
     def facts(d: dict) -> list[str]:
         out = [d.get("status", "draft"), scope_text(d)]
         if d["parts"]:
-            out.append(f"{len(d['parts'])} part(s)")
+            out.append(say("fact_parts", n=len(d["parts"])))
         files = attachments(d)
         if files:
-            out.append(f"{len(files)} file(s)")
+            out.append(say("fact_files", n=len(files)))
         if _age(d.get("at", "")):
             out.append(_age(d.get("at", "")))
         if d.get("superseded_by"):
-            out.append(f"SUPERSEDED by doc {d['superseded_by']}")
+            out.append(say("fact_superseded", n=d["superseded_by"]))
         if d.get("abstract"):
             out.append(d["abstract"])
         return out
@@ -888,51 +992,50 @@ def show(root: Path, ref: str, width: int | None = None) -> tuple[bool, str]:
     if doc is None or (prt is None and "." in ref):
         return False, err
     if prt:
-        out = [fmt.title(f"DOC {doc['n']}.{prt['p']}", sub=prt["title"]),
-               "  " + fmt.dim(f"of doc {doc['n']}: {doc['title']} · {prt.get('source', '')} · "
-                              f"{_age(prt.get('at', ''))} · {prt['path'].relative_to(root.parent)}"), ""]
+        out = [fmt.title(say("part_heading", n=doc["n"], p=prt["p"]), sub=prt["title"]),
+               "  " + fmt.dim(say("part_meta", n=doc["n"], title=doc["title"], source=prt.get("source", ""),
+                                  age=_age(prt.get("at", "")), path=prt["path"].relative_to(root.parent))), ""]
         out.append(fmt.prose(prt["body"].rstrip(), width=width))
         return True, "\n".join(out)
     meta = [doc.get("status", "draft"), scope_text(doc), doc.get("source", ""),
-            f"written {_age(doc.get('at', ''))}"]
-    out = [fmt.title(f"DOC {doc['n']}", sub=doc["title"]),
+            say("written", age=_age(doc.get("at", "")))]
+    out = [fmt.title(say("doc_heading", n=doc["n"]), sub=doc["title"]),
            "  " + fmt.dim(" · ".join(m for m in meta if m)),
            "  " + fmt.dim(str(doc["path"].relative_to(root.parent)))]
     if doc.get("superseded_by"):
-        out.append(fmt.section("superseded"))
-        out.append(fmt.wrap(f"Doc {doc['superseded_by']} replaces this one. Read that instead: "
-                            f"journal docs {doc['superseded_by']}"))
+        out.append(fmt.section(say("superseded_section")))
+        out.append(fmt.wrap(say("superseded_note", n=doc["superseded_by"])))
     if doc.get("supersedes"):
-        out.append("  " + fmt.dim(f"supersedes doc {doc['supersedes']}"))
-    out.append(fmt.section("abstract"))
+        out.append("  " + fmt.dim(say("supersedes_note", n=doc["supersedes"])))
+    out.append(fmt.section(say("abstract_section")))
     out.append(fmt.wrap(doc.get("abstract", ""), width=width))
     if doc["body"].strip():
         out.append("")
         out.append(fmt.prose(doc["body"].rstrip(), width=width))
     for p in doc["parts"]:
-        out.append(fmt.section(f"{doc['n']}.{p['p']}  {p['title']}"))
-        out.append("  " + fmt.dim(f"{p.get('source', '')} · {_age(p.get('at', ''))} · "
-                                  f"{p['path'].relative_to(root.parent)}"))
+        out.append(fmt.section(say("part_section", n=doc["n"], p=p["p"], title=p["title"])))
+        out.append("  " + fmt.dim(say("part_line", source=p.get("source", ""), age=_age(p.get("at", "")),
+                                      path=p["path"].relative_to(root.parent))))
         out.append("")
         out.append(fmt.prose(p["body"].rstrip(), width=width))
     files = attachments(doc)
     if files:
-        out.append(fmt.section("attachments"))
+        out.append(fmt.section(say("attachments_section")))
         out.append("")
         out.extend(_attachment_lines(root, files))
     cites = cited_by(root, doc["n"])
     if cites:
-        out.append(fmt.section("cited by"))
-        out.extend(f"  {c}" for c in cites)
+        out.append(fmt.section(say("cited_section")))
+        out.extend(say("cite_line", cite=c) for c in cites)
     out.append("")
-    rows = [(f'journal docs part {doc["n"]} "<title>" --brief', "add a part from stdin"),
-            (f'journal docs attach {doc["n"]} <path> "<what it is>"', "copy a file or folder in, beside the parts")]
+    n = doc["n"]
+    rows = [(say("cmd_part", n=n), say("cmd_part_what")), (say("cmd_attach", n=n), say("cmd_attach_what"))]
     if files:
-        rows.append((f'journal docs detach {doc["n"]} <name> "<why>"', "drop an attachment, kept under struck/"))
+        rows.append((say("cmd_detach", n=n), say("cmd_detach_what")))
     if doc["parts"]:
-        rows.append((f'journal docs strike {doc["n"]}.<p> "<why>"', "drop a part, on the record"))
-    rows.append((f"journal docs {'final' if doc.get('status') != 'final' else 'draft'} {doc['n']}",
-                 "change its status"))
+        rows.append((say("cmd_strike", n=n), say("cmd_strike_what")))
+    rows.append((say("cmd_status", status="final" if doc.get("status") != "final" else "draft", n=n),
+                 say("cmd_status_what")))
     out.append(fmt.commands(rows))
     return True, "\n".join(out)
 
@@ -962,18 +1065,17 @@ def carry(root: Path, cap: int = 20, track: str = "", brief: bool = False) -> st
         return ""
     lines = []
     for d in fmt.ordered(docs)[:cap]:
-        mark = "  (draft)" if d.get("status") != "final" else ""
-        files = [] if brief else attachments(d)
-        if files:
-            mark += f"  ({len(files)} file(s): " + ", ".join(a["name"] for a in files[:3]) + ("…" if len(files) > 3 else "") + ")"
+        draft = say("draft_mark") if d.get("status") != "final" else ""
+        n = str(d["n"]).rjust(3)
         if brief:
-            lines.append(f"  {d['n']:>3}  {fmt.gist(d['title'])}{'  (draft)' if d.get('status') != 'final' else ''}")
-        else:
-            lines.append(f"  {d['n']:>3}  {d['title']}{mark}\n       {d.get('abstract', '')}")
+            lines.append(say("carry_brief", n=n, title=fmt.gist(d["title"]), draft=draft))
+            continue
+        files = attachments(d)
+        mark = draft + (say("files_mark", n=len(files), names=[a["name"] for a in files[:3]],
+                            more="…" if len(files) > 3 else "") if files else "")
+        lines.append(say("carry_row", n=n, title=d["title"], mark=mark, abstract=d.get("abstract", "")))
     more = fmt.cut(cap, len(docs), "journal docs", shortened=brief)
-    return (f"DOCS OF THIS PROJECT, {len(docs)} catalogued — read one before you re-investigate what "
-            "it settles; `journal docs <n>` reads it, `journal docs search <term>` finds a line:\n"
-            + "\n".join(lines) + more)
+    return say("carry", total=len(docs), rows=lines, more=more)
 
 
 def search_lines(root: Path, track: str = "",
@@ -1000,9 +1102,9 @@ def search_lines(root: Path, track: str = "",
                 out.append((f"{d['n']}.{p['p']}", p["title"], i, line))
         for a in attachments(d):
             rel = a["path"].relative_to(root.parent)
-            out.append((str(d["n"]), d["title"], 0, f"attachment {a['name']} — {a['title']} ({rel})"))
+            out.append((str(d["n"]), d["title"], 0, say("search_attachment", name=a["name"], title=a["title"], path=rel)))
             if a["dir"]:
                 for x in sorted(a["path"].rglob("*")):
                     if x.is_file() and not x.name.startswith("."):
-                        out.append((str(d["n"]), d["title"], 0, f"attachment {a['name']}/{x.relative_to(a['path'])} — in {a['title']}"))
+                        out.append((str(d["n"]), d["title"], 0, say("search_inside", name=a["name"], file=x.relative_to(a["path"]), title=a["title"])))
     return out
