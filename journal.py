@@ -437,71 +437,6 @@ def cmd_search(term: str, all_of_them: bool = False, width: int | None = None, p
 
 
 
-def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1, order: str = fmt.DESC) -> int:
-    here = tracks.current(root(), _stem())
-    if not rest:
-        cat = tools._all(root())
-        loose = tools.uncatalogued(root())
-        fmt.say(fmt.title("TOOLS OF THIS PROJECT", sub=f"{len(cat)} catalogued"))
-        fmt.say()
-        fmt.say(tools.catalogue(root(), cap=CATALOGUE_PAGE, page=page, order=order))
-        if loose:
-            fmt.say()
-            fmt.say(fmt.wrap(f"{len(loose)} folder(s) under .journal/tools/ have no tool.md: "
-                           + ", ".join(x.name for x in loose) + " — `journal tools index` catalogues them."))
-        fmt.say()
-        fmt.say(fmt.wrap("Scripts kept for repeated work, so the next session runs one "
-                         "instead of writing it again. A tool is the project's, like a doc; "
-                         "one line of this catalogue reaches every session."))
-        fmt.say(fmt.commands([
-            ("journal tools show <name>", "read one — `show` reaches a tool named after a verb"),
-            ("journal tools run <name> …", "run it from the project root"),
-            ('journal tools add <name> "<title>" --summary="…" --usage="…" --entry=<file>', "catalogue a script"),
-        ]))
-        return 0
-    verb = rest[0]
-    if verb == "add":
-        if len(rest) < 3:
-            fmt.say('journal tools add <name> "<title>" --summary="<one line>" --usage="<how to call it>" [--entry=<file>] [--brief]',
-                  error=True)
-            return 1
-        body = _brief(brief)
-        if body is None:
-            fmt.say(BRIEF_REFUSED, error=True)
-            return 1
-        ok, msg = tools.add(root(), rest[1], " ".join(rest[2:]), meta.get("summary", ""), meta.get("usage", ""),
-                            meta.get("when", ""), meta.get("entry", ""), body, here)
-    elif verb == "set":
-        if len(rest) < 4:
-            fmt.say('journal tools set <name> summary|usage|when|entry "<value>"', error=True)
-            return 1
-        ok, msg = tools.set_field(root(), rest[1], rest[2], " ".join(rest[3:]))
-    elif verb in ("remove", "strike"):  # ruling R4: `strike` is the one retire verb everywhere
-        if len(rest) < 3:
-            fmt.say(f'journal tools {verb} <name> "<why>"', error=True)
-            return 1
-        ok, msg = tools.remove(root(), rest[1], " ".join(rest[2:]))
-    elif verb == "index":
-        for line in tools.adopt(root(), here):
-            fmt.say(line)
-        return 0
-    elif verb == "run":
-        fmt.say("journal tools run <name> [args…]", error=True)
-        return 1
-    # THE READ IS A VERB TOO, because a tool may be NAMED after one. `journal tools <name>`
-    # reads a tool by putting its name where a verb goes, which works until somebody
-    # catalogues a tool called `add`, `run` or `index` — and then the noun's own vocabulary
-    # eats it, silently and forever. `journal tools show add` is the way to say "the tool
-    # called add" no matter what it is called. The bare form stays: ruling R3, nothing that
-    # runs today stops running.
-    elif verb in ("show", "info", "read") and len(rest) > 1:
-        ok, msg = tools.show(root(), rest[1])
-    elif verb == "list" and len(rest) == 1:
-        return cmd_tools([], brief, meta, page, order)
-    else:
-        ok, msg = tools.show(root(), verb)
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
 
 
 
@@ -919,13 +854,11 @@ class Opts:
     all_of_them: bool = False
     go_back: bool = False
     fresh: bool = False
-    brief: bool = False
     off_flag: bool = False
     list_flag: bool = False
     project_too: bool = False
     all_sessions: bool = False
     yes_flag: bool = False
-    order: str = fmt.DESC
     sessions: list
     page: int = 1
     acting: str = ""
@@ -933,28 +866,22 @@ class Opts:
     from_src: str | None = None
     serve_port: int | None = None
     open_browser: bool = False
-    tool_meta: dict
 
     def __init__(self):
-        # THE TWO THAT MUST NOT BE SHARED. Everything above is immutable and safe as a
-        # class attribute; a list and a dict are not, and a default_factory is exactly what
-        # a dataclass would have generated here.
+        # the one field that must not be shared: a list class attribute would be one list for every instance
         self.sessions = []
-        self.tool_meta = {}
 
 
 class _Flag(NamedTuple):
     """One row of the flag table. `dest` is the Opts field it fills; None means the
     option is recognised and consumed here but read elsewhere (`--env=`, `--from=`).
     `type` converts a `--x=value`'s text — raising ValueError with the refusal to print
-    if it cannot. `append`/`keyed` are the two shapes a value can land in besides a
-    plain assignment: a list that grows, or a dict keyed by the flag's own name. `set`
-    is what a bare flag (no value at all) writes into its dest.
+    if it cannot. `append` makes the value land in a list that grows instead of a plain
+    assignment. `set` is what a bare flag (no value at all) writes into its dest.
     """
     dest: str | None = None
     type: object = str
     append: bool = False
-    keyed: bool = False
     set: object = True
 
 
@@ -974,26 +901,15 @@ def _page_flag(v: str) -> int:
         raise ValueError("--page wants a number")
 
 
-def _order_flag(v: str) -> str:
-    v = v.strip().lower()
-    if v not in fmt.ORDERS:
-        raise ValueError(f"--order wants asc or desc, got {v!r}. Newest first is the "
-                          "default; --order=asc reads oldest first.")
-    return v
-
-
 # `--x=value` FLAGS. Aliases share one `_Flag` instance, so two spellings cannot drift.
 _ENV_NOOP = _Flag(dest=None)      # applied and refused in run(), before any command reads the record
-_TOOL_META = _Flag(dest="tool_meta", keyed=True)
 
 VALUE_FLAGS: dict[str, _Flag] = {
     "--back": _Flag(dest="back", type=_int_flag("--back")),
     "--env": _ENV_NOOP, "--environment": _ENV_NOOP, "--track": _ENV_NOOP,
-    "--order": _Flag(dest="order", type=_order_flag),
     "--session": _Flag(dest="sessions", append=True),
     "--as": _Flag(dest="acting"),
     "--to": _Flag(dest="to_agent"),
-    "--summary": _TOOL_META, "--usage": _TOOL_META, "--when": _TOOL_META, "--entry": _TOOL_META,
     "--from": _Flag(dest="from_src"),
     "--page": _Flag(dest="page", type=_page_flag),
     "--port": _Flag(dest="serve_port", type=_int_flag("--port")),
@@ -1006,7 +922,6 @@ BARE_FLAGS: dict[str, _Flag] = {
     "--off": _Flag(dest="off_flag"),
     #: `grant` LENDS BARE now, so its listing needed a spelling of its own — `_v_grant`.
     "--list": _Flag(dest="list_flag"),
-    "--brief": _Flag(dest="brief"),
     "--project": _Flag(dest="project_too"),
     "--yes": _Flag(dest="yes_flag"),
     "--all-sessions": _Flag(dest="all_sessions"),
@@ -1206,7 +1121,6 @@ COMMANDS.update({
     "assign": _v_assign,
     "user": lambda verb, rest, opts: cmd_user(opts.back),
     "search": _v_search,
-    "tools": lambda verb, rest, opts: cmd_tools(rest[1:], opts.brief, opts.tool_meta, opts.page, opts.order),
     "carry": lambda verb, rest, opts: cmd_carry(opts.fresh),
     "claim": lambda verb, rest, opts: cmd_claim(rest[1] if len(rest) > 1 else "", " ".join(rest[2:])),
     "prepare": lambda verb, rest, opts: cmd_prepare(" ".join(rest[1:])),
@@ -1276,9 +1190,7 @@ def main(argv: list[str]) -> int:
                     converted = spec.type(val)
                 except ValueError as e:
                     return _refuse(str(e))
-                if spec.keyed:
-                    opts.tool_meta[name[2:]] = converted
-                elif spec.append:
+                if spec.append:
                     getattr(opts, spec.dest).append(converted)
                 else:
                     setattr(opts, spec.dest, converted)

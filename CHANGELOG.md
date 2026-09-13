@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.9 — `tools` moves onto command classes; the hook's noun tables are gone
+
+`journal tools` is declared in `commands/tools.py`, and with it the last per-noun write table
+in `hook.py` (`NOUN_WRITES`) is removed: every declared noun is classified from its command
+classes, one place. `journal tools run` still hands its arguments to the script untouched.
+The `--summary`/`--usage`/`--when`/`--entry` options are declared on `tools add` instead of
+being special-cased by the CLI's flag loop.
+
 ## 1.62.8 — `docs` moves onto command classes
 
 Every docs verb — list, show/read, `<doc> files`, files, add, part, replace, strike, final,
