@@ -125,12 +125,32 @@ class RulesController(ClaimsController):
     noun = "rule"
     key = pins.RULES
     scoped = False
-    actions = ("index", "show", "store", "update", "destroy", "amend")
-    numbered = ("show", "update", "destroy", "amend")
+    actions = ("index", "show", "store", "update", "destroy", "amend", "inject", "uninject")
+    numbered = ("show", "update", "destroy", "amend", "inject", "uninject")
 
     def repository(self, root: Path, p: Payload):
         from resources import Rules
         return Rules(root)
+
+    def _rows(self, root: Path, p: Payload) -> dict[int, dict]:
+        import claude_md
+        inside = claude_md.injected(root)
+        return {n: {**row, "in_claude_md": n in inside} for n, row in super()._rows(root, p).items()}
+
+    def destroy(self, root: Path, p: WhyPayload) -> Result:
+        import claude_md
+        result = super().destroy(root, p)
+        if result.ok:
+            claude_md.forget(root, p.id)
+        return result
+
+    def inject(self, root: Path, p: Payload) -> Result:
+        import claude_md
+        return Result.of(claude_md.inject(root, p.id))
+
+    def uninject(self, root: Path, p: Payload) -> Result:
+        import claude_md
+        return Result.of(claude_md.uninject(root, p.id))
 
     def index(self, root: Path, p: ListingPayload) -> Result:
         import builtin
