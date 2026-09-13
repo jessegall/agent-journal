@@ -117,6 +117,7 @@ data = json.loads(body)
 check("/api/overview answers 200", status, 200)
 check("overview lists both environments", {e["name"] for e in data["environments"]} >= {"alpha", "beta"}, True)
 check("overview names the project the viewer's sidebar shows", data["project"], project.name)
+check("and the version being served, so an open page can reload when it changes", "version" in data, True)
 
 status, _, body = get("/api/env/alpha/todos")
 data = json.loads(body)

@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.86.0 — the viewer keeps itself current
+
+Every list and item on screen refreshes itself every five seconds while the tab is visible,
+one request at a time, and a failed refresh is simply tried again on the next tick (search
+does not poll). The overview carries the version being served; when it changes — after an
+upgrade — an open page reloads itself so the new viewer renders.
+
 ## 1.85.0 — Home opens what you click beside the page
 
 Clicking a to-do, a message or a question on an environment's Home opens it in a side panel
