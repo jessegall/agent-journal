@@ -362,6 +362,15 @@ check("a field that cannot be sorted on is a 400 naming what can", (status, "pri
 status, got = post("/api/env/beta/todos/2", {"title": "x"}, method="PATCH")
 check("a number that is not on that environment is 404", status, 404)
 
+# ─────────────────────────────────────────────────────────────── a question with a description and options
+status, got = post("/api/env/alpha/questions", {"text": "Which colour?", "description": "The button needs one.",
+                                                "options": ["blue", "green", " blue "]})
+check("a question keeps its description and its options, each once",
+      (status, got["data"]["description"], got["data"]["options"]), (201, "The button needs one.", ["blue", "green"]))
+n_q = got["data"]["n"]
+status, got = post(f"/api/env/alpha/questions/{n_q}/answer", {"answer": "green"})
+check("choosing an option answers with it", (status, got["data"]["answer"]), (200, "green"))
+
 # ─────────────────────────────────────────────────────────────── tools, through their controller
 status, got = post("/api/tools", {"name": "report", "title": "Write the report", "summary": "prints the weekly report"})
 check("store: a tool from the browser", (status, [t["name"] for t in json.loads(get("/api/tools")[2])]), (201, ["report"]))

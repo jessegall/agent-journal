@@ -14,7 +14,7 @@ class QuestionsController(Controller):
     noun = "question"
     actions = ("index", "show", "store", "update", "destroy", "answer", "link", "unlink")
     numbered = ("show", "update", "destroy", "answer", "link", "unlink")
-    payloads = {"index": ListingPayload, "store": question_payloads.StorePayload, "update": TextPayload,
+    payloads = {"index": ListingPayload, "store": question_payloads.StorePayload, "update": question_payloads.UpdatePayload,
                 "destroy": WhyPayload, "answer": AnswerPayload, "link": question_payloads.RefPayload,
                 "unlink": question_payloads.RefPayload}
 
@@ -47,12 +47,15 @@ class QuestionsController(Controller):
         return Result("ok", "", self._row(root, p, p.id))
 
     def store(self, root: Path, p: question_payloads.StorePayload) -> Result:
-        outcome = questions.add(root, p.text, p.at, p.about, source=p.source)
+        outcome = questions.add(root, p.text, p.at, p.about, source=p.source, description=p.description, options=p.options)
         data = self._row(root, p, self.repository(root, p).count()) if outcome[0] else None
         return Result.of(outcome, data, created=True)
 
-    def update(self, root: Path, p: TextPayload) -> Result:
-        return Result.of(questions.edit(root, p.id, p.text), self._row(root, p, p.id))
+    def update(self, root: Path, p: question_payloads.UpdatePayload) -> Result:
+        outcome = questions.edit(root, p.id, p.text if p.has("text") else None,
+                                 description=p.description if p.has("description") else None,
+                                 options=p.options if p.has("options") else None)
+        return Result.of(outcome, self._row(root, p, p.id))
 
     def answer(self, root: Path, p: AnswerPayload) -> Result:
         # a new answer is added and the old one kept; the agent is told again

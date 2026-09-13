@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.88.0 — a question can explain itself and offer choices
+
+A question is one short line, and can carry a description — the context the user needs to
+decide — and options: `journal questions add "<question>" --description="…" --option="…"
+--option="…"` (and the same on `questions edit`, where only what is given changes). In the
+viewer the description is shown under the question and each option is a button that answers
+with it; the box below still takes an answer of the user's own. The skill says to write
+questions this way.
+
 ## 1.87.3 — Project docs and Environment docs
 
 The viewer's "All docs" only ever listed the project's own docs, so it is called Project docs;

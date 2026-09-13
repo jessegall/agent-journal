@@ -525,7 +525,7 @@ message mentions it once; that never blocks, so finish the step you are on first
 
 ## Questions: ask the user through the journal
 
-    journal questions add "<question>" [--about=<ref>]...   ask; the session keeps going
+    journal questions add "<question>" [--about=<ref>]... [--description="<context>"] [--option="<a choice>"]...   ask; the session keeps going
     journal questions                                     open ones first, then answered
     journal questions show <n>                            the question, what it is about, the answer
     journal questions link <n> <ref>                      about one more thing; `unlink` takes one off
@@ -542,6 +542,12 @@ auto on it is refused; the journal's question is always available.
 you doubt or a doc part that seems wrong, not only about a to-do. A to-do with an open
 question waits on the user, and `todos ask <n>` is the same as `questions add --about="todo
 <n>"`.
+
+**Write a question the user can answer at a glance.** The question itself is one short
+line. What they need to decide well goes in `--description` — the situation, what each way
+costs — and when the answer is one of a few choices, give each as an `--option`: in the viewer
+the user clicks one, or writes their own. A question that makes them read your transcript to
+understand it is a question they will answer wrong.
 
 **An answer can change.** The user answers from the viewer or the terminal, and may answer
 again: the new answer replaces the old one, which is kept, and the next stop tells you again,
