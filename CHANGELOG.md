@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.69.2 — an answered question always reaches the agent
+
+A question linked to a to-do was never told when that to-do was the open work. It was left
+to the to-do's own "the user answered" notice, which only runs when nothing is open. Now
+every answered question is told at the next stop. With nothing open, the to-do's notice
+still tells it, beside the to-do, and marks it told so it is not said twice. Answered
+questions also come before "work still open" in the stop queue: that notice fires every
+time work is open, so it used to take the stop and the answer never got its turn.
+
 ## 1.69.1 — plain wording for a new answer
 
 Answering a question that already has an answer adds a new answer; the old one stays in its
