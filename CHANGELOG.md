@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.99.0 — reports: what the user asked to have checked, written for the user to read
+
+A report is the situation as it was when someone looked: a check, a measurement, a subagent's
+research. It is not a doc, and no session is handed one. `journal reports add "<title>"
+[--about="todo 22"|"question 4"] --brief` files one with its text on stdin; `journal reports`
+lists them, `reports show <n>` reads one, `reports archive <n> "<why>"` takes one off the list
+(`--all` still shows it). The viewer has a Reports page for each environment, with the text
+rendered, a link to the to-do or question it answers, a New report button and Archive.
+
 ## 1.98.0 — a message or a whole doc can be archived
 
 `journal messages archive <n> "<why>"` takes a message off the list with its reason; a waiting

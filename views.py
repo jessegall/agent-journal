@@ -78,6 +78,7 @@ def environments(root: Path) -> list[dict]:
             "docs": len(docs_on(root, name)),
             "inbox": len(inbox.unprocessed(root, name)),
             "questions": len(questions.open_items(root, name)),
+            "reports": len([r for r in __import__("reports")._all(root, name) if not r.get("archived")]),
             # the newest thing that happened there: a journal event, or a live session's last hook event
             "last_active": max([e["at"] for e in ActivityController._events(root, name)[:1]] + [seen.get(name, "")]),
         })

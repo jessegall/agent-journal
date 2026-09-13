@@ -554,6 +554,18 @@ understand it is a question they will answer wrong.
 again: the new answer replaces the old one, which is kept, and the next stop tells you again,
 marked "(a new answer)". Act on the latest answer, not the one you remember.
 
+## Reports: what the user asked to have checked
+
+    journal reports add "<title>" [--about="todo 22"] --brief   the report, its text on stdin
+    journal reports                                            what has been reported here
+    journal reports archive <n> "<why>"                        off the list
+
+When the user asks for something to be checked, measured or researched — or you send
+subagents to find out — the answer is a report, not a doc. A doc is what was settled and
+stays true; a report is the situation as it was when you looked, written for the user to
+read in the viewer. Title it by what was asked, start with the answer, then the evidence.
+No session is handed a report, so if it settles something, pin that too or write the doc.
+
 ## Comments: what the user said about something
 
     journal comments                            what the user said, not handled yet

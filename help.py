@@ -56,6 +56,13 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal messages move N "<env>"    carry a waiting message to another environment',
         'journal messages archive N "<why>"   take a message off the list, kept with its reason',
     ),
+    "reports": (
+        "journal reports [--all]       what the user asked to have checked or researched, newest first; --all adds archived ones",
+        "journal report ...            the same commands; `report` and `reports` are twins",
+        "journal reports show N        one report in full",
+        'journal reports add "<title>" [--about="todo 22"|"question 4"] --brief   a report for the user, its text on stdin; never a doc, never handed to a session',
+        'journal reports archive N "<why>"   take one off the list, kept with its reason',
+    ),
     "comments": (
         "journal comments [--all]      what the user said about a to-do, doc, pin, rule or reminder; open ones, --all adds handled",
         "journal comment ...           the same commands; `comment` and `comments` are twins",
@@ -228,6 +235,7 @@ ALIAS: dict[str, str] = {
     "idea": "ideas",
     "question": "questions",
     "comment": "comments",
+    "report": "reports",
     "pin": "pins", "promote": "pins", "strike": "pins",
     "nothing": "pins",
     "rule": "rules",
