@@ -4,6 +4,7 @@ from pathlib import Path
 
 import reminders
 import settings as settings_mod
+import state
 from controller import Controller, Payload, Result
 
 
@@ -31,8 +32,10 @@ class RemindersController(Controller):
             return query
         page, rows = self.paged(query, p), self._rows(root)
         live = len([r for r in every if r.standing])
+        conf, _ = settings_mod.load(root)
         return Result("ok", "", [{**rows[r.n], "until": r.until} for r in page.rows],
-                      {"left": page.left, "live": live, "retired": len(every) - live})
+                      {"left": page.left, "live": live, "retired": len(every) - live,
+                       "env": state.current_track(root), "every": conf["reminder_every"]})
 
     def show(self, root: Path, p: Payload) -> Result:
         return Result("ok", "", {**self._rows(root)[p.id], "until": self.repository(root, p).find(p.id).until})

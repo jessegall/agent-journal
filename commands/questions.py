@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import fmt
 import questions
-from app import CATALOGUE_PAGE, catalogue, root
+from app import CATALOGUE_PAGE, catalogue
 from command import Parsed, number
 from commands.options import LISTING, LISTING_CASTS
 from commands.resource import Resource
@@ -55,7 +55,7 @@ class Show(Resource):
     def render(self, p: Parsed, result) -> int:
         if not result.ok:
             return super().render(p, result)
-        print(questions.show(root(), result.data["n"])[1])
+        print(questions.show_text(result.data))
         return 0
 
 
