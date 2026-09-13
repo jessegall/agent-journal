@@ -338,104 +338,10 @@ def cmd_user(back: int) -> int:
     return 0
 
 
-def cmd_open() -> int:
-    standing = work.open_work(root())
-    if not standing:
-        fmt.say("Nothing is open.")
-        return 0
-    fmt.say(fmt.title("OPEN WORK", sub="declared and never closed"))
-    for w in standing:
-        fmt.say()
-        fmt.say(f"  {w['subject']}")
-        fmt.say(f"     {fmt.dim('since ' + w['at'][:16].replace('T', ' '))}")
-        # THE NOTES ARE THE POINT OF `open`, not decoration. A subject alone says a thing
-        # is in flight; the notes say where it got to, which is what a reader on the far
-        # side of a compaction actually needs before they touch it.
-        for note in w.get("notes", []):
-            fmt.say(fmt.wrap(f"{note['at'][11:16]}  {note['text']}", indent=5))
-    fmt.say()
-    fmt.say(fmt.commands([
-        ('journal work end "<the same words>"', "close it"),
-        ('journal work update "<where it got to>"', "say where it got to"),
-    ]))
-    return 0
 
 
 
 
-def cmd_await(what: str, on: str | None, minutes: float | None,
-              agent: str | None = None, pid: int | None = None) -> int:
-    """Mark the open work as waiting on something, with a deadline."""
-    import time as _time
-    conf, _ = settings_mod.load(root())
-    mins = minutes if minutes is not None else conf["await_default_minutes"]
-    cap = conf["await_max_minutes"]
-    if mins > cap:
-        fmt.say(f"a wait is capped at {cap} minute(s) — nothing waits longer without saying so again",
-                error=True)
-        mins = cap
-    ok, said = work.wait(root(), what, mins, _now(), _time.time(), on, agent, pid)
-    fmt.say(said, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_start(subject: str) -> int:
-    ok, msg = work.start(root(), subject, _now(), _where())
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_end(subject: str, force: bool = False, acting: str = "",
-            close_todo: bool = False) -> int:
-    """Close the work, and ask the one question that is only answerable now.
-
-    THE MOMENT WORK CLOSES IS THE MOMENT YOU KNOW WHAT IT TAUGHT. Before it, you cannot
-    say; long after, you no longer remember there was anything to say. Pins were coming out
-    sparse — three in a full day of work — and the only prompt to write one fired at 75%
-    context, which is late and is about the compaction rather than about the work.
-
-    It ASKS, it does not hold. A gate here would be a third rule, and this is a question
-    with a legitimate answer of "nothing" — most work teaches nothing that outlives it.
-    """
-    ok, msg = work.end(root(), subject, _now(), force)
-    fmt.say(msg, error=not ok)
-    if ok:
-        here = tracks.current(root(), _stem())
-        # CLOSING A TO-DO IS ALWAYS EXPLICIT — the user's ruling, after 710 of one project's
-        # 1,810 closed rows turned out to have been closed by a `work end` matching a title
-        # rather than by anyone deciding they were done. `work end` meant both "finished" and
-        # "I am putting this down", and an agent interrupted mid-row does the tidy thing:
-        # closes its declaration before switching. The record heard "done". So the match is
-        # REPORTED and the close is asked for.
-        row = todo.titled(root(), here, subject)
-        if row and close_todo:
-            closed, note = todo.close_titled(root(), here, subject, _now(), acting)
-            fmt.say(f"  to-do {closed} is done with it." if closed else "  " + note)
-        elif row:
-            fmt.say(f'  to-do {row["n"]} has this title and STAYS OPEN — ending work is not '
-                    "finishing a row:\n"
-                    f'    journal todos done {row["n"]} "<how>"   it is finished\n'
-                    f'    journal work end "<the same words>" --todo   both, in one command')
-        # AND THE OTHER DIRECTION, which this asked for two years of sessions and never once.
-        # A field report named the gap: "pins go stale precisely when a stretch of work
-        # changes the code they describe. Pin 1 was written before the fix and was false the
-        # instant the fix landed — about eight hours before anyone noticed." The moment work
-        # closes is the moment you know what it taught AND what it just made untrue, and only
-        # the first half was ever asked. It asks; a gate here would be a third rule.
-        fmt.say('  did that teach anything a later reader would get wrong without?\n'
-              '    journal pins add "<the claim, in one line>"   (or nothing, which is fine)')
-        standing = len(pins.live(root(), pins.RULES)) + len(pins.live(root()))
-        if standing:
-            fmt.say(f'  and did it make any of the {standing} standing claim(s) FALSE? work that '
-                    "changes code\n    is what makes a pin describe a version that is gone:\n"
-                    '    journal pins strike <n> "<why>"   ·   journal rules strike <n> "<why>"')
-    return 0 if ok else 1
-
-
-def cmd_update(text: str, on: str | None) -> int:
-    ok, msg = work.note(root(), text, _now(), on)
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
 
 
 PAGE = 25
@@ -1061,87 +967,6 @@ def cmd_serve(port: int | None, open_browser: bool) -> int:
     return 0
 
 
-def cmd_next() -> int:
-    """What to do now: the details of the last hold, or the state of the list.
-
-    THE BACK HALF OF A ONE-LINE HOLD, and the prompt a loop fires at an idle auto session.
-    A hold says `journal next` for its details; a loop says `journal next` every few
-    minutes; both land here, and here says the one thing to do.
-    """
-    import state as _st
-    if not _st.hooks_enabled(root()):
-        # A LOOP KEEPS FIRING THIS EVEN WHILE DISABLED — `journal disable` only reaches
-        # the hook layer, never a session's own scheduled wakeups, which this package
-        # cannot see or stop. So each firing still ran the full hold/to-do advisory
-        # logic below, which can read as actively contradictory right after the user
-        # silenced the journal. One honest line instead.
-        fmt.say("hooks are disabled. `journal enable` turns them back on.")
-        return 0
-    stem = _stem()
-    here = tracks.current(root(), _stem())
-    held = _st.get(root(), "next_text", "", stem=stem) if stem else ""
-    # A SNAPSHOT IS SHOWN ONLY WHILE IT IS STILL TRUE. The hold recorded which to-dos were
-    # open when it wrote this; if that has changed, the text may be offering finished work
-    # and the live answer below is the honest one.
-    if held and _st.get(root(), "next_rows", None, stem=stem) not in (
-            None, sorted(t["n"] for t in todo.open_items(root(), here))):
-        held = ""
-        _st.put(root(), "next_text", "", stem=stem)
-    if held:
-        # A HOLD'S DETAILS ARE READ ONCE, AND THE SNAPSHOT DIES WITH THE READING. This text
-        # was written by the hold that sent you here, and it describes the list AS IT WAS AT
-        # THAT STOP. Nothing refreshed it afterwards, so a loop firing `journal next` every
-        # fifteen minutes went on being handed the same frozen listing — and it listed
-        # to-dos that had been CLOSED in between, offering finished work as the next thing
-        # to do while `journal todo` correctly showed them done. Two commands, one store,
-        # two answers, and the wrong one is the one an agent in auto mode reads.
-        #
-        # So the text is consumed: shown once, then cleared, and every later call recomputes
-        # from the record. The next hold writes the next snapshot.
-        _st.put(root(), "next_text", "", stem=stem)
-        fmt.say(held)
-        return 0
-    standing = work.open_work(root())
-    if standing:
-        fmt.say("Open work: " + "; ".join(w["subject"] for w in standing))
-        fmt.say("Carry on with it; `journal work end \"<the same words>\"` when it is done, or\n"
-                '`journal work await "<what you wait on>" --pid=<n>|--agent=<id>` if it is in '
-                "flight on\nsomething you cannot hurry.")
-        return 0
-    if todo.auto(root(), here):
-        ready = todo.ready(root(), here)
-        if ready:
-            t = ready[0]
-            fmt.say(f"Auto mode is on and nothing is open. Next: to-do {t['n']}, {t['title']}")
-            fmt.say(f"  journal todos {t['n']}          the brief")
-            fmt.say(f"  journal todos start {t['n']}    pick it up")
-            return 0
-        waiting = todo.open_items(root(), here)
-        if not waiting:
-            fmt.say("The list is empty. Stop the loop if one is running.")
-            return 0
-        # THE LIST WAS NOT EMPTY, AND THIS SAID IT WAS. `asking` is one of four ways a row
-        # can be unready — a to-do set aside on a condition (`blocked`), one waiting on a
-        # prerequisite, or one held by a live agent are none of them "asking" and none of
-        # them make the list empty. This checked only `asking` and fell through to "empty"
-        # for the other three, which is exactly what a session waiting on 18 set-aside rows
-        # was told. `hook.py`'s `_p_auto` already draws this distinction correctly; this
-        # matches it instead of contradicting it one command later.
-        held_back = todo.blocked(root(), here)
-        owed = [t for t in waiting if todo.waiting_on(root(), here, t)]
-        reasons = (
-            (todo.asking(root(), here), "waiting on your answer"),
-            (held_back, "set aside on a condition"),
-            (owed, "waiting on a to-do that must land first"),
-            ([t for t in waiting if t.get("assigned")], "held by an agent still working"),
-        )
-        why = ", ".join(f"{len(rows)} {what}" for rows, what in reasons if rows)
-        fmt.say(f"Nothing to pick up: {why}. `journal todo` shows what each waits on.")
-        return 0
-    waiting = todo.open_items(root(), here)
-    fmt.say(f"Nothing is open. {len(waiting)} to-do(s) waiting; auto is off, so none starts "
-          "without the user's word." if waiting else "Nothing is open and nothing is waiting.")
-    return 0
 
 
 def cmd_carry(fresh: bool) -> int:
@@ -1540,10 +1365,6 @@ class Opts:
     order_by_id: bool = False
     go_back: bool = False
     fresh: bool = False
-    wait_for: float | None = None
-    await_agent: str | None = None
-    await_pid: int | None = None
-    on: str | None = None
     brief: bool = False
     quiet: bool = False
     replace: bool = False
@@ -1554,7 +1375,6 @@ class Opts:
     all_sessions: bool = False
     yes_flag: bool = False
     force: bool = False
-    close_todo: bool = False
     order: str = fmt.DESC
     sessions: list
     page: int = 1
@@ -1608,23 +1428,12 @@ def _page_flag(v: str) -> int:
         raise ValueError("--page wants a number")
 
 
-def _for_flag(v: str) -> float:
-    try:
-        return float(v)
-    except ValueError:
-        raise ValueError(f"--for wants minutes, got {v!r}")
-
-
 def _order_flag(v: str) -> str:
     v = v.strip().lower()
     if v not in fmt.ORDERS:
         raise ValueError(f"--order wants asc or desc, got {v!r}. Newest first is the "
                           "default; --order=asc reads oldest first.")
     return v
-
-
-def _agent_flag(v: str) -> str | None:
-    return v.strip() or None
 
 
 # `--x=value` FLAGS. Aliases share one `_Flag` instance — `--after` and `--needs` are
@@ -1636,10 +1445,6 @@ _PRUNE_BEFORE = _Flag(dest="prune_before")   # --older-than=30d and --before=<da
 
 VALUE_FLAGS: dict[str, _Flag] = {
     "--back": _Flag(dest="back", type=_int_flag("--back")),
-    "--agent": _Flag(dest="await_agent", type=_agent_flag),
-    "--pid": _Flag(dest="await_pid", type=_int_flag("--pid")),
-    "--for": _Flag(dest="wait_for", type=_for_flag),
-    "--on": _Flag(dest="on"),
     "--env": _ENV_NOOP, "--environment": _ENV_NOOP, "--track": _ENV_NOOP,
     "--order": _Flag(dest="order", type=_order_flag),
     "--session": _Flag(dest="sessions", append=True),
@@ -1670,8 +1475,6 @@ BARE_FLAGS: dict[str, _Flag] = {
     "--project": _Flag(dest="project_too"),
     "--yes": _Flag(dest="yes_flag"),
     "--force": _Flag(dest="force"),
-    "--todo": _Flag(dest="close_todo"),
-    "--todos": _Flag(dest="close_todo"),
     "--all-sessions": _Flag(dest="all_sessions"),
     "--none": _Flag(dest="after", set="--none"),    # `todos after <n> --none` clears the prerequisites
     "--fresh": _Flag(dest="fresh"),
@@ -1807,27 +1610,6 @@ def _v_update(verb: str, rest: list[str], opts: Opts) -> int:
     return _v_upgrade(verb, rest, opts)
 
 
-def _v_work(verb: str, rest: list[str], opts: Opts) -> int:
-    sub = rest[1] if len(rest) > 1 else ""
-    if sub not in ("start", "end", "update", "await"):
-        return _refuse('journal work start|update|end|await "<words>"')
-    # --force NEEDS NO WORDS: the case it exists for is work nobody can name any more.
-    if len(rest) < 3 and not (sub == "end" and opts.force):
-        return _refuse(f'work {sub} wants the words: journal work {sub} "<the work>"')
-    words = " ".join(rest[2:])
-    if sub == "await":
-        return cmd_await(words, opts.on, opts.wait_for, opts.await_agent, opts.await_pid)
-    if sub == "update":
-        return cmd_update(words, opts.on)
-    return cmd_start(words) if sub == "start" else cmd_end(words, opts.force, opts.acting, opts.close_todo)
-
-
-def _v_start_end(verb: str, rest: list[str], opts: Opts) -> int:
-    # kept so a session that learned the old spelling is not stranded mid-work
-    if len(rest) < 2:
-        return _refuse(f"{verb} wants the words that name the work")
-    subject = " ".join(rest[1:])
-    return cmd_start(subject) if verb == "start" else cmd_end(subject, opts.force, opts.acting, opts.close_todo)
 
 
 def _v_migrate(verb: str, rest: list[str], opts: Opts) -> int:
@@ -1885,7 +1667,6 @@ _ALIASES: dict[tuple[str, ...], object] = {
     ("todo", "todos"): lambda verb, rest, opts: cmd_todo(
         rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,
         opts.page, opts.order, opts.quiet, opts.order_by_id, opts.prune_before, opts.force),
-    ("start", "end"): _v_start_end,
     ("migrate", "migrations"): _v_migrate,
     ENV_NOUNS: _v_environments,
 }
@@ -1894,7 +1675,6 @@ COMMANDS: dict[str, object] = {name: fn for names, fn in _ALIASES.items() for na
 COMMANDS.update({
     "assign": _v_assign,
     "user": lambda verb, rest, opts: cmd_user(opts.back),
-    "open": lambda verb, rest, opts: cmd_open(),
     "search": _v_search,
     "docs": lambda verb, rest, opts: cmd_docs(rest[1:], opts.brief, opts.abstract, opts.page,
                                               opts.replace, opts.order, opts.all_of_them,
@@ -1907,11 +1687,9 @@ COMMANDS.update({
     "switch": lambda verb, rest, opts: cmd_switch(" ".join(rest[1:]), opts.go_back, opts.project_too, opts.sessions or None, opts.all_sessions),
     "update": _v_update,
     "upgrade": _v_upgrade,
-    "work": _v_work,
     "verify": _v_verify,
     "settings": lambda verb, rest, opts: cmd_settings(),
     "worktree": _v_worktree,
-    "next": lambda verb, rest, opts: cmd_next(),
     "serve": lambda verb, rest, opts: cmd_serve(opts.serve_port, opts.open_browser),
     "enable": lambda verb, rest, opts: cmd_enable(),
     "disable": lambda verb, rest, opts: cmd_disable(),
