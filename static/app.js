@@ -388,12 +388,16 @@ const ResourceList = {
     groups: { type: Array, default: () => [{ key: "all", label: "", match: () => true }] },
     columns: Object, href: Function, selected: Function, pick: Function,
     sorts: { type: Array, default: () => [{ key: "n", label: "Number" }] },
-    count: Function, showLabel: String, empty: String,
+    count: Function, showLabel: String, empty: String, name: String, showDefault: Boolean,
     bar: { type: Boolean, default: true }, limit: { type: Number, default: PAGE_ROWS },
   },
   components: { StatusIcon, PriorityIcon, Switch },
   setup(props) {
-    const state = reactive({ show: false, sort: {}, pages: {} });
+    // a switch the viewer flipped is remembered per list, in this browser only
+    const key = props.name ? `journal:show:${props.name}` : "";
+    const remembered = () => { try { return key ? localStorage.getItem(key) : null; } catch (e) { return null; } };
+    const state = reactive({ show: remembered() === null ? props.showDefault : remembered() === "1", sort: {}, pages: {} });
+    watchEffect(() => { const on = state.show; try { if (key) localStorage.setItem(key, on ? "1" : "0"); } catch (e) { /* storage off */ } });
     const sortOf = (key) => state.sort[key] || { by: props.sorts[0].key, dir: "desc" };
     const sections = computed(() => (props.rows ? props.groups.filter((g) => state.show || !g.closed).map((g) => {
       const order = sortOf(g.key);
@@ -501,7 +505,7 @@ const TODO_LIST = {
              cite: (t) => (t.doc ? `Doc ${t.doc}` : ""), age: (t) => t.age },
   sorts: [{ key: "n", label: "Number" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
   count: (rows) => `${rows.filter((t) => todoStatus(t) !== "done").length} open`,
-  showLabel: "Show done", empty: "Nothing is waiting on this environment.",
+  showLabel: "Show done", empty: "Nothing is waiting on this environment.", name: "todos",
 };
 const CLAIM_LIST = {
   groups: [{ key: "standing", label: "Standing", kind: "open", match: (c) => !c.struck },
@@ -516,7 +520,7 @@ const MESSAGE_LIST = {
   columns: { status: (m) => (m.status === "waiting" ? "waiting" : "done"), num: (m) => `#${m.n}`, title: (m) => m.text,
              cite: messageBecame, age: (m) => m.age },
   count: (rows) => `${rows.filter((m) => m.status === "waiting").length} waiting`, showLabel: "Show processed",
-  empty: "No messages yet.",
+  empty: "No messages yet.", name: "messages", showDefault: true,
 };
 const QUESTION_LIST = {
   groups: [{ key: "open", label: "Open", kind: "waiting", match: (q) => q.status === "open" },
@@ -525,27 +529,27 @@ const QUESTION_LIST = {
   columns: { status: (q) => questionKind(q), num: (q) => `#${q.n}`, title: (q) => q.text,
              cite: (q) => q.links.map((l) => l.label).join(", "), age: (q) => q.age },
   count: (rows) => `${rows.filter((q) => q.status === "open").length} open`, showLabel: "Show answered",
-  empty: "Nothing has been asked on this environment.",
+  empty: "Nothing has been asked on this environment.", name: "questions",
 };
 const WORK_LIST = {
   groups: [{ key: "open", label: "Open", kind: "progress", match: (w) => !w.ended },
            { key: "ended", label: "Ended", kind: "done", closed: true, match: (w) => w.ended }],
   columns: { title: (w) => w.subject, sub: (w) => (w.notes.length ? w.notes[w.notes.length - 1].text : ""), age: (w) => w.age },
-  count: (rows) => `${rows.filter((w) => !w.ended).length} open`, showLabel: "Show ended", empty: "Nothing is open.",
+  count: (rows) => `${rows.filter((w) => !w.ended).length} open`, showLabel: "Show ended", empty: "Nothing is open.", name: "work",
 };
 const REMINDER_LIST = {
   groups: [{ key: "standing", label: "Standing", kind: "open", match: (r) => !r.struck },
            { key: "retired", label: "Retired", kind: "withdrawn", closed: true, match: (r) => r.struck }],
   columns: { num: (r) => `#${r.n}`, title: (r) => r.text, cite: (r) => r.until || "", struck: (r) => r.struck },
   count: (rows) => `${rows.filter((r) => !r.struck).length} standing`, showLabel: "Show retired",
-  empty: "Nothing is being repeated.",
+  empty: "Nothing is being repeated.", name: "reminders",
 };
 const DOC_LIST = {
   groups: [{ key: "draft", label: "Draft", kind: "open", match: (d) => !d.superseded_by && d.status !== "final" },
            { key: "final", label: "Final", kind: "done", match: (d) => !d.superseded_by && d.status === "final" },
            { key: "superseded", label: "Superseded", kind: "withdrawn", closed: true, match: (d) => d.superseded_by }],
   columns: { num: (d) => `#${d.n}`, title: (d) => d.title, sub: (d) => d.abstract, age: (d) => d.age, struck: (d) => d.superseded_by },
-  count: (rows) => `${rows.length} catalogued`, showLabel: "Show superseded",
+  count: (rows) => `${rows.length} catalogued`, showLabel: "Show superseded", name: "docs",
 };
 const TOOL_LIST = {
   groups: [{ key: "tools", label: "Catalogued", match: () => true }],
@@ -681,7 +685,7 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
       <TopBar :crumbs="crumbs"><a class="btn new" :href="base + '/new'">New {{ word }}</a></TopBar>
       <div class=body>
         <div class=list>
-          <ResourceList v-bind="CLAIM_LIST" :empty="empty" :rows="list.data" :loading="list.loading" :error="list.error"
+          <ResourceList v-bind="CLAIM_LIST" :name="word + 's'" :empty="empty" :rows="list.data" :loading="list.loading" :error="list.error"
             :href="(c) => base + '/' + c.n" :selected="(c) => String(c.n) === n"/>
         </div>
         <Panel v-if="n === 'new'" :label="'New ' + word" :close="base">

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.87.1 — list switches are remembered, and group sort controls sit flush
+
+Each list's show/hide switch is remembered in the browser, per list; on Messages, Show
+processed starts on. The sort control in a group's header is plain text with a chevron, with
+no box around it.
+
 ## 1.87.0 — one list, one switch, everywhere in the viewer
 
 Every list in the viewer is the same component: to-dos, pins, rules, messages, questions,
