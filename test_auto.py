@@ -618,7 +618,7 @@ def ask_call(s):
 # A QUESTION TO THE USER HALTS THE SESSION, and auto was switched on to be away.
 denied = ask_call(s9)
 check("with auto on, AskUserQuestion is refused", bool(denied), True)
-check("and the refusal names the two ways out", ("todos ask" in denied, "work update" in denied), (True, True))
+check("and the refusal names the two ways out", ("questions add" in denied, "work update" in denied), (True, True))
 s9.journal("todos", "auto", "off")
 check("with auto off, the same question goes through", ask_call(s9), "")
 s9.journal("todos", "auto", "on")
