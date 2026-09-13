@@ -195,10 +195,6 @@ def reminders_on(root: Path, env: str) -> list[dict]:
 
 
 # ────────────────────────────────────────────────────────────────── inbox & questions
-def inbox_on(root: Path, env: str) -> list[dict]:
-    return inbox.rows_response(root, env)
-
-
 def questions_on(root: Path, env: str) -> list[dict]:
     return questions.rows_response(root, env)
 

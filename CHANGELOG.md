@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.72.0 — the inbox goes through its controller; a message can be reworded or moved
+
+Every `journal inbox` command and the viewer's inbox API run through `InboxController`:
+`GET/POST /api/env/<env>/inbox`, `GET/PATCH …/inbox/<n>`, and `POST …/inbox/<n>/process|done|move`.
+`journal inbox edit <n> "<text>"` rewords a waiting message, and `journal inbox move <n>
+"<environment>"` carries one left on the wrong environment to the right one: it is closed
+here as moved and waits there. A processed or moved message refuses every change, and a
+message is never deleted (DELETE is 405). A method a resource does not take is now 405.
+
 ## 1.71.0 — pins and rules go through their controllers
 
 Every `journal pins` and `journal rules` command runs through `PinsController` and
