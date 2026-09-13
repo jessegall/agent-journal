@@ -293,6 +293,7 @@ def current(root: Path, stem: str | None = None) -> str:
 
 
 SESSIONS = "sessions"
+MARKS = "session_marks"
 
 
 def carried_by(root: Path) -> dict[str, list[str]]:
@@ -309,17 +310,28 @@ def carried_by(root: Path) -> dict[str, list[str]]:
     return got if isinstance(got, dict) else {}
 
 
-def carried(root: Path, track: str, stem: str) -> None:
-    """Record that `stem` was on `environment`. Idempotent; a record write, under the lock."""
+def marks(root: Path) -> dict[str, list[list]]:
+    """{session stem: [[environment, the transcript line it began at], ...]} — recorded, never parsed."""
+    got = state.get(root, MARKS, {})
+    return got if isinstance(got, dict) else {}
+
+
+def carried(root: Path, track: str, stem: str, line: int = 0) -> None:
+    """Record that `stem` was on `environment`, and from which transcript line. A record write, under the lock."""
     if not stem:
         return
     with state.locked(root):
         idx = carried_by(root)
         have = idx.get(track) or []
-        if stem in have:
-            return
-        idx[track] = have + [stem]
-        state.put(root, SESSIONS, idx)
+        if stem not in have:
+            idx[track] = have + [stem]
+            state.put(root, SESSIONS, idx)
+        if line:
+            got = marks(root)
+            mine = got.get(stem) or []
+            if not mine or mine[-1][0] != track:
+                got[stem] = mine + [[track, line]]
+                state.put(root, MARKS, got)
 
 
 def _all(root: Path) -> dict:
@@ -462,7 +474,7 @@ def listing(root: Path, stem: str | None = None, stale_hours: float = 24.0) -> l
 
 
 def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False,
-           exclusive: bool = True, stale_hours: float = 24.0) -> tuple[bool, str]:
+           exclusive: bool = True, stale_hours: float = 24.0, line: int = 0) -> tuple[bool, str]:
     """Move this session to an environment, or the project's start environment, or both.
 
     NOTHING IS SWAPPED ANY MORE. Every environment's pins and work live under its name; a
@@ -514,7 +526,7 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
             # that fallback as "previous" would send the session BACK to an environment it
             # never chose — which is the whole thing an unbound start exists to prevent.
             state.put(root, "previous_track", bound_before, stem=stem)
-            carried(root, name, stem)
+            carried(root, name, stem, line)
             return True, say("switched_session", name=name, kept=kept, was=was,
                              start=state.get(root, CURRENT, DEFAULT) or DEFAULT, lost=lost)
         if stem:
@@ -524,7 +536,7 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
             return False, say("already_start", name=name)
         state.put(root, PREVIOUS, start)
         state.put(root, CURRENT, name)
-        carried(root, name, stem)
+        carried(root, name, stem, line)
     others = {sid: t for sid, t in _bindings(root).items() if t != name and sid != stem}
     note = ""
     if others:

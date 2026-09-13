@@ -2624,7 +2624,8 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
         peak = context.peak_before_compaction(ctx.path)
         if peak and not state.get(ROOT, "window", 0):
             state.put(ROOT, "window", context.window_from_peak(peak))
-    tracks.carried(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem)
+    began = transcript.read(ctx.path)[0] if ctx.path is not None and ctx.path.is_file() else []
+    tracks.carried(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, (began[-1].n + 1) if began else 1)
     _prune(ctx.stem)
     loose = _unbound(conf, ctx)
     block = carried(source, ctx.stem, unbound=loose)

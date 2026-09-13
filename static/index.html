@@ -79,6 +79,7 @@
   .docrow { grid-template-columns: 44px minmax(0, 1fr) 60px 64px; }
   .reminderrow { grid-template-columns: 44px minmax(0, 1fr) minmax(0, 220px); }
   .workrow { grid-template-columns: 22px minmax(0, 1fr) 64px; align-items: start; padding-top: 11px; padding-bottom: 11px; }
+  .workrow .dot { margin-top: 5px; }
   .row .num { color: var(--text-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
   .row .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13.5px; }
   .row .cite, .row .age, .row .tag { color: var(--text-3); font-size: 12.5px; text-align: right;
@@ -167,6 +168,9 @@
   .searchrow .tag, .hitrow .tag { text-align: left; }
   .hit { white-space: normal; overflow-wrap: anywhere; }
   mark { background: rgba(94, 100, 201, .35); color: var(--text); border-radius: 3px; padding: 0 2px; }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent;
+    border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .pager { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; }
   .setting { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; }
 

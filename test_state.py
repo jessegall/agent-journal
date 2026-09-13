@@ -696,6 +696,21 @@ older.write_text("\n".join(json.dumps(r) for r in [
 os.utime(older, (1, 1))
 segs = transcript.track_segments(transcript.read(path)[0])
 check("the session is segmented by its marks", [t for t, _, _ in segs][-2:], ["default", "beta"])
+bound = path.with_name("00000000-bound.jsonl")
+bound.write_text("\n".join(json.dumps(r) for r in [
+    {"type": "attachment", "attachment": {"type": "hook_additional_context", "hookEvent": "SessionStart",
+                                          "content": ["THE JOURNAL IS IN FORCE HERE — this session is bound to environment `gamma`"]}},
+    {"type": "user", "origin": {"kind": "human"}, "timestamp": "2026-08-30T00:00:00Z",
+     "message": {"role": "user", "content": "said on gamma"}},
+]) + "\n")
+check("today's start block wording marks the environment too",
+      [t for t, _, _ in transcript.track_segments(transcript.read(bound)[0])], ["gamma"])
+bound.unlink()
+_plain = [transcript.Line(n, "user", "human", f"line {n}", "") for n in (1, 2, 3, 4)]
+check("recorded marks decide the environments, whatever the text says",
+      transcript.segments(_plain, [["gamma", 1], ["beta", 3]]), [("gamma", 1, 2), ("beta", 3, 4)])
+check("and what came before the first mark falls back to reading the text",
+      [t for t, _, _ in transcript.segments(_plain, [["beta", 3]])], ["default", "beta"])
 subprocess.run([J, "switch", "default"], env=env, capture_output=True, timeout=180)  # it chooses default
 subprocess.run([J, "switch", "beta"], env=env, capture_output=True, timeout=180)
 p = subprocess.run([J, "search", "heredoc"], env=env, capture_output=True, text=True, timeout=180)

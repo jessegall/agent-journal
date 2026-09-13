@@ -7,7 +7,7 @@ import state
 import todo
 import tracks
 import worktree
-from app import answer, now, package, project, refuse, root, stem
+from app import answer, now, package, project, refuse, root, stem, where
 from command import Command, Parsed, number
 from commands.resource import Resource
 from controllers.environments import EnvironmentController
@@ -136,6 +136,11 @@ class Remove(Resource):
         return {"session": stem() or ""}
 
 
+def _line(session: str) -> int:
+    """The transcript line a switch happens at, so search knows where the session moved."""
+    return (where().get("line", 0) + 1) if session else 0
+
+
 # ------------------------------------------------------------------ the verbs that move a session
 class Switch(Command):
     signature = "switch {name*? : the environment's name} {--back} {--project} {--session=*} {--all-sessions}"
@@ -160,7 +165,7 @@ class Switch(Command):
         if p.option("back"):
             return answer(tracks.back(root(), now(), session, exclusive, stale))
         return answer(tracks.switch(root(), name, now(), session, project=bool(p.option("project")) or not session,
-                                    exclusive=exclusive, stale_hours=stale))
+                                    exclusive=exclusive, stale_hours=stale, line=_line(session)))
 
 
 class Claim(Command):
@@ -184,7 +189,7 @@ class Prepare(Command):
         session = stem() or ""
         exclusive, stale = _settings()
         ok, msg = tracks.switch(root(), name, now(), session, project=not session, exclusive=exclusive,
-                                stale_hours=stale)
+                                stale_hours=stale, line=_line(session))
         if not ok and "already on" not in msg:
             return refuse(msg)
         fmt.say(fmt.title(TEXT["prepare_title"], sub=name))

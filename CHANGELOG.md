@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.83.0 — search finds the conversation on an environment again
+
+Searching one environment's conversation found nothing said in any recent session. The
+transcript was split by environment by matching the session-start notice's wording, and when
+that wording changed ("you are on environment" became "this session is bound to environment")
+nothing matched, so every session counted as `default`. The journal now RECORDS the line each
+environment begins at — at every session start and every switch (`session_marks` in the
+record) — and search splits a transcript by that record. The old text match is kept only for
+sessions older than the record, and knows both wordings. The viewer's Search page shows a
+spinner and disables its button while it searches, and the open-work status ring lines up
+with its text.
+
 ## 1.82.0 — tools have a page, and always a title and a summary
 
 The viewer's Project group has Tools: every catalogued script with its title, summary, usage,
