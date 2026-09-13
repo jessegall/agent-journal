@@ -118,6 +118,8 @@ check("/api/overview answers 200", status, 200)
 check("overview lists both environments", {e["name"] for e in data["environments"]} >= {"alpha", "beta"}, True)
 check("overview names the project the viewer's sidebar shows", data["project"], project.name)
 check("and the version being served, so an open page can reload when it changes", "version" in data, True)
+check("environments come newest activity first", [e["last_active"] for e in data["environments"]],
+      sorted((e["last_active"] for e in data["environments"]), reverse=True))
 
 status, _, body = get("/api/env/alpha/todos")
 data = json.loads(body)

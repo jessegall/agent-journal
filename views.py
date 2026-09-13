@@ -55,8 +55,16 @@ def environments(root: Path) -> list[dict]:
     "idle 2.0 h" per session. An environment can be current with nobody on it, or
     active on an environment that was never the default.
     """
+    import time
+    from datetime import datetime, timezone
+    from controllers.activity import ActivityController
     current = tracks.current(root)
-    active = {info["track"] for info in tracks.live(root).values()}
+    live = tracks.live(root)
+    active = {info["track"] for info in live.values()}
+    seen = {}
+    for info in live.values():
+        at = datetime.fromtimestamp(time.time() - (info["age"] or 0), timezone.utc).isoformat(timespec="seconds")
+        seen[info["track"]] = max(seen.get(info["track"], ""), at)
     out = []
     for name in tracks._all(root):
         out.append({
@@ -70,8 +78,10 @@ def environments(root: Path) -> list[dict]:
             "docs": len(docs_on(root, name)),
             "inbox": len(inbox.unprocessed(root, name)),
             "questions": len(questions.open_items(root, name)),
+            # the newest thing that happened there: a journal event, or a live session's last hook event
+            "last_active": max([e["at"] for e in ActivityController._events(root, name)[:1]] + [seen.get(name, "")]),
         })
-    out.sort(key=lambda e: (not e["active"], e["name"]))
+    out.sort(key=lambda e: (e["last_active"], e["name"]), reverse=True)
     return out
 
 
