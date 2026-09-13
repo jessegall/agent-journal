@@ -237,9 +237,9 @@ check("a subagent's read files nothing and is nudged for nothing",
       ("", {}, None))
 code, out, err = fire(d, "PostToolUse", path, **big)
 check("so the parent is still told about ITS first big read", "characters, the largest" in out, True)
-for cmd, want in (('.journal/journal.py remember "a fact"', True),
+for cmd, want in (('.journal/journal.py pin "a fact"', True),
                   ('cd x && ./.journal/journal.py start "work"', True),
-                  ('.journal/journal.py search remember', False),
+                  ('.journal/journal.py search pin', False),
                   ('.journal/journal.py pins', False),
                   # the canonical plurals: the noun alone is a listing, the verb is the write
                   ('.journal/journal.py pins add "a fact"', True),
@@ -326,13 +326,13 @@ check("nothing with no rung waiting says so", (p.returncode, "no pin is due" in 
 runtime = d / ".journal" / "runtime" / "s1.json"
 data = json.loads(runtime.read_text()); data["pin_due"] = {"rung": 0.7, "used": 1, "window": 2}
 runtime.write_text(json.dumps(data))
-p = subprocess.run([J, "remember", "x" * 600], env=env, capture_output=True, text=True, timeout=180)
+p = subprocess.run([J, "pin", "x" * 600], env=env, capture_output=True, text=True, timeout=180)
 check("a refused pin does not lift the gate", runtime_of(d, "s1").get("pin_due") is not None, True)
-p = subprocess.run([J, "remember", "the report is in scratchpad/report.md"], env=env,
+p = subprocess.run([J, "pin", "the report is in scratchpad/report.md"], env=env,
                    capture_output=True, text=True, timeout=180)
 check("a pin citing a scratch path is refused, with the reason",
       (p.returncode, "exists for one session only" in p.stderr), (1, True))
-p = subprocess.run([J, "remember", "a real claim"], env=env, capture_output=True, text=True, timeout=180)
+p = subprocess.run([J, "pin", "a real claim"], env=env, capture_output=True, text=True, timeout=180)
 check("an accepted pin lifts the gate", runtime_of(d, "s1").get("pin_due"), None)
 # and the whole thing is a setting
 (d / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True, "silenced": ["loop"], "one_session_per_environment": False, "context_window": 200000,
@@ -486,7 +486,7 @@ check("a rule has the same cap", (took, "300" in msg), (False, True))
 d, path = project_with(2)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
-subprocess.run([J, "remember", "an environment fact"], env=env, capture_output=True, timeout=180)
+subprocess.run([J, "pin", "an environment fact"], env=env, capture_output=True, timeout=180)
 subprocess.run([J, "rule", "a project rule"], env=env, capture_output=True, timeout=180)
 for source in ("startup", "compact"):
     code, out, err = fire(d, "SessionStart", path, source=source)
@@ -508,7 +508,9 @@ check("a subagent's rule is refused, and now says which of the two reasons it is
        "binds every environment" in testkit.denied(out)), (True, True))
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                       tool_input={"command": ".journal/journal.py promote 1"})
-check("and so is its promote", "from a subagent is refused" in out, True)
+check("and so is its promote, for the same reason",
+      ("is refused from a subagent" in testkit.denied(out), "binds every environment" in testkit.denied(out)),
+      (True, True))
 runtime = d / ".journal" / "runtime" / "s1.json"
 data = json.loads(runtime.read_text()); data["pin_due"] = {"rung": 0.5, "used": 1, "window": 2}
 runtime.write_text(json.dumps(data))
@@ -647,8 +649,8 @@ check("and adds no to-do", todo.open_items(d / ".journal", "default"), [])
 p = subprocess.run([J, "todo", "--bogus", "title"], env=env, capture_output=True, text=True, timeout=180)
 check("an unknown option is refused", (p.returncode, "unknown option '--bogus'" in p.stderr), (1, True))
 check("and adds no to-do either", todo.open_items(d / ".journal", "default"), [])
-p = subprocess.run([J, "help", "remember"], env=env, capture_output=True, text=True, timeout=180)
-check("journal help <verb> prints that verb", (p.returncode, "remember" in p.stdout, "journal todo" in p.stdout), (0, True, False))
+p = subprocess.run([J, "help", "pin"], env=env, capture_output=True, text=True, timeout=180)
+check("journal help <verb> prints that verb", (p.returncode, "journal pin" in p.stdout, "journal todo" in p.stdout), (0, True, False))
 p = subprocess.run([J, "nosuch", "--help"], env=env, capture_output=True, text=True, timeout=180)
 check("help for an unknown verb says so", (p.returncode, "No such command" in p.stderr), (1, True))
 
@@ -948,9 +950,9 @@ check("a subagent's file goes with its transcript, and stays while it exists",
 d, path = project_with(2)
 J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
-subprocess.run([J, "remember", "a pin of the environment"], env=env, capture_output=True, timeout=180)
+subprocess.run([J, "pin", "a pin of the environment"], env=env, capture_output=True, timeout=180)
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
-                      tool_input={"command": f"{J} remember 'from a subagent'"})
+                      tool_input={"command": f"{J} ideas add 'from a subagent'"})
 check("a subagent's journal write is refused, and told why",
       ("deny" in out, "the journal is the main" in out), (True, True))
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
@@ -1039,7 +1041,7 @@ check("and only once", out.strip(), "")
 
 # pins are delivered on every source, with an honest header
 d, path = project_with(2)
-subprocess.run([J.replace(str(J.split('/.journal')[0]), str(d)), "remember", "a standing fact"],
+subprocess.run([J.replace(str(J.split('/.journal')[0]), str(d)), "pin", "a standing fact"],
                env=env, capture_output=True, timeout=180)
 for source, head in (("startup", "FACTS THAT STAND ON THIS ENVIRONMENT"),
                      ("clear", "FACTS THAT STAND ON THIS ENVIRONMENT"),
@@ -1078,7 +1080,7 @@ d, path = project_with(4)
 other = path.with_name("zz-newer.jsonl"); shutil.copy(path, other)
 os.utime(other, None)
 J = str(d / ".journal" / "journal.py")
-p = subprocess.run([J, "remember", "cited"], env={**os.environ, transcript.SESSION_ENV: "s1"},
+p = subprocess.run([J, "pin", "cited"], env={**os.environ, transcript.SESSION_ENV: "s1"},
                    capture_output=True, text=True, timeout=180)
 def _pins(rec):
     f = d / ".journal" / "environments" / (rec.get("current") or "default") / "pins.json"
@@ -1089,7 +1091,7 @@ rec = json.loads((d / ".journal" / "record.json").read_text())
 check("remember cites the session from the environment, not the newest file",
       _pins(rec)[-1]["session"], "s1.jsonl")
 e = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}
-p = subprocess.run([J, "remember", "guessed"], env=e, capture_output=True, text=True, timeout=180)
+p = subprocess.run([J, "pin", "guessed"], env=e, capture_output=True, text=True, timeout=180)
 rec = json.loads((d / ".journal" / "record.json").read_text())
 check("without the environment it guesses the newest and SAYS so",
       (_pins(rec)[-1].get("guessed"), "guessed" in p.stderr), (True, True))

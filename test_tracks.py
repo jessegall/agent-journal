@@ -149,7 +149,7 @@ def run_cli(*args):
     return P.cli(*args)
 
 
-run_cli("remember", "cli fact")
+run_cli("pin", "cli fact")
 run_cli("start", "cli work")
 code, out = run_cli("switch", "second")
 check("cli switch succeeds", code, 0)
@@ -319,7 +319,7 @@ def helped(verb):
 
 for alias in ("environments", "environment", "envs", "env", "tracks", "track"):
     check(f"`journal {alias} help` answers", helped(alias), True)
-for alias in ("pins", "pin", "remember", "rules", "rule", "todo", "docs", "tools",
+for alias in ("pins", "pin", "rules", "rule", "todo", "docs", "tools",
               "work", "start", "end", "switch", "prepare", "claim"):
     check(f"`journal {alias} help` answers", helped(alias), True)
 # HELP ANSWERS FOR EXACTLY WHAT DISPATCHES, and `delegate`/`handoff` no longer do: the

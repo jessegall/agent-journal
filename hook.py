@@ -1173,7 +1173,7 @@ def _declared_first(payload: dict) -> bool:
 
 #: The journal verbs that answer a context rung. A chain that OPENS with one of these has
 #: decided before anything after it runs, so the rung gate lets the whole line through.
-DECIDES = frozenset({"pin", "remember", "rule", "nothing"})
+DECIDES = frozenset({"pin", "rule", "nothing"})
 
 
 def _is_journal(payload: dict) -> bool:
@@ -1197,7 +1197,7 @@ def _is_journal(payload: dict) -> bool:
     return _is_journal_verb(first[0]) and len(first) > 1 and first[1] in DECIDES
 
 
-#: Where a `remember` stops on a command line: the next shell separator or redirection.
+#: Where a `pin` stops on a command line: the next shell separator or redirection.
 _SEPARATORS = frozenset({"&&", "||", ";", "|", "&"})
 _REDIRECT = re.compile(r"^\d*[<>]")
 
@@ -1225,7 +1225,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
     if (payload.get("tool_name") or "") != "Bash":
         return None
     cmd = str((payload.get("tool_input") or {}).get("command", ""))
-    if "journal" not in cmd or not ("pin" in cmd or "remember" in cmd or "rule" in cmd):
+    if "journal" not in cmd or not ("pin" in cmd or "rule" in cmd):
         return None
     import shlex
     # ONE LINE AT A TIME. A newline ends a command as surely as `&&`, and shlex treats it
@@ -1233,7 +1233,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
     # lines was measured as 536 and refused, with the next four commands quoted back as
     # the part to cut.
     for line in _HEREDOC_BODY.sub(r"\1", cmd).splitlines():
-        if "journal" not in line or not ("pin" in line or "remember" in line or "rule" in line):  # `pins`/`rules` contain both
+        if "journal" not in line or not ("pin" in line or "rule" in line):  # `pins`/`rules` contain both
             continue
         try:
             toks = shlex.split(line)
@@ -1249,7 +1249,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
             if t in ("pins", "rules") and i > 0 and "journal" in toks[i - 1] \
                     and i + 1 < len(toks) and toks[i + 1] == "add":
                 start = i + 2
-            elif t in ("pin", "remember", "rule") and i > 0 and "journal" in toks[i - 1]:
+            elif t in ("pin", "rule") and i > 0 and "journal" in toks[i - 1]:
                 start = i + 1
             else:
                 continue
@@ -1287,8 +1287,8 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 #: AND `environments` IS HERE FOR THE NOUN+VERB SPELLING. `journal environments switch "x"`
 #: is the documented twin of `journal switch "x"` (ruling R11) and presents `environments`
 #: as its verb, so without it half of every lifecycle command was ungated.
-JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "pins", "remember", "strike", "switch",
-                            "nothing", "rule", "rules", "promote", "todo", "todos", "docs", "work",
+JOURNAL_WRITES = frozenset({"start", "end", "update", "switch",
+                            "todo", "todos", "docs", "work",
                             "tools", "loop", "prepare", "migrate", "claim", "grant", "grants",
                             "environments", "environment", "envs", "env", "tracks", "track",
                             "cleanup", "worktree", "upgrade"})
@@ -1347,7 +1347,6 @@ def _journal_write(payload: dict) -> str | None:
 DOCS_WRITES = frozenset({"add", "part", "replace", "strike", "final", "draft", "abstract",
                          "supersede", "index", "attach", "detach", "move"})
 #: What turns `pins`/`rules` from a listing into a change.
-PIN_WRITES = frozenset({"add", "strike", "promote", "move"})
 TODO_WRITES = frozenset({"add", "start", "done", "drop", "strike", "skip", "ask", "answer",
                          "reopen", "move", "block", "unblock", "after", "needs", "report",
                          "amend", "replace", "auto", "from-commit", "from_commit"})
@@ -1374,7 +1373,6 @@ NOUN_WRITES = {
     "docs": DOCS_WRITES.__contains__,
     "tools": TOOL_WRITES.__contains__,
     "todo": _titled, "todos": _titled,
-    "pins": PIN_WRITES.__contains__, "rules": PIN_WRITES.__contains__,
 }
 
 

@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.5 — `pins` and `rules` move onto command classes
+
+`pins`, `rules` and their bare spellings — `pin`, `rule`, `rule --strike N`, `strike`,
+`promote`, `nothing` — are declared in `commands/pins.py` and classified by the hook from
+those declarations. The `remember` alias is gone: `journal pin` is the spelling. `journal pins 3` and `journal rules 3` now show that claim
+(as `show` does) instead of printing the whole list; `--full` still opens the conversation
+around it. The `--brief`, provenance and doc-citation helpers every command uses moved into
+`app.py`.
+
 ## 1.62.4 — commands are declared by signature
 
 A command class declares itself with one signature string, Laravel-style:

@@ -25,7 +25,7 @@ Every group below prints its own commands, and so does every spelling of them:
     system         verify, version, update, settings, loop
 
 THE PLURAL NOUN IS THE CANONICAL SPELLING (ruling R10). Every singular and legacy one —
-`pin`, `rule`, `todo`, `remember`, `tracks`, bare `strike` and `promote` — still runs,
+`pin`, `rule`, `todo`, `tracks`, bare `strike` and `promote` — still runs,
 still answers `help`, and calls the very same function. None of them is deprecated.
 """
 from __future__ import annotations
@@ -42,7 +42,6 @@ import fmt
 import grants
 import help
 import settings as settings_mod
-import builtin
 import commands
 import ideas
 import questions
@@ -101,8 +100,9 @@ verify = _Lazy("verify")
 import worktree as _wt
 
 import app
-from app import CATALOGUE_PAGE, project, root
-from app import catalogue as _catalogue, now as _now, refuse as _refuse, stem as _stem
+from app import BRIEF_REFUSED, CATALOGUE_PAGE, project, root
+from app import brief as _brief, catalogue as _catalogue, doc_where as _doc_where, now as _now
+from app import refuse as _refuse, resolved as _resolved, stem as _stem, where as _where
 
 app.start(Path(__file__))
 _ROOT, _WT_NOTE = app.ROOT, app.WORKTREE_NOTE
@@ -172,14 +172,6 @@ def _transcript() -> Path:
         fmt.say("No transcript for this project yet.", error=True)
         raise SystemExit(1)
     return got[0]
-
-
-def _resolved() -> tuple[Path, bool] | None:
-    got = transcript.session_transcript(project())
-    if got and got[1]:
-        fmt.say(f"  (guessed: newest transcript, {got[0].name} — {transcript.SESSION_ENV} is "
-              "not set)", error=True)
-    return got
 
 
 #: The lifecycle verbs `journal environments <verb>` hands to their top-level twins. Reads
@@ -369,50 +361,6 @@ def cmd_open() -> int:
     return 0
 
 
-BRIEF_WAIT = 10.0
-BRIEF_REFUSED = ("--brief takes the brief on stdin and nothing arrived. Pipe it in — "
-                 "journal <command> --brief <<'MSG' … MSG — or drop --brief and pass the "
-                 "title alone.")
-
-
-def _brief(brief: bool) -> str | None:
-    """The body behind --brief, or None when the caller must be refused.
-
-    BOUNDED, for the same reason the record lock is: `sys.stdin.read()` runs to EOF, and an
-    agent's shell hands the command a stdin nobody ever closes. The flag then hangs until
-    the tool times out, saying nothing — the worst failure the CLI has, because it looks
-    like the journal is thinking. Wait a few seconds, then refuse with the spelling that
-    works. An empty read is refused too: a to-do or a part with a blank brief is the same
-    mistake, filed instead of caught.
-    """
-    if not brief:
-        return ""
-    if sys.stdin is None or sys.stdin.closed or sys.stdin.isatty():
-        return None
-    try:
-        import select
-        import time as _time
-        fd = sys.stdin.fileno()
-    except (ImportError, OSError, ValueError):  # not POSIX, or stdin has no fd: as before
-        return sys.stdin.read() or None
-    chunks: list[bytes] = []
-    deadline = _time.monotonic() + BRIEF_WAIT
-    while True:
-        left = deadline - _time.monotonic()
-        if left <= 0:
-            if not b"".join(chunks).strip():
-                return None
-            print(f"journal: stdin never closed — took the {len(b''.join(chunks))} character(s) "
-                  f"that arrived in {BRIEF_WAIT:.0f}s", file=sys.stderr)
-            break
-        if not select.select([fd], [], [], min(left, 0.1))[0]:
-            continue
-        blob = os.read(fd, 65536)
-        if not blob:
-            break
-        chunks.append(blob)
-    text = b"".join(chunks).decode("utf-8", "replace")
-    return text if text.strip() else None
 
 
 def cmd_await(what: str, on: str | None, minutes: float | None,
@@ -578,206 +526,6 @@ def cmd_search(term: str, all_of_them: bool = False, width: int | None = None, p
     return 0
 
 
-def _where() -> dict:
-    """The transcript position this pin is being written at, so it can be read around later.
-
-    Recorded at WRITE time and never recomputed: the newest session changes, and a pin that
-    silently re-points at a different conversation is an index that lies.
-    """
-    got = _resolved()
-    if got is None:
-        return {}
-    path, guessed = got
-    lines, _ = transcript.read(path)
-    where = {"line": lines[-1].n if lines else 0, "session": path.name}
-    if guessed:
-        where["guessed"] = True  # so `pins <n> --full` can say the citation may be off
-    return where
-
-
-def _doc_where(doc_ref: str) -> dict | None:
-    """The provenance for a new entry, with the doc it cites — or None if the citation is bad."""
-    where = _where()
-    if doc_ref:
-        err = docs.check_ref(root(), doc_ref)
-        if err:
-            fmt.say(f"--doc: {err}", error=True)
-            return None
-        base, head, _ = docs.anchor(root(), doc_ref)
-        doc, prt, _ = docs.get(root(), base)
-        # A NAME RESOLVES ONCE AND THE NUMBER STAYS — and so does the heading's slug, which
-        # is what makes the citation survive the doc being renamed.
-        doc_ref = f"{doc['n']}.{prt['p']}" if prt else str(doc["n"])
-        if head:
-            doc_ref += "#" + docs.slug_of(head)
-        where["doc"] = doc_ref
-    return where
-
-
-def cmd_remember(fact: str, supersedes: int | None, doc_ref: str = "", long: str = "") -> int:
-    conf, _ = settings_mod.load(root())
-    where = _doc_where(doc_ref)
-    if where is None:
-        return 1
-    ok, msg = pins.add(root(), fact, _now(), conf["pin_max_chars"], supersedes, where, long=long)
-    fmt.say(msg, error=not ok)
-    if ok:
-        _decided("pinned")
-    return 0 if ok else 1
-
-
-def _decided(how: str) -> bool:
-    """Lift the gate a context rung lowered. True if one was standing."""
-    import state
-    stem = _stem()
-    due = state.get(root(), "pin_due", None, stem=stem) if stem else None
-    if not due:
-        return False
-    state.put(root(), "pin_due", None, stem=stem)
-    state.put(root(), "pin_decided", {**due, "how": how, "at": _now()}, stem=stem)
-    return True
-
-
-def cmd_nothing(why: str) -> int:
-    """Decline to pin, on the record. The way through the rung gate that is not a pin.
-
-    IT WANTS A REASON, and the reason is the whole point: it is the thought the gate
-    exists to force, and it lands in the transcript where a later reader can argue with
-    it. A bare "nothing" would be the nudge being clicked through, which is what the gate
-    replaced.
-    """
-    why = " ".join((why or "").split())
-    if not why:
-        fmt.say('nothing wants a reason: journal nothing "<why nothing here needs pinning>"',
-              error=True)
-        return 1
-    if _decided("declined: " + why):
-        fmt.say(f"noted — nothing pinned at this rung, because: {why}")
-        return 0
-    if not _stem():
-        fmt.say("this process cannot tell which session it is — no transcript for "
-                f"{transcript.SESSION_ENV} was found — so the decision was NOT filed. Run it from "
-                "inside the session, or `journal verify` to see what the hook sees", error=True)
-        return 1
-    fmt.say("no pin is due — no context warning is waiting on a decision", error=True)
-    return 1
-
-
-def cmd_body(key: str, verb: str, rest: list[str], brief: bool) -> int:
-    """`<noun> amend <n> "<section>" --brief` and `<noun> replace <n> --brief`.
-
-    The same two verbs a to-do's brief already takes, over the same shape: one is additive
-    and one is not, and what is replaced is kept under `struck/` either way.
-    """
-    if not rest or not rest[0].isdigit():
-        fmt.say(f'{key} {verb} wants a number: journal {key} {verb} 3'
-                + (' "<section title>" --brief' if verb == "amend" else " --brief"), error=True)
-        return 1
-    n = int(rest[0])
-    text = _brief(brief)
-    if text is None:
-        fmt.say(BRIEF_REFUSED, error=True)
-        return 1
-    if verb == "amend":
-        ok, msg = pins.amend_body(root(), n, " ".join(rest[1:]), text, key, _now())
-    else:
-        ok, msg = pins.write_body(root(), n, text, key, _now())
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_rule(fact: str, strike_n: int | None, why: str, doc_ref: str = "", long: str = "") -> int:
-    conf, _ = settings_mod.load(root())
-    if strike_n is not None:
-        ok, msg = pins.strike(root(), strike_n, why, key=pins.RULES)
-    else:
-        where = _doc_where(doc_ref)
-        if where is None:
-            return 1
-        ok, msg = pins.add(root(), fact, _now(), conf["pin_max_chars"], None, where,
-                           key=pins.RULES, long=long)
-        if ok:
-            _decided("ruled")
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_rules(all_of_them: bool, n: int | None, full: bool, page: int = 1,
-              order: str = fmt.DESC) -> int:
-    if n is not None and full:
-        conf, _ = settings_mod.load(root())
-        ok, body = pins.around(root(), n, project(), conf["pin_context"], key=pins.RULES)
-        fmt.say(body, error=not ok)
-        return 0 if ok else 1
-    live = len(pins.live(root(), pins.RULES))
-    struck = len(pins._all(root(), pins.RULES)) - live
-    sub = f"{live} in force, on every environment" + (
-        f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
-    fmt.say(fmt.title("RULES OF THIS PROJECT", sub=sub))
-    fmt.say()
-    fmt.say(pins.render(root(), all_of_them=all_of_them, key=pins.RULES, cap=CATALOGUE_PAGE, page=page, order=order))
-    # THE PACKAGE'S OWN, MARKED AS ITS OWN. A reader must be able to tell "this project
-    # decided" from "the tool ships this": a rule whose provenance is unclear is one nobody
-    # can find the argument for, and the argument for these is in `builtin.py`.
-    conf, _ = settings_mod.load(root())
-    if conf["builtin_rules"] and builtin.RULES:
-        fmt.say()
-        fmt.say(fmt.dim(f"  THE JOURNAL'S OWN — {len(builtin.RULES)}, in every project that installs it"))
-        for r in builtin.RULES:
-            fmt.say(fmt.numbered(r["id"], r["fact"]).replace(f"  {r['id']}", f"  {r['id']}", 1))
-        fmt.say(fmt.dim("       they cannot be struck; `journal rules show B1` reads the reasoning"))
-    fmt.say()
-    fmt.say(fmt.wrap("Handed to every session, before anything else."))
-    fmt.say(fmt.commands([
-        ("journal rules <n> --full", "the conversation around one"),
-        ('journal rules strike <n> "<why>"', "repeal one"),
-    ]))
-    return 0
-
-
-def cmd_claim_page(n: int, key: str) -> int:
-    """`rules show <n>` / `pins show <n>` — the CLAIM, not the conversation around it.
-
-    THE ONE PLACE `show` DID NOT READ ITS NOUN. `docs show 4` prints the doc and `todos show
-    3` prints the to-do; this printed a stretch of transcript, which is what `--full` means
-    everywhere else. With a long form there is something to read here, so `show` now reads
-    it and `<n> --full` still opens the conversation.
-    """
-    items = pins._all(root(), key)
-    noun = "rule" if key == pins.RULES else "pin"
-    if n < 1 or n > len(items):
-        fmt.say(f"there is no {noun} {n}. `journal {key}` numbers them.", error=True)
-        return 1
-    it = items[n - 1]
-    fmt.say(fmt.title(f"{noun.upper()} {n}", sub=pins.age(it.get("at", ""))))
-    fmt.say()
-    fmt.say(fmt.wrap(it["fact"]))
-    if it.get("struck"):
-        fmt.say()
-        fmt.say(fmt.wrap(f"STRUCK: {it['struck']}"))
-    if it.get("doc"):
-        fmt.say()
-        fmt.say("  → " + docs.ref_label(root(), str(it["doc"])))
-    long = pins.body(root(), n, key)
-    fmt.say()
-    if long.strip():
-        fmt.say(long.rstrip())
-    else:
-        fmt.say(fmt.wrap("No reasoning is written down. The claim is all there is, which is "
-                         "fine — and if the argument matters, this is where it goes."))
-    fmt.say()
-    fmt.say(fmt.commands([
-        (f"journal {key} {n} --full", "the conversation it was written in"),
-        (f'journal {key} amend {n} "<section title>" --brief', "add a section to the reasoning"),
-        (f"journal {key} replace {n} --brief", "replace the reasoning outright"),
-    ]))
-    return 0
-
-
-def cmd_promote(n: int) -> int:
-    ok, msg = pins.promote(root(), n, _now(), _where())
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
 
 
 def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", after: str = "", acting: str = "", page: int = 1,
@@ -1561,44 +1309,6 @@ def cmd_claim(name: str, why: str) -> int:
     return 0 if ok else 1
 
 
-def cmd_strike(n: int, why: str) -> int:
-    ok, msg = pins.strike(root(), n, why)
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_pin_full(n: int) -> int:
-    conf, _ = settings_mod.load(root())
-    ok, body = pins.around(root(), n, project(), conf["pin_context"])
-    fmt.say(body, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_pins(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
-    conf, _ = settings_mod.load(root())
-    here = tracks.current(root(), _stem())
-    n = len(pins.live(root()))
-    struck = len(pins._all(root())) - n
-    sub = f"environment {here} · {n} standing" + (
-        f" · {struck} struck" + ("" if all_of_them else " (--all shows them)") if struck else "")
-    code = _catalogue(
-        "PINS", sub,
-        pins.listing(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order),
-        "Nothing is pinned.",
-        "Handed to every session on this environment.",
-        [("journal pins <n> --full", "the conversation around one"),
-         ("journal pins promote <n>", "make one a rule for every environment"),
-         ('journal pins strike <n> "<why>"', "retire one that stopped being true")],
-        noun="pins", page=page, order=order)
-    got = transcript.session_transcript(project())
-    if got:
-        import state as _st
-        read = context.pressure(got[0], conf["context_window"], _st.get(root(), "window", 0) or 0)
-        if read:
-            fmt.say(f"Context {read[0]:.0%} full ({read[1]:,} of {read[2]:,})." if read[3] else
-                    f"Context: {read[1]:,} tokens; the window is learned at the first "
-                    "compaction, or set context_window in .journal/settings.json.")
-    return code
 
 
 def cmd_lent() -> int:
@@ -1826,17 +1536,14 @@ class Opts:
     mutable class attribute is shared by every instance.
     """
     back: int = 0
-    supersedes: int | None = None
     all_of_them: bool = False
     order_by_id: bool = False
     go_back: bool = False
     fresh: bool = False
-    full: bool = False
     wait_for: float | None = None
     await_agent: str | None = None
     await_pid: int | None = None
     on: str | None = None
-    strike_n: int | None = None
     brief: bool = False
     quiet: bool = False
     replace: bool = False
@@ -1901,13 +1608,6 @@ def _page_flag(v: str) -> int:
         raise ValueError("--page wants a number")
 
 
-def _supersedes_flag(v: str) -> int:
-    try:
-        return int(v)
-    except ValueError:
-        raise ValueError("--supersedes wants a pin number; `journal pins` numbers them")
-
-
 def _for_flag(v: str) -> float:
     try:
         return float(v)
@@ -1936,7 +1636,6 @@ _PRUNE_BEFORE = _Flag(dest="prune_before")   # --older-than=30d and --before=<da
 
 VALUE_FLAGS: dict[str, _Flag] = {
     "--back": _Flag(dest="back", type=_int_flag("--back")),
-    "--supersedes": _Flag(dest="supersedes", type=_supersedes_flag),
     "--agent": _Flag(dest="await_agent", type=_agent_flag),
     "--pid": _Flag(dest="await_pid", type=_int_flag("--pid")),
     "--for": _Flag(dest="wait_for", type=_for_flag),
@@ -1960,7 +1659,6 @@ VALUE_FLAGS: dict[str, _Flag] = {
 # flag not listed writes `True`, so only the two exceptions (`--strike`, `--none`) name
 # theirs.
 BARE_FLAGS: dict[str, _Flag] = {
-    "--strike": _Flag(dest="strike_n", set=-1),    # the number follows as the next word
     "--off": _Flag(dest="off_flag"),
     #: A DOC BELONGS TO ITS ENVIRONMENT UNLESS THIS SAYS THE PROJECT'S — see `docs.GLOBAL`.
     "--global": _Flag(dest="global_flag"),
@@ -1976,7 +1674,6 @@ BARE_FLAGS: dict[str, _Flag] = {
     "--todos": _Flag(dest="close_todo"),
     "--all-sessions": _Flag(dest="all_sessions"),
     "--none": _Flag(dest="after", set="--none"),    # `todos after <n> --none` clears the prerequisites
-    "--full": _Flag(dest="full"),
     "--fresh": _Flag(dest="fresh"),
     "--back": _Flag(dest="go_back"),
     "--all": _Flag(dest="all_of_them"),
@@ -2062,86 +1759,6 @@ def _v_search(verb: str, rest: list[str], opts: Opts) -> int:
     return cmd_search(" ".join(rest[1:]), opts.all_of_them, page=opts.page)
 
 
-def _v_pin(verb: str, rest: list[str], opts: Opts) -> int:
-    if len(rest) < 2:
-        return _refuse("pin wants the claim, in one line")
-    return cmd_remember(" ".join(rest[1:]), opts.supersedes, opts.doc_ref)
-
-
-def _v_rule(verb: str, rest: list[str], opts: Opts) -> int:
-    if opts.strike_n is not None:
-        if len(rest) < 3:
-            return _refuse('rule --strike wants a number and why: journal rule --strike 2 "<why>"')
-        n, why = _number(rest, 1, "rule --strike", "rule", "journal rules")
-        return _refuse(why) if why else cmd_rule("", n, " ".join(rest[2:]))
-    if len(rest) < 2:
-        return _refuse("rule wants the ruling, in one line")
-    return cmd_rule(" ".join(rest[1:]), None, "", opts.doc_ref)
-
-
-def _v_rules(verb: str, rest: list[str], opts: Opts) -> int:
-    # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`list`/`show`
-    # call the exact same functions the old `rule`/`rule --strike` branches call, so
-    # the two spellings can never drift apart.
-    sub = rest[1] if len(rest) > 1 else ""
-    if sub == "move":
-        return _refuse("a rule binds EVERY environment, so there is nowhere to move it to. If it "
-                "only describes one line of work it was never a rule: strike it and pin it "
-                "there —\n"
-                '  journal rules strike <n> "<why>"\n'
-                '  journal pins add "<the claim>"')
-    if sub == "add":
-        said, why = _words(rest, 2, "rules add", "the ruling, in one line")
-        if why:
-            return _refuse(why)
-        long = _brief(opts.brief)
-        if long is None:
-            return _refuse(BRIEF_REFUSED)
-        return cmd_rule(" ".join(rest[2:]), None, "", opts.doc_ref, long)
-    if sub in ("amend", "replace"):
-        return cmd_body(pins.RULES, sub, rest[2:], opts.brief)
-    if sub == "strike":
-        if len(rest) > 2 and builtin.by_id(rest[2]):
-            return _refuse(f"{rest[2].upper()} is the journal's own rule, not this "
-                           "project's — it holds wherever the journal is installed, so "
-                           "striking it here would be a local opinion wearing the tool's "
-                           "authority. `builtin_rules: false` in settings.json turns them "
-                           "all off.")
-        if len(rest) < 4:
-            return _refuse('rules strike wants a rule number and why: journal rules strike 2 "<why>"')
-        n, why = _number(rest, 2, "rules strike", "rule", "journal rules")
-        return _refuse(why) if why else cmd_rule("", n, " ".join(rest[3:]))
-    if sub == "list":
-        return cmd_rules(opts.all_of_them, None, False, opts.page, opts.order)
-    if sub == "show":
-        if len(rest) < 3:
-            return _refuse("rules show wants a rule number: journal rules show 3")
-        shipped = builtin.by_id(rest[2])
-        if shipped:
-            fmt.say(fmt.title(f"RULE {shipped['id']}", sub="the journal's own, in every project"))
-            fmt.say()
-            fmt.say(fmt.wrap(shipped["fact"]))
-            fmt.say()
-            fmt.say(fmt.block(shipped["body"]))
-            return 0
-        n, why = _number(rest, 2, "rules show", "rule", "journal rules")
-        return _refuse(why) if why else cmd_claim_page(n, pins.RULES)
-    n = None
-    if len(rest) > 1:
-        try:
-            n = int(rest[1])
-        except ValueError:
-            return _refuse(f"rules wants a NUMBER with --full, got {rest[1]!r}")
-    return cmd_rules(opts.all_of_them, n, opts.full, opts.page, opts.order)
-
-
-def _v_promote(verb: str, rest: list[str], opts: Opts) -> int:
-    if len(rest) < 2:
-        return _refuse("promote wants a pin number: journal pins promote 3")
-    try:
-        return cmd_promote(int(rest[1]))
-    except ValueError:
-        return _refuse(_number(rest, 1, "promote", "pin", "journal pins")[1])
 
 
 def _v_environments(verb: str, rest: list[str], opts: Opts) -> int:
@@ -2163,14 +1780,6 @@ def _v_environments(verb: str, rest: list[str], opts: Opts) -> int:
     return cmd_tracks(" ".join(rest[1:]))
 
 
-def _v_strike(verb: str, rest: list[str], opts: Opts) -> int:
-    if len(rest) < 3:
-        return _refuse('strike wants a pin number and why: journal pins strike 6 "<why>"')
-    try:
-        n = int(rest[1])
-    except ValueError:
-        return _refuse(_number(rest, 1, "strike", "pin", "journal pins")[1])
-    return cmd_strike(n, " ".join(rest[2:]))
 
 
 def _dispatch(argv: list[str]) -> int:
@@ -2180,51 +1789,6 @@ def _dispatch(argv: list[str]) -> int:
 
 
 
-def _v_pins(verb: str, rest: list[str], opts: Opts) -> int:
-    # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`promote`/
-    # `list`/`show` call the exact same functions the old bare top-level `pin`,
-    # `strike` and `promote` verbs call, so the two spellings can never drift apart.
-    sub = rest[1] if len(rest) > 1 else ""
-    if sub == "add":
-        said, why = _words(rest, 2, "pins add", "the claim, in one line")
-        if why:
-            return _refuse(why)
-        long = _brief(opts.brief)
-        if long is None:
-            return _refuse(BRIEF_REFUSED)
-        return cmd_remember(" ".join(rest[2:]), opts.supersedes, opts.doc_ref, long)
-    if sub in ("amend", "replace"):
-        return cmd_body(pins.KEY, sub, rest[2:], opts.brief)
-    if sub == "move":
-        if len(rest) < 4 or not rest[2].isdigit():
-            return _refuse('pins move wants a pin number and an environment: '
-                    'journal pins move 6 "<environment>"')
-        ok, msg = pins.move(root(), int(rest[2]), " ".join(rest[3:]), _now())
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    if sub == "strike":
-        if len(rest) < 4:
-            return _refuse('pins strike wants a pin number and why: journal pins strike 6 "<why>"')
-        n, why = _number(rest, 2, "pins strike", "pin", "journal pins")
-        return _refuse(why) if why else cmd_strike(n, " ".join(rest[3:]))
-    if sub == "promote":
-        if len(rest) < 3:
-            return _refuse("pins promote wants a pin number: journal pins promote 3")
-        n, why = _number(rest, 2, "pins promote", "pin", "journal pins")
-        return _refuse(why) if why else cmd_promote(n)
-    if sub == "list":
-        return cmd_pins(opts.all_of_them, opts.page, opts.order)
-    if sub == "show":
-        if len(rest) < 3:
-            return _refuse("pins show wants a pin number: journal pins show 3")
-        n, why = _number(rest, 2, "pins show", "pin", "journal pins")
-        return _refuse(why) if why else cmd_claim_page(n, pins.KEY)
-    if len(rest) > 1 and opts.full:
-        try:
-            return cmd_pin_full(int(rest[1]))
-        except ValueError:
-            return _refuse(f"pins wants a NUMBER with --full, got {rest[1]!r}")
-    return cmd_pins(opts.all_of_them, opts.page, opts.order)
 
 
 def _v_upgrade(verb: str, rest: list[str], opts: Opts) -> int:
@@ -2318,7 +1882,6 @@ _ALIASES: dict[tuple[str, ...], object] = {
     ("cleanup", "tidy"): _v_cleanup,
     ("grant", "grants"): _v_grant,
     ("lent",): lambda verb, rest, opts: cmd_lent(),
-    ("pin", "remember"): _v_pin,
     ("todo", "todos"): lambda verb, rest, opts: cmd_todo(
         rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,
         opts.page, opts.order, opts.quiet, opts.order_by_id, opts.prune_before, opts.force),
@@ -2333,10 +1896,6 @@ COMMANDS.update({
     "user": lambda verb, rest, opts: cmd_user(opts.back),
     "open": lambda verb, rest, opts: cmd_open(),
     "search": _v_search,
-    "nothing": lambda verb, rest, opts: cmd_nothing(" ".join(rest[1:])),
-    "rule": _v_rule,
-    "rules": _v_rules,
-    "promote": _v_promote,
     "docs": lambda verb, rest, opts: cmd_docs(rest[1:], opts.brief, opts.abstract, opts.page,
                                               opts.replace, opts.order, opts.all_of_them,
                                               opts.global_flag),
@@ -2346,8 +1905,6 @@ COMMANDS.update({
     "prepare": lambda verb, rest, opts: cmd_prepare(" ".join(rest[1:])),
     "loop": lambda verb, rest, opts: cmd_loop(rest[1:]),
     "switch": lambda verb, rest, opts: cmd_switch(" ".join(rest[1:]), opts.go_back, opts.project_too, opts.sessions or None, opts.all_sessions),
-    "strike": _v_strike,
-    "pins": _v_pins,
     "update": _v_update,
     "upgrade": _v_upgrade,
     "work": _v_work,

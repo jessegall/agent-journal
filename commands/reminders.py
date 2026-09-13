@@ -9,7 +9,7 @@ from command import Command, Parsed, number
 from commands.options import LISTING, LISTING_CASTS
 from templates import render
 
-NOUN = ("reminders", "reminder", "remind")
+NOUNS = (("reminders", "reminder", "remind"),)
 
 REMINDER = {"n": number("a reminder number")}
 

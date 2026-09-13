@@ -8,7 +8,7 @@ from command import Command, Parsed, number
 from commands.options import LISTING, LISTING_CASTS, words
 from templates import render
 
-NOUN = ("ideas", "idea")
+NOUNS = (("ideas", "idea"),)
 
 IDEA = {"n": number("an idea number")}
 

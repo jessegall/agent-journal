@@ -14,7 +14,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import journal, testkit, todo, transcript  # noqa: E402
+import app, journal, testkit, todo, transcript  # noqa: E402
 
 ok = fail = 0
 
@@ -121,13 +121,13 @@ p = subprocess.Popen([J, "todos", "add", "stdin never closes", "--brief"], env=e
                      stdin=r, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 os.close(r)
 try:
-    out = p.communicate(timeout=journal.BRIEF_WAIT + 20)[0]
+    out = p.communicate(timeout=app.BRIEF_WAIT + 20)[0]
 except subprocess.TimeoutExpired:
     p.kill(); out = "HUNG"
 os.close(w)
 check("a stdin that never closes refuses inside the bound, instead of hanging",
       (p.returncode, "takes the brief on stdin" in out,
-       time.time() - started < journal.BRIEF_WAIT + 10), (1, True, True))
+       time.time() - started < app.BRIEF_WAIT + 10), (1, True, True))
 
 # A PAYLOAD THAT OPENS WITH `--` IS PAYLOAD, after a bare `--`. Without it, a title
 # beginning with a known flag was parsed as that flag: `todos add "--env= is validated

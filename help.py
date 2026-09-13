@@ -50,7 +50,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
     ),
     "pins": (
         'journal pins add "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a claim that must survive a compaction',
-        'journal pin "<claim>"         the same command; `remember` too. Permanent aliases, never deprecated',
+        'journal pin "<claim>"         the same command. A permanent alias, never deprecated',
         "journal pins [--all] [--order=asc|desc]   every pin, numbered, NEWEST FIRST — the number is what --supersedes takes and never changes with the order",
         "journal pins N --full         the conversation around where pin N was written",
         'journal pins strike N "<why>"   retire a pin that stopped being true — bare `journal strike N "<why>"` is the same',
@@ -194,7 +194,7 @@ ALIAS: dict[str, str] = {
     "start": "work", "end": "work", "open": "work", "next": "work",
     "idea": "ideas",
     "question": "questions",
-    "pin": "pins", "remember": "pins", "promote": "pins", "strike": "pins",
+    "pin": "pins", "promote": "pins", "strike": "pins",
     "nothing": "pins",
     "rule": "rules",
     "reminder": "reminders", "remind": "reminders",
