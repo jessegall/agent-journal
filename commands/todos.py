@@ -1,14 +1,10 @@
 from __future__ import annotations
 
-import re
-
 import fmt
 import todo
-import tracks
-import work
-from app import (BRIEF_REFUSED, CATALOGUE_PAGE, answer, brief, doc_where, now, refuse, root, stem,
+from app import (BRIEF_REFUSED, CATALOGUE_PAGE, answer, brief, doc_where, refuse,
                  where)
-from command import Command, Parsed, number
+from command import Parsed, number
 from commands.resource import Resource
 from controllers.todos import TodosController
 from commands.options import LISTING, LISTING_CASTS, words
@@ -21,7 +17,6 @@ CONTROLLER = TodosController()
 N = "{n : a to-do number}"
 
 TEXT = {
-    "commit_how": "{subject} ({sha})",
     "list_title": "TO-DO",
     "list_sub": "environment {env} · {waiting} waiting[ · {done} done][{hint}][{auto}]",
     "done_hint": " (--all shows them)",
@@ -29,14 +24,12 @@ TEXT = {
     "lead_auto": "Auto is on: with nothing open, the agent picks up the next one on its own.",
     "lead_manual": "Delayed work on this environment, listed at every session start. Not an instruction to start one.",
     "auto_state": "auto is {state} for `{env}`. `journal todos auto on|off` sets it.",
-    "auto_wants": "auto wants on or off, got {got}",
     "auto_working": "  Agent currently working on: {subjects:; }",
     "auto_after_work": "  {n} to-do(s) waiting; the first ready one is picked up when that work ends.",
     "auto_next": "  Nothing is open, {n} to-do(s) waiting: the next idle stop starts to-do {next}, {title}.",
     "auto_stuck": "  Nothing is open and none of the {n} waiting to-do(s) can be started — they wait on you, on a "
                   "condition, or on each other. `journal todos` says which.",
     "auto_empty": "  Nothing is open and nothing is waiting.",
-    "no_commit": "no commit at {ref} to read",
     "names_no_todo": "{sha} names no to-do — a commit closes one with a trailer:\n  {trailer} todos done <n>",
     "commit_line": "  {line}",
     "commit_refused": "  ! {line}",
@@ -58,10 +51,6 @@ LIST_COMMANDS = (("journal todos <n>", "the brief, and the question if it waits 
                  ('journal todos answer <n> "<answer>"', "answer one that waits on you"))
 AUTO_COMMAND = {True: ("journal todos auto off", "stop working through the list on your own"),
                 False: ("journal todos auto on", "work through the list without asking")}
-
-
-def here() -> str:
-    return tracks.current(root(), stem())
 
 
 class List(Resource):
@@ -225,66 +214,58 @@ class Replace(_WithBrief):
     action = "replace"
 
 
-class Auto(Command):
+class Auto(Resource):
     signature = "todos:auto {state? : on or off}"
     writes = True
+    controller = CONTROLLER
+    action = "auto"
 
-    def run(self, p: Parsed) -> int:
-        env = here()
-        want = (p.arg("state") or "").lower()
-        if not want:
-            fmt.say(render(TEXT["auto_state"], state="ON" if todo.auto(root(), env) else "OFF", env=env))
+    def render(self, p: Parsed, result) -> int:
+        if not result.ok:
+            return super().render(p, result)
+        m = result.meta
+        if "set" not in m:
+            fmt.say(render(TEXT["auto_state"], state="ON" if m["on"] else "OFF", env=m["env"]))
             return 0
-        if want not in ("on", "off", "true", "false", "yes", "no"):
-            return refuse(render(TEXT["auto_wants"], got=repr(p.arg("state"))))
-        on = want in ("on", "true", "yes")
-        fmt.say(todo.set_auto(root(), env, on))
-        if not on:
+        fmt.say(result.message)
+        if not m["on"]:
             return 0
-        standing = work.open_work(root())
-        waiting = todo.open_items(root(), env)
-        ready = todo.ready(root(), env)
-        if standing:
-            fmt.say(render(TEXT["auto_working"], subjects=[w["subject"] for w in standing]))
-            fmt.say(render(TEXT["auto_after_work"], n=len(waiting)))
-        elif ready:
-            fmt.say(render(TEXT["auto_next"], n=len(waiting), next=ready[0]["n"], title=ready[0]["title"]))
-        elif waiting:
-            fmt.say(render(TEXT["auto_stuck"], n=len(waiting)))
+        if m["working"]:
+            fmt.say(render(TEXT["auto_working"], subjects=m["working"]))
+            fmt.say(render(TEXT["auto_after_work"], n=m["waiting"]))
+        elif m["next"]:
+            fmt.say(render(TEXT["auto_next"], n=m["waiting"], next=m["next"]["n"], title=m["next"]["title"]))
+        elif m["waiting"]:
+            fmt.say(render(TEXT["auto_stuck"], n=m["waiting"]))
         else:
             fmt.say(TEXT["auto_empty"])
         return 0
 
 
-class Prune(Command):
+class Prune(Resource):
     signature = "todos:prune {--older-than=} {--before=} {--force}"
     writes = True
-
-    def run(self, p: Parsed) -> int:
-        cutoff = p.option("older-than") or p.option("before") or ""
-        return answer(todo.prune(root(), here(), cutoff, now(), bool(p.option("force"))))
+    controller = CONTROLLER
+    action = "prune"
 
 
-class FromCommit(Command):
+class FromCommit(Resource):
     signature = "todos:from-commit {ref? : a commit, HEAD by default} {--quiet}"
     verbs = ("from_commit",)
     writes = True
+    controller = CONTROLLER
+    action = "commit"
 
-    def run(self, p: Parsed) -> int:
-        ref = p.arg("ref") or "HEAD"
-        at = todo.commit_at(root().parent, ref)
-        if at is None:
-            return refuse(render(TEXT["no_commit"], ref=ref))
-        sha, subject, message = at
-        said = todo.close_from_commit(root(), message, render(TEXT["commit_how"], subject=subject, sha=sha[:9]),
-                                      now(), here())
-        if not said:
+    def render(self, p: Parsed, result) -> int:
+        if result.data is None:
+            return super().render(p, result)
+        if not result.data:
             if not p.option("quiet"):
-                fmt.say(render(TEXT["names_no_todo"], sha=sha[:9], trailer=todo.TRAILER))
+                fmt.say(render(TEXT["names_no_todo"], sha=result.meta["sha"], trailer=todo.TRAILER))
             return 0
-        for ok, line in said:
-            fmt.say(render(TEXT["commit_line" if ok else "commit_refused"], line=line))
-        return 0 if any(ok for ok, _ in said) else 1
+        for row in result.data:
+            fmt.say(render(TEXT["commit_line" if row["ok"] else "commit_refused"], line=row["line"]))
+        return 0 if result.ok else 1
 
 
 COMMANDS = (List, Show, Add, Start, Done, Drop, Reopen, Move, Ask, Answer, Block, Unblock, After, Report,
