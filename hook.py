@@ -1288,7 +1288,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 #: is the documented twin of `journal switch "x"` (ruling R11) and presents `environments`
 #: as its verb, so without it half of every lifecycle command was ungated.
 JOURNAL_WRITES = frozenset({"update", "switch",
-                            "todo", "todos", "docs",
+                            "docs",
                             "tools", "loop", "prepare", "migrate", "claim", "grant", "grants",
                             "environments", "environment", "envs", "env", "tracks", "track",
                             "cleanup", "worktree", "upgrade"})
@@ -1347,21 +1347,7 @@ def _journal_write(payload: dict) -> str | None:
 DOCS_WRITES = frozenset({"add", "part", "replace", "strike", "final", "draft", "abstract",
                          "supersede", "index", "attach", "detach", "move"})
 #: What turns `pins`/`rules` from a listing into a change.
-TODO_WRITES = frozenset({"add", "start", "done", "drop", "strike", "skip", "ask", "answer",
-                         "reopen", "move", "block", "unblock", "after", "needs", "report",
-                         "amend", "replace", "auto", "from-commit", "from_commit"})
 TOOL_WRITES = frozenset({"add", "set", "remove", "index"})
-
-def _titled(nxt: str) -> bool:
-    """`journal todo "park this"` writes; `journal todo`, `todo 3` and `todo --all` read.
-
-    THE ONE NOUN WHOSE BARE FORM TAKES A PAYLOAD. Everything after `todos` that is not a
-    number, a flag or a known verb is a TITLE, and filing it is a write — so this noun
-    cannot be a list of verbs like the others, and pretending it could was how a `journal
-    todo "park this"` from a subagent stopped being refused.
-    """
-    return bool(nxt) and not nxt.isdigit() and not nxt.startswith("-")
-
 
 #: EVERY NOUN THAT IS A READ ON ITS OWN, AND WHAT TURNS IT INTO A WRITE — as a predicate on
 #: the word after the noun, because one noun's answer is not a list. One table, so a noun
@@ -1372,7 +1358,6 @@ def _titled(nxt: str) -> bool:
 NOUN_WRITES = {
     "docs": DOCS_WRITES.__contains__,
     "tools": TOOL_WRITES.__contains__,
-    "todo": _titled, "todos": _titled,
 }
 
 

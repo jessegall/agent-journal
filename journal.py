@@ -434,277 +434,6 @@ def cmd_search(term: str, all_of_them: bool = False, width: int | None = None, p
 
 
 
-def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", after: str = "", acting: str = "", page: int = 1,
-             order: str = fmt.DESC, quiet: bool = False, order_by_id: bool = False,
-             prune_before: str = "", force: bool = False) -> int:
-    here = tracks.current(root(), _stem())
-    # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
-    # what a bare noun and a bare noun+id already do; stripping them here means the
-    # existing bare-shape code below is the ONLY place either behaviour lives.
-    if rest and rest[0] == "list":
-        rest = rest[1:]
-    if rest and rest[0] == "show":
-        # A VERB WITH ITS ARGUMENT MISSING IS AN ERROR, NEVER A PAYLOAD. `journal todos show`
-        # with no number fell through this check and was read as a TITLE: it filed a to-do
-        # called "show" and reported success. A write that lands wrong while saying it went
-        # right is the one shape this package exists to prevent, and it is the same defect
-        # as a tool named `add` — the noun's vocabulary and its payload sharing one slot.
-        if len(rest) > 1 and rest[1].isdigit():
-            rest = rest[1:]
-        else:
-            fmt.say("todos show wants a to-do number: journal todos show 3"
-                    + (f", got {rest[1]!r}" if len(rest) > 1 else ""), error=True)
-            return 1
-    if not rest:
-        waiting = todo.open_items(root(), here)
-        done = len(todo._all(root(), here)) - len(waiting)
-        draining = todo.auto(root(), here)
-        sub = f"environment {here} · {len(waiting)} waiting" + (
-            f" · {done} done" + ("" if all_of_them else " (--all shows them)") if done else "") + (
-            " · auto ON" if draining else "")
-        fmt.say(fmt.title("TO-DO", sub=sub))
-        fmt.say()
-        fmt.say(todo.render(root(), here, all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page,
-                           order=order, order_by_id=order_by_id))
-        fmt.say()
-        fmt.say(fmt.wrap("Auto is on: with nothing open, the agent picks up the next one on its own."
-                       if draining else
-                       "Delayed work on this environment, listed at every session start. Not an "
-                       "instruction to start one."))
-        fmt.say(fmt.commands([
-            ("journal todos <n>", "the brief, and the question if it waits on the user"),
-            ("journal todos start <n>", "pick one up"),
-            ('journal todos add "<title>" --brief', "add one, with a brief on stdin"),
-            ('journal todos answer <n> "<answer>"', "answer one that waits on you"),
-            ("journal todos auto " + ("off" if draining else "on"),
-             "stop working through the list on your own" if draining else "work through the list without asking"),
-        ]))
-        return 0
-    verb = rest[0]
-    if verb == "auto":
-        if len(rest) < 2:
-            fmt.say(f"auto is {'ON' if todo.auto(root(), here) else 'OFF'} for `{here}`. "
-                  "`journal todos auto on|off` sets it.")
-            return 0
-        want = rest[1].lower()
-        if want not in ("on", "off", "true", "false", "yes", "no"):
-            fmt.say(f"auto wants on or off, got {rest[1]!r}", error=True)
-            return 1
-        on = want in ("on", "true", "yes")
-        fmt.say(todo.set_auto(root(), here, on))
-        standing = work.open_work(root())
-        # WHAT IS NEXT IS ONE QUESTION WITH ONE ANSWER: `todo.ready`. This asked
-        # `open_items` and named its first row, while the stop hook it was predicting asks
-        # `ready` — so it promised to start a to-do that waits on the user, is blocked, is
-        # held by a live agent, or has an unmet prerequisite, none of which the stop would
-        # ever pick up. Measured the moment auto was switched on here: it named to-do 40,
-        # which has been waiting on the user for five hours.
-        waiting = todo.open_items(root(), here)
-        nxt = todo.ready(root(), here)
-        if on:
-            if standing:
-                fmt.say("  Agent currently working on: " + "; ".join(w["subject"] for w in standing))
-                fmt.say(f"  {len(waiting)} to-do(s) waiting; the first ready one is picked up "
-                        "when that work ends.")
-            elif nxt:
-                fmt.say(f"  Nothing is open, {len(waiting)} to-do(s) waiting: the next idle stop "
-                        f"starts to-do {nxt[0]['n']}, {nxt[0]['title']}.")
-            elif waiting:
-                # NOT THE SAME AS AN EMPTY LIST, and saying so is the whole point: a list
-                # that is full and entirely unstartable looks identical to a finished one
-                # from the outside, and the difference is what the user has to act on.
-                fmt.say(f"  Nothing is open and none of the {len(waiting)} waiting to-do(s) can "
-                        "be started — they wait on you, on a condition, or on each other. "
-                        "`journal todos` says which.")
-            else:
-                fmt.say("  Nothing is open and nothing is waiting.")
-        return 0
-    if verb == "prune":
-        # NO TO-DO NUMBER — this clears a whole batch, so it does not join the
-        # numbered-verb group above; it reads its own two flags instead.
-        ok, msg = todo.prune(root(), here, prune_before, _now(), force)
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    if verb in ("from-commit", "from_commit"):
-        # THE SAME PROTOCOL FROM OUTSIDE A SESSION: what the git post-commit hook calls, and
-        # what a person runs after committing by hand. The agent's own commits are already
-        # read at PostToolUse, and a second pass over the same sha closes nothing twice.
-        ref = rest[1] if len(rest) > 1 else "HEAD"
-        at = todo.commit_at(root().parent, ref)
-        if at is None:
-            fmt.say(f"no commit at {ref} to read", error=True)
-            return 1
-        sha, subject, message = at
-        said = todo.close_from_commit(root(), message, f"{subject} ({sha[:9]})", _now(), here)
-        if not said:
-            # SILENT FOR THE GIT HOOK. This runs after every commit a person makes, and a
-            # line printed on every one of them is a line they stop reading — including the
-            # one that says a to-do was closed. Run by hand, it still answers.
-            if not quiet:
-                fmt.say(f"{sha[:9]} names no to-do — a commit closes one with a trailer:\n"
-                        f"  {todo.TRAILER} todos done <n>")
-            return 0
-        for ok, line in said:
-            fmt.say(("  " if ok else "  ! ") + line)
-        return 0 if any(ok for ok, _ in said) else 1
-    if verb in ("start", "done", "drop", "strike", "ask", "answer", "reopen", "move",
-                "block", "unblock", "skip", "after", "needs", "report", "priority"):
-        if len(rest) < 2 or not rest[1].isdigit():
-            fmt.say(f'todo {verb} wants a number: journal todos {verb} 3' + (
-                ' "<how>"' if verb != "start" else ""), error=True)
-            return 1
-        n = int(rest[1])
-        if verb == "report":
-            # A SUBAGENT SAYS FINISHED; THE PARENT SAYS CLOSED. Two phases, and the second
-            # is where the judgement is — a runner that ticked its own box is a failure this
-            # project has already watched happen.
-            if not acting:
-                return _refuse(f'`todos report` is a subagent saying a row is finished — put '
-                               f'--as="<your agent name>" on it. If you are the agent that '
-                               f'dispatched one, `journal todos done {n} "<how>"` closes it.')
-            ok, msg = todo.report(root(), here, n, " ".join(rest[2:]), acting)
-            fmt.say(msg, error=not ok)
-            return 0 if ok else 1
-        if verb in ("after", "needs"):
-            ok, msg = todo.after(root(), here, n, after if after == "--none" else " ".join(rest[2:]))
-            fmt.say(msg, error=not ok)
-            return 0 if ok else 1
-        if verb == "priority":
-            ok, msg = todo.priority(root(), here, n, " ".join(rest[2:]))
-            fmt.say(msg, error=not ok)
-            return 0 if ok else 1
-        if verb in ("block", "skip", "unblock"):
-            # A CONDITION, NOT A QUESTION. `ask` waits on the user; this waits on a fact
-            # about the world and is the agent's own to re-judge. Both close the work the
-            # to-do opened, for the same reason: an agent that sets something aside must
-            # not leave work standing behind it.
-            if verb == "unblock":
-                ok, msg = todo.unblock(root(), here, n)
-            else:
-                ok, msg = todo.block(root(), here, n, " ".join(rest[2:]))
-            if ok and verb != "unblock":
-                t, _ = todo._get(root(), here, n)
-                if t and any(w["subject"] == t["title"] for w in work.open_work(root())):
-                    closed, note = work.end(root(), t["title"], _now())
-                    msg += "\n  " + (f"closed the work `{t['title']}` — it is set aside"
-                                     if closed else note)
-            fmt.say(msg, error=not ok)
-            return 0 if ok else 1
-        if verb in ("ask", "answer"):
-            fn = todo.ask if verb == "ask" else todo.answer
-            ok, msg = fn(root(), here, n, " ".join(rest[2:]))
-            if ok and verb == "ask":
-                # THE QUESTION CLOSES THE WORK the to-do opened: an agent that asks and moves
-                # on must not leave work standing, or its every stop is held for it.
-                t, _ = todo._get(root(), here, n)
-                if t and any(w["subject"] == t["title"] for w in work.open_work(root())):
-                    closed, note = work.end(root(), t["title"], _now())
-                    msg += "\n  " + (f"closed the work `{t['title']}` — it waits on the answer" if closed else note)
-            fmt.say(msg, error=not ok)
-            return 0 if ok else 1
-        if verb == "start":
-            t, err = todo.start(root(), here, n, _now(), agent=acting)
-            if t is None:
-                fmt.say(f"{err}", error=True)
-                return 1
-            ok, msg = work.start(root(), t["title"], _now(), _where())
-            fmt.say(msg, error=not ok)
-            if ok:
-                # THE SENTENCE THAT TAUGHT THE HABIT. It told every agent that ending the
-                # work closes the row, which is what 710 of one project's closes did without
-                # anyone deciding anything. Closing is explicit now, and this says which —
-                # EXCEPT TO A SUBAGENT, whose one prohibition is closing a row: naming
-                # `todos done` to it is offering the exact verb it may not use, and this
-                # package has already been caught once teaching a subagent to close its own
-                # homework. The `report` line below is its half.
-                if acting:
-                    fmt.say(f"  to-do {n} is started, and it stays open — a row closes when "
-                            "whoever dispatched you closes it.")
-                else:
-                    fmt.say(f'  to-do {n} is started. It stays open until you say it is done:\n'
-                            f'    journal todos done {n} "<how>"\n'
-                            f'    journal work end "{t["title"]}" --todo   closes the work AND the row')
-                if acting:
-                    # THE HOLD IS THE HALF AN AGENT CANNOT SEE. `assign` said it to the
-                    # dispatcher; the agent that claimed the row by starting it is told here,
-                    # with the verb it will need, because the one thing it cannot do is close.
-                    fmt.say(f"  it is held for `{acting}` while you are writing; "
-                            f"`journal todos report {n} \"<how>\" --as={acting}` says it is finished.")
-                # THE UNATTRIBUTED-START WARNING LIVED HERE AND COULD NOT BE TRUE HERE.
-                # The CLI cannot see `agent_id`, so "you may be a dispatched agent" was said
-                # to every session that had lent anything — noise for the parent, and still
-                # only a guess for the agent. It is a refusal at the grant door now, where
-                # the identity actually exists: see `grants.allows`.
-                # TAUGHT WHERE IT IS NEEDED, AND NOT WHERE IT CANNOT BE USED: the trailer is
-                # only ever typed in a commit message, and the moment an agent learns which
-                # to-do it is on is the moment to hand it the line that closes it from there.
-                # A subagent is not shown it — closing is the parent's, so a close verb in
-                # front of an agent that may not close is an instruction it will try.
-                if not acting:
-                    fmt.say(f"  or close it from the commit that finishes it, as a trailer:\n"
-                            f"    {todo.TRAILER} todos done {n}")
-            return 0 if ok else 1
-        why = " ".join(rest[2:])
-        if verb in ("drop", "strike"):  # ruling R4: `strike` is the one retire verb everywhere
-            if not why.strip():
-                fmt.say(f'say why: journal todos {verb} <n> "<why it is abandoned>"', error=True)
-                return 1
-            why = "dropped: " + why
-        if verb == "move":
-            ok, msg = todo.move(root(), here, n, why, _now())
-        elif verb == "reopen":
-            ok, msg = todo.reopen(root(), here, n, why, _now())
-        else:
-            ok, msg = todo.done(root(), here, n, why, _now())
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    if verb.isdigit():
-        ok, body = todo.show(root(), here, int(verb))
-        fmt.say(body, error=not ok)
-        return 0 if ok else 1
-    if verb in ("amend", "replace"):  # ruling R5: the CLI gains a verb that CHANGES a brief
-        if len(rest) < 2 or not rest[1].isdigit():
-            fmt.say(f'todo {verb} wants a number: journal todos {verb} <n> ' + (
-                '"<section title>" --brief' if verb == "amend" else '["<section title>"] --brief'), error=True)
-            return 1
-        n = int(rest[1])
-        title = " ".join(rest[2:])
-        text = _brief(brief)
-        if text is None:
-            fmt.say(BRIEF_REFUSED, error=True)
-            return 1
-        fn = todo.amend if verb == "amend" else todo.replace_section
-        ok, msg = fn(root(), here, n, title, text)
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    if verb == "add":
-        rest = rest[1:]
-        if not rest:
-            fmt.say('a to-do needs a title: journal todos add "<what, in a few words>"', error=True)
-            return 1
-    # adding: the title is the words; the brief comes on stdin ONLY when asked for with
-    # --brief. Reading stdin whenever it is not a terminal hung under a test runner whose
-    # stdin never closed, and a command that can hang is worse than one that asks.
-    title = " ".join(rest)
-    body = _brief(brief)
-    if body is None:
-        fmt.say(BRIEF_REFUSED, error=True)
-        return 1
-    where = _doc_where(doc_ref)
-    if where is None:
-        return 1
-    ok, msg = todo.add(root(), here, title, body, _now(), where)
-    fmt.say(msg, error=not ok)
-    # `--after=` ON THE SAME COMMAND, because the moment you write a row that must follow
-    # another is the moment you know it — and going back to say so is the step that gets
-    # skipped. It is applied after the add, through the one function that validates it.
-    if ok and after:
-        import re as _re
-        m = _re.search(r"to-do (\d+)", msg)
-        if m:
-            good, note = todo.after(root(), here, int(m.group(1)), after)
-            fmt.say("  " + note, error=not good)
-    return 0 if ok else 1
 
 
 def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bool = False,
@@ -1362,11 +1091,9 @@ class Opts:
     """
     back: int = 0
     all_of_them: bool = False
-    order_by_id: bool = False
     go_back: bool = False
     fresh: bool = False
     brief: bool = False
-    quiet: bool = False
     replace: bool = False
     off_flag: bool = False
     list_flag: bool = False
@@ -1374,16 +1101,12 @@ class Opts:
     project_too: bool = False
     all_sessions: bool = False
     yes_flag: bool = False
-    force: bool = False
     order: str = fmt.DESC
     sessions: list
     page: int = 1
     abstract: str = ""
-    after: str = ""
     acting: str = ""
     to_agent: str = ""
-    doc_ref: str = ""
-    prune_before: str = ""
     from_src: str | None = None
     serve_port: int | None = None
     open_browser: bool = False
@@ -1436,12 +1159,9 @@ def _order_flag(v: str) -> str:
     return v
 
 
-# `--x=value` FLAGS. Aliases share one `_Flag` instance — `--after` and `--needs` are
-# one entry with two names, the way the to-do asks, not two branches that could drift.
-_AFTER = _Flag(dest="after")
+# `--x=value` FLAGS. Aliases share one `_Flag` instance, so two spellings cannot drift.
 _ENV_NOOP = _Flag(dest=None)      # applied and refused in run(), before any command reads the record
 _TOOL_META = _Flag(dest="tool_meta", keyed=True)
-_PRUNE_BEFORE = _Flag(dest="prune_before")   # --older-than=30d and --before=<date> are one cutoff, two words for it
 
 VALUE_FLAGS: dict[str, _Flag] = {
     "--back": _Flag(dest="back", type=_int_flag("--back")),
@@ -1449,15 +1169,12 @@ VALUE_FLAGS: dict[str, _Flag] = {
     "--order": _Flag(dest="order", type=_order_flag),
     "--session": _Flag(dest="sessions", append=True),
     "--abstract": _Flag(dest="abstract"),
-    "--after": _AFTER, "--needs": _AFTER,
     "--as": _Flag(dest="acting"),
     "--to": _Flag(dest="to_agent"),
     "--summary": _TOOL_META, "--usage": _TOOL_META, "--when": _TOOL_META, "--entry": _TOOL_META,
-    "--doc": _Flag(dest="doc_ref"),
     "--from": _Flag(dest="from_src"),
     "--page": _Flag(dest="page", type=_page_flag),
     "--port": _Flag(dest="serve_port", type=_int_flag("--port")),
-    "--older-than": _PRUNE_BEFORE, "--before": _PRUNE_BEFORE,
 }
 
 # BARE FLAGS: no value, presence is the value. `set` is what lands in `dest`; every
@@ -1471,17 +1188,14 @@ BARE_FLAGS: dict[str, _Flag] = {
     "--list": _Flag(dest="list_flag"),
     "--replace": _Flag(dest="replace"),
     "--brief": _Flag(dest="brief"),
-    "--quiet": _Flag(dest="quiet"),
     "--project": _Flag(dest="project_too"),
     "--yes": _Flag(dest="yes_flag"),
-    "--force": _Flag(dest="force"),
     "--all-sessions": _Flag(dest="all_sessions"),
     "--none": _Flag(dest="after", set="--none"),    # `todos after <n> --none` clears the prerequisites
     "--fresh": _Flag(dest="fresh"),
     "--back": _Flag(dest="go_back"),
     "--all": _Flag(dest="all_of_them"),
     "--open": _Flag(dest="open_browser"),
-    "--order-by-id": _Flag(dest="order_by_id"),
 }
 
 
@@ -1664,9 +1378,6 @@ _ALIASES: dict[tuple[str, ...], object] = {
     ("cleanup", "tidy"): _v_cleanup,
     ("grant", "grants"): _v_grant,
     ("lent",): lambda verb, rest, opts: cmd_lent(),
-    ("todo", "todos"): lambda verb, rest, opts: cmd_todo(
-        rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,
-        opts.page, opts.order, opts.quiet, opts.order_by_id, opts.prune_before, opts.force),
     ("migrate", "migrations"): _v_migrate,
     ENV_NOUNS: _v_environments,
 }
