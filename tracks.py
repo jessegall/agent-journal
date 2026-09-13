@@ -337,8 +337,8 @@ def carried(root: Path, track: str, stem: str, line: int = 0) -> None:
 def _all(root: Path) -> dict:
     data = state._record(root)
     got = data.get("tracks")
-    if not isinstance(got, dict):
-        got = {}
+    # a copy: the record is shared by the server's threads, and a list read while a removal writes must not change under it
+    got = dict(got) if isinstance(got, dict) else {}
     cur = data.get("current") or DEFAULT
     got.setdefault(cur, {})
     return got
