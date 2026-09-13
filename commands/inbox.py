@@ -9,27 +9,27 @@ from commands.resource import Resource
 from controllers.inbox import InboxController
 from templates import render
 
-NOUNS = (("inbox",),)
+NOUNS = (("messages", "message", "inbox"),)
 
 MESSAGE = {"n": number("a message number")}
 CONTROLLER = InboxController()
 
 PAGE = {
     "sub": "{waiting} waiting, {processed} processed",
-    "empty": "The inbox is empty.",
+    "empty": "No messages yet.",
     "lead": "Messages the user left for the agent on this environment, waiting ones first. Each is split into "
             "parts, and each part says what it became: a to-do, a pin, a rule, a reminder, a work update, a "
             "question, or noted.",
-    "commands": (('journal inbox "<message>"', "leave one"),
-                 ("journal inbox show <n>", "read one, with what it became"),
-                 ('journal inbox process <n> --part="<words>" --became=<ref>', "record a part"),
-                 ("journal inbox done <n>", "mark it processed"),
-                 ('journal inbox move <n> "<environment>"', "carry a waiting one to another environment")),
+    "commands": (('journal messages "<message>"', "leave one"),
+                 ("journal messages show <n>", "read one, with what it became"),
+                 ('journal messages process <n> --part="<words>" --became=<ref>', "record a part"),
+                 ("journal messages done <n>", "mark it processed"),
+                 ('journal messages move <n> "<environment>"', "carry a waiting one to another environment")),
 }
 
 
 class List(Resource):
-    signature = "inbox:list {--page=1} {--order=desc}"
+    signature = "messages:list {--page=1} {--order=desc}"
     casts = LISTING_CASTS
     default = True
     controller = CONTROLLER
@@ -42,13 +42,13 @@ class List(Resource):
         page, order = p.option("page"), p.option("order")
         items = [fmt.Item(n=r["n"], text=r["gist"], meta=r["facts"]) for r in result.data]
         return catalogue(
-            "INBOX", render(PAGE["sub"], waiting=result.meta["waiting"], processed=result.meta["processed"]),
+            "MESSAGES", render(PAGE["sub"], waiting=result.meta["waiting"], processed=result.meta["processed"]),
             (items, result.meta["left"]), PAGE["empty"], PAGE["lead"], PAGE["commands"],
-            noun="inbox", page=page, order=order)
+            noun="messages", page=page, order=order)
 
 
 class Show(Resource):
-    signature = "inbox:show {n : a message number}"
+    signature = "messages:show {n : a message number}"
     casts = MESSAGE
     default = True
     controller = CONTROLLER
@@ -62,7 +62,7 @@ class Show(Resource):
 
 
 class Add(Resource):
-    signature = "inbox:add {text* : the message}"
+    signature = "messages:add {text* : the message}"
     casts = {"text": words("a message")}
     default = True
     writes = True
@@ -71,7 +71,7 @@ class Add(Resource):
 
 
 class Edit(Resource):
-    signature = "inbox:edit {n : a message number} {text* : the message, reworded}"
+    signature = "messages:edit {n : a message number} {text* : the message, reworded}"
     casts = MESSAGE
     writes = True
     controller = CONTROLLER
@@ -79,7 +79,7 @@ class Edit(Resource):
 
 
 class Process(Resource):
-    signature = "inbox:process {n : a message number} {--part=} {--became=*}"
+    signature = "messages:process {n : a message number} {--part=} {--became=*}"
     casts = MESSAGE
     writes = True
     controller = CONTROLLER
@@ -87,7 +87,7 @@ class Process(Resource):
 
 
 class Done(Resource):
-    signature = "inbox:done {n : a message number}"
+    signature = "messages:done {n : a message number}"
     casts = MESSAGE
     writes = True
     controller = CONTROLLER
@@ -95,7 +95,7 @@ class Done(Resource):
 
 
 class Move(Resource):
-    signature = "inbox:move {n : a message number} {environment* : the environment it moves to}"
+    signature = "messages:move {n : a message number} {environment* : the environment it moves to}"
     casts = MESSAGE
     writes = True
     controller = CONTROLLER

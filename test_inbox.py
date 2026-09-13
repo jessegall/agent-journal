@@ -58,7 +58,7 @@ code, out = j("inbox")
 check("listed", ("rename the parser" in out, "also check the flaky test" in out, "2 waiting, 0 processed" in out),
       (True, True, True))
 code, out = j("inbox", "show", "1")
-check("show reads it with the next steps", (code, "rename the parser module" in out, "inbox process 1" in out),
+check("show reads it with the next steps", (code, "rename the parser module" in out, "messages process 1" in out),
       (0, True, True))
 
 # ------------------------------------------------------------------ process
@@ -156,7 +156,7 @@ fire("SessionStart", source="startup")
 turn("how is it going", "[!reply] fine")
 label, _ = testkit.hold(fire("Stop", stop_hook_active=False))
 check("the stop holds while a message waits, ahead of the rest of the queue", label,
-      "the user left 1 message(s) in the inbox")
+      "the user left 1 message(s) for you")
 
 # ------------------------------------------------------------------ a tool call mentions a new message once
 read = {"tool_name": "Read", "tool_input": {"file_path": "x"}, "tool_response": "ok"}

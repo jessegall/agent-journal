@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.78.0 — the inbox is called Messages
+
+What the user leaves for the agent read, from the user's side, like mail addressed to them.
+It is now Messages everywhere a person or an agent reads it: `journal messages` (with
+`message` and the old `inbox` still answering), the stop notice "the user left N message(s)
+for you", help, the skill, and the viewer's sidebar, pages and Home (`#/env/<env>/messages`;
+old `/inbox` links still open). The store and the API keep their internal name.
+
 ## 1.77.3 — New buttons sit in the top bar
 
 Every button that creates a resource (New to-do, New pin, New rule, New reminder, Start work,

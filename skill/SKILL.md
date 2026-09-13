@@ -1,6 +1,6 @@
 ---
 name: journal
-description: "The project's journal: how to file what happens so it survives a compaction and reaches every later session — the tag on each message, declared work, pins, rules, to-dos, and reading the transcript back instead of answering from memory. Use it whenever the user asks for a feature, a fix, an implementation or any piece of work, because the first decision is whether that is the current work, work to do now, or work to park as a to-do. Also use it whenever a hook holds your stop or denies a tool call; before your first pin, rule, declaration or search in a session; when a context warning asks for a decision; when the user says later, not yet, or after X; when the user rules something project-wide or asks to promote a pin; when you are about to say 'I think we decided…'; when a stop says the user left messages in the inbox, or you need to ask the user something; when the user asks to prepare an environment or set up the journal for an issue or PR; and at a fresh start or after a compaction. Load it even when the request seems small — the decision it teaches is the one most often skipped. Not for subagents: a subagent reports what it found and the main conversation files it."
+description: "The project's journal: how to file what happens so it survives a compaction and reaches every later session — the tag on each message, declared work, pins, rules, to-dos, and reading the transcript back instead of answering from memory. Use it whenever the user asks for a feature, a fix, an implementation or any piece of work, because the first decision is whether that is the current work, work to do now, or work to park as a to-do. Also use it whenever a hook holds your stop or denies a tool call; before your first pin, rule, declaration or search in a session; when a context warning asks for a decision; when the user says later, not yet, or after X; when the user rules something project-wide or asks to promote a pin; when you are about to say 'I think we decided…'; when a stop says the user left messages for you, or you need to ask the user something; when the user asks to prepare an environment or set up the journal for an issue or PR; and at a fresh start or after a compaction. Load it even when the request seems small — the decision it teaches is the one most often skipped. Not for subagents: a subagent reports what it found and the main conversation files it."
 ---
 
 # The journal
@@ -493,15 +493,15 @@ That last sentence is the whole point. When the list keeps offering something fo
 there is no way to say "not now, because X", the row stops being a to-do and becomes a
 wall — and an agent routes around a wall.
 
-## The inbox: what the user left for you
+## Messages: what the user left for you
 
-    journal inbox                                              waiting messages first, then processed ones
-    journal inbox show <n>                                     the message, its parts, and the questions about it
-    journal inbox process <n> --part="<words>" --became=<ref>  one part, and what it became
-    journal inbox done <n>                                     processed, once its parts say what they became
-    journal inbox move <n> "<environment>"                     left on the wrong environment: carry it there
+    journal messages                                              waiting messages first, then processed ones
+    journal messages show <n>                                     the message, its parts, and the questions about it
+    journal messages process <n> --part="<words>" --became=<ref>  one part, and what it became
+    journal messages done <n>                                     processed, once its parts say what they became
+    journal messages move <n> "<environment>"                     left on the wrong environment: carry it there
 
-The user writes to the inbox instead of interrupting you: instructions, follow-ups,
+The user leaves messages instead of interrupting you: instructions, follow-ups,
 corrections, things to remember, new work. It belongs to an environment, like a pin. When a
 stop says the user left messages, process them before anything else — one at a time:
 
@@ -515,8 +515,8 @@ stop says the user left messages, process them before anything else — one at a
    - an acknowledgement, or something already done, is `--became=noted`.
 3. **A part you do not understand becomes a question, never a guess:** `journal questions
    add "<question>" --about="inbox <n>"`, recorded as `--became="question <q>"`.
-4. **Record each part, then close the message:** one `inbox process` per part, several
-   `--became` if a part became several things, then `inbox done <n>`.
+4. **Record each part, then close the message:** one `messages process` per part, several
+   `--became` if a part became several things, then `messages done <n>`.
 
 A message is never deleted. Its record — each part beside what it became — is how the user
 sees their words landed where they meant. Between stops, the first tool call after a new
@@ -691,8 +691,8 @@ thing to do now.
 
 | it says                                                        | do                                                     |
 |----------------------------------------------------------------|--------------------------------------------------------|
-| *the user left N message(s) in the inbox*                      | `journal inbox`; split each into parts with `inbox process`, a question for any part you do not understand, then `inbox done` |
-| *the user left N new message(s) in the inbox — … nothing is blocked* | finish the step you are on, then process them the same way |
+| *the user left N message(s) for you*                      | `journal messages`; split each into parts with `messages process`, a question for any part you do not understand, then `messages done` |
+| *the user left N new message(s) for you — … nothing is blocked* | finish the step you are on, then process them the same way |
 | *the user answered question N*                                 | act on the answer; `journal questions show <n>` reads it in full |
 | *AUTO IS ON, so the question tool is refused*                  | `questions add "<question>" --about=<ref>` and carry on with what does not depend on it |
 | *N message(s) carried no tag*                                  | tag your next message; it will not hold for those lines again |
