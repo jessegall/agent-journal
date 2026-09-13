@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.81.0 — Home shows what was recently finished
+
+An environment's Home lists the last eight finished to-dos beside the open ones, newest
+first, each with how it ended and when, linked to its page. A to-do row now carries `how`
+and `done_age`.
+
 ## 1.80.0 — auto mode is its own command
 
 Auto mode belongs to an environment, not to its to-do list, so it has its own command:
