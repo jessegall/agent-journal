@@ -75,6 +75,8 @@ def _environment_folders(root: Path) -> list[str]:
 
 
 MESSAGES = {
+    "pin_body_moved": "  pin reasoning {name} moved from `{was}` to `{env}`, the environment its pin is on",
+    "no_pin_body": "  every pin's reasoning is already in its own environment's folder",
     "moved_key": "{key} ({n})",
     "moved_todos": "to-dos ({n})",
     "env_moved": "  {env}: {moved:, }",
@@ -164,6 +166,35 @@ def _todo_questions(root: Path) -> list[str]:
     return said or [say("no_question")]
 
 
+def _pin_bodies_home(root: Path) -> list[str]:
+    # an older body_dir filed reasoning under the start environment; a file moves only when
+    # exactly one environment's pins name it and exactly one other folder holds it
+    import pins
+    envs = root / state.ENVS
+    folders = sorted(p for p in envs.iterdir() if p.is_dir()) if envs.is_dir() else []
+    owners: dict[str, list[str]] = {}
+    for env in folders:
+        f = state._tracked_file(root, env.name, pins.KEY)
+        for p in (state._read(f).get(pins.KEY) if f.is_file() else None) or []:
+            if p.get("body"):
+                owners.setdefault(p["body"], []).append(env.name)
+    said = []
+    for name, named in sorted(owners.items()):
+        if len(named) != 1:
+            continue
+        target = pins.body_dir(root, pins.KEY, track=named[0]) / name
+        if target.is_file():
+            continue
+        strays = [pins.body_dir(root, pins.KEY, track=env.name) / name for env in folders if env.name != named[0]]
+        strays = [s for s in strays if s.is_file()]
+        if len(strays) != 1:
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(strays[0]), str(target))
+        said.append(say("pin_body_moved", name=name, was=strays[0].parent.parent.name, env=named[0]))
+    return said or [say("no_pin_body")]
+
+
 #: (the version it belongs to, what it does, the function). Ordered oldest first.
 MIGRATIONS: list[tuple[str, str, object]] = [
     ("1.34.0", "pins, work and to-dos move into each environment's own folder",
@@ -172,6 +203,7 @@ MIGRATIONS: list[tuple[str, str, object]] = [
      _docs_written_as_provenance),
     ("1.62.0", "a to-do's question and answer move out of its file into questions",
      _todo_questions),
+    ("1.64.1", "a pin's reasoning file moves to the environment its pin is on", _pin_bodies_home),
 ]
 
 

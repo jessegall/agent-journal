@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.64.1 — a pin's reasoning moves to the environment its pin is on
+
+An older `pins.body_dir` filed a pin's reasoning under the project's start environment
+rather than the session's, so the pin listed on one environment and its reasoning file sat
+in another's folder. The writer was fixed earlier; this migration moves each misplaced file
+to the environment whose pins name it, and leaves a file alone when more than one
+environment names it or a copy is already in place. It runs on the next command.
+
 ## 1.64.0 — the web viewer writes: an inbox box and question answers
 
 `journal serve` has an Inbox page per environment with a message box — what is sent lands in
