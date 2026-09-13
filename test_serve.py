@@ -116,10 +116,12 @@ status, _, body = get("/api/overview")
 data = json.loads(body)
 check("/api/overview answers 200", status, 200)
 check("overview lists both environments", {e["name"] for e in data["environments"]} >= {"alpha", "beta"}, True)
+check("overview names the project the viewer's sidebar shows", data["project"], project.name)
 
 status, _, body = get("/api/env/alpha/todos")
 data = json.loads(body)
 check("alpha's to-dos: 200 and the seeded to-do is there", (status, any(t["title"] == "do the thing" for t in data)), (200, True))
+check("a to-do row carries its priority, for the priority column", [t["priority"] for t in data], [100])
 
 status, _, body = get("/api/env/nope/todos")
 check("an unknown environment is 404, not 500", status, 404)

@@ -4,199 +4,170 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>journal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
 <style>
   :root {
-    color-scheme: light dark;
-    --bg: #ffffff;
-    --fg: #1c1c1e;
-    --fg-muted: rgba(60,60,67,.6);
-    --border: rgba(127,127,127,.22);
-    --border-soft: rgba(127,127,127,.16);
-    --surface: rgba(127,127,127,.07);
-    --accent: #3d6690;
-    --error: #b3492f;
+    color-scheme: dark;
+    --side: #0d0e10; --bg: #131416; --raised: #18191c; --hover: #1d1e22; --sel: #212329;
+    --border: #25272b; --border-2: #2f3136;
+    --text: #e6e7ea; --text-2: #a9acb3; --text-3: #83868e;
+    --accent: #5e64c9; --accent-text: #a3a8f0; --warn: #c9955e; --danger: #df8b7e; --live: #6fae7d;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #17181c;
-      --fg: #e7e7ea;
-      --fg-muted: rgba(235,235,245,.58);
-      --border: rgba(148,148,158,.26);
-      --border-soft: rgba(148,148,158,.18);
-      --surface: rgba(148,148,158,.1);
-      --accent: #85a8cc;
-      --error: #e08267;
-    }
-  }
-
   *, *::before, *::after { box-sizing: border-box; }
-
+  html, body, #app { height: 100%; }
   body {
-    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    max-width: 860px; margin: 0 auto; padding: 24px 16px 64px;
-    background: var(--bg); color: var(--fg);
+    margin: 0; overflow: hidden; background: var(--bg); color: var(--text);
+    font-family: "Geist", -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 13px; line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
   }
+  a { color: var(--accent-text); text-decoration: none; }
+  a:hover { color: var(--text); }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  svg { display: block; }
 
-  /* CALM, ON PURPOSE. Ordinary text/links stay near-black/near-white — weight
-     signals "clickable", not color; the muted accent is spent only on hover
-     and on marking where you are (the current environment, the active nav
-     item), so it still means something when it shows up. */
-  h1, h2, h3 { line-height: 1.25; margin: 1.4em 0 .5em; font-weight: 600; }
-  h1:first-child, h2:first-child, h3:first-child { margin-top: 0; }
-  h1 { font-size: 1.4em; }
+  .app { display: flex; height: 100%; overflow: hidden; }
 
-  a { color: var(--fg); text-decoration: none; font-weight: 500; }
-  a:hover { color: var(--accent); text-decoration: underline; }
-  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+  /* sidebar */
+  .side { width: 236px; flex: none; background: var(--side); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 18px; padding: 12px 10px; overflow-y: auto; }
+  .project { display: flex; align-items: center; gap: 9px; padding: 6px 8px; font-weight: 600; font-size: 13.5px; color: var(--text); }
+  .project:hover { color: var(--text); }
+  .project .logo { width: 20px; height: 20px; border-radius: 5px; background: #2a2c33; display: flex; align-items: center;
+    justify-content: center; font-size: 11px; color: var(--text-2); }
+  .group { display: flex; flex-direction: column; gap: 1px; }
+  .group-label { font-size: 11.5px; font-weight: 500; color: var(--text-3); padding: 4px 8px 6px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item { display: flex; align-items: center; gap: 9px; padding: 6px 8px; border-radius: 6px; color: var(--text-2); font-size: 13px; }
+  .item:hover { background: var(--hover); color: var(--text); }
+  .item.on { background: var(--sel); color: var(--text); }
+  .item .ico { width: 15px; height: 15px; }
+  .item .count { margin-left: auto; font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .item .count.hot { color: var(--accent-text); font-weight: 500; }
+  .env-dot { width: 7px; height: 7px; border-radius: 2px; background: #3a3c43; flex: none; margin: 0 4px; }
+  .env-dot.cur { background: var(--accent); }
+  .env-dot.live { box-shadow: 0 0 0 2px rgba(111, 174, 125, .4); }
 
-  .meta { color: var(--fg-muted); font-size: .88em; font-weight: 400; }
-  .meta a { font-weight: 400; }
-  /* the environment summary line (N to-dos · N pins · ...) is several joined
-     counts, not prose — it should stay one line and shrink before it wraps */
-  .meta-tight { font-size: .78em; white-space: nowrap; }
+  /* main */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .top { height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px 0 20px; border-bottom: 1px solid var(--border); }
+  .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); min-width: 0; }
+  .crumb b { color: var(--text); font-weight: 500; }
+  .crumb .sep { color: var(--text-3); }
+  .viewbar { height: 40px; flex: none; display: flex; align-items: center; gap: 14px; padding: 0 20px;
+    border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--text-3); }
+  .viewbar b { color: var(--text-2); font-weight: 500; }
+  .toggle { margin-left: auto; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .toggle input { accent-color: var(--accent); margin: 0; }
+  .body { flex: 1; min-height: 0; display: flex; }
+  .list { flex: 1; min-width: 0; overflow-y: auto; }
+  .page { flex: 1; min-height: 0; overflow-y: auto; }
+  .page-inner { max-width: 760px; padding: 28px 32px 64px; display: flex; flex-direction: column; gap: 22px; }
 
-  /* the secondary-facts disclosure (to-do 15) — a native <details>, no JS */
-  .meta-more { margin-top: .3em; }
-  .meta-more summary { cursor: pointer; color: var(--fg-muted); list-style: none; }
-  .meta-more summary::-webkit-details-marker { display: none; }
-  .meta-more summary::before { content: "▸ "; }
-  .meta-more[open] summary::before { content: "▾ "; }
-  .meta-more div { margin-top: .2em; padding-left: 1em; }
+  .ghead { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 20px;
+    background: var(--raised); border-bottom: 1px solid var(--border); font-size: 12.5px; font-weight: 500; color: var(--text-2); }
+  .ghead .n { color: var(--text-3); font-weight: 400; }
 
-  /* rows: a real grid so the meta column lines up down the page instead of
-     trailing wherever the title/badges happened to end */
-  .row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) clamp(120px, 34vw, 340px);
-    column-gap: 20px;
-    align-items: start;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border-soft);
-  }
-  .row:last-child { border-bottom: none; }
-  /* deliberately NOT flex: badges + link need to wrap together, word by word,
-     like normal text — a flex row wraps whole items, which strands a long
-     title on its own line below the badges */
-  .row-main { min-width: 0; }
-  .row-badges { margin-bottom: .3em; }
-  @media (max-width: 560px) {
-    .row { grid-template-columns: 1fr; row-gap: 4px; }
-  }
+  /* rows: fixed columns, so status and priority never push a title out of line */
+  .row { display: grid; align-items: center; column-gap: 8px; min-height: 40px; padding: 0 20px;
+    border-bottom: 1px solid var(--border); color: var(--text); }
+  .row:hover { background: var(--hover); color: var(--text); }
+  .row.sel { background: var(--sel); }
+  .todorow { grid-template-columns: 22px 22px 44px minmax(0, 1fr) 76px 64px; }
+  .pinrow { grid-template-columns: 44px minmax(0, 1fr) 76px 64px; }
+  .inboxrow, .questionrow { grid-template-columns: 22px 44px minmax(0, 1fr) minmax(0, 160px) 64px; }
+  .docrow { grid-template-columns: 44px minmax(0, 1fr) 60px 64px; }
+  .reminderrow { grid-template-columns: 44px minmax(0, 1fr) minmax(0, 220px); }
+  .workrow { grid-template-columns: 22px minmax(0, 1fr) 64px; align-items: start; padding-top: 11px; padding-bottom: 11px; }
+  .row .num { color: var(--text-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .row .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13.5px; }
+  .row .cite, .row .age, .row .tag { color: var(--text-3); font-size: 12.5px; text-align: right;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .sub { color: var(--text-3); font-size: 12.5px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row.struck .title { color: var(--text-3); text-decoration: line-through; }
+  .ico { width: 16px; height: 16px; color: var(--text-3); flex: none; }
+  .ico.hot { color: var(--warn); }
+  .empty { color: var(--text-3); padding: 16px 20px; margin: 0; }
+  .error { color: var(--danger); padding: 12px 20px; margin: 0; }
+  .muted { color: var(--text-3); }
 
-  /* TAGS, NOT BUTTONS. Small, muted, uppercase labels — a dashboard's status
-     chip, not a call to action. margin-right spaces a badge from what
-     follows; the sibling rule adds the matching gap BEFORE one only when it
-     follows something that isn't already a badge (badge+badge already have
-     their own margin-right between them — a second left margin would double
-     the gap right where it should stay tight). */
-  .badge {
-    display: inline-block; font-size: .68em; font-weight: 600;
-    text-transform: uppercase; letter-spacing: .04em;
-    padding: .22em .5em; border-radius: 4px;
-    background: var(--surface); color: var(--fg-muted);
-    white-space: nowrap; margin-right: .45em; vertical-align: middle;
-  }
-  *:not(.badge) + .badge { margin-left: .45em; }
+  /* detail panel */
+  .panel { width: 400px; flex: none; min-height: 0; display: flex; flex-direction: column;
+    border-left: 1px solid var(--border); background: var(--bg); }
+  .panel-top { height: 44px; flex: none; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px 0 20px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12.5px; }
+  .icon-btn { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-3); }
+  .icon-btn:hover { background: var(--hover); color: var(--text); }
+  .icon-btn .ico { width: 15px; height: 15px; }
+  .panel-body { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 20px 28px; display: flex; flex-direction: column; gap: 20px; }
+  .p-title { font-size: 16px; font-weight: 600; line-height: 1.4; margin: 0; text-wrap: pretty; }
+  .page .p-title { font-size: 20px; }
+  .props { display: grid; grid-template-columns: 96px 1fr; row-gap: 10px; column-gap: 12px; font-size: 13px; margin: 0; }
+  .props dt { color: var(--text-3); }
+  .props dd { margin: 0; color: var(--text); display: flex; align-items: center; gap: 7px; min-width: 0; flex-wrap: wrap; }
+  .props dd .ico { width: 15px; height: 15px; }
+  .section-label { font-size: 12px; font-weight: 500; color: var(--text-3); margin: 0 0 8px; }
+  .prose { color: var(--text-2); font-size: 13px; line-height: 1.6; margin: 0; }
+  .message { white-space: pre-wrap; color: var(--text); }
+  .note { border: 1px solid var(--border-2); border-radius: 8px; padding: 10px 12px; color: var(--text-2); font-size: 12.5px; line-height: 1.5; }
+  .note .section-label { margin-bottom: 4px; }
+  .chip { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; margin: 0 6px 6px 0;
+    border-radius: 5px; border: 1px solid var(--border-2); color: var(--text-2); font-size: 12px; }
+  a.chip:hover { background: var(--hover); color: var(--text); }
+  .part { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .part:last-child { border-bottom: none; }
+  .excerpt { color: var(--text-2); margin-bottom: 6px; }
+  .linked { display: flex; flex-direction: column; }
+  .linked a { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--text); }
+  .linked a:last-child { border-bottom: none; }
+  .linked a:hover { color: var(--accent-text); }
+  .linked .answer { color: var(--text-3); }
 
-  nav {
-    position: sticky; top: 0; z-index: 10;
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    background: var(--bg);
-    margin: -24px -16px 28px; padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  nav a { color: var(--fg-muted); text-decoration: none; font-weight: 500; }
-  nav a:hover { color: var(--fg); text-decoration: none; }
-  nav a.active { color: var(--fg); }
-  nav .brand { font-weight: 700; font-size: 1.05em; letter-spacing: -.01em; color: var(--fg) !important; }
-  nav .brand-group { display: flex; align-items: center; gap: .5em; min-width: 0; }
-  nav .nav-links { display: flex; align-items: center; gap: 1.25em; flex: none; }
+  /* compose: the inbox's message box and a question's answer box */
+  .compose-wrap { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+  .compose { display: flex; flex-direction: column; gap: 8px; }
+  .box-area { width: 100%; min-height: 72px; resize: vertical; outline: none; padding: 9px 11px;
+    background: var(--raised); border: 1px solid var(--border-2); border-radius: 8px;
+    color: var(--text); font: inherit; font-size: 13px; line-height: 1.55; }
+  .box-area:focus { border-color: var(--accent); }
+  .box-area::placeholder { color: var(--text-3); }
+  .compose-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .hint { color: var(--text-3); font-size: 12px; }
+  .primary { display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 12px; border-radius: 6px; border: none;
+    background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 500; }
+  .primary:disabled { opacity: .45; cursor: default; }
+  .compose .error { padding: 0; }
 
-  /* READS AS TEXT, OPENS AS A SELECT: the browser's native picker is what
-     makes this a dropdown at all — appearance:none only strips the boxed
-     look, a native <select> still opens its option list on click/tap with
-     no extra script. The caret is drawn on the WRAPPER (::after on <select>
-     itself isn't reliable across browsers), so the select just needs room
-     on the right to not sit under it. */
-  .env-jump-wrap { position: relative; display: inline-flex; align-items: center; min-width: 0; }
-  .env-jump-wrap::after {
-    content: ""; position: absolute; right: 7px; top: 50%; width: 5px; height: 5px;
-    border-right: 1.5px solid var(--fg-muted); border-bottom: 1.5px solid var(--fg-muted);
-    transform: translateY(-65%) rotate(45deg); pointer-events: none;
-  }
-  .env-jump {
-    appearance: none; -webkit-appearance: none; -moz-appearance: none;
-    font: inherit; font-size: .95em; font-weight: 500; color: var(--fg-muted);
-    background: transparent; border: none; border-radius: 6px;
-    padding: .3em 1.4em .3em .5em; margin: 0; cursor: pointer;
-    max-width: 40vw; overflow: hidden; text-overflow: ellipsis;
-  }
-  .env-jump:hover, .env-jump:focus-visible { color: var(--fg); background: var(--surface); }
+  /* markdown, rendered by app.js */
+  .md > :first-child { margin-top: 0; }
+  .md :is(h1, h2, h3, h4, h5, h6) { font-size: 13.5px; font-weight: 600; color: var(--text); margin: 1.2em 0 .4em; }
+  .md p { margin: .6em 0; }
+  .md ul, .md ol { margin: .4em 0 .8em; padding-left: 1.3em; }
+  .md li { margin: .2em 0; }
+  .md code { background: var(--raised); border: 1px solid var(--border); border-radius: 4px; padding: .05em .35em;
+    font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .md pre { background: var(--raised); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; }
+  .md pre code { background: none; border: none; padding: 0; }
 
-  pre {
-    white-space: pre-wrap; word-wrap: break-word;
-    background: var(--surface); border: 1px solid var(--border-soft);
-    padding: 12px 14px; border-radius: 6px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: .88em; line-height: 1.5;
-  }
-
-  /* rendered markdown (see renderMarkdown in app.js) — scoped so a doc's own
-     headings read as CONTENT, not as loud as the page's own <h1> */
-  .md :is(h1, h2, h3, h4, h5, h6) { font-size: 1.05em; margin: 1.1em 0 .4em; }
-  .md :is(h1, h2, h3, h4, h5, h6):first-child { margin-top: 0; }
-  .md p { margin: .7em 0; }
-  .md ul, .md ol { margin: .5em 0 .9em; padding-left: 1.4em; }
-  .md li { margin: .25em 0; }
-  .md pre { margin: .8em 0; }
-  .md code { background: var(--surface); border-radius: 4px; padding: .1em .4em;
-             font-size: .88em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  .md pre code { background: none; padding: 0; font-size: 1em; }
-
-  /* a labelled block — a to-do's brief, a doc's body — reads as its OWN
-     section, not just more text running down the page */
-  .card {
-    border: 1px solid var(--border); border-radius: 8px;
-    padding: 0 18px 18px; margin: 1.2em 0; overflow: hidden;
-  }
-  .card-title {
-    margin: 0 -18px .8em; padding: 12px 18px; font-size: .95em;
-    border-bottom: 1px solid var(--border); background: var(--surface);
-  }
-  .card .card-body > :first-child { margin-top: 0; }
-  .card .md :is(h1, h2, h3, h4, h5, h6):first-child { margin-top: 0; }
-
-  /* a doc's attachments, as small cards rather than plain rows — the link
-     to download one should read as the main event of its card, not just
-     another line of text among several */
-  .attachment-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: .8em 0; }
-  .attachment-card {
-    display: flex; align-items: center; gap: 10px;
-    border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px;
-    min-width: 180px; max-width: 100%;
-  }
-  .attachment-icon { width: 22px; height: 22px; flex: none; color: var(--fg-muted); }
+  /* a doc's attachments */
+  .attachment-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .attachment-card { display: flex; align-items: center; gap: 10px; min-width: 180px; max-width: 100%;
+    border: 1px solid var(--border-2); border-radius: 8px; padding: 9px 12px; }
   .attachment-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .attachment-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .attachment-name { color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .attachment-meta { color: var(--text-3); font-size: 12px; }
 
-  /* the inbox's message box and a question's answer box */
-  .compose { margin: 0 0 1.4em; }
-  .compose textarea {
-    width: 100%; font: inherit; color: var(--fg); background: var(--surface);
-    border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; resize: vertical;
-  }
-  .compose textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .compose-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
-  button {
-    font: inherit; font-weight: 500; color: var(--bg); background: var(--fg);
-    border: none; border-radius: 6px; padding: .4em 1em; cursor: pointer;
-  }
-  button:disabled { opacity: .4; cursor: default; }
-  .message-text { white-space: pre-wrap; }
-  .parts { margin-top: .4em; }
-  .part { margin-top: .2em; }
+  .list, .panel-body, .page, .side { scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
 
-  .error { color: var(--error); }
+  @media (max-width: 960px) {
+    .side { display: none; }
+    .panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); z-index: 5; box-shadow: -12px 0 32px rgba(0, 0, 0, .45); }
+  }
+  @media (max-width: 640px) {
+    .todorow { grid-template-columns: 22px 22px 36px minmax(0, 1fr) 56px; }
+    .inboxrow, .questionrow { grid-template-columns: 22px 36px minmax(0, 1fr) 56px; }
+    .todorow .cite, .inboxrow .cite, .questionrow .cite { display: none; }
+  }
 </style>
 </head>
 <body>

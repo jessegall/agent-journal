@@ -82,6 +82,7 @@ def overview(root: Path) -> dict:
         "environments": envs,
         "rules": len(pins.live(root, pins.RULES)),
         "docs": len(docs(root)),
+        "project": root.resolve().parent.name,
     }
 
 
