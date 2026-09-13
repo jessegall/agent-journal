@@ -399,6 +399,22 @@ check("a rule is not written under an environment", status, 405)
 status, _, body = get("/api/env/alpha/rules")
 check("nor read under one", status, 404)
 
+# ─────────────────────────────────────────────────────────────── docs, through their controller
+status, got = post("/api/docs", {"title": "a note written in the browser", "abstract": "what it settles"})
+check("store at /api/docs writes a project doc",
+      (status, [d["title"] for d in json.loads(get("/api/docs")[2])][:1]), (201, ["a note written in the browser"]))
+status, got = post("/api/env/alpha/docs/1/part", {"title": "a part from the browser", "body": "its text"})
+check("a part is added to a doc",
+      (status, [x["title"] for x in json.loads(get("/api/docs/1")[2])["parts"]][-1]), (201, "a part from the browser"))
+status, got = post("/api/docs/1", {"abstract": "a sharper abstract"}, method="PATCH")
+check("update changes the abstract", (status, json.loads(get("/api/docs/1")[2])["abstract"]), (200, "a sharper abstract"))
+status, got = post("/api/docs/1/attach", {"path": "/etc/hosts"})
+check("attaching a file from the browser is refused", status, 400)
+status, got = post("/api/docs/search", {"term": "part body text", "all": True})
+check("search finds the line", (status, len(got["data"]) >= 1), (200, True))
+status, _, body = get("/api/docs/99")
+check("an unknown doc is 404", status, 404)
+
 import commands  # noqa: E402
 parsed, _ = commands.REGISTRY.parse(["reminders", "done", "3", "it", "came", "true"])
 got = parsed.payload()

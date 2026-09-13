@@ -93,13 +93,22 @@ class Controller:
 
     default_sort = "n"
     default_direction = fmt.DESC
-    scoped = True           # served under /api/env/<env>/; a project-wide resource sets False
+    scoped = True           # served under /api/env/<env>/; False for project-wide, None for both
 
     def repository(self, root: Path, payload: Payload):
         raise NotImplementedError
 
     def exists(self, root: Path, payload: Payload) -> bool:
         return self.repository(root, payload).exists(payload.id)
+
+    def identify(self, root: Path, action: str, payload: Payload) -> Result | None:
+        """Turn the payload's id into the one the actions use, or say why there is none."""
+        if not str(payload.id).isdigit():
+            return Result("refused", say("bad_id", resource=self.resource, action=action, id=repr(payload.id)))
+        payload.id = int(payload.id)
+        if not self.exists(root, payload):
+            return Result("missing", say("no_item", noun=self.noun, id=payload.id))
+        return None
 
     def sorted(self, query, payload: Payload):
         """The query in the order the payload asks for, or the refusal naming what it can sort by."""
@@ -123,9 +132,7 @@ class Controller:
             if action in self.numbered:
                 if payload.id in (None, ""):
                     return Result("refused", say("needs_id", resource=self.resource, action=action))
-                if not str(payload.id).isdigit():
-                    return Result("refused", say("bad_id", resource=self.resource, action=action, id=repr(payload.id)))
-                payload.id = int(payload.id)
-                if not self.exists(root, payload):
-                    return Result("missing", say("no_item", noun=self.noun, id=payload.id))
+                refused = self.identify(root, action, payload)
+                if refused:
+                    return refused
             return self.guard(root, action, payload) or getattr(self, action)(root, payload)

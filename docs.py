@@ -956,6 +956,23 @@ def attachment_row(a: dict) -> dict:
 
 
 # ------------------------------------------------------------------ rendering
+def facts_text(root: Path, d: dict) -> str:
+    """The line beneath a doc's title in the catalogue."""
+    out = [d.get("status", "draft"), scope_text(d)]
+    if d["parts"]:
+        out.append(say("fact_parts", n=len(d["parts"])))
+    files = attachments(d)
+    if files:
+        out.append(say("fact_files", n=len(files)))
+    if _age(d.get("at", "")):
+        out.append(_age(d.get("at", "")))
+    if d.get("superseded_by"):
+        out.append(say("fact_superseded", n=d["superseded_by"]))
+    if d.get("abstract"):
+        out.append(d["abstract"])
+    return " · ".join(out)
+
+
 def catalogue(root: Path, width: int | None = None, cap: int | None = None, page: int = 1,
               order: str = fmt.DESC, track: str = "", all_of_them: bool = False) -> str:
     """The catalogue, capped like `carry` (below) so a bare `journal docs` never grows
@@ -974,81 +991,80 @@ def catalogue(root: Path, width: int | None = None, cap: int | None = None, page
     if not docs:
         return say("empty")
 
-    def facts(d: dict) -> list[str]:
-        out = [d.get("status", "draft"), scope_text(d)]
-        if d["parts"]:
-            out.append(say("fact_parts", n=len(d["parts"])))
-        files = attachments(d)
-        if files:
-            out.append(say("fact_files", n=len(files)))
-        if _age(d.get("at", "")):
-            out.append(_age(d.get("at", "")))
-        if d.get("superseded_by"):
-            out.append(say("fact_superseded", n=d["superseded_by"]))
-        if d.get("abstract"):
-            out.append(d["abstract"])
-        return out
-
     def item_of(d: dict):
-        return fmt.Item(n=d["n"], text=d["title"], meta=" · ".join(facts(d)),
-                        struck=bool(d.get("superseded_by")))
+        return fmt.Item(n=d["n"], text=d["title"], meta=facts_text(root, d), struck=bool(d.get("superseded_by")))
 
     rows, left = entries.listing(docs, item_of, cap=cap, page=page, order=order)
     return fmt.render(fmt.Out(items=tuple(rows))) + fmt.more("docs", left, page, order)
 
 
 def show(root: Path, ref: str, width: int | None = None) -> tuple[bool, str]:
-    width = fmt.room(width)
     doc, prt, err = get(root, ref)
     if doc is None or (prt is None and "." in ref):
         return False, err
-    if prt:
-        out = [fmt.title(say("part_heading", n=doc["n"], p=prt["p"]), sub=prt["title"]),
-               "  " + fmt.dim(say("part_meta", n=doc["n"], title=doc["title"], source=prt.get("source", ""),
-                                  age=_age(prt.get("at", "")), path=prt["path"].relative_to(root.parent))), ""]
+    return True, show_text(detail(root, doc, prt), width)
+
+
+def detail(root: Path, doc: dict, prt: dict | None = None) -> dict:
+    """One doc in full, as data: its row, body, parts, attachments, what cites it, and the part asked for."""
+    def rel(path) -> str:
+        return str(path.relative_to(root.parent)) if path else ""
+    files = attachments(doc)
+    return {**row(root, doc), "body": doc.get("body", ""), "source": doc.get("source", ""), "file": rel(doc.get("path")),
+            "parts": [{**part_row(p), "file": rel(p.get("path"))} for p in doc.get("parts") or []],
+            "attachments": [attachment_row(a) for a in files],
+            "attachment_lines": _attachment_lines(root, files) if files else [],
+            "cited_by": cited_by_rows(root, doc["n"]), "cites": cited_by(root, doc["n"]),
+            "part": {**part_row(prt), "file": rel(prt.get("path"))} if prt else None}
+
+
+def show_text(d: dict, width: int | None = None) -> str:
+    """A doc's `detail` as the terminal page — only the part, when one was asked for."""
+    width = fmt.room(width)
+    n = d["n"]
+    if d["part"]:
+        prt = d["part"]
+        out = [fmt.title(say("part_heading", n=n, p=prt["p"]), sub=prt["title"]),
+               "  " + fmt.dim(say("part_meta", n=n, title=d["title"], source=prt["source"], age=prt["age"],
+                                  path=prt["file"])), ""]
         out.append(fmt.prose(prt["body"].rstrip(), width=width))
-        return True, "\n".join(out)
-    meta = [doc.get("status", "draft"), scope_text(doc), doc.get("source", ""),
-            say("written", age=_age(doc.get("at", "")))]
-    out = [fmt.title(say("doc_heading", n=doc["n"]), sub=doc["title"]),
+        return "\n".join(out)
+    meta = [d["status"], d["scope"], d["source"], say("written", age=d["age"])]
+    out = [fmt.title(say("doc_heading", n=n), sub=d["title"]),
            "  " + fmt.dim(" · ".join(m for m in meta if m)),
-           "  " + fmt.dim(str(doc["path"].relative_to(root.parent)))]
-    if doc.get("superseded_by"):
+           "  " + fmt.dim(d["file"])]
+    if d["superseded_by"]:
         out.append(fmt.section(say("superseded_section")))
-        out.append(fmt.wrap(say("superseded_note", n=doc["superseded_by"])))
-    if doc.get("supersedes"):
-        out.append("  " + fmt.dim(say("supersedes_note", n=doc["supersedes"])))
+        out.append(fmt.wrap(say("superseded_note", n=d["superseded_by"])))
+    if d["supersedes"]:
+        out.append("  " + fmt.dim(say("supersedes_note", n=d["supersedes"])))
     out.append(fmt.section(say("abstract_section")))
-    out.append(fmt.wrap(doc.get("abstract", ""), width=width))
-    if doc["body"].strip():
+    out.append(fmt.wrap(d["abstract"], width=width))
+    if d["body"].strip():
         out.append("")
-        out.append(fmt.prose(doc["body"].rstrip(), width=width))
-    for p in doc["parts"]:
-        out.append(fmt.section(say("part_section", n=doc["n"], p=p["p"], title=p["title"])))
-        out.append("  " + fmt.dim(say("part_line", source=p.get("source", ""), age=_age(p.get("at", "")),
-                                      path=p["path"].relative_to(root.parent))))
+        out.append(fmt.prose(d["body"].rstrip(), width=width))
+    for p in d["parts"]:
+        out.append(fmt.section(say("part_section", n=n, p=p["p"], title=p["title"])))
+        out.append("  " + fmt.dim(say("part_line", source=p["source"], age=p["age"], path=p["file"])))
         out.append("")
         out.append(fmt.prose(p["body"].rstrip(), width=width))
-    files = attachments(doc)
-    if files:
+    if d["attachment_lines"]:
         out.append(fmt.section(say("attachments_section")))
         out.append("")
-        out.extend(_attachment_lines(root, files))
-    cites = cited_by(root, doc["n"])
-    if cites:
+        out.extend(d["attachment_lines"])
+    if d["cites"]:
         out.append(fmt.section(say("cited_section")))
-        out.extend(say("cite_line", cite=c) for c in cites)
+        out.extend(say("cite_line", cite=c) for c in d["cites"])
     out.append("")
-    n = doc["n"]
     rows = [(say("cmd_part", n=n), say("cmd_part_what")), (say("cmd_attach", n=n), say("cmd_attach_what"))]
-    if files:
+    if d["attachments"]:
         rows.append((say("cmd_detach", n=n), say("cmd_detach_what")))
-    if doc["parts"]:
+    if d["parts"]:
         rows.append((say("cmd_strike", n=n), say("cmd_strike_what")))
-    rows.append((say("cmd_status", status="final" if doc.get("status") != "final" else "draft", n=n),
+    rows.append((say("cmd_status", status="final" if d["status"] != "final" else "draft", n=n),
                  say("cmd_status_what")))
     out.append(fmt.commands(rows))
-    return True, "\n".join(out)
+    return "\n".join(out)
 
 
 def carry(root: Path, cap: int = 20, track: str = "", brief: bool = False) -> str:
