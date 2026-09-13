@@ -1430,7 +1430,8 @@ const App = {
     const envName = computed(() => {
       if (route.params.env) return route.params.env;
       const envs = ov.data ? ov.data.environments : [];
-      return (envs.find((e) => e.current) || envs[0] || {}).name || "";
+      // the viewer opens where an agent is working; the CLI's start environment only when nobody is
+      return (envs.find((e) => e.active) || envs.find((e) => e.current) || envs[0] || {}).name || "";
     });
     const envRow = computed(() => (ov.data ? ov.data.environments.find((e) => e.name === envName.value) : null));
     watchEffect(() => {
@@ -1462,7 +1463,7 @@ const App = {
           <div class=group-label>Environments</div>
           <a v-for="e in ov.data.environments" :key="e.name" :class="['item', {on: route.params.env === e.name}]"
             :href="'#/env/' + e.name" :title="e.active ? 'an agent is working here' : ''">
-            <span :class="['env-dot', {cur: e.current, live: e.active}]"></span>{{ e.name }}
+            <span :class="['env-dot', {live: e.active}]"></span>{{ e.name }}
           </a>
         </div>
       </aside>

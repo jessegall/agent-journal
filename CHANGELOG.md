@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.87.2 — the viewer no longer marks the terminal's current environment
+
+Which environment the terminal starts on matters to commands, not to a browser that picks its
+environment from the address. The sidebar no longer highlights it; environments with a live
+session are listed first and marked as live, and the viewer opens on one of them — the start
+environment only when no session is working anywhere.
+
 ## 1.87.1 — list switches are remembered, and group sort controls sit flush
 
 Each list's show/hide switch is remembered in the browser, per list; on Messages, Show

@@ -71,7 +71,7 @@ def environments(root: Path) -> list[dict]:
             "inbox": len(inbox.unprocessed(root, name)),
             "questions": len(questions.open_items(root, name)),
         })
-    out.sort(key=lambda e: (not e["current"], e["name"]))
+    out.sort(key=lambda e: (not e["active"], e["name"]))
     return out
 
 
