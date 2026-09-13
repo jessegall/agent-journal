@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import re
 from typing import Callable, NamedTuple
 
 
 class Arg(NamedTuple):
     name: str
-    type: Callable = str          # raises ValueError with the reason
-    rest: bool = False            # takes every remaining word, joined
+    type: Callable = str
+    rest: bool = False
     optional: bool = False
     what: str = ""
 
@@ -31,6 +32,43 @@ def number(what: str) -> Callable[[str], int]:
     return convert
 
 
+_BLOCK = re.compile(r"\{([^{}]*)\}")
+
+
+def _option(spec: str, casts: dict) -> Opt:
+    name, eq, default = spec[2:].partition("=")
+    cast = casts.get(name, str)
+    if not eq:
+        return Opt(name, cast, bare=True)
+    if default == "*":
+        return Opt(name, cast, repeat=True)
+    return Opt(name, cast, default=cast(default) if default else None)
+
+
+def options(signature: str, casts: dict | None = None) -> tuple:
+    """The `{--...}` blocks of a signature, as options."""
+    return tuple(_option(b.partition(" : ")[0].strip(), casts or {})
+                 for b in _BLOCK.findall(signature) if b.strip().startswith("--"))
+
+
+def parse_signature(signature: str, casts: dict | None = None) -> tuple[str, str, tuple, tuple]:
+    """`noun:verb {arg} {arg?} {rest*} {--flag} {--opt=} {--opt=default} {--opt=*}`, with
+    ` : description` inside any block."""
+    casts = casts or {}
+    noun, _, verb = signature.split("{", 1)[0].strip().partition(":")
+    args = []
+    for block in _BLOCK.findall(signature):
+        spec, _, what = block.partition(" : ")
+        spec = spec.strip()
+        if spec.startswith("--"):
+            continue
+        name = spec.rstrip("?*")
+        suffix = spec[len(name):]
+        args.append(Arg(name, casts.get(name, str), rest="*" in suffix, optional="?" in suffix,
+                        what=what.strip()))
+    return noun, verb, tuple(args), options(signature, casts)
+
+
 class Parsed:
     __slots__ = ("command", "_args", "_opts")
 
@@ -45,13 +83,22 @@ class Parsed:
 
 
 class Command:
-    noun: str = ""
-    verb: str = ""
+    signature: str = ""
+    casts: dict = {}
     verbs: tuple = ()
     default: bool = False         # also answers the bare noun
+    needs: tuple = ()             # options that must be present for this command to be chosen
+    writes: bool = False
+
+    noun: str = ""
+    verb: str = ""
     args: tuple = ()
     opts: tuple = ()
-    writes: bool = False
+
+    def __init_subclass__(cls, **kw):
+        super().__init_subclass__(**kw)
+        if "signature" in cls.__dict__ or "casts" in cls.__dict__:
+            cls.noun, cls.verb, cls.args, cls.opts = parse_signature(cls.signature, cls.casts)
 
     def answers(self, word: str) -> bool:
         return word in (self.verb, *self.verbs)
@@ -179,6 +226,8 @@ class Registry:
         cands, left, refusal = self._resolve(words or [""])
         if not cands:
             return None, refusal
+        present = {name for name, _ in raw}
+        cands = [c for c in cands if set(c.needs) <= present]
         left += payload
         first = ""
         for cmd in cands:
@@ -195,9 +244,11 @@ class Registry:
     def command_of(self, words: list[str]) -> Command | None:
         # a malformed write is still a write, so a failed bind falls back to the first candidate
         plain = [w for w in words if not (w.startswith("--") and len(w) > 2)]
+        present = {w[2:].partition("=")[0] for w in words if w.startswith("--") and len(w) > 2}
         if "--" in plain:
             plain.remove("--")
         cands, left, _ = self._resolve(plain or [""])
+        cands = [c for c in cands if set(c.needs) <= present] or cands
         for cmd in cands:
             if self._bind(cmd, left)[0] is not None:
                 return cmd

@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.4 — commands are declared by signature
+
+A command class declares itself with one signature string, Laravel-style:
+`signature = "questions:answer {n : a question number} {answer* : the answer}"`. `{x}` is a
+required argument, `{x?}` optional, `{x*}` takes the rest of the words; `{--flag}` is a bare
+flag, `{--opt=}` takes a value, `{--opt=1}` has a default, `{--opt=*}` repeats; ` : ` gives the
+description a refusal uses. Types and validation come from a `casts` dict. A command can also
+`need` an option to be present before it is chosen, which is how `rule --strike N` will keep
+working. `questions`, `ideas` and `reminders` are declared this way; nothing they accept or
+print changed.
+
 ## 1.62.3 — `reminders` moves onto command classes
 
 `journal reminders` (and `reminder`, `remind`) now runs from `commands/reminders.py`, its
