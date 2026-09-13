@@ -6,11 +6,13 @@ import settings as settings_mod
 import todo
 import tracks
 from controller import Controller, Payload, Result
-from payloads.environments import RemovePayload, SettingsPayload
+import work
+from payloads.environments import AutoPayload, RemovePayload, SettingsPayload
 from templates import render
 
 MESSAGES = {
     "nothing_to_change": "send a setting to change: auto",
+    "auto_wants": "auto mode is enabled or disabled, got {got}",
 }
 
 
@@ -21,9 +23,9 @@ def say(message: str, /, **values) -> str:
 class EnvironmentController(Controller):
     resource = "environment"
     noun = "environment"
-    actions = ("index", "settings", "remove")
+    actions = ("index", "settings", "auto", "remove")
     numbered = ()
-    payloads = {"settings": SettingsPayload, "remove": RemovePayload}
+    payloads = {"settings": SettingsPayload, "auto": AutoPayload, "remove": RemovePayload}
 
     def index(self, root: Path, p: Payload) -> Result:
         import views
@@ -36,6 +38,21 @@ class EnvironmentController(Controller):
         if not p.has("auto"):
             return Result("refused", say("nothing_to_change"))
         return Result("ok", todo.set_auto(root, p.env, p.auto))
+
+    def auto(self, root: Path, p: AutoPayload) -> Result:
+        want = p.state.lower()
+        if not want:
+            return Result("ok", "", None, {"env": p.env, "on": todo.auto(root, p.env)})
+        if want not in ("enable", "disable", "on", "off", "true", "false", "yes", "no"):
+            return Result("refused", say("auto_wants", got=repr(p.state)))
+        on = want in ("enable", "on", "true", "yes")
+        meta = {"env": p.env, "on": on, "set": True}
+        message = todo.set_auto(root, p.env, on)
+        if on:
+            ready = todo.ready(root, p.env)
+            meta.update(working=[w["subject"] for w in work.open_work(root)], waiting=len(todo.open_items(root, p.env)),
+                        next={"n": ready[0]["n"], "title": ready[0]["title"]} if ready else None)
+        return Result("ok", message, None, meta)
 
     def remove(self, root: Path, p: RemovePayload) -> Result:
         conf, _ = settings_mod.load(root)

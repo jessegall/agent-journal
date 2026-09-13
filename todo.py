@@ -208,11 +208,11 @@ MESSAGES = {
                   "leaves open is yours: make it, write it in `journal work update`, carry on. Ask the user only "
                   "when you cannot proceed without something only they can supply, or the hook says you are "
                   "stalled — then `journal todos add ask <n> \"<what is stuck>\"` and move to the next. {loop}\n"
-                  "{lead}{titles}{asking}\n`journal todos <n>` reads the brief; `journal todos auto off` turns this off.",
+                  "{lead}{titles}{asking}\n`journal todos <n>` reads the brief; `journal auto-mode disable` turns this off.",
     "carry_asking": "\n{n} of these wait on the user; the questions are above. When the user answers, `journal todos start <n>`.",
     "carry_manual": "TO DO on this environment, {n} waiting — delayed work, not an instruction to start any of it. "
                     "Start one only when the user says so, or asks you to work through them (then offer `journal "
-                    "todos auto on`). A to-do the user has ANSWERED is theirs saying to do it: start it.\n"
+                    "auto-mode enable`). A to-do the user has ANSWERED is theirs saying to do it: start it.\n"
                     "{lead}{titles}\n`journal todos <n>` reads the brief; `journal todos start <n>` picks one up.",
 }
 

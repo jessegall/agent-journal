@@ -361,7 +361,7 @@ doing real work over a long stretch, where losing the record at the end is the l
     journal todos move <n> "<env>"      carry it to another environment
     journal todos ask <n> "<question>"  it waits on the user; auto moves on to the next
     journal todos answer <n> "<answer>" the user's answer; the agent is told at its next stop
-    journal todos auto [on|off]         work through the list without asking, or wait for the word
+    journal auto-mode [enable|disable]  work through the list without asking, or wait for the word
     journal todos prune --older-than=<30d|2h|6w>|--before=<date> [--force]   done/dropped to-dos older than that, ARCHIVED (or actually deleted with --force); an open to-do is never touched, and there is no silent default age
 
 A to-do is work that was **put off**: the user said later, or you found something and
@@ -395,14 +395,14 @@ environment should say. If a trailer closed the wrong one, `journal todos reopen
 
 **Turning auto on means starting a loop, in the same breath.** Auto says the list drains
 while the user is away; a session with no loop stops at its first idle stop and the list
-sits there — the one thing auto was turned on to prevent. So `journal todos auto on` prints
+sits there — the one thing auto was turned on to prevent. So `journal auto-mode enable` prints
 the loop command, and the next write is REFUSED until a loop exists. `journal loop set` says one is running that the journal cannot
-see; `journal todos auto off` says the list should not drain on its own.
+see; `journal auto-mode disable` says the list should not drain on its own.
 
 **A to-do is not permission, unless the user has switched it on.** With `auto` off, the
 default, the start block COUNTS what is waiting — `journal todos` is what lists it — and an
 idle stop says so once; neither is an instruction to begin one. Start a to-do only when the user says so for that one, or
-asks you to work through them, in which case offer `journal todos auto on`. With auto on
+asks you to work through them, in which case offer `journal auto-mode enable`. With auto on
 for the environment, the user has already said it: whenever nothing is open, pick up the next
 one with `todo start <n>`, do it, `work end "<title>" --todo` it — the row does not close on
 its own — and the next idle stop brings the next. Auto

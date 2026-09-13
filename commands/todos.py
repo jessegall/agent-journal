@@ -5,6 +5,7 @@ import todo
 from app import (BRIEF_REFUSED, CATALOGUE_PAGE, answer, brief, doc_where, refuse,
                  where)
 from command import Parsed, number
+from commands.auto import AutoMode
 from commands.resource import Resource
 from controllers.todos import TodosController
 from commands.options import LISTING, LISTING_CASTS, words
@@ -23,13 +24,6 @@ TEXT = {
     "auto_on_tag": " · auto ON",
     "lead_auto": "Auto is on: with nothing open, the agent picks up the next one on its own.",
     "lead_manual": "Delayed work on this environment, listed at every session start. Not an instruction to start one.",
-    "auto_state": "auto is {state} for `{env}`. `journal todos auto on|off` sets it.",
-    "auto_working": "  Agent currently working on: {subjects:; }",
-    "auto_after_work": "  {n} to-do(s) waiting; the first ready one is picked up when that work ends.",
-    "auto_next": "  Nothing is open, {n} to-do(s) waiting: the next idle stop starts to-do {next}, {title}.",
-    "auto_stuck": "  Nothing is open and none of the {n} waiting to-do(s) can be started — they wait on you, on a "
-                  "condition, or on each other. `journal todos` says which.",
-    "auto_empty": "  Nothing is open and nothing is waiting.",
     "names_no_todo": "{sha} names no to-do — a commit closes one with a trailer:\n  {trailer} todos done <n>",
     "commit_line": "  {line}",
     "commit_refused": "  ! {line}",
@@ -49,8 +43,8 @@ LIST_COMMANDS = (("journal todos <n>", "the brief, and the question if it waits 
                  ("journal todos start <n>", "pick one up"),
                  ('journal todos add "<title>" --brief', "add one, with a brief on stdin"),
                  ('journal todos answer <n> "<answer>"', "answer one that waits on you"))
-AUTO_COMMAND = {True: ("journal todos auto off", "stop working through the list on your own"),
-                False: ("journal todos auto on", "work through the list without asking")}
+AUTO_COMMAND = {True: ("journal auto-mode disable", "stop working through the list on your own"),
+                False: ("journal auto-mode enable", "work through the list without asking")}
 
 
 class List(Resource):
@@ -214,32 +208,12 @@ class Replace(_WithBrief):
     action = "replace"
 
 
-class Auto(Resource):
-    signature = "todos:auto {state? : on or off}"
+class Auto(AutoMode):
+    signature = "todos:auto {state? : enable or disable}"
     writes = True
-    controller = CONTROLLER
-    action = "auto"
 
-    def render(self, p: Parsed, result) -> int:
-        if not result.ok:
-            return super().render(p, result)
-        m = result.meta
-        if "set" not in m:
-            fmt.say(render(TEXT["auto_state"], state="ON" if m["on"] else "OFF", env=m["env"]))
-            return 0
-        fmt.say(result.message)
-        if not m["on"]:
-            return 0
-        if m["working"]:
-            fmt.say(render(TEXT["auto_working"], subjects=m["working"]))
-            fmt.say(render(TEXT["auto_after_work"], n=m["waiting"]))
-        elif m["next"]:
-            fmt.say(render(TEXT["auto_next"], n=m["waiting"], next=m["next"]["n"], title=m["next"]["title"]))
-        elif m["waiting"]:
-            fmt.say(render(TEXT["auto_stuck"], n=m["waiting"]))
-        else:
-            fmt.say(TEXT["auto_empty"])
-        return 0
+    def extra(self, p: Parsed):
+        return {}
 
 
 class Prune(Resource):
