@@ -175,7 +175,7 @@ const Icon = {
   props: ["name"],
   template: `
     <svg class=ico viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-      <template v-if="name === 'todos'"><rect x="4.75" y="1.75" width="6.5" height="12.5" rx="3.25"/><rect x="6.5" y="7.75" width="3" height="4.75" rx="1.5" fill="currentColor" stroke="none"/></template>
+      <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <template v-else-if="name === 'work'"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></template>
       <path v-else-if="name === 'reminders'" d="M4 11V7a4 4 0 0 1 8 0v4l1 1.5H3L4 11ZM6.5 14h3"/>
@@ -516,11 +516,11 @@ const CLAIM_LIST = {
 };
 const MESSAGE_LIST = {
   groups: [{ key: "waiting", label: "Waiting", kind: "waiting", match: (m) => m.status === "waiting" },
-           { key: "processed", label: "Processed", kind: "done", closed: true, match: (m) => m.status !== "waiting" }],
+           { key: "processed", label: "Processed", kind: "done", match: (m) => m.status !== "waiting" }],
   columns: { status: (m) => (m.status === "waiting" ? "waiting" : "done"), num: (m) => `#${m.n}`, title: (m) => m.text,
              cite: messageBecame, age: (m) => m.age },
-  count: (rows) => `${rows.filter((m) => m.status === "waiting").length} waiting`, showLabel: "Show processed",
-  empty: "No messages yet.", name: "messages", showDefault: true,
+  count: (rows) => `${rows.filter((m) => m.status === "waiting").length} waiting`,
+  empty: "No messages yet.",
 };
 const QUESTION_LIST = {
   groups: [{ key: "open", label: "Open", kind: "waiting", match: (q) => q.status === "open" },
@@ -1442,11 +1442,12 @@ const App = {
       return (envs.find((e) => e.active) || envs.find((e) => e.current) || envs[0] || {}).name || "";
     });
     const envRow = computed(() => (ov.data ? ov.data.environments.find((e) => e.name === envName.value) : null));
+    const activity = useFetch(() => envName.value && `/api/env/${envName.value}/activity`);
     watchEffect(() => {
       if (route.view === "Home" && envName.value) location.replace(`#/env/${envName.value}`);
     });
     const key = computed(() => route.view + ":" + (route.params.env || ""));
-    return { route, ov, envName, envRow, NAV, key };
+    return { route, ov, envName, envRow, NAV, key, activity };
   },
   template: `
     <div class=app>
@@ -1473,6 +1474,16 @@ const App = {
             :href="'#/env/' + e.name" :title="e.active ? 'an agent is working here' : ''">
             <span :class="['env-dot', {live: e.active}]"></span>{{ e.name }}
           </a>
+        </div>
+        <div class="group activity" v-if="activity.data">
+          <div class=group-label>Activity</div>
+          <div v-if="activity.data.agent" class=activity-agent>
+            <div class=activity-meta><span class="env-dot live"></span>Agent<span v-if="activity.data.agent.seen"> · {{ activity.data.agent.seen }}</span></div>
+            <div v-if="activity.data.agent.text" class="activity-text clamp">{{ activity.data.agent.text }}</div>
+          </div>
+          <div v-for="(e, i) in activity.data.events.slice(0, 6)" :key="i" class=activity-row>
+            <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
+          </div>
         </div>
       </aside>
       <main class=main>

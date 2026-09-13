@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from controllers.activity import ActivityController
 from controllers.docs import DocsController
 from controllers.environments import EnvironmentController
 from controllers.inbox import InboxController
@@ -14,4 +15,5 @@ from controllers.work import WorkController
 CONTROLLERS = {c.resource: c for c in (RemindersController(), QuestionsController(), TodosController(),
                                           PinsController(), RulesController(), InboxController(),
                                           WorkController(), DocsController(),
-                                          EnvironmentController(), SearchController(), ToolsController())}
+                                          EnvironmentController(), SearchController(), ToolsController(),
+                                          ActivityController())}
