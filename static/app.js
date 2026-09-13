@@ -12,6 +12,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/pins(?:\/(\d+|new))?$/, view: "Pins", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(?:\/(\d+))?$/, view: "Inbox", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/questions(?:\/(\d+))?$/, view: "Questions", params: ["env", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/reports(?:\/(\d+|new))?$/, view: "Reports", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/work(?:\/(\d+|new))?$/, view: "Work", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reminders(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
@@ -94,6 +95,7 @@ function refHref(ref, env) {
   if (kind === "rule") return `#/rules/${num}`;
   if (kind === "doc") return `#/docs/${num}`;
   if (kind === "question") return `#/env/${env}/questions/${num}`;
+  if (kind === "report") return `#/env/${env}/reports/${num}`;
   if (kind === "reminder") return `#/env/${env}/reminders`;
   if (kind === "inbox") return `#/env/${env}/messages/${num}`;
   if (kind === "work") return `#/env/${env}/work`;
@@ -177,6 +179,7 @@ const Icon = {
     <svg class=ico viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
+      <template v-else-if="name === 'reports'"><path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/></template>
       <template v-else-if="name === 'work'"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></template>
       <path v-else-if="name === 'reminders'" d="M4 11V7a4 4 0 0 1 8 0v4l1 1.5H3L4 11ZM6.5 14h3"/>
       <template v-else-if="name === 'docs'"><path d="M4 1.8h5.5L12.5 5v9.2H4V1.8Z"/><path d="M9.5 1.8V5h3"/></template>
@@ -865,6 +868,63 @@ const Inbox = {
     </div>`,
 };
 
+const REPORT_LIST = {
+  groups: [{ key: "reports", label: "Reports", kind: "open", match: (r) => !r.archived },
+           { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (r) => r.archived }],
+  columns: { num: (r) => `#${r.n}`, title: (r) => r.title, sub: (r) => r.gist, cite: (r) => r.about_label, age: (r) => r.age,
+             struck: (r) => r.archived },
+  count: (rows) => `${rows.filter((r) => !r.archived).length} reports`, showLabel: "Show archived", name: "reports",
+  empty: "No reports on this environment yet.",
+};
+
+const Reports = {
+  props: ["env", "n"],
+  components: { TopBar, Panel, ActionBar, ResourceList },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/reports`);
+    const base = computed(() => `#/env/${props.env}/reports`);
+    const list = useFetch(() => props.env && `${api.value}?all=1`);
+    const item = useFetch(() => props.env && props.n && props.n !== "new" && `${api.value}/${props.n}`);
+    const creating = computed(() => [{
+      label: "New report", method: "POST", url: api.value, submit: "Add report", leave: true,
+      fields: [{ name: "title", label: "Title" }, { name: "body", label: "Text", kind: "area" },
+               { name: "about", label: "For (optional)", placeholder: "todo 22 or question 4" }],
+    }]);
+    const actions = computed(() => {
+      const r = item.data;
+      if (!r || r.archived) return [];
+      return [{ label: "Archive", method: "DELETE", url: `${api.value}/${r.n}`, danger: true, submit: "Archive",
+                fields: [{ name: "why", label: "Why it is taken off the list" }] }];
+    });
+    const done = (body, a) => settle(body, a, base.value, list, item);
+    return { list, item, creating, actions, done, base, REPORT_LIST };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Reports']"><a class="btn new" :href="base + '/new'">New report</a></TopBar>
+    <div class=body>
+      <div class=list>
+        <ResourceList v-bind="REPORT_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(r) => base + '/' + r.n" :selected="(r) => String(r.n) === n"/>
+      </div>
+      <Panel v-if="n === 'new'" label="New report" :close="base">
+        <ActionBar :actions="creating" open="New report" :done="done"/>
+      </Panel>
+      <Panel v-else-if="n" :label="'Report #' + n" :close="base">
+        <p v-if="item.error" class=error>{{ item.error }}</p>
+        <template v-else-if="item.data">
+          <h2 class=p-title>{{ item.data.title }}</h2>
+          <dl class=props>
+            <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
+            <dt>For</dt><dd><a v-if="item.data.about && $refHref(item.data.about, env)" :href="$refHref(item.data.about, env)" class=chip>{{ item.data.about_label }}</a><span v-else class=muted>—</span></dd>
+            <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
+          </dl>
+          <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
+          <div class="md prose" v-html="$md(item.data.body)"></div>
+        </template>
+      </Panel>
+    </div>`,
+};
+
 const Questions = {
   props: ["env", "n"],
   components: { TopBar, Panel, StatusIcon, Compose, ActionBar, ResourceList, FromMessages },
@@ -1492,7 +1552,7 @@ const Settings = {
 const Home = { template: `<p class=empty>Loading…</p>` };
 const NotFound = { components: { TopBar }, template: `<TopBar :crumbs="['Not found']"/><p class=empty>Nothing here.</p>` };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -1502,6 +1562,7 @@ const NAV = [
   { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "questions", label: "Questions", views: ["Questions"], path: "questions", count: "questions" },
+  { key: "reports", label: "Reports", views: ["Reports"], path: "reports", count: "reports" },
   { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
   { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
   { key: "docs", label: "Environment docs", views: ["EnvDocs"], path: "docs", count: "docs" },

@@ -83,6 +83,19 @@ class Reminder(Model):
 
 
 @dataclass
+class Report(Model):
+    title: str = ""
+    body: str = ""
+    about: str = ""
+    source: str = ""
+    archived: str = ""
+    archived_at: str = ""
+
+    noun: ClassVar[str] = "report"
+    sortable: ClassVar[tuple[str, ...]] = ("n", "at", "title")
+
+
+@dataclass
 class Comment(Model):
     text: str = ""
     about: str = ""
