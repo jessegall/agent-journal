@@ -283,13 +283,15 @@ check("and the next tool call is NOT denied for it — the context rung never ga
 import hook as _h
 check("every noun that reads on its own is in the table",
       sorted(set(_h.NOUN_WRITES)),
-      sorted({"docs", "tools", "todo", "todos", "pins", "rules",
-              "reminders", "reminder", "remind"}))
+      sorted({"docs", "tools", "todo", "todos", "pins", "rules"}))
 check("and every one of them is a verb the gate can actually see",
       [n for n in _h.NOUN_WRITES if n not in _h.JOURNAL_WRITES], [])
+check("a noun on the command registry is classified by its declared commands",
+      [_h._journal_write({"tool_name": "Bash", "tool_input": {"command": f".journal/journal.py {c}"}})
+       for c in ("reminders", "reminders --all", "reminders add x", "remind done 1 why", "reminder move 1 x")],
+      [None, None, "reminders", "remind", "reminder"])
 for _noun, _read, _write in (("pins", "", "add"), ("rules", "3", "strike"),
-                             ("reminders", "", "add"), ("docs", "4", "add"),
-                             ("tools", "", "add")):
+                             ("docs", "4", "add"), ("tools", "", "add")):
     check(f"`journal {_noun} {_read}`.strip() reads and `{_noun} {_write}` writes",
           (_h.NOUN_WRITES[_noun](_read), _h.NOUN_WRITES[_noun](_write)), (False, True))
 check("`todos` is the one noun whose bare form takes a title, so text is a write",

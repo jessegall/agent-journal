@@ -1291,7 +1291,7 @@ JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "pins", "remember",
                             "nothing", "rule", "rules", "promote", "todo", "todos", "docs", "work",
                             "tools", "loop", "prepare", "migrate", "claim", "grant", "grants",
                             "environments", "environment", "envs", "env", "tracks", "track",
-                            "remind", "reminder", "reminders", "cleanup", "worktree", "upgrade"})
+                            "cleanup", "worktree", "upgrade"})
 _SHELL_BREAKS = frozenset({"&&", "||", "|", ";"})
 
 
@@ -1351,7 +1351,6 @@ PIN_WRITES = frozenset({"add", "strike", "promote", "move"})
 TODO_WRITES = frozenset({"add", "start", "done", "drop", "strike", "skip", "ask", "answer",
                          "reopen", "move", "block", "unblock", "after", "needs", "report",
                          "amend", "replace", "auto", "from-commit", "from_commit"})
-REMINDER_WRITES = frozenset({"add", "done", "retire", "strike", "stop", "move"})
 TOOL_WRITES = frozenset({"add", "set", "remove", "index"})
 
 def _titled(nxt: str) -> bool:
@@ -1376,9 +1375,6 @@ NOUN_WRITES = {
     "tools": TOOL_WRITES.__contains__,
     "todo": _titled, "todos": _titled,
     "pins": PIN_WRITES.__contains__, "rules": PIN_WRITES.__contains__,
-    "reminders": REMINDER_WRITES.__contains__,
-    "reminder": REMINDER_WRITES.__contains__,
-    "remind": REMINDER_WRITES.__contains__,
 }
 
 

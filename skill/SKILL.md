@@ -318,7 +318,7 @@ that needs any of them reports and lets you do it:
 | `switch` `claim` `prepare` `grant` `grants` `environments` (and `environment`, `env`, `envs`, `track`, `tracks`) | they move a SESSION, and the session a subagent would move is *yours* — it runs under your id |
 | `rules` `rule` | a rule binds every environment, and it was lent one |
 | `docs` `tools` | they belong to the project, not to the environment it was lent |
-| `pins` `pin` `reminders` `reminder` | inherited, never written: re-read by every session that binds here, so a claim whose reasoning nobody saw would stand in the record's highest-authority position forever |
+| `pins` `pin` `reminders` `reminder` `remind` | inherited, never written: re-read by every session that binds here, so a claim whose reasoning nobody saw would stand in the record's highest-authority position forever |
 
 Reads are never refused — `--env="<name>" pins` shows it what it inherits.
 
