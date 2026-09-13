@@ -59,6 +59,7 @@ MESSAGES = {
     "no_doc": "no doc {ref}",
     "no_attachment": "no attachment {name} on doc {n}",
     "no_question": "no question {n} on environment {env}",
+    "method": "{method} {path} is not something this resource does",
     "not_json": "send the body as JSON: Content-Type: application/json",
     "bad_json": "the body is not a JSON object",
     "foreign_origin": "a write from another origin is refused",
@@ -199,14 +200,6 @@ def _api_work(root: Path, project: Path, m: re.Match):
     return _json(views.work_on(root, env))
 
 
-@route(r"^/api/env/(?P<env>[a-z0-9-]+)/reminders$")
-def _api_reminders(root: Path, project: Path, m: re.Match):
-    env = m.group("env")
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    return _json(views.reminders_on(root, env))
-
-
 @route(r"^/api/docs$")
 def _api_docs(root: Path, project: Path, m: re.Match):
     return _json(views.docs(root))
@@ -278,6 +271,47 @@ def _post_answer(root: Path, project: Path, m: re.Match, body: dict):
         return _not_found(say("no_question", n=n, env=repr(env)))
     result = questions.answer(root, n, str(body.get("answer") or ""), _now(), track=env)
     return _wrote(result, views.question_detail(root, env, n))
+
+
+# ─────────────────────────────────────────────────────────── resources, through their controllers
+RESOURCE = re.compile(r"^/api/env/(?P<env>[a-z0-9-]+)/(?P<resource>[a-z]+)(?:/(?P<id>\d+(?:\.\d+)?))?(?:/(?P<action>[a-z]+))?$")
+_VERBS = {("GET", False): "index", ("GET", True): "show", ("POST", False): "store",
+          ("PATCH", True): "update", ("DELETE", True): "destroy"}
+_STATUS = {"ok": 200, "created": 201, "refused": 400, "missing": 404}
+
+
+class Request:
+    """An HTTP request for a resource: it produces the same payload a CLI command does."""
+    __slots__ = ("env", "id", "body")
+
+    def __init__(self, env: str, id: str | None, body: dict):
+        self.env, self.id, self.body = env, id, body
+
+    def payload(self):
+        from controller import Payload
+        return Payload(self.env, self.id, self.body, source="web")
+
+
+def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str, bytes] | None:
+    import controllers
+    m = RESOURCE.match(path)
+    controller = controllers.CONTROLLERS.get(m.group("resource")) if m else None
+    if controller is None:
+        return None
+    env, ident, named = m.group("env"), m.group("id"), m.group("action")
+    if not _known_env(root, env):
+        return _not_found(say("no_env", env=repr(env)))
+    if named and method != "POST":
+        return _json({"error": say("method", method=method, path=path)}, 405)
+    action = named or _VERBS.get((method, bool(ident)))
+    if action is None:
+        return _json({"error": say("method", method=method, path=path)}, 405)
+    result = controller.call(root, action, Request(env, ident, body).payload())
+    if method == "GET" and result.ok:
+        return _json(result.data)
+    if not result.ok:
+        return _json({"error": result.message}, _STATUS[result.status])
+    return _json({"ok": True, "message": result.message, "data": result.data}, _STATUS[result.status])
 
 
 @route(r"^/api/tools$")
@@ -354,7 +388,22 @@ class _Handler(BaseHTTPRequestHandler):
                 status, ctype, out = _json({"error": say("internal", error=e)}, 500)
             self._send(status, ctype, out, False)
             return
-        self._method_not_allowed()
+        self._write("POST")
+
+    def _write(self, method: str) -> None:
+        path = urlsplit(self.path).path
+        if not RESOURCE.match(path):
+            self._method_not_allowed()
+            return
+        body, refusal = self._write_body()
+        if refusal:
+            self._send(*refusal, False)
+            return
+        answered = _resource(self.server.root, method, path, body)
+        if answered is None:
+            self._method_not_allowed()
+            return
+        self._send(*answered, False)
 
     def _write_body(self) -> tuple[dict | None, tuple | None]:
         origin = self.headers.get("Origin")
@@ -380,13 +429,17 @@ class _Handler(BaseHTTPRequestHandler):
         self._method_not_allowed()
 
     def do_DELETE(self) -> None:
-        self._method_not_allowed()
+        self._write("DELETE")
 
     def do_PATCH(self) -> None:
-        self._method_not_allowed()
+        self._write("PATCH")
 
     def _dispatch(self, head: bool) -> None:
         path = urlsplit(self.path).path
+        answered = _resource(self.server.root, "GET", path, {}) if RESOURCE.match(path) else None
+        if answered is not None:
+            self._send(*answered, head)
+            return
         for pattern, fn in ROUTES:
             m = pattern.match(path)
             if not m:

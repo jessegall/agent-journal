@@ -109,6 +109,7 @@ MESSAGES = {
     "unblocked": "to-do {n} is back on the list; it was set aside on: {was}",
     "no_such": "there is no to-do {n} on environment `{track}`. `journal todo` numbers them.",
     "add_empty": 'a to-do needs a title: journal todos add "<what, in a few words>"',
+    "retitled": "to-do {n} is now titled: {title}",
     "duplicate": "already waiting as to-do {n} — nothing to add",
     "added": "to-do {n} on `{track}`: {title}\n  {path}",
     "amend_title": 'amend wants a section title: journal todos amend <n> "<section title>" --brief',
@@ -829,6 +830,14 @@ def add(root: Path, track: str, title: str, body: str, at: str, where: dict | No
     meta = {"title": title, "track": track, "at": at, **{k: str(v) for k, v in (where or {}).items()}}
     _write(path, meta, body)
     return True, say("added", n=n, track=track, title=title, path=path.relative_to(root.parent))
+
+
+def retitle(root: Path, track: str, n: int, title: str) -> tuple[bool, str]:
+    title = " ".join((title or "").split())
+    if not title:
+        return False, say("add_empty")
+    t, err = _update(root, track, n, title=title)
+    return (True, say("retitled", n=n, title=title)) if t else (False, err)
 
 
 def _update(root: Path, track: str, n: int, **fields) -> tuple[dict | None, str]:

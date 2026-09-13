@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.67.0 — resources go through controllers; reminders first
+
+A resource is served by one controller — `index`, `show`, `store`, `update`, `destroy` and
+its own actions — that takes a payload and returns a result. The terminal and the web both
+reach it the same way: a parsed CLI command and an HTTP request each produce the payload
+(`controller.PayloadSource`), the controller does the work, and the command renders the
+result as text while the server sends it as JSON. Reminders are the first resource on it:
+every `journal reminders` command runs through `RemindersController`, and the viewer's API
+serves `GET/POST /api/env/<env>/reminders`, `GET/PATCH/DELETE …/reminders/<n>` and
+`POST …/reminders/<n>/move`. Destroying a reminder retires it with a reason; nothing is
+erased. The other resources follow.
+
 ## 1.66.1 — the sidebar is titled with the selected environment
 
 The name at the top of the viewer's sidebar is the environment you are looking at, with its

@@ -67,6 +67,7 @@ MESSAGES = {
     "block_one": "REMINDER:",
     "block_many": "REMINDERS:",
     "none": "  Nothing is being repeated.",
+    "updated": "reminder {n} now reads: {text}",
     "none_standing": "  Nothing is being repeated. `journal reminders --all` shows the retired ones.",
 }
 
@@ -139,6 +140,24 @@ def done(root: Path, n: int, why: str, at: str = "") -> tuple[bool, str]:
     a condition costs one line to undo.
     """
     return entries.retire(root, _STORE, n, why, at)
+
+
+def update(root: Path, n: int, text: str, until: str, limit: int) -> tuple[bool, str]:
+    text = " ".join((text or "").split())
+    until = " ".join((until or "").split())
+    if not text:
+        return False, say("needs_text")
+    if limit and len(text) > limit:
+        return False, say("too_long", length=len(text), limit=limit,
+                          keep=text[:limit - 20], cut=text[limit - 20:][:120])
+    with state.locked(root):
+        items = _all(root)
+        r, why = entries._find(items, n, _STORE)
+        if r is None:
+            return False, why
+        r["text"], r["until"] = text, until
+        state.put(root, KEY, items)
+    return True, say("updated", n=n, text=text)
 
 
 def move(root: Path, n: int, dst: str, at: str) -> tuple[bool, str]:

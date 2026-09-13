@@ -219,9 +219,9 @@ status, _, body = get("/api/overview", method="POST")
 check("POST is refused: 405, not attempted", status, 405)
 
 
-def post(path: str, payload, headers: dict | None = None) -> tuple[int, dict]:
+def post(path: str, payload, headers: dict | None = None, method: str = "POST") -> tuple[int, dict]:
     data = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
-    req = urllib.request.Request(BASE + path, data=data, method="POST",
+    req = urllib.request.Request(BASE + path, data=data, method=method,
                                  headers={"Content-Type": "application/json", **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=10) as r:
@@ -287,6 +287,37 @@ check("an environment counts its waiting messages and open questions", (env_row[
 
 status, _, body = get("/nothing/here")
 check("an unmapped path is 404, not a crash", status, 404)
+
+# ─────────────────────────────────────────────────────────────── reminders, through their controller
+status, _, body = get("/api/env/alpha/reminders/1")
+check("a reminder's show page: 200, its text", (status, json.loads(body)["text"]), (200, "say hi on alpha"))
+status, got = post("/api/env/alpha/reminders", {"text": "check the build", "until": "it is green"})
+check("store: 201, and it lands on alpha", (status, [r["text"] for r in reminders._all(root, "alpha")][-1]),
+      (201, "check the build"))
+status, got = post("/api/env/alpha/reminders/2", {"text": "check the build twice"}, method="PATCH")
+check("update changes the text and keeps the condition it was not sent",
+      (status, reminders._all(root, "alpha")[1]["text"], reminders._all(root, "alpha")[1]["until"]),
+      (200, "check the build twice", "it is green"))
+status, got = post("/api/env/alpha/reminders/2", {}, method="DELETE")
+check("destroy needs a reason: 400", status, 400)
+status, got = post("/api/env/alpha/reminders/2", {"why": "the build is green"}, method="DELETE")
+check("destroy retires it on the record, never erases it",
+      (status, reminders._all(root, "alpha")[1]["done"], len(reminders._all(root, "alpha"))), (200, "the build is green", 2))
+status, got = post("/api/env/alpha/reminders/9", {"why": "x"}, method="DELETE")
+check("a reminder that is not there is 404", status, 404)
+status, got = post("/api/env/alpha/reminders/1/fly", {})
+check("an action the controller does not have is 404", status, 404)
+check("beta was never touched", reminders._all(root, "beta"), [])
+state.use_track("default")
+
+import commands  # noqa: E402
+parsed, _ = commands.REGISTRY.parse(["reminders", "done", "3", "it", "came", "true"])
+got = parsed.payload()
+check("a parsed CLI command produces the same payload shape an HTTP request does",
+      (got.id, got.fields["why"], got.source), (3, "it came true", "cli"))
+import controller  # noqa: E402
+check("both are payload sources", (isinstance(parsed, controller.PayloadSource),
+                                   isinstance(serve.Request("alpha", "1", {}), controller.PayloadSource)), (True, True))
 
 srv.shutdown()
 srv.server_close()
