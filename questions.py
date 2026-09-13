@@ -11,13 +11,13 @@ from templates import render
 
 KEY = "questions"
 
-KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule"}
+KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "inbox": "inbox message"}
 
-_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|inbox)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
 
 MESSAGES = {
     "label": "{kind} {num}",
-    "not_a_ref": "{text} is not a reference; write one as `todo 22`, `doc 4.1`, `pin 3` or `rule 2`",
+    "not_a_ref": "{text} is not a reference; write one as `todo 22`, `doc 4.1`, `pin 3`, `rule 2` or `inbox 5`",
     "part_on_non_doc": "only a doc takes a part number; {text} names a {kind}",
     "no_todo": "there is no to-do {n} on this environment",
     "no_entry": "there is no {kind} {n}. `journal {key}` numbers them.",
@@ -41,8 +41,8 @@ MESSAGES = {
 }
 
 
-def say(key: str, **values) -> str:
-    return render(MESSAGES[key], **values)
+def say(message: str, /, **values) -> str:
+    return render(MESSAGES[message], **values)
 
 
 def parse_ref(text: str) -> tuple[str | None, str]:
@@ -74,6 +74,9 @@ def check_ref(root: Path, ref: str, track: str | None = None) -> str | None:
         import docs
         return docs.check_ref(root, num)
     n = int(num)
+    if kind == "inbox":
+        import inbox
+        return None if 1 <= n <= len(inbox._all(root, track)) else say("no_entry", kind=KINDS[kind], n=n, key="inbox")
     if kind == "todo":
         import todo
         t, err = todo.item(root, track or state.current_track(root), n)
