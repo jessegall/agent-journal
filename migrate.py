@@ -28,6 +28,7 @@ from pathlib import Path
 
 import state
 import update
+from templates import render as fill
 
 SCHEMA = "schema"          # the version whose migrations have all run
 _RAN: set = set()          # this process has already checked, per root
@@ -55,22 +56,42 @@ def _environment_folders(root: Path) -> list[str]:
             merged = (have + [x for x in entry[key] if x not in have]) if have else entry[key]
             f.parent.mkdir(parents=True, exist_ok=True)
             state._write(f, {key: merged})
-            moved.append(f"{key} ({len(entry[key])})")
+            moved.append(say("moved_key", key=key, n=len(entry[key])))
             entry.pop(key)
         was = root / "todo" / slug
         now = state.env_dir(root, slug) / "todo"
         if was.is_dir() and not now.exists():
             now.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(was), str(now))
-            moved.append(f"to-dos ({len(list(now.glob('*.md')))})")
+            moved.append(say("moved_todos", n=len(list(now.glob("*.md")))))
         if moved:
-            said.append(f"  {slug}: " + ", ".join(moved))
+            said.append(say("env_moved", env=slug, moved=moved))
     state._write(state.record_file(root), data)
     old = root / "todo"
     if old.is_dir() and not any(old.iterdir()):
         old.rmdir()
-    return said or ["  nothing to move — already one folder per environment"]
+    return said or [say("nothing_moved")]
 
+
+
+MESSAGES = {
+    "moved_key": "{key} ({n})",
+    "moved_todos": "to-dos ({n})",
+    "env_moved": "  {env}: {moved:, }",
+    "nothing_moved": "  nothing to move — already one folder per environment",
+    "doc_moved": "  doc {n} was `{was}`, now the project's — {title}",
+    "no_doc": "  no doc carries a track from before scope meant scope",
+    "question_moved": "  {env}: to-do {n}'s question is question {q}",
+    "no_question": "  no to-do carried a question in its own file",
+    "ran": "{version}: {what}",
+    "report_head": "MIGRATIONS  the record is at {done}; the package is at {package}",
+    "report_row": "{mark} {version}  {what}",
+    "pending": "  {n} pending — `journal migrate run`, or the next command runs them",
+    "none_pending": "  Nothing pending. They run themselves after an upgrade.",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 #: WHEN 1.44.0 SHIPPED, in UTC, from its own tag. Every doc written before this had `track:`
@@ -112,8 +133,8 @@ def _docs_written_as_provenance(root: Path) -> list[str]:
         was = d["track"]
         ok, _ = docs_mod.move(root, str(d["n"]), docs_mod.GLOBAL)
         if ok:
-            said.append(f"  doc {d['n']} was `{was}`, now the project's — {d['title'][:60]}")
-    return said or ["  no doc carries a track from before scope meant scope"]
+            said.append(say("doc_moved", n=d["n"], was=was, title=d["title"][:60]))
+    return said or [say("no_doc")]
 
 
 def _todo_questions(root: Path) -> list[str]:
@@ -138,9 +159,9 @@ def _todo_questions(root: Path) -> list[str]:
                                   "told_at": None, "withdrawn": None})
                     f.parent.mkdir(parents=True, exist_ok=True)
                     state._write(f, {questions.KEY: items})
-                    said.append(f"  {env.name}: to-do {meta['n']}'s question is question {len(items)}")
+                    said.append(say("question_moved", env=env.name, n=meta["n"], q=len(items)))
             todo._write(path, meta, meta["body"])
-    return said or ["  no to-do carried a question in its own file"]
+    return said or [say("no_question")]
 
 
 #: (the version it belongs to, what it does, the function). Ordered oldest first.
@@ -169,7 +190,7 @@ def run(root: Path) -> list[str]:
     """Run what is pending, oldest first, recording how far it got after each one."""
     out = []
     for version, what, fn in pending(root):
-        out.append(f"{version}: {what}")
+        out.append(say("ran", version=version, what=what))
         out.extend(fn(root))
         state.put(root, SCHEMA, version)
     return out
@@ -200,11 +221,10 @@ def ensure(root: Path) -> list[str]:
 def report(root: Path) -> str:
     """What has run and what has not."""
     done, left = at(root), pending(root)
-    lines = [f"MIGRATIONS  the record is at {done}; the package is at {update.current(root)}", ""]
+    lines = [say("report_head", done=done, package=update.current(root)), ""]
     for version, what, _ in MIGRATIONS:
         mark = "  ·" if any(version == v for v, _, _ in left) else "  ✓"
-        lines.append(f"{mark} {version}  {what}")
+        lines.append(say("report_row", mark=mark, version=version, what=what))
     lines.append("")
-    lines.append("  " + (f"{len(left)} pending — `journal migrate run`, or the next command runs them"
-                         if left else "Nothing pending. They run themselves after an upgrade."))
+    lines.append(say("pending", n=len(left)) if left else say("none_pending"))
     return "\n".join(lines)

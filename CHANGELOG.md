@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.19 — grants, agents, verify, update and migrate say what they say from templates
+
+The subagent refusals and briefings, the `verify` rows, the upgrade notice and changelog
+replay, and the migration report are declared once per module in `MESSAGES` and filled by
+`say`. The wording is unchanged.
+
 ## 1.62.18 — the hook says what it says from templates
 
 Every hold, denial, hint and start-block sentence `hook.py` produces is declared once in its

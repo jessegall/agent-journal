@@ -18,6 +18,7 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
+from templates import render as fill
 
 REPO = "https://github.com/jessegall/agent-journal"
 RAW = "https://raw.githubusercontent.com/jessegall/agent-journal/main"
@@ -35,6 +36,23 @@ def _tuple(v: str) -> tuple:
 
 def newer(a: str, b: str) -> bool:
     return _tuple(a) > _tuple(b)
+
+
+MESSAGES = {
+    "upgraded": "THE JOURNAL WAS UPGRADED: {had} → {now}. What changed, newest first:",
+    "version": "\n{version}[ — {head}]",
+    "reload": "\nRELOAD THE JOURNAL SKILL NOW — invoke the `journal` skill again — because its rules and commands "
+              "changed with this version and what you remember of it is stale.",
+    "available": "AGENT-JOURNAL {version} IS AVAILABLE (this project has {have})[ — {headline}]. `journal upgrade` "
+                 "pulls it, runs its tests first, and prints what changed.",
+    "clone_failed": "could not clone {src}:\n{error}",
+    "migrated": "\n\n  Migrated:\n{lines:\n}",
+    "migrated_line": "  {line}",
+    "already": "\n\n  Already at {now}.",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 def entries(text: str) -> list[tuple[str, str, str]]:
@@ -57,12 +75,11 @@ def render_since(text: str, had: str, now: str) -> str:
     got = since(text, had)
     if not got:
         return ""
-    lines = [f"THE JOURNAL WAS UPGRADED: {had} → {now}. What changed, newest first:"]
+    lines = [say("upgraded", had=had, now=now)]
     for v, head, body in got:
-        lines.append(f"\n{v} — {head}" if head else f"\n{v}")
+        lines.append(say("version", version=v, head=head))
         lines.append(body)
-    lines.append("\nRELOAD THE JOURNAL SKILL NOW — invoke the `journal` skill again — because its "
-                 "rules and commands changed with this version and what you remember of it is stale.")
+    lines.append(say("reload"))
     return "\n".join(lines)
 
 
@@ -137,10 +154,7 @@ def available(root: Path) -> tuple[str, str]:
     have = current(root)
     if not (got.get("version") and newer(got["version"], have)):
         return "", ""
-    head = f" — {got['headline']}" if got.get("headline") else ""
-    return (f"AGENT-JOURNAL {got['version']} IS AVAILABLE (this project has {have}){head}. "
-            "`journal upgrade` pulls it, runs its tests first, and prints what changed.",
-            got["version"])
+    return say("available", version=got["version"], have=have, headline=got.get("headline")), got["version"]
 
 
 def notice(root: Path) -> str:
@@ -160,7 +174,7 @@ def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
         p = subprocess.run(["git", "clone", "--quiet", "--depth", "1", src, str(tmp / "pkg")],
                            capture_output=True, text=True)
         if p.returncode != 0:
-            return False, f"could not clone {src}:\n{p.stderr.strip()}"
+            return False, say("clone_failed", src=src, error=p.stderr.strip())
         src = str(tmp / "pkg")
     try:
         lines = install.pull(Path(src), check=False)
@@ -197,7 +211,7 @@ def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
         import migrate
         ran = migrate.run(root)
         if ran:
-            out += "\n\n  Migrated:\n" + "\n".join(f"  {l}" for l in ran)
+            out += say("migrated", lines=[say("migrated_line", line=l) for l in ran])
     elif now == had:
-        out += f"\n\n  Already at {now}."
+        out += say("already", now=now)
     return True, out

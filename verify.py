@@ -20,6 +20,32 @@ import fmt
 import settings as settings_mod
 import state
 import transcript
+from templates import render as fill
+
+MESSAGES = {
+    "no_settings": "{path} does not exist",
+    "wired": "wired: {event}",
+    "nothing_under": "nothing under {path}",
+    "deaf": "{events:, } cannot carry additionalContext — the harness rejects the payload while the hook still exits 0",
+    "fired_count": "the hook has fired — in {n} transcript(s) on this machine",
+    "fired_here": "the hook has fired in THIS session ({sid}…)",
+    "block_replaced": "the harness replaced it with a persisted-output path: it was over {cap} characters and the "
+                      "agent never read it. `journal carry` prints it now; `journal cleanup read` is how the record "
+                      "gets smaller.",
+    "block_arrived": "the start block arrived, not just fired ({n} chars)",
+    "next_block": "the next start block is {n} chars",
+    "over_budget": "over the {budget} budget and heading for the {cap} ceiling — `journal cleanup read`",
+    "window_read": "context window {window} — read from this session's peak",
+    "window_pct": "{pct}% full now; `context_window` in settings.json overrides it",
+    "title": "IS THE JOURNAL IN FORCE?",
+    "row": "  {mark} {name}[\n      {note}]",
+    "footer": "All green means it is wired and has run. Those are different facts and this reports both, because a "
+              "mechanism that is configured and silent is the one failure nobody can point at.",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
+
 
 WANT_EVENTS = ("Stop", "SessionStart", "PostToolUse", "PreToolUse", "UserPromptSubmit")
 #: Keys ONLY EVER WRITTEN BY A HOOK THAT REALLY RAN, in a transcript's own runtime file.
@@ -58,7 +84,7 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
     f = project / ".claude" / "settings.json"
     wired: set[str] = set()
     if not f.is_file():
-        out.append(("wired in .claude/settings.json", False, f"{f} does not exist"))
+        out.append(("wired in .claude/settings.json", False, say("no_settings", path=f)))
     else:
         try:
             data = json.loads(f.read_text())
@@ -68,7 +94,7 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
                         if "hook.py" in str(h.get("command", "")):
                             wired.add(event)
             for ev in WANT_EVENTS:
-                out.append((f"wired: {ev}", ev in wired, "" if ev in wired else "not in settings.json"))
+                out.append((say("wired", event=ev), ev in wired, "" if ev in wired else "not in settings.json"))
         except ValueError as e:
             out.append(("`.claude/settings.json` parses", False, str(e)))
 
@@ -83,7 +109,7 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
     out.append((
         "transcript findable",
         path is not None,
-        str(path) if path else f"nothing under {transcript.project_dir(project)}",
+        str(path) if path else say("nothing_under", path=transcript.project_dir(project)),
     ))
 
     # WIRED, FIRED, AND *ACCEPTED* ARE THREE FACTS. A hook may run, exit 0, write its
@@ -98,10 +124,7 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
         out.append((
             "every injected context targets an event that accepts it",
             not deaf,
-            "" if not deaf else (
-                f"{', '.join(deaf)} cannot carry additionalContext — the harness rejects "
-                "the payload while the hook still exits 0"
-            ),
+            "" if not deaf else say("deaf", events=deaf),
         ))
     except Exception as e:  # never let the checker be the thing that breaks
         out.append(("context targets checkable", False, str(e)))
@@ -117,7 +140,7 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
     fired = [(stem, d) for stem, d in files if any(k in d for k in FIRED)]
     sid = os.environ.get(transcript.SESSION_ENV, "")
     if fired:
-        out.append((f"the hook has fired — in {len(fired)} transcript(s) on this machine", True, ""))
+        out.append((say("fired_count", n=len(fired)), True, ""))
     elif sid:
         out.append(("the hook has fired", False,
                     "wired but never invoked — no transcript carries a mark. Stop once with an "
@@ -130,7 +153,7 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
         mine = dict(files).get(sid, {})
         here = any(k in mine for k in FIRED)
         out.append((
-            f"the hook has fired in THIS session ({sid[:8]}…)",
+            say("fired_here", sid=sid[:8]),
             here,
             "" if here else "this session has no runtime file — nothing has reached the hook here",
         ))
@@ -152,21 +175,18 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
                         "no SessionStart context in this transcript yet — nothing to check"))
         elif got[1]:
             out.append(("the start block ARRIVED, not just fired", False,
-                        f"the harness replaced it with a persisted-output path: it was over "
-                        f"{hook_mod.INLINE_CAP:,} characters and the agent never read it. "
-                        "`journal carry` prints it now; `journal cleanup read` is how the "
-                        "record gets smaller."))
+                        say("block_replaced", cap=format(hook_mod.INLINE_CAP, ","))))
         else:
-            out.append((f"the start block arrived, not just fired ({len(got[0]):,} chars)", True, ""))
+            out.append((say("block_arrived", n=format(len(got[0]), ",")), True, ""))
 
     # AND IS THE NEXT ONE GOING TO FIT? Measured, in the same spirit as the window: the
     # block is assembled here without writing anything, and compared against the budget.
     try:
         block = hook_mod.carried("startup")
         room = len(block) <= hook_mod.INLINE_BUDGET
-        out.append((f"the next start block is {len(block):,} chars", room or None,
-                    "" if room else (f"over the {hook_mod.INLINE_BUDGET:,} budget and heading for the "
-                                     f"{hook_mod.INLINE_CAP:,} ceiling — `journal cleanup read`")))
+        out.append((say("next_block", n=format(len(block), ",")), room or None,
+                    "" if room else say("over_budget", budget=format(hook_mod.INLINE_BUDGET, ","),
+                                        cap=format(hook_mod.INLINE_CAP, ","))))
     except Exception:
         pass
 
@@ -188,8 +208,8 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
         got = transcript.session_transcript(project)
         got = context.pressure(got[0], 0, 0) if got else None
         if got and got[3]:
-            out.append((f"context window {got[2]:,} — read from this session's peak", True,
-                        f"{got[0] * 100:.0f}% full now; `context_window` in settings.json overrides it"))
+            out.append((say("window_read", window=format(got[2], ",")), True,
+                        say("window_pct", pct=round(got[0] * 100))))
         else:
             out.append(("context window not yet known", None,
                         "learned at the first compaction, or once the peak fits one window only; until then "
@@ -201,15 +221,12 @@ def check(root: Path) -> tuple[list[tuple[str, bool, str]], bool]:
 
 def render(root: Path) -> tuple[str, bool]:
     rows, ok = check(root)
-    lines = [fmt.title("IS THE JOURNAL IN FORCE?"), ""]
+    lines = [fmt.title(say("title")), ""]
     for name, good, note in rows:
         mark = "·" if good is None else ("✓" if good else "✗")
-        lines.append(f"  {mark} {name}" + (f"\n      {note}" if note else ""))
+        lines.append(say("row", mark=mark, name=name, note=note))
     lines.append("")
-    lines.append(fmt.wrap(
-        "All green means it is wired and has run. Those are different facts and this reports "
-        "both, because a mechanism that is configured and silent is the one failure nobody "
-        "can point at."))
+    lines.append(fmt.wrap(say("footer")))
     return "\n".join(lines), ok
 
 
