@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.64.2 — reading environments is a read; assigning a to-do is a write
+
+`journal environments`, `journal environments "<name>"` and `journal grants` only list, and
+are no longer classified as writes: they are not held behind open work, a lent subagent may
+run them, and a session on no environment is no longer refused the listing its start block
+tells it to read. `journal assign <n>` holds a row for an agent, so it is now a write and is
+gated like one. Switching, claiming, preparing, removing and granting are unchanged.
+
 ## 1.64.1 — a pin's reasoning moves to the environment its pin is on
 
 An older `pins.body_dir` filed a pin's reasoning under the project's start environment

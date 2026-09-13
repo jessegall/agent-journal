@@ -92,7 +92,6 @@ def _settings() -> tuple[bool, float]:
 class List(Command):
     signature = "environments:list"
     default = True
-    writes = True
 
     def run(self, p: Parsed) -> int:
         exclusive, stale = _settings()
@@ -113,7 +112,6 @@ class List(Command):
 
 class Page(Command):
     signature = "environments {name* : a name}"
-    writes = True
 
     def run(self, p: Parsed) -> int:
         return answer(tracks.page(root(), p.arg("name"), commands=True))
@@ -228,7 +226,6 @@ class Grant(Command):
 
 class Grants(Command):
     signature = "grants {name*? : ignored; grants lists} {--off} {--list}"
-    writes = True
 
     def run(self, p: Parsed) -> int:
         return _granted_page()
@@ -250,6 +247,7 @@ class Lent(Command):
 class Assign(Command):
     signature = "assign {n : a to-do number} {agent*? : the agent's name} {--to=} {--off}"
     casts = {"n": number("a to-do number")}
+    writes = True
 
     def run(self, p: Parsed) -> int:
         n, off = p.arg("n"), bool(p.option("off"))

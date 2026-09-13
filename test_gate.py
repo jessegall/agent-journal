@@ -307,8 +307,8 @@ check("every environment and session spelling is classified as it was",
       [_classified(c) for c in ('switch "x"', "switch --back", 'claim "x" "why"', 'prepare "x"', "environments",
                                 'environments "x"', 'environments switch "x"', "env", 'grant "x"', "grants", "lent",
                                 "assign 3 --to=a", "worktree", "worktree link")],
-      ["switch", "switch", "claim", "prepare", "environments", "environments", "environments", "env",
-       "grant", "grants", None, None, "worktree", "worktree"])
+      ["switch", "switch", "claim", "prepare", None, None, "environments", None,
+       "grant", None, None, "assign", "worktree", "worktree"])
 check("reading the transcript is never a write",
       [_classified(c) for c in ("conversation", "conversation --back=1", "user", "search pins", "search x --all",
                                 "carry", "carry --fresh")],
