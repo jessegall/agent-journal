@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.66.0 — an environment has a home page
+
+Opening an environment in `journal serve` lands on its Home, reached from a Home item at
+the top of the sidebar. Home is the quick overview: counts for the inbox, open questions,
+to-dos, pins, reminders and docs, each linking to its page; the open work with its latest
+notes; waiting inbox messages and open questions; and the to-dos in progress, waiting on the
+user and blocked, with the top five open by priority. Open work has no sidebar entry of its
+own any more — it lives on Home.
+
 ## 1.65.0 — the web viewer takes the approved dark design
 
 `journal serve` is restyled to the approved console design: a dark sidebar with this
