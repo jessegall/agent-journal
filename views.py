@@ -173,27 +173,6 @@ def _split_meta(row: dict) -> dict:
 
 
 # ────────────────────────────────────────────────────────────────── work & reminders
-def work_on(root: Path, env: str) -> list[dict]:
-    """Open work on this environment, with its notes."""
-    out = []
-    for w in work.open_work(root, track=env):
-        out.append({
-            "subject": w["subject"],
-            "at": w.get("at", ""),
-            "age": _age(w.get("at", "")),
-            "notes": [{"at": n.get("at", ""), "text": n.get("text", "")}
-                     for n in w.get("notes") or []],
-        })
-    return out
-
-
-def reminders_on(root: Path, env: str) -> list[dict]:
-    """This environment's live reminders — `reminders.rows_response` is the same
-    response `journal reminders` renders to text; the meta split is the web page's own."""
-    rows, _left = reminders.rows_response(root, track=env, order=fmt.DESC)
-    return [_split_meta(r) for r in rows]
-
-
 # ────────────────────────────────────────────────────────────────── inbox & questions
 def questions_on(root: Path, env: str) -> list[dict]:
     return questions.rows_response(root, env)

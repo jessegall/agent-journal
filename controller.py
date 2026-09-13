@@ -92,6 +92,7 @@ class Controller:
     numbered: tuple = ("show", "update", "destroy")
 
     default_sort = "n"
+    default_direction = fmt.DESC
     scoped = True           # served under /api/env/<env>/; a project-wide resource sets False
 
     def repository(self, root: Path, payload: Payload):
@@ -104,7 +105,7 @@ class Controller:
         """The query in the order the payload asks for, or the refusal naming what it can sort by."""
         try:
             return query.order_by(payload.text("sort") or self.default_sort,
-                                  payload.text("direction") or payload.text("order") or fmt.DESC)
+                                  payload.text("direction") or payload.text("order") or self.default_direction)
         except ValueError as e:
             return Result("refused", str(e))
 

@@ -134,14 +134,6 @@ def _api_env(root: Path, project: Path, m: re.Match):
     return _json(envs[env])
 
 
-@route(r"^/api/env/(?P<env>[a-z0-9-]+)/work$")
-def _api_work(root: Path, project: Path, m: re.Match):
-    env = m.group("env")
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    return _json(views.work_on(root, env))
-
-
 @route(r"^/api/docs$")
 def _api_docs(root: Path, project: Path, m: re.Match):
     return _json(views.docs(root))

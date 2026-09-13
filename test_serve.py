@@ -361,6 +361,20 @@ check("a field that cannot be sorted on is a 400 naming what can", (status, "pri
 status, got = post("/api/env/beta/todos/2", {"title": "x"}, method="PATCH")
 check("a number that is not on that environment is 404", status, 404)
 
+# ─────────────────────────────────────────────────────────────── work, through its controller
+status, got = post("/api/env/beta/work", {"subject": "something started in the browser"})
+check("store opens work on beta", (status, [w["subject"] for w in work.open_work(root, track="beta")]),
+      (201, ["something started in the browser"]))
+status, _, body = get("/api/env/beta/work")
+beta_work = json.loads(body)
+check("index lists open work with its number", [(w["n"], w["subject"]) for w in beta_work], [(1, "something started in the browser")])
+status, got = post("/api/env/beta/work/1", {"text": "got halfway"}, method="PATCH")
+check("update files a note on it", (status, [n["text"] for n in work._all(root, "beta")[0]["notes"]]), (200, ["got halfway"]))
+status, got = post("/api/env/beta/work/1", {}, method="DELETE")
+check("destroy ends it", (status, bool(work._all(root, "beta")[0]["ended"])), (200, True))
+status, got = post("/api/env/beta/work/1", {"text": "more"}, method="PATCH")
+check("ended work refuses a change", status, 400)
+
 # ─────────────────────────────────────────────────────────────── pins and rules, through their controllers
 status, got = post("/api/env/alpha/pins", {"fact": "a pin written in the browser", "body": "because the page can"})
 check("store: 201, numbered on alpha, its reasoning kept",

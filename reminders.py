@@ -226,7 +226,7 @@ def rows_response(root: Path, *, all_of_them: bool = False, cap: int | None = No
                   page: int = 1, order: str = fmt.DESC, track: str | None = None) -> tuple[list[dict], int]:
     """(the rows as plain, JSON-safe dicts, how many were left off) — the ONE place a
     reminder becomes DATA. `render` turns this same response into terminal text;
-    `views.reminders_on` serves it as JSON, unchanged."""
+    the reminders controller serves it as JSON, unchanged."""
     items, left = listing(root, all_of_them=all_of_them, cap=cap, page=page, order=order, track=track)
     return [{"n": it.n, "text": it.text, "meta": it.meta, "struck": it.struck} for it in items], left
 

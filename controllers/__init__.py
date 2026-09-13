@@ -5,6 +5,8 @@ from controllers.pins import PinsController, RulesController
 from controllers.questions import QuestionsController
 from controllers.reminders import RemindersController
 from controllers.todos import TodosController
+from controllers.work import WorkController
 
 CONTROLLERS = {c.resource: c for c in (RemindersController(), QuestionsController(), TodosController(),
-                                          PinsController(), RulesController(), InboxController())}
+                                          PinsController(), RulesController(), InboxController(),
+                                          WorkController())}

@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-import time
-
 import fmt
-import pins
-import settings as settings_mod
 import state
 import todo
 import tracks
 import work
-from app import answer, now, refuse, root, stem, where
+from app import root, stem, where
 from command import Command, Parsed
-from templates import render
+from commands.resource import Resource
+from controllers.work import WorkController
 from templates import render
 
 NOUNS = (("work",), ("start",), ("end",), ("open",), ("next",))
@@ -42,7 +39,6 @@ def agent(value: str) -> str | None:
 
 
 TEXT = {
-    "end_words": 'work end wants the words: journal work end "<the work>"',
     "capped": "a wait is capped at {cap} minute(s) — nothing waits longer without saying so again",
     "todo_closed": "  to-do {n} is done with it.",
     "todo_note": "  {note}",
@@ -79,63 +75,61 @@ OPEN_COMMANDS = (('journal work end "<the same words>"', "close it"),
                  ('journal work update "<where it got to>"', "say where it got to"))
 
 
-class Start(Command):
+CONTROLLER = WorkController()
+
+
+class Start(Resource):
     signature = "work:start {subject* : the words that name the work}"
     writes = True
+    controller = CONTROLLER
+    action = "store"
 
-    def run(self, p: Parsed) -> int:
-        return answer(work.start(root(), p.arg("subject"), now(), where()))
+    def payload(self, p: Parsed):
+        got = p.payload()
+        got.fields["where"] = where()
+        return got
 
 
-class End(Command):
+class End(Resource):
     signature = "work:end {subject*? : the same words that opened it} {--force} {--todo} {--todos}"
     writes = True
+    controller = CONTROLLER
+    action = "end"
 
-    def run(self, p: Parsed) -> int:
-        subject = p.arg("subject") or ""
-        force = bool(p.option("force"))
-        if not subject and not force:
-            return refuse(TEXT["end_words"])
-        ok, msg = work.end(root(), subject, now(), force)
-        fmt.say(msg, error=not ok)
-        if not ok:
-            return 1
-        here = tracks.current(root(), stem())
-        row = todo.titled(root(), here, subject)
-        if row and (p.option("todo") or p.option("todos")):
-            closed, note = todo.close_titled(root(), here, subject, now(), p.option("as") or "")
-            fmt.say(render(TEXT["todo_closed"], n=closed) if closed else render(TEXT["todo_note"], note=note))
-        elif row:
-            fmt.say(render(TEXT["todo_stays"], n=row["n"]))
+    def render(self, p: Parsed, result) -> int:
+        code = super().render(p, result)
+        if not result.ok:
+            return code
+        m = result.meta
+        if "todo_closed" in m:
+            fmt.say(render(TEXT["todo_closed"], n=m["todo_closed"]) if m["todo_closed"]
+                    else render(TEXT["todo_note"], note=m["todo_note"]))
+        elif m.get("todo_open"):
+            fmt.say(render(TEXT["todo_stays"], n=m["todo_open"]))
         fmt.say(TEXT["taught"])
-        standing = len(pins.live(root(), pins.RULES)) + len(pins.live(root()))
-        if standing:
-            fmt.say(render(TEXT["false_claims"], standing=standing))
+        if m["standing"]:
+            fmt.say(render(TEXT["false_claims"], standing=m["standing"]))
         return 0
 
 
-class Update(Command):
+class Update(Resource):
     signature = "work:update {text* : the words that say what moved} {--on=}"
     writes = True
+    controller = CONTROLLER
+    action = "note"
 
-    def run(self, p: Parsed) -> int:
-        return answer(work.note(root(), p.arg("text"), now(), p.option("on")))
 
-
-class Await(Command):
+class Await(Resource):
     signature = "work:await {what* : the words that name what you wait on} {--on=} {--for=} {--agent=} {--pid=}"
     casts = {"for": minutes, "agent": agent, "pid": pid}
     writes = True
+    controller = CONTROLLER
+    action = "wait"
 
-    def run(self, p: Parsed) -> int:
-        conf, _ = settings_mod.load(root())
-        mins = p.option("for") if p.option("for") is not None else conf["await_default_minutes"]
-        cap = conf["await_max_minutes"]
-        if mins > cap:
-            fmt.say(render(TEXT["capped"], cap=cap), error=True)
-            mins = cap
-        return answer(work.wait(root(), p.arg("what"), mins, now(), time.time(),
-                                p.option("on"), p.option("agent"), p.option("pid")))
+    def render(self, p: Parsed, result) -> int:
+        if result.meta and result.meta.get("capped"):
+            fmt.say(render(TEXT["capped"], cap=result.meta["capped"]), error=True)
+        return super().render(p, result)
 
 
 class BareStart(Start):
@@ -146,20 +140,21 @@ class BareEnd(End):
     signature = "end {subject*? : the same words that opened it} {--force} {--todo} {--todos}"
 
 
-class Open(Command):
+class Open(Resource):
     signature = "open"
+    controller = CONTROLLER
+    action = "index"
 
-    def run(self, p: Parsed) -> int:
-        standing = work.open_work(root())
-        if not standing:
+    def render(self, p: Parsed, result) -> int:
+        if not result.data:
             fmt.say(TEXT["open_none"])
             return 0
         fmt.say(fmt.title(TEXT["open_title"], sub=TEXT["open_sub"]))
-        for w in standing:
+        for w in result.data:
             fmt.say()
             fmt.say(render(TEXT["open_subject"], subject=w["subject"]))
             fmt.say("     " + fmt.dim(render(TEXT["open_since"], since=w["at"][:16].replace("T", " "))))
-            for note in w.get("notes", []):
+            for note in w["notes"]:
                 fmt.say(fmt.wrap(render(TEXT["open_note"], at=note["at"][11:16], text=note["text"]), indent=5))
         fmt.say()
         fmt.say(fmt.commands(list(OPEN_COMMANDS)))
