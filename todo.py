@@ -50,9 +50,12 @@ wallpaper within the hour.
 """
 from __future__ import annotations
 
+import contextlib
 import json
+import os
 import re
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -62,7 +65,8 @@ import state
 DIR = "todo"
 STRUCK = "struck"
 FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how", "asks", "answer",
-          "blocked", "after", "assigned", "reported", "by", "doc", "reopened", "moved_from")
+          "blocked", "after", "assigned", "reported", "by", "doc", "reopened", "moved_from",
+          "priority")
 
 
 def _slug(text: str, limit: int = 40) -> str:
@@ -132,12 +136,30 @@ def _read_todo(path: Path) -> dict:
 
 
 def _write(path: Path, meta: dict, body: str) -> None:
+    """Atomic, and SAFE UNDER A CONCURRENT READER — see `state._write`, which this mirrors.
+
+    `path.write_text` opens with truncation, then writes: a reader that lands in that
+    window — a background loop's `journal next`, a hook firing on a different tool call —
+    sees a short or empty file. `_read_todo` treats a front matter with no closing `---`
+    as NO front matter at all, so a reader catching this row mid-write reads it as if
+    `started` and `done` had never been set. Each writer gets its own tmp file, exactly
+    as `state._write` does, for the same reason: two writers sharing one tmp path killed
+    the loser with FileNotFoundError.
+    """
     _PARSED.pop(str(path), None)
     lines = ["---"] + [f"{k}: {meta.get(k, '') or ''}" for k in FIELDS] + ["---", ""]
     if body.strip():
         lines += [body.strip(), ""]
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines))
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as fh:
+            fh.write("\n".join(lines))
+        os.replace(tmp, path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp)
+        raise
 
 
 #: THE LEDGER. One file holding the front matter of every row, so answering "how many are
@@ -288,7 +310,11 @@ def ready(root: Path, track: str) -> list[dict]:
              and not t.get("reported")
              and not (t.get("assigned") and ag.active(root, track, t["assigned"], 30))
              and not waiting_on(root, track, t)]
-    return sorted(items, key=lambda t: 0 if answered_one(t) else 1)
+    # ANSWERED STILL OUTRANKS PRIORITY. The user replying to a question is their own
+    # word to do it now — that is a stronger signal than a number nobody has looked at
+    # since it was set, so it stays the first sort key. Priority decides the rest: the
+    # highest-priority ready row is what auto picks up and what `journal next` names.
+    return sorted(items, key=lambda t: (0 if answered_one(t) else 1, -priority_of(t)))
 
 
 def blocked(root: Path, track: str) -> list[dict]:
@@ -356,6 +382,70 @@ def report(root: Path, track: str, n: int, how: str, agent: str) -> tuple[bool, 
 def reported(root: Path, track: str) -> list[dict]:
     """Rows a subagent has finished and the parent has not yet closed."""
     return [t for t in open_items(root, track) if t.get("reported")]
+
+
+#: WHAT "PRIORITY" MEANS HERE: A SCORE, NOT A RANK. Bigger is more important — the
+#: user's own words for it: "everything below [the default] is less important than
+#: everything above." 100 is the middle of the scale on purpose, so a to-do can be
+#: pushed either more urgent (above it) or less (below it) from the same starting
+#: point, the way `nice` does it in the opposite direction.
+DEFAULT_PRIORITY = 100
+
+#: NAMED LEVELS ARE SUGAR OVER THE SAME NUMBER, NOT A SEPARATE SCALE. No `medium` —
+#: `default` already names the middle of the scale, and a to-do nobody has touched IS
+#: that. A raw number still works for anything finer than these four words.
+PRIORITY_LEVELS = {"low": 50, "default": DEFAULT_PRIORITY, "high": 150, "critical": 200}
+
+
+def priority_of(t: dict) -> int:
+    """This to-do's priority — `DEFAULT_PRIORITY` for one that has never had it set,
+    and for a value that somehow ended up unreadable, because a broken number here
+    must never crash the list that is supposed to be showing it."""
+    got = t.get("priority")
+    if got in (None, ""):
+        return DEFAULT_PRIORITY
+    try:
+        return int(got)
+    except (TypeError, ValueError):
+        return DEFAULT_PRIORITY
+
+
+def parse_priority(word: str) -> tuple[int | None, str]:
+    """(the number, "") for a raw integer or a named level — or (None, the refusal)."""
+    word = (word or "").strip()
+    if not word:
+        return None, 'say a number or a level: journal todos priority <n> <50|low|medium|high|100|...>'
+    named = PRIORITY_LEVELS.get(word.lower())
+    if named is not None:
+        return named, ""
+    try:
+        return int(word), ""
+    except ValueError:
+        levels = ", ".join(sorted(set(PRIORITY_LEVELS) - {"default"}))
+        return None, f"priority wants a number or one of {levels}, got {word!r}"
+
+
+def priority_label(value: int) -> str:
+    """The named level this number matches, or the number itself — for the CLI to
+    show a reader the word they set rather than making them recompute it."""
+    for name, num in PRIORITY_LEVELS.items():
+        if num == value and name != "default":
+            return f"{name} ({value})"
+    return str(value)
+
+
+def priority(root: Path, track: str, n: int, word: str) -> tuple[bool, str]:
+    """Set a to-do's priority. `word` is a raw number or a named level (low/medium/
+    high/...) — see `parse_priority`. Bigger means more important; `journal todos`
+    orders by it, highest first, unless told `--order-by-id`."""
+    value, err = parse_priority(word)
+    if value is None:
+        return False, err
+    t, err = _get(root, track, n)
+    if t is None:
+        return False, err
+    _update(root, track, n, priority=str(value))
+    return True, f"to-do {n} is priority {priority_label(value)}"
 
 
 def after_of(t: dict) -> list[int]:
@@ -791,6 +881,79 @@ def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str
     return True, f"reopened {n}: {t['title']}\n  {why}\n  the close it undoes: {was}"
 
 
+#: WHERE A PRUNED FILE GOES BY DEFAULT — never `STRUCK`, which already means something
+#: else here (a pre-edit SNAPSHOT of a brief that is about to be overwritten, kept
+#: beside the row it belongs to; see `_snapshot`). A pruned to-do is the whole ROW
+#: leaving the counted list, so it gets its own folder rather than crowding a name that
+#: already has a job.
+ARCHIVE = "archived"
+
+
+def _prune_cutoff(word: str, now: str) -> tuple[str | None, str]:
+    """(the ISO cutoff, "") from a duration ("30d", "2h", "6w") or a date/timestamp
+    typed as-is — or (None, the refusal). Nothing here guesses a default age: pruning
+    clears rows off the list for good, and a silent number would be the one time this
+    package's "ask, don't assume" habit matters most.
+    """
+    import re as _re
+    from datetime import datetime, timedelta, timezone
+    word = (word or "").strip()
+    if not word:
+        return None, ('say how old: journal todos prune --older-than=30d (h/d/w) or '
+                      '--before=<date>')
+    m = _re.fullmatch(r"(\d+)([hdw])", word.lower())
+    if m:
+        n, unit = int(m.group(1)), m.group(2)
+        hours = {"h": 1, "d": 24, "w": 24 * 7}[unit]
+        try:
+            when = datetime.now(timezone.utc) - timedelta(hours=n * hours)
+        except OverflowError:
+            return None, f"{word} is too large a span"
+        return when.isoformat(timespec="seconds"), ""
+    try:
+        when = datetime.fromisoformat(word.replace("Z", "+00:00"))
+    except ValueError:
+        return None, f"{word!r} is not a duration (30d, 2h, 6w) or a date `journal` writes (e.g. 2026-08-01)"
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    return when.isoformat(timespec="seconds"), ""
+
+
+def prune(root: Path, track: str, word: str, at: str, force: bool = False) -> tuple[bool, str]:
+    """Clear DONE to-dos older than `word` off the list — archived under `archived/`
+    by default, actually removed with `force`. An OPEN to-do is never touched, whatever
+    its age; "done" already covers a dropped one too, since `strike`/`drop` close a
+    to-do through the same `done` field a normal finish does.
+
+    ARCHIVED, NOT STRUCK — a moved file is invisible to `_all` for free: it scans the
+    folder itself, not subfolders (see `_stamped`), so nothing here has to teach the
+    read path a new exclusion. `force` is the one real deletion this package does
+    anywhere; everywhere else "gone" means "hidden, on purpose, and still on disk."
+    """
+    cutoff, err = _prune_cutoff(word, at)
+    if cutoff is None:
+        return False, err
+    items = _all(root, track)
+    candidates = [t for t in items if t.get("done") and t["done"] < cutoff]
+    if not candidates:
+        return True, f"nothing to prune — no done to-do here closed before {cutoff[:10]}"
+    d = folder(root, track)
+    if force:
+        for t in candidates:
+            t["path"].unlink(missing_ok=True)
+        said = f"deleted {len(candidates)} done to-do(s)"
+    else:
+        arc = d / ARCHIVE
+        arc.mkdir(exist_ok=True)
+        for t in candidates:
+            t["path"].rename(arc / t["path"].name)
+        said = f"archived {len(candidates)} done to-do(s) under {ARCHIVE}/"
+    _LISTED.pop(str(d), None)
+    nums = ", ".join(str(t["n"]) for t in candidates[:12])
+    more = f" …and {len(candidates) - 12} more" if len(candidates) > 12 else ""
+    return True, f"{said}, closed before {cutoff[:10]}: {nums}{more}"
+
+
 def titled(root: Path, track: str, title: str) -> dict | None:
     """The started to-do whose title is these words, if there is one. Reads, decides nothing.
 
@@ -879,8 +1042,20 @@ TRAILER = "Journal:"
 #: one closing; test_commit holds the opposite and is right: commit messages here discuss
 #: to-dos at length, and an INDENTED line is how this project quotes one. A quotation that
 #: closes a to-do is worse than a trailer that has to be unindented.
+#:
+#: A RUN OF BARE NUMBERS AFTER THE FIRST IS MORE REFS, NOT THE START OF `how`. One
+#: commit, `Journal: todos done 2263 2264`, closed 2263 and read "2264" as free text —
+#: silently, with nothing in the reply saying a second number had been swallowed. The
+#: number closes; only the FIRST ref may carry an `<environment>/`, because a bulk close
+#: on one line means "these, in the environment I already named or the one this session
+#: is on" — repeating the environment per number buys nothing a second trailer line
+#: didn't already offer. The tradeoff this accepts: a `how` that happens to start with a
+#: bare number ("4 files touched") now reads as a second ref too. That ref then fails or
+#: closes something unintended — visibly, in the reply `close_from_commit` returns for
+#: every ref — which is still better than the silent swallow this replaces.
 _TRAILER = re.compile(r"^Journal:[ \t]*todos?[ \t]+done[ \t]+"
-                      r"(?:(?P<env>[A-Za-z0-9][A-Za-z0-9 _.-]*?)/)?(?P<n>\d+)[ \t]*(?P<how>.*)$",
+                      r"(?:(?P<env>[A-Za-z0-9][A-Za-z0-9 _.-]*?)/)?(?P<n>\d+)"
+                      r"(?P<more>(?:[ \t]+\d+)*)[ \t]*(?P<how>.*)$",
                       re.IGNORECASE | re.MULTILINE)
 
 
@@ -905,11 +1080,18 @@ def commit_at(project: Path, ref: str = "HEAD") -> tuple[str, str, str] | None:
 
 
 def refs_in(message: str) -> list[tuple[str | None, int, str]]:
-    """Every close the message asks for: (environment or None, number, the how it gave)."""
+    """Every close the message asks for: (environment or None, number, the how it gave).
+
+    A line naming several numbers yields several refs, all with the same `how` and the
+    same environment (or none) — see the comment on `_TRAILER`.
+    """
     out = []
     for m in _TRAILER.finditer(message or ""):
-        out.append((" ".join(m.group("env").split()) if m.group("env") else None,
-                    int(m.group("n")), " ".join(m.group("how").split())))
+        env = " ".join(m.group("env").split()) if m.group("env") else None
+        how = " ".join(m.group("how").split())
+        out.append((env, int(m.group("n")), how))
+        for extra in m.group("more").split():
+            out.append((env, int(extra), how))
     return out
 
 
@@ -1066,6 +1248,18 @@ def _held(root: Path, track: str, t: dict) -> str:
     return f"held by `{t['assigned']}` ({ag.age(root, track, t['assigned'])})"
 
 
+def _started(root: Path, track: str, t: dict) -> str:
+    """`started` is never cleared by a plain `work end` — only `--todo`/`done` clears the
+    row — so a row that was started and then ended without closing it still says
+    `started`, and claiming "work is open" for it unconditionally was a lie the moment
+    that happened. Say so only when `work.open_work` actually has a matching subject.
+    """
+    import work
+    live = any(w["subject"].lower() == t["title"].lower() for w in work.open_work(root))
+    return (f"started {_age(t['started'])}, work is open" if live else
+            f"started {_age(t['started'])}, but the work was ended without closing this row")
+
+
 #: THE TABLE FROM STATE TO SENTENCE. One entry per name `_state` can return, and every name
 #: it can return has one: adding a state means adding a row here, not another `elif`.
 _STATE_TEXT = {
@@ -1079,14 +1273,14 @@ _STATE_TEXT = {
     "after": lambda root, track, t: (
         f"after {t['after']}" + (f" — {len(waiting_on(root, track, t))} still open"
                                  if waiting_on(root, track, t) else ", all done: ready")),
-    "started": lambda root, track, t: f"started {_age(t['started'])}, work is open",
+    "started": _started,
     "waiting": lambda root, track, t: (
         f"waiting {_age(t.get('at', ''))}" if _age(t.get("at", "")) else "waiting"),
 }
 
 
 def render(root: Path, track: str, *, all_of_them: bool = False, width: int | None = None, short_refs: bool = False,
-           cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
+           cap: int | None = None, page: int = 1, order: str = fmt.DESC, order_by_id: bool = False) -> str:
     """The list as a person reads it: the title, where it stands, and any question below.
 
     CAPPED LIKE `carry` (below), for the same reason: a bare `journal todo` is asked for
@@ -1099,6 +1293,12 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int | No
     only `facts` below is this noun's own, exactly the strategy `pins._store` already
     supplies for a pin, a rule and a reminder.
 
+    ORDERED BY PRIORITY UNLESS `order_by_id` SAYS OTHERWISE. `entries.listing`/
+    `fmt.paged` order and page whatever list they are handed; the only change here is
+    WHICH list that is — pre-sorted by priority (ascending, ties keeping their number
+    order) so the existing `order=asc|desc` reversal still means what it already means:
+    DESC (the default) reads highest-first, exactly as it read newest-first before.
+
     THE QUESTION AND ITS ANSWER ARE NOT A FACT, and stay out of `facts`: a fact is a short
     fragment joined into one line with " · ", and a wrapped line breaks wherever it must —
     measured, folding a long answer in with the rest put the wrap point inside the arrow
@@ -1110,9 +1310,13 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int | No
     items = _all(root, track) if all_of_them else open_items(root, track)
     if not items:
         return "  Nothing is waiting." if not all_of_them else "  No to-dos on this environment."
+    if not order_by_id:
+        items = sorted(items, key=priority_of)
 
     def facts(t: dict) -> list[str]:
         out = [_STATE_TEXT[_state(t)](root, track, t)]
+        if priority_of(t) != DEFAULT_PRIORITY:
+            out.append(f"priority {priority_label(priority_of(t))}")
         out.append("has a brief" if t.get("brief") or t.get("body") else "title only")
         if t.get("doc"):
             import docs as docs_mod

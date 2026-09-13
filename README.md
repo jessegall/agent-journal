@@ -76,7 +76,10 @@ left half-done without a trace.
 Work put off for later, one file each with a title and a brief. The agent
 parks a to-do when you ask for something while it is busy with something else, and picks
 it up when you say so. A to-do can be marked as needing your answer; you answer from the
-terminal and the agent is told at its next stop.
+terminal and the agent is told at its next stop. Each one has a priority — a number,
+bigger meaning more important, 100 unless you set it — so the list, `journal next`, and
+what auto mode picks up on its own all lead with the thing that matters most, not just
+the oldest one waiting.
 
 ### Auto mode
 
@@ -197,15 +200,17 @@ from your terminal. Commands that only make sense for the agent are marked (agen
 
 ### To-dos
 
-    journal todos                        the list
+    journal todos                        the list, HIGHEST PRIORITY FIRST (--order-by-id for plain number order)
     journal todos show <n>               one, with its brief (also: `journal todo <n>`)
     journal todos add "<title>" --brief  park work for later; brief from stdin (also: `journal todo "<title>"`)
+    journal todos priority <n> <value>   bigger is more important; a number or a name (low/default/high/critical); 100 unless set
     journal todos start <n>              pick it up as the open work (agent)
     journal todos done <n> "<how>"       close it without starting it
     journal todos strike <n> "<why>"     abandon it, on the record (also: `todo drop`)
     journal todos ask <n> "<question>"   it needs the user; the list moves on (agent)
     journal todos answer <n> "<answer>"  answer it; the agent is told at its next stop
     journal todos auto on|off            on: the agent works through the list itself
+    journal todos prune --older-than=<age>|--before=<date> [--force]   done/dropped to-dos older than that — ARCHIVED under todo/<env>/archived/, or actually deleted with --force; an open to-do is never touched
 
 ### Pins and rules
 
@@ -287,6 +292,7 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal todos report <n> "<how>"     a lent agent says a row is finished; the parent closes it (agent)
     journal --env=<name> <command>       any command on a named environment, without switching
     journal loop set                     this session has a loop running the hook cannot see (agent)
+    journal enable | journal disable     the kill switch — disable makes every hook inert until enable; the user's call, never the agent's own idea
     journal settings                     every setting and where it came from
     journal serve [--port=<n>] [--open]  a local, read-only web viewer over this journal
     journal version                      the installed version; is a newer one out?

@@ -224,6 +224,14 @@ check("a bare work end leaves the row standing, and says so",
        "a row somebody is in the middle of" in j("todos")[1]), (True, True))
 check("and it names both ways to close it",
       (f'journal todos done {_n}' in _out, "--todo" in _out), (True, True))
+# `started` is never cleared by a bare `work end`, so the listing used to keep claiming
+# "work is open" for a row that plainly is not — `journal open` said nothing was, right
+# beside a to-do insisting otherwise.
+_listing = j("todos")[1]
+_block = _listing[_listing.index("a row somebody is in the middle of"):]
+check("the row no longer claims work is open once it plainly is not",
+      ("work is open" in _block.splitlines()[1], "ended without closing this row" in _block.splitlines()[1]),
+      (False, True))
 j("todos", "start", _n)
 _code, _out = j("work", "end", "a row somebody is in the middle of", "--todo")
 check("--todo closes both", (f"to-do {_n} is done with it" in _out,
@@ -277,6 +285,44 @@ _tm._LISTED.clear()
 check("a corrupt ledger is a rebuild, never a failure", len(_tm._all(_r, "default")), _n_before)
 check("the body is still there for whoever asks for one row",
       bool(_tm._get(_r, "default", _tm._all(_r, "default")[0]["n"])[0].get("body") is not None), True)
+
+# ──────────────── a concurrent reader must never catch a torn write ────────────────────
+# `_write` used to `path.write_text(...)` in place: open-with-truncate, then write, with a
+# window in between where a row started and then immediately closed (a hook writing
+# `started`, then `done`, in quick succession — exactly `todos start` followed moments
+# later by a commit trailer's close) could be read as EMPTY or with an unclosed front
+# matter, which `_read_todo` treats as no front matter at all. Measured: 2,672 torn reads
+# in 2 seconds of the old code hammering one row; 0 with `_write` made atomic like
+# `state._write`.
+import threading
+_race_path = sorted(_dir.glob("*.md"))[0]
+_race_n = _tm._all(_r, "default")[0]["n"]
+_stop, _torn = threading.Event(), [0]
+
+
+def _hammer_write():
+    while not _stop.is_set():
+        _tm._update(_r, "default", _race_n, started="2026-01-01T00:00:00+00:00")
+        _tm._update(_r, "default", _race_n, done="", how="")
+
+
+def _hammer_read():
+    while not _stop.is_set():
+        try:
+            text = _race_path.read_text()
+        except OSError:
+            continue
+        if not (text.startswith("---\n") and "\n---" in text[4:]):
+            _torn[0] += 1
+
+
+_tw, _tr = threading.Thread(target=_hammer_write), threading.Thread(target=_hammer_read)
+_tw.start(); _tr.start()
+time.sleep(0.5)
+_stop.set()
+_tw.join(); _tr.join()
+check("a reader racing the writer never sees a torn front matter", _torn[0], 0)
+_tm._LISTED.clear()
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
