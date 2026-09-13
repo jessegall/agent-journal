@@ -47,6 +47,7 @@ MESSAGES = {
     "fact_body": "has its reasoning ({key} show {n})",
     "fact_doc": "→ {label}",
     "just_now": "just now",
+    "minutes": "{n} min ago",
     "hours": "{n}h ago",
     "days": "{n}d ago",
     "needs_fact": "pin what? one line: the fact, and what makes it matter",
@@ -170,8 +171,10 @@ def age(at: str, now: datetime | None = None) -> str:
     if when.tzinfo is None:
         when = when.replace(tzinfo=timezone.utc)
     secs = ((now or datetime.now(timezone.utc)) - when).total_seconds()
-    if secs < 3600:
+    if secs < 300:
         return say("just_now")
+    if secs < 3600:
+        return say("minutes", n=int(secs // 60))
     if secs < 86400:
         return say("hours", n=int(secs // 3600))
     return say("days", n=int(secs // 86400))
