@@ -61,6 +61,260 @@ import tracks  # noqa: E402
 import transcript  # noqa: E402
 import migrate  # noqa: E402
 import update  # noqa: E402
+from templates import render as fill  # noqa: E402
+
+MESSAGES = {
+    "deferral_do": "park it as a to-do before going on, or run this call again if nothing is deferred",
+    "deferral_why": "You wrote:\n  …{said}…\n\nThe user asked for something and this says it will happen later. Work "
+                    "held only in words lives in this window, and one distraction or one compaction loses it. Park it "
+                    'now:\n  .journal/journal.py todos add "<title>" --brief\nand say in your next message that it is '
+                    "parked as to-do n. If nothing is deferred — you were describing the order of the current work — "
+                    "run the call again; this is said once per reply.",
+    "deferral_fact": "work deferred in words, not parked",
+    "deferral_deny": "{do}\n\n{why}",
+    "prompt_fact": "{n} piece(s) of work open",
+    "prompt_do": 'a NEW request is a to-do unless the user said to do it NOW: `.journal/journal.py todos add "<title>" '
+                 "--brief`, say you parked it, and carry on with what is open. Do NOT `work end` to make room — ending "
+                 "work is not finishing a row, and the row you are on stays yours. Same work? carry on. Told to do it "
+                 "now? `update` the open work and `start` the new one.",
+    "rules_decided": "Decided, and still in force:",
+    "rules_again": "Again, because the block you read at the start is far behind you:",
+    "context_fact": "context {pct}% full",
+    "context_decide": 'decide before any other tool runs: `pin "<claim>"` or `nothing "<why>"`',
+    "context_consider": "consider what must outlive it",
+    "update_run": "{note} Run it now if nothing is mid-flight: `.journal/journal.py update`.",
+    "waiting_fact": "{n} to-do(s) waiting on `{env}`",
+    "waiting_do": "delayed work, not an instruction to start any of it; `journal todo` lists them",
+    "row": "  - {row}",
+    "taken_fact": "environment `{env}` is taken by another session",
+    "taken_do": 'session {sid} has it ({age}); ask the user which environment this session works on, then '
+                '`.journal/journal.py switch "<name>"`',
+    "loop_fact": "auto is on, no loop running",
+    "loop_do": "start one before the list can drain: the `loop` skill with `{m}m journal next`, or "
+               "`.journal/journal.py loop set` if one is running that the journal cannot see",
+    "undecided_fact": "context {pct}% full, still undecided",
+    "undecided_do": 'the warning is unanswered: `.journal/journal.py pin "<claim>"` or `.journal/journal.py nothing '
+                    '"<why>"` before anything else',
+    "untagged_fact": "{n} untagged message(s)",
+    "untagged_do": "last at line {line}; open the next with {tags: }[{teach}]",
+    "untagged_teach": "; the tag is the first thing in the message, nothing before it",
+    "tag": "\\[!{tag}\\]",
+    "waited_fact": "work waited out",
+    "waited_dead": "{who} has exited; `{subject}` was waiting on {what}",
+    "waited_mins": "`{subject}` has waited {mins} minute(s) on {what}[ ({who})]",
+    "waited_do": "is it still coming? `work update` what you know, `work await` again, or `work end` it",
+    "waited_note": "Open: {subject}\nAwaited: {what}[ ({who})]{how}A wait expires so that work cannot be abandoned "
+                   'quietly. Decide:\n  .journal/journal.py work update "<what you know now>"   it moved, or it did '
+                   'not\n  .journal/journal.py work await "<the same thing>" --for=<minutes>   still coming\n'
+                   '  .journal/journal.py work end "<the same words>"   it is over, or it is not coming',
+    "waited_exited": " — that process has EXITED.\n\n",
+    "waited_for": ", for {mins} minute(s).\n\n",
+    "auto_open_fact": "auto is on, work still open",
+    "auto_open_do": "`work end` each if it is done, `work await` it if it is in flight on something you cannot hurry, "
+                    "or park what is left as a to-do and end it{tail}",
+    "auto_open_listed": "; then the list starts",
+    "auto_open_never": "; open work is never left standing",
+    "auto_open_note": "Open:\n{names:\n}\n\nAuto is on for `{env}`, and the next to-do starts only when nothing is "
+                      'open. If this work is finished, close it:\n  .journal/journal.py work end "<the same words>"\n'
+                      "If part of it is waiting on the user — a ruling, a review — that part is a to-do, not open work: "
+                      "park it with the questions in its brief, then end the work:\n"
+                      '  .journal/journal.py todos add "<what is left, and on what it waits>" --brief\n'
+                      "If it is IN FLIGHT on something you cannot hurry — a subagent, a build, a review — say so and the "
+                      'nudging stops until it lands:\n  .journal/journal.py work await "<what you wait on>" '
+                      "--pid=<n>|--agent=<id>\nIf you are mid-work and stopped to ask the user something, say so; the "
+                      "next turn asks again.",
+    "open_fact": "work still open",
+    "open_do": '{subjects:; }: `work end` it, `work update` where it got to, or `work await "<what you wait on>" '
+               "--pid=<n>|--agent=<id>` if it is in flight on something you cannot hurry",
+    "rules_n": "{n} rule(s)",
+    "pins_n": "{n} pin(s)",
+    "recall_fact": "{counted: and } are in force here, and the block that handed them to you is far behind",
+    "recall_owed": "`.journal/journal.py cleanup read` reads every one AND asks the three questions — the reading pass "
+                   "is owed here, and reading them is the moment to judge them",
+    "recall_read": "`journal rules` and `journal pins` read them back in one command each — cheaper than being wrong "
+                   "about one",
+    "cleanup_fact": "{n} thing(s) in the record have evidence against them ({kinds:, })",
+    "cleanup_do": "`.journal/journal.py cleanup` lists each beside the command that retires it; `cleanup read` is the "
+                  "half no check can do, and was {never}",
+    "cleanup_clean_fact": "nothing in the record has evidence against it, but the reading pass was {never}",
+    "cleanup_clean_do": "`.journal/journal.py cleanup read` — every rule and pin judged against the code — when the "
+                        "work you just did touched what they claim",
+    "answered_one": "the user answered question {n}",
+    "answered_many": "the user answered {n} questions",
+    "answered_do": "act on each answer; `.journal/journal.py questions show <n>` reads one in full",
+    "answered_row": "question {n}: {text} → {answer}",
+    "aside_fact": "auto is on for `{env}`, and every waiting to-do is set aside",
+    "aside_do": "nothing is blocked on the user — these wait on conditions you judge: {rows:; } `journal todos start "
+                "<n>` when one comes true",
+    "aside_row": "{n} ({why})",
+    "reason_asking": "waiting on your answer",
+    "reason_aside": "set aside on a condition",
+    "reason_after": "waiting on a to-do that must land first",
+    "reason_held": "held by an agent still working",
+    "reason": "{n} {what}",
+    "stuck_fact": "auto is on for `{env}`, but nothing on the list can be picked up",
+    "stuck_do": "[{why:, }; ]`journal todo` shows what each waits on",
+    "user_answered_fact": "the user answered to-do {n}",
+    "user_answered_do": "({title}) — that is their word to do it: `.journal/journal.py todos start {n}`",
+    "answered_block": "To-do {n}: {title}\n  asked:    {asks}\n  answered: {answer}",
+    "user_answered_note": "{blocks:\n}\n\nStart it, do it, end it. The answer stays on the to-do; `journal todos {n}` "
+                          "shows both.",
+    "auto_answered_fact": "auto is on, the user answered to-do {n}",
+    "auto_answered_do": "({title}) — you are unstuck: `.journal/journal.py todos start {n}`",
+    "auto_answered_note": "{blocks:\n}\n\nStart with to-do {n}: the answer is above, the brief is `journal todos {n}`. "
+                          "Then the rest of the list:\n{rest:\n}",
+    "list_row": "  {n}  {title}[  (waits on the user: {asks})]",
+    "auto_next_fact": "auto is on, {n} to-do(s) waiting",
+    "auto_next_do": "nothing is open — pick up the next: `.journal/journal.py todos start {n}`",
+    "auto_next_note": "Waiting on `{env}`:\n{rows:\n}\n\nRead the brief (`journal todos {n}`), start it, solve it, "
+                      "`work end` it; the next idle stop brings the next one. Every choice the brief leaves open is "
+                      "yours. {loop}\nStuck on something only the user can supply: `work update` what was tried, `work "
+                      'end`, `journal todos ask {n} "<what is stuck>"`.',
+    "loop_owed": "AUTO IS ON for `{env}` and this session has no loop, so the list would stop at your next idle stop. "
+                 "Start one before writing anything else:\n  the `loop` skill with `{m}m journal next`\n"
+                 "  .journal/journal.py loop set     if one is already running that the journal cannot see\n"
+                 "  .journal/journal.py todos auto off   if the list should not drain on its own\n"
+                 "Reads are never gated; only changes.",
+    "choice_line": "journal: this session has no environment yet — {names:, }. It will take one from your first "
+                   "message, or ask.",
+    "backticked": "`{name}`",
+    "none_exist": "none exist yet",
+    "choose": "THIS SESSION HAS NO ENVIRONMENT{where}. Every pin, to-do and piece of work belongs to one, so nothing "
+              "can be written until this session is on one. It is not given you: you choose it, because you are the "
+              "one who has read what the user asked.\nThe environments that exist:\n{have:\n}\n"
+              "DECIDE FROM WHAT THE USER JUST ASKED. If it names or plainly implies one of these, take it — `journal "
+              'switch "<name>"` — and say in one line which you took, so a wrong guess costs the user one word to '
+              "correct. If the work is real and belongs on none of them, `journal prepare \"<name>\"` makes one. If "
+              "the message names nothing to work on — a greeting, a question about the record, anything you can "
+              "answer without writing — ASK which environment, listing the ones above, before you answer it. Do not "
+              "guess in the dark and do not fall back to the first on the list: an environment nobody chose is how "
+              "work lands where nobody looks.",
+    "choose_row": "  {name}",
+    "choose_none": "  (none yet)",
+    "taken_block": "ENVIRONMENT `{env}` IS TAKEN: session {sid} is on it ({age}), and one session works an environment "
+                   "at a time. Before anything else, tell the user and ask which environment this session works on — a "
+                   "free one from `journal environments`, or a new name — then\n"
+                   '  .journal/journal.py switch "<name>"\nUntil then edits are refused and every stop asks again. '
+                   "Reads are fine.",
+    "pin_refused": "That pin would be refused, so the command is not run.\n{why}",
+    "context_deny": "CONTEXT IS {pct}% FULL and nothing has been decided about what must outlive it. This call is "
+                    'denied until one of these has run:\n  .journal/journal.py pins add "<the claim, in one line>"\n'
+                    '  .journal/journal.py nothing "<why nothing here needs pinning>"\nNothing is the right answer more '
+                    "often than not — say so and carry on. `journal search`, `journal conversation --back=1` and "
+                    "`journal pins` still run, to decide with.",
+    "ask_denied": "AUTO IS ON, so a question to the user is refused: it would halt the session until they return, "
+                  "which auto exists to prevent. Decide it yourself and file the choice, or put the question on the "
+                  'to-do and move on:\n  .journal/journal.py work update "<what you chose, and why>"\n'
+                  '  .journal/journal.py todos ask <n> "<what is stuck, and what was tried>"\nThe user answers with '
+                  "`journal todos answer <n>` and the next stop hands that to-do back first.",
+    "unbound_deny": "{block}\n\nThis call is denied until one has been chosen. Reads are never gated; only changes.",
+    "gate": "Nothing is open, so this edit would not be filed against any work. Say what you are doing first — one "
+            'line, and then this stops asking:\n  .journal/journal.py work start "<the work, in your own words>"\n'
+            "Close it with `end` when it is done. Reads are never gated; only changes.",
+    "deny": "\\[{project}\\] {reason}",
+    "markdown_hint": "journal: {path} is a markdown file written outside the journal. Not a problem — but if it is a "
+                     "design, a report or a finding, the docs catalogue is where it is handed to every session and "
+                     'found by search:\n  .journal/journal.py docs add "<title>" --abstract="<one line>" --brief < the '
+                     'file\n  .journal/journal.py docs part <n> "<title>" --brief < the file      as a part of doc n\n'
+                     "A README or a changelog is fine as it is.",
+    "commit_how": "{subject} ({sha})",
+    "commit_mixed": "the commit closed {shut}, and could not close {kept}",
+    "commit_closed": "the commit's trailer closed what it named",
+    "commit_nothing": "the commit's trailer ({trailer} todos done <n>) closed nothing",
+    "commit_ok": "  {line}",
+    "commit_bad": "  ! {line}",
+    "commit_said": "journal: {fact}\n{lines:\n}",
+    "trailer_hint": "journal: that commit closed no to-do, and to-do {n} ({title}) is started — the commit that "
+                    "finishes it can close it from its own message, on a line of its own:\n    {trailer} todos done "
+                    '{n}\n  the close then cites the commit; `journal todos done {n} "<how>"` by hand is fine too',
+    "attach_hint": "journal: {path} has been read {count} times this session, and it is not a source file of this "
+                   "project. If it is reference material — a rendered design, an export, something the user sent — "
+                   "attach it to the doc it belongs to, so it is catalogued, found by name and handed to the next "
+                   'session instead of re-read:\n  .journal/journal.py docs attach <doc> "{path}" "<what it is>"\n'
+                   "(`journal docs add` first if no doc fits; a markdown file may be a doc or a part instead.) A scratch "
+                   "file is fine as it is.",
+    "script_wrote": "{path} is a script you wrote{where}",
+    "script_scratch": " in a scratch folder, which the next session cannot reach",
+    "script_ran": "{path} is a scratch script you ran",
+    "inline_twice": "the same inline script has now run twice",
+    "tool_hint": "journal: {what}. If this job will come back, it is a tool: put the script under .journal/tools/<name>/ "
+                 "(or leave it and point --entry at it) and catalogue it, so every session is handed it instead of "
+                 'writing it again:\n  .journal/journal.py tools add <name> "<title>" --summary="<what it does>" '
+                 '--usage="<how to call it>" --entry=<file>\nA one-off is fine as it is.',
+    "stall": "journal: {calls} tool calls on to-do {n} ({title}) with no progress filed. If there is a measurable "
+             'result, file it — `journal work update "<what moved>"` — and carry on. If there is not, stop pouring '
+             'time in: `update` what was tried, `end` the work, `journal todos ask {n} "<what is stuck>"`, and move on.',
+    "size_fact": "that {tool} call returned {size} characters, the largest this session",
+    "size_do": "it is in the context for good; if you were after one thing in it, the next read can be narrower — grep "
+               "for the line, sed a range, head the file. Nothing to undo.",
+    "that_tool": "that tool",
+    "details": "\n  details: `.journal/journal.py next`",
+    "with_reminder": "{brief}\n\n{reminder}",
+    "no_context": "journal: {event} cannot carry additionalContext — the harness rejects it. {n} lines were NOT "
+                  "delivered.",
+    "over_budget": "\n\nTHIS BLOCK IS {size} CHARACTERS and the harness saves anything over {cap} to a file, handing "
+                   "you a path instead of the text — so if what you are reading looks cut off, it was. `journal carry` "
+                   "prints it in full, and `journal cleanup read` is how the record gets smaller.",
+    "in_force_bound": "THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{env}` (`journal "
+                      "environments` for the others; `journal switch` moves this session only, `--project` also the "
+                      "start environment).",
+    "in_force_unbound": "THE JOURNAL IS IN FORCE HERE — but this session is on NO ENVIRONMENT yet. What is listed below "
+                        "is the start environment's (`{env}`), shown so you can read; it is not yours until you take "
+                        'it. Choose one from the user\'s first message — `journal switch "<name>"`, `journal '
+                        "environments` for the list — and say which you took. If that message asks for nothing, ask "
+                        "them which. Writes are refused meanwhile.",
+    "doorway": "{head}\nOpen every message with exactly one tag: {tags: } — what each is for: the `journal` skill.\n"
+               'Work is not a tag, it costs a command: `journal work start "<the work>"`, `journal work update "<what '
+               'moved>"`, `journal work end "<the same words>"` — and `journal work await "<what you wait on>" '
+               "--pid=<n>|--agent=<id>` when it is in flight on something you cannot hurry, which stops the nudging "
+               "until it lands.\nA NEW REQUEST IS A TO-DO UNLESS THE USER SAID TO DO IT NOW. Park it — `journal todos "
+               '"<title>"` — say you parked it, and carry on with what is open. Do not end your work to make room: '
+               "ending work is not finishing a row.\n\nIF YOU ARE UNSURE WHAT WAS DECIDED, LOOK — do not answer from "
+               "what survived: `journal search <term>`, `journal conversation --back=1`, `journal user`.\n\n"
+               "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in this session, and again "
+               "whenever a hook holds or denies you.",
+    "docs_cite": "{catalogue}\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.",
+    "compact_tail": "THE SUMMARY YOU ARE HOLDING DROPPED WHAT WAS DECIDED. Before you touch anything:\n"
+                    "  .journal/journal.py conversation --back=1    the stretch that summary REPLACED\n"
+                    "  .journal/journal.py user        the user's own words, in full\n"
+                    "  .journal/journal.py open        work you declared and never closed\n"
+                    "The transcript lost nothing. Read it rather than half-remembering it.",
+    "nothing_open": 'NOTHING IS OPEN — declare what you pick up: `journal work start "<the work>"`.',
+    "still_open": "STILL OPEN, from this or an earlier session:\n{rows:\n}\n`journal open` shows where each got to.",
+    "note_auto": "AUTO IS ON — work the list without asking: `todos start <n>`, solve it, `work end`, repeat. "
+                 "`todos auto off` stops it",
+    "note_answered": "{n} the user has ANSWERED — theirs saying to do it, read those first",
+    "note_asks": "{n} of them wait on the user",
+    "note_delayed": "delayed work, not an instruction to start any of it",
+    "count_reminders": "said again at every stop; not repeated here",
+    "count_tools": "scripts this project keeps; run them, do not rewrite them",
+    "count_row": "{n}  {cmd}",
+    "count_carry": "      journal carry",
+    "count_carry_what": "all of it, in full, in one read",
+    "counts": "WHAT ELSE STANDS HERE — the number is the command's, not a summary:\n{rows}",
+    "keep_loop": "KEEP A LOOP RUNNING while auto is on, if none is: the `loop` skill with `{m}m journal next`, so that "
+                 "an idle session comes back every {m} minutes and carries on until nothing is left it can do; stop "
+                 "the loop when the list is empty or everything left waits on the user.",
+    "another_session": "another session",
+    "claimed_fact": "environment `{env}` was claimed by another session",
+    "claimed_do": "by session {by}: {why}",
+    "claimed_note": "This session is bound to nothing now, and nothing of that environment was deleted.\n"
+                    '  .journal/journal.py claim "{env}" "<why>"   take it back\n'
+                    '  .journal/journal.py switch "<name>"   pick another; `journal environments` lists them',
+    "unregistered_deny": "`journal {verb}` is refused: this session is registered on no environment — {block}",
+    "unregistered_hold": "journal: environment `{env}` is taken by session {sid} ({age}), and one session works an "
+                         "environment — ask the user which environment this session works on, then "
+                         '`.journal/journal.py switch "<name>"`',
+    "problem": "journal: {problem}",
+    "no_session": "journal: {event} payload names no session or transcript — nothing filed",
+    "as_denied": '`--as="{said}"` is not you: this call is agent `{aid}`. Use your own name — you were told it on your '
+                 "first tool call — or leave the flag off and write nothing.",
+    "handler_failed": "journal: {event} handler failed ({kind}: {error}) — nothing filed",
+}
+
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 class Ctx:
@@ -210,16 +464,7 @@ def _deferral(conf: dict, ctx: Ctx) -> tuple[str, str] | None:
     if not said:
         return None
     state.put(ROOT, "deferral_at", uid, stem=ctx.stem)
-    return (
-        "park it as a to-do before going on, or run this call again if nothing is deferred",
-        f"You wrote:\n  …{said}…\n\nThe user asked for something and this says it will happen "
-        "later. Work held only in words lives in this window, and one distraction or one "
-        "compaction loses it. Park it now:\n"
-        '  .journal/journal.py todos add "<title>" --brief\n'
-        "and say in your next message that it is parked as to-do n. If nothing is deferred — "
-        "you were describing the order of the current work — run the call again; this is "
-        "said once per reply.",
-    )
+    return say("deferral_do"), say("deferral_why", said=said)
 
 
 def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
@@ -246,12 +491,7 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     # `_say` SUPPLIES THE DASH. A fact that carries its own gets two of them before the
     # reader reaches the instruction.
     return _context("UserPromptSubmit", _say(
-        f"{len(standing)} piece(s) of work open",
-        "a NEW request is a to-do unless the user said to do it NOW:",
-        '`.journal/journal.py todos add "<title>" --brief`, say you parked it, and carry on',
-        "with what is open. Do NOT `work end` to make room — ending work is not finishing a",
-        "row, and the row you are on stays yours. Same work? carry on. Told to do it now?",
-        "`update` the open work and `start` the new one.",
+        say("prompt_fact", n=len(standing)), say("prompt_do"),
         rows=[w["subject"] for w in standing])[1])
 
 
@@ -298,15 +538,9 @@ def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
     # time the window is half full, and it is a few lines.
     ruled = pins.carry(ROOT, "compact", key=pins.RULES)
     if ruled:
-        text += "\n\n" + ruled.replace(
-            "Decided, and still in force:",
-            "Again, because the block you read at the start is far behind you:")
-    return _say(
-        f"context {pct:.0f}% full",
-        ('decide before any other tool runs: `pin "<claim>"` or `nothing "<why>"`'
-         if gated else "consider what must outlive it"),
-        note=text,
-    )
+        text += "\n\n" + ruled.replace(say("rules_decided"), say("rules_again"))
+    return _say(say("context_fact", pct=round(pct)),
+                say("context_decide") if gated else say("context_consider"), note=text)
 
 
 #: THE STOP QUEUE, in the order the subjects are raised. One subject per stop, each
@@ -423,15 +657,13 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
         if note:
             if latest and latest != state.get(ROOT, "update_said", "", stem=ctx.stem):
                 state.put(ROOT, "update_said", latest, stem=ctx.stem)
-                return _context("Stop", _remembering(
-                    note + " Run it now if nothing is mid-flight: `.journal/journal.py update`."))
+                return _context("Stop", _remembering(say("update_run", note=note)))
     if not work.open_work(ROOT) and not todo.auto(ROOT, here):
         ids = sorted(t["n"] for t in todo.open_items(ROOT, here))
         if ids and ids != state.get(ROOT, "todos_said", [], stem=ctx.stem):
             state.put(ROOT, "todos_said", ids, stem=ctx.stem)
             return _context("Stop", _remembering(_say(
-                f"{len(ids)} to-do(s) waiting on `{here}`",
-                "delayed work, not an instruction to start any of it; `journal todo` lists them")[1]))
+                say("waiting_fact", n=len(ids), env=here), say("waiting_do"))[1]))
     return _remind_only()
 
 
@@ -487,7 +719,7 @@ def _say(fact: str, *do: str, rows=(), note: str = "") -> tuple:
     body = " ".join(d.strip() for d in do if d and d.strip())
     parts = [fact]
     if rows:
-        parts.append("\n".join(f"  - {fmt.gist(r)}" for r in rows))
+        parts.append("\n".join(say("row", row=fmt.gist(r)) for r in rows))
     if body:
         parts.append(fmt.wrap(body, indent=2))
     # AIR BETWEEN THE LIST AND WHAT TO DO ABOUT IT. The user's standing instruction about
@@ -535,9 +767,7 @@ def _p_track(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # THE LABEL IS THE FACT; THE BODY IS WHAT TO DO ABOUT IT. `_hold` prints them as one
     # line, so a body that opens by restating its own label says the fact twice in the
     # user's terminal — which four other subjects were also doing.
-    return _say(f"environment `{due['track']}` is taken by another session",
-                f"session {due['by'][:8]} has it ({due['age']}); ask the user which environment this",
-                'session works on, then `.journal/journal.py switch "<name>"`')
+    return _say(say("taken_fact", env=due["track"]), say("taken_do", sid=due["by"][:8], age=due["age"]))
 
 
 @nudges.subject("loop", 10)
@@ -551,9 +781,7 @@ def _p_loop(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         return None
     if _loop_running(ctx, lines):
         return None
-    return _say("auto is on, no loop running",
-                f"start one before the list can drain: the `loop` skill with `{m}m journal next`,",
-                "or `.journal/journal.py loop set` if one is running that the journal cannot see")
+    return _say(say("loop_fact"), say("loop_do", m=m))
 
 
 @nudges.subject("context", 20)
@@ -568,9 +796,7 @@ def _p_context(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     due = state.get(ROOT, "pin_due", None, stem=ctx.stem)
     if due:
         pct = 100 * due["used"] / due["window"] if due.get("window") else 0
-        return _say(f"context {pct:.0f}% full, still undecided",
-                    'the warning is unanswered: `.journal/journal.py pin "<claim>"` or',
-                    '`.journal/journal.py nothing "<why>"` before anything else')
+        return _say(say("undecided_fact", pct=round(pct)), say("undecided_do"))
     return None
 
 
@@ -581,7 +807,7 @@ def _p_deferral(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # quoted back — and for a while this line returned only the instruction and dropped it.
     # The evidence is what lets a reader tell a real deferral from a false positive, and a
     # message assembled and thrown away is the wired-and-silent shape `verify` reports.
-    return _say("work deferred in words, not parked", due[0], note=due[1]) if due else None
+    return _say(say("deferral_fact"), due[0], note=due[1]) if due else None
 
 
 @nudges.subject("untagged", 40)
@@ -601,10 +827,9 @@ def _p_untagged(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     taught = state.get(ROOT, "taught_vocabulary", False, stem=ctx.stem)
     if not taught:
         state.put(ROOT, "taught_vocabulary", True, stem=ctx.stem)
-    return _say(f"{len(fresh)} untagged message(s)",
-                f"last at line {fresh[-1].n}; open the next with "
-                + " ".join(f"[!{t}]" for t in tags.TAGS)
-                + ("" if taught else "; the tag is the first thing in the message, nothing before it"))
+    return _say(say("untagged_fact", n=len(fresh)),
+                say("untagged_do", line=fresh[-1].n, tags=[say("tag", tag=t) for t in tags.TAGS],
+                    teach=None if taught else say("untagged_teach")))
 
 
 def _owners(ctx: Ctx) -> set:
@@ -638,45 +863,24 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         who = work.named(got)
         work.woke(ROOT, w["subject"])   # said once; saying it again needs a new `await`
         return _say(
-            "work waited out",
-            (f"{who} has exited; `{w['subject']}` was waiting on {got['what']}"
-             if dead else
-             f"`{w['subject']}` has waited {mins} minute(s) on {got['what']}"
-             + (f" ({who})" if who else "")),
-            "is it still coming? `work update` what you know, `work await` again, or `work end` it",
-            note=f"Open: {w['subject']}\nAwaited: {got['what']}"
-                 + (f" ({who})" if who else "")
-                 + (" — that process has EXITED.\n\n" if dead else f", for {mins} minute(s).\n\n")
-                 + "A wait expires so that work cannot be abandoned quietly. Decide:\n"
-                 '  .journal/journal.py work update "<what you know now>"   it moved, or it did not\n'
-                 '  .journal/journal.py work await "<the same thing>" --for=<minutes>   still coming\n'
-                 '  .journal/journal.py work end "<the same words>"   it is over, or it is not coming')
+            say("waited_fact"),
+            say("waited_dead", who=who, subject=w["subject"], what=got["what"]) if dead
+            else say("waited_mins", subject=w["subject"], mins=mins, what=got["what"], who=who),
+            say("waited_do"),
+            note=say("waited_note", subject=w["subject"], what=got["what"], who=who,
+                     how=say("waited_exited") if dead else say("waited_for", mins=mins)))
     standing = [w for w in standing if not work.awaiting(w, now) or work.gone(w)]
     if not standing:
         return None
     if todo.auto(ROOT, here):
         # AUTO IS ON AND WORK IS OPEN AT A STOP: every turn, once. End it, or park what
         # is left as a to-do and end it; open work is never left standing.
-        names = "\n".join(f"  - {w['subject']}" for w in standing)
         listed = bool(todo.open_items(ROOT, here))
         return _say(
-                "auto is on, work still open",
-                "`work end` each if it is done, `work await` it if it is in flight on something you",
-                "cannot hurry, or park what is left as a to-do and end it"
-                + ("; then the list starts" if listed else "; open work is never left standing"),
+                say("auto_open_fact"),
+                say("auto_open_do", tail=say("auto_open_listed") if listed else say("auto_open_never")),
                 rows=[w["subject"] for w in standing],
-                note=f"Open:\n{names}\n\nAuto is on for `{here}`, and the next to-do starts only "
-                "when nothing is open. If this work is finished, close it:\n"
-                '  .journal/journal.py work end "<the same words>"\n'
-                "If part of it is waiting on the user — a ruling, a review — that part is a "
-                "to-do, not open work: park it with the questions in its brief, then end the "
-                "work:\n"
-                '  .journal/journal.py todos add "<what is left, and on what it waits>" --brief\n'
-                "If it is IN FLIGHT on something you cannot hurry — a subagent, a build, a "
-                "review — say so and the nudging stops until it lands:\n"
-                '  .journal/journal.py work await "<what you wait on>" --pid=<n>|--agent=<id>\n'
-                "If you are mid-work and stopped to ask the user something, say so; the next "
-                "turn asks again.")
+                note=say("auto_open_note", names=[say("row", row=w["subject"]) for w in standing], env=here))
     # ONLY WORK THIS TRANSCRIPT OPENED, ONCE PER PIECE. Work opened elsewhere was told
     # at the start; work legitimately spans stops, and a hold that repeats until it
     # closes is a trap.
@@ -695,11 +899,7 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # never read the skill learned `await` from the user or not at all. Measured: exactly
     # that, twice in one session. A vocabulary taught only in a file nobody is required to
     # open is a vocabulary that does not exist.
-    return _say("work still open",
-                f"{'; '.join(w['subject'] for w in fresh)}: `work end` it, `work update` where it",
-                "got to, or",
-                '`work await "<what you wait on>" --pid=<n>|--agent=<id>` if it is in flight on',
-                "something you cannot hurry")
+    return _say(say("open_fact"), say("open_do", subjects=[w["subject"] for w in fresh]))
 
 
 @nudges.subject("recall", 65)
@@ -733,8 +933,7 @@ def _p_recall(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     if not passed:
         return None
     state.put(ROOT, "recalled", list(done) + passed, stem=ctx.stem)
-    counted = " and ".join(x for x in (f"{ruled} rule(s)" if ruled else "",
-                                       f"{pinned} pin(s)" if pinned else "") if x)
+    counted = ([say("rules_n", n=ruled)] if ruled else []) + ([say("pins_n", n=pinned)] if pinned else [])
     # READING THEM IS THE MOMENT TO JUDGE THEM, and the two are one command apart. A field
     # report: "Both times I obeyed it, spotted one wrong pin, fixed that one, and moved on.
     # It never occurred to me to run the full cleanup, because nothing in the nudge said
@@ -746,12 +945,8 @@ def _p_recall(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     except Exception:
         due = False
     if due:
-        return _said(f"{counted} are in force here, and the block that handed them to you is far behind",
-                     "`.journal/journal.py cleanup read` reads every one AND asks the three questions —",
-                     "the reading pass is owed here, and reading them is the moment to judge them")
-    return _said(f"{counted} are in force here, and the block that handed them to you is far behind",
-                 "`journal rules` and `journal pins` read them back in one command each —",
-                 "cheaper than being wrong about one")
+        return _said(say("recall_fact", counted=counted), say("recall_owed"))
+    return _said(say("recall_fact", counted=counted), say("recall_read"))
 
 
 @nudges.subject("cleanup", 70)
@@ -784,16 +979,12 @@ def _p_cleanup(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         return None
     state.put(ROOT, "cleanup_said", key, stem=ctx.stem)
     if found:
-        what = ", ".join(sorted({f["kind"] for f in found}))
-        return _said(f"{len(found)} thing(s) in the record have evidence against them ({what})",
-                     "`.journal/journal.py cleanup` lists each beside the command that retires it;",
-                     f"`cleanup read` is the half no check can do, and was {never}")
+        return _said(say("cleanup_fact", n=len(found), kinds=sorted({f["kind"] for f in found})),
+                     say("cleanup_do", never=never))
     # NOTHING MECHANICAL TO SAY, AND STILL SOMETHING OWED. The rot that matters most leaves
     # no trace a command can find, so an empty findings list is not a clean record — it is a
     # record nobody has read. This is the only thing the hook can say about it: how long.
-    return _said(f"nothing in the record has evidence against it, but the reading pass was {never}",
-                 "`.journal/journal.py cleanup read` — every rule and pin judged against the code —",
-                 "when the work you just did touched what they claim")
+    return _said(say("cleanup_clean_fact", never=never), say("cleanup_clean_do"))
 
 
 @nudges.subject("questions", 55)
@@ -803,10 +994,10 @@ def _p_questions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     if not fresh:
         return None
     questions.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
-    head = (f"the user answered question {fresh[0][0]}" if len(fresh) == 1
-            else f"the user answered {len(fresh)} questions")
-    return _say(head, "act on each answer; `.journal/journal.py questions show <n>` reads one in full",
-                rows=[f"question {n}: {q['text']} → {q['answer']}" for n, q in fresh])
+    head = (say("answered_one", n=fresh[0][0]) if len(fresh) == 1
+            else say("answered_many", n=len(fresh)))
+    return _say(head, say("answered_do"),
+                rows=[say("answered_row", n=n, text=q["text"], answer=q["answer"]) for n, q in fresh])
 
 
 @nudges.subject("auto", 60)
@@ -830,10 +1021,8 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         if ids != state.get(ROOT, "todos_said", [], stem=ctx.stem):
             state.put(ROOT, "todos_said", ids, stem=ctx.stem)
             if held_back and not todo.asking(ROOT, here):
-                return _said(f"auto is on for `{here}`, and every waiting to-do is set aside",
-                             "nothing is blocked on the user — these wait on conditions you judge:",
-                             "; ".join(f"{t['n']} ({t['blocked']})" for t in held_back[:3]),
-                             "`journal todos start <n>` when one comes true")
+                return _said(say("aside_fact", env=here),
+                             say("aside_do", rows=[say("aside_row", n=t["n"], why=t["blocked"]) for t in held_back[:3]]))
             # EVERY REASON, OR THE COUNT IS A LIE BY OMISSION. This named two of the four
             # ways a row can be unstartable and left out the one the reader can actually
             # act on — measured here: a list with a to-do waiting on the user and one set
@@ -842,15 +1031,13 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
             # question and never mentioned the set-aside row. Two messages, two different
             # halves of the truth, neither of them wrong on its own.
             reasons = (
-                (todo.asking(ROOT, here), "waiting on your answer"),
-                (held_back, "set aside on a condition"),
-                (owed, "waiting on a to-do that must land first"),
-                ([t for t in todo.open_items(ROOT, here) if t.get("assigned")],
-                 "held by an agent still working"),
+                (todo.asking(ROOT, here), say("reason_asking")),
+                (held_back, say("reason_aside")),
+                (owed, say("reason_after")),
+                ([t for t in todo.open_items(ROOT, here) if t.get("assigned")], say("reason_held")),
             )
-            why = ", ".join(f"{len(rows)} {what}" for rows, what in reasons if rows)
-            return _said(f"auto is on for `{here}`, but nothing on the list can be picked up",
-                         (why + "; " if why else "") + "`journal todo` shows what each waits on")
+            why = [say("reason", n=len(rows), what=what) for rows, what in reasons if rows]
+            return _said(say("stuck_fact", env=here), say("stuck_do", why=why))
         return None
     if not auto:
         if not unstuck:
@@ -860,35 +1047,21 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
             return None
         state.put(ROOT, "answered_said", key, stem=ctx.stem)
         t = unstuck[0]
-        return _say(f"the user answered to-do {t['n']}",
-                f"({t['title']}) — that is their word to do it: "
-                f"`.journal/journal.py todos start {t['n']}`",
-                note=
-                "\n".join(f"To-do {u['n']}: {u['title']}\n  asked:    {u['asks']}\n"
-                          f"  answered: {u['answer']}" for u in unstuck)
-                + "\n\nStart it, do it, end it. The answer stays on the to-do; "
-                f"`journal todos {t['n']}` shows both.")
+        blocks = [say("answered_block", n=u["n"], title=u["title"], asks=u["asks"], answer=u["answer"])
+                  for u in unstuck]
+        return _say(say("user_answered_fact", n=t["n"]), say("user_answered_do", title=t["title"], n=t["n"]),
+                    note=say("user_answered_note", blocks=blocks, n=t["n"]))
     nxt = ready[0]
     if todo.answered_one(nxt):
-        return _say(f"auto is on, the user answered to-do {nxt['n']}",
-                f"({nxt['title']}) — you are unstuck: `.journal/journal.py todos start {nxt['n']}`",
-                note=
-                "\n".join(f"To-do {u['n']}: {u['title']}\n  asked:    {u['asks']}\n"
-                          f"  answered: {u['answer']}" for u in unstuck)
-                + f"\n\nStart with to-do {nxt['n']}: the answer is above, the brief is "
-                f"`journal todos {nxt['n']}`. Then the rest of the list:\n"
-                + "\n".join(f"  {t['n']:>3}  {t['title']}" for t in waiting if not todo.answered_one(t)))
-    return _say(f"auto is on, {len(ids)} to-do(s) waiting",
-            f"nothing is open — pick up the next: `.journal/journal.py todos start {nxt['n']}`",
-            note=
-            f"Waiting on `{here}`:\n" + "\n".join(
-                f"  {t['n']:>3}  {t['title']}" + (f"  (waits on the user: {t['asks']})" if t.get("asks") else "")
-                for t in waiting)
-            + f"\n\nRead the brief (`journal todos {nxt['n']}`), start it, solve it, `work end` "
-            "it; the next idle stop brings the next one. Every choice the brief leaves open is "
-            "yours. " + _loop_line(conf)
-            + f"\nStuck on something only the user can supply: `work update` what was tried, "
-            f"`work end`, `journal todos ask {nxt['n']} \"<what is stuck>\"`.")
+        blocks = [say("answered_block", n=u["n"], title=u["title"], asks=u["asks"], answer=u["answer"])
+                  for u in unstuck]
+        rest = [say("list_row", n=str(t["n"]).rjust(3), title=t["title"], asks=None)
+                for t in waiting if not todo.answered_one(t)]
+        return _say(say("auto_answered_fact", n=nxt["n"]), say("auto_answered_do", title=nxt["title"], n=nxt["n"]),
+                    note=say("auto_answered_note", blocks=blocks, n=nxt["n"], rest=rest))
+    rows = [say("list_row", n=str(t["n"]).rjust(3), title=t["title"], asks=t.get("asks")) for t in waiting]
+    return _say(say("auto_next_fact", n=len(ids)), say("auto_next_do", n=nxt["n"]),
+                note=say("auto_next_note", env=here, rows=rows, n=nxt["n"], loop=_loop_line(conf)))
 
 
 
@@ -928,12 +1101,7 @@ def _loop_owed(conf: dict, ctx: Ctx, here: str) -> str:
     # reached only when every cheaper condition already says a denial is owed.
     if _loop_running(ctx, transcript.read(ctx.path)[0] if ctx.path else []):
         return ""
-    return (f"AUTO IS ON for `{here}` and this session has no loop, so the list would stop "
-            "at your next idle stop. Start one before writing anything else:\n"
-            f"  the `loop` skill with `{m}m journal next`\n"
-            "  .journal/journal.py loop set     if one is already running that the journal cannot see\n"
-            "  .journal/journal.py todos auto off   if the list should not drain on its own\n"
-            "Reads are never gated; only changes.")
+    return say("loop_owed", env=here, m=m)
 
 
 def _unbound(conf: dict, ctx: Ctx) -> bool:
@@ -954,29 +1122,14 @@ def _unbound(conf: dict, ctx: Ctx) -> bool:
 def _choice_line() -> str:
     """The one line the USER sees when a session starts with no environment."""
     names = tracks.choices(ROOT)
-    return ("journal: this session has no environment yet — "
-            + (", ".join(f"`{n}`" for n in names) if names else "none exist yet")
-            + ". It will take one from your first message, or ask.")
+    return say("choice_line", names=[say("backticked", name=n) for n in names] or [say("none_exist")])
 
 
 def _choose_block(where: str) -> str:
     """What the AGENT is told while the session is unbound. Said at the start and at each prompt."""
     names = tracks.choices(ROOT)
-    have = "\n".join(f"  {n}" for n in names) if names else "  (none yet)"
-    return (
-        f"THIS SESSION HAS NO ENVIRONMENT{where}. Every pin, to-do and piece of work belongs "
-        "to one, so nothing can be written until this session is on one. It is not given "
-        "you: you choose it, because you are the one who has read what the user asked.\n"
-        "The environments that exist:\n" + have + "\n"
-        "DECIDE FROM WHAT THE USER JUST ASKED. If it names or plainly implies one of "
-        'these, take it — `journal switch "<name>"` — and say in one line which you took, '
-        "so a wrong guess costs the user one word to correct. If the work is real and "
-        'belongs on none of them, `journal prepare "<name>"` makes one. If the message '
-        "names nothing to work on — a greeting, a question about the record, anything you "
-        "can answer without writing — ASK which environment, listing the ones above, "
-        "before you answer it. Do not guess in the dark and do not fall back to the first "
-        "on the list: an environment nobody chose is how work lands where nobody looks."
-    )
+    have = [say("choose_row", name=n) for n in names] or [say("choose_none")]
+    return say("choose", where=where, have=have)
 
 
 def _track_due(conf: dict, ctx: Ctx) -> dict | None:
@@ -1005,11 +1158,7 @@ def _track_due(conf: dict, ctx: Ctx) -> dict | None:
 
 
 def _taken_block(due: dict) -> str:
-    return (f"ENVIRONMENT `{due['track']}` IS TAKEN: session {due['by'][:8]} is on it ({due['age']}), and one "
-            "session works an environment at a time. Before anything else, tell the user and ask which "
-            "environment this session works on — a free one from `journal environments`, or a new name — then\n"
-            '  .journal/journal.py switch "<name>"\n'
-            "Until then edits are refused and every stop asks again. Reads are fine.")
+    return say("taken_block", env=due["track"], sid=due["by"][:8], age=due["age"])
 
 
 #: Tools whose ENTIRE PURPOSE is to change a file. No judgement needed for these.
@@ -1326,7 +1475,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     _floor(ctx)
     over = _pin_overflow(payload, conf["pin_max_chars"])
     if over:
-        return _deny("That pin would be refused, so the command is not run.\n" + over)
+        return _deny(say("pin_refused", why=over))
     # A RUNG WAS ANNOUNCED AND NOTHING WAS DECIDED. The hold at the stop was measured and
     # did not land — the user had to ask for the pin — so until `pin` or `nothing`
     # has run, no other tool does. Reads too, this once: the decision needs thought, not
@@ -1335,18 +1484,11 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     if not _is_journal(payload):
         put_off = _deferral(conf, ctx)
         if put_off:
-            return _deny(put_off[0] + "\n\n" + put_off[1])
+            return _deny(say("deferral_deny", do=put_off[0], why=put_off[1]))
     due = state.get(ROOT, "pin_due", None, stem=ctx.stem)
     if due and not _is_journal(payload):
         pct = 100 * due["used"] / due["window"] if due.get("window") else 0
-        return _deny(
-            f"CONTEXT IS {pct:.0f}% FULL and nothing has been decided about what must "
-            f"outlive it. This call is denied until one of these has run:\n"
-            '  .journal/journal.py pins add "<the claim, in one line>"\n'
-            '  .journal/journal.py nothing "<why nothing here needs pinning>"\n'
-            "Nothing is the right answer more often than not — say so and carry on. "
-            "`journal search`, `journal conversation --back=1` and `journal pins` still run, to decide with."
-        )
+        return _deny(say("context_deny", pct=round(pct)))
     # WITH AUTO ON, A QUESTION TO THE USER IS THE ONE MOVE THAT STOPS THE LIST. The user
     # switched auto on to be away; AskUserQuestion halts the session until they are back,
     # which is exactly what auto was turned on to prevent. The skill says to decide and
@@ -1354,15 +1496,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     # the two ways out, and this is a denial rather than a hold because a hold arrives
     # after the question is already on screen.
     if payload.get("tool_name") == "AskUserQuestion" and todo.auto(ROOT, tracks.current(ROOT, ctx.stem)):
-        return _deny(
-            "AUTO IS ON, so a question to the user is refused: it would halt the session "
-            "until they return, which auto exists to prevent. Decide it yourself and file "
-            "the choice, or put the question on the to-do and move on:\n"
-            '  .journal/journal.py work update "<what you chose, and why>"\n'
-            '  .journal/journal.py todos ask <n> "<what is stuck, and what was tried>"\n'
-            "The user answers with `journal todos answer <n>` and the next stop hands that "
-            "to-do back first."
-        )
+        return _deny(say("ask_denied"))
     # A WAIT ENDS WHEN THE WORK STARTS AGAIN, without being told. The user's ruling. `await`
     # buys silence, and that silence is right while the agent is blocked and wrong the
     # instant it is not — and the agent that has picked the work back up is the last thing
@@ -1374,10 +1508,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
         if woke:
             state.put(ROOT, "held_work", {}, stem=ctx.stem)   # it may be held for again
     if _is_write(payload) and not _is_journal(payload) and _unbound(conf, ctx):
-        return _deny(
-            _choose_block("") + "\n\nThis call is denied until one has been chosen. Reads "
-            "are never gated; only changes."
-        )
+        return _deny(say("unbound_deny", block=_choose_block("")))
     if _is_write(payload) and not _is_journal(payload):
         taken = _track_due(conf, ctx)
         if taken:
@@ -1399,12 +1530,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
         return 0
     if not _is_write(payload) or work.open_work(ROOT) or _declared_first(payload):
         return 0
-    return _deny(
-        "Nothing is open, so this edit would not be filed against any work. Say what "
-        "you are doing first — one line, and then this stops asking:\n"
-        '  .journal/journal.py work start "<the work, in your own words>"\n'
-        "Close it with `end` when it is done. Reads are never gated; only changes."
-    )
+    return _deny(say("gate"))
 
 
 def _deny(reason: str) -> int:
@@ -1421,7 +1547,7 @@ def _deny(reason: str) -> int:
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
         "permissionDecision": "deny",
-        "permissionDecisionReason": fmt.block(f"[{ROOT.parent.name}] " + reason),
+        "permissionDecisionReason": fmt.block(say("deny", project=ROOT.parent.name, reason=reason)),
     }}))
     return 0
 
@@ -1487,14 +1613,7 @@ def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
     if rel in said:
         return None
     state.put(ROOT, "md_hinted", (said + [rel])[-50:], stem=ctx.stem)
-    return (
-        f"journal: {rel} is a markdown file written outside the journal. Not a problem — but if "
-        "it is a design, a report or a finding, the docs catalogue is where it is handed to every "
-        "session and found by search:\n"
-        '  .journal/journal.py docs add "<title>" --abstract="<one line>" --brief < the file\n'
-        '  .journal/journal.py docs part <n> "<title>" --brief < the file      as a part of doc n\n'
-        "A README or a changelog is fine as it is."
-    )
+    return say("markdown_hint", path=rel)
 
 
 #: SOURCE OR REFERENCE. A file the project is built from is source: it has a source
@@ -1575,7 +1694,7 @@ def _closed_by_commit(conf: dict, payload: dict, ctx: Ctx) -> str | None:
     if state.get(ROOT, "commit_closed", "", stem=ctx.stem) == sha:
         return None
     state.put(ROOT, "commit_closed", sha, stem=ctx.stem)
-    said = todo.close_from_commit(ROOT, message, f"{subject} ({sha[:9]})", todo.now(),
+    said = todo.close_from_commit(ROOT, message, say("commit_how", subject=subject, sha=sha[:9]), todo.now(),
                                   tracks.current(ROOT, ctx.stem))
     if not said:
         return None
@@ -1588,13 +1707,13 @@ def _closed_by_commit(conf: dict, payload: dict, ctx: Ctx) -> str | None:
     shut = [line for ok, line in said if ok]
     kept = [line for ok, line in said if not ok]
     if shut and kept:
-        fact = f"the commit closed {len(shut)}, and could not close {len(kept)}"
+        fact = say("commit_mixed", shut=len(shut), kept=len(kept))
     elif shut:
-        fact = "the commit's trailer closed what it named"
+        fact = say("commit_closed")
     else:
-        fact = f"the commit's trailer ({todo.TRAILER} todos done <n>) closed nothing"
-    lines = [f"  {l}" for l in shut] + [f"  ! {l}" for l in kept]
-    return f"journal: {fact}\n" + "\n".join(lines)
+        fact = say("commit_nothing", trailer=todo.TRAILER)
+    lines = [say("commit_ok", line=l) for l in shut] + [say("commit_bad", line=l) for l in kept]
+    return say("commit_said", fact=fact, lines=lines)
 
 
 def _trailer_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
@@ -1622,10 +1741,7 @@ def _trailer_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
     t = started[0]
     # `journal: ` LIKE EVERY OTHER LINE. This one opened with unprefixed shouting, which
     # made it the only message in the package a reader could not place at a glance.
-    return (f"journal: that commit closed no to-do, and to-do {t['n']} ({t['title']}) is started — "
-            f"the commit that finishes it can close it from its own message, on a line of its own:\n"
-            f"    {todo.TRAILER} todos done {t['n']}\n"
-            f"  the close then cites the commit; `journal todos done {t['n']} \"<how>\"` by hand is fine too")
+    return say("trailer_hint", n=t["n"], title=t["title"], trailer=todo.TRAILER)
 
 
 def _attach_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
@@ -1681,15 +1797,7 @@ def _attach_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
         return None
     state.put(ROOT, "attach_hinted", (said + [key])[-100:], stem=ctx.stem)
     shown = rp.relative_to(project).as_posix() if inside else str(rp)
-    return (
-        f"journal: {shown} has been read {counts[key]} times this session, and it is not a source "
-        "file of this project. If it is reference material — a rendered design, an export, something "
-        "the user sent — attach it to the doc it belongs to, so it is catalogued, found by name and "
-        "handed to the next session instead of re-read:\n"
-        f'  .journal/journal.py docs attach <doc> "{shown}" "<what it is>"\n'
-        "(`journal docs add` first if no doc fits; a markdown file may be a doc or a part instead.) "
-        "A scratch file is fine as it is."
-    )
+    return say("attach_hint", path=shown, count=counts[key])
 
 
 _SCRIPT_EXT = (".py", ".sh", ".php", ".js", ".ts", ".rb", ".pl")
@@ -1725,14 +1833,14 @@ def _tool_shaped(conf: dict, payload: dict, ctx: Ctx) -> str | None:
             scratch = not inside and any(x in path for x in _SCRATCH)
             toolish = inside and any(rel.startswith(d) or f"/{d}" in rel for d in _TOOLISH_DIRS)
             if scratch or toolish:
-                what, key = f"{rel} is a script you wrote" + (" in a scratch folder, which the next session cannot reach" if scratch else ""), rel
+                what, key = say("script_wrote", path=rel, where=say("script_scratch") if scratch else ""), rel
     elif name == "Bash":
         cmd = str(inp.get("command") or "")
         if any(_is_journal_verb(w[0]) for w in _pieces(cmd)):
             return None
         m = re.search(r"\b(?:python3?|php|sh|bash|node|ruby)\s+(\S*(?:" + "|".join(x.strip("/") for x in _SCRATCH) + r")\S+)", cmd)
         if m:
-            what, key = f"{m.group(1)} is a scratch script you ran", "run:" + m.group(1)
+            what, key = say("script_ran", path=m.group(1)), "run:" + m.group(1)
         else:
             for _, body in _HEREDOC_BODY_RE.findall(cmd):
                 if len(body) < 300:
@@ -1741,20 +1849,14 @@ def _tool_shaped(conf: dict, payload: dict, ctx: Ctx) -> str | None:
                 h = hashlib.sha1(" ".join(body.split()).encode()).hexdigest()[:12]
                 seen = state.get(ROOT, "inline_scripts", [], stem=ctx.stem) or []
                 if h in seen:
-                    what, key = "the same inline script has now run twice", "inline:" + h
+                    what, key = say("inline_twice"), "inline:" + h
                 else:
                     state.put(ROOT, "inline_scripts", (seen + [h])[-100:], stem=ctx.stem)
                 break
     if not what or key in said:
         return None
     state.put(ROOT, "tool_hinted", (said + [key])[-50:], stem=ctx.stem)
-    return (
-        f"journal: {what}. If this job will come back, it is a tool: put the script under "
-        ".journal/tools/<name>/ (or leave it and point --entry at it) and catalogue it, so every "
-        "session is handed it instead of writing it again:\n"
-        '  .journal/journal.py tools add <name> "<title>" --summary="<what it does>" --usage="<how to call it>" --entry=<file>\n'
-        "A one-off is fine as it is."
-    )
+    return say("tool_hint", what=what)
 
 
 def _stall(conf: dict, ctx: Ctx) -> str | None:
@@ -1807,12 +1909,7 @@ def _stall(conf: dict, ctx: Ctx) -> str | None:
         return None
     mark["said"] = 1
     state.put(ROOT, "stall", mark, stem=ctx.stem)
-    return (
-        f"journal: {mark['calls']} tool calls on to-do {t['n']} ({t['title']}) with no progress "
-        "filed. If there is a measurable result, file it — `journal work update \"<what moved>\"` — "
-        "and carry on. If there is not, stop pouring time in: `update` what was tried, `end` "
-        f"the work, `journal todos ask {t['n']} \"<what is stuck>\"`, and move on."
-    )
+    return say("stall", calls=mark["calls"], n=t["n"], title=t["title"])
 
 
 def _response_size(payload: dict) -> int:
@@ -1931,11 +2028,8 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     if size < floor or size <= state.get(ROOT, "biggest_result", 0, stem=ctx.stem):
         return 0
     state.put(ROOT, "biggest_result", size, stem=ctx.stem)
-    name = payload.get("tool_name") or "that tool"
-    return _context("PostToolUse", _say(
-        f"that {name} call returned {size:,} characters, the largest this session",
-        "it is in the context for good; if you were after one thing in it, the next read can",
-        "be narrower — grep for the line, sed a range, head the file. Nothing to undo.")[1])
+    name = payload.get("tool_name") or say("that_tool")
+    return _context("PostToolUse", _say(say("size_fact", tool=name, size=format(size, ",")), say("size_do"))[1])
 
 
 # `on_message_display` LIVED HERE and wrote `last_untagged`, which nothing ever read. The
@@ -2107,7 +2201,7 @@ def _hold(label: str, brief: str, text: str = "", subject: str = "") -> int:
         state.put(ROOT, "next_rows", _open_ids(), stem=_HOLD_CTX[0])
         # ITS OWN LINE. Appended with an em dash it ran onto the end of a wrapped
         # instruction, which is the one place a reader stops looking.
-        brief += "\n  details: `.journal/journal.py next`"
+        brief += say("details")
     # `_say` ALREADY BUILT THE LINE. This used to strip a `journal: ` prefix and then try to
     # spot the label repeated at the start of the body — a textual reconciliation of two
     # strings somebody wrote separately. They are one string now, so there is nothing to
@@ -2117,7 +2211,7 @@ def _hold(label: str, brief: str, text: str = "", subject: str = "") -> int:
     # fields hold. Only the two subjects about writing to the wrong environment keep the
     # error shape, because for those the alarm IS the message.
     if subject not in _ERROR_LABELLED:
-        return _context("Stop", brief + (f"\n\n{_REMIND[0]}" if _REMIND else ""))
+        return _context("Stop", say("with_reminder", brief=brief, reminder=_REMIND[0]) if _REMIND else brief)
     out: dict = {"decision": "block", "reason": brief.replace("\n", " ")}
     # A REMINDER IS NOT AN ERROR, SO IT NEVER GOES IN `reason`. The harness prints that
     # field under the words "Stop hook error", and for one release this line prepended the
@@ -2163,11 +2257,7 @@ def _context(event: str, text: str, system: str | None = None) -> int:
     if system:
         out["systemMessage"] = system
     if event not in DELIVERS_CONTEXT:
-        print(
-            f"journal: {event} cannot carry additionalContext — the harness rejects it. "
-            f"{len(text.splitlines())} lines were NOT delivered.",
-            file=sys.stderr,
-        )
+        print(say("no_context", event=event, n=len(text.splitlines())), file=sys.stderr)
         if out:
             print(json.dumps(out))
         return 0
@@ -2266,10 +2356,7 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
             break
         caps = {k: max(floor, v // 2) if v else v for k, v in caps.items()}
     if len(block) > INLINE_BUDGET:
-        block += (f"\n\nTHIS BLOCK IS {len(block):,} CHARACTERS and the harness saves anything over "
-                  f"{INLINE_CAP:,} to a file, handing you a path instead of the text — so if what you "
-                  "are reading looks cut off, it was. `journal carry` prints it in full, and "
-                  "`journal cleanup read` is how the record gets smaller.")
+        block += say("over_budget", size=format(len(block), ","), cap=format(INLINE_CAP, ","))
     return block
 
 
@@ -2303,39 +2390,8 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
         #
         # WHICH ENVIRONMENT OF WORK THIS IS comes first: a fresh agent inherits an environment it did
         # not choose and cannot see, and every pin and open item below belongs to that one.
-        (f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{here}`"
-         " (`journal environments` for the others; `journal switch` moves this session only, "
-         "`--project` also the start environment)."
-         if not unbound else
-         "THE JOURNAL IS IN FORCE HERE — but this session is on NO ENVIRONMENT yet. What is "
-         f"listed below is the start environment's (`{here}`), shown so you can read; it is "
-         "not yours until you take it. Choose one from the user's first message — "
-         '`journal switch "<name>"`, `journal environments` for the list — and say which '
-         "you took. If that message asks for nothing, ask them which. Writes are refused "
-         "meanwhile.")
-        # ONE LINE OF TAGS, NOT ONE LINE PER TAG. What each means is in the `journal`
-        # skill, loaded before the first one is worn — this block is the rule, not the
-        # reasoning, and it is read at every start and again after every compaction, so
-        # its own length is a recurring charge on the very context it is protecting.
-        + "\nOpen every message with exactly one tag: "
-        + " ".join(f"[!{t.name}]" for t in tags.TAGS.values())
-        + " — what each is for: the `journal` skill.\n"
-        # CURRENT SPELLING ONLY. `journal start`/`update`/`end` still run — 1.x sessions
-        # are not stranded — but this block is what teaches every fresh one, and it must
-        # not teach the spelling this project moved past.
-        "Work is not a tag, it costs a command: `journal work start \"<the work>\"`, "
-        "`journal work update \"<what moved>\"`, `journal work end \"<the same words>\"` — and "
-        "`journal work await \"<what you wait on>\" --pid=<n>|--agent=<id>` when it is in flight "
-        "on something you cannot hurry, which stops the nudging until it lands.\n"
-        "A NEW REQUEST IS A TO-DO UNLESS THE USER SAID TO DO IT NOW. Park it — `journal todos "
-        "\"<title>\"` — say you parked it, and carry on with what is open. Do not end your work "
-        "to make room: ending work is not finishing a row.\n\n"
-        # THE REFLEX. Everything above is how to WRITE the record; this is when to READ
-        # one instead of answering from whatever survived the summary.
-        "IF YOU ARE UNSURE WHAT WAS DECIDED, LOOK — do not answer from what survived: "
-        "`journal search <term>`, `journal conversation --back=1`, `journal user`.\n\n"
-        "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in "
-        "this session, and again whenever a hook holds or denies you."
+        say("doorway", head=say("in_force_unbound" if unbound else "in_force_bound", env=here),
+            tags=[say("tag", tag=t.name) for t in tags.TAGS.values()])
     ]
     parts.append(_standing(short))
     # THE PACKAGE'S OWN RULES FIRST OF ALL, before anything this project decided: they bind
@@ -2361,7 +2417,7 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
     # settled before it re-investigates it; the doc itself is read on demand.
     catalogued = docs.carry(ROOT, cap=caps["docs"], track=here, brief=short) if caps["docs"] else ""
     if catalogued:
-        parts.append(catalogued + "\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.")
+        parts.append(say("docs_cite", catalogue=catalogued))
     # A CAP OF ZERO MEANS THE SECTION IS NOT IN THIS DEPTH AT ALL. Passed through, it
     # printed the heading and a bare "… and 23 more of 23" under it — a section announcing
     # that it had shown the reader nothing.
@@ -2380,13 +2436,7 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
     if depth == BRIEF:
         parts.append(_counts(here))
     if source == "compact":
-        parts.append(
-            "THE SUMMARY YOU ARE HOLDING DROPPED WHAT WAS DECIDED. Before you touch anything:\n"
-            "  .journal/journal.py conversation --back=1    the stretch that summary REPLACED\n"
-            "  .journal/journal.py user        the user's own words, in full\n"
-            "  .journal/journal.py open        work you declared and never closed\n"
-            "The transcript lost nothing. Read it rather than half-remembering it."
-        )
+        parts.append(say("compact_tail"))
     return "\n\n".join(parts)
 
 
@@ -2408,10 +2458,8 @@ def _standing(short: bool) -> str:
     """
     standing = work.open_work(ROOT)
     if not standing:
-        return "NOTHING IS OPEN — declare what you pick up: `journal work start \"<the work>\"`." if short else ""
-    lines = "\n".join(f"  - {fmt.gist(w['subject']) if short else w['subject']}" for w in standing)
-    return ("STILL OPEN, from this or an earlier session:\n" + lines
-            + "\n`journal open` shows where each got to.")
+        return say("nothing_open") if short else ""
+    return say("still_open", rows=[say("row", row=fmt.gist(w["subject"]) if short else w["subject"]) for w in standing])
 
 
 def _todo_note(here: str) -> str:
@@ -2434,13 +2482,12 @@ def _todo_note(here: str) -> str:
     asks_n = len(todo.asking(ROOT, here))
     said = []
     if todo.auto(ROOT, here):
-        said.append("AUTO IS ON — work the list without asking: `todos start <n>`, solve it, "
-                    "`work end`, repeat. `todos auto off` stops it")
+        said.append(say("note_auto"))
     if answered_n:
-        said.append(f"{answered_n} the user has ANSWERED — theirs saying to do it, read those first")
+        said.append(say("note_answered", n=answered_n))
     elif asks_n:
-        said.append(f"{asks_n} of them wait on the user")
-    return "; ".join(said) or "delayed work, not an instruction to start any of it"
+        said.append(say("note_asks", n=asks_n))
+    return "; ".join(said) or say("note_delayed")
 
 
 def _counts(here: str) -> str:
@@ -2458,19 +2505,17 @@ def _counts(here: str) -> str:
     """
     import reminders as rem
     rows = [
-        (len(rem.live(ROOT)), "journal reminders", "said again at every stop; not repeated here"),
+        (len(rem.live(ROOT)), "journal reminders", say("count_reminders")),
         (len(todo.open_items(ROOT, here)), "journal todos", _todo_note(here)),
-        (len(tools._all(ROOT)), "journal tools",
-         "scripts this project keeps; run them, do not rewrite them"),
+        (len(tools._all(ROOT)), "journal tools", say("count_tools")),
     ]
-    have = [(f"{n:>4}  {cmd}", what) for n, cmd, what in rows if n]
+    have = [(say("count_row", n=str(n).rjust(4), cmd=cmd), what) for n, cmd, what in rows if n]
     # THE HEADING BELONGS TO THE ROWS. With none of them standing it announced an empty
     # list and then offered `journal carry` under it — a heading over nothing, which is the
     # exact shape that teaches a reader to skip headings.
     if not have:
         return ""
-    return ("WHAT ELSE STANDS HERE — the number is the command's, not a summary:\n"
-            + fmt.commands(have + [("      journal carry", "all of it, in full, in one read")]))
+    return say("counts", rows=fmt.commands(have + [(say("count_carry"), say("count_carry_what"))]))
 
 
 def _loop_line(conf: dict) -> str:
@@ -2478,10 +2523,7 @@ def _loop_line(conf: dict) -> str:
     m = conf.get("auto_loop_minutes", 0)
     if not m:
         return ""
-    return (f"KEEP A LOOP RUNNING while auto is on, if none is: the `loop` skill with "
-            f"`{m}m journal next`, so that an idle session comes back every {m} minutes and "
-            "carries on until nothing is left it can do; stop the loop when the list is empty "
-            "or everything left waits on the user.")
+    return say("keep_loop", m=m)
 
 
 def _prune(keep: str = "") -> None:
@@ -2616,14 +2658,9 @@ def _claimed_note(ctx: Ctx | None, clear: bool = True) -> tuple[str, str] | None
         return None
     if clear:
         state.put(ROOT, "claimed_away", {}, stem=ctx.stem)
-    by = (got.get("by") or "")[:8] or "another session"
-    return _say(f"environment `{got['track']}` was claimed by another session",
-                f"by session {by}: " + got.get("why", ""),
-                note="This session is bound to nothing now, and nothing of that environment was "
-                     "deleted.\n"
-                     f'  .journal/journal.py claim "{got["track"]}" "<why>"   take it back\n'
-                     '  .journal/journal.py switch "<name>"   pick another; `journal environments` '
-                     "lists them")
+    by = (got.get("by") or "")[:8] or say("another_session")
+    return _say(say("claimed_fact", env=got["track"]), say("claimed_do", by=by, why=got.get("why", "")),
+                note=say("claimed_note", env=got["track"]))
 
 
 def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) -> int:
@@ -2646,8 +2683,7 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
         if handler is on_pre_tool:
             verb = _journal_write(payload)
             if verb and verb not in ("switch", "prepare"):
-                return _deny(f"`journal {verb}` is refused: this session is registered on no environment — "
-                             + _taken_block(due))
+                return _deny(say("unregistered_deny", verb=verb, block=_taken_block(due)))
             if _is_write(payload) and not _is_journal(payload):
                 return _deny(_taken_block(due))
             return 0
@@ -2656,10 +2692,9 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
             note = _claimed_note(ctx)
             if note:
                 return _hold(*note)
-            return _hold(f"environment `{due.get('track', '?')}` is taken by another session",
-                         f"journal: environment `{due.get('track', '?')}` is taken by session {str(due.get('by', ''))[:8]} "
-                         f"({due.get('age', '')}), and one session works an environment — ask the user which "
-                         'environment this session works on, then `.journal/journal.py switch "<name>"`')
+            env = due.get("track", "?")
+            return _hold(say("taken_fact", env=env),
+                         say("unregistered_hold", env=env, sid=str(due.get("by", ""))[:8], age=due.get("age", "")))
         return 0
     return 0
 
@@ -2723,7 +2758,7 @@ def main(raw: str | None = None) -> int:
         return 0
     conf, problems = settings_mod.load(ROOT)
     for p in problems:
-        print(f"journal: {p}", file=sys.stderr)
+        print(say("problem", problem=p), file=sys.stderr)
 
     # THE HOOK MIGRATES TOO. A consumer whose agent never types a `journal` command still
     # fires hooks on every tool call, so this is the entry point that reaches everybody.
@@ -2736,8 +2771,7 @@ def main(raw: str | None = None) -> int:
     state.retire_old(ROOT)
     ctx = _ctx(payload)
     if ctx is None:
-        print(f"journal: {event} payload names no session or transcript — nothing filed",
-              file=sys.stderr)
+        print(say("no_session", event=event), file=sys.stderr)
         return 0
     # A SUBAGENT IS TURNED AWAY AT THE DOOR, AND THAT IS THE WHOLE OF IT. It used to be let
     # in and then handled: a delegation to bind it to an environment, a rules ladder on its
@@ -2806,11 +2840,7 @@ def main(raw: str | None = None) -> int:
             # another's — its work, and the to-do that is held for it.
             said = grants.acting_in(command)
             if said and said != aid:
-                return _deny(
-                    f"`--as=\"{said}\"` is not you: this call is agent `{aid}`. Use your own "
-                    "name — you were told it on your first tool call — or leave the flag off "
-                    "and write nothing."
-                )
+                return _deny(say("as_denied", said=said, aid=aid))
         return 0
     _CONF[:] = [conf]
     env = _register(payload, ctx)
@@ -2826,8 +2856,7 @@ def main(raw: str | None = None) -> int:
         state.put(ROOT, "seen_at", int(time.time()), stem=ctx.stem)
         return handler(conf, payload, ctx)
     except Exception as e:  # noqa: BLE001
-        print(f"journal: {event} handler failed ({type(e).__name__}: {e}) — nothing filed",
-              file=sys.stderr)
+        print(say("handler_failed", event=event, kind=type(e).__name__, error=e), file=sys.stderr)
         return 0
 
 
