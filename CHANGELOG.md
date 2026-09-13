@@ -4,6 +4,23 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.0 — questions are a resource of their own
+
+`journal questions add "<question>" --about=todo 22 --about=doc 4.1` files a numbered
+question on this environment, linked to any number of resources — to-dos, docs and doc
+parts, pins, rules — and a resource can carry any number of questions. `questions answer
+N "<answer>"` answers one; the agent is told at its next stop, once, and the question
+remembers it was told so no later session hears it again. `questions link`/`unlink` change
+what a question is about, `questions withdraw N "<why>"` retires one that no longer needs an
+answer, and `journal questions` lists open ones first.
+
+`todos ask <n> "<question>"` now files a question linked to the to-do instead of writing it
+into the to-do's file, and `todos answer <n>` answers it; a to-do with several open questions
+asks you to answer each by its question number. A to-do waits on the user while any linked
+question is open. Existing questions and answers stored on to-dos are moved into questions
+the first time 1.62.0 runs. An answered to-do question is announced with its to-do, as before,
+and not a second time on its own.
+
 ## 1.61.6 — `journal serve`: a browser over the journal
 
 `journal serve [--port=<n>] [--open]` starts a local, read-only web viewer — every

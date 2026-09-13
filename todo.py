@@ -64,7 +64,7 @@ import state
 
 DIR = "todo"
 STRUCK = "struck"
-FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how", "asks", "answer",
+FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how",
           "blocked", "after", "assigned", "reported", "by", "doc", "reopened", "moved_from",
           "priority")
 
@@ -247,7 +247,27 @@ def _all(root: Path, track: str) -> list[dict]:
         meta["path"] = row.get("_p") or row.setdefault("_p", d / name)
         meta["brief"] = row["brief"]
         out.append(meta)
-    return sorted(out, key=lambda m: m["n"])
+    return _with_questions(root, track, sorted(out, key=lambda m: m["n"]))
+
+
+def _with_questions(root: Path, track: str, rows: list[dict]) -> list[dict]:
+    import questions
+    linked: dict[int, list[dict]] = {}
+    for q in questions._all(root, track):
+        if q.get("withdrawn"):
+            continue
+        for ref in q.get("links") or []:
+            kind, _, num = ref.partition(":")
+            if kind == "todo" and num.isdigit():
+                linked.setdefault(int(num), []).append(q)
+    for t in rows:
+        qs = linked.get(t["n"])
+        if not qs:
+            continue
+        waiting = [q for q in qs if not q.get("answer")]
+        t["asks"] = "; ".join(q["text"] for q in (waiting or qs[-1:]))
+        t["answer"] = "" if waiting else qs[-1]["answer"]
+    return rows
 
 
 def _read_index(f: Path) -> dict:
@@ -509,9 +529,16 @@ def answer(root: Path, track: str, n: int, text: str) -> tuple[bool, str]:
         return False, err
     if t.get("done"):
         return False, f"to-do {n} is already done ({t.get('how')})"
-    if not t.get("asks"):
+    import questions
+    waiting = [m for m, q in questions.about(root, f"todo:{n}", track) if questions.is_open(q)]
+    if not waiting:
         return False, f"to-do {n} is not waiting on a question; `journal todos start {n}` picks it up"
-    _update(root, track, n, answer=text)
+    if len(waiting) > 1:
+        return False, (f"to-do {n} waits on {len(waiting)} questions ({', '.join(map(str, waiting))}); "
+                       'answer each with journal questions answer <n> "<the answer>"')
+    ok, msg = questions.answer(root, waiting[0], text, now(), track=track)
+    if not ok:
+        return False, msg
     return True, f"answered to-do {n}: {t['title']}\n  the agent is told at its next stop and picks it up first"
 
 
@@ -533,11 +560,12 @@ def ask(root: Path, track: str, n: int, question: str) -> tuple[bool, str]:
         return False, err
     if t.get("done"):
         return False, f"to-do {n} is already done ({t.get('how')})"
-    # A NEW QUESTION RETIRES THE OLD ANSWER. Left standing, a re-asked row read as
-    # answered: the hold announced a reply nobody had given and `show` printed the new
-    # question above the old answer. Found in workflows on 1.58.0.
-    _update(root, track, n, asks=question, started="", answer="")
-    return True, f"to-do {n} waits on the user: {question}"
+    import questions
+    ok, msg = questions.add(root, question, now(), [f"todo {n}"], track=track)
+    if not ok:
+        return False, msg
+    _update(root, track, n, started="")
+    return True, f"to-do {n} waits on the user: {question}\n  {msg}"
 
 
 def block(root: Path, track: str, n: int, why: str) -> tuple[bool, str]:

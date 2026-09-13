@@ -207,8 +207,8 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal todos start <n>              pick it up as the open work (agent)
     journal todos done <n> "<how>"       close it without starting it
     journal todos strike <n> "<why>"     abandon it, on the record (also: `todo drop`)
-    journal todos ask <n> "<question>"   it needs the user; the list moves on (agent)
-    journal todos answer <n> "<answer>"  answer it; the agent is told at its next stop
+    journal todos ask <n> "<question>"   files a question linked to the to-do; the list moves on (agent)
+    journal todos answer <n> "<answer>"  answer its open question; the agent is told at its next stop
     journal todos auto on|off            on: the agent works through the list itself
     journal todos prune --older-than=<age>|--before=<date> [--force]   done/dropped to-dos older than that — ARCHIVED under todo/<env>/archived/, or actually deleted with --force; an open to-do is never touched
 
@@ -230,6 +230,17 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal reminders add "<instruction>"   repeat it; --until="<condition>" the agent judges itself
     journal reminders done <n> "<why>"   stop repeating it
     journal reminders move <n> <env>     move one to another environment
+
+### Questions
+
+`<ref>` names a resource: `todo 22`, `doc 4.1`, `pin 3`, `rule 2`.
+
+    journal questions                    open questions first, then answered (also: `journal question`)
+    journal questions add "<question>" [--about=<ref>]...   a question on this environment, about any number of resources
+    journal questions show <n>           the question, what it is about, and the answer
+    journal questions answer <n> "<answer>"   answer it; the agent is told at its next stop
+    journal questions link <n> <ref>     link it to one more resource (`unlink` removes one)
+    journal questions withdraw <n> "<why>"   it no longer needs an answer
 
 ### Docs
 
@@ -348,7 +359,7 @@ refused with the reason, because each of those writes where every session reads.
 
     .journal/record.json      rules, the environment registry, session bookkeeping — committed
     .journal/environments/<name>/   one folder per environment — committed
-        pins.json  work.json  reminders.json  todo/<one file per to-do>
+        pins.json  work.json  reminders.json  questions.json  todo/<one file per to-do>
         agents/<id>/work.json       a lent subagent's own ledger
     .journal/tools/<name>/    a tool.md and its script — committed
     .journal/docs/            the docs, one folder each — committed

@@ -210,7 +210,7 @@ check("reminders has no second copy of the listing",
 check("and neither does pins", "entries.rows" in _i.getsource(_p.listing), True)
 check("a reminder is bound to its environment, like a pin, and a rule is not",
       (sorted(_s.TRACKED), "rules" in _s.TRACKED, "rules" in _s.IN_RECORD),
-      (["pins", "reminders", "work"], False, True))
+      (["pins", "questions", "reminders", "work"], False, True))
 
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

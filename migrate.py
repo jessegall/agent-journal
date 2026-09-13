@@ -116,12 +116,41 @@ def _docs_written_as_provenance(root: Path) -> list[str]:
     return said or ["  no doc carries a track from before scope meant scope"]
 
 
+def _todo_questions(root: Path) -> list[str]:
+    import questions
+    import todo
+    said = []
+    envs = root / state.ENVS
+    folders = sorted(p for p in envs.iterdir() if (p / todo.DIR).is_dir()) if envs.is_dir() else []
+    for env in folders:
+        f = state._tracked_file(root, env.name, questions.KEY)
+        for path in sorted((env / todo.DIR).glob("*.md")):
+            meta = todo._read_todo(path)
+            if "asks" not in meta and "answer" not in meta:
+                continue
+            asked, answered = meta.get("asks", "").strip(), meta.get("answer", "").strip()
+            ref = f"todo:{meta['n']}"
+            if asked:
+                items = (state._read(f).get(questions.KEY) if f.is_file() else None) or []
+                if not any(q.get("text") == asked and ref in (q.get("links") or []) for q in items):
+                    items.append({"text": asked, "at": meta.get("at", ""), "source": "migrated",
+                                  "links": [ref], "answer": answered or None, "answered_at": None,
+                                  "told_at": None, "withdrawn": None})
+                    f.parent.mkdir(parents=True, exist_ok=True)
+                    state._write(f, {questions.KEY: items})
+                    said.append(f"  {env.name}: to-do {meta['n']}'s question is question {len(items)}")
+            todo._write(path, meta, meta["body"])
+    return said or ["  no to-do carried a question in its own file"]
+
+
 #: (the version it belongs to, what it does, the function). Ordered oldest first.
 MIGRATIONS: list[tuple[str, str, object]] = [
     ("1.34.0", "pins, work and to-dos move into each environment's own folder",
      _environment_folders),
     ("1.52.0", "a doc written before 1.44.0 carried provenance in `track:`, not a scope",
      _docs_written_as_provenance),
+    ("1.62.0", "a to-do's question and answer move out of its file into questions",
+     _todo_questions),
 ]
 
 

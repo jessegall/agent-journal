@@ -15,6 +15,7 @@ Every group below prints its own commands, and so does every spelling of them:
     pins           a claim that must survive a compaction, on this environment
     rules          a pin that every environment obeys
     reminders      an instruction said again at every stop, until you retire it
+    questions      a question of its own, linked to to-dos, docs, pins or rules
     todos          delayed work, parked with the brief you will need in a week
     docs           what was settled: findings, reports, the reasoning a pin cites
     tools          scripts kept for repeated work
@@ -24,8 +25,8 @@ Every group below prints its own commands, and so does every spelling of them:
     system         verify, version, update, settings, loop
 
 THE PLURAL NOUN IS THE CANONICAL SPELLING (ruling R10). Every singular and legacy one —
-`pin`, `rule`, `todo`, `remember`, `tracks`, bare `strike` and `promote` — still runs, still
-answers `help`, and calls the very same function. None of them is deprecated.
+`pin`, `rule`, `todo`, `remember`, `tracks`, bare `strike` and `promote` — still runs,
+still answers `help`, and calls the very same function. None of them is deprecated.
 """
 from __future__ import annotations
 
@@ -43,6 +44,7 @@ import help
 import settings as settings_mod
 import builtin
 import ideas
+import questions
 import pins
 import reminders
 import tags
@@ -1985,13 +1987,15 @@ class Opts:
     open_browser: bool = False
     title: str = ""
     tool_meta: dict
+    about: list
 
     def __init__(self):
-        # THE TWO THAT MUST NOT BE SHARED. Everything above is immutable and safe as a
+        # THE ONES THAT MUST NOT BE SHARED. Everything above is immutable and safe as a
         # class attribute; a list and a dict are not, and a default_factory is exactly what
         # a dataclass would have generated here.
         self.sessions = []
         self.tool_meta = {}
+        self.about = []
 
 
 class _Flag(NamedTuple):
@@ -2068,6 +2072,7 @@ VALUE_FLAGS: dict[str, _Flag] = {
     "--env": _ENV_NOOP, "--environment": _ENV_NOOP, "--track": _ENV_NOOP,
     "--order": _Flag(dest="order", type=_order_flag),
     "--session": _Flag(dest="sessions", append=True),
+    "--about": _Flag(dest="about", append=True),
     "--abstract": _Flag(dest="abstract"),
     "--until": _Flag(dest="until"),
     "--after": _AFTER, "--needs": _AFTER,
@@ -2356,6 +2361,68 @@ def _v_ideas(verb: str, rest: list[str], opts: Opts) -> int:
     return cmd_ideas(opts.all_of_them, opts.page, opts.order)
 
 
+def cmd_questions(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
+    n = len(questions.open_items(root()))
+    total = len([q for q in questions._all(root()) if not q.get("withdrawn")])
+    sub = f"{n} open, {total - n} answered"
+    return _catalogue(
+        "QUESTIONS", sub,
+        questions.listing(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order),
+        "Nothing has been asked yet.",
+        "This environment's questions, open first. A question can be about any number of "
+        "to-dos, docs, pins and rules; answering one tells the agent at its next stop.",
+        [('journal questions add "<question>" --about="todo 22"', "ask one, linked to what it is about"),
+         ('journal questions answer <n> "<answer>"', "answer it"),
+         ("journal questions show <n>", "read one in full")],
+        noun="questions", page=page, order=order)
+
+
+def _v_questions(verb: str, rest: list[str], opts: Opts) -> int:
+    sub = rest[1] if len(rest) > 1 else ""
+
+    def said(msg: tuple[bool, str]) -> int:
+        fmt.say(msg[1], error=not msg[0])
+        return 0 if msg[0] else 1
+
+    if sub == "add":
+        text, why = _words(rest, 2, "questions add", "the question")
+        return _refuse(why) if why else said(questions.add(root(), text, _now(), opts.about))
+    if sub == "show" or sub.isdigit():
+        at = 2 if sub == "show" else 1
+        n, why = _number(rest, at, "questions show", "question", "journal questions")
+        if why:
+            return _refuse(why)
+        ok, msg = questions.show(root(), n)
+        if ok:
+            print(msg)
+            return 0
+        return _refuse(msg)
+    if sub == "answer":
+        n, why = _number(rest, 2, "questions answer", "question", "journal questions")
+        if why:
+            return _refuse(why)
+        text, why = _words(rest, 3, f"questions answer {n}", "the answer")
+        return _refuse(why) if why else said(questions.answer(root(), n, text, _now()))
+    if sub in ("link", "unlink"):
+        n, why = _number(rest, 2, f"questions {sub}", "question", "journal questions")
+        if why:
+            return _refuse(why)
+        ref, why = _words(rest, 3, f"questions {sub} {n}", "a reference like `todo 22` or `doc 4.1`")
+        if why:
+            return _refuse(why)
+        return said((questions.link if sub == "link" else questions.unlink)(root(), n, ref))
+    if sub in ("withdraw", "strike"):
+        n, why = _number(rest, 2, "questions withdraw", "question", "journal questions")
+        if why:
+            return _refuse(why)
+        text, why = _words(rest, 3, f"questions withdraw {n}", "why it no longer needs an answer")
+        return _refuse(why) if why else said(questions.withdraw(root(), n, text, _now()))
+    if sub in ("", "list"):
+        return cmd_questions(opts.all_of_them, opts.page, opts.order)
+    return _refuse(f"questions has no {sub!r}. It takes add, show, answer, link, unlink, "
+                   "withdraw, list — and a bare `journal questions` reads them.")
+
+
 def _v_pins(verb: str, rest: list[str], opts: Opts) -> int:
     # NOUN+VERB ALIASES (ruling R1: plural canonical) — `add`/`strike`/`promote`/
     # `list`/`show` call the exact same functions the old bare top-level `pin`,
@@ -2500,6 +2567,7 @@ _ALIASES: dict[tuple[str, ...], object] = {
         opts.page, opts.order, opts.quiet, opts.order_by_id, opts.prune_before, opts.force),
     ("reminders", "reminder", "remind"): _v_reminders,
     ("ideas", "idea"): _v_ideas,
+    ("questions", "question"): _v_questions,
     ("start", "end"): _v_start_end,
     ("migrate", "migrations"): _v_migrate,
     ENV_NOUNS: _v_environments,
