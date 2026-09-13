@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.76.0 — the viewer can create, edit, move and close every resource
+
+Every list in the viewer has a New button (to-dos, pins, rules, reminders, work, docs; the
+inbox keeps its message box, and questions are only asked by the agent), and every detail
+has the actions its resource takes, each opening a small form:
+- to-do: Edit (title, brief, priority), Mark done, Waits on, Move, Drop — and Reopen once closed;
+- pin: Edit, Move, Promote to rule, Strike; rule: Edit, Strike;
+- question: Edit, Withdraw (and the answer box as before); inbox message: Edit, Move;
+- reminder: Edit, Move, Retire; work: Add note, End work; doc: Edit (abstract, status), Add part, Move.
+Reminders and work get their own detail panels. A closed or struck resource shows no edit
+actions, because the server refuses them. All of it goes through the same controllers the
+terminal uses.
+
 ## 1.75.1 — `todos auto`, `prune` and `from-commit` go through the controller
 
 The last three `journal todos` commands that still read and wrote the store themselves run
