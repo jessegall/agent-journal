@@ -126,8 +126,7 @@ def unreachable() -> set:
     `test_bind` asserts this is empty, which is the assertion that would have caught it.
     """
     import commands
-    import hook
-    return {v for v in NEVER if v not in hook.JOURNAL_WRITES and not commands.REGISTRY.knows(v)}
+    return {v for v in NEVER if not commands.REGISTRY.knows(v)}
 
 
 def granted(root: Path, stem: str | None) -> list[str]:

@@ -34,7 +34,6 @@ import contextlib as _contextlib
 import os
 import sys
 from pathlib import Path
-from typing import NamedTuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -92,14 +91,12 @@ tools = _Lazy("tools")
 context = _Lazy("context")
 migrate = _Lazy("migrate")
 update = _Lazy("update")
-verify = _Lazy("verify")
 
 
 
 import app
-from app import BRIEF_REFUSED, CATALOGUE_PAGE, PAGE, project, root
-from app import brief as _brief, catalogue as _catalogue, doc_where as _doc_where, now as _now
-from app import refuse as _refuse, stem as _stem, where as _where
+from app import project, root
+from app import refuse as _refuse, stem as _stem
 
 app.start(Path(__file__))
 _ROOT, _WT_NOTE = app.ROOT, app.WORKTREE_NOTE
@@ -269,200 +266,6 @@ def cmd_status() -> int:
 
 
 
-
-
-
-
-
-
-
-#: A LISTING SHOWN BY DEFAULT COSTS CONTEXT EVERY TIME; a search was asked for. So the
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def cmd_serve(port: int | None, open_browser: bool) -> int:
-    """Start the local web viewer: a read-only browser over this journal.
-
-    A THIN WRAPPER, DELIBERATELY. `serve.py` knows how to bind a socket and answer JSON;
-    this only supplies the two paths every command already has (`root()`, `project()`)
-    and turns the module's own refusal (a busy port raises `SystemExit`) into this
-    command's exit code, the same as every other verb here.
-    """
-    import serve
-    try:
-        serve.run(root(), project(), port=port or serve.DEFAULT_PORT, open_browser=open_browser)
-    except SystemExit as e:
-        return e.code if isinstance(e.code, int) else 1
-    return 0
-
-
-
-
-
-
-def cmd_loop(args: list[str]) -> int:
-    import state as _st
-    stem = _stem()
-    if not stem:
-        fmt.say("`journal loop` is the session's: run it from inside one", error=True)
-        return 1
-    if args and args[0] == "set":
-        _st.put(root(), "loop_set", True, stem=stem)
-        fmt.say("noted: this session has a loop running; the stop queue will not ask for one")
-        return 0
-    if args and args[0] in ("unset", "off"):
-        _st.put(root(), "loop_set", False, stem=stem)
-        fmt.say("noted: no loop; with auto on, the next stop asks for one")
-        return 0
-    known = bool(_st.get(root(), "loop_set", False, stem=stem))
-    conf, _ = settings_mod.load(root())
-    fmt.say(("a loop is known to be running in this session" if known else "no loop is known in this session")
-          + f" — with auto on, one is asked for: the `loop` skill with `{conf['auto_loop_minutes']}m journal next`")
-    return 0
-
-
-
-
-def cmd_cleanup(every: bool) -> int:
-    import cleanup
-    conf, _ = settings_mod.load(root())
-    fmt.say(cleanup.report(root(), tracks.current(root(), _stem()), every,
-                           conf["session_stale_hours"]))
-    return 0
-
-
-def cmd_cleanup_read() -> int:
-    """The half no check can do: every rule and pin, in full, to be judged by a reader."""
-    import cleanup
-    fmt.say(cleanup.reading(root(), tracks.current(root(), _stem()), _now()))
-    return 0
-
-
-
-
-
-
-
-
-def _set_enabled(on: bool) -> int:
-    _state.set_hooks_enabled(root(), on)
-    fmt.say("hooks ENABLED: every hold, gate and reminder is back in force."
-            if on else
-            "hooks DISABLED: nothing is held, gated, filed or reminded until "
-            "`journal enable` — only run this because the user asked for it, by name.")
-    return 0
-
-
-def cmd_enable() -> int:
-    """`journal enable` — turn every hook this package wires back on. The undo for
-    `journal disable`; see its docstring for what "off" means and who may say so."""
-    return _set_enabled(True)
-
-
-def cmd_disable() -> int:
-    """`journal disable` — the kill switch for every hook this package wires.
-
-    ONLY THE USER TYPES THIS. It makes every hook event inert — no hold, no gate, no
-    context, nothing filed — silently, and that is exactly the shape of thing an agent
-    must never reach for on its own to get past a hold it does not like. An agent
-    reading this: run `disable` ONLY when the user has explicitly asked for it, by
-    name, in the conversation — never to route around a hold, a gate or a refusal.
-
-    The CLI itself is never gated by this switch, on or off — it is the hook that goes
-    quiet, not the commands you type; `journal enable` is exactly as unblocked while
-    disabled as everything else, which is what makes turning it back on always possible.
-    """
-    return _set_enabled(False)
-
-
-def cmd_settings() -> int:
-    """Every setting, what it is, and — the half this used to promise and not print — the
-    order the stop queue runs in.
-
-    THE COLUMNS ARE MEASURED, NOT GUESSED. They were padded to a hardcoded 24 and 22, and
-    `one_session_per_environment` is 27 characters, so that one row shoved its value column
-    three places right and the table stopped being a table. Nothing here knows how long the
-    longest key is except the keys.
-    """
-    # THE REGISTRY IS FILLED BY hook.py's DECORATORS, so `nudges` alone answers with an
-    # empty list — which is how this printed a heading and no rows the first time it was
-    # written. Imported here rather than at module scope: the CLI's start-up time is a
-    # measured thing, and one command needs this.
-    import nudges
-    import hook  # noqa: F401 — registers the subjects
-    conf, problems = settings_mod.load(root())
-    f = root() / settings_mod.PATH
-    changed = [k for k in settings_mod.DEFAULTS if conf[k] != settings_mod.DEFAULTS[k]]
-    # THE ORDER IS A SETTING WITH NO ROW OF ITS OWN. `stop_priority` prints as `{}` like any
-    # other key, while settings.py has promised since it was written that "`journal
-    # settings` shows the order in force". A setting whose effect cannot be seen is the
-    # failure this module was built to report, so the queue is a section of its own.
-    fmt.say(fmt.Out(
-        title="SETTINGS",
-        sub=str(f) if f.is_file() else "no file, every default in force",
-        items=tuple(
-            fmt.Item(title=("* " if k in changed else "  ") + k, text=str(conf[k]),
-                     meta=f"default {d}" if k in changed else "")
-            for k, d in settings_mod.DEFAULTS.items()
-        ) + (
-            fmt.Item(text="* set in settings.json"),
-        ) * bool(changed) + (
-            fmt.Out(title="THE STOP QUEUE, IN THE ORDER IT RUNS",
-                    items=tuple(fmt.Item(title=name, text=str(n))
-                                for name, n in nudges.priorities(conf))),
-        ),
-        footer='One subject is raised per stop, lowest number first. `stop_priority` moves '
-               'one: {"work": 1} puts open work at the head. `silenced` turns one off by '
-               "name, and is the way to quiet a single subject.",
-    ))
-    for p in problems:
-        fmt.say(p, error=True)
-    return 1 if problems else 0
-
-
-#: ─────────────────────────── one refusal, for every missing argument ────────────────────
-#:
-#: THIRTY HAND-WRITTEN REFUSALS SAYING THE SAME TWO THINGS. Every noun's verbs checked their
-#: own arguments and wrote their own complaint — "pins strike wants a pin NUMBER, got 'x'.
-#: `journal pins` numbers them." — thirty times, with ten separate spellings of "numbers
-#: them" that had already drifted in capitalisation, punctuation and whether the offending
-#: word was quoted back. A refusal is the thing a reader meets at their worst moment; it is
-#: the last text in this package that should be improvised per site.
-#:
-#: THE TWO SHAPES ARE ALL THERE ARE. A verb wants WORDS (a claim, a reason, a title), or it
-#: wants a NUMBER that indexes a numbered store. Both refusals name the verb, show what was
-#: typed, and name the command that lists what is available.
-
-
-def _words(rest: list, at: int, spelling: str, what: str) -> tuple[str, str]:
-    """(the words from `at` onward, "") — or ("", the refusal that says what is missing)."""
-    said = " ".join(rest[at:]).strip()
-    if said:
-        return said, ""
-    return "", f"{spelling} wants {what}"
-
-
-def _number(rest: list, at: int, spelling: str, noun: str, lists: str) -> tuple[int, str]:
-    """(the number at `at`, "") — or (0, the refusal). One spelling of "that is not a number"."""
-    if len(rest) <= at:
-        return 0, f"{spelling} wants a {noun} number, e.g. `{spelling} 3`; `{lists}` numbers them"
-    try:
-        return int(rest[at]), ""
-    except ValueError:
-        return 0, (f"{spelling} wants a {noun} NUMBER, got {rest[at]!r}; `{lists}` numbers them")
-
-
 def _retired(verb: str) -> int | None:
     """A command that was removed says what replaced it, or None if it is simply unknown.
 
@@ -482,211 +285,10 @@ def _retired(verb: str) -> int | None:
     return _refuse("\n\n".join((fmt.wrap(why), fmt.commands(commands), fmt.wrap(then))))
 
 
-class Opts:
-    """Everywhere a flag's value lands. One instance per invocation, built by the loop
-    below from FLAGS/BARE_FLAGS, and read by whichever verb handler needs a field —
-    most read two or three of these, none read them all.
-
-    NOT A DATACLASS, FOR ONE MEASURED REASON: `import dataclasses` costs 5.9ms and pulls
-    `inspect` (4.8ms) in behind it, on EVERY invocation of a CLI whose whole start is
-    ~110ms — for a decorator whose only work here is writing an `__init__` that assigns
-    thirty defaults. The class body below still reads as the declaration it was; the
-    defaults are class attributes, which is what a dataclass would have produced.
-    """
-    all_of_them: bool = False
-    page: int = 1
-    acting: str = ""
-    from_src: str | None = None
-    serve_port: int | None = None
-    open_browser: bool = False
-
-
-
-class _Flag(NamedTuple):
-    """One row of the flag table. `dest` is the Opts field it fills; None means the
-    option is recognised and consumed here but read elsewhere (`--env=`, `--from=`).
-    `type` converts a `--x=value`'s text — raising ValueError with the refusal to print
-    if it cannot. `set` is what a bare flag (no value at all) writes into its dest.
-    """
-    dest: str | None = None
-    type: object = str
-    set: object = True
-
-
-def _int_flag(spelling: str):
-    def conv(v: str) -> int:
-        try:
-            return int(v)
-        except ValueError:
-            raise ValueError(f"{spelling} wants a number, got {v!r}")
-    return conv
-
-
-def _page_flag(v: str) -> int:
-    try:
-        return int(v)
-    except ValueError:
-        raise ValueError("--page wants a number")
-
-
-# `--x=value` FLAGS. Aliases share one `_Flag` instance, so two spellings cannot drift.
-_ENV_NOOP = _Flag(dest=None)      # applied and refused in run(), before any command reads the record
-
-VALUE_FLAGS: dict[str, _Flag] = {
-    "--env": _ENV_NOOP, "--environment": _ENV_NOOP, "--track": _ENV_NOOP,
-    "--as": _Flag(dest="acting"),
-    "--from": _Flag(dest="from_src"),
-    "--page": _Flag(dest="page", type=_page_flag),
-    "--port": _Flag(dest="serve_port", type=_int_flag("--port")),
-}
-
-# BARE FLAGS: no value, presence is the value. `set` is what lands in `dest`; every
-# flag not listed writes `True`, so only the two exceptions (`--strike`, `--none`) name
-# theirs.
-BARE_FLAGS: dict[str, _Flag] = {
-    "--none": _Flag(dest="after", set="--none"),    # `todos after <n> --none` clears the prerequisites
-    "--all": _Flag(dest="all_of_them"),
-    "--open": _Flag(dest="open_browser"),
-}
-
-
-# ─────────────────────────────────── VERB HANDLERS ────────────────────────────────────
-# Every handler takes (verb, rest, opts) and returns the exit code — the shape COMMANDS
-# below dispatches to. `rest[0] is verb`; a handler slices `rest[1:]`, `rest[2:]` etc.
-# for its own sub-words, exactly as the code it replaces did. Nothing here changes what
-# any command does — only how main() finds it.
-
-def cmd_cleanup_keep(mark: str) -> int:
-    """Say a countable finding was read and kept, so it stops being reported until it grows.
-
-    NOT EVERY FINDING IS A MISTAKE. Most of what `cleanup` lists has a fix beside it — strike
-    the claim, remove the environment — and running the fix is how it stops being listed. The
-    rows the retired auto-close closed are different: how a row closed is a fact about the
-    past, so a reader who audits all of them and finds nothing to reopen has nothing to DO,
-    and the line would say the same number forever.
-
-    ONLY A FINDING THAT CARRIES A `mark` IS KEEPABLE, which is what keeps this from becoming a
-    mute button for the tier: a mistake is fixed, never kept.
-    """
-    import cleanup as cleanup_mod
-    here = tracks.current(root(), _stem())
-    found = [c for c in cleanup_mod.candidates(root(), here) if c.get("mark")]
-    hit = next((c for c in found if c["mark"] == mark), None)
-    if hit:
-        fmt.say(cleanup_mod.keep(root(), here, mark, _now(),
-                                 int(str(hit["text"]).split()[0])))
-        return 0
-    names = ", ".join(f"`{c['mark']}`" for c in found)
-    return _refuse(
-        (f"nothing is reported as {mark!r} here. " if mark else "keep which finding? ")
-        + (f"What can be kept: {names}" if names
-           else "Nothing countable is being reported — `journal cleanup` shows what is."))
-
-
-def _v_cleanup(verb: str, rest: list[str], opts: Opts) -> int:
-    # THE NOUN OWNS ITS VERBS (ruling R10/R11): the reading pass is an explicit `read`,
-    # never a bare `journal cleanup` that silently means something else.
-    if len(rest) > 1 and rest[1] in ("read", "reading"):
-        return cmd_cleanup_read()
-    if len(rest) > 1 and rest[1] in ("keep", "kept"):
-        return cmd_cleanup_keep(rest[2] if len(rest) > 2 else "")
-    if len(rest) > 1:
-        return _refuse(f"cleanup takes no argument (got {rest[1]!r}) — `journal cleanup` for what a "
-                       "check can see, `journal cleanup read` for the half only reading finds, "
-                       "`journal cleanup keep <finding>` to mark a countable one read")
-    return cmd_cleanup(opts.all_of_them)
-
-
-
-
-
-
-
-
-
-
-
-
 def _dispatch(argv: list[str]) -> int:
     parsed, why = commands.REGISTRY.parse(argv)
     return parsed.command.run(parsed) if parsed else _refuse(why)
 
-
-
-
-
-
-def _v_upgrade(verb: str, rest: list[str], opts: Opts) -> int:
-    ok, msg = update.upgrade(root(), opts.from_src)
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def _v_update(verb: str, rest: list[str], opts: Opts) -> int:
-    # `journal update` upgrades the journal; a note on the work is `journal work
-    # update`. `journal upgrade` never carries this ambiguity, so extra words after it
-    # are simply ignored — only the shorter, overloaded spelling is checked.
-    if len(rest) > 1:
-        return _refuse('journal update upgrades the journal. Progress on the open work is:\n'
-              '  journal work update "<what moved>"')
-    return _v_upgrade(verb, rest, opts)
-
-
-
-
-def _v_migrate(verb: str, rest: list[str], opts: Opts) -> int:
-    if len(rest) > 1 and rest[1] in ("run", "now"):
-        out = migrate.run(root()) or ["Nothing pending."]
-        fmt.say("\n".join(out))
-        return 0
-    fmt.say(migrate.report(root()))
-    return 0
-
-
-def _v_verify(verb: str, rest: list[str], opts: Opts) -> int:
-    body, ok = verify.render(root())
-    fmt.say(body)
-    return 0 if ok else 1
-
-
-
-
-def _v_version(verb: str, rest: list[str], opts: Opts) -> int:
-    have = update.current(root())
-    got = update.check(root(), force=True)
-    fmt.say(fmt.title(f"AGENT-JOURNAL {have}"))
-    if got.get("version") and update.newer(got["version"], have):
-        fmt.say(fmt.wrap(f"{got['version']} is available" + (f": {got['headline']}" if got.get("headline") else "")))
-        fmt.say(fmt.commands([("journal upgrade", "pull it, tests first, and print what changed")]))
-    elif got.get("version"):
-        fmt.say(fmt.wrap("This is the latest."))
-    else:
-        fmt.say(fmt.wrap("Could not reach the repository to check for a newer one."))
-    return 0
-
-
-# ─────────────────────────────────── COMMAND TABLE ────────────────────────────────────
-# Verb (and every spelling of it) -> the function that handles it. A group of aliases is
-# ONE key — a tuple of names — not one branch per spelling. `update` and `upgrade` stay separate entries
-# because they are NOT the same behaviour (see `_v_update`), the one place a verb here
-# earns its own row instead of joining another's.
-_ALIASES: dict[tuple[str, ...], object] = {
-    ("cleanup", "tidy"): _v_cleanup,
-    ("migrate", "migrations"): _v_migrate,
-}
-
-COMMANDS: dict[str, object] = {name: fn for names, fn in _ALIASES.items() for name in names}
-COMMANDS.update({
-    "loop": lambda verb, rest, opts: cmd_loop(rest[1:]),
-    "update": _v_update,
-    "upgrade": _v_upgrade,
-    "verify": _v_verify,
-    "settings": lambda verb, rest, opts: cmd_settings(),
-    "serve": lambda verb, rest, opts: cmd_serve(opts.serve_port, opts.open_browser),
-    "enable": lambda verb, rest, opts: cmd_enable(),
-    "disable": lambda verb, rest, opts: cmd_disable(),
-    "version": _v_version,
-})
 
 
 def main(argv: list[str]) -> int:
@@ -716,53 +318,17 @@ def main(argv: list[str]) -> int:
         argv, first = ["conversation", *argv], "conversation"
     if commands.REGISTRY.knows(first):
         return _dispatch(argv)
-    # EVERYTHING AFTER A BARE `--` IS PAYLOAD. The loop below matches options by prefix, so
-    # a title, a claim, a reminder or a strike reason that opens with `--` was parsed as a
-    # flag and never reached the command — and `--env=` is a KNOWN one, so
-    # `todos add "--env= is validated twice"` was refused with a message about environments.
-    # Refusing an unknown option is right and stays; what was missing is the way every other
-    # CLI lets you say the next word is not an option.
-    if "--" in argv:
-        cut = argv.index("--")
-        argv, payload = argv[:cut], argv[cut + 1:]
-    else:
-        payload = []
-    # ONE LOOP OVER THE FLAG TABLE. `--x=value` and bare `--x` are the same shape with
-    # different fields (VALUE_FLAGS / BARE_FLAGS), looked up by the token itself — never
-    # a chain of `elif a == ...`. Adding a flag means adding a row, never a branch.
-    opts = Opts()
-    rest: list[str] = []
-    for a in argv:
-        if a.startswith("--") and "=" in a:
-            name, val = a.split("=", 1)
-            spec = VALUE_FLAGS.get(name)
-            if spec is None:
-                return _refuse(f"unknown option {a!r}. `journal help` lists the commands and their options.")
-            if spec.dest is not None:
-                try:
-                    converted = spec.type(val)
-                except ValueError as e:
-                    return _refuse(str(e))
-                setattr(opts, spec.dest, converted)
-        elif a.startswith("--") and len(a) > 2:
-            spec = BARE_FLAGS.get(a)
-            if spec is None:
-                return _refuse(f"unknown option {a!r}. `journal help` lists the commands and their options.")
-            setattr(opts, spec.dest, spec.set)
-        else:
-            rest.append(a)
-    rest += payload
-    verb = rest[0] if rest else ""
-    handler = COMMANDS.get(verb)
-    if handler is not None:
-        return handler(verb, rest, opts)
-    if verb:
-        gone = _retired(verb)
+    if first:
+        gone = _retired(first)
         if gone is not None:
             return gone
-        fmt.say(f"No such command: {verb}\n", error=True)
+        fmt.say(f"No such command: {first}\n", error=True)
         fmt.say(__doc__, error=True)
         return 1
+    unknown = next((a for a in argv if a.startswith("--") and len(a) > 2
+                    and a[2:].partition("=")[0] not in commands.REGISTRY.shared), None)
+    if unknown:
+        return _refuse(f"unknown option {unknown!r}. `journal help` lists the commands and their options.")
     return cmd_status()
 
 

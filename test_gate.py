@@ -313,6 +313,13 @@ check("reading the transcript is never a write",
       [_classified(c) for c in ("conversation", "conversation --back=1", "user", "search pins", "search x --all",
                                 "carry", "carry --fresh")],
       [None, None, None, None, None, None, None])
+check("the system verbs that change the record are writes under every spelling",
+      [_classified(c) for c in ("cleanup", "tidy", "cleanup read", "cleanup keep x", "migrate", "migrations run",
+                                "loop set", "update", "upgrade --from=x")],
+      ["cleanup", "tidy", "cleanup", "cleanup", "migrate", "migrations", "loop", "update", "upgrade"])
+check("the system verbs that only look are not writes",
+      [_classified(c) for c in ("verify", "version", "settings", "serve --port=1", "enable", "disable")],
+      [None, None, None, None, None, None])
 check("every tools spelling is classified the same way",
       [_classified(c) for c in ("tools", "tools mover", "tools show add", 'tools add m "t" --summary=s',
                                 "tools set m entry run.py", 'tools remove m "why"', "tools index", "tools run m x")],
