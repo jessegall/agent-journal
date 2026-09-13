@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.97.0 — the agent is told when a cleanup report is ready
+
+Once an hour at most per session, the hook runs the cleanup checks itself and tells the agent
+in one line when the record has entries with evidence against them: how many, of what kind,
+and the commands to read them (`journal cleanup`, then `journal cleanup read` for what only
+reading finds). It says so again only when the findings change, and it mentions a due
+read-through of the rules and pins when nothing else is found. It is never a hold. The
+interval is `cleanup_every_minutes` (default 60, 0 turns it off); silence it with
+`"silenced": ["cleanup_report"]`.
+
 ## 1.96.0 — a message can carry files
 
 The viewer's message box has Attach files: each file is copied into the environment at once,
