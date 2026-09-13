@@ -1030,7 +1030,8 @@ const EnvHome = {
       ];
     });
     const about = (q) => q.links.map((l) => l.label).join(", ");
-    return { work, groups, finished, waiting, asking, stats, about, questionKind };
+    const view = reactive({ finished: false });
+    return { work, groups, finished, view, waiting, asking, stats, about, questionKind };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -1083,8 +1084,19 @@ const EnvHome = {
       </section>
 
       <section>
-        <div class=home-head><h2>To-dos</h2><a class=more :href="'#/env/' + env + '/todos'">All to-dos</a></div>
-        <div class=block>
+        <div class=home-head><h2>To-dos</h2>
+          <span class=segmented>
+            <button type=button :class="['btn', {on: !view.finished}]" @click="view.finished = false">Open</button>
+            <button type=button :class="['btn', {on: view.finished}]" @click="view.finished = true">Recently finished</button>
+          </span>
+          <a class=more :href="'#/env/' + env + '/todos'">All to-dos</a></div>
+        <div v-if="view.finished" class=block>
+          <a v-for="t in finished" :key="t.n" class="row finishedrow" :href="'#/env/' + env + '/todos/' + t.n">
+            <span class=num>#{{ t.n }}</span><span class=title>{{ t.title }}</span><span class=age>{{ t.done_age }}</span>
+          </a>
+          <p v-if="!finished.length" class=empty>Nothing has been finished yet.</p>
+        </div>
+        <div v-else class=block>
           <p v-if="!groups.length" class=empty>Nothing is waiting on this environment.</p>
           <template v-for="g in groups" :key="g.key">
             <div class=ghead><StatusIcon :kind="g.key"/>{{ g.label }}
@@ -1095,16 +1107,6 @@ const EnvHome = {
               <span class=age>{{ t.age }}</span>
             </a>
           </template>
-        </div>
-      </section>
-
-      <section v-if="finished.length">
-        <div class=home-head><h2>Recently finished</h2><span class=n>{{ finished.length }}</span>
-          <a class=more :href="'#/env/' + env + '/todos'">All to-dos</a></div>
-        <div class=block>
-          <a v-for="t in finished" :key="t.n" class="row finishedrow" :href="'#/env/' + env + '/todos/' + t.n">
-            <span class=num>#{{ t.n }}</span><span class=title>{{ t.title }}</span><span class=age>{{ t.done_age }}</span>
-          </a>
         </div>
       </section>
     </div></div>`,

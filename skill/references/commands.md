@@ -111,13 +111,15 @@ A brief on stdin:
     them state-only like the others. Start from src/View/Widgets/Dropdown.php.
     EOF
 
-**Inbox, for this environment**
+**Messages, for this environment** (`message` and the old `inbox` answer too)
 
     journal messages "<message>"         leave a message for the agent — `journal messages add "<message>"` is the same
     journal messages [--page=N] [--order=asc|desc]   waiting messages first, then processed ones
     journal messages show N              the message, the parts it was split into and what each became, and the questions about it
     journal messages process N --part="<words>" --became=<ref> [--became=<ref>]   one part: the words it quotes, and what it became — todo 22, pin 3, rule 2, reminder 1, question 4, work or noted
     journal messages done N              processed; refused until at least one part is recorded
+    journal messages edit N "<text>"     reword a message that still waits
+    journal messages move N "<env>"      carry a waiting message to another environment
 
 A part must quote the message, and what it became must exist. Nothing is deleted. A stop
 holds while messages wait; the first tool call after a new one mentions it once.
@@ -127,7 +129,8 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal questions add "<question>" [--about=<ref>]...   ask; never halts the session. A ref is todo 22, doc 4.1, pin 3, rule 2 or inbox 5
     journal questions [--all]         open first, then answered; --all adds withdrawn ones
     journal questions show N          the question, what it is about, and the answer
-    journal questions answer N "<answer>"   the user answers; the agent is told at its next stop
+    journal questions answer N "<answer>"   the user answers; answering again adds a new answer, the old one is kept, and the agent is told again
+    journal questions edit N "<question>"   reword it
     journal questions link N <ref>    about one more thing — `questions unlink N <ref>` takes one off
     journal questions withdraw N "<why>"   it no longer needs an answer
 
@@ -154,8 +157,8 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal tools                    the catalogue
     journal tools show <name>        read one; `show` is how a tool NAMED after a verb (add, run, index) is reached
     journal tools run <name> [args]  run its entry point from the project root
-    journal tools add <name> "<title>" --summary="…" --usage="…" --when="…" --entry=<file> [--brief]
-    journal tools set <name> summary|usage|when|entry "<value>"
+    journal tools add <name> "<title>" --summary="…" --usage="…" --when="…" --entry=<file> [--brief]   the title and summary are required
+    journal tools set <name> title|summary|usage|when|entry "<value>"   the title and summary cannot be blanked
     journal tools remove <name> "<why>"   retire it under struck/ — `journal tools strike <name> "<why>"` is the same
     journal tools index              catalogue folders under .journal/tools/ that lack a tool.md
 
@@ -168,12 +171,21 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal switch "<name>" --session=<id> | --all-sessions   move other sessions (a terminal's switch offers these)
     journal switch --back            the environment this session came from
     journal claim "<name>" "<why>"   take one a live session still holds: it is unbound, told at its next stop why and by whom, and can claim it back. Nothing of the environment is deleted
-    journal environments remove "<name>" [--yes] [--purge]   take one off the list: bare it says what it holds, --yes archives it whole under .journal/removed/, --purge deletes it; never the start environment, never one a live session is on, and docs stay
+    journal environments remove "<name>" [--yes]   take one off the list: bare it says what it holds, --yes deletes it and what it holds (the record keeps a one-line note); never the start environment, never one a live session is on, and docs stay
     journal environments show "<name>"   the pickup page: docs to read first, what stands, open work, to-dos, how to begin (bare `journal environments "<name>"` is the same)
     journal prepare "<name>"         create an environment for a piece of work and switch to it (see prepare.md)
   says which model, which gets a worktree, and what happens to the branch.
     journal --env=<name> <command>   any command on a named environment, without switching
     journal loop set                 this session has a loop the hook cannot see; `journal loop` says what is known
+
+**The viewer**
+
+    journal serve [--port=8420]      the web viewer on 127.0.0.1: every resource, with the same actions the commands have, and Search and Settings per environment
+
+Everything the viewer changes goes through the same controllers as these commands, marked as
+coming from the web where a record keeps a source. The API is `/api/env/<env>/<resource>[/<n>][/<action>]`
+(GET lists and shows, POST creates or runs an action, PATCH edits, DELETE retires), and
+`/api/rules`, `/api/docs` and `/api/tools` for what belongs to the project.
 
 **Chains.** A journal command in a chain exempts only itself from the write gate. A line
 whose first non-trivial piece is `journal work start` may write after it; a line that decides

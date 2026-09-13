@@ -500,9 +500,10 @@ wall — and an agent routes around a wall.
     journal messages process <n> --part="<words>" --became=<ref>  one part, and what it became
     journal messages done <n>                                     processed, once its parts say what they became
     journal messages move <n> "<environment>"                     left on the wrong environment: carry it there
+    journal messages edit <n> "<text>"                            reword one that still waits
 
-The user leaves messages instead of interrupting you: instructions, follow-ups,
-corrections, things to remember, new work. It belongs to an environment, like a pin. When a
+The user leaves messages instead of interrupting you — mostly from the journal's web viewer,
+while you work: instructions, follow-ups, corrections, things to remember, new work. It belongs to an environment, like a pin. When a
 stop says the user left messages, process them before anything else — one at a time:
 
 1. **Split it into parts.** A part is the stretch of the message that asks for one thing;
@@ -528,6 +529,7 @@ message mentions it once; that never blocks, so finish the step you are on first
     journal questions                                     open ones first, then answered
     journal questions show <n>                            the question, what it is about, the answer
     journal questions link <n> <ref>                      about one more thing; `unlink` takes one off
+    journal questions edit <n> "<question>"               reword it; if it was answered, the user is asked again
 
 **You may always ask the user.** When something only they can answer comes up, ask — through
 the journal. `questions add` never halts the session: file it, say in your reply that you
@@ -540,6 +542,26 @@ auto on it is refused; the journal's question is always available.
 you doubt or a doc part that seems wrong, not only about a to-do. A to-do with an open
 question waits on the user, and `todos ask <n>` is the same as `questions add --about="todo
 <n>"`.
+
+**An answer can change.** The user answers from the viewer or the terminal, and may answer
+again: the new answer replaces the old one, which is kept, and the next stop tells you again,
+marked "(a new answer)". Act on the latest answer, not the one you remember.
+
+## The viewer: what the user does in the browser
+
+    journal serve [--port=8420]     the web viewer, on this machine only
+
+The user reads and changes the journal in a browser while you work: they leave messages,
+answer questions, add and edit to-dos, pins, rules, reminders and docs, change a to-do's
+priority or what it waits on, retire what is stale, switch auto mode on an environment's
+Settings page, and remove old environments. Every one of those goes through the same
+controllers the terminal commands use, so it lands in the same record and obeys the same
+refusals (a closed to-do cannot be edited, a struck pin cannot change).
+
+**So the record can change under you.** A to-do you are working may have been re-prioritised
+or rewritten, and a pin you rely on may have been struck. Before acting on something you read
+a while ago, read it again. What the user did in the browser reaches you as a message, an
+answer, or a changed record, never as chat.
 
 ## What belongs to an environment lives in its folder
 
@@ -618,13 +640,15 @@ but if it is a design or a report, file it as a doc so it is handed on and found
 A script you wrote for a job that will come again — move a class with every reference,
 list uncovered methods, run a fixer on one directory — is a tool. Put it under
 `.journal/tools/<name>/`, or leave it where it is and point `--entry` at it, and
-catalogue it with its summary and usage. Every session is handed the COUNT of them beside
+catalogue it with its title, summary and usage — a tool without a title or a summary is
+refused, and neither can be blanked later, because they are what the catalogue hands on. Every session is handed the COUNT of them beside
 `journal tools`, which is the catalogue, so the next agent runs yours instead of writing it
 again. Before writing a script, read the catalogue. Running a tool is a write: declare the work first.
 
 ## Look before you answer
 
     journal search <term> [--all]     this environment's whole transcript, every session, 25 hits a page newest first
+                                      (the viewer's Search page also finds the journal's to-dos, pins, rules, docs and messages)
 
 Search when any of these is about to leave your mouth: "I think we decided…", "as
 discussed…", "earlier you said…"; the name of a command, flag, option or file the user
