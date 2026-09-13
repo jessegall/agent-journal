@@ -74,6 +74,12 @@ MESSAGES = {
               "rule and every pin in front of you with the questions to ask of each — {last}.",
     "all_hint": "  journal cleanup --all   the pins of every environment, not just this one",
     "kept": "{n} {mark} finding(s) are marked read; this returns if the count grows",
+    "report_ready": "journal: a cleanup report is ready — {n} entr(ies) in the record have evidence against them "
+                    "({kinds:, }). `.journal/journal.py cleanup` shows each with the command that retires it; "
+                    "`.journal/journal.py cleanup read` puts every rule and pin in front of you for what only reading "
+                    "finds ({read}).",
+    "report_owed": "journal: nothing in the record has evidence a check can find, but the rules and pins are due a "
+                   "read-through ({read}): `.journal/journal.py cleanup read`.",
     "never_owed": "never done on this environment",
     "never_young": "never done here, and not owed yet — nothing standing is {days} days old",
     "today": "last done today",
@@ -321,6 +327,20 @@ def _environments(root: Path, here: str, stale_hours: float = 24.0) -> list[dict
                     "why": say("env_why"), "age": "",
                     "fix": say("fix_env", name=name)})
     return out
+
+
+def report_due(root: Path, here: str, said: list, stale_hours: float = 24.0) -> tuple[str, list]:
+    """The background report's line and the key it was said for, or ("", said) when it would repeat itself."""
+    found = candidates(root, here, stale_hours=stale_hours)
+    if found:
+        key = sorted(f"{f['kind']}{f['n']}{f['text'][:20]}" for f in found)
+        if key == said:
+            return "", said
+        return say("report_ready", n=len(found), kinds=sorted({f["kind"] for f in found}),
+                   read=last_read(root, here)), key
+    if owed(root, here) and said != ["owed"]:
+        return say("report_owed", read=last_read(root, here)), ["owed"]
+    return "", said
 
 
 def candidates(root: Path, here: str, every: bool = False, stale_hours: float = 24.0) -> list[dict]:

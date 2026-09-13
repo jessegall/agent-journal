@@ -1822,6 +1822,27 @@ def _searched(payload: dict) -> str:
     return cmd if any(piece and piece[0] in _SEARCH_CMDS for piece in _pieces(cmd)) else ""
 
 
+def _cleanup_report(conf: dict, ctx: Ctx) -> str | None:
+    """At most once every `cleanup_every_minutes` per session: run the cleanup checks and say what is new."""
+    every = conf.get("cleanup_every_minutes") or 0
+    if not every or "cleanup_report" in conf["silenced"] or ctx is None:
+        return None
+    now = time.time()
+    if now - float(state.get(ROOT, "cleanup_checked", 0, stem=ctx.stem) or 0) < every * 60:
+        return None
+    state.put(ROOT, "cleanup_checked", now, stem=ctx.stem)
+    import cleanup as cleanup_mod
+    said = state.get(ROOT, "cleanup_reported", [], stem=ctx.stem) or []
+    try:
+        text, key = cleanup_mod.report_due(ROOT, tracks.current(ROOT, ctx.stem), said, conf["session_stale_hours"])
+    except Exception:
+        return None
+    if not text:
+        return None
+    state.put(ROOT, "cleanup_reported", key, stem=ctx.stem)
+    return text
+
+
 def _search_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
     """A search whose term names an attached file: point at the doc that holds it, once per file."""
     if "search_hint" in conf["silenced"]:
@@ -2134,7 +2155,7 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     hint = _tool_shaped(conf, payload, ctx)
     if hint:
         return _context("PostToolUse", hint)
-    hint = _search_hint(conf, payload, ctx) or _attach_hint(conf, payload, ctx)
+    hint = _search_hint(conf, payload, ctx) or _attach_hint(conf, payload, ctx) or _cleanup_report(conf, ctx)
     if hint:
         return _context("PostToolUse", hint)
     stalled = _stall(conf, ctx)

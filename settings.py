@@ -157,6 +157,8 @@ DEFAULTS = {
     # After this many hours without a hook event a bound session counts as gone — a
     # terminal closed without a SessionEnd — and its environment is free again.
     "session_stale_hours": 24.0,
+    # How often, at most, a session runs the mechanical cleanup pass itself and says what it found. 0 turns it off.
+    "cleanup_every_minutes": 60,
 
     # THE ORDER OF THE STOP QUEUE, by subject: lower runs first. {"work": 1} puts open work
     # at the head. The defaults are NOT restated here — a list in a comment beside a

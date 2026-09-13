@@ -288,5 +288,17 @@ check("nothing was rewritten to make it quiet — the rows still say how they cl
       sorted((t.get("how") or "") for t in todo_mod._all(r11, "default")),
       [cleanup.AUTO_CLOSED, cleanup.AUTO_CLOSED])
 
+# ------------------------------------------------------------- the background report
+r12b = fresh()
+pins.add(r12b, "gone.py holds the parser", AT, 200)
+text, key = cleanup.report_due(r12b, "default", [])
+check("a report is said when the record has evidence against it, naming the commands",
+      ("1 entr(ies)" in text, "cleanup read" in text, "journal.py cleanup" in text, bool(key)), (True, True, True, True))
+check("and not again for the same findings", cleanup.report_due(r12b, "default", key), ("", key))
+pins.add(r12b, "also.py holds the lexer", AT, 200)
+text2, key2 = cleanup.report_due(r12b, "default", key)
+check("a new finding says it again", ("2 entr(ies)" in text2, key2 != key), (True, True))
+check("a clean, young record says nothing", cleanup.report_due(fresh(), "default", []), ("", []))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
