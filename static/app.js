@@ -39,26 +39,37 @@ function parseHash() {
 // ─────────────────────────────────────────────────────────────── fetching
 // `urlFn` returning a falsy value means "nothing to fetch yet". Data already shown stays
 // on screen while the next request is in flight, so opening another item does not flash.
-function useFetch(urlFn) {
+// every list and item on screen refreshes itself while the tab is visible
+const POLL_MS = 5000;
+
+function useFetch(urlFn, { poll = true } = {}) {
   const state = reactive({ data: null, loading: true, error: null, tick: 0 });
   state.reload = () => { state.tick += 1; };
+  let busy = false;
   const stop = watchEffect(() => {
     const url = urlFn();
     void state.tick;
     if (!url) return;
     // only writes here: reading state.data would make every response trigger the next fetch
     state.loading = true;
-    state.error = null;
+    busy = true;
     fetch(url)
       .then((r) => r.json().then((body) => ({ ok: r.ok, body })))
       .then(({ ok, body }) => {
         if (!ok) throw new Error(body.error || "request failed");
         state.data = body;
+        state.error = null;
       })
       .catch((e) => { state.error = e.message; })
-      .finally(() => { state.loading = false; });
+      .finally(() => { state.loading = false; busy = false; });
   });
-  onUnmounted(stop);
+  // self-healing: a poll that throws or fails is simply tried again on the next tick
+  const timer = poll ? setInterval(() => {
+    try {
+      if (!busy && document.visibilityState === "visible") state.reload();
+    } catch (e) { /* the next tick tries again */ }
+  }, POLL_MS) : null;
+  onUnmounted(() => { stop(); if (timer) clearInterval(timer); });
   return state;
 }
 
@@ -1253,7 +1264,7 @@ const Search = {
   setup(props) {
     const form = reactive({ text: "", all: false, term: "", page: 1 });
     const s = useFetch(() => props.env && form.term &&
-      `/api/env/${props.env}/search?term=${encodeURIComponent(form.term)}&all=${form.all ? 1 : ""}&page=${form.page}`);
+      `/api/env/${props.env}/search?term=${encodeURIComponent(form.term)}&all=${form.all ? 1 : ""}&page=${form.page}`, { poll: false });
     const go = () => { form.term = form.text.trim(); form.page = 1; };
     return { form, s, go, kinds: SEARCH_KINDS, markHits };
   },
@@ -1380,13 +1391,21 @@ const App = {
   setup() {
     const route = reactive(parseHash());
     const ov = reactive({ data: null });
-    const loadOverview = () => fetch("/api/overview").then((r) => r.json()).then((d) => { ov.data = d; }).catch(() => {});
+    let version = "";
+    const loadOverview = () => fetch("/api/overview").then((r) => r.json()).then((d) => {
+      // a newer journal is being served: reload the whole page so the new viewer renders
+      if (version && d.version && d.version !== version) { location.reload(); return; }
+      version = version || d.version || "";
+      ov.data = d;
+    }).catch(() => {});
+    const overviewTimer = setInterval(() => { if (document.visibilityState === "visible") loadOverview(); }, POLL_MS);
     const onHash = () => { Object.assign(route, parseHash()); loadOverview(); };
     window.addEventListener("hashchange", onHash);
     window.addEventListener("journal:changed", loadOverview);
     onUnmounted(() => {
       window.removeEventListener("hashchange", onHash);
       window.removeEventListener("journal:changed", loadOverview);
+      clearInterval(overviewTimer);
     });
     loadOverview();
     const envName = computed(() => {

@@ -83,6 +83,7 @@ def overview(root: Path) -> dict:
         "rules": len(pins.live(root, pins.RULES)),
         "docs": len(docs(root)),
         "project": root.resolve().parent.name,
+        "version": __import__("update").current(root),
     }
 
 
