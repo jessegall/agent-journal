@@ -1288,7 +1288,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 #: is the documented twin of `journal switch "x"` (ruling R11) and presents `environments`
 #: as its verb, so without it half of every lifecycle command was ungated.
 JOURNAL_WRITES = frozenset({"update", "switch",
-                            "tools", "loop", "prepare", "migrate", "claim", "grant", "grants",
+                            "loop", "prepare", "migrate", "claim", "grant", "grants",
                             "environments", "environment", "envs", "env", "tracks", "track",
                             "cleanup", "worktree", "upgrade"})
 _SHELL_BREAKS = frozenset({"&&", "||", "|", ";"})
@@ -1323,37 +1323,9 @@ def _journal_write(payload: dict) -> str | None:
             if cmd is not None and cmd.writes:
                 return verb
             continue
-        if verb not in JOURNAL_WRITES:
-            continue
-        i = j - 1
-        nxt = toks[i + 2] if i + 2 < len(toks) else ""
-        # A NOUN IS A READ UNTIL A VERB AFTER IT SAYS OTHERWISE. `journal pins` lists them,
-        # `journal docs 4` reads one, `journal todos` shows the list — none of them change
-        # anything, and a subagent must keep every read it had.
-        #
-        # THIS WAS FIVE `if verb == …: continue` BRANCHES AND A NOUN WAS MISSING FROM IT.
-        # `reminders` was never listed, so `journal reminders` — a listing — has counted as
-        # a WRITE since the noun existed: gated behind open work, and refused outright to a
-        # lent agent that was told to read what it inherited. A table cannot have that kind
-        # of hole silently, because the nouns and their write-verbs are in one place and a
-        # noun with no entry is visible.
-        if verb in NOUN_WRITES and not NOUN_WRITES[verb](nxt):
-            continue
-        return verb
+        if verb in JOURNAL_WRITES:
+            return verb
     return None
-
-
-TOOL_WRITES = frozenset({"add", "set", "remove", "index"})
-
-#: EVERY NOUN THAT IS A READ ON ITS OWN, AND WHAT TURNS IT INTO A WRITE — as a predicate on
-#: the word after the noun, because one noun's answer is not a list. One table, so a noun
-#: missing from it is visible rather than silently classified as a write, which is what
-#: happened to `reminders` for as long as the noun has existed: `journal reminders`, a
-#: listing, has counted as a write, gated behind open work and refused to a lent agent that
-#: was told to read what it inherited.
-NOUN_WRITES = {
-    "tools": TOOL_WRITES.__contains__,
-}
 
 
 def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
