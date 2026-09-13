@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.73.0 — work goes through its controller
+
+`journal work start|update|await|end` and `journal open` run through `WorkController` and print
+only what it returns; ending work with `--todo`, and the reminder that a to-do of that title
+stays open, are decided there. The viewer's API serves `GET/POST /api/env/<env>/work`,
+`GET/PATCH/DELETE …/work/<n>` (PATCH files a note, DELETE ends it), and
+`POST …/work/note|end|wait` by the work's words. Ended work refuses every change.
+
 ## 1.72.1 — help and the skill teach inbox edit and move
 
 `journal help` lists `inbox edit` and `inbox move`, and the skill names `inbox move` for a
