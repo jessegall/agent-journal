@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.91.0 — a doc's files can be browsed in the viewer
+
+A doc's page lists its attachments as files: each opens in a new tab (an HTML design, a PDF,
+anything the browser can show), images are shown inline under their name, and a folder
+attachment expands to the files it holds, each of which opens the same way. The server serves
+a file inside a folder attachment only if it resolves inside that folder, which comes from the
+doc's manifest.
+
 ## 1.90.0 — what came from a message links back to it
 
 When a part of the user's message became a to-do, a pin, a rule, a reminder or a question,

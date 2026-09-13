@@ -203,6 +203,15 @@
   .md pre { background: var(--raised); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; }
   .md pre code { background: none; border: none; padding: 0; }
 
+  /* a doc's files */
+  .files { display: flex; flex-direction: column; gap: 4px; }
+  .file-row, .file-folder summary { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 6px; color: var(--text); cursor: pointer; }
+  .file-row:hover, .file-folder summary:hover { background: var(--hover); color: var(--text); }
+  .file-folder summary { list-style: none; }
+  .file-folder .file-row { padding-left: 34px; }
+  .file-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-meta { color: var(--text-3); font-size: 12px; white-space: nowrap; }
+  .file-preview { display: block; max-width: 100%; max-height: 360px; margin: 4px 10px 10px; border-radius: 8px; border: 1px solid var(--border); }
   /* a doc's attachments */
   .attachment-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .attachment-card { display: flex; align-items: center; gap: 10px; min-width: 180px; max-width: 100%;

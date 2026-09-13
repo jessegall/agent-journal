@@ -364,6 +364,20 @@ check("a field that cannot be sorted on is a 400 naming what can", (status, "pri
 status, got = post("/api/env/beta/todos/2", {"title": "x"}, method="PATCH")
 check("a number that is not on that environment is 404", status, 404)
 
+# ─────────────────────────────────────────────────────────────── a folder attachment's files
+board = project / "boards"
+(board / "img").mkdir(parents=True)
+(board / "index.html").write_text("<h1>the board</h1>")
+(board / "img" / "dot.svg").write_text("<svg xmlns='http://www.w3.org/2000/svg'/>")
+docs.attach(root, "1", str(board), "the design boards", "alpha")
+status, _, body = get("/api/docs/1")
+folder = next(a for a in json.loads(body)["attachments"] if a["dir"])
+check("a folder attachment lists the files it holds", sorted(folder["files"]), ["img/dot.svg", "index.html"])
+status, headers, body = get(f"/docs/1/files/{folder['name']}/index.html")
+check("a file inside it is served with its type", (status, headers.get("Content-Type"), b"the board" in body), (200, "text/html", True))
+status, _, _ = get(f"/docs/1/files/{folder['name']}/..%2F..%2Fattachment.txt")
+check("and nothing outside the folder is", status, 404)
+
 # ─────────────────────────────────────────────────────────────── a resource links back to the message it came from
 status, got = post("/api/env/alpha/inbox", {"text": "please finish it properly"})
 n_msg = got["data"]["n"]
