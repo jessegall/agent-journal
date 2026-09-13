@@ -1268,26 +1268,6 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
     return None
 
 
-#: Journal verbs that WRITE. A subagent may read the record; it may not change it.
-#: THE PLURALS ARE CANONICAL (ruling R1) and were missing here, so a write spelled the way
-#: the skill teaches it was not recognised AS a write — by the gate that refuses an
-#: undelegated subagent's journal writes, or by the one that answers an unregistered session.
-#: EVERY VERB THAT CHANGES ANYTHING, under every spelling the CLI answers to. A verb missing
-#: here is invisible to every gate this set feeds — the write gate, the context rung's hold,
-#: and the subagent refusal — so it is not a list of interesting commands, it is the
-#: definition of "a write" and it has to be complete.
-#:
-#: FIVE WERE MISSING AND THE HOLE WAS REAL: `claim`, `grant`, `environments`, `handoff` and
-#: `delegate` were named in `grants.NEVER` as verbs a subagent may never run, and none of
-#: them reached that check, because `_journal_write` returned None first. A granted subagent
-#: could evict a live session with `journal claim`, or lend an environment on its
-#: dispatcher's behalf with `journal grant`. `test_bind` now asserts NEVER ⊆ this set, so
-#: the two lists cannot drift apart again.
-#:
-#: AND `environments` IS HERE FOR THE NOUN+VERB SPELLING. `journal environments switch "x"`
-#: is the documented twin of `journal switch "x"` (ruling R11) and presents `environments`
-#: as its verb, so without it half of every lifecycle command was ungated.
-JOURNAL_WRITES = frozenset({"update", "loop", "migrate", "cleanup", "upgrade"})
 _SHELL_BREAKS = frozenset({"&&", "||", "|", ";"})
 
 
@@ -1319,9 +1299,6 @@ def _journal_write(payload: dict) -> str | None:
             cmd = commands.REGISTRY.command_of(toks[j:end])
             if cmd is not None and cmd.writes:
                 return verb
-            continue
-        if verb in JOURNAL_WRITES:
-            return verb
     return None
 
 

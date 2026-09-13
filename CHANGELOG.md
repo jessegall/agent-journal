@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.12 — the system verbs move onto command classes
+
+`cleanup`, `migrate`, `loop`, `update`, `upgrade`, `verify`, `settings`, `serve`, `enable`,
+`disable` and `version` are declared in `commands/system.py`, their text from templates.
+`journal.py` keeps no flag table and no command table of its own; the hook's last verb list
+(`JOURNAL_WRITES`) is gone, so every write is classified by the registry. Two edges change:
+`tidy` and `migrations` now count as writes like the spellings they alias, and `journal loop
+<anything else>` is refused instead of reading as bare `journal loop`.
+
 ## 1.62.11 — the transcript verbs move onto command classes
 
 `conversation`, `user`, `search` and `carry` are declared in `commands/transcript.py`, their
