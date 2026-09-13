@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.63.1 — the inbox is announced
+
+A stop holds while the active environment has unprocessed messages — subject `inbox`,
+priority 7, just after `claimed` and `environment` — naming how many and how to process
+them. Between stops, the first tool call after a new message mentions it once, as context,
+and never blocks; each message is announced once per session and environment. `silenced:
+["inbox"]` turns both off.
+
 ## 1.63.0 — the inbox: messages the user leaves for the agent
 
 `journal inbox "<message>"` leaves a message on the active environment: an instruction, a
