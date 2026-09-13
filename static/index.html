@@ -176,6 +176,11 @@
     border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .pager { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; }
+  .options { display: flex; flex-direction: column; gap: 6px; }
+  .option { text-align: left; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-2); background: var(--raised);
+    color: var(--text); font-size: 13px; line-height: 1.45; }
+  .option:hover:not(:disabled) { border-color: var(--accent); }
+  .option.chosen { border-color: var(--accent); background: rgba(94, 100, 201, .18); }
   .setting { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; }
 
   /* markdown, rendered by app.js */

@@ -795,6 +795,8 @@ const Questions = {
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const answer = (text) => postJSON(`${api.value}/${props.n}/answer`, { answer: text })
       .then((body) => { item.data = body.data; list.reload(); changed(); });
+    const state = reactive({ answering: false });
+    const choose = (option) => { state.answering = true; answer(option).finally(() => { state.answering = false; }); };
     const actions = computed(() => {
       const q = item.data;
       if (!q || q.withdrawn) return [];
@@ -806,7 +808,7 @@ const Questions = {
       ];
     });
     const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, answer, questionKind, actions, done, QUESTION_LIST };
+    return { list, item, answer, choose, answering: computed(() => state.answering), questionKind, actions, done, QUESTION_LIST };
   },
   template: `
     <TopBar :crumbs="[env, 'Questions']"/>
@@ -831,12 +833,18 @@ const Questions = {
             <dt>Asked</dt><dd>{{ item.data.age || '—' }}</dd>
           </dl>
           <ActionBar :actions="actions" :done="done" :key="'question' + item.data.n + item.data.status"/>
+          <div v-if="item.data.description" class="md prose" v-html="$md(item.data.description)"></div>
+          <div v-if="item.data.options.length && !item.data.withdrawn" class=options>
+            <p class=section-label>{{ item.data.answer ? 'Choose again' : 'Choose one' }}</p>
+            <button v-for="(o, i) in item.data.options" :key="i" type=button
+              :class="['option', {chosen: item.data.answer === o}]" :disabled="answering" @click="choose(o)">{{ o }}</button>
+          </div>
           <div v-if="item.data.answer">
             <p class=section-label>Answer<span v-if="item.data.answered_age"> · {{ item.data.answered_age }}</span></p>
             <div class="md prose" v-html="$md(item.data.answer)"></div>
           </div>
           <div v-if="item.data.withdrawn" class=note>Withdrawn: {{ item.data.withdrawn }}</div>
-          <Compose v-else :placeholder="item.data.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
+          <Compose v-else :placeholder="item.data.options.length ? 'Or write your own answer' : item.data.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
             :submit="item.data.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
         </template>
       </Panel>

@@ -126,7 +126,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
 
 **Questions, for this environment**
 
-    journal questions add "<question>" [--about=<ref>]...   ask; never halts the session. A ref is todo 22, doc 4.1, pin 3, rule 2 or inbox 5
+    journal questions add "<question>" [--about=<ref>]... [--description="<context>"] [--option="<a choice>"]...   ask; never halts the session. A ref is todo 22, doc 4.1, pin 3, rule 2 or inbox 5; each --option is a choice the user can click in the viewer
     journal questions [--all]         open first, then answered; --all adds withdrawn ones
     journal questions show N          the question, what it is about, and the answer
     journal questions answer N "<answer>"   the user answers; answering again adds a new answer, the old one is kept, and the agent is told again

@@ -38,6 +38,7 @@ MESSAGES = {
     "show_head": "QUESTION {n}[  {age}]\n\n{text}\n\n  about: {links}",
     "show_withdrawn": "  withdrawn: {why}",
     "show_answered": "\n  ANSWERED[ {age}]\n{answer}",
+    "show_option": "  {n}. {option}",
     "show_open": '\n  open — journal questions answer {n} "<the answer>"',
 }
 
@@ -159,7 +160,8 @@ def _refs(root: Path, raw: list[str], track: str | None = None) -> tuple[list[st
 
 
 def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
-        source: str = "cli", track: str | None = None) -> tuple[bool, str]:
+        source: str = "cli", track: str | None = None, description: str = "",
+        options: list[str] | None = None) -> tuple[bool, str]:
     text = (text or "").strip()
     if not text:
         return False, say("needs_text")
@@ -169,10 +171,21 @@ def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
     with state.locked(root):
         items = _all(root, track)
         items.append({"text": text, "at": at, "source": source, "links": links,
+                      "description": (description or "").strip(), "options": _options(options),
                       "answer": None, "answered_at": None, "told_at": None, "withdrawn": None})
         _put(root, items, track)
         n = len(items)
     return True, say("added", n=n, links=labels(links), open=len(open_items(root, track)))
+
+
+def _options(raw: list[str] | None) -> list[str]:
+    """The choices offered, each one line, blanks and repeats dropped."""
+    out: list[str] = []
+    for o in raw or []:
+        o = " ".join(str(o).split())
+        if o and o not in out:
+            out.append(o)
+    return out
 
 
 def _find(items: list[dict], n: int) -> tuple[dict | None, str]:
@@ -196,16 +209,23 @@ def answer(root: Path, n: int, text: str, at: str, track: str | None = None) -> 
     return True, say("answered", verb="re-answered" if again else "answered", n=n, text=q["text"][:70])
 
 
-def edit(root: Path, n: int, text: str, track: str | None = None) -> tuple[bool, str]:
-    text = (text or "").strip()
-    if not text:
+def edit(root: Path, n: int, text: str | None, track: str | None = None, description: str | None = None,
+         options: list[str] | None = None) -> tuple[bool, str]:
+    """Reword a question, and/or change its description or options; what is not given stays."""
+    if text is not None and not text.strip():
         return False, say("needs_text")
     with state.locked(root):
         items = _all(root, track)
         q, why = _find(items, n)
         if q is None:
             return False, why
-        q["text"] = text
+        if text is not None:
+            q["text"] = text.strip()
+        if description is not None:
+            q["description"] = description.strip()
+        if options is not None:
+            q["options"] = _options(options)
+        text = q["text"]
         if q.get("answer"):
             q["told_at"] = None
         _put(root, items, track)
@@ -262,6 +282,10 @@ def show_text(q: dict) -> str:
     """A question's `row_response` as the terminal page."""
     text = say("show_head", n=q["n"], age=q["age"], text=fmt.wrap(q["text"], indent=2),
                links=[link["label"] for link in q["links"]] or "nothing linked")
+    if q["description"]:
+        text += "\n\n" + fmt.wrap(q["description"], indent=2)
+    if q["options"]:
+        text += "\n\n" + "\n".join(say("show_option", n=i, option=o) for i, o in enumerate(q["options"], 1))
     if q["withdrawn"]:
         tail = say("show_withdrawn", why=q["withdrawn"])
     elif q["answer"]:
@@ -295,6 +319,8 @@ def row_response(n: int, q: dict) -> dict:
         "changed": bool(q.get("earlier_answers")),
         "meta": " · ".join(_facts(q, n)),
         "links": [{"ref": r, "label": label(r)} for r in q.get("links") or []],
+        "description": q.get("description") or "",
+        "options": list(q.get("options") or []),
     }
 
 

@@ -19,7 +19,7 @@ PAGE = {
     "empty": "Nothing has been asked yet.",
     "lead": "This environment's questions, open first. A question can be about any number of "
             "to-dos, docs, pins, rules and inbox messages; answering one tells the agent at its next stop.",
-    "commands": (('journal questions add "<question>" --about="todo 22"', "ask one, linked to what it is about"),
+    "commands": (('journal questions add "<question>" --description="<the context>" --option="<a choice>"', "ask one, with choices the user can pick"),
                  ('journal questions answer <n> "<answer>"', "answer it, or add a new answer"),
                  ("journal questions show <n>", "read one in full")),
 }
@@ -58,18 +58,24 @@ class Show(Resource):
 
 
 class Add(Resource):
-    signature = "questions:add {text* : the question} {--about=*}"
+    signature = "questions:add {text* : the question, in one short line} {--about=*} {--description=} {--option=*}"
     writes = True
     controller = CONTROLLER
     action = "store"
 
+    def extra(self, p: Parsed):
+        return {"options": p.option("option") or []}
+
 
 class Edit(Resource):
-    signature = "questions:edit {n : a question number} {text* : the question, reworded}"
+    signature = "questions:edit {n : a question number} {text* : the question, reworded} {--description=} {--option=*}"
     casts = QUESTION
     writes = True
     controller = CONTROLLER
     action = "update"
+
+    def extra(self, p: Parsed):
+        return {"options": p.option("option")} if p.option("option") else {}
 
 
 class Answer(Resource):

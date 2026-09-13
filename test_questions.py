@@ -212,5 +212,13 @@ before = len(stored())
 migrate._todo_questions(root)
 check("running it again changes nothing", len(stored()), before)
 
+# ------------------------------------------------------------------ a question with a description and options
+code, out = j("questions", "add", "which port?", "--description=The viewer needs one.", "--option=8420", "--option=9000")
+n_port = len(q_mod._all(root, "default"))
+code, out = j("questions", "show", str(n_port))
+check("show prints the description and the numbered options",
+      (code, "The viewer needs one." in out, "1. 8420" in out, "2. 9000" in out), (0, True, True, True))
+j("questions", "withdraw", str(n_port), "only testing the options")
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
