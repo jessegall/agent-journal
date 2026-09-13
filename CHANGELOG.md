@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.1 — commands declared once; `questions` is the first noun on them
+
+`commands.py` declares each command — its noun, verb, arguments, options, and whether it
+writes — and `cli.py` parses a command line into an object handlers read by name, with every
+refusal (a missing argument, a word that is not a number, an unknown option or verb) built
+from the declaration. The hook decides whether a declared command writes from that same
+declaration instead of a table of its own. Output messages are templates with named
+placeholders (`templates.py`). `questions` is the first noun moved over; the rest follow
+one at a time. Nothing changes in what any command accepts or prints, except that an option
+a command does not declare is now refused for that command rather than silently ignored.
+
 ## 1.62.0 — questions are a resource of their own
 
 `journal questions add "<question>" --about=todo 22 --about=doc 4.1` files a numbered

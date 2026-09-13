@@ -284,7 +284,7 @@ import hook as _h
 check("every noun that reads on its own is in the table",
       sorted(set(_h.NOUN_WRITES)),
       sorted({"docs", "tools", "todo", "todos", "pins", "rules",
-              "reminders", "reminder", "remind", "questions", "question"}))
+              "reminders", "reminder", "remind"}))
 check("and every one of them is a verb the gate can actually see",
       [n for n in _h.NOUN_WRITES if n not in _h.JOURNAL_WRITES], [])
 for _noun, _read, _write in (("pins", "", "add"), ("rules", "3", "strike"),

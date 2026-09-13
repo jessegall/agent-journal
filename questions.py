@@ -7,6 +7,7 @@ import entries
 import fmt
 import state
 from pins import age
+from templates import render
 
 KEY = "questions"
 
@@ -14,24 +15,55 @@ KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule"}
 
 _REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
 
+MESSAGES = {
+    "not_a_ref": "{text} is not a reference; write one as `todo 22`, `doc 4.1`, `pin 3` or `rule 2`",
+    "part_on_non_doc": "only a doc takes a part number; {text} names a {kind}",
+    "no_todo": "there is no to-do {n} on this environment",
+    "no_entry": "there is no {kind} {n}. `journal {key}` numbers them.",
+    "no_question": "there is no question {n}. `journal questions` numbers them.",
+    "fact_withdrawn": "withdrawn: {why}",
+    "fact_answered": "answered: {answer}",
+    "fact_open": "open",
+    "fact_about": "about {links}",
+    "needs_text": 'a question needs its text: journal questions add "<question>"',
+    "added": "question {n}[, about {links}] ({open} open)",
+    "needs_answer": 'say the answer: journal questions answer {n} "<the answer>"',
+    "answered": "{verb} question {n}: {text}\n  the agent is told at its next stop",
+    "already_about": "question {n} is already about {ref}",
+    "now_about": "question {n} is now about {links}",
+    "not_about": "question {n} is not about {ref}",
+    "no_longer_about": "question {n} is no longer about {ref}; it is about {left}",
+    "show_head": "QUESTION {n}[  {age}]\n\n{text}\n\n  about: {links}",
+    "show_withdrawn": "  withdrawn: {why}",
+    "show_answered": "\n  ANSWERED[ {age}]\n{answer}",
+    "show_open": '\n  open — journal questions answer {n} "<the answer>"',
+}
+
+
+def say(key: str, **values) -> str:
+    return render(MESSAGES[key], **values)
+
 
 def parse_ref(text: str) -> tuple[str | None, str]:
     m = _REF.match(text or "")
     if not m:
-        return None, (f"{text!r} is not a reference; write one as `todo 22`, `doc 4.1`, "
-                      "`pin 3` or `rule 2`")
+        return None, say("not_a_ref", text=repr(text))
     word, num = m.group(1).lower().replace("-", ""), m.group(2)
     kind = word.rstrip("s") if word != "todos" else "todo"
     if kind not in KINDS:
         kind = "todo"
     if "." in num and kind != "doc":
-        return None, f"only a doc takes a part number; {text!r} names a {KINDS[kind]}"
+        return None, say("part_on_non_doc", text=repr(text), kind=KINDS[kind])
     return f"{kind}:{num}", ""
 
 
 def label(ref: str) -> str:
     kind, _, num = ref.partition(":")
     return f"{KINDS.get(kind, kind)} {num}"
+
+
+def labels(refs: list[str]) -> list[str]:
+    return [label(r) for r in refs]
 
 
 def check_ref(root: Path, ref: str, track: str | None = None) -> str | None:
@@ -44,26 +76,24 @@ def check_ref(root: Path, ref: str, track: str | None = None) -> str | None:
     if kind == "todo":
         import todo
         t, err = todo.item(root, track or state.current_track(root), n)
-        return None if t else (err or f"there is no to-do {n} on this environment")
+        return None if t else (err or say("no_todo", n=n))
     key = pins.RULES if kind == "rule" else pins.KEY
-    have = len(pins._all(root, key, track))
-    if 1 <= n <= have:
+    if 1 <= n <= len(pins._all(root, key, track)):
         return None
-    return f"there is no {kind} {n}. `journal {key}` numbers them."
+    return say("no_entry", kind=kind, n=n, key=key)
 
 
 def _facts(q: dict, n: int) -> list[str]:
-    out = []
     if q.get("withdrawn"):
-        out.append(f"withdrawn: {q['withdrawn']}")
+        out = [say("fact_withdrawn", why=q["withdrawn"])]
     elif q.get("answer"):
-        out.append(f"answered: {q['answer']}")
+        out = [say("fact_answered", answer=q["answer"])]
     else:
-        out.append("open")
+        out = [say("fact_open")]
     if age(q.get("at", "")):
         out.append(age(q.get("at", "")))
     if q.get("links"):
-        out.append("about " + ", ".join(label(r) for r in q["links"]))
+        out.append(say("fact_about", links=labels(q["links"])))
     return out
 
 
@@ -129,7 +159,7 @@ def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
         source: str = "cli", track: str | None = None) -> tuple[bool, str]:
     text = (text or "").strip()
     if not text:
-        return False, 'a question needs its text: journal questions add "<question>"'
+        return False, say("needs_text")
     links, why = _refs(root, about_refs or [], track)
     if why:
         return False, why
@@ -139,8 +169,7 @@ def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
                       "answer": None, "answered_at": None, "told_at": None, "withdrawn": None})
         _put(root, items, track)
         n = len(items)
-    on = f", about {', '.join(label(r) for r in links)}" if links else ""
-    return True, f"question {n}{on} ({len(open_items(root, track))} open)"
+    return True, say("added", n=n, links=labels(links), open=len(open_items(root, track)))
 
 
 def _find(items: list[dict], n: int) -> tuple[dict | None, str]:
@@ -150,7 +179,7 @@ def _find(items: list[dict], n: int) -> tuple[dict | None, str]:
 def answer(root: Path, n: int, text: str, at: str, track: str | None = None) -> tuple[bool, str]:
     text = (text or "").strip()
     if not text:
-        return False, f'say the answer: journal questions answer {n} "<the answer>"'
+        return False, say("needs_answer", n=n)
     with state.locked(root):
         items = _all(root, track)
         q, why = _find(items, n)
@@ -161,8 +190,7 @@ def answer(root: Path, n: int, text: str, at: str, track: str | None = None) -> 
             q.setdefault("earlier_answers", []).append({"answer": q["answer"], "at": q.get("answered_at")})
         q.update(answer=text, answered_at=at, told_at=None)
         _put(root, items, track)
-    return True, (f"{'re-answered' if again else 'answered'} question {n}: {q['text'][:70]}\n"
-                  "  the agent is told at its next stop")
+    return True, say("answered", verb="re-answered" if again else "answered", n=n, text=q["text"][:70])
 
 
 def link(root: Path, n: int, raw: str) -> tuple[bool, str]:
@@ -177,10 +205,10 @@ def link(root: Path, n: int, raw: str) -> tuple[bool, str]:
             return False, why
         links = q.setdefault("links", [])
         if ref in links:
-            return False, f"question {n} is already about {label(ref)}"
+            return False, say("already_about", n=n, ref=label(ref))
         links.append(ref)
         _put(root, items)
-    return True, f"question {n} is now about {', '.join(label(r) for r in links)}"
+    return True, say("now_about", n=n, links=labels(links))
 
 
 def unlink(root: Path, n: int, raw: str) -> tuple[bool, str]:
@@ -194,11 +222,10 @@ def unlink(root: Path, n: int, raw: str) -> tuple[bool, str]:
             return False, why
         links = q.get("links") or []
         if ref not in links:
-            return False, f"question {n} is not about {label(ref)}"
+            return False, say("not_about", n=n, ref=label(ref))
         links.remove(ref)
         _put(root, items)
-    left = ", ".join(label(r) for r in links) or "nothing"
-    return True, f"question {n} is no longer about {label(ref)}; it is about {left}"
+    return True, say("no_longer_about", n=n, ref=label(ref), left=labels(links) or "nothing")
 
 
 def withdraw(root: Path, n: int, why: str, at: str = "") -> tuple[bool, str]:
@@ -208,17 +235,17 @@ def withdraw(root: Path, n: int, why: str, at: str = "") -> tuple[bool, str]:
 def show(root: Path, n: int) -> tuple[bool, str]:
     items = _all(root)
     if n < 1 or n > len(items):
-        return False, f"there is no question {n}. `journal questions` numbers them."
+        return False, say("no_question", n=n)
     q = items[n - 1]
-    lines = [f"QUESTION {n}  {age(q.get('at', ''))}".rstrip(), "", fmt.wrap(q["text"], indent=2), ""]
-    lines.append("  about: " + (", ".join(label(r) for r in q.get("links") or []) or "nothing linked"))
+    text = say("show_head", n=n, age=age(q.get("at", "")), text=fmt.wrap(q["text"], indent=2),
+               links=labels(q.get("links") or []) or "nothing linked")
     if q.get("withdrawn"):
-        lines.append(f"  withdrawn: {q['withdrawn']}")
+        tail = say("show_withdrawn", why=q["withdrawn"])
     elif q.get("answer"):
-        lines += ["", f"  ANSWERED {age(q.get('answered_at', ''))}".rstrip(), fmt.wrap(q["answer"], indent=4)]
+        tail = say("show_answered", age=age(q.get("answered_at") or ""), answer=fmt.wrap(q["answer"], indent=4))
     else:
-        lines += ["", f'  open — journal questions answer {n} "<the answer>"']
-    return True, "\n".join(lines)
+        tail = say("show_open", n=n)
+    return True, text + "\n" + tail
 
 
 def _ordered(root: Path, all_of_them: bool, order: str, track: str | None = None) -> list[tuple[int, dict]]:
