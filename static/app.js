@@ -1534,7 +1534,13 @@ const App = {
       if (route.view === "Home" && envName.value) location.replace(`#/env/${envName.value}`);
     });
     const key = computed(() => route.view + ":" + (route.params.env || ""));
-    return { route, ov, envName, envRow, NAV, key, activity };
+    const FOLDED = "journal.sidebar.folded";
+    const folded = reactive((() => { try { return JSON.parse(localStorage.getItem(FOLDED) || "{}"); } catch (e) { return {}; } })());
+    const fold = (name) => {
+      folded[name] = !folded[name];
+      try { localStorage.setItem(FOLDED, JSON.stringify(folded)); } catch (e) { /* storage off */ }
+    };
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold };
   },
   template: `
     <div class=app>
@@ -1543,27 +1549,35 @@ const App = {
           <span class=logo>{{ (envName || 'j').charAt(0).toUpperCase() }}</span>{{ envName || 'journal' }}
         </a>
         <div class=group v-if="envName">
-          <a v-for="item in NAV" :key="item.key" :class="['item', {on: item.views.includes(route.view)}]"
+          <button type=button class="group-label fold-head" @click="fold('environment')" :aria-expanded="!folded.environment">
+            Environment<span :class="['fold', {shut: folded.environment}]"></span></button>
+          <a v-if="!folded.environment" v-for="item in NAV" :key="item.key" :class="['item', {on: item.views.includes(route.view)}]"
             :href="'#/env/' + envName + (item.path ? '/' + item.path : '')">
             <Icon :name="item.key"/>{{ item.label }}
             <span v-if="item.count" :class="['count', {hot: item.key === 'inbox' && envRow && envRow.inbox}]">{{ envRow && envRow[item.count] ? envRow[item.count] : '' }}</span>
           </a>
         </div>
         <div class=group>
-          <div class=group-label>Project</div>
-          <a :class="['item', {on: route.view === 'Rules'}]" href="#/rules"><Icon name="rules"/>Rules<span class=count>{{ ov.data ? ov.data.rules : '' }}</span></a>
-          <a :class="['item', {on: route.view === 'Tools'}]" href="#/tools"><Icon name="tools"/>Tools</a>
-          <a :class="['item', {on: route.view === 'Docs' || route.view === 'DocDetail'}]" href="#/docs"><Icon name="folder"/>Project docs<span class=count>{{ ov.data ? ov.data.docs : '' }}</span></a>
+          <button type=button class="group-label fold-head" @click="fold('project')" :aria-expanded="!folded.project">
+            Project<span :class="['fold', {shut: folded.project}]"></span></button>
+          <template v-if="!folded.project">
+            <a :class="['item', {on: route.view === 'Rules'}]" href="#/rules"><Icon name="rules"/>Rules<span class=count>{{ ov.data ? ov.data.rules : '' }}</span></a>
+            <a :class="['item', {on: route.view === 'Tools'}]" href="#/tools"><Icon name="tools"/>Tools</a>
+            <a :class="['item', {on: route.view === 'Docs' || route.view === 'DocDetail'}]" href="#/docs"><Icon name="folder"/>Project docs<span class=count>{{ ov.data ? ov.data.docs : '' }}</span></a>
+          </template>
         </div>
         <div class=group v-if="ov.data">
-          <div class=group-label>Environments</div>
-          <a v-for="e in ov.data.environments" :key="e.name" :class="['item', {on: route.params.env === e.name}]"
+          <button type=button class="group-label fold-head" @click="fold('environments')" :aria-expanded="!folded.environments">
+            Environments<span :class="['fold', {shut: folded.environments}]"></span></button>
+          <a v-if="!folded.environments" v-for="e in ov.data.environments" :key="e.name" :class="['item', {on: route.params.env === e.name}]"
             :href="'#/env/' + e.name" :title="e.active ? 'an agent is working here' : ''">
             <span :class="['env-dot', {live: e.active}]"></span>{{ e.name }}
           </a>
         </div>
         <div class="group activity" v-if="activity.data">
-          <div class=group-label>Activity</div>
+          <button type=button class="group-label fold-head" @click="fold('activity')" :aria-expanded="!folded.activity">
+            Activity<span :class="['fold', {shut: folded.activity}]"></span></button>
+          <template v-if="!folded.activity">
           <div v-if="activity.data.agent" class=activity-agent>
             <div class=activity-meta><span class="env-dot live"></span>Agent<span v-if="activity.data.agent.seen"> · {{ activity.data.agent.seen }}</span></div>
             <div v-if="activity.data.agent.text" class="activity-text clamp">{{ activity.data.agent.text }}</div>
@@ -1571,6 +1585,7 @@ const App = {
           <div v-for="(e, i) in activity.data.events.slice(0, 6)" :key="i" class=activity-row>
             <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
           </div>
+          </template>
         </div>
       </aside>
       <main class=main>

@@ -46,6 +46,12 @@
   .activity-age { font-size: 11px; color: var(--text-3); white-space: nowrap; }
   .group-label { font-size: 11.5px; font-weight: 500; color: var(--text-3); padding: 4px 8px 6px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fold-head { display: flex; align-items: center; justify-content: space-between; width: 100%; background: none; border: 0;
+    font-family: inherit; text-align: left; cursor: pointer; border-radius: 6px; }
+  .fold-head:hover { color: var(--text-2); }
+  .fold { width: 5px; height: 5px; margin-right: 4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg); transition: transform .15s; opacity: .7; }
+  .fold.shut { transform: rotate(-45deg); }
   .item { display: flex; align-items: center; gap: 9px; padding: 6px 8px; border-radius: 6px; color: var(--text-2); font-size: 13px; }
   .item:hover { background: var(--hover); color: var(--text); }
   .item.on { background: var(--sel); color: var(--text); }
