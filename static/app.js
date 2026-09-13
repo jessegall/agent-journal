@@ -974,9 +974,9 @@ function docList({ crumbs, url, base, empty }) {
   };
 }
 
-const Docs = docList({ crumbs: () => ["Project", "All docs"], url: () => "/api/docs", base: () => "#/docs",
+const Docs = docList({ crumbs: () => ["Project", "Project docs"], url: () => "/api/docs", base: () => "#/docs",
                        empty: "No project-wide docs are catalogued." });
-const EnvDocs = docList({ crumbs: (p) => [p.env, "Docs"], url: (p) => p.env && `/api/env/${p.env}/docs`,
+const EnvDocs = docList({ crumbs: (p) => [p.env, "Environment docs"], url: (p) => p.env && `/api/env/${p.env}/docs`,
                           base: (p) => `#/env/${p.env}/docs`,
                           empty: "No docs are scoped to this environment; the project's docs still apply." });
 
@@ -1140,7 +1140,7 @@ const EnvHome = {
         { label: "Open to-dos", n: s.todos, icon: "todos", path: "todos" },
         { label: "Pins", n: s.pins, icon: "pins", path: "pins" },
         { label: "Reminders", n: s.reminders, icon: "reminders", path: "reminders" },
-        { label: "Docs", n: s.docs, icon: "docs", path: "docs" },
+        { label: "Environment docs", n: s.docs, icon: "docs", path: "docs" },
       ];
     });
     const about = (q) => q.links.map((l) => l.label).join(", ");
@@ -1401,7 +1401,7 @@ const NAV = [
   { key: "questions", label: "Questions", views: ["Questions"], path: "questions", count: "questions" },
   { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
   { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
-  { key: "docs", label: "Docs", views: ["EnvDocs"], path: "docs", count: "docs" },
+  { key: "docs", label: "Environment docs", views: ["EnvDocs"], path: "docs", count: "docs" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 
@@ -1457,7 +1457,7 @@ const App = {
           <div class=group-label>Project</div>
           <a :class="['item', {on: route.view === 'Rules'}]" href="#/rules"><Icon name="rules"/>Rules<span class=count>{{ ov.data ? ov.data.rules : '' }}</span></a>
           <a :class="['item', {on: route.view === 'Tools'}]" href="#/tools"><Icon name="tools"/>Tools</a>
-          <a :class="['item', {on: route.view === 'Docs' || route.view === 'DocDetail'}]" href="#/docs"><Icon name="folder"/>All docs<span class=count>{{ ov.data ? ov.data.docs : '' }}</span></a>
+          <a :class="['item', {on: route.view === 'Docs' || route.view === 'DocDetail'}]" href="#/docs"><Icon name="folder"/>Project docs<span class=count>{{ ov.data ? ov.data.docs : '' }}</span></a>
         </div>
         <div class=group v-if="ov.data">
           <div class=group-label>Environments</div>

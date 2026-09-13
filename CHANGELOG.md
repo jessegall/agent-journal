@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.87.3 — Project docs and Environment docs
+
+The viewer's "All docs" only ever listed the project's own docs, so it is called Project docs;
+an environment's docs page, its sidebar item and its Home count say Environment docs.
+
 ## 1.87.2 — the viewer no longer marks the terminal's current environment
 
 Which environment the terminal starts on matters to commands, not to a browser that picks its
