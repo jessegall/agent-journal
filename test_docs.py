@@ -443,5 +443,21 @@ check("and --all reaches it", "spiritwood" in j("docs", "search", "spiritwood", 
 check("while reading it by number still works, from here",
       "spiritwood" in j("docs", "show", f"{_n}.1")[1] or "spiritwood" in j("docs", _n)[1], True)
 
+# ---------------------------------------------------------------- archiving a whole doc
+code, out = j("docs", "add", "an old investigation", "--abstract=nobody needs this", "--brief", stdin="the needle is quartzite\n")
+_arch = re.search(r"doc (\d+)", out).group(1)
+code, out = j("docs", "archive", _arch)
+check("archive wants a reason", code, 1)
+code, out = j("docs", "archive", f"{_arch}.1", "x")
+check("a part is struck, not archived", code, 1)
+code, out = j("docs", "archive", _arch, "superseded by the code itself")
+check("a whole doc is archived", (code, "is archived" in out), (0, True))
+check("it is off the catalogue", "an old investigation" in j("docs")[1], False)
+check("listed under --all, with its reason", ("an old investigation" in j("docs", "--all")[1], "superseded by the code itself" in j("docs", "--all")[1]),
+      (True, True))
+check("still readable by number", "an old investigation" in j("docs", _arch)[1], True)
+check("search skips it", "NO DOC MENTIONS" in j("docs", "search", "quartzite")[1], True)
+check("twice is refused", j("docs", "archive", _arch, "again")[0], 1)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

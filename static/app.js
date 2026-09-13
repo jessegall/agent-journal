@@ -562,7 +562,8 @@ const CLAIM_LIST = {
 };
 const MESSAGE_LIST = {
   groups: [{ key: "waiting", label: "Waiting", kind: "waiting", match: (m) => m.status === "waiting" },
-           { key: "processed", label: "Processed", kind: "done", match: (m) => m.status !== "waiting" }],
+           { key: "processed", label: "Processed", kind: "done", match: (m) => m.status === "processed" || m.status === "moved" },
+           { key: "archived", label: "Archived", kind: "withdrawn", match: (m) => m.status === "archived" }],
   columns: { status: (m) => (m.status === "waiting" ? "waiting" : "done"), num: (m) => `#${m.n}`, title: (m) => m.text,
              cite: messageBecame, age: (m) => m.age },
   count: (rows) => `${rows.filter((m) => m.status === "waiting").length} waiting`,
@@ -594,9 +595,10 @@ const REMINDER_LIST = {
 const DOC_LIST = {
   groups: [{ key: "draft", label: "Draft", kind: "open", match: (d) => !d.superseded_by && d.status !== "final" },
            { key: "final", label: "Final", kind: "done", match: (d) => !d.superseded_by && d.status === "final" },
-           { key: "superseded", label: "Superseded", kind: "withdrawn", closed: true, match: (d) => d.superseded_by }],
+           { key: "superseded", label: "Superseded", kind: "withdrawn", closed: true, match: (d) => d.superseded_by },
+           { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (d) => d.archived && !d.superseded_by }],
   columns: { num: (d) => `#${d.n}`, title: (d) => d.title, sub: (d) => d.abstract, age: (d) => d.age, struck: (d) => d.superseded_by },
-  count: (rows) => `${rows.length} catalogued`, showLabel: "Show superseded", name: "docs",
+  count: (rows) => `${rows.filter((d) => !d.archived).length} catalogued`, showLabel: "Show superseded and archived", name: "docs",
 };
 const TOOL_LIST = {
   groups: [{ key: "tools", label: "Catalogued", match: () => true }],
@@ -793,7 +795,7 @@ const Inbox = {
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/inbox`);
     const base = computed(() => `#/env/${props.env}/messages`);
-    const list = useFetch(() => props.env && api.value);
+    const list = useFetch(() => props.env && `${api.value}?all=1`);
     const envs = useEnvironments(() => props.env);
     const send = (text, files) => postJSON(api.value, { text, files }).then(() => { list.reload(); changed(); });
     const heldUrl = (m, f) => `/inbox-files/${props.env}/${m.n}/${encodeURIComponent(f.name)}`;
@@ -801,9 +803,12 @@ const Inbox = {
     const item = computed(() => (list.data && props.n ? list.data.find((m) => String(m.n) === props.n) : null));
     const actions = computed(() => {
       const m = item.value;
-      if (!m || m.status !== "waiting") return [];
+      if (!m || m.status === "archived") return [];
       const url = `${api.value}/${m.n}`;
-      return [
+      const archive = { label: "Archive", method: "DELETE", url, danger: true, submit: "Archive",
+                        fields: [{ name: "why", label: "Why it needs nothing more" }] };
+      if (m.status !== "waiting") return [archive];
+      return [archive,
         { label: "Edit", method: "PATCH", url, only: true, submit: "Save", fields: [{ name: "text", label: "Message", kind: "area", value: m.text }] },
         { label: "Move", method: "POST", url: `${url}/move`, fields: [envField(envs.value)], leave: true,
           note: "For a message left on the wrong environment: it waits there instead." },
@@ -826,7 +831,7 @@ const Inbox = {
       <Panel v-if="n && item" :label="'Message #' + n" :close="'#/env/' + env + '/messages'">
         <div class="prose message">{{ item.text }}</div>
         <dl class=props>
-          <dt>Status</dt><dd><StatusIcon :kind="item.status === 'waiting' ? 'waiting' : 'done'"/>{{ item.status === 'waiting' ? 'Waiting to be processed' : item.status === 'moved' ? 'Moved to ' + item.moved_to : 'Processed' }}</dd>
+          <dt>Status</dt><dd><StatusIcon :kind="item.status === 'waiting' ? 'waiting' : 'done'"/>{{ item.status === 'waiting' ? 'Waiting to be processed' : item.status === 'moved' ? 'Moved to ' + item.moved_to : item.status === 'archived' ? 'Archived: ' + item.archived : 'Processed' }}</dd>
           <dt>Left</dt><dd>{{ item.age || '—' }}</dd>
           <dt>From</dt><dd>{{ item.source === 'web' ? 'The browser' : 'The terminal' }}</dd>
         </dl>
@@ -1061,9 +1066,9 @@ function docList({ crumbs, url, base, empty }) {
   };
 }
 
-const Docs = docList({ crumbs: () => ["Project", "Project docs"], url: () => "/api/docs", base: () => "#/docs",
+const Docs = docList({ crumbs: () => ["Project", "Project docs"], url: () => "/api/docs?archived=1", base: () => "#/docs",
                        empty: "No project-wide docs are catalogued." });
-const EnvDocs = docList({ crumbs: (p) => [p.env, "Environment docs"], url: (p) => p.env && `/api/env/${p.env}/docs`,
+const EnvDocs = docList({ crumbs: (p) => [p.env, "Environment docs"], url: (p) => p.env && `/api/env/${p.env}/docs?archived=1`,
                           base: (p) => `#/env/${p.env}/docs`,
                           empty: "No docs are scoped to this environment; the project's docs still apply." });
 
@@ -1097,6 +1102,8 @@ const DocDetail = {
           fields: [{ ...envField(envs.value, "Belongs to"), options: [{ value: "", label: "Choose one" },
                      { value: "__project", label: "The whole project" }, ...envs.value.map((name) => ({ value: name, label: name }))] }],
           shape: (p) => (p.environment === "__project" ? { global: true } : p) },
+        ...(d.archived ? [] : [{ label: "Archive", method: "POST", url: `${url}/archive`, danger: true, submit: "Archive",
+          fields: [{ name: "why", label: "Why it is no longer needed" }] }]),
       ];
     });
     const done = (body, a) => settle(body, a, "", s);
@@ -1114,6 +1121,7 @@ const DocDetail = {
           <dt>Scope</dt><dd>{{ s.data.scope }}</dd>
           <dt>Written</dt><dd>{{ s.data.age || '—' }}</dd>
           <template v-if="s.data.superseded_by"><dt>Superseded</dt><dd><a :href="'#/docs/' + s.data.superseded_by">by doc {{ s.data.superseded_by }}</a></dd></template>
+          <template v-if="s.data.archived"><dt>Archived</dt><dd>{{ s.data.archived }}</dd></template>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'doc' + s.data.n"/>
         <div><p class=section-label>Abstract</p><p class=prose>{{ s.data.abstract }}</p></div>

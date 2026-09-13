@@ -33,14 +33,14 @@ class DocsController(Controller):
     noun = "doc"
     scoped = None
     actions = ("index", "show", "store", "update", "destroy", "part", "final", "draft", "move", "supersede",
-               "attach", "detach", "files", "paths", "adopt", "search")
+               "attach", "detach", "files", "paths", "adopt", "search", "archive")
     numbered = ("show", "update", "destroy", "part", "final", "draft", "move", "supersede", "attach", "detach",
-                "paths")
+                "paths", "archive")
     payloads = {"index": doc_payloads.ListPayload, "store": doc_payloads.StorePayload,
                 "update": doc_payloads.UpdatePayload, "destroy": WhyPayload, "part": SectionPayload,
                 "move": doc_payloads.MovePayload, "supersede": doc_payloads.SupersedePayload,
                 "attach": doc_payloads.AttachPayload, "detach": doc_payloads.DetachPayload,
-                "files": doc_payloads.FilesPayload, "search": doc_payloads.SearchPayload}
+                "files": doc_payloads.FilesPayload, "search": doc_payloads.SearchPayload, "archive": WhyPayload}
 
     def repository(self, root: Path, p: Payload):
         from resources import Docs
@@ -68,6 +68,8 @@ class DocsController(Controller):
             shelf = [d for d in every if docs.here(d, p.env)]
         else:
             shelf = [d for d in every if docs.scope_of(d) == (p.env or docs.GLOBAL)]
+        if not (p.all or p.archived):
+            shelf = [d for d in shelf if not d.get("archived")]
         wanted = {d["n"] for d in shelf}
         query = self.sorted(self.repository(root, p).query().where(lambda d: d.n in wanted), p)
         if isinstance(query, Result):
@@ -109,6 +111,9 @@ class DocsController(Controller):
 
     def destroy(self, root: Path, p: WhyPayload) -> Result:
         return Result.of(_docs().strike(root, p.id, p.why))
+
+    def archive(self, root: Path, p: WhyPayload) -> Result:
+        return Result.of(_docs().archive(root, p.id, p.why, p.at))
 
     def part(self, root: Path, p: SectionPayload) -> Result:
         return Result.of(_docs().part(root, p.id, p.title, p.body, self._author(root, p)), created=True)

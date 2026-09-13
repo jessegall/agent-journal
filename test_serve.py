@@ -269,7 +269,7 @@ check("a part is recorded through the controller", (status, len(inbox._all(root,
 status, got = post("/api/env/alpha/inbox/2/done", {})
 check("and the message is marked processed", (status, bool(inbox._all(root, "alpha")[1]["processed"])), (200, True))
 status, got = post("/api/env/alpha/inbox/1", {"text": "x"}, method="DELETE")
-check("a message is never deleted", status, 405)
+check("a DELETE archives, never deletes, and wants a reason", (status, len(inbox._all(root, "alpha")) >= 2), (400, True))
 
 # ─────────────────────────────────────────────────────────────── questions
 status, _, body = get("/api/env/alpha/questions")
@@ -519,6 +519,19 @@ status, _, _ = get(f"/inbox-files/alpha/{_held_n}/other.txt")
 check("a name the message does not hold is 404", status, 404)
 status, got = post("/api/env/alpha/inbox", {"text": "big", "files": [{"name": "b.bin", "data": base64.b64encode(b"x" * 100_000).decode()}]})
 check("a message may carry more than the ordinary body limit", status, 201)
+
+status, got = post(f"/api/env/alpha/inbox/{_held_n}", {"why": "not needed"}, method="DELETE")
+check("a message is archived from the viewer", status, 200)
+status, _, body = get("/api/env/alpha/inbox")
+check("it leaves the default list", _held_n in [m["n"] for m in json.loads(body)], False)
+status, _, body = get("/api/env/alpha/inbox?all=1")
+check("and all=1 brings it back, marked archived", [m["status"] for m in json.loads(body) if m["n"] == _held_n], ["archived"])
+status, got = post("/api/docs/1/archive", {"why": "done with it"})
+check("a doc is archived from the viewer", status, 200)
+status, _, body = get("/api/env/alpha/docs")
+check("it leaves the doc list", 1 in [d["n"] for d in json.loads(body)], False)
+status, _, body = get("/api/env/alpha/docs?archived=1")
+check("archived=1 lists it, marked", [d["archived"] for d in json.loads(body) if d["n"] == 1], ["done with it"])
 
 state.put(root, serve.VIEWER_PORT, srv.server_port)
 check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)

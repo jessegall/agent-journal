@@ -238,7 +238,7 @@ def _docs(root: Path) -> list[dict]:
     out = []
     names = set(tracks._all(root))
     for d in docs_mod._load(root):
-        if d.get("superseded_by"):
+        if d.get("superseded_by") or d.get("archived"):
             continue
         why = ""
         gone = ""

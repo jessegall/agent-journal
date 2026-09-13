@@ -54,6 +54,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal messages done N           mark it processed, once its parts say what they became and every file is filed",
         'journal messages edit N "<text>"   reword a waiting message',
         'journal messages move N "<env>"    carry a waiting message to another environment',
+        'journal messages archive N "<why>"   take a message off the list, kept with its reason',
     ),
     "comments": (
         "journal comments [--all]      what the user said about a to-do, doc, pin, rule or reminder; open ones, --all adds handled",
@@ -156,6 +157,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal docs final <doc> | draft <doc>      its status",
         'journal docs abstract <doc> "<one line>"    the line every session is handed',
         'journal docs title <doc> "<title>"          retitle it; its number and what cites it stay',
+        'journal docs archive <doc> "<why>"          take a whole doc off the catalogue; it stays readable by number and under --all',
         "journal docs paths <doc>      one absolute path per attached file, a folder's files included — for a subagent's prompt",
         "journal docs supersede <doc> by <doc>       point readers of the first at the second",
         'journal docs attach <doc> <path> ["<what it is>"] [--replace]   copy a file or a folder into the doc, beside its parts',

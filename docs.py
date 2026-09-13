@@ -36,7 +36,7 @@ INDEX = "index.md"
 STRUCK = "struck"
 FILES = "files"                 # a doc's attachments: any file or folder, copied in, listed in a manifest
 MANIFEST = "manifest.json"
-FIELDS = ("n", "title", "abstract", "abstract_at", "status", "track", "source", "at", "supersedes", "superseded_by", "adopted")
+FIELDS = ("n", "title", "abstract", "abstract_at", "archived", "archived_at", "status", "track", "source", "at", "supersedes", "superseded_by", "adopted")
 
 #: WHAT `track:` MEANS ON A DOC, and it is a SCOPE now rather than a note about where the
 #: doc came from.
@@ -123,6 +123,11 @@ MESSAGES = {
     "abstract_usage": 'journal docs abstract <n> "<one line>"',
     "abstract_set": "doc {n}: {abstract}",
     "title_usage": 'journal docs title <n> "<the title>"',
+    "archive_why": 'say why: journal docs archive <n> "<why it is no longer needed>"',
+    "archive_part": "a part is struck, not archived: journal docs strike {ref} \"<why>\"",
+    "already_archived": "doc {n} is already archived: {why}",
+    "archived": "doc {n} is archived: {title}\n  it is off the catalogue and still readable by number; `journal docs --all` lists it",
+    "fact_archived": "archived: {why}",
     "title_set": "doc {n} is titled: {title}",
     "no_paths": "doc {n} has no attachments",
     "fact_stale": "abstract older than its parts or files",
@@ -744,6 +749,24 @@ def move(root: Path, ref: str, dst: str) -> tuple[bool, str]:
     return True, say("moved", n=doc["n"], now=now_said, was=was_said, title=doc["title"])
 
 
+def archive(root: Path, ref: str, why: str, at: str = "") -> tuple[bool, str]:
+    """Take a whole doc off the catalogue, with the reason; it stays readable by number."""
+    why = " ".join((why or "").split())
+    if not why:
+        return False, say("archive_why")
+    doc, prt, err = get(root, ref)
+    if doc is None:
+        return False, err
+    if prt is not None:
+        return False, say("archive_part", ref=ref)
+    if doc.get("archived"):
+        return False, say("already_archived", n=doc["n"], why=doc["archived"])
+    meta = {k: doc.get(k, "") for k in FIELDS}
+    meta["archived"], meta["archived_at"] = why, at or _now()
+    _write(doc["path"], meta, doc["body"])
+    return True, say("archived", n=doc["n"], title=doc["title"])
+
+
 def set_status(root: Path, ref: str, status: str) -> tuple[bool, str]:
     doc, _, err = get(root, ref)
     if doc is None:
@@ -969,6 +992,7 @@ def row(root: Path, d: dict) -> dict:
         "attachments": len(attachments(d)),
         "superseded_by": d.get("superseded_by") or "",
         "supersedes": d.get("supersedes") or "",
+        "archived": d.get("archived") or "",
     }
 
 
@@ -1010,6 +1034,8 @@ def facts_text(root: Path, d: dict) -> str:
         out.append(_age(d.get("at", "")))
     if stale(d):
         out.append(say("fact_stale"))
+    if d.get("archived"):
+        out.append(say("fact_archived", why=d["archived"]))
     if d.get("superseded_by"):
         out.append(say("fact_superseded", n=d["superseded_by"]))
     if d.get("abstract"):
@@ -1131,7 +1157,7 @@ def carry(root: Path, cap: int = 20, track: str = "", brief: bool = False) -> st
     # a catalogue nobody can skim is a catalogue nobody reads, which is the one thing it
     # exists to prevent.
     docs = [d for d in _load(root)
-            if not d.get("superseded_by") and (not track or here(d, track))]
+            if not d.get("superseded_by") and not d.get("archived") and (not track or here(d, track))]
     if not docs:
         return ""
     lines = []
@@ -1165,7 +1191,7 @@ def search_lines(root: Path, track: str = "",
     """
     out = []
     for d in _load(root):
-        if track and not all_of_them and not here(d, track):
+        if (track and not all_of_them and not here(d, track)) or (d.get("archived") and not all_of_them):
             continue
         for i, line in enumerate(d["body"].splitlines(), 1):
             out.append((str(d["n"]), d["title"], i, line))
