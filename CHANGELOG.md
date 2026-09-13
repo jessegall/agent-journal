@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.97.1 — the viewer's sidebar sections fold
+
+Each sidebar section (Environment, Project, Environments, Activity) has a header you click to
+fold it; the browser remembers which are folded. The environment's own pages sit under an
+"Environment" label.
+
 ## 1.97.0 — the agent is told when a cleanup report is ready
 
 Once an hour at most per session, the hook runs the cleanup checks itself and tells the agent

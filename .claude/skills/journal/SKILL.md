@@ -748,6 +748,7 @@ thing to do now.
 | *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
 | *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`                  |
 | *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs. While it stands the next WRITE is refused — auto without a loop is a promise nothing keeps |
+| *a cleanup report is ready — N entr(ies) …*                     | when you reach a pause: `journal cleanup`, then `cleanup read`; strike what you judge dead. Never a hold |
 | *N entr(ies) in the record have evidence against them*         | `journal cleanup`, then `cleanup read`, then strike what you judged dead |
 | *the reading pass … was never done / N d ago*                  | `journal cleanup read` — judge every rule and pin against the code you just worked in |
 | *environment `x` is taken by another session*                        | ask the user which environment this session works on, then `switch "<name>"`; if the holder is gone and they say so, `claim "<name>" "<why>"` |
