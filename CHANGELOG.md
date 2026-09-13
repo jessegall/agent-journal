@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.92.0 — a doc's attached files are hard to miss
+
+A session start names each doc's attached files beside its title, with `journal docs paths
+<doc>` to get them. `journal docs paths <doc>` prints one absolute path per attached file,
+a folder's files included, ready to paste into a subagent's prompt. A search for a file that
+is attached to a doc (find, grep, rg, ls, Glob, Grep) is answered once with the doc and the
+path. A to-do that cites a doc lists that doc's files under its brief. `journal docs title
+<doc> "<title>"` retitles a doc. The catalogue flags a doc whose parts or files were added
+after its abstract was written; `journal docs abstract` clears it. Silence the search hint
+with `"silenced": ["search_hint"]`.
+
 ## 1.91.0 — a doc's files can be browsed in the viewer
 
 A doc's page lists its attachments as files: each opens in a new tab (an HTML design, a PDF,

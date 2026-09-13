@@ -588,6 +588,7 @@ process gets there first — `journal migrate` says what is pending and what has
     journal docs                                the catalogue: number, title, status, parts, files, abstract
     journal docs show <doc>  |  journal docs show <doc>.<p>   read a doc, or one part; <doc> is its number or its name
     journal docs files <doc>                    its attachments, as a tree (also: `docs <doc> files`)
+    journal docs paths <doc>                    one absolute path per attached file — put these in a subagent's prompt
     journal docs add "<title>" --abstract="<one line>" --brief    a new doc, its intro on stdin
     journal docs part <doc> "<title>" --brief   a report, a section, a finding — as one part
     journal docs attach <doc> <path> "<what it is>"   a file or a folder, copied in beside the parts

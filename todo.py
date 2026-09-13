@@ -176,6 +176,7 @@ MESSAGES = {
     "section_answered": "the user answered",
     "section_waiting": "waiting on the user",
     "section_brief": "brief",
+    "section_doc_files": "files of doc {n}",
     "title_only": "  (title only; no brief was written)",
     "cmd_start": "journal todos start {n}",
     "cmd_start_what": "pick it up",
@@ -1535,10 +1536,17 @@ def detail(root: Path, track: str, t: dict) -> dict:
         meta.append(say("meta_started", age=_age(t["started"])))
     if t.get("done"):
         meta.append(say("meta_done", age=_age(t["done"]), how=t.get("how")))
+    doc_files, doc_n = [], ""
     if t.get("doc"):
         import docs as docs_mod
         meta.append(say("fact_doc", label=docs_mod.ref_label(root, str(t["doc"]))))
+        doc, _, _ = docs_mod.get(root, str(t["doc"]).split(".")[0])
+        if doc is not None:
+            doc_n = doc["n"]
+            doc_files = [str(p.relative_to(root.parent.resolve())) if root.parent.resolve() in p.parents else str(p)
+                         for p in docs_mod.file_paths(doc)]
     return {**row_response(root, track, t), "body": t.get("body", ""), "how": t.get("how") or "",
+            "doc_n": doc_n, "doc_files": doc_files,
             "facts": " · ".join(meta), "file": str(t["path"].relative_to(root.parent)) if t.get("path") else ""}
 
 
@@ -1563,6 +1571,11 @@ def show_text(t: dict, width: int | None = None) -> str:
     # SECOND time in a narrower terminal and left a stub under each line. `prose` is the
     # distinction — a paragraph flows, a list and a code block and a table do not.
     out.append(fmt.prose(t["body"], width=width) if t["body"] else say("title_only"))
+    if t.get("doc_files"):
+        out.append(fmt.section(say("section_doc_files", n=t["doc_n"])))
+        out.extend("  " + f for f in t["doc_files"][:20])
+        if len(t["doc_files"]) > 20:
+            out.append("  " + fmt.dim(f"… journal docs paths {t['doc_n']}"))
     out.append("")
     rows = []
     if not t["done"]:

@@ -285,8 +285,8 @@ p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name":
                    capture_output=True, text=True, timeout=180)
 ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
 names = "2 file(s): design.html, by-hand.html", "2 file(s): by-hand.html, design.html"
-check("the doorway does not name a doc's files — that is content, and `docs <n>` has it",
-      any(n in ctx for n in names), False)
+check("the doorway names a doc's files, so nobody searches the repo for them",
+      (any(n in ctx for n in names), f"journal docs paths {n_att}" in ctx), (True, True))
 code, whole = j("carry")
 check("the full hand-over still says which docs carry files", any(n in whole for n in names), True)
 # a subagent may not attach
@@ -340,6 +340,45 @@ check("a piped line is not a plain read", read(None, cmd=f"cat {outside / 'notes
 read(outside / "other.csv"); read(outside / "other.csv")
 check("silenced: nothing", read(outside / "other.csv"), "")
 (root / "settings.json").write_text(json.dumps({"context_window": 1000000}))
+
+# ---------------------------------------------------------------- an attached file is hard to miss
+def searched(tool, inp):
+    p = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "PostToolUse", "session_id": "s1", "transcript_path": str(path),
+                       "tool_name": tool, "tool_input": inp, "tool_response": "x"}), capture_output=True, text=True, timeout=180)
+    return (json.loads(p.stdout).get("hookSpecificOutput") or {}).get("additionalContext", "") if p.stdout.strip() else ""
+
+
+got = searched("Bash", {"command": "find . -name '*design*'"})
+check("a find naming an attached file points at the doc that holds it",
+      (f"doc {n_att}" in got, "design.html" in got, "docs paths" in got), (True, True, True))
+check("once per file", searched("Glob", {"pattern": "**/design.html"}), "")
+check("a search for something no doc holds says nothing", searched("Grep", {"pattern": "nothingattached"}), "")
+check("a plain command is not a search", searched("Bash", {"command": "echo by-hand"}), "")
+check("Grep counts too", f"doc {n_att}" in searched("Grep", {"pattern": "by-hand"}), True)
+code, out = j("docs", "paths", str(n_att))
+check("docs paths prints one absolute path per attached file",
+      (code, all(Path(l).is_absolute() and Path(l).is_file() for l in out.strip().splitlines()),
+       any(l.endswith("design.html") for l in out.splitlines())), (0, True, True))
+code, out = j("docs", "paths", "1")
+check("and says so when there are none", (code, "no attachments" in out), (0, True))
+code, out = j("docs", "title", str(n_att), "Where files go, retitled")
+check("docs title retitles a doc and keeps its number",
+      (code, "Where files go, retitled" in j("docs", str(n_att))[1], f"DOC {n_att}" in j("docs", str(n_att))[1]), (0, True, True))
+check("a blank title is refused", j("docs", "title", str(n_att), " ")[0], 1)
+_index = folder_att / "index.md"
+_index.write_text(re.sub(r"^at: .*$", "at: 2020-01-01T00:00:00+00:00", _index.read_text(), count=1, flags=re.M))
+docs._CATALOGUE.clear()
+_row = next(x for x in docs._load(root) if x["n"] == n_att)
+check("a doc whose files came after its abstract is flagged stale", docs.stale(_row), True)
+j("docs", "abstract", str(n_att), "where files go, now with a design")
+docs._CATALOGUE.clear()
+_row = next(x for x in docs._load(root) if x["n"] == n_att)
+check("and rewriting the abstract clears it", docs.stale(_row), False)
+code, out = j("todos", "add", "build from the design", f"--doc={n_att}")
+_tn = re.search(r"to-do (\d+)", out).group(1)
+code, out = j("todos", "show", _tn)
+check("a to-do citing a doc lists that doc's files under its brief",
+      (f"files of doc {n_att}".upper() in out.upper(), "design.html" in out), (True, True))
 
 # ─────────────────── citing a HEADING, one level below the part ───────────────────────────
 code, out = j("docs", "add", "one with sections", "--abstract=x", "--brief",

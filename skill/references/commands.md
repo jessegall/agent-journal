@@ -147,6 +147,8 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal docs strike <doc>.<p> "<why>"    drop a part, on the record
     journal docs final <doc> | draft <doc>   status
     journal docs abstract <doc> "<one line>"   the line every session is handed
+    journal docs title <doc> "<title>"         retitle it; its number and what cites it stay
+    journal docs paths <doc>                   one absolute path per attached file, for a subagent's prompt
     journal docs supersede <doc> by <doc>    point readers of the first at the second
     journal docs index               catalogue the files .journal/docs/ already holds
     journal docs search <term> [--page=N]   every line of every doc, and every attachment by name, 25 a page
