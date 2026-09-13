@@ -22,6 +22,9 @@ MESSAGES = {
     "closed_aside": "\n  closed the work `{title}` — it is set aside",
     "closed_note": "\n  {note}",
     "after_note": "\n  {note}",
+    "auto_wants": "auto wants on or off, got {got}",
+    "no_commit": "no commit at {ref} to read",
+    "commit_how": "{subject} ({sha})",
 }
 
 
@@ -33,14 +36,18 @@ class TodosController(Controller):
     resource = "todos"
     noun = "to-do"
     actions = ("index", "show", "store", "update", "destroy", "done", "reopen", "start", "move", "ask",
-               "answer", "block", "unblock", "after", "report", "priority", "amend", "replace")
-    numbered = actions[1:2] + actions[3:]
+               "answer", "block", "unblock", "after", "report", "priority", "amend", "replace", "auto", "prune",
+               "commit")
+    numbered = ("show", "update", "destroy", "done", "reopen", "start", "move", "ask", "answer", "block", "unblock",
+                "after", "report", "priority", "amend", "replace")
     payloads = {"index": todo_payloads.ListPayload, "store": todo_payloads.StorePayload,
                 "update": todo_payloads.UpdatePayload, "destroy": WhyPayload, "done": todo_payloads.HowPayload,
                 "reopen": WhyPayload, "start": todo_payloads.StartPayload, "move": MovePayload,
                 "ask": todo_payloads.AskPayload, "answer": AnswerPayload, "block": WhyPayload,
                 "after": todo_payloads.AfterPayload, "report": todo_payloads.ReportPayload,
-                "priority": todo_payloads.PriorityPayload, "amend": SectionPayload, "replace": SectionPayload}
+                "priority": todo_payloads.PriorityPayload, "amend": SectionPayload, "replace": SectionPayload,
+                "auto": todo_payloads.AutoPayload, "prune": todo_payloads.PrunePayload,
+                "commit": todo_payloads.CommitPayload}
     # a closed row is the record of how it ended; reopening is the only way to change it
     EDITS = frozenset({"update", "destroy", "done", "start", "move", "ask", "block", "unblock", "after",
                        "report", "priority", "amend", "replace"})
@@ -165,3 +172,33 @@ class TodosController(Controller):
 
     def replace(self, root: Path, p: SectionPayload) -> Result:
         return Result.of(todo.replace_section(root, self.env(root), p.id, p.title, p.body))
+
+    def auto(self, root: Path, p: todo_payloads.AutoPayload) -> Result:
+        env, want = self.env(root), p.state.lower()
+        if not want:
+            return Result("ok", "", None, {"env": env, "on": todo.auto(root, env)})
+        if want not in ("on", "off", "true", "false", "yes", "no"):
+            return Result("refused", say("auto_wants", got=repr(p.state)))
+        on = want in ("on", "true", "yes")
+        message = todo.set_auto(root, env, on)
+        meta = {"env": env, "on": on, "set": True}
+        if on:
+            ready = todo.ready(root, env)
+            meta.update(working=[w["subject"] for w in work.open_work(root)], waiting=len(todo.open_items(root, env)),
+                        next={"n": ready[0]["n"], "title": ready[0]["title"]} if ready else None)
+        return Result("ok", message, None, meta)
+
+    def prune(self, root: Path, p: todo_payloads.PrunePayload) -> Result:
+        return Result.of(todo.prune(root, self.env(root), p.older_than or p.before, p.at, p.force))
+
+    def commit(self, root: Path, p: todo_payloads.CommitPayload) -> Result:
+        ref = p.ref or "HEAD"
+        found = todo.commit_at(root.parent, ref)
+        if found is None:
+            return Result("refused", say("no_commit", ref=ref))
+        sha, subject, message = found
+        said = todo.close_from_commit(root, message, say("commit_how", subject=subject, sha=sha[:9]), p.at,
+                                      self.env(root))
+        closed = not said or any(ok for ok, _ in said)
+        return Result("ok" if closed else "refused", "", [{"ok": ok, "line": line} for ok, line in said],
+                      {"sha": sha[:9]})

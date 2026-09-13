@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.75.1 — `todos auto`, `prune` and `from-commit` go through the controller
+
+The last three `journal todos` commands that still read and wrote the store themselves run
+through `TodosController` as its `auto`, `prune` and `commit` actions, and print only what
+they return. No command a user types handles a resource on its own any more.
+
 ## 1.75.0 — every controller action takes its own typed payload
 
 A controller declares the payload each action takes (`payloads/`): shared ones where the
