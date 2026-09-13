@@ -18,6 +18,9 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/work$/, view: "Work", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/reminders$/, view: "Reminders", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/docs$/, view: "EnvDocs", params: ["env"] },
+  { re: /^\/env\/([a-z0-9-]+)\/inbox$/, view: "Inbox", params: ["env"] },
+  { re: /^\/env\/([a-z0-9-]+)\/questions$/, view: "Questions", params: ["env"] },
+  { re: /^\/env\/([a-z0-9-]+)\/questions\/(\d+)$/, view: "QuestionDetail", params: ["env", "n"] },
   { re: /^\/rules$/, view: "Rules" },
   { re: /^\/rules\/(\d+)$/, view: "RuleDetail", params: ["n"] },
   { re: /^\/docs$/, view: "Docs" },
@@ -59,6 +62,29 @@ function useFetch(urlFn) {
   });
   onUnmounted(stop);
   return state;
+}
+
+function postJSON(url, payload) {
+  return fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+    .then((r) => r.json().then((body) => {
+      if (!r.ok) throw new Error(body.error || "request failed");
+      return body;
+    }));
+}
+
+// A LINK FOR A STORED REFERENCE ("todo:3", "doc:4.1"): the same spellings questions and
+// the inbox store, so every page resolves them one way. `noted` links nowhere.
+function refHref(ref, env) {
+  const [kind, num] = String(ref).split(":");
+  if (kind === "todo") return `#/env/${env}/todos/${num}`;
+  if (kind === "pin") return `#/env/${env}/pins/${num}`;
+  if (kind === "rule") return `#/rules/${num}`;
+  if (kind === "doc") return `#/docs/${num}`;
+  if (kind === "question") return `#/env/${env}/questions/${num}`;
+  if (kind === "reminder") return `#/env/${env}/reminders`;
+  if (kind === "inbox") return `#/env/${env}/inbox`;
+  if (kind === "work") return `#/env/${env}/work`;
+  return null;
 }
 
 function esc(s) { return s == null ? "" : String(s); }   // Vue's template compiler escapes text nodes itself
@@ -270,6 +296,10 @@ const EnvHome = {
           </div>
         </div>
       </Card>
+      <div class=row><div class=row-main><a :href="'#/env/' + env + '/inbox'">inbox</a></div>
+        <span class=meta>{{ s.data.inbox }} waiting</span></div>
+      <div class=row><div class=row-main><a :href="'#/env/' + env + '/questions'">questions</a></div>
+        <span class=meta>{{ s.data.questions }} open</span></div>
       <div class=row><div class=row-main><a :href="'#/env/' + env + '/todos'">to-dos</a></div>
         <span class=meta>{{ s.data.todos }} open</span></div>
       <div class=row><div class=row-main><a :href="'#/env/' + env + '/pins'">pins</a></div>
@@ -339,6 +369,7 @@ const TodoDetail = {
         <div class=md v-if="s.data.body" v-html="$md(s.data.body)"></div>
         <p v-else>(title only.)</p>
       </Card>
+      <LinkedQuestions :rows="s.data.questions" :env="env"/>
     </div>`,
 };
 
@@ -381,6 +412,7 @@ const PinDetail = {
         <div class=md v-html="$md(s.data.body)"></div>
       </Card>
       <p v-else class=meta>No reasoning is written down for this pin.</p>
+      <LinkedQuestions :rows="s.data.questions" :env="env"/>
     </div>`,
 };
 
@@ -423,6 +455,7 @@ const RuleDetail = {
         <div class=md v-html="$md(s.data.body)"></div>
       </Card>
       <p v-else class=meta>No reasoning is written down for this rule.</p>
+      <LinkedQuestions :rows="s.data.questions"/>
     </div>`,
 };
 
@@ -566,6 +599,7 @@ const DocDetail = {
           </div>
         </div>
       </template>
+      <LinkedQuestions :rows="s.data.questions"/>
       <template v-if="s.data.cited_by.length">
         <h3>cited by</h3>
         <div class=row v-for="(c, i) in s.data.cited_by" :key="i">
@@ -579,9 +613,153 @@ const DocDetail = {
     </div>`,
 };
 
+// THE QUESTIONS ABOUT ONE RESOURCE, on its own detail page. A rule or a doc belongs to no one
+// environment, so its rows carry the environment each question was asked on.
+const LinkedQuestions = {
+  props: { rows: { type: Array, default: () => [] }, env: { type: String, default: "" } },
+  components: { RowMain },
+  template: `
+    <template v-if="rows && rows.length">
+      <h3>questions</h3>
+      <div class=row v-for="q in rows" :key="(q.env || env) + ':' + q.n">
+        <RowMain :badges="[q.status]">
+          <a :href="'#/env/' + (q.env || env) + '/questions/' + q.n">{{ q.text }}</a>
+        </RowMain>
+        <div class=meta><span v-if="q.answer">→ {{ q.answer }}</span><span v-else>{{ q.age }}</span></div>
+      </div>
+    </template>`,
+};
+
+// A COMPOSE BOX'S STATE, shared by the inbox and the answer form: what is typed, whether it
+// is on its way, and the server's refusal if there was one.
+function useSend(post) {
+  const draft = reactive({ text: "", sending: false, error: null });
+  async function send() {
+    if (!draft.text.trim() || draft.sending) return;
+    draft.sending = true;
+    draft.error = null;
+    try {
+      await post(draft.text);
+      draft.text = "";
+    } catch (e) {
+      draft.error = e.message;
+    } finally {
+      draft.sending = false;
+    }
+  }
+  return { draft, send };
+}
+
+const Inbox = {
+  props: ["env"],
+  components: { Loading, ErrorBox, RowMain },
+  setup(props) {
+    const s = useFetch(() => props.env && `/api/env/${props.env}/inbox`);
+    const { draft, send } = useSend((text) =>
+      postJSON(`/api/env/${props.env}/inbox`, { text }).then((body) => { s.data = body.rows; }));
+    return { s, draft, send };
+  },
+  template: `
+    <h1>{{ env }} · inbox</h1>
+    <form class=compose @submit.prevent="send">
+      <textarea v-model="draft.text" rows=3 aria-label="message"
+        placeholder="leave a message for the agent — an instruction, a follow-up, anything"
+        @keydown.meta.enter.prevent="send" @keydown.ctrl.enter.prevent="send"></textarea>
+      <div class=compose-bar>
+        <span class=meta>the agent is told at its next stop</span>
+        <button type=submit :disabled="draft.sending || !draft.text.trim()">send</button>
+      </div>
+      <ErrorBox v-if="draft.error" :message="draft.error"/>
+    </form>
+    <div v-if="s.loading"><Loading/></div>
+    <ErrorBox v-else-if="s.error" :message="s.error"/>
+    <div v-else>
+      <div class=row v-for="m in s.data" :key="m.n">
+        <RowMain :badges="[m.status]">
+          <div class=message-text>{{ m.text }}</div>
+          <div class=parts v-if="m.parts.length">
+            <div class=part v-for="(p, i) in m.parts" :key="i">
+              <span class=meta>«{{ p.excerpt }}» →</span>
+              <template v-for="b in p.became" :key="b.ref">
+                <a v-if="$refHref(b.ref, env)" :href="$refHref(b.ref, env)" class=badge>{{ b.label }}</a>
+                <span v-else class=badge>{{ b.label }}</span>
+              </template>
+            </div>
+          </div>
+        </RowMain>
+        <div class=meta>{{ m.age }}<span v-if="m.source === 'web'"> · from the browser</span></div>
+      </div>
+      <p v-if="!s.data.length">the inbox is empty.</p>
+    </div>`,
+};
+
+const Questions = {
+  props: ["env"],
+  components: { Loading, ErrorBox, RowMain },
+  setup(props) {
+    const s = useFetch(() => props.env && `/api/env/${props.env}/questions`);
+    return { s };
+  },
+  template: `
+    <h1>{{ env }} · questions</h1>
+    <div v-if="s.loading"><Loading/></div>
+    <ErrorBox v-else-if="s.error" :message="s.error"/>
+    <div v-else>
+      <div class=row v-for="q in s.data" :key="q.n">
+        <RowMain :badges="[q.status]">
+          <a :href="'#/env/' + env + '/questions/' + q.n">{{ q.n }}. {{ q.text }}</a>
+        </RowMain>
+        <div class=meta>{{ q.age }}<span v-if="q.links.length"> · about {{ q.links.map((l) => l.label).join(', ') }}</span></div>
+      </div>
+      <p v-if="!s.data.length">nothing has been asked.</p>
+    </div>`,
+};
+
+const QuestionDetail = {
+  props: ["env", "n"],
+  components: { Loading, ErrorBox, Badges, Card },
+  setup(props) {
+    const s = useFetch(() => props.env && props.n && `/api/env/${props.env}/questions/${props.n}`);
+    const { draft, send } = useSend((answer) =>
+      postJSON(`/api/env/${props.env}/questions/${props.n}/answer`, { answer }).then((body) => { s.data = body.rows; }));
+    return { s, draft, send };
+  },
+  template: `
+    <div v-if="s.loading"><Loading/></div>
+    <ErrorBox v-else-if="s.error" :message="s.error"/>
+    <div v-else>
+      <h1>{{ env }} · question {{ s.data.n }}</h1>
+      <Badges :names="[s.data.status]"/>
+      <p class=meta>{{ s.data.age }}</p>
+      <Card title="question"><div class=md v-html="$md(s.data.text)"></div></Card>
+      <p v-if="s.data.links.length"><b>about:</b>
+        <template v-for="l in s.data.links" :key="l.ref">
+          <a v-if="$refHref(l.ref, env)" :href="$refHref(l.ref, env)" class=badge>{{ l.label }}</a>
+          <span v-else class=badge>{{ l.label }}</span>
+        </template>
+      </p>
+      <Card v-if="s.data.answer" title="answer">
+        <div class=md v-html="$md(s.data.answer)"></div>
+        <p class=meta>{{ s.data.answered_age }}</p>
+      </Card>
+      <p v-if="s.data.withdrawn" class=meta>withdrawn: {{ s.data.withdrawn }}</p>
+      <form v-else class=compose @submit.prevent="send">
+        <textarea v-model="draft.text" rows=3 aria-label="answer"
+          :placeholder="s.data.answer ? 'answer it again — the earlier answer is kept' : 'your answer'"
+          @keydown.meta.enter.prevent="send" @keydown.ctrl.enter.prevent="send"></textarea>
+        <div class=compose-bar>
+          <span class=meta>the agent is told at its next stop</span>
+          <button type=submit :disabled="draft.sending || !draft.text.trim()">{{ s.data.answer ? 'answer again' : 'answer' }}</button>
+        </div>
+        <ErrorBox v-if="draft.error" :message="draft.error"/>
+      </form>
+    </div>`,
+};
+
 const NotFound = { template: `<p class=error>nothing here.</p>` };
 
-const VIEWS = { Home, EnvHome, Todos, TodoDetail, Pins, PinDetail, Rules, RuleDetail, Work, Reminders, Docs, EnvDocs, DocDetail, NotFound };
+const VIEWS = { Home, EnvHome, Todos, TodoDetail, Pins, PinDetail, Rules, RuleDetail, Work, Reminders, Docs, EnvDocs, DocDetail,
+                Inbox, Questions, QuestionDetail, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 const App = {
@@ -645,4 +823,6 @@ const app = createApp(App);
 // importing/returning its own reference from setup().
 app.config.globalProperties.$md = renderMarkdown;
 app.config.globalProperties.$human = humanSize;
+app.config.globalProperties.$refHref = refHref;
+app.component("LinkedQuestions", LinkedQuestions);
 app.mount("#app");

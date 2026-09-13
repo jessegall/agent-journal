@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.64.0 — the web viewer writes: an inbox box and question answers
+
+`journal serve` has an Inbox page per environment with a message box — what is sent lands in
+that environment's inbox, marked as from the browser — and each message shows what its parts
+became, linked. A Questions page lists the environment's questions; a question's page shows
+what it is about, linked, and an answer box. The to-do, pin, rule and doc pages list the
+questions about them; a rule's and a doc's carry the environment each was asked on. These are
+the viewer's first writes: POST with a JSON body, refused from another origin.
+
 ## 1.63.2 — the skill teaches the inbox, and that asking through the journal is always allowed
 
 The `journal` skill has two new sections: how to process an inbox message — split it into

@@ -27,7 +27,9 @@ from pathlib import Path
 
 import docs as docs_mod
 import fmt
+import inbox
 import pins
+import questions
 import reminders
 import todo
 import tools
@@ -66,6 +68,8 @@ def environments(root: Path) -> list[dict]:
             "work": len(work.open_work(root, track=name)),
             "reminders": len(reminders.live(root, track=name)),
             "docs": len(docs_on(root, name)),
+            "inbox": len(inbox.unprocessed(root, name)),
+            "questions": len(questions.open_items(root, name)),
         })
     out.sort(key=lambda e: (not e["current"], e["name"]))
     return out
@@ -98,6 +102,7 @@ def todo_detail(root: Path, env: str, n: int) -> dict | None:
     row["started"] = t.get("started") or ""
     row["done"] = t.get("done") or ""
     row["how"] = t.get("how") or ""
+    row["questions"] = questions_about(root, env, f"todo:{n}")
     return row
 
 
@@ -136,6 +141,8 @@ def doc_detail(root: Path, ref: str) -> dict | None:
     row["attachments"] = [docs_mod.attachment_row(a) for a in docs_mod.attachments(doc)]
     row["cited_by"] = docs_mod.cited_by_rows(root, doc["n"])
     row["part"] = docs_mod.part_row(prt) if prt else None
+    n = doc["n"]
+    row["questions"] = questions_everywhere(root, lambda ref: ref == f"doc:{n}" or ref.startswith(f"doc:{n}."))
     return row
 
 
@@ -202,6 +209,7 @@ def pin_detail(root: Path, env: str, n: int) -> dict | None:
         return None
     row = _split_meta(row)
     row["body"] = pins.body(root, n, track=env)
+    row["questions"] = questions_about(root, env, f"pin:{n}")
     return row
 
 
@@ -222,6 +230,7 @@ def rule_detail(root: Path, n: int) -> dict | None:
         return None
     row = _split_meta(row)
     row["body"] = pins.body(root, n, pins.RULES)
+    row["questions"] = questions_everywhere(root, lambda ref: ref == f"rule:{n}")
     return row
 
 
@@ -245,6 +254,35 @@ def reminders_on(root: Path, env: str) -> list[dict]:
     response `journal reminders` renders to text; the meta split is the web page's own."""
     rows, _left = reminders.rows_response(root, track=env, order=fmt.DESC)
     return [_split_meta(r) for r in rows]
+
+
+# ────────────────────────────────────────────────────────────────── inbox & questions
+def inbox_on(root: Path, env: str) -> list[dict]:
+    return inbox.rows_response(root, env)
+
+
+def questions_on(root: Path, env: str) -> list[dict]:
+    return questions.rows_response(root, env)
+
+
+def question_detail(root: Path, env: str, n: int) -> dict | None:
+    items = questions._all(root, env)
+    if n < 1 or n > len(items):
+        return None
+    return questions.row_response(n, items[n - 1])
+
+
+def questions_about(root: Path, env: str, ref: str) -> list[dict]:
+    return [questions.row_response(n, q) for n, q in questions.about(root, ref, env)]
+
+
+def questions_everywhere(root: Path, matches) -> list[dict]:
+    out = []
+    for name in tracks._all(root):
+        for n, q in enumerate(questions._all(root, name), 1):
+            if not q.get("withdrawn") and any(matches(r) for r in q.get("links") or []):
+                out.append({**questions.row_response(n, q), "env": name})
+    return out
 
 
 # ────────────────────────────────────────────────────────────────── tools
