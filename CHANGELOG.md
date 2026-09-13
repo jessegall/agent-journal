@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.71.0 — pins and rules go through their controllers
+
+Every `journal pins` and `journal rules` command runs through `PinsController` and
+`RulesController`, and prints only what they return. The viewer's API serves
+`GET/POST /api/env/<env>/pins`, `GET/PATCH/DELETE …/pins/<n>`, `POST …/pins/<n>/move|promote|amend`,
+and the project-wide `GET/POST /api/rules`, `GET/PATCH/DELETE /api/rules/<n>`,
+`POST /api/rules/<n>/amend`. Changing a claim's fact strikes the old one and adds the new one
+under a new number; its reasoning is changed in place. A struck pin or rule refuses every
+change. The router now serves project-wide resources at `/api/<resource>` as well as
+environment ones at `/api/env/<env>/<resource>`.
+
 ## 1.70.2 — question pages and the reminders list print only what their controllers return
 
 `journal questions show <n>` prints the question from its controller's row, and `journal

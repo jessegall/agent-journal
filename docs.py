@@ -889,6 +889,17 @@ def ref_label(root: Path, ref: str, short: bool = False) -> str:
     return say("label", n=doc["n"], title=doc["title"], sec=sec)
 
 
+def normalize_ref(root: Path, ref: str) -> tuple[str | None, str]:
+    """A doc reference as it is stored — `4`, `4.2`, `4.2#heading` — or why it is refused."""
+    err = check_ref(root, ref)
+    if err:
+        return None, err
+    base, head, _ = anchor(root, ref)
+    doc, prt, _ = get(root, base)
+    out = f"{doc['n']}.{prt['p']}" if prt else str(doc["n"])
+    return (out + "#" + slug_of(head) if head else out), ""
+
+
 def check_ref(root: Path, ref: str) -> str | None:
     """The reason a --doc reference cannot be taken, or None."""
     if not ref:

@@ -92,6 +92,7 @@ class Controller:
     numbered: tuple = ("show", "update", "destroy")
 
     default_sort = "n"
+    scoped = True           # served under /api/env/<env>/; a project-wide resource sets False
 
     def repository(self, root: Path, payload: Payload):
         raise NotImplementedError

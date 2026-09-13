@@ -53,8 +53,6 @@ ROUTES: list[tuple[re.Pattern, Callable]] = []
 
 MESSAGES = {
     "no_env": "no environment called {env}",
-    "no_pin": "no pin {n} on environment {env}",
-    "no_rule": "no rule {n}",
     "no_doc": "no doc {ref}",
     "no_attachment": "no attachment {name} on doc {n}",
     "no_question": "no question {n} on environment {env}",
@@ -142,38 +140,6 @@ def _api_env(root: Path, project: Path, m: re.Match):
     return _json(envs[env])
 
 
-@route(r"^/api/env/(?P<env>[a-z0-9-]+)/pins$")
-def _api_pins(root: Path, project: Path, m: re.Match):
-    env = m.group("env")
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    return _json(views.pins_on(root, env))
-
-
-@route(r"^/api/env/(?P<env>[a-z0-9-]+)/pins/(?P<n>\d+)$")
-def _api_pin_detail(root: Path, project: Path, m: re.Match):
-    env = m.group("env")
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    row = views.pin_detail(root, env, int(m.group("n")))
-    if row is None:
-        return _not_found(say("no_pin", n=m.group("n"), env=repr(env)))
-    return _json(row)
-
-
-@route(r"^/api/rules$")
-def _api_rules(root: Path, project: Path, m: re.Match):
-    return _json(views.rules(root))
-
-
-@route(r"^/api/rules/(?P<n>\d+)$")
-def _api_rule_detail(root: Path, project: Path, m: re.Match):
-    row = views.rule_detail(root, int(m.group("n")))
-    if row is None:
-        return _not_found(say("no_rule", n=m.group("n")))
-    return _json(row)
-
-
 @route(r"^/api/env/(?P<env>[a-z0-9-]+)/work$")
 def _api_work(root: Path, project: Path, m: re.Match):
     env = m.group("env")
@@ -226,7 +192,7 @@ def _post_inbox(root: Path, project: Path, m: re.Match, body: dict):
 
 
 # ─────────────────────────────────────────────────────────── resources, through their controllers
-RESOURCE = re.compile(r"^/api/env/(?P<env>[a-z0-9-]+)/(?P<resource>[a-z]+)(?:/(?P<id>\d+(?:\.\d+)?))?(?:/(?P<action>[a-z]+))?$")
+RESOURCE = re.compile(r"^/api/(?:env/(?P<env>[a-z0-9-]+)/)?(?P<resource>[a-z]+)(?:/(?P<id>\d+(?:\.\d+)?))?(?:/(?P<action>[a-z]+))?$")
 _VERBS = {("GET", False): "index", ("GET", True): "show", ("POST", False): "store",
           ("PATCH", True): "update", ("DELETE", True): "destroy"}
 _STATUS = {"ok": 200, "created": 201, "refused": 400, "missing": 404}
@@ -244,14 +210,23 @@ class Request:
         return Payload(self.env, self.id, self.body, source="web")
 
 
-def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str, bytes] | None:
+def _served(path: str):
+    """(controller, match) for a path that names a resource in its scope, or None."""
     import controllers
     m = RESOURCE.match(path)
     controller = controllers.CONTROLLERS.get(m.group("resource")) if m else None
-    if controller is None:
+    if controller is None or controller.scoped != bool(m.group("env")):
         return None
-    env, ident, named = m.group("env"), m.group("id"), m.group("action")
-    if not _known_env(root, env):
+    return controller, m
+
+
+def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str, bytes] | None:
+    served = _served(path)
+    if served is None:
+        return None
+    controller, m = served
+    env, ident, named = m.group("env") or "", m.group("id"), m.group("action")
+    if env and not _known_env(root, env):
         return _not_found(say("no_env", env=repr(env)))
     if named and method != "POST":
         return _json({"error": say("method", method=method, path=path)}, 405)
@@ -344,7 +319,7 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _write(self, method: str) -> None:
         path = urlsplit(self.path).path
-        if not RESOURCE.match(path):
+        if _served(path) is None:
             self._method_not_allowed()
             return
         body, refusal = self._write_body()
@@ -389,7 +364,7 @@ class _Handler(BaseHTTPRequestHandler):
     def _dispatch(self, head: bool) -> None:
         url = urlsplit(self.path)
         path = url.path
-        answered = _resource(self.server.root, "GET", path, dict(parse_qsl(url.query))) if RESOURCE.match(path) else None
+        answered = _resource(self.server.root, "GET", path, dict(parse_qsl(url.query))) if _served(path) else None
         if answered is not None:
             self._send(*answered, head)
             return

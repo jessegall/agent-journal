@@ -347,6 +347,30 @@ check("a field that cannot be sorted on is a 400 naming what can", (status, "pri
 status, got = post("/api/env/beta/todos/2", {"title": "x"}, method="PATCH")
 check("a number that is not on that environment is 404", status, 404)
 
+# ─────────────────────────────────────────────────────────────── pins and rules, through their controllers
+status, got = post("/api/env/alpha/pins", {"fact": "a pin written in the browser", "body": "because the page can"})
+check("store: 201, numbered on alpha, its reasoning kept",
+      (status, got["data"]["n"], pins.body(root, 3, track="alpha").strip()), (201, 3, "because the page can"))
+status, got = post("/api/env/alpha/pins/3", {"fact": "a pin rewritten in the browser"}, method="PATCH")
+check("changing the fact strikes the old pin and adds the new one under a new number",
+      (status, got["data"]["n"], [(q["fact"], bool(q["struck"])) for q in pins._all(root, pins.KEY, "alpha")][2:]),
+      (200, 4, [("a pin written in the browser", True), ("a pin rewritten in the browser", False)]))
+status, got = post("/api/env/alpha/pins/3", {"body": "more"}, method="PATCH")
+check("a struck pin refuses a change", status, 400)
+status, got = post("/api/env/alpha/pins/4", {"why": "no longer true"}, method="DELETE")
+check("destroy strikes it with the reason", (status, pins._all(root, pins.KEY, "alpha")[3]["struck"]), (200, "no longer true"))
+status, _, body = get("/api/env/alpha/pins/4")
+check("a struck pin's page says why", (status, json.loads(body)["struck_why"]), (200, "no longer true"))
+status, got = post("/api/env/alpha/pins/1/move", {"environment": "beta"})
+check("move carries a pin to another environment", (status, pins._all(root, pins.KEY, "beta")[-1]["fact"]), (200, "a pin on alpha"))
+status, got = post("/api/rules", {"fact": "a rule written in the browser"})
+check("a rule is project-wide: stored at /api/rules", (status, pins._all(root, pins.RULES)[-1]["fact"]),
+      (201, "a rule written in the browser"))
+status, got = post("/api/env/alpha/rules", {"fact": "x"})
+check("a rule is not written under an environment", status, 405)
+status, _, body = get("/api/env/alpha/rules")
+check("nor read under one", status, 404)
+
 import commands  # noqa: E402
 parsed, _ = commands.REGISTRY.parse(["reminders", "done", "3", "it", "came", "true"])
 got = parsed.payload()

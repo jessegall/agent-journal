@@ -124,16 +124,11 @@ def doc_where(doc_ref: str) -> dict | None:
     out = where()
     if doc_ref:
         import docs
-        err = docs.check_ref(root(), doc_ref)
-        if err:
+        got, err = docs.normalize_ref(root(), doc_ref)
+        if got is None:
             fmt.say(render(MESSAGES["doc_refused"], why=err), error=True)
             return None
-        base, head, _ = docs.anchor(root(), doc_ref)
-        doc, prt, _ = docs.get(root(), base)
-        doc_ref = f"{doc['n']}.{prt['p']}" if prt else str(doc["n"])
-        if head:
-            doc_ref += "#" + docs.slug_of(head)
-        out["doc"] = doc_ref
+        out["doc"] = got
     return out
 
 

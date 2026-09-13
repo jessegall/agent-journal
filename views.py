@@ -172,48 +172,6 @@ def _split_meta(row: dict) -> dict:
     return {**row, "meta": " · ".join(primary), "meta_secondary": secondary}
 
 
-def pins_on(root: Path, env: str) -> list[dict]:
-    """This environment's standing pins, newest first — `pins.rows_response` is the
-    SAME response `journal pins` renders to text; the line-number drop and the
-    primary/secondary meta split are the web page's own."""
-    rows, _left = pins.rows_response(root, track=env, order=fmt.DESC)
-    return [_split_meta(r) for r in rows]
-
-
-def pin_detail(root: Path, env: str, n: int) -> dict | None:
-    """One pin on this environment, in full — same shape and same read-only scope
-    as `rule_detail` (see to-do 19/20; pin 5 still stands, no write path here)."""
-    rows, _left = pins.rows_response(root, track=env, all_of_them=True, order=fmt.DESC)
-    row = next((r for r in rows if r["n"] == n), None)
-    if row is None:
-        return None
-    row = _split_meta(row)
-    row["body"] = pins.body(root, n, track=env)
-    row["questions"] = questions_about(root, env, f"pin:{n}")
-    return row
-
-
-def rules(root: Path) -> list[dict]:
-    """The project's rules — every environment's, never one's. Same relationship to
-    `pins.rows_response`/`journal rules` as `pins_on` has to `journal pins`."""
-    rows, _left = pins.rows_response(root, key=pins.RULES, order=fmt.DESC)
-    return [_split_meta(r) for r in rows]
-
-
-def rule_detail(root: Path, n: int) -> dict | None:
-    """One rule, in full: its claim, meta, and its long-form reasoning if it has
-    one (`pins.body` — the same text `journal rules show N` prints). Read-only:
-    there is no write path from this page yet (see to-do 19; pin 5 still stands)."""
-    rows, _left = pins.rows_response(root, key=pins.RULES, all_of_them=True, order=fmt.DESC)
-    row = next((r for r in rows if r["n"] == n), None)
-    if row is None:
-        return None
-    row = _split_meta(row)
-    row["body"] = pins.body(root, n, pins.RULES)
-    row["questions"] = questions_everywhere(root, lambda ref: ref == f"rule:{n}")
-    return row
-
-
 # ────────────────────────────────────────────────────────────────── work & reminders
 def work_on(root: Path, env: str) -> list[dict]:
     """Open work on this environment, with its notes."""
