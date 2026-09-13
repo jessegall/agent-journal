@@ -309,6 +309,10 @@ check("every environment and session spelling is classified as it was",
                                 "assign 3 --to=a", "worktree", "worktree link")],
       ["switch", "switch", "claim", "prepare", "environments", "environments", "environments", "env",
        "grant", "grants", None, None, "worktree", "worktree"])
+check("reading the transcript is never a write",
+      [_classified(c) for c in ("conversation", "conversation --back=1", "user", "search pins", "search x --all",
+                                "carry", "carry --fresh")],
+      [None, None, None, None, None, None, None])
 check("every tools spelling is classified the same way",
       [_classified(c) for c in ("tools", "tools mover", "tools show add", 'tools add m "t" --summary=s',
                                 "tools set m entry run.py", 'tools remove m "why"', "tools index", "tools run m x")],
