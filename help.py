@@ -53,6 +53,13 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal messages edit N "<text>"   reword a waiting message',
         'journal messages move N "<env>"    carry a waiting message to another environment',
     ),
+    "comments": (
+        "journal comments [--all]      what the user said about a to-do, doc, pin, rule or reminder; open ones, --all adds handled",
+        "journal comment ...           the same commands; `comment` and `comments` are twins",
+        "journal comments show N       one comment in full",
+        'journal comments add "<ref>" "<text>"   comment on something: todo 22, doc 4, pin 3, rule 2, reminder 1; the agent is told at its next stop',
+        'journal comments done N "<what was done>"   the comment is handled',
+    ),
     "questions": (
         'journal questions add "<question>" [--about=<ref>]...   a question of its own, linked to any number of resources: todo 22, doc 4.1, pin 3, rule 2',
         "journal question ...          the same commands; `question` and `questions` are twins",
@@ -216,6 +223,7 @@ ALIAS: dict[str, str] = {
     "start": "work", "end": "work", "open": "work", "next": "work",
     "idea": "ideas",
     "question": "questions",
+    "comment": "comments",
     "pin": "pins", "promote": "pins", "strike": "pins",
     "nothing": "pins",
     "rule": "rules",

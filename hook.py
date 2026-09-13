@@ -145,6 +145,11 @@ MESSAGES = {
     "cleanup_clean_fact": "nothing in the record has evidence against it, but the reading pass was {never}",
     "cleanup_clean_do": "`.journal/journal.py cleanup read` — every rule and pin judged against the code — when the "
                         "work you just did touched what they claim",
+    "commented_one": "the user commented on {label}",
+    "commented_many": "the user left {n} comments",
+    "commented_do": "act on what each asks — amend, drop or answer what it is about — then "
+                    '`.journal/journal.py comments done <n> "<what was done>"`',
+    "commented_row": "comment {n} on {label}: {text}",
     "answered_one": "the user answered question {n}",
     "answered_many": "the user answered {n} questions",
     "answered_do": "act on each answer; `.journal/journal.py questions show <n>` reads one in full",
@@ -1006,6 +1011,19 @@ def _p_cleanup(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # no trace a command can find, so an empty findings list is not a clean record — it is a
     # record nobody has read. This is the only thing the hook can say about it: how long.
     return _said(say("cleanup_clean_fact", never=never), say("cleanup_clean_do"))
+
+
+@nudges.subject("comments", 8)
+def _p_comments(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    import comments
+    fresh = comments.untold(ROOT, here)
+    if not fresh:
+        return None
+    comments.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
+    head = (say("commented_one", label=comments.label(fresh[0][1]["about"])) if len(fresh) == 1
+            else say("commented_many", n=len(fresh)))
+    return _say(head, say("commented_do"),
+                rows=[say("commented_row", n=n, label=comments.label(c["about"]), text=c["text"]) for n, c in fresh])
 
 
 @nudges.subject("questions", 45)

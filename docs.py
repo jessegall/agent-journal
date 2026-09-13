@@ -962,6 +962,7 @@ def row(root: Path, d: dict) -> dict:
         "abstract": d.get("abstract", ""),
         "status": d.get("status") or "draft",
         "scope": scope_text(d),
+        "track": "" if scope_of(d) == GLOBAL else scope_of(d),
         "at": d.get("at", ""),
         "age": _age(d.get("at", "")),
         "parts": len(d.get("parts") or []),

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable
 
+import comments
 import docs
 import inbox
 import pins
@@ -12,7 +13,7 @@ import todo
 import tools
 import work
 from resources.base import Query, Repository
-from resources.models import Attachment, Claim, Doc, Message, Part, Question, Reminder, Rule, Todo, Tool, Work
+from resources.models import Attachment, Claim, Comment, Doc, Message, Part, Question, Reminder, Rule, Todo, Tool, Work
 
 
 class Todos(Repository[Todo]):
@@ -63,6 +64,13 @@ class Questions(Repository[Question]):
 
     def about(self, ref: str) -> Query[Question]:
         return self.query().where(lambda q: ref in q.links and not q.withdrawn)
+
+
+class Comments(Repository[Comment]):
+    model = Comment
+
+    def rows(self) -> list[dict]:
+        return comments._all(self.root, self.env or None)
 
 
 class Messages(Repository[Message]):

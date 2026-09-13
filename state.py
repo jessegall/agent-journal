@@ -153,7 +153,7 @@ def runtime_files(root: Path) -> list[tuple[str, dict]]:
 #: Before this, the current environment's data sat in top-level keys and a switch SWAPPED it
 #: with a parked copy — which meant one current environment for the whole project, and two
 #: sessions could not be on two environments. A record in the old shape is moved on first read.
-TRACKED = ("pins", "work", "reminders", "questions", "inbox")
+TRACKED = ("pins", "work", "reminders", "questions", "inbox", "comments")
 _TRACK: list = []
 
 #: WHAT BELONGS TO AN ENVIRONMENT LIVES IN THE ENVIRONMENT'S FOLDER. Pins and work sat in

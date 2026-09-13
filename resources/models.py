@@ -83,6 +83,23 @@ class Reminder(Model):
 
 
 @dataclass
+class Comment(Model):
+    text: str = ""
+    about: str = ""
+    source: str = ""
+    told_at: str = ""
+    done: str = ""
+    done_at: str = ""
+
+    noun: ClassVar[str] = "comment"
+    sortable: ClassVar[tuple[str, ...]] = ("n", "at")
+
+    @property
+    def open(self) -> bool:
+        return not self.done
+
+
+@dataclass
 class Question(Model):
     text: str = ""
     source: str = ""
