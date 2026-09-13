@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.83.1 — the viewer stops refetching forever, and the server reads the environment list safely
+
+Every list in the viewer refetched its data the moment the last fetch landed, over and over,
+because the fetch effect read the data it was about to replace: about 23,000 requests in a
+quarter of an hour, which is why the viewer felt slower. It now fetches when its address
+changes or a write asks it to. The Search button is enabled as soon as there is a term (an
+empty string counted as disabled), and it shows a spinner only while a search runs. The server
+reads the environment list from a copy, so removing an environment while another request lists
+them no longer crashes that request. Open work rows no longer show a status dot.
+
 ## 1.83.0 — search finds the conversation on an environment again
 
 Searching one environment's conversation found nothing said in any recent session. The

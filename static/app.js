@@ -46,7 +46,8 @@ function useFetch(urlFn) {
     const url = urlFn();
     void state.tick;
     if (!url) return;
-    if (state.data === null) state.loading = true;
+    // only writes here: reading state.data would make every response trigger the next fetch
+    state.loading = true;
     state.error = null;
     fetch(url)
       .then((r) => r.json().then((body) => ({ ok: r.ok, body })))
@@ -781,7 +782,6 @@ const Work = {
         <p v-else-if="list.error" class=error>{{ list.error }}</p>
         <template v-else-if="list.data">
           <a :class="['row', 'workrow', {sel: String(w.n) === n}]" v-for="w in list.data" :key="w.n" :href="base + '/' + w.n">
-            <StatusIcon kind="progress"/>
             <div>
               <div class=title>{{ w.subject }}</div>
               <div v-for="(note, i) in w.notes.slice(-3)" :key="i" class=sub>{{ note.text }}</div>
@@ -1049,7 +1049,6 @@ const EnvHome = {
           <p v-else-if="work.error" class=error>{{ work.error }}</p>
           <template v-else-if="work.data">
             <div class="row workrow" v-for="w in work.data" :key="w.subject">
-              <StatusIcon kind="progress"/>
               <div>
                 <div class=title>{{ w.subject }}</div>
                 <div v-for="(note, i) in w.notes.slice(-3)" :key="i" class=sub>{{ note.text }}</div>
@@ -1208,7 +1207,7 @@ const Search = {
       <form class=search-bar @submit.prevent="go">
         <input class="input search-input" v-model="form.text" placeholder="Search to-dos, pins, docs, messages and the conversation">
         <label class=toggle><input type=checkbox v-model="form.all" @change="form.term && go()"> Every environment</label>
-        <button type=submit class=primary :disabled="!form.text.trim() || s.loading">
+        <button type=submit class=primary :disabled="!form.text.trim() || (!!form.term && s.loading)">
           <span v-if="s.loading && form.term" class=spinner></span>{{ s.loading && form.term ? 'Searching' : 'Search' }}</button>
       </form>
       <p v-if="!form.term" class="prose muted">This searches like <code>journal search</code>: everything said in the sessions on this environment, and the journal's own to-dos, pins, rules, questions, messages, reminders and docs.</p>
