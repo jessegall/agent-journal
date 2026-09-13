@@ -499,6 +499,7 @@ wall — and an agent routes around a wall.
     journal inbox show <n>                                     the message, its parts, and the questions about it
     journal inbox process <n> --part="<words>" --became=<ref>  one part, and what it became
     journal inbox done <n>                                     processed, once its parts say what they became
+    journal inbox move <n> "<environment>"                     left on the wrong environment: carry it there
 
 The user writes to the inbox instead of interrupting you: instructions, follow-ups,
 corrections, things to remember, new work. It belongs to an environment, like a pin. When a
@@ -681,7 +682,7 @@ The noun answers to `env`, `envs`, `environment`, `tracks` and `track` as well.
 ## If a hook holds or denies you
 
 Read what it says and do that one thing. A hold is one line, and holds come one per
-stop in a fixed order — claimed, environment, inbox, loop, context, deferral, untagged, work, questions, auto — so what
+stop in a fixed order — claimed, environment, inbox, loop, context, deferral, untagged, questions, work, auto — so what
 you are shown is the first thing owed, and the next stop shows the next. When the line ends with
 "details: `.journal/journal.py next`", run that first: it prints the full text of the
 hold, which to-do is next, the questions the user answered, or what is filling the
