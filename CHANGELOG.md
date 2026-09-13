@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.89.1 — environments are listed by their latest activity
+
+The viewer lists environments newest activity first: the latest journal event there — a
+message, a to-do, a question, work — or a live session's last hook event, whichever is newer.
+An environment where something just happened moves to the top. The overview carries each
+environment's `last_active`.
+
 ## 1.89.0 — the sidebar shows what the agent is doing
 
 The bottom of the viewer's sidebar is an Activity section for the environment you are on: the
