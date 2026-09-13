@@ -540,6 +540,7 @@ const QUESTION_LIST = {
   count: (rows) => `${rows.filter((q) => q.status === "open").length} open`, showLabel: "Show answered",
   empty: "Nothing has been asked on this environment.", name: "questions",
 };
+const LOG_KIND = { started: "Started", update: "Update", waiting: "Waiting on", ended: "Ended" };
 const WORK_LIST = {
   groups: [{ key: "open", label: "Open", kind: "progress", match: (w) => !w.ended },
            { key: "ended", label: "Ended", kind: "done", closed: true, match: (w) => w.ended }],
@@ -608,7 +609,7 @@ const Todos = {
       ];
     });
     const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, creating, actions, done, base, todoStatus, STATUS_LABEL, priorityName, TODO_LIST };
+    return { list, item, creating, actions, done, base, todoStatus, STATUS_LABEL, priorityName, TODO_LIST, LOG_KIND };
   },
   template: `
     <TopBar :crumbs="[env, 'To-dos']"><a class="btn new" :href="base + '/new'">New to-do</a></TopBar>
@@ -645,6 +646,14 @@ const Todos = {
             <p class=section-label>Brief</p>
             <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
             <p v-else class="prose muted">Title only; no brief was written.</p>
+          </div>
+          <div v-if="item.data.log && item.data.log.length">
+            <p class=section-label>Work log</p>
+            <div class=linked>
+              <div v-for="(e, i) in item.data.log" :key="i" class=sub>
+                <span class=muted>{{ LOG_KIND[e.kind] }} · {{ e.age || 'just now' }}</span><span v-if="e.text && e.kind !== 'started'"> — {{ e.text }}</span>
+              </div>
+            </div>
           </div>
           <FromMessages :rows="item.data.from_messages" :env="env"/>
           <LinkedQuestions :rows="item.data.questions" :env="env"/>
@@ -905,6 +914,7 @@ const Work = {
           <h2 class=p-title>{{ item.data.subject }}</h2>
           <dl class=props>
             <dt>Started</dt><dd>{{ item.data.age || '—' }}</dd>
+            <dt v-if="item.data.ended">Ended</dt><dd v-if="item.data.ended">{{ item.data.ended_age || 'just now' }}</dd>
             <dt>Status</dt><dd>{{ item.data.ended ? 'Ended' : item.data.awaiting ? 'Waiting on ' + item.data.awaiting : 'Open' }}</dd>
           </dl>
           <ActionBar :actions="actions" :done="done" :key="'work' + item.data.n + (item.data.ended || '')"/>

@@ -138,7 +138,8 @@ class TodosController(Controller):
         t, err = todo.start(root, self.env(root), p.id, p.at, agent=p.agent)
         if t is None:
             return Result("refused", err)
-        return Result.of(work.start(root, t["title"], p.at, p.where), {"n": p.id, "title": t["title"]})
+        return Result.of(work.start(root, t["title"], p.at, {**(p.where or {}), "todo": p.id}),
+                         {"n": p.id, "title": t["title"]})
 
     def move(self, root: Path, p: MovePayload) -> Result:
         return Result.of(todo.move(root, self.env(root), p.id, p.environment, p.at))

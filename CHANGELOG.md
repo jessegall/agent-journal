@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.94.0 — a to-do keeps a log of the work done on it
+
+Work started from a to-do records the to-do's number, whether through `journal todos start
+<n>` or through `journal work start` with the to-do's title. A to-do's page, in the terminal
+and in the viewer, shows a work log: when the work started, each update, what it waited on,
+and when it ended. The viewer's work panel shows when ended work ended.
+
 ## 1.93.0 — the user is told about the web viewer, and can see the journal in the status bar
 
 A session start shows the user one line: the viewer's address when it is running, or how to
