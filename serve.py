@@ -34,7 +34,7 @@ import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Callable
-from urllib.parse import unquote, urlsplit
+from urllib.parse import parse_qsl, unquote, urlsplit
 
 import docs as docs_mod
 import inbox
@@ -387,8 +387,9 @@ class _Handler(BaseHTTPRequestHandler):
         self._write("PATCH")
 
     def _dispatch(self, head: bool) -> None:
-        path = urlsplit(self.path).path
-        answered = _resource(self.server.root, "GET", path, {}) if RESOURCE.match(path) else None
+        url = urlsplit(self.path)
+        path = url.path
+        answered = _resource(self.server.root, "GET", path, dict(parse_qsl(url.query))) if RESOURCE.match(path) else None
         if answered is not None:
             self._send(*answered, head)
             return
