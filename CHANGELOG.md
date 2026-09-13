@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.69.1 — plain wording for a new answer
+
+Answering a question that already has an answer adds a new answer; the old one stays in its
+history. The viewer now says so plainly: the box reads "Write a new answer. The old one stays
+in the history." and the button "Add new answer". The agent is told "(a new answer)".
+
 ## 1.69.0 — to-dos go through their controller; a closed to-do cannot be edited
 
 Every `journal todos` command and the viewer's to-do API run through `TodosController`:
