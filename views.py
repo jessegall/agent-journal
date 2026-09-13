@@ -105,27 +105,6 @@ def docs_on(root: Path, env: str) -> list[dict]:
            if docs_mod.scope_of(d) == env]
 
 
-def doc_detail(root: Path, ref: str) -> dict | None:
-    """One doc, in full: its body, every part, its attachments, and what cites it.
-
-    `ref` may name a part (`4.2`) as well as a doc (`4`) — either way the whole doc comes
-    back; a `part` key is set only when `ref` named one specifically, so a page for
-    `/docs/4.2` can show that part first without losing the doc it belongs to.
-    """
-    doc, prt, err = docs_mod.get(root, ref)
-    if doc is None:
-        return None
-    row = docs_mod.row(root, doc)
-    row["body"] = doc.get("body", "")
-    row["parts"] = [docs_mod.part_row(p) for p in doc.get("parts") or []]
-    row["attachments"] = [docs_mod.attachment_row(a) for a in docs_mod.attachments(doc)]
-    row["cited_by"] = docs_mod.cited_by_rows(root, doc["n"])
-    row["part"] = docs_mod.part_row(prt) if prt else None
-    n = doc["n"]
-    row["questions"] = questions_everywhere(root, lambda ref: ref == f"doc:{n}" or ref.startswith(f"doc:{n}."))
-    return row
-
-
 # ────────────────────────────────────────────────────────────────── pins & rules
 #: WHERE IN THE TRANSCRIPT A PIN WAS WRITTEN IS FOR `pins around`, not for a reader of
 #: the web viewer — it names nothing they can act on. Every pin/rule's meta carries

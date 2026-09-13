@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.74.0 — docs go through their controller
+
+Every `journal docs` command runs through `DocsController` and prints only what it returns. A
+doc is addressed by number, by part (`4.2`) or by title, the same from the terminal and the
+web. The viewer's API serves `GET/POST /api/docs` (the project's own docs) and
+`/api/env/<env>/docs` (an environment's), `GET/PATCH/DELETE /api/docs/<n>[.<p>]` (PATCH takes
+an abstract, a status or a body; DELETE strikes a part), and `POST …/<n>/part|final|draft|move|supersede|detach`
+and `POST /api/docs/search`. Attaching copies a file from this machine, so it is refused from
+the browser. A doc's terminal page and the viewer's detail are built from the same data.
+
 ## 1.73.0 — work goes through its controller
 
 `journal work start|update|await|end` and `journal open` run through `WorkController` and print

@@ -134,27 +134,6 @@ def _api_env(root: Path, project: Path, m: re.Match):
     return _json(envs[env])
 
 
-@route(r"^/api/docs$")
-def _api_docs(root: Path, project: Path, m: re.Match):
-    return _json(views.docs(root))
-
-
-@route(r"^/api/env/(?P<env>[a-z0-9-]+)/docs$")
-def _api_env_docs(root: Path, project: Path, m: re.Match):
-    env = m.group("env")
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    return _json(views.docs_on(root, env))
-
-
-@route(r"^/api/docs/(?P<ref>\d+(?:\.\d+)?)$")
-def _api_doc_detail(root: Path, project: Path, m: re.Match):
-    d = views.doc_detail(root, m.group("ref"))
-    if d is None:
-        return _not_found(say("no_doc", ref=m.group("ref")))
-    return _json(d)
-
-
 # ─────────────────────────────────────────────────────────── resources, through their controllers
 RESOURCE = re.compile(r"^/api/(?:env/(?P<env>[a-z0-9-]+)/)?(?P<resource>[a-z]+)(?:/(?P<id>\d+(?:\.\d+)?))?(?:/(?P<action>[a-z]+))?$")
 _VERBS = {("GET", False): "index", ("GET", True): "show", ("POST", False): "store",
@@ -179,7 +158,7 @@ def _served(path: str):
     import controllers
     m = RESOURCE.match(path)
     controller = controllers.CONTROLLERS.get(m.group("resource")) if m else None
-    if controller is None or controller.scoped != bool(m.group("env")):
+    if controller is None or (controller.scoped is not None and controller.scoped != bool(m.group("env"))):
         return None
     return controller, m
 

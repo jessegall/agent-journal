@@ -3,9 +3,10 @@ from __future__ import annotations
 import textwrap
 
 import fmt
-import tracks
-from app import BRIEF_REFUSED, CATALOGUE_PAGE, PAGE, answer, brief, refuse, root, stem
-from command import Command, Parsed
+from app import BRIEF_REFUSED, CATALOGUE_PAGE, PAGE, brief, refuse
+from command import Parsed
+from commands.resource import Resource
+from controllers.docs import DocsController
 from commands.options import LISTING, LISTING_CASTS
 from templates import render
 
@@ -15,10 +16,6 @@ NOUNS = (("docs",),)
 def _docs():
     import docs
     return docs
-
-
-def here() -> str:
-    return tracks.current(root(), stem())
 
 
 def trailing_files(text: str) -> str:
@@ -40,11 +37,6 @@ TEXT = {
     "loose": "{n} file(s) under {folder}/ are not catalogued: {names:, }",
     "lead": "What was settled, so it is not re-investigated: a doc is read on demand and never injected, and one "
             "line of its catalogue reaches every session. A pin, rule or to-do that rests on one cites it with --doc=N.",
-    "move_both": "`docs move {doc}` was given both `--global` and `{dst}`. A doc belongs to the project or to one "
-                 "environment; say which.",
-    "move_where": '`journal docs move <doc> "<environment>"` — or `--global` to give it to the project, which lists '
-                  "it on every environment",
-    "search_wants": "docs search wants a term",
     "search_none": "NO DOC MENTIONS {term}",
     "search_found": "{n} DOC LINE(S) MENTION {term}",
     "search_elsewhere": "{n} on other environments (--all)",
@@ -68,185 +60,187 @@ LIST_COMMANDS = (
 INDEX_COMMAND = ("journal docs index", "catalogue the loose files")
 
 
-class List(Command):
+CONTROLLER = DocsController()
+
+
+class List(Resource):
     signature = "docs:list " + LISTING
     casts = LISTING_CASTS
     default = True
+    controller = CONTROLLER
+    action = "index"
 
-    def run(self, p: Parsed) -> int:
-        docs, env, every_env = _docs(), here(), bool(p.option("all"))
-        every = docs._load(root())
-        shelf = every if every_env else [d for d in every if docs.here(d, env)]
-        loose = docs.uncatalogued(root())
-        fmt.say(fmt.title(TEXT["title"], sub=render(
-            TEXT["sub"], n=len(shelf), drafts=len([d for d in shelf if d.get("status") != "final"]) or None,
-            elsewhere=(len(every) - len(shelf)) or None)))
+    def payload(self, p: Parsed):
+        got = p.payload()
+        got.fields.update(cap=CATALOGUE_PAGE, scope="here")
+        return got
+
+    def render(self, p: Parsed, result) -> int:
+        m, page, order = result.meta, p.option("page"), p.option("order")
+        fmt.say(fmt.title(TEXT["title"], sub=render(TEXT["sub"], n=m["shelf"], drafts=m["drafts"] or None,
+                                                    elsewhere=m["elsewhere"] or None)))
         fmt.say()
-        fmt.say(docs.catalogue(root(), cap=CATALOGUE_PAGE, page=p.option("page"), order=p.option("order"),
-                               track=env, all_of_them=every_env))
-        if loose:
+        if result.data:
+            items = tuple(fmt.Item(n=r["n"], text=r["title"], meta=r["facts"], struck=bool(r["superseded_by"]))
+                          for r in result.data)
+            fmt.say(fmt.render(fmt.Out(items=items)) + fmt.more("docs", m["left"], page, order))
+        else:
+            fmt.say(_docs().say("empty"))
+        if m["loose"]:
             fmt.say()
-            fmt.say(fmt.wrap(render(TEXT["loose"], n=len(loose), folder=docs.folder(root()).name,
-                                    names=[x.name for x in loose])))
+            fmt.say(fmt.wrap(render(TEXT["loose"], n=len(m["loose"]), folder=m["folder"], names=m["loose"])))
         fmt.say()
         fmt.say(fmt.wrap(TEXT["lead"]))
-        fmt.say(fmt.commands([*LIST_COMMANDS, *([INDEX_COMMAND] if loose else [])]))
+        fmt.say(fmt.commands([*LIST_COMMANDS, *([INDEX_COMMAND] if m["loose"] else [])]))
         return 0
 
 
-class FilesOf(Command):
+class FilesOf(Resource):
     signature = "docs {doc* : a doc number or name, then files}"
     casts = {"doc": trailing_files}
+    controller = CONTROLLER
+    action = "files"
+    id_arg = "doc"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_docs().list_attachments(root(), p.arg("doc")))
 
-
-class Show(Command):
+class Show(Resource):
     signature = "docs:show {doc* : a doc number or name}"
     verbs = ("read",)
     default = True
+    controller = CONTROLLER
+    action = "show"
+    id_arg = "doc"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_docs().show(root(), p.arg("doc")))
+    def render(self, p: Parsed, result) -> int:
+        if not result.ok:
+            return super().render(p, result)
+        fmt.say(_docs().show_text(result.data))
+        return 0
 
 
-class Files(Command):
+class Files(Resource):
     signature = "docs:files {doc*? : a doc number or name}"
     verbs = ("attachments",)
+    controller = CONTROLLER
+    action = "files"
+    id_arg = "doc"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_docs().list_attachments(root(), p.arg("doc") or ""))
+
+class _WithBody(Resource):
+    writes = True
+    controller = CONTROLLER
+
+    def payload(self, p: Parsed):
+        body = brief(bool(p.option("brief")))
+        if body is None:
+            return refuse(BRIEF_REFUSED)
+        got = p.payload()
+        got.fields["body"] = body
+        return got
 
 
-class Add(Command):
+class Add(_WithBody):
     signature = "docs:add {title*? : the doc's title} {--abstract=} {--brief} {--global}"
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        body = brief(bool(p.option("brief")))
-        if body is None:
-            return refuse(BRIEF_REFUSED)
-        docs = _docs()
-        scope = docs.GLOBAL if p.option("global") else here()
-        return answer(docs.add(root(), p.arg("title") or "", p.option("abstract") or "", body, scope))
+    action = "store"
 
 
-class Part(Command):
+class Part(_WithBody):
     signature = "docs:part {doc : a doc number or name} {title* : the part's title} {--brief}"
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        body = brief(bool(p.option("brief")))
-        if body is None:
-            return refuse(BRIEF_REFUSED)
-        return answer(_docs().part(root(), p.arg("doc"), p.arg("title"), body, here()))
+    action = "part"
+    id_arg = "doc"
 
 
-class Replace(Command):
+class Replace(_WithBody):
     signature = "docs:replace {part : a part, like 4.2} {--brief}"
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        body = brief(bool(p.option("brief")))
-        if body is None:
-            return refuse(BRIEF_REFUSED)
-        return answer(_docs().replace(root(), p.arg("part"), body, here()))
+    action = "update"
+    id_arg = "part"
 
 
-class Strike(Command):
+class Strike(Resource):
     signature = "docs:strike {part : a part, like 4.2} {why* : why it is struck}"
     writes = True
+    controller = CONTROLLER
+    action = "destroy"
+    id_arg = "part"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_docs().strike(root(), p.arg("part"), p.arg("why")))
 
-
-class Final(Command):
+class Final(Resource):
     signature = "docs:final {doc : a doc number or name}"
-    status = "final"
     writes = True
-
-    def run(self, p: Parsed) -> int:
-        return answer(_docs().set_status(root(), p.arg("doc"), self.status))
+    controller = CONTROLLER
+    action = "final"
+    id_arg = "doc"
 
 
 class Draft(Final):
     signature = "docs:draft {doc : a doc number or name}"
-    status = "draft"
+    action = "draft"
 
 
-class Abstract(Command):
+class Abstract(Resource):
     signature = "docs:abstract {doc : a doc number or name} {line* : the one-line abstract}"
     writes = True
+    controller = CONTROLLER
+    action = "update"
+    id_arg = "doc"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_docs().set_abstract(root(), p.arg("doc"), p.arg("line")))
+    def payload(self, p: Parsed):
+        got = p.payload()
+        got.fields["abstract"] = got.fields.pop("line")
+        return got
 
 
-class Move(Command):
+class Move(Resource):
     signature = "docs:move {doc : a doc number or name} {environment*? : the environment it belongs to} {--global}"
     writes = True
-
-    def run(self, p: Parsed) -> int:
-        docs, dst, to_project = _docs(), p.arg("environment") or "", bool(p.option("global"))
-        if to_project and dst:
-            return refuse(render(TEXT["move_both"], doc=p.arg("doc"), dst=dst))
-        if not (dst or to_project):
-            return refuse(TEXT["move_where"])
-        return answer(docs.move(root(), p.arg("doc"), docs.GLOBAL if to_project else dst))
+    controller = CONTROLLER
+    action = "move"
+    id_arg = "doc"
 
 
-class Supersede(Command):
+class Supersede(Resource):
     signature = "docs:supersede {old : the doc being replaced} {by : the word by} {new : the doc that replaces it}"
     casts = {"by": the_word_by}
     writes = True
+    controller = CONTROLLER
+    action = "supersede"
+    id_arg = "old"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_docs().supersede(root(), p.arg("old"), p.arg("new")))
 
-
-class Attach(Command):
+class Attach(Resource):
     signature = "docs:attach {doc : a doc number or name} {path : the file or folder} {title*? : what it is} {--replace}"
     writes = True
+    controller = CONTROLLER
+    action = "attach"
+    id_arg = "doc"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_docs().attach(root(), p.arg("doc"), p.arg("path"), p.arg("title") or "", here(),
-                                     replace=bool(p.option("replace"))))
 
-
-class Detach(Command):
+class Detach(Resource):
     signature = "docs:detach {doc : a doc number or name} {name : the attachment} {why* : why it is removed}"
     writes = True
+    controller = CONTROLLER
+    action = "detach"
+    id_arg = "doc"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_docs().detach(root(), p.arg("doc"), p.arg("name"), p.arg("why")))
 
-
-class Index(Command):
+class Index(Resource):
     signature = "docs:index"
     writes = True
-
-    def run(self, p: Parsed) -> int:
-        for line in _docs().adopt(root(), here()):
-            fmt.say(line)
-        return 0
+    controller = CONTROLLER
+    action = "adopt"
 
 
-class Search(Command):
+class Search(Resource):
     signature = "docs:search {term*? : a word or phrase} {--all} {--page=1}"
     casts = {"page": LISTING_CASTS["page"]}
+    controller = CONTROLLER
+    action = "search"
 
-    def run(self, p: Parsed) -> int:
-        term = p.arg("term") or ""
+    def render(self, p: Parsed, result) -> int:
+        if not result.ok:
+            return super().render(p, result)
+        term, hits, elsewhere = p.arg("term") or "", result.data, result.meta["elsewhere"]
         needle = term.lower()
-        if not needle:
-            return refuse(TEXT["search_wants"])
-        docs = _docs()
-        every = docs.search_lines(root(), all_of_them=True)
-        lines = every if p.option("all") else docs.search_lines(root(), track=here())
-        hits = [(ref, title, i, line) for ref, title, i, line in lines if needle in line.lower()]
-        elsewhere = len([1 for _, _, _, line in every if needle in line.lower()]) - len(hits)
         away = render(TEXT["search_elsewhere"], n=elsewhere) if elsewhere else ""
         if not hits:
             fmt.say(fmt.title(render(TEXT["search_none"], term=repr(term)), sub=away))
@@ -260,14 +254,14 @@ class Search(Command):
         said = [s for s in (render(TEXT["search_page"], page=page, pages=pages) if pages > 1 else "", away) if s]
         fmt.say(fmt.title(render(TEXT["search_found"], n=len(hits), term=repr(term)), sub=" · ".join(said)))
         width, last = fmt.room(None), None
-        for ref, title, i, line in hits[lo:hi]:
-            if ref != last:
-                fmt.say(fmt.section(render(TEXT["search_section"], ref=ref, title=title)))
-                last = ref
-            body = " ".join(line.split())
+        for hit in hits[lo:hi]:
+            if hit["ref"] != last:
+                fmt.say(fmt.section(render(TEXT["search_section"], ref=hit["ref"], title=hit["title"])))
+                last = hit["ref"]
+            body = " ".join(hit["text"].split())
             j = body.lower().find(needle)
             body = body[:j] + "«" + body[j:j + len(term)] + "»" + body[j + len(term):]
-            fmt.say(textwrap.fill(body, width=width, initial_indent=f"  {i:>4}  ", subsequent_indent="        "))
+            fmt.say(textwrap.fill(body, width=width, initial_indent=f"  {hit['line']:>4}  ", subsequent_indent="        "))
         fmt.say()
         rows = [("journal docs <doc>", "read the doc, by number or name")]
         if page < pages:
