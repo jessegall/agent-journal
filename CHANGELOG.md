@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.87.0 — one list, one switch, everywhere in the viewer
+
+Every list in the viewer is the same component: to-dos, pins, rules, messages, questions,
+work, reminders, docs, tools and the lists on Home. Each groups its rows by status under
+dividers, sorts each group on its own (number, or priority for to-dos, in either direction —
+number first, newest on top), shows the first 25 with Show more, and hides what is closed
+behind one switch in its bar — Show done, Show struck, Show processed, Show answered, Show
+ended, Show retired, Show superseded. Rows have the same columns and the same spacing
+everywhere. Single on/off settings use one switch component, label on the left and the
+switch at the end of the row: the list bars, Search's Every environment and Settings' auto
+mode. A list that is empty only because its closed rows are hidden says so.
+
 ## 1.86.1 — list bars show only their counts
 
 The bar under each page title says only how many there are — "27 open", "18 standing" — and

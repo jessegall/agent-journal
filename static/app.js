@@ -367,6 +367,89 @@ const ActionBar = {
     </div>`,
 };
 
+// ─────────────────────────────────────────────────────────────── lists: one component for every resource
+const Switch = {
+  props: { label: String, modelValue: Boolean },
+  emits: ["update:modelValue"],
+  template: `
+    <label class=switch-row>
+      <span>{{ label }}</span>
+      <button type=button role=switch :aria-checked="modelValue ? 'true' : 'false'" :class="['switch', {on: modelValue}]"
+        @click.prevent="$emit('update:modelValue', !modelValue)"><span class=knob></span></button>
+    </label>`,
+};
+
+const PAGE_ROWS = 25;
+
+// groups: {key, label, kind, closed, match(row)}; columns: {priority, status, num, numWidth, title, sub, cite, age, struck}
+const ResourceList = {
+  props: {
+    rows: Array, loading: Boolean, error: String,
+    groups: { type: Array, default: () => [{ key: "all", label: "", match: () => true }] },
+    columns: Object, href: Function, selected: Function, pick: Function,
+    sorts: { type: Array, default: () => [{ key: "n", label: "Number" }] },
+    count: Function, showLabel: String, empty: String,
+    bar: { type: Boolean, default: true }, limit: { type: Number, default: PAGE_ROWS },
+  },
+  components: { StatusIcon, PriorityIcon, Switch },
+  setup(props) {
+    const state = reactive({ show: false, sort: {}, pages: {} });
+    const sortOf = (key) => state.sort[key] || { by: props.sorts[0].key, dir: "desc" };
+    const sections = computed(() => (props.rows ? props.groups.filter((g) => state.show || !g.closed).map((g) => {
+      const order = sortOf(g.key);
+      const spec = props.sorts.find((x) => x.key === order.by) || props.sorts[0];
+      const value = spec.value || ((r) => r[spec.key]);
+      const rows = props.rows.filter(g.match).sort((a, b) => {
+        const x = value(a), y = value(b);
+        const c = x < y ? -1 : x > y ? 1 : 0;
+        return order.dir === "asc" ? c : -c;
+      });
+      return { ...g, total: rows.length, rows: rows.slice(0, props.limit * (state.pages[g.key] || 1)) };
+    }).filter((g) => g.total) : []));
+    const closable = computed(() => props.groups.some((g) => g.closed));
+    const cols = computed(() => {
+      const c = props.columns;
+      return [c.priority && "22px", c.status && "22px", c.num && (c.numWidth || "44px"), "minmax(0, 1fr)",
+              c.cite && "minmax(0, 180px)", c.age && "72px"].filter(Boolean).join(" ");
+    });
+    const setSort = (key, value) => { const [by, dir] = value.split(":"); state.sort[key] = { by, dir }; };
+    const more = (key) => { state.pages[key] = (state.pages[key] || 1) + 1; };
+    const open = (event, row) => { if (props.pick) { event.preventDefault(); props.pick(row); } };
+    return { state, sections, closable, cols, sortOf, setSort, more, open };
+  },
+  template: `
+    <div v-if="bar" class=viewbar>
+      <span v-if="rows && count">{{ count(rows) }}</span>
+      <Switch v-if="closable && showLabel" class=bar-switch :label="showLabel" v-model="state.show"/>
+    </div>
+    <p v-if="loading && !rows" class=empty>Loading…</p>
+    <p v-else-if="error && !rows" class=error>{{ error }}</p>
+    <template v-else-if="rows">
+      <template v-for="g in sections" :key="g.key">
+        <div v-if="g.label" class=ghead>
+          <StatusIcon v-if="g.kind" :kind="g.kind"/>{{ g.label }}<span class=n>{{ g.total }}</span>
+          <select class=sort :value="sortOf(g.key).by + ':' + sortOf(g.key).dir" @change="setSort(g.key, $event.target.value)" aria-label="Sort">
+            <template v-for="o in sorts" :key="o.key">
+              <option :value="o.key + ':desc'">{{ o.label }}, high to low</option>
+              <option :value="o.key + ':asc'">{{ o.label }}, low to high</option>
+            </template>
+          </select>
+        </div>
+        <a v-for="r in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r)}]"
+          :style="{gridTemplateColumns: cols}" :href="href(r)" @click="open($event, r)">
+          <PriorityIcon v-if="columns.priority" :value="columns.priority(r)"/>
+          <StatusIcon v-if="columns.status" :kind="columns.status(r)"/>
+          <span v-if="columns.num" class=num>{{ columns.num(r) }}</span>
+          <div class=stack><div class=title>{{ columns.title(r) }}</div><div v-if="columns.sub && columns.sub(r)" class=sub>{{ columns.sub(r) }}</div></div>
+          <span v-if="columns.cite" class=cite>{{ columns.cite(r) }}</span>
+          <span v-if="columns.age" class=age>{{ columns.age(r) }}</span>
+        </a>
+        <button v-if="g.rows.length < g.total" type=button class="btn more-rows" @click="more(g.key)">Show {{ Math.min(limit, g.total - g.rows.length) }} more</button>
+      </template>
+      <p v-if="!sections.length" class=empty>{{ rows.length && closable && !state.show ? 'Nothing here is open. Switch on “' + showLabel + '” to see the rest.' : empty }}</p>
+    </template>`,
+};
+
 // after a write: refresh what is on screen, then follow the resource to its number when it has one
 function settle(body, action, base, ...shown) {
   changed();
@@ -410,6 +493,67 @@ function todoStatus(t) {
   return "open";
 }
 
+function messageBecame(m) { return [...new Set(m.parts.flatMap((p) => p.became.map((b) => b.label)))].join(", "); }
+
+const TODO_LIST = {
+  groups: GROUPS.map((g) => ({ ...g, kind: g.key, closed: g.key === "done", match: (t) => todoStatus(t) === g.key })),
+  columns: { priority: (t) => t.priority, status: (t) => todoStatus(t), num: (t) => `#${t.n}`, title: (t) => t.title,
+             cite: (t) => (t.doc ? `Doc ${t.doc}` : ""), age: (t) => t.age },
+  sorts: [{ key: "n", label: "Number" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
+  count: (rows) => `${rows.filter((t) => todoStatus(t) !== "done").length} open`,
+  showLabel: "Show done", empty: "Nothing is waiting on this environment.",
+};
+const CLAIM_LIST = {
+  groups: [{ key: "standing", label: "Standing", kind: "open", match: (c) => !c.struck },
+           { key: "struck", label: "Struck", kind: "withdrawn", closed: true, match: (c) => c.struck }],
+  columns: { num: (c) => `#${c.n}`, title: (c) => c.fact, cite: (c) => (docOf(c.meta) ? `Doc ${docOf(c.meta)}` : ""),
+             age: (c) => ageOf(c.meta), struck: (c) => c.struck },
+  count: (rows) => `${rows.filter((c) => !c.struck).length} standing`, showLabel: "Show struck",
+};
+const MESSAGE_LIST = {
+  groups: [{ key: "waiting", label: "Waiting", kind: "waiting", match: (m) => m.status === "waiting" },
+           { key: "processed", label: "Processed", kind: "done", closed: true, match: (m) => m.status !== "waiting" }],
+  columns: { status: (m) => (m.status === "waiting" ? "waiting" : "done"), num: (m) => `#${m.n}`, title: (m) => m.text,
+             cite: messageBecame, age: (m) => m.age },
+  count: (rows) => `${rows.filter((m) => m.status === "waiting").length} waiting`, showLabel: "Show processed",
+  empty: "No messages yet.",
+};
+const QUESTION_LIST = {
+  groups: [{ key: "open", label: "Open", kind: "waiting", match: (q) => q.status === "open" },
+           { key: "answered", label: "Answered", kind: "done", closed: true, match: (q) => q.status === "answered" },
+           { key: "withdrawn", label: "Withdrawn", kind: "withdrawn", closed: true, match: (q) => q.status === "withdrawn" }],
+  columns: { status: (q) => questionKind(q), num: (q) => `#${q.n}`, title: (q) => q.text,
+             cite: (q) => q.links.map((l) => l.label).join(", "), age: (q) => q.age },
+  count: (rows) => `${rows.filter((q) => q.status === "open").length} open`, showLabel: "Show answered",
+  empty: "Nothing has been asked on this environment.",
+};
+const WORK_LIST = {
+  groups: [{ key: "open", label: "Open", kind: "progress", match: (w) => !w.ended },
+           { key: "ended", label: "Ended", kind: "done", closed: true, match: (w) => w.ended }],
+  columns: { title: (w) => w.subject, sub: (w) => (w.notes.length ? w.notes[w.notes.length - 1].text : ""), age: (w) => w.age },
+  count: (rows) => `${rows.filter((w) => !w.ended).length} open`, showLabel: "Show ended", empty: "Nothing is open.",
+};
+const REMINDER_LIST = {
+  groups: [{ key: "standing", label: "Standing", kind: "open", match: (r) => !r.struck },
+           { key: "retired", label: "Retired", kind: "withdrawn", closed: true, match: (r) => r.struck }],
+  columns: { num: (r) => `#${r.n}`, title: (r) => r.text, cite: (r) => r.until || "", struck: (r) => r.struck },
+  count: (rows) => `${rows.filter((r) => !r.struck).length} standing`, showLabel: "Show retired",
+  empty: "Nothing is being repeated.",
+};
+const DOC_LIST = {
+  groups: [{ key: "draft", label: "Draft", kind: "open", match: (d) => !d.superseded_by && d.status !== "final" },
+           { key: "final", label: "Final", kind: "done", match: (d) => !d.superseded_by && d.status === "final" },
+           { key: "superseded", label: "Superseded", kind: "withdrawn", closed: true, match: (d) => d.superseded_by }],
+  columns: { num: (d) => `#${d.n}`, title: (d) => d.title, sub: (d) => d.abstract, age: (d) => d.age, struck: (d) => d.superseded_by },
+  count: (rows) => `${rows.length} catalogued`, showLabel: "Show superseded",
+};
+const TOOL_LIST = {
+  groups: [{ key: "tools", label: "Catalogued", match: () => true }],
+  columns: { num: (t) => t.name, numWidth: "120px", title: (t) => t.title, sub: (t) => t.summary, age: (t) => t.age },
+  sorts: [{ key: "n", label: "Number" }, { key: "name", label: "Name" }],
+  count: (rows) => `${rows.length} catalogued`, empty: "No tools are catalogued.",
+};
+
 function priorityName(value) {
   const v = Number(value ?? 100);
   return v >= 200 ? "Critical" : v > 100 ? "High" : v < 100 ? "Low" : "Default";
@@ -417,23 +561,13 @@ function priorityName(value) {
 
 const Todos = {
   props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, PriorityIcon, LinkedQuestions, ActionBar },
+  components: { TopBar, Panel, StatusIcon, PriorityIcon, LinkedQuestions, ActionBar, ResourceList },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/todos`);
     const base = computed(() => `#/env/${props.env}/todos`);
     const list = useFetch(() => props.env && api.value);
     const item = useFetch(() => props.env && props.n && props.n !== "new" && `${api.value}/${props.n}`);
     const envs = useEnvironments(() => props.env);
-    const view = reactive({ done: false });
-    const groups = computed(() => {
-      if (!list.data) return [];
-      return GROUPS.filter((g) => g.key !== "done" || view.done).map((g) => ({
-        ...g,
-        rows: list.data.filter((t) => todoStatus(t) === g.key)
-          .sort((a, b) => (b.priority ?? 100) - (a.priority ?? 100) || b.n - a.n),
-      })).filter((g) => g.rows.length);
-    });
-    const open = computed(() => (list.data || []).filter((t) => todoStatus(t) !== "done").length);
     const creating = computed(() => [{
       label: "New to-do", method: "POST", url: api.value, submit: "Add to-do", leave: true,
       fields: [{ name: "title", label: "Title", placeholder: "What needs doing, in a few words" },
@@ -461,32 +595,14 @@ const Todos = {
       ];
     });
     const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, view, groups, open, creating, actions, done, base, todoStatus, STATUS_LABEL, priorityName };
+    return { list, item, creating, actions, done, base, todoStatus, STATUS_LABEL, priorityName, TODO_LIST };
   },
   template: `
     <TopBar :crumbs="[env, 'To-dos']"><a class="btn new" :href="base + '/new'">New to-do</a></TopBar>
-    <div class=viewbar>
-      <span v-if="list.data"><b>{{ open }}</b> open</span>
-      <label class=toggle><input type=checkbox v-model="view.done"> Show done</label>
-    </div>
     <div class=body>
       <div class=list>
-        <p v-if="list.loading && !list.data" class=empty>Loading…</p>
-        <p v-else-if="list.error" class=error>{{ list.error }}</p>
-        <template v-else-if="list.data">
-          <template v-for="g in groups" :key="g.key">
-            <div class=ghead><StatusIcon :kind="g.key"/>{{ g.label }}<span class=n>{{ g.rows.length }}</span></div>
-            <a v-for="t in g.rows" :key="t.n" :class="['row', 'todorow', {sel: String(t.n) === n}]" :href="base + '/' + t.n">
-              <PriorityIcon :value="t.priority"/>
-              <StatusIcon :kind="g.key"/>
-              <span class=num>#{{ t.n }}</span>
-              <span class=title>{{ t.title }}</span>
-              <span class=cite>{{ t.doc ? 'Doc ' + t.doc : '' }}</span>
-              <span class=age>{{ t.age }}</span>
-            </a>
-          </template>
-          <p v-if="!groups.length" class=empty>Nothing is waiting on this environment.</p>
-        </template>
+        <ResourceList v-bind="TODO_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(t) => base + '/' + t.n" :selected="(t) => String(t.n) === n"/>
       </div>
       <Panel v-if="n === 'new'" label="New to-do" :close="base">
         <ActionBar :actions="creating" open="New to-do" :done="done"/>
@@ -527,9 +643,9 @@ const Todos = {
 function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
   return {
     props: ["env", "n"],
-    components: { TopBar, Panel, LinkedQuestions, ActionBar },
+    components: { TopBar, Panel, LinkedQuestions, ActionBar, ResourceList },
     setup(props) {
-      const list = useFetch(() => api(props));
+      const list = useFetch(() => api(props) && `${api(props)}?all=1`);
       const item = useFetch(() => props.n && props.n !== "new" && `${api(props)}/${props.n}`);
       const envs = useEnvironments(() => props.env);
       const word = noun.toLowerCase();
@@ -559,24 +675,14 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
       });
       const done = (body, a) => settle(body, a, base(props), list, item);
       return { list, item, creating, actions, done, ageOf, docOf, crumbs: computed(() => crumbs(props)),
-               base: computed(() => base(props)), scope: computed(() => scope(props)), noun, word, empty };
+               base: computed(() => base(props)), scope: computed(() => scope(props)), noun, word, empty, CLAIM_LIST };
     },
     template: `
       <TopBar :crumbs="crumbs"><a class="btn new" :href="base + '/new'">New {{ word }}</a></TopBar>
-      <div class=viewbar><span v-if="list.data"><b>{{ list.data.length }}</b> standing</span></div>
       <div class=body>
         <div class=list>
-          <p v-if="list.loading && !list.data" class=empty>Loading…</p>
-          <p v-else-if="list.error" class=error>{{ list.error }}</p>
-          <template v-else-if="list.data">
-            <a v-for="p in list.data" :key="p.n" :class="['row', 'pinrow', {sel: String(p.n) === n, struck: p.struck}]" :href="base + '/' + p.n">
-              <span class=num>#{{ p.n }}</span>
-              <span class=title>{{ p.fact }}</span>
-              <span class=cite>{{ docOf(p.meta) ? 'Doc ' + docOf(p.meta) : '' }}</span>
-              <span class=age>{{ ageOf(p.meta) }}</span>
-            </a>
-            <p v-if="!list.data.length" class=empty>{{ empty }}</p>
-          </template>
+          <ResourceList v-bind="CLAIM_LIST" :empty="empty" :rows="list.data" :loading="list.loading" :error="list.error"
+            :href="(c) => base + '/' + c.n" :selected="(c) => String(c.n) === n"/>
         </div>
         <Panel v-if="n === 'new'" :label="'New ' + word" :close="base">
           <ActionBar :actions="creating" :open="'New ' + word" :done="done"/>
@@ -620,7 +726,7 @@ const Rules = claimsView({
 // ─────────────────────────────────────────────────────────────── inbox and questions
 const Inbox = {
   props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, Compose, ActionBar },
+  components: { TopBar, Panel, StatusIcon, Compose, ActionBar, ResourceList },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/inbox`);
     const base = computed(() => `#/env/${props.env}/messages`);
@@ -628,8 +734,6 @@ const Inbox = {
     const envs = useEnvironments(() => props.env);
     const send = (text) => postJSON(api.value, { text }).then(() => { list.reload(); changed(); });
     const item = computed(() => (list.data && props.n ? list.data.find((m) => String(m.n) === props.n) : null));
-    const waiting = computed(() => (list.data || []).filter((m) => m.status === "waiting").length);
-    const became = (m) => [...new Set(m.parts.flatMap((p) => p.became.map((b) => b.label)))].join(", ");
     const actions = computed(() => {
       const m = item.value;
       if (!m || m.status !== "waiting") return [];
@@ -641,29 +745,18 @@ const Inbox = {
       ];
     });
     const done = (body, a) => settle(body, a, base.value, list);
-    return { list, send, item, waiting, became, actions, done };
+    return { list, send, item, actions, done, MESSAGE_LIST };
   },
   template: `
     <TopBar :crumbs="[env, 'Messages']"/>
-    <div class=viewbar><span v-if="list.data"><b>{{ waiting }}</b> waiting</span></div>
     <div class=body>
       <div class=list>
         <div class=compose-wrap>
           <Compose placeholder="Leave a message for the agent: an instruction, a follow-up, anything"
             submit="Send" hint="The agent is told at its next stop" :send="send"/>
         </div>
-        <p v-if="list.loading && !list.data" class=empty>Loading…</p>
-        <p v-else-if="list.error" class=error>{{ list.error }}</p>
-        <template v-else-if="list.data">
-          <a v-for="m in list.data" :key="m.n" :class="['row', 'inboxrow', {sel: String(m.n) === n}]" :href="'#/env/' + env + '/messages/' + m.n">
-            <StatusIcon :kind="m.status === 'waiting' ? 'waiting' : 'done'"/>
-            <span class=num>#{{ m.n }}</span>
-            <span class=title>{{ m.text }}</span>
-            <span class=cite>{{ became(m) }}</span>
-            <span class=age>{{ m.age }}</span>
-          </a>
-          <p v-if="!list.data.length" class=empty>No messages yet.</p>
-        </template>
+        <ResourceList v-bind="MESSAGE_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(m) => '#/env/' + env + '/messages/' + m.n" :selected="(m) => String(m.n) === n"/>
       </div>
       <Panel v-if="n && item" :label="'Message #' + n" :close="'#/env/' + env + '/messages'">
         <div class="prose message">{{ item.text }}</div>
@@ -690,16 +783,14 @@ const Inbox = {
 
 const Questions = {
   props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, Compose, ActionBar },
+  components: { TopBar, Panel, StatusIcon, Compose, ActionBar, ResourceList },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/questions`);
     const base = computed(() => `#/env/${props.env}/questions`);
-    const list = useFetch(() => props.env && api.value);
+    const list = useFetch(() => props.env && `${api.value}?all=1`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const answer = (text) => postJSON(`${api.value}/${props.n}/answer`, { answer: text })
       .then((body) => { item.data = body.data; list.reload(); changed(); });
-    const open = computed(() => (list.data || []).filter((q) => q.status === "open").length);
-    const about = (q) => q.links.map((l) => l.label).join(", ");
     const actions = computed(() => {
       const q = item.data;
       if (!q || q.withdrawn) return [];
@@ -711,25 +802,14 @@ const Questions = {
       ];
     });
     const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, answer, open, about, questionKind, actions, done };
+    return { list, item, answer, questionKind, actions, done, QUESTION_LIST };
   },
   template: `
     <TopBar :crumbs="[env, 'Questions']"/>
-    <div class=viewbar><span v-if="list.data"><b>{{ open }}</b> open</span></div>
     <div class=body>
       <div class=list>
-        <p v-if="list.loading && !list.data" class=empty>Loading…</p>
-        <p v-else-if="list.error" class=error>{{ list.error }}</p>
-        <template v-else-if="list.data">
-          <a v-for="q in list.data" :key="q.n" :class="['row', 'questionrow', {sel: String(q.n) === n}]" :href="'#/env/' + env + '/questions/' + q.n">
-            <StatusIcon :kind="questionKind(q)"/>
-            <span class=num>#{{ q.n }}</span>
-            <span class=title>{{ q.text }}</span>
-            <span class=cite>{{ about(q) }}</span>
-            <span class=age>{{ q.age }}</span>
-          </a>
-          <p v-if="!list.data.length" class=empty>Nothing has been asked on this environment.</p>
-        </template>
+        <ResourceList v-bind="QUESTION_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(q) => '#/env/' + env + '/questions/' + q.n" :selected="(q) => String(q.n) === n"/>
       </div>
       <Panel v-if="n" :label="'Question #' + n" :close="'#/env/' + env + '/questions'">
         <p v-if="item.error" class=error>{{ item.error }}</p>
@@ -762,11 +842,11 @@ const Questions = {
 // ─────────────────────────────────────────────────────────────── work and reminders
 const Work = {
   props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, ActionBar },
+  components: { TopBar, Panel, StatusIcon, ActionBar, ResourceList },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/work`);
     const base = computed(() => `#/env/${props.env}/work`);
-    const list = useFetch(() => props.env && api.value);
+    const list = useFetch(() => props.env && `${api.value}?all=1`);
     const item = useFetch(() => props.env && props.n && props.n !== "new" && `${api.value}/${props.n}`);
     const creating = computed(() => [{
       label: "Start work", method: "POST", url: api.value, submit: "Start", leave: true,
@@ -783,25 +863,14 @@ const Work = {
       ];
     });
     const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, creating, actions, done, base };
+    return { list, item, creating, actions, done, base, WORK_LIST };
   },
   template: `
     <TopBar :crumbs="[env, 'Open work']"><a class="btn new" :href="base + '/new'">Start work</a></TopBar>
-    <div class=viewbar><span v-if="list.data"><b>{{ list.data.length }}</b> open</span></div>
     <div class=body>
       <div class=list>
-        <p v-if="list.loading && !list.data" class=empty>Loading…</p>
-        <p v-else-if="list.error" class=error>{{ list.error }}</p>
-        <template v-else-if="list.data">
-          <a :class="['row', 'workrow', {sel: String(w.n) === n}]" v-for="w in list.data" :key="w.n" :href="base + '/' + w.n">
-            <div>
-              <div class=title>{{ w.subject }}</div>
-              <div v-for="(note, i) in w.notes.slice(-3)" :key="i" class=sub>{{ note.text }}</div>
-            </div>
-            <span class=age>{{ w.age }}</span>
-          </a>
-          <p v-if="!list.data.length" class=empty>Nothing is open.</p>
-        </template>
+        <ResourceList v-bind="WORK_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(w) => base + '/' + w.n" :selected="(w) => String(w.n) === n"/>
       </div>
       <Panel v-if="n === 'new'" label="Start work" :close="base">
         <ActionBar :actions="creating" open="Start work" :done="done"/>
@@ -826,11 +895,11 @@ const Work = {
 
 const Reminders = {
   props: ["env", "n"],
-  components: { TopBar, Panel, ActionBar },
+  components: { TopBar, Panel, ActionBar, ResourceList },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reminders`);
     const base = computed(() => `#/env/${props.env}/reminders`);
-    const list = useFetch(() => props.env && api.value);
+    const list = useFetch(() => props.env && `${api.value}?all=1`);
     const item = useFetch(() => props.env && props.n && props.n !== "new" && `${api.value}/${props.n}`);
     const envs = useEnvironments(() => props.env);
     const creating = computed(() => [{
@@ -850,21 +919,14 @@ const Reminders = {
       ];
     });
     const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, creating, actions, done, base };
+    return { list, item, creating, actions, done, base, REMINDER_LIST };
   },
   template: `
     <TopBar :crumbs="[env, 'Reminders']"><a class="btn new" :href="base + '/new'">New reminder</a></TopBar>
-    <div class=viewbar><span v-if="list.data"><b>{{ list.data.length }}</b> standing</span></div>
     <div class=body>
       <div class=list>
-        <p v-if="list.loading && !list.data" class=empty>Loading…</p>
-        <p v-else-if="list.error" class=error>{{ list.error }}</p>
-        <template v-else-if="list.data">
-          <a :class="['row', 'reminderrow', {sel: String(r.n) === n}]" v-for="r in list.data" :key="r.n" :href="base + '/' + r.n">
-            <span class=num>#{{ r.n }}</span><span class=title>{{ r.text }}</span><span class=cite>{{ r.meta }}</span>
-          </a>
-          <p v-if="!list.data.length" class=empty>Nothing is being repeated.</p>
-        </template>
+        <ResourceList v-bind="REMINDER_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(r) => base + '/' + r.n" :selected="(r) => String(r.n) === n"/>
       </div>
       <Panel v-if="n === 'new'" label="New reminder" :close="base">
         <ActionBar :actions="creating" open="New reminder" :done="done"/>
@@ -887,7 +949,7 @@ const Reminders = {
 function docList({ crumbs, url, base, empty }) {
   return {
     props: ["env", "n"],
-    components: { TopBar, ActionBar },
+    components: { TopBar, ActionBar, ResourceList },
     setup(props) {
       const s = useFetch(() => url(props));
       const creating = computed(() => [{
@@ -897,22 +959,13 @@ function docList({ crumbs, url, base, empty }) {
                  { name: "body", label: "Text", kind: "area" }],
       }]);
       const done = (body, a) => settle(body, a, base(props), s);
-      return { s, creating, done, crumbs: computed(() => crumbs(props)), base: computed(() => base(props)), empty };
+      return { s, creating, done, crumbs: computed(() => crumbs(props)), base: computed(() => base(props)), empty, DOC_LIST };
     },
     template: `
       <TopBar :crumbs="crumbs"><a class="btn new" :href="base + '/new'">New doc</a></TopBar>
-      <div class=viewbar><span v-if="s.data"><b>{{ s.data.length }}</b> catalogued</span></div>
       <div class=body><div class=list>
         <div v-if="n === 'new'" class=compose-wrap><ActionBar :actions="creating" open="New doc" :done="done"/></div>
-        <p v-if="s.loading && !s.data" class=empty>Loading…</p>
-        <p v-else-if="s.error" class=error>{{ s.error }}</p>
-        <template v-else-if="s.data">
-          <a v-for="d in s.data" :key="d.n" :class="['row', 'docrow', {struck: d.superseded_by}]" :href="'#/docs/' + d.n">
-            <span class=num>#{{ d.n }}</span><span class=title>{{ d.title }}</span>
-            <span class=tag>{{ d.status }}</span><span class=age>{{ d.age }}</span>
-          </a>
-          <p v-if="!s.data.length" class=empty>{{ empty }}</p>
-        </template>
+        <ResourceList v-bind="DOC_LIST" :empty="empty" :rows="s.data" :loading="s.loading" :error="s.error" :href="(d) => '#/docs/' + d.n"/>
       </div></div>`,
   };
 }
@@ -1058,7 +1111,7 @@ const Peek = {
 // ─────────────────────────────────────────────────────────────── an environment's home
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, StatusIcon, PriorityIcon, Peek },
+  components: { TopBar, Icon, StatusIcon, PriorityIcon, Peek, ResourceList },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     const summary = useFetch(url(""));
@@ -1066,16 +1119,13 @@ const EnvHome = {
     const todos = useFetch(url("/todos"));
     const inbox = useFetch(url("/inbox"));
     const questions = useFetch(url("/questions"));
-    const groups = computed(() => {
-      const rows = (todos.data || []).filter((t) => todoStatus(t) !== "done")
-        .sort((a, b) => (b.priority ?? 100) - (a.priority ?? 100) || b.n - a.n);
-      return GROUPS.filter((g) => g.key !== "done").map((g) => {
-        const all = rows.filter((t) => todoStatus(t) === g.key);
-        return { ...g, total: all.length, rows: g.key === "open" ? all.slice(0, 5) : all };
-      }).filter((g) => g.rows.length);
-    });
-    const finished = computed(() => (todos.data || []).filter((t) => t.done)
-      .sort((a, b) => (b.done > a.done ? 1 : b.done < a.done ? -1 : 0)).slice(0, 8));
+    const openTodos = { ...TODO_LIST, groups: TODO_LIST.groups.filter((g) => !g.closed) };
+    const finishedTodos = { groups: [{ key: "finished", label: "", match: (t) => t.done }],
+                            columns: { num: (t) => `#${t.n}`, title: (t) => t.title, age: (t) => t.done_age },
+                            sorts: [{ key: "done", label: "Finished" }], empty: "Nothing has been finished yet." };
+    const waitingMessages = { ...MESSAGE_LIST, groups: [{ ...MESSAGE_LIST.groups[0], label: "" }] };
+    const openQuestions = { ...QUESTION_LIST, groups: [{ ...QUESTION_LIST.groups[0], label: "" }] };
+    const openWork = { ...WORK_LIST, groups: [{ ...WORK_LIST.groups[0], label: "" }] };
     const waiting = computed(() => (inbox.data || []).filter((m) => m.status === "waiting"));
     const asking = computed(() => (questions.data || []).filter((q) => q.status === "open"));
     const stats = computed(() => {
@@ -1093,7 +1143,9 @@ const EnvHome = {
     const view = reactive({ finished: false, kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; };
     const unpeek = () => { view.kind = ""; view.n = 0; };
-    return { work, groups, finished, view, peek, unpeek, waiting, asking, stats, about, questionKind };
+    const picked = (kind) => (r) => view.kind === kind && view.n === r.n;
+    return { work, todos, inbox, questions, view, peek, unpeek, picked, waiting, asking, stats, openTodos, finishedTodos,
+             waitingMessages, openQuestions, openWork };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -1108,18 +1160,8 @@ const EnvHome = {
       <section>
         <div class=home-head><h2>Open work</h2><span class=n>{{ work.data ? work.data.length : '' }}</span></div>
         <div class=block>
-          <p v-if="work.loading && !work.data" class=empty>Loading…</p>
-          <p v-else-if="work.error" class=error>{{ work.error }}</p>
-          <template v-else-if="work.data">
-            <div class="row workrow" v-for="w in work.data" :key="w.subject">
-              <div>
-                <div class=title>{{ w.subject }}</div>
-                <div v-for="(note, i) in w.notes.slice(-3)" :key="i" class=sub>{{ note.text }}</div>
-              </div>
-              <span class=age>{{ w.age }}</span>
-            </div>
-            <p v-if="!work.data.length" class=empty>Nothing is open.</p>
-          </template>
+          <ResourceList v-bind="openWork" :bar="false" :rows="work.data" :loading="work.loading" :error="work.error"
+            :href="(w) => '#/env/' + env + '/work/' + w.n"/>
         </div>
       </section>
 
@@ -1127,10 +1169,8 @@ const EnvHome = {
         <div class=home-head><h2>Messages</h2><span class=n>{{ waiting.length }} waiting</span>
           <a class=more :href="'#/env/' + env + '/messages'">All messages</a></div>
         <div class=block>
-          <a v-for="m in waiting" :key="m.n" :class="['row', 'inboxrow', {sel: view.kind === 'message' && view.n === m.n}]" :href="'#/env/' + env + '/messages/' + m.n" @click.prevent="peek('message', m.n)">
-            <StatusIcon kind="waiting"/><span class=num>#{{ m.n }}</span><span class=title>{{ m.text }}</span>
-            <span class=cite></span><span class=age>{{ m.age }}</span>
-          </a>
+          <ResourceList v-bind="waitingMessages" :bar="false" :rows="inbox.data" :href="(m) => '#/env/' + env + '/messages/' + m.n"
+            :pick="(m) => peek('message', m.n)" :selected="picked('message')"/>
         </div>
       </section>
 
@@ -1138,10 +1178,8 @@ const EnvHome = {
         <div class=home-head><h2>Questions</h2><span class=n>{{ asking.length }} open</span>
           <a class=more :href="'#/env/' + env + '/questions'">All questions</a></div>
         <div class=block>
-          <a v-for="q in asking" :key="q.n" :class="['row', 'questionrow', {sel: view.kind === 'question' && view.n === q.n}]" :href="'#/env/' + env + '/questions/' + q.n" @click.prevent="peek('question', q.n)">
-            <StatusIcon :kind="questionKind(q)"/><span class=num>#{{ q.n }}</span><span class=title>{{ q.text }}</span>
-            <span class=cite>{{ about(q) }}</span><span class=age>{{ q.age }}</span>
-          </a>
+          <ResourceList v-bind="openQuestions" :bar="false" :rows="questions.data" :href="(q) => '#/env/' + env + '/questions/' + q.n"
+            :pick="(q) => peek('question', q.n)" :selected="picked('question')"/>
         </div>
       </section>
 
@@ -1152,23 +1190,11 @@ const EnvHome = {
             <button type=button :class="['btn', {on: view.finished}]" @click="view.finished = true">Recently finished</button>
           </span>
           <a class=more :href="'#/env/' + env + '/todos'">All to-dos</a></div>
-        <div v-if="view.finished" class=block>
-          <a v-for="t in finished" :key="t.n" :class="['row', 'finishedrow', {sel: view.kind === 'todo' && view.n === t.n}]" :href="'#/env/' + env + '/todos/' + t.n" @click.prevent="peek('todo', t.n)">
-            <span class=num>#{{ t.n }}</span><span class=title>{{ t.title }}</span><span class=age>{{ t.done_age }}</span>
-          </a>
-          <p v-if="!finished.length" class=empty>Nothing has been finished yet.</p>
-        </div>
-        <div v-else class=block>
-          <p v-if="!groups.length" class=empty>Nothing is waiting on this environment.</p>
-          <template v-for="g in groups" :key="g.key">
-            <div class=ghead><StatusIcon :kind="g.key"/>{{ g.label }}
-              <span class=n>{{ g.total > g.rows.length ? g.rows.length + ' of ' + g.total : g.total }}</span></div>
-            <a v-for="t in g.rows" :key="t.n" :class="['row', 'todorow', {sel: view.kind === 'todo' && view.n === t.n}]" :href="'#/env/' + env + '/todos/' + t.n" @click.prevent="peek('todo', t.n)">
-              <PriorityIcon :value="t.priority"/><StatusIcon :kind="g.key"/><span class=num>#{{ t.n }}</span>
-              <span class=title>{{ t.title }}</span><span class=cite>{{ t.doc ? 'Doc ' + t.doc : '' }}</span>
-              <span class=age>{{ t.age }}</span>
-            </a>
-          </template>
+        <div class=block>
+          <ResourceList v-if="view.finished" v-bind="finishedTodos" :bar="false" :limit="8" :rows="todos.data"
+            :href="(t) => '#/env/' + env + '/todos/' + t.n" :pick="(t) => peek('todo', t.n)" :selected="picked('todo')"/>
+          <ResourceList v-else v-bind="openTodos" :bar="false" :limit="5" :rows="todos.data" :loading="todos.loading" :error="todos.error"
+            :href="(t) => '#/env/' + env + '/todos/' + t.n" :pick="(t) => peek('todo', t.n)" :selected="picked('todo')"/>
         </div>
       </section>
     </div></div>
@@ -1179,7 +1205,7 @@ const EnvHome = {
 // ─────────────────────────────────────────────────────────────── tools
 const Tools = {
   props: ["n"],
-  components: { TopBar, Panel, ActionBar },
+  components: { TopBar, Panel, ActionBar, ResourceList },
   setup(props) {
     const base = "#/tools";
     const list = useFetch(() => "/api/tools");
@@ -1204,23 +1230,14 @@ const Tools = {
       ];
     });
     const done = (body, a) => settle(body, a, base, list, item);
-    return { list, item, creating, actions, done, base };
+    return { list, item, creating, actions, done, base, TOOL_LIST };
   },
   template: `
     <TopBar :crumbs="['Project', 'Tools']"><a class="btn new" :href="base + '/new'">New tool</a></TopBar>
-    <div class=viewbar><span v-if="list.data"><b>{{ list.data.length }}</b> catalogued</span></div>
     <div class=body>
       <div class=list>
-        <p v-if="list.loading && !list.data" class=empty>Loading…</p>
-        <p v-else-if="list.error" class=error>{{ list.error }}</p>
-        <template v-else-if="list.data">
-          <a v-for="t in list.data" :key="t.name" :class="['row', 'toolrow', {sel: String(t.n) === n}]" :href="base + '/' + t.n">
-            <span class=num>{{ t.name }}</span>
-            <div class=stack><div class=title>{{ t.title }}</div><div class=sub>{{ t.summary }}</div></div>
-            <span class=age>{{ t.age }}</span>
-          </a>
-          <p v-if="!list.data.length" class=empty>No tools are catalogued.</p>
-        </template>
+        <ResourceList v-bind="TOOL_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(t) => base + '/' + t.n" :selected="(t) => String(t.n) === n"/>
       </div>
       <Panel v-if="n === 'new'" label="New tool" :close="base">
         <ActionBar :actions="creating" open="New tool" :done="done"/>
@@ -1259,7 +1276,7 @@ function markHits(text) { return _escapeHtml(text).replace(/«/g, "<mark>").repl
 
 const Search = {
   props: ["env"],
-  components: { TopBar },
+  components: { TopBar, Switch },
   setup(props) {
     const form = reactive({ text: "", all: false, term: "", page: 1 });
     const s = useFetch(() => props.env && form.term &&
@@ -1272,7 +1289,7 @@ const Search = {
     <div class=page><div class=home>
       <form class=search-bar @submit.prevent="go">
         <input class="input search-input" v-model="form.text" placeholder="Search to-dos, pins, docs, messages and the conversation">
-        <label class=toggle><input type=checkbox v-model="form.all" @change="form.term && go()"> Every environment</label>
+        <Switch label="Every environment" :modelValue="form.all" @update:modelValue="(v) => { form.all = v; if (form.term) go(); }"/>
         <button type=submit class=primary :disabled="!form.text.trim() || (!!form.term && s.loading)">
           <span v-if="s.loading && form.term" class=spinner></span>{{ s.loading && form.term ? 'Searching' : 'Search' }}</button>
       </form>
@@ -1314,7 +1331,7 @@ const Search = {
 // ─────────────────────────────────────────────────────────────── an environment's settings
 const Settings = {
   props: ["env"],
-  components: { TopBar, ActionBar },
+  components: { TopBar, ActionBar, Switch },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/environment`);
     const s = useFetch(() => props.env && api.value);
@@ -1349,8 +1366,7 @@ const Settings = {
         <section>
           <div class=home-head><h2>Auto mode</h2></div>
           <div class=setting>
-            <label class=toggle><input type=checkbox :checked="s.data.auto" :disabled="auto.saving" @change="setAuto($event.target.checked)">
-              Work through the to-do list without asking</label>
+            <Switch label="Work through the to-do list without asking" :modelValue="s.data.auto" @update:modelValue="setAuto"/>
             <p class="prose muted">When this is on and nothing is open, the agent starts the next ready to-do by itself.</p>
             <p v-if="auto.error" class=error>{{ auto.error }}</p>
           </div>
