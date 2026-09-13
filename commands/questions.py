@@ -6,7 +6,7 @@ from command import Command, Parsed, number
 from commands.options import LISTING, LISTING_CASTS
 from templates import render
 
-NOUN = ("questions", "question")
+NOUNS = (("questions", "question"),)
 
 QUESTION = {"n": number("a question number")}
 

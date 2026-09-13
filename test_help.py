@@ -63,8 +63,8 @@ check("both wrote one more entry, same shape", len(after) - len(before), 1)
 check("the new entry carries exactly the words given, not `add` too",
       after[-1]["fact"], "new spelling writes a pin")
 
-code, out = j("remember", "a third pin via the other old spelling")
-check("`remember` is the same alias as `pin`", (code, "pinned" in out), (0, True))
+code, out = j("remember", "a third pin via the removed spelling")
+check("`remember` is no longer a command: `pin` is the spelling", (code != 0, "pinned" in out), (True, False))
 
 # strike: old top-level `strike` vs new `pins strike`
 code, out = j("pins", "strike", "1", "superseded by pins add")

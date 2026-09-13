@@ -136,9 +136,9 @@ code, out = j("docs")
 check("the pointer is not listed as a loose file", "slots.md" in out.split("not catalogued")[-1] if "not catalogued" in out else False, False)
 
 # ---------------------------------------------------------------- citations
-code, out = j("remember", "read the slots doc before touching any State", f"--doc={n_slots}")
+code, out = j("pin","read the slots doc before touching any State", f"--doc={n_slots}")
 check("a pin cites a doc", (code, "pinned" in out), (0, True))
-code, out = j("remember", "bad ref", "--doc=99")
+code, out = j("pin","bad ref", "--doc=99")
 check("a bad reference is refused", (code, "no doc 99" in out), (1, True))
 code, out = j("rule", "components are slots", f"--doc={n_slots}.1")
 check("a rule cites a part", (code, "ruled" in out), (0, True))

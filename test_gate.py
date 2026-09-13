@@ -48,7 +48,7 @@ READS = [
     'cmd >&2',
     'diff <(cat a) <(cat b)',
     './journal.py start "x"',
-    '.journal/journal.py remember "y"',
+    '.journal/journal.py pin "y"',
     'journal todo "park this" --brief <<\'EOF\'\nwhy and where\nEOF',
     'journal todo "park this" && journal open && git status',
 ]
@@ -103,10 +103,10 @@ for name in ("Read", "Grep", "Glob", "WebFetch"):
 for cmd, want in (
     ('python3 .journal/journal.py nothing "only reads"', True),
     ('python3 .journal/journal.py search x', True),
-    ('python .journal/journal.py remember "c" && make', True),
+    ('python .journal/journal.py pin "c" && make', True),
     ('journal search thing', True),
     ('.journal/journal.py --back=1 | head -40', True),
-    ('journal remember "a claim" && git commit -m x', True),
+    ('journal pin "a claim" && git commit -m x', True),
     ('python3 other.py nothing "x"', False),
     ('journal nothing "only reads happened" ; ls', True),
     ('journal rule "r" && journal todo "t" && make', True),
@@ -148,11 +148,11 @@ for cmd, want in (
         fail += 1
         print(f"  FAIL declared-first expected {want}: {cmd[:60]!r}")
 for cmd, fn, want in (
-    ('J=.journal/journal.py; $J remember "c" && $J remember "d"', hook._is_journal, True),
+    ('J=.journal/journal.py; $J pin "c" && $J pin "d"', hook._is_journal, True),
     ('J=.journal/journal.py; $J search x | head', hook._is_journal, True),
     ('J=./.journal/journal.py; $J start "w" && git commit -m x', hook._declared_first, True),
     ('J=.journal/journal.py; ${J} nothing "no"', hook._is_journal, True),
-    ('X=1; $UNKNOWN remember "c"', hook._is_journal, False),
+    ('X=1; $UNKNOWN pin "c"', hook._is_journal, False),
 ):
     got = fn({"tool_name": "Bash", "tool_input": {"command": cmd}})
     if got == want:
@@ -160,7 +160,7 @@ for cmd, fn, want in (
     else:
         fail += 1
         print(f"  FAIL variable form expected {want}: {cmd[:60]}")
-got = hook._is_journal({"tool_name": "Bash", "tool_input": {"command": 'cd proj && journal remember "c" && git commit -m x'}})
+got = hook._is_journal({"tool_name": "Bash", "tool_input": {"command": 'cd proj && journal pin "c" && git commit -m x'}})
 ok, fail = (ok + 1, fail) if got else (ok, fail + 1)
 if not got:
     print("  FAIL cd before a deciding journal command is neutral for the rung gate")
@@ -169,19 +169,19 @@ if not got:
 # after the fact; the gate says it before the command runs, off the same words.
 LONG = "x" * 400
 for cmd, want in (
-    (f'journal remember "{LONG}"', True),
-    (f'.journal/journal.py remember "{LONG}" --supersedes=3', True),
-    (f'cd proj && ./.journal/journal.py remember "{LONG}" && journal pins', True),
-    ('journal remember "a claim that fits"', False),
-    (f'journal search remember; echo "{LONG}"', False),   # `remember` is the search term
-    (f'echo "remember {LONG}"', False),                    # not the journal at all
-    ('journal remember "unterminated', False),             # unparseable: left to the CLI
+    (f'journal pin "{LONG}"', True),
+    (f'.journal/journal.py pin "{LONG}" --supersedes=3', True),
+    (f'cd proj && ./.journal/journal.py pin "{LONG}" && journal pins', True),
+    ('journal pin "a claim that fits"', False),
+    (f'journal search pin; echo "{LONG}"', False),   # `pin` is the search term
+    (f'echo "pin {LONG}"', False),                   # not the journal at all
+    ('journal pin "unterminated', False),             # unparseable: left to the CLI
     # THE PATCH THAT GOT DENIED: a heredoc body mentioning the command is data, not a call
-    ("python3 - <<'PY'\ns = '.journal/journal.py remember \"" + LONG + "\"'\nPY", False),
-    (f'journal remember "{LONG}" <<EOF\nbody\nEOF', True),  # the opener's line still counts
-    ('journal remember "' + "x" * 298 + '" 2>&1 | tail -1', False),  # the redirect is not claim
-    ('journal remember "the report is at scratchpad/report.md"', True),  # cites a session path
-    ('journal remember "see /tmp/out.txt for the numbers"', True),
+    ("python3 - <<'PY'\ns = '.journal/journal.py pin \"" + LONG + "\"'\nPY", False),
+    (f'journal pin "{LONG}" <<EOF\nbody\nEOF', True),  # the opener's line still counts
+    ('journal pin "' + "x" * 298 + '" 2>&1 | tail -1', False),  # the redirect is not claim
+    ('journal pin "the report is at scratchpad/report.md"', True),  # cites a session path
+    ('journal pin "see /tmp/out.txt for the numbers"', True),
     ('journal rule "never cite the scratchpad in a pin"', True),  # the word alone is enough: refuse
     # THE CANONICAL SPELLINGS. The gate matched only the bare singular verbs, so the two
     # forms the skill teaches first went straight past it and were caught, if at all, by the
@@ -200,7 +200,7 @@ for cmd, want in (
     else:
         fail += 1
         print(f"  FAIL pin gate expected {'deny' if want else 'pass'}: {cmd[:60]}")
-got = hook._pin_overflow({"tool_name": "Bash", "tool_input": {"command": f'journal remember "{LONG}"'}}, 0)
+got = hook._pin_overflow({"tool_name": "Bash", "tool_input": {"command": f'journal pin "{LONG}"'}}, 0)
 ok, fail = (ok + 1, fail) if got is None else (ok, fail + 1)
 if got is not None:
     print("  FAIL a cap of 0 must not gate on length")
@@ -283,15 +283,21 @@ check("and the next tool call is NOT denied for it — the context rung never ga
 import hook as _h
 check("every noun that reads on its own is in the table",
       sorted(set(_h.NOUN_WRITES)),
-      sorted({"docs", "tools", "todo", "todos", "pins", "rules"}))
+      sorted({"docs", "tools", "todo", "todos"}))
 check("and every one of them is a verb the gate can actually see",
       [n for n in _h.NOUN_WRITES if n not in _h.JOURNAL_WRITES], [])
+_classified = lambda c: _h._journal_write({"tool_name": "Bash", "tool_input": {"command": f".journal/journal.py {c}"}})  # noqa: E731
 check("a noun on the command registry is classified by its declared commands",
-      [_h._journal_write({"tool_name": "Bash", "tool_input": {"command": f".journal/journal.py {c}"}})
-       for c in ("reminders", "reminders --all", "reminders add x", "remind done 1 why", "reminder move 1 x")],
+      [_classified(c) for c in ("reminders", "reminders --all", "reminders add x", "remind done 1 why", "reminder move 1 x")],
       [None, None, "reminders", "remind", "reminder"])
-for _noun, _read, _write in (("pins", "", "add"), ("rules", "3", "strike"),
-                             ("docs", "4", "add"), ("tools", "", "add")):
+check("every pins and rules spelling is classified the same way",
+      [_classified(c) for c in ("pins", "pins 3 --full", "pins show 3", 'pin "a claim"',
+                                "pins strike 2 why", "strike 2 why", "promote 3", 'nothing "because"',
+                                "rules", "rules show B1", 'rule "a ruling"', "rule --strike 2 why", "rules move 1 x",
+                                'remember "a claim"')],
+      [None, None, None, "pin", "pins", "strike", "promote", "nothing",
+       None, None, "rule", "rule", "rules", None])
+for _noun, _read, _write in (("docs", "4", "add"), ("tools", "", "add")):
     check(f"`journal {_noun} {_read}`.strip() reads and `{_noun} {_write}` writes",
           (_h.NOUN_WRITES[_noun](_read), _h.NOUN_WRITES[_noun](_write)), (False, True))
 check("`todos` is the one noun whose bare form takes a title, so text is a write",

@@ -102,9 +102,10 @@ _INHERITED = ("a {noun} is inherited, never written, by a lent agent: it is re-r
 NEVER = {
     "switch": _MOVES_A_SESSION, "claim": _MOVES_A_SESSION, "prepare": _MOVES_A_SESSION,
     "grant": _MOVES_A_SESSION, "environments": _MOVES_A_SESSION,
-    "rule": _BINDS_EVERYTHING, "rules": _BINDS_EVERYTHING,
+    "rule": _BINDS_EVERYTHING, "rules": _BINDS_EVERYTHING, "promote": _BINDS_EVERYTHING,
     "docs": _THE_PROJECT_S, "tools": _THE_PROJECT_S,
     "pins": _INHERITED.format(noun="pin"), "pin": _INHERITED.format(noun="pin"),
+    "strike": _INHERITED.format(noun="pin"),
     "reminders": _INHERITED.format(noun="reminder"),
     "reminder": _INHERITED.format(noun="reminder"),
     "remind": _INHERITED.format(noun="reminder"),
