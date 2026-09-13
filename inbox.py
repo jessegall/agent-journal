@@ -16,6 +16,12 @@ PLAIN = ("work", "noted")
 _REF = re.compile(r"^\s*(to-?dos?|pins?|rules?|reminders?|questions?)\s*[:#\s]\s*(\d+)\s*$", re.I)
 
 MESSAGES = {
+    "edited": "message {n} is updated",
+    "move_where": 'say where: journal inbox move {n} "<environment>"',
+    "move_none": "there is no environment {dst}",
+    "move_same": "message {n} is already on {env}",
+    "moved": "message {n} moved to {env}, where it is message {there}",
+    "fact_moved": "moved to {to}",
     "not_a_ref": "{text} is not something a part becomes; write `todo 22`, `pin 3`, `rule 2`, `reminder 1`, "
                  "`question 4`, `work` or `noted`",
     "no_entry": "there is no {kind} {n} for a part to have become",
@@ -187,8 +193,53 @@ def done(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, s
     return True, say("done", n=n, became=_became(m), waiting=len(unprocessed(root, track)))
 
 
+def update(root: Path, n: int, text: str, track: str | None = None) -> tuple[bool, str]:
+    text = (text or "").strip()
+    if not text:
+        return False, say("needs_text")
+    with state.locked(root):
+        items = _all(root, track)
+        m, why = _find(items, n)
+        if m is None:
+            return False, why
+        if m.get("processed"):
+            return False, say("already_processed", n=n)
+        m["text"] = text
+        _put(root, items, track)
+    return True, say("edited", n=n)
+
+
+def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tuple[bool, str]:
+    """Carry a waiting message to another environment: closed here as moved, waiting there."""
+    import tracks
+    dst = state.slug(dst)
+    if not dst:
+        return False, say("move_where", n=n)
+    if dst not in tracks._all(root):
+        return False, say("move_none", dst=repr(dst))
+    here = track or state.current_track(root)
+    if dst == here:
+        return False, say("move_same", n=n, env=dst)
+    with state.locked(root):
+        items = _all(root, here)
+        m, why = _find(items, n)
+        if m is None:
+            return False, why
+        if m.get("processed"):
+            return False, say("already_processed", n=n)
+        there = _all(root, dst)
+        there.append({**m, "processed": None, "moved_from": here})
+        _put(root, there, dst)
+        m["processed"], m["moved_to"] = at, f"{dst}:{len(there)}"
+        _put(root, items, here)
+    return True, say("moved", n=n, env=dst, there=len(there))
+
+
 def _facts(m: dict) -> list[str]:
-    out = [say("fact_processed", age=age(m["processed"])) if m.get("processed") else say("fact_waiting")]
+    if m.get("moved_to"):
+        out = [say("fact_moved", to=m["moved_to"].replace(":", " message "))]
+    else:
+        out = [say("fact_processed", age=age(m["processed"])) if m.get("processed") else say("fact_waiting")]
     if age(m.get("at", "")):
         out.append(age(m["at"]))
     if m.get("source") and m["source"] != "cli":
@@ -213,33 +264,43 @@ def listing(root: Path, *, cap: int | None = None, page: int = 1, order: str = f
 
 
 def show(root: Path, n: int, track: str | None = None) -> tuple[bool, str]:
-    import questions
     m, why = _find(_all(root, track), n)
     if m is None:
         return False, why
-    status = say("status_processed" if m.get("processed") else "status_waiting")
-    source = m.get("source") if m.get("source") != "cli" else None
-    out = [fmt.title(say("show_title", n=n), sub=say("show_sub", status=status, age=age(m.get("at", "")),
-                                                     source=source)),
-           "", fmt.wrap(m["text"])]
-    if m.get("parts"):
+    return True, show_text(detail(root, n, m, track))
+
+
+def detail(root: Path, n: int, m: dict, track: str | None = None) -> dict:
+    import questions
+    return {**row_response(n, m),
+            "questions": [questions.row_response(qn, q) for qn, q in questions.about(root, f"inbox:{n}", track)]}
+
+
+def show_text(d: dict) -> str:
+    """A message's `detail` as the terminal page."""
+    n = d["n"]
+    status = say("status_waiting" if d["status"] == "waiting" else "status_processed")
+    out = [fmt.title(say("show_title", n=n), sub=say("show_sub", status=status, age=d["age"],
+                                                     source=d["source"] if d["source"] not in ("", "cli") else None)),
+           "", fmt.wrap(d["text"])]
+    if d["parts"]:
         out.append(fmt.section(say("show_parts")))
-        out += [say("show_part", excerpt=p["excerpt"], became=[label(r) for r in p["became"]])
-                for p in m["parts"]]
-    asked = questions.about(root, f"inbox:{n}", track)
-    if asked:
+        out += [say("show_part", excerpt=p["excerpt"], became=[b["label"] for b in p["became"]]) for p in d["parts"]]
+    if d["questions"]:
         out.append(fmt.section(say("show_questions")))
-        out += [say("show_question", n=qn, text=q["text"], answer=q.get("answer")) for qn, q in asked]
-    if not m.get("processed"):
+        out += [say("show_question", n=q["n"], text=q["text"], answer=q["answer"] or None) for q in d["questions"]]
+    if d["status"] == "waiting":
         out += ["", fmt.commands([(say("cmd_process", n=n), say("cmd_process_what")),
                                   (say("cmd_ask", n=n), say("cmd_ask_what")),
                                   (say("cmd_done", n=n), say("cmd_done_what"))])]
-    return True, "\n".join(out)
+    return "\n".join(out)
 
 
 def row_response(n: int, m: dict) -> dict:
     return {
-        "n": n, "text": m["text"], "status": "processed" if m.get("processed") else "waiting",
+        "n": n, "text": m["text"], "gist": fmt.gist(m["text"]), "facts": " · ".join(_facts(m)),
+        "status": "moved" if m.get("moved_to") else "processed" if m.get("processed") else "waiting",
+        "moved_to": m.get("moved_to") or "",
         "age": age(m.get("at", "")), "processed_age": age(m.get("processed") or ""),
         "source": m.get("source") or "",
         "parts": [{"excerpt": p["excerpt"], "became": [{"ref": r, "label": label(r)} for r in p["became"]]}

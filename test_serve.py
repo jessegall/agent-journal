@@ -238,7 +238,7 @@ status, _, body = get("/api/env/beta/inbox")
 check("beta's inbox is its own", json.loads(body), [])
 status, got = post("/api/env/beta/inbox", {"text": "a message from the browser"})
 check("POST a message: 201, written from the web",
-      (status, got["rows"][0]["text"], got["rows"][0]["source"]), (201, "a message from the browser", "web"))
+      (status, got["data"]["text"], got["data"]["source"]), (201, "a message from the browser", "web"))
 check("and it landed on beta, not wherever this process is tracked",
       ([m["text"] for m in inbox.rows_response(root, "alpha")], len(inbox.rows_response(root, "beta"))),
       (["hello from the cli"], 1))
@@ -253,6 +253,20 @@ check("a write from another origin is refused", status, 403)
 status, got = post("/api/env/beta/inbox", b"[1, 2]")
 check("a body that is not a JSON object is 400", status, 400)
 check("no refused write landed", len(inbox.rows_response(root, "beta")), 1)
+status, got = post("/api/env/beta/inbox/1", {"text": "a message from the browser, reworded"}, method="PATCH")
+check("a waiting message can be reworded", (status, inbox._all(root, "beta")[0]["text"]), (200, "a message from the browser, reworded"))
+status, got = post("/api/env/beta/inbox/1/move", {"environment": "alpha"})
+check("move carries a waiting message to another environment",
+      (status, [m["text"] for m in inbox.rows_response(root, "alpha")][:1], inbox.rows_response(root, "beta")[0]["status"]),
+      (200, ["a message from the browser, reworded"], "moved"))
+status, got = post("/api/env/beta/inbox/1", {"text": "x"}, method="PATCH")
+check("a moved message refuses a change", status, 400)
+status, got = post("/api/env/alpha/inbox/2/process", {"part": "a message from the browser", "became": ["noted"]})
+check("a part is recorded through the controller", (status, len(inbox._all(root, "alpha")[1]["parts"])), (200, 1))
+status, got = post("/api/env/alpha/inbox/2/done", {})
+check("and the message is marked processed", (status, bool(inbox._all(root, "alpha")[1]["processed"])), (200, True))
+status, got = post("/api/env/alpha/inbox/1", {"text": "x"}, method="DELETE")
+check("a message is never deleted", status, 405)
 
 # ─────────────────────────────────────────────────────────────── questions
 status, _, body = get("/api/env/alpha/questions")

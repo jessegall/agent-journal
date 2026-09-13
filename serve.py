@@ -37,7 +37,6 @@ from typing import Callable
 from urllib.parse import parse_qsl, unquote, urlsplit
 
 import docs as docs_mod
-import inbox
 import questions
 import views
 from templates import render as fill
@@ -73,7 +72,6 @@ def say(message: str, /, **values) -> str:
     return fill(MESSAGES[message], **values)
 
 
-POST_ROUTES: list[tuple[re.Pattern, Callable]] = []
 BODY_LIMIT = 64_000
 
 
@@ -84,10 +82,6 @@ def route(pattern: str, table: list = ROUTES):
         table.append((compiled, fn))
         return fn
     return deco
-
-
-def post_route(pattern: str):
-    return route(pattern, POST_ROUTES)
 
 
 def _now() -> str:
@@ -169,28 +163,6 @@ def _api_doc_detail(root: Path, project: Path, m: re.Match):
     return _json(d)
 
 
-@route(r"^/api/env/(?P<env>[a-z0-9-]+)/inbox$")
-def _api_inbox(root: Path, project: Path, m: re.Match):
-    env = m.group("env")
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    return _json(views.inbox_on(root, env))
-
-
-def _wrote(result: tuple[bool, str], rows) -> tuple[int, str, bytes]:
-    ok, message = result
-    return _json({"ok": True, "message": message, "rows": rows}, 201) if ok else _json({"error": message}, 400)
-
-
-@post_route(r"^/api/env/(?P<env>[a-z0-9-]+)/inbox$")
-def _post_inbox(root: Path, project: Path, m: re.Match, body: dict):
-    env = m.group("env")
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    result = inbox.add(root, str(body.get("text") or ""), _now(), source="web", track=env)
-    return _wrote(result, views.inbox_on(root, env))
-
-
 # ─────────────────────────────────────────────────────────── resources, through their controllers
 RESOURCE = re.compile(r"^/api/(?:env/(?P<env>[a-z0-9-]+)/)?(?P<resource>[a-z]+)(?:/(?P<id>\d+(?:\.\d+)?))?(?:/(?P<action>[a-z]+))?$")
 _VERBS = {("GET", False): "index", ("GET", True): "show", ("POST", False): "store",
@@ -231,7 +203,8 @@ def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str,
     if named and method != "POST":
         return _json({"error": say("method", method=method, path=path)}, 405)
     action = named or _VERBS.get((method, bool(ident)))
-    if action is None:
+    # a method the resource does not take is 405; an action it does not have is a path that is not there
+    if action is None or (not named and action not in controller.actions):
         return _json({"error": say("method", method=method, path=path)}, 405)
     result = controller.call(root, action, Request(env, ident, body).payload())
     if method == "GET" and result.ok:
@@ -300,21 +273,6 @@ class _Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self) -> None:
-        path = urlsplit(self.path).path
-        for pattern, fn in POST_ROUTES:
-            m = pattern.match(path)
-            if not m:
-                continue
-            body, refusal = self._write_body()
-            if refusal:
-                self._send(*refusal, False)
-                return
-            try:
-                status, ctype, out = fn(self.server.root, self.server.project, m, body)
-            except Exception as e:   # a bad route must answer 500, never crash the server
-                status, ctype, out = _json({"error": say("internal", error=e)}, 500)
-            self._send(status, ctype, out, False)
-            return
         self._write("POST")
 
     def _write(self, method: str) -> None:

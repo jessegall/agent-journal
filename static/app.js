@@ -450,7 +450,7 @@ const Inbox = {
   setup(props) {
     const list = useFetch(() => props.env && `/api/env/${props.env}/inbox`);
     const send = (text) => postJSON(`/api/env/${props.env}/inbox`, { text })
-      .then((body) => { list.data = body.rows; changed(); });
+      .then(() => { list.reload(); changed(); });
     const item = computed(() => (list.data && props.n ? list.data.find((m) => String(m.n) === props.n) : null));
     const waiting = computed(() => (list.data || []).filter((m) => m.status === "waiting").length);
     const became = (m) => [...new Set(m.parts.flatMap((p) => p.became.map((b) => b.label)))].join(", ");
