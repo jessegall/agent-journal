@@ -1014,6 +1014,8 @@ const DocDetail = {
       return s.data.parts.filter((p) => p.p !== skip);
     });
     const citedHref = (c) => c.kind === "rule" ? `#/rules/${c.n}` : c.kind === "to-do" ? `#/env/${c.env}/todos/${c.n}` : `#/env/${c.env}/pins/${c.n}`;
+    const fileUrl = (n, path) => `/docs/${n}/files/` + path.split("/").map(encodeURIComponent).join("/");
+    const isImage = (name) => /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(name);
     const actions = computed(() => {
       const d = s.data;
       if (!d) return [];
@@ -1032,7 +1034,7 @@ const DocDetail = {
       ];
     });
     const done = (body, a) => settle(body, a, "", s);
-    return { s, restParts, citedHref, actions, done };
+    return { s, restParts, citedHref, actions, done, fileUrl, isImage };
   },
   template: `
     <TopBar :crumbs="['Docs', s.data ? '#' + s.data.n : docref]"/>
@@ -1058,18 +1060,23 @@ const DocDetail = {
           <p class=section-label>{{ s.data.n }}.{{ p.p }} {{ p.title }}<span v-if="p.age"> · {{ p.age }}</span></p>
           <div class="md prose" v-html="$md(p.body)"></div>
         </div>
-        <div v-if="s.data.attachments.length">
-          <p class=section-label>Attachments</p>
-          <div class=attachment-grid>
-            <div class=attachment-card v-for="a in s.data.attachments" :key="a.name">
-              <Icon :name="a.dir ? 'folder' : 'docs'"/>
-              <div class=attachment-info>
-                <a v-if="!a.dir" class=attachment-name :href="'/docs/' + s.data.n + '/files/' + encodeURIComponent(a.name)">{{ a.name }}</a>
-                <span v-else class=attachment-name>{{ a.name }}/</span>
-                <span class=attachment-meta>{{ a.dir ? 'folder' : a.title }} · {{ $human(a.size) }}</span>
-              </div>
+        <div v-if="s.data.attachments.length" class=files>
+          <p class=section-label>Files</p>
+          <template v-for="a in s.data.attachments" :key="a.name">
+            <details v-if="a.dir" class=file-folder>
+              <summary><Icon name="folder"/><span class=file-name>{{ a.name }}/</span><span class=file-meta>{{ a.files.length }} file(s) · {{ $human(a.size) }}</span></summary>
+              <a v-for="f in a.files" :key="f" class=file-row :href="fileUrl(s.data.n, a.name + '/' + f)" target=_blank rel=noopener>
+                <Icon name="docs"/><span class=file-name>{{ f }}</span>
+              </a>
+            </details>
+            <div v-else class=file>
+              <a class=file-row :href="fileUrl(s.data.n, a.name)" target=_blank rel=noopener>
+                <Icon name="docs"/><span class=file-name>{{ a.name }}</span>
+                <span class=file-meta>{{ a.title }}<template v-if="a.title"> · </template>{{ $human(a.size) }}</span>
+              </a>
+              <img v-if="isImage(a.name)" class=file-preview :src="fileUrl(s.data.n, a.name)" :alt="a.title || a.name" loading=lazy>
             </div>
-          </div>
+          </template>
         </div>
         <LinkedQuestions :rows="s.data.questions"/>
         <div v-if="s.data.cited_by.length">

@@ -206,6 +206,24 @@ def _doc_file(root: Path, project: Path, m: re.Match):
     return 200, ctype, match["path"].read_bytes()
 
 
+@route(r"^/docs/(?P<n>\d+)/files/(?P<name>[^/]+)/(?P<rest>.+)$")
+def _doc_folder_file(root: Path, project: Path, m: re.Match):
+    """A file inside a folder attachment: the folder comes from the manifest, and the file must resolve inside it."""
+    n, name, rest = int(m.group("n")), unquote(m.group("name")), unquote(m.group("rest"))
+    doc, _prt, err = docs_mod.get(root, str(n))
+    if doc is None:
+        return _not_found(err or say("no_doc", ref=n))
+    folder = next((a for a in docs_mod.attachments(doc) if a["name"] == name and a["dir"]), None)
+    if folder is None:
+        return _not_found(say("no_attachment", name=repr(name), n=n))
+    base = folder["path"].resolve()
+    target = (base / rest).resolve()
+    if not target.is_file() or not target.is_relative_to(base):
+        return _not_found(say("no_attachment", name=repr(f"{name}/{rest}"), n=n))
+    ctype = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
+    return 200, ctype, target.read_bytes()
+
+
 # ─────────────────────────────────────────────────────────────────────── the server
 class _Server(ThreadingHTTPServer):
     daemon_threads = True

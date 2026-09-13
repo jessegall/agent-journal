@@ -947,11 +947,16 @@ def part_row(p: dict) -> dict:
 
 
 def attachment_row(a: dict) -> dict:
+    files = []
+    if a.get("dir") and a.get("path"):
+        base = a["path"]
+        files = [str(f.relative_to(base)) for f in sorted(base.rglob("*")) if f.is_file() and not f.name.startswith(".")][:200]
     return {
         "name": a.get("name", ""),
         "title": a.get("title", ""),
         "dir": bool(a.get("dir")),
         "size": int(a.get("size") or 0),
+        "files": files,
     }
 
 
