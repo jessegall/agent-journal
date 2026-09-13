@@ -466,7 +466,6 @@ const Todos = {
   template: `
     <TopBar :crumbs="[env, 'To-dos']"><a class="btn new" :href="base + '/new'">New to-do</a></TopBar>
     <div class=viewbar>
-      <span>Grouped by <b>status</b></span><span>Ordered by <b>priority</b></span>
       <span v-if="list.data"><b>{{ open }}</b> open</span>
       <label class=toggle><input type=checkbox v-model="view.done"> Show done</label>
     </div>
@@ -564,7 +563,7 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
     },
     template: `
       <TopBar :crumbs="crumbs"><a class="btn new" :href="base + '/new'">New {{ word }}</a></TopBar>
-      <div class=viewbar><span>Ordered by <b>newest</b></span><span v-if="list.data"><b>{{ list.data.length }}</b> standing</span></div>
+      <div class=viewbar><span v-if="list.data"><b>{{ list.data.length }}</b> standing</span></div>
       <div class=body>
         <div class=list>
           <p v-if="list.loading && !list.data" class=empty>Loading…</p>
@@ -646,7 +645,7 @@ const Inbox = {
   },
   template: `
     <TopBar :crumbs="[env, 'Messages']"/>
-    <div class=viewbar><span>Waiting <b>first</b></span><span v-if="list.data"><b>{{ waiting }}</b> waiting</span></div>
+    <div class=viewbar><span v-if="list.data"><b>{{ waiting }}</b> waiting</span></div>
     <div class=body>
       <div class=list>
         <div class=compose-wrap>
@@ -716,7 +715,7 @@ const Questions = {
   },
   template: `
     <TopBar :crumbs="[env, 'Questions']"/>
-    <div class=viewbar><span>Open <b>first</b></span><span v-if="list.data"><b>{{ open }}</b> open</span></div>
+    <div class=viewbar><span v-if="list.data"><b>{{ open }}</b> open</span></div>
     <div class=body>
       <div class=list>
         <p v-if="list.loading && !list.data" class=empty>Loading…</p>
@@ -855,7 +854,7 @@ const Reminders = {
   },
   template: `
     <TopBar :crumbs="[env, 'Reminders']"><a class="btn new" :href="base + '/new'">New reminder</a></TopBar>
-    <div class=viewbar><span>Said again at <b>every stop</b></span><span v-if="list.data"><b>{{ list.data.length }}</b> standing</span></div>
+    <div class=viewbar><span v-if="list.data"><b>{{ list.data.length }}</b> standing</span></div>
     <div class=body>
       <div class=list>
         <p v-if="list.loading && !list.data" class=empty>Loading…</p>
@@ -902,7 +901,7 @@ function docList({ crumbs, url, base, empty }) {
     },
     template: `
       <TopBar :crumbs="crumbs"><a class="btn new" :href="base + '/new'">New doc</a></TopBar>
-      <div class=viewbar><span>Ordered by <b>number</b></span><span v-if="s.data"><b>{{ s.data.length }}</b> catalogued</span></div>
+      <div class=viewbar><span v-if="s.data"><b>{{ s.data.length }}</b> catalogued</span></div>
       <div class=body><div class=list>
         <div v-if="n === 'new'" class=compose-wrap><ActionBar :actions="creating" open="New doc" :done="done"/></div>
         <p v-if="s.loading && !s.data" class=empty>Loading…</p>
