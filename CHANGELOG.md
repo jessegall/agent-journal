@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.84.0 — the skill knows the viewer; Home's to-do table switches to Recently finished
+
+The journal skill and its command reference catch up with this branch: Messages (and editing
+or moving one), new answers to a question and rewording one, the web viewer (`journal serve`)
+and what the user does there — and that the record can therefore change under a running
+agent, so it re-reads before acting — the viewer's Search, tools' required title and summary,
+and removing an environment. On Home, Recently finished is no longer its own table: the to-do
+table switches between Open and Recently finished.
+
 ## 1.83.1 — the viewer stops refetching forever, and the server reads the environment list safely
 
 Every list in the viewer refetched its data the moment the last fetch landed, over and over,
