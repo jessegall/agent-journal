@@ -15,7 +15,7 @@ MESSAGE = {"n": number("a message number")}
 CONTROLLER = InboxController()
 
 PAGE = {
-    "sub": "{waiting} waiting, {processed} processed",
+    "sub": "{waiting} waiting, {processed} processed[, {archived} archived (--all)]",
     "empty": "No messages yet.",
     "lead": "Messages the user left for the agent on this environment, waiting ones first. Each is split into "
             "parts, and each part says what it became: a to-do, a pin, a rule, a reminder, a work update, a "
@@ -30,7 +30,7 @@ PAGE = {
 
 
 class List(Resource):
-    signature = "messages:list {--page=1} {--order=desc}"
+    signature = "messages:list {--page=1} {--order=desc} {--all}"
     casts = LISTING_CASTS
     default = True
     controller = CONTROLLER
@@ -43,7 +43,8 @@ class List(Resource):
         page, order = p.option("page"), p.option("order")
         items = [fmt.Item(n=r["n"], text=r["gist"], meta=r["facts"]) for r in result.data]
         return catalogue(
-            "MESSAGES", render(PAGE["sub"], waiting=result.meta["waiting"], processed=result.meta["processed"]),
+            "MESSAGES", render(PAGE["sub"], waiting=result.meta["waiting"], processed=result.meta["processed"],
+                               archived=result.meta["archived"] or None),
             (items, result.meta["left"]), PAGE["empty"], PAGE["lead"], PAGE["commands"],
             noun="messages", page=page, order=order)
 
@@ -106,6 +107,14 @@ class Done(Resource):
     action = "done"
 
 
+class Archive(Resource):
+    signature = "messages:archive {n : a message number} {why* : why it no longer needs anything done}"
+    casts = MESSAGE
+    writes = True
+    controller = CONTROLLER
+    action = "destroy"
+
+
 class Move(Resource):
     signature = "messages:move {n : a message number} {environment* : the environment it moves to}"
     casts = MESSAGE
@@ -114,4 +123,4 @@ class Move(Resource):
     action = "move"
 
 
-COMMANDS = (List, Show, Add, Edit, Process, File, Done, Move)
+COMMANDS = (List, Show, Add, Edit, Process, File, Done, Archive, Move)

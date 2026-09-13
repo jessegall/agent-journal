@@ -209,6 +209,14 @@ class Paths(Resource):
         return super().render(p, result)
 
 
+class Archive(Resource):
+    signature = "docs:archive {doc : a doc number or name} {why* : why it is no longer needed}"
+    writes = True
+    controller = CONTROLLER
+    action = "archive"
+    id_arg = "doc"
+
+
 class Move(Resource):
     signature = "docs:move {doc : a doc number or name} {environment*? : the environment it belongs to} {--global}"
     writes = True
@@ -290,5 +298,5 @@ class Search(Resource):
         return 0
 
 
-COMMANDS = (List, FilesOf, Show, Files, Add, Part, Replace, Strike, Final, Draft, Abstract, Title, Paths, Move, Supersede,
+COMMANDS = (List, FilesOf, Show, Files, Add, Part, Replace, Strike, Final, Draft, Abstract, Title, Paths, Archive, Move, Supersede,
             Attach, Detach, Index, Search)

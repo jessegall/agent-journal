@@ -118,6 +118,7 @@ A brief on stdin:
     journal messages show N              the message, the parts it was split into and what each became, and the questions about it
     journal messages process N --part="<words>" --became=<ref> [--became=<ref>]   one part: the words it quotes, and what it became — todo 22, pin 3, rule 2, reminder 1, question 4, work or noted
     journal messages file N <name> "doc <doc>"|keep   an attached file: copied into the doc (the held copy removed), or kept
+    journal messages archive N "<why>"   off the list, kept with its reason; it no longer waits
     journal messages done N              processed; refused until at least one part is recorded and every file is filed
     journal messages edit N "<text>"     reword a message that still waits
     journal messages move N "<env>"      carry a waiting message to another environment
@@ -149,6 +150,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal docs final <doc> | draft <doc>   status
     journal docs abstract <doc> "<one line>"   the line every session is handed
     journal docs title <doc> "<title>"         retitle it; its number and what cites it stay
+    journal docs archive <doc> "<why>"         off the catalogue, readable by number, listed under --all
     journal docs paths <doc>                   one absolute path per attached file, for a subagent's prompt
     journal docs supersede <doc> by <doc>    point readers of the first at the second
     journal docs index               catalogue the files .journal/docs/ already holds

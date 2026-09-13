@@ -57,6 +57,10 @@ MESSAGES = {
     "cmd_ask_what": "a part you do not understand becomes a question",
     "cmd_done": "journal messages done {n}",
     "cmd_done_what": "mark it processed once every part is recorded",
+    "archive_why": 'say why: journal messages archive {n} "<why it needs nothing more>"',
+    "already_archived": "message {n} is already archived",
+    "archived": "message {n} is archived: {why}\n  it is off the list; `journal messages --all` still shows it",
+    "fact_archived": "archived: {why}",
     "files_too_large": "the attached files come to {size} MB; a message holds at most {limit} MB",
     "file_unreadable": "cannot read {name}",
     "unfiled": "message {n} still holds {names:, }. File each one first: "
@@ -144,7 +148,7 @@ def _put(root: Path, items: list[dict], track: str | None = None) -> None:
 
 
 def unprocessed(root: Path, track: str | None = None) -> list[tuple[int, dict]]:
-    return [(n, m) for n, m in enumerate(_all(root, track), 1) if not m.get("processed")]
+    return [(n, m) for n, m in enumerate(_all(root, track), 1) if not m.get("processed") and not m.get("archived")]
 
 
 def _find(items: list[dict], n: int) -> tuple[dict | None, str]:
@@ -372,8 +376,27 @@ def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tup
     return True, say("moved", n=n, env=dst, there=len(there))
 
 
+def archive(root: Path, n: int, why: str, at: str, track: str | None = None) -> tuple[bool, str]:
+    """Take a message off the list, with the reason. A waiting one stops waiting; nothing is deleted."""
+    why = " ".join((why or "").split())
+    if not why:
+        return False, say("archive_why", n=n)
+    with state.locked(root):
+        items = _all(root, track)
+        m, err = _find(items, n)
+        if m is None:
+            return False, err
+        if m.get("archived"):
+            return False, say("already_archived", n=n)
+        m["archived"], m["archived_at"] = why, at
+        _put(root, items, track)
+    return True, say("archived", n=n, why=why)
+
+
 def _facts(m: dict) -> list[str]:
-    if m.get("moved_to"):
+    if m.get("archived"):
+        out = [say("fact_archived", why=m["archived"])]
+    elif m.get("moved_to"):
         out = [say("fact_moved", to=m["moved_to"].replace(":", " message "))]
     else:
         out = [say("fact_processed", age=age(m["processed"])) if m.get("processed") else say("fact_waiting")]
@@ -443,7 +466,8 @@ def show_text(d: dict) -> str:
 def row_response(n: int, m: dict) -> dict:
     return {
         "n": n, "text": m["text"], "gist": fmt.gist(m["text"]), "facts": " · ".join(_facts(m)),
-        "status": "moved" if m.get("moved_to") else "processed" if m.get("processed") else "waiting",
+        "status": "archived" if m.get("archived") else "moved" if m.get("moved_to") else "processed" if m.get("processed") else "waiting",
+        "archived": m.get("archived") or "",
         "moved_to": m.get("moved_to") or "",
         "age": age(m.get("at", "")), "processed_age": age(m.get("processed") or ""),
         "source": m.get("source") or "",

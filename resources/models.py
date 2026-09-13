@@ -134,17 +134,18 @@ class Message(Model):
     parts: list[dict] = field(default_factory=list)
     processed: str = ""
     moved_to: str = ""
+    archived: str = ""
 
     noun: ClassVar[str] = "message"
     sortable: ClassVar[tuple[str, ...]] = ("n", "at", "processed", "status_order")
 
     @property
     def waiting(self) -> bool:
-        return not self.processed
+        return not self.processed and not self.archived
 
     @property
     def status_order(self) -> int:
-        return 0 if self.waiting else 1
+        return 2 if self.archived else 0 if self.waiting else 1
 
 
 @dataclass

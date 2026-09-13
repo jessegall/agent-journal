@@ -6,6 +6,7 @@ from payloads.common import ListingPayload, MovePayload as EnvironmentMove, WhyP
 
 class ListPayload(ListingPayload):
     scope = Field(str)
+    archived = Field(bool)
 
 
 class StorePayload(Payload):

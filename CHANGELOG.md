@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.98.0 — a message or a whole doc can be archived
+
+`journal messages archive <n> "<why>"` takes a message off the list with its reason; a waiting
+one stops waiting, and nothing is deleted. `journal messages --all` still lists it, and the
+viewer shows archived messages in their own group at the bottom, with an Archive button on
+each message. `journal docs archive <doc> "<why>"` takes a whole doc off the catalogue, the
+session start and search; it stays readable by number, `journal docs --all` lists it with its
+reason, and the viewer's doc lists show it under "Show superseded and archived". A part is
+still struck, not archived.
+
 ## 1.97.1 — the viewer's sidebar sections fold
 
 Each sidebar section (Environment, Project, Environments, Activity) has a header you click to
