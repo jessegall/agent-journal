@@ -29,6 +29,7 @@ import time
 from pathlib import Path
 
 import state
+from templates import render as fill
 
 SEEN = "agent_seen"      # {track: {agent: unix seconds}} — the heartbeat, in the record
 
@@ -60,6 +61,32 @@ def touch(root: Path, track: str, agent: str) -> None:
         state.put(root, SEEN, log)
 
 
+MESSAGES = {
+    "age_never": "never written",
+    "age_now": "active just now",
+    "age_minutes": "last wrote {n} min ago",
+    "age_hours": "last wrote {n} h ago",
+    "called": ' — "{called}"',
+    "env_one": '--env="{env}"',
+    "env_unknown": '--env="<the environment your dispatch named>"',
+    "head_one": "YOU ARE AGENT `{agent}`{called} WORKING UNDER `{env}`, and you have your own ledger.",
+    "head_many": "YOU ARE AGENT `{agent}`{called}, and you have your own ledger under the environment your dispatch "
+                 "lent you. This session has lent {n}, so only your own prompt says which is yours — use that name and "
+                 "no other.",
+    "briefing": "{head}\n  Put both flags on every journal command you run:\n"
+                '    .journal/journal.py {env} --as="{agent}" work start "<what you are doing>"\n'
+                '    .journal/journal.py {env} --as="{agent}" todos          what was assigned to you\n'
+                '    .journal/journal.py {env} --as="{agent}" todos report <n> "<how>"\n'
+                "  Your work is yours: no other agent can open or close it. The environment's\n"
+                "  PINS and REMINDERS are the parent's — read them, and report what you find\n"
+                "  rather than writing either. You may REPORT a to-do complete; only the parent\n"
+                "  closes one.",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
+
+
 def active(root: Path, track: str, agent: str, stale_minutes: float) -> bool:
     """Has this agent written anything recently enough to still hold what it holds?"""
     got = (seen(root).get(track) or {}).get(state.slug(agent))
@@ -76,13 +103,13 @@ def age(root: Path, track: str, agent: str) -> str:
     """How long since this agent last wrote, in words — for a listing to read."""
     got = (seen(root).get(track) or {}).get(state.slug(agent))
     if not got:
-        return "never written"
+        return say("age_never")
     secs = time.time() - float(got)
     if secs < 90:
-        return "active just now"
+        return say("age_now")
     if secs < 3600:
-        return f"last wrote {int(secs // 60)} min ago"
-    return f"last wrote {secs / 3600:.1f} h ago"
+        return say("age_minutes", n=int(secs // 60))
+    return say("age_hours", n=f"{secs / 3600:.1f}")
 
 
 def described(project: Path, parent: str, agent: str) -> str:
@@ -146,19 +173,8 @@ def briefing(lent: list, agent: str, called: str = "") -> str:
     place that knowledge exists.
     """
     one = lent[0] if len(lent) == 1 else ""
-    named = f' — "{called}"' if called else ""
-    env = f'--env="{one}"' if one else '--env="<the environment your dispatch named>"'
-    head = (f"YOU ARE AGENT `{agent}`{named} WORKING UNDER `{one}`, and you have your own ledger."
-            if one else
-            f"YOU ARE AGENT `{agent}`{named}, and you have your own ledger under the environment "
-            f"your dispatch lent you. This session has lent {len(lent)}, so only your own "
-            f"prompt says which is yours — use that name and no other.")
-    return (head + "\n"
-            f"  Put both flags on every journal command you run:\n"
-            f'    .journal/journal.py {env} --as="{agent}" work start "<what you are doing>"\n'
-            f'    .journal/journal.py {env} --as="{agent}" todos          what was assigned to you\n'
-            f'    .journal/journal.py {env} --as="{agent}" todos report <n> "<how>"\n'
-            "  Your work is yours: no other agent can open or close it. The environment's\n"
-            "  PINS and REMINDERS are the parent's — read them, and report what you find\n"
-            "  rather than writing either. You may REPORT a to-do complete; only the parent\n"
-            "  closes one.")
+    named = say("called", called=called) if called else ""
+    env = say("env_one", env=one) if one else say("env_unknown")
+    head = (say("head_one", agent=agent, called=named, env=one) if one
+            else say("head_many", agent=agent, called=named, n=len(lent)))
+    return say("briefing", head=head, env=env, agent=agent)

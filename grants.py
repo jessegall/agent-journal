@@ -51,6 +51,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import state
+from templates import render as fill
 
 KEY = "granted"
 
@@ -129,6 +130,48 @@ def unreachable() -> set:
     return {v for v in NEVER if not commands.REGISTRY.knows(v)}
 
 
+MESSAGES = {
+    "grant_what": 'grant what? `journal grant "<environment>"`',
+    "grant_no_session": "a grant belongs to a session, and this process is not in one — run it from the session that "
+                        "will dispatch the subagent",
+    "revoke_none": "this session has granted nothing",
+    "revoked_all": "granted nothing now; {names:, } {verb} no longer lent",
+    "revoke_unknown": "this session has not granted {name}; it granted {names:, }",
+    "revoked": "{name} is no longer lent to this session's subagents",
+    "never": "`journal {verb}` is refused from a subagent even on a granted environment: {why}.",
+    "no_grant": "`journal {verb}` from a subagent is refused: the journal is the main conversation's, and your shell "
+                "carries its session id, so this would file under its name. Report what you found and let it decide "
+                "what to keep. Reads (`search`, `pins`, `open`, `--back`) are fine.",
+    "needs_as": "`journal {verb}` from a lent agent needs `--as=<your name>` as well as `--env`. Without it the write "
+                "files under the environment rather than under you: your ledger is not yours, a to-do you start is "
+                "held by nobody, and `report` will refuse it later. Your name was given to you on your first tool call.",
+    "not_lent": "`journal {verb}`: you were not lent `{name}`. That is a mistake in your dispatch, not something to "
+                "work around — do NOT pick a different environment. Report to the agent that dispatched you that the "
+                "grant is missing, and let it run `journal grant` before you try again.",
+    "names_none": "`journal {verb}` needs the environment it was lent, and this command names none. Put "
+                  '`--env="<name>"` on it, exactly as your dispatch told you — the name is in the prompt you were '
+                  "given. If it is not, report that upward rather than guessing.",
+    "head_already": "`{name}` is already lent to this session's subagents.",
+    "head_fresh": "`{name}` is a new environment, made and lent to this session's subagents. This session has not moved.",
+    "head_lent": "`{name}` is lent to this session's subagents. This session has not moved.",
+    "briefing": "{head}\n\n  TELL THE AGENT, IN ITS PROMPT:\n"
+                "    Run `.journal/journal.py lent` first: it answers with your own name.\n"
+                "    You work on your own journal: environment `{name}`. Every journal command\n"
+                '    you run must carry --env="{name}", e.g.\n'
+                '      .journal/journal.py --env="{name}" work start "<what you are doing>"\n'
+                '      .journal/journal.py --env="{name}" todos report <n> "<how it was done>"\n'
+                "    Without the flag your writes are refused, because your shell carries the\n"
+                "    dispatching session's id and would file under its name.\n"
+                '    You INHERIT this environment\'s pins and reminders — `--env="{name}" pins`\n'
+                "    reads them — and write neither: report what you found instead.\n\n"
+                '  read what it wrote: `journal environments "{name}"`\n'
+                '  take it back:       `journal grant --off "{name}"`',
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
+
+
 def granted(root: Path, stem: str | None) -> list[str]:
     """The environments this session has lent to its subagents."""
     got = state.get(root, KEY, [], stem=stem) if stem else []
@@ -140,7 +183,7 @@ def grant(root: Path, stem: str, name: str) -> tuple[bool, str]:
     import tracks
     name = state.slug(name)
     if not name:
-        return False, 'grant what? `journal grant "<environment>"`'
+        return False, say("grant_what")
     # LENDING MAKES THE ENVIRONMENT IT LENDS. This refused an unknown name and pointed at
     # `prepare`, which CREATES AND SWITCHES — so handing out three environments meant
     # prepare, switch back, prepare, switch back, prepare, switch back: six moves of a
@@ -154,8 +197,7 @@ def grant(root: Path, stem: str, name: str) -> tuple[bool, str]:
         with state.locked(root):
             tracks.create(root, name, at=_now())
     if not stem:
-        return False, ("a grant belongs to a session, and this process is not in one — run it "
-                       "from the session that will dispatch the subagent")
+        return False, say("grant_no_session")
     have = granted(root, stem)
     if name in have:
         return True, _briefing(name, already=True)
@@ -167,15 +209,15 @@ def revoke(root: Path, stem: str, name: str = "") -> tuple[bool, str]:
     """Take a grant back. Without a name, all of them."""
     have = granted(root, stem)
     if not have:
-        return False, "this session has granted nothing"
+        return False, say("revoke_none")
     if not name:
         state.put(root, KEY, [], stem=stem)
-        return True, f"granted nothing now; {', '.join(have)} {'is' if len(have) == 1 else 'are'} no longer lent"
+        return True, say("revoked_all", names=have, verb="is" if len(have) == 1 else "are")
     name = state.slug(name)
     if name not in have:
-        return False, f"this session has not granted {name!r}; it granted {', '.join(have)}"
+        return False, say("revoke_unknown", name=repr(name), names=have)
     state.put(root, KEY, [x for x in have if x != name], stem=stem)
-    return True, f"{name} is no longer lent to this session's subagents"
+    return True, say("revoked", name=name)
 
 
 def allows(root: Path, stem: str | None, verb: str, command: str) -> tuple[bool, str]:
@@ -186,16 +228,10 @@ def allows(root: Path, stem: str | None, verb: str, command: str) -> tuple[bool,
     the same as one that names none — otherwise the grant would be a suggestion.
     """
     if verb in NEVER:
-        return False, (f"`journal {verb}` is refused from a subagent even on a granted "
-                       f"environment: {NEVER[verb]}.")
+        return False, say("never", verb=verb, why=NEVER[verb])
     lent = granted(root, stem)
     if not lent:
-        return False, (
-            "`journal " + verb + "` from a subagent is refused: the journal is the main "
-            "conversation's, and your shell carries its session id, so this would file under "
-            "its name. Report what you found and let it decide what to keep. Reads "
-            "(`search`, `pins`, `open`, `--back`) are fine."
-        )
+        return False, say("no_grant", verb=verb)
     named = _env_in(command)
     if named and named in lent:
         # BOTH FLAGS OR NEITHER. `--env` says which environment; `--as` says which AGENT,
@@ -210,13 +246,7 @@ def allows(root: Path, stem: str | None, verb: str, command: str) -> tuple[bool,
         # so cannot tell a session from an agent; this door is the one place that can, which
         # is why the CLI's own version of this warning fired for the parent too.
         if not acting_in(command):
-            return False, (
-                f"`journal {verb}` from a lent agent needs `--as=<your name>` as well as "
-                "`--env`. Without it the write files under the environment rather than under "
-                "you: your ledger is not yours, a to-do you start is held by nobody, and "
-                "`report` will refuse it later. Your name was given to you on your first "
-                "tool call."
-            )
+            return False, say("needs_as", verb=verb)
         return True, ""
     # IT NEVER NAMES THE OTHERS, and that is not tidiness — it is the fix for a live
     # failure. This refusal used to list every environment the session had lent and then
@@ -227,17 +257,8 @@ def allows(root: Path, stem: str | None, verb: str, command: str) -> tuple[bool,
     # told to use has hit a mistake in its DISPATCH, and the only correct next move is to
     # report that upward, never to choose an environment for itself.
     if named:
-        return False, (
-            f"`journal {verb}`: you were not lent `{named}`. That is a mistake in your "
-            "dispatch, not something to work around — do NOT pick a different environment. "
-            "Report to the agent that dispatched you that the grant is missing, and let it "
-            "run `journal grant` before you try again."
-        )
-    return False, (
-        f"`journal {verb}` needs the environment it was lent, and this command names none. "
-        'Put `--env="<name>"` on it, exactly as your dispatch told you — the name is in the '
-        "prompt you were given. If it is not, report that upward rather than guessing."
-    )
+        return False, say("not_lent", verb=verb, name=named)
+    return False, say("names_none", verb=verb)
 
 
 def acting_in(command: str) -> str:
@@ -270,24 +291,10 @@ def _briefing(name: str, already: bool = False, fresh: bool = False) -> str:
     copy it into the prompt, and a sentence somebody paraphrases is a sentence that loses
     the flag the entire mechanism turns on.
     """
-    head = (f"`{name}` is already lent to this session's subagents." if already else
-            (f"`{name}` is a new environment, made and lent to this session's subagents. "
-             "This session has not moved." if fresh else
-             f"`{name}` is lent to this session's subagents. This session has not moved."))
+    head = say("head_already" if already else "head_fresh" if fresh else "head_lent", name=name)
     # EVERY EXAMPLE HERE IS A WRITE THE AGENT MAY ACTUALLY MAKE. It used to offer
     # `pins add` — which a lent agent is refused, by the user's ruling that pins are
     # inherited and never written by one. A briefing that teaches a forbidden command
     # teaches the agent to hit a wall on its first useful act, and it is copied verbatim
     # into the prompt, so the error arrives with the dispatcher's own authority behind it.
-    return (head + "\n\n  TELL THE AGENT, IN ITS PROMPT:\n"
-            "    Run `.journal/journal.py lent` first: it answers with your own name.\n"
-            f'    You work on your own journal: environment `{name}`. Every journal command\n'
-            f'    you run must carry --env="{name}", e.g.\n'
-            f'      .journal/journal.py --env="{name}" work start "<what you are doing>"\n'
-            f'      .journal/journal.py --env="{name}" todos report <n> "<how it was done>"\n'
-            "    Without the flag your writes are refused, because your shell carries the\n"
-            "    dispatching session's id and would file under its name.\n"
-            f'    You INHERIT this environment\'s pins and reminders — `--env="{name}" pins`\n'
-            "    reads them — and write neither: report what you found instead.\n\n"
-            f'  read what it wrote: `journal environments "{name}"`\n'
-            f'  take it back:       `journal grant --off "{name}"`')
+    return say("briefing", head=head, name=name)
