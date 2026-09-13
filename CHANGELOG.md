@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.93.0 — the user is told about the web viewer, and can see the journal in the status bar
+
+A session start shows the user one line: the viewer's address when it is running, or how to
+start it (`journal serve`, or ask Claude). `journal statusline` prints the line Claude Code's
+status bar can show: the environment, the open work, and whether the viewer is up.
+`journal statusline --install` adds it to `.claude/settings.json`, and never replaces a
+status line that is already there; `journal enable` offers it when none is set. Silence the
+start line with `"silenced": ["viewer_line"]`.
+
 ## 1.92.0 — a doc's attached files are hard to miss
 
 A session start names each doc's attached files beside its title, with `journal docs paths

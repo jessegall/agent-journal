@@ -556,6 +556,7 @@ marked "(a new answer)". Act on the latest answer, not the one you remember.
 ## The viewer: what the user does in the browser
 
     journal serve [--port=8420]     the web viewer, on this machine only
+    journal statusline --install    show environment, open work and viewer in the status bar — only if the user wants it
 
 The user reads and changes the journal in a browser while you work: they leave messages,
 answer questions, add and edit to-dos, pins, rules, reminders and docs, change a to-do's

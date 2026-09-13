@@ -197,6 +197,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal settings              every setting, its value, and where it came from",
         "journal loop set              this session has a loop running (the hook could not see it); `journal loop` says whether one is known",
         "journal serve [--port=<n>] [--open]   a local, read-only web viewer over this journal — 127.0.0.1 only, Ctrl-C to stop",
+        "journal statusline [--install]   the one line Claude Code's status bar shows: environment, open work, viewer; --install adds it to .claude/settings.json",
         "journal enable / journal disable   the kill switch: disable makes every hook inert — no hold, no gate, no context — until enable; the USER's call, never the agent's own idea",
     ),
 }
@@ -228,7 +229,7 @@ ALIAS: dict[str, str] = {
     "conversation": "transcript", "user": "transcript", "search": "transcript",
     "carry": "transcript",
     "status": "system", "verify": "system", "version": "system", "update": "system", "settings": "system",
-    "loop": "system", "serve": "system", "enable": "system", "disable": "system",
+    "loop": "system", "serve": "system", "statusline": "system", "enable": "system", "disable": "system",
 }
 
 

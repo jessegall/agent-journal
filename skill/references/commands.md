@@ -183,6 +183,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
 **The viewer**
 
     journal serve [--port=8420]      the web viewer on 127.0.0.1: every resource, with the same actions the commands have, and Search and Settings per environment
+    journal statusline [--install]   the status bar line: environment, open work, viewer; --install adds it to .claude/settings.json, never over one that exists
 
 Everything the viewer changes goes through the same controllers as these commands, marked as
 coming from the web where a record keeps a source. The API is `/api/env/<env>/<resource>[/<n>][/<action>]`

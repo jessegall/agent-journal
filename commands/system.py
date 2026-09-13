@@ -8,7 +8,7 @@ from command import Command, Parsed, number
 from templates import render
 
 NOUNS = (("cleanup", "tidy"), ("migrate", "migrations"), ("loop",), ("update",), ("upgrade",),
-         ("verify",), ("settings",), ("serve",), ("enable",), ("disable",), ("version",))
+         ("verify",), ("settings",), ("serve",), ("statusline", "status-line"), ("enable",), ("disable",), ("version",))
 
 TEXT = {
     "cleanup_extra": "cleanup takes no argument (got {word}) — `journal cleanup` for what a check can see, "
@@ -29,6 +29,12 @@ TEXT = {
     "update_extra": "journal update upgrades the journal. Progress on the open work is:\n"
                     '  journal work update "<what moved>"',
     "enabled": "hooks ENABLED: every hold, gate and reminder is back in force.",
+    "statusline_offer": "Want the environment, the open work and the web viewer in Claude Code's status bar? "
+                        "`journal statusline --install`",
+    "statusline_installed": "status line added to {path}; it shows from the next prompt",
+    "statusline_taken": "{path} already has a status line; it was left as it is. To use the journal's, set its "
+                        'command to: {command}',
+    "statusline_command": ".journal/journal.py statusline",
     "disabled": "hooks DISABLED: nothing is held, gated, filed or reminded until "
                 "`journal enable` — only run this because the user asked for it, by name.",
     "settings_title": "SETTINGS",
@@ -236,6 +242,53 @@ class Serve(Command):
         return 0
 
 
+class Statusline(Command):
+    signature = "statusline {--install}"
+
+    def run(self, p: Parsed) -> int:
+        if p.option("install"):
+            return self.install()
+        import json
+        import sys
+        import views
+        from pathlib import Path
+        got = {}
+        if not sys.stdin.isatty():
+            try:
+                got = json.loads(sys.stdin.read() or "{}")
+            except ValueError:
+                got = {}
+        where = got.get("transcript_path") or ""
+        print(views.status_line(root(), Path(where).stem if where else stem()))
+        return 0
+
+    @staticmethod
+    def install() -> int:
+        import json
+        path = project() / ".claude" / "settings.json"
+        data = json.loads(path.read_text()) if path.is_file() else {}
+        shown = path.relative_to(project())
+        if data.get("statusLine"):
+            fmt.say(render(TEXT["statusline_taken"], path=shown, command=TEXT["statusline_command"]))
+            return 0
+        data["statusLine"] = {"type": "command", "command": TEXT["statusline_command"]}
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data, indent=2) + "\n")
+        fmt.say(render(TEXT["statusline_installed"], path=shown))
+        return 0
+
+
+def has_statusline() -> bool:
+    import json
+    for f in (project() / ".claude" / "settings.json", project() / ".claude" / "settings.local.json"):
+        try:
+            if f.is_file() and json.loads(f.read_text()).get("statusLine"):
+                return True
+        except ValueError:
+            continue
+    return False
+
+
 class Enable(Command):
     signature = "enable"
     on = True
@@ -244,6 +297,8 @@ class Enable(Command):
         import state
         state.set_hooks_enabled(root(), self.on)
         fmt.say(TEXT["enabled"] if self.on else TEXT["disabled"])
+        if self.on and not has_statusline():
+            fmt.say(fmt.wrap(TEXT["statusline_offer"]))
         return 0
 
 
@@ -271,4 +326,4 @@ class Version(Command):
 
 
 COMMANDS = (Cleanup, CleanupRead, CleanupKeep, Migrate, MigrateRun, Loop, LoopSet, LoopUnset,
-            Upgrade, Update, Verify, Settings, Serve, Enable, Disable, Version)
+            Upgrade, Update, Verify, Settings, Serve, Statusline, Enable, Disable, Version)
