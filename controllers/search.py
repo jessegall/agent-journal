@@ -33,7 +33,7 @@ class SearchController(Controller):
         if not term:
             return Result("refused", say("search_wants"))
         needle = term.lower()
-        index = tracks.carried_by(root)
+        index, recorded = tracks.carried_by(root), tracks.marks(root)
         known = {s for stems in index.values() for s in stems}
         wanted = set(index.get(p.env) or [])
         found, total = [], 0
@@ -41,7 +41,7 @@ class SearchController(Controller):
             if not p.all and path.stem in known and path.stem not in wanted:
                 continue
             lines, _ = transcript.read(path)
-            pool = lines if p.all else transcript.on_track(lines, p.env)
+            pool = lines if p.all else transcript.on_track(lines, p.env, recorded.get(path.stem))
             hits = [line for line in pool if line.spoken and needle in (line.text or "").lower()]
             if hits:
                 found.append((path, list(reversed(hits))))

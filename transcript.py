@@ -85,7 +85,8 @@ def sessions(cwd: Path) -> list[Path]:
                   key=lambda f: f.stat().st_mtime, reverse=True)
 
 
-_START_MARK = re.compile(r"you are on environment `([^`]+)`")
+# the session-start block's wording, then and now: a mark nobody matches files the whole session under `default`
+_START_MARK = re.compile(r"(?:you are on|this session is bound to) environment `([^`]+)`")
 _SWITCH_MARK = re.compile(r"^\s*on (.+?) — ", re.M)
 _BEFORE_TRACKS = "default"
 
@@ -94,8 +95,8 @@ def track_segments(lines: list[Line]) -> list[tuple[str, int, int]]:
     """(environment, first line, last line) for every stretch of this transcript, in order.
 
     AN ENVIRONMENT HAS A TRANSCRIPT: everything ever said while it was current, across every
-    session. The transcript records where that is. Every session start injects "you are
-    on environment `X`", and every switch prints "on X — …" as its own output, so the stretch
+    session. The transcript records where that is. Every session start injects "this session
+    is bound to environment `X`", and every switch prints "on X — …" as its own output, so the stretch
     between one mark and the next belongs to the environment the mark names. Before the first
     mark — a session older than environments, or older than the start block — the environment is
     `default`, which is the environment every project had before anyone named one.
@@ -134,9 +135,27 @@ def snippet(body: str, term: str, before: int = 140, after: int = 200) -> str:
     return ("…" if a else "") + piece + ("…" if b < len(body) else "")
 
 
-def on_track(lines: list[Line], track: str) -> list[Line]:
+def segments(lines: list[Line], marks: list | None = None) -> list[tuple[str, int, int]]:
+    """(environment, first line, last line) stretches: from the journal's recorded marks where it has them.
+
+    The text of the start block and the switch output is read only for what came before the first
+    recorded mark — a session older than the record — because wording changes and a record does not.
+    """
+    last = lines[-1].n if lines else 0
+    recorded = sorted((int(n), str(env)) for env, n in (marks or []) if n)
+    if not recorded:
+        return track_segments(lines)
+    out = track_segments([l for l in lines if l.n < recorded[0][0]])
+    for i, (n, env) in enumerate(recorded):
+        hi = recorded[i + 1][0] - 1 if i + 1 < len(recorded) else last
+        if hi >= n:
+            out.append((env, n, hi))
+    return out
+
+
+def on_track(lines: list[Line], track: str, marks: list | None = None) -> list[Line]:
     """The lines of this transcript said while `environment` was current."""
-    keep = [(lo, hi) for t, lo, hi in track_segments(lines) if t == track]
+    keep = [(lo, hi) for t, lo, hi in segments(lines, marks) if t == track]
     return [l for l in lines if any(lo <= l.n <= hi for lo, hi in keep)]
 
 

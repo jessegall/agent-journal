@@ -1208,10 +1208,11 @@ const Search = {
       <form class=search-bar @submit.prevent="go">
         <input class="input search-input" v-model="form.text" placeholder="Search to-dos, pins, docs, messages and the conversation">
         <label class=toggle><input type=checkbox v-model="form.all" @change="form.term && go()"> Every environment</label>
-        <button type=submit class=primary :disabled="!form.text.trim()">Search</button>
+        <button type=submit class=primary :disabled="!form.text.trim() || s.loading">
+          <span v-if="s.loading && form.term" class=spinner></span>{{ s.loading && form.term ? 'Searching' : 'Search' }}</button>
       </form>
       <p v-if="!form.term" class="prose muted">This searches like <code>journal search</code>: everything said in the sessions on this environment, and the journal's own to-dos, pins, rules, questions, messages, reminders and docs.</p>
-      <p v-else-if="s.loading && !s.data" class=empty>Searching…</p>
+      <p v-else-if="s.loading && !s.data" class=empty><span class=spinner></span> Searching…</p>
       <p v-else-if="s.error" class=error>{{ s.error }}</p>
       <template v-else-if="s.data">
         <section>
