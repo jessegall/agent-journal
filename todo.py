@@ -1392,6 +1392,7 @@ def row_response(root: Path, track: str, t: dict) -> dict:
         "asks": t.get("asks") or "",
         "answer": t.get("answer") or "",
         "doc": str(t["doc"]) if t.get("doc") else "",
+        "priority": priority_of(t),
     }
 
 

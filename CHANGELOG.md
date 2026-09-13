@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.65.0 — the web viewer takes the approved dark design
+
+`journal serve` is restyled to the approved console design: a dark sidebar with this
+environment's inbox, to-dos, questions, pins, open work, reminders and docs, each with its
+count, the project's rules and docs, and every environment; a breadcrumb bar; and lists in
+fixed columns. To-dos are grouped by status and ordered by priority, with a chevron for
+priority and a pill for status in their own columns rather than badges before the title.
+Selecting a to-do, pin, rule, message or question opens it in a panel beside the list; a
+doc opens as its own page. The routes and the JSON API are unchanged; a to-do row now
+carries its priority and the overview names the project.
+
 ## 1.64.2 — reading environments is a read; assigning a to-do is a write
 
 `journal environments`, `journal environments "<name>"` and `journal grants` only list, and
