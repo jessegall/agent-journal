@@ -47,7 +47,8 @@ class WorkController(Controller):
     @staticmethod
     def _row(w) -> dict:
         return {"n": w.n, "subject": w.subject, "at": w.at, "age": pins.age(w.at) if w.at else "",
-                "ended": w.ended, "awaiting": (w.awaiting or {}).get("what") or "",
+                "ended": w.ended, "ended_age": pins.age(w.ended) if w.ended else "",
+                "awaiting": (w.awaiting or {}).get("what") or "",
                 "notes": [{"at": x.get("at", ""), "text": x.get("text", "")} for x in w.notes]}
 
     def index(self, root: Path, p: ListingPayload) -> Result:
@@ -63,7 +64,11 @@ class WorkController(Controller):
         return Result("ok", "", self._row(self.repository(root, p).find(p.id)))
 
     def store(self, root: Path, p: work_payloads.StartPayload) -> Result:
-        return Result.of(work.start(root, p.subject, p.at, p.where), created=True)
+        subject = " ".join((p.subject or "").split()).lower()
+        env = p.env or state.current_track(root)
+        match = next((r["n"] for r in todo._all(root, env) if not r.get("done") and r["title"].lower() == subject), None)
+        where = {**(p.where or {}), **({"todo": match} if match else {})}
+        return Result.of(work.start(root, p.subject, p.at, where), created=True)
 
     def update(self, root: Path, p: work_payloads.NotePayload) -> Result:
         return Result.of(work.note(root, p.text, p.at, self.repository(root, p).find(p.id).subject))

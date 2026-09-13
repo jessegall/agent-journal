@@ -176,6 +176,12 @@ MESSAGES = {
     "section_answered": "the user answered",
     "section_waiting": "waiting on the user",
     "section_brief": "brief",
+    "section_log": "work log",
+    "log_started": "started",
+    "log_update": "update",
+    "log_waiting": "waiting on",
+    "log_ended": "ended",
+    "log_row": "  {age:>9}  {kind:<10}  {text}",
     "section_doc_files": "files of doc {n}",
     "title_only": "  (title only; no brief was written)",
     "cmd_start": "journal todos start {n}",
@@ -1424,6 +1430,24 @@ def _held(root: Path, track: str, t: dict) -> str:
     return say("held", agent=t["assigned"], age=ag.age(root, track, t["assigned"]))
 
 
+def work_log(root: Path, track: str, t: dict) -> list[dict]:
+    """What was done on a to-do: each piece of work started from it, its updates, waits and end."""
+    import work
+    title = " ".join(t["title"].split()).lower()
+    out = []
+    for w in work._all(root, track):
+        if w.get("todo") != t["n"] and w["subject"].lower() != title:
+            continue
+        out.append({"at": w.get("at", ""), "kind": "started", "text": w["subject"]})
+        out.extend({"at": x.get("at", ""), "kind": "update", "text": x.get("text", "")} for x in w.get("notes") or [])
+        if w.get(work.AWAIT):
+            out.append({"at": w[work.AWAIT].get("at", ""), "kind": "waiting", "text": w[work.AWAIT].get("what", "")})
+        if w.get("ended"):
+            out.append({"at": w["ended"], "kind": "ended", "text": w.get("ended_note") or ""})
+    out.sort(key=lambda e: e["at"])
+    return [{**e, "age": _age(e["at"])} for e in out]
+
+
 def _started(root: Path, track: str, t: dict) -> str:
     """`started` is never cleared by a plain `work end` — only `--todo`/`done` clears the
     row — so a row that was started and then ended without closing it still says
@@ -1546,7 +1570,7 @@ def detail(root: Path, track: str, t: dict) -> dict:
             doc_files = [str(p.relative_to(root.parent.resolve())) if root.parent.resolve() in p.parents else str(p)
                          for p in docs_mod.file_paths(doc)]
     return {**row_response(root, track, t), "body": t.get("body", ""), "how": t.get("how") or "",
-            "doc_n": doc_n, "doc_files": doc_files,
+            "doc_n": doc_n, "doc_files": doc_files, "log": work_log(root, track, t),
             "facts": " · ".join(meta), "file": str(t["path"].relative_to(root.parent)) if t.get("path") else ""}
 
 
@@ -1571,6 +1595,10 @@ def show_text(t: dict, width: int | None = None) -> str:
     # SECOND time in a narrower terminal and left a stub under each line. `prose` is the
     # distinction — a paragraph flows, a list and a code block and a table do not.
     out.append(fmt.prose(t["body"], width=width) if t["body"] else say("title_only"))
+    if t.get("log"):
+        out.append(fmt.section(say("section_log")))
+        for e in t["log"]:
+            out.append(fmt.gist(say("log_row", age=e["age"], kind=say("log_" + e["kind"]), text=e["text"]), width))
     if t.get("doc_files"):
         out.append(fmt.section(say("section_doc_files", n=t["doc_n"])))
         out.extend("  " + f for f in t["doc_files"][:20])

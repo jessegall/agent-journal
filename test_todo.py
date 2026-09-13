@@ -324,5 +324,17 @@ _tw.join(); _tr.join()
 check("a reader racing the writer never sees a torn front matter", _torn[0], 0)
 _tm._LISTED.clear()
 
+# ---------------------------------------------------------------- a to-do keeps a log of the work done on it
+code, out = j("todos", "add", "log this row")
+_ln = re.search(r"to-do (\d+)", out).group(1)
+j("todos", "start", _ln)
+j("work", "update", "halfway there", "--on=log this row")
+j("work", "end", "log this row")
+code, out = j("todos", "show", _ln)
+check("a to-do's page shows the work started from it, its updates and its end",
+      ("WORK LOG" in out.upper(), "halfway there" in out, "started" in out, "ended" in out), (True, True, True, True))
+check("the log is data too", [e["kind"] for e in todo.detail(root, "default", todo.item(root, "default", int(_ln))[0])["log"]],
+      ["started", "update", "ended"])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
