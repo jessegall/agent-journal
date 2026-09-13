@@ -175,5 +175,28 @@ check("and running it twice moves nothing",
       "no doc carries a track from before" in j(d3, "migrate", "run")[1]
       or "Nothing pending" in j(d3, "migrate")[1], True)
 
+# ────────── a pin's reasoning filed under another environment moves to its pin's environment ──────────
+import migrate as _migrate  # noqa: E402
+_r = Path(tempfile.mkdtemp()) / ".journal"
+for _env, _bodies in (("start", []), ("work", ["007-the-claim.md"]), ("both", ["009-shared.md"]),
+                      ("other", ["009-shared.md"])):
+    (_r / "environments" / _env).mkdir(parents=True)
+    (_r / "environments" / _env / "pins.json").write_text(
+        json.dumps({"pins": [{"fact": "x", "body": b} for b in _bodies]}))
+(_r / "environments" / "start" / "pins").mkdir()
+(_r / "environments" / "start" / "pins" / "007-the-claim.md").write_text("the argument\n")
+(_r / "environments" / "start" / "pins" / "009-shared.md").write_text("ambiguous\n")
+_moved = _r / "environments" / "work" / "pins" / "007-the-claim.md"
+_said = _migrate._pin_bodies_home(_r)
+check("a stray reasoning file moves to the environment whose pin names it, and says so",
+      (_moved.read_text() if _moved.is_file() else None,
+       (_r / "environments" / "start" / "pins" / "007-the-claim.md").exists(),
+       "moved from `start` to `work`" in _said[0]),
+      ("the argument\n", False, True))
+check("a file two environments name stays where it is",
+      (_r / "environments" / "start" / "pins" / "009-shared.md").is_file(), True)
+check("running it again moves nothing",
+      "already in its own environment" in _migrate._pin_bodies_home(_r)[0], True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
