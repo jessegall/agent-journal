@@ -1012,6 +1012,8 @@ const EnvHome = {
         return { ...g, total: all.length, rows: g.key === "open" ? all.slice(0, 5) : all };
       }).filter((g) => g.rows.length);
     });
+    const finished = computed(() => (todos.data || []).filter((t) => t.done)
+      .sort((a, b) => (b.done > a.done ? 1 : b.done < a.done ? -1 : 0)).slice(0, 8));
     const waiting = computed(() => (inbox.data || []).filter((m) => m.status === "waiting"));
     const asking = computed(() => (questions.data || []).filter((q) => q.status === "open"));
     const stats = computed(() => {
@@ -1026,7 +1028,7 @@ const EnvHome = {
       ];
     });
     const about = (q) => q.links.map((l) => l.label).join(", ");
-    return { work, groups, waiting, asking, stats, about, questionKind };
+    return { work, groups, finished, waiting, asking, stats, about, questionKind };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -1092,6 +1094,18 @@ const EnvHome = {
               <span class=age>{{ t.age }}</span>
             </a>
           </template>
+        </div>
+      </section>
+
+      <section v-if="finished.length">
+        <div class=home-head><h2>Recently finished</h2><span class=n>{{ finished.length }}</span>
+          <a class=more :href="'#/env/' + env + '/todos'">All to-dos</a></div>
+        <div class=block>
+          <a v-for="t in finished" :key="t.n" class="row todorow finishedrow" :href="'#/env/' + env + '/todos/' + t.n">
+            <span></span><StatusIcon kind="done"/><span class=num>#{{ t.n }}</span>
+            <div class=stack><div class=title>{{ t.title }}</div><div v-if="t.how" class=sub>{{ t.how }}</div></div>
+            <span class=cite></span><span class=age>{{ t.done_age }}</span>
+          </a>
         </div>
       </section>
     </div></div>`,
