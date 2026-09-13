@@ -131,10 +131,8 @@ def about(root: Path, ref: str, track: str | None = None) -> list[tuple[int, dic
 
 
 def untold(root: Path, track: str | None = None) -> list[tuple[int, dict]]:
-    # a question about a to-do is announced with its to-do, not on its own
     return [(n, q) for n, q in enumerate(_all(root, track), 1)
-            if q.get("answer") and not q.get("withdrawn") and not q.get("told_at")
-            and not any(r.startswith("todo:") for r in q.get("links") or [])]
+            if q.get("answer") and not q.get("withdrawn") and not q.get("told_at")]
 
 
 def mark_told(root: Path, track: str | None, ns: list[int], at: str) -> None:

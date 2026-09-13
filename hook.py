@@ -1002,10 +1002,14 @@ def _p_cleanup(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     return _said(say("cleanup_clean_fact", never=never), say("cleanup_clean_do"))
 
 
-@nudges.subject("questions", 55)
+@nudges.subject("questions", 45)
 def _p_questions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     import questions
     fresh = questions.untold(ROOT, here)
+    if not work.open_work(ROOT):
+        # with nothing open, an answered to-do's own notice tells its questions beside it
+        left = {f"todo:{t['n']}" for t in todo.answered(ROOT, here)}
+        fresh = [(n, q) for n, q in fresh if not left & set(q.get("links") or [])]
     if not fresh:
         return None
     questions.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
@@ -1014,6 +1018,14 @@ def _p_questions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     return _say(head, say("answered_do"),
                 rows=[say("answered_row", n=n, text=q["text"], answer=q["answer"],
                           changed=say("answer_changed") if q.get("earlier_answers") else None) for n, q in fresh])
+
+
+def _told_with(here: str, rows: list[dict]) -> None:
+    import questions
+    refs = {f"todo:{t['n']}" for t in rows}
+    ns = [n for n, q in questions.untold(ROOT, here) if refs & set(q.get("links") or [])]
+    if ns:
+        questions.mark_told(ROOT, here, ns, todo.now())
 
 
 @nudges.subject("auto", 60)
@@ -1062,6 +1074,7 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         if key == state.get(ROOT, "answered_said", [], stem=ctx.stem):
             return None
         state.put(ROOT, "answered_said", key, stem=ctx.stem)
+        _told_with(here, unstuck)
         t = unstuck[0]
         blocks = [say("answered_block", n=u["n"], title=u["title"], asks=u["asks"], answer=u["answer"])
                   for u in unstuck]
@@ -1069,6 +1082,7 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
                     note=say("user_answered_note", blocks=blocks, n=t["n"]))
     nxt = ready[0]
     if todo.answered_one(nxt):
+        _told_with(here, unstuck)
         blocks = [say("answered_block", n=u["n"], title=u["title"], asks=u["asks"], answer=u["answer"])
                   for u in unstuck]
         rest = [say("list_row", n=str(t["n"]).rjust(3), title=t["title"], asks=None)

@@ -85,7 +85,8 @@ check("a resource carries every question linked to it",
 # ------------------------------------------------------------------ answer, and the agent is told once
 code, out = j("questions", "answer", "1", "postgres")
 check("answered", (code, "answered question 1" in out), (0, True))
-check("a question about a to-do is left to the to-do's own announcement", q_mod.untold(root, "default"), [])
+check("an answered question is untold until the agent hears it, a question about a to-do too",
+      [n for n, _ in q_mod.untold(root, "default")], [1])
 code, out = j("questions")
 check("open ones list before answered ones",
       out.index("is the fact still true?") < out.index("which database?"), True)
@@ -161,11 +162,23 @@ label, text = testkit.hold(fire("Stop", stop_hook_active=False))
 check("the stop names the answered question, and not the one about a to-do",
       (label, "which port? → 8420" in text, "sqlite after all" in text),
       ("the user answered question 3", True, False))
-check("and the record remembers it told them", q_mod.untold(root, "default"), [])
+check("and the record remembers it told them", [n for n, _ in q_mod.untold(root, "default")], [1])
 turn("and now", "[!reply] still fine")
 label, _ = testkit.hold(fire("Stop", stop_hook_active=False))
 check("a later stop does not repeat the question, and the answered to-do question arrives with its to-do",
       label, "the user answered to-do 1")
+check("the to-do's notice marks its question told", q_mod.untold(root, "default"), [])
+
+# the bug this guards: a question about the OPEN work's to-do was never told, because the
+# to-do's own notice only runs with nothing open
+j("todos", "start", "1")
+j("questions", "add", "which schema?", "--about=todo 1")
+n_open = len(q_mod._all(root, "default"))
+j("questions", "answer", str(n_open), "the new one")
+turn("go on", "[!reply] going")
+label, text = testkit.hold(fire("Stop", stop_hook_active=False))
+check("with its to-do being worked, a question about it is told at the next stop",
+      (label, "which schema? → the new one" in text), (f"the user answered question {n_open}", True))
 
 # ------------------------------------------------------------------ to-dos ask through questions
 j("todos", "add", "pick a colour")
