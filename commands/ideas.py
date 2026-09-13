@@ -4,13 +4,13 @@ import ideas
 import settings as settings_mod
 import tracks
 from app import CATALOGUE_PAGE, answer, catalogue, now, root, stem
-from command import Arg, Command, Opt, Parsed, number
-from commands.options import LISTING, words
+from command import Command, Parsed, number
+from commands.options import LISTING, LISTING_CASTS, words
 from templates import render
 
 NOUN = ("ideas", "idea")
 
-IDEA = Arg("n", number("an idea number"), what="an idea number")
+IDEA = {"n": number("an idea number")}
 
 PAGE = {
     "sub": "{standing} standing[, {dropped} dropped]",
@@ -24,7 +24,9 @@ PAGE = {
 
 
 class List(Command):
-    noun, verb, default, opts = "ideas", "list", True, LISTING
+    signature = "ideas:list " + LISTING
+    casts = LISTING_CASTS
+    default = True
 
     def run(self, p: Parsed) -> int:
         n = len(ideas.live(root()))
@@ -38,8 +40,10 @@ class List(Command):
 
 
 class Add(Command):
-    noun, verb, default, writes = "ideas", "add", True, True
-    args = (Arg("text", words("an idea"), rest=True, what="the idea, in one line"),)
+    signature = "ideas:add {text* : the idea, in one line}"
+    casts = {"text": words("an idea")}
+    default = True
+    writes = True
 
     def run(self, p: Parsed) -> int:
         conf, _ = settings_mod.load(root())
@@ -47,16 +51,19 @@ class Add(Command):
 
 
 class Drop(Command):
-    noun, verb, verbs, writes = "ideas", "drop", ("strike",), True
-    args = (IDEA, Arg("why", rest=True, what="why it is dropped"))
+    signature = "ideas:drop {n : an idea number} {why* : why it is dropped}"
+    casts = IDEA
+    verbs = ("strike",)
+    writes = True
 
     def run(self, p: Parsed) -> int:
         return answer(ideas.drop(root(), p.arg("n"), p.arg("why"), now()))
 
 
 class Promote(Command):
-    noun, verb, writes = "ideas", "promote", True
-    args, opts = (IDEA,), (Opt("title"),)
+    signature = "ideas:promote {n : an idea number} {--title=}"
+    casts = IDEA
+    writes = True
 
     def run(self, p: Parsed) -> int:
         return answer(ideas.promote(root(), p.arg("n"), now(), tracks.current(root(), stem()),

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""command.py: parsing, refusals, and write classification."""
+"""command.py: signatures, parsing, refusals, and write classification."""
 import sys
 from pathlib import Path
 
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-from command import Arg, Command, Opt, Registry, number  # noqa: E402
+from command import Command, Registry, number, options, parse_signature  # noqa: E402
 
 ok = fail = 0
 
@@ -19,49 +19,71 @@ def check(label, got, want):
         print(f"  FAIL {label}\n       got  {got!r}\n       want {want!r}")
 
 
-N = Arg("n", number("a question number"), what="a question number")
+# ------------------------------------------------------------------ the signature
+noun, verb, args, opts = parse_signature(
+    "pins:add {fact* : the claim} {extra?} {--brief} {--doc=} {--page=1} {--about=*}",
+    {"page": number("--page")})
+check("noun and verb", (noun, verb), ("pins", "add"))
+check("arguments: rest, optional, description",
+      [(a.name, a.rest, a.optional, a.what) for a in args],
+      [("fact", True, False, "the claim"), ("extra", False, True, "")])
+check("options: bare, value, typed default, repeatable",
+      [(o.name, o.bare, o.repeat, o.default) for o in opts],
+      [("brief", True, False, None), ("doc", False, False, None), ("page", False, False, 1), ("about", False, True, None)])
+check("a bare noun signature has no verb", parse_signature("next")[:2], ("next", ""))
+check("options() reads only the option blocks", [o.name for o in options("{x} {--a} {--b=}")], ["a", "b"])
+
+Q = {"n": number("a question number")}
 
 
 class QList(Command):
-    noun, verb, default = "questions", "list", True
+    signature = "questions:list"
+    default = True
 
 
 class QShow(Command):
-    noun, verb, default, args = "questions", "show", True, (N,)
+    signature = "questions:show {n : a question number}"
+    casts = Q
+    default = True
 
 
 class QAdd(Command):
-    noun, verb, writes = "questions", "add", True
-    args, opts = (Arg("text", rest=True, what="the question"),), (Opt("about", repeat=True),)
+    signature = "questions:add {text* : the question} {--about=*}"
+    writes = True
 
 
 class QAnswer(Command):
-    noun, verb, writes = "questions", "answer", True
-    args = (N, Arg("answer", rest=True, what="the answer"))
+    signature = "questions:answer {n : a question number} {answer* : the answer}"
+    casts = Q
+    writes = True
 
 
 class QWithdraw(Command):
-    noun, verb, verbs, writes = "questions", "withdraw", ("strike",), True
-    args = (N, Arg("why", rest=True))
+    signature = "questions:withdraw {n : a question number} {why*}"
+    casts = Q
+    verbs = ("strike",)
+    writes = True
 
 
 class TList(Command):
-    noun = "todos"
+    signature = "todos"
 
 
 class TShow(Command):
-    noun, args = "todos", (Arg("n", number("a to-do number")),)
+    signature = "todos {n}"
+    casts = {"n": number("a to-do number")}
 
 
 class TAdd(Command):
-    noun, writes, args = "todos", True, (Arg("title", rest=True),)
+    signature = "todos {title*}"
+    writes = True
 
 
 class Next(Command):
-    noun = "next"
+    signature = "next"
 
 
-reg = Registry(shared=(Opt("env"), Opt("all", bare=True), Opt("page", number("a page"), default=1)))
+reg = Registry(shared=options("{--env=} {--all} {--page=1}", {"page": number("a page")}))
 reg.noun("questions", "question")
 reg.add(QList, QShow, QAdd, QAnswer, QWithdraw)
 reg.noun("todos", "todo")
@@ -111,7 +133,7 @@ check("an option's type is enforced", (p, "a page must be a number" in why), (No
 p, why = parse("todos", "add", "--about=x")
 check("an option another command declares is not accepted here", p, None)
 
-# ------------------------------------------------------------------ refusals, from the declaration
+# ------------------------------------------------------------------ refusals, from the signature
 p, why = parse("questions", "answer")
 check("a missing argument names the usage and what it wants",
       why, "`journal questions answer <n> <answer>...` wants a question number")
@@ -138,14 +160,42 @@ for words, want in ((["questions"], False), (["questions", "3"], False), (["ques
     cmd = reg.command_of(words)
     check(f"command_of {words}", None if cmd is None else cmd.writes, want)
 
+
+# ------------------------------------------------------------------ a command chosen only when its option is present
+class RAdd(Command):
+    signature = "rules {text*}"
+    default = True
+    writes = True
+
+
+class RStrikeOld(Command):
+    signature = "rules {n} {why*} {--strike}"
+    casts = {"n": number("a rule number")}
+    default = True
+    needs = ("strike",)
+    writes = True
+
+
+needy = Registry()
+needy.noun("rules", "rule")
+needy.add(RStrikeOld, RAdd)
+p, _ = needy.parse(["rule", "--strike", "2", "no", "longer", "true"])
+check("with the option present, the command that needs it is chosen",
+      (type(p.command), p.arg("n"), p.arg("why")), (RStrikeOld, 2, "no longer true"))
+p, _ = needy.parse(["rule", "2", "no", "longer", "true"])
+check("without it, that command is never considered", (type(p.command), p.arg("text")), (RAdd, "2 no longer true"))
+check("command_of honours the same condition",
+      (type(needy.command_of(["rule", "--strike", "2", "x"])), type(needy.command_of(["rule", "2", "x"]))),
+      (RStrikeOld, RAdd))
+
+
 # ------------------------------------------------------------------ usage and listing
 class Usage(Command):
-    noun, verb, args = "x", "y", (Arg("a"), Arg("b", optional=True), Arg("c", rest=True))
+    signature = "x:y {a} {b?} {c*}"
 
 
 check("usage shows optional and rest arguments", Usage().usage(), "journal x y <a> [<b>] <c>...")
 check("every command of a noun, by any spelling", len(reg.commands("question")), 5)
-check("a command left without run() says so", isinstance(Next(), Command), True)
 try:
     Next().run(None)
     check("the base run raises", False, True)

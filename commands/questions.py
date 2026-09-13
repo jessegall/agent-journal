@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import questions
 from app import CATALOGUE_PAGE, answer, catalogue, now, refuse, root
-from command import Arg, Command, Opt, Parsed, number
-from commands.options import LISTING
+from command import Command, Parsed, number
+from commands.options import LISTING, LISTING_CASTS
 from templates import render
 
 NOUN = ("questions", "question")
 
-QUESTION = Arg("n", number("a question number"), what="a question number")
-REF = Arg("ref", rest=True, what="a reference like `todo 22` or `doc 4.1`")
+QUESTION = {"n": number("a question number")}
 
 PAGE = {
     "sub": "{open} open, {answered} answered",
@@ -23,7 +22,9 @@ PAGE = {
 
 
 class List(Command):
-    noun, verb, default, opts = "questions", "list", True, LISTING
+    signature = "questions:list " + LISTING
+    casts = LISTING_CASTS
+    default = True
 
     def run(self, p: Parsed) -> int:
         standing = [q for q in questions._all(root()) if not q.get("withdrawn")]
@@ -36,7 +37,9 @@ class List(Command):
 
 
 class Show(Command):
-    noun, verb, default, args = "questions", "show", True, (QUESTION,)
+    signature = "questions:show {n : a question number}"
+    casts = QUESTION
+    default = True
 
     def run(self, p: Parsed) -> int:
         ok, msg = questions.show(root(), p.arg("n"))
@@ -47,39 +50,45 @@ class Show(Command):
 
 
 class Add(Command):
-    noun, verb, writes = "questions", "add", True
-    args = (Arg("text", rest=True, what="the question"),)
-    opts = (Opt("about", repeat=True),)
+    signature = "questions:add {text* : the question} {--about=*}"
+    writes = True
 
     def run(self, p: Parsed) -> int:
         return answer(questions.add(root(), p.arg("text"), now(), p.option("about")))
 
 
 class Answer(Command):
-    noun, verb, writes = "questions", "answer", True
-    args = (QUESTION, Arg("answer", rest=True, what="the answer"))
+    signature = "questions:answer {n : a question number} {answer* : the answer}"
+    casts = QUESTION
+    writes = True
 
     def run(self, p: Parsed) -> int:
         return answer(questions.answer(root(), p.arg("n"), p.arg("answer"), now()))
 
 
 class Link(Command):
-    noun, verb, writes, args = "questions", "link", True, (QUESTION, REF)
+    signature = "questions:link {n : a question number} {ref* : a reference like `todo 22` or `doc 4.1`}"
+    casts = QUESTION
+    writes = True
 
     def run(self, p: Parsed) -> int:
         return answer(questions.link(root(), p.arg("n"), p.arg("ref")))
 
 
 class Unlink(Command):
-    noun, verb, writes, args = "questions", "unlink", True, (QUESTION, REF)
+    signature = "questions:unlink {n : a question number} {ref* : a reference like `todo 22` or `doc 4.1`}"
+    casts = QUESTION
+    writes = True
 
     def run(self, p: Parsed) -> int:
         return answer(questions.unlink(root(), p.arg("n"), p.arg("ref")))
 
 
 class Withdraw(Command):
-    noun, verb, verbs, writes = "questions", "withdraw", ("strike",), True
-    args = (QUESTION, Arg("why", rest=True, what="why it no longer needs an answer"))
+    signature = "questions:withdraw {n : a question number} {why* : why it no longer needs an answer}"
+    casts = QUESTION
+    verbs = ("strike",)
+    writes = True
 
     def run(self, p: Parsed) -> int:
         return answer(questions.withdraw(root(), p.arg("n"), p.arg("why"), now()))

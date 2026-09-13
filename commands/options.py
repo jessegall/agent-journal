@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from command import Opt, number
+from command import number, options
 
 
 def order(value: str) -> str:
@@ -19,5 +19,6 @@ def words(what: str):
     return convert
 
 
-SHARED = (Opt("env"), Opt("environment"), Opt("track"), Opt("as"))
-LISTING = (Opt("all", bare=True), Opt("page", number("--page"), default=1), Opt("order", order, default="desc"))
+SHARED = options("{--env=} {--environment=} {--track=} {--as=}")
+LISTING = "{--all} {--page=1} {--order=desc}"
+LISTING_CASTS = {"page": number("--page"), "order": order}

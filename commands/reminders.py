@@ -5,13 +5,13 @@ import reminders
 import settings as settings_mod
 import tracks
 from app import CATALOGUE_PAGE, answer, catalogue, now, root, stem
-from command import Arg, Command, Opt, Parsed, number
-from commands.options import LISTING
+from command import Command, Parsed, number
+from commands.options import LISTING, LISTING_CASTS
 from templates import render
 
 NOUN = ("reminders", "reminder", "remind")
 
-REMINDER = Arg("n", number("a reminder number"), what="a reminder number")
+REMINDER = {"n": number("a reminder number")}
 
 PAGE = {
     "sub": "environment {env} · {n} repeated[, {retired} retired]",
@@ -28,7 +28,9 @@ PAGE = {
 
 
 class List(Command):
-    noun, verb, default, opts = "reminders", "list", True, LISTING
+    signature = "reminders:list " + LISTING
+    casts = LISTING_CASTS
+    default = True
 
     def run(self, p: Parsed) -> int:
         conf, _ = settings_mod.load(root())
@@ -45,9 +47,8 @@ class List(Command):
 
 
 class Add(Command):
-    noun, verb, writes = "reminders", "add", True
-    args = (Arg("text", rest=True, what="the instruction, in one line"),)
-    opts = (Opt("until"),)
+    signature = "reminders:add {text* : the instruction, in one line} {--until=}"
+    writes = True
 
     def run(self, p: Parsed) -> int:
         conf, _ = settings_mod.load(root())
@@ -58,16 +59,19 @@ class Add(Command):
 
 
 class Done(Command):
-    noun, verb, verbs, writes = "reminders", "done", ("retire", "strike", "stop"), True
-    args = (REMINDER, Arg("why", rest=True, what="what made it true"))
+    signature = "reminders:done {n : a reminder number} {why* : what made it true}"
+    casts = REMINDER
+    verbs = ("retire", "strike", "stop")
+    writes = True
 
     def run(self, p: Parsed) -> int:
         return answer(reminders.done(root(), p.arg("n"), p.arg("why"), now()))
 
 
 class Move(Command):
-    noun, verb, writes = "reminders", "move", True
-    args = (REMINDER, Arg("environment", rest=True, what="the environment it moves to"))
+    signature = "reminders:move {n : a reminder number} {environment* : the environment it moves to}"
+    casts = REMINDER
+    writes = True
 
     def run(self, p: Parsed) -> int:
         return answer(reminders.move(root(), p.arg("n"), p.arg("environment"), now()))
