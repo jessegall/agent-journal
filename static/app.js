@@ -297,6 +297,15 @@ const LinkedQuestions = {
     </div>`,
 };
 
+const FromMessages = {
+  props: { rows: { type: Array, default: () => [] }, env: { type: String, default: "" } },
+  template: `
+    <div v-if="rows && rows.length" class=from-messages>
+      <p class=section-label>From your message</p>
+      <a v-for="m in rows" :key="m.n" class=chip :href="'#/env/' + env + '/messages/' + m.n" :title="m.excerpt">Message #{{ m.n }}</a>
+    </div>`,
+};
+
 // ─────────────────────────────────────────────────────────────── writing: actions and their forms
 // An action is { label, method, url, fields, submit, note, danger, only, leave, shape }: `only` sends the
 // fields that changed, `leave` returns to the list, `shape` rewrites the payload before it is sent.
@@ -565,7 +574,7 @@ function priorityName(value) {
 
 const Todos = {
   props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, PriorityIcon, LinkedQuestions, ActionBar, ResourceList },
+  components: { TopBar, Panel, StatusIcon, PriorityIcon, LinkedQuestions, ActionBar, ResourceList, FromMessages },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/todos`);
     const base = computed(() => `#/env/${props.env}/todos`);
@@ -637,6 +646,7 @@ const Todos = {
             <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
             <p v-else class="prose muted">Title only; no brief was written.</p>
           </div>
+          <FromMessages :rows="item.data.from_messages" :env="env"/>
           <LinkedQuestions :rows="item.data.questions" :env="env"/>
         </template>
       </Panel>
@@ -647,7 +657,7 @@ const Todos = {
 function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
   return {
     props: ["env", "n"],
-    components: { TopBar, Panel, LinkedQuestions, ActionBar, ResourceList },
+    components: { TopBar, Panel, LinkedQuestions, ActionBar, ResourceList, FromMessages },
     setup(props) {
       const list = useFetch(() => api(props) && `${api(props)}?all=1`);
       const item = useFetch(() => props.n && props.n !== "new" && `${api(props)}/${props.n}`);
@@ -710,6 +720,7 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
               <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
               <p v-else class="prose muted">No reasoning is written down; the claim is all there is.</p>
             </div>
+            <FromMessages :rows="item.data.from_messages" :env="env || 'web-interface'"/>
             <LinkedQuestions :rows="item.data.questions" :env="env"/>
           </template>
         </Panel>
@@ -787,7 +798,7 @@ const Inbox = {
 
 const Questions = {
   props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, Compose, ActionBar, ResourceList },
+  components: { TopBar, Panel, StatusIcon, Compose, ActionBar, ResourceList, FromMessages },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/questions`);
     const base = computed(() => `#/env/${props.env}/questions`);
@@ -833,6 +844,7 @@ const Questions = {
             <dt>Asked</dt><dd>{{ item.data.age || '—' }}</dd>
           </dl>
           <ActionBar :actions="actions" :done="done" :key="'question' + item.data.n + item.data.status"/>
+          <FromMessages :rows="item.data.from_messages" :env="env"/>
           <div v-if="item.data.description" class="md prose" v-html="$md(item.data.description)"></div>
           <div v-if="item.data.options.length && !item.data.withdrawn" class=options>
             <p class=section-label>{{ item.data.answer ? 'Choose again' : 'Choose one' }}</p>
@@ -907,7 +919,7 @@ const Work = {
 
 const Reminders = {
   props: ["env", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList },
+  components: { TopBar, Panel, ActionBar, ResourceList, FromMessages },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reminders`);
     const base = computed(() => `#/env/${props.env}/reminders`);
@@ -952,6 +964,7 @@ const Reminders = {
             <dt>Facts</dt><dd>{{ item.data.meta || '—' }}</dd>
           </dl>
           <ActionBar :actions="actions" :done="done" :key="'reminder' + item.data.n + (item.data.struck ? 'x' : '')"/>
+          <FromMessages :rows="item.data.from_messages" :env="env"/>
         </template>
       </Panel>
     </div>`,

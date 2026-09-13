@@ -94,7 +94,8 @@ class TodosController(Controller):
     def show(self, root: Path, p: Payload) -> Result:
         env, t = self.env(root), self.repository(root, p).find(p.id)
         row = todo.detail(root, env, t.raw)
-        row.update(questions=[questions.row_response(n, q) for n, q in questions.about(root, f"todo:{p.id}", env)])
+        row.update(questions=[questions.row_response(n, q) for n, q in questions.about(root, f"todo:{p.id}", env)],
+                   from_messages=__import__("inbox").sources(root, f"todo:{p.id}", env))
         return Result("ok", "", row)
 
     def store(self, root: Path, p: todo_payloads.StorePayload) -> Result:

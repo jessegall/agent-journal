@@ -66,7 +66,8 @@ class ClaimsController(Controller):
         return Result("ok", "", {**self._rows(root, p)[p.id], "body": repo.reasoning(p.id), "age": pins.age(claim.at),
                                  "struck_why": claim.struck,
                                  "doc_label": docs.ref_label(root, claim.doc) if claim.doc else "",
-                                 "questions": self._questions(root, p)})
+                                 "questions": self._questions(root, p),
+                                 "from_messages": __import__("inbox").sources(root, f"{self.noun}:{p.id}", p.env or None)})
 
     def store(self, root: Path, p: pin_payloads.StorePayload) -> Result:
         where = dict(p.where)

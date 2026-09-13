@@ -82,6 +82,16 @@ def label(ref: str) -> str:
     return say("label", kind=KINDS.get(kind, kind), n=num)
 
 
+def sources(root: Path, ref: str, track: str | None = None) -> list[dict]:
+    """The messages a part of which became `ref` (like `todo:44`), each with the words it quoted."""
+    out = []
+    for n, m in enumerate(_all(root, track), 1):
+        parts = [p for p in m.get("parts") or [] if ref in p.get("became") or []]
+        if parts:
+            out.append({"n": n, "excerpt": parts[0].get("excerpt", "")})
+    return out
+
+
 def check_became(root: Path, ref: str, track: str | None = None) -> str | None:
     if ref in PLAIN:
         return None
