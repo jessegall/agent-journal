@@ -34,6 +34,7 @@ def start(entry: Path) -> None:
 
 #: catalogue pages (docs, tools, todos, pins, rules) are shorter than a search's 25 (ruling R7)
 CATALOGUE_PAGE = 15
+PAGE = 25
 
 
 def root() -> Path:

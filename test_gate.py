@@ -283,7 +283,7 @@ check("and the next tool call is NOT denied for it — the context rung never ga
 import hook as _h
 check("every noun that reads on its own is in the table",
       sorted(set(_h.NOUN_WRITES)),
-      sorted({"docs", "tools"}))
+      sorted({"tools"}))
 check("and every one of them is a verb the gate can actually see",
       [n for n in _h.NOUN_WRITES if n not in _h.JOURNAL_WRITES], [])
 _classified = lambda c: _h._journal_write({"tool_name": "Bash", "tool_input": {"command": f".journal/journal.py {c}"}})  # noqa: E731
@@ -301,7 +301,12 @@ check("every work spelling is classified the same way",
       [_classified(c) for c in ("open", "next", 'work start "w"', 'start "w"', 'end "w"', "work end --force",
                                 'work update "x" --on=w', 'work await "y" --for=5')],
       [None, None, "work", "start", "end", "work", "work", "work"])
-for _noun, _read, _write in (("docs", "4", "add"), ("tools", "", "add")):
+check("every docs spelling is classified the same way",
+      [_classified(c) for c in ("docs", "docs 4", "docs 4 files", "docs search x", "docs show search",
+                                'docs add "t" --brief', "docs final 4", 'docs attach 4 ./a.html "x"',
+                                "docs move 4 --global", "docs supersede 3 by 4")],
+      [None, None, None, None, None, "docs", "docs", "docs", "docs", "docs"])
+for _noun, _read, _write in (("tools", "", "add"),):
     check(f"`journal {_noun} {_read}`.strip() reads and `{_noun} {_write}` writes",
           (_h.NOUN_WRITES[_noun](_read), _h.NOUN_WRITES[_noun](_write)), (False, True))
 check("`todos` is the one noun whose bare form takes a title, and the registry classifies it",
