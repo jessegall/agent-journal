@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.18 — the hook says what it says from templates
+
+Every hold, denial, hint and start-block sentence `hook.py` produces is declared once in its
+`MESSAGES` and filled by `say`; `_say` still shapes a hold into its fact and what to do about
+it. The wording is unchanged.
+
 ## 1.62.17 — environments and cleanup say what they say from templates
 
 Every message `tracks.py` and `cleanup.py` return or print — claim, switch and remove
