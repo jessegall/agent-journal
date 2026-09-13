@@ -182,6 +182,8 @@ holds while messages wait; the first tool call after a new one mentions it once.
 
 **The viewer**
 
+    journal comments [--all]         what the user said about a to-do, doc, pin, rule or reminder
+    journal comments done <n> "<what was done>"   a comment is handled
     journal serve [--port=8420]      the web viewer on 127.0.0.1: every resource, with the same actions the commands have, and Search and Settings per environment
     journal statusline [--install]   the status bar line: environment, open work, viewer; --install adds it to .claude/settings.json, never over one that exists
 

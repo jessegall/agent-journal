@@ -553,6 +553,17 @@ understand it is a question they will answer wrong.
 again: the new answer replaces the old one, which is kept, and the next stop tells you again,
 marked "(a new answer)". Act on the latest answer, not the one you remember.
 
+## Comments: what the user said about something
+
+    journal comments                            what the user said, not handled yet
+    journal comments show <n>                   one in full
+    journal comments done <n> "<what was done>" it is handled
+
+The user comments on a to-do, doc, pin, rule or reminder from the viewer. Every comment is
+a nudge: the next stop names it. Act on what it asks — amend the to-do, strike the pin,
+add a part to the doc, answer it in your reply — then `comments done` it, saying what was
+done. A comment that asks for new work is a to-do like any other request.
+
 ## The viewer: what the user does in the browser
 
     journal serve [--port=8420]     the web viewer, on this machine only
@@ -725,6 +736,7 @@ thing to do now.
 |----------------------------------------------------------------|--------------------------------------------------------|
 | *the user left N message(s) for you*                      | `journal messages`; split each into parts with `messages process`, a question for any part you do not understand, then `messages done` |
 | *the user left N new message(s) for you — … nothing is blocked* | finish the step you are on, then process them the same way |
+| *the user commented on to-do N*                                | act on what it asks, then `comments done <n> "<what was done>"` |
 | *the user answered question N*                                 | act on the answer; `journal questions show <n>` reads it in full |
 | *AUTO IS ON, so the question tool is refused*                  | `questions add "<question>" --about=<ref>` and carry on with what does not depend on it |
 | *N message(s) carried no tag*                                  | tag your next message; it will not hold for those lines again |

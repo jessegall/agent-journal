@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.95.0 — the user can comment on a to-do, doc, pin, rule or reminder
+
+Every detail panel in the viewer has a Comments section: the user writes a comment for the
+agent, and the next stop tells the agent, straight after the user's messages. The agent acts
+on what the comment asks, then closes it with `journal comments done <n> "<what was done>"`.
+Each comment shows whether the agent has seen it and what was done. From the terminal:
+`journal comments`, `comments show <n>`, `comments add "todo 22" "<text>"`. Comments belong
+to an environment; a comment on a doc or rule is filed on the doc's own environment, or on the
+most recently active one.
+
 ## 1.94.1 — "just now" means the last five minutes
 
 An age says "just now" for the first five minutes, then "N min ago" up to an hour, then hours

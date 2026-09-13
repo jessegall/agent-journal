@@ -498,6 +498,15 @@ import controller  # noqa: E402
 check("both are payload sources", (isinstance(parsed, controller.PayloadSource),
                                    isinstance(serve.Request("alpha", "1", {}), controller.PayloadSource)), (True, True))
 
+status, got = post("/api/env/alpha/comments", {"about": "todo 1", "text": "split this"})
+check("a comment is posted from the viewer", status, 201)
+status, _, body = get("/api/env/alpha/comments?about=todo%3A1&all=1")
+check("and listed by what it is about", [c["text"] for c in json.loads(body)], ["split this"])
+status, got = post("/api/env/alpha/comments", {"about": "todo 99", "text": "x"})
+check("a comment on nothing is refused", status, 400)
+status, got = post("/api/env/alpha/comments/1/done", {"how": "split into two"})
+check("and handled through the same route", (status, got.get("message", "").endswith("split into two")), (200, True))
+
 state.put(root, serve.VIEWER_PORT, srv.server_port)
 check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)
 import views  # noqa: E402

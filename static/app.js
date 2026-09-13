@@ -297,6 +297,29 @@ const LinkedQuestions = {
     </div>`,
 };
 
+const Comments = {
+  props: { about: { type: String, default: "" }, env: { type: String, default: "" } },
+  components: { Compose },
+  setup(props) {
+    const list = useFetch(() => props.env && props.about &&
+      `/api/env/${props.env}/comments?about=${encodeURIComponent(props.about)}&all=1&direction=asc`);
+    const post = (text) => send("POST", `/api/env/${props.env}/comments`, { about: props.about, text }).then(() => list.reload());
+    const state = (c) => (c.done ? `Handled: ${c.done}` : c.told ? "Seen by the agent" : "Not seen yet");
+    return { list, post, state };
+  },
+  template: `
+    <div v-if="env && about" class=comments>
+      <p class=section-label>Comments</p>
+      <div v-if="list.data && list.data.length" class=linked>
+        <div v-for="c in list.data" :key="c.n" class=sub>
+          <div>{{ c.text }}</div>
+          <div class=muted>{{ c.age || 'just now' }} · {{ state(c) }}</div>
+        </div>
+      </div>
+      <Compose placeholder="Comment for the agent" submit="Comment" hint="The agent is told at its next stop" :send="post"/>
+    </div>`,
+};
+
 const FromMessages = {
   props: { rows: { type: Array, default: () => [] }, env: { type: String, default: "" } },
   template: `
@@ -575,7 +598,7 @@ function priorityName(value) {
 
 const Todos = {
   props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, PriorityIcon, LinkedQuestions, ActionBar, ResourceList, FromMessages },
+  components: { TopBar, Panel, StatusIcon, PriorityIcon, LinkedQuestions, ActionBar, ResourceList, FromMessages, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/todos`);
     const base = computed(() => `#/env/${props.env}/todos`);
@@ -657,6 +680,7 @@ const Todos = {
           </div>
           <FromMessages :rows="item.data.from_messages" :env="env"/>
           <LinkedQuestions :rows="item.data.questions" :env="env"/>
+          <Comments :about="'todo ' + item.data.n" :env="env" :key="'c-todo' + item.data.n"/>
         </template>
       </Panel>
     </div>`,
@@ -666,7 +690,7 @@ const Todos = {
 function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
   return {
     props: ["env", "n"],
-    components: { TopBar, Panel, LinkedQuestions, ActionBar, ResourceList, FromMessages },
+    components: { TopBar, Panel, LinkedQuestions, ActionBar, ResourceList, FromMessages, Comments },
     setup(props) {
       const list = useFetch(() => api(props) && `${api(props)}?all=1`);
       const item = useFetch(() => props.n && props.n !== "new" && `${api(props)}/${props.n}`);
@@ -697,7 +721,7 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
         ];
       });
       const done = (body, a) => settle(body, a, base(props), list, item);
-      return { list, item, creating, actions, done, ageOf, docOf, crumbs: computed(() => crumbs(props)),
+      return { list, item, creating, actions, done, ageOf, docOf, word, envs, crumbs: computed(() => crumbs(props)),
                base: computed(() => base(props)), scope: computed(() => scope(props)), noun, word, empty, CLAIM_LIST };
     },
     template: `
@@ -731,6 +755,7 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
             </div>
             <FromMessages :rows="item.data.from_messages" :env="env || 'web-interface'"/>
             <LinkedQuestions :rows="item.data.questions" :env="env"/>
+            <Comments :about="word + ' ' + item.data.n" :env="env || envs[0] || ''" :key="'c-' + word + item.data.n"/>
           </template>
         </Panel>
       </div>`,
@@ -929,7 +954,7 @@ const Work = {
 
 const Reminders = {
   props: ["env", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, FromMessages },
+  components: { TopBar, Panel, ActionBar, ResourceList, FromMessages, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reminders`);
     const base = computed(() => `#/env/${props.env}/reminders`);
@@ -975,6 +1000,7 @@ const Reminders = {
           </dl>
           <ActionBar :actions="actions" :done="done" :key="'reminder' + item.data.n + (item.data.struck ? 'x' : '')"/>
           <FromMessages :rows="item.data.from_messages" :env="env"/>
+          <Comments :about="'reminder ' + item.data.n" :env="env" :key="'c-reminder' + item.data.n"/>
         </template>
       </Panel>
     </div>`,
@@ -1014,7 +1040,7 @@ const EnvDocs = docList({ crumbs: (p) => [p.env, "Environment docs"], url: (p) =
 const DocDetail = {
   // NAMED "docref", NOT "ref": Vue intercepts `ref` as its own template-ref attribute.
   props: ["docref"],
-  components: { TopBar, Icon, LinkedQuestions, ActionBar },
+  components: { TopBar, Icon, LinkedQuestions, ActionBar, Comments },
   setup(props) {
     const s = useFetch(() => props.docref && `/api/docs/${props.docref}`);
     const envs = useEnvironments(() => "");
@@ -1044,7 +1070,7 @@ const DocDetail = {
       ];
     });
     const done = (body, a) => settle(body, a, "", s);
-    return { s, restParts, citedHref, actions, done, fileUrl, isImage };
+    return { s, restParts, citedHref, actions, done, fileUrl, isImage, envs };
   },
   template: `
     <TopBar :crumbs="['Docs', s.data ? '#' + s.data.n : docref]"/>
@@ -1089,6 +1115,7 @@ const DocDetail = {
           </template>
         </div>
         <LinkedQuestions :rows="s.data.questions"/>
+        <Comments :about="'doc ' + s.data.n" :env="s.data.track || envs[0] || ''" :key="'c-doc' + s.data.n"/>
         <div v-if="s.data.cited_by.length">
           <p class=section-label>Cited by</p>
           <div class=linked>
