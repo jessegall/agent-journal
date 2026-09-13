@@ -10,7 +10,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)$/, view: "EnvHome", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/todos(?:\/(\d+|new))?$/, view: "Todos", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/pins(?:\/(\d+|new))?$/, view: "Pins", params: ["env", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/inbox(?:\/(\d+))?$/, view: "Inbox", params: ["env", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(?:\/(\d+))?$/, view: "Inbox", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/questions(?:\/(\d+))?$/, view: "Questions", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/work(?:\/(\d+|new))?$/, view: "Work", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reminders(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "n"] },
@@ -81,7 +81,7 @@ function refHref(ref, env) {
   if (kind === "doc") return `#/docs/${num}`;
   if (kind === "question") return `#/env/${env}/questions/${num}`;
   if (kind === "reminder") return `#/env/${env}/reminders`;
-  if (kind === "inbox") return `#/env/${env}/inbox/${num}`;
+  if (kind === "inbox") return `#/env/${env}/messages/${num}`;
   if (kind === "work") return `#/env/${env}/work`;
   return null;
 }
@@ -606,7 +606,7 @@ const Inbox = {
   components: { TopBar, Panel, StatusIcon, Compose, ActionBar },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/inbox`);
-    const base = computed(() => `#/env/${props.env}/inbox`);
+    const base = computed(() => `#/env/${props.env}/messages`);
     const list = useFetch(() => props.env && api.value);
     const envs = useEnvironments(() => props.env);
     const send = (text) => postJSON(api.value, { text }).then(() => { list.reload(); changed(); });
@@ -627,7 +627,7 @@ const Inbox = {
     return { list, send, item, waiting, became, actions, done };
   },
   template: `
-    <TopBar :crumbs="[env, 'Inbox']"/>
+    <TopBar :crumbs="[env, 'Messages']"/>
     <div class=viewbar><span>Waiting <b>first</b></span><span v-if="list.data"><b>{{ waiting }}</b> waiting</span></div>
     <div class=body>
       <div class=list>
@@ -638,17 +638,17 @@ const Inbox = {
         <p v-if="list.loading && !list.data" class=empty>Loading…</p>
         <p v-else-if="list.error" class=error>{{ list.error }}</p>
         <template v-else-if="list.data">
-          <a v-for="m in list.data" :key="m.n" :class="['row', 'inboxrow', {sel: String(m.n) === n}]" :href="'#/env/' + env + '/inbox/' + m.n">
+          <a v-for="m in list.data" :key="m.n" :class="['row', 'inboxrow', {sel: String(m.n) === n}]" :href="'#/env/' + env + '/messages/' + m.n">
             <StatusIcon :kind="m.status === 'waiting' ? 'waiting' : 'done'"/>
             <span class=num>#{{ m.n }}</span>
             <span class=title>{{ m.text }}</span>
             <span class=cite>{{ became(m) }}</span>
             <span class=age>{{ m.age }}</span>
           </a>
-          <p v-if="!list.data.length" class=empty>The inbox is empty.</p>
+          <p v-if="!list.data.length" class=empty>No messages yet.</p>
         </template>
       </div>
-      <Panel v-if="n && item" :label="'Message #' + n" :close="'#/env/' + env + '/inbox'">
+      <Panel v-if="n && item" :label="'Message #' + n" :close="'#/env/' + env + '/messages'">
         <div class="prose message">{{ item.text }}</div>
         <dl class=props>
           <dt>Status</dt><dd><StatusIcon :kind="item.status === 'waiting' ? 'waiting' : 'done'"/>{{ item.status === 'waiting' ? 'Waiting to be processed' : item.status === 'moved' ? 'Moved to ' + item.moved_to : 'Processed' }}</dd>
@@ -1015,7 +1015,7 @@ const EnvHome = {
     const stats = computed(() => {
       const s = summary.data || {};
       return [
-        { label: "Inbox waiting", n: s.inbox, icon: "inbox", path: "inbox", hot: s.inbox },
+        { label: "Messages waiting", n: s.inbox, icon: "inbox", path: "messages", hot: s.inbox },
         { label: "Open questions", n: s.questions, icon: "questions", path: "questions", hot: s.questions },
         { label: "Open to-dos", n: s.todos, icon: "todos", path: "todos" },
         { label: "Pins", n: s.pins, icon: "pins", path: "pins" },
@@ -1056,10 +1056,10 @@ const EnvHome = {
       </section>
 
       <section v-if="waiting.length">
-        <div class=home-head><h2>Inbox</h2><span class=n>{{ waiting.length }} waiting</span>
-          <a class=more :href="'#/env/' + env + '/inbox'">Open inbox</a></div>
+        <div class=home-head><h2>Messages</h2><span class=n>{{ waiting.length }} waiting</span>
+          <a class=more :href="'#/env/' + env + '/messages'">All messages</a></div>
         <div class=block>
-          <a v-for="m in waiting" :key="m.n" class="row inboxrow" :href="'#/env/' + env + '/inbox/' + m.n">
+          <a v-for="m in waiting" :key="m.n" class="row inboxrow" :href="'#/env/' + env + '/messages/' + m.n">
             <StatusIcon kind="waiting"/><span class=num>#{{ m.n }}</span><span class=title>{{ m.text }}</span>
             <span class=cite></span><span class=age>{{ m.age }}</span>
           </a>
@@ -1119,7 +1119,7 @@ const Settings = {
     const removing = computed(() => [{
       label: "Remove this environment", method: "POST", url: `${api.value}/remove`, danger: true, submit: "Remove it",
       fields: [{ name: "confirm", label: `Type ${props.env} to confirm` }],
-      note: s.data ? `This deletes its ${s.data.pins} pin(s), ${s.data.todos} open to-do(s), its open work and its inbox for good. Docs stay with the project.` : "",
+      note: s.data ? `This deletes its ${s.data.pins} pin(s), ${s.data.todos} open to-do(s), its open work and its messages for good. Docs stay with the project.` : "",
     }]);
     const done = () => { changed(); location.hash = "#/"; };
     return { s, auto, setAuto, removing, done };
@@ -1159,7 +1159,7 @@ const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Work, Remin
 // open work lives on Home, so the sidebar has no entry of its own for it
 const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "" },
-  { key: "inbox", label: "Inbox", views: ["Inbox"], path: "inbox", count: "inbox" },
+  { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "questions", label: "Questions", views: ["Questions"], path: "questions", count: "questions" },
   { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
