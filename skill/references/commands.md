@@ -117,7 +117,8 @@ A brief on stdin:
     journal messages [--page=N] [--order=asc|desc]   waiting messages first, then processed ones
     journal messages show N              the message, the parts it was split into and what each became, and the questions about it
     journal messages process N --part="<words>" --became=<ref> [--became=<ref>]   one part: the words it quotes, and what it became — todo 22, pin 3, rule 2, reminder 1, question 4, work or noted
-    journal messages done N              processed; refused until at least one part is recorded
+    journal messages file N <name> "doc <doc>"|keep   an attached file: copied into the doc (the held copy removed), or kept
+    journal messages done N              processed; refused until at least one part is recorded and every file is filed
     journal messages edit N "<text>"     reword a message that still waits
     journal messages move N "<env>"      carry a waiting message to another environment
 

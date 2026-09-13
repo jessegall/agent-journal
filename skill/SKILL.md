@@ -498,7 +498,8 @@ wall — and an agent routes around a wall.
     journal messages                                              waiting messages first, then processed ones
     journal messages show <n>                                     the message, its parts, and the questions about it
     journal messages process <n> --part="<words>" --became=<ref>  one part, and what it became
-    journal messages done <n>                                     processed, once its parts say what they became
+    journal messages file <n> <name> "doc <doc>"|keep             an attached file: into the doc it belongs to, or kept
+    journal messages done <n>                                     processed, once its parts say what they became and its files are filed
     journal messages move <n> "<environment>"                     left on the wrong environment: carry it there
     journal messages edit <n> "<text>"                            reword one that still waits
 

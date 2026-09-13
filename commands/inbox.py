@@ -23,6 +23,7 @@ PAGE = {
     "commands": (('journal messages "<message>"', "leave one"),
                  ("journal messages show <n>", "read one, with what it became"),
                  ('journal messages process <n> --part="<words>" --became=<ref>', "record a part"),
+                 ('journal messages file <n> <name> "doc <doc>"', "file an attached file into a doc, or keep it"),
                  ("journal messages done <n>", "mark it processed"),
                  ('journal messages move <n> "<environment>"', "carry a waiting one to another environment")),
 }
@@ -62,12 +63,23 @@ class Show(Resource):
 
 
 class Add(Resource):
-    signature = "messages:add {text* : the message}"
+    signature = "messages:add {text* : the message} {--file=*}"
     casts = {"text": words("a message")}
     default = True
     writes = True
     controller = CONTROLLER
     action = "store"
+
+    def extra(self, p: Parsed):
+        return {"files": [{"path": f} for f in p.option("file") or []]}
+
+
+class File(Resource):
+    signature = "messages:file {n : a message number} {name : the attached file} {into* : `doc 4`, or keep}"
+    casts = MESSAGE
+    writes = True
+    controller = CONTROLLER
+    action = "file"
 
 
 class Edit(Resource):
@@ -102,4 +114,4 @@ class Move(Resource):
     action = "move"
 
 
-COMMANDS = (List, Show, Add, Edit, Process, Done, Move)
+COMMANDS = (List, Show, Add, Edit, Process, File, Done, Move)

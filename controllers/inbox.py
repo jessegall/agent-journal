@@ -6,18 +6,18 @@ import fmt
 import inbox
 from controller import Controller, Payload, Result
 from payloads.common import ListingPayload, MovePayload, TextPayload
-from payloads.inbox import ProcessPayload
+from payloads.inbox import FilePayload, ProcessPayload, StorePayload
 
 
 class InboxController(Controller):
     resource = "inbox"
     noun = "message"
-    actions = ("index", "show", "store", "update", "process", "done", "move")
-    numbered = ("show", "update", "process", "done", "move")
-    payloads = {"index": ListingPayload, "store": TextPayload, "update": TextPayload, "process": ProcessPayload,
-                "move": MovePayload}
+    actions = ("index", "show", "store", "update", "process", "file", "done", "move")
+    numbered = ("show", "update", "process", "file", "done", "move")
+    payloads = {"index": ListingPayload, "store": StorePayload, "update": TextPayload, "process": ProcessPayload,
+                "file": FilePayload, "move": MovePayload}
     # a processed or moved message is the record of what it became
-    EDITS = frozenset({"update", "process", "done", "move"})
+    EDITS = frozenset({"update", "process", "file", "done", "move"})
 
     def repository(self, root: Path, p: Payload):
         from resources import Messages
@@ -49,8 +49,9 @@ class InboxController(Controller):
     def show(self, root: Path, p: Payload) -> Result:
         return Result("ok", "", inbox.detail(root, p.id, self.repository(root, p).find(p.id).raw, p.env or None))
 
-    def store(self, root: Path, p: TextPayload) -> Result:
-        outcome = inbox.add(root, p.text, p.at, source=p.source, track=p.env or None)
+    def store(self, root: Path, p: StorePayload) -> Result:
+        files = p.files if isinstance(p.files, list) else []
+        outcome = inbox.add(root, p.text, p.at, source=p.source, track=p.env or None, files=files)
         data = self._row(root, p, self.repository(root, p).count()) if outcome[0] else None
         return Result.of(outcome, data, created=True)
 
@@ -59,6 +60,9 @@ class InboxController(Controller):
 
     def process(self, root: Path, p: ProcessPayload) -> Result:
         return Result.of(inbox.process(root, p.id, p.part, p.became, p.at, p.env or None), self._row(root, p, p.id))
+
+    def file(self, root: Path, p: FilePayload) -> Result:
+        return Result.of(inbox.file_into(root, p.id, p.name, p.into, p.at, p.env or None), self._row(root, p, p.id))
 
     def done(self, root: Path, p: Payload) -> Result:
         return Result.of(inbox.done(root, p.id, p.at, p.env or None), self._row(root, p, p.id))

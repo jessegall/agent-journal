@@ -249,29 +249,43 @@ const Panel = {
 };
 
 const Compose = {
-  props: ["placeholder", "submit", "hint", "send"],
+  props: ["placeholder", "submit", "hint", "send", "attach"],
   setup(props) {
-    const draft = reactive({ text: "", sending: false, error: null });
+    const draft = reactive({ text: "", sending: false, error: null, files: [] });
+    const picked = (e) => { draft.files.push(...Array.from(e.target.files || [])); e.target.value = ""; };
+    const unpick = (i) => draft.files.splice(i, 1);
+    const encoded = (file) => new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve({ name: file.name, data: String(r.result) });
+      r.onerror = () => reject(new Error(`Could not read ${file.name}`));
+      r.readAsDataURL(file);
+    });
     async function go() {
       if (!draft.text.trim() || draft.sending) return;
       draft.sending = true;
       draft.error = null;
       try {
-        await props.send(draft.text);
+        const files = props.attach ? await Promise.all(draft.files.map(encoded)) : [];
+        await props.send(draft.text, files);
         draft.text = "";
+        draft.files = [];
       } catch (e) {
         draft.error = e.message;
       } finally {
         draft.sending = false;
       }
     }
-    return { draft, go };
+    return { draft, go, picked, unpick };
   },
   template: `
     <form class=compose @submit.prevent="go">
       <textarea class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
         @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go"></textarea>
+      <div v-if="draft.files.length" class=compose-files>
+        <span v-for="(f, i) in draft.files" :key="i" class=chip>{{ f.name }} <button type=button class=chip-x title="Remove" @click="unpick(i)">×</button></span>
+      </div>
       <div class=compose-bar>
+        <label v-if="attach" class="btn attach">Attach files<input type=file multiple hidden @change="picked"></label>
         <span class=hint>{{ hint }}</span>
         <button type=submit class=primary :disabled="draft.sending || !draft.text.trim()">{{ submit }}</button>
       </div>
@@ -781,7 +795,9 @@ const Inbox = {
     const base = computed(() => `#/env/${props.env}/messages`);
     const list = useFetch(() => props.env && api.value);
     const envs = useEnvironments(() => props.env);
-    const send = (text) => postJSON(api.value, { text }).then(() => { list.reload(); changed(); });
+    const send = (text, files) => postJSON(api.value, { text, files }).then(() => { list.reload(); changed(); });
+    const heldUrl = (m, f) => `/inbox-files/${props.env}/${m.n}/${encodeURIComponent(f.name)}`;
+    const isImage = (name) => /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(name);
     const item = computed(() => (list.data && props.n ? list.data.find((m) => String(m.n) === props.n) : null));
     const actions = computed(() => {
       const m = item.value;
@@ -794,7 +810,7 @@ const Inbox = {
       ];
     });
     const done = (body, a) => settle(body, a, base.value, list);
-    return { list, send, item, actions, done, MESSAGE_LIST };
+    return { list, send, item, actions, done, MESSAGE_LIST, heldUrl, isImage };
   },
   template: `
     <TopBar :crumbs="[env, 'Messages']"/>
@@ -802,7 +818,7 @@ const Inbox = {
       <div class=list>
         <div class=compose-wrap>
           <Compose placeholder="Leave a message for the agent: an instruction, a follow-up, anything"
-            submit="Send" hint="The agent is told at its next stop" :send="send"/>
+            submit="Send" hint="The agent is told at its next stop" :send="send" :attach="true"/>
         </div>
         <ResourceList v-bind="MESSAGE_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
           :href="(m) => '#/env/' + env + '/messages/' + m.n" :selected="(m) => String(m.n) === n"/>
@@ -815,6 +831,20 @@ const Inbox = {
           <dt>From</dt><dd>{{ item.source === 'web' ? 'The browser' : 'The terminal' }}</dd>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'message' + item.n + item.status"/>
+        <div v-if="item.files && item.files.length">
+          <p class=section-label>Files</p>
+          <div class=files>
+            <template v-for="f in item.files" :key="f.name">
+              <a v-if="!f.filed.startsWith('doc:')" class=file-row :href="heldUrl(item, f)" target=_blank rel=noopener>
+                <span class=file-name>{{ f.name }}</span><span class=file-meta>{{ f.filed_label }} · {{ $human(f.size) }}</span>
+              </a>
+              <a v-else class=file-row :href="'#/docs/' + f.filed.slice(4)">
+                <span class=file-name>{{ f.name }}</span><span class=file-meta>{{ f.filed_label }} · {{ $human(f.size) }}</span>
+              </a>
+              <img v-if="isImage(f.name) && !f.filed.startsWith('doc:')" class=file-preview :src="heldUrl(item, f)" :alt="f.name" loading=lazy>
+            </template>
+          </div>
+        </div>
         <div v-if="item.parts.length">
           <p class=section-label>What it became</p>
           <div class=part v-for="(p, i) in item.parts" :key="i">

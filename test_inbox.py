@@ -165,5 +165,35 @@ check("and the next one does not repeat it", "new message" in fire("PostToolUse"
 j("inbox", "add", "one more thing")
 check("a newer message is mentioned in its turn", "1 new message(s)" in fire("PostToolUse", **read), True)
 
+# ------------------------------------------------------------------ a message carries files
+import re  # noqa: E402
+_src = Path(tempfile.mkdtemp())
+(_src / "shot.png").write_bytes(b"\x89PNGdata")
+(_src / "notes.txt").write_text("remember this")
+code, out = j("messages", "add", "see the screenshot and notes", f"--file={_src / 'shot.png'}", f"--file={_src / 'notes.txt'}")
+_mn = int(re.search(r"message (\d+)", out).group(1))
+_held = d / ".journal" / "environments" / "default" / "inbox-files" / str(_mn)
+check("the files are copied into the environment at once", (code, (_held / "shot.png").read_bytes(), (_held / "notes.txt").read_text()),
+      (0, b"\x89PNGdata", "remember this"))
+code, out = j("messages", "show", str(_mn))
+check("show lists each file, where it is held, and that it is not filed", ("shot.png" in out, "inbox-files" in out, "not filed yet" in out),
+      (True, True, True))
+j("messages", "process", str(_mn), "--part=see the screenshot", "--became=noted")
+code, out = j("messages", "done", str(_mn))
+check("done is refused while a file is not filed, naming it", (code, "shot.png" in out, "notes.txt" in out), (1, True, True))
+P.cli("docs", "add", "Screens", "--abstract=where screenshots go", "--brief", stdin="intro\n")
+code, out = j("messages", "file", str(_mn), "shot.png", "doc Screens")
+check("a file is filed into a doc: copied there, the held copy gone",
+      (code, "filed into doc" in out, (_held / "shot.png").exists(),
+       any(x.name == "shot.png" for x in (d / ".journal" / "docs").rglob("shot.png"))), (0, True, False, True))
+code, out = j("messages", "file", str(_mn), "shot.png", "keep")
+check("twice is refused", code, 1)
+code, out = j("messages", "file", str(_mn), "nothere.txt", "keep")
+check("a name it does not hold is refused", code, 1)
+code, out = j("messages", "file", str(_mn), "notes.txt", "keep")
+check("keep leaves it where it is held", (code, (_held / "notes.txt").is_file()), (0, True))
+code, out = j("messages", "done", str(_mn))
+check("and then done is allowed", code, 0)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
