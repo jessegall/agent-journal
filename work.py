@@ -18,8 +18,51 @@ import os
 from pathlib import Path
 
 import state
+from templates import render
 
 KEY = "work"
+
+MESSAGES = {
+    "start_what": "start what? give it a name you will say again to close it",
+    "already_open": "already open since {since} — nothing to do",
+    "opened": "open: {subject}",
+    "nothing_open": "nothing is open",
+    "forced": "closed {n} with --force:\n  {subjects:\n  }",
+    "closed": "closed: {subject}",
+    "closes_nothing": "that closes nothing. Open:\n  {subjects:\n  }",
+    "await_what": 'await what? `journal work await "<what you are waiting for>"`',
+    "no_timeout": "a wait needs a timeout in minutes: nothing may wait forever",
+    "nothing_to_wait": "nothing is open to wait on — `journal work start` first",
+    "names_no_work": "that names no open work. Open:\n  {subjects:\n  }",
+    "await_guess": "several pieces of work are open, so this would have to guess which one waits. Name it:\n"
+                   "{names:\n}",
+    "await_name": '  journal work await "..." --on="{subject}"',
+    "waiting": "waiting on {what}[ ({who})] — `{subject}` is not held for {mins} minute(s).\n",
+    "ends_named": "  it names what it waits on, so it ends when THAT does: the clock, the pid exiting, or your "
+                  "own `work update`/`work end`. A write about something else leaves it standing, which is the "
+                  "whole point of waiting",
+    "ends_on_write": "  the FIRST WRITE ends it by itself — reading keeps waiting, editing is the work resuming — "
+                     "and so does any `work update` or `work end`; after that the hold returns and asks whether "
+                     "it is still coming",
+    "pid_watched": "\n  the pid is watched: if it exits, the wait is over at the next stop",
+    "update_what": "update what? say what moved, in one line",
+    "no_work_for_update": 'nothing is open, so there is no work for this to be about.\n'
+                          '  journal start "<the work>"   then update it',
+    "on_matches_nothing": "--on matches nothing open. Open:\n  {subjects:\n  }",
+    "update_guess": "several pieces of work are open, so this would have to guess which one moved. Name it:\n"
+                    "{names:\n}",
+    "update_name": '  journal update "..." --on="{subject}"',
+    "filed": "{subject}: {n} update(s) filed",
+    "vanished": "that work vanished between reading it and writing to it",
+}
+
+
+def say(key: str, **values) -> str:
+    return render(MESSAGES[key], **values)
+
+
+def _subjects(items: list[dict]) -> list[str]:
+    return [w["subject"] for w in items]
 
 
 def _all(root: Path, track: str | None = None) -> list[dict]:
@@ -45,15 +88,15 @@ def start(root: Path, subject: str, at: str, where: dict | None = None) -> tuple
     """
     subject = " ".join(subject.split())
     if not subject:
-        return False, "start what? give it a name you will say again to close it"
+        return False, say("start_what")
     with state.locked(root):
         for w in open_work(root):
             if w["subject"].lower() == subject.lower():
-                return False, f"already open since {w['at'][:19]} — nothing to do"
+                return False, say("already_open", since=w["at"][:19])
         items = _all(root)
         items.append({"subject": subject, "at": at, "ended": None, **(where or {})})
         state.put(root, KEY, items)
-    return True, f"open: {subject}"
+    return True, say("opened", subject=subject)
 
 
 def end(root: Path, subject: str, at: str, force: bool = False) -> tuple[bool, str]:
@@ -89,22 +132,19 @@ def end(root: Path, subject: str, at: str, force: bool = False) -> tuple[bool, s
             if closed:
                 state.put(root, KEY, items)
         if not closed:
-            return False, "nothing is open"
-        return True, (f"closed {len(closed)} with --force:\n"
-                      + "\n".join(f"  {s}" for s in closed))
+            return False, say("nothing_open")
+        return True, say("forced", n=len(closed), subjects=closed)
     with state.locked(root):
         items = _all(root)
         for w in items:
             if not w.get("ended") and w["subject"].lower() == subject:
                 w["ended"] = at
                 state.put(root, KEY, items)
-                return True, f"closed: {w['subject']}"
+                return True, say("closed", subject=w["subject"])
     still = open_work(root)
     if not still:
-        return False, "nothing is open"
-    return False, "that closes nothing. Open:\n" + "\n".join(
-        f"  {w['subject']}" for w in still
-    )
+        return False, say("nothing_open")
+    return False, say("closes_nothing", subjects=_subjects(still))
 
 
 def awaiting(w: dict, now: float) -> dict | None:
@@ -153,41 +193,31 @@ def wait(root: Path, what: str, minutes: float, at: str, now: float,
     """
     what = " ".join((what or "").split())
     if not what:
-        return False, 'await what? `journal work await "<what you are waiting for>"`'
+        return False, say("await_what")
     if minutes <= 0:
-        return False, "a wait needs a timeout in minutes: nothing may wait forever"
+        return False, say("no_timeout")
     with state.locked(root):
         items = _all(root)
         standing = [w for w in items if not w.get("ended")]
         if not standing:
-            return False, "nothing is open to wait on — `journal work start` first"
+            return False, say("nothing_to_wait")
         if on:
             key = " ".join(on.split()).lower()
             picked = [w for w in standing if w["subject"].lower() == key]
             if not picked:
-                return False, "that names no open work. Open:\n" + "\n".join(
-                    f"  {w['subject']}" for w in standing)
+                return False, say("names_no_work", subjects=_subjects(standing))
         elif len(standing) > 1:
-            return False, ("several pieces of work are open, so this would have to guess which one "
-                           "waits. Name it:\n" + "\n".join(
-                               f'  journal work await "..." --on="{w["subject"]}"' for w in standing))
+            return False, say("await_guess", names=[say("await_name", subject=s) for s in _subjects(standing)])
         else:
             picked = standing
         picked[0][AWAIT] = {"what": what, "until": now + minutes * 60, "at": at,
                             "minutes": minutes, "agent": agent or None, "pid": pid or None}
         state.put(root, KEY, items)
     mins = int(minutes) if float(minutes).is_integer() else minutes
-    who = f" ({named(picked[0][AWAIT])})" if named(picked[0][AWAIT]) else ""
-    return True, (f"waiting on {what}{who} — `{picked[0]['subject']}` is not held for {mins} minute(s).\n"
-                  + ("  it names what it waits on, so it ends when THAT does: the clock, the pid "
-                     "exiting, or your own `work update`/`work end`. A write about something else "
-                     "leaves it standing, which is the whole point of waiting"
-                     if who else
-                     "  the FIRST WRITE ends it by itself — reading keeps waiting, editing is the "
-                     "work resuming — and so does any `work update` or `work end`; after that the "
-                     "hold returns and asks whether it is still coming")
-                  + ("\n  the pid is watched: if it exits, the wait is over at the next stop"
-                     if pid else ""))
+    who = named(picked[0][AWAIT])
+    return True, (say("waiting", what=what, who=who, subject=picked[0]["subject"], mins=mins)
+                  + say("ends_named" if who else "ends_on_write")
+                  + (say("pid_watched") if pid else ""))
 
 
 def named(got: dict) -> str:
@@ -288,7 +318,7 @@ def note(root: Path, text: str, at: str, on: str | None = None) -> tuple[bool, s
     """
     text = " ".join((text or "").split())
     if not text:
-        return False, "update what? say what moved, in one line"
+        return False, say("update_what")
     with state.locked(root):
         return _note(root, text, at, on)
 
@@ -296,24 +326,15 @@ def note(root: Path, text: str, at: str, on: str | None = None) -> tuple[bool, s
 def _note(root: Path, text: str, at: str, on: str | None) -> tuple[bool, str]:
     standing = open_work(root)
     if not standing:
-        return False, (
-            "nothing is open, so there is no work for this to be about.\n"
-            "  journal start \"<the work>\"   then update it"
-        )
+        return False, say("no_work_for_update")
     if on:
         want = " ".join(on.split()).lower()
         match = [w for w in standing if w["subject"].lower() == want]
         if not match:
-            return False, "--on matches nothing open. Open:\n" + "\n".join(
-                f"  {w['subject']}" for w in standing
-            )
+            return False, say("on_matches_nothing", subjects=_subjects(standing))
         target = match[0]
     elif len(standing) > 1:
-        return False, (
-            "several pieces of work are open, so this would have to guess which one "
-            "moved. Name it:\n"
-            + "\n".join(f"  journal update \"...\" --on=\"{w['subject']}\"" for w in standing)
-        )
+        return False, say("update_guess", names=[say("update_name", subject=s) for s in _subjects(standing)])
     else:
         target = standing[0]
 
@@ -323,6 +344,5 @@ def _note(root: Path, text: str, at: str, on: str | None) -> tuple[bool, str]:
             w.setdefault("notes", []).append({"at": at, "text": text})
             w.pop(AWAIT, None)   # progress arrived: whatever was awaited is no longer awaited
             state.put(root, KEY, items)
-            n = len(w["notes"])
-            return True, f"{target['subject']}: {n} update(s) filed"
-    return False, "that work vanished between reading it and writing to it"
+            return True, say("filed", subject=target["subject"], n=len(w["notes"]))
+    return False, say("vanished")

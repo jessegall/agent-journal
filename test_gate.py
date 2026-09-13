@@ -297,6 +297,10 @@ check("every pins and rules spelling is classified the same way",
                                 'remember "a claim"')],
       [None, None, None, "pin", "pins", "strike", "promote", "nothing",
        None, None, "rule", "rule", "rules", None])
+check("every work spelling is classified the same way",
+      [_classified(c) for c in ("open", "next", 'work start "w"', 'start "w"', 'end "w"', "work end --force",
+                                'work update "x" --on=w', 'work await "y" --for=5')],
+      [None, None, "work", "start", "end", "work", "work", "work"])
 for _noun, _read, _write in (("docs", "4", "add"), ("tools", "", "add")):
     check(f"`journal {_noun} {_read}`.strip() reads and `{_noun} {_write}` writes",
           (_h.NOUN_WRITES[_noun](_read), _h.NOUN_WRITES[_noun](_write)), (False, True))

@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.6 — `work`, `start`, `end`, `open` and `next` move onto command classes
+
+The work commands are declared in `commands/work.py` and their messages, and `work.py`'s,
+come from templates. What they accept and print is unchanged.
+
 ## 1.62.5 — `pins` and `rules` move onto command classes
 
 `pins`, `rules` and their bare spellings — `pin`, `rule`, `rule --strike N`, `strike`,
