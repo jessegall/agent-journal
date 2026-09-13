@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.16 — to-dos say what they say from templates
+
+Every message `todo.py` returns or prints — refusals, confirmations, a row's state line,
+the listing, a to-do's page, commit-trailer replies and the carry block — is declared once
+in `MESSAGES` and filled by `say`. The wording is unchanged, except that a close with no
+recorded reason no longer prints the word `None`.
+
 ## 1.62.15 — docs says what it says from templates
 
 Every message `docs.py` returns or prints — refusals, confirmations, the catalogue, a doc's
