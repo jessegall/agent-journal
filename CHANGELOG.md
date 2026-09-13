@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.70.0 — resources are typed, and read through repositories
+
+Every resource has a typed model — `Todo`, `Claim` (a pin) and `Rule`, `Reminder`, `Question`,
+`Message` (the inbox), `Work`, `Doc` with its `Part`s and `Attachment`s — and a repository
+that reads it: `Todos(root, env).all()`, `.find(n)`, `.query().where(...).order_by("priority",
+"desc").page(cap, page)`. A doc's parts and attachments are repositories of their own
+(`Docs(root).parts(n)`). The to-dos, questions and reminders controllers read through them.
+Any list can be sorted by any field its model marks sortable, in either direction: the API
+takes `?sort=<field>&direction=asc|desc`, and a field that cannot be sorted on is refused with
+the list of those that can. Writes still go through each store's own functions.
+
 ## 1.69.2 — an answered question always reaches the agent
 
 A question linked to a to-do was never told when that to-do was the open work. It was left

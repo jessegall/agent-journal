@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
+import fmt
 import state
 from templates import render
 
@@ -90,11 +91,25 @@ class Controller:
     actions: tuple = ("index", "show", "store", "update", "destroy")
     numbered: tuple = ("show", "update", "destroy")
 
-    def count(self, root: Path) -> int:
-        return 0
+    default_sort = "n"
 
-    def exists(self, root: Path, ident: int) -> bool:
-        return 1 <= ident <= self.count(root)
+    def repository(self, root: Path, payload: Payload):
+        raise NotImplementedError
+
+    def exists(self, root: Path, payload: Payload) -> bool:
+        return self.repository(root, payload).exists(payload.id)
+
+    def sorted(self, query, payload: Payload):
+        """The query in the order the payload asks for, or the refusal naming what it can sort by."""
+        try:
+            return query.order_by(payload.text("sort") or self.default_sort,
+                                  payload.text("direction") or payload.text("order") or fmt.DESC)
+        except ValueError as e:
+            return Result("refused", str(e))
+
+    @staticmethod
+    def paged(query, payload: Payload):
+        return query.page(payload.get("cap"), int(payload.get("page") or 1))
 
     def guard(self, root: Path, action: str, payload: Payload) -> Result | None:
         return None
@@ -109,6 +124,6 @@ class Controller:
                 if not str(payload.id).isdigit():
                     return Result("refused", say("bad_id", resource=self.resource, action=action, id=repr(payload.id)))
                 payload.id = int(payload.id)
-                if not self.exists(root, payload.id):
+                if not self.exists(root, payload):
                     return Result("missing", say("no_item", noun=self.noun, id=payload.id))
             return self.guard(root, action, payload) or getattr(self, action)(root, payload)

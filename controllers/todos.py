@@ -40,37 +40,41 @@ class TodosController(Controller):
     def env(root: Path) -> str:
         return state.current_track(root)
 
-    def exists(self, root: Path, ident: int) -> bool:
-        return todo.item(root, self.env(root), ident)[0] is not None
+    def repository(self, root: Path, p: Payload):
+        from resources import Todos
+        return Todos(root, self.env(root))
 
     def guard(self, root: Path, action: str, p: Payload) -> Result | None:
         if action not in self.EDITS:
             return None
-        t = todo.item(root, self.env(root), p.id)[0]
-        if t.get("done"):
-            return Result("refused", say("closed", n=p.id, how=t.get("how") or "done"))
+        t = self.repository(root, p).find(p.id)
+        if t.closed:
+            return Result("refused", say("closed", n=p.id, how=t.how or "done"))
         return None
 
     def _close_work(self, root: Path, n: int, at: str, key: str) -> str:
-        t = todo.item(root, self.env(root), n)[0]
-        if not t or not any(w["subject"] == t["title"] for w in work.open_work(root)):
+        t = self.repository(root, Payload(self.env(root), n, {})).find(n)
+        if not t or not any(w["subject"] == t.title for w in work.open_work(root)):
             return ""
-        closed, note = work.end(root, t["title"], at)
-        return say(key, title=t["title"]) if closed else say("closed_note", note=note)
+        closed, note = work.end(root, t.title, at)
+        return say(key, title=t.title) if closed else say("closed_note", note=note)
 
     def index(self, root: Path, p: Payload) -> Result:
-        env = self.env(root)
-        waiting = len(todo.open_items(root, env))
-        rows = todo.rows_response(root, env)
-        return Result("ok", "", rows, {"env": env, "waiting": waiting, "done": len(rows) - waiting,
-                                       "auto": todo.auto(root, env)})
+        env, repo = self.env(root), self.repository(root, p)
+        every = repo.all()
+        query = self.sorted(repo.query(), p)
+        if isinstance(query, Result):
+            return query
+        page = self.paged(query, p)
+        waiting = len([t for t in every if not t.closed])
+        return Result("ok", "", [todo.row_response(root, env, t.raw) for t in page.rows],
+                      {"env": env, "waiting": waiting, "done": len(every) - waiting, "left": page.left,
+                       "auto": todo.auto(root, env)})
 
     def show(self, root: Path, p: Payload) -> Result:
-        env = self.env(root)
-        t = todo.item(root, env, p.id)[0]
-        row = todo.row_response(root, env, t)
-        row.update(body=t.get("body", ""), started=t.get("started") or "", done=t.get("done") or "",
-                   how=t.get("how") or "",
+        env, t = self.env(root), self.repository(root, p).find(p.id)
+        row = todo.row_response(root, env, t.raw)
+        row.update(body=t.body, started=t.started, done=t.done, how=t.how,
                    questions=[questions.row_response(n, q) for n, q in questions.about(root, f"todo:{p.id}", env)])
         return Result("ok", "", row)
 

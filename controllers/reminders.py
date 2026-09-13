@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import fmt
 import reminders
 import settings as settings_mod
 from controller import Controller, Payload, Result
@@ -14,19 +13,29 @@ class RemindersController(Controller):
     actions = ("index", "show", "store", "update", "destroy", "move")
     numbered = ("show", "update", "destroy", "move")
 
-    def count(self, root: Path) -> int:
-        return len(reminders._all(root))
+    def repository(self, root: Path, p: Payload):
+        from resources import Reminders
+        return Reminders(root, p.env)
+
+    @staticmethod
+    def _rows(root: Path) -> dict[int, dict]:
+        return {r["n"]: r for r in reminders.rows_response(root, all_of_them=True)[0]}
 
     def index(self, root: Path, p: Payload) -> Result:
-        rows, left = reminders.rows_response(root, all_of_them=bool(p.get("all")), cap=p.get("cap"),
-                                             page=int(p.get("page", 1)), order=p.get("order", fmt.DESC))
-        live = len(reminders.live(root))
-        return Result("ok", "", rows, {"left": left, "live": live, "retired": self.count(root) - live})
+        every = self.repository(root, p).all()
+        query = self.repository(root, p).query()
+        if not p.get("all"):
+            query = query.where(lambda r: r.standing)
+        query = self.sorted(query, p)
+        if isinstance(query, Result):
+            return query
+        page, rows = self.paged(query, p), self._rows(root)
+        live = len([r for r in every if r.standing])
+        return Result("ok", "", [{**rows[r.n], "until": r.until} for r in page.rows],
+                      {"left": page.left, "live": live, "retired": len(every) - live})
 
     def show(self, root: Path, p: Payload) -> Result:
-        rows, _ = reminders.rows_response(root, all_of_them=True)
-        row = next(r for r in rows if r["n"] == p.id)
-        return Result("ok", "", {**row, "until": reminders._all(root)[p.id - 1].get("until") or ""})
+        return Result("ok", "", {**self._rows(root)[p.id], "until": self.repository(root, p).find(p.id).until})
 
     def store(self, root: Path, p: Payload) -> Result:
         conf, _ = settings_mod.load(root)
@@ -35,9 +44,9 @@ class RemindersController(Controller):
 
     def update(self, root: Path, p: Payload) -> Result:
         conf, _ = settings_mod.load(root)
-        was = reminders._all(root)[p.id - 1]
-        text = p.text("text") if p.has("text") else was.get("text", "")
-        until = p.text("until") if p.has("until") else was.get("until") or ""
+        was = self.repository(root, p).find(p.id)
+        text = p.text("text") if p.has("text") else was.text
+        until = p.text("until") if p.has("until") else was.until
         return Result.of(reminders.update(root, p.id, text, until, conf["reminder_max_chars"]))
 
     def destroy(self, root: Path, p: Payload) -> Result:
