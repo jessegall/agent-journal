@@ -738,6 +738,11 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
             { label: "Promote to rule", method: "POST", url: `${url}/promote`, submit: "Promote",
               note: "It becomes a rule on every environment, and this pin is struck." },
           ] : []),
+          ...(noun === "Rule" ? [c.in_claude_md
+            ? { label: "Remove from CLAUDE.md", method: "POST", url: `${url}/uninject`, submit: "Remove",
+                note: "The rule stays; only its copy in CLAUDE.md is taken out." }
+            : { label: "Add to CLAUDE.md", method: "POST", url: `${url}/inject`, submit: "Add",
+                note: "Writes the ruling into the project's CLAUDE.md between journal markers, with a path to any file or doc it cites — never the file itself." }] : []),
           { label: "Strike", method: "DELETE", url, danger: true, fields: [{ name: "why", label: "Why it stopped being true" }] },
         ];
       });
@@ -761,6 +766,7 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
             <h2 class=p-title>{{ item.data.fact }}</h2>
             <dl class=props>
               <dt>Scope</dt><dd>{{ scope }}</dd>
+              <template v-if="noun === 'Rule'"><dt>CLAUDE.md</dt><dd>{{ item.data.in_claude_md ? 'Written in CLAUDE.md' : 'Not in CLAUDE.md' }}</dd></template>
               <dt>Cites</dt><dd><a v-if="docOf(item.data.meta)" :href="'#/docs/' + docOf(item.data.meta)">Doc {{ docOf(item.data.meta) }}</a><span v-else class=muted>—</span></dd>
               <dt>Written</dt><dd>{{ ageOf(item.data.meta) || '—' }}</dd>
             </dl>

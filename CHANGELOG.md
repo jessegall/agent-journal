@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.100.0 — a rule can be written into CLAUDE.md
+
+`journal rules inject <n>` writes a rule of this project into the project's CLAUDE.md, inside
+`<!-- journal:rules -->` … `<!-- /journal:rules -->` markers, one entry per rule tagged with
+its number. The entry is the ruling plus a path to each doc it cites and each project file it
+names, never the file's content. `journal rules uninject <n>` takes it out; striking the rule
+takes it out too, and `journal disable` removes the whole block. Everything outside the markers
+is left as it is. The rule's page in the viewer shows whether it is in CLAUDE.md, with an
+Add to CLAUDE.md or Remove from CLAUDE.md button.
+
 ## 1.99.1 — the viewer asks the server for less
 
 Every page now reads the one overview the shell already keeps fresh, instead of each page

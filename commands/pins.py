@@ -44,6 +44,8 @@ TEXT = {
     "builtin_foot": "       they cannot be struck; `journal rules show B1` reads the reasoning",
     "builtin_title": "RULE {id}",
     "builtin_sub": "the journal's own, in every project",
+    "builtin_inject": "{id} ships with the journal and is already in CLAUDE.md's journal block; inject takes a rule "
+                      "of this project, by number",
     "builtin_strike": "{id} is the journal's own rule, not this project's — it holds wherever the journal is "
                       "installed, so striking it here would be a local opinion wearing the tool's authority. "
                       "`builtin_rules: false` in settings.json turns them all off.",
@@ -341,6 +343,25 @@ class RulesStrike(Resource):
         return {}
 
 
+class RulesInject(Resource):
+    signature = "rules:inject {id : a rule number}"
+    casts = {"id": rule_id}
+    writes = True
+    controller = RULES
+    action = "inject"
+    id_arg = "id"
+
+    def extra(self, p: Parsed):
+        if not p.arg("id").isdigit():
+            return refuse(render(TEXT["builtin_inject"], id=p.arg("id").upper()))
+        return {}
+
+
+class RulesUninject(RulesInject):
+    signature = "rules:uninject {id : a rule number}"
+    action = "uninject"
+
+
 class RulesMove(Command):
     signature = "rules:move {rest*?}"
     writes = True
@@ -389,5 +410,6 @@ class Nothing(Command):
 
 
 COMMANDS = (PinsAround, PinsList, PinsShow, PinsAdd, PinsStrike, PinsPromote, PinsMove, PinsAmend, PinsReplace,
-            RulesAround, RulesStrikeFlag, RulesList, RulesShow, RulesAdd, RulesStrike, RulesMove, RulesAmend,
+            RulesAround, RulesStrikeFlag, RulesList, RulesShow, RulesAdd, RulesStrike, RulesInject, RulesUninject,
+            RulesMove, RulesAmend,
             RulesReplace, Strike, Promote, Nothing)

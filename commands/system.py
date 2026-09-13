@@ -29,6 +29,7 @@ TEXT = {
     "update_extra": "journal update upgrades the journal. Progress on the open work is:\n"
                     '  journal work update "<what moved>"',
     "enabled": "hooks ENABLED: every hold, gate and reminder is back in force.",
+    "rules_block_removed": "the rules injected into CLAUDE.md are taken out; `journal rules inject <n>` puts one back",
     "statusline_offer": "Want the environment, the open work and the web viewer in Claude Code's status bar? "
                         "`journal statusline --install`",
     "statusline_installed": "status line added to {path}; it shows from the next prompt",
@@ -297,6 +298,10 @@ class Enable(Command):
         import state
         state.set_hooks_enabled(root(), self.on)
         fmt.say(TEXT["enabled"] if self.on else TEXT["disabled"])
+        if not self.on:
+            import claude_md
+            if claude_md.remove(root()):
+                fmt.say(TEXT["rules_block_removed"])
         if self.on and not has_statusline():
             fmt.say(fmt.wrap(TEXT["statusline_offer"]))
         return 0

@@ -63,6 +63,8 @@ payload, not a description of it.
     journal rules [--all]            every rule, numbered
     journal rules N --full           the conversation around one
     journal rules strike N "<why>"   repeal one, on the record (also: `journal rule --strike N "<why>"`)
+    journal rules inject N           write it into CLAUDE.md between `<!-- journal:rules -->` markers; paths, never file contents
+    journal rules uninject N         take it out of CLAUDE.md
 
 **Cleanup: what has stopped being true**
 

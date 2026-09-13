@@ -103,6 +103,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal rules amend N \"<section title>\" --brief   append a section to the reasoning",
         "journal rules replace N --brief   replace the reasoning outright; the old text goes to struck/",
         'journal rules strike N "<why>"   repeal a rule that stopped being true — `journal rule --strike N "<why>"` is the same',
+        "journal rules inject N          write the ruling into the project's CLAUDE.md between journal markers, with paths to what it cites (never the files)",
+        "journal rules uninject N        take it out of CLAUDE.md again; striking the rule or `journal disable` does it too",
     ),
     "reminders": (
         'journal reminders add "<instruction>" [--until="<condition>"]   an instruction said again at EVERY stop, and every reminder_every tool calls, until it is retired',

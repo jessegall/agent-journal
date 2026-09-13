@@ -218,6 +218,7 @@ line of work it was never a rule — strike it and pin it there.
     journal cleanup [--all]        what has EVIDENCE against it, beside the command that retires it
     journal cleanup read           every rule and pin in full — the half only reading finds
     journal rules strike <n> "<why>"     |  journal pins strike <n> "<why>"
+    journal rules inject <n>             the user wants it in CLAUDE.md too; `rules uninject <n>` takes it out
 
 Rules and pins are re-asserted verbatim at the top of every compaction, in the highest
 authority the system has, and nothing revisits them. `cleanup` finds the entries with
