@@ -7,7 +7,7 @@ const { createApp, reactive, computed, watchEffect, onUnmounted } = Vue;
 // A detail route renders the same view as its list, with the item open in the side panel.
 const ROUTES = [
   { re: /^\/$/, view: "Home" },
-  { re: /^\/env\/([a-z0-9-]+)$/, view: "Todos", params: ["env"] },
+  { re: /^\/env\/([a-z0-9-]+)$/, view: "EnvHome", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/todos(?:\/(\d+))?$/, view: "Todos", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/pins(?:\/(\d+))?$/, view: "Pins", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/inbox(?:\/(\d+))?$/, view: "Inbox", params: ["env", "n"] },
@@ -167,6 +167,7 @@ const Icon = {
       <path v-else-if="name === 'folder'" d="M2.5 3h4l1.5 1.5h5.5v8.5h-11V3Z"/>
       <template v-else-if="name === 'inbox'"><path d="M2 9.5l1.8-6h8.4l1.8 6v3.5H2V9.5Z"/><path d="M2 9.5h3.5l1 1.5h3l1-1.5H14"/></template>
       <template v-else-if="name === 'questions'"><circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.3a1.7 1.7 0 0 1 3.2.7c0 1.2-1.6 1.4-1.6 2.5"/><circle cx="8" cy="11.4" r=".6" fill="currentColor" stroke="none"/></template>
+      <path v-else-if="name === 'home'" d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>
       <path v-else-if="name === 'close'" d="M4 4l8 8M12 4l-8 8"/>
     </svg>`,
 };
@@ -694,20 +695,125 @@ const DocDetail = {
     </div>`,
 };
 
+// ─────────────────────────────────────────────────────────────── an environment's home
+const EnvHome = {
+  props: ["env"],
+  components: { TopBar, Icon, StatusIcon, PriorityIcon },
+  setup(props) {
+    const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
+    const summary = useFetch(url(""));
+    const work = useFetch(url("/work"));
+    const todos = useFetch(url("/todos"));
+    const inbox = useFetch(url("/inbox"));
+    const questions = useFetch(url("/questions"));
+    const groups = computed(() => {
+      const rows = (todos.data || []).filter((t) => todoStatus(t) !== "done")
+        .sort((a, b) => (b.priority ?? 100) - (a.priority ?? 100) || b.n - a.n);
+      return GROUPS.filter((g) => g.key !== "done").map((g) => {
+        const all = rows.filter((t) => todoStatus(t) === g.key);
+        return { ...g, total: all.length, rows: g.key === "open" ? all.slice(0, 5) : all };
+      }).filter((g) => g.rows.length);
+    });
+    const waiting = computed(() => (inbox.data || []).filter((m) => m.status === "waiting"));
+    const asking = computed(() => (questions.data || []).filter((q) => q.status === "open"));
+    const stats = computed(() => {
+      const s = summary.data || {};
+      return [
+        { label: "Inbox waiting", n: s.inbox, icon: "inbox", path: "inbox", hot: s.inbox },
+        { label: "Open questions", n: s.questions, icon: "questions", path: "questions", hot: s.questions },
+        { label: "Open to-dos", n: s.todos, icon: "todos", path: "todos" },
+        { label: "Pins", n: s.pins, icon: "pins", path: "pins" },
+        { label: "Reminders", n: s.reminders, icon: "reminders", path: "reminders" },
+        { label: "Docs", n: s.docs, icon: "docs", path: "docs" },
+      ];
+    });
+    const about = (q) => q.links.map((l) => l.label).join(", ");
+    return { work, groups, waiting, asking, stats, about, questionKind };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Home']"/>
+    <div class=page><div class=home>
+      <div class=stats>
+        <a v-for="s in stats" :key="s.path" :class="['stat', {hot: s.hot}]" :href="'#/env/' + env + '/' + s.path">
+          <span class=stat-top><span>{{ s.label }}</span><Icon :name="s.icon"/></span>
+          <span class=stat-n>{{ s.n ?? '–' }}</span>
+        </a>
+      </div>
+
+      <section>
+        <div class=home-head><h2>Open work</h2><span class=n>{{ work.data ? work.data.length : '' }}</span></div>
+        <div class=block>
+          <p v-if="work.loading && !work.data" class=empty>Loading…</p>
+          <p v-else-if="work.error" class=error>{{ work.error }}</p>
+          <template v-else-if="work.data">
+            <div class="row workrow" v-for="w in work.data" :key="w.subject">
+              <StatusIcon kind="progress"/>
+              <div>
+                <div class=title>{{ w.subject }}</div>
+                <div v-for="(note, i) in w.notes.slice(-3)" :key="i" class=sub>{{ note.text }}</div>
+              </div>
+              <span class=age>{{ w.age }}</span>
+            </div>
+            <p v-if="!work.data.length" class=empty>Nothing is open.</p>
+          </template>
+        </div>
+      </section>
+
+      <section v-if="waiting.length">
+        <div class=home-head><h2>Inbox</h2><span class=n>{{ waiting.length }} waiting</span>
+          <a class=more :href="'#/env/' + env + '/inbox'">Open inbox</a></div>
+        <div class=block>
+          <a v-for="m in waiting" :key="m.n" class="row inboxrow" :href="'#/env/' + env + '/inbox/' + m.n">
+            <StatusIcon kind="waiting"/><span class=num>#{{ m.n }}</span><span class=title>{{ m.text }}</span>
+            <span class=cite></span><span class=age>{{ m.age }}</span>
+          </a>
+        </div>
+      </section>
+
+      <section v-if="asking.length">
+        <div class=home-head><h2>Questions</h2><span class=n>{{ asking.length }} open</span>
+          <a class=more :href="'#/env/' + env + '/questions'">All questions</a></div>
+        <div class=block>
+          <a v-for="q in asking" :key="q.n" class="row questionrow" :href="'#/env/' + env + '/questions/' + q.n">
+            <StatusIcon :kind="questionKind(q)"/><span class=num>#{{ q.n }}</span><span class=title>{{ q.text }}</span>
+            <span class=cite>{{ about(q) }}</span><span class=age>{{ q.age }}</span>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <div class=home-head><h2>To-dos</h2><a class=more :href="'#/env/' + env + '/todos'">All to-dos</a></div>
+        <div class=block>
+          <p v-if="!groups.length" class=empty>Nothing is waiting on this environment.</p>
+          <template v-for="g in groups" :key="g.key">
+            <div class=ghead><StatusIcon :kind="g.key"/>{{ g.label }}
+              <span class=n>{{ g.total > g.rows.length ? g.rows.length + ' of ' + g.total : g.total }}</span></div>
+            <a v-for="t in g.rows" :key="t.n" class="row todorow" :href="'#/env/' + env + '/todos/' + t.n">
+              <PriorityIcon :value="t.priority"/><StatusIcon :kind="g.key"/><span class=num>#{{ t.n }}</span>
+              <span class=title>{{ t.title }}</span><span class=cite>{{ t.doc ? 'Doc ' + t.doc : '' }}</span>
+              <span class=age>{{ t.age }}</span>
+            </a>
+          </template>
+        </div>
+      </section>
+    </div></div>`,
+};
+
 const Home = { template: `<p class=empty>Loading…</p>` };
 const NotFound = { components: { TopBar }, template: `<TopBar :crumbs="['Not found']"/><p class=empty>Nothing here.</p>` };
 
-const VIEWS = { Home, Todos, Pins, Rules, Inbox, Questions, Work, Reminders, Docs, EnvDocs, DocDetail, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Work, Reminders, Docs, EnvDocs, DocDetail, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
+// open work lives on Home, so the sidebar has no entry of its own for it
 const NAV = [
-  { key: "inbox", label: "Inbox", view: "Inbox" },
-  { key: "todos", label: "To-dos", view: "Todos" },
-  { key: "questions", label: "Questions", view: "Questions" },
-  { key: "pins", label: "Pins", view: "Pins" },
-  { key: "work", label: "Open work", view: "Work" },
-  { key: "reminders", label: "Reminders", view: "Reminders" },
-  { key: "docs", label: "Docs", view: "EnvDocs" },
+  { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "" },
+  { key: "inbox", label: "Inbox", views: ["Inbox"], path: "inbox", count: "inbox" },
+  { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
+  { key: "questions", label: "Questions", views: ["Questions"], path: "questions", count: "questions" },
+  { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
+  { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
+  { key: "docs", label: "Docs", views: ["EnvDocs"], path: "docs", count: "docs" },
 ];
 
 const App = {
@@ -731,7 +837,7 @@ const App = {
     });
     const envRow = computed(() => (ov.data ? ov.data.environments.find((e) => e.name === envName.value) : null));
     watchEffect(() => {
-      if (route.view === "Home" && envName.value) location.replace(`#/env/${envName.value}/todos`);
+      if (route.view === "Home" && envName.value) location.replace(`#/env/${envName.value}`);
     });
     const key = computed(() => route.view + ":" + (route.params.env || ""));
     return { route, ov, envName, envRow, NAV, key };
@@ -742,9 +848,10 @@ const App = {
         <a class=project href="#/"><span class=logo>J</span>{{ ov.data ? ov.data.project : 'journal' }}</a>
         <div class=group v-if="envName">
           <div class=group-label>{{ envName }}</div>
-          <a v-for="item in NAV" :key="item.key" :class="['item', {on: route.view === item.view}]" :href="'#/env/' + envName + '/' + item.key">
+          <a v-for="item in NAV" :key="item.key" :class="['item', {on: item.views.includes(route.view)}]"
+            :href="'#/env/' + envName + (item.path ? '/' + item.path : '')">
             <Icon :name="item.key"/>{{ item.label }}
-            <span :class="['count', {hot: item.key === 'inbox' && envRow && envRow.inbox}]">{{ envRow && envRow[item.key] ? envRow[item.key] : '' }}</span>
+            <span v-if="item.count" :class="['count', {hot: item.key === 'inbox' && envRow && envRow.inbox}]">{{ envRow && envRow[item.count] ? envRow[item.count] : '' }}</span>
           </a>
         </div>
         <div class=group>
@@ -755,7 +862,7 @@ const App = {
         <div class=group v-if="ov.data">
           <div class=group-label>Environments</div>
           <a v-for="e in ov.data.environments" :key="e.name" :class="['item', {on: route.params.env === e.name}]"
-            :href="'#/env/' + e.name + '/todos'" :title="e.active ? 'an agent is working here' : ''">
+            :href="'#/env/' + e.name" :title="e.active ? 'an agent is working here' : ''">
             <span :class="['env-dot', {cur: e.current, live: e.active}]"></span>{{ e.name }}
           </a>
         </div>
