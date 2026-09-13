@@ -27,6 +27,12 @@ import time
 from pathlib import Path
 
 import fmt
+from templates import render
+
+NOTICES = {
+    "no_transcript": "no transcript to file {key} under — mark not written",
+    "locked": "record locked for over {seconds}s — proceeding without it",
+}
 
 RECORD = "record.json"
 RUNTIME_DIR = "runtime"
@@ -304,7 +310,7 @@ def put(root: Path, key: str, value, *, stem: str | None = None) -> None:
     if is_record(key):
         f = record_file(root)
     elif not stem:
-        fmt.notice(f"no transcript to file {key!r} under — mark not written")
+        fmt.notice(render(NOTICES["no_transcript"], key=repr(key)))
         return
     else:
         f = runtime_file(root, stem)
@@ -407,7 +413,7 @@ def locked(root: Path, wait: float = 3.0):
             break
         except OSError:
             if time.monotonic() >= deadline:
-                fmt.notice(f"record locked for over {wait:.0f}s — proceeding without it")
+                fmt.notice(render(NOTICES["locked"], seconds=round(wait)))
                 break
             time.sleep(0.02)
     _depth, _held = 1, fh

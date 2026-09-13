@@ -40,6 +40,7 @@ from urllib.parse import unquote, urlsplit
 
 import docs as docs_mod
 import views
+from templates import render as fill
 
 HOST = "127.0.0.1"
 DEFAULT_PORT = 8420
@@ -48,6 +49,25 @@ STATIC = Path(__file__).parent / "static"
 
 # ─────────────────────────────────────────────────────────────────────── routes
 ROUTES: list[tuple[re.Pattern, Callable]] = []
+
+
+MESSAGES = {
+    "no_env": "no environment called {env}",
+    "no_todo": "no to-do {n} on environment {env}",
+    "no_pin": "no pin {n} on environment {env}",
+    "no_rule": "no rule {n}",
+    "no_doc": "no doc {ref}",
+    "no_attachment": "no attachment {name} on doc {n}",
+    "log": "{client} {line}\n",
+    "internal": "internal error: {error}",
+    "nothing_at": "nothing at {path}",
+    "port_taken": "port {port} is already in use — pick another: --port=<n>",
+    "url": "http://{host}:{port}/",
+    "serving": "serving the journal at {url}  (Ctrl-C to stop)",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 def route(pattern: str):
@@ -100,7 +120,7 @@ def _api_env(root: Path, project: Path, m: re.Match):
     env = m.group("env")
     envs = {e["name"]: e for e in views.environments(root)}
     if env not in envs:
-        return _not_found(f"no environment called {env!r}")
+        return _not_found(say("no_env", env=repr(env)))
     return _json(envs[env])
 
 
@@ -108,7 +128,7 @@ def _api_env(root: Path, project: Path, m: re.Match):
 def _api_todos(root: Path, project: Path, m: re.Match):
     env = m.group("env")
     if not _known_env(root, env):
-        return _not_found(f"no environment called {env!r}")
+        return _not_found(say("no_env", env=repr(env)))
     return _json(views.todos(root, env))
 
 
@@ -117,7 +137,7 @@ def _api_todo_detail(root: Path, project: Path, m: re.Match):
     env, n = m.group("env"), int(m.group("n"))
     t = views.todo_detail(root, env, n)
     if t is None:
-        return _not_found(f"no to-do {n} on environment {env!r}")
+        return _not_found(say("no_todo", n=n, env=repr(env)))
     return _json(t)
 
 
@@ -125,7 +145,7 @@ def _api_todo_detail(root: Path, project: Path, m: re.Match):
 def _api_pins(root: Path, project: Path, m: re.Match):
     env = m.group("env")
     if not _known_env(root, env):
-        return _not_found(f"no environment called {env!r}")
+        return _not_found(say("no_env", env=repr(env)))
     return _json(views.pins_on(root, env))
 
 
@@ -133,10 +153,10 @@ def _api_pins(root: Path, project: Path, m: re.Match):
 def _api_pin_detail(root: Path, project: Path, m: re.Match):
     env = m.group("env")
     if not _known_env(root, env):
-        return _not_found(f"no environment called {env!r}")
+        return _not_found(say("no_env", env=repr(env)))
     row = views.pin_detail(root, env, int(m.group("n")))
     if row is None:
-        return _not_found(f"no pin {m.group('n')} on environment {env!r}")
+        return _not_found(say("no_pin", n=m.group("n"), env=repr(env)))
     return _json(row)
 
 
@@ -149,7 +169,7 @@ def _api_rules(root: Path, project: Path, m: re.Match):
 def _api_rule_detail(root: Path, project: Path, m: re.Match):
     row = views.rule_detail(root, int(m.group("n")))
     if row is None:
-        return _not_found(f"no rule {m.group('n')}")
+        return _not_found(say("no_rule", n=m.group("n")))
     return _json(row)
 
 
@@ -157,7 +177,7 @@ def _api_rule_detail(root: Path, project: Path, m: re.Match):
 def _api_work(root: Path, project: Path, m: re.Match):
     env = m.group("env")
     if not _known_env(root, env):
-        return _not_found(f"no environment called {env!r}")
+        return _not_found(say("no_env", env=repr(env)))
     return _json(views.work_on(root, env))
 
 
@@ -165,7 +185,7 @@ def _api_work(root: Path, project: Path, m: re.Match):
 def _api_reminders(root: Path, project: Path, m: re.Match):
     env = m.group("env")
     if not _known_env(root, env):
-        return _not_found(f"no environment called {env!r}")
+        return _not_found(say("no_env", env=repr(env)))
     return _json(views.reminders_on(root, env))
 
 
@@ -178,7 +198,7 @@ def _api_docs(root: Path, project: Path, m: re.Match):
 def _api_env_docs(root: Path, project: Path, m: re.Match):
     env = m.group("env")
     if not _known_env(root, env):
-        return _not_found(f"no environment called {env!r}")
+        return _not_found(say("no_env", env=repr(env)))
     return _json(views.docs_on(root, env))
 
 
@@ -186,7 +206,7 @@ def _api_env_docs(root: Path, project: Path, m: re.Match):
 def _api_doc_detail(root: Path, project: Path, m: re.Match):
     d = views.doc_detail(root, m.group("ref"))
     if d is None:
-        return _not_found(f"no doc {m.group('ref')}")
+        return _not_found(say("no_doc", ref=m.group("ref")))
     return _json(d)
 
 
@@ -208,10 +228,10 @@ def _doc_file(root: Path, project: Path, m: re.Match):
     n, name = int(m.group("n")), unquote(m.group("name"))
     doc, _prt, err = docs_mod.get(root, str(n))
     if doc is None:
-        return _not_found(err or f"no doc {n}")
+        return _not_found(err or say("no_doc", ref=n))
     match = next((a for a in docs_mod.attachments(doc) if a["name"] == name and not a["dir"]), None)
     if match is None:
-        return _not_found(f"no attachment {name!r} on doc {n}")
+        return _not_found(say("no_attachment", name=repr(name), n=n))
     ctype = mimetypes.guess_type(name)[0] or "application/octet-stream"
     return 200, ctype, match["path"].read_bytes()
 
@@ -231,7 +251,7 @@ class _Handler(BaseHTTPRequestHandler):
     server: _Server
 
     def log_message(self, fmt: str, *args) -> None:
-        sys.stderr.write(f"{self.address_string()} {fmt % args}\n")
+        sys.stderr.write(say("log", client=self.address_string(), line=fmt % args))
 
     def do_GET(self) -> None:
         self._dispatch(head=False)
@@ -269,10 +289,10 @@ class _Handler(BaseHTTPRequestHandler):
             try:
                 status, ctype, body = fn(self.server.root, self.server.project, m)
             except Exception as e:   # a bad route must answer 500, never crash the server
-                status, ctype, body = _json({"error": f"internal error: {e}"}, 500)
+                status, ctype, body = _json({"error": say("internal", error=e)}, 500)
             self._send(status, ctype, body, head)
             return
-        self._send(*_not_found(f"nothing at {path}"), head)
+        self._send(*_not_found(say("nothing_at", path=path)), head)
 
     def _send(self, status: int, ctype: str, body: bytes, head: bool) -> None:
         self.send_response(status)
@@ -289,11 +309,11 @@ def run(root: Path, project: Path, port: int = DEFAULT_PORT, open_browser: bool 
         server = _Server((HOST, port), root, project)
     except OSError as e:
         if getattr(e, "errno", None) in (48, 98) or "already in use" in str(e).lower():
-            print(f"port {port} is already in use — pick another: --port=<n>", file=sys.stderr)
+            print(say("port_taken", port=port), file=sys.stderr)
             raise SystemExit(1)
         raise
-    url = f"http://{HOST}:{server.server_port}/"
-    print(f"serving the journal at {url}  (Ctrl-C to stop)")
+    url = say("url", host=HOST, port=server.server_port)
+    print(say("serving", url=url))
     if open_browser:
         import webbrowser
         webbrowser.open(url)

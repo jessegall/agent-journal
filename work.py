@@ -23,6 +23,8 @@ from templates import render
 KEY = "work"
 
 MESSAGES = {
+    "named_agent": "agent {agent}",
+    "named_pid": "pid {pid}",
     "start_what": "start what? give it a name you will say again to close it",
     "already_open": "already open since {since} — nothing to do",
     "opened": "open: {subject}",
@@ -225,9 +227,9 @@ def named(got: dict) -> str:
     if not isinstance(got, dict):
         return ""
     if got.get("agent"):
-        return f"agent {got['agent']}"
+        return say("named_agent", agent=got["agent"])
     if got.get("pid"):
-        return f"pid {got['pid']}"
+        return say("named_pid", pid=got["pid"])
     return ""
 
 

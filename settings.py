@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from templates import render as fill
 
 #: Older names for settings, still accepted: environments were called environments.
 ALIASES = {"one_session_per_track": "one_session_per_environment"}
@@ -192,6 +193,21 @@ DEFAULTS = {
 PATH = "settings.json"
 
 
+MESSAGES = {
+    "bad_json": "{path}: not valid JSON ({error}) — every default is in force",
+    "not_object": "{path}: expected an object — every default is in force",
+    "unknown": "{path}: unknown setting {key} — it does nothing",
+    "wants": "{path}: {key} wants {kind}, got {value} — default kept",
+    "kind_bool": "true/false",
+    "kind_number": "a number",
+    "kind_list": "a list",
+    "kind_object": "an object",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
+
+
 def load(root: Path) -> tuple[dict, list[str]]:
     """Settings, and every complaint about the file. Never raises.
 
@@ -206,9 +222,9 @@ def load(root: Path) -> tuple[dict, list[str]]:
     try:
         data = json.loads(f.read_text())
     except ValueError as e:
-        return out, [f"{PATH}: not valid JSON ({e}) — every default is in force"]
+        return out, [say("bad_json", path=PATH, error=e)]
     if not isinstance(data, dict):
-        return out, [f"{PATH}: expected an object — every default is in force"]
+        return out, [say("not_object", path=PATH)]
     for key, value in data.items():
         # JSON has no comments and everybody writes them anyway. A `//` key is a note to
         # the next reader, not a setting, so it is neither applied nor complained about.
@@ -216,23 +232,23 @@ def load(root: Path) -> tuple[dict, list[str]]:
             continue
         key = ALIASES.get(key, key)   # an older name for a setting still works
         if key not in DEFAULTS:
-            problems.append(f"{PATH}: unknown setting {key!r} — it does nothing")
+            problems.append(say("unknown", path=PATH, key=repr(key)))
             continue
         want = type(DEFAULTS[key])
         if want is bool and not isinstance(value, bool):
-            problems.append(f"{PATH}: {key} wants true/false, got {value!r} — default kept")
+            problems.append(say("wants", path=PATH, key=key, kind=say("kind_bool"), value=repr(value)))
             continue
         if want is float and not isinstance(value, (int, float)):
-            problems.append(f"{PATH}: {key} wants a number, got {value!r} — default kept")
+            problems.append(say("wants", path=PATH, key=key, kind=say("kind_number"), value=repr(value)))
             continue
         if want is int and not isinstance(value, int):
-            problems.append(f"{PATH}: {key} wants a number, got {value!r} — default kept")
+            problems.append(say("wants", path=PATH, key=key, kind=say("kind_number"), value=repr(value)))
             continue
         if want is list and not isinstance(value, list):
-            problems.append(f"{PATH}: {key} wants a list, got {value!r} — default kept")
+            problems.append(say("wants", path=PATH, key=key, kind=say("kind_list"), value=repr(value)))
             continue
         if want is dict and not isinstance(value, dict):
-            problems.append(f"{PATH}: {key} wants an object, got {value!r} — default kept")
+            problems.append(say("wants", path=PATH, key=key, kind=say("kind_object"), value=repr(value)))
             continue
         out[key] = value
     return out, problems

@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.20 — the rest of the package says what it says from templates
+
+The installer's lines, the parser's refusals, entry retire and move replies, settings
+complaints, worktree notes, the context warning, the digest, the web viewer's errors, the
+trimming lines in `fmt`, the shipped rules and the command modules' value refusals are
+declared once in their module's table and filled by `render`. What is left as an f-string
+is data: file names, stored references, URLs and padding. The wording is unchanged.
+
 ## 1.62.19 — grants, agents, verify, update and migrate say what they say from templates
 
 The subagent refusals and briefings, the `verify` rows, the upgrade notice and changelog

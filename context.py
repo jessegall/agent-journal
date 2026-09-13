@@ -12,10 +12,26 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from templates import render as fill
 
 #: The windows that exist, smallest first. The right one is the smallest that fits what
 #: this session has ALREADY held.
 WINDOWS = (200_000, 1_000_000)
+
+
+MESSAGES = {
+    "head": "CONTEXT IS {pct}% FULL — {used} of {window}. {said}",
+    "standing": "{n} pin(s) stand[, {since} written since the last warning]",
+    "claim": "{standing}. A pin is a CLAIM a later reader would get WRONG without.{early}",
+    "claim_early": " Never a status, a count, or what you just did; those rot into confident falsehoods wearing the "
+                   "same authority as the facts that still hold.",
+    "latest": "The last one written, for the shape of it:\n  {latest}",
+    "share": "  {share}  {label}[\n         {lever}]",
+    "made_of": "WHAT IS ACTUALLY IN HERE, by share of what was said:\n{rows:\n}",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 def window_for(peak: int, setting: int = 0, learned: int = 0) -> tuple[int, bool]:
@@ -283,21 +299,17 @@ def warning(used: int, window: int, pinned: int, made_of=(), rung: float = 0.0,
     # `journal` skill and in the start block, and is said here only at the first rung.
     early = rung <= 0.5
     out = [
-        f"CONTEXT IS {pct:.0f}% FULL — {used:,} of {window:,}. {said}",
+        say("head", pct=round(pct), used=format(used, ","), window=format(window, ","), said=said),
     ]
     if early:
         out.append("A compaction keeps what was DONE and drops what was DECIDED. Pins and open "
                    "work are what cross it; everything else has to be read back on purpose.")
-    standing = f"{pinned} pin(s) stand" + (f", {since} written since the last warning" if since else "")
-    out.append(
-        f"{standing}. A pin is a CLAIM a later reader would get WRONG without."
-        + (" Never a status, a count, or what you just did; those rot into confident "
-           "falsehoods wearing the same authority as the facts that still hold." if early else "")
-    )
+    standing = say("standing", n=pinned, since=since or None)
+    out.append(say("claim", standing=standing, early=say("claim_early") if early else ""))
     if latest and early:
         # THE STANDARD, SHOWN RATHER THAN DESCRIBED. "Short and concrete" is an instruction
         # nobody can check themselves against; the last pin that was accepted is one they can.
-        out.append(f"The last one written, for the shape of it:\n  {latest}")
+        out.append(say("latest", latest=latest))
     out.append('  .journal/journal.py pins add "<the claim, in one line>"\n'
                '  .journal/journal.py todos add "<title>"   work you are holding for later '
                "lives only in this window")
@@ -316,12 +328,8 @@ def warning(used: int, window: int, pinned: int, made_of=(), rung: float = 0.0,
             "`--back=1` are available to decide with."
         )
     if made_of:
-        out.append(
-            "WHAT IS ACTUALLY IN HERE, by share of what was said:\n"
-            + "\n".join(
-                f"  {share:>5.0%}  {_LABELS.get(kind, kind)}"
-                + (f"\n         {_LEVER[kind]}" if kind in _LEVER and share >= _LEVER_AT else "")
-                for kind, share in made_of[:4]
-            )
-        )
+        out.append(say("made_of", rows=[
+            say("share", share=format(share, ">5.0%"), label=_LABELS.get(kind, kind),
+                lever=_LEVER[kind] if kind in _LEVER and share >= _LEVER_AT else None)
+            for kind, share in made_of[:4]]))
     return "\n\n".join(out)

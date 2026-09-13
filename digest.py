@@ -12,8 +12,21 @@ from __future__ import annotations
 
 import tags
 import transcript
+from templates import render as fill
 
 CONTEXT = 2  # messages either side of a prompt that are its context
+
+
+MESSAGES = {
+    "elided": "      ⋯ {n} message(s) ⋯",
+    "user": "\n{n}  ▸ USER: {body}",
+    "tags": "\\[{tags:/}\\] ",
+    "agent": "{n}    {mark}{body}",
+    "said": "\n{n}  {at}\n{text}",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 def _near_prompt(lines, i: int, prompts: set[int]) -> bool:
@@ -83,11 +96,11 @@ def render(lines, *, elide: bool = True) -> str:
             skipped += 1
             continue
         if skipped and elide:
-            out.append(f"      ⋯ {skipped} message(s) ⋯")
+            out.append(say("elided", n=skipped))
         skipped = 0
         out.append(_one(line))
     if skipped and elide:
-        out.append(f"      ⋯ {skipped} message(s) ⋯")
+        out.append(say("elided", n=skipped))
     return "\n".join(out)
 
 
@@ -96,9 +109,9 @@ def _one(line) -> str:
     body = tags.strip(line.text) if found else (line.text or "").strip()
     body = " ".join(body.split())
     if line.kind == "human":
-        return f"\n{line.n:>5}  ▸ USER: {body}"
-    mark = f"[{'/'.join('!' + t for t in found)}] " if found else ""
-    return f"{line.n:>5}    {mark}{body[:600]}"
+        return say("user", n=str(line.n).rjust(5), body=body)
+    mark = say("tags", tags=["!" + t for t in found]) if found else ""
+    return say("agent", n=str(line.n).rjust(5), mark=mark, body=body[:600])
 
 
 def users_only(lines) -> str:
@@ -110,5 +123,5 @@ def users_only(lines) -> str:
     out = []
     for line in lines:
         if line.kind == "human":
-            out.append(f"\n{line.n:>5}  {line.ts[:19]}\n{(line.text or '').strip()}")
+            out.append(say("said", n=str(line.n).rjust(5), at=line.ts[:19], text=(line.text or "").strip()))
     return "\n".join(out)

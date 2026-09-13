@@ -21,6 +21,7 @@ find the argument for.
 from __future__ import annotations
 
 import fmt
+from templates import render as fill
 
 #: EACH ONE IS A CLAIM AND ITS REASONING, exactly as a written rule is: the claim is the
 #: line injected everywhere, the body is read on demand. The body is not injected — the same
@@ -55,18 +56,29 @@ RULES = (
 #: rendered markdown, naming the package and the command that regenerates it, so a reader
 #: who edits inside the block is told in the block why their edit will vanish.
 MARK = "agent-journal"
+MESSAGES = {
+    "heading": "## Rules the journal ships",
+    "lead": "These come with the journal itself and hold in every project that installs it. They are not this "
+            "project's opinions; `journal rules` shows the project's own beside them.",
+    "rule": "**{id} — {fact}**",
+    "carry": "RULES THE JOURNAL ITSELF SHIPS, in force here as in every project:\n{rows:\n}{cut}",
+    "carry_row": "  - {fact}  \\[{id}\\]",
+}
+
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
+
+
 BEGIN = f"<!-- BEGIN: {MARK} (auto-generated, run `journal update`) -->"
 END = f"<!-- END: {MARK} -->"
 
 
 def block() -> str:
     """The managed block, whole. Replaced between the markers, never merged."""
-    out = [BEGIN, "", "## Rules the journal ships", "",
-           "These come with the journal itself and hold in every project that installs it. "
-           "They are not this project's opinions; `journal rules` shows the project's own "
-           "beside them.", ""]
+    out = [BEGIN, "", say("heading"), "", say("lead"), ""]
     for r in RULES:
-        out += [f"**{r['id']} — {r['fact']}**", ""]
+        out += [say("rule", id=r["id"], fact=r["fact"]), ""]
         out += [r["body"], ""]
     out.append(END)
     return "\n".join(out)
@@ -82,10 +94,8 @@ def carry(brief: bool = False) -> str:
     """
     if not RULES:
         return ""
-    return ("RULES THE JOURNAL ITSELF SHIPS, in force here as in every project:\n"
-            + "\n".join(f"  - {fmt.gist(r['fact']) if brief else r['fact']}  [{r['id']}]"
-                        for r in RULES)
-            + fmt.cut(len(RULES), len(RULES), "journal rules", shortened=brief))
+    rows = [say("carry_row", fact=fmt.gist(r["fact"]) if brief else r["fact"], id=r["id"]) for r in RULES]
+    return say("carry", rows=rows, cut=fmt.cut(len(RULES), len(RULES), "journal rules", shortened=brief))
 
 
 def by_id(ref: str):

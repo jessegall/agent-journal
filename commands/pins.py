@@ -23,11 +23,12 @@ RULE = {"n": number("a rule number")}
 
 def rule_id(word: str) -> str:
     if not re.fullmatch(r"\d+|[Bb]\d+", word.strip()):
-        raise ValueError(f"a rule number, or a shipped rule like B1, got {word!r}")
+        raise ValueError(render(TEXT["rule_id"], word=repr(word)))
     return word.strip()
 
 
 TEXT = {
+    "rule_id": "a rule number, or a shipped rule like B1, got {word}",
     "pins_sub": "environment {env} · {n} standing[ · {struck} struck][{hint}]",
     "pins_empty": "Nothing is pinned.",
     "pins_lead": "Handed to every session on this environment.",

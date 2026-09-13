@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from typing import Callable, NamedTuple
+from templates import render as fill
 
 
 class Arg(NamedTuple):
@@ -12,7 +13,7 @@ class Arg(NamedTuple):
     what: str = ""
 
     def says(self) -> str:
-        return self.what or f"<{self.name}>"
+        return self.what or say("arg", name=self.name)
 
 
 class Opt(NamedTuple):
@@ -23,12 +24,33 @@ class Opt(NamedTuple):
     default: object = None
 
 
+MESSAGES = {
+    "arg": "<{name}>",
+    "arg_rest": "<{name}>...",
+    "optional": "\\[{shown}\\]",
+    "not_a_number": "{what} must be a number, got {word}",
+    "no_such": "no such command: {word}. `journal help` lists them.",
+    "no_verb": "{noun} has no {verb}. It takes {verbs}.",
+    "needs_verb": "{noun} needs a verb. It takes {verbs}.",
+    "wants": "`{usage}` wants {what}",
+    "bad_value": "`{usage}`: {error}",
+    "extra": "`{usage}` does not take {words}",
+    "unknown_option": "unknown option '--{name}' for `{usage}`",
+    "bare_option": "'--{name}' takes no value",
+    "option_value": "'--{name}' wants a value: --{name}=<value>",
+    "option_error": "'--{name}': {error}",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
+
+
 def number(what: str) -> Callable[[str], int]:
     def convert(word: str) -> int:
         try:
             return int(word)
         except ValueError:
-            raise ValueError(f"{what} must be a number, got {word!r}") from None
+            raise ValueError(say("not_a_number", what=what, word=repr(word))) from None
     return convert
 
 
@@ -106,8 +128,8 @@ class Command:
     def usage(self) -> str:
         words = ["journal", *(w for w in (self.noun, self.verb) if w)]
         for a in self.args:
-            shown = f"<{a.name}>" + ("..." if a.rest else "")
-            words.append(f"[{shown}]" if a.optional else shown)
+            shown = say("arg_rest" if a.rest else "arg", name=a.name)
+            words.append(say("optional", shown=shown) if a.optional else shown)
         return " ".join(words)
 
     def run(self, parsed: Parsed) -> int:
@@ -143,7 +165,7 @@ class Registry:
         first = words[0] if words else ""
         noun = self._nouns.get(first)
         if noun is None:
-            return [], [], f"no such command: {first!r}. `journal help` lists them."
+            return [], [], say("no_such", word=repr(first))
         cmds = self._commands[noun]
         if len(words) > 1:
             named = [c for c in cmds if c.verb and c.answers(words[1])]
@@ -153,8 +175,9 @@ class Registry:
         if bare:
             return bare, words[1:], ""
         verbs = ", ".join(sorted({c.verb for c in cmds}))
-        got = f" has no {words[1]!r}." if len(words) > 1 else " needs a verb."
-        return [], [], f"{noun}{got} It takes {verbs}."
+        if len(words) > 1:
+            return [], [], say("no_verb", noun=noun, verb=repr(words[1]), verbs=verbs)
+        return [], [], say("needs_verb", noun=noun, verbs=verbs)
 
     @staticmethod
     def _bind(cmd: Command, words: list[str]) -> tuple[dict | None, str]:
@@ -167,22 +190,22 @@ class Registry:
                 if not text:
                     if a.optional:
                         continue
-                    return None, f"`{cmd.usage()}` wants {a.says()}"
+                    return None, say("wants", usage=cmd.usage(), what=a.says())
                 try:
                     out[a.name] = a.type(text)
                 except ValueError as e:
-                    return None, f"`{cmd.usage()}`: {e}"
+                    return None, say("bad_value", usage=cmd.usage(), error=e)
                 continue
             if not left:
                 if a.optional:
                     continue
-                return None, f"`{cmd.usage()}` wants {a.says()}"
+                return None, say("wants", usage=cmd.usage(), what=a.says())
             try:
                 out[a.name] = a.type(left.pop(0))
             except ValueError as e:
-                return None, f"`{cmd.usage()}`: {e}"
+                return None, say("bad_value", usage=cmd.usage(), error=e)
         if left:
-            return None, f"`{cmd.usage()}` does not take {' '.join(left)!r}"
+            return None, say("extra", usage=cmd.usage(), words=repr(" ".join(left)))
         return out, ""
 
     def _options(self, cmd: Command, raw: list[tuple[str, str | None]]) -> tuple[dict | None, str]:
@@ -191,18 +214,18 @@ class Registry:
         for name, val in raw:
             spec = specs.get(name)
             if spec is None:
-                return None, f"unknown option '--{name}' for `{cmd.usage()}`"
+                return None, say("unknown_option", name=name, usage=cmd.usage())
             if spec.bare:
                 if val is not None:
-                    return None, f"'--{name}' takes no value"
+                    return None, say("bare_option", name=name)
                 out[name] = True
                 continue
             if val is None:
-                return None, f"'--{name}' wants a value: --{name}=<value>"
+                return None, say("option_value", name=name)
             try:
                 got = spec.type(val)
             except ValueError as e:
-                return None, f"'--{name}': {e}"
+                return None, say("option_error", name=name, error=e)
             if spec.repeat:
                 out[name].append(got)
             else:

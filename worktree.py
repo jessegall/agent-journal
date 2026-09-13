@@ -15,6 +15,7 @@ the notice says the copy should go. Either way one record.
 from __future__ import annotations
 
 from pathlib import Path
+from templates import render as fill
 
 #: `shutil` AND `subprocess` ARE IMPORTED WHERE THEY ARE USED, and that is almost nowhere.
 #: This module is imported at the top of `hook.py` and `journal.py` — every tool call and
@@ -28,6 +29,23 @@ from pathlib import Path
 #: HOW HIGH TO WALK BEFORE GIVING UP. A project is never forty directories deep, and a
 #: bounded loop cannot hang on a symlink cycle or a mount that never reaches `/`.
 _UP = 40
+
+
+MESSAGES = {
+    "linked": "journal: this is a worktree of {main}; its checked-out copy of .journal was replaced with a symlink to "
+              "the main checkout's, so both share one record.",
+    "link_failed": "journal: could not link .journal to {target} ({error}); using the main journal directly.",
+    "redirected": "journal: this is a worktree of {main}, and its .journal is a copy with local changes. Using the main "
+                  "checkout's journal instead. Move anything you need out of the copy, then `journal worktree link` "
+                  "replaces it with a symlink.",
+    "already_linked": ".journal already links to {target}",
+    "not_worktree": "this is not a linked worktree (or the main checkout has no .journal); nothing to link",
+    "now_linked": ".journal now links to {target}\n  the old copy is at .journal.copy — delete it once nothing in it is "
+                  "missed",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 def nearest(start: Path) -> Path | None:
@@ -186,23 +204,20 @@ def resolve(root: Path) -> tuple[Path, str]:
             shutil.rmtree(root)
             root.symlink_to(target, target_is_directory=True)
             hide_from_git(project)
-            return target, (f"journal: this is a worktree of {main.name}; its checked-out copy of .journal was "
-                            f"replaced with a symlink to the main checkout's, so both share one record.")
+            return target, say("linked", main=main.name)
         except OSError as e:
-            return target, f"journal: could not link .journal to {target} ({e}); using the main journal directly."
-    return target, (f"journal: this is a worktree of {main.name}, and its .journal is a copy with local changes. "
-                    f"Using the main checkout's journal instead. Move anything you need out of the copy, then "
-                    f"`journal worktree link` replaces it with a symlink.")
+            return target, say("link_failed", target=target, error=e)
+    return target, say("redirected", main=main.name)
 
 
 def link(root: Path) -> tuple[bool, str]:
     """`journal worktree link`: replace a copy with the symlink, whatever its state."""
     project = root.parent
     if root.is_symlink():
-        return True, f".journal already links to {root.resolve()}"
+        return True, say("already_linked", target=root.resolve())
     main = main_root(project)
     if main is None:
-        return False, "this is not a linked worktree (or the main checkout has no .journal); nothing to link"
+        return False, say("not_worktree")
     target = main / ".journal"
     keep = project / ".journal.copy"
     if keep.exists():
@@ -211,5 +226,4 @@ def link(root: Path) -> tuple[bool, str]:
     root.rename(keep)
     root.symlink_to(target, target_is_directory=True)
     hide_from_git(project)
-    return True, (f".journal now links to {target}\n  the old copy is at .journal.copy — delete it once "
-                  "nothing in it is missed")
+    return True, say("now_linked", target=target)
