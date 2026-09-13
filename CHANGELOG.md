@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.85.0 — Home opens what you click beside the page
+
+Clicking a to-do, a message or a question on an environment's Home opens it in a side panel
+next to Home, instead of leaving the page; the panel has an Open page button that goes to the
+resource's own page, and the row stays marked while it is open.
+
 ## 1.84.0 — the skill knows the viewer; Home's to-do table switches to Recently finished
 
 The journal skill and its command reference catch up with this branch: Messages (and editing
