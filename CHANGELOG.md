@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.77.2 — statuses are small coloured dots
+
+Every status in the viewer is a filled dot: blue in progress, amber blocked, green done,
+violet waiting on the user, grey open, dim grey withdrawn.
+
 ## 1.77.1 — the viewer is never served from the browser's cache
 
 Every response from `journal serve` says `Cache-Control: no-cache`, so after an upgrade the

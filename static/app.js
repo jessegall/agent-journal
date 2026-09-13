@@ -177,22 +177,16 @@ const Icon = {
 };
 
 // A STATUS IS A PILL: an outline when open, filling as it moves, struck through when blocked.
-const STATUS_COLOR = { progress: "var(--accent)", blocked: "var(--warn)", waiting: "var(--accent-text)" };
+const STATUS_COLOR = {
+  progress: "#5b8def", blocked: "#d9a441", done: "#6fae7d", waiting: "#a78bfa", open: "#8b8e96", withdrawn: "#55575d",
+};
 const StatusIcon = {
   props: ["kind"],
   setup(props) {
-    const color = computed(() => STATUS_COLOR[props.kind] || "var(--text-3)");
+    const color = computed(() => STATUS_COLOR[props.kind] || STATUS_COLOR.open);
     return { color };
   },
-  template: `
-    <svg class=ico viewBox="0 0 16 16" fill="none" :aria-label="kind">
-      <rect x="4.75" y="1.75" width="6.5" height="12.5" rx="3.25" stroke-width="1.5"
-        :style="{stroke: color}" :stroke-dasharray="kind === 'withdrawn' ? '2 2' : null"/>
-      <rect v-if="kind === 'progress'" x="6.5" y="7.75" width="3" height="4.75" rx="1.5" :style="{fill: color}"/>
-      <rect v-if="kind === 'done'" x="6.5" y="3.5" width="3" height="9" rx="1.5" :style="{fill: color}"/>
-      <circle v-if="kind === 'waiting'" cx="8" cy="8" r="1.5" :style="{fill: color}"/>
-      <path v-if="kind === 'blocked'" d="M2.5 8h11" stroke-width="1.5" stroke-linecap="round" :style="{stroke: color}"/>
-    </svg>`,
+  template: `<span class=dot :style="{background: color}" role=img :aria-label="kind"></span>`,
 };
 
 // A PRIORITY IS THREE CHEVRONS: how many are lit is how important it is.
