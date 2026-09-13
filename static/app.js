@@ -226,11 +226,13 @@ const TopBar = {
 };
 
 const Panel = {
-  props: ["label", "close"],
+  props: ["label", "close", "onClose"],
   components: { Icon },
   template: `
     <aside class=panel>
-      <div class=panel-top><span>{{ label }}</span><a class=icon-btn :href="close" title="Close"><Icon name="close"/></a></div>
+      <div class=panel-top><span>{{ label }}</span>
+        <button v-if="onClose" type=button class=icon-btn title="Close" @click="onClose"><Icon name="close"/></button>
+        <a v-else class=icon-btn :href="close" title="Close"><Icon name="close"/></a></div>
       <div class=panel-body><slot/></div>
     </aside>`,
 };
@@ -995,10 +997,58 @@ const DocDetail = {
     </div>`,
 };
 
+// ─────────────────────────────────────────────────────────────── a resource, opened beside the page
+// what a click on a row opens without leaving the page, with a link to the resource's own page
+const PEEK = {
+  todo: { label: "To-do", api: (env, n) => `/api/env/${env}/todos/${n}`, page: (env, n) => `#/env/${env}/todos/${n}` },
+  message: { label: "Message", api: (env, n) => `/api/env/${env}/inbox/${n}`, page: (env, n) => `#/env/${env}/messages/${n}` },
+  question: { label: "Question", api: (env, n) => `/api/env/${env}/questions/${n}`, page: (env, n) => `#/env/${env}/questions/${n}` },
+};
+
+const Peek = {
+  props: ["env", "kind", "n", "close"],
+  components: { Panel, StatusIcon, PriorityIcon },
+  setup(props) {
+    const s = useFetch(() => props.kind && props.n && PEEK[props.kind].api(props.env, props.n));
+    return { s, PEEK, todoStatus, STATUS_LABEL, priorityName, questionKind };
+  },
+  template: `
+    <Panel :label="PEEK[kind].label + ' #' + n" :onClose="close">
+      <a class="btn open-page" :href="PEEK[kind].page(env, n)">Open page</a>
+      <p v-if="s.error" class=error>{{ s.error }}</p>
+      <template v-else-if="s.data && kind === 'todo'">
+        <h2 class=p-title>{{ s.data.title }}</h2>
+        <dl class=props>
+          <dt>Status</dt><dd><StatusIcon :kind="todoStatus(s.data)"/>{{ STATUS_LABEL[todoStatus(s.data)] }}</dd>
+          <dt>Priority</dt><dd><PriorityIcon :value="s.data.priority"/>{{ priorityName(s.data.priority) }}</dd>
+          <dt>Added</dt><dd>{{ s.data.age || '—' }}</dd>
+        </dl>
+        <div v-if="s.data.done" class=note>Closed: {{ s.data.how || 'done' }}</div>
+        <div v-if="s.data.body" class="md prose" v-html="$md(s.data.body)"></div>
+        <p v-else class="prose muted">Title only; no brief was written.</p>
+      </template>
+      <template v-else-if="s.data && kind === 'message'">
+        <div class="prose message">{{ s.data.text }}</div>
+        <dl class=props>
+          <dt>Status</dt><dd>{{ s.data.status === 'waiting' ? 'Waiting to be processed' : 'Processed' }}</dd>
+          <dt>Left</dt><dd>{{ s.data.age || '—' }}</dd>
+        </dl>
+      </template>
+      <template v-else-if="s.data && kind === 'question'">
+        <div class="md p-title" v-html="$md(s.data.text)"></div>
+        <dl class=props>
+          <dt>Status</dt><dd><StatusIcon :kind="questionKind(s.data)"/>{{ s.data.status === 'open' ? 'Open' : s.data.status === 'answered' ? 'Answered' : 'Withdrawn' }}</dd>
+          <dt>Asked</dt><dd>{{ s.data.age || '—' }}</dd>
+        </dl>
+        <div v-if="s.data.answer" class="md prose" v-html="$md(s.data.answer)"></div>
+      </template>
+    </Panel>`,
+};
+
 // ─────────────────────────────────────────────────────────────── an environment's home
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, StatusIcon, PriorityIcon },
+  components: { TopBar, Icon, StatusIcon, PriorityIcon, Peek },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     const summary = useFetch(url(""));
@@ -1030,12 +1080,14 @@ const EnvHome = {
       ];
     });
     const about = (q) => q.links.map((l) => l.label).join(", ");
-    const view = reactive({ finished: false });
-    return { work, groups, finished, view, waiting, asking, stats, about, questionKind };
+    const view = reactive({ finished: false, kind: "", n: 0 });
+    const peek = (kind, n) => { view.kind = kind; view.n = n; };
+    const unpeek = () => { view.kind = ""; view.n = 0; };
+    return { work, groups, finished, view, peek, unpeek, waiting, asking, stats, about, questionKind };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
-    <div class=page><div class=home>
+    <div class=body><div class=page><div class=home>
       <div class=stats>
         <a v-for="s in stats" :key="s.path" :class="['stat', {hot: s.hot}]" :href="'#/env/' + env + '/' + s.path">
           <span class=stat-top><span>{{ s.label }}</span><Icon :name="s.icon"/></span>
@@ -1065,7 +1117,7 @@ const EnvHome = {
         <div class=home-head><h2>Messages</h2><span class=n>{{ waiting.length }} waiting</span>
           <a class=more :href="'#/env/' + env + '/messages'">All messages</a></div>
         <div class=block>
-          <a v-for="m in waiting" :key="m.n" class="row inboxrow" :href="'#/env/' + env + '/messages/' + m.n">
+          <a v-for="m in waiting" :key="m.n" :class="['row', 'inboxrow', {sel: view.kind === 'message' && view.n === m.n}]" :href="'#/env/' + env + '/messages/' + m.n" @click.prevent="peek('message', m.n)">
             <StatusIcon kind="waiting"/><span class=num>#{{ m.n }}</span><span class=title>{{ m.text }}</span>
             <span class=cite></span><span class=age>{{ m.age }}</span>
           </a>
@@ -1076,7 +1128,7 @@ const EnvHome = {
         <div class=home-head><h2>Questions</h2><span class=n>{{ asking.length }} open</span>
           <a class=more :href="'#/env/' + env + '/questions'">All questions</a></div>
         <div class=block>
-          <a v-for="q in asking" :key="q.n" class="row questionrow" :href="'#/env/' + env + '/questions/' + q.n">
+          <a v-for="q in asking" :key="q.n" :class="['row', 'questionrow', {sel: view.kind === 'question' && view.n === q.n}]" :href="'#/env/' + env + '/questions/' + q.n" @click.prevent="peek('question', q.n)">
             <StatusIcon :kind="questionKind(q)"/><span class=num>#{{ q.n }}</span><span class=title>{{ q.text }}</span>
             <span class=cite>{{ about(q) }}</span><span class=age>{{ q.age }}</span>
           </a>
@@ -1091,7 +1143,7 @@ const EnvHome = {
           </span>
           <a class=more :href="'#/env/' + env + '/todos'">All to-dos</a></div>
         <div v-if="view.finished" class=block>
-          <a v-for="t in finished" :key="t.n" class="row finishedrow" :href="'#/env/' + env + '/todos/' + t.n">
+          <a v-for="t in finished" :key="t.n" :class="['row', 'finishedrow', {sel: view.kind === 'todo' && view.n === t.n}]" :href="'#/env/' + env + '/todos/' + t.n" @click.prevent="peek('todo', t.n)">
             <span class=num>#{{ t.n }}</span><span class=title>{{ t.title }}</span><span class=age>{{ t.done_age }}</span>
           </a>
           <p v-if="!finished.length" class=empty>Nothing has been finished yet.</p>
@@ -1101,7 +1153,7 @@ const EnvHome = {
           <template v-for="g in groups" :key="g.key">
             <div class=ghead><StatusIcon :kind="g.key"/>{{ g.label }}
               <span class=n>{{ g.total > g.rows.length ? g.rows.length + ' of ' + g.total : g.total }}</span></div>
-            <a v-for="t in g.rows" :key="t.n" class="row todorow" :href="'#/env/' + env + '/todos/' + t.n">
+            <a v-for="t in g.rows" :key="t.n" :class="['row', 'todorow', {sel: view.kind === 'todo' && view.n === t.n}]" :href="'#/env/' + env + '/todos/' + t.n" @click.prevent="peek('todo', t.n)">
               <PriorityIcon :value="t.priority"/><StatusIcon :kind="g.key"/><span class=num>#{{ t.n }}</span>
               <span class=title>{{ t.title }}</span><span class=cite>{{ t.doc ? 'Doc ' + t.doc : '' }}</span>
               <span class=age>{{ t.age }}</span>
@@ -1109,7 +1161,9 @@ const EnvHome = {
           </template>
         </div>
       </section>
-    </div></div>`,
+    </div></div>
+    <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek"/>
+    </div>`,
 };
 
 // ─────────────────────────────────────────────────────────────── tools
