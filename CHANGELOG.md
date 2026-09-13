@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.89.0 — the sidebar shows what the agent is doing
+
+The bottom of the viewer's sidebar is an Activity section for the environment you are on: the
+latest message of the agent working it, when a session is live there, and the latest journal
+events — work started, noted and ended, to-dos added and closed, questions asked and answered,
+messages left and processed — newest first, refreshed with the rest of the page. It is served by
+`ActivityController` (`GET /api/env/<env>/activity`). Messages no longer hide processed ones behind
+a switch, and the to-do icon is a ring with a check, like the status rings.
+
 ## 1.88.0 — a question can explain itself and offer choices
 
 A question is one short line, and can carry a description — the context the user needs to

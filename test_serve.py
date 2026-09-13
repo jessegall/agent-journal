@@ -362,6 +362,13 @@ check("a field that cannot be sorted on is a 400 naming what can", (status, "pri
 status, got = post("/api/env/beta/todos/2", {"title": "x"}, method="PATCH")
 check("a number that is not on that environment is 404", status, 404)
 
+# ─────────────────────────────────────────────────────────────── what is happening on an environment
+status, _, body = get("/api/env/alpha/activity")
+activity = json.loads(body)
+check("activity lists the latest journal events, newest first, and no agent when no session works it",
+      (status, "Started work: something in flight on alpha" in [e["text"] for e in activity["events"]], activity["agent"]),
+      (200, True, None))
+
 # ─────────────────────────────────────────────────────────────── a question with a description and options
 status, got = post("/api/env/alpha/questions", {"text": "Which colour?", "description": "The button needs one.",
                                                 "options": ["blue", "green", " blue "]})
