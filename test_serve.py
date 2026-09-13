@@ -533,6 +533,20 @@ check("it leaves the doc list", 1 in [d["n"] for d in json.loads(body)], False)
 status, _, body = get("/api/env/alpha/docs?archived=1")
 check("archived=1 lists it, marked", [d["archived"] for d in json.loads(body) if d["n"] == 1], ["done with it"])
 
+status, headers, body = get("/app.js")
+_etag = headers.get("ETag") or headers.get("Etag") or ""
+check("app.js carries a fingerprint and still revalidates", (status, bool(_etag), headers.get("Cache-Control")), (200, True, "no-cache"))
+_req = urllib.request.Request(BASE + "/app.js", headers={"If-None-Match": _etag})
+try:
+    with urllib.request.urlopen(_req, timeout=10) as r:
+        _cond = (r.status, len(r.read()))
+except urllib.error.HTTPError as e:
+    _cond = (e.code, len(e.read()))
+check("an unchanged app.js is answered 304 with no body", _cond, (304, 0))
+_req = urllib.request.Request(BASE + "/app.js", headers={"If-None-Match": '"stale"'})
+with urllib.request.urlopen(_req, timeout=10) as r:
+    check("a changed one is sent in full", (r.status, len(r.read()) > 1000), (200, True))
+
 state.put(root, serve.VIEWER_PORT, srv.server_port)
 check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)
 import views  # noqa: E402

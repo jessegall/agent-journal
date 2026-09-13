@@ -73,6 +73,8 @@ def say(message: str, /, **values) -> str:
 
 
 BODY_LIMIT = 64_000
+#: the static shell: sent with a fingerprint, so an unchanged file is answered 304 instead of re-sent
+_FINGERPRINTED = frozenset({"/", "/app.js"})
 UPLOAD_LIMIT = 28_000_000   # a message with attached files, base64 in JSON
 _UPLOAD = re.compile(r"^/api/env/[a-z0-9-]+/inbox$")
 
@@ -334,16 +336,26 @@ class _Handler(BaseHTTPRequestHandler):
                 status, ctype, body = fn(self.server.root, self.server.project, m)
             except Exception as e:   # a bad route must answer 500, never crash the server
                 status, ctype, body = _json({"error": say("internal", error=e)}, 500)
+            if status == 200 and path in _FINGERPRINTED:
+                import hashlib
+                etag = '"' + hashlib.sha1(body).hexdigest()[:20] + '"'
+                if self.headers.get("If-None-Match") == etag:
+                    self._send(304, ctype, b"", True, etag)
+                    return
+                self._send(status, ctype, body, head, etag)
+                return
             self._send(status, ctype, body, head)
             return
         self._send(*_not_found(say("nothing_at", path=path)), head)
 
-    def _send(self, status: int, ctype: str, body: bytes, head: bool) -> None:
+    def _send(self, status: int, ctype: str, body: bytes, head: bool, etag: str = "") -> None:
         self.send_response(status)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
         # an upgraded journal must never be shown through the browser's copy of the last one
         self.send_header("Cache-Control", "no-cache")
+        if etag:
+            self.send_header("ETag", etag)
         self.end_headers()
         if not head:
             self.wfile.write(body)

@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.99.1 — the viewer asks the server for less
+
+Every page now reads the one overview the shell already keeps fresh, instead of each page
+that lists environment names polling `/api/overview` a second time. The page and `app.js`
+are sent with a fingerprint (ETag); a reload of an unchanged viewer is answered 304 with no
+body instead of the whole script. They still revalidate on every load, so an upgraded journal
+is never shown from the browser's copy.
+
 ## 1.99.0 — reports: what the user asked to have checked, written for the user to read
 
 A report is the situation as it was when someone looked: a check, a measurement, a subagent's
