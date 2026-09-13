@@ -514,9 +514,11 @@ function settle(body, action, base, ...shown) {
   else if (action.leave && base) location.hash = base;
 }
 
+// one overview for the whole page: the shell loads and polls it, every view reads this
+const OVERVIEW = reactive({ data: null });
+
 function useEnvironments(current) {
-  const ov = useFetch(() => "/api/overview");
-  return computed(() => (ov.data ? ov.data.environments.map((e) => e.name).filter((name) => name !== current()) : []));
+  return computed(() => (OVERVIEW.data ? OVERVIEW.data.environments.map((e) => e.name).filter((name) => name !== current()) : []));
 }
 
 function envField(names, label = "Environment") {
@@ -1573,7 +1575,7 @@ const App = {
   components: { ...VIEWS, Icon },
   setup() {
     const route = reactive(parseHash());
-    const ov = reactive({ data: null });
+    const ov = OVERVIEW;
     let version = "";
     const loadOverview = () => fetch("/api/overview").then((r) => r.json()).then((d) => {
       // a newer journal is being served: reload the whole page so the new viewer renders
