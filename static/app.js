@@ -507,7 +507,7 @@ const Questions = {
     const list = useFetch(() => props.env && `/api/env/${props.env}/questions`);
     const item = useFetch(() => props.env && props.n && `/api/env/${props.env}/questions/${props.n}`);
     const answer = (text) => postJSON(`/api/env/${props.env}/questions/${props.n}/answer`, { answer: text })
-      .then((body) => { item.data = body.rows; list.reload(); changed(); });
+      .then((body) => { item.data = body.data; list.reload(); changed(); });
     const open = computed(() => (list.data || []).filter((q) => q.status === "open").length);
     const about = (q) => q.links.map((l) => l.label).join(", ");
     return { list, item, answer, open, about, questionKind };
@@ -550,8 +550,8 @@ const Questions = {
             <div class="md prose" v-html="$md(item.data.answer)"></div>
           </div>
           <div v-if="item.data.withdrawn" class=note>Withdrawn: {{ item.data.withdrawn }}</div>
-          <Compose v-else :placeholder="item.data.answer ? 'Answer again; the earlier answer is kept' : 'Your answer'"
-            :submit="item.data.answer ? 'Answer again' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
+          <Compose v-else :placeholder="item.data.answer ? 'Change the answer; the earlier one is kept' : 'Your answer'"
+            :submit="item.data.answer ? 'Edit answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
         </template>
       </Panel>
     </div>`,

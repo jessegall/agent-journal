@@ -208,6 +208,8 @@ def edit(root: Path, n: int, text: str, track: str | None = None) -> tuple[bool,
         if q is None:
             return False, why
         q["text"] = text
+        if q.get("answer"):
+            q["told_at"] = None
         _put(root, items, track)
     return True, say("edited", n=n, text=text[:70])
 
@@ -288,6 +290,8 @@ def row_response(n: int, q: dict) -> dict:
         "answer": q.get("answer") or "", "age": age(q.get("at", "")),
         "answered_age": age(q.get("answered_at") or ""), "source": q.get("source") or "",
         "withdrawn": q.get("withdrawn") or "",
+        "changed": bool(q.get("earlier_answers")),
+        "meta": " · ".join(_facts(q, n)),
         "links": [{"ref": r, "label": label(r)} for r in q.get("links") or []],
     }
 

@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.68.0 — questions go through their controller; an answer can be edited
+
+Every `journal questions` command and the viewer's question API run through
+`QuestionsController`. `journal questions edit <n> "<question>"` rewords a question.
+Answering an answered question edits the answer: the earlier one is kept, and the agent is
+told at its next stop, marked "(the answer changed)"; rewording an answered question tells
+it again too. The viewer's button reads "Edit answer".
+
 ## 1.67.0 — resources go through controllers; reminders first
 
 A resource is served by one controller — `index`, `show`, `store`, `update`, `destroy` and
