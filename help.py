@@ -45,6 +45,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal inbox show N           the message, the parts it was split into and what each became, and the questions about it",
         'journal inbox process N --part="<words>" --became=<ref>...   record one part: todo 22, pin 3, rule 2, reminder 1, question 4, work or noted',
         "journal inbox done N           mark it processed, once its parts say what they became",
+        'journal inbox edit N "<text>"   reword a waiting message',
+        'journal inbox move N "<env>"    carry a waiting message to another environment',
     ),
     "questions": (
         'journal questions add "<question>" [--about=<ref>]...   a question of its own, linked to any number of resources: todo 22, doc 4.1, pin 3, rule 2',

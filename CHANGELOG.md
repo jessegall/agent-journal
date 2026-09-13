@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.72.1 — help and the skill teach inbox edit and move
+
+`journal help` lists `inbox edit` and `inbox move`, and the skill names `inbox move` for a
+message left on the wrong environment. The skill's stop order now reads questions before
+work, as the queue has run since 1.69.2.
+
 ## 1.72.0 — the inbox goes through its controller; a message can be reworded or moved
 
 Every `journal inbox` command and the viewer's inbox API run through `InboxController`:
