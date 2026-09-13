@@ -87,7 +87,7 @@ the claim rather than erasing it, so being wrong about one is cheap.
     journal todos strike N "<why>"   abandoned, on the record — `journal todo drop N "<why>"` is the same
     journal todos ask N "<question>"  it waits on the user's answer; auto moves on to the next
     journal todos answer N "<answer>" the user answers from the terminal; the agent is told at its next stop and picks it up first
-    journal todos auto [on|off]       per environment: work through the list without asking, or wait for the user's word
+    journal auto-mode [enable|disable]  per environment: work through the list without asking, or wait for the user's word
     journal todos amend <n> "<section title>" --brief    append a new `## <title>` section to a brief, from stdin
     journal todos replace <n> ["<section title>"] --brief   swap one named section (or, with no title, the whole brief); the old text is kept under struck/
 

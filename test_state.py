@@ -831,7 +831,7 @@ code, out, err = fire(d, "Stop", path)
 check("auto off: an idle stop says what waits, as context, and calls it not an instruction",
       ('"decision"' in out, "not an instruction" in out), (False, True))
 p = subprocess.run([J, "todo", "auto"], env=env, capture_output=True, text=True, timeout=180)
-check("auto reports off by default", "auto is OFF" in p.stdout, True)
+check("auto reports off by default", "auto mode is OFF" in p.stdout, True)
 p = subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, text=True, timeout=180)
 check("auto on says the state now: nothing open, which to-do starts next",
       "Nothing is open, 2 to-do(s) waiting: the next idle stop starts to-do 1" in p.stdout, True)

@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.80.0 — auto mode is its own command
+
+Auto mode belongs to an environment, not to its to-do list, so it has its own command:
+`journal auto-mode` says whether it is on, `journal auto-mode enable` and `journal auto-mode
+disable` switch it (`auto on|off` answer too). `journal todos auto on|off` still works. The
+stop and session-start notices, the loop refusal, the skill, help and the README all name
+the new command, and the switch runs through the environment's controller — the same one
+behind the viewer's Settings page.
+
 ## 1.79.0 — search from the viewer
 
 Each environment's sidebar has Search, under Home. It searches like `journal search` — every

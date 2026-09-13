@@ -48,10 +48,6 @@ class PriorityPayload(Payload):
     value = Field(str)
 
 
-class AutoPayload(Payload):
-    state = Field(str)
-
-
 class PrunePayload(Payload):
     older_than = Field(str)
     before = Field(str)

@@ -180,7 +180,7 @@ MESSAGES = {
     "loop_owed": "AUTO IS ON for `{env}` and this session has no loop, so the list would stop at your next idle stop. "
                  "Start one before writing anything else:\n  the `loop` skill with `{m}m journal next`\n"
                  "  .journal/journal.py loop set     if one is already running that the journal cannot see\n"
-                 "  .journal/journal.py todos auto off   if the list should not drain on its own\n"
+                 "  .journal/journal.py auto-mode disable   if the list should not drain on its own\n"
                  "Reads are never gated; only changes.",
     "choice_line": "journal: this session has no environment yet — {names:, }. It will take one from your first "
                    "message, or ask.",
@@ -289,7 +289,7 @@ MESSAGES = {
     "nothing_open": 'NOTHING IS OPEN — declare what you pick up: `journal work start "<the work>"`.',
     "still_open": "STILL OPEN, from this or an earlier session:\n{rows:\n}\n`journal open` shows where each got to.",
     "note_auto": "AUTO IS ON — work the list without asking: `todos start <n>`, solve it, `work end`, repeat. "
-                 "`todos auto off` stops it",
+                 "`journal auto-mode disable` stops it",
     "note_answered": "{n} the user has ANSWERED — theirs saying to do it, read those first",
     "note_asks": "{n} of them wait on the user",
     "note_delayed": "delayed work, not an instruction to start any of it",

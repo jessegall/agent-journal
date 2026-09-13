@@ -11,3 +11,7 @@ class RemovePayload(Payload):
     confirm = Field(str)
     yes = Field(bool)
     session = Field(str)
+
+
+class AutoPayload(Payload):
+    state = Field(str)
