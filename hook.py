@@ -795,6 +795,19 @@ def _p_cleanup(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
                  "when the work you just did touched what they claim")
 
 
+@nudges.subject("questions", 55)
+def _p_questions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    import questions
+    fresh = questions.untold(ROOT, here)
+    if not fresh:
+        return None
+    questions.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
+    head = (f"the user answered question {fresh[0][0]}" if len(fresh) == 1
+            else f"the user answered {len(fresh)} questions")
+    return _say(head, "act on each answer; `.journal/journal.py questions show <n>` reads one in full",
+                rows=[f"question {n}: {q['text']} → {q['answer']}" for n, q in fresh])
+
+
 @nudges.subject("auto", 60)
 def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     if work.open_work(ROOT):
@@ -1277,7 +1290,8 @@ JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "pins", "remember",
                             "nothing", "rule", "rules", "promote", "todo", "todos", "docs", "work",
                             "tools", "loop", "prepare", "migrate", "claim", "grant", "grants",
                             "environments", "environment", "envs", "env", "tracks", "track",
-                            "remind", "reminder", "reminders", "cleanup", "worktree", "upgrade"})
+                            "remind", "reminder", "reminders", "cleanup", "worktree", "upgrade",
+                            "questions", "question"})
 
 
 def _journal_write(payload: dict) -> str | None:
@@ -1332,6 +1346,7 @@ TODO_WRITES = frozenset({"add", "start", "done", "drop", "strike", "skip", "ask"
                          "amend", "replace", "auto", "from-commit", "from_commit"})
 REMINDER_WRITES = frozenset({"add", "done", "retire", "strike", "stop", "move"})
 TOOL_WRITES = frozenset({"add", "set", "remove", "index"})
+QUESTION_WRITES = frozenset({"add", "answer", "link", "unlink", "withdraw", "strike"})
 
 def _titled(nxt: str) -> bool:
     """`journal todo "park this"` writes; `journal todo`, `todo 3` and `todo --all` read.
@@ -1358,6 +1373,8 @@ NOUN_WRITES = {
     "reminders": REMINDER_WRITES.__contains__,
     "reminder": REMINDER_WRITES.__contains__,
     "remind": REMINDER_WRITES.__contains__,
+    "questions": QUESTION_WRITES.__contains__,
+    "question": QUESTION_WRITES.__contains__,
 }
 
 
