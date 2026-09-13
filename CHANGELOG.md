@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.86.1 — list bars show only their counts
+
+The bar under each page title says only how many there are — "27 open", "18 standing" — and
+no longer "Grouped by status", "Ordered by newest", "Said again at every stop" and the like.
+
 ## 1.86.0 — the viewer keeps itself current
 
 Every list and item on screen refreshes itself every five seconds while the tab is visible,
