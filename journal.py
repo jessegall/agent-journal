@@ -15,7 +15,8 @@ Every group below prints its own commands, and so does every spelling of them:
     pins           a claim that must survive a compaction, on this environment
     rules          a pin that every environment obeys
     reminders      an instruction said again at every stop, until you retire it
-    questions      a question of its own, linked to to-dos, docs, pins or rules
+    inbox          messages the user leaves for the agent, split into what each part became
+    questions      a question of its own, linked to to-dos, docs, pins, rules or inbox messages
     todos          delayed work, parked with the brief you will need in a week
     docs           what was settled: findings, reports, the reasoning a pin cites
     tools          scripts kept for repeated work
@@ -25,8 +26,7 @@ Every group below prints its own commands, and so does every spelling of them:
     system         verify, version, update, settings, loop
 
 THE PLURAL NOUN IS THE CANONICAL SPELLING (ruling R10). Every singular and legacy one —
-`pin`, `rule`, `todo`, `tracks`, bare `strike` and `promote` — still runs,
-still answers `help`, and calls the very same function. None of them is deprecated.
+`pin`, `rule`, `todo`, `tracks`, `strike`, `promote` — still runs and answers `help`.
 """
 from __future__ import annotations
 

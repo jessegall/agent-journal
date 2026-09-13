@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.63.0 — the inbox: messages the user leaves for the agent
+
+`journal inbox "<message>"` leaves a message on the active environment: an instruction, a
+follow-up, anything. The agent splits each one into parts with `journal inbox process <n>
+--part="<words>" --became=<ref>` — a to-do, pin, rule, reminder, question, `work` or `noted`
+— and `journal inbox done <n>` marks it processed once its parts say what they became. A part
+must quote the message and what it became must exist, so a record cannot be invented. A part
+the agent does not understand becomes a question: `questions add --about="inbox <n>"` links
+it. Nothing is ever deleted. `journal inbox` lists waiting messages first; `inbox show <n>`
+reads one with its parts and questions. The stop nudge and the web viewer's inbox follow.
+
 ## 1.62.20 — the rest of the package says what it says from templates
 
 The installer's lines, the parser's refusals, entry retire and move replies, settings
