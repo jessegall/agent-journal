@@ -28,7 +28,7 @@ class Command(NamedTuple):
     args: tuple = ()
     opts: tuple = ()
     writes: bool = False
-    run: Callable | None = None
+    name: str = ""
     verbs: tuple = ()
     summary: str = ""
 
@@ -79,6 +79,9 @@ class Registry:
             self.noun(cmd.noun)
         self._commands[cmd.noun].append(cmd)
         return cmd
+
+    def knows(self, word: str) -> bool:
+        return word in self._nouns
 
     def commands(self, noun: str | None = None) -> list[Command]:
         if noun is None:

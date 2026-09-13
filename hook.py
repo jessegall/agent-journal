@@ -51,6 +51,7 @@ import agents  # noqa: E402
 import grants  # noqa: E402
 import nudges  # noqa: E402
 import builtin  # noqa: E402
+import commands  # noqa: E402
 import pins  # noqa: E402
 import reminders  # noqa: E402
 import work  # noqa: E402
@@ -1290,8 +1291,8 @@ JOURNAL_WRITES = frozenset({"start", "end", "update", "pin", "pins", "remember",
                             "nothing", "rule", "rules", "promote", "todo", "todos", "docs", "work",
                             "tools", "loop", "prepare", "migrate", "claim", "grant", "grants",
                             "environments", "environment", "envs", "env", "tracks", "track",
-                            "remind", "reminder", "reminders", "cleanup", "worktree", "upgrade",
-                            "questions", "question"})
+                            "remind", "reminder", "reminders", "cleanup", "worktree", "upgrade"})
+_SHELL_BREAKS = frozenset({"&&", "||", "|", ";"})
 
 
 def _journal_write(payload: dict) -> str | None:
@@ -1317,6 +1318,12 @@ def _journal_write(payload: dict) -> str | None:
         while j < len(toks) and toks[j].startswith("-"):
             j += 1
         verb = toks[j] if j < len(toks) else ""
+        if commands.REGISTRY.knows(verb):
+            end = next((k for k in range(j, len(toks)) if toks[k] in _SHELL_BREAKS), len(toks))
+            cmd = commands.REGISTRY.command_of(toks[j:end])
+            if cmd is not None and cmd.writes:
+                return verb
+            continue
         if verb not in JOURNAL_WRITES:
             continue
         i = j - 1
@@ -1346,7 +1353,6 @@ TODO_WRITES = frozenset({"add", "start", "done", "drop", "strike", "skip", "ask"
                          "amend", "replace", "auto", "from-commit", "from_commit"})
 REMINDER_WRITES = frozenset({"add", "done", "retire", "strike", "stop", "move"})
 TOOL_WRITES = frozenset({"add", "set", "remove", "index"})
-QUESTION_WRITES = frozenset({"add", "answer", "link", "unlink", "withdraw", "strike"})
 
 def _titled(nxt: str) -> bool:
     """`journal todo "park this"` writes; `journal todo`, `todo 3` and `todo --all` read.
@@ -1373,8 +1379,6 @@ NOUN_WRITES = {
     "reminders": REMINDER_WRITES.__contains__,
     "reminder": REMINDER_WRITES.__contains__,
     "remind": REMINDER_WRITES.__contains__,
-    "questions": QUESTION_WRITES.__contains__,
-    "question": QUESTION_WRITES.__contains__,
 }
 
 

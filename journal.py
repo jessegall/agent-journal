@@ -43,8 +43,10 @@ import grants
 import help
 import settings as settings_mod
 import builtin
+import commands
 import ideas
 import questions
+from templates import render
 import pins
 import reminders
 import tags
@@ -1987,15 +1989,13 @@ class Opts:
     open_browser: bool = False
     title: str = ""
     tool_meta: dict
-    about: list
 
     def __init__(self):
-        # THE ONES THAT MUST NOT BE SHARED. Everything above is immutable and safe as a
+        # THE TWO THAT MUST NOT BE SHARED. Everything above is immutable and safe as a
         # class attribute; a list and a dict are not, and a default_factory is exactly what
         # a dataclass would have generated here.
         self.sessions = []
         self.tool_meta = {}
-        self.about = []
 
 
 class _Flag(NamedTuple):
@@ -2072,7 +2072,6 @@ VALUE_FLAGS: dict[str, _Flag] = {
     "--env": _ENV_NOOP, "--environment": _ENV_NOOP, "--track": _ENV_NOOP,
     "--order": _Flag(dest="order", type=_order_flag),
     "--session": _Flag(dest="sessions", append=True),
-    "--about": _Flag(dest="about", append=True),
     "--abstract": _Flag(dest="abstract"),
     "--until": _Flag(dest="until"),
     "--after": _AFTER, "--needs": _AFTER,
@@ -2361,66 +2360,82 @@ def _v_ideas(verb: str, rest: list[str], opts: Opts) -> int:
     return cmd_ideas(opts.all_of_them, opts.page, opts.order)
 
 
-def cmd_questions(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
+HANDLERS: dict = {}
+
+
+def _handles(name: str):
+    def register(fn):
+        HANDLERS[name] = fn
+        return fn
+    return register
+
+
+def _answer(result: tuple[bool, str]) -> int:
+    ok, msg = result
+    fmt.say(msg, error=not ok)
+    return 0 if ok else 1
+
+
+def _dispatch(argv: list[str]) -> int:
+    parsed, why = commands.REGISTRY.parse(argv)
+    return HANDLERS[parsed.command.name](parsed) if parsed else _refuse(why)
+
+
+QUESTIONS_PAGE = {
+    "sub": "{open} open, {answered} answered",
+    "empty": "Nothing has been asked yet.",
+    "lead": "This environment's questions, open first. A question can be about any number of "
+            "to-dos, docs, pins and rules; answering one tells the agent at its next stop.",
+}
+
+
+@_handles("questions.list")
+def _questions_list(p: "cli.Parsed") -> int:
+    standing = [q for q in questions._all(root()) if not q.get("withdrawn")]
     n = len(questions.open_items(root()))
-    total = len([q for q in questions._all(root()) if not q.get("withdrawn")])
-    sub = f"{n} open, {total - n} answered"
+    page, order = p.option("page"), p.option("order")
     return _catalogue(
-        "QUESTIONS", sub,
-        questions.listing(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order),
-        "Nothing has been asked yet.",
-        "This environment's questions, open first. A question can be about any number of "
-        "to-dos, docs, pins and rules; answering one tells the agent at its next stop.",
+        "QUESTIONS", render(QUESTIONS_PAGE["sub"], open=n, answered=len(standing) - n),
+        questions.listing(root(), all_of_them=bool(p.option("all")), cap=CATALOGUE_PAGE, page=page, order=order),
+        QUESTIONS_PAGE["empty"], QUESTIONS_PAGE["lead"],
         [('journal questions add "<question>" --about="todo 22"', "ask one, linked to what it is about"),
          ('journal questions answer <n> "<answer>"', "answer it"),
          ("journal questions show <n>", "read one in full")],
         noun="questions", page=page, order=order)
 
 
-def _v_questions(verb: str, rest: list[str], opts: Opts) -> int:
-    sub = rest[1] if len(rest) > 1 else ""
-
-    def said(msg: tuple[bool, str]) -> int:
-        fmt.say(msg[1], error=not msg[0])
-        return 0 if msg[0] else 1
-
-    if sub == "add":
-        text, why = _words(rest, 2, "questions add", "the question")
-        return _refuse(why) if why else said(questions.add(root(), text, _now(), opts.about))
-    if sub == "show" or sub.isdigit():
-        at = 2 if sub == "show" else 1
-        n, why = _number(rest, at, "questions show", "question", "journal questions")
-        if why:
-            return _refuse(why)
-        ok, msg = questions.show(root(), n)
-        if ok:
-            print(msg)
-            return 0
+@_handles("questions.show")
+def _questions_show(p: "cli.Parsed") -> int:
+    ok, msg = questions.show(root(), p.arg("n"))
+    if not ok:
         return _refuse(msg)
-    if sub == "answer":
-        n, why = _number(rest, 2, "questions answer", "question", "journal questions")
-        if why:
-            return _refuse(why)
-        text, why = _words(rest, 3, f"questions answer {n}", "the answer")
-        return _refuse(why) if why else said(questions.answer(root(), n, text, _now()))
-    if sub in ("link", "unlink"):
-        n, why = _number(rest, 2, f"questions {sub}", "question", "journal questions")
-        if why:
-            return _refuse(why)
-        ref, why = _words(rest, 3, f"questions {sub} {n}", "a reference like `todo 22` or `doc 4.1`")
-        if why:
-            return _refuse(why)
-        return said((questions.link if sub == "link" else questions.unlink)(root(), n, ref))
-    if sub in ("withdraw", "strike"):
-        n, why = _number(rest, 2, "questions withdraw", "question", "journal questions")
-        if why:
-            return _refuse(why)
-        text, why = _words(rest, 3, f"questions withdraw {n}", "why it no longer needs an answer")
-        return _refuse(why) if why else said(questions.withdraw(root(), n, text, _now()))
-    if sub in ("", "list"):
-        return cmd_questions(opts.all_of_them, opts.page, opts.order)
-    return _refuse(f"questions has no {sub!r}. It takes add, show, answer, link, unlink, "
-                   "withdraw, list — and a bare `journal questions` reads them.")
+    print(msg)
+    return 0
+
+
+@_handles("questions.add")
+def _questions_add(p: "cli.Parsed") -> int:
+    return _answer(questions.add(root(), p.arg("text"), _now(), p.option("about")))
+
+
+@_handles("questions.answer")
+def _questions_answer(p: "cli.Parsed") -> int:
+    return _answer(questions.answer(root(), p.arg("n"), p.arg("answer"), _now()))
+
+
+@_handles("questions.link")
+def _questions_link(p: "cli.Parsed") -> int:
+    return _answer(questions.link(root(), p.arg("n"), p.arg("ref")))
+
+
+@_handles("questions.unlink")
+def _questions_unlink(p: "cli.Parsed") -> int:
+    return _answer(questions.unlink(root(), p.arg("n"), p.arg("ref")))
+
+
+@_handles("questions.withdraw")
+def _questions_withdraw(p: "cli.Parsed") -> int:
+    return _answer(questions.withdraw(root(), p.arg("n"), p.arg("why"), _now()))
 
 
 def _v_pins(verb: str, rest: list[str], opts: Opts) -> int:
@@ -2567,7 +2582,6 @@ _ALIASES: dict[tuple[str, ...], object] = {
         opts.page, opts.order, opts.quiet, opts.order_by_id, opts.prune_before, opts.force),
     ("reminders", "reminder", "remind"): _v_reminders,
     ("ideas", "idea"): _v_ideas,
-    ("questions", "question"): _v_questions,
     ("start", "end"): _v_start_end,
     ("migrate", "migrations"): _v_migrate,
     ENV_NOUNS: _v_environments,
@@ -2631,6 +2645,8 @@ def main(argv: list[str]) -> int:
     if any(a in ("-h", "--help") for a in argv) or "help" in argv[:2]:
         verb = next((a for a in argv if not a.startswith("-") and a != "help"), "")
         return _help(verb)
+    if commands.REGISTRY.knows(next((a for a in argv if not a.startswith("--")), "")):
+        return _dispatch(argv)
     # EVERYTHING AFTER A BARE `--` IS PAYLOAD. The loop below matches options by prefix, so
     # a title, a claim, a reminder or a strike reason that opens with `--` was parsed as a
     # flag and never reached the command — and `--env=` is a KNOWN one, so
