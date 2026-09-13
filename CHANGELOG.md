@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.13 — the status page is a command class
+
+What bare `journal` shows is declared in `commands/status.py`, its text from templates, and
+answers `journal status` too. Bare `journal` hands its options to it, so an unknown option is
+refused by the same parser as every other command. `journal.py` is now the entry point alone:
+environment set-up, help, and the hand-off to the registry.
+
 ## 1.62.12 — the system verbs move onto command classes
 
 `cleanup`, `migrate`, `loop`, `update`, `upgrade`, `verify`, `settings`, `serve`, `enable`,

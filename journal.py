@@ -31,71 +31,17 @@ still answers `help`, and calls the very same function. None of them is deprecat
 from __future__ import annotations
 
 import contextlib as _contextlib
-import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import app
+import commands
 import fmt
 import help
-import settings as settings_mod
-import commands
-import ideas
-import questions
-import pins
-import reminders
-import todo
 import tracks
-import transcript
-import work
-
-
-class _Lazy:
-    """A module imported the first time something is read from it, and not before.
-
-    NINETEEN MODULES WERE IMPORTED FOR A COMMAND THAT USES TWO. `journal open` paid 7.7ms
-    for `docs` (which pulls `shutil`), 3.4ms for `tools` (`subprocess`), and more for
-    `migrate`, `update`, `verify` and `context` — none of which it touches — out of a start
-    that is ~110ms in total. The cost is charged to every hook event and every command.
-
-    ONE OBJECT INSTEAD OF FORTY EDITS. The alternative was `import docs` inside each of the
-    twenty-eight functions that use it, which is the same decision written twenty-eight
-    times and one more thing to forget on the twenty-ninth. This keeps every call site
-    exactly as it reads — `docs.get(...)` — and moves the import to first use.
-
-    WHAT IS NOT LAZY, AND WHY. Anything the module-level block below needs while it runs:
-    the environment resolution, the `--env=` scan, the record. Deferring one of those would
-    not remove a cost, it would move a SIDE EFFECT — and a CLI that resolves its environment
-    lazily is one whose commands can disagree about which environment they are on. That is
-    the failure 1.34.0 was spent fixing, and it is not worth 7ms.
-    """
-
-    __slots__ = ("_name", "_mod")
-
-    def __init__(self, name: str):
-        self._name = name
-        self._mod = None
-
-    def __getattr__(self, attr: str):
-        if self._mod is None:
-            import importlib
-            object.__setattr__(self, "_mod", importlib.import_module(self._name))
-        return getattr(self._mod, attr)
-
-
-#: Imported on first use — see `_Lazy`. Each is touched by a handful of commands and by no
-#: code path that runs on every invocation.
-docs = _Lazy("docs")
-tools = _Lazy("tools")
-context = _Lazy("context")
-migrate = _Lazy("migrate")
-update = _Lazy("update")
-
-
-
-import app
-from app import project, root
+from app import root
 from app import refuse as _refuse, stem as _stem
 
 app.start(Path(__file__))
@@ -190,79 +136,6 @@ def _help(verb: str = "") -> int:
     return 0
 
 
-def cmd_status() -> int:
-    """Where things stand, on one screen. What bare `journal` shows.
-
-    The bare command used to print the conversation, which is the one output nobody wants
-    by accident: long, and not what a person glancing at the journal is asking. What they
-    are asking is "what is the state of this thing" — the environment, what stands, what waits.
-    """
-    conf, problems = settings_mod.load(root())
-    for p in problems:
-        fmt.say(f"{p}", error=True)
-    here = tracks.current(root(), _stem())
-    ruled = len(pins.live(root(), pins.RULES))
-    pinned = len(pins.live(root()))
-    standing = work.open_work(root())
-    waiting = todo.open_items(root(), here)
-    on_user = todo.asking(root(), here)
-    others = [t["name"] for t in tracks.listing(root()) if not t["current"]]
-    rows = [
-        ("environment", here + ""
-         + (f"   (parked: {', '.join(others)})" if others else ""), "journal environments"),
-        ("rules", f"{ruled} in force on every environment" if ruled else "none", "journal rules"),
-        ("pins", f"{pinned} standing on this environment" if pinned else "none", "journal pins"),
-        ("reminders", (lambda r: f"{len(r)} repeated at every stop" if r else "none")(reminders.live(root())),
-         "journal reminders"),
-        ("open work", (f"{len(standing)} open: " + "; ".join(w["subject"] for w in standing))
-         if standing else "none", "journal open"),
-        ("docs", (lambda c: f"{len(c)} catalogued" + (f", {len([d for d in c if d.get('status') != 'final'])} draft(s)"
-                                                       if any(d.get('status') != 'final' for d in c) else ""))(docs._load(root()))
-         if docs._load(root()) else "none", "journal docs"),
-        ("tools", f"{len(tools._all(root()))} catalogued" if tools._all(root()) else "none", "journal tools"),
-        ("to-do", (f"{len(waiting)} waiting" if waiting else "none")
-         + (f", {len(on_user)} on the user" if on_user else "")
-         + (f", {len(todo.answered(root(), here))} answered" if todo.answered(root(), here) else "")
-         + (", auto on" if todo.auto(root(), here) else ""), "journal todo"),
-    ]
-    got = transcript.session_transcript(project())
-    if got:
-        import state as _st
-        read = context.pressure(got[0], conf["context_window"], _st.get(root(), "window", 0) or 0)
-        if read and read[3]:
-            rows.append(("context", f"{read[0]:.0%} full ({read[1]:,} of {read[2]:,})", ""))
-        elif read:
-            rows.append(("context", f"{read[1]:,} tokens; window not yet known (learned at the first compaction)", ""))
-        if got[1]:
-            rows.append(("transcript", f"guessed: {got[0].name} (no session id in the environment)", ""))
-    import state as state_mod
-    sid = os.environ.get(transcript.SESSION_ENV, "")
-    mine = dict(state_mod.runtime_files(root())).get(sid, {}) if sid else {}
-    disabled = not _state.hooks_enabled(root())
-    rows.append(("hooks",
-                 "DISABLED — nothing is held, gated or filed" if disabled else
-                 "fired in this session" if mine else "nothing has reached the hook in this session",
-                 "journal enable" if disabled else "journal verify"))
-    up = update.check(root())
-    have = update.current(root())
-    rows.append(("version", have + (f"  ({up['version']} available: journal upgrade)"
-                                    if up.get("version") and update.newer(up["version"], have) else ""), "journal version"))
-    fmt.say(fmt.title("JOURNAL", sub=f"environment {here}"))
-    fmt.say()
-    fmt.say(fmt.facts(rows))
-    if on_user:
-        fmt.say(fmt.section("waiting on the user"))
-        for t in on_user:
-            fmt.say(fmt.numbered(t["n"], t["title"]))
-            fmt.say(fmt.wrap(t["asks"], indent=5))
-    fmt.say()
-    fmt.say(fmt.commands([
-        ("journal conversation [--back=N]", "what was said, since the last compaction or before it"),
-        ("journal search <term>", "every line mentioning it on this environment, and who said it"),
-        ('journal pins add "<claim>" [--doc=<doc>]', "a fact that must outlive a compaction; --doc ties it to a doc, by number or name"),
-        ("journal help", "every command"),
-    ]))
-    return 0
 
 
 
@@ -296,6 +169,7 @@ def main(argv: list[str]) -> int:
     # by whichever process notices first; this is the one that notices most often. Except
     # for `migrate` itself: a status that has already acted is a status nobody can read.
     if not (argv and argv[0] in ("migrate", "migrations")):
+        import migrate
         for line in migrate.ensure(root()):
             print(line, file=sys.stderr)
     # HELP WORKS AFTER ANY VERB, and an unknown option is refused rather than kept as
@@ -304,6 +178,7 @@ def main(argv: list[str]) -> int:
     # into the text. A flag nobody declared is a typo, and a typo filed as a title is a
     # write that reports success and lands wrong.
     if len(argv) >= 3 and argv[0] == "tools" and argv[1] == "run":
+        import tools
         return tools.run(root(), argv[2], argv[3:])
     # `help` IS A WORD IN VERB POSITION, NOT A WORD ANYWHERE. Matching it across the whole
     # of argv meant a payload could ask for help instead of being written: `journal search
@@ -325,11 +200,7 @@ def main(argv: list[str]) -> int:
         fmt.say(f"No such command: {first}\n", error=True)
         fmt.say(__doc__, error=True)
         return 1
-    unknown = next((a for a in argv if a.startswith("--") and len(a) > 2
-                    and a[2:].partition("=")[0] not in commands.REGISTRY.shared), None)
-    if unknown:
-        return _refuse(f"unknown option {unknown!r}. `journal help` lists the commands and their options.")
-    return cmd_status()
+    return _dispatch(["status", *argv])
 
 
 def run(argv: list[str]) -> int:

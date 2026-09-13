@@ -173,6 +173,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal carry                 exactly what a compaction will hand back — nothing is written",
     ),
     "system": (
+        "journal status                where things stand, on one screen: what bare `journal` shows",
         "journal verify                is any of this in force? wired is not the same as fired",
         "journal version               this project's version of the journal, and whether a newer one is out",
         "journal update [--from=<path or git url>]    pull the latest journal and print what changed",
@@ -206,7 +207,7 @@ ALIAS: dict[str, str] = {
     "grants": "grant",
     "conversation": "transcript", "user": "transcript", "search": "transcript",
     "carry": "transcript",
-    "verify": "system", "version": "system", "update": "system", "settings": "system",
+    "status": "system", "verify": "system", "version": "system", "update": "system", "settings": "system",
     "loop": "system", "serve": "system", "enable": "system", "disable": "system",
 }
 
