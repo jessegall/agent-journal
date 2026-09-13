@@ -44,7 +44,9 @@ class QuestionsController(Controller):
                       {"left": page.left, "open": open_n, "answered": standing - open_n})
 
     def show(self, root: Path, p: Payload) -> Result:
-        return Result("ok", "", self._row(root, p, p.id))
+        import inbox
+        return Result("ok", "", {**self._row(root, p, p.id),
+                                 "from_messages": inbox.sources(root, f"question:{p.id}", p.env or None)})
 
     def store(self, root: Path, p: question_payloads.StorePayload) -> Result:
         outcome = questions.add(root, p.text, p.at, p.about, source=p.source, description=p.description, options=p.options)

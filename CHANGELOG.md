@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.90.0 — what came from a message links back to it
+
+When a part of the user's message became a to-do, a pin, a rule, a reminder or a question,
+that resource's page now says which message it came from and links to it — in the viewer
+("From your message", with the words it quoted on hover) and on a to-do's terminal page
+("from the user's message 44"). Nothing new is written: it is read from what the message
+already records each part became (`inbox.sources`).
+
 ## 1.89.1 — environments are listed by their latest activity
 
 The viewer lists environments newest activity first: the latest journal event there — a

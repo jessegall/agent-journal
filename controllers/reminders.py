@@ -42,7 +42,9 @@ class RemindersController(Controller):
                        "env": state.current_track(root), "every": conf["reminder_every"]})
 
     def show(self, root: Path, p: Payload) -> Result:
-        return Result("ok", "", {**self._rows(root)[p.id], "until": self.repository(root, p).find(p.id).until})
+        import inbox
+        return Result("ok", "", {**self._rows(root)[p.id], "until": self.repository(root, p).find(p.id).until,
+                                 "from_messages": inbox.sources(root, f"reminder:{p.id}", p.env or None)})
 
     def store(self, root: Path, p: ReminderPayload) -> Result:
         conf, _ = settings_mod.load(root)

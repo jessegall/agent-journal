@@ -364,6 +364,13 @@ check("a field that cannot be sorted on is a 400 naming what can", (status, "pri
 status, got = post("/api/env/beta/todos/2", {"title": "x"}, method="PATCH")
 check("a number that is not on that environment is 404", status, 404)
 
+# ─────────────────────────────────────────────────────────────── a resource links back to the message it came from
+status, got = post("/api/env/alpha/inbox", {"text": "please finish it properly"})
+n_msg = got["data"]["n"]
+post(f"/api/env/alpha/inbox/{n_msg}/process", {"part": "finish it properly", "became": ["todo 1"]})
+status, _, body = get("/api/env/alpha/todos/1")
+check("a to-do's detail names the message it came from", [m["n"] for m in json.loads(body)["from_messages"]], [n_msg])
+
 # ─────────────────────────────────────────────────────────────── what is happening on an environment
 status, _, body = get("/api/env/alpha/activity")
 activity = json.loads(body)

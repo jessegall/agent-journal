@@ -70,6 +70,7 @@ FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how",
           "priority")
 
 MESSAGES = {
+    "from_messages": "from the user's message {ns:, }",
     "already_done": "to-do {n} is already done ({how})",
     "already_closed": "to-do {n} is already closed ({how})",
     "assigned_nobody": "to-do {n} is assigned to nobody",
@@ -1546,6 +1547,8 @@ def show_text(t: dict, width: int | None = None) -> str:
     width = fmt.room(width)
     n = t["n"]
     out = [fmt.title(say("show_title", n=n), sub=" ".join(t["title"].split())), "  " + fmt.dim(t["facts"])]
+    if t.get("from_messages"):
+        out.append("  " + fmt.dim(say("from_messages", ns=[m["n"] for m in t["from_messages"]])))
     if t["asks"]:
         out.append(fmt.section(say("section_answered" if t["answer"] else "section_waiting")))
         out.append(fmt.wrap(t["asks"], width=width))
