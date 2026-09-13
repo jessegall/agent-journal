@@ -57,6 +57,24 @@ MESSAGES = {
     "cmd_ask_what": "a part you do not understand becomes a question",
     "cmd_done": "journal messages done {n}",
     "cmd_done_what": "mark it processed once every part is recorded",
+    "files_too_large": "the attached files come to {size} MB; a message holds at most {limit} MB",
+    "file_unreadable": "cannot read {name}",
+    "unfiled": "message {n} still holds {names:, }. File each one first: "
+               'journal messages file {n} <name> "doc <doc>" — or keep it where it is: journal messages file {n} <name> keep',
+    "no_file": "message {n} holds no file called {name}",
+    "already_filed": "{name} of message {n} is already filed: {filed}",
+    "file_where": 'say where it goes: journal messages file {n} {name} "doc <doc>" — or keep',
+    "filed_doc": "{name} of message {n} is filed into doc {doc}\n  {path}",
+    "filed_kept": "{name} of message {n} is kept where it is\n  {path}",
+    "filed_label_doc": "filed into doc {doc}",
+    "filed_label_kept": "kept",
+    "filed_label_none": "not filed yet",
+    "fact_files": "{n} file(s)",
+    "show_files": "files",
+    "show_file": "  {name}  ({status})\n    {path}",
+    "cmd_file": 'journal messages file {n} <name> "doc <doc>"',
+    "cmd_file_what": "file an attachment into a doc, or `keep` it where it is",
+    "attached_title": "from the user's message {n}",
 }
 
 
@@ -143,16 +161,118 @@ def _became(m: dict) -> list[str]:
     return list(dict.fromkeys(label(r) for p in m.get("parts") or [] for r in p["became"]))
 
 
-def add(root: Path, text: str, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
+FILES = "inbox-files"
+FILES_LIMIT = 20 * 1024 * 1024
+
+
+def files_dir(root: Path, track: str | None, n: int) -> Path:
+    return state.env_dir(root, track or state.current_track(root)) / FILES / str(n)
+
+
+def _file_name(name: str, taken: set) -> str:
+    base = Path(str(name or "").replace("\\", "/")).name.strip().lstrip(".") or "file"
+    stem, dot, ext = base.rpartition(".")
+    got, i = base, 2
+    while got in taken:
+        got = f"{stem}-{i}.{ext}" if dot and stem else f"{base}-{i}"
+        i += 1
+    taken.add(got)
+    return got
+
+
+def _read_files(files: list | None) -> tuple[list[tuple[str, bytes]], str]:
+    import base64
+    out, taken = [], set()
+    for f in files or []:
+        if not isinstance(f, dict):
+            continue
+        name = f.get("name") or (Path(f["path"]).name if f.get("path") else "")
+        try:
+            if f.get("path"):
+                data = Path(f["path"]).expanduser().read_bytes()
+            else:
+                raw = str(f.get("data") or "")
+                data = base64.b64decode(raw.split(",", 1)[1] if raw.startswith("data:") else raw, validate=False)
+        except (OSError, ValueError):
+            return [], say("file_unreadable", name=repr(name))
+        out.append((_file_name(name, taken), data))
+    size = sum(len(d) for _, d in out)
+    if size > FILES_LIMIT:
+        return [], say("files_too_large", size=round(size / 1048576, 1), limit=FILES_LIMIT // 1048576)
+    return out, ""
+
+
+def add(root: Path, text: str, at: str, source: str = "cli", track: str | None = None,
+        files: list | None = None) -> tuple[bool, str]:
     text = (text or "").strip()
     if not text:
         return False, say("needs_text")
+    got, why = _read_files(files)
+    if why:
+        return False, why
     with state.locked(root):
         items = _all(root, track)
-        items.append({"text": text, "at": at, "source": source, "parts": [], "processed": None})
+        items.append({"text": text, "at": at, "source": source, "parts": [], "processed": None,
+                      **({"files": [{"name": name, "size": len(data), "filed": None} for name, data in got]} if got else {})})
         _put(root, items, track)
         n = len(items)
+        if got:
+            held = files_dir(root, track, n)
+            held.mkdir(parents=True, exist_ok=True)
+            for name, data in got:
+                (held / name).write_bytes(data)
     return True, say("added", n=n, waiting=len(unprocessed(root, track)))
+
+
+def unfiled(m: dict) -> list[str]:
+    return [f["name"] for f in m.get("files") or [] if not f.get("filed")]
+
+
+def file_into(root: Path, n: int, name: str, into: str, at: str, track: str | None = None) -> tuple[bool, str]:
+    """File one held attachment: into a doc (copied there, the held copy removed), or kept where it is."""
+    import re as _re
+    here = track or state.current_track(root)
+    where = " ".join((into or "").split())
+    keep = where.lower() == "keep"
+    doc_ref = _re.match(r"^docs?\s*[:#\s]?\s*(.+)$", where, _re.I)
+    if not keep and not doc_ref:
+        return False, say("file_where", n=n, name=name)
+    with state.locked(root):
+        items = _all(root, here)
+        m, why = _find(items, n)
+        if m is None:
+            return False, why
+        f = next((x for x in m.get("files") or [] if x["name"] == name), None)
+        if f is None:
+            return False, say("no_file", n=n, name=repr(name))
+        if f.get("filed"):
+            return False, say("already_filed", n=n, name=name, filed=f["filed"])
+        path = files_dir(root, here, n) / name
+        shown = path.relative_to(root.parent)
+        if keep:
+            f["filed"] = "kept"
+            _put(root, items, here)
+            return True, say("filed_kept", n=n, name=name, path=shown)
+    import docs
+    ok, message = docs.attach(root, doc_ref.group(1), str(path), say("attached_title", n=n), here, source="the user")
+    if not ok:
+        return False, message
+    doc, _, _ = docs.get(root, doc_ref.group(1))
+    path.unlink(missing_ok=True)
+    with state.locked(root):
+        items = _all(root, here)
+        m, _ = _find(items, n)
+        f = next(x for x in m["files"] if x["name"] == name)
+        f["filed"] = f"doc:{doc['n']}"
+        _put(root, items, here)
+    return True, say("filed_doc", n=n, name=name, doc=doc["n"], path=(doc["dir"] / docs.FILES / name).relative_to(root.parent))
+
+
+def _filed_label(f: dict) -> str:
+    filed = f.get("filed") or ""
+    if filed.startswith("doc:"):
+        return say("filed_label_doc", doc=filed[4:])
+    return say("filed_label_kept") if filed == "kept" else say("filed_label_none")
 
 
 def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
@@ -198,6 +318,8 @@ def done(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, s
             return False, say("already_processed", n=n)
         if not m.get("parts"):
             return False, say("no_parts", n=n)
+        if unfiled(m):
+            return False, say("unfiled", n=n, names=unfiled(m))
         m["processed"] = at
         _put(root, items, track)
     return True, say("done", n=n, became=_became(m), waiting=len(unprocessed(root, track)))
@@ -240,6 +362,11 @@ def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tup
         there = _all(root, dst)
         there.append({**m, "processed": None, "moved_from": here})
         _put(root, there, dst)
+        held = files_dir(root, here, n)
+        if held.is_dir():
+            import shutil
+            files_dir(root, dst, len(there)).parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(held), str(files_dir(root, dst, len(there))))
         m["processed"], m["moved_to"] = at, f"{dst}:{len(there)}"
         _put(root, items, here)
     return True, say("moved", n=n, env=dst, there=len(there))
@@ -282,7 +409,10 @@ def show(root: Path, n: int, track: str | None = None) -> tuple[bool, str]:
 
 def detail(root: Path, n: int, m: dict, track: str | None = None) -> dict:
     import questions
-    return {**row_response(n, m),
+    here = track or state.current_track(root)
+    files = [{**f, "path": str((files_dir(root, here, n) / f["name"]).relative_to(root.parent))}
+             for f in row_response(n, m)["files"]]
+    return {**row_response(n, m), "files": files,
             "questions": [questions.row_response(qn, q) for qn, q in questions.about(root, f"inbox:{n}", track)]}
 
 
@@ -296,11 +426,15 @@ def show_text(d: dict) -> str:
     if d["parts"]:
         out.append(fmt.section(say("show_parts")))
         out += [say("show_part", excerpt=p["excerpt"], became=[b["label"] for b in p["became"]]) for p in d["parts"]]
+    if d.get("files"):
+        out.append(fmt.section(say("show_files")))
+        out += [say("show_file", name=f["name"], status=f["filed_label"], path=f["path"]) for f in d["files"]]
     if d["questions"]:
         out.append(fmt.section(say("show_questions")))
         out += [say("show_question", n=q["n"], text=q["text"], answer=q["answer"] or None) for q in d["questions"]]
     if d["status"] == "waiting":
         out += ["", fmt.commands([(say("cmd_process", n=n), say("cmd_process_what")),
+                                  *([(say("cmd_file", n=n), say("cmd_file_what"))] if d.get("files") else []),
                                   (say("cmd_ask", n=n), say("cmd_ask_what")),
                                   (say("cmd_done", n=n), say("cmd_done_what"))])]
     return "\n".join(out)
@@ -313,6 +447,8 @@ def row_response(n: int, m: dict) -> dict:
         "moved_to": m.get("moved_to") or "",
         "age": age(m.get("at", "")), "processed_age": age(m.get("processed") or ""),
         "source": m.get("source") or "",
+        "files": [{"name": f["name"], "size": f.get("size", 0), "filed": f.get("filed") or "", "filed_label": _filed_label(f)}
+                  for f in m.get("files") or []],
         "parts": [{"excerpt": p["excerpt"], "became": [{"ref": r, "label": label(r)} for r in p["became"]]}
                   for p in m.get("parts") or []],
     }

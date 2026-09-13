@@ -507,6 +507,19 @@ check("a comment on nothing is refused", status, 400)
 status, got = post("/api/env/alpha/comments/1/done", {"how": "split into two"})
 check("and handled through the same route", (status, got.get("message", "").endswith("split into two")), (200, True))
 
+import base64  # noqa: E402
+status, got = post("/api/env/alpha/inbox", {"text": "with a file", "files": [{"name": "../a.txt", "data": base64.b64encode(b"hello").decode()}]})
+_held_n = (got.get("data") or {}).get("n")
+check("a message is posted with a file, its name made safe", (status, [f["name"] for f in (got.get("data") or {}).get("files", [])]),
+      (201, ["a.txt"]))
+status, _, body = get(f"/api/env/alpha/inbox")
+status, headers, body = get(f"/inbox-files/alpha/{_held_n}/a.txt")
+check("the held file is served by name", (status, body), (200, b"hello"))
+status, _, _ = get(f"/inbox-files/alpha/{_held_n}/other.txt")
+check("a name the message does not hold is 404", status, 404)
+status, got = post("/api/env/alpha/inbox", {"text": "big", "files": [{"name": "b.bin", "data": base64.b64encode(b"x" * 100_000).decode()}]})
+check("a message may carry more than the ordinary body limit", status, 201)
+
 state.put(root, serve.VIEWER_PORT, srv.server_port)
 check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)
 import views  # noqa: E402

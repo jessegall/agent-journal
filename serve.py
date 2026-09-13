@@ -73,6 +73,8 @@ def say(message: str, /, **values) -> str:
 
 
 BODY_LIMIT = 64_000
+UPLOAD_LIMIT = 28_000_000   # a message with attached files, base64 in JSON
+_UPLOAD = re.compile(r"^/api/env/[a-z0-9-]+/inbox$")
 
 
 def route(pattern: str, table: list = ROUTES):
@@ -186,6 +188,20 @@ def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str,
 
 
 # ────────────────────────────────────────────────────────── binary: doc attachments
+@route(r"^/inbox-files/(?P<env>[a-z0-9-]+)/(?P<n>\d+)/(?P<name>[^/]+)$")
+def _message_file(root: Path, project: Path, m: re.Match):
+    """A file held on a message, by NAME matched against the message's own record."""
+    import inbox
+    env, n, name = m.group("env"), int(m.group("n")), unquote(m.group("name"))
+    items = inbox._all(root, env) if _known_env(root, env) else []
+    message = items[n - 1] if 1 <= n <= len(items) else None
+    held = next((f for f in (message or {}).get("files") or [] if f["name"] == name), None)
+    path = inbox.files_dir(root, env, n) / name if held else None
+    if path is None or not path.is_file():
+        return _not_found(say("no_attachment", name=repr(name), n=n))
+    return 200, mimetypes.guess_type(name)[0] or "application/octet-stream", path.read_bytes()
+
+
 @route(r"^/docs/(?P<n>\d+)/files/(?P<name>[^/]+)$")
 def _doc_file(root: Path, project: Path, m: re.Match):
     """An attachment, by NAME matched against the doc's own manifest — never a raw path.
@@ -264,7 +280,7 @@ class _Handler(BaseHTTPRequestHandler):
         if _served(path) is None:
             self._method_not_allowed()
             return
-        body, refusal = self._write_body()
+        body, refusal = self._write_body(UPLOAD_LIMIT if method == "POST" and _UPLOAD.match(path) else BODY_LIMIT)
         if refusal:
             self._send(*refusal, False)
             return
@@ -274,7 +290,7 @@ class _Handler(BaseHTTPRequestHandler):
             return
         self._send(*answered, False)
 
-    def _write_body(self) -> tuple[dict | None, tuple | None]:
+    def _write_body(self, limit: int = BODY_LIMIT) -> tuple[dict | None, tuple | None]:
         origin = self.headers.get("Origin")
         if origin and urlsplit(origin).netloc != self.headers.get("Host", ""):
             return None, _json({"error": say("foreign_origin")}, 403)
@@ -284,8 +300,8 @@ class _Handler(BaseHTTPRequestHandler):
             size = int(self.headers.get("Content-Length") or 0)
         except ValueError:
             size = 0
-        if size > BODY_LIMIT:
-            return None, _json({"error": say("too_large", limit=BODY_LIMIT)}, 413)
+        if size > limit:
+            return None, _json({"error": say("too_large", limit=limit)}, 413)
         try:
             data = json.loads(self.rfile.read(size) or b"{}")
         except ValueError:

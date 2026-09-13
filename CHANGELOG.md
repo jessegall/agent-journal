@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.96.0 — a message can carry files
+
+The viewer's message box has Attach files: each file is copied into the environment at once,
+under `environments/<env>/inbox-files/<message>/`, so nothing is lost before the agent gets to
+it. From the terminal, `journal messages add "<message>" --file=<path>`. `messages show` lists
+each file with where it is held. The agent files each one with `journal messages file <n>
+<name> "doc <doc>"`, which copies it into the doc and removes the held copy, or with `keep`.
+`messages done` is refused while a file is not filed. The message panel lists the files, shows
+images inline, and links a filed one to its doc.
+
 ## 1.95.0 — the user can comment on a to-do, doc, pin, rule or reminder
 
 Every detail panel in the viewer has a Comments section: the user writes a comment for the
