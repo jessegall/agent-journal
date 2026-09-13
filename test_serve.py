@@ -505,6 +505,12 @@ line = views.status_line(root, None)
 check("the status line names the environment, the open work and the viewer",
       (line.startswith("journal · "), "viewer http://127.0.0.1:" in line), (True, True))
 
+from datetime import datetime, timedelta, timezone  # noqa: E402
+_now = datetime(2026, 9, 14, 12, 0, tzinfo=timezone.utc)
+check("an age says just now for five minutes, then minutes, hours and days",
+      [pins.age((_now - timedelta(seconds=s)).isoformat(), _now) for s in (30, 299, 300, 59 * 60, 3600, 86400 * 2)],
+      ["just now", "just now", "5 min ago", "59 min ago", "1h ago", "2d ago"])
+
 srv.shutdown()
 srv.server_close()
 thread.join(timeout=5)

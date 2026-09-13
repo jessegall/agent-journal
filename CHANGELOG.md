@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.94.1 — "just now" means the last five minutes
+
+An age says "just now" for the first five minutes, then "N min ago" up to an hour, then hours
+and days, in the terminal and in the viewer. It used to say "just now" for a whole hour.
+
 ## 1.94.0 — a to-do keeps a log of the work done on it
 
 Work started from a to-do records the to-do's number, whether through `journal todos start
