@@ -185,6 +185,9 @@ MESSAGES = {
     "choice_line": "journal: this session has no environment yet — {names:, }. It will take one from your first "
                    "message, or ask.",
     "backticked": "`{name}`",
+    "viewer_up": "journal: the web viewer is running at {url}",
+    "viewer_down": "journal: browse and edit the journal in your browser: run `.journal/journal.py serve` "
+                   "(or ask Claude to start it), then open http://127.0.0.1:8420",
     "none_exist": "none exist yet",
     "choose": "THIS SESSION HAS NO ENVIRONMENT{where}. Every pin, to-do and piece of work belongs to one, so nothing "
               "can be written until this session is on one. It is not given you: you choose it, because you are the "
@@ -1156,6 +1159,15 @@ def _choice_line() -> str:
     """The one line the USER sees when a session starts with no environment."""
     names = tracks.choices(ROOT)
     return say("choice_line", names=[say("backticked", name=n) for n in names] or [say("none_exist")])
+
+
+def _viewer_line(conf: dict) -> str:
+    """The line the USER sees at a start: where the web viewer is, or how to start one."""
+    if "viewer_line" in conf["silenced"]:
+        return ""
+    import serve
+    url = serve.running(ROOT)
+    return say("viewer_up", url=url) if url else say("viewer_down")
 
 
 def _choose_block(where: str) -> str:
@@ -2693,7 +2705,8 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
         note = update.notice(ROOT)
         if note:
             block += "\n\n" + note
-    return _context("SessionStart", block, system=_choice_line() if loose else None)
+    told = [x for x in (_choice_line() if loose else "", _viewer_line(conf)) if x]
+    return _context("SessionStart", block, system="\n".join(told) or None)
 
 
 #: EVERY EVENT, IN ONE TABLE. The harness has to name this script once per event it should

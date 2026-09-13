@@ -333,6 +333,21 @@ class _Handler(BaseHTTPRequestHandler):
             self.wfile.write(body)
 
 
+VIEWER_PORT = "viewer_port"
+
+
+def running(root: Path) -> str:
+    """The viewer's URL when one answers on its last port (or the default), else ''."""
+    import socket
+    import state
+    port = state.get(root, VIEWER_PORT, DEFAULT_PORT) or DEFAULT_PORT
+    try:
+        with socket.create_connection((HOST, int(port)), timeout=0.2):
+            return say("url", host=HOST, port=port)
+    except OSError:
+        return ""
+
+
 def run(root: Path, project: Path, port: int = DEFAULT_PORT, open_browser: bool = False) -> None:
     """Start the server in the foreground; Ctrl-C stops it. No daemon mode in the MVP."""
     try:
@@ -343,6 +358,8 @@ def run(root: Path, project: Path, port: int = DEFAULT_PORT, open_browser: bool 
             raise SystemExit(1)
         raise
     url = say("url", host=HOST, port=server.server_port)
+    import state
+    state.put(root, VIEWER_PORT, server.server_port)
     print(say("serving", url=url))
     if open_browser:
         import webbrowser

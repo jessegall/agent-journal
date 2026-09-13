@@ -498,9 +498,17 @@ import controller  # noqa: E402
 check("both are payload sources", (isinstance(parsed, controller.PayloadSource),
                                    isinstance(serve.Request("alpha", "1", {}), controller.PayloadSource)), (True, True))
 
+state.put(root, serve.VIEWER_PORT, srv.server_port)
+check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)
+import views  # noqa: E402
+line = views.status_line(root, None)
+check("the status line names the environment, the open work and the viewer",
+      (line.startswith("journal · "), "viewer http://127.0.0.1:" in line), (True, True))
+
 srv.shutdown()
 srv.server_close()
 thread.join(timeout=5)
+check("and once it stops, the status line says how to start one", "journal serve" in views.status_line(root, None), True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

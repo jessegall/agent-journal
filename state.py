@@ -45,7 +45,7 @@ RETIRED = "state.json"
 IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto",
              "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read",
              "cleanup_kept", "ideas",
-             "agent_seen", "schema", "hooks_enabled"}
+             "agent_seen", "schema", "hooks_enabled", "viewer_port"}
 
 
 def is_record(key: str) -> bool:
