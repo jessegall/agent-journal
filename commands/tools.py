@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import fmt
-import tracks
-from app import BRIEF_REFUSED, CATALOGUE_PAGE, answer, brief, refuse, root, stem
+from app import BRIEF_REFUSED, CATALOGUE_PAGE, brief, refuse, root
 from command import Command, Parsed
+from commands.resource import Resource
+from controllers.tools import ToolsController
 from commands.options import LISTING, LISTING_CASTS
 from templates import render
 
@@ -13,10 +14,6 @@ NOUNS = (("tools",),)
 def _tools():
     import tools
     return tools
-
-
-def here() -> str:
-    return tracks.current(root(), stem())
 
 
 TEXT = {
@@ -34,74 +31,92 @@ LIST_COMMANDS = (
 )
 
 
-class List(Command):
+CONTROLLER = ToolsController()
+
+
+class List(Resource):
     signature = "tools:list " + LISTING
     casts = LISTING_CASTS
     default = True
+    controller = CONTROLLER
+    action = "index"
 
-    def run(self, p: Parsed) -> int:
-        tools = _tools()
-        loose = tools.uncatalogued(root())
-        fmt.say(fmt.title(TEXT["title"], sub=render(TEXT["sub"], n=len(tools._all(root())))))
+    def extra(self, p: Parsed):
+        return {"cap": CATALOGUE_PAGE}
+
+    def render(self, p: Parsed, result) -> int:
+        tools, m = _tools(), result.meta
+        fmt.say(fmt.title(TEXT["title"], sub=render(TEXT["sub"], n=m["total"])))
         fmt.say()
-        fmt.say(tools.catalogue(root(), cap=CATALOGUE_PAGE, page=p.option("page"), order=p.option("order")))
-        if loose:
+        fmt.say(tools.render_rows(result.data) + fmt.more("tools", m["left"], p.option("page"), p.option("order"))
+                if result.data else tools.say("empty"))
+        if m["loose"]:
             fmt.say()
-            fmt.say(fmt.wrap(render(TEXT["loose"], n=len(loose), names=[x.name for x in loose])))
+            fmt.say(fmt.wrap(render(TEXT["loose"], n=len(m["loose"]), names=m["loose"])))
         fmt.say()
         fmt.say(fmt.wrap(TEXT["lead"]))
         fmt.say(fmt.commands(list(LIST_COMMANDS)))
         return 0
 
 
-class Show(Command):
+class Show(Resource):
     signature = "tools:show {name : the tool's name}"
     verbs = ("info", "read")
     default = True
+    controller = CONTROLLER
+    action = "show"
+    id_arg = "name"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_tools().show(root(), p.arg("name")))
+    def render(self, p: Parsed, result) -> int:
+        if not result.ok:
+            return super().render(p, result)
+        fmt.say(_tools().show_text(result.data))
+        return 0
 
 
-class Add(Command):
+class Add(Resource):
     signature = ("tools:add {name : the tool's name} {title* : what it does, in a few words} "
                  "{--summary=} {--usage=} {--when=} {--entry=} {--brief}")
     writes = True
+    controller = CONTROLLER
+    action = "store"
+    id_arg = ""
 
-    def run(self, p: Parsed) -> int:
+    def extra(self, p: Parsed):
         body = brief(bool(p.option("brief")))
         if body is None:
             return refuse(BRIEF_REFUSED)
-        return answer(_tools().add(root(), p.arg("name"), p.arg("title"), p.option("summary") or "",
-                                   p.option("usage") or "", p.option("when") or "", p.option("entry") or "",
-                                   body, here()))
+        return {"body": body}
 
 
-class Set(Command):
+class Set(Resource):
     signature = "tools:set {name : the tool's name} {field : summary, usage, when or entry} {value* : the new value}"
     writes = True
+    controller = CONTROLLER
+    action = "update"
+    id_arg = "name"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_tools().set_field(root(), p.arg("name"), p.arg("field"), p.arg("value")))
+    def extra(self, p: Parsed):
+        field = p.arg("field")
+        if field not in ToolsController.FIELDS:
+            return refuse(_tools().say("not_a_field", field=repr(field)))
+        return {field: p.arg("value"), "field": None, "value": None}
 
 
-class Remove(Command):
+class Remove(Resource):
     signature = "tools:remove {name : the tool's name} {why* : why it is retired}"
     verbs = ("strike",)
     writes = True
+    controller = CONTROLLER
+    action = "destroy"
+    id_arg = "name"
 
-    def run(self, p: Parsed) -> int:
-        return answer(_tools().remove(root(), p.arg("name"), p.arg("why")))
 
-
-class Index(Command):
+class Index(Resource):
     signature = "tools:index"
     writes = True
-
-    def run(self, p: Parsed) -> int:
-        for line in _tools().adopt(root(), here()):
-            fmt.say(line)
-        return 0
+    controller = CONTROLLER
+    action = "adopt"
 
 
 class Run(Command):

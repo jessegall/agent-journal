@@ -185,11 +185,6 @@ def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str,
     return _json({"ok": True, "message": result.message, "data": result.data}, _STATUS[result.status])
 
 
-@route(r"^/api/tools$")
-def _api_tools(root: Path, project: Path, m: re.Match):
-    return _json(views.tools_catalogue(root))
-
-
 # ────────────────────────────────────────────────────────── binary: doc attachments
 @route(r"^/docs/(?P<n>\d+)/files/(?P<name>[^/]+)$")
 def _doc_file(root: Path, project: Path, m: re.Match):

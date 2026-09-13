@@ -189,6 +189,9 @@ def add(root: Path, name: str, title: str, summary: str, usage: str, when: str, 
 def set_field(root: Path, name: str, field: str, value: str) -> tuple[bool, str]:
     if field not in ("title", "summary", "usage", "when", "entry"):
         return False, say("not_a_field", field=repr(field))
+    if field in ("title", "summary") and not " ".join((value or "").split()):
+        # every tool keeps a title and a summary: they are what the catalogue hands every session
+        return False, say("needs_title" if field == "title" else "needs_summary")
     t, err = get(root, name)
     if t is None:
         return False, err
@@ -258,73 +261,82 @@ def run(root: Path, name: str, args: list[str]) -> int:
 
 
 # ------------------------------------------------------------------ rendering
+def facts_text(t: dict) -> str:
+    """The line beneath a tool's summary: how it is called, its entry point, its age."""
+    out = []
+    if t.get("usage"):
+        out.append(t["usage"])
+    out.append(say("fact_entry", entry=t["entry"]) if t.get("entry") else say("fact_no_entry"))
+    if _age(t.get("at", "")):
+        out.append(_age(t.get("at", "")))
+    return " · ".join(out)
+
+
+def row(n: int, t: dict) -> dict:
+    return {"n": n, "name": t["name"], "title": t.get("title", ""), "summary": t.get("summary", ""),
+            "usage": t.get("usage", ""), "when": t.get("when", ""), "entry": t.get("entry", ""),
+            "source": t.get("source", ""), "track": t.get("track", ""), "age": _age(t.get("at", "")),
+            "facts": facts_text(t)}
+
+
+def detail(root: Path, n: int, t: dict) -> dict:
+    script = entry_path(root, t)
+    return {**row(n, t), "body": t.get("body", ""), "file": str(t["path"].relative_to(root.parent)),
+            "script": str(script.relative_to(root.parent)) if script is not None else ""}
+
+
+def render_rows(rows: list[dict]) -> str:
+    """Tool rows as the terminal catalogue: a name beside its title, the summary, then the facts."""
+    items = [fmt.Item(title=say("head", name=r["name"], title=r["title"]) if r["title"] and r["title"] != r["name"] else r["name"],
+                      text=r["summary"], meta=r["facts"]) for r in rows]
+    return "\n\n".join(fmt.render(fmt.Out(items=(it,))) for it in items)
+
+
 def catalogue(root: Path, width: int | None = None, cap: int | None = None, page: int = 1,
               order: str = fmt.DESC) -> str:
-    """The catalogue, capped like `carry` (below) so a bare `journal tools` never grows
-    without bound; unlike carry — handed automatically, every session — this is asked
-    for, so it pages rather than just saying "N more".
-
-    THE LOOP IS `entries.listing`, shared with `todo.render` and `docs.catalogue` — only
-    `facts` below is a tool's own, the same strategy `pins._store` already supplies for a
-    pin, a rule and a reminder. A tool has no number, so its row is a name beside its
-    summary — `fmt.Item(title=…)` — rather than the numbered shape the other two use; and
-    each is rendered on its own rather than as one group, because `fmt`'s COLUMN rows sit
-    tight as a table and a tool's own multi-line block never was one.
-    """
-    width = fmt.room(width)
+    """The catalogue, paged — the loop is `entries.listing`, a tool's own part is `row`."""
     import entries
     tools = _all(root)
     if not tools:
         return say("empty")
-
-    def facts(t: dict) -> list[str]:
-        out = []
-        if t.get("usage"):
-            out.append(t["usage"])
-        out.append(say("fact_entry", entry=t["entry"]) if t.get("entry") else say("fact_no_entry"))
-        if _age(t.get("at", "")):
-            out.append(_age(t.get("at", "")))
-        return out
-
-    def item_of(t: dict):
-        head = say("head", name=t["name"], title=t["title"]) if t.get("title") and t["title"] != t["name"] else t["name"]
-        return fmt.Item(title=head, text=t.get("summary", ""), meta=" · ".join(facts(t)))
-
-    rows, left = entries.listing(tools, item_of, cap=cap, page=page, order=order)
-    body = "\n\n".join(fmt.render(fmt.Out(items=(it,))) for it in rows)
-    body += fmt.more("tools", left, page, order)
-    return body
+    rows, left = entries.listing(list(enumerate(tools, 1)), lambda pair: row(*pair), cap=cap, page=page, order=order)
+    return render_rows(rows) + fmt.more("tools", left, page, order)
 
 
 def show(root: Path, name: str, width: int | None = None) -> tuple[bool, str]:
-    width = fmt.room(width)
     t, err = get(root, name)
     if t is None:
         return False, err
-    env = say("show_env", env=t["track"]) if t.get("track") else ""
-    out = [fmt.title(say("show_title", name=t["name"]), sub=t.get("title", "")),
-           "  " + fmt.dim(" · ".join(x for x in (t.get("source", ""), env, _age(t.get("at", ""))) if x))]
+    n = next(i for i, x in enumerate(_all(root), 1) if x["name"] == t["name"])
+    return True, show_text(detail(root, n, t), width)
+
+
+def show_text(d: dict, width: int | None = None) -> str:
+    """A tool's `detail` as the terminal page."""
+    width = fmt.room(width)
+    env = say("show_env", env=d["track"]) if d["track"] else ""
+    out = [fmt.title(say("show_title", name=d["name"]), sub=d["title"]),
+           "  " + fmt.dim(" · ".join(x for x in (d["source"], env, d["age"]) if x))]
     out.append(fmt.section(say("what")))
-    out.append(fmt.wrap(t.get("summary", ""), width=width))
-    if t.get("usage"):
+    out.append(fmt.wrap(d["summary"], width=width))
+    if d["usage"]:
         out.append(fmt.section(say("usage")))
-        out.append("  " + t["usage"])
-    if t.get("when"):
+        out.append("  " + d["usage"])
+    if d["when"]:
         out.append(fmt.section(say("when")))
-        out.append(fmt.wrap(t["when"], width=width))
-    if t["body"].strip():
+        out.append(fmt.wrap(d["when"], width=width))
+    if d["body"].strip():
         out.append("")
-        out.append(t["body"].rstrip())
-    script = entry_path(root, t)
+        out.append(d["body"].rstrip())
     out.append(fmt.section(say("run")))
-    rows = [(say("run_it", name=t["name"]), say("run_it_what"))]
-    if script is not None:
-        rows.append((str(script.relative_to(root.parent)), say("script")))
+    rows = [(say("run_it", name=d["name"]), say("run_it_what"))]
+    if d["script"]:
+        rows.append((d["script"], say("script")))
     else:
-        rows.append((say("set_entry", name=t["name"]), say("set_entry_what")))
+        rows.append((say("set_entry", name=d["name"]), say("set_entry_what")))
     out.append(fmt.commands(rows))
-    out.append("  " + fmt.dim(str(t["path"].relative_to(root.parent))))
-    return True, "\n".join(out)
+    out.append("  " + fmt.dim(d["file"]))
+    return "\n".join(out)
 
 
 def carry(root: Path, cap: int = 20) -> str:

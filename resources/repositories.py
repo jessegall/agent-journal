@@ -9,9 +9,10 @@ import pins
 import questions
 import reminders
 import todo
+import tools
 import work
 from resources.base import Query, Repository
-from resources.models import Attachment, Claim, Doc, Message, Part, Question, Reminder, Rule, Todo, Work
+from resources.models import Attachment, Claim, Doc, Message, Part, Question, Reminder, Rule, Todo, Tool, Work
 
 
 class Todos(Repository[Todo]):
@@ -76,6 +77,13 @@ class WorkLog(Repository[Work]):
 
     def rows(self) -> list[dict]:
         return work._all(self.root, self.env or None)
+
+
+class ToolCatalogue(Repository[Tool]):
+    model = Tool
+
+    def rows(self) -> list[dict]:
+        return tools.all_tools(self.root)
 
 
 class Docs(Repository[Doc]):

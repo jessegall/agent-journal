@@ -170,6 +170,22 @@ class Attachment(Model):
 
 
 @dataclass
+class Tool(Model):
+    name: str = ""
+    title: str = ""
+    summary: str = ""
+    usage: str = ""
+    when: str = ""
+    entry: str = ""
+    source: str = ""
+    track: str = ""
+    body: str = ""
+
+    noun: ClassVar[str] = "tool"
+    sortable: ClassVar[tuple[str, ...]] = ("n", "at", "name", "title")
+
+
+@dataclass
 class Doc(Model):
     title: str = ""
     abstract: str = ""
