@@ -264,7 +264,14 @@ check("question detail: 200, with what it is about",
 status, _, body = get("/api/env/alpha/questions/99")
 check("an unknown question is 404", status, 404)
 status, got = post("/api/env/alpha/questions/1/answer", {"answer": "blue"})
-check("POST an answer: 201, answered", (status, got["rows"]["status"], got["rows"]["answer"]), (201, "answered", "blue"))
+check("POST an answer: 200, answered", (status, got["data"]["status"], got["data"]["answer"]), (200, "answered", "blue"))
+questions.mark_told(root, "alpha", [1], AT)
+status, got = post("/api/env/alpha/questions/1/answer", {"answer": "green"})
+check("changing an answer keeps the earlier one and tells the agent again",
+      (status, got["data"]["answer"], got["data"]["changed"], questions._all(root, "alpha")[0]["told_at"]),
+      (200, "green", True, None))
+status, got = post("/api/env/alpha/questions/1", {"text": "which colour, exactly?"}, method="PATCH")
+check("editing a question rewords it", (status, got["data"]["text"]), (200, "which colour, exactly?"))
 status, got = post("/api/env/alpha/questions/99/answer", {"answer": "x"})
 check("answering an unknown question is 404", status, 404)
 status, got = post("/api/env/alpha/questions/2/answer", {"answer": ""})
@@ -272,7 +279,7 @@ check("an empty answer is refused: 400", status, 400)
 
 # ─────────────────────────────────────────────────────────────── questions on every resource
 status, _, body = get("/api/env/alpha/todos/1")
-check("a to-do's detail lists its questions", [q["text"] for q in json.loads(body)["questions"]], ["which colour?"])
+check("a to-do's detail lists its questions", [q["text"] for q in json.loads(body)["questions"]], ["which colour, exactly?"])
 status, _, body = get("/api/docs/1")
 check("a doc's detail lists the questions about it, with their environment",
       [(q["env"], q["text"]) for q in json.loads(body)["questions"]], [("alpha", "is the design final?")])

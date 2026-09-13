@@ -51,6 +51,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal question ...          the same commands; `question` and `questions` are twins",
         "journal questions [--all] [--order=asc|desc]   open questions first, then answered; --all adds withdrawn ones",
         "journal questions show N        the question, what it is about, and the answer",
+        'journal questions edit N "<question>"   reword it; if it was answered, the agent is told again',
         'journal questions answer N "<answer>"   answer it; the agent is told at its next stop',
         "journal questions link N <ref>   link it to one more resource; `questions unlink N <ref>` removes a link",
         'journal questions withdraw N "<why>"   it no longer needs an answer',

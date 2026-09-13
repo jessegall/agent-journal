@@ -148,7 +148,8 @@ MESSAGES = {
     "answered_one": "the user answered question {n}",
     "answered_many": "the user answered {n} questions",
     "answered_do": "act on each answer; `.journal/journal.py questions show <n>` reads one in full",
-    "answered_row": "question {n}: {text} → {answer}",
+    "answered_row": "question {n}: {text} → {answer}[{changed}]",
+    "answer_changed": " (the answer changed)",
     "aside_fact": "auto is on for `{env}`, and every waiting to-do is set aside",
     "aside_do": "nothing is blocked on the user — these wait on conditions you judge: {rows:; } `journal todos start "
                 "<n>` when one comes true",
@@ -1011,7 +1012,8 @@ def _p_questions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     head = (say("answered_one", n=fresh[0][0]) if len(fresh) == 1
             else say("answered_many", n=len(fresh)))
     return _say(head, say("answered_do"),
-                rows=[say("answered_row", n=n, text=q["text"], answer=q["answer"]) for n, q in fresh])
+                rows=[say("answered_row", n=n, text=q["text"], answer=q["answer"],
+                          changed=say("answer_changed") if q.get("earlier_answers") else None) for n, q in fresh])
 
 
 @nudges.subject("auto", 60)

@@ -229,25 +229,6 @@ def _api_inbox(root: Path, project: Path, m: re.Match):
     return _json(views.inbox_on(root, env))
 
 
-@route(r"^/api/env/(?P<env>[a-z0-9-]+)/questions$")
-def _api_questions(root: Path, project: Path, m: re.Match):
-    env = m.group("env")
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    return _json(views.questions_on(root, env))
-
-
-@route(r"^/api/env/(?P<env>[a-z0-9-]+)/questions/(?P<n>\d+)$")
-def _api_question_detail(root: Path, project: Path, m: re.Match):
-    env, n = m.group("env"), int(m.group("n"))
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    row = views.question_detail(root, env, n)
-    if row is None:
-        return _not_found(say("no_question", n=n, env=repr(env)))
-    return _json(row)
-
-
 def _wrote(result: tuple[bool, str], rows) -> tuple[int, str, bytes]:
     ok, message = result
     return _json({"ok": True, "message": message, "rows": rows}, 201) if ok else _json({"error": message}, 400)
@@ -260,17 +241,6 @@ def _post_inbox(root: Path, project: Path, m: re.Match, body: dict):
         return _not_found(say("no_env", env=repr(env)))
     result = inbox.add(root, str(body.get("text") or ""), _now(), source="web", track=env)
     return _wrote(result, views.inbox_on(root, env))
-
-
-@post_route(r"^/api/env/(?P<env>[a-z0-9-]+)/questions/(?P<n>\d+)/answer$")
-def _post_answer(root: Path, project: Path, m: re.Match, body: dict):
-    env, n = m.group("env"), int(m.group("n"))
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    if views.question_detail(root, env, n) is None:
-        return _not_found(say("no_question", n=n, env=repr(env)))
-    result = questions.answer(root, n, str(body.get("answer") or ""), _now(), track=env)
-    return _wrote(result, views.question_detail(root, env, n))
 
 
 # ─────────────────────────────────────────────────────────── resources, through their controllers
