@@ -28,6 +28,7 @@ MESSAGES = {
     "fact_about": "about {links}",
     "needs_text": 'a question needs its text: journal questions add "<question>"',
     "added": "question {n}[, about {links}] ({open} open)",
+    "edited": "question {n} now reads: {text}",
     "needs_answer": 'say the answer: journal questions answer {n} "<the answer>"',
     "answered": "{verb} question {n}: {text}\n  the agent is told at its next stop",
     "already_about": "question {n} is already about {ref}",
@@ -195,6 +196,20 @@ def answer(root: Path, n: int, text: str, at: str, track: str | None = None) -> 
         q.update(answer=text, answered_at=at, told_at=None)
         _put(root, items, track)
     return True, say("answered", verb="re-answered" if again else "answered", n=n, text=q["text"][:70])
+
+
+def edit(root: Path, n: int, text: str, track: str | None = None) -> tuple[bool, str]:
+    text = (text or "").strip()
+    if not text:
+        return False, say("needs_text")
+    with state.locked(root):
+        items = _all(root, track)
+        q, why = _find(items, n)
+        if q is None:
+            return False, why
+        q["text"] = text
+        _put(root, items, track)
+    return True, say("edited", n=n, text=text[:70])
 
 
 def link(root: Path, n: int, raw: str) -> tuple[bool, str]:

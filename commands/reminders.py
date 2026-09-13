@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 import fmt
-import reminders
-import settings as settings_mod
 import tracks
-from app import CATALOGUE_PAGE, answer, catalogue, now, root, stem
-from command import Command, Parsed, number
+from app import CATALOGUE_PAGE, catalogue, root, stem
+from command import Parsed, number
 from commands.options import LISTING, LISTING_CASTS
+from commands.resource import Resource
+from controllers.reminders import RemindersController
 from templates import render
 
 NOUNS = (("reminders", "reminder", "remind"),)
 
 REMINDER = {"n": number("a reminder number")}
+CONTROLLER = RemindersController()
 
 PAGE = {
     "sub": "environment {env} · {n} repeated[, {retired} retired]",
@@ -27,54 +28,58 @@ PAGE = {
 }
 
 
-class List(Command):
+class List(Resource):
     signature = "reminders:list " + LISTING
     casts = LISTING_CASTS
     default = True
+    controller = CONTROLLER
+    action = "index"
 
-    def run(self, p: Parsed) -> int:
+    def extra(self) -> dict:
+        return {"cap": CATALOGUE_PAGE}
+
+    def render(self, p: Parsed, result) -> int:
+        import settings as settings_mod
         conf, _ = settings_mod.load(root())
-        every = bool(p.option("all"))
-        n = len(reminders.live(root()))
-        retired = len(reminders._all(root())) - n
-        page, order = p.option("page"), p.option("order")
+        items = [fmt.Item(n=r["n"], text=r["text"], meta=r["meta"], struck=r["struck"]) for r in result.data]
+        retired = result.meta["retired"]
         return catalogue(
             "REMINDERS",
-            render(PAGE["sub"], env=tracks.current(root(), stem()), n=n, retired=retired if every and retired else None),
-            reminders.listing(root(), all_of_them=every, cap=CATALOGUE_PAGE, page=page, order=order),
+            render(PAGE["sub"], env=tracks.current(root(), stem()), n=result.meta["live"],
+                   retired=retired if p.option("all") and retired else None),
+            (items, result.meta["left"]),
             PAGE["empty"], render(PAGE["lead"], every=conf["reminder_every"] or None),
-            PAGE["commands"], noun="reminders", page=page, order=order)
+            PAGE["commands"], noun="reminders", page=p.option("page"), order=p.option("order"))
 
 
-class Add(Command):
+class Add(Resource):
     signature = "reminders:add {text* : the instruction, in one line} {--until=}"
     writes = True
+    controller = CONTROLLER
+    action = "store"
 
-    def run(self, p: Parsed) -> int:
-        conf, _ = settings_mod.load(root())
-        code = answer(reminders.add(root(), p.arg("text"), now(), conf["reminder_max_chars"], p.option("until") or ""))
-        if code == 0 and conf["reminder_every"]:
-            fmt.say(render(PAGE["every_added"], every=conf["reminder_every"]))
+    def render(self, p: Parsed, result) -> int:
+        code = super().render(p, result)
+        if result.ok and result.meta.get("every"):
+            fmt.say(render(PAGE["every_added"], every=result.meta["every"]))
         return code
 
 
-class Done(Command):
+class Done(Resource):
     signature = "reminders:done {n : a reminder number} {why* : what made it true}"
     casts = REMINDER
     verbs = ("retire", "strike", "stop")
     writes = True
+    controller = CONTROLLER
+    action = "destroy"
 
-    def run(self, p: Parsed) -> int:
-        return answer(reminders.done(root(), p.arg("n"), p.arg("why"), now()))
 
-
-class Move(Command):
+class Move(Resource):
     signature = "reminders:move {n : a reminder number} {environment* : the environment it moves to}"
     casts = REMINDER
     writes = True
-
-    def run(self, p: Parsed) -> int:
-        return answer(reminders.move(root(), p.arg("n"), p.arg("environment"), now()))
+    controller = CONTROLLER
+    action = "move"
 
 
 COMMANDS = (List, Add, Done, Move)
