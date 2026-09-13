@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.79.0 — search from the viewer
+
+Each environment's sidebar has Search, under Home. It searches like `journal search` — every
+line said in the sessions on that environment, or on every environment, newest first, paged,
+with the matched words marked — and also the journal's own to-dos, pins, rules, questions,
+messages, reminders and docs, each linked to its page. `journal search` and the viewer both
+run through `SearchController` (`GET /api/env/<env>/search?term=…&all=&page=`), and the
+stretch of text around a match is built once, in `transcript.snippet`.
+
 ## 1.78.0 — the inbox is called Messages
 
 What the user leaves for the agent read, from the user's side, like mail addressed to them.

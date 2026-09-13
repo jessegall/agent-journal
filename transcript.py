@@ -121,6 +121,19 @@ def track_segments(lines: list[Line]) -> list[tuple[str, int, int]]:
     return out
 
 
+def snippet(body: str, term: str, before: int = 140, after: int = 200) -> str:
+    """The stretch of a line around the first mention of `term`, the mention marked «like this»."""
+    body = " ".join(body.split())
+    needle = term.lower()
+    at = body.lower().find(needle)
+    a, b = max(0, at - before), min(len(body), at + len(term) + after)
+    piece = body[a:b]
+    j = piece.lower().find(needle)
+    if j >= 0:
+        piece = piece[:j] + "«" + piece[j:j + len(term)] + "»" + piece[j + len(term):]
+    return ("…" if a else "") + piece + ("…" if b < len(body) else "")
+
+
 def on_track(lines: list[Line], track: str) -> list[Line]:
     """The lines of this transcript said while `environment` was current."""
     keep = [(lo, hi) for t, lo, hi in track_segments(lines) if t == track]

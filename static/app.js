@@ -16,6 +16,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/reminders(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/settings$/, view: "Settings", params: ["env"] },
+  { re: /^\/env\/([a-z0-9-]+)\/search$/, view: "Search", params: ["env"] },
   { re: /^\/rules(?:\/(\d+|new))?$/, view: "Rules", params: ["n"] },
   { re: /^\/docs(?:\/(new))?$/, view: "Docs", params: ["n"] },
   { re: /^\/docs\/(\d+(?:\.\d+)?)$/, view: "DocDetail", params: ["docref"] },
@@ -172,6 +173,7 @@ const Icon = {
       <template v-else-if="name === 'questions'"><circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.3a1.7 1.7 0 0 1 3.2.7c0 1.2-1.6 1.4-1.6 2.5"/><circle cx="8" cy="11.4" r=".6" fill="currentColor" stroke="none"/></template>
       <path v-else-if="name === 'home'" d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>
       <path v-else-if="name === 'close'" d="M4 4l8 8M12 4l-8 8"/>
+      <template v-else-if="name === 'search'"><circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/></template>
       <template v-else-if="name === 'settings'"><circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></template>
     </svg>`,
 };
@@ -1095,6 +1097,72 @@ const EnvHome = {
     </div></div>`,
 };
 
+// ─────────────────────────────────────────────────────────────── search
+const SEARCH_KINDS = {
+  todo: { label: "To-do", href: (env, n) => `#/env/${env}/todos/${n}` },
+  pin: { label: "Pin", href: (env, n) => `#/env/${env}/pins/${n}` },
+  rule: { label: "Rule", href: (env, n) => `#/rules/${n}` },
+  question: { label: "Question", href: (env, n) => `#/env/${env}/questions/${n}` },
+  message: { label: "Message", href: (env, n) => `#/env/${env}/messages/${n}` },
+  reminder: { label: "Reminder", href: (env, n) => `#/env/${env}/reminders/${n}` },
+  doc: { label: "Doc", href: (env, n) => `#/docs/${n}` },
+};
+
+function markHits(text) { return _escapeHtml(text).replace(/«/g, "<mark>").replace(/»/g, "</mark>"); }
+
+const Search = {
+  props: ["env"],
+  components: { TopBar },
+  setup(props) {
+    const form = reactive({ text: "", all: false, term: "", page: 1 });
+    const s = useFetch(() => props.env && form.term &&
+      `/api/env/${props.env}/search?term=${encodeURIComponent(form.term)}&all=${form.all ? 1 : ""}&page=${form.page}`);
+    const go = () => { form.term = form.text.trim(); form.page = 1; };
+    return { form, s, go, kinds: SEARCH_KINDS, markHits };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Search']"/>
+    <div class=page><div class=home>
+      <form class=search-bar @submit.prevent="go">
+        <input class="input search-input" v-model="form.text" placeholder="Search to-dos, pins, docs, messages and the conversation">
+        <label class=toggle><input type=checkbox v-model="form.all" @change="form.term && go()"> Every environment</label>
+        <button type=submit class=primary :disabled="!form.text.trim()">Search</button>
+      </form>
+      <p v-if="!form.term" class="prose muted">This searches like <code>journal search</code>: everything said in the sessions on this environment, and the journal's own to-dos, pins, rules, questions, messages, reminders and docs.</p>
+      <p v-else-if="s.loading && !s.data" class=empty>Searching…</p>
+      <p v-else-if="s.error" class=error>{{ s.error }}</p>
+      <template v-else-if="s.data">
+        <section>
+          <div class=home-head><h2>In the journal</h2><span class=n>{{ s.data.resources.length }}</span></div>
+          <div class=block>
+            <a v-for="r in s.data.resources" :key="r.kind + r.n" class="row searchrow" :href="kinds[r.kind].href(env, r.n)">
+              <span class=tag>{{ kinds[r.kind].label }}</span><span class=num>#{{ r.n }}</span><span class=title>{{ r.text }}</span>
+            </a>
+            <p v-if="!s.data.resources.length" class=empty>Nothing in the journal mentions it.</p>
+          </div>
+        </section>
+        <section>
+          <div class=home-head><h2>In the conversation</h2><span class=n>{{ s.data.total }}</span></div>
+          <div class=block>
+            <template v-for="g in s.data.transcript" :key="g.session">
+              <div class=ghead>{{ g.mine ? 'This session' : 'Session ' + g.session.slice(0, 8) }}<span class=n>{{ g.when }}</span></div>
+              <div v-for="l in g.lines" :key="g.session + l.n" class="row hitrow">
+                <span class=num>{{ l.n }}</span><span class=tag>{{ l.who === 'user' ? 'You' : 'Agent' }}</span>
+                <span class="prose hit" v-html="markHits(l.text)"></span>
+              </div>
+            </template>
+            <p v-if="!s.data.transcript.length" class=empty>Nothing that was said mentions it.</p>
+          </div>
+          <div v-if="s.data.pages > 1" class=pager>
+            <button type=button class=btn :disabled="s.data.page <= 1" @click="form.page = s.data.page - 1">Newer</button>
+            <span class=muted>Page {{ s.data.page }} of {{ s.data.pages }}</span>
+            <button type=button class=btn :disabled="s.data.page >= s.data.pages" @click="form.page = s.data.page + 1">Older</button>
+          </div>
+        </section>
+      </template>
+    </div></div>`,
+};
+
 // ─────────────────────────────────────────────────────────────── an environment's settings
 const Settings = {
   props: ["env"],
@@ -1153,12 +1221,13 @@ const Settings = {
 const Home = { template: `<p class=empty>Loading…</p>` };
 const NotFound = { components: { TopBar }, template: `<TopBar :crumbs="['Not found']"/><p class=empty>Nothing here.</p>` };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
 const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "" },
+  { key: "search", label: "Search", views: ["Search"], path: "search" },
   { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "questions", label: "Questions", views: ["Questions"], path: "questions", count: "questions" },
