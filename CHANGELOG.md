@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.77.0 — an environment has a Settings page
+
+The viewer's environment sidebar ends with Settings: a switch for auto mode, and removing the
+environment, which asks for its name to be typed first and says what will be deleted. The
+start environment cannot be removed, and neither can one a live session is on. Both go
+through a new `EnvironmentController` (`GET /api/env/<env>/environment`, `POST …/environment/settings`,
+`POST …/environment/remove`), and `journal environments remove <name> --yes` runs through it
+too.
+
 ## 1.76.0 — the viewer can create, edit, move and close every resource
 
 Every list in the viewer has a New button (to-dos, pins, rules, reminders, work, docs; the

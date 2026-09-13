@@ -107,7 +107,9 @@ class Parsed:
         import state
         fields = {**self._opts, **self._args, **(extra or {})}
         ident = fields.pop(getattr(self.command, "id_arg", "n"), None)
-        return kind.build(state._TRACK[0] if state._TRACK else "", ident, fields, "cli")
+        env_arg = getattr(self.command, "env_arg", "")
+        env = fields.pop(env_arg, None) if env_arg else None
+        return kind.build(env or (state._TRACK[0] if state._TRACK else ""), ident, fields, "cli")
 
 
 class Command:

@@ -15,6 +15,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/work(?:\/(\d+|new))?$/, view: "Work", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reminders(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/settings$/, view: "Settings", params: ["env"] },
   { re: /^\/rules(?:\/(\d+|new))?$/, view: "Rules", params: ["n"] },
   { re: /^\/docs(?:\/(new))?$/, view: "Docs", params: ["n"] },
   { re: /^\/docs\/(\d+(?:\.\d+)?)$/, view: "DocDetail", params: ["docref"] },
@@ -171,6 +172,7 @@ const Icon = {
       <template v-else-if="name === 'questions'"><circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.3a1.7 1.7 0 0 1 3.2.7c0 1.2-1.6 1.4-1.6 2.5"/><circle cx="8" cy="11.4" r=".6" fill="currentColor" stroke="none"/></template>
       <path v-else-if="name === 'home'" d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>
       <path v-else-if="name === 'close'" d="M4 4l8 8M12 4l-8 8"/>
+      <template v-else-if="name === 'settings'"><circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></template>
     </svg>`,
 };
 
@@ -1103,10 +1105,65 @@ const EnvHome = {
     </div></div>`,
 };
 
+// ─────────────────────────────────────────────────────────────── an environment's settings
+const Settings = {
+  props: ["env"],
+  components: { TopBar, ActionBar },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/environment`);
+    const s = useFetch(() => props.env && api.value);
+    const auto = reactive({ saving: false, error: null });
+    async function setAuto(on) {
+      auto.saving = true;
+      auto.error = null;
+      try {
+        await postJSON(`${api.value}/settings`, { auto: on });
+        s.reload();
+        changed();
+      } catch (e) {
+        auto.error = e.message;
+      } finally {
+        auto.saving = false;
+      }
+    }
+    const removing = computed(() => [{
+      label: "Remove this environment", method: "POST", url: `${api.value}/remove`, danger: true, submit: "Remove it",
+      fields: [{ name: "confirm", label: `Type ${props.env} to confirm` }],
+      note: s.data ? `This deletes its ${s.data.pins} pin(s), ${s.data.todos} open to-do(s), its open work and its inbox for good. Docs stay with the project.` : "",
+    }]);
+    const done = () => { changed(); location.hash = "#/"; };
+    return { s, auto, setAuto, removing, done };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Settings']"/>
+    <div class=page><div class=home>
+      <p v-if="s.loading && !s.data" class=empty>Loading…</p>
+      <p v-else-if="s.error" class=error>{{ s.error }}</p>
+      <template v-else-if="s.data">
+        <section>
+          <div class=home-head><h2>Auto mode</h2></div>
+          <div class=setting>
+            <label class=toggle><input type=checkbox :checked="s.data.auto" :disabled="auto.saving" @change="setAuto($event.target.checked)">
+              Work through the to-do list without asking</label>
+            <p class="prose muted">When this is on and nothing is open, the agent starts the next ready to-do by itself.</p>
+            <p v-if="auto.error" class=error>{{ auto.error }}</p>
+          </div>
+        </section>
+        <section>
+          <div class=home-head><h2>Remove this environment</h2></div>
+          <div class=setting>
+            <p v-if="s.data.start" class="prose muted">New sessions start on this environment, so it cannot be removed. Make another environment the start environment first.</p>
+            <ActionBar v-else :actions="removing" :done="done"/>
+          </div>
+        </section>
+      </template>
+    </div></div>`,
+};
+
 const Home = { template: `<p class=empty>Loading…</p>` };
 const NotFound = { components: { TopBar }, template: `<TopBar :crumbs="['Not found']"/><p class=empty>Nothing here.</p>` };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Work, Reminders, Docs, EnvDocs, DocDetail, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -1118,6 +1175,7 @@ const NAV = [
   { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
   { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
   { key: "docs", label: "Docs", views: ["EnvDocs"], path: "docs", count: "docs" },
+  { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 
 const App = {
