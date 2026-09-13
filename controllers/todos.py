@@ -9,6 +9,8 @@ import state
 import todo
 import work
 from controller import Controller, Payload, Result
+from payloads import todos as todo_payloads
+from payloads.common import AnswerPayload, MovePayload, SectionPayload, WhyPayload
 from templates import render
 
 MESSAGES = {
@@ -33,6 +35,12 @@ class TodosController(Controller):
     actions = ("index", "show", "store", "update", "destroy", "done", "reopen", "start", "move", "ask",
                "answer", "block", "unblock", "after", "report", "priority", "amend", "replace")
     numbered = actions[1:2] + actions[3:]
+    payloads = {"index": todo_payloads.ListPayload, "store": todo_payloads.StorePayload,
+                "update": todo_payloads.UpdatePayload, "destroy": WhyPayload, "done": todo_payloads.HowPayload,
+                "reopen": WhyPayload, "start": todo_payloads.StartPayload, "move": MovePayload,
+                "ask": todo_payloads.AskPayload, "answer": AnswerPayload, "block": WhyPayload,
+                "after": todo_payloads.AfterPayload, "report": todo_payloads.ReportPayload,
+                "priority": todo_payloads.PriorityPayload, "amend": SectionPayload, "replace": SectionPayload}
     # a closed row is the record of how it ended; reopening is the only way to change it
     EDITS = frozenset({"update", "destroy", "done", "start", "move", "ask", "block", "unblock", "after",
                        "report", "priority", "amend", "replace"})
@@ -41,7 +49,7 @@ class TodosController(Controller):
     def env(root: Path) -> str:
         return state.current_track(root)
 
-    def repository(self, root: Path, p: Payload):
+    def repository(self, root: Path, p: Payload | None = None):
         from resources import Todos
         return Todos(root, self.env(root))
 
@@ -54,19 +62,19 @@ class TodosController(Controller):
         return None
 
     def _close_work(self, root: Path, n: int, at: str, key: str) -> str:
-        t = self.repository(root, Payload(self.env(root), n, {})).find(n)
+        t = self.repository(root).find(n)
         if not t or not any(w["subject"] == t.title for w in work.open_work(root)):
             return ""
         closed, note = work.end(root, t.title, at)
         return say(key, title=t.title) if closed else say("closed_note", note=note)
 
-    def index(self, root: Path, p: Payload) -> Result:
+    def index(self, root: Path, p: todo_payloads.ListPayload) -> Result:
         env, repo = self.env(root), self.repository(root, p)
         every = repo.all()
-        query = repo.query().where(lambda t: not t.closed) if p.get("open") else repo.query()
-        if p.source == "cli" and not p.text("sort") and not p.get("order-by-id"):
+        query = repo.query().where(lambda t: not t.closed) if p.open else repo.query()
+        if p.source == "cli" and not p.sort and not p.order_by_id:
             # the terminal lists by priority, highest first; ties newest first
-            direction = p.text("order") or fmt.DESC
+            direction = p.order or fmt.DESC
             query = query.order_by("n", direction).order_by("priority", direction)
         else:
             query = self.sorted(query, p)
@@ -84,22 +92,21 @@ class TodosController(Controller):
         row.update(questions=[questions.row_response(n, q) for n, q in questions.about(root, f"todo:{p.id}", env)])
         return Result("ok", "", row)
 
-    def store(self, root: Path, p: Payload) -> Result:
+    def store(self, root: Path, p: todo_payloads.StorePayload) -> Result:
         env = self.env(root)
-        ok, message = todo.add(root, env, str(p.get("title") or ""), str(p.get("body") or ""), p.at,
-                               p.get("where") or {})
+        ok, message = todo.add(root, env, p.title, p.body, p.at, p.where)
         added = re.search(r"to-do (\d+)", message) if ok else None
-        after = p.text("after") or p.text("needs")
+        after = p.after or p.needs
         if added and after:
             _, note = todo.after(root, env, int(added.group(1)), after)
             message += say("after_note", note=note)
         return Result("created" if ok else "refused", message, {"n": int(added.group(1))} if added else None)
 
-    def update(self, root: Path, p: Payload) -> Result:
+    def update(self, root: Path, p: todo_payloads.UpdatePayload) -> Result:
         env, said = self.env(root), []
-        changes = (("title", lambda: todo.retitle(root, env, p.id, p.text("title"))),
-                   ("body", lambda: todo.replace_section(root, env, p.id, "", str(p.get("body") or ""))),
-                   ("priority", lambda: todo.priority(root, env, p.id, p.text("priority"))))
+        changes = (("title", lambda: todo.retitle(root, env, p.id, p.title)),
+                   ("body", lambda: todo.replace_section(root, env, p.id, "", p.body)),
+                   ("priority", lambda: todo.priority(root, env, p.id, p.priority)))
         for field, change in changes:
             if p.has(field):
                 ok, message = change()
@@ -110,53 +117,51 @@ class TodosController(Controller):
             return Result("refused", say("nothing_to_change"))
         return Result("ok", "\n".join(said))
 
-    def destroy(self, root: Path, p: Payload) -> Result:
-        why = p.text("why")
-        if not why:
+    def destroy(self, root: Path, p: WhyPayload) -> Result:
+        if not p.why:
             return Result("refused", say("say_why"))
-        return Result.of(todo.done(root, self.env(root), p.id, say("dropped", why=why), p.at))
+        return Result.of(todo.done(root, self.env(root), p.id, say("dropped", why=p.why), p.at))
 
-    def done(self, root: Path, p: Payload) -> Result:
-        return Result.of(todo.done(root, self.env(root), p.id, p.text("how"), p.at))
+    def done(self, root: Path, p: todo_payloads.HowPayload) -> Result:
+        return Result.of(todo.done(root, self.env(root), p.id, p.how, p.at))
 
-    def reopen(self, root: Path, p: Payload) -> Result:
-        return Result.of(todo.reopen(root, self.env(root), p.id, p.text("why"), p.at))
+    def reopen(self, root: Path, p: WhyPayload) -> Result:
+        return Result.of(todo.reopen(root, self.env(root), p.id, p.why, p.at))
 
-    def start(self, root: Path, p: Payload) -> Result:
-        t, err = todo.start(root, self.env(root), p.id, p.at, agent=p.text("as"))
+    def start(self, root: Path, p: todo_payloads.StartPayload) -> Result:
+        t, err = todo.start(root, self.env(root), p.id, p.at, agent=p.agent)
         if t is None:
             return Result("refused", err)
-        return Result.of(work.start(root, t["title"], p.at, p.get("where")), {"n": p.id, "title": t["title"]})
+        return Result.of(work.start(root, t["title"], p.at, p.where), {"n": p.id, "title": t["title"]})
 
-    def move(self, root: Path, p: Payload) -> Result:
-        return Result.of(todo.move(root, self.env(root), p.id, p.text("environment"), p.at))
+    def move(self, root: Path, p: MovePayload) -> Result:
+        return Result.of(todo.move(root, self.env(root), p.id, p.environment, p.at))
 
-    def ask(self, root: Path, p: Payload) -> Result:
-        ok, message = todo.ask(root, self.env(root), p.id, p.text("question"))
+    def ask(self, root: Path, p: todo_payloads.AskPayload) -> Result:
+        ok, message = todo.ask(root, self.env(root), p.id, p.question)
         return Result.of((ok, message + self._close_work(root, p.id, p.at, "closed_waiting") if ok else message))
 
-    def answer(self, root: Path, p: Payload) -> Result:
-        return Result.of(todo.answer(root, self.env(root), p.id, p.text("answer")))
+    def answer(self, root: Path, p: AnswerPayload) -> Result:
+        return Result.of(todo.answer(root, self.env(root), p.id, p.answer))
 
-    def block(self, root: Path, p: Payload) -> Result:
-        ok, message = todo.block(root, self.env(root), p.id, p.text("why"))
+    def block(self, root: Path, p: WhyPayload) -> Result:
+        ok, message = todo.block(root, self.env(root), p.id, p.why)
         return Result.of((ok, message + self._close_work(root, p.id, p.at, "closed_aside") if ok else message))
 
     def unblock(self, root: Path, p: Payload) -> Result:
         return Result.of(todo.unblock(root, self.env(root), p.id))
 
-    def after(self, root: Path, p: Payload) -> Result:
-        names = "--none" if p.get("none") else p.text("names")
-        return Result.of(todo.after(root, self.env(root), p.id, names))
+    def after(self, root: Path, p: todo_payloads.AfterPayload) -> Result:
+        return Result.of(todo.after(root, self.env(root), p.id, "--none" if p.none else p.names))
 
-    def report(self, root: Path, p: Payload) -> Result:
-        return Result.of(todo.report(root, self.env(root), p.id, p.text("how"), p.text("as")))
+    def report(self, root: Path, p: todo_payloads.ReportPayload) -> Result:
+        return Result.of(todo.report(root, self.env(root), p.id, p.how, p.agent))
 
-    def priority(self, root: Path, p: Payload) -> Result:
-        return Result.of(todo.priority(root, self.env(root), p.id, p.text("value")))
+    def priority(self, root: Path, p: todo_payloads.PriorityPayload) -> Result:
+        return Result.of(todo.priority(root, self.env(root), p.id, p.value))
 
-    def amend(self, root: Path, p: Payload) -> Result:
-        return Result.of(todo.amend(root, self.env(root), p.id, p.text("title"), str(p.get("body") or "")))
+    def amend(self, root: Path, p: SectionPayload) -> Result:
+        return Result.of(todo.amend(root, self.env(root), p.id, p.title, p.body))
 
-    def replace(self, root: Path, p: Payload) -> Result:
-        return Result.of(todo.replace_section(root, self.env(root), p.id, p.text("title"), str(p.get("body") or "")))
+    def replace(self, root: Path, p: SectionPayload) -> Result:
+        return Result.of(todo.replace_section(root, self.env(root), p.id, p.title, p.body))

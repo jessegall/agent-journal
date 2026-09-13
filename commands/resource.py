@@ -2,24 +2,25 @@ from __future__ import annotations
 
 import fmt
 from command import Command, Parsed
-from controller import Payload, Result
+from controller import Result, dispatch
 
 
 class Resource(Command):
-    """A command that hands its payload to a resource controller and renders the result."""
+    """A command that sends what was typed to a resource controller and renders the result."""
     controller = None
     action = ""
     id_arg = "n"
 
-    def payload(self, p: Parsed) -> Payload | int:
-        return p.payload()
+    def extra(self, p: Parsed) -> dict | int:
+        """Fields the command adds to what was typed, or the exit code of a refusal."""
+        return {}
 
     def run(self, p: Parsed) -> int:
         from app import root
-        payload = self.payload(p)
-        if isinstance(payload, int):
-            return payload
-        return self.render(p, self.controller.call(root(), self.action, payload))
+        extra = self.extra(p)
+        if isinstance(extra, int):
+            return extra
+        return self.render(p, dispatch(root(), self.controller, self.action, p, extra))
 
     def render(self, p: Parsed, result: Result) -> int:
         if result.message:

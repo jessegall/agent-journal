@@ -417,9 +417,12 @@ check("an unknown doc is 404", status, 404)
 
 import commands  # noqa: E402
 parsed, _ = commands.REGISTRY.parse(["reminders", "done", "3", "it", "came", "true"])
-got = parsed.payload()
-check("a parsed CLI command produces the same payload shape an HTTP request does",
-      (got.id, got.fields["why"], got.source), (3, "it came true", "cli"))
+import controllers  # noqa: E402
+kind = controllers.CONTROLLERS["reminders"].payload_for("destroy")
+got = parsed.payload(kind)
+check("a parsed CLI command builds the typed payload its action takes, as an HTTP request does",
+      (type(got).__name__, got.id, got.why, got.source, serve.Request("alpha", "3", {"why": "it came true"}).payload(kind).why),
+      ("WhyPayload", 3, "it came true", "cli", "it came true"))
 import controller  # noqa: E402
 check("both are payload sources", (isinstance(parsed, controller.PayloadSource),
                                    isinstance(serve.Request("alpha", "1", {}), controller.PayloadSource)), (True, True))

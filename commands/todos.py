@@ -71,10 +71,8 @@ class List(Resource):
     controller = CONTROLLER
     action = "index"
 
-    def payload(self, p: Parsed):
-        got = p.payload()
-        got.fields.update(cap=CATALOGUE_PAGE, open=not p.option("all"))
-        return got
+    def extra(self, p: Parsed):
+        return dict(cap=CATALOGUE_PAGE, open=not p.option("all"))
 
     def render(self, p: Parsed, result) -> int:
         env, done, draining = result.meta["env"], result.meta["done"], result.meta["auto"]
@@ -114,16 +112,14 @@ class Add(Resource):
     controller = CONTROLLER
     action = "store"
 
-    def payload(self, p: Parsed):
+    def extra(self, p: Parsed):
         body = brief(bool(p.option("brief")))
         if body is None:
             return refuse(BRIEF_REFUSED)
         got = doc_where(p.option("doc") or "")
         if got is None:
             return 1
-        payload = p.payload()
-        payload.fields.update(body=body, where=got)
-        return payload
+        return dict(body=body, where=got)
 
 
 class Start(Resource):
@@ -133,10 +129,8 @@ class Start(Resource):
     controller = CONTROLLER
     action = "start"
 
-    def payload(self, p: Parsed):
-        payload = p.payload()
-        payload.fields["where"] = where()
-        return payload
+    def extra(self, p: Parsed):
+        return {"where": where()}
 
     def render(self, p: Parsed, result) -> int:
         code = super().render(p, result)
@@ -168,10 +162,10 @@ class Move(Resource):
     controller = CONTROLLER
     action = "move"
 
-    def payload(self, p: Parsed):
+    def extra(self, p: Parsed):
         if not (p.arg("environment") or "").strip():
             return refuse(todo.say("move_where"))
-        return p.payload()
+        return {}
 
 
 Ask = _action("Ask", "todos:ask " + N + " {question*? : what the user must decide}")
@@ -190,10 +184,10 @@ class Drop(Resource):
     controller = CONTROLLER
     action = "destroy"
 
-    def payload(self, p: Parsed):
+    def extra(self, p: Parsed):
         if not (p.arg("why") or "").strip():
             return refuse(render(TEXT["say_why"], verb="drop"))
-        return p.payload()
+        return {}
 
 
 class Report(Resource):
@@ -203,10 +197,10 @@ class Report(Resource):
     controller = CONTROLLER
     action = "report"
 
-    def payload(self, p: Parsed):
+    def extra(self, p: Parsed):
         if not p.option("as"):
             return refuse(render(TEXT["report_needs_as"], n=p.arg("n")))
-        return p.payload()
+        return {}
 
 
 class _WithBrief(Resource):
@@ -214,13 +208,11 @@ class _WithBrief(Resource):
     writes = True
     controller = CONTROLLER
 
-    def payload(self, p: Parsed):
+    def extra(self, p: Parsed):
         text = brief(bool(p.option("brief")))
         if text is None:
             return refuse(BRIEF_REFUSED)
-        payload = p.payload()
-        payload.fields["body"] = text
-        return payload
+        return {"body": text}
 
 
 class Amend(_WithBrief):

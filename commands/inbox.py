@@ -35,10 +35,8 @@ class List(Resource):
     controller = CONTROLLER
     action = "index"
 
-    def payload(self, p: Parsed):
-        got = p.payload()
-        got.fields["cap"] = CATALOGUE_PAGE
-        return got
+    def extra(self, p: Parsed):
+        return {"cap": CATALOGUE_PAGE}
 
     def render(self, p: Parsed, result) -> int:
         page, order = p.option("page"), p.option("order")

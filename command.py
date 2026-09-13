@@ -103,12 +103,11 @@ class Parsed:
     def option(self, name: str, default=None):
         return self._opts.get(name, default)
 
-    def payload(self):
+    def payload(self, kind, extra: dict | None = None):
         import state
-        from controller import Payload
-        fields = {**self._opts, **self._args}
+        fields = {**self._opts, **self._args, **(extra or {})}
         ident = fields.pop(getattr(self.command, "id_arg", "n"), None)
-        return Payload(state._TRACK[0] if state._TRACK else "", ident, fields, source="cli")
+        return kind.build(state._TRACK[0] if state._TRACK else "", ident, fields, "cli")
 
 
 class Command:

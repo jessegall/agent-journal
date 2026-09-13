@@ -10,6 +10,8 @@ import state
 import todo
 import work
 from controller import Controller, Payload, Result
+from payloads import work as work_payloads
+from payloads.common import ListingPayload
 from templates import render
 
 MESSAGES = {
@@ -27,6 +29,9 @@ class WorkController(Controller):
     noun = "work"
     actions = ("index", "show", "store", "update", "destroy", "note", "end", "wait")
     numbered = ("show", "update", "destroy")
+    payloads = {"index": ListingPayload, "store": work_payloads.StartPayload, "update": work_payloads.NotePayload,
+                "destroy": work_payloads.EndPayload, "note": work_payloads.NotePayload, "end": work_payloads.EndPayload,
+                "wait": work_payloads.WaitPayload}
     default_direction = fmt.ASC
     EDITS = frozenset({"update", "destroy"})
 
@@ -45,9 +50,9 @@ class WorkController(Controller):
                 "ended": w.ended, "awaiting": (w.awaiting or {}).get("what") or "",
                 "notes": [{"at": x.get("at", ""), "text": x.get("text", "")} for x in w.notes]}
 
-    def index(self, root: Path, p: Payload) -> Result:
+    def index(self, root: Path, p: ListingPayload) -> Result:
         repo = self.repository(root, p)
-        query = repo.query() if p.get("all") else repo.query().where(lambda w: w.open)
+        query = repo.query() if p.all else repo.query().where(lambda w: w.open)
         query = self.sorted(query, p)
         if isinstance(query, Result):
             return query
@@ -57,41 +62,40 @@ class WorkController(Controller):
     def show(self, root: Path, p: Payload) -> Result:
         return Result("ok", "", self._row(self.repository(root, p).find(p.id)))
 
-    def store(self, root: Path, p: Payload) -> Result:
-        return Result.of(work.start(root, p.text("subject"), p.at, p.get("where")), created=True)
+    def store(self, root: Path, p: work_payloads.StartPayload) -> Result:
+        return Result.of(work.start(root, p.subject, p.at, p.where), created=True)
 
-    def update(self, root: Path, p: Payload) -> Result:
-        return Result.of(work.note(root, p.text("text"), p.at, self.repository(root, p).find(p.id).subject))
+    def update(self, root: Path, p: work_payloads.NotePayload) -> Result:
+        return Result.of(work.note(root, p.text, p.at, self.repository(root, p).find(p.id).subject))
 
-    def note(self, root: Path, p: Payload) -> Result:
-        return Result.of(work.note(root, p.text("text"), p.at, p.text("on") or None))
+    def note(self, root: Path, p: work_payloads.NotePayload) -> Result:
+        return Result.of(work.note(root, p.text, p.at, p.on or None))
 
-    def destroy(self, root: Path, p: Payload) -> Result:
+    def destroy(self, root: Path, p: work_payloads.EndPayload) -> Result:
         return self._end(root, p, self.repository(root, p).find(p.id).subject)
 
-    def end(self, root: Path, p: Payload) -> Result:
-        if not p.text("subject") and not p.get("force"):
+    def end(self, root: Path, p: work_payloads.EndPayload) -> Result:
+        if not p.subject and not p.force:
             return Result("refused", say("end_words"))
-        return self._end(root, p, p.text("subject"))
+        return self._end(root, p, p.subject)
 
-    def _end(self, root: Path, p: Payload, subject: str) -> Result:
-        ok, message = work.end(root, subject, p.at, bool(p.get("force")))
+    def _end(self, root: Path, p: work_payloads.EndPayload, subject: str) -> Result:
+        ok, message = work.end(root, subject, p.at, p.force)
         if not ok:
             return Result("refused", message)
         env = state.current_track(root)
         meta = {"standing": len(pins.live(root, pins.RULES)) + len(pins.live(root))}
         row = todo.titled(root, env, subject)
-        if row and (p.get("todo") or p.get("todos")):
-            closed, note = todo.close_titled(root, env, subject, p.at, p.text("as"))
+        if row and (p.todo or p.todos):
+            closed, note = todo.close_titled(root, env, subject, p.at, p.agent)
             meta.update(todo_closed=closed, todo_note=note)
         elif row:
             meta["todo_open"] = row["n"]
         return Result("ok", message, None, meta)
 
-    def wait(self, root: Path, p: Payload) -> Result:
+    def wait(self, root: Path, p: work_payloads.WaitPayload) -> Result:
         conf, _ = settings_mod.load(root)
-        minutes = float(p.get("for")) if p.get("for") is not None else conf["await_default_minutes"]
+        minutes = p.minutes if p.minutes is not None else conf["await_default_minutes"]
         cap = conf["await_max_minutes"]
-        outcome = work.wait(root, p.text("what"), min(minutes, cap), p.at, time.time(), p.text("on") or None,
-                            p.text("agent") or None, int(p.get("pid")) if p.get("pid") else None)
+        outcome = work.wait(root, p.what, min(minutes, cap), p.at, time.time(), p.on or None, p.agent or None, p.pid)
         return Result.of(outcome, meta={"capped": cap if minutes > cap else None})
