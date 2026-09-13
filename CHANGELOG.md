@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.3 — `reminders` moves onto command classes
+
+`journal reminders` (and `reminder`, `remind`) now runs from `commands/reminders.py`, its
+messages from templates, and the hook classifies its writes from those command classes. What
+it accepts and prints is unchanged. A lent subagent is now refused `journal remind` writes too:
+`reminders` and `reminder` always were, and the third spelling of the same write never was.
+
 ## 1.62.2 — commands are classes, one file per noun; `ideas` moves over
 
 A command is now a `Command` subclass (`command.py`) that declares its noun, verb, arguments,

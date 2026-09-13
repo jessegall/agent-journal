@@ -1574,46 +1574,6 @@ def cmd_pin_full(n: int) -> int:
     return 0 if ok else 1
 
 
-def cmd_remind(text: str, until: str) -> int:
-    """`journal reminders add` — start saying this again at every stop."""
-    conf, _ = settings_mod.load(root())
-    ok, msg = reminders.add(root(), text, _now(), conf["reminder_max_chars"], until)
-    fmt.say(msg, error=not ok)
-    if ok and conf["reminder_every"]:
-        fmt.say(f"  and again every {conf['reminder_every']} tool calls in between "
-                "(settings: reminder_every)")
-    return 0 if ok else 1
-
-
-def cmd_reminder_done(n: int, why: str) -> int:
-    ok, msg = reminders.done(root(), n, why, _now())
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_reminders(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
-    """The list, and what it costs — the one catalogue whose entries are re-read for free
-    by nobody. Every line here is said at every stop, so the count is the headline."""
-    conf, _ = settings_mod.load(root())
-    n = len(reminders.live(root()))
-    retired = len(reminders._all(root())) - n
-    sub = f"environment {tracks.current(root(), _stem())} · {n} repeated"
-    if all_of_them and retired:
-        sub += f", {retired} retired"
-    every = f", and every {conf['reminder_every']} tool calls in between" if conf["reminder_every"] else ""
-    return _catalogue(
-        "REMINDERS", sub,
-        reminders.listing(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order),
-        "Nothing is being repeated.",
-        f"Said to you at every stop{every}, and to the user with it — they wrote it, and "
-        "seeing it come back is how they know it landed. Nothing here expires on its own.",
-        [('journal reminders add "<instruction>" [--until="<condition>"]', "start repeating one; --until is prose YOU judge"),
-         ('journal reminders done <n> "<why>"', "retire one whose condition came true"),
-         ('journal reminders move <n> "<environment>"', "it belongs to an environment, like a pin"),
-         ("journal reminders --all", "the retired ones too")],
-        noun="reminders", page=page, order=order)
-
-
 def cmd_pins(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
     conf, _ = settings_mod.load(root())
     here = tracks.current(root(), _stem())
@@ -1892,7 +1852,6 @@ class Opts:
     sessions: list
     page: int = 1
     abstract: str = ""
-    until: str = ""
     after: str = ""
     acting: str = ""
     to_agent: str = ""
@@ -1986,7 +1945,6 @@ VALUE_FLAGS: dict[str, _Flag] = {
     "--order": _Flag(dest="order", type=_order_flag),
     "--session": _Flag(dest="sessions", append=True),
     "--abstract": _Flag(dest="abstract"),
-    "--until": _Flag(dest="until"),
     "--after": _AFTER, "--needs": _AFTER,
     "--as": _Flag(dest="acting"),
     "--to": _Flag(dest="to_agent"),
@@ -2215,38 +2173,6 @@ def _v_strike(verb: str, rest: list[str], opts: Opts) -> int:
     return cmd_strike(n, " ".join(rest[2:]))
 
 
-def _v_reminders(verb: str, rest: list[str], opts: Opts) -> int:
-    # THE NOUN OWNS ITS VERBS, and the bare singular is an ALIAS of the list rather
-    # than a shortcut for `add`: `journal remind` printing the reminders is a read, and
-    # a verb whose argument is missing must never take the payload's place.
-    sub = rest[1] if len(rest) > 1 else ""
-    if sub == "add":
-        said, why = _words(rest, 2, "reminders add", 'the instruction, in one line: '
-                            'journal reminders add "<what to keep telling you>"')
-        if why:
-            return _refuse(why)
-        return cmd_remind(" ".join(rest[2:]), opts.until)
-    if sub in ("done", "retire", "strike", "stop"):
-        if len(rest) < 4:
-            return _refuse('reminders done wants a number and why: '
-                    'journal reminders done 2 "<what made it true>"')
-        n, why = _number(rest, 2, "reminders done", "reminder", "journal reminders")
-        return _refuse(why) if why else cmd_reminder_done(n, " ".join(rest[3:]))
-    if sub == "move":
-        if len(rest) < 4 or not rest[2].isdigit():
-            return _refuse('reminders move wants a number and an environment: '
-                    'journal reminders move 2 "<environment>"')
-        ok, msg = reminders.move(root(), int(rest[2]), " ".join(rest[3:]), _now())
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    if sub == "list":
-        return cmd_reminders(opts.all_of_them, opts.page, opts.order)
-    if sub:
-        return _refuse(f"reminders has no {sub!r}. It takes add, done, move, list — and a "
-                "bare `journal reminders` reads them.")
-    return cmd_reminders(opts.all_of_them, opts.page, opts.order)
-
-
 def _dispatch(argv: list[str]) -> int:
     parsed, why = commands.REGISTRY.parse(argv)
     return parsed.command.run(parsed) if parsed else _refuse(why)
@@ -2396,7 +2322,6 @@ _ALIASES: dict[tuple[str, ...], object] = {
     ("todo", "todos"): lambda verb, rest, opts: cmd_todo(
         rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,
         opts.page, opts.order, opts.quiet, opts.order_by_id, opts.prune_before, opts.force),
-    ("reminders", "reminder", "remind"): _v_reminders,
     ("start", "end"): _v_start_end,
     ("migrate", "migrations"): _v_migrate,
     ENV_NOUNS: _v_environments,

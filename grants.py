@@ -107,6 +107,7 @@ NEVER = {
     "pins": _INHERITED.format(noun="pin"), "pin": _INHERITED.format(noun="pin"),
     "reminders": _INHERITED.format(noun="reminder"),
     "reminder": _INHERITED.format(noun="reminder"),
+    "remind": _INHERITED.format(noun="reminder"),
     # THE NOUN SPELLINGS OF THE SAME LIFECYCLE VERBS. `journal environments switch "x"` is
     # the documented twin of `journal switch "x"`, so refusing one and not the other would
     # be refusing a spelling rather than an act.
@@ -123,8 +124,9 @@ def unreachable() -> set:
     a granted subagent could `journal claim` a live session's environment out from under it.
     `test_bind` asserts this is empty, which is the assertion that would have caught it.
     """
+    import commands
     import hook
-    return set(NEVER) - set(hook.JOURNAL_WRITES)
+    return {v for v in NEVER if v not in hook.JOURNAL_WRITES and not commands.REGISTRY.knows(v)}
 
 
 def granted(root: Path, stem: str | None) -> list[str]:
