@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.8 — `docs` moves onto command classes
+
+Every docs verb — list, show/read, `<doc> files`, files, add, part, replace, strike, final,
+draft, abstract, move, supersede, attach, detach, index and search — is declared in
+`commands/docs.py`, and the hook classifies docs writes from those declarations instead of
+its own table. What each accepts and prints is unchanged.
+
 ## 1.62.7 — `todos` moves onto command classes
 
 Every to-do verb — list, show, add, start, done, drop/strike, reopen, move, ask, answer,

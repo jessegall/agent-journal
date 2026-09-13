@@ -1288,7 +1288,6 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 #: is the documented twin of `journal switch "x"` (ruling R11) and presents `environments`
 #: as its verb, so without it half of every lifecycle command was ungated.
 JOURNAL_WRITES = frozenset({"update", "switch",
-                            "docs",
                             "tools", "loop", "prepare", "migrate", "claim", "grant", "grants",
                             "environments", "environment", "envs", "env", "tracks", "track",
                             "cleanup", "worktree", "upgrade"})
@@ -1344,9 +1343,6 @@ def _journal_write(payload: dict) -> str | None:
     return None
 
 
-DOCS_WRITES = frozenset({"add", "part", "replace", "strike", "final", "draft", "abstract",
-                         "supersede", "index", "attach", "detach", "move"})
-#: What turns `pins`/`rules` from a listing into a change.
 TOOL_WRITES = frozenset({"add", "set", "remove", "index"})
 
 #: EVERY NOUN THAT IS A READ ON ITS OWN, AND WHAT TURNS IT INTO A WRITE — as a predicate on
@@ -1356,7 +1352,6 @@ TOOL_WRITES = frozenset({"add", "set", "remove", "index"})
 #: listing, has counted as a write, gated behind open work and refused to a lent agent that
 #: was told to read what it inherited.
 NOUN_WRITES = {
-    "docs": DOCS_WRITES.__contains__,
     "tools": TOOL_WRITES.__contains__,
 }
 

@@ -100,7 +100,7 @@ verify = _Lazy("verify")
 import worktree as _wt
 
 import app
-from app import BRIEF_REFUSED, CATALOGUE_PAGE, project, root
+from app import BRIEF_REFUSED, CATALOGUE_PAGE, PAGE, project, root
 from app import brief as _brief, catalogue as _catalogue, doc_where as _doc_where, now as _now
 from app import refuse as _refuse, resolved as _resolved, stem as _stem, where as _where
 
@@ -344,7 +344,6 @@ def cmd_user(back: int) -> int:
 
 
 
-PAGE = 25
 #: A LISTING SHOWN BY DEFAULT COSTS CONTEXT EVERY TIME; a search was asked for. So the
 
 
@@ -436,137 +435,6 @@ def cmd_search(term: str, all_of_them: bool = False, width: int | None = None, p
 
 
 
-def cmd_docs(rest: list[str], brief: bool, abstract: str, page: int, replace: bool = False,
-             order: str = fmt.DESC, all_of_them: bool = False, global_flag: bool = False) -> int:
-    here = tracks.current(root(), _stem())
-    body = _brief(brief)
-    if body is None:
-        fmt.say(BRIEF_REFUSED, error=True)
-        return 1
-    if not rest:
-        # THE CATALOGUE FOR THIS ENVIRONMENT: its own docs and the project's. `--all` is the
-        # whole shelf, and the sub-heading says which of the two you are looking at, because
-        # a filtered list that does not announce itself is a list somebody will trust as
-        # complete.
-        every = docs._load(root())
-        cat = every if all_of_them else [d for d in every if docs.here(d, here)]
-        drafts = len([d for d in cat if d.get("status") != "final"])
-        loose = docs.uncatalogued(root())
-        elsewhere = len(every) - len(cat)
-        sub = f"{len(cat)} catalogued" + (f" · {drafts} draft(s)" if drafts else "")
-        if elsewhere:
-            sub += f" · {elsewhere} on other environments (--all)"
-        fmt.say(fmt.title("DOCS OF THIS PROJECT", sub=sub))
-        fmt.say()
-        fmt.say(docs.catalogue(root(), cap=CATALOGUE_PAGE, page=page, order=order,
-                               track=here, all_of_them=all_of_them))
-        if loose:
-            fmt.say()
-            fmt.say(fmt.wrap(f"{len(loose)} file(s) under {docs.folder(root()).name}/ are not catalogued: "
-                           + ", ".join(x.name for x in loose)))
-        fmt.say()
-        # THE SENTENCE EVERY OTHER CATALOGUE HAS. Four of seven screens said what their
-        # store is and what it costs before listing its commands; docs and tools said
-        # nothing, so a reader met the commands without ever being told what they are for.
-        fmt.say(fmt.wrap("What was settled, so it is not re-investigated: a doc is read on "
-                         "demand and never injected, and one line of its catalogue reaches "
-                         "every session. A pin, rule or to-do that rests on one cites it "
-                         "with --doc=N."))
-        fmt.say(fmt.commands([
-            ("journal docs show <doc>", "read one, by number or name; <doc>.<p> reads one part"),
-            ('journal docs add "<title>" --abstract="<one line>" --brief', "a new doc, its intro on stdin"),
-            ('journal docs part <doc> "<title>" --brief', "a new part, from stdin"),
-            ('journal docs attach <doc> <path> "<what it is>"', "copy a file or folder (HTML, a design, a PDF) into the doc"),
-            ("journal docs <doc> files", "its attachments, as a tree; `docs files` lists every doc's"),
-            ("journal docs search <term>", "every line of every doc mentioning it"),
-            ('journal pins add "<claim>" --doc=<doc>[.<p>]', "cite a doc, or one part, from a pin; rule and todo take it too"),
-        ] + ([("journal docs index", "catalogue the loose files")] if loose else [])))
-        return 0
-    verb = rest[0]
-    if verb == "add":
-        # A DOC BELONGS TO THE WORK IT CAME OUT OF, unless it is the project's. `--global`
-        # is the opt-out, and it is a deliberate one: a doc every environment is handed at
-        # every start is a charge on every session, so the reader who wants that should have
-        # said so.
-        ok, msg = docs.add(root(), " ".join(rest[1:]), abstract, body,
-                           docs.GLOBAL if global_flag else here)
-    elif verb == "part":
-        if len(rest) < 3:
-            fmt.say('docs part wants a doc number and a title: journal docs part 4 "<title>" --brief', error=True)
-            return 1
-        ok, msg = docs.part(root(), rest[1], " ".join(rest[2:]), body, here)
-    elif verb == "replace":
-        if len(rest) < 2:
-            fmt.say("docs replace wants a part, like 4.2", error=True)
-            return 1
-        ok, msg = docs.replace(root(), rest[1], body, here)
-    elif verb == "strike":
-        if len(rest) < 3:
-            fmt.say('docs strike wants a part and why: journal docs strike 4.2 "<why>"', error=True)
-            return 1
-        ok, msg = docs.strike(root(), rest[1], " ".join(rest[2:]))
-    elif verb in ("final", "draft"):
-        if len(rest) < 2:
-            fmt.say(f"docs {verb} wants a doc number", error=True)
-            return 1
-        ok, msg = docs.set_status(root(), rest[1], verb)
-    elif verb == "abstract":
-        if len(rest) < 3:
-            fmt.say('docs abstract wants a doc number and the line: journal docs abstract 4 "<one line>"', error=True)
-            return 1
-        ok, msg = docs.set_abstract(root(), rest[1], " ".join(rest[2:]))
-    elif verb == "move":
-        # `--global` IS A FLAG, so it never reaches `rest` — the destination is either the
-        # name that was typed or the project. Saying both is a contradiction, and a command
-        # that quietly picks one of two things the user asked for is worse than a refusal.
-        dst = " ".join(rest[2:])
-        if global_flag and dst:
-            return _refuse(f'`docs move {rest[1] if len(rest) > 1 else "<doc>"}` was given both '
-                           f'`--global` and `{dst}`. A doc belongs to the project or to one '
-                           "environment; say which.")
-        if len(rest) < 2 or not (dst or global_flag):
-            return _refuse('`journal docs move <doc> "<environment>"` — or `--global` to give '
-                           "it to the project, which lists it on every environment")
-        ok, msg = docs.move(root(), rest[1], docs.GLOBAL if global_flag else dst)
-    elif verb == "supersede":
-        if len(rest) < 4 or rest[2] != "by":
-            fmt.say("journal docs supersede <old> by <new>", error=True)
-            return 1
-        ok, msg = docs.supersede(root(), rest[1], rest[3])
-    elif verb == "attach":
-        if len(rest) < 3:
-            fmt.say('docs attach wants a doc number and a path: journal docs attach 4 ./design.html "<what it is>"', error=True)
-            return 1
-        ok, msg = docs.attach(root(), rest[1], rest[2], " ".join(rest[3:]), here, replace=replace)
-    elif verb in ("attachments", "files"):
-        ok, msg = docs.list_attachments(root(), " ".join(rest[1:]))
-    elif len(rest) > 1 and rest[-1] in ("files", "attachments"):
-        ok, msg = docs.list_attachments(root(), " ".join(rest[:-1]))
-    elif verb == "detach":
-        if len(rest) < 4:
-            fmt.say('docs detach wants a doc number, a name and why: journal docs detach 4 design.html "<why>"', error=True)
-            return 1
-        ok, msg = docs.detach(root(), rest[1], rest[2], " ".join(rest[3:]))
-    elif verb == "index":
-        for line in docs.adopt(root(), here):
-            fmt.say(line)
-        return 0
-    elif verb == "search":
-        return cmd_docs_search(" ".join(rest[1:]), page, all_of_them=all_of_them)
-    # A DOC IS NAMED BY THE USER, so it can be called anything — `journal docs show search`
-    # is how you read a doc called "search" when the bare form would dispatch the verb.
-    elif verb in ("show", "read") and len(rest) > 1:
-        ok, msg = docs.show(root(), " ".join(rest[1:]))
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    elif verb == "list" and len(rest) == 1:
-        return cmd_docs([], brief, abstract, page, replace, order, all_of_them, global_flag)
-    else:
-        ok, msg = docs.show(root(), " ".join(rest))
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
 
 
 def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1, order: str = fmt.DESC) -> int:
@@ -636,48 +504,6 @@ def cmd_tools(rest: list[str], brief: bool, meta: dict, page: int = 1, order: st
     return 0 if ok else 1
 
 
-def cmd_docs_search(term: str, page: int = 1, width: int | None = None,
-                    all_of_them: bool = False) -> int:
-    width = fmt.room(width)
-    import textwrap
-    needle = term.lower()
-    if not needle:
-        fmt.say("docs search wants a term", error=True)
-        return 1
-    here = tracks.current(root(), _stem())
-    every = docs.search_lines(root(), all_of_them=True)
-    lines = every if all_of_them else docs.search_lines(root(), track=here)
-    hits = [(ref, title, i, line) for ref, title, i, line in lines if needle in line.lower()]
-    elsewhere = len([1 for r, t, i, l in every if needle in l.lower()]) - len(hits)
-    if not hits:
-        fmt.say(fmt.title(f"NO DOC MENTIONS {term!r}",
-                          sub=f"{elsewhere} on other environments (--all)" if elsewhere else ""))
-        fmt.say(fmt.commands([(f"journal search {term}", "the transcript instead")]
-                             + ([(f"journal docs search {term} --all", "every environment's docs")]
-                                if elsewhere else [])))
-        return 0
-    pages = max(1, -(-len(hits) // PAGE))
-    page = min(max(1, page), pages)
-    lo, hi = (page - 1) * PAGE, page * PAGE
-    said = [f"page {page} of {pages}"] if pages > 1 else []
-    if elsewhere:
-        said.append(f"{elsewhere} on other environments (--all)")
-    fmt.say(fmt.title(f"{len(hits)} DOC LINE(S) MENTION {term!r}", sub=" · ".join(said)))
-    last = None
-    for ref, title, i, line in hits[lo:hi]:
-        if ref != last:
-            fmt.say(fmt.section(f"doc {ref}  {title}"))
-            last = ref
-        body = " ".join(line.split())
-        j = body.lower().find(needle)
-        body = body[:j] + "«" + body[j:j + len(term)] + "»" + body[j + len(term):]
-        fmt.say(textwrap.fill(body, width=width, initial_indent=f"  {i:>4}  ", subsequent_indent="        "))
-    fmt.say()
-    rows = [("journal docs <doc>", "read the doc, by number or name")]
-    if page < pages:
-        rows.insert(0, (f"journal docs search {term} --page={page + 1}", f"the next {min(PAGE, len(hits) - hi)}"))
-    fmt.say(fmt.commands(rows))
-    return 0
 
 
 def cmd_serve(port: int | None, open_browser: bool) -> int:
@@ -1094,17 +920,14 @@ class Opts:
     go_back: bool = False
     fresh: bool = False
     brief: bool = False
-    replace: bool = False
     off_flag: bool = False
     list_flag: bool = False
-    global_flag: bool = False
     project_too: bool = False
     all_sessions: bool = False
     yes_flag: bool = False
     order: str = fmt.DESC
     sessions: list
     page: int = 1
-    abstract: str = ""
     acting: str = ""
     to_agent: str = ""
     from_src: str | None = None
@@ -1168,7 +991,6 @@ VALUE_FLAGS: dict[str, _Flag] = {
     "--env": _ENV_NOOP, "--environment": _ENV_NOOP, "--track": _ENV_NOOP,
     "--order": _Flag(dest="order", type=_order_flag),
     "--session": _Flag(dest="sessions", append=True),
-    "--abstract": _Flag(dest="abstract"),
     "--as": _Flag(dest="acting"),
     "--to": _Flag(dest="to_agent"),
     "--summary": _TOOL_META, "--usage": _TOOL_META, "--when": _TOOL_META, "--entry": _TOOL_META,
@@ -1182,11 +1004,8 @@ VALUE_FLAGS: dict[str, _Flag] = {
 # theirs.
 BARE_FLAGS: dict[str, _Flag] = {
     "--off": _Flag(dest="off_flag"),
-    #: A DOC BELONGS TO ITS ENVIRONMENT UNLESS THIS SAYS THE PROJECT'S — see `docs.GLOBAL`.
-    "--global": _Flag(dest="global_flag"),
     #: `grant` LENDS BARE now, so its listing needed a spelling of its own — `_v_grant`.
     "--list": _Flag(dest="list_flag"),
-    "--replace": _Flag(dest="replace"),
     "--brief": _Flag(dest="brief"),
     "--project": _Flag(dest="project_too"),
     "--yes": _Flag(dest="yes_flag"),
@@ -1387,9 +1206,6 @@ COMMANDS.update({
     "assign": _v_assign,
     "user": lambda verb, rest, opts: cmd_user(opts.back),
     "search": _v_search,
-    "docs": lambda verb, rest, opts: cmd_docs(rest[1:], opts.brief, opts.abstract, opts.page,
-                                              opts.replace, opts.order, opts.all_of_them,
-                                              opts.global_flag),
     "tools": lambda verb, rest, opts: cmd_tools(rest[1:], opts.brief, opts.tool_meta, opts.page, opts.order),
     "carry": lambda verb, rest, opts: cmd_carry(opts.fresh),
     "claim": lambda verb, rest, opts: cmd_claim(rest[1] if len(rest) > 1 else "", " ".join(rest[2:])),
