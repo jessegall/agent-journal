@@ -86,27 +86,6 @@ def overview(root: Path) -> dict:
     }
 
 
-# ────────────────────────────────────────────────────────────────── to-dos
-def todos(root: Path, env: str) -> list[dict]:
-    """Every to-do on this environment, newest first — `todo.rows_response` is the
-    same response `journal todos` renders to text (see `todo.row_response`)."""
-    return todo.rows_response(root, env)
-
-
-def todo_detail(root: Path, env: str, n: int) -> dict | None:
-    """One to-do in full: its brief, its state, what it cites, what it waits on."""
-    t, err = todo.item(root, env, n)
-    if t is None:
-        return None
-    row = todo.row_response(root, env, t)
-    row["body"] = t.get("body", "")
-    row["started"] = t.get("started") or ""
-    row["done"] = t.get("done") or ""
-    row["how"] = t.get("how") or ""
-    row["questions"] = questions_about(root, env, f"todo:{n}")
-    return row
-
-
 # ────────────────────────────────────────────────────────────────── docs
 def docs(root: Path) -> list[dict]:
     """The project's OWN docs — global scope, never one environment's. `docs.row`

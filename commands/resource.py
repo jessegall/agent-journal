@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import fmt
 from command import Command, Parsed
-from controller import Result
+from controller import Payload, Result
 
 
 class Resource(Command):
@@ -11,12 +11,15 @@ class Resource(Command):
     action = ""
     id_arg = "n"
 
-    def extra(self) -> dict:
-        return {}
+    def payload(self, p: Parsed) -> Payload | int:
+        return p.payload()
 
     def run(self, p: Parsed) -> int:
         from app import root
-        return self.render(p, self.controller.call(root(), self.action, p.payload()))
+        payload = self.payload(p)
+        if isinstance(payload, int):
+            return payload
+        return self.render(p, self.controller.call(root(), self.action, payload))
 
     def render(self, p: Parsed, result: Result) -> int:
         if result.message:

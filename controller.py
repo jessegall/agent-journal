@@ -93,6 +93,12 @@ class Controller:
     def count(self, root: Path) -> int:
         return 0
 
+    def exists(self, root: Path, ident: int) -> bool:
+        return 1 <= ident <= self.count(root)
+
+    def guard(self, root: Path, action: str, payload: Payload) -> Result | None:
+        return None
+
     def call(self, root: Path, action: str, payload: Payload) -> Result:
         if action not in self.actions:
             return Result("missing", say("no_action", resource=self.resource, action=repr(action)))
@@ -103,6 +109,6 @@ class Controller:
                 if not str(payload.id).isdigit():
                     return Result("refused", say("bad_id", resource=self.resource, action=action, id=repr(payload.id)))
                 payload.id = int(payload.id)
-                if not 1 <= payload.id <= self.count(root):
+                if not self.exists(root, payload.id):
                     return Result("missing", say("no_item", noun=self.noun, id=payload.id))
-            return getattr(self, action)(root, payload)
+            return self.guard(root, action, payload) or getattr(self, action)(root, payload)

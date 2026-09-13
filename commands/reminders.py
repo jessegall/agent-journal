@@ -35,8 +35,10 @@ class List(Resource):
     controller = CONTROLLER
     action = "index"
 
-    def extra(self) -> dict:
-        return {"cap": CATALOGUE_PAGE}
+    def payload(self, p: Parsed):
+        got = p.payload()
+        got.fields["cap"] = CATALOGUE_PAGE
+        return got
 
     def render(self, p: Parsed, result) -> int:
         import settings as settings_mod

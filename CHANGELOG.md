@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.69.0 — to-dos go through their controller; a closed to-do cannot be edited
+
+Every `journal todos` command and the viewer's to-do API run through `TodosController`:
+`GET/POST /api/env/<env>/todos`, `GET/PATCH/DELETE …/todos/<n>` (PATCH takes `title`, `body`
+and `priority`; DELETE drops it and wants a `why`), and `POST …/todos/<n>/<action>` for
+done, reopen, start, move, ask, answer, block, unblock, after, report, priority, amend and
+replace. A closed to-do — done or dropped — refuses every change, from the terminal and the
+web alike, and names `reopen` as the way back.
+
 ## 1.68.0 — questions go through their controller; an answer can be edited
 
 Every `journal questions` command and the viewer's question API run through
