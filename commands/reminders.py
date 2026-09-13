@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import fmt
-import tracks
-from app import CATALOGUE_PAGE, catalogue, root, stem
+from app import CATALOGUE_PAGE, catalogue
 from command import Parsed, number
 from commands.options import LISTING, LISTING_CASTS
 from commands.resource import Resource
@@ -41,16 +40,14 @@ class List(Resource):
         return got
 
     def render(self, p: Parsed, result) -> int:
-        import settings as settings_mod
-        conf, _ = settings_mod.load(root())
         items = [fmt.Item(n=r["n"], text=r["text"], meta=r["meta"], struck=r["struck"]) for r in result.data]
         retired = result.meta["retired"]
         return catalogue(
             "REMINDERS",
-            render(PAGE["sub"], env=tracks.current(root(), stem()), n=result.meta["live"],
+            render(PAGE["sub"], env=result.meta["env"], n=result.meta["live"],
                    retired=retired if p.option("all") and retired else None),
             (items, result.meta["left"]),
-            PAGE["empty"], render(PAGE["lead"], every=conf["reminder_every"] or None),
+            PAGE["empty"], render(PAGE["lead"], every=result.meta["every"] or None),
             PAGE["commands"], noun="reminders", page=p.option("page"), order=p.option("order"))
 
 

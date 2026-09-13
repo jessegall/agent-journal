@@ -255,16 +255,20 @@ def show(root: Path, n: int) -> tuple[bool, str]:
     items = _all(root)
     if n < 1 or n > len(items):
         return False, say("no_question", n=n)
-    q = items[n - 1]
-    text = say("show_head", n=n, age=age(q.get("at", "")), text=fmt.wrap(q["text"], indent=2),
-               links=labels(q.get("links") or []) or "nothing linked")
-    if q.get("withdrawn"):
+    return True, show_text(row_response(n, items[n - 1]))
+
+
+def show_text(q: dict) -> str:
+    """A question's `row_response` as the terminal page."""
+    text = say("show_head", n=q["n"], age=q["age"], text=fmt.wrap(q["text"], indent=2),
+               links=[link["label"] for link in q["links"]] or "nothing linked")
+    if q["withdrawn"]:
         tail = say("show_withdrawn", why=q["withdrawn"])
-    elif q.get("answer"):
-        tail = say("show_answered", age=age(q.get("answered_at") or ""), answer=fmt.wrap(q["answer"], indent=4))
+    elif q["answer"]:
+        tail = say("show_answered", age=q["answered_age"], answer=fmt.wrap(q["answer"], indent=4))
     else:
-        tail = say("show_open", n=n)
-    return True, text + "\n" + tail
+        tail = say("show_open", n=q["n"])
+    return text + "\n" + tail
 
 
 def _ordered(root: Path, all_of_them: bool, order: str, track: str | None = None) -> list[tuple[int, dict]]:

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.70.2 — question pages and the reminders list print only what their controllers return
+
+`journal questions show <n>` prints the question from its controller's row, and `journal
+reminders` takes the environment name and the reminder interval from the controller's
+result instead of reading them itself.
+
 ## 1.70.1 — `journal todos` prints only what its controller returns
 
 The to-do list and a to-do's page in the terminal are printed from the controller's result,
