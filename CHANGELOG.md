@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.82.0 — tools have a page, and always a title and a summary
+
+The viewer's Project group has Tools: every catalogued script with its title, summary, usage,
+when to use it and its entry point, and New tool, Edit and Retire. `journal tools` list, show,
+add, set, remove and index run through a new `ToolsController` (`GET/POST /api/tools`,
+`GET/PATCH/DELETE /api/tools/<n>`), which names a tool by its number or its name. A tool was
+already refused without a title and a summary when added; now neither can be blanked with
+`tools set` either, because they are what every session is handed. Also: Home's Recently
+finished shows only each to-do's number, title and when, and status dots are hollow rings.
+
 ## 1.81.0 — Home shows what was recently finished
 
 An environment's Home lists the last eight finished to-dos beside the open ones, newest

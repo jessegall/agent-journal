@@ -87,7 +87,8 @@
   .row.struck .title { color: var(--text-3); text-decoration: line-through; }
   .ico { width: 16px; height: 16px; color: var(--text-3); flex: none; }
   .ico.hot { color: var(--warn); }
-  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; display: inline-block; margin: 0 4px; }
+  .dot { width: 10px; height: 10px; box-sizing: border-box; border: 2px solid; border-radius: 50%; flex: none; display: inline-block; margin: 0 3px; }
+  .toolrow { display: grid; grid-template-columns: 120px minmax(0, 1fr) 72px; gap: 12px; }
   .empty { color: var(--text-3); padding: 16px 20px; margin: 0; }
   .error { color: var(--danger); padding: 12px 20px; margin: 0; }
   .muted { color: var(--text-3); }
@@ -160,6 +161,7 @@
   .search-bar .toggle { margin-left: 0; }
   .searchrow, .hitrow { display: grid; gap: 12px; }
   .stack { min-width: 0; }
+  .finishedrow { display: grid; grid-template-columns: 44px minmax(0, 1fr) 72px; gap: 12px; }
   .searchrow { grid-template-columns: 72px 44px minmax(0, 1fr); }
   .hitrow { grid-template-columns: 52px 48px minmax(0, 1fr); align-items: start; }
   .searchrow .tag, .hitrow .tag { text-align: left; }

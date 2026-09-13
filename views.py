@@ -178,17 +178,6 @@ def questions_everywhere(root: Path, matches) -> list[dict]:
 
 
 # ────────────────────────────────────────────────────────────────── tools
-def tools_catalogue(root: Path) -> list[dict]:
-    """The project's tools — global, like docs."""
-    out = []
-    for t in tools.all_tools(root):
-        out.append({
-            "name": t.get("name", ""),
-            "title": t.get("title", ""),
-            "summary": t.get("summary", ""),
-            "usage": t.get("usage", ""),
-        })
-    return out
 
 
 # ────────────────────────────────────────────────────────────────── safety

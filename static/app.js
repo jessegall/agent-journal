@@ -18,6 +18,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/settings$/, view: "Settings", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/search$/, view: "Search", params: ["env"] },
   { re: /^\/rules(?:\/(\d+|new))?$/, view: "Rules", params: ["n"] },
+  { re: /^\/tools(?:\/(\d+|new))?$/, view: "Tools", params: ["n"] },
   { re: /^\/docs(?:\/(new))?$/, view: "Docs", params: ["n"] },
   { re: /^\/docs\/(\d+(?:\.\d+)?)$/, view: "DocDetail", params: ["docref"] },
 ];
@@ -173,6 +174,7 @@ const Icon = {
       <template v-else-if="name === 'questions'"><circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.3a1.7 1.7 0 0 1 3.2.7c0 1.2-1.6 1.4-1.6 2.5"/><circle cx="8" cy="11.4" r=".6" fill="currentColor" stroke="none"/></template>
       <path v-else-if="name === 'home'" d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>
       <path v-else-if="name === 'close'" d="M4 4l8 8M12 4l-8 8"/>
+      <template v-else-if="name === 'tools'"><path d="M9.8 2.3a3 3 0 0 0-3.6 3.9L2.5 9.9a1.2 1.2 0 0 0 1.7 1.7l3.7-3.7a3 3 0 0 0 3.9-3.6L10 6 8.6 5.4 8 4l1.8-1.7Z"/></template>
       <template v-else-if="name === 'search'"><circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/></template>
       <template v-else-if="name === 'settings'"><circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></template>
     </svg>`,
@@ -188,7 +190,7 @@ const StatusIcon = {
     const color = computed(() => STATUS_COLOR[props.kind] || STATUS_COLOR.open);
     return { color };
   },
-  template: `<span class=dot :style="{background: color}" role=img :aria-label="kind"></span>`,
+  template: `<span class=dot :style="{borderColor: color}" role=img :aria-label="kind"></span>`,
 };
 
 // A PRIORITY IS THREE CHEVRONS: how many are lit is how important it is.
@@ -1101,14 +1103,80 @@ const EnvHome = {
         <div class=home-head><h2>Recently finished</h2><span class=n>{{ finished.length }}</span>
           <a class=more :href="'#/env/' + env + '/todos'">All to-dos</a></div>
         <div class=block>
-          <a v-for="t in finished" :key="t.n" class="row todorow finishedrow" :href="'#/env/' + env + '/todos/' + t.n">
-            <span></span><StatusIcon kind="done"/><span class=num>#{{ t.n }}</span>
-            <div class=stack><div class=title>{{ t.title }}</div><div v-if="t.how" class=sub>{{ t.how }}</div></div>
-            <span class=cite></span><span class=age>{{ t.done_age }}</span>
+          <a v-for="t in finished" :key="t.n" class="row finishedrow" :href="'#/env/' + env + '/todos/' + t.n">
+            <span class=num>#{{ t.n }}</span><span class=title>{{ t.title }}</span><span class=age>{{ t.done_age }}</span>
           </a>
         </div>
       </section>
     </div></div>`,
+};
+
+// ─────────────────────────────────────────────────────────────── tools
+const Tools = {
+  props: ["n"],
+  components: { TopBar, Panel, ActionBar },
+  setup(props) {
+    const base = "#/tools";
+    const list = useFetch(() => "/api/tools");
+    const item = useFetch(() => props.n && props.n !== "new" && `/api/tools/${props.n}`);
+    const creating = [{
+      label: "New tool", method: "POST", url: "/api/tools", submit: "Add tool", leave: true,
+      fields: [{ name: "name", label: "Name", placeholder: "one word, like suite" },
+               { name: "title", label: "Title", placeholder: "what it does, in a few words" },
+               { name: "summary", label: "Summary", placeholder: "the one line every session is handed" },
+               { name: "usage", label: "Usage (optional)", placeholder: "how to call it" }],
+      note: "Put the script in .journal/tools/<name>/ and set its entry from the terminal.",
+    }];
+    const actions = computed(() => {
+      const t = item.data;
+      if (!t) return [];
+      const url = `/api/tools/${t.n}`;
+      return [
+        { label: "Edit", method: "PATCH", url, only: true, submit: "Save",
+          fields: [{ name: "title", label: "Title", value: t.title }, { name: "summary", label: "Summary", value: t.summary },
+                   { name: "usage", label: "Usage", value: t.usage }, { name: "when", label: "When to use it", value: t.when }] },
+        { label: "Retire", method: "DELETE", url, danger: true, leave: true, fields: [{ name: "why", label: "Why it is retired" }] },
+      ];
+    });
+    const done = (body, a) => settle(body, a, base, list, item);
+    return { list, item, creating, actions, done, base };
+  },
+  template: `
+    <TopBar :crumbs="['Project', 'Tools']"><a class="btn new" :href="base + '/new'">New tool</a></TopBar>
+    <div class=viewbar><span v-if="list.data"><b>{{ list.data.length }}</b> catalogued</span></div>
+    <div class=body>
+      <div class=list>
+        <p v-if="list.loading && !list.data" class=empty>Loading…</p>
+        <p v-else-if="list.error" class=error>{{ list.error }}</p>
+        <template v-else-if="list.data">
+          <a v-for="t in list.data" :key="t.name" :class="['row', 'toolrow', {sel: String(t.n) === n}]" :href="base + '/' + t.n">
+            <span class=num>{{ t.name }}</span>
+            <div class=stack><div class=title>{{ t.title }}</div><div class=sub>{{ t.summary }}</div></div>
+            <span class=age>{{ t.age }}</span>
+          </a>
+          <p v-if="!list.data.length" class=empty>No tools are catalogued.</p>
+        </template>
+      </div>
+      <Panel v-if="n === 'new'" label="New tool" :close="base">
+        <ActionBar :actions="creating" open="New tool" :done="done"/>
+      </Panel>
+      <Panel v-else-if="n" :label="'Tool ' + (item.data ? item.data.name : '')" :close="base">
+        <p v-if="item.error" class=error>{{ item.error }}</p>
+        <template v-else-if="item.data">
+          <h2 class=p-title>{{ item.data.title }}</h2>
+          <p class=prose>{{ item.data.summary }}</p>
+          <dl class=props>
+            <dt>Name</dt><dd><code>{{ item.data.name }}</code></dd>
+            <dt>Usage</dt><dd>{{ item.data.usage || '—' }}</dd>
+            <dt>When</dt><dd>{{ item.data.when || '—' }}</dd>
+            <dt>Script</dt><dd>{{ item.data.script || 'no entry point yet' }}</dd>
+            <dt>Added</dt><dd>{{ item.data.age || '—' }}</dd>
+          </dl>
+          <ActionBar :actions="actions" :done="done" :key="'tool' + item.data.n"/>
+          <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
+        </template>
+      </Panel>
+    </div>`,
 };
 
 // ─────────────────────────────────────────────────────────────── search
@@ -1235,7 +1303,7 @@ const Settings = {
 const Home = { template: `<p class=empty>Loading…</p>` };
 const NotFound = { components: { TopBar }, template: `<TopBar :crumbs="['Not found']"/><p class=empty>Nothing here.</p>` };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -1293,6 +1361,7 @@ const App = {
         <div class=group>
           <div class=group-label>Project</div>
           <a :class="['item', {on: route.view === 'Rules'}]" href="#/rules"><Icon name="rules"/>Rules<span class=count>{{ ov.data ? ov.data.rules : '' }}</span></a>
+          <a :class="['item', {on: route.view === 'Tools'}]" href="#/tools"><Icon name="tools"/>Tools</a>
           <a :class="['item', {on: route.view === 'Docs' || route.view === 'DocDetail'}]" href="#/docs"><Icon name="folder"/>All docs<span class=count>{{ ov.data ? ov.data.docs : '' }}</span></a>
         </div>
         <div class=group v-if="ov.data">

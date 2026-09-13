@@ -8,9 +8,10 @@ from controllers.questions import QuestionsController
 from controllers.search import SearchController
 from controllers.reminders import RemindersController
 from controllers.todos import TodosController
+from controllers.tools import ToolsController
 from controllers.work import WorkController
 
 CONTROLLERS = {c.resource: c for c in (RemindersController(), QuestionsController(), TodosController(),
                                           PinsController(), RulesController(), InboxController(),
                                           WorkController(), DocsController(),
-                                          EnvironmentController(), SearchController())}
+                                          EnvironmentController(), SearchController(), ToolsController())}

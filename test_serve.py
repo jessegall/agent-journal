@@ -361,6 +361,18 @@ check("a field that cannot be sorted on is a 400 naming what can", (status, "pri
 status, got = post("/api/env/beta/todos/2", {"title": "x"}, method="PATCH")
 check("a number that is not on that environment is 404", status, 404)
 
+# ─────────────────────────────────────────────────────────────── tools, through their controller
+status, got = post("/api/tools", {"name": "report", "title": "Write the report", "summary": "prints the weekly report"})
+check("store: a tool from the browser", (status, [t["name"] for t in json.loads(get("/api/tools")[2])]), (201, ["report"]))
+status, got = post("/api/tools", {"name": "untitled", "title": "No summary"})
+check("a tool without a summary is refused", status, 400)
+status, got = post("/api/tools/1", {"summary": "  "}, method="PATCH")
+check("and its summary cannot be blanked", status, 400)
+status, got = post("/api/tools/1", {"usage": "journal tools run report"}, method="PATCH")
+check("its usage can be set", (status, json.loads(get("/api/tools/1")[2])["usage"]), (200, "journal tools run report"))
+status, got = post("/api/tools/1", {"why": "not needed"}, method="DELETE")
+check("destroy retires it", (status, json.loads(get("/api/tools")[2])), (200, []))
+
 # ─────────────────────────────────────────────────────────────── search, through its controller
 status, _, body = get("/api/env/alpha/search?term=do%20the%20thing")
 found = json.loads(body)
