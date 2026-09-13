@@ -36,7 +36,7 @@ INDEX = "index.md"
 STRUCK = "struck"
 FILES = "files"                 # a doc's attachments: any file or folder, copied in, listed in a manifest
 MANIFEST = "manifest.json"
-FIELDS = ("n", "title", "abstract", "status", "track", "source", "at", "supersedes", "superseded_by", "adopted")
+FIELDS = ("n", "title", "abstract", "abstract_at", "status", "track", "source", "at", "supersedes", "superseded_by", "adopted")
 
 #: WHAT `track:` MEANS ON A DOC, and it is a SCOPE now rather than a note about where the
 #: doc came from.
@@ -122,6 +122,10 @@ MESSAGES = {
     "no_abstract": '(no abstract yet — journal docs abstract <n> "…" gives it one)',
     "abstract_usage": 'journal docs abstract <n> "<one line>"',
     "abstract_set": "doc {n}: {abstract}",
+    "title_usage": 'journal docs title <n> "<the title>"',
+    "title_set": "doc {n} is titled: {title}",
+    "no_paths": "doc {n} has no attachments",
+    "fact_stale": "abstract older than its parts or files",
     "cite_rule": "rule {n}: {text}",
     "cite_other": "{kind} {n} on environment {env}: {text}",
     "missing": "doc {ref} (missing)",
@@ -158,8 +162,8 @@ MESSAGES = {
     "cmd_status": "journal docs {status} {n}",
     "cmd_status_what": "change its status",
     "draft_mark": "  (draft)",
-    "files_mark": "  ({n} file(s): {names:, }{more})",
-    "carry_brief": "  {n}  {title}{draft}",
+    "files_mark": "  ({n} file(s): {names:, }{more} · journal docs paths {doc})",
+    "carry_brief": "  {n}  {title}{draft}{files}",
     "carry_row": "  {n}  {title}{mark}\n       {abstract}",
     "carry": "DOCS OF THIS PROJECT, {total} catalogued — read one before you re-investigate what it settles; "
              "`journal docs <n>` reads it, `journal docs search <term>` finds a line:\n{rows:\n}{more}",
@@ -821,9 +825,41 @@ def set_abstract(root: Path, ref: str, abstract: str) -> tuple[bool, str]:
     if doc is None:
         return False, err
     meta = {k: doc.get(k, "") for k in FIELDS}
-    meta["abstract"] = abstract
+    meta["abstract"], meta["abstract_at"] = abstract, _now()
     _write(doc["path"], meta, doc["body"])
     return True, say("abstract_set", n=doc["n"], abstract=abstract)
+
+
+def set_title(root: Path, ref: str, title: str) -> tuple[bool, str]:
+    title = " ".join((title or "").split())
+    if not title:
+        return False, say("title_usage")
+    doc, _, err = get(root, ref)
+    if doc is None:
+        return False, err
+    meta = {k: doc.get(k, "") for k in FIELDS}
+    meta["title"] = title
+    _write(doc["path"], meta, doc["body"])
+    return True, say("title_set", n=doc["n"], title=title)
+
+
+def file_paths(doc: dict) -> list[Path]:
+    """Every file a doc holds as an attachment, a folder's files included, as absolute paths."""
+    out = []
+    for a in attachments(doc):
+        p = a["path"].resolve()
+        if a["dir"]:
+            out.extend(x for x in sorted(p.rglob("*")) if x.is_file() and not x.name.startswith("."))
+        else:
+            out.append(p)
+    return out
+
+
+def stale(doc: dict) -> bool:
+    """A part or an attachment was added after the abstract was last written."""
+    since = doc.get("abstract_at") or doc.get("at") or ""
+    later = [x.get("at") or "" for x in (doc.get("parts") or [])] + [a.get("at") or "" for a in attachments(doc)]
+    return bool(since) and any(at > since for at in later)
 
 
 # ------------------------------------------------------------------ what cites a doc
@@ -971,6 +1007,8 @@ def facts_text(root: Path, d: dict) -> str:
         out.append(say("fact_files", n=len(files)))
     if _age(d.get("at", "")):
         out.append(_age(d.get("at", "")))
+    if stale(d):
+        out.append(say("fact_stale"))
     if d.get("superseded_by"):
         out.append(say("fact_superseded", n=d["superseded_by"]))
     if d.get("abstract"):
@@ -1099,12 +1137,13 @@ def carry(root: Path, cap: int = 20, track: str = "", brief: bool = False) -> st
     for d in fmt.ordered(docs)[:cap]:
         draft = say("draft_mark") if d.get("status") != "final" else ""
         n = str(d["n"]).rjust(3)
-        if brief:
-            lines.append(say("carry_brief", n=n, title=fmt.gist(d["title"]), draft=draft))
-            continue
         files = attachments(d)
-        mark = draft + (say("files_mark", n=len(files), names=[a["name"] for a in files[:3]],
-                            more="…" if len(files) > 3 else "") if files else "")
+        shown = say("files_mark", n=len(files), names=[a["name"] for a in files[:3]],
+                    more="…" if len(files) > 3 else "", doc=d["n"]) if files else ""
+        if brief:
+            lines.append(say("carry_brief", n=n, title=fmt.gist(d["title"]), draft=draft, files=shown))
+            continue
+        mark = draft + shown
         lines.append(say("carry_row", n=n, title=d["title"], mark=mark, abstract=d.get("abstract", "")))
     more = fmt.cut(cap, len(docs), "journal docs", shortened=brief)
     return say("carry", total=len(docs), rows=lines, more=more)

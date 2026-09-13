@@ -16,6 +16,7 @@ class StorePayload(Payload):
 
 
 class UpdatePayload(Payload):
+    title = Field(str)
     abstract = Field(str)
     status = Field(str)
     body = Field(str, verbatim=True)

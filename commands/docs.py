@@ -54,6 +54,7 @@ LIST_COMMANDS = (
     ('journal docs part <doc> "<title>" --brief', "a new part, from stdin"),
     ('journal docs attach <doc> <path> "<what it is>"', "copy a file or folder (HTML, a design, a PDF) into the doc"),
     ("journal docs <doc> files", "its attachments, as a tree; `docs files` lists every doc's"),
+    ("journal docs paths <doc>", "one absolute path per attached file, for a subagent's prompt"),
     ("journal docs search <term>", "every line of every doc mentioning it"),
     ('journal pins add "<claim>" --doc=<doc>[.<p>]', "cite a doc, or one part, from a pin; rule and todo take it too"),
 )
@@ -184,6 +185,30 @@ class Abstract(Resource):
         return {"abstract": p.arg("line")}
 
 
+class Title(Resource):
+    signature = "docs:title {doc : a doc number or name} {title* : the doc's new title}"
+    writes = True
+    controller = CONTROLLER
+    action = "update"
+    id_arg = "doc"
+
+    def extra(self, p: Parsed):
+        return {"title": p.arg("title")}
+
+
+class Paths(Resource):
+    signature = "docs:paths {doc : a doc number or name}"
+    controller = CONTROLLER
+    action = "paths"
+    id_arg = "doc"
+
+    def render(self, p: Parsed, result) -> int:
+        if result.ok and result.data:
+            print("\n".join(result.data))
+            return 0
+        return super().render(p, result)
+
+
 class Move(Resource):
     signature = "docs:move {doc : a doc number or name} {environment*? : the environment it belongs to} {--global}"
     writes = True
@@ -265,5 +290,5 @@ class Search(Resource):
         return 0
 
 
-COMMANDS = (List, FilesOf, Show, Files, Add, Part, Replace, Strike, Final, Draft, Abstract, Move, Supersede,
+COMMANDS = (List, FilesOf, Show, Files, Add, Part, Replace, Strike, Final, Draft, Abstract, Title, Paths, Move, Supersede,
             Attach, Detach, Index, Search)

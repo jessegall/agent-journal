@@ -240,6 +240,9 @@ MESSAGES = {
                    'session instead of re-read:\n  .journal/journal.py docs attach <doc> "{path}" "<what it is>"\n'
                    "(`journal docs add` first if no doc fits; a markdown file may be a doc or a part instead.) A scratch "
                    "file is fine as it is.",
+    "search_hint": "journal: what you searched for is attached to a doc — read it there before searching the repo:\n"
+                   "{rows:\n}\n  `journal docs files <doc>` lists what a doc holds; `journal docs paths <doc>` gives absolute paths",
+    "search_hint_row": "  doc {n} ({title}): {path}",
     "script_wrote": "{path} is a script you wrote{where}",
     "script_scratch": " in a scratch folder, which the next session cannot reach",
     "script_ran": "{path} is a scratch script you ran",
@@ -1774,6 +1777,46 @@ def _trailer_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
     return say("trailer_hint", n=t["n"], title=t["title"], trailer=todo.TRAILER)
 
 
+_SEARCH_CMDS = frozenset({"find", "grep", "rg", "ls", "fd", "locate", "ag"})
+_SEARCH_SKIP = frozenset({"index", "readme", "main", "files", "test", "tests", "docs"})
+
+
+def _searched(payload: dict) -> str:
+    name = payload.get("tool_name") or ""
+    inp = payload.get("tool_input") or {}
+    if name in ("Glob", "Grep"):
+        return " ".join(str(inp.get(k) or "") for k in ("pattern", "glob", "path"))
+    if name != "Bash":
+        return ""
+    cmd = str(inp.get("command", ""))
+    return cmd if any(piece and piece[0] in _SEARCH_CMDS for piece in _pieces(cmd)) else ""
+
+
+def _search_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
+    """A search whose term names an attached file: point at the doc that holds it, once per file."""
+    if "search_hint" in conf["silenced"]:
+        return None
+    text = _searched(payload).lower()
+    if not text:
+        return None
+    said = state.get(ROOT, "search_hinted", [], stem=ctx.stem) or []
+    rows, keys = [], []
+    for d in docs._load(ROOT):
+        if d.get("superseded_by"):
+            continue
+        for p in docs.file_paths(d):
+            stem = p.stem.lower()
+            key = str(p)
+            if len(stem) < 4 or stem in _SEARCH_SKIP or stem not in text or key in said or key in keys:
+                continue
+            rows.append(say("search_hint_row", n=d["n"], title=fmt.gist(d["title"]), path=str(p)))
+            keys.append(key)
+    if not rows:
+        return None
+    state.put(ROOT, "search_hinted", (said + keys)[-200:], stem=ctx.stem)
+    return say("search_hint", rows=rows[:8])
+
+
 def _attach_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
     """A non-source file read again and again: a hint to attach it to a doc, once per file.
 
@@ -2061,7 +2104,7 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     hint = _tool_shaped(conf, payload, ctx)
     if hint:
         return _context("PostToolUse", hint)
-    hint = _attach_hint(conf, payload, ctx)
+    hint = _search_hint(conf, payload, ctx) or _attach_hint(conf, payload, ctx)
     if hint:
         return _context("PostToolUse", hint)
     stalled = _stall(conf, ctx)

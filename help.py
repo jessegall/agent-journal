@@ -146,6 +146,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal docs strike <doc>.<p> "<why>"       drop a part, on the record',
         "journal docs final <doc> | draft <doc>      its status",
         'journal docs abstract <doc> "<one line>"    the line every session is handed',
+        'journal docs title <doc> "<title>"          retitle it; its number and what cites it stay',
+        "journal docs paths <doc>      one absolute path per attached file, a folder's files included — for a subagent's prompt",
         "journal docs supersede <doc> by <doc>       point readers of the first at the second",
         'journal docs attach <doc> <path> ["<what it is>"] [--replace]   copy a file or a folder into the doc, beside its parts',
         'journal docs detach <doc> <name> "<why>"    drop an attachment; it is kept under struck/',

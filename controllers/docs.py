@@ -13,7 +13,7 @@ MESSAGES = {
                  "environment; say which.",
     "move_where": '`journal docs move <doc> "<environment>"` — or `--global` to give it to the project, which lists '
                   "it on every environment",
-    "nothing_to_change": "send an abstract, a status or a body to change",
+    "nothing_to_change": "send a title, an abstract, a status or a body to change",
     "attach_here": "attaching copies a file from this machine, so it is done from the terminal: journal docs attach",
     "search_wants": "docs search wants a term",
 }
@@ -33,8 +33,9 @@ class DocsController(Controller):
     noun = "doc"
     scoped = None
     actions = ("index", "show", "store", "update", "destroy", "part", "final", "draft", "move", "supersede",
-               "attach", "detach", "files", "adopt", "search")
-    numbered = ("show", "update", "destroy", "part", "final", "draft", "move", "supersede", "attach", "detach")
+               "attach", "detach", "files", "paths", "adopt", "search")
+    numbered = ("show", "update", "destroy", "part", "final", "draft", "move", "supersede", "attach", "detach",
+                "paths")
     payloads = {"index": doc_payloads.ListPayload, "store": doc_payloads.StorePayload,
                 "update": doc_payloads.UpdatePayload, "destroy": WhyPayload, "part": SectionPayload,
                 "move": doc_payloads.MovePayload, "supersede": doc_payloads.SupersedePayload,
@@ -92,7 +93,8 @@ class DocsController(Controller):
 
     def update(self, root: Path, p: doc_payloads.UpdatePayload) -> Result:
         docs, said = _docs(), []
-        changes = (("abstract", lambda: docs.set_abstract(root, p.id, p.abstract)),
+        changes = (("title", lambda: docs.set_title(root, p.id, p.title)),
+                   ("abstract", lambda: docs.set_abstract(root, p.id, p.abstract)),
                    ("status", lambda: docs.set_status(root, p.id, p.status)),
                    ("body", lambda: docs.replace(root, p.id, p.body, self._author(root, p))))
         for field, change in changes:
@@ -138,6 +140,12 @@ class DocsController(Controller):
 
     def files(self, root: Path, p: doc_payloads.FilesPayload) -> Result:
         return Result.of(_docs().list_attachments(root, str(p.id or "")))
+
+    def paths(self, root: Path, p: Payload) -> Result:
+        docs = _docs()
+        doc, _, _ = docs.get(root, p.id.split(".")[0])
+        got = [str(x) for x in docs.file_paths(doc)]
+        return Result("ok", "\n".join(got) or docs.say("no_paths", n=doc["n"]), got)
 
     def adopt(self, root: Path, p: Payload) -> Result:
         return Result("ok", "\n".join(_docs().adopt(root, self._author(root, p))))
