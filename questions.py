@@ -16,6 +16,7 @@ KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule"}
 _REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
 
 MESSAGES = {
+    "label": "{kind} {num}",
     "not_a_ref": "{text} is not a reference; write one as `todo 22`, `doc 4.1`, `pin 3` or `rule 2`",
     "part_on_non_doc": "only a doc takes a part number; {text} names a {kind}",
     "no_todo": "there is no to-do {n} on this environment",
@@ -59,7 +60,7 @@ def parse_ref(text: str) -> tuple[str | None, str]:
 
 def label(ref: str) -> str:
     kind, _, num = ref.partition(":")
-    return f"{KINDS.get(kind, kind)} {num}"
+    return say("label", kind=KINDS.get(kind, kind), num=num)
 
 
 def labels(refs: list[str]) -> list[str]:

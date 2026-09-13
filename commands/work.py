@@ -12,22 +12,29 @@ import work
 from app import answer, now, refuse, root, stem, where
 from command import Command, Parsed
 from templates import render
+from templates import render
 
 NOUNS = (("work",), ("start",), ("end",), ("open",), ("next",))
+
+
+REFUSALS = {
+    "minutes": "--for wants minutes, got {value}",
+    "pid": "--pid wants a number, got {value}",
+}
 
 
 def minutes(value: str) -> float:
     try:
         return float(value)
     except ValueError:
-        raise ValueError(f"--for wants minutes, got {value!r}") from None
+        raise ValueError(render(REFUSALS["minutes"], value=repr(value))) from None
 
 
 def pid(value: str) -> int:
     try:
         return int(value)
     except ValueError:
-        raise ValueError(f"--pid wants a number, got {value!r}") from None
+        raise ValueError(render(REFUSALS["pid"], value=repr(value))) from None
 
 
 def agent(value: str) -> str | None:

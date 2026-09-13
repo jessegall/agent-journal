@@ -15,6 +15,7 @@ NOUNS = (("environments", "environment", "envs", "env", "tracks", "track"), ("sw
          ("prepare",), ("grant",), ("grants",), ("lent",), ("assign",), ("worktree",))
 
 TEXT = {
+    "session": "{sid} ({seen})",
     "list_title": "ENVIRONMENTS",
     "list_sub": "* this session · > where new sessions start",
     "row": " {mark} {name} {pins} pin(s), {open} open[   sessions: {sessions:, }]",
@@ -102,7 +103,8 @@ class List(Command):
         for t in rows:
             fmt.say(render(TEXT["row"], mark=("*" if t["current"] else " ") + (">" if t["start"] else " "),
                            name=t["name"].ljust(wide), pins=t["pins"], open=t["open"],
-                           sessions=[f"{sid[:8]} ({t['seen'].get(sid, '')})" for sid in t["sessions"]]))
+                           sessions=[render(TEXT["session"], sid=sid[:8], seen=t["seen"].get(sid, ""))
+                                     for sid in t["sessions"]]))
         fmt.say()
         fmt.say(fmt.wrap(render(TEXT["list_lead"], hours=f"{stale:g}" if exclusive else None)))
         fmt.say(fmt.commands(list(LIST_COMMANDS)))

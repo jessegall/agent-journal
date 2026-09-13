@@ -26,6 +26,25 @@ from pathlib import Path
 from typing import NamedTuple
 
 import state
+from templates import render as fill
+
+
+MESSAGES = {
+    "no_such": "there is no {noun} {n}. `journal {plural}` numbers them.",
+    "already": "{noun} {n} is already {verb}: {gone}",
+    "needs_reason": 'retiring {noun} {n} needs a reason: `journal {plural} {verb} {n} "<why>"` — the text stays under '
+                    "--all, so being wrong about it is cheap",
+    "retired": "{verb} {noun} {n}: {said}\n  because: {why} ({standing} standing)",
+    "retired_verb": "retired",
+    "retire_verb": "retire",
+    "move_where": 'say where: `journal {plural} move {n} "<environment>"`',
+    "move_none": "no environment is called {dst}; `journal environments` lists them, `journal prepare` makes one",
+    "moved_to": "moved to `{dst}` as {noun} {n}",
+    "moved": "{noun} {n} is {noun} {to} on `{dst}`: {said}",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 class Store(NamedTuple):
@@ -119,11 +138,11 @@ def rows(root: Path, store: Store, *, all_of_them: bool = False, cap: int | None
 def _find(items: list[dict], n: int, store: Store) -> tuple[dict | None, str]:
     """The entry at that number, or the refusal that says why there is none."""
     if n < 1 or n > len(items):
-        return None, f"there is no {store.noun} {n}. `journal {store.plural}` numbers them."
+        return None, say("no_such", noun=store.noun, n=n, plural=store.plural)
     e = items[n - 1]
     if e.get(store.retired):
         gone = e[store.retired]
-        return None, f"{store.noun} {n} is already {store.verb or 'retired'}: {gone}"
+        return None, say("already", noun=store.noun, n=n, verb=store.verb or say("retired_verb"), gone=gone)
     return e, ""
 
 
@@ -138,9 +157,8 @@ def retire(root: Path, store: Store, n: int, why: str, at: str = "") -> tuple[bo
     """
     why = " ".join((why or "").split())
     if not why:
-        return False, (f'retiring {store.noun} {n} needs a reason: `journal {store.plural} '
-                       f'{store.verb or "retire"} {n} "<why>"` — the text stays under --all, '
-                       "so being wrong about it is cheap")
+        return False, say("needs_reason", noun=store.noun, n=n, plural=store.plural,
+                          verb=store.verb or say("retire_verb"))
     with state.locked(root):
         items = all_of(root, store)
         e, refusal = _find(items, n, store)
@@ -152,7 +170,8 @@ def retire(root: Path, store: Store, n: int, why: str, at: str = "") -> tuple[bo
         state.put(root, store.key, items)
         standing = len([x for x in items if not x.get(store.retired)])
     said = (e.get(store.text) or "")[:70]
-    return True, f"{store.verb or 'retired'} {store.noun} {n}: {said}\n  because: {why} ({standing} standing)"
+    return True, say("retired", verb=store.verb or say("retired_verb"), noun=store.noun, n=n, said=said, why=why,
+                     standing=standing)
 
 
 def move(root: Path, store: Store, n: int, dst: str, at: str) -> tuple[bool, str]:
@@ -165,10 +184,9 @@ def move(root: Path, store: Store, n: int, dst: str, at: str) -> tuple[bool, str
     import tracks
     dst = state.slug(dst)
     if not dst:
-        return False, f'say where: `journal {store.plural} move {n} "<environment>"`'
+        return False, say("move_where", plural=store.plural, n=n)
     if dst not in tracks._all(root):
-        return False, (f"no environment is called {dst!r}; `journal environments` lists them, "
-                       "`journal prepare` makes one")
+        return False, say("move_none", dst=repr(dst))
     with state.locked(root):
         items = all_of(root, store)
         e, refusal = _find(items, n, store)
@@ -176,8 +194,8 @@ def move(root: Path, store: Store, n: int, dst: str, at: str) -> tuple[bool, str
             return False, refusal
         there = state.tracked(root, store.key, dst, []) or []
         there.append({**e, "at": at, store.retired: None, "moved_from": n})
-        items[n - 1][store.retired] = f"moved to `{dst}` as {store.noun} {len(there)}"
+        items[n - 1][store.retired] = say("moved_to", dst=dst, noun=store.noun, n=len(there))
         state.put_tracked(root, store.key, dst, there)
         state.put(root, store.key, items)
     said = (e.get(store.text) or "")[:70]
-    return True, f"{store.noun} {n} is {store.noun} {len(there)} on `{dst}`: {said}"
+    return True, say("moved", noun=store.noun, n=n, to=len(there), dst=dst, said=said)

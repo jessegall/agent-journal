@@ -16,6 +16,7 @@ import sys
 import re
 import textwrap
 from typing import NamedTuple
+from templates import render as fill
 
 WIDTH = 88
 #: Below this a reflowed paragraph is worse than the hard wrap it replaced.
@@ -628,7 +629,20 @@ def notice(text: str) -> None:
     every other line this package marks that way — so a long interpolated reason still
     reads as one notice instead of breaking across two.
     """
-    print(block(f"journal: {text}"), file=sys.stderr)
+    print(block(_said("notice", text=text)), file=sys.stderr)
+
+
+MESSAGES = {
+    "notice": "journal: {text}",
+    "shortened": "\n  … shortened to a line each — `{command}` reads every one, in full, right now.",
+    "cut": "\n  … and {left} more of {total}[{shortened}] — none dropped: `{command}` reads every one, in full, right now.",
+    "cut_shortened": ", and these shortened to a line each",
+    "order_flag": " --order={order}",
+    "more": "\n\n  … and {left} more; `journal {noun} --page={page}{flag}` shows the rest.",
+}
+
+def _said(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 DESC, ASC = "desc", "asc"
@@ -678,11 +692,9 @@ def cut(shown: int, total: int, command: str, shortened: bool = False) -> str:
     # silent-forgetting failure this function was written to make impossible, arrived at
     # through the other cap.
     if shown >= total:
-        return (f"\n  … shortened to a line each — `{command}` reads every one, in full, "
-                "right now." if shortened else "")
-    return (f"\n  … and {total - shown} more of {total}, and these shortened to a line each"
-            if shortened else f"\n  … and {total - shown} more of {total}") + (
-            f" — none dropped: `{command}` reads every one, in full, right now.")
+        return _said("shortened", command=command) if shortened else ""
+    return _said("cut", left=total - shown, total=total, command=command,
+               shortened=_said("cut_shortened") if shortened else "")
 
 
 GIST = 180
@@ -710,5 +722,5 @@ def more(noun: str, left: int, page: int, order: str = DESC) -> str:
     """The one line that says a page was cut, carrying the order so the next page keeps it."""
     if left <= 0:
         return ""
-    flag = f" --order={order}" if order != DESC else ""
-    return f"\n\n  … and {left} more; `journal {noun} --page={page + 1}{flag}` shows the rest."
+    flag = _said("order_flag", order=order) if order != DESC else ""
+    return _said("more", left=left, noun=noun, page=page + 1, flag=flag)

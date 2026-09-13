@@ -48,6 +48,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from templates import render as fill
 
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
@@ -167,14 +168,66 @@ def briefing(project: Path, check: bool, conf: dict) -> list[str]:
         elif f.is_file():
             want = block + "\n"
         else:
-            want = f"# {project.name}\n\n" + block + "\n"
+            want = say("briefing_new", name=project.name, block=block)
         if want == had:
-            out.append(f"  = {name} briefing up to date")
+            out.append(say("briefing_current", name=name))
             continue
         if not check:
             f.write_text(want)
-        out.append(f"  + {name} briefing written" if had else f"  + {name} created with the briefing")
+        out.append(say("briefing_written" if had else "briefing_created", name=name))
     return out
+
+
+MESSAGES = {
+    "briefing_new": "# {name}\n\n{block}\n",
+    "briefing_current": "  = {name} briefing up to date",
+    "briefing_written": "  + {name} briefing written",
+    "briefing_created": "  + {name} created with the briefing",
+    "not_a_package": "  ! {src} is not a journal package (no hook.py / journal.py)",
+    "pulling": "  · pulling from {src}",
+    "suite": "  {mark} {name}: {last}",
+    "updated": "  + {rel}[{would}]",
+    "would_update": " (would update)",
+    "gone": "  - {rel} (no longer in the package)",
+    "stale_suite": "  - {rel} (the suites do not ship; they run where the package is developed)",
+    "bad_json": "  ! {path} does not parse as JSON: {error}\n    Fix it by hand — starting from scratch here would "
+                "delete whatever else you have wired.",
+    "hooks_not_object": "  ! {path}: `hooks` is not an object, refusing to touch it",
+    "hooks_not_list": "  ! {path}: hooks.{event} is not a list, refusing to touch it",
+    "already_wired": "  = {event} already wired",
+    "rewired": "  ~ {event} rewired — the old command did not look above its own folder",
+    "wired": "  + {event} wired",
+    "unwired": "  - {event} UNWIRED — that event creates the worktree, it does not announce one, and ours was "
+               "breaking every worktree dispatch",
+    "already_executable": "  = {name} already executable",
+    "made_executable": "  + {name} made executable",
+    "skill_missing": "  ! {src}/SKILL.md is missing — no skill to install",
+    "skill_copied": "  + skill {how}: {dst}/{rel}",
+    "skill_updated": "updated",
+    "skill_installed": "installed",
+    "skill_dropped": "  - {dst}/{rel} (no longer in the skill)",
+    "hook_foreign": "  ! {path} is not the journal's — left alone",
+    "hook_removed": "  - {path} removed",
+    "hook_exists": "  ! {path} already exists and is not the journal's — left alone.\n"
+                   "    Add this line to it to close to-dos from commit trailers:\n"
+                   '      "$(git rev-parse --show-toplevel)"/.journal/journal.py todos from-commit HEAD --quiet || true',
+    "hook_installed": "  + {path} installed — a commit's `Journal: todos done N` trailer closes that to-do",
+    "alias_removed": "  - the old journal alias removed from ~/{rc} — open a new terminal",
+    "alias_shadows": "  ! ~/{rc} has an alias that shadows the journal command; delete this line:\n      {line}",
+    "command_present": "  = journal command already in {dir}",
+    "command_installed": "  + journal command installed in {dir}",
+    "path_fish": "fish_add_path {dir}",
+    "path_other": "add {dir} to your PATH",
+    "not_on_path": "  ! {dir} is not on your PATH — once, in your shell:\n      {line}\n"
+                   "    then open a new terminal. Until then: .journal/journal.py <command>",
+    "clone_failed": "  ! could not clone {src}:\n{error}",
+    "source_checkout": "  · {name}/ is the package's source, not an install — wiring, the skill and the briefing are "
+                       "for a project's `.journal/`, and were skipped so they do not land in {project}/",
+    "not_installed_row": "  ✗ {name}[\n      {note}]",
+}
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 #: What belongs to THIS project and never comes across on a pull.
@@ -224,13 +277,13 @@ def pull(src: Path, check: bool) -> list[str]:
     if src.name != ".journal" and not (src / "hook.py").is_file() and (src / ".journal").is_dir():
         src = src / ".journal"
     if not (src / "hook.py").is_file() or not (src / "journal.py").is_file():
-        raise SystemExit(f"  ! {src} is not a journal package (no hook.py / journal.py)")
+        raise SystemExit(say("not_a_package", src=src))
     if src == ROOT:
         raise SystemExit("  ! --from names this very checkout; nothing to pull")
 
     stage = Path(tempfile.mkdtemp()) / ".journal"
     shutil.copytree(src, stage, ignore=shutil.ignore_patterns(*DATA, "*.tmp", "*.pyc"))
-    out = [f"  · pulling from {src}"]
+    out = [say("pulling", src=src)]
     # A PULL INSIDE A SUITE RUNS NO SUITES. The suites test `upgrade`, `upgrade` pulls,
     # and a pull runs the suites — which test `upgrade`. Measured as a test that never
     # ended. The environment marks a run that is already a test, and that run copies
@@ -243,7 +296,7 @@ def pull(src: Path, check: bool) -> list[str]:
         p = subprocess.run([sys.executable, str(t)], capture_output=True, text=True,
                            env={**os.environ, "AGENT_JOURNAL_IN_TESTS": "1"})
         last = (p.stdout.strip().splitlines() or ["(no output)"])[-1]
-        out.append(f"  {'=' if p.returncode == 0 else '!'} {t.name}: {last}")
+        out.append(say("suite", mark="=" if p.returncode == 0 else "!", name=t.name, last=last))
         if p.returncode != 0:
             raise SystemExit("\n".join(out) + "\n  ! the pulled package fails its own tests "
                              "— nothing was copied. Fix it at the source first.")
@@ -263,13 +316,13 @@ def pull(src: Path, check: bool) -> list[str]:
             (ROOT / rel).parent.mkdir(parents=True, exist_ok=True)
             (ROOT / rel).unlink(missing_ok=True)
             shutil.copy2(stage / rel, ROOT / rel)
-        out.append(f"  + {rel}" + (" (would update)" if check else ""))
+        out.append(say("updated", rel=rel, would=say("would_update") if check else ""))
     for rel in gone:
         # PACKAGE OUTPUT ONLY. Anything under DATA never reaches this list, so what is
         # removed is code or skill the source no longer ships — and it is said, by name.
         if not check:
             (ROOT / rel).unlink()
-        out.append(f"  - {rel} (no longer in the package)")
+        out.append(say("gone", rel=rel))
     # SUITES AN EARLIER PULL LEFT HERE GO TOO — but only in a consumer. The development
     # checkout is the one place the suites belong, and it is the one that is a git
     # repository; a consumer's .journal never is, because install.sh strips the clone's .git.
@@ -277,7 +330,7 @@ def pull(src: Path, check: bool) -> list[str]:
     for rel in stale:
         if not check:
             (ROOT / rel).unlink()
-        out.append(f"  - {rel} (the suites do not ship; they run where the package is developed)")
+        out.append(say("stale_suite", rel=rel))
     if not changed and not gone and not stale:
         out.append("  = already at the source's version")
     shutil.rmtree(stage.parent, ignore_errors=True)
@@ -320,21 +373,17 @@ def wire(check: bool) -> list[str]:
         except ValueError as e:
             # STOP. See the module docstring: an unreadable config is not an empty one,
             # and treating it as one deletes hooks the user is relying on.
-            raise SystemExit(
-                f"  ! {f} does not parse as JSON: {e}\n"
-                "    Fix it by hand — starting from scratch here would delete whatever "
-                "else you have wired."
-            )
+            raise SystemExit(say("bad_json", path=f, error=e))
     if not isinstance(data.get("hooks"), dict):
         data["hooks"] = {} if "hooks" not in data else data["hooks"]
     if not isinstance(data["hooks"], dict):
-        raise SystemExit(f"  ! {f}: `hooks` is not an object, refusing to touch it")
+        raise SystemExit(say("hooks_not_object", path=f))
 
     done: list[str] = []
     for ev in EVENTS:
         blocks = data["hooks"].setdefault(ev, [])
         if not isinstance(blocks, list):
-            raise SystemExit(f"  ! {f}: hooks.{ev} is not a list, refusing to touch it")
+            raise SystemExit(say("hooks_not_list", path=f, event=ev))
         # OURS IS ANYTHING THAT RUNS `hook.py`, AND IT IS REWRITTEN, NOT LEFT ALONE. This
         # only ever checked whether SOMETHING mentioning hook.py was wired and then skipped
         # the event — so a project installed before the command learned to walk up would
@@ -345,15 +394,15 @@ def wire(check: bool) -> list[str]:
                 for h in (b.get("hooks") or [])
                 if isinstance(h, dict) and "hook.py" in str(h.get("command", ""))]
         if ours and all(h.get("command") == COMMAND for h in ours):
-            done.append(f"  = {ev} already wired")
+            done.append(say("already_wired", event=ev))
             continue
         if ours:
             for h in ours:
                 h["command"] = COMMAND
-            done.append(f"  ~ {ev} rewired — the old command did not look above its own folder")
+            done.append(say("rewired", event=ev))
             continue
         blocks.append({"hooks": [{"type": "command", "command": COMMAND}]})
-        done.append(f"  + {ev} wired")
+        done.append(say("wired", event=ev))
 
     # AND WHAT THIS PACKAGE ONCE WIRED AND SHOULD NOT HAVE, IS TAKEN OUT. Only ours: a block
     # that runs `hook.py`. Anything the user wired themselves on the same event is left
@@ -381,8 +430,7 @@ def wire(check: bool) -> list[str]:
             data["hooks"][ev] = keep
         else:
             data["hooks"].pop(ev, None)
-        done.append(f"  - {ev} UNWIRED — that event creates the worktree, it does not "
-                    "announce one, and ours was breaking every worktree dispatch")
+        done.append(say("unwired", event=ev))
 
     if not check and any(d.startswith(("  +", "  ~", "  -")) for d in done):
         f.parent.mkdir(parents=True, exist_ok=True)
@@ -396,11 +444,11 @@ def executable(check: bool) -> list[str]:
     for name in sorted(_executable(ROOT)):
         p = ROOT / name
         if os.access(p, os.X_OK):
-            out.append(f"  = {name} already executable")
+            out.append(say("already_executable", name=name))
             continue
         if not check:
             p.chmod(p.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-        out.append(f"  + {name} made executable")
+        out.append(say("made_executable", name=name))
     return out
 
 
@@ -436,7 +484,7 @@ def _one_skill(SKILL_SRC: str, SKILL_DST: str, check: bool) -> list[str]:
     """One packaged skill folder, copied into place and kept current."""
     src = ROOT / SKILL_SRC
     if not (src / "SKILL.md").is_file():
-        return [f"  ! {SKILL_SRC}/SKILL.md is missing — no skill to install"]
+        return [say("skill_missing", src=SKILL_SRC)]
     dst = PROJECT / SKILL_DST
     out = []
     theirs = sorted(f.relative_to(src) for f in src.rglob("*") if f.is_file())
@@ -448,13 +496,14 @@ def _one_skill(SKILL_SRC: str, SKILL_DST: str, check: bool) -> list[str]:
         if not check:
             (dst / rel).parent.mkdir(parents=True, exist_ok=True)
             (dst / rel).write_bytes(want)
-        out.append(f"  + skill {'updated' if have is not None else 'installed'}: {SKILL_DST}/{rel}")
+        out.append(say("skill_copied", how=say("skill_updated" if have is not None else "skill_installed"),
+                       dst=SKILL_DST, rel=rel))
     if dst.is_dir():
         for f in sorted(dst.rglob("*")):
             if f.is_file() and f.relative_to(dst) not in theirs:
                 if not check:
                     f.unlink()
-                out.append(f"  - {SKILL_DST}/{f.relative_to(dst)} (no longer in the skill)")
+                out.append(say("skill_dropped", dst=SKILL_DST, rel=f.relative_to(dst)))
     return out or ["  = skill already current"]
 
 
@@ -506,10 +555,10 @@ def git_hook(check: bool, remove: bool = False) -> list[str]:
         if not have:
             return ["  = no post-commit hook to remove"]
         if not ours:
-            return [f"  ! {f} is not the journal's — left alone"]
+            return [say("hook_foreign", path=f)]
         if not check:
             f.unlink()
-        return [f"  - {f} removed"]
+        return [say("hook_removed", path=f)]
     if ours and have == GIT_HOOK:
         return ["  = post-commit hook already installed"]
     if ours:
@@ -524,14 +573,12 @@ def git_hook(check: bool, remove: bool = False) -> list[str]:
     if have:
         # ONE STRING, because `main` prints only the lines that start with a mark: a
         # continuation printed as its own line is a continuation that never reaches anybody.
-        return [f"  ! {f} already exists and is not the journal's — left alone.\n"
-                "    Add this line to it to close to-dos from commit trailers:\n"
-                '      "$(git rev-parse --show-toplevel)"/.journal/journal.py todos from-commit HEAD --quiet || true']
+        return [say("hook_exists", path=f)]
     if not check:
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(GIT_HOOK)
         f.chmod(f.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-    return [f"  + {f} installed — a commit's `Journal: todos done N` trailer closes that to-do"]
+    return [say("hook_installed", path=f)]
 
 
 def _retire_rc_alias(check: bool) -> list[str]:
@@ -567,9 +614,9 @@ def _retire_rc_alias(check: bool) -> list[str]:
         if removed:
             if not check:
                 rc.write_text("".join(keep))
-            out.append(f"  - the old journal alias removed from ~/{name} — open a new terminal")
+            out.append(say("alias_removed", rc=name))
         for f in foreign:
-            out.append(f"  ! ~/{name} has an alias that shadows the journal command; delete this line:\n      {f}")
+            out.append(say("alias_shadows", rc=name, line=f))
     return out
 
 
@@ -578,22 +625,21 @@ def alias(check: bool) -> list[str]:
     dst = BIN_DIR / "journal"
     out = _retire_rc_alias(check)
     if dst.is_file() and dst.read_text() == LAUNCHER and os.access(dst, os.X_OK):
-        out.append(f"  = journal command already in {BIN_DIR}")
+        out.append(say("command_present", dir=BIN_DIR))
     else:
         if not check:
             BIN_DIR.mkdir(parents=True, exist_ok=True)
             dst.write_text(LAUNCHER)
             dst.chmod(dst.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-        out.append(f"  + journal command installed in {BIN_DIR}")
+        out.append(say("command_installed", dir=BIN_DIR))
     on_path = str(BIN_DIR) in os.environ.get("PATH", "").split(os.pathsep)
     if not on_path:
         shell = Path(os.environ.get("SHELL", "")).name
-        line = {"fish": f"fish_add_path {BIN_DIR}",
-                "zsh": f'echo \'export PATH="$HOME/.local/bin:$PATH"\' >> ~/.zshrc',
-                "bash": f'echo \'export PATH="$HOME/.local/bin:$PATH"\' >> ~/.bashrc'}.get(
-            shell, f"add {BIN_DIR} to your PATH")
-        out.append(f"  ! {BIN_DIR} is not on your PATH — once, in your shell:\n      {line}\n"
-                   "    then open a new terminal. Until then: .journal/journal.py <command>")
+        line = {"fish": say("path_fish", dir=BIN_DIR),
+                "zsh": 'echo \'export PATH="$HOME/.local/bin:$PATH"\' >> ~/.zshrc',
+                "bash": 'echo \'export PATH="$HOME/.local/bin:$PATH"\' >> ~/.bashrc'}.get(
+            shell, say("path_other", dir=BIN_DIR))
+        out.append(say("not_on_path", dir=BIN_DIR, line=line))
     return out
 
 
@@ -634,7 +680,7 @@ def main(argv: list[str]) -> int:
             p = subprocess.run(["git", "clone", "--quiet", "--depth", "1", src, str(tmp)],
                                capture_output=True, text=True)
             if p.returncode != 0:
-                raise SystemExit(f"  ! could not clone {src}:\n{p.stderr.strip()}")
+                raise SystemExit(say("clone_failed", src=src, error=p.stderr.strip()))
             src = tmp
         lines += pull(Path(src), check)
     import settings as _settings
@@ -644,10 +690,7 @@ def main(argv: list[str]) -> int:
     # into `PROJECT`, and from a source checkout that is the directory above the checkout.
     # The executable bits are the exception: they are on the package's own files.
     if not _installed_at(ROOT):
-        lines.append(f"  · {ROOT.name}/ is the package's source, not an install — wiring, "
-                     "the skill and the briefing are for a project's `.journal/`, and were "
-                     "skipped so they do not land in "
-                     f"{PROJECT.name}/")
+        lines.append(say("source_checkout", name=ROOT.name, project=PROJECT.name))
     else:
         lines += wire(check) + skill(check) + briefing(PROJECT, check, _conf)
     if "--alias" in argv:
@@ -668,7 +711,7 @@ def main(argv: list[str]) -> int:
         fmt.say("\n".join(changed))
     if bad:
         fmt.say("\n".join(["", "Not installed:",
-                           *(f"  ✗ {n}" + (f"\n      {note}" if note else "") for n, note in bad)]))
+                           *(say("not_installed_row", name=n, note=note) for n, note in bad)]))
         return 1
     fmt.say(("Updated." if src is not None else "Installed.") if changed else "Already installed.")
     fmt.say("Start Claude Code in this project and the journal is on: the agent is handed the\n"

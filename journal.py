@@ -43,11 +43,20 @@ import help
 import tracks
 from app import root
 from app import refuse as _refuse, stem as _stem
+from templates import render
+
+TEXT = {
+    "worktree_note": "  {note}",
+    "no_environment": "no environment is called {name}; `journal environments` lists them, `journal switch` or "
+                      "`journal prepare` creates one",
+    "no_such": "No such command: {verb}\n",
+    "help_head": "journal {verb}\n",
+}
 
 app.start(Path(__file__))
 _ROOT, _WT_NOTE = app.ROOT, app.WORKTREE_NOTE
 if _WT_NOTE:
-    fmt.say(f"  {_WT_NOTE}", error=True)
+    fmt.say(render(TEXT["worktree_note"], note=_WT_NOTE), error=True)
 
 
 fmt.cli(_ROOT)   # the spelling every printed command uses, from here
@@ -66,8 +75,7 @@ if _ENV_FLAG:
     # how the flag works found the half that does nothing.
     _ENV_FLAG = _state.slug(_ENV_FLAG) or "default"
     if _ENV_FLAG not in tracks._all(_ROOT):
-        fmt.say(f"no environment is called {_ENV_FLAG!r}; `journal environments` lists them, "
-                "`journal switch` or `journal prepare` creates one", error=True)
+        fmt.say(render(TEXT["no_environment"], name=repr(_ENV_FLAG)), error=True)
         raise SystemExit(1)
     tracks.override(_ENV_FLAG)
 _state.use_track(tracks.current(_ROOT, _stem()))
@@ -105,10 +113,10 @@ def _help(verb: str = "") -> int:
         gone = _retired(verb)
         if gone is not None:
             return gone
-        fmt.say(f"No such command: {verb}\n", error=True)
+        fmt.say(render(TEXT["no_such"], verb=verb), error=True)
         fmt.say(__doc__, error=True)
         return 1
-    fmt.say(f"journal {verb}\n")
+    fmt.say(render(TEXT["help_head"], verb=verb))
     # THROUGH THE SAME RENDERER AS EVERY OTHER COMMAND LIST. These lines were printed with a
     # four-space prefix straight to `say`, and `block` passes an already-indented line
     # through untouched however long it is — so no help screen was ever wrapped by anything.
@@ -197,7 +205,7 @@ def main(argv: list[str]) -> int:
         gone = _retired(first)
         if gone is not None:
             return gone
-        fmt.say(f"No such command: {first}\n", error=True)
+        fmt.say(render(TEXT["no_such"], verb=first), error=True)
         fmt.say(__doc__, error=True)
         return 1
     return _dispatch(["status", *argv])
@@ -223,8 +231,7 @@ def run(argv: list[str]) -> int:
     if flag:
         name = _state.slug(flag) or "default"
         if name not in tracks._all(_ROOT):
-            fmt.say(f"no environment is called {name!r}; `journal environments` lists them, "
-                    "`journal switch` or `journal prepare` creates one", error=True)
+            fmt.say(render(TEXT["no_environment"], name=repr(name)), error=True)
             return 1
         tracks.override(name)
     _state.use_track(tracks.current(_ROOT, _stem()))

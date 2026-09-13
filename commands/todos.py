@@ -18,6 +18,7 @@ TODO = {"n": number("a to-do number")}
 N = "{n : a to-do number}"
 
 TEXT = {
+    "commit_how": "{subject} ({sha})",
     "list_title": "TO-DO",
     "list_sub": "environment {env} · {waiting} waiting[ · {done} done][{hint}][{auto}]",
     "done_hint": " (--all shows them)",
@@ -337,7 +338,8 @@ class FromCommit(Command):
         if at is None:
             return refuse(render(TEXT["no_commit"], ref=ref))
         sha, subject, message = at
-        said = todo.close_from_commit(root(), message, f"{subject} ({sha[:9]})", now(), here())
+        said = todo.close_from_commit(root(), message, render(TEXT["commit_how"], subject=subject, sha=sha[:9]),
+                                      now(), here())
         if not said:
             if not p.option("quiet"):
                 fmt.say(render(TEXT["names_no_todo"], sha=sha[:9], trailer=todo.TRAILER))
