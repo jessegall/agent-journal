@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.77.1 — the viewer is never served from the browser's cache
+
+Every response from `journal serve` says `Cache-Control: no-cache`, so after an upgrade the
+browser loads the new viewer instead of the copy it kept of the old one. The auto mode switch
+on the Settings page sits on the left.
+
 ## 1.77.0 — an environment has a Settings page
 
 The viewer's environment sidebar ends with Settings: a switch for auto mode, and removing the
