@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.77.3 — New buttons sit in the top bar
+
+Every button that creates a resource (New to-do, New pin, New rule, New reminder, Start work,
+New doc) is in the page's top bar, beside the breadcrumb, and the bar below keeps only what
+describes the list: the Show done switch is back on the right.
+
 ## 1.77.2 — statuses are small coloured dots
 
 Every status in the viewer is a filled dot: blue in progress, amber blocked, green done,

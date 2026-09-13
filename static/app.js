@@ -216,6 +216,7 @@ const TopBar = {
           <span v-if="i" class=sep>/</span><b v-if="i === crumbs.length - 1">{{ c }}</b><span v-else>{{ c }}</span>
         </template>
       </div>
+      <slot/>
     </div>`,
 };
 
@@ -445,12 +446,11 @@ const Todos = {
     return { list, item, view, groups, open, creating, actions, done, base, todoStatus, STATUS_LABEL, priorityName };
   },
   template: `
-    <TopBar :crumbs="[env, 'To-dos']"/>
+    <TopBar :crumbs="[env, 'To-dos']"><a class="btn new" :href="base + '/new'">New to-do</a></TopBar>
     <div class=viewbar>
       <span>Grouped by <b>status</b></span><span>Ordered by <b>priority</b></span>
       <span v-if="list.data"><b>{{ open }}</b> open</span>
       <label class=toggle><input type=checkbox v-model="view.done"> Show done</label>
-      <a class="btn new" :href="base + '/new'">New to-do</a>
     </div>
     <div class=body>
       <div class=list>
@@ -545,9 +545,8 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
                base: computed(() => base(props)), scope: computed(() => scope(props)), noun, word, empty };
     },
     template: `
-      <TopBar :crumbs="crumbs"/>
-      <div class=viewbar><span>Ordered by <b>newest</b></span><span v-if="list.data"><b>{{ list.data.length }}</b> standing</span>
-        <a class="btn new" :href="base + '/new'">New {{ word }}</a></div>
+      <TopBar :crumbs="crumbs"><a class="btn new" :href="base + '/new'">New {{ word }}</a></TopBar>
+      <div class=viewbar><span>Ordered by <b>newest</b></span><span v-if="list.data"><b>{{ list.data.length }}</b> standing</span></div>
       <div class=body>
         <div class=list>
           <p v-if="list.loading && !list.data" class=empty>Loading…</p>
@@ -770,9 +769,8 @@ const Work = {
     return { list, item, creating, actions, done, base };
   },
   template: `
-    <TopBar :crumbs="[env, 'Open work']"/>
-    <div class=viewbar><span v-if="list.data"><b>{{ list.data.length }}</b> open</span>
-      <a class="btn new" :href="base + '/new'">Start work</a></div>
+    <TopBar :crumbs="[env, 'Open work']"><a class="btn new" :href="base + '/new'">Start work</a></TopBar>
+    <div class=viewbar><span v-if="list.data"><b>{{ list.data.length }}</b> open</span></div>
     <div class=body>
       <div class=list>
         <p v-if="list.loading && !list.data" class=empty>Loading…</p>
@@ -839,9 +837,8 @@ const Reminders = {
     return { list, item, creating, actions, done, base };
   },
   template: `
-    <TopBar :crumbs="[env, 'Reminders']"/>
-    <div class=viewbar><span>Said again at <b>every stop</b></span><span v-if="list.data"><b>{{ list.data.length }}</b> standing</span>
-      <a class="btn new" :href="base + '/new'">New reminder</a></div>
+    <TopBar :crumbs="[env, 'Reminders']"><a class="btn new" :href="base + '/new'">New reminder</a></TopBar>
+    <div class=viewbar><span>Said again at <b>every stop</b></span><span v-if="list.data"><b>{{ list.data.length }}</b> standing</span></div>
     <div class=body>
       <div class=list>
         <p v-if="list.loading && !list.data" class=empty>Loading…</p>
@@ -887,9 +884,8 @@ function docList({ crumbs, url, base, empty }) {
       return { s, creating, done, crumbs: computed(() => crumbs(props)), base: computed(() => base(props)), empty };
     },
     template: `
-      <TopBar :crumbs="crumbs"/>
-      <div class=viewbar><span>Ordered by <b>number</b></span><span v-if="s.data"><b>{{ s.data.length }}</b> catalogued</span>
-        <a class="btn new" :href="base + '/new'">New doc</a></div>
+      <TopBar :crumbs="crumbs"><a class="btn new" :href="base + '/new'">New doc</a></TopBar>
+      <div class=viewbar><span>Ordered by <b>number</b></span><span v-if="s.data"><b>{{ s.data.length }}</b> catalogued</span></div>
       <div class=body><div class=list>
         <div v-if="n === 'new'" class=compose-wrap><ActionBar :actions="creating" open="New doc" :done="done"/></div>
         <p v-if="s.loading && !s.data" class=empty>Loading…</p>
