@@ -845,9 +845,10 @@ const App = {
   template: `
     <div class=app>
       <aside class=side>
-        <a class=project href="#/"><span class=logo>J</span>{{ ov.data ? ov.data.project : 'journal' }}</a>
+        <a class=project :href="envName ? '#/env/' + envName : '#/'" :title="ov.data ? ov.data.project : ''">
+          <span class=logo>{{ (envName || 'j').charAt(0).toUpperCase() }}</span>{{ envName || 'journal' }}
+        </a>
         <div class=group v-if="envName">
-          <div class=group-label>{{ envName }}</div>
           <a v-for="item in NAV" :key="item.key" :class="['item', {on: item.views.includes(route.view)}]"
             :href="'#/env/' + envName + (item.path ? '/' + item.path : '')">
             <Icon :name="item.key"/>{{ item.label }}

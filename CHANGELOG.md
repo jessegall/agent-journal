@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.66.1 — the sidebar is titled with the selected environment
+
+The name at the top of the viewer's sidebar is the environment you are looking at, with its
+initial as the mark, and it links to that environment's Home; the project's name shows on
+hover. The environment's name no longer repeats as a label above its pages.
+
 ## 1.66.0 — an environment has a home page
 
 Opening an environment in `journal serve` lands on its Home, reached from a Home item at
