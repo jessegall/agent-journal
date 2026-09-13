@@ -1287,10 +1287,7 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 #: AND `environments` IS HERE FOR THE NOUN+VERB SPELLING. `journal environments switch "x"`
 #: is the documented twin of `journal switch "x"` (ruling R11) and presents `environments`
 #: as its verb, so without it half of every lifecycle command was ungated.
-JOURNAL_WRITES = frozenset({"update", "switch",
-                            "loop", "prepare", "migrate", "claim", "grant", "grants",
-                            "environments", "environment", "envs", "env", "tracks", "track",
-                            "cleanup", "worktree", "upgrade"})
+JOURNAL_WRITES = frozenset({"update", "loop", "migrate", "cleanup", "upgrade"})
 _SHELL_BREAKS = frozenset({"&&", "||", "|", ";"})
 
 

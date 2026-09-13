@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.10 — the environment and session verbs move onto command classes
+
+`switch`, `claim`, `prepare`, `grant`, `grants`, `lent`, `assign`, `worktree` and the
+`environments` noun (with `environment`, `envs`, `env`, `tracks`, `track`) are declared in
+`commands/environments.py`. `environments switch|claim|prepare` are real subcommands now
+rather than a rewrite of the command line in `journal.main`. Every one keeps the write
+classification it had, including two worth deciding about (to-do 31).
+
 ## 1.62.9 — `tools` moves onto command classes; the hook's noun tables are gone
 
 `journal tools` is declared in `commands/tools.py`, and with it the last per-noun write table
