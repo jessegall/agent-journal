@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.11 — the transcript verbs move onto command classes
+
+`conversation`, `user`, `search` and `carry` are declared in `commands/transcript.py`, their
+text from templates. Bare `journal --back=N` still reads the conversation, by handing the
+command line to `conversation`. What each accepts and prints is unchanged.
+
 ## 1.62.10 — the environment and session verbs move onto command classes
 
 `switch`, `claim`, `prepare`, `grant`, `grants`, `lent`, `assign`, `worktree` and the

@@ -46,7 +46,6 @@ import ideas
 import questions
 import pins
 import reminders
-import tags
 import todo
 import tracks
 import transcript
@@ -100,7 +99,7 @@ verify = _Lazy("verify")
 import app
 from app import BRIEF_REFUSED, CATALOGUE_PAGE, PAGE, project, root
 from app import brief as _brief, catalogue as _catalogue, doc_where as _doc_where, now as _now
-from app import refuse as _refuse, resolved as _resolved, stem as _stem, where as _where
+from app import refuse as _refuse, stem as _stem, where as _where
 
 app.start(Path(__file__))
 _ROOT, _WT_NOTE = app.ROOT, app.WORKTREE_NOTE
@@ -145,31 +144,6 @@ if _AS:
 
 
 
-def _load(back: int = 0):
-    import digest      # only the transcript commands need it; it pulls tags and the rest
-    conf, problems = settings_mod.load(root())
-    for p in problems:
-        fmt.say(f"{p}", error=True)
-    digest.CONTEXT = conf["context_messages"]
-    path = _transcript()
-    lines, boundaries = transcript.read(path)
-    return conf, lines, boundaries, transcript.since(lines, boundaries, back), path
-
-
-def _transcript() -> Path:
-    """The transcript this command is about: this session's, or a labelled guess.
-
-    Every Bash call made from inside a session carries the session id in its environment,
-    so the CLI is not blind. It reads the newest file by mtime only for a person at a bare
-    terminal, and then it SAYS it guessed — with two terminals open the guess is the other
-    one, and a `search` that quietly answered from the wrong conversation is the confident
-    falsehood this tool exists to prevent.
-    """
-    got = _resolved()
-    if got is None:
-        fmt.say("No transcript for this project yet.", error=True)
-        raise SystemExit(1)
-    return got[0]
 
 
 def _help(verb: str = "") -> int:
@@ -294,34 +268,6 @@ def cmd_status() -> int:
     return 0
 
 
-def cmd_read(back: int) -> int:
-    conf, lines, boundaries, seg, path = _load(back)
-    n = len(boundaries)
-    if back > n:
-        # SAY IT RATHER THAN CLAMP. `since` shows the oldest stretch for any N past the
-        # first compaction; labelling that as "N back" is an index that lies.
-        fmt.say(f"  ! only {n} compaction(s) in this session; showing the oldest stretch",
-              error=True)
-        back = n
-    where = "since the last compaction" if back == 0 else f"the stretch {back} summary/ies back replaced"
-    fmt.say(fmt.title("CONVERSATION", sub=f"{where} · {len(seg)} lines · {n} compaction(s) in this session"))
-    fmt.say()
-    import digest
-    body = digest.render(seg)
-    fmt.say(body if body.strip() else "  (nothing was said in this stretch)")
-    if back == 0 and n:
-        fmt.say()
-        fmt.say(fmt.commands([("journal conversation --back=1", "precisely what the last summary dropped")]))
-    return 0
-
-
-def cmd_user(back: int) -> int:
-    _, _, _, seg, _ = _load(back)
-    import digest
-    body = digest.users_only(seg)
-    fmt.say(fmt.title("THE USER'S OWN WORDS", sub="in full, never trimmed"))
-    fmt.say(body if body.strip() else "\n  (the user said nothing in this stretch)")
-    return 0
 
 
 
@@ -333,88 +279,6 @@ def cmd_user(back: int) -> int:
 #: A LISTING SHOWN BY DEFAULT COSTS CONTEXT EVERY TIME; a search was asked for. So the
 
 
-def cmd_search(term: str, all_of_them: bool = False, width: int | None = None, page: int = 1) -> int:
-    """Every line mentioning the term on this environment, across every session of the project.
-
-    AN ENVIRONMENT HAS A TRANSCRIPT — everything said while it was current, in every session —
-    and that is what is searched, because a ruling made on this environment last week is as
-    much this environment's as one made an hour ago. `--all` searches every environment. The line
-    number is the citation and leads, with the session it belongs to; the passage is a
-    window around the first mention, wrapped, with the term marked so the eye lands on it.
-    """
-    width = fmt.room(width)
-    import textwrap
-    from pins import age
-    conf, problems = settings_mod.load(root())
-    for pr in problems:
-        fmt.say(f"{pr}", error=True)
-    here = tracks.current(root(), _stem())
-    needle = term.lower()
-    found: list[tuple[Path, list]] = []
-    total = 0
-    # ONLY THE SESSIONS THAT CARRIED THIS ENVIRONMENT, from the index — plus any session the
-    # index has never heard of, read the long way so a session older than the index is
-    # not silently missing.
-    idx = tracks.carried_by(root())
-    known = {stem for stems in idx.values() for stem in stems}
-    wanted = set(idx.get(here) or [])
-    for path in transcript.sessions(project()):
-        if not all_of_them and path.stem in known and path.stem not in wanted:
-            continue
-        lines, _ = transcript.read(path)
-        pool = lines if all_of_them else transcript.on_track(lines, here)
-        hits = [l for l in pool if l.spoken and needle in (l.text or "").lower()]
-        if hits:
-            found.append((path, hits))
-            total += len(hits)
-    scope = "every environment, every session" if all_of_them else f"environment {here}, every session"
-    if not total:
-        fmt.say(fmt.title(f"NOTHING MENTIONS {term!r}", sub=scope))
-        fmt.say()
-        fmt.say(fmt.wrap("The record does not have it. Say so rather than filling the gap."))
-        if not all_of_them:
-            fmt.say(fmt.commands([(f"journal search {term} --all", "every environment")]))
-        return 0
-    # A PAGE AT A TIME. A common term in a long environment has hundreds of mentions, and the
-    # reader is an agent whose window this lands in. Newest first, because a decision is
-    # more likely recent than old, and a page number for the rest.
-    pages = max(1, -(-total // PAGE))
-    page = min(max(1, page), pages)
-    lo, hi = (page - 1) * PAGE, page * PAGE
-    sub = scope + (f" · page {page} of {pages}, newest first" if pages > 1 else "")
-    fmt.say(fmt.title(f"{total} LINE(S) MENTION {term!r}", sub=sub))
-    mine = transcript.session_transcript(project())
-    seen = 0
-    for path, hits in found:  # sessions are newest first already
-        hits = list(reversed(hits))
-        take = [l for i, l in enumerate(hits, seen) if lo <= i < hi]
-        seen += len(hits)
-        if not take:
-            continue
-        label = "this session" if mine and path == mine[0] else f"session {path.stem[:8]}"
-        when = age(take[0].ts) if take[0].ts else ""
-        fmt.say(fmt.section(label + (f", {when}" if when else "")))
-        for l in take:
-            who = "USER" if l.kind == "human" else "agent"
-            fmt.say(f"  {l.n:>5}  {who}")
-            body = " ".join(tags.strip(l.text).split())
-            i = body.lower().find(needle)
-            lo, hi = max(0, i - 140), min(len(body), i + len(term) + 200)
-            snippet = body[lo:hi]
-            j = snippet.lower().find(needle)
-            if j >= 0:
-                snippet = snippet[:j] + "«" + snippet[j:j + len(term)] + "»" + snippet[j + len(term):]
-            snippet = ("…" if lo else "") + snippet + ("…" if hi < len(body) else "")
-            fmt.say(textwrap.fill(snippet, width=width, initial_indent="         ",
-                                subsequent_indent="         "))
-            fmt.say()
-    rows = []
-    if page < pages:
-        rows.append((f"journal search {term} --page={page + 1}", f"the next {min(PAGE, total - hi)} of {total}, older"))
-    rows.append(("journal conversation --back=N", "reads a whole stretch of this session"))
-    fmt.say(fmt.wrap("A line number is a citation within its session."))
-    fmt.say(fmt.commands(rows))
-    return 0
 
 
 
@@ -445,23 +309,6 @@ def cmd_serve(port: int | None, open_browser: bool) -> int:
 
 
 
-def cmd_carry(fresh: bool) -> int:
-    """THE FULL HANDOVER, on demand. What the doorway points at.
-
-    THE TWO STOPPED BEING THE SAME THING. This printed exactly what the hook injected, which
-    made it a way to LOOK at the block — worth a command on its own, because that block is
-    assembled inside a hook and delivered into a context the user never reads. Now the hook
-    injects a doorway: where you are, what the commands are, how many of each thing stands.
-    The rest is here, uncapped, for a session that would rather read it once than run six
-    commands.
-
-    NO `--unfold`. A flag would exist only to tell this apart from the injected form, and
-    there is nothing to tell apart any more: nobody types the doorway. `carry` means the
-    whole handover, and that is its only meaning.
-    """
-    import hook
-    fmt.say(hook.carried("startup" if fresh else "compact", depth=hook.FULL))
-    return 0
 
 
 def cmd_loop(args: list[str]) -> int:
@@ -646,10 +493,7 @@ class Opts:
     thirty defaults. The class body below still reads as the declaration it was; the
     defaults are class attributes, which is what a dataclass would have produced.
     """
-    back: int = 0
     all_of_them: bool = False
-    go_back: bool = False
-    fresh: bool = False
     page: int = 1
     acting: str = ""
     from_src: str | None = None
@@ -689,7 +533,6 @@ def _page_flag(v: str) -> int:
 _ENV_NOOP = _Flag(dest=None)      # applied and refused in run(), before any command reads the record
 
 VALUE_FLAGS: dict[str, _Flag] = {
-    "--back": _Flag(dest="back", type=_int_flag("--back")),
     "--env": _ENV_NOOP, "--environment": _ENV_NOOP, "--track": _ENV_NOOP,
     "--as": _Flag(dest="acting"),
     "--from": _Flag(dest="from_src"),
@@ -702,8 +545,6 @@ VALUE_FLAGS: dict[str, _Flag] = {
 # theirs.
 BARE_FLAGS: dict[str, _Flag] = {
     "--none": _Flag(dest="after", set="--none"),    # `todos after <n> --none` clears the prerequisites
-    "--fresh": _Flag(dest="fresh"),
-    "--back": _Flag(dest="go_back"),
     "--all": _Flag(dest="all_of_them"),
     "--open": _Flag(dest="open_browser"),
 }
@@ -758,10 +599,6 @@ def _v_cleanup(verb: str, rest: list[str], opts: Opts) -> int:
 
 
 
-def _v_search(verb: str, rest: list[str], opts: Opts) -> int:
-    if len(rest) < 2:
-        return _refuse("search wants a term")
-    return cmd_search(" ".join(rest[1:]), opts.all_of_them, page=opts.page)
 
 
 
@@ -840,9 +677,6 @@ _ALIASES: dict[tuple[str, ...], object] = {
 
 COMMANDS: dict[str, object] = {name: fn for names, fn in _ALIASES.items() for name in names}
 COMMANDS.update({
-    "user": lambda verb, rest, opts: cmd_user(opts.back),
-    "search": _v_search,
-    "carry": lambda verb, rest, opts: cmd_carry(opts.fresh),
     "loop": lambda verb, rest, opts: cmd_loop(rest[1:]),
     "update": _v_update,
     "upgrade": _v_upgrade,
@@ -852,7 +686,6 @@ COMMANDS.update({
     "enable": lambda verb, rest, opts: cmd_enable(),
     "disable": lambda verb, rest, opts: cmd_disable(),
     "version": _v_version,
-    "conversation": lambda verb, rest, opts: cmd_read(opts.back),
 })
 
 
@@ -878,7 +711,10 @@ def main(argv: list[str]) -> int:
     if any(a in ("-h", "--help") for a in argv) or "help" in argv[:2]:
         verb = next((a for a in argv if not a.startswith("-") and a != "help"), "")
         return _help(verb)
-    if commands.REGISTRY.knows(next((a for a in argv if not a.startswith("--")), "")):
+    first = next((a for a in argv if not a.startswith("--")), "")
+    if not first and any(a.startswith("--back") for a in argv):
+        argv, first = ["conversation", *argv], "conversation"
+    if commands.REGISTRY.knows(first):
         return _dispatch(argv)
     # EVERYTHING AFTER A BARE `--` IS PAYLOAD. The loop below matches options by prefix, so
     # a title, a claim, a reminder or a strike reason that opens with `--` was parsed as a
@@ -927,9 +763,7 @@ def main(argv: list[str]) -> int:
         fmt.say(f"No such command: {verb}\n", error=True)
         fmt.say(__doc__, error=True)
         return 1
-    # `journal --back=1` alone still reads: the block and the skill said it for a day,
-    # and a reader with the old words in mind must not land on a status page instead.
-    return cmd_read(opts.back) if any(a.startswith("--back") for a in argv) else cmd_status()
+    return cmd_status()
 
 
 def run(argv: list[str]) -> int:
