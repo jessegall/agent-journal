@@ -24,7 +24,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-import docs, pins, reminders, serve, state, todo, tracks, views, work  # noqa: E402
+import docs, inbox, pins, questions, reminders, serve, state, todo, tracks, views, work  # noqa: E402
 
 AT = "2026-09-11T12:00:00+00:00"
 ok = fail = 0
@@ -73,6 +73,12 @@ docs.add(root, "a project-wide note", "the global abstract", "the global body", 
 pins.add(root, "beta's pin cites the design", AT, 400, where={"doc": "1"})
 pins.add(root, "a rule that cites the design", AT, 400, key=pins.RULES, where={"doc": "1"})
 todo.add(root, "beta", "follow up on the design", "body", AT, where={"doc": "1"})
+
+# an inbox message and questions — about a to-do and a doc on alpha, about a rule on beta
+inbox.add(root, "hello from the cli", AT, track="alpha")
+questions.add(root, "which colour?", AT, ["todo 1"], track="alpha")
+questions.add(root, "is the design final?", AT, ["doc 1"], track="alpha")
+questions.add(root, "does the rule still hold?", AT, ["rule 1"], track="beta")
 
 # WHAT THE STOP HOOK'S PROCESS-GLOBAL TRACK SHOULD NEVER LEAK INTO A RESPONSE: leave the
 # process tracked as something that is neither alpha nor beta, the way a real server
@@ -209,6 +215,73 @@ check("a traversal attempt on an attachment name is refused (404, not a file)", 
 
 status, _, body = get("/api/overview", method="POST")
 check("POST is refused: 405, not attempted", status, 405)
+
+
+def post(path: str, payload, headers: dict | None = None) -> tuple[int, dict]:
+    data = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
+    req = urllib.request.Request(BASE + path, data=data, method="POST",
+                                 headers={"Content-Type": "application/json", **(headers or {})})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return r.status, json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        return e.code, json.loads(e.read())
+
+
+# ─────────────────────────────────────────────────────────────── the inbox
+status, _, body = get("/api/env/alpha/inbox")
+check("alpha's inbox: 200, the message from the cli",
+      (status, [m["text"] for m in json.loads(body)]), (200, ["hello from the cli"]))
+status, _, body = get("/api/env/beta/inbox")
+check("beta's inbox is its own", json.loads(body), [])
+status, got = post("/api/env/beta/inbox", {"text": "a message from the browser"})
+check("POST a message: 201, written from the web",
+      (status, got["rows"][0]["text"], got["rows"][0]["source"]), (201, "a message from the browser", "web"))
+check("and it landed on beta, not wherever this process is tracked",
+      ([m["text"] for m in inbox.rows_response(root, "alpha")], len(inbox.rows_response(root, "beta"))),
+      (["hello from the cli"], 1))
+status, got = post("/api/env/beta/inbox", {"text": "  "})
+check("an empty message is refused: 400 with the reason", (status, "needs its text" in got["error"]), (400, True))
+status, got = post("/api/env/nope/inbox", {"text": "x"})
+check("POST to an unknown environment is 404", status, 404)
+status, got = post("/api/env/beta/inbox", b"text=x", headers={"Content-Type": "application/x-www-form-urlencoded"})
+check("a form post is refused: JSON only", status, 415)
+status, got = post("/api/env/beta/inbox", {"text": "x"}, headers={"Origin": "http://elsewhere.example"})
+check("a write from another origin is refused", status, 403)
+status, got = post("/api/env/beta/inbox", b"[1, 2]")
+check("a body that is not a JSON object is 400", status, 400)
+check("no refused write landed", len(inbox.rows_response(root, "beta")), 1)
+
+# ─────────────────────────────────────────────────────────────── questions
+status, _, body = get("/api/env/alpha/questions")
+check("alpha's questions: 200, both of its own",
+      (status, {q["text"] for q in json.loads(body)}), (200, {"which colour?", "is the design final?"}))
+status, _, body = get("/api/env/alpha/questions/1")
+check("question detail: 200, with what it is about",
+      (status, [l["label"] for l in json.loads(body)["links"]]), (200, ["to-do 1"]))
+status, _, body = get("/api/env/alpha/questions/99")
+check("an unknown question is 404", status, 404)
+status, got = post("/api/env/alpha/questions/1/answer", {"answer": "blue"})
+check("POST an answer: 201, answered", (status, got["rows"]["status"], got["rows"]["answer"]), (201, "answered", "blue"))
+status, got = post("/api/env/alpha/questions/99/answer", {"answer": "x"})
+check("answering an unknown question is 404", status, 404)
+status, got = post("/api/env/alpha/questions/2/answer", {"answer": ""})
+check("an empty answer is refused: 400", status, 400)
+
+# ─────────────────────────────────────────────────────────────── questions on every resource
+status, _, body = get("/api/env/alpha/todos/1")
+check("a to-do's detail lists its questions", [q["text"] for q in json.loads(body)["questions"]], ["which colour?"])
+status, _, body = get("/api/docs/1")
+check("a doc's detail lists the questions about it, with their environment",
+      [(q["env"], q["text"]) for q in json.loads(body)["questions"]], [("alpha", "is the design final?")])
+status, _, body = get("/api/rules/1")
+check("a rule's detail lists the questions about it, from any environment",
+      [(q["env"], q["text"]) for q in json.loads(body)["questions"]], [("beta", "does the rule still hold?")])
+status, _, body = get("/api/env/alpha/pins/1")
+check("a pin's detail carries a questions list, empty here", json.loads(body)["questions"], [])
+status, _, body = get("/api/env/alpha")
+env_row = json.loads(body)
+check("an environment counts its waiting messages and open questions", (env_row["inbox"], env_row["questions"]), (1, 1))
 
 status, _, body = get("/nothing/here")
 check("an unmapped path is 404, not a crash", status, 404)

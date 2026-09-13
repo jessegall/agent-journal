@@ -179,6 +179,23 @@
   .attachment-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .attachment-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+  /* the inbox's message box and a question's answer box */
+  .compose { margin: 0 0 1.4em; }
+  .compose textarea {
+    width: 100%; font: inherit; color: var(--fg); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; resize: vertical;
+  }
+  .compose textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .compose-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+  button {
+    font: inherit; font-weight: 500; color: var(--bg); background: var(--fg);
+    border: none; border-radius: 6px; padding: .4em 1em; cursor: pointer;
+  }
+  button:disabled { opacity: .4; cursor: default; }
+  .message-text { white-space: pre-wrap; }
+  .parts { margin-top: .4em; }
+  .part { margin-top: .2em; }
+
   .error { color: var(--error); }
 </style>
 </head>

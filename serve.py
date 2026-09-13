@@ -16,12 +16,10 @@ choosing how it looks. The choosing happens in the browser now, not here — see
 same response objects is a separate, larger question — see doc 4, to-do 11 — and this
 module does not attempt it.)
 
-LOCALHOST ONLY, AND READ-ONLY. `http.server` is documented as not hardened for anything
-public, and this process has no CSRF or origin checking — acceptable for a GET-only
-server bound to 127.0.0.1, not for one that changes anything. Every write this package
-makes is attributed (who, which transcript line, which environment) and gated by rules a
-browser click has no way to satisfy, so writing from here is a later phase's decision,
-not this one's.
+LOCALHOST ONLY. `http.server` is not hardened for anything public, so it binds 127.0.0.1.
+The writes — a message into the inbox, an answer to a question — are POST with a JSON body
+and refused from another origin: a page elsewhere cannot send `application/json` here
+without a preflight this server never answers.
 
 THE ROUTE TABLE IS FRAMEWORK-AGNOSTIC ON PURPOSE: a route is a compiled pattern and a
 function `(root, project, match) -> (status, content_type, bytes)`, nothing about
@@ -39,6 +37,8 @@ from typing import Callable
 from urllib.parse import unquote, urlsplit
 
 import docs as docs_mod
+import inbox
+import questions
 import views
 from templates import render as fill
 
@@ -58,6 +58,11 @@ MESSAGES = {
     "no_rule": "no rule {n}",
     "no_doc": "no doc {ref}",
     "no_attachment": "no attachment {name} on doc {n}",
+    "no_question": "no question {n} on environment {env}",
+    "not_json": "send the body as JSON: Content-Type: application/json",
+    "bad_json": "the body is not a JSON object",
+    "foreign_origin": "a write from another origin is refused",
+    "too_large": "the body is larger than {limit} bytes",
     "log": "{client} {line}\n",
     "internal": "internal error: {error}",
     "nothing_at": "nothing at {path}",
@@ -70,13 +75,26 @@ def say(message: str, /, **values) -> str:
     return fill(MESSAGES[message], **values)
 
 
-def route(pattern: str):
+POST_ROUTES: list[tuple[re.Pattern, Callable]] = []
+BODY_LIMIT = 64_000
+
+
+def route(pattern: str, table: list = ROUTES):
     compiled = re.compile(pattern)
 
     def deco(fn: Callable) -> Callable:
-        ROUTES.append((compiled, fn))
+        table.append((compiled, fn))
         return fn
     return deco
+
+
+def post_route(pattern: str):
+    return route(pattern, POST_ROUTES)
+
+
+def _now() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
 def _json(data, status: int = 200) -> tuple[int, str, bytes]:
@@ -210,6 +228,58 @@ def _api_doc_detail(root: Path, project: Path, m: re.Match):
     return _json(d)
 
 
+@route(r"^/api/env/(?P<env>[a-z0-9-]+)/inbox$")
+def _api_inbox(root: Path, project: Path, m: re.Match):
+    env = m.group("env")
+    if not _known_env(root, env):
+        return _not_found(say("no_env", env=repr(env)))
+    return _json(views.inbox_on(root, env))
+
+
+@route(r"^/api/env/(?P<env>[a-z0-9-]+)/questions$")
+def _api_questions(root: Path, project: Path, m: re.Match):
+    env = m.group("env")
+    if not _known_env(root, env):
+        return _not_found(say("no_env", env=repr(env)))
+    return _json(views.questions_on(root, env))
+
+
+@route(r"^/api/env/(?P<env>[a-z0-9-]+)/questions/(?P<n>\d+)$")
+def _api_question_detail(root: Path, project: Path, m: re.Match):
+    env, n = m.group("env"), int(m.group("n"))
+    if not _known_env(root, env):
+        return _not_found(say("no_env", env=repr(env)))
+    row = views.question_detail(root, env, n)
+    if row is None:
+        return _not_found(say("no_question", n=n, env=repr(env)))
+    return _json(row)
+
+
+def _wrote(result: tuple[bool, str], rows) -> tuple[int, str, bytes]:
+    ok, message = result
+    return _json({"ok": True, "message": message, "rows": rows}, 201) if ok else _json({"error": message}, 400)
+
+
+@post_route(r"^/api/env/(?P<env>[a-z0-9-]+)/inbox$")
+def _post_inbox(root: Path, project: Path, m: re.Match, body: dict):
+    env = m.group("env")
+    if not _known_env(root, env):
+        return _not_found(say("no_env", env=repr(env)))
+    result = inbox.add(root, str(body.get("text") or ""), _now(), source="web", track=env)
+    return _wrote(result, views.inbox_on(root, env))
+
+
+@post_route(r"^/api/env/(?P<env>[a-z0-9-]+)/questions/(?P<n>\d+)/answer$")
+def _post_answer(root: Path, project: Path, m: re.Match, body: dict):
+    env, n = m.group("env"), int(m.group("n"))
+    if not _known_env(root, env):
+        return _not_found(say("no_env", env=repr(env)))
+    if views.question_detail(root, env, n) is None:
+        return _not_found(say("no_question", n=n, env=repr(env)))
+    result = questions.answer(root, n, str(body.get("answer") or ""), _now(), track=env)
+    return _wrote(result, views.question_detail(root, env, n))
+
+
 @route(r"^/api/tools$")
 def _api_tools(root: Path, project: Path, m: re.Match):
     return _json(views.tools_catalogue(root))
@@ -269,7 +339,42 @@ class _Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self) -> None:
+        path = urlsplit(self.path).path
+        for pattern, fn in POST_ROUTES:
+            m = pattern.match(path)
+            if not m:
+                continue
+            body, refusal = self._write_body()
+            if refusal:
+                self._send(*refusal, False)
+                return
+            try:
+                status, ctype, out = fn(self.server.root, self.server.project, m, body)
+            except Exception as e:   # a bad route must answer 500, never crash the server
+                status, ctype, out = _json({"error": say("internal", error=e)}, 500)
+            self._send(status, ctype, out, False)
+            return
         self._method_not_allowed()
+
+    def _write_body(self) -> tuple[dict | None, tuple | None]:
+        origin = self.headers.get("Origin")
+        if origin and urlsplit(origin).netloc != self.headers.get("Host", ""):
+            return None, _json({"error": say("foreign_origin")}, 403)
+        if (self.headers.get("Content-Type") or "").split(";")[0].strip() != "application/json":
+            return None, _json({"error": say("not_json")}, 415)
+        try:
+            size = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            size = 0
+        if size > BODY_LIMIT:
+            return None, _json({"error": say("too_large", limit=BODY_LIMIT)}, 413)
+        try:
+            data = json.loads(self.rfile.read(size) or b"{}")
+        except ValueError:
+            data = None
+        if not isinstance(data, dict):
+            return None, _json({"error": say("bad_json")}, 400)
+        return data, None
 
     def do_PUT(self) -> None:
         self._method_not_allowed()
