@@ -61,12 +61,163 @@ from pathlib import Path
 
 import fmt
 import state
+from templates import render as fill
 
 DIR = "todo"
 STRUCK = "struck"
 FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how",
           "blocked", "after", "assigned", "reported", "by", "doc", "reopened", "moved_from",
           "priority")
+
+MESSAGES = {
+    "already_done": "to-do {n} is already done ({how})",
+    "already_closed": "to-do {n} is already closed ({how})",
+    "assigned_nobody": "to-do {n} is assigned to nobody",
+    "unassigned": "to-do {n} is back on the list; it was held by `{was}`",
+    "held_by_other": "to-do {n} is held by `{held}` — one agent works a row. `journal assign {n} --off` takes it back first.",
+    "assigned": "to-do {n} is assigned to `{agent}`: {title}\n"
+                "  it is theirs while they are writing; nobody else may take or complete it",
+    "report_how": 'say how it was finished: `journal todos report {n} "<how>"`',
+    "report_not_yours": "to-do {n} is not assigned to you — it is held by `{held}`. Report what you found instead.",
+    "report_nobody": "to-do {n} is held by nobody, so there is nothing of yours to report. "
+                     "`journal todos start {n} --as={agent}` claims it and starts it.",
+    "reported": "to-do {n} is reported finished: {how}\n  the agent that dispatched you closes it; you are done with this row",
+    "priority_empty": "say a number or a level: journal todos priority <n> <50|low|medium|high|100|...>",
+    "priority_bad": "priority wants a number or one of {levels:, }, got {word}",
+    "priority_named": "{name} ({value})",
+    "priority_set": "to-do {n} is priority {label}",
+    "answer_empty": 'say the answer: journal todos answer <n> "<the answer>"',
+    "answer_no_question": "to-do {n} is not waiting on a question; `journal todos start {n}` picks it up",
+    "answer_many": "to-do {n} waits on {count} questions ({numbers:, }); "
+                   'answer each with journal questions answer <n> "<the answer>"',
+    "answered": "answered to-do {n}: {title}\n  the agent is told at its next stop and picks it up first",
+    "ask_empty": 'say what the user must decide: journal todos ask <n> "<the question>"',
+    "ask_link": "todo {n}",
+    "asked": "to-do {n} waits on the user: {question}\n  {msg}",
+    "block_empty": 'say what it waits on: `journal todos block <n> "<what has to be true first>"` — a skipped row with no reason reads as a gap',
+    "blocked": "to-do {n} is set aside: {why}\n"
+               "  the list skips it and `journal next` will not offer it; `journal todos start {n}` picks it up when the condition is true",
+    "after_none": "to-do {n} waits on nothing now",
+    "after_number": "a prerequisite is a to-do number: `journal todos after {n} 12,14`",
+    "after_missing": "no to-do on `{track}` is numbered {missing:, }; `journal todos` numbers them",
+    "after_self": "to-do {n} cannot wait on itself",
+    "after_cycle": "that is a cycle: {path: → } — a list where each waits on the next can never be worked",
+    "after_set": "to-do {n} waits on {nums:, }{tail}",
+    "after_left": "; {left} still open, and it becomes ready when the last one closes",
+    "after_ready": " — all of them are done, so it is ready now",
+    "not_aside": "to-do {n} is not set aside",
+    "unblocked": "to-do {n} is back on the list; it was set aside on: {was}",
+    "no_such": "there is no to-do {n} on environment `{track}`. `journal todo` numbers them.",
+    "add_empty": 'a to-do needs a title: journal todos add "<what, in a few words>"',
+    "duplicate": "already waiting as to-do {n} — nothing to add",
+    "added": "to-do {n} on `{track}`: {title}\n  {path}",
+    "amend_title": 'amend wants a section title: journal todos amend <n> "<section title>" --brief',
+    "amend_body": "amend wants a body on stdin — pass it with --brief",
+    "amend_exists": 'to-do {n} already has a section called "{title}" — journal todos replace {n} "{title}" updates it',
+    "amended": 'to-do {n}: added section "{title}"\n  the old brief is kept under {struck}/',
+    "replace_body": "replace wants a body on stdin — pass it with --brief",
+    "replaced_whole": "to-do {n}: the whole brief replaced\n  the old one is kept under {struck}/",
+    "section_quoted": '"{title}"',
+    "no_sections": "none — this brief has no `## ` sections yet",
+    "no_section": 'to-do {n} has no section called "{title}". It has: {have}',
+    "replaced": 'to-do {n}: section "{title}" replaced\n  the old brief is kept under {struck}/',
+    "no_reason": "no reason recorded",
+    "start_waits": "to-do {n} waits on the user: {asks} — {next}",
+    "start_next": "next ready: {n} ({title})",
+    "start_nothing": "nothing else is ready",
+    "done_empty": 'say how it was resolved: journal todos done <n> "<how>"',
+    "done": "done {n}: {title}\n  {how}",
+    "move_where": 'say where: journal todos move <n> "<environment>"',
+    "move_same": "to-do {n} is already on `{env}`",
+    "moved": "to-do {n} on `{track}` is to-do {to} on `{env}`: {title}\n  {path}",
+    "reopen_why": 'say why it is open again: journal todos reopen <n> "<why>"',
+    "reopen_open": "to-do {n} is not done — nothing to reopen",
+    "reopened": "reopened {n}: {title}\n  {why}\n  the close it undoes: {was}",
+    "prune_empty": "say how old: journal todos prune --older-than=30d (h/d/w) or --before=<date>",
+    "prune_large": "{word} is too large a span",
+    "prune_bad": "{word} is not a duration (30d, 2h, 6w) or a date `journal` writes (e.g. 2026-08-01)",
+    "prune_nothing": "nothing to prune — no done to-do here closed before {date}",
+    "pruned_deleted": "deleted {n} done to-do(s)",
+    "pruned_archived": "archived {n} done to-do(s) under {archive}/",
+    "pruned": "{said}, closed before {date}: {nums:, }[ …and {more} more]",
+    "stays_open": "to-do {n} stays open: it is held for `{held}`, and the agent that dispatched you closes it. Your work is closed.",
+    "commit_none": "to-do {n}: no environment has one — nothing closed",
+    "commit_ambiguous": "to-do {n} is ambiguous — {owners:, } all have one. Spell it: {trailer} todos done <environment>/{n}",
+    "commit_closed_already": "to-do {n} on `{env}` was already closed ({how}) — left as it is",
+    "commit_closed": "{line} (on `{env}`)",
+    "held": "held by `{agent}` ({age})",
+    "started_live": "started {age}, work is open",
+    "started_ended": "started {age}, but the work was ended without closing this row",
+    "state_done": "done {age}: {how}",
+    "state_answered": "answered by the user, not yet picked up",
+    "state_asks": "waits on the user",
+    "state_reported": "reported finished by `{by}` — yours to close: {how}",
+    "state_blocked": "set aside: {why}",
+    "state_after": "after {after}{tail}",
+    "state_after_open": " — {n} still open",
+    "state_after_done": ", all done: ready",
+    "state_waiting": "waiting[ {age}]",
+    "empty_open": "  Nothing is waiting.",
+    "empty_all": "  No to-dos on this environment.",
+    "fact_priority": "priority {label}",
+    "fact_brief": "has a brief",
+    "fact_title_only": "title only",
+    "fact_doc": "→ {label}",
+    "question": "? {asks}",
+    "answer": "→ {answer}",
+    "meta_env": "environment {env}",
+    "meta_written": "written {age} ({date})",
+    "meta_line": "line {line}",
+    "meta_started": "started {age}",
+    "meta_done": "done {age}: {how}",
+    "show_title": "TO-DO {n}",
+    "section_answered": "the user answered",
+    "section_waiting": "waiting on the user",
+    "section_brief": "brief",
+    "title_only": "  (title only; no brief was written)",
+    "cmd_start": "journal todos start {n}",
+    "cmd_start_what": "pick it up",
+    "cmd_done": 'journal todos done {n} "<how>"',
+    "cmd_done_what": "close it without starting",
+    "cmd_answer": 'journal todos answer {n} "<answer>"',
+    "cmd_answer_what": "answer it (the user)",
+    "cmd_ask": 'journal todos ask {n} "<question>"',
+    "cmd_ask_what": "it waits on the user",
+    "cmd_block": 'journal todos block {n} "<what has to be true first>"',
+    "cmd_block_what": "you cannot do it yet, and it is not a question for them",
+    "cmd_after": "journal todos after {n} 12,14",
+    "cmd_after_what": "it must follow those; it goes ready when the last one closes",
+    "auto_on": "auto ON for `{track}`: whenever no work is open, the agent picks up the next to-do on its own and "
+               "keeps going until the list is empty.\n"
+               "  START A LOOP NOW, or nothing will wake this session at its next idle stop and the list will sit "
+               "where it is:\n"
+               "    the `loop` skill with `15m journal next`\n"
+               "  Until one is running (or `journal loop set` says one is), the next write is refused — auto "
+               "without a loop is a promise nothing keeps.",
+    "auto_off": "auto OFF for `{track}`: to-dos are listed and never started without the user's word.",
+    "loop_line": "Keep a loop running while auto is on, if none is: the `loop` skill with `{m}m journal next`, so an "
+                 "idle session comes back every {m} minutes and carries on until nothing is left it can do.",
+    "carry_line": "  {n}  {title}",
+    "carry_answered": "\n       ANSWERED by the user: {answer}\n       (the question was: {asks})",
+    "carry_asks": "\n       waiting on the user: {asks}",
+    "carry_lead": "{n} of these the user has ANSWERED since they were parked — pick those up first.\n",
+    "carry_auto": "TO DO on this environment, {n} waiting — AUTO MODE IS ON: this list is worked through without "
+                  "asking. Whenever nothing is open, pick up the next one with `journal todos start <n>`, solve it "
+                  "yourself, `journal work end` it, and keep going until the list is empty. Every choice a brief "
+                  "leaves open is yours: make it, write it in `journal work update`, carry on. Ask the user only "
+                  "when you cannot proceed without something only they can supply, or the hook says you are "
+                  "stalled — then `journal todos add ask <n> \"<what is stuck>\"` and move to the next. {loop}\n"
+                  "{lead}{titles}{asking}\n`journal todos <n>` reads the brief; `journal todos auto off` turns this off.",
+    "carry_asking": "\n{n} of these wait on the user; the questions are above. When the user answers, `journal todos start <n>`.",
+    "carry_manual": "TO DO on this environment, {n} waiting — delayed work, not an instruction to start any of it. "
+                    "Start one only when the user says so, or asks you to work through them (then offer `journal "
+                    "todos auto on`). A to-do the user has ANSWERED is theirs saying to do it: start it.\n"
+                    "{lead}{titles}\n`journal todos <n>` reads the brief; `journal todos start <n>` picks one up.",
+}
+
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 def _slug(text: str, limit: int = 40) -> str:
@@ -354,21 +505,19 @@ def assign(root: Path, track: str, n: int, agent: str) -> tuple[bool, str]:
     if t is None:
         return False, err
     if t.get("done"):
-        return False, f"to-do {n} is already done ({t.get('how')})"
+        return False, say("already_done", n=n, how=t.get("how"))
     if agent in ("--off", "off", ""):
         was = t.get("assigned")
         if not was:
-            return False, f"to-do {n} is assigned to nobody"
+            return False, say("assigned_nobody", n=n)
         _update(root, track, n, assigned="", reported="", by="")
-        return True, f"to-do {n} is back on the list; it was held by `{was}`"
+        return True, say("unassigned", n=n, was=was)
     agent = state.slug(agent)
     held = t.get("assigned")
     if held and held != agent:
-        return False, (f"to-do {n} is held by `{held}` — one agent works a row. "
-                       f'`journal assign {n} --off` takes it back first.')
+        return False, say("held_by_other", n=n, held=held)
     _update(root, track, n, assigned=agent)
-    return True, (f"to-do {n} is assigned to `{agent}`: {t['title']}\n"
-                  f"  it is theirs while they are writing; nobody else may take or complete it")
+    return True, say("assigned", n=n, agent=agent, title=t["title"])
 
 
 def report(root: Path, track: str, n: int, how: str, agent: str) -> tuple[bool, str]:
@@ -381,22 +530,18 @@ def report(root: Path, track: str, n: int, how: str, agent: str) -> tuple[bool, 
     """
     how = " ".join((how or "").split())
     if not how:
-        return False, f'say how it was finished: `journal todos report {n} "<how>"`'
+        return False, say("report_how", n=n)
     t, err = _get(root, track, n)
     if t is None:
         return False, err
     if t.get("done"):
-        return False, f"to-do {n} is already closed ({t.get('how')})"
+        return False, say("already_closed", n=n, how=t.get("how"))
     if state.slug(agent) != (t.get("assigned") or ""):
         held = t.get("assigned")
-        return False, (
-            f"to-do {n} is not assigned to you — it is held by `{held}`. Report what you "
-            "found instead." if held else
-            f"to-do {n} is held by nobody, so there is nothing of yours to report. "
-            f"`journal todos start {n} --as={state.slug(agent)}` claims it and starts it.")
+        return False, (say("report_not_yours", n=n, held=held) if held
+                       else say("report_nobody", n=n, agent=state.slug(agent)))
     _update(root, track, n, reported=how, by=state.slug(agent))
-    return True, (f"to-do {n} is reported finished: {how}\n"
-                  "  the agent that dispatched you closes it; you are done with this row")
+    return True, say("reported", n=n, how=how)
 
 
 def reported(root: Path, track: str) -> list[dict]:
@@ -434,15 +579,14 @@ def parse_priority(word: str) -> tuple[int | None, str]:
     """(the number, "") for a raw integer or a named level — or (None, the refusal)."""
     word = (word or "").strip()
     if not word:
-        return None, 'say a number or a level: journal todos priority <n> <50|low|medium|high|100|...>'
+        return None, say("priority_empty")
     named = PRIORITY_LEVELS.get(word.lower())
     if named is not None:
         return named, ""
     try:
         return int(word), ""
     except ValueError:
-        levels = ", ".join(sorted(set(PRIORITY_LEVELS) - {"default"}))
-        return None, f"priority wants a number or one of {levels}, got {word!r}"
+        return None, say("priority_bad", levels=sorted(set(PRIORITY_LEVELS) - {"default"}), word=repr(word))
 
 
 def priority_label(value: int) -> str:
@@ -450,7 +594,7 @@ def priority_label(value: int) -> str:
     show a reader the word they set rather than making them recompute it."""
     for name, num in PRIORITY_LEVELS.items():
         if num == value and name != "default":
-            return f"{name} ({value})"
+            return say("priority_named", name=name, value=value)
     return str(value)
 
 
@@ -465,7 +609,7 @@ def priority(root: Path, track: str, n: int, word: str) -> tuple[bool, str]:
     if t is None:
         return False, err
     _update(root, track, n, priority=str(value))
-    return True, f"to-do {n} is priority {priority_label(value)}"
+    return True, say("priority_set", n=n, label=priority_label(value))
 
 
 def after_of(t: dict) -> list[int]:
@@ -523,23 +667,22 @@ def answer(root: Path, track: str, n: int, text: str) -> tuple[bool, str]:
     """
     text = " ".join((text or "").split())
     if not text:
-        return False, 'say the answer: journal todos answer <n> "<the answer>"'
+        return False, say("answer_empty")
     t, err = _get(root, track, n)
     if t is None:
         return False, err
     if t.get("done"):
-        return False, f"to-do {n} is already done ({t.get('how')})"
+        return False, say("already_done", n=n, how=t.get("how"))
     import questions
     waiting = [m for m, q in questions.about(root, f"todo:{n}", track) if questions.is_open(q)]
     if not waiting:
-        return False, f"to-do {n} is not waiting on a question; `journal todos start {n}` picks it up"
+        return False, say("answer_no_question", n=n)
     if len(waiting) > 1:
-        return False, (f"to-do {n} waits on {len(waiting)} questions ({', '.join(map(str, waiting))}); "
-                       'answer each with journal questions answer <n> "<the answer>"')
+        return False, say("answer_many", n=n, count=len(waiting), numbers=waiting)
     ok, msg = questions.answer(root, waiting[0], text, now(), track=track)
     if not ok:
         return False, msg
-    return True, f"answered to-do {n}: {t['title']}\n  the agent is told at its next stop and picks it up first"
+    return True, say("answered", n=n, title=t["title"])
 
 
 def ask(root: Path, track: str, n: int, question: str) -> tuple[bool, str]:
@@ -554,18 +697,18 @@ def ask(root: Path, track: str, n: int, question: str) -> tuple[bool, str]:
     """
     question = " ".join((question or "").split())
     if not question:
-        return False, 'say what the user must decide: journal todos ask <n> "<the question>"'
+        return False, say("ask_empty")
     t, err = _get(root, track, n)
     if t is None:
         return False, err
     if t.get("done"):
-        return False, f"to-do {n} is already done ({t.get('how')})"
+        return False, say("already_done", n=n, how=t.get("how"))
     import questions
-    ok, msg = questions.add(root, question, now(), [f"todo {n}"], track=track)
+    ok, msg = questions.add(root, question, now(), [say("ask_link", n=n)], track=track)
     if not ok:
         return False, msg
     _update(root, track, n, started="")
-    return True, f"to-do {n} waits on the user: {question}\n  {msg}"
+    return True, say("asked", n=n, question=question, msg=msg)
 
 
 def block(root: Path, track: str, n: int, why: str) -> tuple[bool, str]:
@@ -584,17 +727,14 @@ def block(root: Path, track: str, n: int, why: str) -> tuple[bool, str]:
     """
     why = " ".join((why or "").split())
     if not why:
-        return False, ('say what it waits on: `journal todos block <n> "<what has to be true '
-                       'first>"` — a skipped row with no reason reads as a gap')
+        return False, say("block_empty")
     t, err = _get(root, track, n)
     if t is None:
         return False, err
     if t.get("done"):
-        return False, f"to-do {n} is already done ({t.get('how')})"
+        return False, say("already_done", n=n, how=t.get("how"))
     _update(root, track, n, blocked=why, started="")
-    return True, (f"to-do {n} is set aside: {why}\n"
-                  f"  the list skips it and `journal next` will not offer it; "
-                  f"`journal todos start {n}` picks it up when the condition is true")
+    return True, say("blocked", n=n, why=why)
 
 
 def after(root: Path, track: str, n: int, names: str) -> tuple[bool, str]:
@@ -612,27 +752,24 @@ def after(root: Path, track: str, n: int, names: str) -> tuple[bool, str]:
         return False, err
     if names in ("--none", "none", ""):
         _update(root, track, n, after="")
-        return True, f"to-do {n} waits on nothing now"
+        return True, say("after_none", n=n)
     want = [x for x in names.split()]
     if any(not x.isdigit() for x in want):
-        return False, f'a prerequisite is a to-do number: `journal todos after {n} 12,14`'
+        return False, say("after_number", n=n)
     nums = [int(x) for x in want]
     by_n = {x["n"]: x for x in _all(root, track)}
     missing = [x for x in nums if x not in by_n]
     if missing:
-        return False, (f"no to-do on `{track}` is numbered {', '.join(map(str, missing))}; "
-                       "`journal todos` numbers them")
+        return False, say("after_missing", track=track, missing=missing)
     if n in nums:
-        return False, f"to-do {n} cannot wait on itself"
+        return False, say("after_self", n=n)
     cycle = _cycle(by_n, n, nums)
     if cycle:
-        return False, (f"that is a cycle: {' → '.join(map(str, cycle))} — a list where each "
-                       "waits on the next can never be worked")
+        return False, say("after_cycle", path=cycle)
     _update(root, track, n, after=",".join(map(str, nums)))
     left = waiting_on(root, track, {**t, "after": ",".join(map(str, nums))})
-    return True, (f"to-do {n} waits on {', '.join(map(str, nums))}"
-                  + (f"; {len(left)} still open, and it becomes ready when the last one closes"
-                     if left else " — all of them are done, so it is ready now"))
+    tail = say("after_left", left=len(left)) if left else say("after_ready")
+    return True, say("after_set", n=n, nums=nums, tail=tail)
 
 
 def _cycle(by_n: dict, start: int, nums: list[int]) -> list[int] | None:
@@ -656,10 +793,10 @@ def unblock(root: Path, track: str, n: int) -> tuple[bool, str]:
     if t is None:
         return False, err
     if not t.get("blocked"):
-        return False, f"to-do {n} is not set aside"
+        return False, say("not_aside", n=n)
     was = t["blocked"]
     _update(root, track, n, blocked="")
-    return True, f"to-do {n} is back on the list; it was set aside on: {was}"
+    return True, say("unblocked", n=n, was=was)
 
 
 def _get(root: Path, track: str, n: int) -> tuple[dict | None, str]:
@@ -671,7 +808,7 @@ def _get(root: Path, track: str, n: int) -> tuple[dict | None, str]:
     """
     items = {t["n"]: t for t in _all(root, track)}
     if n not in items:
-        return None, f"there is no to-do {n} on environment `{track}`. `journal todo` numbers them."
+        return None, say("no_such", n=n, track=track)
     got = items[n]
     if "body" not in got:
         got = dict(got, body=_read_todo(got["path"])["body"])
@@ -682,16 +819,16 @@ def add(root: Path, track: str, title: str, body: str, at: str, where: dict | No
     """Write one. Refuses an empty title and a duplicate open one."""
     title = " ".join((title or "").split())
     if not title:
-        return False, 'a to-do needs a title: journal todos add "<what, in a few words>"'
+        return False, say("add_empty")
     for t in open_items(root, track):
         if t["title"].lower() == title.lower():
-            return False, f"already waiting as to-do {t['n']} — nothing to add"
+            return False, say("duplicate", n=t["n"])
     items = _all(root, track)
     n = (items[-1]["n"] if items else 0) + 1
     path = folder(root, track) / f"{n:03d}-{_slug(title)}.md"
     meta = {"title": title, "track": track, "at": at, **{k: str(v) for k, v in (where or {}).items()}}
     _write(path, meta, body)
-    return True, f"to-do {n} on `{track}`: {title}\n  {path.relative_to(root.parent)}"
+    return True, say("added", n=n, track=track, title=title, path=path.relative_to(root.parent))
 
 
 def _update(root: Path, track: str, n: int, **fields) -> tuple[dict | None, str]:
@@ -761,21 +898,20 @@ def amend(root: Path, track: str, n: int, title: str, addition: str) -> tuple[bo
     """
     title = " ".join((title or "").split())
     if not title:
-        return False, 'amend wants a section title: journal todos amend <n> "<section title>" --brief'
+        return False, say("amend_title")
     addition = (addition or "").rstrip("\n")
     if not addition.strip():
-        return False, "amend wants a body on stdin — pass it with --brief"
+        return False, say("amend_body")
     t, err = _get(root, track, n)
     if t is None:
         return False, err
     if any(existing.lower() == title.lower() for existing, _ in _sections(t["body"]) if existing):
-        return False, (f'to-do {n} already has a section called "{title}" — '
-                        f'journal todos replace {n} "{title}" updates it')
+        return False, say("amend_exists", n=n, title=title)
     _snapshot(t)
     sep = "\n\n" if t["body"].strip() else ""
     new_body = t["body"].rstrip("\n") + sep + f"## {title}\n{addition}\n"
     _write(t["path"], {k: t.get(k, "") for k in FIELDS}, new_body)
-    return True, f'to-do {n}: added section "{title}"\n  the old brief is kept under {STRUCK}/'
+    return True, say("amended", n=n, title=title, struck=STRUCK)
 
 
 def replace_section(root: Path, track: str, n: int, title: str, new_text: str) -> tuple[bool, str]:
@@ -785,7 +921,7 @@ def replace_section(root: Path, track: str, n: int, title: str, new_text: str) -
     """
     new_text = (new_text or "").rstrip("\n")
     if not new_text.strip():
-        return False, "replace wants a body on stdin — pass it with --brief"
+        return False, say("replace_body")
     t, err = _get(root, track, n)
     if t is None:
         return False, err
@@ -794,12 +930,12 @@ def replace_section(root: Path, track: str, n: int, title: str, new_text: str) -
     if not title:
         _snapshot(t)
         _write(t["path"], {k: t.get(k, "") for k in FIELDS}, new_text + "\n")
-        return True, f"to-do {n}: the whole brief replaced\n  the old one is kept under {STRUCK}/"
+        return True, say("replaced_whole", n=n, struck=STRUCK)
     named = [s for s in sections if s[0]]
     match = next((s for s in named if s[0].lower() == title.lower()), None)
     if match is None:
-        have = ", ".join(f'"{s[0]}"' for s in named) or "none — this brief has no `## ` sections yet"
-        return False, f'to-do {n} has no section called "{title}". It has: {have}'
+        have = ", ".join(say("section_quoted", title=s[0]) for s in named) or say("no_sections")
+        return False, say("no_section", n=n, title=title, have=have)
     _snapshot(t)
     rebuilt = [f"## {title}\n{new_text}" if existing.lower() == title.lower() else text
                for existing, text in sections]
@@ -807,7 +943,7 @@ def replace_section(root: Path, track: str, n: int, title: str, new_text: str) -
     if not new_body.endswith("\n"):
         new_body += "\n"
     _write(t["path"], {k: t.get(k, "") for k in FIELDS}, new_body)
-    return True, f'to-do {n}: section "{title}" replaced\n  the old brief is kept under {STRUCK}/'
+    return True, say("replaced", n=n, title=title, struck=STRUCK)
 
 
 def start(root: Path, track: str, n: int, at: str, strict: bool = False,
@@ -829,13 +965,13 @@ def start(root: Path, track: str, n: int, at: str, strict: bool = False,
     if t is None:
         return None, err
     if t.get("done"):
-        return None, f"to-do {n} is already done ({t.get('how') or 'no reason recorded'})"
+        return None, say("already_done", n=n, how=t.get("how") or say("no_reason"))
     if strict and t.get("asks") and not t.get("answer"):
         # A DELEGATED ACTOR CANNOT REACH THE USER: what waits on them is not startable for
         # it. A session may start it — the user answered in the conversation.
         nxt = next((x for x in ready(root, track) if x["n"] != n), None)
-        return None, (f"to-do {n} waits on the user: {t['asks']}" + (f" — next ready: {nxt['n']} ({nxt['title']})" if nxt
-                      else " — nothing else is ready"))
+        return None, say("start_waits", n=n, asks=t["asks"],
+                         next=say("start_next", n=nxt["n"], title=nxt["title"]) if nxt else say("start_nothing"))
     if agent:
         ok, why = assign(root, track, n, agent)
         if not ok:
@@ -849,14 +985,14 @@ def start(root: Path, track: str, n: int, at: str, strict: bool = False,
 def done(root: Path, track: str, n: int, how: str, at: str) -> tuple[bool, str]:
     how = " ".join((how or "").split())
     if not how:
-        return False, 'say how it was resolved: journal todos done <n> "<how>"'
+        return False, say("done_empty")
     t, err = _get(root, track, n)
     if t is None:
         return False, err
     if t.get("done"):
-        return False, f"to-do {n} is already done ({t.get('how')})"
+        return False, say("already_done", n=n, how=t.get("how"))
     _update(root, track, n, done=at, how=how)
-    return True, f"done {n}: {t['title']}\n  {how}"
+    return True, say("done", n=n, title=t["title"], how=how)
 
 
 def move(root: Path, track: str, n: int, dst: str, at: str) -> tuple[bool, str]:
@@ -869,9 +1005,9 @@ def move(root: Path, track: str, n: int, dst: str, at: str) -> tuple[bool, str]:
     """
     dst = state.slug(dst)
     if not dst:
-        return False, 'say where: journal todos move <n> "<environment>"'
+        return False, say("move_where")
     if dst == state.slug(track):
-        return False, f"to-do {n} is already on `{dst}`"
+        return False, say("move_same", n=n, env=dst)
     t, err = _get(root, track, n)
     if t is None:
         return False, err
@@ -883,8 +1019,7 @@ def move(root: Path, track: str, n: int, dst: str, at: str) -> tuple[bool, str]:
     path = folder(root, dst) / f"{to:03d}-{_slug(t['title'])}.md"
     _write(path, meta, t["body"])
     t["path"].unlink()
-    return True, (f"to-do {n} on `{track}` is to-do {to} on `{dst}`: {t['title']}\n"
-                  f"  {path.relative_to(root.parent)}")
+    return True, say("moved", n=n, track=track, to=to, env=dst, title=t["title"], path=path.relative_to(root.parent))
 
 
 def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str]:
@@ -898,15 +1033,15 @@ def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str
     """
     why = " ".join((why or "").split())
     if not why:
-        return False, 'say why it is open again: journal todos reopen <n> "<why>"'
+        return False, say("reopen_why")
     t, err = _get(root, track, n)
     if t is None:
         return False, err
     if not t.get("done"):
-        return False, f"to-do {n} is not done — nothing to reopen"
-    was = t.get("how") or "no reason recorded"
+        return False, say("reopen_open", n=n)
+    was = t.get("how") or say("no_reason")
     _update(root, track, n, done="", how="", reopened=f"{at} · {why} (was closed: {was})")
-    return True, f"reopened {n}: {t['title']}\n  {why}\n  the close it undoes: {was}"
+    return True, say("reopened", n=n, title=t["title"], why=why, was=was)
 
 
 #: WHERE A PRUNED FILE GOES BY DEFAULT — never `STRUCK`, which already means something
@@ -927,8 +1062,7 @@ def _prune_cutoff(word: str, now: str) -> tuple[str | None, str]:
     from datetime import datetime, timedelta, timezone
     word = (word or "").strip()
     if not word:
-        return None, ('say how old: journal todos prune --older-than=30d (h/d/w) or '
-                      '--before=<date>')
+        return None, say("prune_empty")
     m = _re.fullmatch(r"(\d+)([hdw])", word.lower())
     if m:
         n, unit = int(m.group(1)), m.group(2)
@@ -936,12 +1070,12 @@ def _prune_cutoff(word: str, now: str) -> tuple[str | None, str]:
         try:
             when = datetime.now(timezone.utc) - timedelta(hours=n * hours)
         except OverflowError:
-            return None, f"{word} is too large a span"
+            return None, say("prune_large", word=word)
         return when.isoformat(timespec="seconds"), ""
     try:
         when = datetime.fromisoformat(word.replace("Z", "+00:00"))
     except ValueError:
-        return None, f"{word!r} is not a duration (30d, 2h, 6w) or a date `journal` writes (e.g. 2026-08-01)"
+        return None, say("prune_bad", word=repr(word))
     if when.tzinfo is None:
         when = when.replace(tzinfo=timezone.utc)
     return when.isoformat(timespec="seconds"), ""
@@ -964,22 +1098,21 @@ def prune(root: Path, track: str, word: str, at: str, force: bool = False) -> tu
     items = _all(root, track)
     candidates = [t for t in items if t.get("done") and t["done"] < cutoff]
     if not candidates:
-        return True, f"nothing to prune — no done to-do here closed before {cutoff[:10]}"
+        return True, say("prune_nothing", date=cutoff[:10])
     d = folder(root, track)
     if force:
         for t in candidates:
             t["path"].unlink(missing_ok=True)
-        said = f"deleted {len(candidates)} done to-do(s)"
+        said = say("pruned_deleted", n=len(candidates))
     else:
         arc = d / ARCHIVE
         arc.mkdir(exist_ok=True)
         for t in candidates:
             t["path"].rename(arc / t["path"].name)
-        said = f"archived {len(candidates)} done to-do(s) under {ARCHIVE}/"
+        said = say("pruned_archived", n=len(candidates), archive=ARCHIVE)
     _LISTED.pop(str(d), None)
-    nums = ", ".join(str(t["n"]) for t in candidates[:12])
-    more = f" …and {len(candidates) - 12} more" if len(candidates) > 12 else ""
-    return True, f"{said}, closed before {cutoff[:10]}: {nums}{more}"
+    more = len(candidates) - 12 if len(candidates) > 12 else None
+    return True, say("pruned", said=said, date=cutoff[:10], nums=[t["n"] for t in candidates[:12]], more=more)
 
 
 def titled(root: Path, track: str, title: str) -> dict | None:
@@ -1031,8 +1164,7 @@ def close_titled(root: Path, track: str, title: str, at: str,
         return "", ""
     held = t.get("assigned") or ""
     if held and state.slug(agent) == held:
-        return "", (f"to-do {t['n']} stays open: it is held for `{held}`, and the agent "
-                    "that dispatched you closes it. Your work is closed.")
+        return "", say("stays_open", n=t["n"], held=held)
     _update(root, track, t["n"], done=at, how="closed with the work that finished it")
     return str(t["n"]), ""
 
@@ -1153,11 +1285,10 @@ def close_from_commit(root: Path, message: str, how_default: str, at: str,
                     seen.add(e)
                     owners.append(e)
             if not owners:
-                said.append((False, f"to-do {n}: no environment has one — nothing closed"))
+                said.append((False, say("commit_none", n=n)))
                 continue
             if len(owners) > 1 and (here not in owners):
-                said.append((False, f"to-do {n} is ambiguous — {', '.join(owners)} all have one. "
-                                    f"Spell it: {TRAILER} todos done <environment>/{n}"))
+                said.append((False, say("commit_ambiguous", n=n, owners=owners, trailer=TRAILER)))
                 continue
             env = here if here in owners else owners[0]
         t, err = _get(root, env, n)
@@ -1167,10 +1298,10 @@ def close_from_commit(root: Path, message: str, how_default: str, at: str,
         if t.get("done"):
             # AN AMEND OR A REBASE RUNS THE HOOK AGAIN over the same message. That is a
             # no-op with a note, not a failure: nothing about the record is wrong.
-            said.append((False, f"to-do {n} on `{env}` was already closed ({t.get('how')}) — left as it is"))
+            said.append((False, say("commit_closed_already", n=n, env=env, how=t.get("how"))))
             continue
         ok, msg = done(root, env, n, how or how_default, at)
-        said.append((ok, msg.splitlines()[0] + f" (on `{env}`)" if ok else msg))
+        said.append((ok, say("commit_closed", line=msg.splitlines()[0], env=env) if ok else msg))
     return said
 
 
@@ -1273,7 +1404,7 @@ def rows_response(root: Path, track: str) -> list[dict]:
 
 def _held(root: Path, track: str, t: dict) -> str:
     import agents as ag
-    return f"held by `{t['assigned']}` ({ag.age(root, track, t['assigned'])})"
+    return say("held", agent=t["assigned"], age=ag.age(root, track, t["assigned"]))
 
 
 def _started(root: Path, track: str, t: dict) -> str:
@@ -1284,26 +1415,23 @@ def _started(root: Path, track: str, t: dict) -> str:
     """
     import work
     live = any(w["subject"].lower() == t["title"].lower() for w in work.open_work(root))
-    return (f"started {_age(t['started'])}, work is open" if live else
-            f"started {_age(t['started'])}, but the work was ended without closing this row")
+    return say("started_live" if live else "started_ended", age=_age(t["started"]))
 
 
 #: THE TABLE FROM STATE TO SENTENCE. One entry per name `_state` can return, and every name
 #: it can return has one: adding a state means adding a row here, not another `elif`.
 _STATE_TEXT = {
-    "done": lambda root, track, t: f"done {_age(t['done'])}: {t.get('how') or 'no reason recorded'}",
-    "answered": lambda root, track, t: "answered by the user, not yet picked up",
-    "asks": lambda root, track, t: "waits on the user",
-    "reported": lambda root, track, t: (
-        f"reported finished by `{t.get('by') or '?'}` — yours to close: {t['reported']}"),
+    "done": lambda root, track, t: say("state_done", age=_age(t["done"]), how=t.get("how") or say("no_reason")),
+    "answered": lambda root, track, t: say("state_answered"),
+    "asks": lambda root, track, t: say("state_asks"),
+    "reported": lambda root, track, t: say("state_reported", by=t.get("by") or "?", how=t["reported"]),
     "assigned": _held,
-    "blocked": lambda root, track, t: f"set aside: {t['blocked']}",
-    "after": lambda root, track, t: (
-        f"after {t['after']}" + (f" — {len(waiting_on(root, track, t))} still open"
-                                 if waiting_on(root, track, t) else ", all done: ready")),
+    "blocked": lambda root, track, t: say("state_blocked", why=t["blocked"]),
+    "after": lambda root, track, t: say("state_after", after=t["after"], tail=(
+        say("state_after_open", n=len(waiting_on(root, track, t))) if waiting_on(root, track, t)
+        else say("state_after_done"))),
     "started": _started,
-    "waiting": lambda root, track, t: (
-        f"waiting {_age(t.get('at', ''))}" if _age(t.get("at", "")) else "waiting"),
+    "waiting": lambda root, track, t: say("state_waiting", age=_age(t.get("at", ""))),
 }
 
 
@@ -1337,18 +1465,18 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int | No
     import entries
     items = _all(root, track) if all_of_them else open_items(root, track)
     if not items:
-        return "  Nothing is waiting." if not all_of_them else "  No to-dos on this environment."
+        return say("empty_all" if all_of_them else "empty_open")
     if not order_by_id:
         items = sorted(items, key=priority_of)
 
     def facts(t: dict) -> list[str]:
         out = [_STATE_TEXT[_state(t)](root, track, t)]
         if priority_of(t) != DEFAULT_PRIORITY:
-            out.append(f"priority {priority_label(priority_of(t))}")
-        out.append("has a brief" if t.get("brief") or t.get("body") else "title only")
+            out.append(say("fact_priority", label=priority_label(priority_of(t))))
+        out.append(say("fact_brief") if t.get("brief") or t.get("body") else say("fact_title_only"))
         if t.get("doc"):
             import docs as docs_mod
-            out.append("→ " + docs_mod.ref_label(root, str(t["doc"]), short=short_refs))
+            out.append(say("fact_doc", label=docs_mod.ref_label(root, str(t["doc"]), short=short_refs)))
         return out
 
     def item_of(t: dict):
@@ -1363,9 +1491,9 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int | No
         # SAME CONDITION THE LADDER GATED ITS OWN EXTRA LINES ON: still waiting, not yet
         # started, not done.
         if t.get("asks") and not t.get("done") and not t.get("started"):
-            entry += "\n" + fmt.wrap("? " + t["asks"], indent=5, width=width)
+            entry += "\n" + fmt.wrap(say("question", asks=t["asks"]), indent=5, width=width)
             if t.get("answer"):
-                entry += "\n" + fmt.wrap("→ " + t["answer"], indent=5, width=width)
+                entry += "\n" + fmt.wrap(say("answer", answer=t["answer"]), indent=5, width=width)
         blocks.append(entry)
     return "\n\n".join(blocks) + fmt.more("todos", left, page, order)
 
@@ -1375,46 +1503,44 @@ def show(root: Path, track: str, n: int, width: int | None = None) -> tuple[bool
     t, err = _get(root, track, n)
     if t is None:
         return False, err
-    meta = [f"environment {track}"]
+    meta = [say("meta_env", env=track)]
     if t.get("at"):
-        meta.append(f"written {_age(t['at'])} ({t['at'][:10]})")
+        meta.append(say("meta_written", age=_age(t["at"]), date=t["at"][:10]))
     if t.get("line"):
-        meta.append(f"line {t['line']}")
+        meta.append(say("meta_line", line=t["line"]))
     if t.get("started"):
-        meta.append(f"started {_age(t['started'])}")
+        meta.append(say("meta_started", age=_age(t["started"])))
     if t.get("done"):
-        meta.append(f"done {_age(t['done'])}: {t.get('how')}")
+        meta.append(say("meta_done", age=_age(t["done"]), how=t.get("how")))
     if t.get("doc"):
         import docs as docs_mod
-        meta.append("→ " + docs_mod.ref_label(root, str(t["doc"])))
-    out = [fmt.title(f"TO-DO {n}", sub=" ".join(t["title"].split())), "  " + fmt.dim(" · ".join(meta))]
+        meta.append(say("fact_doc", label=docs_mod.ref_label(root, str(t["doc"]))))
+    out = [fmt.title(say("show_title", n=n), sub=" ".join(t["title"].split())), "  " + fmt.dim(" · ".join(meta))]
     if t.get("asks"):
-        out.append(fmt.section("the user answered" if t.get("answer") else "waiting on the user"))
+        out.append(fmt.section(say("section_answered" if t.get("answer") else "section_waiting")))
         out.append(fmt.wrap(t["asks"], width=width))
         if t.get("answer"):
             out.append("")
-            out.append(fmt.wrap("→ " + t["answer"], width=width))
-    out.append(fmt.section("brief"))
+            out.append(fmt.wrap(say("answer", answer=t["answer"]), width=width))
+    out.append(fmt.section(say("section_brief")))
     # fmt.PROSE, NOT fmt.wrap AND NOT fmt.block. `wrap` joins every line of the brief into
     # one, which swallows an indented list and a `## ` heading alike into run-on prose.
     # `block` was the other extreme: it kept every stored line exactly as written, so a
     # paragraph hard-wrapped by its author at whatever width their editor had wrapped a
     # SECOND time in a narrower terminal and left a stub under each line. `prose` is the
     # distinction — a paragraph flows, a list and a code block and a table do not.
-    out.append(fmt.prose(t["body"], width=width) if t["body"] else "  (title only; no brief was written)")
+    out.append(fmt.prose(t["body"], width=width) if t["body"] else say("title_only"))
     out.append("")
     rows = []
     if not t.get("done"):
-        rows.append((f"journal todos start {n}", "pick it up"))
-        rows.append((f'journal todos done {n} "<how>"', "close it without starting"))
+        rows.append((say("cmd_start", n=n), say("cmd_start_what")))
+        rows.append((say("cmd_done", n=n), say("cmd_done_what")))
         if t.get("asks") and not t.get("answer"):
-            rows.append((f'journal todos answer {n} "<answer>"', "answer it (the user)"))
+            rows.append((say("cmd_answer", n=n), say("cmd_answer_what")))
         elif not t.get("asks"):
-            rows.append((f'journal todos ask {n} "<question>"', "it waits on the user"))
-            rows.append((f'journal todos block {n} "<what has to be true first>"',
-                         "you cannot do it yet, and it is not a question for them"))
-            rows.append((f"journal todos after {n} 12,14",
-                         "it must follow those; it goes ready when the last one closes"))
+            rows.append((say("cmd_ask", n=n), say("cmd_ask_what")))
+            rows.append((say("cmd_block", n=n), say("cmd_block_what")))
+            rows.append((say("cmd_after", n=n), say("cmd_after_what")))
     if rows:
         out.append(fmt.commands(rows))
     out.append("  " + fmt.dim(str(t["path"].relative_to(root.parent))))
@@ -1442,15 +1568,7 @@ def set_auto(root: Path, track: str, on: bool) -> str:
         got = got if isinstance(got, dict) else {}
         got[track] = bool(on)
         state.put(root, AUTO, got)
-    return (f"auto ON for `{track}`: whenever no work is open, the agent picks up the next "
-            "to-do on its own and keeps going until the list is empty.\n"
-            "  START A LOOP NOW, or nothing will wake this session at its next idle stop and "
-            "the list will sit where it is:\n"
-            "    the `loop` skill with `15m journal next`\n"
-            "  Until one is running (or `journal loop set` says one is), the next write is "
-            "refused — auto without a loop is a promise nothing keeps."
-            if on else
-            f"auto OFF for `{track}`: to-dos are listed and never started without the user's word.")
+    return say("auto_on" if on else "auto_off", track=track)
 
 
 def _loop_line(root: Path) -> str:
@@ -1458,9 +1576,7 @@ def _loop_line(root: Path) -> str:
     m = load(root)[0].get("auto_loop_minutes", 0)
     if not m:
         return ""
-    return (f"Keep a loop running while auto is on, if none is: the `loop` skill with "
-            f"`{m}m journal next`, so an idle session comes back every {m} minutes and carries "
-            "on until nothing is left it can do.")
+    return say("loop_line", m=m)
 
 
 def carry(root: Path, track: str, cap: int = 0) -> str:
@@ -1476,37 +1592,19 @@ def carry(root: Path, track: str, cap: int = 0) -> str:
     if not waiting:
         return ""
     def line(t):
-        s = f"  {t['n']:>3}  {t['title']}"
+        s = say("carry_line", n=str(t["n"]).rjust(3), title=t["title"])
         if answered_one(t):
-            s += f"\n       ANSWERED by the user: {t['answer']}\n       (the question was: {t['asks']})"
+            s += say("carry_answered", answer=t["answer"], asks=t["asks"])
         elif t.get("asks") and not t.get("started"):
-            s += f"\n       waiting on the user: {t['asks']}"
+            s += say("carry_asks", asks=t["asks"])
         return s
     ordered = sorted(waiting, key=lambda t: 0 if answered_one(t) else 1)
     shown = ordered[:cap] if cap else ordered
     titles = "\n".join(line(t) for t in shown) + fmt.cut(len(shown), len(ordered), "journal todos")
     blocked = asking(root, track)
     unstuck = answered(root, track)
-    lead = (f"{len(unstuck)} of these the user has ANSWERED since they were parked — pick those up "
-            "first.\n" if unstuck else "")
+    lead = say("carry_lead", n=len(unstuck)) if unstuck else ""
     if auto(root, track):
-        return (
-            f"TO DO on this environment, {len(waiting)} waiting — AUTO MODE IS ON: this list is worked "
-            "through without asking. Whenever nothing is open, pick up the next one with "
-            "`journal todos start <n>`, solve it yourself, `journal work end` it, and keep going "
-            "until the list is empty. Every choice a brief leaves open is yours: make it, write it "
-            "in `journal work update`, carry on. Ask the user only when you cannot proceed without "
-            "something only they can supply, or the hook says you are stalled — then `journal todos add "
-            'ask <n> "<what is stuck>"` and move to the next. ' + _loop_line(root)
-            + "\n" + lead + titles
-            + (f"\n{len(blocked)} of these wait on the user; the questions are above. When the "
-               "user answers, `journal todos start <n>`." if blocked else "")
-            + "\n`journal todos <n>` reads the brief; `journal todos auto off` turns this off."
-        )
-    return (
-        f"TO DO on this environment, {len(waiting)} waiting — delayed work, not an instruction to "
-        "start any of it. Start one only when the user says so, or asks you to work through "
-        "them (then offer `journal todos auto on`). A to-do the user has ANSWERED is theirs "
-        "saying to do it: start it.\n" + lead + titles
-        + "\n`journal todos <n>` reads the brief; `journal todos start <n>` picks one up."
-    )
+        return say("carry_auto", n=len(waiting), loop=_loop_line(root), lead=lead, titles=titles,
+                   asking=say("carry_asking", n=len(blocked)) if blocked else "")
+    return say("carry_manual", n=len(waiting), lead=lead, titles=titles)
