@@ -4,7 +4,7 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
-## 1.59.0 — `journal serve`: a browser over the journal
+## 1.61.6 — `journal serve`: a browser over the journal
 
 `journal serve [--port=<n>] [--open]` starts a local, read-only web viewer — every
 environment's to-dos, pins, open work and reminders, plus the project's docs and rules,
@@ -13,6 +13,115 @@ answers a thin JSON API (`serve.py`, built on a new `views.py` read layer), and 
 Vue 3 app (loaded from a CDN, no build step) renders it in the browser. Read-only in this
 release — writing from the browser needs an attribution story the CLI already has and a
 web click does not, and stays a later decision.
+
+## 1.61.5 — a to-do's `.md` file is written atomically now
+
+`todo._write` used to `path.write_text(...)` in place — open-with-truncate, then write —
+with a window in between where a row started and then closed moments later (`todos
+start` followed by a commit trailer's close, exactly the shape a hook produces) could be
+read by a concurrent reader (a background loop's `journal next`, a second hook) as empty
+or with an unclosed front matter, which `_read_todo` treats as no front matter parsed at
+all. Reported live: `journal todos` showed an already-DONE row (confirmed done by
+`journal todos <n>`) as merely "started ... but the work was ended without closing this
+row". Demonstrated with a hammering-thread test — 2,672 torn reads in 2 seconds of the
+old code, 0 after the fix. `_write` now writes its own tmp file and `os.replace`s it in,
+the same pattern `state._write` already uses for exactly this reason.
+
+## 1.61.4 — the to-do listing stopped claiming "work is open" for a row that isn't
+
+Same shape of bug as 1.61.3, different code path: `journal todos` said "started N ago,
+work is open" for ANY row with a `started` stamp, never checking whether work was
+actually still open for it. Since a plain `work end` (no `--todo`) never clears
+`started`, a row that was started and then ended without closing the row kept claiming
+open work forever after. Found live, in this project's own dogfood instance, right
+after fixing 1.61.3 — `journal todos` said to-do 6's work was open while `journal open`
+correctly said nothing was. Now checks `work.open_work()` for a matching subject and
+says so honestly either way.
+
+## 1.61.3 — the stall nudge names the row actually open, not the last one `started`
+
+"N tool calls on to-do X with no progress filed" could name the wrong to-do: a row's
+`started` stamp is never cleared by a plain `work end` (only `--todo`/`done` clears the
+row), so a row that was started, ended, and then touched again (`todos after`, `todos
+block`) still carried `started` and could sort after the row genuinely open. The nudge
+now matches the started to-dos against `work.open_work()`'s subject instead of just
+taking the last row with a `started` timestamp. Found by a peer session: the nudge named
+to-do 2269 (ended, then chained onto another to-do) while the real open work, per
+`journal open`, was to-do 1417.
+
+## 1.61.2 — a commit trailer can close several to-dos on one line
+
+`Journal: todos done 2263 2264` used to close 2263 and silently read "2264" as part of
+2263's `how` text — the second number vanished with no sign anything was swallowed. A
+run of bare numbers right after the first is now read as more refs, all sharing the same
+environment and `how` text as the first. Found by a peer session that had to close the
+second one by hand after the trailer's reply said only "closed what it named: done
+2263". `<environment>/N` still only applies to the first number in the run — a bulk
+close on one line means "these, in the environment I already named."
+
+## 1.61.1 — `journal next` stopped calling a non-empty list empty
+
+With auto on and nothing ready, `journal next` checked only whether a to-do was waiting
+on the user's answer — if none was, it said "The list is empty. Stop the loop if one is
+running." even when every remaining row was set aside on a condition, waiting on a
+prerequisite, or held by a live agent. `hook.py`'s idle-stop advisory already named all
+four reasons correctly; `journal next` predates the set-aside feature and was never
+updated to match. It now reports every reason a row can't be picked up, the same way the
+stop hook does, instead of only "asking" or "empty".
+
+## 1.61.0 — `journal todos prune`: clear old done to-dos off the list
+
+`journal todos prune --older-than=30d` (or `--before=<date>`) moves every done or
+dropped to-do older than that under `todo/<env>/archived/` — invisible to the normal
+list from then on, but never deleted; `--force` actually deletes instead. An open to-do
+is never touched, whatever its age, and there is no silent default: an age or date is
+required every time. Found the need for this in a project whose default environment had
+2163 to-do files on disk with only 47 still open — nothing ever pruned a finished one
+before.
+
+## 1.60.0 — a to-do has a priority now
+
+`journal todos priority <n> <value>` sets it — a raw number or a name (`low`=50,
+`default`/unset=100, `high`=150, `critical`=200). Bigger is more important. `journal
+todos` now lists highest priority first by default (`--order=asc` for lowest first,
+`--order-by-id` for the old plain-number order), and `ready()` — what `journal next` and
+auto mode pick up next — sorts by it too, so the most important ready to-do is always
+suggested first. An answered to-do still comes before an unanswered one regardless of
+priority: the user replying to a question is their own word to do it now. Existing
+to-dos with no priority set behave exactly as priority 100 — nothing to migrate.
+
+## 1.59.3 — `journal next` stays honest while disabled
+
+`journal disable` only reaches the hook layer — it cannot see or stop a session's own
+scheduled `/loop` wakeup, so a loop firing `journal next` every few minutes kept running
+its full hold/to-do advisory logic regardless, which can read as actively contradictory
+right after the journal was silenced. `journal next` now checks first and prints one
+line — "hooks are disabled. `journal enable` turns them back on." — instead.
+
+## 1.59.2 — `journal enable` / `journal disable`, not `enable true|false`
+
+Same kill switch as 1.59.0, split into two plain verbs instead of one taking an
+argument: `journal disable` turns every hook inert, `journal enable` turns it back on.
+Bare `journal` now shows DISABLED on its own status line when it is off, instead of a
+separate status subcommand.
+
+## 1.59.1 — a rule's reasoning survived an upgrade for the first time
+
+`install.py`'s `DATA` exclusion list — what a pull never touches — was missing `rules`.
+docs/tools/environments/todo were already protected as project data; a rule's long-form
+reasoning (written by `pins.write_body` under `.journal/rules/`) was not, so upgrading
+deleted every rule's body that existed before the pull. Caught by running the upgrade
+against this project itself, which lost two rules' reasoning before the fix landed (a
+third was recovered). If you have rules with a written-out `--brief`, upgrading to
+1.59.1 is what stops losing them; nothing before this fixes what already happened.
+
+## 1.59.0 — `journal enable`: a kill switch for the hooks
+
+`journal enable false` makes every hook event inert — no hold, no gate, no context, no
+write filed — until `journal enable true`. Bare `journal enable` reports which. The CLI
+itself is never gated by it either way; only the hook goes quiet. This is the user's
+switch, never an agent's: run `enable false` only because the user explicitly asked for
+it, by name — never to get past a hold, a gate or a refusal.
 
 ## 1.58.3 — asking a to-do again retires the old answer
 

@@ -298,8 +298,11 @@ def cmd_status() -> int:
     import state as state_mod
     sid = os.environ.get(transcript.SESSION_ENV, "")
     mine = dict(state_mod.runtime_files(root())).get(sid, {}) if sid else {}
-    rows.append(("hooks", "fired in this session" if mine else "nothing has reached the hook in this session",
-                 "journal verify"))
+    disabled = not _state.hooks_enabled(root())
+    rows.append(("hooks",
+                 "DISABLED — nothing is held, gated or filed" if disabled else
+                 "fired in this session" if mine else "nothing has reached the hook in this session",
+                 "journal enable" if disabled else "journal verify"))
     up = update.check(root())
     have = update.current(root())
     rows.append(("version", have + (f"  ({up['version']} available: journal upgrade)"
@@ -796,7 +799,8 @@ def cmd_promote(n: int) -> int:
 
 
 def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: str = "", after: str = "", acting: str = "", page: int = 1,
-             order: str = fmt.DESC, quiet: bool = False) -> int:
+             order: str = fmt.DESC, quiet: bool = False, order_by_id: bool = False,
+             prune_before: str = "", force: bool = False) -> int:
     here = tracks.current(root(), _stem())
     # NOUN+VERB ALIASES (ruling R1): `list` and `show <n>` are the canonical spellings of
     # what a bare noun and a bare noun+id already do; stripping them here means the
@@ -824,7 +828,8 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             " · auto ON" if draining else "")
         fmt.say(fmt.title("TO-DO", sub=sub))
         fmt.say()
-        fmt.say(todo.render(root(), here, all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order))
+        fmt.say(todo.render(root(), here, all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page,
+                           order=order, order_by_id=order_by_id))
         fmt.say()
         fmt.say(fmt.wrap("Auto is on: with nothing open, the agent picks up the next one on its own."
                        if draining else
@@ -878,6 +883,12 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             else:
                 fmt.say("  Nothing is open and nothing is waiting.")
         return 0
+    if verb == "prune":
+        # NO TO-DO NUMBER — this clears a whole batch, so it does not join the
+        # numbered-verb group above; it reads its own two flags instead.
+        ok, msg = todo.prune(root(), here, prune_before, _now(), force)
+        fmt.say(msg, error=not ok)
+        return 0 if ok else 1
     if verb in ("from-commit", "from_commit"):
         # THE SAME PROTOCOL FROM OUTSIDE A SESSION: what the git post-commit hook calls, and
         # what a person runs after committing by hand. The agent's own commits are already
@@ -901,7 +912,7 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             fmt.say(("  " if ok else "  ! ") + line)
         return 0 if any(ok for ok, _ in said) else 1
     if verb in ("start", "done", "drop", "strike", "ask", "answer", "reopen", "move",
-                "block", "unblock", "skip", "after", "needs", "report"):
+                "block", "unblock", "skip", "after", "needs", "report", "priority"):
         if len(rest) < 2 or not rest[1].isdigit():
             fmt.say(f'todo {verb} wants a number: journal todos {verb} 3' + (
                 ' "<how>"' if verb != "start" else ""), error=True)
@@ -920,6 +931,10 @@ def cmd_todo(rest: list[str], all_of_them: bool, brief: bool = False, doc_ref: s
             return 0 if ok else 1
         if verb in ("after", "needs"):
             ok, msg = todo.after(root(), here, n, after if after == "--none" else " ".join(rest[2:]))
+            fmt.say(msg, error=not ok)
+            return 0 if ok else 1
+        if verb == "priority":
+            ok, msg = todo.priority(root(), here, n, " ".join(rest[2:]))
             fmt.say(msg, error=not ok)
             return 0 if ok else 1
         if verb in ("block", "skip", "unblock"):
@@ -1324,6 +1339,14 @@ def cmd_next() -> int:
     minutes; both land here, and here says the one thing to do.
     """
     import state as _st
+    if not _st.hooks_enabled(root()):
+        # A LOOP KEEPS FIRING THIS EVEN WHILE DISABLED — `journal disable` only reaches
+        # the hook layer, never a session's own scheduled wakeups, which this package
+        # cannot see or stop. So each firing still ran the full hold/to-do advisory
+        # logic below, which can read as actively contradictory right after the user
+        # silenced the journal. One honest line instead.
+        fmt.say("hooks are disabled. `journal enable` turns them back on.")
+        return 0
     stem = _stem()
     here = tracks.current(root(), _stem())
     held = _st.get(root(), "next_text", "", stem=stem) if stem else ""
@@ -1363,12 +1386,27 @@ def cmd_next() -> int:
             fmt.say(f"  journal todos {t['n']}          the brief")
             fmt.say(f"  journal todos start {t['n']}    pick it up")
             return 0
-        blocked = todo.asking(root(), here)
-        if blocked:
-            fmt.say(f"Nothing to pick up: {len(blocked)} to-do(s) wait on the user's answer. "
-                  "Stop the loop if one is running; `journal todo` shows the questions.")
-        else:
+        waiting = todo.open_items(root(), here)
+        if not waiting:
             fmt.say("The list is empty. Stop the loop if one is running.")
+            return 0
+        # THE LIST WAS NOT EMPTY, AND THIS SAID IT WAS. `asking` is one of four ways a row
+        # can be unready — a to-do set aside on a condition (`blocked`), one waiting on a
+        # prerequisite, or one held by a live agent are none of them "asking" and none of
+        # them make the list empty. This checked only `asking` and fell through to "empty"
+        # for the other three, which is exactly what a session waiting on 18 set-aside rows
+        # was told. `hook.py`'s `_p_auto` already draws this distinction correctly; this
+        # matches it instead of contradicting it one command later.
+        held_back = todo.blocked(root(), here)
+        owed = [t for t in waiting if todo.waiting_on(root(), here, t)]
+        reasons = (
+            (todo.asking(root(), here), "waiting on your answer"),
+            (held_back, "set aside on a condition"),
+            (owed, "waiting on a to-do that must land first"),
+            ([t for t in waiting if t.get("assigned")], "held by an agent still working"),
+        )
+        why = ", ".join(f"{len(rows)} {what}" for rows, what in reasons if rows)
+        fmt.say(f"Nothing to pick up: {why}. `journal todo` shows what each waits on.")
         return 0
     waiting = todo.open_items(root(), here)
     fmt.say(f"Nothing is open. {len(waiting)} to-do(s) waiting; auto is off, so none starts "
@@ -1763,6 +1801,37 @@ def cmd_grant(name: str, off: bool, listing: bool) -> int:
     return 0 if ok else 1
 
 
+def _set_enabled(on: bool) -> int:
+    _state.set_hooks_enabled(root(), on)
+    fmt.say("hooks ENABLED: every hold, gate and reminder is back in force."
+            if on else
+            "hooks DISABLED: nothing is held, gated, filed or reminded until "
+            "`journal enable` — only run this because the user asked for it, by name.")
+    return 0
+
+
+def cmd_enable() -> int:
+    """`journal enable` — turn every hook this package wires back on. The undo for
+    `journal disable`; see its docstring for what "off" means and who may say so."""
+    return _set_enabled(True)
+
+
+def cmd_disable() -> int:
+    """`journal disable` — the kill switch for every hook this package wires.
+
+    ONLY THE USER TYPES THIS. It makes every hook event inert — no hold, no gate, no
+    context, nothing filed — silently, and that is exactly the shape of thing an agent
+    must never reach for on its own to get past a hold it does not like. An agent
+    reading this: run `disable` ONLY when the user has explicitly asked for it, by
+    name, in the conversation — never to route around a hold, a gate or a refusal.
+
+    The CLI itself is never gated by this switch, on or off — it is the hook that goes
+    quiet, not the commands you type; `journal enable` is exactly as unblocked while
+    disabled as everything else, which is what makes turning it back on always possible.
+    """
+    return _set_enabled(False)
+
+
 def cmd_settings() -> int:
     """Every setting, what it is, and — the half this used to promise and not print — the
     order the stop queue runs in.
@@ -1881,6 +1950,7 @@ class Opts:
     back: int = 0
     supersedes: int | None = None
     all_of_them: bool = False
+    order_by_id: bool = False
     go_back: bool = False
     fresh: bool = False
     full: bool = False
@@ -1909,6 +1979,7 @@ class Opts:
     acting: str = ""
     to_agent: str = ""
     doc_ref: str = ""
+    prune_before: str = ""
     from_src: str | None = None
     serve_port: int | None = None
     open_browser: bool = False
@@ -1985,6 +2056,7 @@ def _agent_flag(v: str) -> str | None:
 _AFTER = _Flag(dest="after")
 _ENV_NOOP = _Flag(dest=None)      # applied and refused in run(), before any command reads the record
 _TOOL_META = _Flag(dest="tool_meta", keyed=True)
+_PRUNE_BEFORE = _Flag(dest="prune_before")   # --older-than=30d and --before=<date> are one cutoff, two words for it
 
 VALUE_FLAGS: dict[str, _Flag] = {
     "--back": _Flag(dest="back", type=_int_flag("--back")),
@@ -2007,6 +2079,7 @@ VALUE_FLAGS: dict[str, _Flag] = {
     "--page": _Flag(dest="page", type=_page_flag),
     "--port": _Flag(dest="serve_port", type=_int_flag("--port")),
     "--title": _Flag(dest="title"),
+    "--older-than": _PRUNE_BEFORE, "--before": _PRUNE_BEFORE,
 }
 
 # BARE FLAGS: no value, presence is the value. `set` is what lands in `dest`; every
@@ -2034,6 +2107,7 @@ BARE_FLAGS: dict[str, _Flag] = {
     "--back": _Flag(dest="go_back"),
     "--all": _Flag(dest="all_of_them"),
     "--open": _Flag(dest="open_browser"),
+    "--order-by-id": _Flag(dest="order_by_id"),
 }
 
 
@@ -2423,7 +2497,7 @@ _ALIASES: dict[tuple[str, ...], object] = {
     ("pin", "remember"): _v_pin,
     ("todo", "todos"): lambda verb, rest, opts: cmd_todo(
         rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,
-        opts.page, opts.order, opts.quiet),
+        opts.page, opts.order, opts.quiet, opts.order_by_id, opts.prune_before, opts.force),
     ("reminders", "reminder", "remind"): _v_reminders,
     ("ideas", "idea"): _v_ideas,
     ("start", "end"): _v_start_end,
@@ -2460,6 +2534,8 @@ COMMANDS.update({
     "worktree": _v_worktree,
     "next": lambda verb, rest, opts: cmd_next(),
     "serve": lambda verb, rest, opts: cmd_serve(opts.serve_port, opts.open_browser),
+    "enable": lambda verb, rest, opts: cmd_enable(),
+    "disable": lambda verb, rest, opts: cmd_disable(),
     "version": _v_version,
     "conversation": lambda verb, rest, opts: cmd_read(opts.back),
 })

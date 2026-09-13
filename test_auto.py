@@ -421,6 +421,25 @@ s2.journal("todo", "x"); s2.journal("todo", "start", "1"); s2.start()
 outs = [s2.fire("PostToolUse", **call) for _ in range(50)]
 check("stall_calls 0 turns it off", any(o.strip() for o in outs), False)
 
+# a row started, ended without --todo, then touched again (`after`) must not steal the
+# nudge from the row that is actually open now — measured live: it did.
+d3 = project(); s3 = Session(d3, "s1")
+(d3 / ".journal" / "settings.json").write_text(json.dumps({"silenced": ["loop"], "one_session_per_environment": False, "gate_after_context_rung": True, "context_window": 1000000, "stall_calls": 5}))
+s3.journal("todo", "auto", "on")
+# THE STALE ROW MUST OUTNUMBER THE REAL ONE: the bug this guards against is `started[-1]`
+# picking the highest-numbered started row, which is only wrong when the row that is
+# stale-but-touched sorts AFTER the row genuinely open — exactly the live report, where
+# to-do 2269 (stale) outnumbered to-do 1417 (the real open work).
+s3.journal("todo", "the real one"); s3.journal("todo", "the old one")        # 1, 2
+s3.journal("todo", "start", "2"); s3.journal("end", "the old one")          # started, ended, row left open (no --todo)
+s3.journal("todo", "after", "2", "1")                                       # touched again after ending — `started` still set
+s3.journal("todo", "start", "1"); s3.start()
+outs = [s3.fire("PostToolUse", **call) for _ in range(4)]
+check("under the limit: silent", [o.strip() for o in outs], [""] * 4)
+out = s3.fire("PostToolUse", **call)
+check("the nudge names the to-do actually open (1), not the higher-numbered ended-then-touched one (2)",
+      ("to-do 1" in out, "to-do 2" in out), (True, False))
+
 # ---------------------------------------------------------------- the user answers
 d = project(); s = Session(d, "s1")
 s.journal("todo", "needs a ruling"); s.journal("todo", "plain chore"); s.journal("todo", "auto", "on"); s.start()

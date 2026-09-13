@@ -204,5 +204,17 @@ out = fire()
 check("when some close and some do not, the headline says BOTH halves",
       ("closed 1, and could not close 1" in out, "! " in out), (True, True))
 
+# ─────────── two numbers on ONE trailer line: both close, not just the first ───────────────
+j("todos", "add", "third of a pair"); j("todos", "add", "fourth of a pair")
+third = [l for l in j("todos")[1].splitlines() if "third of a pair" in l][0].split()[0]
+fourth = [l for l in j("todos")[1].splitlines() if "fourth of a pair" in l][0].split()[0]
+check("refs_in reads both numbers off one line, with the same how",
+      todo.refs_in(f"kit: x\n\nJournal: todos done {third} {fourth} landed together\n"),
+      [(None, int(third), "landed together"), (None, int(fourth), "landed together")])
+commit(f"kit: finishes a pair on one line\n\nJournal: todos done {third} {fourth} landed together\n")
+out = fire()
+check("both close from one line, not just the first",
+      (f"done {third}:" in out, f"done {fourth}:" in out), (True, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

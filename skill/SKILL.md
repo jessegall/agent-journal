@@ -350,8 +350,9 @@ doing real work over a long stretch, where losing the record at the end is the l
 ## Delayed work: the to-do
 
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)
-    journal todos                      the titles
+    journal todos                      the titles, HIGHEST PRIORITY FIRST (--order-by-id for plain number order)
     journal todos show <n>             the brief (also: `journal todo <n>`)
+    journal todos priority <n> <value>  bigger is more important; a number or a name (low/default/high/critical); 100 unless set
     journal todos start <n>             open work under that title; the row stays open until you close it
     journal todos done <n> "<how>"      the row is finished — always explicit, never a side effect
     journal work end "<title>" --todo   closes the work AND the row, in one command
@@ -361,6 +362,7 @@ doing real work over a long stretch, where losing the record at the end is the l
     journal todos ask <n> "<question>"  it waits on the user; auto moves on to the next
     journal todos answer <n> "<answer>" the user's answer; the agent is told at its next stop
     journal todos auto [on|off]         work through the list without asking, or wait for the word
+    journal todos prune --older-than=<30d|2h|6w>|--before=<date> [--force]   done/dropped to-dos older than that, ARCHIVED (or actually deleted with --force); an open to-do is never touched, and there is no silent default age
 
 A to-do is work that was **put off**: the user said later, or you found something and
 were told not to touch it yet. It is a titled file under `todo/<environment>/`, and the brief is

@@ -87,7 +87,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
     "todos": (
         'journal todos add "<title>" [--brief] [--doc=<doc>[.<p>]]   delayed work, on this environment; --brief reads a longer brief from stdin',
         'journal todo "<title>"        the same command; `todo` and `todos` are twins everywhere',
-        "journal todos [--all] [--page=N] [--order=asc|desc]   the titles, numbered, newest first",
+        "journal todos [--all] [--page=N] [--order=asc|desc] [--order-by-id]   the titles, numbered, HIGHEST PRIORITY FIRST (--order=asc for lowest-first; --order-by-id for the old newest-first-by-number)",
+        'journal todos priority N <low|default|high|critical|70|...>   bigger is more important; a name or a raw number; 100 (default) unless set; `journal todos` and `journal next` read it',
         "journal todos show N          the whole brief — bare `journal todo N` is the same",
         "journal todos start N         open work with that title; the row stays open until you close it — `journal todos done N \"<how>\"`, a `Journal: todos done N` commit trailer, or `journal work end \"<title>\" --todo` for both in one command",
         'journal todos done N "<how>"    resolved without starting it',
@@ -102,6 +103,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal todos amend N "<section title>" --brief     append a new section to a brief, from stdin',
         'journal todos replace N ["<section title>"] --brief   swap one named section, or the whole brief with none; old text kept under struck/',
         "journal todo auto [on|off]    work through this environment's list without asking, or wait for the user's word",
+        "journal todos prune --older-than=<30d|2h|6w>|--before=<date> [--force]   done/dropped to-dos older than that, ARCHIVED under todo/<env>/archived/ (or actually deleted with --force) — an open to-do is never touched; no silent default age",
     ),
     "migrate": (
         "journal migrate               what the record's shape is, and what an upgrade still owes it",
@@ -168,6 +170,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal settings              every setting, its value, and where it came from",
         "journal loop set              this session has a loop running (the hook could not see it); `journal loop` says whether one is known",
         "journal serve [--port=<n>] [--open]   a local, read-only web viewer over this journal — 127.0.0.1 only, Ctrl-C to stop",
+        "journal enable / journal disable   the kill switch: disable makes every hook inert — no hold, no gate, no context — until enable; the USER's call, never the agent's own idea",
     ),
 }
 
@@ -194,7 +197,7 @@ ALIAS: dict[str, str] = {
     "conversation": "transcript", "user": "transcript", "search": "transcript",
     "carry": "transcript",
     "verify": "system", "version": "system", "update": "system", "settings": "system",
-    "loop": "system", "serve": "system",
+    "loop": "system", "serve": "system", "enable": "system", "disable": "system",
 }
 
 
