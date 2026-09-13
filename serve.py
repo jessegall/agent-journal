@@ -53,7 +53,6 @@ ROUTES: list[tuple[re.Pattern, Callable]] = []
 
 MESSAGES = {
     "no_env": "no environment called {env}",
-    "no_todo": "no to-do {n} on environment {env}",
     "no_pin": "no pin {n} on environment {env}",
     "no_rule": "no rule {n}",
     "no_doc": "no doc {ref}",
@@ -141,23 +140,6 @@ def _api_env(root: Path, project: Path, m: re.Match):
     if env not in envs:
         return _not_found(say("no_env", env=repr(env)))
     return _json(envs[env])
-
-
-@route(r"^/api/env/(?P<env>[a-z0-9-]+)/todos$")
-def _api_todos(root: Path, project: Path, m: re.Match):
-    env = m.group("env")
-    if not _known_env(root, env):
-        return _not_found(say("no_env", env=repr(env)))
-    return _json(views.todos(root, env))
-
-
-@route(r"^/api/env/(?P<env>[a-z0-9-]+)/todos/(?P<n>\d+)$")
-def _api_todo_detail(root: Path, project: Path, m: re.Match):
-    env, n = m.group("env"), int(m.group("n"))
-    t = views.todo_detail(root, env, n)
-    if t is None:
-        return _not_found(say("no_todo", n=n, env=repr(env)))
-    return _json(t)
 
 
 @route(r"^/api/env/(?P<env>[a-z0-9-]+)/pins$")

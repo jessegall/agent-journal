@@ -317,6 +317,32 @@ check("an action the controller does not have is 404", status, 404)
 check("beta was never touched", reminders._all(root, "beta"), [])
 state.use_track("default")
 
+# ─────────────────────────────────────────────────────────────── to-dos, through their controller
+status, got = post("/api/env/alpha/todos", {"title": "write the release note", "body": "what changed"})
+added = got.get("data") or {}
+check("store: 201, and the new to-do is numbered on alpha", (status, added.get("n")), (201, 2))
+status, got = post("/api/env/alpha/todos/2", {"title": "write the release notes", "priority": "high"}, method="PATCH")
+check("update renames and reprioritises in one request",
+      (status, todo.item(root, "alpha", 2)[0]["title"], todo.priority_label(todo.priority_of(todo.item(root, "alpha", 2)[0]))),
+      (200, "write the release notes", "high (150)"))
+status, got = post("/api/env/alpha/todos/2", {}, method="PATCH")
+check("an update with nothing to change is refused", status, 400)
+status, got = post("/api/env/alpha/todos/2", {}, method="DELETE")
+check("destroy without a reason is refused", status, 400)
+status, got = post("/api/env/alpha/todos/2/done", {"how": "written"})
+check("done closes it", (status, bool(todo.item(root, "alpha", 2)[0].get("done"))), (200, True))
+status, got = post("/api/env/alpha/todos/2", {"title": "rename a closed one"}, method="PATCH")
+check("a closed to-do refuses an edit, and says to reopen it",
+      (status, "reopen" in got["error"], todo.item(root, "alpha", 2)[0]["title"]), (400, True, "write the release notes"))
+status, got = post("/api/env/alpha/todos/2/priority", {"value": "low"})
+check("and refuses its own actions too", status, 400)
+status, got = post("/api/env/alpha/todos/2/reopen", {"why": "one more line"})
+check("reopening is the way back", (status, todo.item(root, "alpha", 2)[0].get("done") or ""), (200, ""))
+status, got = post("/api/env/alpha/todos/2", {"why": "someone else wrote it"}, method="DELETE")
+check("destroy drops it with the reason", (status, todo.item(root, "alpha", 2)[0].get("how")), (200, "dropped: someone else wrote it"))
+status, got = post("/api/env/beta/todos/2", {"title": "x"}, method="PATCH")
+check("a number that is not on that environment is 404", status, 404)
+
 import commands  # noqa: E402
 parsed, _ = commands.REGISTRY.parse(["reminders", "done", "3", "it", "came", "true"])
 got = parsed.payload()

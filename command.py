@@ -108,8 +108,6 @@ class Parsed:
         from controller import Payload
         fields = {**self._opts, **self._args}
         ident = fields.pop(getattr(self.command, "id_arg", "n"), None)
-        extra = getattr(self.command, "extra", None)
-        fields.update(extra() if extra else {})
         return Payload(state._TRACK[0] if state._TRACK else "", ident, fields, source="cli")
 
 

@@ -9,12 +9,15 @@ import work
 from app import (BRIEF_REFUSED, CATALOGUE_PAGE, answer, brief, doc_where, now, refuse, root, stem,
                  where)
 from command import Command, Parsed, number
+from commands.resource import Resource
+from controllers.todos import TodosController
 from commands.options import LISTING, LISTING_CASTS, words
 from templates import render
 
 NOUNS = (("todos", "todo"),)
 
 TODO = {"n": number("a to-do number")}
+CONTROLLER = TodosController()
 N = "{n : a to-do number}"
 
 TEXT = {
@@ -39,9 +42,6 @@ TEXT = {
     "commit_refused": "  ! {line}",
     "report_needs_as": '`todos report` is a subagent saying a row is finished — put --as="<your agent name>" on it. '
                        'If you are the agent that dispatched one, `journal todos done {n} "<how>"` closes it.',
-    "closed_waiting": "\n  closed the work `{title}` — it waits on the answer",
-    "closed_aside": "\n  closed the work `{title}` — it is set aside",
-    "closed_note": "\n  {note}",
     "started_agent": "  to-do {n} is started, and it stays open — a row closes when whoever dispatched you closes it.",
     "started": '  to-do {n} is started. It stays open until you say it is done:\n'
                '    journal todos done {n} "<how>"\n'
@@ -50,8 +50,6 @@ TEXT = {
                 "says it is finished.",
     "trailer": "  or close it from the commit that finishes it, as a trailer:\n    {trailer} todos done {n}",
     "say_why": 'say why: journal todos {verb} <n> "<why it is abandoned>"',
-    "dropped": "dropped: {why}",
-    "after_note": "  {note}",
 }
 
 LIST_COMMANDS = (("journal todos <n>", "the brief, and the question if it waits on the user"),
@@ -66,26 +64,18 @@ def here() -> str:
     return tracks.current(root(), stem())
 
 
-def _close_opened_work(n: int, key: str) -> str:
-    t, _ = todo._get(root(), here(), n)
-    if not t or not any(w["subject"] == t["title"] for w in work.open_work(root())):
-        return ""
-    closed, note = work.end(root(), t["title"], now())
-    return render(TEXT[key], title=t["title"]) if closed else render(TEXT["closed_note"], note=note)
-
-
-class List(Command):
+class List(Resource):
     signature = "todos:list " + LISTING + " {--order-by-id}"
     casts = LISTING_CASTS
     default = True
+    controller = CONTROLLER
+    action = "index"
 
-    def run(self, p: Parsed) -> int:
-        env, every = here(), bool(p.option("all"))
-        waiting = todo.open_items(root(), env)
-        done = len(todo._all(root(), env)) - len(waiting)
-        draining = todo.auto(root(), env)
+    def render(self, p: Parsed, result) -> int:
+        env, done, draining = result.meta["env"], result.meta["done"], result.meta["auto"]
+        every = bool(p.option("all"))
         fmt.say(fmt.title(TEXT["list_title"], sub=render(
-            TEXT["list_sub"], env=env, waiting=len(waiting), done=done or None,
+            TEXT["list_sub"], env=env, waiting=result.meta["waiting"], done=done or None,
             hint=TEXT["done_hint"] if done and not every else None, auto=TEXT["auto_on_tag"] if draining else None)))
         fmt.say()
         fmt.say(todo.render(root(), env, all_of_them=every, cap=CATALOGUE_PAGE, page=p.option("page"),
@@ -96,195 +86,144 @@ class List(Command):
         return 0
 
 
-class Show(Command):
+class Show(Resource):
     signature = "todos:show " + N
     casts = TODO
     default = True
+    controller = CONTROLLER
+    action = "show"
 
-    def run(self, p: Parsed) -> int:
-        return answer(todo.show(root(), here(), p.arg("n")))
+    def render(self, p: Parsed, result) -> int:
+        if not result.ok:
+            return super().render(p, result)
+        return answer(todo.show(root(), here(), result.data["n"]))
 
 
-class Add(Command):
+class Add(Resource):
     signature = "todos:add {title* : the title, in a few words} {--brief} {--doc=} {--after=} {--needs=}"
     casts = {"title": words("a to-do title")}
     default = True
     writes = True
+    controller = CONTROLLER
+    action = "store"
 
-    def run(self, p: Parsed) -> int:
+    def payload(self, p: Parsed):
         body = brief(bool(p.option("brief")))
         if body is None:
             return refuse(BRIEF_REFUSED)
         got = doc_where(p.option("doc") or "")
         if got is None:
             return 1
-        env = here()
-        ok, msg = todo.add(root(), env, p.arg("title"), body, now(), got)
-        fmt.say(msg, error=not ok)
-        after = p.option("after") or p.option("needs")
-        added = re.search(r"to-do (\d+)", msg) if ok else None
-        if added and after:
-            good, note = todo.after(root(), env, int(added.group(1)), after)
-            fmt.say(render(TEXT["after_note"], note=note), error=not good)
-        return 0 if ok else 1
+        payload = p.payload()
+        payload.fields.update(body=body, where=got)
+        return payload
 
 
-class Start(Command):
+class Start(Resource):
     signature = "todos:start " + N
     casts = TODO
     writes = True
+    controller = CONTROLLER
+    action = "start"
 
-    def run(self, p: Parsed) -> int:
-        n, acting = p.arg("n"), p.option("as") or ""
-        t, err = todo.start(root(), here(), n, now(), agent=acting)
-        if t is None:
-            return refuse(err)
-        ok, msg = work.start(root(), t["title"], now(), where())
-        fmt.say(msg, error=not ok)
-        if not ok:
-            return 1
+    def payload(self, p: Parsed):
+        payload = p.payload()
+        payload.fields["where"] = where()
+        return payload
+
+    def render(self, p: Parsed, result) -> int:
+        code = super().render(p, result)
+        if not result.ok or not result.data:
+            return code
+        n, acting = result.data["n"], p.option("as") or ""
         if acting:
             fmt.say(render(TEXT["started_agent"], n=n))
             fmt.say(render(TEXT["held_for"], agent=acting, n=n))
         else:
-            fmt.say(render(TEXT["started"], n=n, title=t["title"]))
+            fmt.say(render(TEXT["started"], n=n, title=result.data["title"]))
             fmt.say(render(TEXT["trailer"], trailer=todo.TRAILER, n=n))
-        return 0
+        return code
 
 
-class Done(Command):
-    signature = "todos:done " + N + " {how*? : how it was resolved}"
+def _action(name: str, signature: str, verbs: tuple = ()) -> type:
+    return type(name, (Resource,), {"signature": signature, "casts": TODO, "verbs": verbs, "writes": True,
+                                    "controller": CONTROLLER, "action": name.lower()})
+
+
+Done = _action("Done", "todos:done " + N + " {how*? : how it was resolved}")
+Reopen = _action("Reopen", "todos:reopen " + N + " {why*? : why it is open again}")
+
+
+class Move(Resource):
+    signature = "todos:move " + N + " {environment*? : the environment it moves to}"
     casts = TODO
     writes = True
+    controller = CONTROLLER
+    action = "move"
 
-    def run(self, p: Parsed) -> int:
-        return answer(todo.done(root(), here(), p.arg("n"), p.arg("how") or "", now()))
+    def payload(self, p: Parsed):
+        if not (p.arg("environment") or "").strip():
+            return refuse(todo.say("move_where"))
+        return p.payload()
 
 
-class Drop(Command):
+Ask = _action("Ask", "todos:ask " + N + " {question*? : what the user must decide}")
+Answer = _action("Answer", "todos:answer " + N + " {answer*? : the answer}")
+Block = _action("Block", "todos:block " + N + " {why*? : what has to be true first}", ("skip",))
+Unblock = _action("Unblock", "todos:unblock " + N)
+After = _action("After", "todos:after " + N + " {names*? : the to-do numbers it waits on} {--none}", ("needs",))
+Priority = _action("Priority", "todos:priority " + N + " {value*? : a number or low, default, high, critical}")
+
+
+class Drop(Resource):
     signature = "todos:drop " + N + " {why*? : why it is abandoned}"
     casts = TODO
     verbs = ("strike",)
     writes = True
+    controller = CONTROLLER
+    action = "destroy"
 
-    def run(self, p: Parsed) -> int:
-        why = (p.arg("why") or "").strip()
-        if not why:
+    def payload(self, p: Parsed):
+        if not (p.arg("why") or "").strip():
             return refuse(render(TEXT["say_why"], verb="drop"))
-        return answer(todo.done(root(), here(), p.arg("n"), render(TEXT["dropped"], why=why), now()))
+        return p.payload()
 
 
-class Reopen(Command):
-    signature = "todos:reopen " + N + " {why*? : why it is open again}"
-    casts = TODO
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        return answer(todo.reopen(root(), here(), p.arg("n"), p.arg("why") or "", now()))
-
-
-class Move(Command):
-    signature = "todos:move " + N + " {environment*? : the environment it moves to}"
-    casts = TODO
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        return answer(todo.move(root(), here(), p.arg("n"), p.arg("environment") or "", now()))
-
-
-class Ask(Command):
-    signature = "todos:ask " + N + " {question*? : what the user must decide}"
-    casts = TODO
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        ok, msg = todo.ask(root(), here(), p.arg("n"), p.arg("question") or "")
-        return answer((ok, msg + _close_opened_work(p.arg("n"), "closed_waiting") if ok else msg))
-
-
-class Answer(Command):
-    signature = "todos:answer " + N + " {answer*? : the answer}"
-    casts = TODO
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        return answer(todo.answer(root(), here(), p.arg("n"), p.arg("answer") or ""))
-
-
-class Block(Command):
-    signature = "todos:block " + N + " {why*? : what has to be true first}"
-    casts = TODO
-    verbs = ("skip",)
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        ok, msg = todo.block(root(), here(), p.arg("n"), p.arg("why") or "")
-        return answer((ok, msg + _close_opened_work(p.arg("n"), "closed_aside") if ok else msg))
-
-
-class Unblock(Command):
-    signature = "todos:unblock " + N
-    casts = TODO
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        return answer(todo.unblock(root(), here(), p.arg("n")))
-
-
-class After(Command):
-    signature = "todos:after " + N + " {names*? : the to-do numbers it waits on} {--none}"
-    casts = TODO
-    verbs = ("needs",)
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        names = "--none" if p.option("none") else (p.arg("names") or "")
-        return answer(todo.after(root(), here(), p.arg("n"), names))
-
-
-class Report(Command):
+class Report(Resource):
     signature = "todos:report " + N + " {how*? : how it was finished}"
     casts = TODO
     writes = True
+    controller = CONTROLLER
+    action = "report"
 
-    def run(self, p: Parsed) -> int:
-        acting = p.option("as") or ""
-        if not acting:
+    def payload(self, p: Parsed):
+        if not p.option("as"):
             return refuse(render(TEXT["report_needs_as"], n=p.arg("n")))
-        return answer(todo.report(root(), here(), p.arg("n"), p.arg("how") or "", acting))
+        return p.payload()
 
 
-class Priority(Command):
-    signature = "todos:priority " + N + " {value*? : a number or low, default, high, critical}"
+class _WithBrief(Resource):
     casts = TODO
     writes = True
+    controller = CONTROLLER
 
-    def run(self, p: Parsed) -> int:
-        return answer(todo.priority(root(), here(), p.arg("n"), p.arg("value") or ""))
+    def payload(self, p: Parsed):
+        text = brief(bool(p.option("brief")))
+        if text is None:
+            return refuse(BRIEF_REFUSED)
+        payload = p.payload()
+        payload.fields["body"] = text
+        return payload
 
 
-class Amend(Command):
+class Amend(_WithBrief):
     signature = "todos:amend " + N + " {title*? : the section title} {--brief}"
-    casts = TODO
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        text = brief(bool(p.option("brief")))
-        if text is None:
-            return refuse(BRIEF_REFUSED)
-        return answer(todo.amend(root(), here(), p.arg("n"), p.arg("title") or "", text))
+    action = "amend"
 
 
-class Replace(Command):
+class Replace(_WithBrief):
     signature = "todos:replace " + N + " {title*? : the section title} {--brief}"
-    casts = TODO
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        text = brief(bool(p.option("brief")))
-        if text is None:
-            return refuse(BRIEF_REFUSED)
-        return answer(todo.replace_section(root(), here(), p.arg("n"), p.arg("title") or "", text))
+    action = "replace"
 
 
 class Auto(Command):

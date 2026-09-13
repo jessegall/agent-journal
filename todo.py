@@ -1407,7 +1407,7 @@ def row_response(root: Path, track: str, t: dict) -> dict:
 
 def rows_response(root: Path, track: str) -> list[dict]:
     """Every to-do on this environment, as plain dicts, newest first — what
-    `views.todos` serves; `views.todo_detail` starts from `row_response` for one."""
+    the to-dos controller serves; its `show` starts from `row_response` for one."""
     rows = [row_response(root, track, t) for t in _all(root, track)]
     return sorted(rows, key=lambda r: r["n"], reverse=True)
 
