@@ -1,23 +1,3 @@
-"""Stray ideas: one line, global, no promise attached.
-
-NEITHER A PIN NOR A TO-DO. A pin is a decided, standing fact; a to-do is committed work
-someone will pick up, with the brief they will need. An idea is neither — it has no
-owner, no brief, and no claim to being true or worth doing. It exists because "it might
-be nice to build X later" was a message with a tag, gone the moment the transcript
-compacted, and the only place left to put it was inventing a to-do for work nobody had
-agreed to do yet or a pin for a fact nobody had decided.
-
-GLOBAL, LIKE DOCS, RULES AND TOOLS. An idea belongs to the project, not to whichever
-environment happened to be open when it was written down — the same reasoning that
-keeps rules out of `environments/<name>/`. It lives in the record under its own
-top-level key (`state.IN_RECORD`), read and written exactly like `rules` is: project-
-wide, through `entries.py`'s shared retire/move loop.
-
-LOW CEREMONY IS THE WHOLE POINT. `add` takes one line; there is no required brief, no
-title, no track. Two ways out, both explicit: `drop` (it was tried, superseded, or not
-worth it — same "reason required" rule every retirement here has) and `promote` (it
-became real work, filed as a to-do on a named environment).
-"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -26,18 +6,39 @@ import entries
 import fmt
 import state
 from pins import age
+from templates import render
 
 KEY = "ideas"
+
+MESSAGES = {
+    "fact_dropped": "dropped: {why}",
+    "fact_promoted": "promoted to {track}",
+    "needs_text": 'an idea is one line: journal ideas add "<the idea>"',
+    "too_long": "{length} characters, and an idea has {limit}. This is meant to be jotted and moved "
+                "past, not a brief:\n  keep  {keep}…\n  cut   {cut}\nIf it needs more than a line, it is "
+                "a to-do, not an idea.",
+    "added": "idea {n} ({standing} standing)",
+    "needs_title": 'promoting needs a title: journal ideas promote {n} --title="<to-do title>"',
+    "no_idea": "there is no idea {n}. `journal ideas` numbers them.",
+    "already_dropped": "idea {n} is already dropped: {why}",
+    "from_idea": "From idea {n}: {text}",
+    "promoted_reason": "promoted to a to-do on `{track}`",
+    "promoted": "idea {n} is now a to-do on `{track}`:\n  {said}",
+}
+
+
+def say(key: str, **values) -> str:
+    return render(MESSAGES[key], **values)
 
 
 def _facts(i: dict, n: int) -> list[str]:
     out = []
     if i.get("dropped"):
-        out.append(f"dropped: {i['dropped']}")
+        out.append(say("fact_dropped", why=i["dropped"]))
     if age(i.get("at", "")):
         out.append(age(i.get("at", "")))
     if i.get("promoted_to"):
-        out.append(f"promoted to {i['promoted_to']}")
+        out.append(say("fact_promoted", track=i["promoted_to"]))
     return out
 
 
@@ -46,8 +47,7 @@ _STORE = entries.Store(key=KEY, noun="idea", text="text", retired="dropped",
 
 
 def _all(root: Path) -> list[dict]:
-    got = state.get(root, KEY, [])
-    return got if isinstance(got, list) else []
+    return entries.all_of(root, _STORE)
 
 
 def live(root: Path) -> list[dict]:
@@ -55,68 +55,47 @@ def live(root: Path) -> list[dict]:
 
 
 def add(root: Path, text: str, at: str, limit: int) -> tuple[bool, str]:
-    """Write one down. Refuses a paragraph, same as a pin — this is a note, not a brief."""
     text = " ".join(text.split())
     if not text:
-        return False, 'an idea is one line: journal ideas add "<the idea>"'
+        return False, say("needs_text")
     if limit and len(text) > limit:
-        return False, (
-            f"{len(text)} characters, and an idea has {limit}. This is meant to be jotted "
-            f"and moved past, not a brief:\n"
-            f"  keep  {text[:limit - 20]}…\n"
-            f"  cut   {text[limit - 20:][:120]}\n"
-            "If it needs more than a line, it is a to-do, not an idea."
-        )
+        return False, say("too_long", length=len(text), limit=limit,
+                          keep=text[:limit - 20], cut=text[limit - 20:][:120])
     with state.locked(root):
         items = _all(root)
         items.append({"text": text, "at": at, "dropped": None})
         state.put(root, KEY, items)
         standing = len([i for i in items if not i.get("dropped")])
-    return True, f"idea {len(items)} ({standing} standing)"
+    return True, say("added", n=len(items), standing=standing)
 
 
 def drop(root: Path, n: int, why: str, at: str = "") -> tuple[bool, str]:
-    """It was tried, superseded, or not worth doing. The reason is required, as ever."""
     return entries.retire(root, _STORE, n, why, at)
 
 
 def promote(root: Path, n: int, at: str, track: str, title: str) -> tuple[bool, str]:
-    """Turn idea n into a real to-do on a named environment. The idea is dropped, not
-    copied — see `pins.promote`, the same shape for the same reason: one place holds
-    the claim, and the retirement reason says where it went."""
     import todo
     title = " ".join((title or "").split())
     if not title:
-        return False, f'promoting needs a title: journal ideas promote {n} --todo="<title>"'
+        return False, say("needs_title", n=n)
     with state.locked(root):
         items = _all(root)
         if n < 1 or n > len(items):
-            return False, f"there is no idea {n}. `journal ideas` numbers them."
+            return False, say("no_idea", n=n)
         if items[n - 1].get("dropped"):
-            return False, f"idea {n} is already dropped: {items[n - 1]['dropped']}"
+            return False, say("already_dropped", n=n, why=items[n - 1]["dropped"])
         idea_text = items[n - 1]["text"]
-    ok, msg = todo.add(root, track, title, f"From idea {n}: {idea_text}", at)
+    ok, msg = todo.add(root, track, title, say("from_idea", n=n, text=idea_text), at)
     if not ok:
         return False, msg
     with state.locked(root):
         items = _all(root)
-        items[n - 1]["dropped"] = f"promoted to a to-do on `{track}`"
+        items[n - 1]["dropped"] = say("promoted_reason", track=track)
         items[n - 1]["promoted_to"] = track
         state.put(root, KEY, items)
-    return True, f"idea {n} is now a to-do on `{track}`:\n  {msg}"
+    return True, say("promoted", n=n, track=track, said=msg)
 
 
 def listing(root: Path, *, all_of_them: bool = False, cap: int | None = None,
             page: int = 1, order: str = fmt.DESC):
     return entries.rows(root, _STORE, all_of_them=all_of_them, cap=cap, page=page, order=order)
-
-
-def render(root: Path, *, all_of_them: bool = False, width: int | None = None,
-           cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
-    width = fmt.room(width)
-    if not _all(root):
-        return "  Nothing jotted down yet."
-    items, left = listing(root, all_of_them=all_of_them, cap=cap, page=page, order=order)
-    if not items:
-        return "  Nothing standing. `journal ideas --all` shows the dropped ones."
-    return fmt.render(fmt.Out(items=tuple(items))) + fmt.more(KEY, left, page, order)

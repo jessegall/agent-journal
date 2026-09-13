@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.2 — commands are classes, one file per noun; `ideas` moves over
+
+A command is now a `Command` subclass (`command.py`) that declares its noun, verb, arguments,
+options and whether it writes, and carries its own `run()`. Each noun's commands live in their
+own file under `commands/` (`commands/questions.py`, `commands/ideas.py`), registered in
+`commands/__init__.py`. The helpers every command shares — the root, the session, the clock,
+refusals, the catalogue page — moved out of `journal.py` into `app.py`, which the entry script
+starts with its own path so a worktree's symlinked `.journal` still resolves as the worktree.
+`journal.py` loses what moved; the remaining nouns follow the same way.
+
+`journal ideas add` is now recognised as a write by the hook — it never was, so an idea
+could be filed with no work open and by a subagent. `journal idea "<text>"` files an idea,
+as the help always said it did (the old handler refused it); a bare number is still refused
+rather than filed as an idea. The promote refusal names `--title=`, the flag it takes, instead
+of `--todo=`.
+
 ## 1.62.1 — commands declared once; `questions` is the first noun on them
 
 `commands.py` declares each command — its noun, verb, arguments, options, and whether it
