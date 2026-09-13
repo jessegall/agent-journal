@@ -5,6 +5,8 @@ from pathlib import Path
 import pins
 import settings as settings_mod
 from controller import Controller, Payload, Result
+from payloads import pins as pin_payloads
+from payloads.common import ListingPayload, MovePayload, SectionPayload, WherePayload, WhyPayload
 from templates import render
 
 MESSAGES = {
@@ -19,6 +21,8 @@ def say(message: str, /, **values) -> str:
 
 class ClaimsController(Controller):
     key = pins.KEY
+    payloads = {"index": ListingPayload, "store": pin_payloads.StorePayload, "update": pin_payloads.UpdatePayload,
+                "destroy": WhyPayload, "amend": SectionPayload, "move": MovePayload, "promote": WherePayload}
     # a struck claim is the record of why it stopped holding
     EDITS = frozenset({"update", "destroy", "amend", "move", "promote"})
 
@@ -43,20 +47,10 @@ class ClaimsController(Controller):
         import views
         return views.questions_about(root, p.env, f"pin:{p.id}")
 
-    def _where(self, root: Path, p: Payload) -> tuple[dict | None, str]:
-        where = dict(p.get("where") or {})
-        if p.text("doc"):
-            import docs
-            got, why = docs.normalize_ref(root, p.text("doc"))
-            if got is None:
-                return None, say("doc_refused", why=why)
-            where["doc"] = got
-        return where, ""
-
-    def index(self, root: Path, p: Payload) -> Result:
+    def index(self, root: Path, p: ListingPayload) -> Result:
         repo = self.repository(root, p)
         every = repo.all()
-        query = repo.query() if p.get("all") else repo.query().where(lambda c: c.standing)
+        query = repo.query() if p.all else repo.query().where(lambda c: c.standing)
         query = self.sorted(query, p)
         if isinstance(query, Result):
             return query
@@ -74,29 +68,30 @@ class ClaimsController(Controller):
                                  "doc_label": docs.ref_label(root, claim.doc) if claim.doc else "",
                                  "questions": self._questions(root, p)})
 
-    def store(self, root: Path, p: Payload) -> Result:
-        where, why = self._where(root, p)
-        if where is None:
-            return Result("refused", why)
+    def store(self, root: Path, p: pin_payloads.StorePayload) -> Result:
+        where = dict(p.where)
+        if p.doc:
+            import docs
+            got, why = docs.normalize_ref(root, p.doc)
+            if got is None:
+                return Result("refused", say("doc_refused", why=why))
+            where["doc"] = got
         conf, _ = settings_mod.load(root)
-        replaces = p.get("supersedes")
-        outcome = pins.add(root, p.text("fact"), p.at, conf["pin_max_chars"], int(replaces) if replaces else None,
-                           where, key=self.key, long=str(p.get("body") or ""))
+        outcome = pins.add(root, p.fact, p.at, conf["pin_max_chars"], p.supersedes, where, key=self.key, long=p.body)
         return Result.of(outcome, {"n": self.repository(root, p).count()} if outcome[0] else None, created=True)
 
-    def update(self, root: Path, p: Payload) -> Result:
+    def update(self, root: Path, p: pin_payloads.UpdatePayload) -> Result:
         said, n = [], p.id
         if p.has("fact"):
             # a claim is never rewritten in place: the old one is struck and the new one takes a new number
             conf, _ = settings_mod.load(root)
-            ok, message = pins.add(root, p.text("fact"), p.at, conf["pin_max_chars"], p.id,
-                                   dict(p.get("where") or {}), key=self.key)
+            ok, message = pins.add(root, p.fact, p.at, conf["pin_max_chars"], p.id, dict(p.where), key=self.key)
             if not ok:
                 return Result("refused", message)
             said.append(message)
             n = self.repository(root, p).count()
         if p.has("body"):
-            ok, message = pins.write_body(root, n, str(p.get("body")), self.key, p.at)
+            ok, message = pins.write_body(root, n, p.body, self.key, p.at)
             if not ok:
                 return Result("refused", message)
             said.append(message)
@@ -104,11 +99,11 @@ class ClaimsController(Controller):
             return Result("refused", say("nothing_to_change"))
         return Result("ok", "\n".join(said), {"n": n})
 
-    def destroy(self, root: Path, p: Payload) -> Result:
-        return Result.of(pins.strike(root, p.id, p.text("why"), key=self.key))
+    def destroy(self, root: Path, p: WhyPayload) -> Result:
+        return Result.of(pins.strike(root, p.id, p.why, key=self.key))
 
-    def amend(self, root: Path, p: Payload) -> Result:
-        return Result.of(pins.amend_body(root, p.id, p.text("title"), str(p.get("body") or ""), self.key, p.at))
+    def amend(self, root: Path, p: SectionPayload) -> Result:
+        return Result.of(pins.amend_body(root, p.id, p.title, p.body, self.key, p.at))
 
 
 class PinsController(ClaimsController):
@@ -117,11 +112,11 @@ class PinsController(ClaimsController):
     actions = ("index", "show", "store", "update", "destroy", "amend", "move", "promote")
     numbered = ("show", "update", "destroy", "amend", "move", "promote")
 
-    def move(self, root: Path, p: Payload) -> Result:
-        return Result.of(pins.move(root, p.id, p.text("environment"), p.at))
+    def move(self, root: Path, p: MovePayload) -> Result:
+        return Result.of(pins.move(root, p.id, p.environment, p.at))
 
-    def promote(self, root: Path, p: Payload) -> Result:
-        return Result.of(pins.promote(root, p.id, p.at, p.get("where")))
+    def promote(self, root: Path, p: WherePayload) -> Result:
+        return Result.of(pins.promote(root, p.id, p.at, p.where or None))
 
 
 class RulesController(ClaimsController):
@@ -136,7 +131,7 @@ class RulesController(ClaimsController):
         from resources import Rules
         return Rules(root)
 
-    def index(self, root: Path, p: Payload) -> Result:
+    def index(self, root: Path, p: ListingPayload) -> Result:
         import builtin
         result = super().index(root, p)
         if result.ok:

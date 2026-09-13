@@ -130,16 +130,14 @@ class _Add(Resource):
     action = "store"
     how = "pinned"
 
-    def payload(self, p: Parsed):
+    def extra(self, p: Parsed):
         body = brief(bool(p.option("brief")))
         if body is None:
             return refuse(BRIEF_REFUSED)
         got = doc_where(p.option("doc") or "")
         if got is None:
             return 1
-        payload = p.payload()
-        payload.fields.update(body=body, doc=got.pop("doc", ""), where=got)
-        return payload
+        return dict(body=body, doc=got.pop("doc", ""), where=got)
 
     def render(self, p: Parsed, result) -> int:
         code = super().render(p, result)
@@ -151,13 +149,11 @@ class _Add(Resource):
 class _Body(Resource):
     writes = True
 
-    def payload(self, p: Parsed):
+    def extra(self, p: Parsed):
         text = brief(bool(p.option("brief")))
         if text is None:
             return refuse(BRIEF_REFUSED)
-        payload = p.payload()
-        payload.fields["body"] = text
-        return payload
+        return {"body": text}
 
 
 # ------------------------------------------------------------------ pins
@@ -177,10 +173,8 @@ class PinsList(Resource):
     controller = PINS
     action = "index"
 
-    def payload(self, p: Parsed):
-        got = p.payload()
-        got.fields["cap"] = CATALOGUE_PAGE
-        return got
+    def extra(self, p: Parsed):
+        return {"cap": CATALOGUE_PAGE}
 
     def render(self, p: Parsed, result) -> int:
         every, page, order = bool(p.option("all")), p.option("page"), p.option("order")
@@ -227,10 +221,8 @@ class PinsPromote(Resource):
     controller = PINS
     action = "promote"
 
-    def payload(self, p: Parsed):
-        payload = p.payload()
-        payload.fields["where"] = where()
-        return payload
+    def extra(self, p: Parsed):
+        return {"where": where()}
 
 
 class PinsMove(Resource):
@@ -282,10 +274,8 @@ class RulesList(Resource):
     controller = RULES
     action = "index"
 
-    def payload(self, p: Parsed):
-        got = p.payload()
-        got.fields["cap"] = CATALOGUE_PAGE
-        return got
+    def extra(self, p: Parsed):
+        return {"cap": CATALOGUE_PAGE}
 
     def render(self, p: Parsed, result) -> int:
         every, page, order = bool(p.option("all")), p.option("page"), p.option("order")
@@ -345,10 +335,10 @@ class RulesStrike(Resource):
     action = "destroy"
     id_arg = "id"
 
-    def payload(self, p: Parsed):
+    def extra(self, p: Parsed):
         if builtin.by_id(p.arg("id")) or not p.arg("id").isdigit():
             return refuse(render(TEXT["builtin_strike"], id=p.arg("id").upper()))
-        return p.payload()
+        return {}
 
 
 class RulesMove(Command):

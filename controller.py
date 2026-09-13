@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import threading
 from contextlib import contextmanager
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 import fmt
 import state
+from payloads.base import Payload, PayloadError
 from templates import render
 
 MESSAGES = {
@@ -15,6 +15,7 @@ MESSAGES = {
     "needs_id": "{resource} {action} needs a number",
     "bad_id": "{resource} {action} wants a number, got {id}",
     "no_item": "there is no {noun} {id}",
+    "wrong_payload": "{resource} {action} takes a {kind}, not a {given}",
 }
 
 
@@ -22,32 +23,10 @@ def say(message: str, /, **values) -> str:
     return render(MESSAGES[message], **values)
 
 
-class Payload:
-    """What a controller is asked to do with, whichever door the ask came through."""
-    __slots__ = ("env", "id", "fields", "source", "at")
-
-    def __init__(self, env: str, id=None, fields: dict | None = None, source: str = "cli", at: str = ""):
-        self.env = env
-        self.id = id
-        self.fields = dict(fields or {})
-        self.source = source
-        self.at = at or datetime.now(timezone.utc).isoformat(timespec="seconds")
-
-    def has(self, name: str) -> bool:
-        return self.fields.get(name) is not None
-
-    def get(self, name: str, default=None):
-        value = self.fields.get(name)
-        return default if value is None else value
-
-    def text(self, name: str) -> str:
-        return " ".join(str(self.fields.get(name) or "").split())
-
-
 @runtime_checkable
 class PayloadSource(Protocol):
-    """A parsed CLI command and an HTTP request are both this."""
-    def payload(self) -> Payload: ...
+    """A parsed CLI command and an HTTP request are both this: each builds the payload an action takes."""
+    def payload(self, kind: type[Payload], extra: dict | None = None) -> Payload: ...
 
 
 class Result:
@@ -90,10 +69,14 @@ class Controller:
     noun = ""
     actions: tuple = ("index", "show", "store", "update", "destroy")
     numbered: tuple = ("show", "update", "destroy")
+    payloads: dict = {}     # action -> the payload class it takes; Payload when it takes no fields
 
     default_sort = "n"
     default_direction = fmt.DESC
     scoped = True           # served under /api/env/<env>/; False for project-wide, None for both
+
+    def payload_for(self, action: str) -> type[Payload] | None:
+        return self.payloads.get(action, Payload) if action in self.actions else None
 
     def repository(self, root: Path, payload: Payload):
         raise NotImplementedError
@@ -113,21 +96,25 @@ class Controller:
     def sorted(self, query, payload: Payload):
         """The query in the order the payload asks for, or the refusal naming what it can sort by."""
         try:
-            return query.order_by(payload.text("sort") or self.default_sort,
-                                  payload.text("direction") or payload.text("order") or self.default_direction)
+            return query.order_by(payload.sort or self.default_sort,
+                                  payload.direction or payload.order or self.default_direction)
         except ValueError as e:
             return Result("refused", str(e))
 
     @staticmethod
     def paged(query, payload: Payload):
-        return query.page(payload.get("cap"), int(payload.get("page") or 1))
+        return query.page(payload.cap, payload.page or 1)
 
     def guard(self, root: Path, action: str, payload: Payload) -> Result | None:
         return None
 
     def call(self, root: Path, action: str, payload: Payload) -> Result:
-        if action not in self.actions:
+        kind = self.payload_for(action)
+        if kind is None:
             return Result("missing", say("no_action", resource=self.resource, action=repr(action)))
+        if not isinstance(payload, kind):
+            raise TypeError(say("wrong_payload", resource=self.resource, action=action, kind=kind.__name__,
+                                given=type(payload).__name__))
         with bound(payload.env):
             if action in self.numbered:
                 if payload.id in (None, ""):
@@ -136,3 +123,16 @@ class Controller:
                 if refused:
                     return refused
             return self.guard(root, action, payload) or getattr(self, action)(root, payload)
+
+
+def dispatch(root: Path, controller: Controller, action: str, source: PayloadSource,
+             extra: dict | None = None) -> Result:
+    """The one way into a controller: the source builds the payload the action takes, and the controller runs it."""
+    kind = controller.payload_for(action)
+    if kind is None:
+        return Result("missing", say("no_action", resource=controller.resource, action=repr(action)))
+    try:
+        payload = source.payload(kind, extra)
+    except PayloadError as e:
+        return Result("refused", str(e))
+    return controller.call(root, action, payload)

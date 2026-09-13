@@ -70,10 +70,8 @@ class List(Resource):
     controller = CONTROLLER
     action = "index"
 
-    def payload(self, p: Parsed):
-        got = p.payload()
-        got.fields.update(cap=CATALOGUE_PAGE, scope="here")
-        return got
+    def extra(self, p: Parsed):
+        return dict(cap=CATALOGUE_PAGE, scope="here")
 
     def render(self, p: Parsed, result) -> int:
         m, page, order = result.meta, p.option("page"), p.option("order")
@@ -130,13 +128,11 @@ class _WithBody(Resource):
     writes = True
     controller = CONTROLLER
 
-    def payload(self, p: Parsed):
+    def extra(self, p: Parsed):
         body = brief(bool(p.option("brief")))
         if body is None:
             return refuse(BRIEF_REFUSED)
-        got = p.payload()
-        got.fields["body"] = body
-        return got
+        return {"body": body}
 
 
 class Add(_WithBody):
@@ -184,10 +180,8 @@ class Abstract(Resource):
     action = "update"
     id_arg = "doc"
 
-    def payload(self, p: Parsed):
-        got = p.payload()
-        got.fields["abstract"] = got.fields.pop("line")
-        return got
+    def extra(self, p: Parsed):
+        return {"abstract": p.arg("line")}
 
 
 class Move(Resource):

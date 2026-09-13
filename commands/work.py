@@ -84,10 +84,8 @@ class Start(Resource):
     controller = CONTROLLER
     action = "store"
 
-    def payload(self, p: Parsed):
-        got = p.payload()
-        got.fields["where"] = where()
-        return got
+    def extra(self, p: Parsed):
+        return {"where": where()}
 
 
 class End(Resource):

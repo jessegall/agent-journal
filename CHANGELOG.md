@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.75.0 — every controller action takes its own typed payload
+
+A controller declares the payload each action takes (`payloads/`): shared ones where the
+fields are the same — `WhyPayload` for strike, drop, withdraw and retire, `MovePayload` for
+every move, `ListingPayload` for every list, `TextPayload`, `AnswerPayload`, `SectionPayload`
+— and a resource's own where they are not, namespaced by resource (`payloads.docs.AttachPayload`,
+`DetachPayload`, `FilesPayload`, `payloads.todos.StorePayload`, …). Each field has a type, a
+default and the key it is sent under, and a value that does not fit its type is refused
+before the action runs. A parsed CLI command and an HTTP request both build the payload
+through `controller.dispatch`, the one way into a controller; actions read typed attributes
+instead of looking fields up by name.
+
 ## 1.74.0 — docs go through their controller
 
 Every `journal docs` command runs through `DocsController` and prints only what it returns. A

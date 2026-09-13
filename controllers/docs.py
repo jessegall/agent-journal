@@ -4,6 +4,8 @@ from pathlib import Path
 
 import state
 from controller import Controller, Payload, Result
+from payloads import docs as doc_payloads
+from payloads.common import SectionPayload, WhyPayload
 from templates import render
 
 MESSAGES = {
@@ -33,6 +35,11 @@ class DocsController(Controller):
     actions = ("index", "show", "store", "update", "destroy", "part", "final", "draft", "move", "supersede",
                "attach", "detach", "files", "adopt", "search")
     numbered = ("show", "update", "destroy", "part", "final", "draft", "move", "supersede", "attach", "detach")
+    payloads = {"index": doc_payloads.ListPayload, "store": doc_payloads.StorePayload,
+                "update": doc_payloads.UpdatePayload, "destroy": WhyPayload, "part": SectionPayload,
+                "move": doc_payloads.MovePayload, "supersede": doc_payloads.SupersedePayload,
+                "attach": doc_payloads.AttachPayload, "detach": doc_payloads.DetachPayload,
+                "files": doc_payloads.FilesPayload, "search": doc_payloads.SearchPayload}
 
     def repository(self, root: Path, p: Payload):
         from resources import Docs
@@ -51,12 +58,12 @@ class DocsController(Controller):
     def _author(root: Path, p: Payload) -> str:
         return p.env or state.current_track(root)
 
-    def index(self, root: Path, p: Payload) -> Result:
+    def index(self, root: Path, p: doc_payloads.ListPayload) -> Result:
         docs = _docs()
         every = docs._load(root)
-        if p.get("all"):
+        if p.all:
             shelf = every
-        elif p.text("scope") == "here":
+        elif p.scope == "here":
             shelf = [d for d in every if docs.here(d, p.env)]
         else:
             shelf = [d for d in every if docs.scope_of(d) == (p.env or docs.GLOBAL)]
@@ -78,17 +85,16 @@ class DocsController(Controller):
         return Result("ok", "", {**docs.detail(root, doc, prt), "questions": views.questions_everywhere(
             root, lambda ref: ref == f"doc:{n}" or ref.startswith(f"doc:{n}."))})
 
-    def store(self, root: Path, p: Payload) -> Result:
+    def store(self, root: Path, p: doc_payloads.StorePayload) -> Result:
         docs = _docs()
-        scope = docs.GLOBAL if p.get("global") or not p.env else p.env
-        outcome = docs.add(root, p.text("title"), p.text("abstract"), str(p.get("body") or ""), scope)
-        return Result.of(outcome, created=True)
+        scope = docs.GLOBAL if p.project or not p.env else p.env
+        return Result.of(docs.add(root, p.title, p.abstract, p.body, scope), created=True)
 
-    def update(self, root: Path, p: Payload) -> Result:
+    def update(self, root: Path, p: doc_payloads.UpdatePayload) -> Result:
         docs, said = _docs(), []
-        changes = (("abstract", lambda: docs.set_abstract(root, p.id, p.text("abstract"))),
-                   ("status", lambda: docs.set_status(root, p.id, p.text("status"))),
-                   ("body", lambda: docs.replace(root, p.id, str(p.get("body")), self._author(root, p))))
+        changes = (("abstract", lambda: docs.set_abstract(root, p.id, p.abstract)),
+                   ("status", lambda: docs.set_status(root, p.id, p.status)),
+                   ("body", lambda: docs.replace(root, p.id, p.body, self._author(root, p))))
         for field, change in changes:
             if p.has(field):
                 ok, message = change()
@@ -99,12 +105,11 @@ class DocsController(Controller):
             return Result("refused", say("nothing_to_change"))
         return Result("ok", "\n".join(said))
 
-    def destroy(self, root: Path, p: Payload) -> Result:
-        return Result.of(_docs().strike(root, p.id, p.text("why")))
+    def destroy(self, root: Path, p: WhyPayload) -> Result:
+        return Result.of(_docs().strike(root, p.id, p.why))
 
-    def part(self, root: Path, p: Payload) -> Result:
-        return Result.of(_docs().part(root, p.id, p.text("title"), str(p.get("body") or ""), self._author(root, p)),
-                         created=True)
+    def part(self, root: Path, p: SectionPayload) -> Result:
+        return Result.of(_docs().part(root, p.id, p.title, p.body, self._author(root, p)), created=True)
 
     def final(self, root: Path, p: Payload) -> Result:
         return Result.of(_docs().set_status(root, p.id, "final"))
@@ -112,41 +117,38 @@ class DocsController(Controller):
     def draft(self, root: Path, p: Payload) -> Result:
         return Result.of(_docs().set_status(root, p.id, "draft"))
 
-    def move(self, root: Path, p: Payload) -> Result:
+    def move(self, root: Path, p: doc_payloads.MovePayload) -> Result:
         docs = _docs()
-        dst, to_project = p.text("environment"), bool(p.get("global"))
-        if to_project and dst:
-            return Result("refused", say("move_both", doc=p.id, dst=dst))
-        if not (dst or to_project):
+        if p.project and p.environment:
+            return Result("refused", say("move_both", doc=p.id, dst=p.environment))
+        if not (p.environment or p.project):
             return Result("refused", say("move_where"))
-        return Result.of(docs.move(root, p.id, docs.GLOBAL if to_project else dst))
+        return Result.of(docs.move(root, p.id, docs.GLOBAL if p.project else p.environment))
 
-    def supersede(self, root: Path, p: Payload) -> Result:
-        return Result.of(_docs().supersede(root, p.id, p.text("new")))
+    def supersede(self, root: Path, p: doc_payloads.SupersedePayload) -> Result:
+        return Result.of(_docs().supersede(root, p.id, p.new))
 
-    def attach(self, root: Path, p: Payload) -> Result:
+    def attach(self, root: Path, p: doc_payloads.AttachPayload) -> Result:
         if p.source == "web":
             return Result("refused", say("attach_here"))
-        return Result.of(_docs().attach(root, p.id, str(p.get("path") or ""), p.text("title"), self._author(root, p),
-                                        replace=bool(p.get("replace"))))
+        return Result.of(_docs().attach(root, p.id, p.path, p.title, self._author(root, p), replace=p.replace))
 
-    def detach(self, root: Path, p: Payload) -> Result:
-        return Result.of(_docs().detach(root, p.id, p.text("name"), p.text("why")))
+    def detach(self, root: Path, p: doc_payloads.DetachPayload) -> Result:
+        return Result.of(_docs().detach(root, p.id, p.name, p.why))
 
-    def files(self, root: Path, p: Payload) -> Result:
+    def files(self, root: Path, p: doc_payloads.FilesPayload) -> Result:
         return Result.of(_docs().list_attachments(root, str(p.id or "")))
 
     def adopt(self, root: Path, p: Payload) -> Result:
         return Result("ok", "\n".join(_docs().adopt(root, self._author(root, p))))
 
-    def search(self, root: Path, p: Payload) -> Result:
+    def search(self, root: Path, p: doc_payloads.SearchPayload) -> Result:
         docs = _docs()
-        term = str(p.get("term") or "")
-        needle = term.lower()
+        needle = p.term.lower()
         if not needle:
             return Result("refused", say("search_wants"))
         every = docs.search_lines(root, all_of_them=True)
-        lines = every if p.get("all") else docs.search_lines(root, track=self._author(root, p))
+        lines = every if p.all else docs.search_lines(root, track=self._author(root, p))
         hits = [{"ref": ref, "title": title, "line": i, "text": line}
                 for ref, title, i, line in lines if needle in line.lower()]
         elsewhere = len([1 for _, _, _, line in every if needle in line.lower()]) - len(hits)

@@ -6,6 +6,8 @@ import reminders
 import settings as settings_mod
 import state
 from controller import Controller, Payload, Result
+from payloads.common import ListingPayload, MovePayload, WhyPayload
+from payloads.reminders import ReminderPayload
 
 
 class RemindersController(Controller):
@@ -13,6 +15,8 @@ class RemindersController(Controller):
     noun = "reminder"
     actions = ("index", "show", "store", "update", "destroy", "move")
     numbered = ("show", "update", "destroy", "move")
+    payloads = {"index": ListingPayload, "store": ReminderPayload, "update": ReminderPayload,
+                "destroy": WhyPayload, "move": MovePayload}
 
     def repository(self, root: Path, p: Payload):
         from resources import Reminders
@@ -22,10 +26,10 @@ class RemindersController(Controller):
     def _rows(root: Path) -> dict[int, dict]:
         return {r["n"]: r for r in reminders.rows_response(root, all_of_them=True)[0]}
 
-    def index(self, root: Path, p: Payload) -> Result:
+    def index(self, root: Path, p: ListingPayload) -> Result:
         every = self.repository(root, p).all()
         query = self.repository(root, p).query()
-        if not p.get("all"):
+        if not p.all:
             query = query.where(lambda r: r.standing)
         query = self.sorted(query, p)
         if isinstance(query, Result):
@@ -40,20 +44,20 @@ class RemindersController(Controller):
     def show(self, root: Path, p: Payload) -> Result:
         return Result("ok", "", {**self._rows(root)[p.id], "until": self.repository(root, p).find(p.id).until})
 
-    def store(self, root: Path, p: Payload) -> Result:
+    def store(self, root: Path, p: ReminderPayload) -> Result:
         conf, _ = settings_mod.load(root)
-        outcome = reminders.add(root, p.text("text"), p.at, conf["reminder_max_chars"], p.text("until"))
+        outcome = reminders.add(root, p.text, p.at, conf["reminder_max_chars"], p.until)
         return Result.of(outcome, created=True, meta={"every": conf["reminder_every"]})
 
-    def update(self, root: Path, p: Payload) -> Result:
+    def update(self, root: Path, p: ReminderPayload) -> Result:
         conf, _ = settings_mod.load(root)
         was = self.repository(root, p).find(p.id)
-        text = p.text("text") if p.has("text") else was.text
-        until = p.text("until") if p.has("until") else was.until
+        text = p.text if p.has("text") else was.text
+        until = p.until if p.has("until") else was.until
         return Result.of(reminders.update(root, p.id, text, until, conf["reminder_max_chars"]))
 
-    def destroy(self, root: Path, p: Payload) -> Result:
-        return Result.of(reminders.done(root, p.id, p.text("why"), p.at))
+    def destroy(self, root: Path, p: WhyPayload) -> Result:
+        return Result.of(reminders.done(root, p.id, p.why, p.at))
 
-    def move(self, root: Path, p: Payload) -> Result:
-        return Result.of(reminders.move(root, p.id, p.text("environment"), p.at))
+    def move(self, root: Path, p: MovePayload) -> Result:
+        return Result.of(reminders.move(root, p.id, p.environment, p.at))

@@ -34,10 +34,8 @@ class List(Resource):
     controller = CONTROLLER
     action = "index"
 
-    def payload(self, p: Parsed):
-        got = p.payload()
-        got.fields["cap"] = CATALOGUE_PAGE
-        return got
+    def extra(self, p: Parsed):
+        return {"cap": CATALOGUE_PAGE}
 
     def render(self, p: Parsed, result) -> int:
         items = [fmt.Item(n=r["n"], text=r["text"], meta=r["meta"], struck=r["struck"]) for r in result.data]

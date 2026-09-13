@@ -148,9 +148,8 @@ class Request:
     def __init__(self, env: str, id: str | None, body: dict):
         self.env, self.id, self.body = env, id, body
 
-    def payload(self):
-        from controller import Payload
-        return Payload(self.env, self.id, self.body, source="web")
+    def payload(self, kind, extra: dict | None = None):
+        return kind.build(self.env, self.id, {**self.body, **(extra or {})}, "web")
 
 
 def _served(path: str):
@@ -177,7 +176,8 @@ def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str,
     # a method the resource does not take is 405; an action it does not have is a path that is not there
     if action is None or (not named and action not in controller.actions):
         return _json({"error": say("method", method=method, path=path)}, 405)
-    result = controller.call(root, action, Request(env, ident, body).payload())
+    from controller import dispatch
+    result = dispatch(root, controller, action, Request(env, ident, body))
     if method == "GET" and result.ok:
         return _json(result.data)
     if not result.ok:
