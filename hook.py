@@ -61,9 +61,15 @@ import tracks  # noqa: E402
 import transcript  # noqa: E402
 import migrate  # noqa: E402
 import update  # noqa: E402
+import inbox  # noqa: E402
 from templates import render as fill  # noqa: E402
 
 MESSAGES = {
+    "inbox_fact": "the user left {n} message(s) in the inbox",
+    "inbox_do": "process them before anything else: `.journal/journal.py inbox` lists them; split each into parts with "
+                "`inbox process`, a question for any part you do not understand, then `inbox done`",
+    "inbox_mention": "the user left {n} new message(s) in the inbox — `journal inbox` reads them when you reach a "
+                     "pause; nothing is blocked",
     "deferral_do": "park it as a to-do before going on, or run this call again if nothing is deferred",
     "deferral_why": "You wrote:\n  …{said}…\n\nThe user asked for something and this says it will happen later. Work "
                     "held only in words lives in this window, and one distraction or one compaction loses it. Park it "
@@ -768,6 +774,14 @@ def _p_track(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # line, so a body that opens by restating its own label says the fact twice in the
     # user's terminal — which four other subjects were also doing.
     return _say(say("taken_fact", env=due["track"]), say("taken_do", sid=due["by"][:8], age=due["age"]))
+
+
+@nudges.subject("inbox", 7)
+def _p_inbox(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    waiting = inbox.unprocessed(ROOT, here)
+    if not waiting:
+        return None
+    return _say(say("inbox_fact", n=len(waiting)), say("inbox_do"))
 
 
 @nudges.subject("loop", 10)
@@ -1927,6 +1941,21 @@ def _response_size(payload: dict) -> int:
     return len(json.dumps(r)) if r is not None else 0
 
 
+def _inbox_news(conf: dict, ctx: Ctx) -> str:
+    if "inbox" in conf["silenced"]:
+        return ""
+    here = tracks.current(ROOT, ctx.stem)
+    waiting = [n for n, _ in inbox.unprocessed(ROOT, here)]
+    told = state.get(ROOT, "inbox_told", {}, stem=ctx.stem) or {}
+    said = told.get(here) or []
+    fresh = [n for n in waiting if n not in said]
+    if not fresh:
+        return ""
+    told[here] = sorted(set(said) | set(fresh))
+    state.put(ROOT, "inbox_told", told, stem=ctx.stem)
+    return say("inbox_mention", n=len(fresh))
+
+
 def _reminder_due(conf: dict, ctx: Ctx) -> str:
     """Every `reminder_every` tool calls, the standing reminders again — or "".
 
@@ -1986,6 +2015,9 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     due = _reminder_due(conf, ctx)
     if due:
         return _context("PostToolUse", due)
+    news = _inbox_news(conf, ctx)
+    if news:
+        return _context("PostToolUse", news)
     # THE CONTEXT LADDER, MID-WORK. Only with the window set: a tail reading has no peak
     # to infer one from, and the ladder never climbs a guess.
     window = conf["context_window"] or (state.get(ROOT, "window", 0) or 0)

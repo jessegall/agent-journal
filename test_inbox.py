@@ -129,5 +129,41 @@ check("adding, processing and closing are writes; reading is not",
         "inbox", "inbox show 1")],
       ["inbox", "inbox", "inbox", "inbox", None, None])
 
+# ------------------------------------------------------------------ the stop holds while a message waits
+import transcript  # noqa: E402
+tdir = transcript.project_dir(d)
+tdir.mkdir(parents=True, exist_ok=True)
+tpath = tdir / "s1.jsonl"
+tpath.write_text("")
+
+
+def fire(event, **extra):
+    return P.hook(event, session_id="s1", transcript_path=str(tpath), **extra)[1]
+
+
+def turn(user_text, reply):
+    with tpath.open("a") as fh:
+        fh.write(json.dumps({"type": "user", "origin": {"kind": "human"}, "uuid": f"u{os.urandom(3).hex()}",
+                             "message": {"role": "user", "content": user_text}}) + "\n")
+    fire("UserPromptSubmit", prompt=user_text)
+    with tpath.open("a") as fh:
+        fh.write(json.dumps({"type": "assistant", "uuid": f"a{os.urandom(3).hex()}", "message": {
+            "role": "assistant", "content": [{"type": "text", "text": reply}],
+            "usage": {"input_tokens": 1000}}}) + "\n")
+
+
+fire("SessionStart", source="startup")
+turn("how is it going", "[!reply] fine")
+label, _ = testkit.hold(fire("Stop", stop_hook_active=False))
+check("the stop holds while a message waits, ahead of the rest of the queue", label,
+      "the user left 1 message(s) in the inbox")
+
+# ------------------------------------------------------------------ a tool call mentions a new message once
+read = {"tool_name": "Read", "tool_input": {"file_path": "x"}, "tool_response": "ok"}
+check("the first tool call after a message mentions it", "1 new message(s)" in fire("PostToolUse", **read), True)
+check("and the next one does not repeat it", "new message" in fire("PostToolUse", **read), False)
+j("inbox", "add", "one more thing")
+check("a newer message is mentioned in its turn", "1 new message(s)" in fire("PostToolUse", **read), True)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
