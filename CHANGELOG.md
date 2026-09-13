@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.14 — tools and pins say what they say from templates
+
+Every message `tools.py` and `pins.py` return or print is declared once in the module's
+`MESSAGES` and filled by `say`, the shape `reminders.py` already had: a refusal, a
+confirmation, the catalogue, a claim's facts, the carry block. The wording is unchanged.
+
 ## 1.62.13 — the status page is a command class
 
 What bare `journal` shows is declared in `commands/status.py`, its text from templates, and

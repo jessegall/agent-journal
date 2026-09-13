@@ -29,6 +29,7 @@ from pathlib import Path
 import entries
 import fmt
 import state
+from templates import render as fill
 
 #: `docs` IS IMPORTED WHERE IT IS USED, in the two places that render a pin's doc citation.
 #: At module scope it made `import pins` an `import docs` as well — and `journal.py` imports
@@ -36,6 +37,70 @@ import state
 #: A lazy import is only as lazy as the eagerest thing on the path to it.
 
 KEY = "pins"
+
+MESSAGES = {
+    "fact_struck": "struck: {why}",
+    "fact_line": "line {line}",
+    "fact_no_line": "before lines were kept",
+    "fact_replaces": "replaces {n}",
+    "fact_promoted": "promoted from pin {n}",
+    "fact_body": "has its reasoning ({key} show {n})",
+    "fact_doc": "→ {label}",
+    "just_now": "just now",
+    "hours": "{n}h ago",
+    "days": "{n}d ago",
+    "needs_fact": "pin what? one line: the fact, and what makes it matter",
+    "no_such": "there is no {noun} {n}. `journal {key}` numbers them.",
+    "no_such_all": "there is no {noun} {n}. `journal {key} --all` numbers them.",
+    "already_struck": "{noun} {n} is already struck by: {why}",
+    "replacing": "{noun} {n}, replacing {old}",
+    "added": "{verb} {n} ({standing} standing)",
+    "added_body": "\n  {msg}",
+    "added_hint": "\n  the reasoning behind it: journal {key} replace {n} --brief",
+    "needs_body": "a long form needs a body — pass it on stdin with --brief",
+    "body_written": "{noun} {n} has its reasoning: {path}",
+    "needs_section": 'a section needs a title: journal {key} amend {n} "<section title>" --brief',
+    "has_section": "that long form already has a section called {title}",
+    "section": "## {title}\n\n{text}",
+    "section_added": "\n  added the section {title}",
+    "volatile": "this pin cites {hit}, a path that exists for one session only — it will point at nothing "
+                "tomorrow, which fails the test a pin has to pass. Put the file in the repo and cite that, or "
+                "pin its CLAIMS instead of its location.",
+    "too_long": "{length} characters, and a pin has {limit}. This is re-read in full at every compaction, so it "
+                "has to be a CLAIM, not the reasoning behind it:\n  keep  …{keep}\n  cut   …{cut}\n"
+                "The reasoning is not cut, it is MOVED: `--brief` on the same command takes it on stdin, and "
+                "only the claim is printed into context. `journal pins show <n>` reads it back. Several claims "
+                "are still several pins.",
+    "promoted_to": "promoted to rule {n}",
+    "promoted": "rule {n}, from pin {pin}: {fact}",
+    "no_rules": "  No rules stand.",
+    "no_pins": "  Nothing is pinned.",
+    "before_lines": "{noun} {n} was written before pins recorded where they were said, so there is nothing to "
+                    "read around. The fact still stands:\n  {fact}",
+    "transcript_gone": "that pin names a transcript this machine no longer has.",
+    "note_gone": "  ! the session it was written in ({want}) is gone; reading the newest instead\n",
+    "note_delegated": "  ! written while the environment was DELEGATED: the writer may have been a subagent,\n"
+                      "    whose words are one level under this transcript, in its subagents/ folder\n",
+    "note_guessed": "  ! the transcript was GUESSED when this pin was written (no session id in the\n"
+                    "    environment); the citation may point at another terminal's conversation\n",
+    "around_line": "{edge}{n}  {mark}  {text}",
+    "around_title": "{noun} {n}",
+    "around_sub": "written at line {line}",
+    "around": "{title}\n{note}\n  {fact}\n\n{body}\n\n  >> marks the line it was pinned at. "
+              "journal conversation --back=N reads further.",
+    "around_empty": "  (nothing was said around that line)",
+    "head_rules": "RULES OF THIS PROJECT, on every environment. Decided, and still in force:",
+    "head_compact": "FACTS THE SUMMARY YOU ARE HOLDING DID NOT KEEP. They were true before the compaction and "
+                    "are true now:",
+    "head_start": "FACTS THAT STAND ON THIS ENVIRONMENT, decided in earlier sessions and still true:",
+    "carry_row": "  - {fact}[  \\[{age}\\]][  ·{noun} show {body}][  → {doc}]",
+    "carry": "{head}\n{rows:\n}{more}",
+    "doc_ref": "doc {doc}",
+}
+
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 def _store(key: str = KEY, root: Path | None = None):
@@ -52,19 +117,18 @@ def _store(key: str = KEY, root: Path | None = None):
     def facts(p: dict, n: int) -> list[str]:
         out = []
         if p.get("struck"):
-            out.append(f"struck: {p['struck']}")
+            out.append(say("fact_struck", why=p["struck"]))
         if age(p.get("at", "")):
             out.append(age(p.get("at", "")))
-        out.append(f"line {p['line']}" if p.get("line") else "before lines were kept")
+        out.append(say("fact_line", line=p["line"]) if p.get("line") else say("fact_no_line"))
         if p.get("replaced"):
-            out.append(f"replaces {p['replaced']}")
+            out.append(say("fact_replaces", n=p["replaced"]))
         if p.get("promoted_from"):
-            out.append(f"promoted from pin {p['promoted_from']}")
+            out.append(say("fact_promoted", n=p["promoted_from"]))
         if p.get("body"):
-            out.append(f"has its reasoning ({key} show {n})")
+            out.append(say("fact_body", key=key, n=n))
         if p.get("doc") and root is not None:
-            import docs as docs_mod
-            out.append("→ " + docs_mod.ref_label(root, str(p["doc"])))
+            out.append(say("fact_doc", label=_doc_label(root, p["doc"])))
         return out
 
     return entries.Store(key=key, noun=noun, text="fact", retired="struck",
@@ -107,10 +171,10 @@ def age(at: str, now: datetime | None = None) -> str:
         when = when.replace(tzinfo=timezone.utc)
     secs = ((now or datetime.now(timezone.utc)) - when).total_seconds()
     if secs < 3600:
-        return "just now"
+        return say("just_now")
     if secs < 86400:
-        return f"{int(secs // 3600)}h ago"
-    return f"{int(secs // 86400)}d ago"
+        return say("hours", n=int(secs // 3600))
+    return say("days", n=int(secs // 86400))
 
 
 def _all(root: Path, key: str = KEY, track: str | None = None) -> list[dict]:
@@ -141,7 +205,7 @@ def add(root: Path, fact: str, at: str, limit: int, supersedes: int | None = Non
     """
     fact = " ".join(fact.split())
     if not fact:
-        return False, "pin what? one line: the fact, and what makes it matter"
+        return False, say("needs_fact")
     over = refused(fact, limit)
     if over:
         return False, over
@@ -155,25 +219,25 @@ def add(root: Path, fact: str, at: str, limit: int, supersedes: int | None = Non
         if supersedes is not None:
             i = supersedes - 1
             if i < 0 or i >= len(items):
-                return False, f"there is no {noun} {supersedes}. `journal {key}` numbers them."
+                return False, say("no_such", noun=noun, n=supersedes, key=key)
             if items[i].get("struck"):
-                return False, f"{noun} {supersedes} is already struck by: {items[i]['struck']}"
+                return False, say("already_struck", noun=noun, n=supersedes, why=items[i]["struck"])
             items[i]["struck"] = fact
             items.append({**made, "replaced": supersedes})
             state.put(root, key, items)
-            return True, f"{noun} {len(items)}, replacing {supersedes}"
+            return True, say("replacing", noun=noun, n=len(items), old=supersedes)
         items.append(made)
         state.put(root, key, items)
         standing = len([p for p in items if not p.get("struck")])
     verb = "ruled" if key == RULES else "pinned"
-    out = f"{verb} {len(items)} ({standing} standing)"
+    out = say("added", verb=verb, n=len(items), standing=standing)
     if (long or "").strip():
         ok, msg = write_body(root, len(items), long, key, at)
-        out += "\n  " + msg
+        out += say("added_body", msg=msg)
     else:
         # TAUGHT WHERE IT IS NEEDED: the claim has just landed and its argument is still in
         # the window. This is the last moment it is cheap to write down.
-        out += f"\n  the reasoning behind it: journal {key} replace {len(items)} --brief"
+        out += say("added_hint", key=key, n=len(items))
     return True, out
 
 
@@ -238,11 +302,11 @@ def write_body(root: Path, n: int, text: str, key: str = KEY, at: str = "") -> t
     """Give claim n a long form, or replace the one it has. The old text is kept under struck/."""
     noun = "rule" if key == RULES else "pin"
     if not (text or "").strip():
-        return False, f"a long form needs a body — pass it on stdin with --brief"
+        return False, say("needs_body")
     with state.locked(root):
         items = _all(root, key)
         if n < 1 or n > len(items):
-            return False, f"there is no {noun} {n}. `journal {key}` numbers them."
+            return False, say("no_such", noun=noun, n=n, key=key)
         item = items[n - 1]
         f = body_dir(root, key) / (item.get("body") or body_path(root, n, item["fact"], key).name)
         if f.is_file():
@@ -253,20 +317,20 @@ def write_body(root: Path, n: int, text: str, key: str = KEY, at: str = "") -> t
         f.write_text(text.strip() + "\n")
         item["body"] = f.name
         state.put(root, key, items)
-    return True, f"{noun} {n} has its reasoning: {f.relative_to(root.parent)}"
+    return True, say("body_written", noun=noun, n=n, path=f.relative_to(root.parent))
 
 
 def amend_body(root: Path, n: int, title: str, text: str, key: str = KEY, at: str = "") -> tuple[bool, str]:
     """Append a `## <title>` section to the long form, leaving what is there."""
     title = " ".join((title or "").split())
     if not title:
-        return False, f'a section needs a title: journal {key} amend {n} "<section title>" --brief'
+        return False, say("needs_section", key=key, n=n)
     had = body(root, n, key)
-    if f"## {title.lower()}" in had.lower():
-        return False, f"that long form already has a section called {title!r}"
-    joined = (had.rstrip() + "\n\n" if had.strip() else "") + f"## {title}\n\n{text.strip()}"
+    if ("## " + title).lower() in had.lower():
+        return False, say("has_section", title=repr(title))
+    joined = (had.rstrip() + "\n\n" if had.strip() else "") + say("section", title=title, text=text.strip())
     ok, msg = write_body(root, n, joined, key, at)
-    return ok, (msg + f"\n  added the section {title!r}" if ok else msg)
+    return ok, (msg + say("section_added", title=repr(title)) if ok else msg)
 
 
 #: Paths that exist for one session. A pin naming one is a citation to nothing: the
@@ -289,22 +353,10 @@ def refused(fact: str, limit: int) -> str | None:
     low = fact.lower()
     hit = next((v for v in VOLATILE if v in low), None)
     if hit:
-        return (
-            f"this pin cites {hit!r}, a path that exists for one session only — it will "
-            f"point at nothing tomorrow, which fails the test a pin has to pass. Put the "
-            f"file in the repo and cite that, or pin its CLAIMS instead of its location."
-        )
+        return say("volatile", hit=repr(hit))
     if not limit or len(fact) <= limit:
         return None
-    return (
-        f"{len(fact)} characters, and a pin has {limit}. This is re-read in full at "
-        f"every compaction, so it has to be a CLAIM, not the reasoning behind it:\n"
-        f"  keep  …{fact[:limit - 20]}\n"
-        f"  cut   …{fact[limit - 20:][:120]}\n"
-        "The reasoning is not cut, it is MOVED: `--brief` on the same command takes it on "
-        "stdin, and only the claim is printed into context. `journal pins show <n>` reads "
-        "it back. Several claims are still several pins."
-    )
+    return say("too_long", length=len(fact), limit=limit, keep=fact[:limit - 20], cut=fact[limit - 20:][:120])
 
 
 def strike(root: Path, n: int, why: str, key: str = KEY) -> tuple[bool, str]:
@@ -343,14 +395,14 @@ def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[boo
         items = _all(root)
         i = n - 1
         if i < 0 or i >= len(items):
-            return False, f"there is no pin {n}. `journal pins` numbers them."
+            return False, say("no_such", noun="pin", n=n, key=KEY)
         if items[i].get("struck"):
-            return False, f"pin {n} is already struck by: {items[i]['struck']}"
+            return False, say("already_struck", noun="pin", n=n, why=items[i]["struck"])
         rules = _all(root, RULES)
         rules.append({"fact": items[i]["fact"], "at": at, "struck": None,
                       **{k: items[i][k] for k in ("line", "session", "doc") if k in items[i]},
                       "promoted_from": n, **(where or {})})
-        items[i]["struck"] = f"promoted to rule {len(rules)}"
+        items[i]["struck"] = say("promoted_to", n=len(rules))
         state.put(root, RULES, rules)
         state.put(root, KEY, items)
         # THE REASONING GOES WITH THE CLAIM. Copying the fact and leaving the body behind
@@ -359,7 +411,7 @@ def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[boo
         carried = body(root, n, KEY)
     if carried.strip():
         write_body(root, len(rules), carried, RULES, at)
-    return True, f"rule {len(rules)}, from pin {n}: {items[i]['fact'][:70]}"
+    return True, say("promoted", n=len(rules), pin=n, fact=items[i]["fact"][:70])
 
 
 def listing(root: Path, *, all_of_them: bool = False, key: str = KEY,
@@ -405,7 +457,7 @@ def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int 
     changes neither, and the word "shared" belongs to that distinction, not to this one."""
     width = fmt.room(width)
     if not _all(root, key):
-        return "  No rules stand." if key == RULES else "  Nothing is pinned."
+        return say("no_rules" if key == RULES else "no_pins")
     rows, left = rows_response(root, all_of_them=all_of_them, key=key, cap=cap, page=page, order=order)
     items = [fmt.Item(n=r["n"], text=r["fact"], meta=r["meta"], struck=r["struck"]) for r in rows]
     return fmt.render(fmt.Out(items=tuple(items))) + fmt.more(key, left, page, order)
@@ -425,13 +477,10 @@ def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tu
     noun = "rule" if key == RULES else "pin"
     items = _all(root, key)
     if n < 1 or n > len(items):
-        return False, f"there is no {noun} {n}. `journal {key} --all` numbers them."
+        return False, say("no_such_all", noun=noun, n=n, key=key)
     p = items[n - 1]
     if not p.get("line"):
-        return False, (
-            f"{noun} {n} was written before pins recorded where they were said, so there is "
-            f"nothing to read around. The fact still stands:\n  {p['fact']}"
-        )
+        return False, say("before_lines", noun=noun, n=n, fact=p["fact"])
     want = p.get("session")
     path = None
     if want:
@@ -439,15 +488,13 @@ def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tu
         path = cand if cand.is_file() else None
     path = path or transcript.newest_session(project)
     if path is None:
-        return False, "that pin names a transcript this machine no longer has."
+        return False, say("transcript_gone")
     if want and path.name != want:
-        note = f"  ! the session it was written in ({want}) is gone; reading the newest instead\n"
+        note = say("note_gone", want=want)
     elif p.get("via") == "delegation":
-        note = ("  ! written while the environment was DELEGATED: the writer may have been a subagent,\n"
-                "    whose words are one level under this transcript, in its subagents/ folder\n")
+        note = say("note_delegated")
     elif p.get("guessed"):
-        note = "  ! the transcript was GUESSED when this pin was written (no session id in the\n" \
-               "    environment); the citation may point at another terminal's conversation\n"
+        note = say("note_guessed")
     else:
         note = ""
     lines, _ = transcript.read(path)
@@ -468,12 +515,10 @@ def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tu
         text = " ".join((l.text or "").split())
         # The pin sits AFTER the last message before it, never on one, so the marker goes
         # on that message rather than pretending a line was the pin itself.
-        body.append(f"{'>>' if l.n == edge else '  '}{l.n:>6}  {mark}  {text[:400]}")
-    return True, (
-        fmt.title(f"{noun.upper()} {n}", sub=f"written at line {here}") + f"\n{note}\n  {p['fact']}\n\n"
-        + ("\n".join(body) if body else "  (nothing was said around that line)")
-        + "\n\n  >> marks the line it was pinned at. journal conversation --back=N reads further."
-    )
+        body.append(say("around_line", edge=">>" if l.n == edge else "  ", n=str(l.n).rjust(6), mark=mark, text=text[:400]))
+    title = fmt.title(say("around_title", noun=noun.upper(), n=n), sub=say("around_sub", line=here))
+    return True, say("around", title=title, note=note, fact=p["fact"],
+                     body="\n".join(body) if body else say("around_empty"))
 
 
 def carry(root: Path, source: str = "compact", key: str = KEY, cap: int = 0,
@@ -503,30 +548,10 @@ def carry(root: Path, source: str = "compact", key: str = KEY, cap: int = 0,
     total = len(numbered)
     if cap and total > cap:
         numbered = numbered[-cap:]
-    if key == RULES:
-        head = "RULES OF THIS PROJECT, on every environment. Decided, and still in force:"
-    elif source == "compact":
-        head = ("FACTS THE SUMMARY YOU ARE HOLDING DID NOT KEEP. They were true before the "
-                "compaction and are true now:")
-    else:
-        head = "FACTS THAT STAND ON THIS ENVIRONMENT, decided in earlier sessions and still true:"
+    head = say("head_rules" if key == RULES else "head_compact" if source == "compact" else "head_start")
     noun = "rules" if key == RULES else "pins"
-    return (
-        head + "\n"
-        + "\n".join(
-            f"  - {fmt.gist(p['fact']) if brief else p['fact']}"
-            + (f"  [{age(p.get('at', ''))}]" if age(p.get("at", "")) else "")
-            # THE MARKER IS ONE SUFFIX, because this block is the scarcest text in the
-            # system: a reader who wants the argument is told, in the fewest characters
-            # that can carry a command, where it is.
-            + (f"  ·{noun} show {i}" if p.get("body") else "")
-            # THE CITATION IS A REFERENCE, AND IN THE DOORWAY THAT IS ALL IT IS. The
-            # label carries the doc's title and the part's — 150 characters of content
-            # hanging off an entry that was just capped at 180, which is how a bounded
-            # line grew back to 267. `journal docs 88.1` is the half that reads.
-            + (f"  → {'doc ' + str(p['doc']) if brief else _doc_label(root, p['doc'])}"
-               if p.get("doc") else "")
-            for i, p in numbered
-        )
-        + fmt.cut(len(numbered), total, f"journal {noun}", shortened=brief)
-    )
+    rows = [say("carry_row", fact=fmt.gist(p["fact"]) if brief else p["fact"], age=age(p.get("at", "")),
+                noun=noun, body=i if p.get("body") else None,
+                doc=(say("doc_ref", doc=p["doc"]) if brief else _doc_label(root, p["doc"])) if p.get("doc") else None)
+            for i, p in numbered]
+    return say("carry", head=head, rows=rows, more=fmt.cut(len(numbered), total, f"journal {noun}", shortened=brief))
