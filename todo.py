@@ -1381,7 +1381,7 @@ def states_of(t: dict) -> list[str]:
     return [name for name, is_it in _STATES[:-1] if is_it(t)]
 
 
-def row_response(root: Path, track: str, t: dict) -> dict:
+def row_response(root: Path, track: str, t: dict, short_refs: bool = False) -> dict:
     """One to-do as a plain, JSON-safe dict — the shape the web viewer serves, built
     from the SAME predicates (`states_of`, `after_of`, `waiting_on`) the terminal
     renderer's own `facts()` reads to build its one-line sentence per row. Neither
@@ -1402,6 +1402,9 @@ def row_response(root: Path, track: str, t: dict) -> dict:
         "answer": t.get("answer") or "",
         "doc": str(t["doc"]) if t.get("doc") else "",
         "priority": priority_of(t),
+        "meta": facts_text(root, track, t, short_refs),
+        "started": t.get("started") or "",
+        "done": t.get("done") or "",
     }
 
 
@@ -1479,40 +1482,47 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int | No
     if not order_by_id:
         items = sorted(items, key=priority_of)
 
-    def facts(t: dict) -> list[str]:
-        out = [_STATE_TEXT[_state(t)](root, track, t)]
-        if priority_of(t) != DEFAULT_PRIORITY:
-            out.append(say("fact_priority", label=priority_label(priority_of(t))))
-        out.append(say("fact_brief") if t.get("brief") or t.get("body") else say("fact_title_only"))
-        if t.get("doc"):
-            import docs as docs_mod
-            out.append(say("fact_doc", label=docs_mod.ref_label(root, str(t["doc"]), short=short_refs)))
-        return out
+    rows, left = entries.listing(items, lambda t: row_response(root, track, t, short_refs), cap=cap, page=page,
+                                 order=order)
+    return render_rows(rows, width) + fmt.more("todos", left, page, order)
 
-    def item_of(t: dict):
-        return fmt.Item(n=t["n"], text=t["title"], meta=" · ".join(facts(t)),
-                        struck=bool(t.get("done")))
 
-    rows, left = entries.listing(items, item_of, cap=cap, page=page, order=order)
-    paged, _ = fmt.paged(items, cap, page, order)
+def facts_text(root: Path, track: str, t: dict, short_refs: bool = False) -> str:
+    """The line beneath a to-do's title: where it stands, its priority, its brief, its doc."""
+    out = [_STATE_TEXT[_state(t)](root, track, t)]
+    if priority_of(t) != DEFAULT_PRIORITY:
+        out.append(say("fact_priority", label=priority_label(priority_of(t))))
+    out.append(say("fact_brief") if t.get("brief") or t.get("body") else say("fact_title_only"))
+    if t.get("doc"):
+        import docs as docs_mod
+        out.append(say("fact_doc", label=docs_mod.ref_label(root, str(t["doc"]), short=short_refs)))
+    return " · ".join(out)
+
+
+def render_rows(rows: list[dict], width: int | None = None) -> str:
+    """To-do rows (`row_response`) as the terminal list: title, facts, and a waiting question beneath."""
+    width = fmt.room(width)
     blocks = []
-    for t, it in zip(paged, rows):
-        entry = fmt.render(fmt.Out(items=(it,)))
-        # SAME CONDITION THE LADDER GATED ITS OWN EXTRA LINES ON: still waiting, not yet
-        # started, not done.
-        if t.get("asks") and not t.get("done") and not t.get("started"):
-            entry += "\n" + fmt.wrap(say("question", asks=t["asks"]), indent=5, width=width)
-            if t.get("answer"):
-                entry += "\n" + fmt.wrap(say("answer", answer=t["answer"]), indent=5, width=width)
+    for r in rows:
+        entry = fmt.render(fmt.Out(items=(fmt.Item(n=r["n"], text=r["title"], meta=r["meta"], struck=bool(r["done"])),)))
+        # only while it still waits: not started, not done
+        if r["asks"] and not r["done"] and not r["started"]:
+            entry += "\n" + fmt.wrap(say("question", asks=r["asks"]), indent=5, width=width)
+            if r["answer"]:
+                entry += "\n" + fmt.wrap(say("answer", answer=r["answer"]), indent=5, width=width)
         blocks.append(entry)
-    return "\n\n".join(blocks) + fmt.more("todos", left, page, order)
+    return "\n\n".join(blocks)
 
 
 def show(root: Path, track: str, n: int, width: int | None = None) -> tuple[bool, str]:
-    width = fmt.room(width)
     t, err = _get(root, track, n)
     if t is None:
         return False, err
+    return True, show_text(detail(root, track, t), width)
+
+
+def detail(root: Path, track: str, t: dict) -> dict:
+    """One to-do in full, as data: its row, its brief, and what the terminal page says of it."""
     meta = [say("meta_env", env=track)]
     if t.get("at"):
         meta.append(say("meta_written", age=_age(t["at"]), date=t["at"][:10]))
@@ -1525,11 +1535,19 @@ def show(root: Path, track: str, n: int, width: int | None = None) -> tuple[bool
     if t.get("doc"):
         import docs as docs_mod
         meta.append(say("fact_doc", label=docs_mod.ref_label(root, str(t["doc"]))))
-    out = [fmt.title(say("show_title", n=n), sub=" ".join(t["title"].split())), "  " + fmt.dim(" · ".join(meta))]
-    if t.get("asks"):
-        out.append(fmt.section(say("section_answered" if t.get("answer") else "section_waiting")))
+    return {**row_response(root, track, t), "body": t.get("body", ""), "how": t.get("how") or "",
+            "facts": " · ".join(meta), "file": str(t["path"].relative_to(root.parent)) if t.get("path") else ""}
+
+
+def show_text(t: dict, width: int | None = None) -> str:
+    """A to-do's `detail` as the terminal page."""
+    width = fmt.room(width)
+    n = t["n"]
+    out = [fmt.title(say("show_title", n=n), sub=" ".join(t["title"].split())), "  " + fmt.dim(t["facts"])]
+    if t["asks"]:
+        out.append(fmt.section(say("section_answered" if t["answer"] else "section_waiting")))
         out.append(fmt.wrap(t["asks"], width=width))
-        if t.get("answer"):
+        if t["answer"]:
             out.append("")
             out.append(fmt.wrap(say("answer", answer=t["answer"]), width=width))
     out.append(fmt.section(say("section_brief")))
@@ -1542,19 +1560,20 @@ def show(root: Path, track: str, n: int, width: int | None = None) -> tuple[bool
     out.append(fmt.prose(t["body"], width=width) if t["body"] else say("title_only"))
     out.append("")
     rows = []
-    if not t.get("done"):
+    if not t["done"]:
         rows.append((say("cmd_start", n=n), say("cmd_start_what")))
         rows.append((say("cmd_done", n=n), say("cmd_done_what")))
-        if t.get("asks") and not t.get("answer"):
+        if t["asks"] and not t["answer"]:
             rows.append((say("cmd_answer", n=n), say("cmd_answer_what")))
-        elif not t.get("asks"):
+        elif not t["asks"]:
             rows.append((say("cmd_ask", n=n), say("cmd_ask_what")))
             rows.append((say("cmd_block", n=n), say("cmd_block_what")))
             rows.append((say("cmd_after", n=n), say("cmd_after_what")))
     if rows:
         out.append(fmt.commands(rows))
-    out.append("  " + fmt.dim(str(t["path"].relative_to(root.parent))))
-    return True, "\n".join(out)
+    if t["file"]:
+        out.append("  " + fmt.dim(t["file"]))
+    return "\n".join(out)
 
 
 AUTO = "auto"

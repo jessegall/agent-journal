@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import fmt
 import questions
 import state
 import todo
@@ -62,9 +63,15 @@ class TodosController(Controller):
     def index(self, root: Path, p: Payload) -> Result:
         env, repo = self.env(root), self.repository(root, p)
         every = repo.all()
-        query = self.sorted(repo.query(), p)
-        if isinstance(query, Result):
-            return query
+        query = repo.query().where(lambda t: not t.closed) if p.get("open") else repo.query()
+        if p.source == "cli" and not p.text("sort") and not p.get("order-by-id"):
+            # the terminal lists by priority, highest first; ties newest first
+            direction = p.text("order") or fmt.DESC
+            query = query.order_by("n", direction).order_by("priority", direction)
+        else:
+            query = self.sorted(query, p)
+            if isinstance(query, Result):
+                return query
         page = self.paged(query, p)
         waiting = len([t for t in every if not t.closed])
         return Result("ok", "", [todo.row_response(root, env, t.raw) for t in page.rows],
@@ -73,9 +80,8 @@ class TodosController(Controller):
 
     def show(self, root: Path, p: Payload) -> Result:
         env, t = self.env(root), self.repository(root, p).find(p.id)
-        row = todo.row_response(root, env, t.raw)
-        row.update(body=t.body, started=t.started, done=t.done, how=t.how,
-                   questions=[questions.row_response(n, q) for n, q in questions.about(root, f"todo:{p.id}", env)])
+        row = todo.detail(root, env, t.raw)
+        row.update(questions=[questions.row_response(n, q) for n, q in questions.about(root, f"todo:{p.id}", env)])
         return Result("ok", "", row)
 
     def store(self, root: Path, p: Payload) -> Result:

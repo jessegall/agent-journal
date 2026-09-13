@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.70.1 — `journal todos` prints only what its controller returns
+
+The to-do list and a to-do's page in the terminal are printed from the controller's result,
+the same data the viewer gets as JSON, instead of reading the store a second time. A to-do
+row now carries its terminal facts line (`meta`) and whether it started or is done; the
+detail carries the facts line under the title and the file it lives in. The terminal list
+still orders by priority, highest first; `--order-by-id` and `?sort=` order by anything
+else.
+
 ## 1.70.0 — resources are typed, and read through repositories
 
 Every resource has a typed model — `Todo`, `Claim` (a pin) and `Rule`, `Reminder`, `Question`,

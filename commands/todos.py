@@ -71,6 +71,11 @@ class List(Resource):
     controller = CONTROLLER
     action = "index"
 
+    def payload(self, p: Parsed):
+        got = p.payload()
+        got.fields.update(cap=CATALOGUE_PAGE, open=not p.option("all"))
+        return got
+
     def render(self, p: Parsed, result) -> int:
         env, done, draining = result.meta["env"], result.meta["done"], result.meta["auto"]
         every = bool(p.option("all"))
@@ -78,8 +83,10 @@ class List(Resource):
             TEXT["list_sub"], env=env, waiting=result.meta["waiting"], done=done or None,
             hint=TEXT["done_hint"] if done and not every else None, auto=TEXT["auto_on_tag"] if draining else None)))
         fmt.say()
-        fmt.say(todo.render(root(), env, all_of_them=every, cap=CATALOGUE_PAGE, page=p.option("page"),
-                            order=p.option("order"), order_by_id=bool(p.option("order-by-id"))))
+        if result.data:
+            fmt.say(todo.render_rows(result.data) + fmt.more("todos", result.meta["left"], p.option("page"), p.option("order")))
+        else:
+            fmt.say(todo.say("empty_all" if every else "empty_open"))
         fmt.say()
         fmt.say(fmt.wrap(TEXT["lead_auto"] if draining else TEXT["lead_manual"]))
         fmt.say(fmt.commands([*LIST_COMMANDS, AUTO_COMMAND[draining]]))
@@ -96,7 +103,7 @@ class Show(Resource):
     def render(self, p: Parsed, result) -> int:
         if not result.ok:
             return super().render(p, result)
-        return answer(todo.show(root(), here(), result.data["n"]))
+        return answer((True, todo.show_text(result.data)))
 
 
 class Add(Resource):
