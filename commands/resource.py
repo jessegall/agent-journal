@@ -10,6 +10,7 @@ class Resource(Command):
     controller = None
     action = ""
     id_arg = "n"
+    env_arg = ""            # the argument that names the environment, when it is not the session's
 
     def extra(self, p: Parsed) -> dict | int:
         """Fields the command adds to what was typed, or the exit code of a refusal."""

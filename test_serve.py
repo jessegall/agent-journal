@@ -361,6 +361,17 @@ check("a field that cannot be sorted on is a 400 naming what can", (status, "pri
 status, got = post("/api/env/beta/todos/2", {"title": "x"}, method="PATCH")
 check("a number that is not on that environment is 404", status, 404)
 
+# ─────────────────────────────────────────────────────────────── an environment's settings, through its controller
+tracks.create(root, "gamma", at=AT)
+status, _, body = get("/api/env/gamma/environment")
+check("an environment's settings: auto is off by default", (status, json.loads(body)["auto"]), (200, False))
+status, got = post("/api/env/gamma/environment/settings", {"auto": True})
+check("auto mode is switched on from the browser", (status, todo.auto(root, "gamma")), (200, True))
+status, got = post("/api/env/gamma/environment/remove", {"confirm": "not-gamma"})
+check("removing wants the environment's name typed", (status, "gamma" in tracks._all(root)), (400, True))
+status, got = post("/api/env/gamma/environment/remove", {"confirm": "gamma"})
+check("with the name typed, it is removed", (status, "gamma" in tracks._all(root)), (200, False))
+
 # ─────────────────────────────────────────────────────────────── work, through its controller
 status, got = post("/api/env/beta/work", {"subject": "something started in the browser"})
 check("store opens work on beta", (status, [w["subject"] for w in work.open_work(root, track="beta")]),

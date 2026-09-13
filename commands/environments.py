@@ -9,6 +9,8 @@ import tracks
 import worktree
 from app import answer, now, package, project, refuse, root, stem
 from command import Command, Parsed, number
+from commands.resource import Resource
+from controllers.environments import EnvironmentController
 from templates import render
 
 NOUNS = (("environments", "environment", "envs", "env", "tracks", "track"), ("switch",), ("claim",),
@@ -122,15 +124,16 @@ class Show(Page):
     verbs = ("read",)
 
 
-class Remove(Command):
+class Remove(Resource):
     signature = "environments:remove {name* : a name} {--yes}"
     verbs = ("rm", "delete", "forget")
     writes = True
+    controller = EnvironmentController()
+    action = "remove"
+    env_arg = "name"
 
-    def run(self, p: Parsed) -> int:
-        _, stale = _settings()
-        return answer(tracks.remove(root(), p.arg("name"), now(), stem() or "", yes=bool(p.option("yes")),
-                                    stale_hours=stale))
+    def extra(self, p: Parsed):
+        return {"session": stem() or ""}
 
 
 # ------------------------------------------------------------------ the verbs that move a session
