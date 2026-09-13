@@ -7,18 +7,19 @@ import fmt
 import pins
 import settings as settings_mod
 import state
-import tracks
 import transcript
-from app import (BRIEF_REFUSED, CATALOGUE_PAGE, answer, brief, catalogue, doc_where, now, project,
-                 refuse, root, stem, where)
+from app import BRIEF_REFUSED, CATALOGUE_PAGE, brief, catalogue, doc_where, now, project, refuse, root, stem, where
 from command import Command, Parsed, number
 from commands.options import LISTING, LISTING_CASTS
+from commands.resource import Resource
+from controllers.pins import PinsController, RulesController
 from templates import render
 
 NOUNS = (("pins", "pin"), ("rules", "rule"), ("strike",), ("promote",), ("nothing",))
 
 PIN = {"n": number("a pin number")}
 RULE = {"n": number("a rule number")}
+PINS, RULES = PinsController(), RulesController()
 
 
 def rule_id(word: str) -> str:
@@ -87,57 +88,76 @@ def _struck(every: bool, struck: int) -> dict:
     return {"struck": struck or None, "hint": TEXT["struck_hint"] if struck and not every else None}
 
 
-def _add(key: str, fact: str, supersedes: int | None, doc_ref: str, long_flag: bool, how: str) -> int:
-    body = brief(long_flag)
-    if body is None:
-        return refuse(BRIEF_REFUSED)
-    got = doc_where(doc_ref or "")
-    if got is None:
-        return 1
-    conf, _ = settings_mod.load(root())
-    ok, msg = pins.add(root(), fact, now(), conf["pin_max_chars"], supersedes, got, key=key, long=body)
-    code = answer((ok, msg))
-    if ok:
-        _decided(how)
-    return code
+def _items(rows: list[dict]) -> list:
+    return [fmt.Item(n=r["n"], text=r["fact"], meta=r["facts"], struck=r["struck"]) for r in rows]
 
 
-def _around(key: str, n: int) -> int:
-    conf, _ = settings_mod.load(root())
-    return answer(pins.around(root(), n, project(), conf["pin_context"], key=key))
+def _said(outcome: tuple[bool, str]) -> int:
+    ok, message = outcome
+    fmt.say(message, error=not ok)
+    return 0 if ok else 1
 
 
-def _body(key: str, n: int, title: str, long_flag: bool, verb: str) -> int:
-    text = brief(long_flag)
-    if text is None:
-        return refuse(BRIEF_REFUSED)
-    if verb == "amend":
-        return answer(pins.amend_body(root(), n, title, text, key, now()))
-    return answer(pins.write_body(root(), n, text, key, now()))
-
-
-def _claim_page(key: str, n: int) -> int:
-    import docs
-    items = pins._all(root(), key)
+def _claim_page(key: str, d: dict) -> int:
     noun = "rule" if key == pins.RULES else "pin"
-    if n < 1 or n > len(items):
-        return refuse(render(TEXT["no_claim"], noun=noun, n=n, key=key))
-    it = items[n - 1]
-    fmt.say(fmt.title(render(TEXT["claim_title"], noun=noun.upper(), n=n), sub=pins.age(it.get("at", ""))))
+    fmt.say(fmt.title(render(TEXT["claim_title"], noun=noun.upper(), n=d["n"]), sub=d["age"]))
     fmt.say()
-    fmt.say(fmt.wrap(it["fact"]))
-    if it.get("struck"):
+    fmt.say(fmt.wrap(d["fact"]))
+    if d["struck_why"]:
         fmt.say()
-        fmt.say(fmt.wrap(render(TEXT["struck"], why=it["struck"])))
-    if it.get("doc"):
+        fmt.say(fmt.wrap(render(TEXT["struck"], why=d["struck_why"])))
+    if d["doc_label"]:
         fmt.say()
-        fmt.say(render(TEXT["cites"], label=docs.ref_label(root(), str(it["doc"]))))
-    long = pins.body(root(), n, key)
+        fmt.say(render(TEXT["cites"], label=d["doc_label"]))
     fmt.say()
-    fmt.say(long.rstrip() if long.strip() else fmt.wrap(TEXT["no_reasoning"]))
+    fmt.say(d["body"].rstrip() if d["body"].strip() else fmt.wrap(TEXT["no_reasoning"]))
     fmt.say()
-    fmt.say(fmt.commands([(render(c, key=key, n=n), w) for c, w in CLAIM_COMMANDS]))
+    fmt.say(fmt.commands([(render(c, key=key, n=d["n"]), w) for c, w in CLAIM_COMMANDS]))
     return 0
+
+
+class _Show(Resource):
+    action = "show"
+
+    def render(self, p: Parsed, result) -> int:
+        if not result.ok:
+            return super().render(p, result)
+        return _claim_page(self.controller.key, result.data)
+
+
+class _Add(Resource):
+    writes = True
+    action = "store"
+    how = "pinned"
+
+    def payload(self, p: Parsed):
+        body = brief(bool(p.option("brief")))
+        if body is None:
+            return refuse(BRIEF_REFUSED)
+        got = doc_where(p.option("doc") or "")
+        if got is None:
+            return 1
+        payload = p.payload()
+        payload.fields.update(body=body, doc=got.pop("doc", ""), where=got)
+        return payload
+
+    def render(self, p: Parsed, result) -> int:
+        code = super().render(p, result)
+        if result.ok:
+            _decided(self.how)
+        return code
+
+
+class _Body(Resource):
+    writes = True
+
+    def payload(self, p: Parsed):
+        text = brief(bool(p.option("brief")))
+        if text is None:
+            return refuse(BRIEF_REFUSED)
+        payload = p.payload()
+        payload.fields["body"] = text
+        return payload
 
 
 # ------------------------------------------------------------------ pins
@@ -147,25 +167,29 @@ class PinsAround(Command):
     needs = ("full",)
 
     def run(self, p: Parsed) -> int:
-        return _around(pins.KEY, p.arg("n"))
+        return _said(pins.around(root(), p.arg("n"), project(), settings_mod.load(root())[0]["pin_context"]))
 
 
-class PinsList(Command):
+class PinsList(Resource):
     signature = "pins:list " + LISTING
     casts = LISTING_CASTS
     default = True
+    controller = PINS
+    action = "index"
 
-    def run(self, p: Parsed) -> int:
-        conf, _ = settings_mod.load(root())
-        every = bool(p.option("all"))
-        page, order = p.option("page"), p.option("order")
-        n = len(pins.live(root()))
-        sub = render(TEXT["pins_sub"], env=tracks.current(root(), stem()), n=n,
-                     **_struck(every, len(pins._all(root())) - n))
-        code = catalogue("PINS", sub,
-                         pins.listing(root(), all_of_them=every, cap=CATALOGUE_PAGE, page=page, order=order),
-                         TEXT["pins_empty"], TEXT["pins_lead"], PINS_COMMANDS, noun="pins", page=page, order=order)
+    def payload(self, p: Parsed):
+        got = p.payload()
+        got.fields["cap"] = CATALOGUE_PAGE
+        return got
+
+    def render(self, p: Parsed, result) -> int:
+        every, page, order = bool(p.option("all")), p.option("page"), p.option("order")
+        sub = render(TEXT["pins_sub"], env=result.meta["env"], n=result.meta["standing"],
+                     **_struck(every, result.meta["struck"]))
+        code = catalogue("PINS", sub, (_items(result.data), result.meta["left"]), TEXT["pins_empty"],
+                         TEXT["pins_lead"], PINS_COMMANDS, noun="pins", page=page, order=order)
         import context
+        conf, _ = settings_mod.load(root())
         got = transcript.session_transcript(project())
         read = got and context.pressure(got[0], conf["context_window"], state.get(root(), "window", 0) or 0)
         if read:
@@ -174,68 +198,61 @@ class PinsList(Command):
         return code
 
 
-class PinsShow(Command):
+class PinsShow(_Show):
     signature = "pins:show {n : a pin number}"
     casts = PIN
     default = True
-
-    def run(self, p: Parsed) -> int:
-        return _claim_page(pins.KEY, p.arg("n"))
+    controller = PINS
 
 
-class PinsAdd(Command):
+class PinsAdd(_Add):
     signature = "pins:add {fact* : the claim, in one line} {--supersedes=} {--doc=} {--brief}"
     casts = {"supersedes": number("--supersedes")}
     default = True
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        return _add(pins.KEY, p.arg("fact"), p.option("supersedes"), p.option("doc"), bool(p.option("brief")), "pinned")
+    controller = PINS
 
 
-class PinsStrike(Command):
+class PinsStrike(Resource):
     signature = "pins:strike {n : a pin number} {why* : why it stopped being true}"
     casts = PIN
     writes = True
+    controller = PINS
+    action = "destroy"
 
-    def run(self, p: Parsed) -> int:
-        return answer(pins.strike(root(), p.arg("n"), p.arg("why")))
 
-
-class PinsPromote(Command):
+class PinsPromote(Resource):
     signature = "pins:promote {n : a pin number}"
     casts = PIN
     writes = True
+    controller = PINS
+    action = "promote"
 
-    def run(self, p: Parsed) -> int:
-        return answer(pins.promote(root(), p.arg("n"), now(), where()))
+    def payload(self, p: Parsed):
+        payload = p.payload()
+        payload.fields["where"] = where()
+        return payload
 
 
-class PinsMove(Command):
+class PinsMove(Resource):
     signature = "pins:move {n : a pin number} {environment* : the environment it moves to}"
     casts = PIN
     writes = True
+    controller = PINS
+    action = "move"
 
-    def run(self, p: Parsed) -> int:
-        return answer(pins.move(root(), p.arg("n"), p.arg("environment"), now()))
 
-
-class PinsAmend(Command):
+class PinsAmend(_Body):
     signature = "pins:amend {n : a pin number} {title* : the section title} {--brief}"
     casts = PIN
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        return _body(pins.KEY, p.arg("n"), p.arg("title"), bool(p.option("brief")), "amend")
+    controller = PINS
+    action = "amend"
 
 
-class PinsReplace(Command):
+class PinsReplace(_Body):
     signature = "pins:replace {n : a pin number} {--brief}"
     casts = PIN
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        return _body(pins.KEY, p.arg("n"), "", bool(p.option("brief")), "replace")
+    controller = PINS
+    action = "update"
 
 
 # ------------------------------------------------------------------ rules
@@ -245,37 +262,45 @@ class RulesAround(Command):
     needs = ("full",)
 
     def run(self, p: Parsed) -> int:
-        return _around(pins.RULES, p.arg("n"))
+        conf, _ = settings_mod.load(root())
+        return _said(pins.around(root(), p.arg("n"), project(), conf["pin_context"], key=pins.RULES))
 
 
-class RulesStrikeFlag(Command):
+class RulesStrikeFlag(Resource):
     signature = "rules {n : a rule number} {why* : why it no longer binds} {--strike}"
     casts = RULE
     needs = ("strike",)
     writes = True
+    controller = RULES
+    action = "destroy"
 
-    def run(self, p: Parsed) -> int:
-        return answer(pins.strike(root(), p.arg("n"), p.arg("why"), key=pins.RULES))
 
-
-class RulesList(Command):
+class RulesList(Resource):
     signature = "rules:list " + LISTING
     casts = LISTING_CASTS
     default = True
+    controller = RULES
+    action = "index"
 
-    def run(self, p: Parsed) -> int:
-        every = bool(p.option("all"))
-        page, order = p.option("page"), p.option("order")
-        live = len(pins.live(root(), pins.RULES))
-        sub = render(TEXT["rules_sub"], n=live, **_struck(every, len(pins._all(root(), pins.RULES)) - live))
+    def payload(self, p: Parsed):
+        got = p.payload()
+        got.fields["cap"] = CATALOGUE_PAGE
+        return got
+
+    def render(self, p: Parsed, result) -> int:
+        every, page, order = bool(p.option("all")), p.option("page"), p.option("order")
+        sub = render(TEXT["rules_sub"], n=result.meta["standing"], **_struck(every, result.meta["struck"]))
         fmt.say(fmt.title(TEXT["rules_title"], sub=sub))
         fmt.say()
-        fmt.say(pins.render(root(), all_of_them=every, key=pins.RULES, cap=CATALOGUE_PAGE, page=page, order=order))
-        conf, _ = settings_mod.load(root())
-        if conf["builtin_rules"] and builtin.RULES:
+        if result.meta["standing"] + result.meta["struck"]:
+            fmt.say(fmt.render(fmt.Out(items=tuple(_items(result.data)))) + fmt.more("rules", result.meta["left"], page, order))
+        else:
+            fmt.say(pins.say("no_rules"))
+        shipped = result.meta["builtin"]
+        if shipped:
             fmt.say()
-            fmt.say(fmt.dim(render(TEXT["builtin_head"], n=len(builtin.RULES))))
-            for r in builtin.RULES:
+            fmt.say(fmt.dim(render(TEXT["builtin_head"], n=len(shipped))))
+            for r in shipped:
                 fmt.say(fmt.numbered(r["id"], r["fact"]))
             fmt.say(fmt.dim(TEXT["builtin_foot"]))
         fmt.say()
@@ -284,10 +309,12 @@ class RulesList(Command):
         return 0
 
 
-class RulesShow(Command):
+class RulesShow(_Show):
     signature = "rules:show {id : a rule number, or a shipped rule like B1}"
     casts = {"id": rule_id}
     default = True
+    controller = RULES
+    id_arg = "id"
 
     def run(self, p: Parsed) -> int:
         shipped = builtin.by_id(p.arg("id"))
@@ -300,27 +327,28 @@ class RulesShow(Command):
             return 0
         if not p.arg("id").isdigit():
             return refuse(render(TEXT["no_claim"], noun="rule", n=p.arg("id"), key=pins.RULES))
-        return _claim_page(pins.RULES, int(p.arg("id")))
+        return super().run(p)
 
 
-class RulesAdd(Command):
+class RulesAdd(_Add):
     signature = "rules:add {fact* : the ruling, in one line} {--doc=} {--brief}"
     default = True
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        return _add(pins.RULES, p.arg("fact"), None, p.option("doc"), bool(p.option("brief")), "ruled")
+    controller = RULES
+    how = "ruled"
 
 
-class RulesStrike(Command):
+class RulesStrike(Resource):
     signature = "rules:strike {id : a rule number} {why* : why it no longer binds}"
     casts = {"id": rule_id}
     writes = True
+    controller = RULES
+    action = "destroy"
+    id_arg = "id"
 
-    def run(self, p: Parsed) -> int:
+    def payload(self, p: Parsed):
         if builtin.by_id(p.arg("id")) or not p.arg("id").isdigit():
             return refuse(render(TEXT["builtin_strike"], id=p.arg("id").upper()))
-        return answer(pins.strike(root(), int(p.arg("id")), p.arg("why"), key=pins.RULES))
+        return p.payload()
 
 
 class RulesMove(Command):
@@ -331,22 +359,18 @@ class RulesMove(Command):
         return refuse(TEXT["rule_move"])
 
 
-class RulesAmend(Command):
+class RulesAmend(_Body):
     signature = "rules:amend {n : a rule number} {title* : the section title} {--brief}"
     casts = RULE
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        return _body(pins.RULES, p.arg("n"), p.arg("title"), bool(p.option("brief")), "amend")
+    controller = RULES
+    action = "amend"
 
 
-class RulesReplace(Command):
+class RulesReplace(_Body):
     signature = "rules:replace {n : a rule number} {--brief}"
     casts = RULE
-    writes = True
-
-    def run(self, p: Parsed) -> int:
-        return _body(pins.RULES, p.arg("n"), "", bool(p.option("brief")), "replace")
+    controller = RULES
+    action = "update"
 
 
 # ------------------------------------------------------------------ bare verbs
