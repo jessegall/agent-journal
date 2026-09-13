@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""cli.py: parsing, refusals, and write classification."""
+"""command.py: parsing, refusals, and write classification."""
 import sys
 from pathlib import Path
 
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
-from cli import Arg, Command, Opt, Registry, number  # noqa: E402
+from command import Arg, Command, Opt, Registry, number  # noqa: E402
 
 ok = fail = 0
 
@@ -20,45 +20,76 @@ def check(label, got, want):
 
 
 N = Arg("n", number("a question number"), what="a question number")
+
+
+class QList(Command):
+    noun, verb, default = "questions", "list", True
+
+
+class QShow(Command):
+    noun, verb, default, args = "questions", "show", True, (N,)
+
+
+class QAdd(Command):
+    noun, verb, writes = "questions", "add", True
+    args, opts = (Arg("text", rest=True, what="the question"),), (Opt("about", repeat=True),)
+
+
+class QAnswer(Command):
+    noun, verb, writes = "questions", "answer", True
+    args = (N, Arg("answer", rest=True, what="the answer"))
+
+
+class QWithdraw(Command):
+    noun, verb, verbs, writes = "questions", "withdraw", ("strike",), True
+    args = (N, Arg("why", rest=True))
+
+
+class TList(Command):
+    noun = "todos"
+
+
+class TShow(Command):
+    noun, args = "todos", (Arg("n", number("a to-do number")),)
+
+
+class TAdd(Command):
+    noun, writes, args = "todos", True, (Arg("title", rest=True),)
+
+
+class Next(Command):
+    noun = "next"
+
+
 reg = Registry(shared=(Opt("env"), Opt("all", bare=True), Opt("page", number("a page"), default=1)))
 reg.noun("questions", "question")
-reg.add(Command("questions", args=(), summary="list"))
-reg.add(Command("questions", args=(N,), summary="show by bare number"))
-reg.add(Command("questions", "add", args=(Arg("text", rest=True, what="the question"),),
-                opts=(Opt("about", repeat=True),), writes=True))
-reg.add(Command("questions", "show", args=(N,)))
-reg.add(Command("questions", "answer", args=(N, Arg("answer", rest=True, what="the answer")), writes=True))
-reg.add(Command("questions", "withdraw", args=(N, Arg("why", rest=True)), writes=True, verbs=("strike",)))
+reg.add(QList, QShow, QAdd, QAnswer, QWithdraw)
 reg.noun("todos", "todo")
-reg.add(Command("todos"))
-reg.add(Command("todos", args=(Arg("n", number("a to-do number")),)))
-reg.add(Command("todos", args=(Arg("title", rest=True),), writes=True))
-reg.noun("next")
-reg.add(Command("next"))
+reg.add(TList, TShow, TAdd, Next)
 
 
 def parse(*argv):
-    p, why = reg.parse(list(argv))
-    return p, why
+    return reg.parse(list(argv))
 
 
 # ------------------------------------------------------------------ arguments by name
 p, why = parse("questions", "answer", "3", "postgres", "for", "now")
-check("a verb, a number, and the rest of the words", (why, p.verb, p.arg("n"), p.arg("answer")),
-      ("", "answer", 3, "postgres for now"))
-check("a declared command writes", p.command.writes, True)
+check("a verb, a number, and the rest of the words",
+      (why, type(p.command), p.arg("n"), p.arg("answer")), ("", QAnswer, 3, "postgres for now"))
+check("the command object knows it writes", p.command.writes, True)
 
 p, _ = parse("question", "add", "which", "db?", "--about=todo 22", "--about=doc 4.1")
 check("an alias of the noun, a repeated option in order",
-      (p.noun, p.arg("text"), p.option("about")), ("questions", "which db?", ["todo 22", "doc 4.1"]))
+      (type(p.command), p.arg("text"), p.option("about")), (QAdd, "which db?", ["todo 22", "doc 4.1"]))
 
 p, _ = parse("questions", "strike", "2", "not", "needed")
-check("an alias of the verb", (p.verb, p.arg("why")), ("withdraw", "not needed"))
+check("an alias of the verb", (type(p.command), p.arg("why")), (QWithdraw, "not needed"))
 
-# ------------------------------------------------------------------ same noun, same verb: the arguments decide
-check("bare noun lists", parse("questions")[0].command.summary, "list")
-check("a bare number shows", (parse("questions", "7")[0].command.summary, parse("questions", "7")[0].arg("n")),
-      ("show by bare number", 7))
+# ------------------------------------------------------------------ the bare noun: the arguments decide
+check("bare noun lists", type(parse("questions")[0].command), QList)
+check("`list` names the same command", type(parse("questions", "list")[0].command), QList)
+p, _ = parse("questions", "7")
+check("a bare number shows", (type(p.command), p.arg("n")), (QShow, 7))
 p, _ = parse("todo", "park", "this")
 check("a title files a to-do, and that is a write", (p.arg("title"), p.command.writes), ("park this", True))
 p, _ = parse("todos", "3")
@@ -85,7 +116,8 @@ p, why = parse("questions", "answer")
 check("a missing argument names the usage and what it wants",
       why, "`journal questions answer <n> <answer>...` wants a question number")
 p, why = parse("questions", "answer", "three", "x")
-check("a wrong type says why", why, "`journal questions answer <n> <answer>...`: a question number must be a number, got 'three'")
+check("a wrong type says why", why,
+      "`journal questions answer <n> <answer>...`: a question number must be a number, got 'three'")
 p, why = parse("questions", "answer", "3")
 check("the rest argument is required too", why, "`journal questions answer <n> <answer>...` wants the answer")
 p, why = parse("questions", "show", "3", "extra")
@@ -93,7 +125,7 @@ check("leftover words are refused", why, "`journal questions show <n>` does not 
 p, why = parse("nope")
 check("an unknown noun", (p, why.startswith("no such command: 'nope'")), (None, True))
 p, why = parse("next", "please")
-check("a noun without that verb, whose default takes nothing", why, "`journal next` does not take 'please'")
+check("a noun whose only command takes nothing", why, "`journal next` does not take 'please'")
 
 # ------------------------------------------------------------------ `--` makes the rest payload
 p, _ = parse("questions", "add", "--", "--about=is", "not", "an", "option")
@@ -107,10 +139,18 @@ for words, want in ((["questions"], False), (["questions", "3"], False), (["ques
     check(f"command_of {words}", None if cmd is None else cmd.writes, want)
 
 # ------------------------------------------------------------------ usage and listing
-check("usage shows optional and rest arguments",
-      reg.usage(Command("x", "y", args=(Arg("a"), Arg("b", optional=True), Arg("c", rest=True)))),
-      "journal x y <a> [<b>] <c>...")
-check("every command of a noun, by any spelling", len(reg.commands("question")), 6)
+class Usage(Command):
+    noun, verb, args = "x", "y", (Arg("a"), Arg("b", optional=True), Arg("c", rest=True))
+
+
+check("usage shows optional and rest arguments", Usage().usage(), "journal x y <a> [<b>] <c>...")
+check("every command of a noun, by any spelling", len(reg.commands("question")), 5)
+check("a command left without run() says so", isinstance(Next(), Command), True)
+try:
+    Next().run(None)
+    check("the base run raises", False, True)
+except NotImplementedError:
+    check("the base run raises", True, True)
 
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

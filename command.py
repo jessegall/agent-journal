@@ -22,15 +22,13 @@ class Opt(NamedTuple):
     default: object = None
 
 
-class Command(NamedTuple):
-    noun: str
-    verb: str = ""
-    args: tuple = ()
-    opts: tuple = ()
-    writes: bool = False
-    name: str = ""
-    verbs: tuple = ()
-    summary: str = ""
+def number(what: str) -> Callable[[str], int]:
+    def convert(word: str) -> int:
+        try:
+            return int(word)
+        except ValueError:
+            raise ValueError(f"{what} must be a number, got {word!r}") from None
+    return convert
 
 
 class Parsed:
@@ -39,14 +37,6 @@ class Parsed:
     def __init__(self, command: Command, args: dict, opts: dict):
         self.command, self._args, self._opts = command, args, opts
 
-    @property
-    def noun(self) -> str:
-        return self.command.noun
-
-    @property
-    def verb(self) -> str:
-        return self.command.verb
-
     def arg(self, name: str, default=None):
         return self._args.get(name, default)
 
@@ -54,13 +44,27 @@ class Parsed:
         return self._opts.get(name, default)
 
 
-def number(what: str) -> Callable[[str], int]:
-    def convert(word: str) -> int:
-        try:
-            return int(word)
-        except ValueError:
-            raise ValueError(f"{what} must be a number, got {word!r}") from None
-    return convert
+class Command:
+    noun: str = ""
+    verb: str = ""
+    verbs: tuple = ()
+    default: bool = False         # also answers the bare noun
+    args: tuple = ()
+    opts: tuple = ()
+    writes: bool = False
+
+    def answers(self, word: str) -> bool:
+        return word in (self.verb, *self.verbs)
+
+    def usage(self) -> str:
+        words = ["journal", *(w for w in (self.noun, self.verb) if w)]
+        for a in self.args:
+            shown = f"<{a.name}>" + ("..." if a.rest else "")
+            words.append(f"[{shown}]" if a.optional else shown)
+        return " ".join(words)
+
+    def run(self, parsed: Parsed) -> int:
+        raise NotImplementedError
 
 
 class Registry:
@@ -74,11 +78,11 @@ class Registry:
             self._nouns[spelling] = name
         self._commands.setdefault(name, [])
 
-    def add(self, cmd: Command) -> Command:
-        if cmd.noun not in self._commands:
-            self.noun(cmd.noun)
-        self._commands[cmd.noun].append(cmd)
-        return cmd
+    def add(self, *classes: type[Command]) -> None:
+        for cls in classes:
+            if cls.noun not in self._commands:
+                self.noun(cls.noun)
+            self._commands[cls.noun].append(cls())
 
     def knows(self, word: str) -> bool:
         return word in self._nouns
@@ -88,13 +92,6 @@ class Registry:
             return [c for cs in self._commands.values() for c in cs]
         return list(self._commands.get(self._nouns.get(noun, noun), []))
 
-    def usage(self, cmd: Command) -> str:
-        words = ["journal", *(w for w in (cmd.noun, cmd.verb) if w)]
-        for a in cmd.args:
-            shown = f"<{a.name}>" + ("..." if a.rest else "")
-            words.append(f"[{shown}]" if a.optional else shown)
-        return " ".join(words)
-
     def _resolve(self, words: list[str]) -> tuple[list[Command], list[str], str]:
         first = words[0] if words else ""
         noun = self._nouns.get(first)
@@ -102,17 +99,18 @@ class Registry:
             return [], [], f"no such command: {first!r}. `journal help` lists them."
         cmds = self._commands[noun]
         if len(words) > 1:
-            named = [c for c in cmds if c.verb and words[1] in (c.verb, *c.verbs)]
+            named = [c for c in cmds if c.verb and c.answers(words[1])]
             if named:
                 return named, words[2:], ""
-        default = [c for c in cmds if not c.verb]
-        if default:
-            return default, words[1:], ""
+        bare = [c for c in cmds if c.default or not c.verb]
+        if bare:
+            return bare, words[1:], ""
         verbs = ", ".join(sorted({c.verb for c in cmds}))
         got = f" has no {words[1]!r}." if len(words) > 1 else " needs a verb."
         return [], [], f"{noun}{got} It takes {verbs}."
 
-    def _bind(self, cmd: Command, words: list[str]) -> tuple[dict | None, str]:
+    @staticmethod
+    def _bind(cmd: Command, words: list[str]) -> tuple[dict | None, str]:
         out: dict = {}
         left = list(words)
         for a in cmd.args:
@@ -122,19 +120,22 @@ class Registry:
                 if not text:
                     if a.optional:
                         continue
-                    return None, f"`{self.usage(cmd)}` wants {a.says()}"
-                out[a.name] = a.type(text) if a.type is not str else text
+                    return None, f"`{cmd.usage()}` wants {a.says()}"
+                try:
+                    out[a.name] = a.type(text)
+                except ValueError as e:
+                    return None, f"`{cmd.usage()}`: {e}"
                 continue
             if not left:
                 if a.optional:
                     continue
-                return None, f"`{self.usage(cmd)}` wants {a.says()}"
+                return None, f"`{cmd.usage()}` wants {a.says()}"
             try:
                 out[a.name] = a.type(left.pop(0))
             except ValueError as e:
-                return None, f"`{self.usage(cmd)}`: {e}"
+                return None, f"`{cmd.usage()}`: {e}"
         if left:
-            return None, f"`{self.usage(cmd)}` does not take {' '.join(left)!r}"
+            return None, f"`{cmd.usage()}` does not take {' '.join(left)!r}"
         return out, ""
 
     def _options(self, cmd: Command, raw: list[tuple[str, str | None]]) -> tuple[dict | None, str]:
@@ -143,7 +144,7 @@ class Registry:
         for name, val in raw:
             spec = specs.get(name)
             if spec is None:
-                return None, f"unknown option '--{name}' for `{self.usage(cmd)}`"
+                return None, f"unknown option '--{name}' for `{cmd.usage()}`"
             if spec.bare:
                 if val is not None:
                     return None, f"'--{name}' takes no value"

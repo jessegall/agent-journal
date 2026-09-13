@@ -46,7 +46,6 @@ import builtin
 import commands
 import ideas
 import questions
-from templates import render
 import pins
 import reminders
 import tags
@@ -101,29 +100,17 @@ verify = _Lazy("verify")
 
 import worktree as _wt
 
-_ROOT, _WT_NOTE = _wt.resolve(Path(__file__).parent if Path(__file__).parent.is_symlink()
-                              else Path(__file__).resolve().parent)
+import app
+from app import CATALOGUE_PAGE, project, root
+from app import catalogue as _catalogue, now as _now, refuse as _refuse, stem as _stem
+
+app.start(Path(__file__))
+_ROOT, _WT_NOTE = app.ROOT, app.WORKTREE_NOTE
 if _WT_NOTE:
     fmt.say(f"  {_WT_NOTE}", error=True)
 
 
 fmt.cli(_ROOT)   # the spelling every printed command uses, from here
-
-
-def root() -> Path:
-    return _ROOT
-
-
-def project() -> Path:
-    # the PROJECT is where this script lives, even when the record is the main checkout's:
-    # transcripts, docs and to-dos paths are relative to it; a worktree's transcript is its own
-    here = Path(__file__).parent
-    return (here if here.is_symlink() else Path(__file__).resolve().parent).parent
-
-
-def _stem() -> str | None:
-    got = transcript.session_transcript(project())
-    return got[0].stem if got and not got[1] else None
 
 
 import state as _state
@@ -382,11 +369,6 @@ def cmd_open() -> int:
     return 0
 
 
-def _now() -> str:
-    from datetime import datetime, timezone
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
-
-
 BRIEF_WAIT = 10.0
 BRIEF_REFUSED = ("--brief takes the brief on stdin and nothing arrived. Pipe it in — "
                  "journal <command> --brief <<'MSG' … MSG — or drop --brief and pass the "
@@ -510,10 +492,6 @@ def cmd_update(text: str, on: str | None) -> int:
 
 PAGE = 25
 #: A LISTING SHOWN BY DEFAULT COSTS CONTEXT EVERY TIME; a search was asked for. So the
-#: catalogues (`journal docs`, `journal tools`, `journal todo`, `journal pins`, `journal
-#: rules`) page at a smaller size than `search`'s 25 — ruling R7, applying the cap
-#: `docs.carry`/`tools.carry` already had to the five renderers that never got one.
-CATALOGUE_PAGE = 15
 
 
 def cmd_search(term: str, all_of_them: bool = False, width: int | None = None, page: int = 1) -> int:
@@ -1613,64 +1591,6 @@ def cmd_reminder_done(n: int, why: str) -> int:
     return 0 if ok else 1
 
 
-def cmd_idea_add(text: str) -> int:
-    """`journal ideas add` — one line, jotted and moved past."""
-    conf, _ = settings_mod.load(root())
-    ok, msg = ideas.add(root(), text, _now(), conf["idea_max_chars"])
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_idea_drop(n: int, why: str) -> int:
-    ok, msg = ideas.drop(root(), n, why, _now())
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_idea_promote(n: int, title: str) -> int:
-    ok, msg = ideas.promote(root(), n, _now(), tracks.current(root(), _stem()), title)
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_ideas(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
-    n = len(ideas.live(root()))
-    dropped = len(ideas._all(root())) - n
-    sub = f"{n} standing" + (f", {dropped} dropped" if all_of_them and dropped else "")
-    return _catalogue(
-        "IDEAS", sub,
-        ideas.listing(root(), all_of_them=all_of_them, cap=CATALOGUE_PAGE, page=page, order=order),
-        "Nothing jotted down yet.",
-        "The project's, not one environment's — unstructured, no owner, no promise. "
-        "Write one down small; decide later whether it becomes real work.",
-        [('journal ideas add "<the idea>"', "jot one down"),
-         ('journal ideas promote <n> --title="<to-do title>"', "it became real work, filed on this environment"),
-         ('journal ideas drop <n> "<why>"', "tried, superseded, or not worth it")],
-        noun="ideas", page=page, order=order)
-
-
-def _catalogue(title: str, sub: str, listed, empty: str, lead: str, rows,
-               noun: str = "", page: int = 1, order: str = fmt.DESC) -> int:
-    """A numbered catalogue page: heading, the list, why it matters, what to type.
-
-    `pins` and `reminders` were this function written twice — same heading, same list, same
-    footer, differing only in the noun and the commands. A third would have been a third
-    copy, which is how the last four drifted apart.
-
-    IT TAKES ROWS, NOT A RENDERED LIST. Handed text, the page could only paste it in as a
-    paragraph — which reflowed a numbered list into prose the first time it was tried here.
-    Rows keep their shape because the renderer, not the caller, decides what a row is.
-    """
-    items, left = listed
-    fmt.say(fmt.Out(title=title, sub=sub,
-                    items=(tuple(items) or (fmt.Item(text=empty),))
-                          + ((fmt.Item(text=fmt.more(noun, left, page, order).strip()),)
-                             if left else ())
-                          + (fmt.Item(text=lead),)
-                          + tuple(fmt.Item(title=c, text=w) for c, w in rows)))
-    return 0
-
-
 def cmd_reminders(all_of_them: bool, page: int = 1, order: str = fmt.DESC) -> int:
     """The list, and what it costs — the one catalogue whose entries are re-read for free
     by nobody. Every line here is said at every stop, so the count is the headline."""
@@ -1913,12 +1833,6 @@ def _number(rest: list, at: int, spelling: str, noun: str, lists: str) -> tuple[
         return 0, (f"{spelling} wants a {noun} NUMBER, got {rest[at]!r}; `{lists}` numbers them")
 
 
-def _refuse(why: str) -> int:
-    """Say one refusal and fail. The only place a refusal is printed."""
-    fmt.say(why, error=True)
-    return 1
-
-
 def _retired(verb: str) -> int | None:
     """A command that was removed says what replaced it, or None if it is simply unknown.
 
@@ -1987,7 +1901,6 @@ class Opts:
     from_src: str | None = None
     serve_port: int | None = None
     open_browser: bool = False
-    title: str = ""
     tool_meta: dict
 
     def __init__(self):
@@ -2082,7 +1995,6 @@ VALUE_FLAGS: dict[str, _Flag] = {
     "--from": _Flag(dest="from_src"),
     "--page": _Flag(dest="page", type=_page_flag),
     "--port": _Flag(dest="serve_port", type=_int_flag("--port")),
-    "--title": _Flag(dest="title"),
     "--older-than": _PRUNE_BEFORE, "--before": _PRUNE_BEFORE,
 }
 
@@ -2335,107 +2247,11 @@ def _v_reminders(verb: str, rest: list[str], opts: Opts) -> int:
     return cmd_reminders(opts.all_of_them, opts.page, opts.order)
 
 
-def _v_ideas(verb: str, rest: list[str], opts: Opts) -> int:
-    sub = rest[1] if len(rest) > 1 else ""
-    if sub == "add":
-        said, why = _words(rest, 2, "ideas add", "the idea, in one line")
-        if why:
-            return _refuse(why)
-        return cmd_idea_add(said)
-    if sub in ("drop", "strike"):
-        if len(rest) < 4:
-            return _refuse('ideas drop wants a number and why: journal ideas drop 2 "<why>"')
-        n, why = _number(rest, 2, "ideas drop", "idea", "journal ideas")
-        return _refuse(why) if why else cmd_idea_drop(n, " ".join(rest[3:]))
-    if sub == "promote":
-        n, why = _number(rest, 2, "ideas promote", "idea", "journal ideas")
-        if why:
-            return _refuse(why)
-        return cmd_idea_promote(n, opts.title)
-    if sub == "list":
-        return cmd_ideas(opts.all_of_them, opts.page, opts.order)
-    if sub:
-        return _refuse(f"ideas has no {sub!r}. It takes add, drop, promote, list — and a "
-                "bare `journal ideas` reads them.")
-    return cmd_ideas(opts.all_of_them, opts.page, opts.order)
-
-
-HANDLERS: dict = {}
-
-
-def _handles(name: str):
-    def register(fn):
-        HANDLERS[name] = fn
-        return fn
-    return register
-
-
-def _answer(result: tuple[bool, str]) -> int:
-    ok, msg = result
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
 def _dispatch(argv: list[str]) -> int:
     parsed, why = commands.REGISTRY.parse(argv)
-    return HANDLERS[parsed.command.name](parsed) if parsed else _refuse(why)
+    return parsed.command.run(parsed) if parsed else _refuse(why)
 
 
-QUESTIONS_PAGE = {
-    "sub": "{open} open, {answered} answered",
-    "empty": "Nothing has been asked yet.",
-    "lead": "This environment's questions, open first. A question can be about any number of "
-            "to-dos, docs, pins and rules; answering one tells the agent at its next stop.",
-}
-
-
-@_handles("questions.list")
-def _questions_list(p: "cli.Parsed") -> int:
-    standing = [q for q in questions._all(root()) if not q.get("withdrawn")]
-    n = len(questions.open_items(root()))
-    page, order = p.option("page"), p.option("order")
-    return _catalogue(
-        "QUESTIONS", render(QUESTIONS_PAGE["sub"], open=n, answered=len(standing) - n),
-        questions.listing(root(), all_of_them=bool(p.option("all")), cap=CATALOGUE_PAGE, page=page, order=order),
-        QUESTIONS_PAGE["empty"], QUESTIONS_PAGE["lead"],
-        [('journal questions add "<question>" --about="todo 22"', "ask one, linked to what it is about"),
-         ('journal questions answer <n> "<answer>"', "answer it"),
-         ("journal questions show <n>", "read one in full")],
-        noun="questions", page=page, order=order)
-
-
-@_handles("questions.show")
-def _questions_show(p: "cli.Parsed") -> int:
-    ok, msg = questions.show(root(), p.arg("n"))
-    if not ok:
-        return _refuse(msg)
-    print(msg)
-    return 0
-
-
-@_handles("questions.add")
-def _questions_add(p: "cli.Parsed") -> int:
-    return _answer(questions.add(root(), p.arg("text"), _now(), p.option("about")))
-
-
-@_handles("questions.answer")
-def _questions_answer(p: "cli.Parsed") -> int:
-    return _answer(questions.answer(root(), p.arg("n"), p.arg("answer"), _now()))
-
-
-@_handles("questions.link")
-def _questions_link(p: "cli.Parsed") -> int:
-    return _answer(questions.link(root(), p.arg("n"), p.arg("ref")))
-
-
-@_handles("questions.unlink")
-def _questions_unlink(p: "cli.Parsed") -> int:
-    return _answer(questions.unlink(root(), p.arg("n"), p.arg("ref")))
-
-
-@_handles("questions.withdraw")
-def _questions_withdraw(p: "cli.Parsed") -> int:
-    return _answer(questions.withdraw(root(), p.arg("n"), p.arg("why"), _now()))
 
 
 def _v_pins(verb: str, rest: list[str], opts: Opts) -> int:
@@ -2581,7 +2397,6 @@ _ALIASES: dict[tuple[str, ...], object] = {
         rest[1:], opts.all_of_them, opts.brief, opts.doc_ref, opts.after, opts.acting,
         opts.page, opts.order, opts.quiet, opts.order_by_id, opts.prune_before, opts.force),
     ("reminders", "reminder", "remind"): _v_reminders,
-    ("ideas", "idea"): _v_ideas,
     ("start", "end"): _v_start_end,
     ("migrate", "migrations"): _v_migrate,
     ENV_NOUNS: _v_environments,
