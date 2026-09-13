@@ -39,7 +39,6 @@ from typing import NamedTuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import fmt
-import grants
 import help
 import settings as settings_mod
 import commands
@@ -97,7 +96,6 @@ update = _Lazy("update")
 verify = _Lazy("verify")
 
 
-import worktree as _wt
 
 import app
 from app import BRIEF_REFUSED, CATALOGUE_PAGE, PAGE, project, root
@@ -172,18 +170,6 @@ def _transcript() -> Path:
         fmt.say("No transcript for this project yet.", error=True)
         raise SystemExit(1)
     return got[0]
-
-
-#: The lifecycle verbs `journal environments <verb>` hands to their top-level twins. Reads
-#: (`journal environments`, `journal environments show "<name>"`) are not here: they are the
-#: noun itself, and a name is not a verb.
-ENV_VERBS = ("switch", "claim", "prepare")
-
-#: EVERY SPELLING OF THE NOUN, in ONE list, because it was written out four times and a
-#: fifth site would have been the one that forgot an alias. `environments` is canonical
-#: (ruling R10); the singular and the short forms are permanent aliases like `pin` and
-#: `todo`, and `--env=<name>` already spelled it short, so the noun answers to it too.
-ENV_NOUNS = ("environments", "environment", "envs", "env", "tracks", "track")
 
 
 def _help(verb: str = "") -> int:
@@ -499,97 +485,6 @@ def cmd_loop(args: list[str]) -> int:
     return 0
 
 
-PREPARE = """\
-Preparing {name}: an environment ready to be picked up from A to Z, by you, by another
-session. Only when the user asked for it. In order:
-
-  1  the source        the issue, the PR, the user's words — fetch it whole (gh, the tracker's tool, or ask)
-  2  the brief         journal docs add "{name}: <title>" --abstract="<one line>" --brief   < the source
-                       journal docs attach <doc> <path> "<what it is>"                   designs, screenshots, exports
-  3  the plan          a Plan agent: phases and the work in each, from the brief — file it: docs part <doc> "Plan" --brief
-  4  the steps         a second agent: concrete steps per phase, what is missing, what could go wrong — docs part <doc> "Steps" --brief
-  5  what must hold    journal pins add "<constraint>" --doc=<doc>      the facts every later reader needs; rule if project-wide
-  6  the to-dos        one per unit of work, in order, the brief citing the doc:
-                       journal todos add "<title>" --brief --doc=<doc>.<p>   < the brief
-                       journal todos ask <n> "<question>"                what only the user can answer
-                       the last one: verify and close — the definition of done
-  7  auto?             ask the user: journal todos auto on   works the list without asking
-  8  the page          journal environments "{name}"   — read it as the one who picks this up would
-
-Then offer: work it now (todo start 1), leave it for a session (journal switch "{name}"), or
-or leave it for a later session.
-"""
-
-
-def cmd_prepare(name: str) -> int:
-    name = _state.slug(name)
-    if not name:
-        fmt.say('prepare what? journal prepare "<environment>" — letters, digits and dashes', error=True)
-        return 1
-    stem = _stem() or ""
-    conf, _ = settings_mod.load(root())
-    ok, msg = tracks.switch(root(), name, _now(), stem, project=not stem,
-                            exclusive=conf["one_session_per_environment"], stale_hours=conf["session_stale_hours"])
-    if not ok and "already on" not in msg:
-        fmt.say(msg, error=True)
-        return 1
-    fmt.say(fmt.title("PREPARE", sub=name))
-    fmt.say("")
-    fmt.say(PREPARE.format(name=name))
-    return 0
-
-
-def cmd_tracks(name: str = "") -> int:
-    conf, _ = settings_mod.load(root())
-    if name:
-        ok, msg = tracks.page(root(), name, commands=True)
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    rows = tracks.listing(root(), _stem(), conf["session_stale_hours"])
-    fmt.say(fmt.title("ENVIRONMENTS", sub="* this session · > where new sessions start"))
-    fmt.say()
-    wide = max([len(t["name"]) for t in rows] + [12])   # measured, not a hardcoded 28
-    for t in rows:
-        mark = ("*" if t["current"] else " ") + (">" if t["start"] else " ")
-        who = ("   sessions: " + ", ".join(f"{sid[:8]} ({t['seen'].get(sid, '')})" for sid in t["sessions"])) if t["sessions"] else ""
-        fmt.say(f" {mark} {t['name']:<{wide}} {t['pins']} pin(s), {t['open']} open{who}")
-    fmt.say()
-    # THE SHAPE EVERY OTHER CATALOGUE HAS: the sentence that says what this store is, a
-    # blank line, then the commands. This screen had them the other way round and with no
-    # blank between, so its closing prose read as a continuation of the last command.
-    fmt.say(fmt.wrap("Nothing is ever closed by switching." + (
-        " One running session works an environment at a time; a stale session is one not seen for "
-        f"{conf['session_stale_hours']:g} h." if conf["one_session_per_environment"] else "")))
-    fmt.say(fmt.commands([
-        ('journal switch "<name>"', "this session onto that environment (from a terminal: the project's start environment)"),
-        ('journal switch "<name>" --project', "this session, and where new sessions start"),
-        ('journal switch "<name>" --session=<id>', "move one bound session; --all-sessions moves every one"),
-        ("journal switch --back", "the one you came from"),
-        ('journal environments remove "<name>"', "take one off the list — it says what it holds, --yes does it"),
-    ]))
-    return 0
-
-
-def cmd_switch(name: str, go_back: bool, project_too: bool = False, sessions: list[str] | None = None,
-               all_sessions: bool = False) -> int:
-    stem = _stem() or ""
-    conf, _ = settings_mod.load(root())
-    excl, stale = conf["one_session_per_environment"], conf["session_stale_hours"]
-    if all_sessions or sessions:
-        ok, msg = tracks.switch(root(), name, _now(), "", project=True) if not go_back else (False, "--back takes no sessions")
-        if not ok and "already on" not in msg:
-            fmt.say(f"{msg}", error=True)
-            return 1
-        moved, refused = tracks.move_sessions(root(), name, None if all_sessions else sessions, excl, stale)
-        fmt.say(f"the project starts on {name}; moved {len(moved)} session(s): " + ", ".join(m[:8] for m in moved))
-        if refused:
-            fmt.say("  ! not moved, one running session works an environment: " + ", ".join(r[:8] for r in refused), error=True)
-            return 1
-        return 0
-    ok, msg = (tracks.back(root(), _now(), stem, excl, stale) if go_back
-               else tracks.switch(root(), name, _now(), stem, project=project_too or not stem, exclusive=excl, stale_hours=stale))
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
 
 
 def cmd_cleanup(every: bool) -> int:
@@ -607,107 +502,10 @@ def cmd_cleanup_read() -> int:
     return 0
 
 
-def cmd_track_remove(name: str, yes: bool) -> int:
-    conf, _ = settings_mod.load(root())
-    ok, msg = tracks.remove(root(), name, _now(), _stem() or "", yes=yes,
-                            stale_hours=conf["session_stale_hours"])
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def cmd_claim(name: str, why: str) -> int:
-    """Take an environment a live session still holds. The holder is unbound and told."""
-    conf, _ = settings_mod.load(root())
-    ok, msg = tracks.claim(root(), name, _now(), _stem() or "", why,
-                           stale_hours=conf["session_stale_hours"])
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
 
 
 
 
-def cmd_lent() -> int:
-    """`journal lent` — a dispatched agent asking what it has been given.
-
-    THE CHECK-IN THAT `grant` IS ON THE PARENT'S SIDE. An agent used to learn its own name
-    as a side effect: it ran whatever tool it ran first, and the hook attached the briefing
-    to that tool's result. It worked, but the moment was an accident of whatever the agent
-    happened to do, and nothing initialised anything on purpose.
-
-    THE CLI CANNOT ANSWER THIS AND SAYS SO PLAINLY. `agent_id` reaches the hook and never
-    the process — that is the identity collision this whole mechanism exists for, and it
-    does not stop applying to the command that asks about it. So the CLI half prints what a
-    SESSION should hear, and the hook half answers an agent on the tool's result, where
-    `agent_id` exists. One command, two readers, and the one who cannot be told here is told
-    a line later.
-    """
-    stem = _stem()
-    lent = grants.granted(root(), stem)
-    fmt.say(fmt.Out(
-        title="LENT", sub=f"{len(lent)} environment(s) this session has lent",
-        lead="You are a SESSION, not a dispatched agent — nothing lent this to you, and the "
-             "journal is yours. `journal lent` is the command an agent you dispatch runs to "
-             "learn its own name and its environment; put it first in the prompt you give it."
-             if not _stem_is_agent() else "",
-        items=tuple(fmt.Item(title=n, text="its agents write here with --env and --as")
-                    for n in lent) or (fmt.Item(text="This session has lent nothing."),),
-        footer='`journal grant "<environment>"` lends one and prints the sentence to paste '
-               "into the dispatch.".strip()))
-    return 0
-
-
-def _stem_is_agent() -> bool:
-    """Is this process a dispatched agent's? It cannot be, and that is the point.
-
-    `agent_id` lives in the hook's payload and nowhere in the environment a subagent's shell
-    inherits — measured, and the reason `--as=` has to be typed at all. Kept as a named
-    function rather than a bare `False` because the question is asked here on purpose: if a
-    future harness ever puts an agent id in the process, this is the one place that changes.
-    """
-    return False
-
-
-def cmd_grant(name: str, off: bool, listing: bool) -> int:
-    """`journal grant "<env>"` — lend an environment to this session's subagents.
-
-    THE SESSION DOES NOT MOVE. That is the difference from `prepare`, which creates AND
-    switches, and from the deleted `delegate`, which bound the session so that its
-    subagents' writes landed there by accident of sharing an id. This lends, and says so
-    out loud in a sentence the dispatcher is meant to paste into the prompt.
-
-    BARE, IT LENDS THE ENVIRONMENT YOU ARE ON, because that is the ordinary case and it was
-    the one thing this command could not do. The user's ruling: a dispatched agent works its
-    dispatcher's environment, with its own ledger under it — a worktree changes where the
-    files are and never which environment anyone is on. Requiring a name made the unusual
-    case (a separate line of work for the agent) the only case, and this session lent three
-    brand-new environments to three agents that afternoon because naming one was the only
-    way to lend anything.
-
-    `--list` IS THE LISTING NOW, and `journal grants` still is: the bare form had to give up
-    one of its two meanings, and "show me what I lent" is the one a reader can ask for by
-    another name.
-    """
-    stem = _stem()
-    if listing:
-        lent = grants.granted(root(), stem)
-        fmt.say(fmt.Out(
-            title="GRANTED", sub=f"{len(lent)} lent by this session",
-            lead="" if lent else
-                 "This session has lent nothing. A subagent's journal writes are refused.",
-            items=tuple(fmt.Item(title=n, text="its subagents may write there with --env")
-                        for n in lent),
-            footer='`journal grant` lends the environment you are on; `journal grant '
-                   '"<other>"` lends a different one, and `--off` takes one back. '
-                   "A grant belongs to this session and dies with it."))
-        return 0
-    if not name and not off:
-        name = tracks.current(root(), stem)
-    if off:
-        ok, msg = grants.revoke(root(), stem or "", name)
-    else:
-        ok, msg = grants.grant(root(), stem or "", name)
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
 
 
 def _set_enabled(on: bool) -> int:
@@ -846,42 +644,28 @@ class Opts:
     `inspect` (4.8ms) in behind it, on EVERY invocation of a CLI whose whole start is
     ~110ms — for a decorator whose only work here is writing an `__init__` that assigns
     thirty defaults. The class body below still reads as the declaration it was; the
-    defaults are class attributes, which is what a dataclass would have produced, and the
-    two fields that need a fresh container per instance say so in `__init__` because a
-    mutable class attribute is shared by every instance.
+    defaults are class attributes, which is what a dataclass would have produced.
     """
     back: int = 0
     all_of_them: bool = False
     go_back: bool = False
     fresh: bool = False
-    off_flag: bool = False
-    list_flag: bool = False
-    project_too: bool = False
-    all_sessions: bool = False
-    yes_flag: bool = False
-    sessions: list
     page: int = 1
     acting: str = ""
-    to_agent: str = ""
     from_src: str | None = None
     serve_port: int | None = None
     open_browser: bool = False
 
-    def __init__(self):
-        # the one field that must not be shared: a list class attribute would be one list for every instance
-        self.sessions = []
 
 
 class _Flag(NamedTuple):
     """One row of the flag table. `dest` is the Opts field it fills; None means the
     option is recognised and consumed here but read elsewhere (`--env=`, `--from=`).
     `type` converts a `--x=value`'s text — raising ValueError with the refusal to print
-    if it cannot. `append` makes the value land in a list that grows instead of a plain
-    assignment. `set` is what a bare flag (no value at all) writes into its dest.
+    if it cannot. `set` is what a bare flag (no value at all) writes into its dest.
     """
     dest: str | None = None
     type: object = str
-    append: bool = False
     set: object = True
 
 
@@ -907,9 +691,7 @@ _ENV_NOOP = _Flag(dest=None)      # applied and refused in run(), before any com
 VALUE_FLAGS: dict[str, _Flag] = {
     "--back": _Flag(dest="back", type=_int_flag("--back")),
     "--env": _ENV_NOOP, "--environment": _ENV_NOOP, "--track": _ENV_NOOP,
-    "--session": _Flag(dest="sessions", append=True),
     "--as": _Flag(dest="acting"),
-    "--to": _Flag(dest="to_agent"),
     "--from": _Flag(dest="from_src"),
     "--page": _Flag(dest="page", type=_page_flag),
     "--port": _Flag(dest="serve_port", type=_int_flag("--port")),
@@ -919,12 +701,6 @@ VALUE_FLAGS: dict[str, _Flag] = {
 # flag not listed writes `True`, so only the two exceptions (`--strike`, `--none`) name
 # theirs.
 BARE_FLAGS: dict[str, _Flag] = {
-    "--off": _Flag(dest="off_flag"),
-    #: `grant` LENDS BARE now, so its listing needed a spelling of its own — `_v_grant`.
-    "--list": _Flag(dest="list_flag"),
-    "--project": _Flag(dest="project_too"),
-    "--yes": _Flag(dest="yes_flag"),
-    "--all-sessions": _Flag(dest="all_sessions"),
     "--none": _Flag(dest="after", set="--none"),    # `todos after <n> --none` clears the prerequisites
     "--fresh": _Flag(dest="fresh"),
     "--back": _Flag(dest="go_back"),
@@ -980,28 +756,6 @@ def _v_cleanup(verb: str, rest: list[str], opts: Opts) -> int:
     return cmd_cleanup(opts.all_of_them)
 
 
-def _v_assign(verb: str, rest: list[str], opts: Opts) -> int:
-    n, why = _number(rest, 1, "assign", "to-do", "journal todos")
-    if why:
-        return _refuse(why)
-    who = opts.to_agent or " ".join(x for x in rest[2:] if not x.startswith("--"))
-    off = opts.off_flag or "--off" in rest
-    if not who and not off:
-        return _refuse(f'assign wants an agent: `journal assign {n} --to="<agent>"`, '
-                       f"or `journal assign {n} --off` to put it back on the list")
-    here = tracks.current(root(), _stem())
-    ok, msg = todo.assign(root(), here, n, "--off" if off else who)
-    fmt.say(msg, error=not ok)
-    return 0 if ok else 1
-
-
-def _v_grant(verb: str, rest: list[str], opts: Opts) -> int:
-    # `grants` IS THE LISTING SPELLING, and so is `--list`. Bare `grant` lends the
-    # environment this session is on; the plural noun reads as a question about what stands,
-    # which is exactly what it now answers.
-    listing = opts.list_flag or verb == "grants"
-    return cmd_grant(" ".join(x for x in rest[1:] if x not in ("--off", "--list")),
-                     opts.off_flag or "--off" in rest, listing)
 
 
 def _v_search(verb: str, rest: list[str], opts: Opts) -> int:
@@ -1012,23 +766,6 @@ def _v_search(verb: str, rest: list[str], opts: Opts) -> int:
 
 
 
-def _v_environments(verb: str, rest: list[str], opts: Opts) -> int:
-    # `show` AND `list` STAY UNDER THE NOUN: there is no `journal show`. An environment
-    # can be named anything, `switch` and `claim` included, so `journal environments
-    # show "claim"` is how its page is read. `remove` lives only under the noun too,
-    # like `show` — a bare verb that deletes is the one spelling a mistyped name must
-    # never reach.
-    if len(rest) > 1 and rest[1] in ("show", "read"):
-        if len(rest) < 3:
-            return _refuse('environments show wants a name: journal environments show "<name>"')
-        return cmd_tracks(" ".join(rest[2:]))
-    if len(rest) == 2 and rest[1] == "list":
-        return cmd_tracks("")
-    if len(rest) > 1 and rest[1] in ("remove", "rm", "delete", "forget"):
-        if len(rest) < 3:
-            return _refuse('remove wants a name: journal environments remove "<name>"')
-        return cmd_track_remove(" ".join(rest[2:]), opts.yes_flag)
-    return cmd_tracks(" ".join(rest[1:]))
 
 
 
@@ -1075,16 +812,6 @@ def _v_verify(verb: str, rest: list[str], opts: Opts) -> int:
     return 0 if ok else 1
 
 
-def _v_worktree(verb: str, rest: list[str], opts: Opts) -> int:
-    if len(rest) > 1 and rest[1] == "link":
-        ok, msg = _wt.link(Path(__file__).parent if Path(__file__).parent.is_symlink()
-                           else Path(__file__).resolve().parent)
-        fmt.say(msg, error=not ok)
-        return 0 if ok else 1
-    main_root = _wt.main_root(project())
-    fmt.say(f"a linked worktree of {main_root}; .journal " + ("is a symlink to its journal" if (project() / ".journal").is_symlink() else "is a COPY — `journal worktree link` fixes that")
-          if main_root else "not a linked worktree")
-    return 0
 
 
 def _v_version(verb: str, rest: list[str], opts: Opts) -> int:
@@ -1103,34 +830,24 @@ def _v_version(verb: str, rest: list[str], opts: Opts) -> int:
 
 # ─────────────────────────────────── COMMAND TABLE ────────────────────────────────────
 # Verb (and every spelling of it) -> the function that handles it. A group of aliases is
-# ONE key — a tuple of names — so `journal env`, `envs`, `environment`, `tracks`,
-# `track` are one entry with five names, not five branches; ENV_NOUNS is that tuple
-# already, reused rather than retyped. `update` and `upgrade` stay separate entries
+# ONE key — a tuple of names — not one branch per spelling. `update` and `upgrade` stay separate entries
 # because they are NOT the same behaviour (see `_v_update`), the one place a verb here
 # earns its own row instead of joining another's.
 _ALIASES: dict[tuple[str, ...], object] = {
     ("cleanup", "tidy"): _v_cleanup,
-    ("grant", "grants"): _v_grant,
-    ("lent",): lambda verb, rest, opts: cmd_lent(),
     ("migrate", "migrations"): _v_migrate,
-    ENV_NOUNS: _v_environments,
 }
 
 COMMANDS: dict[str, object] = {name: fn for names, fn in _ALIASES.items() for name in names}
 COMMANDS.update({
-    "assign": _v_assign,
     "user": lambda verb, rest, opts: cmd_user(opts.back),
     "search": _v_search,
     "carry": lambda verb, rest, opts: cmd_carry(opts.fresh),
-    "claim": lambda verb, rest, opts: cmd_claim(rest[1] if len(rest) > 1 else "", " ".join(rest[2:])),
-    "prepare": lambda verb, rest, opts: cmd_prepare(" ".join(rest[1:])),
     "loop": lambda verb, rest, opts: cmd_loop(rest[1:]),
-    "switch": lambda verb, rest, opts: cmd_switch(" ".join(rest[1:]), opts.go_back, opts.project_too, opts.sessions or None, opts.all_sessions),
     "update": _v_update,
     "upgrade": _v_upgrade,
     "verify": _v_verify,
     "settings": lambda verb, rest, opts: cmd_settings(),
-    "worktree": _v_worktree,
     "serve": lambda verb, rest, opts: cmd_serve(opts.serve_port, opts.open_browser),
     "enable": lambda verb, rest, opts: cmd_enable(),
     "disable": lambda verb, rest, opts: cmd_disable(),
@@ -1190,10 +907,7 @@ def main(argv: list[str]) -> int:
                     converted = spec.type(val)
                 except ValueError as e:
                     return _refuse(str(e))
-                if spec.append:
-                    getattr(opts, spec.dest).append(converted)
-                else:
-                    setattr(opts, spec.dest, converted)
+                setattr(opts, spec.dest, converted)
         elif a.startswith("--") and len(a) > 2:
             spec = BARE_FLAGS.get(a)
             if spec is None:
@@ -1203,15 +917,6 @@ def main(argv: list[str]) -> int:
             rest.append(a)
     rest += payload
     verb = rest[0] if rest else ""
-    # THE NOUN OWNS ITS VERBS, and `environments` is a noun like every other. Ruling R11
-    # keeps switch, claim and prepare as TOP-LEVEL verbs, because they are burned into
-    # hook.py and into what every session is handed at its start — but top-level was
-    # never meant to be the ONLY spelling. This rewrite has to happen before the command
-    # table is consulted: it is what turns `environments switch "x"` into `switch "x"`
-    # so the same handler runs whichever spelling was typed.
-    if verb in ENV_NOUNS and len(rest) > 1 and rest[1] in ENV_VERBS:
-        rest = rest[1:]
-        verb = rest[0]
     handler = COMMANDS.get(verb)
     if handler is not None:
         return handler(verb, rest, opts)

@@ -41,6 +41,10 @@ def root() -> Path:
     return ROOT
 
 
+def package() -> Path:
+    return _PACKAGE
+
+
 def project() -> Path:
     return _PACKAGE.parent
 

@@ -303,6 +303,12 @@ check("every docs spelling is classified the same way",
                                 'docs add "t" --brief', "docs final 4", 'docs attach 4 ./a.html "x"',
                                 "docs move 4 --global", "docs supersede 3 by 4")],
       [None, None, None, None, None, "docs", "docs", "docs", "docs", "docs"])
+check("every environment and session spelling is classified as it was",
+      [_classified(c) for c in ('switch "x"', "switch --back", 'claim "x" "why"', 'prepare "x"', "environments",
+                                'environments "x"', 'environments switch "x"', "env", 'grant "x"', "grants", "lent",
+                                "assign 3 --to=a", "worktree", "worktree link")],
+      ["switch", "switch", "claim", "prepare", "environments", "environments", "environments", "env",
+       "grant", "grants", None, None, "worktree", "worktree"])
 check("every tools spelling is classified the same way",
       [_classified(c) for c in ("tools", "tools mover", "tools show add", 'tools add m "t" --summary=s',
                                 "tools set m entry run.py", 'tools remove m "why"', "tools index", "tools run m x")],
