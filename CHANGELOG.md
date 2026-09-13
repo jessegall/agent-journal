@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.7 — `todos` moves onto command classes
+
+Every to-do verb — list, show, add, start, done, drop/strike, reopen, move, ask, answer,
+block/skip, unblock, after/needs, report, priority, amend, replace, auto, prune and
+from-commit — is declared in `commands/todos.py`, and the hook classifies its writes from
+those declarations instead of its own to-do tables. A bare number is no longer filed as a
+to-do title: `journal todo 42` shows to-do 42.
+
 ## 1.62.6 — `work`, `start`, `end`, `open` and `next` move onto command classes
 
 The work commands are declared in `commands/work.py` and their messages, and `work.py`'s,
