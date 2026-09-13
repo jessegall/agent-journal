@@ -361,6 +361,14 @@ check("a field that cannot be sorted on is a 400 naming what can", (status, "pri
 status, got = post("/api/env/beta/todos/2", {"title": "x"}, method="PATCH")
 check("a number that is not on that environment is 404", status, 404)
 
+# ─────────────────────────────────────────────────────────────── search, through its controller
+status, _, body = get("/api/env/alpha/search?term=do%20the%20thing")
+found = json.loads(body)
+check("search finds the journal's own resources on that environment",
+      (status, [(r["kind"], r["n"]) for r in found["resources"]], found["total"]), (200, [("todo", 1)], 0))
+status, _, body = get("/api/env/alpha/search?term=")
+check("a search without a term is refused", status, 400)
+
 # ─────────────────────────────────────────────────────────────── an environment's settings, through its controller
 tracks.create(root, "gamma", at=AT)
 status, _, body = get("/api/env/gamma/environment")

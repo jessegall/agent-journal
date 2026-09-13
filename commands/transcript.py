@@ -10,6 +10,8 @@ import tracks
 import transcript
 from app import PAGE, project, refuse, resolved, root, stem
 from command import Command, Parsed, number
+from commands.resource import Resource
+from controllers.search import SearchController
 from templates import render
 
 NOUNS = (("conversation",), ("user",), ("search",), ("carry",))
@@ -27,7 +29,6 @@ TEXT = {
     "user_title": "THE USER'S OWN WORDS",
     "user_sub": "in full, never trimmed",
     "user_empty": "\n  (the user said nothing in this stretch)",
-    "search_wants": "search wants a term",
     "scope_all": "every environment, every session",
     "scope_env": "environment {env}, every session",
     "nothing": "NOTHING MENTIONS {term}",
@@ -103,35 +104,24 @@ class User(Command):
         return 0
 
 
-class Search(Command):
+class Search(Resource):
     signature = "search {term*? : a word or phrase} {--all} {--page=1}"
     casts = {"page": number("--page")}
+    controller = SearchController()
+    action = "index"
 
-    def run(self, p: Parsed) -> int:
-        from pins import age
-        term = p.arg("term") or ""
-        if not term:
-            return refuse(TEXT["search_wants"])
+    def extra(self, p: Parsed):
+        return {"session": stem() or ""}
+
+    def render(self, p: Parsed, result) -> int:
+        if not result.ok:
+            return super().render(p, result)
         _, problems = settings_mod.load(root())
         for problem in problems:
             fmt.say(problem, error=True)
-        every_env = bool(p.option("all"))
-        env = tracks.current(root(), stem())
-        needle = term.lower()
-        found: list[tuple[Path, list]] = []
-        index = tracks.carried_by(root())
-        known = {s for stems in index.values() for s in stems}
-        wanted = set(index.get(env) or [])
-        for path in transcript.sessions(project()):
-            if not every_env and path.stem in known and path.stem not in wanted:
-                continue
-            lines, _ = transcript.read(path)
-            pool = lines if every_env else transcript.on_track(lines, env)
-            hits = [line for line in pool if line.spoken and needle in (line.text or "").lower()]
-            if hits:
-                found.append((path, hits))
-        total = sum(len(hits) for _, hits in found)
-        scope = TEXT["scope_all"] if every_env else render(TEXT["scope_env"], env=env)
+        d, every_env = result.data, bool(p.option("all"))
+        term, total, page, pages = d["term"], d["total"], d["page"], d["pages"]
+        scope = TEXT["scope_all"] if every_env else render(TEXT["scope_env"], env=d["env"])
         if not total:
             fmt.say(fmt.title(render(TEXT["nothing"], term=repr(term)), sub=scope))
             fmt.say()
@@ -139,37 +129,20 @@ class Search(Command):
             if not every_env:
                 fmt.say(fmt.commands([(render(TEXT["search_all"], term=term), "every environment")]))
             return 0
-        pages = max(1, -(-total // PAGE))
-        page = min(max(1, p.option("page")), pages)
-        first, last = (page - 1) * PAGE, page * PAGE
         fmt.say(fmt.title(render(TEXT["found"], n=total, term=repr(term)), sub=render(
             TEXT["found_sub"], scope=scope, page=page if pages > 1 else None, pages=pages)))
-        mine = transcript.session_transcript(project())
-        width, seen = fmt.room(None), 0
-        for path, hits in found:
-            hits = list(reversed(hits))
-            take = [line for i, line in enumerate(hits, seen) if first <= i < last]
-            seen += len(hits)
-            if not take:
-                continue
-            label = TEXT["this_session"] if mine and path == mine[0] else render(TEXT["other_session"], stem=path.stem[:8])
-            fmt.say(fmt.section(render(TEXT["section"], label=label, when=age(take[0].ts) if take[0].ts else "")))
-            for line in take:
-                fmt.say(render(TEXT["line"], n=f"{line.n:>5}", who="USER" if line.kind == "human" else "agent"))
-                body = " ".join(tags.strip(line.text).split())
-                at = body.lower().find(needle)
-                a, b = max(0, at - 140), min(len(body), at + len(term) + 200)
-                snippet = body[a:b]
-                j = snippet.lower().find(needle)
-                if j >= 0:
-                    snippet = snippet[:j] + "«" + snippet[j:j + len(term)] + "»" + snippet[j + len(term):]
-                snippet = ("…" if a else "") + snippet + ("…" if b < len(body) else "")
-                fmt.say(textwrap.fill(snippet, width=width, initial_indent="         ", subsequent_indent="         "))
+        width = fmt.room(None)
+        for group in d["transcript"]:
+            label = TEXT["this_session"] if group["mine"] else render(TEXT["other_session"], stem=group["session"][:8])
+            fmt.say(fmt.section(render(TEXT["section"], label=label, when=group["when"])))
+            for line in group["lines"]:
+                fmt.say(render(TEXT["line"], n=f"{line['n']:>5}", who="USER" if line["who"] == "user" else "agent"))
+                fmt.say(textwrap.fill(line["text"], width=width, initial_indent="         ", subsequent_indent="         "))
                 fmt.say()
         rows = []
         if page < pages:
             rows.append((render(TEXT["next_page"], term=term, page=page + 1),
-                         render(TEXT["next_n"], n=min(PAGE, total - last), total=total)))
+                         render(TEXT["next_n"], n=min(PAGE, total - page * PAGE), total=total)))
         rows.append(READ_STRETCH)
         fmt.say(fmt.wrap(TEXT["citation"]))
         fmt.say(fmt.commands(rows))
