@@ -27,6 +27,84 @@ import time
 from pathlib import Path
 
 import state
+from templates import render as fill
+
+MESSAGES = {
+    "claim_what": 'claim what? `journal claim "<environment>" "<why it is yours now>"` — `journal environments` lists them',
+    "claim_why": 'a claim says why: `journal claim "{name}" "<why it is yours now>"` — the session that loses it is told '
+                 "the reason, so there has to be one",
+    "claim_none": 'no environment is called {name}; nothing to claim — `journal prepare "{name}"` makes one, '
+                  '`journal switch "{name}"` takes it',
+    "claim_free": '{name} was held by nobody, so there was nothing to take — this session is on it\n'
+                  '  `journal switch "{name}"` would have done the same',
+    "holder": "{sid} ({age})",
+    "claimed": "claimed {name} from session {who:, }\n  why: {why}\n"
+               "  that session is unbound now and is told at its next stop; nothing of the environment was deleted",
+    "age_none": "not seen",
+    "age_now": "active just now",
+    "age_minutes": "active {n} min ago",
+    "age_hours": "idle {n} h",
+    "age_days": "idle {n} d",
+    "page_none": "no environment is called {name}. `journal environments` lists them.",
+    "page_held": "held by session {sessions:, }",
+    "page_free": "free",
+    "page_title": "ENVIRONMENT {name}",
+    "page_sub": "{auto}{state}",
+    "page_auto": "auto on · ",
+    "read_first": "read first",
+    "doc_parts": "{n} part(s)",
+    "doc_files": "{n} file(s)",
+    "doc_read": "read it: .journal/journal.py docs {n}",
+    "what_stands": "what stands",
+    "pin_doc": "→ {label}",
+    "open_work": "open work",
+    "work_line": "{subject}[ — last: {last}]",
+    "todo_section_n": "to do, in order ({n})",
+    "todo_section": "to do",
+    "todo_hint": "Each has a brief: .journal/journal.py todos <n> prints it. Start one with todo start <n>.",
+    "cmd_switch": 'journal switch "{name}"',
+    "cmd_switch_what": "this session works it",
+    "cmd_begin": 'journal --env="{name}" todo start {n}',
+    "cmd_begin_what": "begin without switching",
+    "switch_what": 'switch to what? `journal switch "<environment>"`, or `--back` — a name is letters, digits and '
+                   "dashes; nothing of that was left",
+    "kept_new": "{name} is new",
+    "kept_counts": "{pins} pin(s), {open} open",
+    "lost": "\n  {n} reminder(s) on `{was}` are not in force here: {texts:; }{more}",
+    "taken": "{name} is taken by session {sid} ({age}), and one session works an environment — pick another name; "
+             "`journal environments` shows who is where",
+    "already_on": "this session is already on {name}",
+    "switched_session": "this session is on {name} — {kept}\n  {was} is where it was; the project still starts on {start}{lost}",
+    "already_start": "already on {name} — the project starts there",
+    "others": "\n  running sessions bound elsewhere stay there:\n{rows:\n}"
+              '\n  move one: `journal switch "{name}" --session=<id>`; all: `--all-sessions`',
+    "other_row": "    {sid}…  on {env}",
+    "switched_project": "the project starts on {name} now — {kept}{too}{lost}{note}",
+    "session_too": "; this session too",
+    "back_none": "no environment to go back to — nothing has been switched away from yet",
+    "remove_what": 'remove what? `journal environments remove "<name>"`',
+    "remove_none": "no environment is called {name}; `journal environments` lists them",
+    "remove_start": "{name} is where new sessions start, so it cannot be removed — point the project somewhere else "
+                    'first: `journal switch "<other>" --project`',
+    "remove_mine": 'this session is on {name} — switch away first: `journal switch "<other>"`, then '
+                   '`journal environments remove "{name}"`',
+    "remove_taken": "{name} is taken by session {sid} ({age}) — an environment under a running session is not removed; "
+                    'wait for it, or move it with `journal switch "<other>" --session={sid}`',
+    "held_what": "{pins} pin(s), {work} open work, {todos} open to-do(s)",
+    "remove_confirm": "{name} holds {what}, and removing it DELETES them:\n"
+                      '  journal environments remove "{name}" --yes\n'
+                      "  the record keeps one line saying it existed and what it held; the pins, the\n"
+                      "  work and the to-dos are gone. Move anything worth keeping first.\n"
+                      "  its docs are not deleted: a doc scoped here becomes the project's, because an\n"
+                      "  environment ending does not unmake what it settled",
+    "stragglers": "\n  {n} stale session(s) were bound to it and are now bound to nothing",
+    "removed": "{name} is removed — it held {what}, and they are deleted{note}",
+}
+
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
+
 
 #: The environment every project already has before anyone names one. An existing journal
 #: becomes this on the first switch, with nothing to migrate — `current` simply defaults.
@@ -104,15 +182,12 @@ def claim(root: Path, name: str, at: str, stem: str, why: str,
     """
     name = state.slug(name)
     if not name:
-        return False, ('claim what? `journal claim "<environment>" "<why it is yours now>"` — '
-                       "`journal environments` lists them")
+        return False, say("claim_what")
     why = (why or "").strip()
     if not why:
-        return False, (f'a claim says why: `journal claim "{name}" "<why it is yours now>"` — '
-                       "the session that loses it is told the reason, so there has to be one")
+        return False, say("claim_why", name=name)
     if name not in _all(root):
-        return False, (f"no environment is called {name}; nothing to claim — "
-                       f'`journal prepare "{name}"` makes one, `journal switch "{name}"` takes it')
+        return False, say("claim_none", name=name)
     held = occupants(root, name, stem, stale_hours)
     for sid, age in held:
         unbind(root, sid)
@@ -132,13 +207,9 @@ def claim(root: Path, name: str, at: str, stem: str, why: str,
     if not ok:
         return False, msg
     if not held:
-        return True, (f"{name} was held by nobody, so there was nothing to take — this session is on it\n"
-                      f"  `journal switch \"{name}\"` would have done the same")
-    who = ", ".join(f"{sid[:8]} ({age_text(age)})" for sid, age in held)
-    return True, (f"claimed {name} from session {who}\n"
-                  f"  why: {why}\n"
-                  "  that session is unbound now and is told at its next stop; nothing of the "
-                  "environment was deleted")
+        return True, say("claim_free", name=name)
+    who = [say("holder", sid=sid[:8], age=age_text(age)) for sid, age in held]
+    return True, say("claimed", name=name, who=who, why=why)
 
 
 def prune(root: Path, keep) -> None:
@@ -186,14 +257,14 @@ def occupants(root: Path, track: str, stem: str | None, stale_hours: float = 24.
 
 def age_text(seconds: float | None) -> str:
     if seconds is None:
-        return "not seen"
+        return say("age_none")
     if seconds < 90:
-        return "active just now"
+        return say("age_now")
     if seconds < 3600:
-        return f"active {int(seconds // 60)} min ago"
+        return say("age_minutes", n=int(seconds // 60))
     if seconds < 86400:
-        return f"idle {seconds / 3600:.1f} h"
-    return f"idle {seconds / 86400:.1f} d"
+        return say("age_hours", n=f"{seconds / 3600:.1f}")
+    return say("age_days", n=f"{seconds / 86400:.1f}")
 
 
 _OVERRIDE: list = []
@@ -310,7 +381,7 @@ def page(root: Path, name: str, width: int | None = None, commands: bool = True)
     width = fmt.room(width)
     name = state.slug(name)
     if name not in _all(root):
-        return False, f"no environment is called {name}. `journal environments` lists them."
+        return False, say("page_none", name=name)
     saved = list(_OVERRIDE)
     override(name)
     try:
@@ -327,37 +398,39 @@ def page(root: Path, name: str, width: int | None = None, commands: bool = True)
         who = [sid for sid, v in live(root).items() if v["track"] == name]
         by = []
         state_ = ("" if by
-                  else f"held by session {', '.join(s[:8] for s in who)}" if who else "free")
-        out = [fmt.title(f"ENVIRONMENT {name}", sub=("auto on · " if auto else "") + state_), ""]
+                  else say("page_held", sessions=[s[:8] for s in who]) if who else say("page_free"))
+        out = [fmt.title(say("page_title", name=name),
+                         sub=say("page_sub", auto=say("page_auto") if auto else "", state=state_)), ""]
         if mine:
-            out.append(fmt.section("read first"))
+            out.append(fmt.section(say("read_first")))
             for d in mine:
                 files = docs_mod.attachments(d)
                 out.append(fmt.numbered(d["n"], d["title"], " · ".join(x for x in [
-                    d.get("status", "draft"), f"{len(d['parts'])} part(s)" if d["parts"] else "",
-                    f"{len(files)} file(s)" if files else "", f"read it: .journal/journal.py docs {d['n']}"] if x), width=width))
+                    d.get("status", "draft"), say("doc_parts", n=len(d["parts"])) if d["parts"] else "",
+                    say("doc_files", n=len(files)) if files else "", say("doc_read", n=d["n"])] if x), width=width))
                 out.append(fmt.wrap(d.get("abstract", ""), indent=5, width=width))
         if pins:
-            out.append(fmt.section("what stands"))
+            out.append(fmt.section(say("what_stands")))
             for i, p in numbered:   # the same numbers `journal pins`, `strike` and `--supersedes` use
-                out.append(fmt.numbered(i, p["fact"], "→ " + docs_mod.ref_label(root, str(p["doc"]), short=True) if p.get("doc") else "", width=width))
+                label = say("pin_doc", label=docs_mod.ref_label(root, str(p["doc"]), short=True)) if p.get("doc") else ""
+                out.append(fmt.numbered(i, p["fact"], label, width=width))
         if open_:
-            out.append(fmt.section("open work"))
+            out.append(fmt.section(say("open_work")))
             for w in open_:
-                out.append(fmt.wrap(w["subject"] + (f" — last: {w['notes'][-1]['text']}" if w.get("notes") else ""), width=width))
-        out.append(fmt.section(f"to do, in order ({len(items)})" if items else "to do"))
+                last = w["notes"][-1]["text"] if w.get("notes") else None
+                out.append(fmt.wrap(say("work_line", subject=w["subject"], last=last), width=width))
+        out.append(fmt.section(say("todo_section_n", n=len(items)) if items else say("todo_section")))
         out.append(todo_mod.render(root, name, width=width, short_refs=True))
         if items:
             out.append("")
-            out.append(fmt.wrap("Each has a brief: .journal/journal.py todos <n> prints it. Start one with todo start <n>.", width=width))
+            out.append(fmt.wrap(say("todo_hint"), width=width))
         out.append("")
         if not commands:
             return True, "\n".join(out).rstrip()
         first = next((t for t in todo_mod.ready(root, name)), None)
-        rows = [(f'journal switch "{name}"', "this session works it"),
-                ]
+        rows = [(say("cmd_switch", name=name), say("cmd_switch_what"))]
         if first:
-            rows.append((f'journal --env="{name}" todo start {first["n"]}', "begin without switching"))
+            rows.append((say("cmd_begin", name=name, n=first["n"]), say("cmd_begin_what")))
         out.append(fmt.commands(rows))
         return True, "\n".join(out)
     finally:
@@ -398,8 +471,7 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
     """
     name = state.slug(name)
     if not name:
-        return False, ('switch to what? `journal switch "<environment>"`, or `--back` — a name is letters, '
-                       'digits and dashes; nothing of that was left')
+        return False, say("switch_what")
     with state.locked(root):
         tracks = _all(root)
         fresh = name not in tracks
@@ -414,9 +486,10 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
         # needed these counts — `page`, `listing`, `_held_summary` — except this one, three
         # hunks below in the same file, in the same commit. It has printed "0 pin(s), 0
         # open" for every switch since, on environments holding both.
-        kept = f"{name} is new" if fresh else (
-            f"{len([p for p in (state.tracked(root, 'pins', name, []) or []) if not p.get('struck')])} pin(s), "
-            f"{len([w for w in (state.tracked(root, 'work', name, []) or []) if not w.get('ended')])} open")
+        kept = say("kept_new", name=name) if fresh else say(
+            "kept_counts",
+            pins=len([p for p in (state.tracked(root, "pins", name, []) or []) if not p.get("struck")]),
+            open=len([w for w in (state.tracked(root, "work", name, []) or []) if not w.get("ended")]))
         bound_before = bound(root, stem)   # None while the session has chosen nothing
         was = current(root, stem)
         # WHAT THE SWITCH SILENCES, said at the moment it silences it. Reminders belong to
@@ -426,17 +499,15 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
         # being LEFT, which is the half no other line in this function looks at.
         silenced = [r for r in (state.tracked(root, "reminders", was, []) or [])
                     if not r.get("done")] if was and was != name else []
-        lost = (f"\n  {len(silenced)} reminder(s) on `{was}` are not in force here: "
-                + "; ".join(r["text"][:60] for r in silenced[:2])
-                + (" …" if len(silenced) > 2 else "")) if silenced else ""
+        lost = say("lost", n=len(silenced), was=was, texts=[r["text"][:60] for r in silenced[:2]],
+                   more=" …" if len(silenced) > 2 else "") if silenced else ""
         if stem and exclusive and bound_before != name:
             taken = occupants(root, name, stem, stale_hours)
             if taken:
-                return False, (f"{name} is taken by session {taken[0][0][:8]} ({age_text(taken[0][1])}), and one "
-                               "session works an environment — pick another name; `journal environments` shows who is where")
+                return False, say("taken", name=name, sid=taken[0][0][:8], age=age_text(taken[0][1]))
         if stem and not project:
             if was == name and bound(root, stem):
-                return False, f"this session is already on {name}"
+                return False, say("already_on", name=name)
             bind(root, stem, name)
             # WHERE IT WAS IS NOWHERE, for a session that had not chosen yet. `current`
             # falls back to the start environment so that reads work unbound; recording
@@ -444,24 +515,23 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
             # never chose — which is the whole thing an unbound start exists to prevent.
             state.put(root, "previous_track", bound_before, stem=stem)
             carried(root, name, stem)
-            return True, (f"this session is on {name} — {kept}\n  {was} is where it was; "
-                          f"the project still starts on {state.get(root, CURRENT, DEFAULT) or DEFAULT}" + lost)
+            return True, say("switched_session", name=name, kept=kept, was=was,
+                             start=state.get(root, CURRENT, DEFAULT) or DEFAULT, lost=lost)
         if stem:
             bind(root, stem, name)
             state.put(root, "previous_track", bound_before, stem=stem)
         if start == name and not stem:
-            return False, f"already on {name} — the project starts there"
+            return False, say("already_start", name=name)
         state.put(root, PREVIOUS, start)
         state.put(root, CURRENT, name)
         carried(root, name, stem)
     others = {sid: t for sid, t in _bindings(root).items() if t != name and sid != stem}
     note = ""
     if others:
-        note = ("\n  running sessions bound elsewhere stay there:\n"
-                + "\n".join(f"    {sid[:8]}…  on {t}" for sid, t in sorted(others.items()))
-                + f"\n  move one: `journal switch \"{name}\" --session=<id>`; all: `--all-sessions`")
-    return True, (f"the project starts on {name} now — {kept}" + (f"; this session too" if stem else "")
-                  + lost + note)
+        note = say("others", name=name,
+                   rows=[say("other_row", sid=sid[:8], env=t) for sid, t in sorted(others.items())])
+    return True, say("switched_project", name=name, kept=kept, too=say("session_too") if stem else "",
+                     lost=lost, note=note)
 
 
 def move_sessions(root: Path, name: str, which: list[str] | None,
@@ -497,7 +567,7 @@ def move_sessions(root: Path, name: str, which: list[str] | None,
 def back(root: Path, at: str, stem: str = "", exclusive: bool = True, stale_hours: float = 24.0) -> tuple[bool, str]:
     was = state.get(root, "previous_track", None, stem=stem) if stem else state.get(root, PREVIOUS)
     if not was:
-        return False, "no environment to go back to — nothing has been switched away from yet"
+        return False, say("back_none")
     return switch(root, was, at, stem, project=not stem, exclusive=exclusive, stale_hours=stale_hours)
 
 
@@ -538,31 +608,22 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
     import todo as todo_mod
     name = state.slug(name)
     if not name:
-        return False, 'remove what? `journal environments remove "<name>"`'
+        return False, say("remove_what")
     tracks = _all(root)
     if name not in tracks:
-        return False, (f"no environment is called {name!r}; `journal environments` lists them")
+        return False, say("remove_none", name=repr(name))
     start = state.get(root, CURRENT, DEFAULT) or DEFAULT
     if name == start:
-        return False, (f"{name} is where new sessions start, so it cannot be removed — point the project "
-                       f'somewhere else first: `journal switch "<other>" --project`')
+        return False, say("remove_start", name=name)
     if bound(root, stem) == name:
-        return False, (f'this session is on {name} — switch away first: `journal switch "<other>"`, '
-                       f'then `journal environments remove "{name}"`')
+        return False, say("remove_mine", name=name)
     taken = occupants(root, name, stem, stale_hours)
     if taken:
-        return False, (f"{name} is taken by session {taken[0][0][:8]} ({age_text(taken[0][1])}) — an environment "
-                       "under a running session is not removed; wait for it, or move it with "
-                       f'`journal switch "<other>" --session={taken[0][0][:8]}`')
+        return False, say("remove_taken", name=name, sid=taken[0][0][:8], age=age_text(taken[0][1]))
     pins, work, todos = _held_summary(root, name, tracks.get(name, {}))
-    what = f"{pins} pin(s), {work} open work, {todos} open to-do(s)"
+    what = say("held_what", pins=pins, work=work, todos=todos)
     if not yes:
-        return False, (f"{name} holds {what}, and removing it DELETES them:\n"
-                       f'  journal environments remove "{name}" --yes\n'
-                       "  the record keeps one line saying it existed and what it held; the pins, the\n"
-                       "  work and the to-dos are gone. Move anything worth keeping first.\n"
-                       "  its docs are not deleted: a doc scoped here becomes the project's, because an\n"
-                       "  environment ending does not unmake what it settled")
+        return False, say("remove_confirm", name=name, what=what)
     with state.locked(root):
         data = state._record(root)
         (data.get("tracks") or {}).pop(name, None)
@@ -593,6 +654,5 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
     stragglers = [sid for sid, t in b.items() if t == name]
     for sid in stragglers:
         unbind(root, sid)
-    note = (f"\n  {len(stragglers)} stale session(s) were bound to it and are now bound to nothing"
-            if stragglers else "")
-    return True, (f"{name} is removed — it held {what}, and they are deleted" + note)
+    note = say("stragglers", n=len(stragglers)) if stragglers else ""
+    return True, say("removed", name=name, what=what, note=note)

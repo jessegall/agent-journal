@@ -34,6 +34,73 @@ import reminders as reminders_mod
 import state
 import todo as todo_mod
 import tracks
+from templates import render as fill
+
+MESSAGES = {
+    "gone_path": "names {path}, which is not in the project",
+    "gone_verb": "names `journal {verb}`, which the CLI does not answer to",
+    "in_reasoning": " (in its reasoning)",
+    "fix_rule": 'journal rules strike {n} "<why>"',
+    "fix_pin": 'journal pins strike {n} "<why>"',
+    "fix_reminder": 'journal reminders done {n} "<why>"',
+    "doc_orphan": "its environment `{env}` is gone",
+    "doc_draft": "a draft with no parts, {days}d old",
+    "fix_doc_orphan": 'the doc still stands — edit `track:` in its index.md, or strike what no longer holds: '
+                      'journal docs strike {n}.<p> "<why>"',
+    "fix_doc_draft": 'journal docs final {n}   (or `docs strike {n}.<p> "<why>"`)',
+    "auto_text": "{n} row(s) were closed by a work-end matching their title",
+    "auto_why": "that is no longer how a row closes — ending work is not finishing one",
+    "auto_fix": 'journal todos --all   read them; journal todos reopen <n> "<why>" what is not done, then '
+                "`journal cleanup keep {mark}`",
+    "asked_why": "waiting on the user for {days}d",
+    "fix_asked": 'journal todos done {n} "<how>"   (or ask again)',
+    "env_why": "no pins, no open work, no to-dos, nobody on it",
+    "fix_env": 'journal environments remove "{name}" --yes',
+    "title": "CLEANUP",
+    "scope_all": "every environment",
+    "clean": "Nothing here has evidence against it: every rule, pin and reminder names something that still "
+             "exists, no doc is orphaned, no to-do has been waiting on the user, and no environment is empty.",
+    "kind_heading": "  {kind}S",
+    "row": "  {n}  {text}",
+    "row_why": "       {why}[ · {age}][ · on {where}]",
+    "row_fix": "       {fix}",
+    "candidates": "Each line is a CANDIDATE, not a verdict: the evidence is printed so you can disagree with it. A "
+                  "strike hides a claim and never erases it — the text and the reason stay under `journal rules "
+                  "--all` and `journal pins --all` — so striking a claim you have read and judged dead is cheap, and "
+                  "leaving one that still holds costs nothing but the line.",
+    "second_heading": "  THE SECOND HALF — what no check can see",
+    "second": "A rule that quietly stopped describing how anyone works names no file and misspells no command: it "
+              "passes every check above and always will. Only reading finds it. `journal cleanup read` puts every "
+              "rule and every pin in front of you with the questions to ask of each — {last}.",
+    "all_hint": "  journal cleanup --all   the pins of every environment, not just this one",
+    "kept": "{n} {mark} finding(s) are marked read; this returns if the count grows",
+    "never_owed": "never done on this environment",
+    "never_young": "never done here, and not owed yet — nothing standing is {days} days old",
+    "today": "last done today",
+    "days_ago": "last done {days}d ago",
+    "entry": "  {n}{body}\n",
+    "entry_meta": '       {age} · journal {noun} strike {n} "<why>"{extra}',
+    "entry_show": " · journal {noun} show {n}",
+    "reading_title": "CLEANUP: THE READING PASS",
+    "reading_lead": "Read every claim below against the code you have just been working in, and ask of each:",
+    "question": "{n}. {q}",
+    "reading_strike": "Strike what you have read and judged dead — the reason is the answer you just gave, and a strike "
+                      "hides the claim rather than erasing it, so being wrong is cheap. Leave what still holds; "
+                      "leaving is the common answer and it costs nothing. If a claim is right but out of date, "
+                      '`pins add "<the claim now>" --supersedes=<n>` replaces it in one move.',
+    "rules_heading": "  RULES — {n}, binding every environment",
+    "pins_heading": "  PINS — {n}, standing on `{env}`",
+    "reminders_heading": "  REMINDERS — {n}, repeated at every stop on `{env}`",
+    "reminder_meta": '       {age}[ · until: {until}] · journal reminders done {n} "<why>"',
+    "reading_end": "That is {rules} rule(s), {pins} pin(s) and {reminders} reminder(s) — the whole of what every later "
+                   "session is handed as true. When you have been through them, say what you struck and what you "
+                   "left; the record keeps when this was last done, not what was decided.",
+}
+
+
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
+
 
 #: A path inside a claim: `hook.py:342`, `.journal/todo/`, `src/a/b.ts`. The suffix list is
 #: what this project's claims actually cite; anything without one is prose, not a path.
@@ -90,12 +157,12 @@ def _dangling(root: Path, text: str) -> str:
                 continue
             if any(project.rglob(Path(p).name)):
                 continue   # moved, not gone: the claim's path is stale, the file is not
-            return f"names {p}, which is not in the project"
+            return say("gone_path", path=p)
         if not any(project.rglob(p)):
-            return f"names {p}, which is not in the project"
+            return say("gone_path", path=p)
     for verb in CMD.findall(text):
         if verb not in _verbs():
-            return f"names `journal {verb}`, which the CLI does not answer to"
+            return say("gone_verb", verb=verb)
     return ""
 
 
@@ -121,13 +188,12 @@ def _claims(root: Path, key: str, where: str) -> list[dict]:
             # argument is the half nobody re-reads.
             why = _dangling(root, pins_mod.body(root, i, key))
             if why:
-                why += " (in its reasoning)"
+                why += say("in_reasoning")
         if not why:
             continue
         out.append({"kind": "rule" if key == pins_mod.RULES else "pin", "n": i, "where": where,
                     "text": p.get("fact", ""), "why": why, "age": pins_mod.age(p.get("at", "")),
-                    "fix": (f'journal rules strike {i} "<why>"' if key == pins_mod.RULES
-                            else f'journal pins strike {i} "<why>"')})
+                    "fix": say("fix_rule" if key == pins_mod.RULES else "fix_pin", n=i)})
     return out
 
 
@@ -158,7 +224,7 @@ def _reminders(root: Path, here: str) -> list[dict]:
             continue
         out.append({"kind": "reminder", "n": i, "where": here, "text": r.get("text", ""),
                     "why": why, "age": pins_mod.age(r.get("at", "")),
-                    "fix": f'journal reminders done {i} "<why>"'})
+                    "fix": say("fix_reminder", n=i)})
     return out
 
 
@@ -177,11 +243,11 @@ def _docs(root: Path) -> list[dict]:
         # been read by something that did not know its meaning had changed.
         if (docs_mod.scope_of(d) != docs_mod.GLOBAL
                 and state.slug(d["track"]) not in {state.slug(n) for n in names}):
-            gone = why = f"its environment `{d['track']}` is gone"
+            gone = why = say("doc_orphan", env=d["track"])
         elif d.get("status") == "draft" and not d.get("parts"):
             days = _days(d.get("at", ""))
             if days is not None and days >= DRAFT_DAYS:
-                why = f"a draft with no parts, {int(days)}d old"
+                why = say("doc_draft", days=int(days))
         if not why:
             continue
         # THE FIX MUST ANSWER THE FINDING. An orphaned doc is not a finished doc, and
@@ -189,10 +255,7 @@ def _docs(root: Path) -> list[dict]:
         # not address what it just reported — the field is what is stale, not the status.
         out.append({"kind": "doc", "n": d["n"], "where": "", "text": d.get("title", ""),
                     "why": why, "age": pins_mod.age(d.get("at", "")),
-                    "fix": (f"the doc still stands — edit `track:` in its index.md, or strike "
-                            f'what no longer holds: journal docs strike {d["n"]}.<p> "<why>"'
-                            if gone else
-                            f'journal docs final {d["n"]}   (or `docs strike {d["n"]}.<p> "<why>"`)')})
+                    "fix": say("fix_doc_orphan" if gone else "fix_doc_draft", n=d["n"])})
     return out
 
 
@@ -223,11 +286,10 @@ def _auto_closed(root: Path, here: str) -> list[dict]:
     if not hit or len(hit) <= (_kept(root, here).get(AUTO_MARK) or {}).get("n", -1):
         return []
     return [{"kind": "to-do", "n": "", "where": here, "mark": AUTO_MARK,
-             "text": f"{len(hit)} row(s) were closed by a work-end matching their title",
-             "why": "that is no longer how a row closes — ending work is not finishing one",
+             "text": say("auto_text", n=len(hit)),
+             "why": say("auto_why"),
              "age": "",
-             "fix": 'journal todos --all   read them; journal todos reopen <n> "<why>" what is '
-                    f'not done, then `journal cleanup keep {AUTO_MARK}`'}]
+             "fix": say("auto_fix", mark=AUTO_MARK)}]
 
 
 def _todos(root: Path, here: str) -> list[dict]:
@@ -237,8 +299,8 @@ def _todos(root: Path, here: str) -> list[dict]:
         if days is None or days < ASKED_DAYS:
             continue
         out.append({"kind": "to-do", "n": t["n"], "where": here, "text": t.get("title", ""),
-                    "why": f"waiting on the user for {int(days)}d", "age": "",
-                    "fix": f'journal todos done {t["n"]} "<how>"   (or ask again)'})
+                    "why": say("asked_why", days=int(days)), "age": "",
+                    "fix": say("fix_asked", n=t["n"])})
     return out
 
 
@@ -256,8 +318,8 @@ def _environments(root: Path, here: str, stale_hours: float = 24.0) -> list[dict
         if todo_mod.open_items(root, name):
             continue
         out.append({"kind": "environment", "n": 0, "where": "", "text": name,
-                    "why": "no pins, no open work, no to-dos, nobody on it", "age": "",
-                    "fix": f'journal environments remove "{name}" --yes'})
+                    "why": say("env_why"), "age": "",
+                    "fix": say("fix_env", name=name)})
     return out
 
 
@@ -277,45 +339,33 @@ def candidates(root: Path, here: str, every: bool = False, stale_hours: float = 
 def report(root: Path, here: str, every: bool = False, stale_hours: float = 24.0) -> str:
     import fmt
     found = candidates(root, here, every, stale_hours)
-    out = [fmt.title("CLEANUP", sub=("every environment" if every else here)), ""]
+    out = [fmt.title(say("title"), sub=(say("scope_all") if every else here)), ""]
     if not found:
-        out.append(fmt.wrap("Nothing here has evidence against it: every rule, pin and reminder "
-                            "names something that still exists, no doc is orphaned, no to-do has "
-                            "been waiting on the user, and no environment is empty."))
+        out.append(fmt.wrap(say("clean")))
         out.append("")
     for kind in ("rule", "pin", "reminder", "doc", "to-do", "environment"):
         rows = [f for f in found if f["kind"] == kind]
         if not rows:
             continue
-        out.append(fmt.dim(f"  {kind.upper()}S"))
+        out.append(fmt.dim(say("kind_heading", kind=kind.upper())))
         for f in rows:
-            head = f"{f['n']}" if f["n"] else ""
-            out.append(f"  {head:>3}  {f['text'][:70]}")
-            out.append(f"       {f['why']}" + (f" · {f['age']}" if f["age"] else "")
-                       + (f" · on {f['where']}" if f["where"] and kind == "pin" else ""))
-            out.append(fmt.dim(f"       {f['fix']}"))
+            out.append(say("row", n=str(f["n"] or "").rjust(3), text=f["text"][:70]))
+            out.append(say("row_why", why=f["why"], age=f["age"], where=f["where"] if kind == "pin" else ""))
+            out.append(fmt.dim(say("row_fix", fix=f["fix"])))
         out.append("")
     if found:
-        out.append(fmt.wrap("Each line is a CANDIDATE, not a verdict: the evidence is printed so you "
-                            "can disagree with it. A strike hides a claim and never erases it — "
-                            "the text and the reason stay under `journal rules --all` and `journal "
-                            "pins --all` — so striking a claim you have read and judged dead is "
-                            "cheap, and leaving one that still holds costs nothing but the line."))
+        out.append(fmt.wrap(say("candidates")))
     out.append("")
     # THE SECOND HALF IS NOT PRINTED HERE, and that is the point of splitting them. What a
     # check can see fits in a list; what only reading can see is every rule and every pin,
     # one at a time, against the code they claim things about — and a wall of them appended
     # to a findings list is a wall that gets skimmed. `cleanup read` is a separate act,
     # taken deliberately, and the record remembers when it was last taken.
-    out.append(fmt.dim("  THE SECOND HALF — what no check can see"))
-    out.append(fmt.wrap("A rule that quietly stopped describing how anyone works names no file "
-                        "and misspells no command: it passes every check above and always will. "
-                        "Only reading finds it. `journal cleanup read` puts every rule and every "
-                        "pin in front of you with the questions to ask of each — "
-                        + last_read(root, here) + "."))
+    out.append(fmt.dim(say("second_heading")))
+    out.append(fmt.wrap(say("second", last=last_read(root, here))))
     if not every:
         out.append("")
-        out.append(fmt.dim("  journal cleanup --all   the pins of every environment, not just this one"))
+        out.append(fmt.dim(say("all_hint")))
     return "\n".join(out)
 
 
@@ -349,7 +399,7 @@ def keep(root: Path, here: str, mark: str, at: str, n: int) -> str:
         log = log if isinstance(log, dict) else {}
         log.setdefault(here, {})[mark] = {"at": at, "n": int(n)}
         state.put(root, KEPT, log)
-    return f"{n} {mark} finding(s) are marked read; this returns if the count grows"
+    return say("kept", n=n, mark=mark)
 
 
 def _read_log(root: Path) -> dict:
@@ -384,11 +434,10 @@ def last_read(root: Path, here: str) -> str:
     got = _read_log(root).get(here) or {}
     days = _days(got.get("at", "")) if got.get("at") else None
     if days is None:
-        return ("never done on this environment" if owed(root, here) else
-                f"never done here, and not owed yet — nothing standing is {READ_DAYS} days old")
+        return say("never_owed") if owed(root, here) else say("never_young", days=READ_DAYS)
     if days < 1:
-        return "last done today"
-    return f"last done {int(days)}d ago"
+        return say("today")
+    return say("days_ago", days=int(days))
 
 
 def owed(root: Path, here: str) -> bool:
@@ -447,10 +496,9 @@ def _entry(n: int, item: dict, noun: str) -> str:
     # a different claim, in a different store, under the same number: the reading pass sent
     # the reader to the wrong text at the one moment its whole design says they must read
     # the claim before judging it.
-    extra = f" · journal {noun} show {n}" if item.get("body") else ""
-    return (f"  {n:>3}" + body[5:] + "\n"
-            + fmt.dim(f"       {pins_mod.age(item.get('at', ''))} · "
-                      f'journal {noun} strike {n} "<why>"' + extra))
+    extra = say("entry_show", noun=noun, n=n) if item.get("body") else ""
+    return (say("entry", n=str(n).rjust(3), body=body[5:])
+            + fmt.dim(say("entry_meta", age=pins_mod.age(item.get("at", "")), noun=noun, n=n, extra=extra)))
 
 
 def reading(root: Path, here: str, at: str = "", mark: bool = True) -> str:
@@ -473,24 +521,19 @@ def reading(root: Path, here: str, at: str = "", mark: bool = True) -> str:
              if not r.get("struck")]
     pins = [(i, p) for i, p in enumerate(_standing(root, pins_mod.KEY, here), 1)
             if not p.get("struck")]
-    out = [fmt.title("CLEANUP: THE READING PASS", sub=here), ""]
-    out.append(fmt.wrap("Read every claim below against the code you have just been working in, "
-                        "and ask of each:"))
+    out = [fmt.title(say("reading_title"), sub=here), ""]
+    out.append(fmt.wrap(say("reading_lead")))
     out.append("")
     for i, q in enumerate(QUESTIONS, 1):
-        out.append(fmt.wrap(f"{i}. {q}", indent=5))
+        out.append(fmt.wrap(say("question", n=i, q=q), indent=5))
     out.append("")
-    out.append(fmt.wrap("Strike what you have read and judged dead — the reason is the answer you "
-                        "just gave, and a strike hides the claim rather than erasing it, so being "
-                        "wrong is cheap. Leave what still holds; leaving is the common answer and "
-                        "it costs nothing. If a claim is right but out of date, `pins add "
-                        '"<the claim now>" --supersedes=<n>` replaces it in one move.'))
+    out.append(fmt.wrap(say("reading_strike")))
     out.append("")
-    out.append(fmt.dim(f"  RULES — {len(rules)}, binding every environment"))
+    out.append(fmt.dim(say("rules_heading", n=len(rules))))
     for i, r in rules:
         out.append(_entry(i, r, "rules"))
     out.append("")
-    out.append(fmt.dim(f"  PINS — {len(pins)}, standing on `{here}`"))
+    out.append(fmt.dim(say("pins_heading", n=len(pins), env=here)))
     for i, p in pins:
         out.append(_entry(i, p, "pins"))
     out.append("")
@@ -500,19 +543,13 @@ def reading(root: Path, here: str, at: str = "", mark: bool = True) -> str:
     # system ever asks whether it is still worth saying.
     said = [(i, r) for i, r in enumerate(_standing_reminders(root, here), 1) if not r.get("done")]
     if said:
-        out.append(fmt.dim(f"  REMINDERS — {len(said)}, repeated at every stop on `{here}`"))
+        out.append(fmt.dim(say("reminders_heading", n=len(said), env=here)))
         for i, r in said:
             body = fmt.wrap(r.get("text", ""), indent=7)
-            out.append(f"  {i:>3}" + body[5:] + "\n"
-                       + fmt.dim(f"       {pins_mod.age(r.get('at', ''))}"
-                                 + (f" · until: {r['until']}" if r.get("until") else "")
-                                 + f' · journal reminders done {i} "<why>"'))
+            out.append(say("entry", n=str(i).rjust(3), body=body[5:])
+                       + fmt.dim(say("reminder_meta", age=pins_mod.age(r.get("at", "")), until=r.get("until"), n=i)))
         out.append("")
-    out.append(fmt.wrap(f"That is {len(rules)} rule(s), {len(pins)} pin(s) and {len(said)} "
-                        "reminder(s) — the whole of what "
-                        "every later session is handed as true. When you have been through them, "
-                        "say what you struck and what you left; the record keeps when this was "
-                        "last done, not what was decided."))
+    out.append(fmt.wrap(say("reading_end", rules=len(rules), pins=len(pins), reminders=len(said))))
     if mark and at:
         stamp(root, here, at, len(rules), len(pins))
     return "\n".join(out)

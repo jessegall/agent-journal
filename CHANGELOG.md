@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.62.17 — environments and cleanup say what they say from templates
+
+Every message `tracks.py` and `cleanup.py` return or print — claim, switch and remove
+replies, an environment's pick-up page, the findings report and the reading pass — is
+declared once in `MESSAGES` and filled by `say`. The wording is unchanged.
+
 ## 1.62.16 — to-dos say what they say from templates
 
 Every message `todo.py` returns or prints — refusals, confirmations, a row's state line,
