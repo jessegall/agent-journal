@@ -111,6 +111,26 @@ A brief on stdin:
     them state-only like the others. Start from src/View/Widgets/Dropdown.php.
     EOF
 
+**Inbox, for this environment**
+
+    journal inbox "<message>"         leave a message for the agent — `journal inbox add "<message>"` is the same
+    journal inbox [--page=N] [--order=asc|desc]   waiting messages first, then processed ones
+    journal inbox show N              the message, the parts it was split into and what each became, and the questions about it
+    journal inbox process N --part="<words>" --became=<ref> [--became=<ref>]   one part: the words it quotes, and what it became — todo 22, pin 3, rule 2, reminder 1, question 4, work or noted
+    journal inbox done N              processed; refused until at least one part is recorded
+
+A part must quote the message, and what it became must exist. Nothing is deleted. A stop
+holds while messages wait; the first tool call after a new one mentions it once.
+
+**Questions, for this environment**
+
+    journal questions add "<question>" [--about=<ref>]...   ask; never halts the session. A ref is todo 22, doc 4.1, pin 3, rule 2 or inbox 5
+    journal questions [--all]         open first, then answered; --all adds withdrawn ones
+    journal questions show N          the question, what it is about, and the answer
+    journal questions answer N "<answer>"   the user answers; the agent is told at its next stop
+    journal questions link N <ref>    about one more thing — `questions unlink N <ref>` takes one off
+    journal questions withdraw N "<why>"   it no longer needs an answer
+
 **Docs, for every environment** — `<doc>` is a doc's number or its name (the title, or a unique part of it)
 
     journal docs                     the catalogue

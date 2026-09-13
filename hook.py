@@ -208,11 +208,11 @@ MESSAGES = {
                     '  .journal/journal.py nothing "<why nothing here needs pinning>"\nNothing is the right answer more '
                     "often than not — say so and carry on. `journal search`, `journal conversation --back=1` and "
                     "`journal pins` still run, to decide with.",
-    "ask_denied": "AUTO IS ON, so a question to the user is refused: it would halt the session until they return, "
-                  "which auto exists to prevent. Decide it yourself and file the choice, or put the question on the "
-                  'to-do and move on:\n  .journal/journal.py work update "<what you chose, and why>"\n'
-                  '  .journal/journal.py todos ask <n> "<what is stuck, and what was tried>"\nThe user answers with '
-                  "`journal todos answer <n>` and the next stop hands that to-do back first.",
+    "ask_denied": "AUTO IS ON, so the question tool is refused: it would halt the session until the user returns, "
+                  "which auto exists to prevent. Ask through the journal instead — it never halts — and carry on with "
+                  'what does not depend on the answer:\n  .journal/journal.py questions add "<the question>" '
+                  '--about="todo <n>"\n  .journal/journal.py work update "<what you chose, and why>"   if you can '
+                  "decide it yourself\nThe user answers with `journal questions answer <n>` and the next stop tells you.",
     "unbound_deny": "{block}\n\nThis call is denied until one has been chosen. Reads are never gated; only changes.",
     "gate": "Nothing is open, so this edit would not be filed against any work. Say what you are doing first — one "
             'line, and then this stops asking:\n  .journal/journal.py work start "<the work, in your own words>"\n'

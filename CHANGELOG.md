@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.63.2 — the skill teaches the inbox, and that asking through the journal is always allowed
+
+The `journal` skill has two new sections: how to process an inbox message — split it into
+parts, route each by the chat rules, a question for any part not understood, record, then
+`inbox done` — and how to ask the user through `journal questions add`, which never halts
+the session and can be about any resource. "Ask in two cases" is now "stop on a to-do in two
+cases": it is about when to stop, not whether a question may be filed. The hold table names
+the inbox holds, and with auto on the refused question tool now points at `questions add`.
+`references/commands.md` lists the inbox and questions verbs.
+
 ## 1.63.1 — the inbox is announced
 
 A stop holds while the active environment has unprocessed messages — subject `inbox`,
