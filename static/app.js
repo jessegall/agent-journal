@@ -550,8 +550,8 @@ const Questions = {
             <div class="md prose" v-html="$md(item.data.answer)"></div>
           </div>
           <div v-if="item.data.withdrawn" class=note>Withdrawn: {{ item.data.withdrawn }}</div>
-          <Compose v-else :placeholder="item.data.answer ? 'Change the answer; the earlier one is kept' : 'Your answer'"
-            :submit="item.data.answer ? 'Edit answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
+          <Compose v-else :placeholder="item.data.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
+            :submit="item.data.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
         </template>
       </Panel>
     </div>`,

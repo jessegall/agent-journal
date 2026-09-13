@@ -149,7 +149,7 @@ MESSAGES = {
     "answered_many": "the user answered {n} questions",
     "answered_do": "act on each answer; `.journal/journal.py questions show <n>` reads one in full",
     "answered_row": "question {n}: {text} → {answer}[{changed}]",
-    "answer_changed": " (the answer changed)",
+    "answer_changed": " (a new answer)",
     "aside_fact": "auto is on for `{env}`, and every waiting to-do is set aside",
     "aside_do": "nothing is blocked on the user — these wait on conditions you judge: {rows:; } `journal todos start "
                 "<n>` when one comes true",

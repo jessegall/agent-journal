@@ -20,7 +20,7 @@ PAGE = {
     "lead": "This environment's questions, open first. A question can be about any number of "
             "to-dos, docs, pins, rules and inbox messages; answering one tells the agent at its next stop.",
     "commands": (('journal questions add "<question>" --about="todo 22"', "ask one, linked to what it is about"),
-                 ('journal questions answer <n> "<answer>"', "answer it, or change the answer"),
+                 ('journal questions answer <n> "<answer>"', "answer it, or add a new answer"),
                  ("journal questions show <n>", "read one in full")),
 }
 
