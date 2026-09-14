@@ -1103,6 +1103,16 @@ const WorkPanel = {
           <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a></dd></template>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'work' + item.data.n + (item.data.ended || '')"/>
+        <div v-if="item.data.files && item.data.files.length">
+          <p class=section-label>Files changed <span class=muted>{{ item.data.files.length }}</span></p>
+          <div class=work-files>
+            <div v-for="f in item.data.files" :key="f.path" class=work-file :title="f.path">
+              <span class=work-file-path>{{ f.path }}</span>
+              <span v-if="f.created" class=work-file-new>new</span>
+              <span class=work-file-add>+{{ f.added }}</span><span class=work-file-del>−{{ f.removed }}</span>
+            </div>
+          </div>
+        </div>
         <div v-if="item.data.notes.length">
           <p class=section-label>Notes</p>
           <div class=linked><div v-for="(note, i) in item.data.notes" :key="i" class=sub>{{ note.text }}</div></div>

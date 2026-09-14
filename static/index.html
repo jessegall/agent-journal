@@ -406,6 +406,14 @@
   .panel-link:hover { color: var(--text); text-decoration: underline; }
   /* a block is a list container too, so Home's lists narrow their columns beside an open panel */
   .block { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; container: list / inline-size; }
+  /* the files a piece of work changed: path, a new tag, and green added / red removed line counts */
+  .work-files { display: flex; flex-direction: column; gap: 2px; }
+  .work-file { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .work-file-path { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text-2); }
+  .work-file-new { font-size: 10px; padding: 0 5px; border-radius: 4px; color: var(--accent); background: rgba(94, 100, 201, .14); }
+  .work-file-add { color: rgb(96, 186, 126); }
+  .work-file-del { color: var(--danger); }
   .block .lgroup:last-child > .rows:last-child > .row:last-child { border-bottom: none; }
   .block .ghead { position: static; }
 

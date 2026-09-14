@@ -305,6 +305,33 @@ def resumed(root: Path, owners: set) -> str | None:
     return None
 
 
+def record_files(root: Path, owners: set, changes: list[dict], at: str) -> int:
+    """Add each changed file to the open work this session answers for; lines sum per path."""
+    with state.locked(root):
+        items = _all(root)
+        standing = [w for w in items if not w.get("ended")]
+        mine = [w for w in standing if w.get("session") in owners] or (standing if len(standing) == 1 else [])
+        if not mine or not changes:
+            return 0
+        files = mine[-1].setdefault("files", [])
+        by_path = {f["path"]: f for f in files}
+        for c in changes:
+            f = by_path.get(c["path"])
+            if f is None:
+                f = by_path[c["path"]] = {"path": c["path"], "created": bool(c.get("created")), "added": 0, "removed": 0}
+                files.append(f)
+            f["added"] += int(c.get("added") or 0)
+            f["removed"] += int(c.get("removed") or 0)
+            f["at"] = at
+        state.put(root, KEY, items)
+        return len(changes)
+
+
+def files_changed(w: dict) -> str:
+    n = len(w.get("files") or [])
+    return "" if not n else "1 file changed" if n == 1 else f"{n} files changed"
+
+
 def note(root: Path, text: str, at: str, on: str | None = None) -> tuple[bool, str]:
     """File progress AGAINST a piece of work. The thing `[!update]` was pretending to be.
 
