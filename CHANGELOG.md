@@ -4,6 +4,27 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.133.0 — Several journals told apart, and answers you can act on
+
+A minor release that gathers everything since 1.132.0:
+
+- **Several journals at once.** With more than one journal viewer running, each wears a thin strip at
+  the top in its own colour from a pool of ten, never shared, with a readable label. The project name
+  on the strip opens a switcher to the others. Both journal pickers list the journal you are in first,
+  highlighted.
+- **Answers.** An "Answered your question" notification is amber on Home and in Activity until you
+  read it. Open shows the answer in Home's side panel and marks it read. An answer can end with a
+  follow-up question you click (`messages reply … --follow-up="…" --option=…`).
+- **Auto mode.** With auto mode off, only a message you leave wakes the agent. Answered questions and
+  comments wait for its next stop, and nothing sends it to the to-do list.
+- **Smaller things.**
+  - Activity says which setting you changed.
+  - A message the agent has read says "Being handled", short, with the time on hover.
+  - A status icon stays beside its text when the text wraps.
+  - Activity stays newest first.
+
+Nothing to do beyond `journal upgrade`.
+
 ## 1.132.15 — The journal pickers put this journal first
 
 In both journal pickers, the one in the sidebar and the one on the strip's tab, the journal you are in
