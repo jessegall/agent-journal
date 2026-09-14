@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.68 — A subagent shows on the environment it works on
+
+The agents list in the Activity header showed no subagents. A subagent's own id is bound to no
+environment, so its heartbeat was filed under the project's start environment instead of the
+environment of the session that sent it. It is now filed there, so a running subagent appears in
+that environment's list, named by its description.
+
 ## 1.131.67 — New and Archive sit in the bar above each list
 
 The buttons that belong to a list, New (New to-do, New pin, Start work and so on) and Archive,
