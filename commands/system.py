@@ -34,6 +34,9 @@ TEXT = {
                          "idle session:\n  claude --dangerously-load-development-channels server:journal",
     "channel_taken": "{path} already has a server named journal; it was left as it is",
     "channel_usage": "journal channel --install adds the journal's channel server to .mcp.json",
+    "claude_added": "the journal channel is added to {path}",
+    "claude_missing": "no `claude` command on your PATH; install Claude Code first",
+    "claude_would_run": "would run:",
     "statusline_offer": "Want the environment, the open work and the web viewer in Claude Code's status bar? "
                         "`journal statusline --install`",
     "statusline_installed": "status line added to {path}; it shows from the next prompt",
@@ -283,6 +286,20 @@ class Statusline(Command):
         return 0
 
 
+def install_channel() -> tuple[bool, Path]:
+    """Add the journal's channel server to .mcp.json. (added, the path shown); False when one is already there."""
+    import json
+    path = project() / ".mcp.json"
+    data = json.loads(path.read_text()) if path.is_file() else {}
+    servers = data.setdefault("mcpServers", {})
+    shown = path.relative_to(project())
+    if "journal" in servers:
+        return False, shown
+    servers["journal"] = {"command": "python3", "args": [".journal/channel.py"]}
+    path.write_text(json.dumps(data, indent=2) + "\n")
+    return True, shown
+
+
 class Channel(Command):
     signature = "channel {--install}"
 
@@ -290,18 +307,39 @@ class Channel(Command):
         if not p.option("install"):
             fmt.say(TEXT["channel_usage"])
             return 0
-        import json
-        path = project() / ".mcp.json"
-        data = json.loads(path.read_text()) if path.is_file() else {}
-        servers = data.setdefault("mcpServers", {})
-        shown = path.relative_to(project())
-        if "journal" in servers:
-            fmt.say(render(TEXT["channel_taken"], path=shown))
-            return 0
-        servers["journal"] = {"command": "python3", "args": [".journal/channel.py"]}
-        path.write_text(json.dumps(data, indent=2) + "\n")
-        fmt.say(render(TEXT["channel_installed"], path=shown))
+        added, shown = install_channel()
+        fmt.say(render(TEXT["channel_installed" if added else "channel_taken"], path=shown))
         return 0
+
+
+class Claude(Command):
+    signature = ("claude {prompt*? : what to ask Claude first} {--continue} {--resume= : a session id} "
+                 "{--dry-run}")
+
+    def run(self, p: Parsed) -> int:
+        import os
+        import shlex
+        import shutil
+        added, shown = install_channel()
+        if added:
+            fmt.say(render(TEXT["claude_added"], path=shown))
+        command = ["claude", "--dangerously-load-development-channels", "server:journal"]
+        if p.option("continue"):
+            command.append("--continue")
+        if p.option("resume"):
+            command += ["--resume", p.option("resume")]
+        if p.arg("prompt"):
+            command.append(p.arg("prompt"))
+        if p.option("dry-run"):
+            fmt.say(TEXT["claude_would_run"])
+            # printed as is: a wrapped command cannot be copied
+            print(shlex.join(command))
+            return 0
+        if not shutil.which("claude"):
+            fmt.say(TEXT["claude_missing"])
+            return 1
+        os.chdir(project())
+        os.execvp("claude", command)
 
 
 def has_statusline() -> bool:
@@ -356,4 +394,4 @@ class Version(Command):
 
 
 COMMANDS = (Cleanup, CleanupRead, CleanupKeep, Migrate, MigrateRun, Loop, LoopSet, LoopUnset,
-            Upgrade, Update, Verify, Settings, Serve, Statusline, Channel, Enable, Disable, Version)
+            Upgrade, Update, Verify, Settings, Serve, Statusline, Channel, Claude, Enable, Disable, Version)
