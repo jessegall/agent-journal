@@ -15,6 +15,7 @@ MESSAGES = {
     "set_usage": "{key} wants a whole number of at least 1",
     "set_show": "{env}: Activity shows the last {n} line(s)",
     "set_keep": "{env}: the activity log keeps the last {n} line(s)",
+    "dispatched": "Dispatched a subagent",
 }
 
 
@@ -409,6 +410,13 @@ def flush_tools(root: Path, track: str, stem: str, at: str) -> None:
     state.put(root, QUEUE, {}, stem=stem)
     _append(root, track, {"at": at, "text": tools_text(counts), "kind": None, "n": None, "titled": False,
                           "detail": "", "by": "Agent"})
+
+
+def record_dispatch(root: Path, track: str, stem: str, description: str, at: str) -> None:
+    """The agent handed work to a subagent: its own line, after whatever tool uses came before it."""
+    flush_tools(root, track, stem, at)
+    _append(root, track, {"at": at, "text": say("dispatched"), "n": None, "detail": " ".join((description or "").split()),
+                          "by": "Agent"})
 
 
 def _append(root: Path, track: str, entry: dict) -> None:

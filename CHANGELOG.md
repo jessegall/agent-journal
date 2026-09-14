@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.66 — See which agents are working, and when one hands work to a subagent
+
+When the agent dispatches a subagent, Activity now shows "Dispatched a subagent" with the
+description the agent gave it. A new button in the Activity column's header lists who is working on the
+environment: each session, marked working or idle, and each subagent that has been active in the
+last 30 minutes, named by its description and the session that sent it. The badge counts the
+ones working now.
+
+A session continued with `claude --continue` or `--resume` also counts as running again. It
+used to stay marked as ended from its earlier exit, so it was missing from this list and the
+sidebar's agent dot never showed it working.
+
 ## 1.131.65 — See what each commit covered
 
 When the agent commits while a piece of work is open, the journal now keeps the commit's hash

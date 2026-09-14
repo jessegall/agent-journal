@@ -203,6 +203,7 @@ const Icon = {
       <template v-else-if="name === 'paperclip'"><path d="M10.5 5.5l-4.3 4.3a1.3 1.3 0 0 0 1.8 1.8l4.6-4.6a2.6 2.6 0 0 0-3.7-3.7L4.3 8a3.9 3.9 0 0 0 5.5 5.5l3.7-3.7"/></template>
       <template v-else-if="name === 'sort-asc'"><path d="M8 13V3M4 7l4-4 4 4"/></template>
       <template v-else-if="name === 'sort-desc'"><path d="M8 3v10M4 9l4 4 4-4"/></template>
+      <template v-else-if="name === 'agents'"><circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/></template>
       <template v-else-if="name === 'empty'"><path d="M2.5 9.5l1.8-5h7.4l1.8 5V13h-11z"/><path d="M2.5 9.5h3l1 1.5h3l1-1.5h3"/></template>
       <template v-else-if="name === 'reports'"><path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/></template>
       <template v-else-if="name === 'work'"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></template>
@@ -2321,12 +2322,38 @@ const ActivityPanel = {
         quick.sending = false;
       }
     };
-    return { hide: () => setActivityShown(false), accept, quick, box, grow, sendQuick };
+    // who is working on this environment: its sessions, and the subagents they dispatched
+    const crew = reactive({ open: false });
+    const agentsList = useFetch(() => props.env && `/api/env/${props.env}/agents`);
+    const working = computed(() => (agentsList.data || []).filter((a) => a.working).length);
+    const outsideCrew = (e) => { if (!e.target.closest(".drop-wrap.crew")) crew.open = false; };
+    watchEffect((onCleanup) => {
+      if (!crew.open) return;
+      document.addEventListener("mousedown", outsideCrew);
+      onCleanup(() => document.removeEventListener("mousedown", outsideCrew));
+    });
+    return { hide: () => setActivityShown(false), accept, quick, box, grow, sendQuick, crew, agentsList, working };
   },
   template: `
     <div class=activity-panel>
       <div class=activity-head><span class=group-label>Activity</span>
-        <button type=button class=icon-btn title="Hide Activity" aria-label="Hide Activity" @click="hide"><Icon name="collapse"/></button>
+        <span class=activity-head-tools>
+          <span class="drop-wrap crew">
+            <button type=button :class="['icon-btn', {on: crew.open}]" title="Agents working here" aria-label="Agents working here"
+              :aria-expanded="crew.open" @click="crew.open = !crew.open; agentsList.reload()">
+              <Icon name="agents"/><span v-if="working" class=tool-badge>{{ working }}</span>
+            </button>
+            <div v-if="crew.open" class=drop>
+              <div class=drop-head><span>Agents on {{ env }}</span></div>
+              <p v-if="!(agentsList.data && agentsList.data.length)" class="muted drop-empty">No agent is working on this environment.</p>
+              <div v-for="a in agentsList.data || []" :key="a.kind + a.id" class=drop-row>
+                <span class=drop-kind>{{ a.kind === 'subagent' ? 'Subagent' : 'Session' }} · {{ a.kind === 'subagent' ? (a.age_text || 'just now') : (a.working ? 'Working' : 'Idle') }}</span>
+                <span class=drop-text>{{ a.name || (a.kind === 'subagent' ? 'Subagent ' + a.id : 'Session ' + a.id) }}<span v-if="a.parent" class=muted> · from session {{ a.parent }}</span></span>
+              </div>
+            </div>
+          </span>
+          <button type=button class=icon-btn title="Hide Activity" aria-label="Hide Activity" @click="hide"><Icon name="collapse"/></button>
+        </span>
       </div>
       <template v-if="data">
         <div class=activity-list>
