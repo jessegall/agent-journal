@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.112.0 — a report can be turned into a document
+
+A report's page has Turn into doc: a document is made from the report's title and text and kept
+for good, and the report is archived, pointing at it. From the terminal, `journal reports doc
+<n>`. This is how a report outlives the 30-day removal.
+
 ## 1.111.1 — session start is fast again
 
 Session start took several seconds on machines with many Claude projects: looking up a session

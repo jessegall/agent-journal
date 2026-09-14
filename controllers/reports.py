@@ -12,8 +12,8 @@ from payloads.common import ListingPayload, WhyPayload
 class ReportsController(Controller):
     resource = "reports"
     noun = "report"
-    actions = ("index", "show", "store", "destroy", "keep")
-    numbered = ("show", "destroy")
+    actions = ("index", "show", "store", "destroy", "keep", "todoc")
+    numbered = ("show", "destroy", "todoc")
     payloads = {"index": ListingPayload, "store": report_payloads.StorePayload, "destroy": WhyPayload,
                 "keep": report_payloads.KeepPayload}
 
@@ -43,6 +43,11 @@ class ReportsController(Controller):
     def show(self, root: Path, p: Payload) -> Result:
         days = reports.archive_days(root, p.env or state.current_track(root))
         return Result("ok", "", reports.row_response(p.id, self.repository(root, p).find(p.id).raw, body=True, days=days))
+
+    def todoc(self, root: Path, p: Payload) -> Result:
+        outcome = reports.to_doc(root, p.id, p.at, track=p.env or None)
+        doc = self.repository(root, p).find(p.id).raw.get("doc") if outcome[0] else None
+        return Result.of(outcome, {"doc": doc} if doc else None)
 
     def keep(self, root: Path, p: report_payloads.KeepPayload) -> Result:
         return Result.of(reports.set_archive_days(root, p.env or state.current_track(root), p.days))

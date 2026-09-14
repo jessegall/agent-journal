@@ -79,7 +79,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal reports show N        one report in full",
         'journal reports add "<title>" [--about="todo 22"|"question 4"] --brief   a report for the user, its text on stdin; never a doc, never handed to a session',
         'journal reports archive N "<why>"   take one off the list, kept with its reason',
-        "journal reports keep <days>     how many days a report stays listed on this environment (30 by default); 0 keeps them until archived by hand",
+        "journal reports keep <days>     how many days a report stays listed on this environment (7 by default); 0 keeps them until archived by hand",
+        "journal reports doc N           turn a report into a document, which is kept for good; the report is archived",
     ),
     "comments": (
         "journal comments [--all]      what the user said about a to-do, doc, pin, rule or reminder; open ones, --all adds handled",

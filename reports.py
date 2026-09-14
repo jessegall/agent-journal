@@ -29,6 +29,9 @@ MESSAGES = {
     "fact_for": "for {about}",
     "fact_archived": "archived: {why}",
     "expired": "older than {days} day(s)",
+    "already_doc": "report {n} is already doc {doc}",
+    "became_doc": "turned into doc {doc}",
+    "to_doc": "report {n} is now doc {doc}; the doc is kept for good, the report is archived",
     "keep_usage": "journal reports keep <days>: how many days a report stays listed on this environment; 0 keeps them",
     "kept": "reports on `{env}` stay listed for {days} day(s), then are archived",
     "kept_always": "reports on `{env}` stay listed until archived by hand",
@@ -98,6 +101,31 @@ def add(root: Path, title: str, body: str, at: str, about: str = "", source: str
         _put(root, items, track)
         n = len(items)
     return True, say("added", n=n, title=title, about=label(ref) or None)
+
+
+def to_doc(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, str]:
+    """Copy a report into a new document, which is never pruned; the report is archived and points at it."""
+    import docs
+    here = track or state.current_track(root)
+    items = _all(root, here)
+    if not 1 <= n <= len(items) or items[n - 1].get("removed"):
+        return False, say("no_report", n=n)
+    r = items[n - 1]
+    if r.get("doc"):
+        return False, say("already_doc", n=n, doc=r["doc"])
+    first = next((l.strip("# ").strip() for l in r.get("body", "").splitlines() if l.strip()), r["title"])
+    ok, message = docs.add(root, r["title"], first[:200], r.get("body", ""), here, source="report %d" % n)
+    if not ok:
+        return False, message
+    import re as _re
+    dn = int(_re.search(r"doc (\d+)", message).group(1))
+    with state.locked(root):
+        items = _all(root, here)
+        items[n - 1]["doc"] = dn
+        items[n - 1]["archived"] = say("became_doc", doc=dn)
+        items[n - 1]["archived_at"] = at
+        _put(root, items, here)
+    return True, say("to_doc", n=n, doc=dn)
 
 
 def archive(root: Path, n: int, why: str, at: str, track: str | None = None) -> tuple[bool, str]:
@@ -199,7 +227,8 @@ def facts(r: dict, days: int = 0) -> str:
 def row_response(n: int, r: dict, body: bool = False, days: int = 0) -> dict:
     row = {"n": n, "title": r.get("title", ""), "gist": fmt.gist(" ".join((r.get("body") or "").split())),
            "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "", "about": r.get("about") or "",
-           "about_label": label(r.get("about") or ""), "archived": archived_why(r, days), "meta": facts(r, days)}
+           "about_label": label(r.get("about") or ""), "archived": archived_why(r, days), "meta": facts(r, days),
+           "doc": r.get("doc") or None}
     if body:
         row["body"] = r.get("body", "")
     return row
