@@ -185,6 +185,7 @@ const Icon = {
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
       <template v-else-if="name === 'activity'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></template>
       <template v-else-if="name === 'collapse'"><path d="M6 4.5l3.5 3.5L6 11.5"/><path d="M11.5 3.5v9"/></template>
+      <template v-else-if="name === 'paperclip'"><path d="M10.5 5.5l-4.3 4.3a1.3 1.3 0 0 0 1.8 1.8l4.6-4.6a2.6 2.6 0 0 0-3.7-3.7L4.3 8a3.9 3.9 0 0 0 5.5 5.5l3.7-3.7"/></template>
       <template v-else-if="name === 'sort-asc'"><path d="M8 13V3M4 7l4-4 4 4"/></template>
       <template v-else-if="name === 'sort-desc'"><path d="M8 3v10M4 9l4 4 4-4"/></template>
       <template v-else-if="name === 'empty'"><path d="M2.5 9.5l1.8-5h7.4l1.8 5V13h-11z"/><path d="M2.5 9.5h3l1 1.5h3l1-1.5h3"/></template>
@@ -326,6 +327,7 @@ const Panel = {
 
 const Compose = {
   props: ["placeholder", "submit", "hint", "send", "attach"],
+  components: { Icon },
   setup(props) {
     const draft = reactive({ text: "", sending: false, error: null, files: [] });
     const picked = (e) => { draft.files.push(...Array.from(e.target.files || [])); e.target.value = ""; };
@@ -355,13 +357,17 @@ const Compose = {
   },
   template: `
     <form class=compose @submit.prevent="go">
-      <textarea class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
-        @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go"></textarea>
+      <div :class="['compose-box', {attachable: attach}]">
+        <textarea class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
+          @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go"></textarea>
+        <label v-if="attach" class=compose-attach title="Attach files" aria-label="Attach files">
+          <Icon name="paperclip"/><input type=file multiple hidden @change="picked">
+        </label>
+      </div>
       <div v-if="draft.files.length" class=compose-files>
         <span v-for="(f, i) in draft.files" :key="i" class=chip>{{ f.name }} <button type=button class=chip-x title="Remove" @click="unpick(i)">×</button></span>
       </div>
       <div class=compose-bar>
-        <label v-if="attach" class="btn attach">Attach files<input type=file multiple hidden @change="picked"></label>
         <span class=hint>{{ hint }}</span>
         <button type=submit class=primary :disabled="draft.sending || !draft.text.trim()">{{ submit }}</button>
       </div>

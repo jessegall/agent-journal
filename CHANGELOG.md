@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.2 — Attach files sits inside the message box
+
+The button for attaching files to a message is now a small paperclip in the top-right
+corner of the message box itself, instead of a button in the bar under it. Text in the box
+keeps clear of it. Picked files still show under the box.
+
 ## 1.131.1 — A to-do's priority is one button with a menu
 
 In an open to-do's panel the Priority row shows the current priority's icon and name as one
