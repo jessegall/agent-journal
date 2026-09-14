@@ -254,14 +254,30 @@ def _is_test(rel: Path) -> bool:
     return len(rel.parts) == 1 and (rel.name == "testkit.py" or (rel.name.startswith("test_") and rel.suffix == ".py"))
 
 
+def _git_files(root: Path) -> set[Path] | None:
+    """In a git checkout, the files git counts: tracked, or new and not ignored. None elsewhere."""
+    if not (root / ".git").exists():
+        return None
+    try:
+        p = subprocess.run(["git", "-C", str(root), "ls-files", "-co", "--exclude-standard", "-z"],
+                           capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return {Path(x) for x in p.stdout.split("\0") if x} if p.returncode == 0 else None
+
+
 def _package_files(root: Path) -> list[Path]:
     """Every file of the package under `root`, relative — code, skill, gitignore; never the suites."""
+    # a checkout also holds untracked or ignored folders (an editor's, a browser tool's) that are not the package
+    listed = _git_files(root)
     out = []
     for f in root.rglob("*"):
         rel = f.relative_to(root)
         # a clone's .git is not the package: copying it once put a nested repository
         # into a consumer's .journal
         if not f.is_file() or rel.parts[0] in DATA or rel.parts[0] == ".git" or f.suffix in (".tmp", ".pyc"):
+            continue
+        if listed is not None and rel not in listed:
             continue
         if _is_test(rel):
             continue

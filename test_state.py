@@ -628,6 +628,15 @@ check("to-dos and the record are data the pull leaves behind",
 # consumer project that finds a red suite starts fixing the tool instead of its own work
 (r / "test_x.py").write_text(""); (r / "testkit.py").write_text("")
 check("the suites are not package files", [str(f) for f in install._package_files(r)], ["hook.py"])
+# from a git checkout, an ignored folder is not the package; a new file git would add still is
+g = fresh()
+(g / "hook.py").write_text(""); (g / ".gitignore").write_text("/.idea\n")
+(g / ".idea").mkdir(); (g / ".idea" / "workspace.xml").write_text("")
+subprocess.run(["git", "init", "-q", str(g)], capture_output=True, timeout=30)
+subprocess.run(["git", "-C", str(g), "add", "hook.py", ".gitignore"], capture_output=True, timeout=30)
+(g / "new.py").write_text("")
+check("a checkout's package is what git counts: tracked, and new but not ignored",
+      [str(f) for f in install._package_files(g)], [".gitignore", "hook.py", "new.py"])
 
 # with nothing open, a line that starts work first may write; one that writes first may not
 d, path = project_with(2)
