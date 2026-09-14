@@ -49,6 +49,12 @@
   .side-foot-age { font-size: 10px; color: var(--text-3); opacity: .55; }
   /* in the footer the dot sits at the far right and blinks while an agent works */
   .side-foot .env-dot { margin: 0; }
+  .side-foot-ctx { margin-left: auto; margin-right: 8px; display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .ctx-bar { width: 36px; height: 3px; border-radius: 2px; background: var(--border-2); overflow: hidden; }
+  .ctx-bar > span { display: block; height: 100%; background: var(--text-3); }
+  .side-foot-ctx.high { color: var(--warn); }
+  .side-foot-ctx.high .ctx-bar > span { background: var(--warn); }
   .side-foot .env-dot.live { animation: env-blink 1.6s ease-in-out infinite; }
   .side-foot .env-dot.live::after { display: none; }
   @keyframes env-blink { 50% { opacity: .3; } }

@@ -680,6 +680,11 @@ check("setting a priority names the to-do and the value",
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
+_tail = root / "context-tail.jsonl"
+_tail.write_text(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 1000, "cache_read_input_tokens": 149000}}}) + "\n")
+check("the agent's context use is its last reading against the window, and nothing without a window or a reading",
+      (_activity.context_use(_tail, 1_000_000), _activity.context_use(_tail, 0), _activity.context_use(root / "none.jsonl", 1_000_000)),
+      ({"used": 150000, "window": 1_000_000, "share": 15}, None, None))
 
 state.put(root, serve.VIEWER_PORT, srv.server_port)
 check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)

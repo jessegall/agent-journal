@@ -2098,6 +2098,9 @@ const App = {
         <div v-if="activity.data" class=side-foot>
           <div class=side-foot-head>
             <span>Agent</span>
+            <span v-if="activity.data.agent && activity.data.agent.context" :class="['side-foot-ctx', {high: activity.data.agent.context.share >= 70}]"
+              :title="'Context ' + activity.data.agent.context.share + '% used: ' + activity.data.agent.context.used.toLocaleString() + ' of ' + activity.data.agent.context.window.toLocaleString() + ' tokens'">
+              <span class=ctx-bar><span :style="{width: activity.data.agent.context.share + '%'}"></span></span>{{ activity.data.agent.context.share }}%</span>
             <span :class="['env-dot', {live: activity.data.agent}]" :title="activity.data.agent ? 'An agent is working' : 'No agent is working'"></span>
           </div>
           <span v-if="latest" class=side-foot-now

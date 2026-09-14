@@ -52,6 +52,15 @@ def say(message: str, /, **values) -> str:
     return render(MESSAGES[message], **values)
 
 
+def context_use(path: Path | None, window: int) -> dict | None:
+    """How full the session's context is, or None when the window or the reading is unknown."""
+    import context
+    used = context.reading_tail(path) if path and window else None
+    if used is None:
+        return None
+    return {"used": used, "window": window, "share": min(100, round(used * 100 / window))}
+
+
 class ActivityController(Controller):
     """What is happening on an environment: the working agent's latest message, and the latest journal events."""
     resource = "activity"
@@ -64,10 +73,15 @@ class ActivityController(Controller):
 
     @staticmethod
     def _agent(root: Path, env: str) -> dict | None:
+        import settings
+        import state
         import tracks
+        import transcript
         for stem, info in tracks.live(root).items():
             if info["track"] == env:
-                return {"session": stem[:8], "seen": tracks.age_text(info["age"])}
+                window = settings.load(root)[0].get("context_window") or state.get(root, "window", 0) or 0
+                return {"session": stem[:8], "seen": tracks.age_text(info["age"]),
+                        "context": context_use(transcript.find(root.parent, stem), window)}
         return None
 
     @staticmethod
