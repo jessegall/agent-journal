@@ -18,6 +18,10 @@ class DetachPayload(Payload):
     why = Field(str)
 
 
+class AttachPayload(Payload):
+    files = Field(object)
+
+
 class ProcessPayload(Payload):
     part = Field(str)
     became = Field(list)

@@ -476,6 +476,10 @@
   .file-remove input:focus { outline: none; border-color: var(--accent); }
   .file-remove .btn { height: 28px; padding: 0 10px; font-size: 12px; }
   .file-row.removed { cursor: default; }
+  /* the Files heading of a message, with Attach files beside it */
+  .files-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .files-head .btn { height: 26px; padding: 0 10px; font-size: 12px; cursor: pointer; }
+  .files-head .btn.disabled { opacity: .6; cursor: default; }
   /* a removed file keeps its name readable; a long reason gives way and ends in an ellipsis */
   .file-row.removed .file-name { flex: 0 1 auto; max-width: 50%; text-decoration: line-through; color: var(--text-3); }
   .file-row.removed .file-meta { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: right; }

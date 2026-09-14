@@ -81,6 +81,8 @@ MESSAGES = {
     "already_removed": "{name} of message {n} is already removed: {why}",
     "detached": "{name} is removed from message {n}: {why}\n  kept at {path}",
     "filed_label_removed": "removed: {why}",
+    "attach_what": "name at least one file to add: journal messages attach {n} --file=<path>",
+    "attached": "added {names:, } to message {n}",
     "filed_label_doc": "filed into doc {doc}",
     "filed_label_kept": "kept",
     "filed_label_none": "not filed yet",
@@ -270,6 +272,35 @@ def detach(root: Path, n: int, name: str, why: str, at: str, track: str | None =
         f["removed"], f["removed_at"] = why, at
         _put(root, items, here)
     return True, say("detached", n=n, name=name, why=why, path=dst.relative_to(root.parent))
+
+
+def attach(root: Path, n: int, files: list | None, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
+    """Add files to a message already sent. From the viewer, the addition is a comment on the message, so the agent is told."""
+    if not files:
+        return False, say("attach_what", n=n)
+    got, why = _read_files(files)
+    if why:
+        return False, why
+    here = track or state.current_track(root)
+    with state.locked(root):
+        items = _all(root, here)
+        m, err = _find(items, n)
+        if m is None:
+            return False, err
+        taken = {f["name"] for f in m.get("files") or []}
+        held = files_dir(root, here, n)
+        held.mkdir(parents=True, exist_ok=True)
+        names = []
+        for name, data in got:
+            name = _file_name(name, taken)
+            (held / name).write_bytes(data)
+            m.setdefault("files", []).append({"name": name, "size": len(data), "filed": None, "added_at": at})
+            names.append(name)
+        _put(root, items, here)
+    if source == "web":
+        import comments
+        comments.add(root, f"message {n}", say("attached", n=n, names=names), at, source="web", track=here)
+    return True, say("attached", n=n, names=names)
 
 
 def file_into(root: Path, n: int, name: str, into: str, at: str, track: str | None = None) -> tuple[bool, str]:
