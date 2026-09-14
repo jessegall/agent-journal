@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.18 — Suggestions has a top bar icon
+
+The agent's suggestions were reachable only from the Notifications drop-down. Suggestions
+now has its own icon in the top bar, a light bulb beside Reports, Pins and Reminders. It
+opens the Suggestions page and is lit while you are on it. Open suggestions still show under
+Notifications.
+
 ## 1.131.17 — The Agent and Auto mode rows are the same height
 
 In the sidebar footer the Auto mode switch made its row taller than the Agent row above it.

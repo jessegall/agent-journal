@@ -269,7 +269,8 @@ const TopBar = {
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
     // what the agent keeps lives here as icons; the one whose page is open is lit
     const view = parseHash().view || "";
-    const KEPT = [{ key: "reports", label: "Reports", view: "Reports" }, { key: "pins", label: "Pins", view: "Pins" },
+    const KEPT = [{ key: "suggestions", label: "Suggestions", view: "Suggestions" },
+                  { key: "reports", label: "Reports", view: "Reports" }, { key: "pins", label: "Pins", view: "Pins" },
                   { key: "reminders", label: "Reminders", view: "Reminders" }];
     return { env, waiting, openCount, drop, notes, suggestions, asks, openQuestions, readOne, readAll, activity, toggleActivity, view, KEPT };
   },
