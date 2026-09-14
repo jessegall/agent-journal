@@ -490,7 +490,7 @@ const ResourceList = {
     const cols = computed(() => {
       const c = props.columns;
       return [c.priority && "22px", c.status && "22px", c.num && (c.numWidth || "44px"), "minmax(0, 1fr)",
-              c.cite && "minmax(0, 180px)", c.age && "72px"].filter(Boolean).join(" ");
+              c.cite && "minmax(0, 180px)", c.age && "112px"].filter(Boolean).join(" ");
     });
     const setSort = (key, value) => { const [by, dir] = value.split(":"); state.sort[key] = { by, dir }; };
     const more = (key) => { state.pages[key] = (state.pages[key] || 1) + 1; };
@@ -1830,10 +1830,10 @@ const ActivityPanel = {
         </div>
         <template v-for="(e, i) in data.events.slice(0, limit)" :key="i">
           <a v-if="href(e)" class="activity-row activity-link" :href="href(e)">
-            <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
+            <span class=activity-text>{{ e.text }}</span><span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
           </a>
           <div v-else class=activity-row>
-            <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
+            <span class=activity-text>{{ e.text }}</span><span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
           </div>
         </template>
       </template>

@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.113.2 — Activity rows show in full, with who did it; times are never cut off
+
+Each Activity row shows its whole text (at most 100 characters, cut at a word) with a small
+line under it saying who did it and when: "You · 18 minutes ago" or "Agent · just now". A
+to-do closed from the viewer counts as yours. The age column in lists is wide enough for
+"18 minutes ago" and is no longer cut off.
+
 ## 1.113.1 — Home's empty panel column shows a faint icon
 
 When nothing is open, Home's panel column shows a faint empty icon instead of the sentence
