@@ -857,6 +857,11 @@ check("the Files page lists a message's file with where it came from, its link a
 check("and the attachments of the environment's documents",
       any(f["source"] == "doc" and f["n"] == 1 and f["url"].startswith("/docs/1/files/") for f in _files), True)
 check("a listed message file opens", get(_shot[0]["url"])[0], 200)
+_shot_n = [m["n"] for m in json.loads(get("/api/env/alpha/inbox?all=1")[2]) if m["text"] == "a message carrying a picture"][0]
+import inbox as _inbox_mod  # noqa: E402
+_inbox_mod.file_into(root, _shot_n, "shot.png", "keep", "2026-09-14T10:00:00+00:00", "alpha")
+check("a message file the agent kept still shows in Files",
+      [f["source"] for f in json.loads(get("/api/env/alpha/files")[2]) if f["name"] == "shot.png"], ["message"])
 _shot_msg = [m["n"] for m in json.loads(get("/api/env/alpha/inbox?all=1")[2]) if m["text"] == "a message carrying a picture"][0]
 status, got = post(f"/api/env/alpha/inbox/{_shot_msg}/attach",
                    {"files": [{"name": "later.txt", "data": "data:text/plain;base64," + base64.b64encode(b"added afterwards").decode()}]})

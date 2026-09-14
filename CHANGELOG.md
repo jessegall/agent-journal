@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.92 — Files lives under Documents, with an image library
+
+A message's file that the agent kept was missing from Files; only files moved into a document are
+left out now, since they show with that document. Files shows images as a grid of thumbnails, each
+with its name and the message or document it came from, and every other file below as a list. Files
+is no longer a sidebar entry: open it from the Files button on an environment's Documents page.
+
 ## 1.131.91 — A message shows the agent is handling it
 
 When the agent reads a waiting message (`journal messages show` or `messages waiting`), the message
