@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.97 — Reports and documents, told apart
+
+An agent asked to have subagents write a report sometimes wrote a document instead. The skill now
+says plainly which is which. A report is temporary: what you checked or found, as it stands now. A
+document is lasting documentation of the codebase or the environment. When the answer is neither, it
+goes in the reply or in a pin. When a to-do the agent starts, or a message it reads, mentions a
+report, the command also reminds it how to write one with `journal reports add`.
+
 ## 1.131.96 — Comment on a piece of work
 
 A work item takes comments like a to-do or a message does: from the Comments section of its panel in

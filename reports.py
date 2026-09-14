@@ -36,11 +36,21 @@ MESSAGES = {
     "kept": "reports on `{env}` stay listed for {days} day(s), then are archived",
     "kept_always": "reports on `{env}` stay listed until archived by hand",
     "show": "REPORT {n}  {title}\n  {meta}\n\n{body}",
+    "hint": "  this mentions a report: a report is the situation as you found it, written for the user —\n"
+            '  journal reports add "<what was asked>" [--about="todo 22"] --brief. A doc is for what stays true.',
 }
 
 
 def say(message: str, /, **values) -> str:
     return render(MESSAGES[message], **values)
+
+
+_MENTIONS = re.compile(r"\breports?\b", re.I)
+
+
+def hint(*texts: str) -> str:
+    """A reminder that reports exist, when what the agent is about to work from asks for one; else ""."""
+    return say("hint") if any(_MENTIONS.search(t or "") for t in texts) else ""
 
 
 def parse_ref(text: str) -> tuple[str | None, str]:
