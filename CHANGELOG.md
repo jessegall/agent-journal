@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.19 — A row's highlight fits inside rounded lists
+
+When a new or moved row was lit in a list with rounded corners, the corners cut off its
+highlight. The highlight now has rounded corners of its own, just inside the list's, so it
+shows in full on the first and last rows too.
+
 ## 1.131.18 — Suggestions has a top bar icon
 
 The agent's suggestions were reachable only from the Notifications drop-down. Suggestions
