@@ -382,9 +382,58 @@ const TopBar = {
     </div>`,
 };
 
+// a section of any panel folds from its label; what is folded is remembered by the label's name
+const FOLDED_KEY = "journal:folded";
+const foldedNames = () => { try { return new Set(JSON.parse(localStorage.getItem(FOLDED_KEY) || "[]")); } catch (e) { return new Set(); } };
+const saveFolded = (names) => { try { localStorage.setItem(FOLDED_KEY, JSON.stringify([...names])); } catch (e) { /* folding still works for this view */ } };
+
 const Panel = {
   props: ["label", "close", "onClose", "link"],
   components: { Icon },
+  setup() {
+    const body = ref(null);
+    const nameOf = (label) => ([...label.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim()) || label).textContent.trim();
+    // the section is the label's element, or the element around a header row that holds the label beside its buttons
+    const sectionOf = (label) => {
+      const head = label.parentElement;
+      const section = head && head.classList.contains("files-head") ? head.parentElement : head;
+      return section && section !== body.value && !label.closest(".question-answer") ? section : null;
+    };
+    const decorate = () => {
+      if (!body.value) return;
+      const folded = foldedNames();
+      body.value.querySelectorAll(".section-label:not([data-foldable])").forEach((label) => {
+        const section = sectionOf(label);
+        if (!section) return;
+        const shut = folded.has(nameOf(label));
+        label.dataset.foldable = "";
+        label.setAttribute("role", "button");
+        label.setAttribute("tabindex", "0");
+        label.setAttribute("aria-expanded", String(!shut));
+        section.classList.toggle("folded", shut);
+      });
+    };
+    const toggle = (label) => {
+      const section = sectionOf(label);
+      if (!section) return;
+      const shut = !section.classList.contains("folded");
+      section.classList.toggle("folded", shut);
+      label.setAttribute("aria-expanded", String(!shut));
+      const names = foldedNames();
+      if (shut) names.add(nameOf(label)); else names.delete(nameOf(label));
+      saveFolded(names);
+    };
+    const onClick = (e) => { const label = e.target.closest(".section-label[data-foldable]"); if (label) toggle(label); };
+    const onKey = (e) => {
+      const label = e.target.closest && e.target.closest(".section-label[data-foldable]");
+      if (label && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggle(label); }
+    };
+    // sections arrive after their data loads, so labels are decorated as they appear
+    let watcher = null;
+    onMounted(() => { decorate(); watcher = new MutationObserver(decorate); watcher.observe(body.value, { childList: true, subtree: true }); });
+    onUnmounted(() => { if (watcher) watcher.disconnect(); });
+    return { body, onClick, onKey };
+  },
   template: `
     <aside class=panel>
       <div class=panel-top><a v-if="link" class=panel-link :href="link" :title="'Open ' + label + ' on its own page'">{{ label }}<Icon name="arrow"/></a><span v-else>{{ label }}</span>
@@ -392,7 +441,7 @@ const Panel = {
           <button v-if="onClose" type=button class=icon-btn title="Close" @click="onClose"><Icon name="close"/></button>
           <a v-else class=icon-btn :href="close" title="Close"><Icon name="close"/></a>
         </span></div>
-      <div class=panel-body><slot/></div>
+      <div class=panel-body ref=body @click="onClick" @keydown="onKey"><slot/></div>
     </aside>`,
 };
 
