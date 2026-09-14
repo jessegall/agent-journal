@@ -228,6 +228,10 @@ MESSAGES = {
                     '  .journal/journal.py nothing "<why nothing here needs pinning>"\nNothing is the right answer more '
                     "often than not — say so and carry on. `journal search`, `journal conversation --back=1` and "
                     "`journal pins` still run, to decide with.",
+    "model_denied": "A subagent dispatch must name its model — rule B1, the journal's own: add `model`, haiku for "
+                    "mechanical work with a known answer, sonnet for care without invention, opus only where the task "
+                    "turns on judgement. A fork, which cannot take a model, and an agent whose own definition sets one "
+                    "go through. The `journal-agents` skill says more.",
     "ask_denied": "AUTO IS ON, so the question tool is refused: it would halt the session until the user returns, "
                   "which auto exists to prevent. Ask through the journal instead — it never halts — and carry on with "
                   'what does not depend on the answer:\n  .journal/journal.py questions add "<the question>" '
@@ -1654,6 +1658,13 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     if due and not _is_journal(payload):
         pct = 100 * due["used"] / due["window"] if due.get("window") else 0
         return _deny(say("context_deny", pct=round(pct)))
+    # A DISPATCH NAMES ITS MODEL (rule B1). Unset hands out this session's own model, the most expensive in the room.
+    # A fork cannot take one, and a custom agent whose definition sets one has already decided.
+    if payload.get("tool_name") == "Agent":
+        given = payload.get("tool_input") or {}
+        kind = str(given.get("subagent_type") or "")
+        if not str(given.get("model") or "").strip() and kind != "fork" and not agents.defined_model(ROOT.parent, kind):
+            return _deny(say("model_denied"))
     # WITH AUTO ON, A QUESTION TO THE USER IS THE ONE MOVE THAT STOPS THE LIST. The user
     # switched auto on to be away; AskUserQuestion halts the session until they are back,
     # which is exactly what auto was turned on to prevent. The skill says to decide and

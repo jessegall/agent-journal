@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.11 — A subagent dispatch that names no model is refused
+
+As you asked in message 259, the hook now refuses an Agent call that does not name its model. The
+refusal names the three choices: haiku for mechanical work with a known answer, sonnet for care
+without invention, opus only where the task turns on judgement. Unset would hand out the session's
+own model, the most expensive in the room. Two dispatches go through without one: a fork, which
+cannot take a model, and a custom agent whose own definition sets its `model:`. The core skill's hook
+table and `journal-agents` say so.
+
 ## 1.134.10 — A commit's work and to-dos come before its files
 
 On a commit's page, the work it was made during and the to-dos it belongs to now come right after its

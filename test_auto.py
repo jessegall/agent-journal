@@ -627,6 +627,29 @@ check("with auto on, AskUserQuestion is refused", bool(denied), True)
 check("and the refusal names the two ways out", ("questions add" in denied, "work update" in denied), (True, True))
 s9.journal("todos", "auto", "off")
 check("with auto off, the same question goes through", ask_call(s9), "")
+
+def agent_call(s, **given):
+    out = s.fire("PreToolUse", tool_name="Agent", tool_input={"description": "look around", "prompt": "read the code", **given})
+    if not out.strip():
+        return ""
+    got = json.loads(out).get("hookSpecificOutput", {})
+    return got.get("permissionDecisionReason", "") if got.get("permissionDecision") == "deny" else ""
+
+# A DISPATCH NAMES ITS MODEL (rule B1): unset hands out the session's own, the most expensive one
+denied = agent_call(s9)
+check("a subagent dispatch that names no model is refused", bool(denied), True)
+check("and the refusal names the three models", all(m in denied for m in ("haiku", "sonnet", "opus")), True)
+check("a dispatch that names its model goes through", agent_call(s9, model="sonnet"), "")
+check("a fork, which cannot take a model, goes through", agent_call(s9, subagent_type="fork"), "")
+import tempfile as _tf  # noqa: E402
+import agents as _agents_mod  # noqa: E402
+_home = Path(_tf.mkdtemp())
+(_home / ".claude" / "agents").mkdir(parents=True)
+(_home / ".claude" / "agents" / "some-file-name.md").write_text("---\nname: auditor\nmodel: sonnet\n---\nbody\n")
+(_home / ".claude" / "agents" / "unset.md").write_text("---\nname: helper\n---\nbody\n")
+check("a custom agent's own definition, matched by its name, can set the model",
+      (_agents_mod.defined_model(_home, "auditor", home=_home), _agents_mod.defined_model(_home, "helper", home=_home),
+       _agents_mod.defined_model(_home, "nobody", home=_home)), ("sonnet", "", ""))
 s9.journal("todos", "auto", "on")
 
 # turning auto ON says so at the moment it becomes true, not only at the next stop
