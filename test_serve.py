@@ -606,6 +606,11 @@ check("and Activity lists it as the agent's, naming the resource and its number 
       {("todo", 3, "Agent"), ("message", None, "Agent")})
 check("a line that only reads something does not repeat its title",
       [e["title"] for e in json.loads(body)["events"] if e["text"] == "Reading to-do"], [""])
+_events_now = json.loads(body)["events"]
+check("a line marks whether it waits on the user: an answered question is marked answered, nothing else unexpected",
+      ({e["needs"] for e in _events_now} <= {"", "open", "answered"},
+       all(e["needs"] == "answered" for e in _events_now if e["text"] == "Answered question"),
+       all(e["needs"] == "" for e in _events_now if e["kind"] not in ("question", "suggestion"))), (True, True, True))
 check("a line that introduces something shows its title",
       [e["title"] for e in json.loads(body)["events"] if e["text"] == "Added to-do" and e["n"] == _tn], ["link me to my work"])
 state.put_tracked(root, "activity", "alpha",

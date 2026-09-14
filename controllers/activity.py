@@ -15,6 +15,7 @@ MESSAGES = {
     "question_answered": "Answered question",
     "message_left": "Wrote message",
     "message_processed": "Processed message",
+    "suggestion_made": "Suggested a change",
 }
 
 TEXT_MAX = 100
@@ -87,10 +88,11 @@ class ActivityController(Controller):
                 titles[kind] = lookups[kind]()
             return short(titles[kind].get(int(n), "") or "", TITLE_MAX)
 
-        def add(at, kind: str, text: str, n: int | None, by: str, titled: bool = False) -> None:
+        def add(at, kind: str, text: str, n: int | None, by: str, titled: bool = False, needs: str = "") -> None:
+            """`needs`: "open" when the line waits on the user, "answered" once they have answered it."""
             if at:
                 out.append({"at": at, "kind": kind, "n": n, "text": short(text),
-                            "title": title_of(kind, n) if titled else "", "by": by})
+                            "title": title_of(kind, n) if titled else "", "by": by, "needs": needs})
 
         for wn, w in enumerate(work._all(root, env), 1):
             if w.get("removed"):
@@ -105,8 +107,15 @@ class ActivityController(Controller):
         for n, q in enumerate(questions._all(root, env), 1):
             if q.get("removed"):
                 continue
-            add(q.get("at"), "question", say("question_asked"), n, AGENT, True)
-            add(q.get("answered_at"), "question", say("question_answered"), n, USER)
+            waiting = not q.get("answered_at") and not q.get("withdrawn") and not q.get("withdrawn_at")
+            add(q.get("at"), "question", say("question_asked"), n, AGENT, True, "open" if waiting else "")
+            add(q.get("answered_at"), "question", say("question_answered"), n, USER, needs="answered")
+        suggestions = __import__("suggestions")
+        for n, s in enumerate(suggestions._all(root, env), 1):
+            if not isinstance(s, dict) or s.get("removed"):
+                continue
+            add(s.get("at"), "suggestion", say("suggestion_made"), n, AGENT, True,
+                "open" if suggestions.status(s) == "open" else "")
         for n, m in enumerate(inbox._all(root, env), 1):
             if m.get("removed"):
                 continue

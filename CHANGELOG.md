@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.123.0 — Activity lines that need you stand out, with their action
+
+A question the agent asked and you have not answered shows in Activity as an ember card
+with an Answer button. A suggestion waiting on you shows the same way, with Accept and
+Review. Once a question is answered, its "Answered question" line keeps a light tint.
+Suggestions now have their own line, "Suggested a change".
+
+The item's number now follows a line's wording after a dot, smaller and muted, without a
+"#": "Closed to-do · 98".
+
+The line under "Agent active" in the sidebar footer is smaller, in italics and fainter, so
+it reads as what the agent is doing rather than a second status.
+
 ## 1.122.1 — The sidebar footer says what the agent did last
 
 Under "Agent active just now" at the bottom of the sidebar, a short line gives the wording
