@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.93 — Every file a piece of work changes is recorded on it
+
+Files changed by an edit showed on the work item as they changed, but two kinds of change were never
+recorded. One was a script that writes files, such as `python3 - <<'PY' … PY`. The other was a shell
+line that edits files and commits in the same go. Both now count toward the work item's files, and
+the Work panel on Home keeps showing them as they come in.
+
 ## 1.131.92 — Files lives under Documents, with an image library
 
 A message's file that the agent kept was missing from Files; only files moved into a document are

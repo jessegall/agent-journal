@@ -94,19 +94,35 @@ fire("PreToolUse", tool_name="Bash", tool_input={"command": "git commit -am x"})
 git(d, "add", "-A")
 git(d, "commit", "-q", "-m", "x")
 fire("PostToolUse", tool_name="Bash", tool_input={"command": "git commit -am x"}, tool_response={"stdout": ""})
-check("a command that commits adds nothing: HEAD moved, so its numbers are not edits", files().get("a.txt"), (False, 4, 1))
+check("a command that commits adds nothing it had counted already", files().get("a.txt"), (False, 4, 1))
 _head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(d), capture_output=True, text=True).stdout.strip()
 check("but the commit it made goes on the open work, with its hash and subject",
       [(c["sha"], c["subject"]) for w in state.tracked(d / ".journal", "work", "w", []) for c in w.get("commits") or []],
       [(_head, "x")])
 
+_script = "python3 - <<'PY'\nopen('a.txt', 'a').write('six\\n')\nPY"
+fire("PreToolUse", tool_name="Bash", tool_input={"command": _script})
+with (d / "a.txt").open("a") as fh:
+    fh.write("six\n")
+fire("PostToolUse", tool_name="Bash", tool_input={"command": _script}, tool_response={"stdout": ""})
+check("a script that writes a file is counted, though the gate does not call it a write", files().get("a.txt"), (False, 5, 1))
+
+fire("PreToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/one/1/ a.txt && git commit -qam y"})
+(d / "a.txt").write_text((d / "a.txt").read_text().replace("one", "1"))
+(d / "c.txt").write_text("c\n")
+git(d, "add", "-A")
+git(d, "commit", "-q", "-m", "y")
+fire("PostToolUse", tool_name="Bash", tool_input={"command": "sed -i '' s/one/1/ a.txt && git commit -qam y"}, tool_response={"stdout": ""})
+got = files()
+check("a line that edits and commits still counts what it edited", (got.get("a.txt"), got.get("c.txt")), ((False, 6, 2), (False, 1, 0)))
+
 import controllers.activity as activity  # noqa: E402
 j("work", "end", "change some files")
 ended = [e for e in activity.ActivityController._events(d / ".journal", "w") if e["text"] == "Ended work"]
-check("the Ended work line in Activity says how many files changed", [e["detail"] for e in ended], ["3 files changed"])
+check("the Ended work line in Activity says how many files changed", [e["detail"] for e in ended], ["4 files changed"])
 import commandlog  # noqa: E402
 check("the tool uses since the last journal command become one line when a journal command runs",
-      "Ran 2 commands, edited 5 files" in [e["text"] for e in commandlog.entries(d / ".journal", "w")], True)
+      "Ran 4 commands, edited 5 files" in [e["text"] for e in commandlog.entries(d / ".journal", "w")], True)
 
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

@@ -1865,10 +1865,10 @@ def _git_out(project: Path, *args: str) -> str | None:
     return p.stdout if p.returncode == 0 else None
 
 
-def _git_snapshot(project: Path) -> dict | None:
-    """HEAD, lines changed against it per tracked file, and the untracked files: what a shell command is measured by."""
+def _git_snapshot(project: Path, base: str = "HEAD") -> dict | None:
+    """HEAD, lines changed against `base` per tracked file, and the untracked files: what a shell command is measured by."""
     head = _git_out(project, "rev-parse", "HEAD")
-    numstat = _git_out(project, "diff", "--numstat", "HEAD")
+    numstat = _git_out(project, "diff", "--numstat", base)
     untracked = _git_out(project, "ls-files", "--others", "--exclude-standard")
     if head is None or numstat is None or untracked is None:
         return None
@@ -1881,8 +1881,8 @@ def _git_snapshot(project: Path) -> dict | None:
 
 
 def _bash_file_changes(before: dict | None, after: dict | None, project: Path) -> list[dict]:
-    # a command that moved HEAD committed; its numbers against the new HEAD say nothing about edits
-    if not before or not after or before["head"] != after["head"]:
+    # after a commit, `after` must be measured against the old HEAD (see _record_files), or the edits it committed vanish
+    if not before or not after:
         return []
     out = []
     for path, (a, r) in after["numstat"].items():
@@ -1900,6 +1900,16 @@ def _bash_file_changes(before: dict | None, after: dict | None, project: Path) -
     return out
 
 
+#: A script can write files without the gate calling it a write: counted after, never refused before.
+_SCRIPTS = frozenset({"python", "python3", "node", "perl", "ruby", "php", "sh", "bash", "zsh", "make", "npm", "npx", "yarn", "pnpm"})
+
+
+def _may_change_files(payload: dict) -> bool:
+    cmd = str((payload.get("tool_input") or {}).get("command", ""))
+    return _is_write(payload) or any(w[0] in _SCRIPTS and not (len(w) > 1 and w[1].endswith("journal.py"))
+                                     for w in _pieces(cmd) if w)
+
+
 def _owns_open_work(ctx: Ctx) -> bool:
     standing = work.open_work(ROOT)
     return any(w.get("session") in _owners(ctx) for w in standing) or len(standing) == 1
@@ -1909,7 +1919,7 @@ def _snapshot_files(payload: dict, ctx: Ctx) -> None:
     """Before a shell command that writes, remember what git sees, so the files it changed can be counted after."""
     if payload.get("tool_name") != "Bash":
         return
-    if _is_write(payload) and _owns_open_work(ctx):
+    if _may_change_files(payload) and _owns_open_work(ctx):
         state.put(ROOT, "files_before", _git_snapshot(ROOT.parent), stem=ctx.stem)
     elif state.get(ROOT, "files_before", None, stem=ctx.stem):
         state.put(ROOT, "files_before", None, stem=ctx.stem)
@@ -1936,8 +1946,10 @@ def _record_files(payload: dict, ctx: Ctx) -> None:
             return
         state.put(ROOT, "files_before", None, stem=ctx.stem)
         after = _git_snapshot(ROOT.parent)
-        changes = _bash_file_changes(before, after, ROOT.parent)
         _record_commits(before, after, ctx)
+        if after and after["head"] != before["head"]:
+            after = _git_snapshot(ROOT.parent, before["head"])
+        changes = _bash_file_changes(before, after, ROOT.parent)
     if changes:
         work.record_files(ROOT, _owners(ctx), changes, datetime.now(timezone.utc).isoformat(timespec="seconds"))
 
