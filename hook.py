@@ -3316,10 +3316,17 @@ def main(raw: str | None = None) -> int:
         aid = state.slug(str(payload.get("agent_id") or ""))
         here = tracks.current(ROOT, ctx.stem if ctx else None)
         # the subagent's own id is bound to nothing; it works on the environment of the session that sent it
-        agents.heartbeat(ROOT, tracks.current(ROOT, _parent_of(payload)), aid, _parent_of(payload))
+        where = tracks.current(ROOT, _parent_of(payload))
         if handler is on_subagent_stop:
-            agents.finish(ROOT, tracks.current(ROOT, _parent_of(payload)), aid)
+            # A STOP ALONE IS NOT A SUBAGENT. The harness's own helpers (an away summary, a background
+            # task) stop with an agent_id, call no tool and write no transcript; recorded, each showed as a
+            # nameless subagent with nothing to open. Only an agent seen at work, or one that left a
+            # transcript, is marked finished.
+            if aid in (agents.seen(ROOT).get(where) or {}) or transcript.find(ROOT.parent, f"agent-{aid}"):
+                agents.heartbeat(ROOT, where, aid, _parent_of(payload))
+                agents.finish(ROOT, where, aid)
             return 0
+        agents.heartbeat(ROOT, where, aid, _parent_of(payload))
         lent = grants.granted(ROOT, _parent_of(payload))
         # ON THE TOOL'S RESULT, NOT BEFORE IT. `DELIVERS_CONTEXT` does not list PreToolUse
         # — the harness rejects `additionalContext` there, measured, and the reference

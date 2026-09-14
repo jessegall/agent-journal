@@ -17,7 +17,7 @@ from templates import render as fill
 
 MESSAGES = {
     "no_agent": "no {kind} {agent} has worked on {env}",
-    "no_transcript": "the transcript of {kind} {agent} is not on this machine",
+    "no_transcript": "{kind} {agent} kept no transcript on this machine: its page has what the journal recorded, and nothing more to open",
 }
 
 #: a subagent that has made no tool call for this long counts as finished

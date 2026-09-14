@@ -264,6 +264,16 @@ for cmd, want in (('.journal/journal.py pin "a fact"', True),
           bool(testkit.denied(out)), want)
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Edit", tool_input={})
 check("a subagent's edit is not gated on open work", out.strip(), "")
+# a stop alone is not a subagent: the harness's own helpers stop with an agent_id, call no tool and keep no transcript
+import agents as _agents_seen  # noqa: E402
+_track_seen = lambda: {a for m in (_agents_seen.seen(d / ".journal") or {}).values() for a in m}
+fire(d, "SubagentStop", path, agent_id="helperonly1")
+check("a SubagentStop from an agent never seen at work records no subagent", "helperonly1" in _track_seen(), False)
+fire(d, "PostToolUse", path, agent_id="realworker1", tool_name="Read", tool_input={"file_path": "x.py"}, tool_response={})
+fire(d, "SubagentStop", path, agent_id="realworker1")
+_done_map = {a for m in (_agents_seen.state.get(d / ".journal", _agents_seen.DONE, {}) or {}).values() for a in m}
+check("a subagent seen making a tool call is recorded, and marked finished when it stops",
+      ("realworker1" in _track_seen(), "realworker1" in _done_map), (True, True))
 
 # the context ladder is silent while the window is unknown, and climbs when set
 d, path = project_with(4)

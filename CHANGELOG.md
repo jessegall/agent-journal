@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.14 — No more nameless subagents with nothing to open
+
+The agents lists and pages showed subagents with no name, no model and no transcript. They were the
+harness's own helpers, such as the away summary and a background task, which stop with an agent id but
+call no tool and keep no transcript. The hook recorded each stop as a subagent that had finished. A stop
+now counts only for an agent already seen making a tool call, or one that left a transcript, so every
+subagent listed is one that was dispatched and has a page worth opening. A subagent without a
+transcript says so plainly. The helpers already recorded drop off the list 30 minutes after they were
+seen.
+
 ## 1.134.13 — Home shows the subagents at work
 
 While any subagent is working, Home shows a small "Subagents at work" section under Open work. Each
