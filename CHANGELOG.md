@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.115.0 — Work links to the to-do and document it was for
+
+A work item names the to-do it was started for (or the to-do with its title) and that
+to-do's document. The work panel links to both, and the work list shows them beside the
+subject.
+
 ## 1.114.1 — Only the sidebar's Activity list scrolls
 
 The sidebar no longer scrolls as a whole. The Activity section fills the space under the

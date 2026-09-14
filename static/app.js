@@ -616,7 +616,8 @@ const LOG_KIND = { started: "Started", update: "Update", waiting: "Waiting on", 
 const WORK_LIST = {
   groups: [{ key: "open", label: "Open", kind: "progress", match: (w) => !w.ended },
            { key: "ended", label: "Ended", kind: "done", closed: true, match: (w) => w.ended }],
-  columns: { title: (w) => w.subject, sub: (w) => (w.notes.length ? w.notes[w.notes.length - 1].text : ""), age: (w) => w.age },
+  columns: { title: (w) => w.subject, sub: (w) => (w.notes.length ? w.notes[w.notes.length - 1].text : ""),
+             cite: (w) => [w.todo && `To-do ${w.todo}`, w.doc && `Doc ${w.doc}`].filter(Boolean).join(", "), age: (w) => w.age },
   count: (rows) => `${rows.filter((w) => !w.ended).length} open`, showLabel: "Show ended", empty: "Nothing is open.", name: "work",
 };
 const REMINDER_LIST = {
@@ -900,6 +901,8 @@ const WorkPanel = {
           <dt>Started</dt><dd>{{ item.data.age || '—' }}</dd>
           <dt v-if="item.data.ended">Ended</dt><dd v-if="item.data.ended">{{ item.data.ended_age || 'just now' }}</dd>
           <dt>Status</dt><dd>{{ item.data.ended ? 'Ended' : item.data.awaiting ? 'Waiting on ' + item.data.awaiting : 'Open' }}</dd>
+          <template v-if="item.data.todo"><dt>To-do</dt><dd><a class=chip :href="'#/env/' + env + '/todos/' + item.data.todo">To-do {{ item.data.todo }}</a></dd></template>
+          <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a></dd></template>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'work' + item.data.n + (item.data.ended || '')"/>
         <div v-if="item.data.notes.length">
