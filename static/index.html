@@ -442,7 +442,7 @@
   .file-folder .file-row { padding-left: 34px; }
   .file-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .file-meta { color: var(--text-3); font-size: 12px; white-space: nowrap; }
-  .file-preview { display: block; max-width: 100%; max-height: 360px; margin: 4px 10px 10px; border-radius: 8px; border: 1px solid var(--border); }
+  .file-preview { display: block; align-self: flex-start; width: auto; height: auto; object-fit: contain; max-width: calc(100% - 20px); max-height: 360px; margin: 4px 10px 10px; border-radius: 8px; border: 1px solid var(--border); }
   /* a doc's attachments */
   .attachment-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .attachment-card { display: flex; align-items: center; gap: 10px; min-width: 180px; max-width: 100%;

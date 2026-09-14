@@ -470,7 +470,7 @@ const QuestionAnswer = {
         <button v-for="(o, i) in q.options" :key="i" type=button
           :class="['option', {picked: state.picked === o.label, chosen: !state.picked && q.answer === o.label, locked, 'has-pick': q.pick === i + 1}]"
           :disabled="locked || state.answering" :aria-pressed="state.picked === o.label" @click="pick(o.label)">
-          <span v-if="q.pick === i + 1" class=option-pick>Agent's pick</span>{{ o.label }}
+          <span v-if="q.pick === i + 1 && !locked" class=option-pick>Agent's pick</span>{{ o.label }}
           <span v-if="o.description" class=option-description>{{ o.description }}</span>
           <code v-if="o.code" class=option-code>{{ o.code }}</code></button>
         <div v-if="!locked" role=button :tabindex="state.answering ? -1 : 0" :aria-pressed="state.picked === CUSTOM"
