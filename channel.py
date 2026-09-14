@@ -72,8 +72,9 @@ def pending(stem: str) -> list[tuple[str, dict]]:
     # a session on no environment is woken for new messages only; answers and comments belong to whoever asked.
     # With auto mode off only a message wakes it: nothing else may set it working on its own
     live = tracks.live(ROOT)
+    loose = _unbound_live(live)
     for env in [bound] if bound else tracks.choices(ROOT):
-        if not _recipient(stem, env, live):
+        if not _recipient(stem, env, live, loose):
             continue
         auto = todo.auto(ROOT, env)
         if auto and not idle:
@@ -83,19 +84,37 @@ def pending(stem: str) -> list[tuple[str, dict]]:
     return [(key, params) for key, params in got if key not in pushed]
 
 
-def _recipient(stem: str, env: str, live: dict) -> bool:
+def _unbound_live(live: dict) -> dict[str, float]:
+    """{stem: seconds since seen} for running sessions of this project's channels that are on no environment."""
+    import state
+    import tracks
+    pids = state.get(ROOT, PIDS, {})
+    now = time.time()
+    out = {}
+    for sid in set(pids.values()) if isinstance(pids, dict) else ():
+        if sid in live or tracks.bound(ROOT, sid) or state.get(ROOT, "ended", None, stem=sid):
+            continue
+        seen = state.get(ROOT, "seen_at", 0, stem=sid) or 0
+        if seen and now - seen <= 24 * 3600:
+            out[sid] = now - seen
+    return out
+
+
+def _recipient(stem: str, env: str, live: dict, loose: dict) -> bool:
     """Is this session the one to wake for `env`? Another agent's environment is never its business.
 
-    A session on no environment hears only environments no live session holds, and of two sessions
-    on one environment only the one seen most recently is woken.
+    The session on `env` is woken, and of two there the one seen most recently. An environment no
+    session holds wakes one session on no environment: the one seen most recently.
     """
-    others = {sid: v["age"] for sid, v in live.items() if v["track"] == env and sid != stem}
-    if not others:
+    holders = {sid: v["age"] for sid, v in live.items() if v["track"] == env}
+    if holders:
+        mine = holders.get(stem)
+        return mine is not None and all(age is None or mine <= age for sid, age in holders.items() if sid != stem)
+    if stem in live:
         return True
-    mine = live.get(stem)
-    if not mine or mine["track"] != env:
-        return False
-    return mine["age"] is not None and all(age is None or mine["age"] <= age for age in others.values())
+    rivals = {sid: age for sid, age in loose.items() if sid != stem}
+    mine = loose.get(stem)
+    return not rivals or (mine is not None and all(mine <= age for age in rivals.values()))
 
 
 def _epoch(stamp) -> float:
