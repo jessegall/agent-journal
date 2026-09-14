@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.40 — Comments are cards with room around them
+
+In a panel's Comments section, the comments ran together, and the last one sat right on top
+of the comment box. Each comment is now its own card with space between them, and a small
+line under the text says who wrote it and when, and whether the agent has seen it. There is
+room between the last comment and the box for writing a new one.
+
 ## 1.131.39 — Follow up on a message with a comment
 
 A message could not be added to once sent, except by sending another message. A message's

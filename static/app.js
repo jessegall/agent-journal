@@ -515,17 +515,22 @@ const Comments = {
     const list = useFetch(() => props.env && props.about &&
       `/api/env/${props.env}/comments?about=${encodeURIComponent(props.about)}&all=1&direction=asc`);
     const post = (text) => send("POST", `/api/env/${props.env}/comments`, { about: props.about, text }).then(() => list.reload());
-    const state = (c) => (c.done ? `Handled: ${c.done}` : c.told ? "Seen by the agent" : "Not seen yet");
-    return { list, post, state };
+    return { list, post };
   },
   template: `
     <div v-if="env && about" class=comments>
       <p class=section-label>Comments</p>
-      <div v-if="list.data && list.data.length" class=linked>
-        <div v-for="c in list.data" :key="c.n" class=sub>
-          <div>{{ c.text }}</div>
-          <div class=muted>{{ c.age || 'just now' }} · {{ state(c) }}</div>
-        </div>
+      <div v-if="list.data && list.data.length" class=comment-list>
+        <template v-for="c in list.data" :key="c.n">
+          <div class=comment-card>
+            <div>{{ c.text }}</div>
+            <div class=comment-meta>{{ c.source === 'web' ? 'You' : 'The agent' }} · {{ c.age || 'just now' }} · {{ c.done ? 'Handled' : c.told ? 'Seen by the agent' : 'Not seen yet' }}</div>
+          </div>
+          <div v-if="c.done" class="comment-card comment-reply">
+            <div>{{ c.done }}</div>
+            <div class=comment-meta>The agent · handled it</div>
+          </div>
+        </template>
       </div>
       <Compose placeholder="Comment for the agent" submit="Comment" hint="The agent is told at its next stop" :send="post"/>
     </div>`,
