@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.135.2 — No script links in the viewer's markdown
+
+The viewer turned any markdown link into a clickable link, `javascript:` ones included. Such a link in
+a message, a to-do's brief, a doc or a pin could run script in the viewer's page, which may write to
+the journal. Now only web links (http and https), mail links, anchors and relative paths become links.
+A link with any other scheme shows as its text.
+
 ## 1.135.1 — Deciding a suggestion wakes the agent
 
 The channel woke an idle agent for your messages, answered questions and comments, but not when you
