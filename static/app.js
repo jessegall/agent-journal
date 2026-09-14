@@ -826,7 +826,14 @@ const Inbox = {
       ];
     });
     const done = (body, a) => settle(body, a, base.value, list);
-    return { list, send, item, actions, done, MESSAGE_LIST, heldUrl, isImage };
+    // a message only reaches an agent at its next hook event; say so when none is working here
+    const live = computed(() => {
+      const row = OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null;
+      return !!(row && row.active);
+    });
+    const hint = computed(() => (live.value ? "The agent is told at its next stop"
+      : "No agent is working on this environment right now; the message waits until a session picks it up"));
+    return { list, send, item, actions, done, MESSAGE_LIST, heldUrl, isImage, hint };
   },
   template: `
     <TopBar :crumbs="[env, 'Messages']"/>
@@ -834,7 +841,7 @@ const Inbox = {
       <div class=list>
         <div class=compose-wrap>
           <Compose placeholder="Leave a message for the agent: an instruction, a follow-up, anything"
-            submit="Send" hint="The agent is told at its next stop" :send="send" :attach="true"/>
+            submit="Send" :hint="hint" :send="send" :attach="true"/>
         </div>
         <ResourceList v-bind="MESSAGE_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
           :href="(m) => '#/env/' + env + '/messages/' + m.n" :selected="(m) => String(m.n) === n"/>
