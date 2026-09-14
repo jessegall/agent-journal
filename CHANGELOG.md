@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.125.0 — Every command the agent runs has a plain Activity line
+
+All 168 journal commands now have a plain description in Activity. Before, 102 of them
+showed as "Running journal <command>". Where a value matters, it follows the number:
+setting a priority reads "Setting to-do priority · 140 · high", switching environment
+names the environment.
+
+The sidebar footer reads top to bottom: the dot and "Agent" (the dot is green while an agent
+works, a grey ring when not), then the agent's latest activity as plain words with its
+number and value ("Setting to-do priority 140 high"), then how long ago it was.
+
+"Processed message" is now "Filed message", followed by what the message became: "Filed
+message · 118 · to-do 139", or "question 12", "work update", "noted".
+
 ## 1.124.1 — The agent status dot reads clearly as working or not
 
 The small marker beside "Agent active" in the sidebar footer and beside each environment

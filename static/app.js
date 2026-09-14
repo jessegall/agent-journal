@@ -1907,7 +1907,7 @@ const ActivityPanel = {
           <template v-for="(e, i) in data.events" :key="i">
             <div v-if="e.needs === 'open' && href(e)" class="activity-row activity-alert">
               <a class=activity-alert-body :href="href(e)">
-                <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span></span>
+                <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span><span v-if="e.detail" class=activity-d>{{ e.detail }}</span></span>
                 <span v-if="e.title" class=activity-title>{{ e.title }}</span>
                 <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
               </a>
@@ -1920,12 +1920,12 @@ const ActivityPanel = {
               </span>
             </div>
             <a v-else-if="href(e)" :class="['activity-row', 'activity-link', {'activity-soft': e.needs === 'answered'}]" :href="href(e)">
-              <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span></span>
+              <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span><span v-if="e.detail" class=activity-d>{{ e.detail }}</span></span>
               <span v-if="e.title" class=activity-title>{{ e.title }}</span>
               <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
             </a>
             <div v-else class=activity-row>
-              <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span></span>
+              <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span><span v-if="e.detail" class=activity-d>{{ e.detail }}</span></span>
               <span v-if="e.title" class=activity-title>{{ e.title }}</span>
               <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
             </div>
@@ -2022,10 +2022,11 @@ const App = {
           </a>
         </div>
         <div v-if="activity.data" class=side-foot>
-          <span :class="['env-dot', {live: activity.data.agent}]"></span>
-          <span v-if="activity.data.agent">Agent {{ activity.data.agent.seen || 'active just now' }}</span>
-          <span v-else>No agent working</span>
-          <span v-if="activity.data.agent && latest" class=side-foot-now :title="latest.text">{{ latest.text }}</span>
+          <span :class="['env-dot', {live: activity.data.agent}]" :title="activity.data.agent ? 'An agent is working' : 'No agent is working'"></span>
+          <span>Agent</span>
+          <span v-if="latest" class=side-foot-now
+            :title="[latest.text, latest.n, latest.detail].filter(Boolean).join(' ')">{{ [latest.text, latest.n, latest.detail].filter(Boolean).join(' ') }}</span>
+          <span v-if="latest" class=side-foot-age>{{ latest.age || 'just now' }}</span>
         </div>
       </aside>
       <main class=main>
