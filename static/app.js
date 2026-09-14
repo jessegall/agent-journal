@@ -18,6 +18,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/reminders(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/settings$/, view: "Settings", params: ["env"] },
+  { re: /^\/env\/([a-z0-9-]+)\/files$/, view: "Files", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/search$/, view: "Search", params: ["env"] },
   { re: /^\/rules(?:\/(\d+|new))?$/, view: "Rules", params: ["n"] },
   { re: /^\/tools(?:\/(\d+|new))?$/, view: "Tools", params: ["n"] },
@@ -182,7 +183,8 @@ function renderMarkdown(src) {
 
 // page view -> its help file under static/help/
 const HELP_TOPICS = { Todos: "todos", Inbox: "messages", Questions: "questions", Suggestions: "suggestions", Reports: "reports",
-  Pins: "pins", Reminders: "reminders", Work: "work", EnvDocs: "docs", Docs: "docs", DocDetail: "docs", Rules: "rules", Tools: "tools" };
+  Pins: "pins", Reminders: "reminders", Work: "work", EnvDocs: "docs", Docs: "docs", DocDetail: "docs", Rules: "rules", Tools: "tools",
+  Files: "files" };
 const HELP_CACHE = {};
 
 // ─────────────────────────────────────────────────────────────── icons
@@ -207,6 +209,7 @@ const Icon = {
       <template v-else-if="name === 'docs'"><path d="M4 1.8h5.5L12.5 5v9.2H4V1.8Z"/><path d="M9.5 1.8V5h3"/></template>
       <path v-else-if="name === 'rules'" d="M3 3.5h10M3 8h10M3 12.5h6"/>
       <path v-else-if="name === 'folder'" d="M2.5 3h4l1.5 1.5h5.5v8.5h-11V3Z"/>
+      <template v-else-if="name === 'files'"><path d="M5.5 4.5V2h6l2 2v7.5h-2.5"/><path d="M2.5 4.5h6l2 2v7.5h-8V4.5Z"/></template>
       <template v-else-if="name === 'inbox'"><path d="M2 9.5l1.8-6h8.4l1.8 6v3.5H2V9.5Z"/><path d="M2 9.5h3.5l1 1.5h3l1-1.5H14"/></template>
       <template v-else-if="name === 'questions'"><circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.3a1.7 1.7 0 0 1 3.2.7c0 1.2-1.6 1.4-1.6 2.5"/><circle cx="8" cy="11.4" r=".6" fill="currentColor" stroke="none"/></template>
       <path v-else-if="name === 'home'" d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>
@@ -846,7 +849,8 @@ const DOC_LIST = {
            { key: "final", label: "Final", kind: "done", match: (d) => !d.superseded_by && d.status === "final" },
            { key: "superseded", label: "Superseded", kind: "withdrawn", closed: true, match: (d) => d.superseded_by },
            { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (d) => d.archived && !d.superseded_by }],
-  columns: { num: (d) => `#${d.n}`, title: (d) => d.title, sub: (d) => d.abstract, age: (d) => d.age, struck: (d) => d.superseded_by },
+  columns: { num: (d) => `#${d.n}`, title: (d) => d.title, sub: (d) => d.abstract, age: (d) => d.age, struck: (d) => d.superseded_by,
+             cite: (d) => (d.attachments ? (d.attachments === 1 ? "1 file" : `${d.attachments} files`) : "") },
   count: (rows) => `${rows.filter((d) => !d.archived).length} catalogued`, showLabel: "Show superseded and archived", name: "docs",
 };
 const TOOL_LIST = {
@@ -2068,7 +2072,44 @@ const Settings = {
 const Home = { template: `<p class=empty>Loading…</p>` };
 const NotFound = { components: { TopBar }, template: `<TopBar :crumbs="['Not found']"/><p class=empty>Nothing here.</p>` };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, NotFound };
+// every file stored for the environment: its messages' files and its documents' attachments
+const Files = {
+  props: ["env"],
+  components: { TopBar, Icon },
+  setup(props) {
+    const list = useFetch(() => props.env && `/api/env/${props.env}/files`);
+    const sourceHref = (f) => (f.source === "message" ? `#/env/${props.env}/messages/${f.n}` : `#/docs/${f.n}`);
+    const sourceLabel = (f) => (f.source === "message" ? `Message ${f.n}` : `Document ${f.n}`);
+    return { list, sourceHref, sourceLabel };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Files']"/>
+    <div class=page>
+      <div class=page-inner>
+        <p v-if="list.loading && !list.data" class=empty>Loading…</p>
+        <p v-else-if="list.error" class=error>{{ list.error }}</p>
+        <p v-else-if="list.data && !list.data.length" class=empty>No files are stored on this environment yet. Files attached to a message or added to a document show here.</p>
+        <div v-else-if="list.data" class=files-page>
+          <div v-for="f in list.data" :key="f.url" class=files-row>
+            <a class=files-thumb :href="f.url" target=_blank rel=noopener :title="'Open ' + f.name">
+              <img v-if="f.image" :src="f.url" :alt="f.name" loading=lazy>
+              <Icon v-else :name="f.folder ? 'folder' : 'docs'"/>
+            </a>
+            <div class=files-main>
+              <a class=files-name :href="f.url" target=_blank rel=noopener>{{ f.name }}<span v-if="f.folder">/</span></a>
+              <span class=files-meta>
+                <a :href="sourceHref(f)">{{ sourceLabel(f) }}</a>
+                <span> · {{ f.folder ? f.count + ' file(s) · ' : '' }}{{ $human(f.size) }}</span>
+              </span>
+            </div>
+            <span class=files-age>{{ f.age || 'just now' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>`,
+};
+
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -2077,6 +2118,7 @@ const NAV = [
   { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "docs", label: "Documents", views: ["EnvDocs"], path: "docs", count: "docs" },
+  { key: "files", label: "Files", views: ["Files"], path: "files" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 

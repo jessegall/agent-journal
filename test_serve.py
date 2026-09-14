@@ -734,6 +734,16 @@ check("a help page that does not exist, or a path outside static/help, is not se
 import re  # noqa: E402
 _topics = set(re.findall(r'"([a-z]+)"', re.search(r"const HELP_TOPICS = \{(.*?)\};", (serve.STATIC / "app.js").read_text(), re.S).group(1)))
 check("every page with a help button has its help file", sorted(t for t in _topics if not (serve.STATIC / "help" / f"{t}.md").is_file()), [])
+import base64  # noqa: E402
+status, got = post("/api/env/alpha/inbox", {"text": "a message carrying a picture",
+                                            "files": [{"name": "shot.png", "data": "data:image/png;base64," + base64.b64encode(b"\x89PNG fake").decode()}]})
+_files = json.loads(get("/api/env/alpha/files")[2])
+_shot = [f for f in _files if f["name"] == "shot.png"]
+check("the Files page lists a message's file with where it came from, its link and that it is an image",
+      [(f["source"], f["url"].startswith("/inbox-files/alpha/"), f["image"], f["size"] > 0) for f in _shot], [("message", True, True, True)])
+check("and the attachments of the environment's documents",
+      any(f["source"] == "doc" and f["n"] == 1 and f["url"].startswith("/docs/1/files/") for f in _files), True)
+check("a listed message file opens", get(_shot[0]["url"])[0], 200)
 _tail = root / "context-tail.jsonl"
 _tail.write_text(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 1000, "cache_read_input_tokens": 149000}}}) + "\n")
 check("the agent's context use is its last reading against the window, and nothing without a window or a reading",

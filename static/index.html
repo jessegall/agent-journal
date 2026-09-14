@@ -452,6 +452,20 @@
   .work-file-add { color: rgb(96, 186, 126); }
   .work-file-del { color: var(--danger); }
   .block .lgroup:last-child > .rows:last-child > .row:last-child { border-bottom: none; }
+  /* the Files page: one row per stored file, with a thumbnail or icon, where it came from, size and age */
+  .files-page { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .files-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .files-row:last-child { border-bottom: none; }
+  .files-thumb { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+    border-radius: 6px; background: var(--raised); border: 1px solid var(--border); overflow: hidden; color: var(--text-3); }
+  .files-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .files-thumb .ico { width: 18px; height: 18px; }
+  .files-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .files-name { color: var(--text); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
+  .files-name:hover { text-decoration: underline; }
+  .files-meta { font-size: 12px; color: var(--text-3); }
+  .files-meta a { color: var(--text-2); }
+  .files-age { flex: none; font-size: 12px; color: var(--text-3); }
   /* a document part is its own bordered block, so where it starts and ends is plain; its header carries Edit */
   .doc-part { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
   .doc-part-head { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 8px 0 14px;

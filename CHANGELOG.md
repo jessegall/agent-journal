@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.36 — Every stored file in one place
+
+Files lived in two places you had to open one by one: attached to a message, or attached
+to a document. Each environment now has a **Files** entry in the sidebar that lists every
+stored file there, including the files on its messages and the attachments of its documents.
+Each file shows where it came from (message 12, document 4), its size and age, a small preview
+for images, and a link that opens it. The documents list also shows how many files each
+document holds.
+
 ## 1.131.35 — The refresh highlight marks only what changed in the background
 
 Lists outlined a row in blue whenever it arrived or moved, including right after you saved
