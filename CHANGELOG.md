@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.5 — The core skill names the model rule again; skill-creator in this project
+
+The split in 1.134.4 moved the model rule into `journal-agents`, which left the core `journal` skill
+without it. A dispatch does not wait for that skill to load, so the core skill says it again: name
+the model on every subagent (`haiku`, `sonnet`, `opus`). The rule itself was never gone. It ships as
+rule B1 and every project sees it at every start.
+
+This project also has the `skill-creator` skill now, in `.claude/skills/skill-creator/`, copied from
+the workflows project. It is for working on this package's skills and is not shipped to other
+projects.
+
 ## 1.134.4 — The journal skill is split into a core skill and six focused ones
 
 The one long journal skill (842 lines) is now a core `journal` skill of about 290 lines. It covers the
