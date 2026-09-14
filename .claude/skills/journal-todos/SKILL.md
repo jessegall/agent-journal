@@ -25,6 +25,7 @@ Every command runs through `.journal/journal.py`; `journal` is an alias for it.
     journal todos answer <n> "<answer>" the user's answer; the agent is told at its next stop
     journal auto-mode [enable|disable]  work through the list without asking, or wait for the word
     journal todos prune --older-than=<30d|2h|6w>|--before=<date> [--force]   done/dropped to-dos older than that, ARCHIVED (or actually deleted with --force); an open to-do is never touched, and there is no silent default age
+    journal todos keep <days>   done to-dos older than that are archived on their own, 7 days by default; 0 leaves them listed
 
 A to-do is work that was **put off**: the user said later, or you found something and
 were told not to touch it yet. It is a titled file under `todo/<environment>/`, and the brief is

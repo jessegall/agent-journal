@@ -49,6 +49,10 @@ class PriorityPayload(Payload):
     value = Field(str)
 
 
+class KeepPayload(Payload):
+    days = Field(int)
+
+
 class PrunePayload(Payload):
     older_than = Field(str)
     before = Field(str)

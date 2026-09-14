@@ -63,4 +63,7 @@ def sweep(root: Path, track: str, now: datetime | None = None) -> dict[str, int]
         ok, _ = todo.prune(root, track, f"{REMOVE_DAYS}d", stamp, force=True)
         if ok:
             out["todos"] = len(done)
+    archived = todo.auto_archive(root, track, stamp)
+    if archived:
+        out["todos_archived"] = archived
     return out

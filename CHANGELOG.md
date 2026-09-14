@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.135.8 — Done to-dos archive themselves
+
+A done to-do now leaves the list on its own, 7 days after it was closed. It moves into the
+environment's `todo/archived/` folder and is not deleted. Reads skip that folder, so the list stays
+short, and nothing has to change in a project: done to-dos already in the folder are moved at the next
+sweep.
+
+- `journal todos keep <days>` sets how many days, per environment, and 0 keeps done to-dos listed.
+  Settings has the same field, under To-dos.
+- A new to-do never takes the number of an archived or deleted one. Before this, removing the
+  highest-numbered to-do meant the next one reused its number.
+- `journal todos prune` still archives or deletes by hand, and a done to-do past 30 days is still
+  deleted, as before.
+
 ## 1.135.7 — The Coding style page, and questions about the coding style
 
 The second part of the Coding style tool. The viewer has a Coding style page, opened from its new

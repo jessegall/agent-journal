@@ -141,6 +141,9 @@ MESSAGES = {
     "prune_nothing": "nothing to prune — no done to-do here closed before {date}",
     "pruned_deleted": "deleted {n} done to-do(s)",
     "pruned_archived": "archived {n} done to-do(s) under {archive}/",
+    "keep_usage": "journal todos keep <days>: how many days a done to-do stays listed on this environment; 0 keeps them",
+    "kept": "done to-dos on `{env}` stay listed for {days} day(s), then are archived",
+    "kept_always": "done to-dos on `{env}` stay listed until archived by hand",
     "pruned": "{said}, closed before {date}: {nums:, }[ …and {more} more]",
     "stays_open": "to-do {n} stays open: it is held for `{held}`, and the agent that dispatched you closes it. Your work is closed.",
     "commit_none": "to-do {n}: no environment has one — nothing closed",
@@ -834,7 +837,7 @@ def add(root: Path, track: str, title: str, body: str, at: str, where: dict | No
         if t["title"].lower() == title.lower():
             return False, say("duplicate", n=t["n"])
     items = _all(root, track)
-    n = (items[-1]["n"] if items else 0) + 1
+    n = _next_n(root, track, items)
     path = folder(root, track) / f"{n:03d}-{_slug(title)}.md"
     meta = {"title": title, "track": track, "at": at, **{k: str(v) for k, v in (where or {}).items()}}
     _write(path, meta, body)
@@ -1068,6 +1071,62 @@ def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str
 #: leaving the counted list, so it gets its own folder rather than crowding a name that
 #: already has a job.
 ARCHIVE = "archived"
+
+
+ARCHIVE_DAYS = "todos_archive_days"
+DEFAULT_ARCHIVE_DAYS = 7
+LAST_N = "todos_last_n"
+
+
+def _next_n(root: Path, track: str, items: list[dict]) -> int:
+    """One past the highest number ever given here, so an archived or deleted to-do's number is never reused."""
+    import os
+    highest = items[-1]["n"] if items else 0
+    try:
+        with os.scandir(folder(root, track) / ARCHIVE) as it:
+            for e in it:
+                m = re.match(r"(\d+)-", e.name)
+                if m:
+                    highest = max(highest, int(m.group(1)))
+    except OSError:
+        pass
+    with state.locked(root):
+        got = state.get(root, LAST_N, {})
+        got = got if isinstance(got, dict) else {}
+        n = max(highest, int(got.get(track) or 0)) + 1
+        got[track] = n
+        state.put(root, LAST_N, got)
+    return n
+
+
+def archive_days(root: Path, track: str) -> int:
+    """How many days a done to-do stays listed on this environment; 0 means until archived by hand."""
+    got = state.get(root, ARCHIVE_DAYS, {})
+    value = got.get(track) if isinstance(got, dict) else None
+    return DEFAULT_ARCHIVE_DAYS if value is None else int(value)
+
+
+def set_archive_days(root: Path, track: str, days: int) -> tuple[bool, str]:
+    if days is None or int(days) < 0:
+        return False, say("keep_usage")
+    with state.locked(root):
+        got = state.get(root, ARCHIVE_DAYS, {})
+        got = got if isinstance(got, dict) else {}
+        got[track] = int(days)
+        state.put(root, ARCHIVE_DAYS, got)
+    return True, say("kept", env=track, days=int(days)) if int(days) else say("kept_always", env=track)
+
+
+def auto_archive(root: Path, track: str, at: str) -> int:
+    """Move the done to-dos older than this environment's archive days into archived/; how many moved."""
+    days = archive_days(root, track)
+    if not days:
+        return 0
+    cutoff, _ = _prune_cutoff(f"{days}d", at)
+    old = [t for t in _all(root, track) if t.get("done") and t["done"] < cutoff]
+    if old:
+        prune(root, track, f"{days}d", at)
+    return len(old)
 
 
 def _prune_cutoff(word: str, now: str) -> tuple[str | None, str]:

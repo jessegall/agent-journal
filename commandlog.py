@@ -50,7 +50,7 @@ NUMBER_ARG = {"docs:files": "doc", "docs:part": "doc", "docs:final": "doc", "doc
               "docs:title": "doc", "docs:paths": "doc", "docs:archive": "doc", "docs:move": "doc", "docs:attach": "doc",
               "docs:detach": "doc", "rules:strike": "id", "rules:inject": "id", "rules:uninject": "id"}
 # the argument whose value Activity shows after the number, like "high" for a priority
-DETAIL = {"todos:priority": "value", "reports:keep": "days", "switch:": "name", "environments:switch": "name", "work:await": "what",
+DETAIL = {"todos:priority": "value", "reports:keep": "days", "todos:keep": "days", "switch:": "name", "environments:switch": "name", "work:await": "what",
           "environments:": "name", "environments:show": "name", "environments:remove": "name",
           "environments:prepare": "name", "environments:claim": "name", "prepare:": "name", "claim:": "name",
           "grant:": "name", "tools:run": "name", "tools:show": "name", "tools:add": "name", "tools:set": "name",
@@ -184,6 +184,7 @@ DESCRIBE = {
     "reminders:move": "Moving reminder {n}",
     "reports:archive": "Archiving report {n}",
     "reports:keep": "Setting how long reports stay listed",
+    "todos:keep": "Setting how long done to-dos stay listed",
     "reports:doc": "Turning report {n} into a document",
     "suggestions:edit": "Rewording suggestion {n}",
     "suggestions:withdraw": "Withdrawing suggestion {n}",
@@ -337,6 +338,7 @@ WEB = {
     "reports:store": "Wrote a report",
     "reports:destroy": "Archived report {n}",
     "reports:keep": "Set how long reports stay listed",
+    "todos:keep": "Set how long done to-dos stay listed",
     "reports:todoc": "Turned report {n} into a document",
     "suggestions:store": "Suggested a change",
     "suggestions:update": "Edited suggestion {n}",
@@ -373,6 +375,9 @@ def _settings_said(key: str, body: dict) -> str:
         if "reports_archive_days" in body:
             days = str(body["reports_archive_days"])
             said.append("Reports stay listed until archived by hand" if days in ("0", "") else f"Reports stay listed for {days} day(s)")
+        if "todos_archive_days" in body:
+            days = str(body["todos_archive_days"])
+            said.append("Done to-dos stay listed until archived by hand" if days in ("0", "") else f"Done to-dos stay listed for {days} day(s)")
         if SHOW in body:
             said.append(f"Activity shows the last {body[SHOW]} line(s)")
         if KEEP in body:

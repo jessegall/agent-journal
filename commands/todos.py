@@ -226,6 +226,14 @@ class Prune(Resource):
     action = "prune"
 
 
+class Keep(Resource):
+    signature = "todos:keep {days : days a done to-do stays listed on this environment, 0 to keep them}"
+    casts = {"days": number("a number of days")}
+    writes = True
+    controller = CONTROLLER
+    action = "keep"
+
+
 class FromCommit(Resource):
     signature = "todos:from-commit {ref? : a commit, HEAD by default} {--quiet}"
     verbs = ("from_commit",)
@@ -246,4 +254,4 @@ class FromCommit(Resource):
 
 
 COMMANDS = (List, Show, Add, Start, Done, Drop, Reopen, Move, Ask, Answer, Block, Unblock, After, Report,
-            Priority, Amend, Replace, Auto, Prune, FromCommit)
+            Priority, Amend, Replace, Auto, Prune, Keep, FromCommit)
