@@ -226,6 +226,9 @@
     color: var(--text-2); font: inherit; font-size: 12px; }
   .sort-select:hover { color: var(--text); background-color: var(--hover); }
   .sort-select option { background: var(--raised); color: var(--text); }
+  /* no focus outline on a select; keyboard focus still shows, as a background on the flush sort select */
+  select:focus { outline: none; }
+  .sort-select:focus-visible { color: var(--text); background-color: var(--hover); }
   /* in a group header the sort control is small and quiet */
   .ghead .sort-select { height: 20px; padding: 0 4px; font-size: 11px; color: var(--text-3); background-image: none; }
   .ghead .sort-select:hover { color: var(--text-2); }
