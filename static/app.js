@@ -1895,11 +1895,13 @@ const ActivityPanel = {
         <div class=activity-list>
           <template v-for="(e, i) in data.events" :key="i">
             <a v-if="href(e)" class="activity-row activity-link" :href="href(e)">
-              <span class=activity-text>{{ e.text }}</span><span v-if="e.title" class=activity-title>{{ e.title }}</span>
+              <span class=activity-line><span class=activity-text>{{ e.text }}</span><span v-if="e.n" class=activity-n>#{{ e.n }}</span></span>
+              <span v-if="e.title" class=activity-title>{{ e.title }}</span>
               <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
             </a>
             <div v-else class=activity-row>
-              <span class=activity-text>{{ e.text }}</span><span v-if="e.title" class=activity-title>{{ e.title }}</span>
+              <span class=activity-line><span class=activity-text>{{ e.text }}</span><span v-if="e.n" class=activity-n>#{{ e.n }}</span></span>
+              <span v-if="e.title" class=activity-title>{{ e.title }}</span>
               <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
             </div>
           </template>

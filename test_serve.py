@@ -389,7 +389,7 @@ check("a to-do's detail names the message it came from", [m["n"] for m in json.l
 status, _, body = get("/api/env/alpha/activity")
 activity = json.loads(body)
 check("activity lists the latest journal events, newest first, and no agent when no session works it",
-      (status, any(e["text"].startswith("Started work ") for e in activity["events"]), activity["agent"]),
+      (status, any(e["text"] == "Started work" for e in activity["events"]), activity["agent"]),
       (200, True, None))
 
 # ─────────────────────────────────────────────────────────────── a question with a description and options
@@ -599,21 +599,21 @@ import commands as _commands  # noqa: E402
 for _argv in (["messages", "list"], ["todos", "show", "3"], ["todos", "done", "3", "x"], ["statusline"]):
     commandlog.record(root, "alpha", _commands.REGISTRY.parse(_argv)[0], "2099-01-01T00:00:00+00:00")
 check("a command the agent runs is logged in plain words; writes Activity already shows and the status line are not",
-      [e["text"] for e in commandlog.entries(root, "alpha")], ["Reading your messages", "Reading to-do 3"])
+      [e["text"] for e in commandlog.entries(root, "alpha")], ["Reading your messages", "Reading to-do"])
 status, _, body = get("/api/env/alpha/activity")
-check("and Activity lists it as the agent's, naming the resource it is about so the line can open it",
-      {(e["kind"], e["n"], e["by"]) for e in json.loads(body)["events"] if e["text"] in ("Reading to-do 3", "Reading your messages")},
+check("and Activity lists it as the agent's, naming the resource and its number apart from the wording",
+      {(e["kind"], e["n"], e["by"]) for e in json.loads(body)["events"] if e["text"] in ("Reading to-do", "Reading your messages")},
       {("todo", 3, "Agent"), ("message", None, "Agent")})
-_t3 = next((t["title"] for t in _todo._all(root, "alpha") if t["n"] == 3), "")
-check("a line gives the title of what it names on a second line",
-      [e["title"] for e in json.loads(body)["events"] if e["text"] == "Reading to-do 3"], [" ".join(_t3.split())[:100]])
-check("a line about a list has no title", [e["title"] for e in json.loads(body)["events"] if e["text"] == "Reading your messages"], [""])
+check("a line that only reads something does not repeat its title",
+      [e["title"] for e in json.loads(body)["events"] if e["text"] == "Reading to-do"], [""])
+check("a line that introduces something shows its title",
+      [e["title"] for e in json.loads(body)["events"] if e["text"] == "Added to-do" and e["n"] == _tn], ["link me to my work"])
 state.put_tracked(root, "activity", "alpha",
                   commandlog.entries(root, "alpha") + [{"at": "2099-01-01T00:00:01+00:00", "text": "Filing message 7"},
                                                        {"at": "2099-01-01T00:00:02+00:00", "text": "Reading reports"}])
-check("a line logged before lines named their resource is read back from its text",
-      [(e["text"], e.get("kind"), e.get("n")) for e in commandlog.entries(root, "alpha") if e["text"] in ("Filing message 7", "Reading reports")],
-      [("Filing message 7", "message", 7), ("Reading reports", "report", None)])
+check("a line logged with its number in the wording is read back as wording, kind and number",
+      [(e["text"], e.get("kind"), e.get("n")) for e in commandlog.entries(root, "alpha") if e.get("n") == 7 or e["text"] == "Reading reports"],
+      [("Filing message", "message", 7), ("Reading reports", "report", None)])
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))

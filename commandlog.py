@@ -46,6 +46,9 @@ KINDS = {"todos": "todo", "messages": "message", "questions": "question", "repor
 SHOWN = {"todos:add", "todos:done", "work:start", "work:update", "work:end", "questions:add", "messages:done"}
 # run by git hooks, not by the agent
 HOOKS = {"todos:from-commit"}
+# lines that introduce something, so Activity shows its title under them; reads and closes do not repeat it
+TITLED = {"questions:add", "reports:add", "docs:add", "suggestions:add", "pins:add", "rules:add", "reminders:add",
+          "notifications:add"}
 
 # noun:verb -> the line shown in Activity; "noun:" is a command with no verb; {n} is its number argument
 DESCRIBE = {
@@ -109,11 +112,12 @@ DESCRIBE = {
 }
 
 
-def describe(noun: str, verb: str, n=None) -> str:
+def describe(noun: str, verb: str) -> str:
+    """The line's wording. The number is not part of it: Activity shows it on its own."""
     text = DESCRIBE.get(f"{noun}:{verb}") or DESCRIBE.get(f"{noun}:")
     if not text:
         return f"Running journal {noun} {verb}".strip()
-    return text.replace("{n}", str(n)) if n not in (None, "") else text.replace(" {n}", "")
+    return text.replace(" {n}", "")
 
 
 def record(root: Path, track: str, parsed, at: str) -> None:
@@ -121,8 +125,8 @@ def record(root: Path, track: str, parsed, at: str) -> None:
     if noun in SKIP or f"{noun}:{verb}" in SHOWN or f"{noun}:{verb}" in HOOKS:
         return
     n = parsed.arg("n")
-    entry = {"at": at, "text": describe(noun, verb, n), "kind": KINDS.get(noun),
-             "n": int(n) if str(n).isdigit() else None}
+    entry = {"at": at, "text": describe(noun, verb), "kind": KINDS.get(noun),
+             "n": int(n) if str(n).isdigit() else None, "titled": f"{noun}:{verb}" in TITLED}
     with state.locked(root):
         items = state.tracked(root, KEY, track, [])
         items = (items if isinstance(items, list) else []) + [entry]
@@ -135,16 +139,17 @@ def _patterns() -> tuple:
     for key, text in DESCRIBE.items():
         kind = KINDS.get(key.split(":")[0])
         if kind:
-            out.append((re.compile("^" + re.escape(text).replace(re.escape("{n}"), r"(\d+)") + "$"), kind))
+            out.append((re.compile("^" + re.escape(text).replace(re.escape("{n}"), r"(\d+)") + "$"), kind,
+                        text.replace(" {n}", "")))
     return tuple(out)
 
 
 def kind_of(text: str) -> dict:
-    """The resource a line names, read from its text: for lines logged before they recorded it."""
-    for pattern, kind in _patterns():
+    """The resource a line names and its wording, read from its text: for lines logged before they recorded them."""
+    for pattern, kind, wording in _patterns():
         got = pattern.match(text or "")
         if got:
-            return {"kind": kind, "n": int(got.group(1)) if got.groups() else None}
+            return {"kind": kind, "n": int(got.group(1)) if got.groups() else None, "text": wording}
     return {}
 
 
