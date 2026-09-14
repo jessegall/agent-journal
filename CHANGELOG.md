@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.127.4 — The sidebar footer is tighter, and its lines line up under "Agent"
+
+The agent status box at the bottom of the sidebar has less padding, so its content sits
+closer to the edges. The latest activity and its time now start where the "Agent" label
+starts, under it, instead of at the box's edge.
+
 ## 1.127.3 — "Reading your messages" reads "Reading messages"
 
 Reading the message list shows in Activity and the sidebar footer as "Reading messages".
