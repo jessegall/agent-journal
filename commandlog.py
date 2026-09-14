@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+from functools import lru_cache
 from pathlib import Path
 
 import state
@@ -127,6 +129,26 @@ def record(root: Path, track: str, parsed, at: str) -> None:
         state.put_tracked(root, KEY, track, items[-setting(root, track, KEEP):])
 
 
+@lru_cache(maxsize=1)
+def _patterns() -> tuple:
+    out = []
+    for key, text in DESCRIBE.items():
+        kind = KINDS.get(key.split(":")[0])
+        if kind:
+            out.append((re.compile("^" + re.escape(text).replace(re.escape("{n}"), r"(\d+)") + "$"), kind))
+    return tuple(out)
+
+
+def kind_of(text: str) -> dict:
+    """The resource a line names, read from its text: for lines logged before they recorded it."""
+    for pattern, kind in _patterns():
+        got = pattern.match(text or "")
+        if got:
+            return {"kind": kind, "n": int(got.group(1)) if got.groups() else None}
+    return {}
+
+
 def entries(root: Path, track: str) -> list[dict]:
     got = state.tracked(root, KEY, track, [])
-    return got if isinstance(got, list) else []
+    items = got if isinstance(got, list) else []
+    return [e if not isinstance(e, dict) or e.get("kind") else {**e, **kind_of(e.get("text", ""))} for e in items]
