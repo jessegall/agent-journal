@@ -122,7 +122,7 @@ def _put(root: Path, items: list[dict], track: str | None = None) -> None:
 
 
 def is_open(q: dict) -> bool:
-    return not q.get("answer") and not q.get("withdrawn")
+    return not q.get("answer") and not q.get("withdrawn") and not q.get("removed")
 
 
 def open_items(root: Path, track: str | None = None) -> list[tuple[int, dict]]:

@@ -100,7 +100,8 @@ class Repository(Generic[M]):
         return [self.model.of(n, row) for n, row in self.numbered()]
 
     def query(self) -> Query[M]:
-        return Query(self.model, self.all())
+        # an item whose content was removed after its retention is kept for numbering, never listed
+        return Query(self.model, [m for m in self.all() if not m.raw.get("removed")])
 
     def find(self, n: int) -> M | None:
         return next((m for m in self.all() if m.n == n), None)

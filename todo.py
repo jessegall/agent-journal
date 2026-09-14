@@ -1436,7 +1436,7 @@ def work_log(root: Path, track: str, t: dict) -> list[dict]:
     title = " ".join(t["title"].split()).lower()
     out = []
     for w in work._all(root, track):
-        if w.get("todo") != t["n"] and w["subject"].lower() != title:
+        if w.get("removed") or (w.get("todo") != t["n"] and w["subject"].lower() != title):
             continue
         out.append({"at": w.get("at", ""), "kind": "started", "text": w["subject"]})
         out.extend({"at": x.get("at", ""), "kind": "update", "text": x.get("text", "")} for x in w.get("notes") or [])

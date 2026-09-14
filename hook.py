@@ -1932,6 +1932,11 @@ def _cleanup_report(conf: dict, ctx: Ctx) -> str | None:
     if now - float(state.get(ROOT, "cleanup_checked", 0, stem=ctx.stem) or 0) < every * 60:
         return None
     state.put(ROOT, "cleanup_checked", now, stem=ctx.stem)
+    try:
+        import prune
+        prune.sweep(ROOT, tracks.current(ROOT, ctx.stem))
+    except Exception:
+        pass
     import cleanup as cleanup_mod
     said = state.get(ROOT, "cleanup_reported", [], stem=ctx.stem) or []
     try:
