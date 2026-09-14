@@ -17,3 +17,10 @@ It was decided, the next reader would get something wrong without it, and it wil
 - Comment on it.
 
 A pin that should hold for every environment becomes a **rule**.
+
+## How the agent uses pins
+
+- **Handed back after a loss.** The pins of the environment the agent works on are in the block it receives at the start of each session and after a long conversation is summarised.
+- **Reading and writing.** `journal pins` reads them in full. It adds one with `journal pins add` when something decided must survive.
+- **When the conversation fills up.** At 50, 70, 90 and 95 percent of its context, the agent is stopped until it pins what matters, writes a rule, or says in one line why nothing needs keeping.
+- **Keeping them true.** The regular cleanup pass has the agent reread every pin and strike the ones that are out of date.

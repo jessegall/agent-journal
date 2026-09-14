@@ -12,3 +12,8 @@ A report is written for you, once. It is not handed to later agent sessions the 
 - Archive it once you are done with it.
 
 Reports older than a set number of days are archived automatically. Change that number on the environment's **Settings** page.
+
+## How the agent uses reports
+
+- **Writing one.** The agent writes a report with `journal reports add` when it has something for you to read now: the result of a check or an investigation, or what a subagent found.
+- **Not carried forward.** Reports are not handed to later sessions. Anything the project should keep goes into a document instead.

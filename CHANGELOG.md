@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.70 — Help pages say how the agent uses each resource
+
+Each page's information button explained what a resource is and what you can do with it, but not
+how the agent works with it. Every help page now ends with a short "How the agent uses it" part:
+when the journal hands the resource to the agent (at the start of a session, after a summary, at
+a stop), which commands it reads and writes it with, and what reminds it. The Rules page, for
+example, explains that rules come with every session and that a regular cleanup has the agent
+reread them.
+
 ## 1.131.69 — `journal claude` passes your other flags to Claude
 
 `journal claude` refused any flag it did not know, so `journal claude --continue

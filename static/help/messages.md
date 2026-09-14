@@ -15,3 +15,9 @@ A message waits until an agent picks it up. If no agent is working on this envir
 - Open a processed one to check your words landed where you meant.
 
 Messages are never deleted.
+
+## How the agent uses messages
+
+- **Told at its next stop.** When a message waits, the agent's next stop says so, and it runs `journal messages show <n>` to read it.
+- **Woken when idle.** If Claude was started with the channel (`journal claude`), a new message also wakes a session that is sitting idle.
+- **Filing each part.** For every part it records what the part became with `journal messages process <n> --part="…" --became=…`, then `journal messages done <n>`.

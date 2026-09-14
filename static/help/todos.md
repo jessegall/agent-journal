@@ -19,3 +19,10 @@ Mostly the agent. When you ask for something while it is busy with something els
 - Close or reopen it, or comment on it.
 
 With **auto mode** on, the agent works through the open to-dos by itself, one after another, without asking first.
+
+## How the agent uses to-dos
+
+- **Parking a request.** A new request becomes a to-do by default, with `journal todos add` and a brief. The agent switches to it right away only if you said to do it now.
+- **Picking one up.** `journal todos start <n>` opens the work. The start of each session shows how many to-dos are waiting.
+- **Closing is explicit.** A to-do closes only through `journal todos done <n> "<how>"`, `journal work end "<title>" --todo`, or a commit trailer that names it. Ending work alone does not close it.
+- **Auto mode.** With it on, each stop with nothing open hands the agent the next to-do to start.
