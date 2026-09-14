@@ -39,6 +39,7 @@ STEM = "chan-session"
 tracks.bind(root, STEM, "default")
 state.put(root, "session_pids", {str(os.getpid()): STEM})
 state.put(root, "last_event", "Stop", stem=STEM)
+state.put(root, "seen_at", int(time.time()) + 3600, stem=STEM)  # its hook is running, as a real session's is
 
 srv = subprocess.Popen([sys.executable, str(root / "channel.py")], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, text=True, bufsize=1, env={**os.environ})
@@ -185,7 +186,8 @@ check("the fresh code keeps the server's start time, so nothing older is pushed"
 import inbox as _inbox  # noqa: E402
 
 _now = time.time()
-for _stem, _env, _age in (("holder-a", "default", 5), ("stale-d", "default", 600), ("free-b", None, 5)):
+state.put(root, "session_pids", {"1001": "holder-a", "1002": "stale-d", "1003": "free-b", "1004": "free-c"})
+for _stem, _env, _age in (("holder-a", "default", 5), ("stale-d", "default", 600), ("free-b", None, 5), ("free-c", None, 50)):
     if _env:
         tracks.bind(root, _stem, _env)
     state.put(root, "seen_at", int(_now - _age), stem=_stem)
@@ -204,7 +206,8 @@ check("the session on the environment is woken for its message",
       "a message for whoever works default" in _heard("holder-a"), True)
 check("a session on no environment is not woken for another live session's environment",
       "a message for whoever works default" in _heard("free-b"), False)
-check("but it is woken for an environment no live session holds", "a message on an environment nobody holds" in _heard("free-b"), True)
+check("an environment no live session holds wakes one session on no environment, the one seen most recently",
+      ("a message on an environment nobody holds" in _heard("free-b"), "a message on an environment nobody holds" in _heard("free-c")), (True, False))
 check("of two sessions bound to one environment, only the one seen most recently is woken",
       ("a message for whoever works default" in _heard("holder-a"), "a message for whoever works default" in _heard("stale-d")), (True, False))
 

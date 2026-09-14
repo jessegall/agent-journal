@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.15 — The channel wakes only the agent that holds an environment
+
+With several sessions in one project, the channel could wake the wrong agent. A session on no
+environment was sent every environment's messages, including an environment another agent was working.
+Now:
+
+- a session on an environment is woken for it, and of two sessions on one environment only the one seen
+  most recently;
+- an environment no session holds wakes one session on no environment, the one seen most recently, not
+  all of them;
+- a process id recorded by an earlier session is not trusted: the channel only acts for a session whose
+  hook has run since shortly before the channel started.
+
+Part of this change was already committed, unannounced, in 1.136.12 to 1.136.14, where the channel's
+tests were failing. The tests now record when their session was last seen, and all 33 pass.
+
 ## 1.136.14 — Text before a tool call is never a turn's message
 
 1.136.13 was not enough. The stop hook can read the transcript before Claude Code has written the
