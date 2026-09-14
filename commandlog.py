@@ -347,6 +347,26 @@ def _detail(value) -> str:
     return " ".join(str(value).split())[:40] if value not in (None, "") else ""
 
 
+def _settings_said(key: str, body: dict) -> str:
+    """What a settings change from the viewer changed, in words: "Turned auto mode on", "Activity shows the last 80 lines"."""
+    def on(value) -> bool:
+        return str(value).lower() in ("true", "1", "yes", "on", "enable")
+    said = []
+    if key == "environment:auto" and body.get("state") not in (None, ""):
+        said.append("Turned auto mode on" if on(body["state"]) else "Turned auto mode off")
+    if key == "environment:settings":
+        if "auto" in body:
+            said.append("Turned auto mode on" if on(body["auto"]) else "Turned auto mode off")
+        if "reports_archive_days" in body:
+            days = str(body["reports_archive_days"])
+            said.append("Reports stay listed until archived by hand" if days in ("0", "") else f"Reports stay listed for {days} day(s)")
+        if SHOW in body:
+            said.append(f"Activity shows the last {body[SHOW]} line(s)")
+        if KEEP in body:
+            said.append(f"The activity log keeps the last {body[KEEP]} line(s)")
+    return " · ".join(said)
+
+
 def record_web(root: Path, track: str, resource: str, action: str, ident: str | None, body: dict, at: str) -> None:
     """A write made in the viewer, as a line by the user."""
     key = f"{resource}:{action}"
@@ -357,8 +377,12 @@ def record_web(root: Path, track: str, resource: str, action: str, ident: str | 
     if field and set(body or {}) == {field[0]}:
         text = field[1]
     n = str(ident or "").split(".")[0]
+    detail = _detail((body or {}).get(WEB_DETAIL.get(key, "")))
+    # a settings change names what changed, not only that something did
+    if said := _settings_said(key, body or {}):
+        text, detail = said, ""
     _append(root, track, {"at": at, "text": text, "kind": WEB_KINDS.get(resource), "n": int(n) if n.isdigit() else None,
-                          "titled": False, "detail": _detail((body or {}).get(WEB_DETAIL.get(key, ""))), "by": "You"})
+                          "titled": False, "detail": detail, "by": "You"})
 
 
 def record(root: Path, track: str, parsed, at: str) -> None:

@@ -699,6 +699,13 @@ check("a change made in the viewer is an Activity line by you, naming what chang
       (("Changed to-do priority", _urgent, "low", "You") in _mine, ("Edited to-do", _urgent, "", "You") in _mine), (True, True))
 for _i, _value in enumerate(("150", "100", "120")):
     commandlog.record_web(root, "alpha", "todos", "update", "900", {"priority": _value}, f"2099-01-04T00:00:0{_i}+00:00")
+for _body, _want in (({"auto": True}, "Turned auto mode on"), ({"auto": False}, "Turned auto mode off"),
+                     ({"activity_show": 80}, "Activity shows the last 80 line(s)"),
+                     ({"reports_archive_days": 0}, "Reports stay listed until archived by hand")):
+    commandlog.record_web(root, "alpha", "environment", "settings", None, _body, "2099-01-05T00:00:00+00:00")
+    check(f"a settings change in the viewer names what changed: {_want}", commandlog.entries(root, "alpha")[-1]["text"], _want)
+commandlog.record_web(root, "alpha", "environment", "auto", None, {"state": "disable"}, "2099-01-05T00:00:01+00:00")
+check("switching auto mode from the viewer says which way", commandlog.entries(root, "alpha")[-1]["text"], "Turned auto mode off")
 _tool_stem = "toolqueue-session"
 for _tool in ("Bash", "Bash", "Edit", "Bash", "Write"):
     commandlog.queue_tool(root, "alpha", _tool_stem, _tool, "2000-01-05T00:00:00+00:00")
