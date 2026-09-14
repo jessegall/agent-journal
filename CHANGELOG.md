@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.120.0 — Search and Notifications live in the top bar
+
+Every page's top bar keeps its crumbs on the left. On the right come the page's own button
+(New to-do, Start work), then a Search button and a Notifications bell. The bell shows how
+many notifications and suggestions are waiting; clicking it opens a list where a suggestion
+opens its page and a notification can be marked read. Search and Suggestions are no longer
+in the sidebar; their pages still open from links.
+
 ## 1.119.2 — Home shows only the counts that call for something
 
 Home's counts are now: messages waiting, questions for you, suggestions, to-dos in

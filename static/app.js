@@ -182,6 +182,7 @@ const Icon = {
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
+      <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
       <template v-else-if="name === 'empty'"><path d="M2.5 9.5l1.8-5h7.4l1.8 5V13h-11z"/><path d="M2.5 9.5h3l1 1.5h3l1-1.5h3"/></template>
       <template v-else-if="name === 'reports'"><path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/></template>
       <template v-else-if="name === 'work'"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></template>
@@ -230,8 +231,34 @@ const PriorityIcon = {
 };
 
 // ─────────────────────────────────────────────────────────────── shared pieces
+// the page's top bar: crumbs, the page's own button, then Search and Notifications on every page
 const TopBar = {
   props: { crumbs: { type: Array, default: () => [] } },
+  components: { Icon },
+  setup() {
+    const hashEnv = parseHash().params.env || "";
+    const env = computed(() => {
+      if (hashEnv) return hashEnv;
+      const envs = OVERVIEW.data ? OVERVIEW.data.environments : [];
+      return (envs.find((e) => e.active) || envs.find((e) => e.current) || envs[0] || {}).name || "";
+    });
+    const row = computed(() => (OVERVIEW.data && env.value ? OVERVIEW.data.environments.find((e) => e.name === env.value) : null));
+    const waiting = computed(() => (row.value ? (row.value.notifications || 0) + (row.value.suggestions || 0) : 0));
+    const drop = reactive({ open: false });
+    const notes = useFetch(() => drop.open && env.value && `/api/env/${env.value}/notifications`);
+    const ideas = useFetch(() => drop.open && env.value && `/api/env/${env.value}/suggestions`);
+    const suggestions = computed(() => (ideas.data || []).filter((s) => s.status === "open"));
+    const changed = () => { notes.reload(); window.dispatchEvent(new CustomEvent("journal:changed")); };
+    const readOne = (x) => send("POST", `/api/env/${env.value}/notifications/${x.n}/read`).then(changed);
+    const readAll = () => send("POST", `/api/env/${env.value}/notifications/readall`).then(changed);
+    const outside = (e) => { if (!e.target.closest(".drop-wrap")) drop.open = false; };
+    watchEffect((onCleanup) => {
+      if (!drop.open) return;
+      document.addEventListener("mousedown", outside);
+      onCleanup(() => document.removeEventListener("mousedown", outside));
+    });
+    return { env, waiting, drop, notes, suggestions, readOne, readAll };
+  },
   template: `
     <div class=top>
       <div class=crumb>
@@ -239,7 +266,33 @@ const TopBar = {
           <span v-if="i" class=sep>/</span><b v-if="i === crumbs.length - 1">{{ c }}</b><span v-else>{{ c }}</span>
         </template>
       </div>
-      <slot/>
+      <div class=top-tools>
+        <slot/>
+        <template v-if="env">
+          <a class=icon-btn :href="'#/env/' + env + '/search'" title="Search" aria-label="Search"><Icon name="search"/></a>
+          <div class=drop-wrap>
+            <button type=button :class="['icon-btn', {on: drop.open}]" title="Notifications" aria-label="Notifications"
+              :aria-expanded="drop.open" @click="drop.open = !drop.open">
+              <Icon name="bell"/><span v-if="waiting" class=tool-badge>{{ waiting }}</span>
+            </button>
+            <div v-if="drop.open" class=drop>
+              <div class=drop-head><span>Notifications</span>
+                <button v-if="notes.data && notes.data.length" type=button class="btn more" @click="readAll">Mark all read</button></div>
+              <p v-if="!(notes.data && notes.data.length) && !suggestions.length" class="muted drop-empty">Nothing waiting.</p>
+              <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
+                <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
+              </a>
+              <div v-for="x in notes.data || []" :key="'n' + x.n" class=drop-row>
+                <span class=drop-text>{{ x.text }}</span>
+                <span class=drop-meta>{{ x.age || 'just now' }}
+                  <a v-if="x.about && $refHref(x.about, env)" class=chip :href="$refHref(x.about, env)" @click="drop.open = false">{{ x.about_label }}</a>
+                  <button type=button class="btn more" @click="readOne(x)">Mark read</button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
     </div>`,
 };
 
@@ -1801,11 +1854,9 @@ const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions
 // open work lives on Home, so the sidebar has no entry of its own for it
 const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "", count: "notifications" },
-  { key: "search", label: "Search", views: ["Search"], path: "search" },
   { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "questions", label: "Questions", views: ["Questions"], path: "questions", count: "questions" },
-  { key: "suggestions", label: "Suggestions", views: ["Suggestions"], path: "suggestions", count: "suggestions" },
   { key: "reports", label: "Reports", views: ["Reports"], path: "reports", count: "reports" },
   { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
   { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
