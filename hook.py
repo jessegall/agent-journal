@@ -537,6 +537,11 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     exactly the case where the answer might be "later" — so it is not wallpaper on every
     message. With nothing open the request is the work and needs no reminder.
     """
+    notes = state.get(ROOT, PROMPT_NOTES, [], stem=ctx.stem) or []
+    if notes:
+        state.put(ROOT, PROMPT_NOTES, [], stem=ctx.stem)
+    lead = "\n\n".join(notes)
+    with_notes = lambda text: "\n\n".join(x for x in (lead, text) if x)  # noqa: E731
     prompt = str(payload.get("prompt") or "")
     asked = asks.asks_for_work(prompt)
     here = tracks.current(ROOT, ctx.stem)
@@ -548,15 +553,15 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     # answered three questions unbound has had three chances to notice, and the fourth
     # message may be the one that writes.
     if _unbound(conf, ctx):
-        return _context("UserPromptSubmit", _choose_block(" YET"))
+        return _context("UserPromptSubmit", with_notes(_choose_block(" YET")))
     standing = work.open_work(ROOT)
     if not asked or not standing or "prompt_reminder" in conf["silenced"]:
-        return 0
+        return _context("UserPromptSubmit", lead) if lead else 0
     # `_say` SUPPLIES THE DASH. A fact that carries its own gets two of them before the
     # reader reaches the instruction.
-    return _context("UserPromptSubmit", _say(
+    return _context("UserPromptSubmit", with_notes(_say(
         say("prompt_fact", n=len(standing)), say("prompt_do"),
-        rows=[w["subject"] for w in standing])[1])
+        rows=[w["subject"] for w in standing])[1]))
 
 
 def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
@@ -709,26 +714,48 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
         raised[subject] = lines[-1].n if lines else 0
         state.put(ROOT, "raised_this_turn", raised, stem=ctx.stem)
         if hold[0] == "context-only":
-            return _context("Stop", _remembering(hold[1]))
+            # SAID, NOT HELD: the user sees it now, the agent gets it with the next prompt,
+            # and the turn is not re-opened for something nobody owes an action on
+            _for_next_prompt(ctx, hold[1])
+            return _tell_user(_remembering(hold[1]))
         return _hold(*hold, subject=subject)
     if not active:
         state.put(ROOT, "raised_this_turn", {}, stem=ctx.stem)
 
-    # NOTHING HELD. Two things are said as context, never held: a newer journal upstream,
-    # and to-dos waiting while auto is off.
+    # NOTHING HELD. Two things are only said, to the user, never held: a newer journal upstream,
+    # and to-dos waiting while auto is off. `additionalContext` here would re-open the turn
+    # (see `_hold`), so they go out as `systemMessage`; the upgrade also reaches the agent
+    # with the user's next prompt.
     if "update_check" not in conf["silenced"]:
         note, latest = update.available(ROOT)
         if note:
             if latest and latest != state.get(ROOT, "update_said", "", stem=ctx.stem):
                 state.put(ROOT, "update_said", latest, stem=ctx.stem)
-                return _context("Stop", _remembering(say("update_run", note=note)))
+                _for_next_prompt(ctx, say("update_run", note=note))
+                return _tell_user(_remembering(say("update_run", note=note)))
     if not work.open_work(ROOT) and not todo.auto(ROOT, here):
         ids = sorted(t["n"] for t in todo.open_items(ROOT, here))
         if ids and ids != state.get(ROOT, "todos_said", [], stem=ctx.stem):
             state.put(ROOT, "todos_said", ids, stem=ctx.stem)
-            return _context("Stop", _remembering(_say(
+            return _tell_user(_remembering(_say(
                 say("waiting_fact", n=len(ids), env=here), say("waiting_do"))[1]))
     return _remind_only()
+
+
+#: runtime key: what a stop had to say to the agent without re-opening the turn, handed over with the next prompt
+PROMPT_NOTES = "notes_for_prompt"
+
+
+def _for_next_prompt(ctx: Ctx, text: str) -> None:
+    notes = state.get(ROOT, PROMPT_NOTES, [], stem=ctx.stem) or []
+    if text and text not in notes:
+        state.put(ROOT, PROMPT_NOTES, (notes + [text])[-5:], stem=ctx.stem)
+
+
+def _tell_user(text: str) -> int:
+    """Shown to the user at a stop; the agent's turn is not re-opened."""
+    print(json.dumps({"systemMessage": text}))
+    return 0
 
 
 #: ────────────────────────────── the one place a message is shaped ──────────────────────────

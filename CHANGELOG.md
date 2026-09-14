@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.16 — A note that is only said no longer wakes the agent
+
+Some things the stop hook tells the agent ask nothing of it: to-dos waiting while auto is off, a newer
+journal, nothing on the list can be picked up, the cleanup and recall notes. They were sent as context
+at the stop, and context at a stop re-opens the agent's turn exactly as a hold does, so one idle stop
+could wake the agent three or four times with nothing to do.
+
+They now go to the user as a message, which re-opens nothing, and the agent is handed them with the
+user's next prompt. Holds, the things the agent does owe an action on, are unchanged.
+
 ## 1.136.15 — The channel wakes only the agent that holds an environment
 
 With several sessions in one project, the channel could wake the wrong agent. A session on no
