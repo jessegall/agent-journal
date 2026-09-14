@@ -406,6 +406,12 @@
   .panel-link:hover { color: var(--text); text-decoration: underline; }
   /* a block is a list container too, so Home's lists narrow their columns beside an open panel */
   .block { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; container: list / inline-size; }
+  /* a to-do's work log: each entry opens its work item, named at the end of the line */
+  .log-row { display: flex; align-items: baseline; gap: 10px; color: inherit; text-decoration: none; border-bottom: none; }
+  a.log-row:hover .log-text { color: var(--text); }
+  a.log-row:hover .log-work { color: var(--accent-text); }
+  .log-text { flex: 1; min-width: 0; }
+  .log-work { flex: none; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
   /* the files a piece of work changed: path, a new tag, and green added / red removed line counts */
   .work-files { display: flex; flex-direction: column; gap: 2px; }
   .work-file { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12px; font-variant-numeric: tabular-nums; }

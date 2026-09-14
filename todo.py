@@ -1446,15 +1446,16 @@ def work_log(root: Path, track: str, t: dict) -> list[dict]:
     import work
     title = " ".join(t["title"].split()).lower()
     out = []
-    for w in work._all(root, track):
+    # each entry carries its work item's number, so the viewer can open that work
+    for wn, w in enumerate(work._all(root, track), 1):
         if w.get("removed") or (w.get("todo") != t["n"] and w["subject"].lower() != title):
             continue
-        out.append({"at": w.get("at", ""), "kind": "started", "text": w["subject"]})
-        out.extend({"at": x.get("at", ""), "kind": "update", "text": x.get("text", "")} for x in w.get("notes") or [])
+        out.append({"at": w.get("at", ""), "kind": "started", "text": w["subject"], "work": wn})
+        out.extend({"at": x.get("at", ""), "kind": "update", "text": x.get("text", ""), "work": wn} for x in w.get("notes") or [])
         if w.get(work.AWAIT):
-            out.append({"at": w[work.AWAIT].get("at", ""), "kind": "waiting", "text": w[work.AWAIT].get("what", "")})
+            out.append({"at": w[work.AWAIT].get("at", ""), "kind": "waiting", "text": w[work.AWAIT].get("what", ""), "work": wn})
         if w.get("ended"):
-            out.append({"at": w["ended"], "kind": "ended", "text": w.get("ended_note") or ""})
+            out.append({"at": w["ended"], "kind": "ended", "text": w.get("ended_note") or "", "work": wn})
     out.sort(key=lambda e: e["at"])
     return [{**e, "age": _age(e["at"])} for e in out]
 

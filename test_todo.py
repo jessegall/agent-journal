@@ -335,6 +335,9 @@ check("a to-do's page shows the work started from it, its updates and its end",
       ("WORK LOG" in out.upper(), "halfway there" in out, "started" in out, "ended" in out), (True, True, True, True))
 check("the log is data too", [e["kind"] for e in todo.detail(root, "default", todo.item(root, "default", int(_ln))[0])["log"]],
       ["started", "update", "ended"])
+_wn = [i for i, w in enumerate(__import__("work")._all(root, "default"), 1) if w["subject"] == "log this row"][0]
+check("each log entry carries the number of the work item it belongs to, so the viewer can open it",
+      {e["work"] for e in todo.detail(root, "default", todo.item(root, "default", int(_ln))[0])["log"]}, {_wn})
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
