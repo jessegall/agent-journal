@@ -440,52 +440,37 @@ def _kind(rec: dict, has_tool_result: bool) -> str:
     return "injected"
 
 
-#: what the compact view keeps: people and the agent talking, not tool output or journal injections
-COMPACT_KINDS = frozenset({"human", "text", "task", "peer"})
-#: tool names shown on one line of the transcript; the rest are counted
-TOOLS_SHOWN = 12
-
-
-def _epoch(ts: str) -> float | None:
-    from datetime import datetime
-    try:
-        return datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
-    except (ValueError, AttributeError):
-        return None
-
-
-def chunk(lines: list[Line], *, before: int | None = None, limit: int = 200, mode: str = "compact",
-          at: float | None = None, window: float = 120.0) -> dict:
-    """One page of a transcript, newest last: the `limit` lines before line `before`, or ending just after the time `at`."""
-    shown = [x for x in lines if mode == "full" or (x.kind in COMPACT_KINDS and ((x.text or "").strip() or x.tools))]
-    focus: set[int] = set()
-    if at is not None:
-        near = [x for x in shown if (_epoch(x.ts) or 0) <= at]
-        focus = {x.n for x in near if at - (_epoch(x.ts) or 0) <= window}
-        if near:
-            after = [x for x in shown if x.n > near[-1].n][:20]
-            before = (after[-1].n + 1) if after else None
-    end = len(shown) if before is None else next((i for i, x in enumerate(shown) if x.n >= before), len(shown))
-    cap = 20000 if mode == "full" else 4000
-    rows: list[dict] = []
-    for x in shown[:end] if mode != "full" else shown[max(0, end - limit):end]:
-        text = x.text or ""
-        # in the compact view a step that only ran tools joins the agent's line before it
-        if mode != "full" and x.kind == "text" and not text.strip() and rows and rows[-1]["kind"] == "text":
-            rows[-1]["tools"].extend(x.tools)
-            if x.n in focus:
-                focus.add(rows[-1]["n"])
+def last_model(path: Path | None, limit: int = 300_000) -> str:
+    """The model that wrote the last reply in a transcript, read from its tail."""
+    if path is None or not path.is_file():
+        return ""
+    size = path.stat().st_size
+    with path.open("rb") as fh:
+        if size > limit:
+            fh.seek(size - limit)
+            fh.readline()
+        raw = fh.read().decode("utf-8", "replace")
+    model = ""
+    for line in raw.splitlines():
+        if '"model"' not in line:
             continue
-        rows.append({"n": x.n, "kind": x.kind, "role": x.role, "ts": x.ts, "tools": list(x.tools),
-                     "text": text[:cap], "clipped": len(text) > cap})
-    # a page is `limit` rows as they are shown, so folding tool steps never shrinks it to a handful
-    more = len(rows) > limit if mode != "full" else end - limit > 0
-    rows = rows[-limit:]
-    for r in rows:
-        r["tools_more"] = max(0, len(r["tools"]) - TOOLS_SHOWN)
-        r["tools"] = r["tools"][:TOOLS_SHOWN]
-    return {"total": len(lines), "shown": len(shown), "first": rows[0]["n"] if rows else None, "more": more,
-            "focus": sorted(focus), "lines": rows}
+        try:
+            rec = json.loads(line)
+        except ValueError:
+            continue
+        if rec.get("type") == "assistant":
+            model = (rec.get("message") or {}).get("model") or model
+    return model
+
+
+def page(lines: list[Line], *, after: int = 0, limit: int = 1000) -> dict:
+    """The next `limit` lines after line `after`, for reading a transcript from the top down."""
+    start = next((i for i, x in enumerate(lines) if x.n > after), len(lines))
+    rows = lines[start:start + limit]
+    cap = 20000
+    return {"total": len(lines), "next": rows[-1].n if rows and start + limit < len(lines) else None,
+            "lines": [{"n": x.n, "kind": x.kind, "role": x.role, "ts": x.ts, "tools": list(x.tools),
+                       "text": (x.text or "")[:cap], "clipped": len(x.text or "") > cap} for x in rows]}
 
 
 def read(path: Path) -> tuple[list[Line], list[int]]:

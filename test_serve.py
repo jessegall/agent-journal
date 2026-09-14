@@ -781,33 +781,25 @@ _tl = [_tx.Line(1, "user", "human", "fix the build", "2026-09-14T10:00:00Z"),
        _tx.Line(5, "assistant", "text", "", "2026-09-14T10:00:12Z", tools=["Bash"]),
        _tx.Line(6, "user", "tool_result", "12 passed", "2026-09-14T10:00:20Z"),
        _tx.Line(7, "user", "human", "thanks", "2026-09-14T10:30:00Z")]
-check("the compact view leaves out tool output and folds a tool-only step into the agent's line before it",
-      [(r["n"], r["kind"], r["tools"]) for r in _tx.chunk(_tl, mode="compact")["lines"]],
-      [(1, "human", []), (2, "text", ["Bash"]), (4, "text", ["Bash"]), (7, "human", [])])
-_page = _tx.chunk(_tl, mode="full", limit=2)
-check("a page is the newest lines, and says there is more before it",
-      ([r["n"] for r in _page["lines"]], _page["first"], _page["more"]), ([6, 7], 6, True))
-check("the page before a line ends just above it",
-      [r["n"] for r in _tx.chunk(_tl, mode="full", limit=2, before=6)["lines"]], [4, 5])
-_busy = []
-for _i in range(1, 61):
-    _busy.append(_tx.Line(_i, "assistant", "text", "step %d" % _i if _i % 3 == 1 else "", "2026-09-14T11:00:00Z", tools=[] if _i % 3 == 1 else ["Bash"] * 20))
-_cpage = _tx.chunk(_busy, mode="compact", limit=5)
-check("a compact page holds as many rows as asked for, however many tool steps fold into them",
-      (len(_cpage["lines"]), _cpage["more"], [r["n"] for r in _cpage["lines"]]), (5, True, [46, 49, 52, 55, 58]))
-check("and a line with many tools shows the first dozen and counts the rest",
-      (len(_cpage["lines"][-1]["tools"]), _cpage["lines"][-1]["tools_more"]), (12, 28))
-check("the compact page before a row ends just above it",
-      [r["n"] for r in _tx.chunk(_busy, mode="compact", limit=2, before=46)["lines"]], [40, 43])
-_at = _tx._epoch("2026-09-14T10:00:12Z")
-check("opened at a moment, the steps just before it are highlighted",
-      _tx.chunk(_tl, mode="full", at=_at)["focus"], [1, 2, 3, 4, 5])
-import controllers.transcript as _txc  # noqa: E402
-check("an environment no session has worked on has no transcript to show",
-      _txc.TranscriptController._session(root, "zz-nobody-here", ""), None)
-from payloads import transcript as _txp  # noqa: E402
-check("the moment to open the transcript at reaches the request, not the request's own timestamp",
-      _txp.ChunkPayload.build("alpha", None, {"moment": "1789387709", "before": "12"}, "web").moment, 1789387709)
+_p1 = _tx.page(_tl, limit=3)
+check("the transcript page reads from the top: the first lines, and where the next load starts",
+      ([r["n"] for r in _p1["lines"]], _p1["next"], _p1["total"]), ([1, 2, 3], 3, 7))
+check("the next load carries on after the last line shown", [r["n"] for r in _tx.page(_tl, after=_p1["next"], limit=3)["lines"]], [4, 5, 6])
+_p3 = _tx.page(_tl, after=6, limit=3)
+check("and the last load says there is nothing more to load", ([r["n"] for r in _p3["lines"]], _p3["next"]), ([7], None))
+import controllers.agent as _agc  # noqa: E402
+check("an environment no session has worked on has no agent to show",
+      _agc.AgentController._session(root, "zz-nobody-here", ""), None)
+from payloads import agent as _agp  # noqa: E402
+_built = _agp.AgentPayload.build("alpha", None, {"agent": "abc123de", "kind": "subagent", "transcript": "1", "after": "1000"}, "web")
+check("the agent, its kind and where to read from reach the request, not the request's own id",
+      (_built.agent, _built.kind, _built.transcript, _built.after), ("abc123de", "subagent", True, 1000))
+_sess = "11111111-2222-3333-4444-555555555555"
+_w_beta = state.tracked(root, "work", "beta", [])
+_w_beta.append({"subject": "work opened by that session", "at": "2026-09-14T10:00:00+00:00", "ended": None, "session": _sess + ".jsonl"})
+state.put_tracked(root, "work", "beta", _w_beta)
+check("a session's page lists the work it opened, which records the transcript file rather than the bare id",
+      [w["subject"] for w in _agc.AgentController._about(root, "beta", "session", _sess, None)["work"]], ["work opened by that session"])
 import agents as _agents  # noqa: E402
 commandlog.record_dispatch(root, "alpha", "dispatch-stem", "  review   the diff ", "2099-01-01T00:00:08+00:00")
 check("handing work to a subagent is its own Activity line, with the dispatcher's description",
