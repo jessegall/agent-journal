@@ -596,7 +596,7 @@ const ResourceList = {
     const cols = computed(() => {
       const c = props.columns;
       return [c.priority && "22px", c.status && "22px", c.num && (c.numWidth || "44px"), "minmax(0, 1fr)",
-              c.cite && "minmax(0, 180px)", c.age && "112px"].filter(Boolean).join(" ");
+              c.cite && "var(--cite-col, minmax(0, 180px))", c.age && "var(--age-col, 112px)"].filter(Boolean).join(" ");
     });
     const setSort = (key, by, dir) => { state.sort[key] = { by, dir }; };
     const more = (key) => { state.pages[key] = (state.pages[key] || 1) + 1; };
