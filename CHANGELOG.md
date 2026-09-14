@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.90 — New buttons with a plus; quieter sort controls; a livelier Activity
+
+The New buttons in each list's bar are flush, with a plus before the label. A list's sort controls
+show only while you hover its group header, and with one way to sort just the arrow shows. New
+Activity lines slide in and old ones fade out, and when a line arrives the list goes back to the
+newest one, unless the pointer is over it.
+
 ## 1.131.89 — The agent page lists its work as a table
 
 An agent's page showed its last ten pieces of work as plain rows. It now shows "Most recent work" as

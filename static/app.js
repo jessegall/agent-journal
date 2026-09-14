@@ -755,7 +755,6 @@ const ResourceList = {
               @change="setSort(g.key, $event.target.value, sortOf(g.key).dir)">
               <option v-for="o in sorts" :key="o.key" :value="o.key">{{ o.label }}</option>
             </select>
-            <span v-else class=sort-field>{{ sorts[0].label }}</span>
             <button type=button class="icon-btn sort-dir"
               :title="sortOf(g.key).dir === 'asc' ? 'Ascending — click for descending' : 'Descending — click for ascending'"
               :aria-label="sortOf(g.key).dir === 'asc' ? 'Sorted ascending' : 'Sorted descending'"
@@ -1576,7 +1575,7 @@ const Reports = {
   },
   template: `
     <template v-if="reading">
-      <TopBar :crumbs="[env, 'Reports', '#' + n]"><a class="btn new" :href="base">All reports</a></TopBar>
+      <TopBar :crumbs="[env, 'Reports', '#' + n]"><a class=btn :href="base">All reports</a></TopBar>
       <div class=body><div class=page><div class=page-inner>
         <p v-if="item.error" class=error>{{ item.error }}</p>
         <template v-else-if="item.data">
@@ -2510,7 +2509,23 @@ const ActivityPanel = {
       document.addEventListener("mousedown", outsideCrew);
       onCleanup(() => document.removeEventListener("mousedown", outsideCrew));
     });
-    return { accept, quick, box, grow, sendQuick, crew, agentsList, working };
+    // each line keyed by when, what and which, so a line keeps its place while newer ones arrive above it
+    const keyed = computed(() => {
+      const seen = {};
+      return ((props.data && props.data.events) || []).map((e) => {
+        const k = `${e.at}|${e.kind}|${e.n}|${e.text}|${e.title}`;
+        seen[k] = (seen[k] || 0) + 1;
+        return { e, key: `${k}#${seen[k]}` };
+      });
+    });
+    // a new line brings the list back to the top, unless the pointer is over it
+    const list = ref(null);
+    const hovered = ref(false);
+    watch(() => keyed.value[0] && keyed.value[0].key, (now, was) => {
+      if (!now || !was || now === was || hovered.value || !list.value) return;
+      list.value.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    });
+    return { accept, quick, box, grow, sendQuick, crew, agentsList, working, keyed, list, hovered };
   },
   template: `
     <div class=activity-panel>
@@ -2534,8 +2549,9 @@ const ActivityPanel = {
         </span>
       </div>
       <template v-if="data">
-        <div class=activity-list>
-          <template v-for="(e, i) in data.events" :key="i">
+        <div class=activity-list ref=list @mouseenter="hovered = true" @mouseleave="hovered = false">
+          <TransitionGroup name=act>
+          <template v-for="{ e, key } in keyed" :key="key">
             <div v-if="e.needs === 'open' && href(e)" class="activity-row activity-alert">
               <a class=activity-alert-body :href="href(e)">
                 <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span><span v-if="e.detail" class=activity-d>{{ e.detail }}</span></span>
@@ -2561,6 +2577,7 @@ const ActivityPanel = {
               <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
             </div>
           </template>
+          </TransitionGroup>
         </div>
         <form v-if="env" class=activity-compose @submit.prevent="sendQuick">
           <textarea ref=box v-model="quick.text" rows=1 placeholder="Message the agent" aria-label="Message the agent"
