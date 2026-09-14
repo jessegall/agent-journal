@@ -209,6 +209,14 @@ def _served(path: str):
     return controller, m
 
 
+def _answered(root: Path, method: str, path: str, body: dict | None):
+    """A resource's answer, and a 500 with the error when its controller raises, as the routes already do."""
+    try:
+        return _resource(root, method, path, body)
+    except Exception as e:  # a bad controller must answer 500, never drop the connection
+        return _json({"error": say("internal", error=e)}, 500)
+
+
 def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str, bytes] | None:
     served = _served(path)
     if served is None:
@@ -342,7 +350,7 @@ class _Handler(BaseHTTPRequestHandler):
         if refusal:
             self._send(*refusal, False)
             return
-        answered = _resource(self.server.root, method, path, body)
+        answered = _answered(self.server.root, method, path, body)
         if answered is None:
             self._method_not_allowed()
             return
@@ -380,7 +388,7 @@ class _Handler(BaseHTTPRequestHandler):
     def _dispatch(self, head: bool) -> None:
         url = urlsplit(self.path)
         path = url.path
-        answered = _resource(self.server.root, "GET", path, dict(parse_qsl(url.query))) if _served(path) else None
+        answered = _answered(self.server.root, "GET", path, dict(parse_qsl(url.query))) if _served(path) else None
         if answered is not None:
             self._send(*answered, head)
             return
