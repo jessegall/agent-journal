@@ -79,6 +79,12 @@ MESSAGES = {
                     "parked as to-do n. If nothing is deferred — you were describing the order of the current work — "
                     "run the call again; this is said once per reply.",
     "deferral_fact": "work deferred in words, not parked",
+    "deferral_stop_do": "park it as a to-do, or say in one line that nothing was put off; this is not asked again for this reply",
+    "deferral_stop_why": "You wrote:\n  …{said}…\n\nThe user asked for something and this says it will happen later. Work "
+                         "held only in words lives in this window, and one distraction or one compaction loses it. Park it "
+                         'now:\n  .journal/journal.py todos add "<title>" --brief\nand say in your next message that it is '
+                         "parked as to-do n. If nothing was put off, you were describing the order of the current work: say "
+                         "so in one line and carry on.",
     "deferral_deny": "{do}\n\n{why}",
     "prompt_fact": "{n} piece(s) of work open",
     "prompt_do": 'a NEW request is a to-do unless the user said to do it NOW: `.journal/journal.py todos add "<title>" '
@@ -463,11 +469,17 @@ def _floor(ctx: Ctx, lines=None) -> int:
 #: agent finishes", "for now, back to the failures", "I'll come back to that". Measured:
 #: the user asked whether to rename a component, the agent said it would do it next, and
 #: nothing was written down — one distraction away from being forgotten.
+#:
+#: NOT THE ORDER OF THE WORK. "Let me read the file, then fix the bug", "I'll check the hook
+#: next" and "For now, reading the file" are an agent narrating its next step, and each of
+#: them was refused: the audit ran them through this pattern and they all matched. "Let me",
+#: and "then", "next", "when" and "for now" on their own, name a step in the current work,
+#: not a promise about later, so they no longer count.
 _DEFERRAL = re.compile(
-    r"\b(?:I(?:'|’)ll|I will|let me|I(?:'|’)m going to|going to|we(?:'|’)ll)\b[^.!?\n]{0,90}?"
-    r"\b(?:once|after|when|later|next|afterwards|then|as soon as)\b"
-    r"|\b(?:for now|later on|come back to (?:that|this|it)|circle back|after this|"
-    r"once that(?:'|’)s done|when that(?:'|’)s done|in a moment|in a bit)\b",
+    r"\b(?:I(?:'|’)ll|I will|I(?:'|’)m going to|we(?:'|’)ll)\b[^.!?\n]{0,90}?"
+    r"\b(?:once|after|later|afterwards|as soon as)\b"
+    r"|\b(?:later on|come back to (?:that|this|it)|circle back|after this|"
+    r"once that(?:'|’)s done|when that(?:'|’)s done)\b",
     re.I,
 )
 
@@ -482,7 +494,7 @@ def deferred(text: str) -> str | None:
     return body[max(0, i - 40):i + 140]
 
 
-def _deferral(conf: dict, ctx: Ctx) -> tuple[str, str] | None:
+def _deferral(conf: dict, ctx: Ctx, at_stop: bool = False) -> tuple[str, str] | None:
     """(the one-line instruction, the reasoning) if the agent's latest reply puts work
     off and nothing was parked since the user asked; None otherwise. Said once per reply.
 
@@ -515,6 +527,9 @@ def _deferral(conf: dict, ctx: Ctx) -> tuple[str, str] | None:
     if not said:
         return None
     state.put(ROOT, "deferral_at", uid, stem=ctx.stem)
+    # A STOP HAS NO CALL TO RUN AGAIN: its hold asks for the to-do or one line, not a retry
+    if at_stop:
+        return say("deferral_stop_do"), say("deferral_stop_why", said=said)
     return say("deferral_do"), say("deferral_why", said=said)
 
 
@@ -901,7 +916,7 @@ def _p_context(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
 
 @nudges.subject("deferral", 30)
 def _p_deferral(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
-    due = _deferral(conf, ctx)
+    due = _deferral(conf, ctx, at_stop=True)
     # BOTH HALVES. `_deferral` builds the evidence — the agent's own deferring sentence,
     # quoted back — and for a while this line returned only the instruction and dropped it.
     # The evidence is what lets a reader tell a real deferral from a false positive, and a
