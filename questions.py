@@ -187,13 +187,16 @@ def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
     return True, say("added", n=n, links=labels(links), open=len(open_items(root, track)))
 
 
-def _options(raw: list[str] | None) -> list[str]:
-    """The choices offered, each one line, blanks and repeats dropped."""
-    out: list[str] = []
-    for o in raw or []:
-        o = " ".join(str(o).split())
-        if o and o not in out:
-            out.append(o)
+def _options(raw: list | None) -> list[dict]:
+    """The choices offered, as {label, description, code}: the label one line, blanks and repeated labels dropped.
+    An option written as a bare string, as every option once was, is its label."""
+    out: list[dict] = []
+    for o in [raw] if isinstance(raw, (str, dict)) else raw or []:
+        o = o if isinstance(o, dict) else {"label": o}
+        label = " ".join(str(o.get("label") or "").split())
+        if label and label not in [x["label"] for x in out]:
+            out.append({"label": label, "description": str(o.get("description") or "").strip(),
+                        "code": str(o.get("code") or "").strip("\n")})
     return out
 
 
@@ -307,8 +310,14 @@ def show_text(q: dict) -> str:
     if q["description"]:
         text += "\n\n" + fmt.wrap(q["description"], indent=2)
     if q["options"]:
-        text += "\n\n" + "\n".join(say("show_option", n=i, option=o) + (say("show_pick") if q["pick"] == i else "")
-                                   for i, o in enumerate(q["options"], 1))
+        lines = []
+        for i, o in enumerate(q["options"], 1):
+            lines.append(say("show_option", n=i, option=o["label"]) + (say("show_pick") if q["pick"] == i else ""))
+            if o["description"]:
+                lines.append(fmt.wrap(o["description"], indent=5))
+            if o["code"]:
+                lines.extend("       " + line for line in o["code"].splitlines())
+        text += "\n\n" + "\n".join(lines)
     if q["withdrawn"]:
         tail = say("show_withdrawn", why=q["withdrawn"])
     elif q["answer"]:
@@ -343,7 +352,7 @@ def row_response(n: int, q: dict) -> dict:
         "meta": " · ".join(_facts(q, n)),
         "links": [{"ref": r, "label": label(r)} for r in q.get("links") or []],
         "description": q.get("description") or "",
-        "options": list(q.get("options") or []),
+        "options": _options(q.get("options")),
         "pick": q.get("pick") or None,
     }
 

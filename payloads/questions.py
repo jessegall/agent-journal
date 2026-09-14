@@ -7,14 +7,14 @@ class StorePayload(Payload):
     text = Field(str, verbatim=True)
     about = Field(list)
     description = Field(str, verbatim=True)
-    options = Field(list)
+    options = Field(object)
     pick = Field(int)
 
 
 class UpdatePayload(Payload):
     text = Field(str, verbatim=True)
     description = Field(str, verbatim=True)
-    options = Field(list)
+    options = Field(object)
     pick = Field(int)
 
 

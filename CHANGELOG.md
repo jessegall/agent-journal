@@ -4,6 +4,21 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.45 — A question's options can explain themselves
+
+An option on a question was a single line, so the reasoning behind a choice, or what it would
+look like in code, had to be squeezed in or left out. An option can now carry a description
+and a code example:
+
+    journal questions add "Where does the cache live?" \
+      --option="In memory" --option-description="Fast, lost on restart" \
+      --option="On disk" --option-description="Survives restarts" --option-code="cache = DiskCache('.cache')"
+
+`--option-description` and `--option-code` belong to the `--option` in the same position. Leave
+either out for an option that needs none. The viewer shows each description under its option
+and the code in a code block. Choosing an option still answers with its label, and options
+written before this still show as they were.
+
 ## 1.131.44 — Home's to-dos switch reads Open / Done
 
 Home's to-dos section switched between "Open" and "Recently finished" with two separate
