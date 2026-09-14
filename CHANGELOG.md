@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.135.4 — Environment requests no longer count everything first
+
+Every request the viewer made for an environment first checked that the environment existed by
+counting the to-dos, pins, work, docs, messages and more of every environment: about 12 ms each time,
+several times per poll. It now checks the name against the list of environments directly, the same
+list those counts were built from, which takes a fraction of a millisecond. Answers are unchanged.
+
 ## 1.135.3 — A failing request answers with its error
 
 When a request the viewer makes hit an error inside the journal, the server closed the connection

@@ -974,6 +974,10 @@ check("an age says just now for a minute, then minutes, hours and days",
 _about = json.loads(get("/api/about")[2])
 check("the About endpoint says the running version and carries the changelog",
       (bool(_about.get("version")), isinstance(_about.get("changelog"), str)), (True, True))
+# an environment is known by name without building every environment's counts, and the answer is the same
+check("an environment is known exactly when views.environments lists it",
+      [(e, serve._known_env(root, e), e in {x["name"] for x in views.environments(root)}) for e in ("alpha", "beta", "zz-nobody")],
+      [("alpha", True, True), ("beta", True, True), ("zz-nobody", False, False)])
 # a controller that raises answers 500 with the error instead of dropping the connection
 import controllers.questions as _qc_boom  # noqa: E402
 def _boom(self, root, p):
