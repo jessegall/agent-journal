@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.128.0 — Comments show up in Activity, yours and the agent's
+
+Writing a comment is now an Activity line, "Wrote comment", by You when it was written in
+the viewer and by Agent when it came from the command line, with the comment's text under
+it. Marking a comment handled shows as "Handled comment". A comment line opens the to-do,
+message or other item the comment is about.
+
 ## 1.127.4 — The sidebar footer is tighter, and its lines line up under "Agent"
 
 The agent status box at the bottom of the sidebar has less padding, so its content sits

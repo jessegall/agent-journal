@@ -632,6 +632,12 @@ state.put_tracked(root, "activity", "alpha",
                   commandlog.entries(root, "alpha") + [{"at": "2099-01-01T00:00:04+00:00", "text": "Reading report", "kind": "report", "n": 5},
                                                        {"at": "2099-01-01T00:00:05+00:00", "text": "Reading report", "kind": "report", "n": 5}])
 _, _, body = get("/api/env/alpha/activity")
+import comments as _comments  # noqa: E402
+_comments.add(root, "todo:1", "check the colour first", "2099-01-02T00:00:00+00:00", source="web", track="alpha")
+_, _, body = get("/api/env/alpha/activity")
+check("a comment written in the viewer is an Activity line by you, titled with its text, opening what it is about",
+      [(e["text"], e["by"], e["title"], e["about"]) for e in json.loads(body)["events"] if e["kind"] == "comment"][:1],
+      [("Wrote comment", "You", "check the colour first", "todo:1")])
 check("the same line twice in a row shows once",
       len([e for e in json.loads(body)["events"] if e["kind"] == "report" and e["n"] == 5]), 1)
 _undescribed = sorted({f"{c.noun}:{c.verb}" for group in _commands.REGISTRY._commands.values() for c in group

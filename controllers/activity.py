@@ -16,6 +16,8 @@ MESSAGES = {
     "message_left": "Wrote message",
     "message_processed": "Filed message",
     "suggestion_made": "Suggested a change",
+    "comment_written": "Wrote comment",
+    "comment_handled": "Handled comment",
 }
 
 TEXT_MAX = 100
@@ -93,6 +95,7 @@ class ActivityController(Controller):
             "pin": lambda: numbered(__import__("pins")._all(root, track=env), "fact"),
             "rule": lambda: numbered(__import__("pins")._all(root, "rules"), "fact"),
             "doc": lambda: {d["n"]: d.get("title", "") for d in __import__("docs").all_docs(root)},
+            "comment": lambda: numbered(__import__("comments")._all(root, env), "text"),
         }
         titles: dict[str, dict] = {}
 
@@ -104,11 +107,12 @@ class ActivityController(Controller):
             return short(titles[kind].get(int(n), "") or "", TITLE_MAX)
 
         def add(at, kind: str, text: str, n: int | None, by: str, titled: bool = False, needs: str = "",
-                detail: str = "") -> None:
+                detail: str = "", about: str = "") -> None:
             """`needs`: "open" when the line waits on the user, "answered" once they have answered it."""
             if at:
                 out.append({"at": at, "kind": kind, "n": n, "text": short(text),
-                            "title": title_of(kind, n) if titled else "", "by": by, "needs": needs, "detail": detail})
+                            "title": title_of(kind, n) if titled else "", "by": by, "needs": needs, "detail": detail,
+                            "about": about})
 
         for wn, w in enumerate(work._all(root, env), 1):
             if w.get("removed"):
@@ -132,6 +136,12 @@ class ActivityController(Controller):
                 continue
             add(s.get("at"), "suggestion", say("suggestion_made"), n, AGENT, True,
                 "open" if suggestions.status(s) == "open" else "")
+        for n, c in enumerate(__import__("comments")._all(root, env), 1):
+            if not isinstance(c, dict) or c.get("removed"):
+                continue
+            by = USER if c.get("source") == "web" else AGENT
+            add(c.get("at"), "comment", say("comment_written"), n, by, True, about=c.get("about") or "")
+            add(c.get("done_at"), "comment", say("comment_handled"), n, AGENT, about=c.get("about") or "")
         for n, m in enumerate(inbox._all(root, env), 1):
             if m.get("removed"):
                 continue

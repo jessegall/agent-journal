@@ -2005,6 +2005,8 @@ const App = {
     const activityHref = (e) => {
       if (e.kind === "doc") return e.n ? `#/docs/${e.n}` : "#/docs";
       if (e.kind === "rule") return e.n ? `#/rules/${e.n}` : "#/rules";
+      // a comment has no page of its own: its line opens what it is about
+      if (e.kind === "comment") return e.about && envName.value ? refHref(e.about, envName.value) : null;
       const page = ACTIVITY_PAGES[e.kind];
       if (!page || !envName.value) return null;
       return `#/env/${envName.value}/${page}` + (e.n ? `/${e.n}` : "");
