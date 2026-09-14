@@ -10,15 +10,16 @@ from templates import render
 KEY = "comments"
 
 KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "reminder": "reminder", "suggestion": "suggestion",
-         "inbox": "message"}
+         "inbox": "message", "work": "work"}
 
-_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|reminders?|suggestions?|messages?|inbox)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|reminders?|suggestions?|messages?|inbox|works?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
 
 MESSAGES = {
     "label": "{kind} {num}",
     "not_a_ref": "{text} is not something a comment can be about; write it as `todo 22`, `doc 4`, `pin 3`, "
-                 "`rule 2`, `reminder 1` or `message 5`",
+                 "`rule 2`, `reminder 1`, `message 5` or `work 7`",
     "no_reminder": "there is no reminder {n} on this environment",
+    "no_work": "there is no work {n} on this environment. `journal work` numbers it.",
     "needs_text": 'a comment needs its text: journal comments add "todo 22" "<the comment>"',
     "added": "comment {n} on {label}; the agent is told at its next stop",
     "no_comment": "there is no comment {n}. `journal comments` numbers them.",
@@ -58,6 +59,10 @@ def check_ref(root: Path, ref: str, track: str | None = None) -> str | None:
         import reminders
         n = int(num)
         return None if 1 <= n <= len(reminders._all(root, track)) else say("no_reminder", n=n)
+    if kind == "work":
+        import work
+        n = int(num)
+        return None if 1 <= n <= len(work._all(root, track)) else say("no_work", n=n)
     import questions
     return questions.check_ref(root, ref, track)
 

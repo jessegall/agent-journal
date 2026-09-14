@@ -112,5 +112,11 @@ check("a handled comment leaves the list", "split this into two" in out, False)
 code, out = j("comments", "--all")
 check("--all still shows it", "split this into two" in out, True)
 
+j("work", "start", "a piece of work to comment on")
+code, out = j("comments", "add", "work 1", "why this way?")
+check("a piece of work takes a comment", (code, "comment" in out and "work 1" in out), (0, True))
+code, out = j("comments", "add", "work 9", "nothing there")
+check("a comment on work that does not exist is refused", code, 1)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

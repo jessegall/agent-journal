@@ -110,7 +110,7 @@ function refHref(ref, env) {
   if (kind === "suggestion") return `#/env/${env}/suggestions/${num}`;
   if (kind === "reminder") return `#/env/${env}/reminders`;
   if (kind === "inbox") return `#/env/${env}/messages/${num}`;
-  if (kind === "work") return `#/env/${env}/work`;
+  if (kind === "work") return `#/env/${env}/work/${num}`;
   return null;
 }
 
@@ -1224,7 +1224,7 @@ const MessagePanel = {
 
 const WorkPanel = {
   props: PANEL_PROPS,
-  components: { Panel, ActionBar },
+  components: { Panel, ActionBar, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/work`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -1275,6 +1275,7 @@ const WorkPanel = {
           <p class=section-label>Notes</p>
           <div class=linked><div v-for="(note, i) in item.data.notes" :key="i" class=sub>{{ note.text }}</div></div>
         </div>
+        <Comments :about="'work ' + item.data.n" :env="env" :key="'c-work' + item.data.n"/>
       </template>
     </Panel>`,
 };
