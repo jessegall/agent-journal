@@ -627,7 +627,7 @@ done. A comment that asks for new work is a to-do like any other request.
 
 ## The viewer: what the user does in the browser
 
-    journal serve [--port=8420]     the web viewer, on this machine only
+    journal serve [--port=<n>]      the web viewer, on this machine only: 8420, or the next free port
     journal statusline --install    show environment, open work and viewer in the status bar — only if the user wants it
 
 The user reads and changes the journal in a browser while you work: they leave messages,

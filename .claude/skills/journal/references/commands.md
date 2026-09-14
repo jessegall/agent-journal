@@ -202,7 +202,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal reports keep <days>      a report older than this is archived (30 by default, 0 never); also on the environment's Settings page
     journal comments [--all]         what the user said about a to-do, doc, pin, rule or reminder
     journal comments done <n> "<what was done>"   a comment is handled
-    journal serve [--port=8420]      the web viewer on 127.0.0.1: every resource, with the same actions the commands have, and Search and Settings per environment
+    journal serve [--port=<n>]       the web viewer on 127.0.0.1, at 8420 or the next free port (read the URL it prints): every resource, with the same actions the commands have, and Search and Settings per environment
     journal statusline [--install]   the status bar line: environment, open work, viewer; --install adds it to .claude/settings.json, never over one that exists
     journal channel --install        add the channel server to .mcp.json; with claude --dangerously-load-development-channels server:journal, a message left in the viewer wakes an idle session
     journal claude [prompt]          start Claude with the channel (added to .mcp.json first if missing); --continue, --resume=<id>, --dry-run shows the command
