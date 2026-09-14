@@ -43,6 +43,9 @@ function parseHash() {
 // on screen while the next request is in flight, so opening another item does not flash.
 // every list and item on screen refreshes itself while the tab is visible
 const POLL_MS = 5000;
+// when this viewer last wrote something: list changes that land soon after are its own, not news
+const LAST_WRITE = { at: 0 };
+const QUIET_MS = 4000;
 
 function useFetch(urlFn, { poll = true } = {}) {
   const state = reactive({ data: null, loading: true, error: null, tick: 0 });
@@ -76,11 +79,14 @@ function useFetch(urlFn, { poll = true } = {}) {
 }
 
 function send(method, url, payload) {
+  // stamped when the write starts and again when it lands, so the reload it causes is inside the quiet window
+  LAST_WRITE.at = Date.now();
   return fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload || {}) })
     .then((r) => r.json().then((body) => {
       if (!r.ok) throw new Error(body.error || "request failed");
       return body;
-    }));
+    }))
+    .finally(() => { LAST_WRITE.at = Date.now(); });
 }
 
 function postJSON(url, payload) { return send("POST", url, payload); }
@@ -638,6 +644,8 @@ const ResourceList = {
     const HOLD_MS = 2500;
     watch(() => props.rows, (rows, before) => {
       if (!rows || !before) return;
+      // only what a poll brings is marked; a change the viewer just made itself is not news
+      if (Date.now() - LAST_WRITE.at < QUIET_MS) return;
       const was = Object.fromEntries(before.map((r) => [rowKey(r), { group: groupOf(r), row: r }]));
       const now = new Set(rows.map(rowKey));
       const lit = (bag, k, value) => { bag[k] = value; setTimeout(() => { delete bag[k]; }, HOLD_MS); };
