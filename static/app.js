@@ -240,11 +240,11 @@ const TopBar = {
 };
 
 const Panel = {
-  props: ["label", "close", "onClose"],
+  props: ["label", "close", "onClose", "link"],
   components: { Icon },
   template: `
     <aside class=panel>
-      <div class=panel-top><span>{{ label }}</span>
+      <div class=panel-top><a v-if="link" class=panel-link :href="link" title="Open the page">{{ label }}</a><span v-else>{{ label }}</span>
         <button v-if="onClose" type=button class=icon-btn title="Close" @click="onClose"><Icon name="close"/></button>
         <a v-else class=icon-btn :href="close" title="Close"><Icon name="close"/></a></div>
       <div class=panel-body><slot/></div>
@@ -617,21 +617,22 @@ function priorityName(value) {
   return v >= 200 ? "Critical" : v > 100 ? "High" : v < 100 ? "Low" : "Default";
 }
 
-const Todos = {
-  props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, PriorityIcon, LinkedQuestions, ActionBar, ResourceList, FromMessages, Comments },
+// ─────────────────────────────────────────────────────────────── one detail panel per resource, used on its page and on Home
+// props: env, n; close (a link) or onClose (a function); base: where a write lands on the page; link: the header's page link;
+// reloaded: called after a write, so the page's list refreshes
+const PANEL_PROPS = ["env", "n", "close", "onClose", "base", "link", "reloaded"];
+
+function panelDone(props, item) {
+  return (body, a) => { settle(body, a, props.base, item); if (props.reloaded) props.reloaded(); };
+}
+
+const TodoPanel = {
+  props: PANEL_PROPS,
+  components: { Panel, StatusIcon, PriorityIcon, LinkedQuestions, ActionBar, FromMessages, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/todos`);
-    const base = computed(() => `#/env/${props.env}/todos`);
-    const list = useFetch(() => props.env && api.value);
-    const item = useFetch(() => props.env && props.n && props.n !== "new" && `${api.value}/${props.n}`);
+    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const envs = useEnvironments(() => props.env);
-    const creating = computed(() => [{
-      label: "New to-do", method: "POST", url: api.value, submit: "Add to-do", leave: true,
-      fields: [{ name: "title", label: "Title", placeholder: "What needs doing, in a few words" },
-               { name: "body", label: "Brief", kind: "area", placeholder: "Anything the agent needs to know to do it" },
-               { name: "after", label: "Waits on (optional)", placeholder: "to-do numbers, like 3, 7" }],
-    }]);
     const actions = computed(() => {
       const t = item.data;
       if (!t) return [];
@@ -652,8 +653,228 @@ const Todos = {
         { label: "Drop", method: "DELETE", url, danger: true, fields: [{ name: "why", label: "Why it is dropped" }] },
       ];
     });
-    const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, creating, actions, done, base, todoStatus, STATUS_LABEL, priorityName, TODO_LIST, LOG_KIND };
+    const done = panelDone(props, item);
+    const todoHref = (a) => `#/env/${props.env}/todos/${a}`;
+    return { item, actions, done, todoHref, todoStatus, STATUS_LABEL, priorityName, LOG_KIND };
+  },
+  template: `
+    <Panel :label="'To-do #' + n" :close="close" :onClose="onClose" :link="link">
+      <p v-if="item.error" class=error>{{ item.error }}</p>
+      <template v-else-if="item.data">
+        <h2 class=p-title>{{ item.data.title }}</h2>
+        <dl class=props>
+          <dt>Status</dt><dd><StatusIcon :kind="todoStatus(item.data)"/>{{ STATUS_LABEL[todoStatus(item.data)] }}</dd>
+          <dt>Priority</dt><dd><PriorityIcon :value="item.data.priority"/>{{ priorityName(item.data.priority) }}</dd>
+          <dt>Cites</dt><dd><a v-if="item.data.doc" :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a><span v-else class=muted>—</span></dd>
+          <dt>Added</dt><dd>{{ item.data.age || '—' }}</dd>
+          <template v-if="item.data.after.length">
+            <dt>Waits on</dt><dd><a v-for="a in item.data.after" :key="a" :href="todoHref(a)">#{{ a }}</a></dd>
+          </template>
+        </dl>
+        <ActionBar :actions="actions" :done="done" :key="'todo' + item.data.n + (item.data.done || '')"/>
+        <div v-if="item.data.done" class=note>Closed: {{ item.data.how || 'done' }}</div>
+        <div v-if="item.data.blocked" class=note>Set aside until {{ item.data.blocked }}</div>
+        <div v-if="item.data.asks" class=note>
+          <p class=section-label>{{ item.data.answer ? 'The user answered' : 'Waiting on the user' }}</p>
+          <div>{{ item.data.asks }}</div>
+          <div v-if="item.data.answer" class=muted>→ {{ item.data.answer }}</div>
+        </div>
+        <div>
+          <p class=section-label>Brief</p>
+          <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
+          <p v-else class="prose muted">Title only; no brief was written.</p>
+        </div>
+        <div v-if="item.data.log && item.data.log.length">
+          <p class=section-label>Work log</p>
+          <div class=linked>
+            <div v-for="(e, i) in item.data.log" :key="i" class=sub>
+              <span class=muted>{{ LOG_KIND[e.kind] }} · {{ e.age || 'just now' }}</span><span v-if="e.text && e.kind !== 'started'"> — {{ e.text }}</span>
+            </div>
+          </div>
+        </div>
+        <FromMessages :rows="item.data.from_messages" :env="env"/>
+        <LinkedQuestions :rows="item.data.questions" :env="env"/>
+        <Comments :about="'todo ' + item.data.n" :env="env" :key="'c-todo' + item.data.n"/>
+      </template>
+    </Panel>`,
+};
+
+const QuestionPanel = {
+  props: PANEL_PROPS,
+  components: { Panel, StatusIcon, Compose, ActionBar, FromMessages },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/questions`);
+    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
+    const answer = (text) => postJSON(`${api.value}/${props.n}/answer`, { answer: text })
+      .then((body) => { item.data = body.data; if (props.reloaded) props.reloaded(); changed(); });
+    const state = reactive({ answering: false });
+    const choose = (option) => { state.answering = true; answer(option).finally(() => { state.answering = false; }); };
+    const actions = computed(() => {
+      const q = item.data;
+      if (!q || q.withdrawn) return [];
+      const url = `${api.value}/${q.n}`;
+      return [
+        { label: "Edit", method: "PATCH", url, only: true, submit: "Save", fields: [{ name: "text", label: "Question", kind: "area", value: q.text }],
+          note: q.answer ? "The agent is told the question changed." : "" },
+        { label: "Withdraw", method: "DELETE", url, danger: true, fields: [{ name: "why", label: "Why it no longer needs an answer" }] },
+      ];
+    });
+    const done = panelDone(props, item);
+    return { item, answer, choose, answering: computed(() => state.answering), questionKind, actions, done };
+  },
+  template: `
+    <Panel :label="'Question #' + n" :close="close" :onClose="onClose" :link="link">
+      <p v-if="item.error" class=error>{{ item.error }}</p>
+      <template v-else-if="item.data">
+        <div class="md p-title" v-html="$md(item.data.text)"></div>
+        <dl class=props>
+          <dt>Status</dt><dd><StatusIcon :kind="questionKind(item.data)"/>{{ item.data.status === 'open' ? 'Open' : item.data.status === 'answered' ? 'Answered' : 'Withdrawn' }}</dd>
+          <dt>About</dt><dd>
+            <template v-for="l in item.data.links" :key="l.ref">
+              <a v-if="$refHref(l.ref, env)" :href="$refHref(l.ref, env)" class=chip>{{ l.label }}</a>
+              <span v-else class=chip>{{ l.label }}</span>
+            </template>
+            <span v-if="!item.data.links.length" class=muted>—</span>
+          </dd>
+          <dt>Asked</dt><dd>{{ item.data.age || '—' }}</dd>
+        </dl>
+        <ActionBar :actions="actions" :done="done" :key="'question' + item.data.n + item.data.status"/>
+        <FromMessages :rows="item.data.from_messages" :env="env"/>
+        <div v-if="item.data.description" class="md prose" v-html="$md(item.data.description)"></div>
+        <div v-if="item.data.options.length && !item.data.withdrawn" class=options>
+          <p class=section-label>{{ item.data.answer ? 'Choose again' : 'Choose one' }}</p>
+          <button v-for="(o, i) in item.data.options" :key="i" type=button
+            :class="['option', {chosen: item.data.answer === o}]" :disabled="answering" @click="choose(o)">{{ o }}</button>
+        </div>
+        <div v-if="item.data.answer">
+          <p class=section-label>Answer<span v-if="item.data.answered_age"> · {{ item.data.answered_age }}</span></p>
+          <div class="md prose" v-html="$md(item.data.answer)"></div>
+        </div>
+        <div v-if="item.data.withdrawn" class=note>Withdrawn: {{ item.data.withdrawn }}</div>
+        <Compose v-else :placeholder="item.data.options.length ? 'Or write your own answer' : item.data.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
+          :submit="item.data.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
+      </template>
+    </Panel>`,
+};
+
+const MessagePanel = {
+  props: PANEL_PROPS,
+  components: { Panel, StatusIcon, ActionBar },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/inbox`);
+    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
+    const envs = useEnvironments(() => props.env);
+    const heldUrl = (m, f) => `/inbox-files/${props.env}/${m.n}/${encodeURIComponent(f.name)}`;
+    const isImage = (name) => /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(name);
+    const actions = computed(() => {
+      const m = item.data;
+      if (!m || m.status === "archived") return [];
+      const url = `${api.value}/${m.n}`;
+      const archive = { label: "Archive", method: "DELETE", url, danger: true, submit: "Archive",
+                        fields: [{ name: "why", label: "Why it needs nothing more" }] };
+      if (m.status !== "waiting") return [archive];
+      return [archive,
+        { label: "Edit", method: "PATCH", url, only: true, submit: "Save", fields: [{ name: "text", label: "Message", kind: "area", value: m.text }] },
+        { label: "Move", method: "POST", url: `${url}/move`, fields: [envField(envs.value)], leave: true,
+          note: "For a message left on the wrong environment: it waits there instead." },
+      ];
+    });
+    const done = panelDone(props, item);
+    return { item, actions, done, heldUrl, isImage };
+  },
+  template: `
+    <Panel :label="'Message #' + n" :close="close" :onClose="onClose" :link="link">
+      <p v-if="item.error" class=error>{{ item.error }}</p>
+      <template v-else-if="item.data">
+        <div class="prose message">{{ item.data.text }}</div>
+        <dl class=props>
+          <dt>Status</dt><dd><StatusIcon :kind="item.data.status === 'waiting' ? 'waiting' : 'done'"/>{{ item.data.status === 'waiting' ? 'Waiting to be processed' : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
+          <dt>Left</dt><dd>{{ item.data.age || '—' }}</dd>
+          <dt>From</dt><dd>{{ item.data.source === 'web' ? 'The browser' : 'The terminal' }}</dd>
+        </dl>
+        <ActionBar :actions="actions" :done="done" :key="'message' + item.data.n + item.data.status"/>
+        <div v-if="item.data.files && item.data.files.length">
+          <p class=section-label>Files</p>
+          <div class=files>
+            <template v-for="f in item.data.files" :key="f.name">
+              <a v-if="!f.filed.startsWith('doc:')" class=file-row :href="heldUrl(item.data, f)" target=_blank rel=noopener>
+                <span class=file-name>{{ f.name }}</span><span class=file-meta>{{ f.filed_label }} · {{ $human(f.size) }}</span>
+              </a>
+              <a v-else class=file-row :href="'#/docs/' + f.filed.slice(4)">
+                <span class=file-name>{{ f.name }}</span><span class=file-meta>{{ f.filed_label }} · {{ $human(f.size) }}</span>
+              </a>
+              <img v-if="isImage(f.name) && !f.filed.startsWith('doc:')" class=file-preview :src="heldUrl(item.data, f)" :alt="f.name" loading=lazy>
+            </template>
+          </div>
+        </div>
+        <div v-if="item.data.parts.length">
+          <p class=section-label>What it became</p>
+          <div class=part v-for="(p, i) in item.data.parts" :key="i">
+            <div class=excerpt>«{{ p.excerpt }}»</div>
+            <template v-for="b in p.became" :key="b.ref">
+              <a v-if="$refHref(b.ref, env)" :href="$refHref(b.ref, env)" class=chip>{{ b.label }}</a>
+              <span v-else class=chip>{{ b.label }}</span>
+            </template>
+          </div>
+        </div>
+        <p v-else-if="item.data.status === 'waiting'" class="prose muted">Not processed yet. At its next stop the agent splits it into parts and records what each became.</p>
+      </template>
+    </Panel>`,
+};
+
+const WorkPanel = {
+  props: PANEL_PROPS,
+  components: { Panel, ActionBar },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/work`);
+    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
+    const actions = computed(() => {
+      const w = item.data;
+      if (!w || w.ended) return [];
+      const url = `${api.value}/${w.n}`;
+      return [
+        { label: "Add note", method: "PATCH", url, submit: "Add", fields: [{ name: "text", label: "Where it got to", kind: "area" }] },
+        { label: "End work", method: "DELETE", url, danger: true, submit: "End it",
+          note: "Ending work does not close a to-do of the same title." },
+      ];
+    });
+    const done = panelDone(props, item);
+    return { item, actions, done };
+  },
+  template: `
+    <Panel :label="'Work #' + n" :close="close" :onClose="onClose" :link="link">
+      <p v-if="item.error" class=error>{{ item.error }}</p>
+      <template v-else-if="item.data">
+        <h2 class=p-title>{{ item.data.subject }}</h2>
+        <dl class=props>
+          <dt>Started</dt><dd>{{ item.data.age || '—' }}</dd>
+          <dt v-if="item.data.ended">Ended</dt><dd v-if="item.data.ended">{{ item.data.ended_age || 'just now' }}</dd>
+          <dt>Status</dt><dd>{{ item.data.ended ? 'Ended' : item.data.awaiting ? 'Waiting on ' + item.data.awaiting : 'Open' }}</dd>
+        </dl>
+        <ActionBar :actions="actions" :done="done" :key="'work' + item.data.n + (item.data.ended || '')"/>
+        <div v-if="item.data.notes.length">
+          <p class=section-label>Notes</p>
+          <div class=linked><div v-for="(note, i) in item.data.notes" :key="i" class=sub>{{ note.text }}</div></div>
+        </div>
+      </template>
+    </Panel>`,
+};
+
+const Todos = {
+  props: ["env", "n"],
+  components: { TopBar, Panel, ActionBar, ResourceList, TodoPanel },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/todos`);
+    const base = computed(() => `#/env/${props.env}/todos`);
+    const list = useFetch(() => props.env && api.value);
+    const creating = computed(() => [{
+      label: "New to-do", method: "POST", url: api.value, submit: "Add to-do", leave: true,
+      fields: [{ name: "title", label: "Title", placeholder: "What needs doing, in a few words" },
+               { name: "body", label: "Brief", kind: "area", placeholder: "Anything the agent needs to know to do it" },
+               { name: "after", label: "Waits on (optional)", placeholder: "to-do numbers, like 3, 7" }],
+    }]);
+    const done = (body, a) => settle(body, a, base.value, list);
+    return { list, creating, done, base, TODO_LIST };
   },
   template: `
     <TopBar :crumbs="[env, 'To-dos']"><a class="btn new" :href="base + '/new'">New to-do</a></TopBar>
@@ -665,45 +886,7 @@ const Todos = {
       <Panel v-if="n === 'new'" label="New to-do" :close="base">
         <ActionBar :actions="creating" open="New to-do" :done="done"/>
       </Panel>
-      <Panel v-else-if="n" :label="'To-do #' + n" :close="base">
-        <p v-if="item.error" class=error>{{ item.error }}</p>
-        <template v-else-if="item.data">
-          <h2 class=p-title>{{ item.data.title }}</h2>
-          <dl class=props>
-            <dt>Status</dt><dd><StatusIcon :kind="todoStatus(item.data)"/>{{ STATUS_LABEL[todoStatus(item.data)] }}</dd>
-            <dt>Priority</dt><dd><PriorityIcon :value="item.data.priority"/>{{ priorityName(item.data.priority) }}</dd>
-            <dt>Cites</dt><dd><a v-if="item.data.doc" :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a><span v-else class=muted>—</span></dd>
-            <dt>Added</dt><dd>{{ item.data.age || '—' }}</dd>
-            <template v-if="item.data.after.length">
-              <dt>Waits on</dt><dd><a v-for="a in item.data.after" :key="a" :href="base + '/' + a">#{{ a }}</a></dd>
-            </template>
-          </dl>
-          <ActionBar :actions="actions" :done="done" :key="'todo' + item.data.n + (item.data.done || '')"/>
-          <div v-if="item.data.done" class=note>Closed: {{ item.data.how || 'done' }}</div>
-          <div v-if="item.data.blocked" class=note>Set aside until {{ item.data.blocked }}</div>
-          <div v-if="item.data.asks" class=note>
-            <p class=section-label>{{ item.data.answer ? 'The user answered' : 'Waiting on the user' }}</p>
-            <div>{{ item.data.asks }}</div>
-            <div v-if="item.data.answer" class=muted>→ {{ item.data.answer }}</div>
-          </div>
-          <div>
-            <p class=section-label>Brief</p>
-            <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
-            <p v-else class="prose muted">Title only; no brief was written.</p>
-          </div>
-          <div v-if="item.data.log && item.data.log.length">
-            <p class=section-label>Work log</p>
-            <div class=linked>
-              <div v-for="(e, i) in item.data.log" :key="i" class=sub>
-                <span class=muted>{{ LOG_KIND[e.kind] }} · {{ e.age || 'just now' }}</span><span v-if="e.text && e.kind !== 'started'"> — {{ e.text }}</span>
-              </div>
-            </div>
-          </div>
-          <FromMessages :rows="item.data.from_messages" :env="env"/>
-          <LinkedQuestions :rows="item.data.questions" :env="env"/>
-          <Comments :about="'todo ' + item.data.n" :env="env" :key="'c-todo' + item.data.n"/>
-        </template>
-      </Panel>
+      <TodoPanel v-else-if="n" :key="'todo' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
     </div>`,
 };
 
@@ -802,30 +985,12 @@ const Rules = claimsView({
 // ─────────────────────────────────────────────────────────────── inbox and questions
 const Inbox = {
   props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, Compose, ActionBar, ResourceList },
+  components: { TopBar, Compose, ResourceList, MessagePanel },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/inbox`);
     const base = computed(() => `#/env/${props.env}/messages`);
     const list = useFetch(() => props.env && `${api.value}?all=1`);
-    const envs = useEnvironments(() => props.env);
     const send = (text, files) => postJSON(api.value, { text, files }).then(() => { list.reload(); changed(); });
-    const heldUrl = (m, f) => `/inbox-files/${props.env}/${m.n}/${encodeURIComponent(f.name)}`;
-    const isImage = (name) => /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(name);
-    const item = computed(() => (list.data && props.n ? list.data.find((m) => String(m.n) === props.n) : null));
-    const actions = computed(() => {
-      const m = item.value;
-      if (!m || m.status === "archived") return [];
-      const url = `${api.value}/${m.n}`;
-      const archive = { label: "Archive", method: "DELETE", url, danger: true, submit: "Archive",
-                        fields: [{ name: "why", label: "Why it needs nothing more" }] };
-      if (m.status !== "waiting") return [archive];
-      return [archive,
-        { label: "Edit", method: "PATCH", url, only: true, submit: "Save", fields: [{ name: "text", label: "Message", kind: "area", value: m.text }] },
-        { label: "Move", method: "POST", url: `${url}/move`, fields: [envField(envs.value)], leave: true,
-          note: "For a message left on the wrong environment: it waits there instead." },
-      ];
-    });
-    const done = (body, a) => settle(body, a, base.value, list);
     // a message only reaches an agent at its next hook event; say so when none is working here
     const live = computed(() => {
       const row = OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null;
@@ -833,7 +998,7 @@ const Inbox = {
     });
     const hint = computed(() => (live.value ? "The agent is told at its next stop"
       : "No agent is working on this environment right now; the message waits until a session picks it up"));
-    return { list, send, item, actions, done, MESSAGE_LIST, heldUrl, isImage, hint };
+    return { list, send, base, MESSAGE_LIST, hint };
   },
   template: `
     <TopBar :crumbs="[env, 'Messages']"/>
@@ -844,42 +1009,9 @@ const Inbox = {
             submit="Send" :hint="hint" :send="send" :attach="true"/>
         </div>
         <ResourceList v-bind="MESSAGE_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
-          :href="(m) => '#/env/' + env + '/messages/' + m.n" :selected="(m) => String(m.n) === n"/>
+          :href="(m) => base + '/' + m.n" :selected="(m) => String(m.n) === n"/>
       </div>
-      <Panel v-if="n && item" :label="'Message #' + n" :close="'#/env/' + env + '/messages'">
-        <div class="prose message">{{ item.text }}</div>
-        <dl class=props>
-          <dt>Status</dt><dd><StatusIcon :kind="item.status === 'waiting' ? 'waiting' : 'done'"/>{{ item.status === 'waiting' ? 'Waiting to be processed' : item.status === 'moved' ? 'Moved to ' + item.moved_to : item.status === 'archived' ? 'Archived: ' + item.archived : 'Processed' }}</dd>
-          <dt>Left</dt><dd>{{ item.age || '—' }}</dd>
-          <dt>From</dt><dd>{{ item.source === 'web' ? 'The browser' : 'The terminal' }}</dd>
-        </dl>
-        <ActionBar :actions="actions" :done="done" :key="'message' + item.n + item.status"/>
-        <div v-if="item.files && item.files.length">
-          <p class=section-label>Files</p>
-          <div class=files>
-            <template v-for="f in item.files" :key="f.name">
-              <a v-if="!f.filed.startsWith('doc:')" class=file-row :href="heldUrl(item, f)" target=_blank rel=noopener>
-                <span class=file-name>{{ f.name }}</span><span class=file-meta>{{ f.filed_label }} · {{ $human(f.size) }}</span>
-              </a>
-              <a v-else class=file-row :href="'#/docs/' + f.filed.slice(4)">
-                <span class=file-name>{{ f.name }}</span><span class=file-meta>{{ f.filed_label }} · {{ $human(f.size) }}</span>
-              </a>
-              <img v-if="isImage(f.name) && !f.filed.startsWith('doc:')" class=file-preview :src="heldUrl(item, f)" :alt="f.name" loading=lazy>
-            </template>
-          </div>
-        </div>
-        <div v-if="item.parts.length">
-          <p class=section-label>What it became</p>
-          <div class=part v-for="(p, i) in item.parts" :key="i">
-            <div class=excerpt>«{{ p.excerpt }}»</div>
-            <template v-for="b in p.became" :key="b.ref">
-              <a v-if="$refHref(b.ref, env)" :href="$refHref(b.ref, env)" class=chip>{{ b.label }}</a>
-              <span v-else class=chip>{{ b.label }}</span>
-            </template>
-          </div>
-        </div>
-        <p v-else-if="item.status === 'waiting'" class="prose muted">Not processed yet. At its next stop the agent splits it into parts and records what each became.</p>
-      </Panel>
+      <MessagePanel v-if="n" :key="'message' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
     </div>`,
 };
 
@@ -942,96 +1074,37 @@ const Reports = {
 
 const Questions = {
   props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, Compose, ActionBar, ResourceList, FromMessages },
+  components: { TopBar, ResourceList, QuestionPanel },
   setup(props) {
-    const api = computed(() => `/api/env/${props.env}/questions`);
     const base = computed(() => `#/env/${props.env}/questions`);
-    const list = useFetch(() => props.env && `${api.value}?all=1`);
-    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
-    const answer = (text) => postJSON(`${api.value}/${props.n}/answer`, { answer: text })
-      .then((body) => { item.data = body.data; list.reload(); changed(); });
-    const state = reactive({ answering: false });
-    const choose = (option) => { state.answering = true; answer(option).finally(() => { state.answering = false; }); };
-    const actions = computed(() => {
-      const q = item.data;
-      if (!q || q.withdrawn) return [];
-      const url = `${api.value}/${q.n}`;
-      return [
-        { label: "Edit", method: "PATCH", url, only: true, submit: "Save", fields: [{ name: "text", label: "Question", kind: "area", value: q.text }],
-          note: q.answer ? "The agent is told the question changed." : "" },
-        { label: "Withdraw", method: "DELETE", url, danger: true, fields: [{ name: "why", label: "Why it no longer needs an answer" }] },
-      ];
-    });
-    const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, answer, choose, answering: computed(() => state.answering), questionKind, actions, done, QUESTION_LIST };
+    const list = useFetch(() => props.env && `/api/env/${props.env}/questions?all=1`);
+    return { list, base, QUESTION_LIST };
   },
   template: `
     <TopBar :crumbs="[env, 'Questions']"/>
     <div class=body>
       <div class=list>
         <ResourceList v-bind="QUESTION_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
-          :href="(q) => '#/env/' + env + '/questions/' + q.n" :selected="(q) => String(q.n) === n"/>
+          :href="(q) => base + '/' + q.n" :selected="(q) => String(q.n) === n"/>
       </div>
-      <Panel v-if="n" :label="'Question #' + n" :close="'#/env/' + env + '/questions'">
-        <p v-if="item.error" class=error>{{ item.error }}</p>
-        <template v-else-if="item.data">
-          <div class="md p-title" v-html="$md(item.data.text)"></div>
-          <dl class=props>
-            <dt>Status</dt><dd><StatusIcon :kind="questionKind(item.data)"/>{{ item.data.status === 'open' ? 'Open' : item.data.status === 'answered' ? 'Answered' : 'Withdrawn' }}</dd>
-            <dt>About</dt><dd>
-              <template v-for="l in item.data.links" :key="l.ref">
-                <a v-if="$refHref(l.ref, env)" :href="$refHref(l.ref, env)" class=chip>{{ l.label }}</a>
-                <span v-else class=chip>{{ l.label }}</span>
-              </template>
-              <span v-if="!item.data.links.length" class=muted>—</span>
-            </dd>
-            <dt>Asked</dt><dd>{{ item.data.age || '—' }}</dd>
-          </dl>
-          <ActionBar :actions="actions" :done="done" :key="'question' + item.data.n + item.data.status"/>
-          <FromMessages :rows="item.data.from_messages" :env="env"/>
-          <div v-if="item.data.description" class="md prose" v-html="$md(item.data.description)"></div>
-          <div v-if="item.data.options.length && !item.data.withdrawn" class=options>
-            <p class=section-label>{{ item.data.answer ? 'Choose again' : 'Choose one' }}</p>
-            <button v-for="(o, i) in item.data.options" :key="i" type=button
-              :class="['option', {chosen: item.data.answer === o}]" :disabled="answering" @click="choose(o)">{{ o }}</button>
-          </div>
-          <div v-if="item.data.answer">
-            <p class=section-label>Answer<span v-if="item.data.answered_age"> · {{ item.data.answered_age }}</span></p>
-            <div class="md prose" v-html="$md(item.data.answer)"></div>
-          </div>
-          <div v-if="item.data.withdrawn" class=note>Withdrawn: {{ item.data.withdrawn }}</div>
-          <Compose v-else :placeholder="item.data.options.length ? 'Or write your own answer' : item.data.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
-            :submit="item.data.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
-        </template>
-      </Panel>
+      <QuestionPanel v-if="n" :key="'question' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
     </div>`,
 };
 
 // ─────────────────────────────────────────────────────────────── work and reminders
 const Work = {
   props: ["env", "n"],
-  components: { TopBar, Panel, StatusIcon, ActionBar, ResourceList },
+  components: { TopBar, Panel, ActionBar, ResourceList, WorkPanel },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/work`);
     const base = computed(() => `#/env/${props.env}/work`);
     const list = useFetch(() => props.env && `${api.value}?all=1`);
-    const item = useFetch(() => props.env && props.n && props.n !== "new" && `${api.value}/${props.n}`);
     const creating = computed(() => [{
       label: "Start work", method: "POST", url: api.value, submit: "Start", leave: true,
       fields: [{ name: "subject", label: "The work, in a sentence" }],
     }]);
-    const actions = computed(() => {
-      const w = item.data;
-      if (!w || w.ended) return [];
-      const url = `${api.value}/${w.n}`;
-      return [
-        { label: "Add note", method: "PATCH", url, submit: "Add", fields: [{ name: "text", label: "Where it got to", kind: "area" }] },
-        { label: "End work", method: "DELETE", url, danger: true, submit: "End it",
-          note: "Ending work does not close a to-do of the same title." },
-      ];
-    });
-    const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, creating, actions, done, base, WORK_LIST };
+    const done = (body, a) => settle(body, a, base.value, list);
+    return { list, creating, done, base, WORK_LIST };
   },
   template: `
     <TopBar :crumbs="[env, 'Open work']"><a class="btn new" :href="base + '/new'">Start work</a></TopBar>
@@ -1043,22 +1116,7 @@ const Work = {
       <Panel v-if="n === 'new'" label="Start work" :close="base">
         <ActionBar :actions="creating" open="Start work" :done="done"/>
       </Panel>
-      <Panel v-else-if="n" :label="'Work #' + n" :close="base">
-        <p v-if="item.error" class=error>{{ item.error }}</p>
-        <template v-else-if="item.data">
-          <h2 class=p-title>{{ item.data.subject }}</h2>
-          <dl class=props>
-            <dt>Started</dt><dd>{{ item.data.age || '—' }}</dd>
-            <dt v-if="item.data.ended">Ended</dt><dd v-if="item.data.ended">{{ item.data.ended_age || 'just now' }}</dd>
-            <dt>Status</dt><dd>{{ item.data.ended ? 'Ended' : item.data.awaiting ? 'Waiting on ' + item.data.awaiting : 'Open' }}</dd>
-          </dl>
-          <ActionBar :actions="actions" :done="done" :key="'work' + item.data.n + (item.data.ended || '')"/>
-          <div v-if="item.data.notes.length">
-            <p class=section-label>Notes</p>
-            <div class=linked><div v-for="(note, i) in item.data.notes" :key="i" class=sub>{{ note.text }}</div></div>
-          </div>
-        </template>
-      </Panel>
+      <WorkPanel v-else-if="n" :key="'work' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
     </div>`,
 };
 
@@ -1245,49 +1303,19 @@ const DocDetail = {
 // ─────────────────────────────────────────────────────────────── a resource, opened beside the page
 // what a click on a row opens without leaving the page, with a link to the resource's own page
 const PEEK = {
-  todo: { label: "To-do", api: (env, n) => `/api/env/${env}/todos/${n}`, page: (env, n) => `#/env/${env}/todos/${n}` },
-  message: { label: "Message", api: (env, n) => `/api/env/${env}/inbox/${n}`, page: (env, n) => `#/env/${env}/messages/${n}` },
-  question: { label: "Question", api: (env, n) => `/api/env/${env}/questions/${n}`, page: (env, n) => `#/env/${env}/questions/${n}` },
+  todo: { panel: "TodoPanel", page: (env, n) => `#/env/${env}/todos/${n}` },
+  message: { panel: "MessagePanel", page: (env, n) => `#/env/${env}/messages/${n}` },
+  question: { panel: "QuestionPanel", page: (env, n) => `#/env/${env}/questions/${n}` },
+  work: { panel: "WorkPanel", page: (env, n) => `#/env/${env}/work/${n}` },
 };
 
+// Home's side panel: the resource's own panel, with its header linking to the page
 const Peek = {
-  props: ["env", "kind", "n", "close"],
-  components: { Panel, StatusIcon, PriorityIcon },
-  setup(props) {
-    const s = useFetch(() => props.kind && props.n && PEEK[props.kind].api(props.env, props.n));
-    return { s, PEEK, todoStatus, STATUS_LABEL, priorityName, questionKind };
-  },
+  props: ["env", "kind", "n", "close", "reloaded"],
+  components: { TodoPanel, MessagePanel, QuestionPanel, WorkPanel },
+  setup() { return { PEEK }; },
   template: `
-    <Panel :label="PEEK[kind].label + ' #' + n" :onClose="close">
-      <a class="btn open-page" :href="PEEK[kind].page(env, n)">Open page</a>
-      <p v-if="s.error" class=error>{{ s.error }}</p>
-      <template v-else-if="s.data && kind === 'todo'">
-        <h2 class=p-title>{{ s.data.title }}</h2>
-        <dl class=props>
-          <dt>Status</dt><dd><StatusIcon :kind="todoStatus(s.data)"/>{{ STATUS_LABEL[todoStatus(s.data)] }}</dd>
-          <dt>Priority</dt><dd><PriorityIcon :value="s.data.priority"/>{{ priorityName(s.data.priority) }}</dd>
-          <dt>Added</dt><dd>{{ s.data.age || '—' }}</dd>
-        </dl>
-        <div v-if="s.data.done" class=note>Closed: {{ s.data.how || 'done' }}</div>
-        <div v-if="s.data.body" class="md prose" v-html="$md(s.data.body)"></div>
-        <p v-else class="prose muted">Title only; no brief was written.</p>
-      </template>
-      <template v-else-if="s.data && kind === 'message'">
-        <div class="prose message">{{ s.data.text }}</div>
-        <dl class=props>
-          <dt>Status</dt><dd>{{ s.data.status === 'waiting' ? 'Waiting to be processed' : 'Processed' }}</dd>
-          <dt>Left</dt><dd>{{ s.data.age || '—' }}</dd>
-        </dl>
-      </template>
-      <template v-else-if="s.data && kind === 'question'">
-        <div class="md p-title" v-html="$md(s.data.text)"></div>
-        <dl class=props>
-          <dt>Status</dt><dd><StatusIcon :kind="questionKind(s.data)"/>{{ s.data.status === 'open' ? 'Open' : s.data.status === 'answered' ? 'Answered' : 'Withdrawn' }}</dd>
-          <dt>Asked</dt><dd>{{ s.data.age || '—' }}</dd>
-        </dl>
-        <div v-if="s.data.answer" class="md prose" v-html="$md(s.data.answer)"></div>
-      </template>
-    </Panel>`,
+    <component :is="PEEK[kind].panel" :env="env" :n="n" :onClose="close" :link="PEEK[kind].page(env, n)" :reloaded="reloaded"/>`,
 };
 
 // ─────────────────────────────────────────────────────────────── an environment's home
@@ -1330,7 +1358,8 @@ const EnvHome = {
     const peek = (kind, n) => { view.kind = kind; view.n = n; };
     const unpeek = () => { view.kind = ""; view.n = 0; };
     const picked = (kind) => (r) => view.kind === kind && view.n === r.n;
-    return { work, todos, inbox, questions, notes, readOne, readAll, view, peek, unpeek, picked, waiting, asking, stats, openTodos, finishedTodos,
+    const reloadAll = () => [work, todos, inbox, questions].forEach((f) => f.reload());
+    return { work, todos, inbox, questions, notes, readOne, readAll, reloadAll, view, peek, unpeek, picked, waiting, asking, stats, openTodos, finishedTodos,
              waitingMessages, openQuestions, openWork };
   },
   template: `
@@ -1360,7 +1389,7 @@ const EnvHome = {
         <div class=home-head><h2>Open work</h2><span class=n>{{ work.data ? work.data.length : '' }}</span></div>
         <div class=block>
           <ResourceList v-bind="openWork" :bar="false" :rows="work.data" :loading="work.loading" :error="work.error"
-            :href="(w) => '#/env/' + env + '/work/' + w.n"/>
+            :href="(w) => '#/env/' + env + '/work/' + w.n" :pick="(w) => peek('work', w.n)" :selected="picked('work')"/>
         </div>
       </section>
 
@@ -1397,7 +1426,7 @@ const EnvHome = {
         </div>
       </section>
     </div></div>
-    <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek"/>
+    <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>
     </div>`,
 };
 

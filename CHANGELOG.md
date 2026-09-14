@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.104.0 — Home's side panel is the resource's own panel
+
+A to-do, question, message or piece of work opened from Home shows the same panel as on its own
+page, with every action: edit a to-do, answer a question, archive a message, add a note to
+work, comment. The panel's title links to the page; the separate Open page button is gone.
+Open work on Home now opens its panel too instead of leaving the page. Each panel is one
+component used in both places.
+
 ## 1.103.0 — the agent is taught to suggest
 
 The skill has a Suggestions section: when the agent thinks something should be done
