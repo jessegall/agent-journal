@@ -599,11 +599,16 @@ import commands as _commands  # noqa: E402
 for _argv in (["messages", "list"], ["todos", "show", "3"], ["todos", "done", "3", "x"], ["statusline"]):
     commandlog.record(root, "alpha", _commands.REGISTRY.parse(_argv)[0], "2099-01-01T00:00:00+00:00")
 check("a command the agent runs is logged in plain words; writes Activity already shows and the status line are not",
-      [e["text"] for e in commandlog.entries(root, "alpha")], ["Reading your messages", "Reading to-do"])
+      [e["text"] for e in commandlog.entries(root, "alpha")], ["Reading messages", "Reading to-do"])
 status, _, body = get("/api/env/alpha/activity")
 check("and Activity lists it as the agent's, naming the resource and its number apart from the wording",
-      {(e["kind"], e["n"], e["by"]) for e in json.loads(body)["events"] if e["text"] in ("Reading to-do", "Reading your messages")},
+      {(e["kind"], e["n"], e["by"]) for e in json.loads(body)["events"] if e["text"] in ("Reading to-do", "Reading messages")},
       {("todo", 3, "Agent"), ("message", None, "Agent")})
+state.put_tracked(root, "activity", "alpha",
+                  commandlog.entries(root, "alpha") + [{"at": "2098-12-31T00:00:00+00:00", "text": "Reading your messages"}])
+check("a line logged with the old wording reads the new one, and still opens the messages",
+      [(e["text"], e.get("kind")) for e in commandlog.entries(root, "alpha") if e["at"] == "2098-12-31T00:00:00+00:00"],
+      [("Reading messages", "message")])
 check("a line that only reads something does not repeat its title",
       [e["title"] for e in json.loads(body)["events"] if e["text"] == "Reading to-do"], [""])
 _events_now = json.loads(body)["events"]

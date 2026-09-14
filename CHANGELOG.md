@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.127.3 — "Reading your messages" reads "Reading messages"
+
+Reading the message list shows in Activity and the sidebar footer as "Reading messages".
+Lines logged earlier with the old wording show the new wording too.
+
 ## 1.127.2 — Sorting picks its field from a flush select, with a plain arrow
 
 Each list group header chooses what it sorts by (ID, Priority) from a select with no border,
