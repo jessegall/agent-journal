@@ -2416,15 +2416,6 @@ const Commit = {
             <p class=section-label>Message</p>
             <div class="prose commit-body">{{ found.data.body }}</div>
           </div>
-          <div v-if="found.data.files && found.data.files.length">
-            <p class=section-label>Files changed <span class=muted>{{ found.data.files.length }}</span></p>
-            <div class=work-files>
-              <div v-for="f in found.data.files" :key="f.path" class=work-file :title="f.path">
-                <span class=work-file-path>{{ f.path }}</span>
-                <span class=work-file-add>+{{ f.added }}</span><span class=work-file-del>−{{ f.removed }}</span>
-              </div>
-            </div>
-          </div>
           <div>
             <p class=section-label>Work <span class=muted>{{ found.data.work.length }}</span></p>
             <div class=linked>
@@ -2440,6 +2431,15 @@ const Commit = {
               <a v-for="t in found.data.todos" :key="t.n" class="sub log-row" :href="'#/env/' + env + '/todos/' + t.n">
                 <span class=log-text>{{ t.title }}</span><span class=log-work>{{ t.done ? 'Done' : 'Open' }} · To-do {{ t.n }}</span>
               </a>
+            </div>
+          </div>
+          <div v-if="found.data.files && found.data.files.length">
+            <p class=section-label>Files changed <span class=muted>{{ found.data.files.length }}</span></p>
+            <div class=work-files>
+              <div v-for="f in found.data.files" :key="f.path" class=work-file :title="f.path">
+                <span class=work-file-path>{{ f.path }}</span>
+                <span class=work-file-add>+{{ f.added }}</span><span class=work-file-del>−{{ f.removed }}</span>
+              </div>
             </div>
           </div>
         </template>

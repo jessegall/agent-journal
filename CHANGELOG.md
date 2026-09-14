@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.10 — A commit's work and to-dos come before its files
+
+On a commit's page, the work it was made during and the to-dos it belongs to now come right after its
+message, and the list of changed files comes last. A commit that changed many files no longer pushes
+them to the bottom of the page.
+
 ## 1.134.9 — The journal's own rules are always written and shown
 
 As you answered on question 22, the rules the journal ships, with the model rule (B1) among them, can no
