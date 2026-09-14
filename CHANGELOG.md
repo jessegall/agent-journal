@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.114.1 — Only the sidebar's Activity list scrolls
+
+The sidebar no longer scrolls as a whole. The Activity section fills the space under the
+navigation, its header stays put, and only its list of events scrolls.
+
 ## 1.114.0 — Activity shows each journal command the agent runs, in short plain words
 
 When a session runs a journal command, Activity gets a line for it: "Reading your messages",

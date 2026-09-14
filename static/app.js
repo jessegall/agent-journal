@@ -1808,9 +1808,8 @@ const ActivityPanel = {
   props: { data: Object, href: Function, mode: String, setMode: Function },
   emits: ["drag"],
   components: { Icon },
-  setup(props) {
-    const limit = computed(() => (props.mode === "sidebar" ? 6 : 20));
-    return { limit, ACTIVITY_MODES };
+  setup() {
+    return { ACTIVITY_MODES };
   },
   template: `
     <div :class="['activity-panel', 'mode-' + mode]">
@@ -1828,14 +1827,16 @@ const ActivityPanel = {
           <div class=activity-meta><span class="env-dot live"></span>Agent<span v-if="data.agent.seen"> · {{ data.agent.seen }}</span></div>
           <div v-if="data.agent.text" class="activity-text clamp">{{ data.agent.text }}</div>
         </div>
-        <template v-for="(e, i) in data.events.slice(0, limit)" :key="i">
-          <a v-if="href(e)" class="activity-row activity-link" :href="href(e)">
-            <span class=activity-text>{{ e.text }}</span><span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
-          </a>
-          <div v-else class=activity-row>
-            <span class=activity-text>{{ e.text }}</span><span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
-          </div>
-        </template>
+        <div class=activity-list>
+          <template v-for="(e, i) in data.events" :key="i">
+            <a v-if="href(e)" class="activity-row activity-link" :href="href(e)">
+              <span class=activity-text>{{ e.text }}</span><span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
+            </a>
+            <div v-else class=activity-row>
+              <span class=activity-text>{{ e.text }}</span><span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
+            </div>
+          </template>
+        </div>
       </template>
     </div>`,
 };
