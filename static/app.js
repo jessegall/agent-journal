@@ -2137,6 +2137,19 @@ const EnvHome = {
                             sorts: [{ key: "done", label: "Done" }], empty: "Nothing is done yet." };
     const waitingMessages = { ...MESSAGE_LIST, groups: [{ ...MESSAGE_LIST.groups[0], label: "" }] };
     const openQuestions = { ...QUESTION_LIST, groups: [{ ...QUESTION_LIST.groups[0], label: "" }] };
+    // the agent's answers to your messages read like the question list, not like a notification that waits on you
+    const isAnswer = (x) => String(x.about).startsWith("inbox:");
+    const answers = computed(() => (notes.data || []).filter(isAnswer));
+    const otherNotes = computed(() => (notes.data || []).filter((x) => !isAnswer(x)));
+    const ANSWER_LIST = { groups: [{ key: "answers", label: "", kind: "done", match: () => true }],
+                          columns: { status: () => "done", title: (x) => x.text, cite: (x) => x.about_label, age: (x) => x.age || "just now" },
+                          name: "answers", empty: "" };
+    const openAnswer = (x) => {
+      readOne(x);
+      if (peekOf(x)) openNote(x);
+      else if (refHref(x.about, props.env)) location.hash = refHref(x.about, props.env);
+    };
+    const readAnswers = () => Promise.all(answers.value.map(readOne));
     const openWork = { ...WORK_LIST, groups: [{ ...WORK_LIST.groups[0], label: "" }] };
     // the last work that ended, newest first, shown small under the open work
     const endedWork = computed(() => (allWork.data || []).filter((w) => w.ended)
@@ -2171,16 +2184,24 @@ const EnvHome = {
     const picked = (kind) => (r) => view.kind === kind && view.n === r.n;
     const reloadAll = () => [work, todos, inbox, questions].forEach((f) => f.reload());
     return { work, allWork, endedWork, todos, inbox, questions, notes, workingSubagents, readOne, readAll, reloadAll, view, peek, unpeek, picked, peekOf, openNote, waiting, asking, stats, openTodos, finishedTodos,
-             waitingMessages, openQuestions, openWork };
+             waitingMessages, openQuestions, openWork, answers, otherNotes, ANSWER_LIST, openAnswer, readAnswers };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
     <div class="body home-body"><div class=page><div class=home>
-      <section v-if="notes.data && notes.data.length" class=notifications>
-        <div class=home-head><h2>Notifications</h2><span class=n>{{ notes.data.length }} unread</span>
+      <section v-if="answers.length">
+        <div class=home-head><h2>Answers to your messages</h2><span class=n>{{ answers.length }} new</span>
+          <button type=button class="btn more" @click="readAnswers">Mark all read</button></div>
+        <div class=block>
+          <ResourceList v-bind="ANSWER_LIST" :bar="false" :rows="answers" :href="(x) => $refHref(x.about, env) || '#/env/' + env"
+            :pick="openAnswer"/>
+        </div>
+      </section>
+      <section v-if="otherNotes.length" class=notifications>
+        <div class=home-head><h2>Notifications</h2><span class=n>{{ otherNotes.length }} unread</span>
           <button type=button class="btn more" @click="readAll">Mark all read</button></div>
         <div class=block>
-          <div v-for="x in notes.data" :key="x.n" :class="['note-row', {answer: String(x.about).startsWith('inbox:')}]">
+          <div v-for="x in otherNotes" :key="x.n" class=note-row>
             <div class=note-text>{{ x.text }}
               <span class=muted> · {{ x.age || 'just now' }}</span>
             </div>

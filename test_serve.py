@@ -1043,10 +1043,10 @@ _inbox_answer.add(root, "is the cache on already? and tidy the logs", "2099-01-0
 _qm = len(_inbox_answer._all(root, "alpha"))
 _inbox_answer.reply(root, _qm, "Yes.", "2099-01-06T00:00:01+00:00", track="alpha", part="is the cache on already?")
 _answered = lambda: [e for e in _activity.ActivityController._events(root, "alpha") if e["text"] == "Answered your question" and e["n"] == _qm]
-check("an answer the user has not read stands out in Activity", [e["needs"] for e in _answered()], ["open"])
+check("an answer asks nothing of the user, so even unread it is an ordinary line in Activity", [e["needs"] for e in _answered()], [""])
 _nn = next(n for n, x in enumerate(_notif._all(root, "alpha"), 1) if x.get("about") == f"inbox:{_qm}")
 _notif.read(root, _nn, "2099-01-06T00:00:02+00:00", "alpha")
-check("once its notification is read, it is an ordinary line", [e["needs"] for e in _answered()], [""])
+check("and it stays one once its notification is read", [e["needs"] for e in _answered()], [""])
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
