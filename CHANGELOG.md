@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.113.0 — a message you leave can wake an idle session
+
+The journal ships a channel server, `.journal/channel.py`. `journal channel --install` adds it to
+the project's `.mcp.json`; start Claude with `claude --dangerously-load-development-channels
+server:journal` (channels are a Claude Code research preview). When you leave a message in the
+viewer and auto mode is off, or the session is idle, the message is pushed into that session and
+it starts working on it; while auto mode is on and the agent is working, the stop hook tells it as
+before. The hook records each session's last event so idle can be told apart from busy.
+
 ## 1.112.0 — a report can be turned into a document
 
 A report's page has Turn into doc: a document is made from the report's title and text and kept
