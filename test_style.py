@@ -58,6 +58,11 @@ check("the skill is named after its subject, says when it loads and carries the 
       ("name: style-naming" in text, "Use it when naming a function" in text, "Functions are verbs, values are nouns" in text,
        "A name says what a thing does" in text), (True, True, True, True))
 check("its examples are the rule's", "def load_user(id)" in (skill / "reference" / "examples.md").read_text(), True)
+_desc = next(l for l in (skill / "SKILL.md").read_text().splitlines() if l.startswith("description:"))
+check("its description says when to load it, then the rule, as two sentences",
+      (_desc.startswith('description: "Use when '), ". This project's rule: " in _desc), (True, True))
+check("its SKILL.md links the worked examples as a markdown link",
+      "[reference/examples.md](reference/examples.md)" in (skill / "SKILL.md").read_text(), True)
 check("its trigger phrases are the rule's", json.loads((skill / "evals" / "triggers.json").read_text())["triggers"],
       ["what should I call this function", "rename this variable"])
 claude = (d / "CLAUDE.md").read_text()
