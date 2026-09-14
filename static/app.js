@@ -427,20 +427,23 @@ const QuestionAnswer = {
   emits: ["answered"],
   components: { Compose },
   setup(props, { emit }) {
-    const state = reactive({ answering: false, picked: "", changing: false });
+    const CUSTOM = " custom";
+    const state = reactive({ answering: false, picked: "", changing: false, custom: "" });
     // an answered question stays read-only until Change answer is pressed
     const locked = computed(() => !!props.q.answer && !state.changing);
-    const cancel = () => { state.changing = false; state.picked = ""; };
+    const cancel = () => { state.changing = false; state.picked = ""; state.custom = ""; };
     const answer = (text) => postJSON(`/api/env/${props.env}/questions/${props.q.n}/answer`, { answer: text })
       .then((body) => { state.changing = false; emit("answered", body.data); changed(); });
     // clicking an option only picks it; Save sends it, so a stray click never answers
-    const pick = (option) => { state.picked = state.picked === option ? "" : option; };
+    const pick = (option) => { state.picked = state.picked === option && option !== CUSTOM ? "" : option; };
+    // what Save would send: the picked option, or the custom text once there is some
+    const chosen = computed(() => (state.picked === CUSTOM ? state.custom.trim() : state.picked));
     const save = () => {
-      if (!state.picked || state.answering) return;
+      if (!chosen.value || state.answering) return;
       state.answering = true;
-      answer(state.picked).then(() => { state.picked = ""; }).finally(() => { state.answering = false; });
+      answer(chosen.value).then(() => { state.picked = ""; state.custom = ""; }).finally(() => { state.answering = false; });
     };
-    return { state, answer, pick, save, locked, cancel };
+    return { state, answer, pick, save, locked, cancel, CUSTOM, chosen };
   },
   template: `
     <div :class="['question-answer', {compact}]">
@@ -450,17 +453,25 @@ const QuestionAnswer = {
           :class="['option', {picked: state.picked === o, chosen: !state.picked && q.answer === o, locked, 'has-pick': q.pick === i + 1}]"
           :disabled="locked || state.answering" :aria-pressed="state.picked === o" @click="pick(o)">
           <span v-if="q.pick === i + 1" class=option-pick>Agent's pick</span>{{ o }}</button>
+        <div v-if="!locked" role=button :tabindex="state.answering ? -1 : 0" :aria-pressed="state.picked === CUSTOM"
+          :class="['option', 'option-custom', {picked: state.picked === CUSTOM}]"
+          @click="pick(CUSTOM)" @keydown.enter.self.prevent="pick(CUSTOM)" @keydown.space.self.prevent="pick(CUSTOM)">
+          Custom answer
+          <textarea v-if="state.picked === CUSTOM" v-model="state.custom" placeholder="Write your answer" aria-label="Your custom answer"
+            :disabled="state.answering" @click.stop @keydown.meta.enter.prevent="save" @keydown.ctrl.enter.prevent="save"
+            @vue:mounted="({ el }) => el.focus()"></textarea>
+        </div>
       </div>
       <div v-if="locked" class=option-save>
         <button type=button class=btn @click="state.changing = true">Change answer</button>
       </div>
       <template v-else>
         <div v-if="q.options && q.options.length" class=option-save>
-          <button type=button class="btn primary" :disabled="!state.picked || state.answering" @click="save">Save answer</button>
+          <button type=button class="btn primary" :disabled="!chosen || state.answering" @click="save">Save answer</button>
           <button v-if="q.answer" type=button class=btn @click="cancel">Cancel</button>
-          <span v-if="state.picked" class=hint>Not sent until you save</span>
+          <span v-if="state.picked" class=hint>{{ state.picked === CUSTOM && !chosen ? 'Write your answer to save it' : 'Not sent until you save' }}</span>
         </div>
-        <Compose :placeholder="q.options && q.options.length ? 'Or write your own answer' : q.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
+        <Compose v-if="!(q.options && q.options.length)" :placeholder="q.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
           :submit="q.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
         <div v-if="q.answer && !(q.options && q.options.length)" class=option-save>
           <button type=button class=btn @click="cancel">Cancel</button>
