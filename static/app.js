@@ -1746,6 +1746,7 @@ function docList({ crumbs, url, base, empty }) {
           <template #tools>
             <RadioGroup label="Which documents" :options="[{ value: 'open', label: 'Open' }, { value: 'archived', label: 'Archived' }]"
               :modelValue="shown.archived ? 'archived' : 'open'" @update:modelValue="(v) => (shown.archived = v === 'archived')"/>
+            <a v-if="base.startsWith('#/env/')" class=btn :href="base.slice(0, -4) + 'files'">Files</a>
             <a class="btn new" :href="base + '/new'">New doc</a>
           </template>
         </ResourceList>
@@ -2248,17 +2249,31 @@ const Files = {
     const list = useFetch(() => props.env && `/api/env/${props.env}/files`);
     const sourceHref = (f) => (f.source === "message" ? `#/env/${props.env}/messages/${f.n}` : `#/docs/${f.n}`);
     const sourceLabel = (f) => (f.source === "message" ? `Message ${f.n}` : `Document ${f.n}`);
-    return { list, sourceHref, sourceLabel };
+    const images = computed(() => (list.data || []).filter((f) => f.image));
+    const others = computed(() => (list.data || []).filter((f) => !f.image));
+    return { list, sourceHref, sourceLabel, images, others };
   },
   template: `
-    <TopBar :crumbs="[env, 'Files']"/>
+    <TopBar :crumbs="[env, 'Documents', 'Files']"/>
     <div class=page>
       <div class=page-inner>
         <p v-if="list.loading && !list.data" class=empty>Loading…</p>
         <p v-else-if="list.error" class=error>{{ list.error }}</p>
         <p v-else-if="list.data && !list.data.length" class=empty>No files are stored on this environment yet. Files attached to a message or added to a document show here.</p>
-        <div v-else-if="list.data" class=files-page>
-          <div v-for="f in list.data" :key="f.url" class=files-row>
+        <template v-else-if="list.data">
+        <div v-if="images.length">
+          <p class=section-label>Images <span class=muted>{{ images.length }}</span></p>
+          <div class=files-gallery>
+            <figure v-for="f in images" :key="f.url" class=files-tile>
+              <a class=files-tile-img :href="f.url" target=_blank rel=noopener :title="'Open ' + f.name"><img :src="f.url" :alt="f.name" loading=lazy></a>
+              <figcaption><span class=files-tile-name :title="f.name">{{ f.name }}</span><a :href="sourceHref(f)">{{ sourceLabel(f) }}</a></figcaption>
+            </figure>
+          </div>
+        </div>
+        <div v-if="others.length">
+        <p v-if="images.length" class=section-label>Other files <span class=muted>{{ others.length }}</span></p>
+        <div class=files-page>
+          <div v-for="f in others" :key="f.url" class=files-row>
             <a class=files-thumb :href="f.url" target=_blank rel=noopener :title="'Open ' + f.name">
               <img v-if="f.image" :src="f.url" :alt="f.name" loading=lazy>
               <Icon v-else :name="f.folder ? 'folder' : 'docs'"/>
@@ -2273,6 +2288,8 @@ const Files = {
             <span class=files-age>{{ f.age || 'just now' }}</span>
           </div>
         </div>
+        </div>
+        </template>
       </div>
     </div>`,
 };
@@ -2469,8 +2486,7 @@ const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "", count: "notifications" },
   { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
-  { key: "docs", label: "Documents", views: ["EnvDocs"], path: "docs", count: "docs" },
-  { key: "files", label: "Files", views: ["Files"], path: "files" },
+  { key: "docs", label: "Documents", views: ["EnvDocs", "Files"], path: "docs", count: "docs" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 

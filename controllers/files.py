@@ -33,7 +33,8 @@ class FilesController(Controller):
             if m.get("removed"):
                 continue
             for f in m.get("files") or []:
-                if f.get("filed") or f.get("removed"):
+                # a file moved into a document is listed with that document; a kept one stays with its message
+                if str(f.get("filed") or "").startswith("doc:") or f.get("removed"):
                     continue
                 at = _stamp(inbox.files_dir(root, env, n) / f["name"], m.get("at", ""))
                 out.append({"name": f["name"], "size": int(f.get("size") or 0), "at": at, "age": age(at) if at else "",
