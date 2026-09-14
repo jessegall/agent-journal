@@ -14,13 +14,28 @@ MESSAGES = {
     "question_asked": "Asked question",
     "question_answered": "Answered question",
     "message_left": "Wrote message",
-    "message_processed": "Processed message",
+    "message_processed": "Filed message",
     "suggestion_made": "Suggested a change",
 }
 
 TEXT_MAX = 100
 TITLE_MAX = 200
 AGENT, USER = "Agent", "You"
+
+
+BECAME = {"todo": "to-do", "question": "question", "pin": "pin", "rule": "rule", "reminder": "reminder", "doc": "document"}
+
+
+def became(message: dict) -> str:
+    """What a filed message's parts became, like "to-do 139, question 12"."""
+    out = []
+    for part in message.get("parts") or []:
+        for ref in part.get("became") or []:
+            kind, _, n = str(ref).partition(":")
+            label = f"{BECAME[kind]} {n}" if kind in BECAME and n else ("work update" if kind == "work" else kind)
+            if label and label not in out:
+                out.append(label)
+    return ", ".join(out)
 
 
 def short(text: str, limit: int = TEXT_MAX) -> str:
@@ -88,11 +103,12 @@ class ActivityController(Controller):
                 titles[kind] = lookups[kind]()
             return short(titles[kind].get(int(n), "") or "", TITLE_MAX)
 
-        def add(at, kind: str, text: str, n: int | None, by: str, titled: bool = False, needs: str = "") -> None:
+        def add(at, kind: str, text: str, n: int | None, by: str, titled: bool = False, needs: str = "",
+                detail: str = "") -> None:
             """`needs`: "open" when the line waits on the user, "answered" once they have answered it."""
             if at:
                 out.append({"at": at, "kind": kind, "n": n, "text": short(text),
-                            "title": title_of(kind, n) if titled else "", "by": by, "needs": needs})
+                            "title": title_of(kind, n) if titled else "", "by": by, "needs": needs, "detail": detail})
 
         for wn, w in enumerate(work._all(root, env), 1):
             if w.get("removed"):
@@ -120,9 +136,10 @@ class ActivityController(Controller):
             if m.get("removed"):
                 continue
             add(m.get("at"), "message", say("message_left"), n, USER, True)
-            add(m.get("processed"), "message", say("message_processed"), n, AGENT)
+            add(m.get("processed"), "message", say("message_processed"), n, AGENT, detail=became(m))
         for c in commandlog.entries(root, env):
-            add(c.get("at"), c.get("kind") or "command", c.get("text", ""), c.get("n"), AGENT, c.get("titled", False))
+            add(c.get("at"), c.get("kind") or "command", c.get("text", ""), c.get("n"), AGENT, c.get("titled", False),
+                detail=c.get("detail", ""))
         out.sort(key=lambda e: e["at"], reverse=True)
         # the same line twice in a row, like a message read again for more context, shows once
         same = lambda a, b: (a["kind"], a["n"], a["text"], a["by"]) == (b["kind"], b["n"], b["text"], b["by"])

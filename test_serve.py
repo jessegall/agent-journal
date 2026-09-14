@@ -629,6 +629,14 @@ state.put_tracked(root, "activity", "alpha",
 _, _, body = get("/api/env/alpha/activity")
 check("the same line twice in a row shows once",
       len([e for e in json.loads(body)["events"] if e["kind"] == "report" and e["n"] == 5]), 1)
+_undescribed = sorted({f"{c.noun}:{c.verb}" for group in _commands.REGISTRY._commands.values() for c in group
+                       if c.noun not in commandlog.SKIP and f"{c.noun}:{c.verb}" not in commandlog.SHOWN | commandlog.HOOKS
+                       and f"{c.noun}:{c.verb}" not in commandlog.DESCRIBE and f"{c.noun}:" not in commandlog.DESCRIBE})
+check("every registered command has a plain Activity line, or a reason it is not logged", _undescribed, [])
+commandlog.record(root, "alpha", _commands.REGISTRY.parse(["todos", "priority", "140", "high"])[0], "2099-01-01T00:00:06+00:00")
+check("setting a priority names the to-do and the value",
+      [(e["text"], e["n"], e["detail"]) for e in commandlog.entries(root, "alpha") if e.get("detail") == "high"],
+      [("Setting to-do priority", 140, "high")])
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
