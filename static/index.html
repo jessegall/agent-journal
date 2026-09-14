@@ -152,7 +152,7 @@
   .lrow { padding-top: 8px; padding-bottom: 8px; }
   .list > .viewbar { position: sticky; top: 0; z-index: 2; background: var(--bg); }
   .list .ghead { top: 40px; }
-  .ghead .sort { margin-left: auto; display: inline-flex; align-items: center; gap: 2px; }
+  .ghead .sort { margin-left: auto; margin-right: -12px; display: inline-flex; align-items: center; gap: 0; }
   .sort-field { height: 22px; padding: 0 6px; border: none; border-radius: 5px; background: none; color: var(--text-3);
     font: inherit; font-size: 12px; line-height: 22px; }
   .sort-select { field-sizing: content; height: 22px; padding: 0 16px 0 6px; border: none; border-radius: 5px; appearance: none; cursor: pointer;
@@ -160,8 +160,12 @@
     color: var(--text-2); font: inherit; font-size: 12px; }
   .sort-select:hover { color: var(--text); background-color: var(--hover); }
   .sort-select option { background: var(--raised); color: var(--text); }
-  .sort-dir { width: 22px; height: 22px; }
-  .sort-dir .ico { width: 13px; height: 13px; }
+  /* in a group header the sort control is small and quiet */
+  .ghead .sort-select { height: 20px; padding: 0 4px; font-size: 11px; color: var(--text-3); background-image: none; }
+  .ghead .sort-select:hover { color: var(--text-2); }
+  .ghead .sort-dir { width: 18px; height: 18px; }
+  .ghead .sort-dir .ico { width: 11px; height: 11px; opacity: .7; }
+  .ghead .sort-dir:hover .ico { opacity: 1; }
   .more-rows { margin: 10px 20px; }
   .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; }
   .viewbar .bar-switch { margin-left: auto; }
