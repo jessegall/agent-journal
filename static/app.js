@@ -1,7 +1,7 @@
 // The journal's browser renderer. Vue does the layout; the server only ever answers with
 // JSON (see serve.py) — this file is the second renderer of that response, fmt.py the first.
 "use strict";
-const { createApp, reactive, computed, watch, watchEffect, onUnmounted } = Vue;
+const { createApp, reactive, computed, watch, watchEffect, onUnmounted, onMounted, ref } = Vue;
 
 // ─────────────────────────────────────────────────────────────── a hash router
 // A detail route renders the same view as its list, with the item open in the side panel.
@@ -337,10 +337,12 @@ const Panel = {
 };
 
 const Compose = {
-  props: ["placeholder", "submit", "hint", "send", "attach"],
+  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus"],
   components: { Icon },
   setup(props) {
     const draft = reactive({ text: "", sending: false, error: null, files: [] });
+    const area = ref(null);
+    onMounted(() => { if (props.autofocus && area.value) area.value.focus(); });
     const picked = (e) => { draft.files.push(...Array.from(e.target.files || [])); e.target.value = ""; };
     const unpick = (i) => draft.files.splice(i, 1);
     const encoded = (file) => new Promise((resolve, reject) => {
@@ -364,13 +366,13 @@ const Compose = {
         draft.sending = false;
       }
     }
-    return { draft, go, picked, unpick };
+    return { draft, go, picked, unpick, area };
   },
   template: `
     <form class=compose @submit.prevent="go">
       <div :class="['compose-box', {attachable: attach}]">
-        <textarea class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
-          @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go"></textarea>
+        <textarea ref=area class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
+          @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go" @keydown.shift.enter.prevent="go"></textarea>
         <label v-if="attach" class=compose-attach title="Attach files" aria-label="Attach files">
           <Icon name="paperclip"/><input type=file multiple hidden @change="picked">
         </label>
@@ -1316,7 +1318,7 @@ const Inbox = {
         </div>
         <div class="compose-wrap at-bottom">
           <Compose placeholder="Leave a message for the agent: an instruction, a follow-up, anything"
-            submit="Send" :hint="hint" :send="send" :attach="true"/>
+            submit="Send" :hint="hint" :send="send" :attach="true" :autofocus="!n"/>
         </div>
       </div>
       <MessagePanel v-if="n" :key="'message' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>

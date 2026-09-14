@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.15 — The message box is ready to type in, and Shift+Enter sends
+
+Opening the Messages page puts the cursor in the message box, so you can start typing
+straight away. In any message, answer or comment box, Shift+Enter sends, as Cmd+Enter and
+Ctrl+Enter already did. Enter on its own still starts a new line.
+
 ## 1.131.14 — The Auto mode row matches the Agent row
 
 In the sidebar footer the Auto mode label was larger and brighter than the Agent label above
