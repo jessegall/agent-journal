@@ -23,7 +23,8 @@ INSTRUCTIONS = ("What the user does in the journal viewer while you are idle arr
                 '<channel source="journal" env="...">. A message (message="N"): handle it the way a stop that says the '
                 "user left messages is handled: `.journal/journal.py messages show N`, split it into parts, file what each "
                 "became. An answered question (question=\"N\"): `.journal/journal.py questions show N` and act on the answer. "
-                "A comment (comment=\"N\"): `.journal/journal.py comments show N` and handle it.")
+                "A comment (comment=\"N\"): `.journal/journal.py comments show N` and handle it. With auto mode off only messages "
+                "arrive, and none of them is a reason to start on the to-do list.")
 
 _OUT = threading.Lock()
 
@@ -54,10 +55,13 @@ def pending(stem: str) -> list[tuple[str, dict]]:
     idle = state.get(ROOT, "last_event", "", stem=stem) == "Stop"
     bound = tracks.bound(ROOT, stem)
     got = []
-    # a session on no environment is woken for new messages only; answers and comments belong to whoever asked
+    # a session on no environment is woken for new messages only; answers and comments belong to whoever asked.
+    # With auto mode off only a message wakes it: nothing else may set it working on its own
     for env in [bound] if bound else tracks.choices(ROOT):
-        if not todo.auto(ROOT, env) or idle:
-            got.extend(_waiting(env, STARTED[0], answers=bool(bound)))
+        auto = todo.auto(ROOT, env)
+        if auto and not idle:
+            continue
+        got.extend(_waiting(env, STARTED[0], answers=bool(bound) and auto))
     pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
     return [(key, params) for key, params in got if key not in pushed]
 

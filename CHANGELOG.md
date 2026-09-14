@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.4 — With auto mode off, only a message wakes the agent
+
+Before, the channel woke an idle session for an answered question or a comment even with auto mode
+off, and the agent could take that as a cue to start on the to-do list. With auto mode off, only a
+message you leave wakes it now. Answers and comments wait for the agent's next stop, and nothing
+sends it to the list. With auto mode on, it is woken for all of them once it is idle, as before.
+
 ## 1.132.3 — Activity says which setting you changed
 
 Changing a setting in the viewer showed only "Changed the settings" in Activity. The line now says
