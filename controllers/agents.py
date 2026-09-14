@@ -5,6 +5,7 @@ from pathlib import Path
 import agents
 import state
 import tracks
+import transcript
 from controller import Controller, Payload, Result
 
 #: a subagent that has made no tool call for this long is no longer counted as working
@@ -35,5 +36,6 @@ class AgentsController(Controller):
             working = agents.working(root, env, agent)
             out.append({"kind": "subagent", "id": agent[:8], "name": agents.described(root.parent, parent, agent),
                         "working": working, "state": "active" if working else "finished" if agents.finished(root, env, agent) else "idle",
-                        "age_text": agents.age(root, env, agent), "parent": parent[:8]})
+                        "age_text": agents.age(root, env, agent), "parent": parent[:8],
+                        "model": transcript.last_model(transcript.find(root.parent, f"agent-{agent}"))})
         return Result("ok", "", out)

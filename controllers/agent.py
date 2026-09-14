@@ -91,6 +91,7 @@ class AgentController(Controller):
                        if Path(str(w.get("session") or "")).stem == full and not w.get("removed")][::-1]
         parents = (state.get(root, agents.PARENT, {}) or {}).get(env) or {}
         out["dispatched"] = [{"id": a[:8], "name": agents.described(root.parent, full, a) or f"Subagent {a[:8]}",
+                              "model": transcript.last_model(transcript.find(root.parent, f"agent-{a}")),
                               "working": agents.working(root, env, a), "age": agents.age(root, env, a)}
                              for a, parent in parents.items() if parent == full]
         return out

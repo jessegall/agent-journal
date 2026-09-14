@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.133.3 — A listed subagent names its model
+
+A subagent's own page already showed the model it ran on. Where subagents are listed, the model is
+now named too: in the "Subagents it sent" list on a session's page, and in the agents dropdown in the
+Activity header, for example "Finished · claude-sonnet-5".
+
 ## 1.133.2 — No Enter hint under the Activity message box
 
 The line "Enter sends, Shift+Enter adds a line" under the message box in the Activity column is gone.

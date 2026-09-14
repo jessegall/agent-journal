@@ -838,6 +838,8 @@ _crew = [a for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == 
 check("the agents list shows a live subagent, with the session that sent it",
       [(a["id"], a["parent"], a["working"]) for a in _crew], [("abc123de", "parentst", True)])
 _agents.finish(root, "alpha", "abc123def")
+check("a listed subagent carries its model, empty when its transcript has none",
+      [("model" in a) for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"], [True])
 check("a subagent that stopped is listed as finished, not working",
       [(a["working"], a["state"]) for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"], [(False, "finished")])
 import install as _install  # noqa: E402
