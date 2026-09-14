@@ -4,6 +4,23 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.24 — The start block and the open-work hold speak to the right session
+
+- A session on no environment was told, in the same block, to ask the user which environment to use and
+  "AUTO IS ON — work the list without asking". Starting a to-do is a journal command the unbound-write gate
+  lets through, so the agent could begin work on an environment it never chose. It is now told only that
+  auto is on for that environment and applies once the session is on it; once it switches, its stops say
+  the rest.
+- A skill marked to load at every start kept being named after it was deleted or renamed, so every start
+  and compaction told the agent to load a skill it could not find. Only installed skills are named.
+- With auto mode on, a session was held over every open piece of work on its environment and told to end
+  it, including work another session had opened. It is now held for its own work as before. Work a session
+  that is still running opened is named once and left to that session; work a session that is gone opened
+  is held at every stop, with `journal work end --force "<note>"` or asking the user as the way to close it.
+- The counter that keeps a to-do number from being reused (1.136.8) was kept in `record.json`, so every
+  `todos add` wrote the project-wide record, including from a subagent lent a single environment. It now
+  lives in that environment's `todo` folder; a number kept by the older version is still honoured.
+
 ## 1.136.23 — To-dos close, start, move and wait the way they say they do
 
 - Dropping a to-do made every to-do waiting on it ready, so auto mode could start work whose prerequisite

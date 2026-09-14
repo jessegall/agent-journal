@@ -129,6 +129,11 @@ MESSAGES = {
     "waited_exited": " — that process has EXITED.\n\n",
     "waited_for": ", for {mins} minute(s).\n\n",
     "auto_open_fact": "auto is on, work still open",
+    "auto_inherited_fact": "auto is on, but the open work was opened by another session",
+    "auto_inherited_do": "it is not yours to end: leave it to that session; the list starts once it is closed",
+    "auto_inherited_gone_do": "that session is gone, so nothing will end it: if it is finished close it with "
+                              "`journal work end --force \"<note>\"`, or ask the user; the list waits until it is closed",
+    "note_auto_unbound": "auto is on for `{env}`; it applies once this session is on that environment",
     "auto_open_do": "`work end` each if it is done, `work await` it if it is in flight on something you cannot hurry, "
                     "or park what is left as a to-do and end it{tail}",
     "auto_open_listed": "; then the list starts",
@@ -954,6 +959,15 @@ def _p_untagged(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
                     teach=None if taught else say("untagged_teach")))
 
 
+def _session_live(name: str, stale_hours: float = 24.0) -> bool:
+    """Is the session that opened this work still running? Its hook has run recently and it has not ended."""
+    stem = name[:-len(".jsonl")] if name.endswith(".jsonl") else name
+    if not stem or state.get(ROOT, "ended", None, stem=stem):
+        return False
+    seen = state.get(ROOT, "seen_at", 0, stem=stem) or 0
+    return bool(seen) and time.time() - float(seen) < stale_hours * 3600
+
+
 def _owners(ctx: Ctx) -> set:
     """The transcript name whose work this session is answerable for.
 
@@ -997,12 +1011,27 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     if todo.auto(ROOT, here):
         # AUTO IS ON AND WORK IS OPEN AT A STOP: every turn, once. End it, or park what
         # is left as a to-do and end it; open work is never left standing.
-        listed = bool(todo.open_items(ROOT, here))
-        return _say(
-                say("auto_open_fact"),
-                say("auto_open_do", tail=say("auto_open_listed") if listed else say("auto_open_never")),
-                rows=[w["subject"] for w in standing],
-                note=say("auto_open_note", names=[say("row", row=w["subject"]) for w in standing], env=here))
+        # BUT ONLY THIS SESSION'S. Told to `work end` work another session opened, an agent
+        # closed work it knew nothing about, or the list never moved.
+        owners = _owners(ctx)
+        mine = [w for w in standing if w.get("session") in owners]
+        if mine:
+            listed = bool(todo.open_items(ROOT, here))
+            return _say(
+                    say("auto_open_fact"),
+                    say("auto_open_do", tail=say("auto_open_listed") if listed else say("auto_open_never")),
+                    rows=[w["subject"] for w in mine],
+                    note=say("auto_open_note", names=[say("row", row=w["subject"]) for w in mine], env=here))
+        # A GONE SESSION'S WORK IS HELD AT EVERY STOP: nothing else will end it, and the list waits on it.
+        # A LIVE SESSION'S WORK IS SAID ONCE: it is being worked, and repeating it wakes this agent for nothing.
+        gone = [w["subject"] for w in standing if not _session_live(str(w.get("session") or ""))]
+        if gone:
+            return _say(say("auto_inherited_fact"), say("auto_inherited_gone_do"), rows=gone)
+        theirs = sorted(w["subject"] for w in standing)
+        if theirs == state.get(ROOT, "inherited_said", [], stem=ctx.stem):
+            return None
+        state.put(ROOT, "inherited_said", theirs, stem=ctx.stem)
+        return _say(say("auto_inherited_fact"), say("auto_inherited_do"), rows=theirs)
     # ONLY WORK THIS TRANSCRIPT OPENED, ONCE PER PIECE. Work opened elsewhere was told
     # at the start; work legitimately spans stops, and a hold that repeats until it
     # closes is a trap.
@@ -3045,7 +3074,11 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
         parts.append(shipped)
     # SKILLS THE USER WANTS AT EVERY START, set on a skill's page in the viewer
     import skills
-    wanted = skills.always(ROOT)
+    stored = skills.always(ROOT)
+    # ONLY SKILLS THAT EXIST. A skill deleted or renamed after it was marked stayed in the list,
+    # and every start and compaction told the agent to load something it could not.
+    present = {s["name"] for s in skills.available(ROOT.parent)} if stored else set()
+    wanted = [n for n in stored if n in present]
     if wanted:
         parts.append(say("always_skills", names=", ".join(f"`{n}`" for n in wanted)))
     # REMINDERS ARE NOT INJECTED AT A START. They fire at every stop and every
@@ -3082,7 +3115,7 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
     # agent acts on; a section silently left out is one it never learns about. Each row
     # names the command that reads that store in full, so it reads only what it needs.
     if depth == BRIEF:
-        parts.append(_counts(here))
+        parts.append(_counts(here, unbound))
     if source == "compact":
         parts.append(say("compact_tail"))
     return "\n\n".join(parts)
@@ -3110,7 +3143,7 @@ def _standing(short: bool) -> str:
     return say("still_open", rows=[say("row", row=fmt.gist(w["subject"]) if short else w["subject"]) for w in standing])
 
 
-def _todo_note(here: str) -> str:
+def _todo_note(here: str, unbound: bool = False) -> str:
     """What the to-do count needs said beside it — and it is never the to-dos themselves.
 
     THE ANSWERED ONES ARE WHY THIS ROW MATTERS. A to-do the user has answered is them saying
@@ -3130,7 +3163,10 @@ def _todo_note(here: str) -> str:
     asks_n = len(todo.asking(ROOT, here))
     said = []
     if todo.auto(ROOT, here):
-        said.append(say("note_auto"))
+        # NOT AN ORDER TO A SESSION ON NO ENVIRONMENT. The same block tells it to ask the user
+        # which environment, and "work the list without asking" beside that started work on an
+        # environment it never chose.
+        said.append(say("note_auto_unbound", env=here) if unbound else say("note_auto"))
     if answered_n:
         said.append(say("note_answered", n=answered_n))
     elif asks_n:
@@ -3138,7 +3174,7 @@ def _todo_note(here: str) -> str:
     return "; ".join(said) or say("note_delayed")
 
 
-def _counts(here: str) -> str:
+def _counts(here: str, unbound: bool = False) -> str:
     """How much of each store stands, and the one command that reads it.
 
     ONLY WHAT IS NOT ALREADY ABOVE. Rules, pins and docs show their most recent few inline,
@@ -3154,7 +3190,7 @@ def _counts(here: str) -> str:
     import reminders as rem
     rows = [
         (len(rem.live(ROOT)), "journal reminders", say("count_reminders")),
-        (len(todo.open_items(ROOT, here)), "journal todos", _todo_note(here)),
+        (len(todo.open_items(ROOT, here)), "journal todos", _todo_note(here, unbound)),
         (len(tools._all(ROOT)), "journal tools", say("count_tools")),
         (len(__import__("suggestions").open_items(ROOT, here)), "journal suggestions", say("count_suggestions")),
     ]

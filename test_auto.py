@@ -169,8 +169,8 @@ s1.journal("todo", "auto", "on"); s1.journal("todo", "chore")
 s2.journal("start", "another session's work")
 s1.start()
 label, text = s1.stop()
-check("work opened by another session still counts as open: held to end it or park",
-      (label, "another session's work" in text), (AUTO_OPEN, True))
+check("work opened by a session that is gone still counts as open: held, and not as this session's to end",
+      (label, "another session's work" in text, "--force" in text), ("journal reminded Claude: auto is on, but the open work was opened by another session", True, True))
 s2.journal("end", "another session's work")
 label, text = s1.stop()
 check("once that ends, the list starts", label, AUTO_NEXT + "1 to-do(s) waiting")
@@ -242,6 +242,7 @@ check("then the auto hold", label, AUTO_NEXT + "1 to-do(s) waiting")
 # ---------------------------------------------------------------- a new session, a compaction
 d = project(); s1 = Session(d, "s1")
 s1.journal("todo", "chore one"); s1.journal("todo", "chore two"); s1.journal("todo", "auto", "on")
+s1.journal("switch", "default")
 ctx = s1.start()
 # THE DOORWAY SAYS AUTO IS ON, AND THAT IS THE ONE LISTING IT REPLACES WITH AN ORDER.
 # Everything else the block used to inline is readable on demand; a standing order is not
@@ -252,8 +253,9 @@ check("and it does NOT list the to-dos — the count and the command stand in fo
       ("chore one" in ctx, "journal todos" in ctx), (False, True))
 s1.stop()
 s2 = Session(d, "s2")
+s2.journal("switch", "default")
 ctx = s2.start()
-check("a fresh session gets the same block", "AUTO IS ON" in ctx, True)
+check("a fresh session on the environment gets the same block", "AUTO IS ON" in ctx, True)
 label, text = s2.stop()
 check("and its first idle stop is held, its own marks being clean", label, AUTO_NEXT + "2 to-do(s) waiting")
 ctx = s1.start("compact")
@@ -368,7 +370,7 @@ check("switching it off again: quiet (the plain hold was already said for this w
 
 d = project(); s1 = Session(d, "s1"); s2 = Session(d, "s2")
 s1.journal("todo", "auto", "on"); s2.journal("start", "opened in s2"); s1.start()
-check("work opened by another session: this one is held every stop too", (s1.stop()[0], s1.stop()[0]), (AUTO_OPEN, AUTO_OPEN))
+check("work opened by a session that is gone: this one is held every stop too", (s1.stop()[0], s1.stop()[0]), ("journal reminded Claude: auto is on, but the open work was opened by another session", "journal reminded Claude: auto is on, but the open work was opened by another session"))
 s2.journal("end", "opened in s2")
 check("ended over there: silent here", s1.stop()[0], "")
 
@@ -379,7 +381,7 @@ ctx = s.start("compact")
 check("after a compaction the block still lists it as open", "chore" in ctx and "STILL OPEN" in ctx, True)
 check("and the stop after the compaction is held", s.stop()[0], AUTO_OPEN)
 s3 = Session(d, "s3"); s3.start()
-check("a fresh session with that work open: held at its first stop", s3.stop()[0], AUTO_OPEN)
+check("a fresh session with another live session's work open: told at its first stop", s3.stop()[0], "journal reminded Claude: auto is on, but the open work was opened by another session")
 
 d = project(); s = Session(d, "s1")
 s.journal("todo", "auto", "on"); s.journal("start", "w"); s.start()
@@ -755,6 +757,37 @@ for _ in range(4):
     s.stop(True)
 check("an answered to-do that waits on another still has its answer told at a stop",
       (len(_before) >= 1, _qmod.untold(d / ".journal", "default")), (True, []))
+
+# ---------------------------------------------------------------- the start block and open work, for the session they are said to
+d = Path(tempfile.mkdtemp()) / "proj"; (d / ".claude").mkdir(parents=True); testkit.make(d, SRC)
+_P = testkit.Project(d)
+_P.cli("auto", "enable"); _P.cli("todos", "add", "a queued task")
+code, out = _P.hook("SessionStart", source="startup", session_id="newsession", transcript_path=str(d / "t2.jsonl"), cwd=str(d))
+_ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
+check("a session on no environment is told auto is on there, not ordered to work the list",
+      ("NO ENVIRONMENT" in _ctx, "AUTO IS ON" in _ctx, "auto is on for" in _ctx), (True, False, True))
+
+d = project(); s = Session(d, "s1")
+_skill = d / ".claude" / "skills" / "real-one"
+_skill.mkdir(parents=True, exist_ok=True)
+(_skill / "SKILL.md").write_text("---\nname: real-one\ndescription: a test skill\n---\nbody\n")
+state.put(d / ".journal", "always_load_skills", ["real-one", "ghost-skill-that-is-gone"])
+_ctx = s.start()
+check("the start block names always-load skills that exist, and not ones that are gone",
+      ("`real-one`" in _ctx, "ghost-skill-that-is-gone" in _ctx), (True, False))
+
+d = project(); s1 = Session(d, "s1"); s2 = Session(d, "s2")
+s1.start(); s2.start()
+s1.journal("todo", "auto", "on")
+s1.journal("work", "start", "the first session's job")
+s2.say("hello", "user"); s2.say("[!reply] hi")
+label, text = s2.stop()
+check("another session's open work is named, not held as this session's to end",
+      (label.startswith("journal reminded Claude: auto is on, but the open work was opened by another session"),
+       "the first session's job" in text), (True, True))
+check("and it is said once", s2.stop(), ("", ""))
+s1.say("[!reply] working")
+check("the session that opened it is still held for it", s1.stop()[0], AUTO_OPEN)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
