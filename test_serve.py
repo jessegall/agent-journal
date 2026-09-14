@@ -570,6 +570,13 @@ status, _, body = get("/api/env/alpha/activity")
 _work_events = [e for e in json.loads(body)["events"] if e["kind"] == "work"]
 check("a work event says which work it is about, so its row can open it",
       (status, bool(_work_events), all(isinstance(e["n"], int) and e["n"] >= 1 for e in _work_events)), (200, True, True))
+_events = json.loads(body)["events"]
+check("every activity event says who did it and stays within 100 characters",
+      (all(e["by"] in ("Agent", "You") for e in _events), all(len(e["text"]) <= 100 for e in _events),
+       {e["by"] for e in _work_events}), (True, True, {"Agent"}))
+import controllers.activity as _activity  # noqa: E402
+check("a long activity text is cut at a word with an ellipsis",
+      (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
 
 state.put(root, serve.VIEWER_PORT, srv.server_port)
 check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)

@@ -126,10 +126,15 @@ class TodosController(Controller):
     def destroy(self, root: Path, p: WhyPayload) -> Result:
         if not p.why:
             return Result("refused", say("say_why"))
-        return Result.of(todo.done(root, self.env(root), p.id, say("dropped", why=p.why), p.at))
+        return self._closed(root, p, todo.done(root, self.env(root), p.id, say("dropped", why=p.why), p.at))
 
     def done(self, root: Path, p: todo_payloads.HowPayload) -> Result:
-        return Result.of(todo.done(root, self.env(root), p.id, p.how, p.at))
+        return self._closed(root, p, todo.done(root, self.env(root), p.id, p.how, p.at))
+
+    def _closed(self, root: Path, p, got: tuple[bool, str]) -> Result:
+        if got[0] and p.source == "web":
+            todo._update(root, self.env(root), p.id, closed_by="web")
+        return Result.of(got)
 
     def reopen(self, root: Path, p: WhyPayload) -> Result:
         return Result.of(todo.reopen(root, self.env(root), p.id, p.why, p.at))
