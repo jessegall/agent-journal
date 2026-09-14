@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.111.0 — anything closed more than 30 days ago is removed
+
+Once an hour, each session sweeps its environment: ended work, processed or archived messages,
+answered or withdrawn questions, handled comments, read notifications and decided suggestions
+that closed more than 30 days ago lose their content for good, and done to-dos older than that
+are deleted. Each removed item keeps its place and its closed status, so numbers do not shift and
+nothing reopens; it no longer shows in any list. Documents are never removed.
+
 ## 1.110.0 — reports are archived after 7 days and removed after 30
 
 A report is archived 7 days after it is written (the default on the environment's Settings page

@@ -60,6 +60,8 @@ class ActivityController(Controller):
                 out.append({"at": at, "kind": kind, "n": n, "text": text})
 
         for wn, w in enumerate(work._all(root, env), 1):
+            if w.get("removed"):
+                continue
             add(w.get("at"), "work", say("work_started", subject=w["subject"]), wn)
             for note in w.get("notes") or []:
                 add(note.get("at"), "work", say("work_note", text=note.get("text", "")), wn)
@@ -68,9 +70,13 @@ class ActivityController(Controller):
             add(t.get("at"), "todo", say("todo_added", n=t["n"], title=t.get("title", "")), t["n"])
             add(t.get("done"), "todo", say("todo_closed", n=t["n"], title=t.get("title", "")), t["n"])
         for n, q in enumerate(questions._all(root, env), 1):
+            if q.get("removed"):
+                continue
             add(q.get("at"), "question", say("question_asked", n=n, text=q.get("text", "")), n)
             add(q.get("answered_at"), "question", say("question_answered", n=n), n)
         for n, m in enumerate(inbox._all(root, env), 1):
+            if m.get("removed"):
+                continue
             add(m.get("at"), "message", say("message_left", n=n), n)
             add(m.get("processed"), "message", say("message_processed", n=n), n)
         out.sort(key=lambda e: e["at"], reverse=True)
