@@ -658,6 +658,8 @@ const RadioGroup = {
 };
 
 const PAGE_ROWS = 25;
+// how long a closed item stays in its list before it counts as archived
+const RECENT_MS = 7 * 24 * 60 * 60 * 1000;
 
 // groups: {key, label, kind, closed, match(row)}; columns: {priority, status, num, numWidth, title, sub, cite, age, struck}
 const ResourceList = {
@@ -666,16 +668,14 @@ const ResourceList = {
     groups: { type: Array, default: () => [{ key: "all", label: "", match: () => true }] },
     columns: Object, href: Function, selected: Function, pick: Function,
     sorts: { type: Array, default: () => [{ key: "n", label: "ID" }] },
-    count: Function, showLabel: String, empty: String, name: String, showDefault: Boolean,
+    count: Function, empty: String, name: String,
     bar: { type: Boolean, default: true }, limit: { type: Number, default: PAGE_ROWS },
   },
-  components: { StatusIcon, PriorityIcon, Switch, Icon },
+  components: { StatusIcon, PriorityIcon, Icon },
   setup(props) {
-    // a switch the viewer flipped is remembered per list, in this browser only
-    const key = props.name ? `journal:show:${props.name}` : "";
-    const remembered = () => { try { return key ? localStorage.getItem(key) : null; } catch (e) { return null; } };
-    const state = reactive({ show: remembered() === null ? props.showDefault : remembered() === "1", sort: {}, pages: {},
-                             held: {}, arrived: {} });
+    const state = reactive({ sort: {}, pages: {}, held: {}, arrived: {} });
+    // a closed section shows what closed in the last week; anything older, or closed at an unknown time, is archived
+    const recent = (r) => !!r.closed_at && Date.now() - Date.parse(r.closed_at) < RECENT_MS;
     // after a refresh, a row that changed group or left the list stays put in blue for a moment, and a new row is lit
     const rowKey = (r) => String(r.n ?? r.name);
     const groupOf = (r) => (props.groups.find((g) => g.match(r)) || {}).key;
@@ -694,16 +694,15 @@ const ResourceList = {
       });
       Object.entries(was).forEach(([k, v]) => { if (!now.has(k)) lit(state.held, k, v); });
     });
-    watchEffect(() => { const on = state.show; try { if (key) localStorage.setItem(key, on ? "1" : "0"); } catch (e) { /* storage off */ } });
     const sortOf = (key) => state.sort[key] || { by: props.sorts[0].key, dir: "desc" };
-    const sections = computed(() => (props.rows ? props.groups.filter((g) => state.show || !g.closed).map((g) => {
+    const sections = computed(() => (props.rows ? props.groups.map((g) => {
       const order = sortOf(g.key);
       const spec = props.sorts.find((x) => x.key === order.by) || props.sorts[0];
       const value = spec.value || ((r) => r[spec.key]);
       const current = Object.fromEntries(props.rows.map((r) => [rowKey(r), r]));
       const held = Object.entries(state.held).filter(([, v]) => v.group === g.key).map(([k, v]) => current[k] || v.row);
       const moving = new Set(Object.keys(state.held));
-      const rows = props.rows.filter((r) => g.match(r) && !moving.has(rowKey(r))).concat(held).sort((a, b) => {
+      const rows = props.rows.filter((r) => g.match(r) && !moving.has(rowKey(r)) && (!g.closed || recent(r))).concat(held).sort((a, b) => {
         const x = value(a), y = value(b);
         const c = x < y ? -1 : x > y ? 1 : 0;
         return order.dir === "asc" ? c : -c;
@@ -726,7 +725,6 @@ const ResourceList = {
   template: `
     <div v-if="bar" class=viewbar>
       <span v-if="rows && count">{{ count(rows) }}</span>
-      <Switch v-if="closable && showLabel" class=bar-switch :label="showLabel" v-model="state.show"/>
     </div>
     <p v-if="loading && !rows" class=empty>Loading…</p>
     <p v-else-if="error && !rows" class=error>{{ error }}</p>
@@ -765,7 +763,7 @@ const ResourceList = {
         <button v-if="g.rows.length < g.total" type=button class="btn more-rows" @click="more(g.key)">Show {{ Math.min(limit, g.total - g.rows.length) }} more</button>
       </div>
       </TransitionGroup>
-      <p v-if="!sections.length" class=empty>{{ rows.length && closable && !state.show ? 'Nothing here is open. Switch on “' + showLabel + '” to see the rest.' : empty }}</p>
+      <p v-if="!sections.length" class=empty>{{ rows.length && closable ? 'Nothing here is open, and nothing closed in the last week.' : empty }}</p>
     </template>`,
 };
 
@@ -837,15 +835,14 @@ const TODO_LIST = {
              title: (t) => t.title, cite: (t) => (t.doc ? `Doc ${t.doc}` : ""), age: (t) => t.age },
   sorts: [{ key: "n", label: "ID" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
   count: (rows) => `${rows.filter((t) => todoStatus(t) !== "done").length} open`,
-  showLabel: "Show done", empty: "Nothing is waiting on this environment.", name: "todos",
+  empty: "Nothing is waiting on this environment.", name: "todos",
 };
 const CLAIM_LIST = {
   groups: [{ key: "standing", label: "Standing", kind: "open", match: (c) => !c.struck },
            { key: "struck", label: "Struck", kind: "withdrawn", closed: true, match: (c) => c.struck }],
   columns: { num: (c) => `#${c.n}`, title: (c) => c.fact, cite: (c) => (docOf(c.meta) ? `Doc ${docOf(c.meta)}` : ""),
              age: (c) => ageOf(c.meta), struck: (c) => c.struck },
-  count: (rows) => `${rows.filter((c) => !c.struck).length} standing`, showLabel: "Show struck",
-};
+  count: (rows) => `${rows.filter((c) => !c.struck).length} standing`,};
 const MESSAGE_LIST = {
   groups: [{ key: "waiting", label: "Waiting", kind: "waiting", match: (m) => m.status === "waiting" },
            { key: "processed", label: "Processed", kind: "done", match: (m) => m.status === "processed" || m.status === "moved" },
@@ -861,8 +858,7 @@ const QUESTION_LIST = {
            { key: "withdrawn", label: "Withdrawn", kind: "withdrawn", closed: true, match: (q) => q.status === "withdrawn" }],
   columns: { status: (q) => questionKind(q), num: (q) => `#${q.n}`, title: (q) => q.text,
              cite: (q) => q.links.map((l) => l.label).join(", "), age: (q) => q.age },
-  count: (rows) => `${rows.filter((q) => q.status === "open").length} open`, showLabel: "Show answered",
-  empty: "Nothing has been asked on this environment.", name: "questions",
+  count: (rows) => `${rows.filter((q) => q.status === "open").length} open`,  empty: "Nothing has been asked on this environment.", name: "questions",
 };
 const LOG_KIND = { started: "Started", update: "Update", waiting: "Waiting on", ended: "Ended" };
 const WORK_LIST = {
@@ -870,23 +866,22 @@ const WORK_LIST = {
            { key: "ended", label: "Ended", kind: "done", closed: true, match: (w) => w.ended }],
   columns: { title: (w) => w.subject, sub: (w) => (w.notes.length ? w.notes[w.notes.length - 1].text : ""),
              cite: (w) => [w.todo && `To-do ${w.todo}`, w.doc && `Doc ${w.doc}`].filter(Boolean).join(", "), age: (w) => w.age },
-  count: (rows) => `${rows.filter((w) => !w.ended).length} open`, showLabel: "Show ended", empty: "Nothing is open.", name: "work",
+  count: (rows) => `${rows.filter((w) => !w.ended).length} open`, empty: "Nothing is open.", name: "work",
 };
 const REMINDER_LIST = {
   groups: [{ key: "standing", label: "Standing", kind: "open", match: (r) => !r.struck },
            { key: "retired", label: "Retired", kind: "withdrawn", closed: true, match: (r) => r.struck }],
   columns: { num: (r) => `#${r.n}`, title: (r) => r.text, cite: (r) => r.until || "", struck: (r) => r.struck },
-  count: (rows) => `${rows.filter((r) => !r.struck).length} standing`, showLabel: "Show retired",
-  empty: "Nothing is being repeated.", name: "reminders",
+  count: (rows) => `${rows.filter((r) => !r.struck).length} standing`,  empty: "Nothing is being repeated.", name: "reminders",
 };
 const DOC_LIST = {
   groups: [{ key: "draft", label: "Draft", kind: "open", match: (d) => !d.superseded_by && d.status !== "final" },
            { key: "final", label: "Final", kind: "done", match: (d) => !d.superseded_by && d.status === "final" },
-           { key: "superseded", label: "Superseded", kind: "withdrawn", closed: true, match: (d) => d.superseded_by },
-           { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (d) => d.archived && !d.superseded_by }],
+           { key: "superseded", label: "Superseded", kind: "withdrawn", match: (d) => d.superseded_by },
+           { key: "archived", label: "Archived", kind: "withdrawn", match: (d) => d.archived && !d.superseded_by }],
   columns: { num: (d) => `#${d.n}`, title: (d) => d.title, sub: (d) => d.abstract, age: (d) => d.age, struck: (d) => d.superseded_by,
              cite: (d) => (d.attachments ? (d.attachments === 1 ? "1 file" : `${d.attachments} files`) : "") },
-  count: (rows) => `${rows.filter((d) => !d.archived).length} catalogued`, showLabel: "Show superseded and archived", name: "docs",
+  count: (rows) => `${rows.filter((d) => !d.archived).length} catalogued`, name: "docs",
 };
 const TOOL_LIST = {
   groups: [{ key: "tools", label: "Catalogued", match: () => true }],
@@ -1265,8 +1260,7 @@ const SUGGESTION_LIST = {
            { key: "withdrawn", label: "Withdrawn", kind: "withdrawn", closed: true, match: (s) => s.status === "withdrawn" }],
   columns: { num: (s) => `#${s.n}`, title: (s) => s.title, sub: (s) => s.gist, age: (s) => s.age,
              struck: (s) => s.status === "declined" || s.status === "withdrawn" },
-  count: (rows) => `${rows.filter((s) => s.status === "open").length} waiting on you`, showLabel: "Show declined and withdrawn",
-  name: "suggestions", empty: "No suggestions on this environment.",
+  count: (rows) => `${rows.filter((s) => s.status === "open").length} waiting on you`,  name: "suggestions", empty: "No suggestions on this environment.",
 };
 
 const SUGGESTION_STATUS = { open: "Waiting on you", accepted: "Accepted", adjusted: "Accepted with your change",
@@ -1512,7 +1506,7 @@ const REPORT_LIST = {
            { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (r) => r.archived }],
   columns: { num: (r) => `#${r.n}`, title: (r) => r.title, sub: (r) => r.gist, cite: (r) => r.about_label, age: (r) => r.age,
              struck: (r) => r.archived },
-  count: (rows) => `${rows.filter((r) => !r.archived).length} reports`, showLabel: "Show archived", name: "reports",
+  count: (rows) => `${rows.filter((r) => !r.archived).length} reports`, name: "reports",
   empty: "No reports on this environment yet.",
 };
 
