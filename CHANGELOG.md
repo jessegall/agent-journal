@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.3 — Tool use shows in Activity after a minute of quiet
+
+The agent's commands, edits and reads are summed into one Activity line ("Ran 7 commands, edited 3
+files"), written when ten have queued or at the agent's next journal event. A queue could sit unseen
+for a long time when the agent stopped between those. Now, once a session has used no tool for a
+minute, opening Activity writes its queued line, dated at the last tool use. Ten tool uses still write
+the line at once.
+
 ## 1.136.2 — An accepted suggestion tells the agent which to-do to pick up
 
 When you accept a suggestion, an idle agent is told through the channel that it was accepted, which

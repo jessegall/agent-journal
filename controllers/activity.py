@@ -77,7 +77,9 @@ class ActivityController(Controller):
     numbered = ()
 
     def index(self, root: Path, p: Payload) -> Result:
+        import commandlog
         import todo
+        commandlog.flush_stale(root, p.env)
         return Result("ok", "", {"agent": self._agent(root, p.env), "auto": todo.auto(root, p.env),
                                  "events": self._events(root, p.env)})
 
