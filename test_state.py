@@ -1456,5 +1456,14 @@ check("once the final message is there, it is the turn's message and the earlier
 _asked = _turn(("user", "human", "go", []), ("assistant", "text", "Which one?", ["AskUserQuestion"]))
 check("a question put through the question tool still counts as the message", transcript.filing_units(_asked), {2})
 
+# ---------------------------------------------------------------- a compaction starts the context ladder again
+d, path = project_with(2, tagged=True)
+fire(d, "SessionStart", path, source="startup")
+state.put(d / ".journal", "warned_at", 0.95, stem="s1")
+state.put(d / ".journal", "pin_due", {"rung": 0.95, "used": 950, "window": 1000}, stem="s1")
+fire(d, "SessionStart", path, source="compact")
+check("after a compaction the rung and its pending decision are cleared, so the new window is warned again",
+      (runtime_of(d, "s1").get("warned_at"), runtime_of(d, "s1").get("pin_due")), (0.0, None))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -4,6 +4,21 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.19 — The context gate starts over after a compaction, and journal lines are judged fairly
+
+- A context warning that was still waiting for a decision when the window compacted refused the first tool
+  call of the new, nearly empty window, and the highest rung reached stayed recorded, so no warning came
+  again for the rest of the session. A compaction now clears both, and the ladder starts from its first
+  rung.
+- `journal todos start 3 && git commit` and `journal --env=x work start "…" && git add .` now count as
+  opening work before the write, as the skills teach. Before, they were refused and told to `work start`,
+  which opened a second piece of work.
+- `journal pins add "…" && git commit`, the decision the context refusal itself recommends, now passes that
+  refusal, as `journal pin "…"` did.
+- A line that merely starts with a journal decision (`journal nothing "x"; rm -rf build`) no longer carries
+  the rest of the line past the environment, loop and wait checks. Only a line made entirely of journal
+  commands skips those.
+
 ## 1.136.18 — A loop is asked for only when it has something to pick up, and is not assumed after a restart
 
 - With auto mode on, the stop hook asked for a loop whenever work was open, even with nothing on the list
