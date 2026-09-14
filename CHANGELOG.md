@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.57 — A session is told about its own project's viewer only
+
+At a session start the journal told you "the web viewer is running at …" whenever anything
+answered on the viewer's port, even a viewer serving a different project. So a second project
+on the same machine was pointed at the wrong journal. The viewer now says which project it
+serves, and a start only reports it when it is this project's. Restart a viewer that is
+already running to pick this up; until then it is trusted as before.
+
 ## 1.131.56 — `journal claude` starts Claude with the channel
 
 Using the channel meant typing `claude --dangerously-load-development-channels server:journal`

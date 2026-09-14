@@ -133,6 +133,11 @@ def _favicon(root: Path, project: Path, m: re.Match):
 
 
 # ───────────────────────────────────────────────────────────────────── the API
+@route(r"^/api/identity$")
+def _api_identity(root: Path, project: Path, m: re.Match):
+    return _json({"root": str(root.resolve())})
+
+
 @route(r"^/api/overview$")
 def _api_overview(root: Path, project: Path, m: re.Match):
     return _json(views.overview(root))
@@ -381,15 +386,28 @@ VIEWER_PORT = "viewer_port"
 
 
 def running(root: Path) -> str:
-    """The viewer's URL when one answers on its last port (or the default), else ''."""
+    """This project's viewer URL when it answers on its last port (or the default), else ''."""
+    import http.client
     import socket
     import state
     port = state.get(root, VIEWER_PORT, DEFAULT_PORT) or DEFAULT_PORT
     try:
         with socket.create_connection((HOST, int(port)), timeout=0.2):
-            return say("url", host=HOST, port=port)
+            pass
     except OSError:
         return ""
+    # another project's viewer can hold the port; a viewer too old to say whose it is keeps the old answer
+    try:
+        conn = http.client.HTTPConnection(HOST, int(port), timeout=0.5)
+        conn.request("GET", "/api/identity")
+        res = conn.getresponse()
+        body = res.read()
+        conn.close()
+        if res.status == 200 and json.loads(body).get("root") != str(root.resolve()):
+            return ""
+    except (OSError, ValueError, http.client.HTTPException):
+        pass
+    return say("url", host=HOST, port=port)
 
 
 def run(root: Path, project: Path, port: int = DEFAULT_PORT, open_browser: bool = False) -> None:

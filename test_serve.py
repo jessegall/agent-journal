@@ -780,6 +780,11 @@ check("the agent's context use is its last reading against the window, and nothi
 
 state.put(root, serve.VIEWER_PORT, srv.server_port)
 check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)
+_other = Path(tempfile.mkdtemp()) / "other" / ".journal"
+_other.mkdir(parents=True)
+state.put(_other, serve.VIEWER_PORT, srv.server_port)
+check("another project whose recorded port this viewer holds is not told a viewer runs for it",
+      serve.running(_other), "")
 import views  # noqa: E402
 line = views.status_line(root, None)
 check("the status line names the environment, the open work and the viewer",
