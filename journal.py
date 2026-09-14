@@ -11,7 +11,6 @@ Every group below prints its own commands, and so does every spelling of them:
 `journal <noun> help`.
 
     work           declare it, move it, wait on something, close it
-    ideas          a stray line, global, no promise attached — not a pin, not a to-do
     pins           a claim that must survive a compaction, on this environment
     rules          a pin that every environment obeys
     reminders      an instruction said again at every stop, until you retire it

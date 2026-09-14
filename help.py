@@ -37,13 +37,6 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal auto-mode enable      work through the list without asking: start the next ready to-do whenever nothing is open",
         "journal auto-mode disable     wait for the user's word before starting a to-do",
     ),
-    "ideas": (
-        'journal ideas add "<the idea>"   one line, global — not a pin (no decision), not a to-do (no brief, no owner)',
-        "journal idea \"<the idea>\"       the same command; `idea` and `ideas` are twins",
-        "journal ideas [--all] [--order=asc|desc]   every idea, numbered, newest first",
-        'journal ideas promote N --title="<to-do title>"   it became real work — filed as a to-do on THIS environment, the idea dropped and says where it went',
-        'journal ideas drop N "<why>"     tried, superseded, or not worth it — bare `journal ideas strike N "<why>"` is the same',
-    ),
     "inbox": (
         'journal messages "<message>"      leave a message for the agent on this environment: an instruction, a follow-up, anything',
         "journal messages [--page=N] [--order=asc|desc]   messages waiting to be processed first, then processed ones",
@@ -254,7 +247,6 @@ ALIAS: dict[str, str] = {
     "messages": "inbox",
     "message": "inbox",
     "start": "work", "end": "work", "open": "work", "next": "work",
-    "idea": "ideas",
     "question": "questions",
     "comment": "comments",
     "report": "reports",
