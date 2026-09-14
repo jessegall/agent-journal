@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.133.4 — An About page with the version and the changelog
+
+The sidebar footer shows the journal's version, for example "Agent journal 1.133.4", just above the
+agent's status. It opens an About page with that version and the whole changelog, newest first. The
+viewer reads both from `/api/about`.
+
 ## 1.133.3 — A listed subagent names its model
 
 A subagent's own page already showed the model it ran on. Where subagents are listed, the model is

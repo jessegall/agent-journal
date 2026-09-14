@@ -951,6 +951,9 @@ check("an age says just now for a minute, then minutes, hours and days",
       [pins.age((_now - timedelta(seconds=s)).isoformat(), _now) for s in (30, 59, 60, 119, 300, 59 * 60, 3600, 86400 * 2)],
       ["just now", "just now", "1 minute ago", "1 minute ago", "5 minutes ago", "59 minutes ago", "1h ago", "2d ago"])
 
+_about = json.loads(get("/api/about")[2])
+check("the About endpoint says the running version and carries the changelog",
+      (bool(_about.get("version")), isinstance(_about.get("changelog"), str)), (True, True))
 srv.shutdown()
 srv.server_close()
 thread.join(timeout=5)

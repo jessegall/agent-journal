@@ -145,6 +145,13 @@ def _api_identity(root: Path, project: Path, m: re.Match):
                   "version": __import__("update").current(root)})
 
 
+@route(r"^/api/about$")
+def _api_about(root: Path, project: Path, m: re.Match):
+    """The running version and its changelog, for the About page."""
+    f = root / "CHANGELOG.md"
+    return _json({"version": __import__("update").current(root), "changelog": f.read_text() if f.is_file() else ""})
+
+
 @route(r"^/api/viewers$")
 def _api_viewers(root: Path, project: Path, m: re.Match):
     return _json(viewers(root))
