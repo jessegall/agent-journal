@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.13 — Home shows the subagents at work
+
+While any subagent is working, Home shows a small "Subagents at work" section under Open work. Each
+one gets a single line with a live dot, its name, the model it runs on and when it last wrote, and
+opens its agent page. When no subagent is working, the section is not there.
+
 ## 1.134.12 — A journal read with a shell redirection is no longer taken for a write
 
 A research subagent ran `journal todos --all 2>&1 | head` and was refused, as if it had written to the

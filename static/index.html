@@ -598,6 +598,14 @@
   .recent-ended-row:hover { background: var(--hover); color: var(--text-2); }
   .recent-ended-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .recent-ended-age { flex: none; font-size: 11.5px; opacity: .8; }
+  /* subagents at work: quieter than Open work, one line each, a live dot before the name */
+  .home-subagents .home-head h2 { font-size: 12.5px; color: var(--text-2); }
+  .home-subagents .recent-ended { margin-top: 0; }
+  .subagent-row::before { content: ""; flex: none; align-self: center; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+    animation: subagent-live 1.6s ease-in-out infinite; }
+  @keyframes subagent-live { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .subagent-row::before { animation: none; } }
+  .subagent-model { flex: none; font-size: 11px; color: var(--text-3); }
   /* the Files page: one row per stored file, with a thumbnail or icon, where it came from, size and age */
   /* one agent, and its raw transcript read from the top down */
   .agent-status.working { color: var(--accent-text); }
