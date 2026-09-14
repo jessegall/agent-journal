@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.1 — Each journal wears its project's colour when several are open
+
+With more than one journal viewer running on the machine, it was easy to lose track of which tab
+was which project. Each viewer now shows a thin strip along the very top in a colour of its own,
+taken from its project's name, with the name on a small tab. The journal switcher shows the same
+colour beside each project. With one journal running, nothing changes.
+
 ## 1.132.0 — The viewer grows up: agent pages, answered questions, comments on work, and a calmer Activity
 
 A minor release that gathers everything since 1.131.79. What changed, in short:
