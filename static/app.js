@@ -26,6 +26,7 @@ const ROUTES = [
   { re: /^\/rules(\/archive)?(?:\/(\d+|new))?$/, view: "Rules", params: ["archive", "n"] },
   { re: /^\/tools(?:\/(\d+|new))?$/, view: "Tools", params: ["n"] },
   { re: /^\/about$/, view: "About", params: [] },
+  { re: /^\/skills\/([A-Za-z0-9_.:-]+)$/, view: "SkillView", params: ["name"] },
   { re: /^\/docs(?:\/(new))?$/, view: "Docs", params: ["n"] },
   { re: /^\/docs\/(\d+(?:\.\d+)?)$/, view: "DocDetail", params: ["docref"] },
 ];
@@ -2507,6 +2508,18 @@ const Agent = {
             </div>
           </div>
         </template>
+        <div v-if="about.data.skills && about.data.skills.length">
+          <p class=section-label>Skills <span class=muted>{{ about.data.skills.filter((s) => s.loaded).length }} loaded of {{ about.data.skills.length }}</span></p>
+          <div class="agent-work skills">
+            <div class=agent-work-head><span>Skill</span><span>Where</span><span>Loaded</span></div>
+            <component :is="s.readable ? 'a' : 'div'" v-for="s in about.data.skills" :key="s.source + s.name" class=agent-work-row
+              :href="s.readable ? '#/skills/' + s.name : null" :title="s.description || null">
+              <span class=title>{{ s.name }}</span>
+              <span class=num>{{ s.source }}</span>
+              <span :class="['agent-work-status', {open: s.loaded}]">{{ s.loaded ? (s.loaded === 1 ? 'Once' : s.loaded + ' times') : '—' }}</span>
+            </component>
+          </div>
+        </div>
       </template>
     </div></div></div>`,
 };
@@ -2599,7 +2612,31 @@ const About = {
     </div></div></div>`,
 };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, NotFound };
+// one skill's text, read-only: skills are edited in the project's files, not here
+const SkillView = {
+  props: ["name"],
+  components: { TopBar },
+  setup(props) {
+    const skill = useFetch(() => props.name && `/api/skills/${props.name}`, { poll: false });
+    const body = computed(() => String((skill.data && skill.data.text) || "").replace(/^---\n[\s\S]*?\n---\n/, ""));
+    return { skill, body };
+  },
+  template: `
+    <TopBar :crumbs="['Skills', name]"/>
+    <div class=body><div class=page><div class=page-inner>
+      <p v-if="skill.error" class=error>{{ skill.error }}</p>
+      <p v-else-if="!skill.data" class=empty>Loading…</p>
+      <template v-else>
+        <h1 class=p-title>{{ skill.data.name }}</h1>
+        <dl class=props><dt>Where</dt><dd>{{ skill.data.source === 'user' ? "Your own skills" : "This project's skills" }}</dd>
+          <dt>Loads when</dt><dd>{{ skill.data.description }}</dd></dl>
+        <p class="prose muted">Read-only. A skill is changed in its SKILL.md file, not through the journal.</p>
+        <div class="md prose" v-html="$md(body)"></div>
+      </template>
+    </div></div></div>`,
+};
+
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, SkillView, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it

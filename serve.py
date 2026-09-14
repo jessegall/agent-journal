@@ -145,6 +145,13 @@ def _api_identity(root: Path, project: Path, m: re.Match):
                   "version": __import__("update").current(root)})
 
 
+@route(r"^/api/skills/([A-Za-z0-9_.:-]+)$")
+def _api_skill(root: Path, project: Path, m: re.Match):
+    """One skill's text, read-only: skills are edited in the project's files, not through the journal."""
+    got = __import__("skills").find(root.resolve().parent, m.group(1))
+    return _json(got) if got else _json({"error": f"there is no skill {m.group(1)} on disk here"}, 404)
+
+
 @route(r"^/api/about$")
 def _api_about(root: Path, project: Path, m: re.Match):
     """The running version and its changelog, for the About page."""
