@@ -78,6 +78,20 @@
   .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .top { height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between;
     padding: 0 16px 0 20px; border-bottom: 1px solid var(--border); }
+  .top-tools { display: flex; align-items: center; gap: 6px; flex: none; }
+  .drop-wrap { position: relative; }
+  .icon-btn.on { background: var(--sel); color: var(--text); }
+  .tool-badge { position: absolute; top: -2px; right: -3px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px;
+    background: var(--accent); color: #fff; font-size: 10px; line-height: 15px; text-align: center; pointer-events: none; }
+  .drop { position: absolute; right: 0; top: 34px; z-index: 30; width: 340px; max-height: 60vh; overflow-y: auto; padding: 6px;
+    background: var(--side); border: 1px solid var(--border-2); border-radius: 10px; box-shadow: 0 16px 40px rgba(0, 0, 0, .45); }
+  .drop-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px 8px; font-size: 12.5px; color: var(--text-2); }
+  .drop-empty { padding: 10px 8px; font-size: 12.5px; }
+  .drop-row { display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 6px; color: inherit; }
+  a.drop-row:hover { background: var(--hover); }
+  .drop-kind { font-size: 11px; color: var(--accent-text); }
+  .drop-text { font-size: 12.5px; color: var(--text); line-height: 1.4; overflow-wrap: anywhere; }
+  .drop-meta { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-3); }
   .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); min-width: 0; }
   .crumb b { color: var(--text); font-weight: 500; }
   .crumb .sep { color: var(--text-3); }
