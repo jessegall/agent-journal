@@ -1960,7 +1960,9 @@ const App = {
       if (!page || !envName.value) return null;
       return `#/env/${envName.value}/${page}` + (e.n ? `/${e.n}` : "");
     };
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY };
+    // what the agent did last, in the footer under its status
+    const latest = computed(() => ((activity.data && activity.data.events) || []).find((e) => e.by === "Agent"));
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest };
   },
   template: `
     <div class=app>
@@ -1998,6 +2000,7 @@ const App = {
           <span :class="['env-dot', {live: activity.data.agent}]"></span>
           <span v-if="activity.data.agent">Agent {{ activity.data.agent.seen || 'active just now' }}</span>
           <span v-else>No agent working</span>
+          <span v-if="activity.data.agent && latest" class=side-foot-now :title="latest.text">{{ latest.text }}</span>
         </div>
       </aside>
       <main class=main>

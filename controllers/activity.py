@@ -7,13 +7,13 @@ from templates import render
 
 MESSAGES = {
     "work_started": "Started work",
-    "work_note": "Noted progress on work",
+    "work_note": "Updated work",
     "work_ended": "Ended work",
     "todo_added": "Added to-do",
     "todo_closed": "Closed to-do",
     "question_asked": "Asked question",
     "question_answered": "Answered question",
-    "message_left": "Left message",
+    "message_left": "Wrote message",
     "message_processed": "Processed message",
 }
 
