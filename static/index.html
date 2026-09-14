@@ -11,7 +11,7 @@
     --side: #0d0e10; --bg: #131416; --raised: #18191c; --hover: #1d1e22; --sel: #212329;
     --border: #25272b; --border-2: #2f3136;
     --text: #e6e7ea; --text-2: #a9acb3; --text-3: #83868e;
-    --accent: #5e64c9; --accent-text: #a3a8f0; --warn: #c9955e; --danger: #df8b7e; --live: #6fae7d;
+    --accent: #5e64c9; --accent-text: #a3a8f0; --warn: #c9955e; --danger: #df8b7e;
   }
   *, *::before, *::after { box-sizing: border-box; }
   html, body, #app { height: 100%; }
@@ -120,10 +120,11 @@
   .item .count.hot { color: var(--accent-text); font-weight: 500; }
   .env-dot { position: relative; width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box;
     border: 1.5px solid var(--text-3); background: transparent; opacity: .7; flex: none; margin: 0 4px; }
-  .env-dot.live { border-color: var(--live); background: var(--live); opacity: 1; }
-  .env-dot.live::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; background: var(--live);
-    opacity: .35; animation: env-pulse 2s ease-out infinite; }
-  @keyframes env-pulse { from { transform: scale(.45); opacity: .45; } to { transform: scale(1); opacity: 0; } }
+  /* an agent working here: the accent colour with a slow, soft ring; green is kept for done */
+  .env-dot.live { border-color: var(--accent); background: var(--accent); opacity: 1; }
+  .env-dot.live::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; background: var(--accent);
+    opacity: .3; animation: env-pulse 2.6s ease-out infinite; }
+  @keyframes env-pulse { from { transform: scale(.45); opacity: .38; } to { transform: scale(1); opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .env-dot.live::after { animation: none; opacity: .2; } }
 
   /* main */
