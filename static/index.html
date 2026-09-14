@@ -286,6 +286,15 @@
   .part:last-child { border-bottom: none; }
   .excerpt { color: var(--text-2); margin-bottom: 6px; }
   .linked { display: flex; flex-direction: column; }
+  /* a resource's comments: each comment its own card, space between them, and room above the comment box */
+  .comments { display: flex; flex-direction: column; gap: 12px; }
+  .comments > .section-label { margin: 0; }
+  .comment-list { display: flex; flex-direction: column; gap: 8px; }
+  .comment-card { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--raised);
+    color: var(--text); font-size: 13px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .comment-meta { margin-top: 5px; font-size: 11.5px; color: var(--text-3); white-space: normal; }
+  /* the agent's note on a handled comment sits under it, set in a little, so it reads as the answer */
+  .comment-card.comment-reply { margin-left: 14px; background: transparent; border-style: dashed; }
   .linked a { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--text); }
   .linked a:last-child { border-bottom: none; }
   .linked a:hover { color: var(--accent-text); }
