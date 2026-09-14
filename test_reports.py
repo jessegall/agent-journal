@@ -62,5 +62,19 @@ check("off the list", "the flaky test" in j("reports")[1], False)
 check("--all still lists it", "the flaky test" in j("reports", "--all")[1], True)
 check("twice is refused", j("reports", "archive", "1", "again")[0], 1)
 
+# ------------------------------------------------------------------ a report older than the setting is archived
+j("reports", "add", "an old measurement", "--brief", stdin="numbers from last month\n")
+f = d / ".journal" / "environments" / "default" / "reports.json"
+data = json.loads(f.read_text())
+data["reports"][-1]["at"] = "2020-01-01T00:00:00+00:00"
+f.write_text(json.dumps(data))
+code, out = j("reports")
+check("by default a report older than 30 days is off the list", ("an old measurement" in out, "1 archived" in out or "2 archived" in out), (False, True))
+check("--all lists it, saying why", ("an old measurement" in j("reports", "--all")[1], "older than 30 day(s)" in j("reports", "--all")[1]), (True, True))
+code, out = j("reports", "keep", "0")
+check("keep 0 keeps reports listed", (code, "until archived by hand" in out, "an old measurement" in j("reports")[1]), (0, True, True))
+code, out = j("reports", "keep", "7")
+check("keep 7 sets a week", (code, "for 7 day(s)" in out, "an old measurement" in j("reports")[1]), (0, True, False))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

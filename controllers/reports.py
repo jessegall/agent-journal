@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import reports
+import state
 from controller import Controller, Payload, Result
 from payloads import reports as report_payloads
 from payloads.common import ListingPayload, WhyPayload
@@ -11,9 +12,10 @@ from payloads.common import ListingPayload, WhyPayload
 class ReportsController(Controller):
     resource = "reports"
     noun = "report"
-    actions = ("index", "show", "store", "destroy")
+    actions = ("index", "show", "store", "destroy", "keep")
     numbered = ("show", "destroy")
-    payloads = {"index": ListingPayload, "store": report_payloads.StorePayload, "destroy": WhyPayload}
+    payloads = {"index": ListingPayload, "store": report_payloads.StorePayload, "destroy": WhyPayload,
+                "keep": report_payloads.KeepPayload}
 
     def repository(self, root: Path, p: Payload):
         from resources import Reports
@@ -26,16 +28,22 @@ class ReportsController(Controller):
 
     def index(self, root: Path, p: ListingPayload) -> Result:
         repo = self.repository(root, p)
-        query = repo.query() if p.all else repo.query().where(lambda r: not r.archived)
+        days = reports.archive_days(root, p.env or state.current_track(root))
+        gone = lambda r: bool(reports.archived_why(r.raw, days))  # noqa: E731
+        query = repo.query() if p.all else repo.query().where(lambda r: not gone(r))
         query = self.sorted(query, p)
         if isinstance(query, Result):
             return query
         page = self.paged(query, p)
-        return Result("ok", "", [reports.row_response(r.n, r.raw) for r in page.rows],
-                      {"left": page.left, "archived": len([r for r in repo.all() if r.archived])})
+        return Result("ok", "", [reports.row_response(r.n, r.raw, days=days) for r in page.rows],
+                      {"left": page.left, "archived": len([r for r in repo.all() if gone(r)]), "archive_days": days})
 
     def show(self, root: Path, p: Payload) -> Result:
-        return Result("ok", "", reports.row_response(p.id, self.repository(root, p).find(p.id).raw, body=True))
+        days = reports.archive_days(root, p.env or state.current_track(root))
+        return Result("ok", "", reports.row_response(p.id, self.repository(root, p).find(p.id).raw, body=True, days=days))
+
+    def keep(self, root: Path, p: report_payloads.KeepPayload) -> Result:
+        return Result.of(reports.set_archive_days(root, p.env or state.current_track(root), p.days))
 
     def store(self, root: Path, p: report_payloads.StorePayload) -> Result:
         outcome = reports.add(root, p.title, p.body, p.at, p.about, source=p.source, track=p.env or None)

@@ -28,6 +28,10 @@ MESSAGES = {
     "label": "{kind} {n}",
     "fact_for": "for {about}",
     "fact_archived": "archived: {why}",
+    "expired": "older than {days} day(s)",
+    "keep_usage": "journal reports keep <days>: how many days a report stays listed on this environment; 0 keeps them",
+    "kept": "reports on `{env}` stay listed for {days} day(s), then are archived",
+    "kept_always": "reports on `{env}` stay listed until archived by hand",
     "show": "REPORT {n}  {title}\n  {meta}\n\n{body}",
 }
 
@@ -112,19 +116,59 @@ def archive(root: Path, n: int, why: str, at: str, track: str | None = None) -> 
     return True, say("archived", n=n, why=why)
 
 
-def facts(r: dict) -> str:
+ARCHIVE_DAYS = "reports_archive_days"
+DEFAULT_ARCHIVE_DAYS = 30
+
+
+def archive_days(root: Path, track: str) -> int:
+    """How many days a report stays listed on this environment; 0 means until archived by hand."""
+    got = state.get(root, ARCHIVE_DAYS, {})
+    value = got.get(track) if isinstance(got, dict) else None
+    return DEFAULT_ARCHIVE_DAYS if value is None else int(value)
+
+
+def set_archive_days(root: Path, track: str, days: int) -> tuple[bool, str]:
+    if days is None or int(days) < 0:
+        return False, say("keep_usage")
+    with state.locked(root):
+        got = state.get(root, ARCHIVE_DAYS, {})
+        got = got if isinstance(got, dict) else {}
+        got[track] = int(days)
+        state.put(root, ARCHIVE_DAYS, got)
+    return True, say("kept", env=track, days=int(days)) if int(days) else say("kept_always", env=track)
+
+
+def expired(r: dict, days: int) -> bool:
+    """Older than the environment's setting, and not archived by hand: treated as archived, nothing is written."""
+    if not days or r.get("archived") or not r.get("at"):
+        return False
+    from datetime import datetime, timezone
+    try:
+        when = datetime.fromisoformat(r["at"].replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    return (datetime.now(timezone.utc) - when).total_seconds() > days * 86400
+
+
+def archived_why(r: dict, days: int) -> str:
+    return r.get("archived") or (say("expired", days=days) if expired(r, days) else "")
+
+
+def facts(r: dict, days: int = 0) -> str:
     out = [age(r.get("at", ""))] if age(r.get("at", "")) else []
     if r.get("about"):
         out.append(say("fact_for", about=label(r["about"])))
-    if r.get("archived"):
-        out.append(say("fact_archived", why=r["archived"]))
+    if archived_why(r, days):
+        out.append(say("fact_archived", why=archived_why(r, days)))
     return " · ".join(out)
 
 
-def row_response(n: int, r: dict, body: bool = False) -> dict:
+def row_response(n: int, r: dict, body: bool = False, days: int = 0) -> dict:
     row = {"n": n, "title": r.get("title", ""), "gist": fmt.gist(" ".join((r.get("body") or "").split())),
            "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "", "about": r.get("about") or "",
-           "about_label": label(r.get("about") or ""), "archived": r.get("archived") or "", "meta": facts(r)}
+           "about_label": label(r.get("about") or ""), "archived": archived_why(r, days), "meta": facts(r, days)}
     if body:
         row["body"] = r.get("body", "")
     return row
