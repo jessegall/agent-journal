@@ -150,7 +150,7 @@ class ActivityController(Controller):
             add(m.get("at"), "message", say("message_left"), n, USER, True)
             add(m.get("processed"), "message", say("message_processed"), n, AGENT, detail=became(m))
         for c in commandlog.entries(root, env):
-            add(c.get("at"), c.get("kind") or "command", c.get("text", ""), c.get("n"), AGENT, c.get("titled", False),
+            add(c.get("at"), c.get("kind") or "command", c.get("text", ""), c.get("n"), c.get("by") or AGENT, c.get("titled", False),
                 detail=c.get("detail", ""))
         out.sort(key=lambda e: e["at"], reverse=True)
         # the same line twice in a row, like a message read again for more context, shows once

@@ -186,6 +186,13 @@ def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str,
         return _json(result.data)
     if not result.ok:
         return _json({"error": result.message}, _STATUS[result.status])
+    try:
+        import commandlog
+        import state
+        from app import now
+        commandlog.record_web(root, env or state.current_track(root), controller.resource, action, ident, body, now())
+    except Exception as e:  # the activity line must never fail the write
+        print(f"journal activity: {e}", file=sys.stderr)
     return _json({"ok": True, "message": result.message, "data": result.data}, _STATUS[result.status])
 
 
