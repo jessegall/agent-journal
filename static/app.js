@@ -2445,6 +2445,10 @@ const App = {
     });
     const envRow = computed(() => (ov.data ? ov.data.environments.find((e) => e.name === envName.value) : null));
     const activity = useFetch(() => envName.value && `/api/env/${envName.value}/activity`);
+    // a message just sent, or anything else just written, shows in Activity now rather than at the next poll
+    const reloadActivity = () => activity.reload();
+    window.addEventListener("journal:changed", reloadActivity);
+    onUnmounted(() => window.removeEventListener("journal:changed", reloadActivity));
     watchEffect(() => {
       if (route.view === "Home" && envName.value) location.replace(`#/env/${envName.value}`);
     });
