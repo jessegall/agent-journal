@@ -241,17 +241,134 @@ def describe(noun: str, verb: str) -> str:
     return text.replace(" {n}", "")
 
 
+# viewer actions that only read
+READS = {"index", "show", "files", "paths", "search", "waiting"}
+# viewer writes that Activity already shows from the stores they change
+WEB_SHOWN = {"todos:store", "todos:done", "inbox:store", "questions:answer", "comments:store", "work:store",
+             "work:note", "work:end"}
+WEB_KINDS = {**KINDS, "inbox": "message", "notifications": None}
+# the field a viewer write carries that Activity shows after the number
+WEB_DETAIL = {"todos:update": "priority", "todos:priority": "value", "reports:keep": "days"}
+# a write whose body changes only this field reads as this line instead
+WEB_FIELD = {"todos:update": ("priority", "Changed to-do priority")}
+
+# resource:action -> the line shown in Activity for a write made in the viewer; {n} is the id in the path
+WEB = {
+    "todos:update": "Edited to-do {n}",
+    "todos:destroy": "Removed to-do {n}",
+    "todos:reopen": "Reopened to-do {n}",
+    "todos:start": "Started to-do {n}",
+    "todos:move": "Moved to-do {n}",
+    "todos:ask": "Asked about to-do {n}",
+    "todos:answer": "Answered to-do {n}",
+    "todos:block": "Marked to-do {n} blocked",
+    "todos:unblock": "Unblocked to-do {n}",
+    "todos:after": "Ordered to-do {n} after others",
+    "todos:report": "Reported to-do {n} finished",
+    "todos:priority": "Changed to-do priority {n}",
+    "todos:amend": "Added to to-do {n}",
+    "todos:replace": "Rewrote to-do {n}",
+    "todos:prune": "Cleared out old to-dos",
+    "todos:commit": "Closed to-dos from a commit",
+    "docs:store": "Wrote a document",
+    "docs:update": "Edited document {n}",
+    "docs:destroy": "Removed document {n}",
+    "docs:part": "Added a part to document {n}",
+    "docs:final": "Marked document {n} final",
+    "docs:draft": "Marked document {n} a draft",
+    "docs:move": "Moved document {n}",
+    "docs:supersede": "Replaced document {n}",
+    "docs:attach": "Attached a file to document {n}",
+    "docs:detach": "Removed a file from document {n}",
+    "docs:adopt": "Added an existing document",
+    "docs:archive": "Archived document {n}",
+    "environment:settings": "Changed the settings",
+    "environment:auto": "Changed auto mode",
+    "environment:remove": "Removed an environment",
+    "inbox:update": "Edited message {n}",
+    "inbox:process": "Filed message {n}",
+    "inbox:file": "Filed an attachment from message {n}",
+    "inbox:done": "Marked message {n} processed",
+    "inbox:move": "Moved message {n}",
+    "inbox:destroy": "Removed message {n}",
+    "inbox:reply": "Replied to message {n}",
+    "notifications:store": "Sent a notification",
+    "notifications:read": "Marked notification {n} read",
+    "notifications:readall": "Marked all notifications read",
+    "pins:store": "Pinned a fact",
+    "pins:update": "Edited pin {n}",
+    "pins:destroy": "Struck pin {n}",
+    "pins:amend": "Added to pin {n}",
+    "pins:move": "Moved pin {n}",
+    "pins:promote": "Promoted pin {n} to a rule",
+    "rules:store": "Wrote a rule",
+    "rules:update": "Edited rule {n}",
+    "rules:destroy": "Struck rule {n}",
+    "rules:amend": "Added to rule {n}",
+    "rules:inject": "Added rule {n} to CLAUDE.md",
+    "rules:uninject": "Removed rule {n} from CLAUDE.md",
+    "questions:store": "Asked a question",
+    "questions:update": "Edited question {n}",
+    "questions:destroy": "Withdrew question {n}",
+    "questions:link": "Linked question {n}",
+    "questions:unlink": "Unlinked question {n}",
+    "reminders:store": "Wrote a reminder",
+    "reminders:update": "Edited reminder {n}",
+    "reminders:destroy": "Retired reminder {n}",
+    "reminders:move": "Moved reminder {n}",
+    "reports:store": "Wrote a report",
+    "reports:destroy": "Archived report {n}",
+    "reports:keep": "Set how long reports stay listed",
+    "reports:todoc": "Turned report {n} into a document",
+    "suggestions:store": "Suggested a change",
+    "suggestions:update": "Edited suggestion {n}",
+    "suggestions:accept": "Accepted suggestion {n}",
+    "suggestions:adjust": "Adjusted suggestion {n}",
+    "suggestions:decline": "Declined suggestion {n}",
+    "suggestions:destroy": "Withdrew suggestion {n}",
+    "tools:store": "Added a tool",
+    "tools:update": "Changed a tool",
+    "tools:destroy": "Retired a tool",
+    "tools:adopt": "Added an existing tool",
+    "work:update": "Edited work {n}",
+    "work:destroy": "Removed work {n}",
+    "work:wait": "Waiting on something",
+    "comments:done": "Closed comment {n}",
+}
+
+
+def _detail(value) -> str:
+    value = " ".join(map(str, value)) if isinstance(value, (list, tuple)) else value
+    return " ".join(str(value).split())[:40] if value not in (None, "") else ""
+
+
+def record_web(root: Path, track: str, resource: str, action: str, ident: str | None, body: dict, at: str) -> None:
+    """A write made in the viewer, as a line by the user."""
+    key = f"{resource}:{action}"
+    if action in READS or key in WEB_SHOWN or key not in WEB:
+        return
+    text = WEB[key].replace(" {n}", "")
+    field = WEB_FIELD.get(key)
+    if field and set(body or {}) == {field[0]}:
+        text = field[1]
+    n = str(ident or "").split(".")[0]
+    _append(root, track, {"at": at, "text": text, "kind": WEB_KINDS.get(resource), "n": int(n) if n.isdigit() else None,
+                          "titled": False, "detail": _detail((body or {}).get(WEB_DETAIL.get(key, ""))), "by": "You"})
+
+
 def record(root: Path, track: str, parsed, at: str) -> None:
     noun, verb = parsed.command.noun, parsed.command.verb
     if noun in SKIP or f"{noun}:{verb}" in SHOWN or f"{noun}:{verb}" in HOOKS:
         return
     key = f"{noun}:{verb}"
     n = parsed.arg(NUMBER_ARG.get(key, "n"))
-    detail = parsed.arg(DETAIL[key]) if key in DETAIL else None
-    detail = " ".join(map(str, detail)) if isinstance(detail, (list, tuple)) else detail
     entry = {"at": at, "text": describe(noun, verb), "kind": KINDS.get(noun),
              "n": int(n) if str(n).isdigit() else None, "titled": key in TITLED,
-             "detail": " ".join(str(detail).split())[:40] if detail not in (None, "") else ""}
+             "detail": _detail(parsed.arg(DETAIL[key])) if key in DETAIL else ""}
+    _append(root, track, entry)
+
+
+def _append(root: Path, track: str, entry: dict) -> None:
     with state.locked(root):
         items = state.tracked(root, KEY, track, [])
         items = (items if isinstance(items, list) else []) + [entry]

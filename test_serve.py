@@ -599,7 +599,7 @@ import commands as _commands  # noqa: E402
 for _argv in (["messages", "list"], ["todos", "show", "3"], ["todos", "done", "3", "x"], ["statusline"]):
     commandlog.record(root, "alpha", _commands.REGISTRY.parse(_argv)[0], "2099-01-01T00:00:00+00:00")
 check("a command the agent runs is logged in plain words; writes Activity already shows and the status line are not",
-      [e["text"] for e in commandlog.entries(root, "alpha")], ["Reading messages", "Reading to-do"])
+      [e["text"] for e in commandlog.entries(root, "alpha") if e.get("by") != "You"], ["Reading messages", "Reading to-do"])
 status, _, body = get("/api/env/alpha/activity")
 check("and Activity lists it as the agent's, naming the resource and its number apart from the wording",
       {(e["kind"], e["n"], e["by"]) for e in json.loads(body)["events"] if e["text"] in ("Reading to-do", "Reading messages")},
@@ -658,9 +658,20 @@ _undescribed = sorted({f"{c.noun}:{c.verb}" for group in _commands.REGISTRY._com
                        if c.noun not in commandlog.SKIP and f"{c.noun}:{c.verb}" not in commandlog.SHOWN | commandlog.HOOKS
                        and f"{c.noun}:{c.verb}" not in commandlog.DESCRIBE and f"{c.noun}:" not in commandlog.DESCRIBE})
 check("every registered command has a plain Activity line, or a reason it is not logged", _undescribed, [])
+import controllers as _controllers  # noqa: E402
+_web_undescribed = sorted(f"{c.resource}:{a}" for c in _controllers.CONTROLLERS.values() for a in c.actions
+                          if a not in commandlog.READS and f"{c.resource}:{a}" not in set(commandlog.WEB) | commandlog.WEB_SHOWN)
+check("every write the viewer can make has a plain Activity line, or a reason it is not logged", _web_undescribed, [])
+_urgent = [t["n"] for t in json.loads(get("/api/env/alpha/todos")[2]) if t["title"] == "an urgent thing to fix"][0]
+post(f"/api/env/alpha/todos/{_urgent}", {"priority": "low"}, method="PATCH")
+post(f"/api/env/alpha/todos/{_urgent}", {"title": "an urgent thing to fix now"}, method="PATCH")
+_mine = [(e["text"], e["n"], e["detail"], e["by"]) for e in json.loads(get("/api/env/alpha/activity")[2])["events"]
+         if e["kind"] == "todo" and e["n"] == _urgent and e["by"] == "You"]
+check("a change made in the viewer is an Activity line by you, naming what changed",
+      (("Changed to-do priority", _urgent, "low", "You") in _mine, ("Edited to-do", _urgent, "", "You") in _mine), (True, True))
 commandlog.record(root, "alpha", _commands.REGISTRY.parse(["todos", "priority", "140", "high"])[0], "2099-01-01T00:00:06+00:00")
 check("setting a priority names the to-do and the value",
-      [(e["text"], e["n"], e["detail"]) for e in commandlog.entries(root, "alpha") if e.get("detail") == "high"],
+      [(e["text"], e["n"], e["detail"]) for e in commandlog.entries(root, "alpha") if e.get("detail") == "high" and e.get("by") != "You"],
       [("Setting to-do priority", 140, "high")])
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
