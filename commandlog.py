@@ -156,4 +156,13 @@ def kind_of(text: str) -> dict:
 def entries(root: Path, track: str) -> list[dict]:
     got = state.tracked(root, KEY, track, [])
     items = got if isinstance(got, list) else []
-    return [e if not isinstance(e, dict) or e.get("kind") else {**e, **kind_of(e.get("text", ""))} for e in items]
+    out = []
+    for e in items:
+        read = kind_of(e.get("text", "")) if isinstance(e, dict) else {}
+        if not read:
+            out.append(e)
+        elif e.get("kind"):
+            out.append({**e, "text": read["text"]})
+        else:
+            out.append({**e, **read})
+    return out

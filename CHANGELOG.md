@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.122.1 — The sidebar footer says what the agent did last
+
+Under "Agent active just now" at the bottom of the sidebar, a short line gives the wording
+of the agent's latest Activity line, like "Reading your messages" or "Started work".
+
+Activity lines logged with the number still in their wording ("Filing message 108") now
+show the wording alone, with the number on the right like every other line.
+
+Two lines read more plainly: a note on work is "Updated work" (beside "Started work" and
+"Ended work"), and a message you send is "Wrote message".
+
 ## 1.122.0 — Activity lines show the number on the right, and titles only where they add something
 
 Each line's wording no longer carries the number: "Closed to-do" with a muted "#98" on the
