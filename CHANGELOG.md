@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.123.2 — The number after an Activity line is fainter
+
+The "· 114" after a line's wording is fainter, so the wording reads first.
+
 ## 1.123.1 — The same Activity line twice in a row shows once
 
 When the agent runs the same thing again right away, like reading a message a second time
