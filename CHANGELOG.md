@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.12 — Amending a to-do no longer reads as adding one, and the skill says what goes where
+
+An agent recording progress with `journal todos amend` showed in Activity as "Adding to to-do 380",
+which reads as adding the to-do again. Activity now says "Adding a section to the brief of to-do 380",
+and "Rewriting the brief of to-do" for a replace.
+
+- `journal todos add` refuses a title that matches an open to-do even when the case, punctuation or
+  spacing differs, and the refusal says where the words belong instead: the brief with
+  `journal todos amend`, or progress with `journal work update`.
+- The `journal-todos` skill now teaches it: a brief says what the to-do is and changes when the task
+  does, and what was done or found while working it goes in `journal work update`.
+
 ## 1.136.11 — Stop and SessionStart stop re-reading the whole transcript
 
 The stop hook parsed the session's entire transcript at the end of every reply, and the context

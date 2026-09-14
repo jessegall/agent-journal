@@ -111,7 +111,8 @@ MESSAGES = {
     "no_such": "there is no to-do {n} on environment `{track}`. `journal todo` numbers them.",
     "add_empty": 'a to-do needs a title: journal todos add "<what, in a few words>"',
     "retitled": "to-do {n} is now titled: {title}",
-    "duplicate": "already waiting as to-do {n} — nothing to add",
+    "duplicate": "to-do {n} is already on the list with that title, so nothing was added. More about it goes in its brief: "
+                 "journal todos amend {n} \"<section>\" --brief. Progress on it goes in: journal work update \"<what moved>\"",
     "added": "to-do {n} on `{track}`: {title}\n  {path}",
     "amend_title": 'amend wants a section title: journal todos amend <n> "<section title>" --brief',
     "amend_body": "amend wants a body on stdin — pass it with --brief",
@@ -828,13 +829,18 @@ def _get(root: Path, track: str, n: int) -> tuple[dict | None, str]:
     return got, ""
 
 
+def _same_title(a: str, b: str) -> bool:
+    """Two titles name one to-do when they differ only in case, punctuation or spacing."""
+    return re.sub(r"[^a-z0-9]+", " ", a.lower()).strip() == re.sub(r"[^a-z0-9]+", " ", b.lower()).strip()
+
+
 def add(root: Path, track: str, title: str, body: str, at: str, where: dict | None = None) -> tuple[bool, str]:
     """Write one. Refuses an empty title and a duplicate open one."""
     title = " ".join((title or "").split())
     if not title:
         return False, say("add_empty")
     for t in open_items(root, track):
-        if t["title"].lower() == title.lower():
+        if _same_title(t["title"], title):
             return False, say("duplicate", n=t["n"])
     items = _all(root, track)
     n = _next_n(root, track, items)

@@ -484,6 +484,8 @@ check("the core skill itself names the model rule, not only journal-agents",
       all(w in _core for w in ("haiku", "sonnet", "opus")), True)
 # agents filed to-dos that rested on each other without saying so, because no skill taught it
 _todos_skill = (SRC / "skills" / "journal-todos" / "SKILL.md").read_text()
+check("the to-do skill teaches that a brief changes with the task and progress goes in work update",
+      ("journal todos amend " in _todos_skill, "progress is `journal work update`" in _todos_skill), (True, True))
 check("the to-do skill teaches recording that a to-do waits on another, and the core skill points at it",
       ("--after=" in _todos_skill, "journal todos after " in _todos_skill, "--after=" in _core), (True, True, True))
 
