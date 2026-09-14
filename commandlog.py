@@ -82,6 +82,7 @@ DESCRIBE = {
     "todos:block": "Marking to-do {n} blocked",
     "todos:move": "Moving to-do {n}",
     "messages:list": "Reading messages",
+    "messages:waiting": "Reading waiting messages",
     "messages:show": "Reading message {n}",
     "messages:process": "Filing message {n}",
     "messages:done": "Marking message {n} processed",

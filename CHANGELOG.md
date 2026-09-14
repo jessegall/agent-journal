@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.129.0 — journal messages waiting: only the messages still waiting, in full
+
+`journal messages waiting` prints every message that is still waiting to be processed,
+oldest first, each in full with its files and the commands to process it, or "No messages
+waiting." when there are none. The stop hook's reminder points at it, so the agent reads
+exactly the messages that need handling instead of scanning the whole list.
+
 ## 1.128.7 — A closed to-do says plainly how it was closed
 
 A to-do closed by `work end --todo` now reads "Closed: its work ended" instead of "Closed:
