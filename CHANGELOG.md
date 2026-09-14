@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.26 — A to-do's work log opens its work
+
+In a to-do's panel, the Work log listed when work started, was updated, waited and ended,
+with no way to get to that work. Each entry now ends with the work's number, like "Work 180",
+and clicking the entry opens that work item.
+
 ## 1.131.25 — Reading a comment says what it is on
 
 When the agent read one comment, Activity showed "Reading comment · 3" and nothing about where

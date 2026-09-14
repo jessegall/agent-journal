@@ -936,9 +936,11 @@ const TodoPanel = {
         <div v-if="item.data.log && item.data.log.length">
           <p class=section-label>Work log</p>
           <div class=linked>
-            <div v-for="(e, i) in item.data.log" :key="i" class=sub>
-              <span class=muted>{{ LOG_KIND[e.kind] }} · {{ e.age || 'just now' }}</span><span v-if="e.text && e.kind !== 'started'"> — {{ e.text }}</span>
-            </div>
+            <component :is="e.work ? 'a' : 'div'" v-for="(e, i) in item.data.log" :key="i" class="sub log-row"
+              :href="e.work ? '#/env/' + env + '/work/' + e.work : null" :title="e.work ? 'Open work ' + e.work : null">
+              <span class=log-text><span class=muted>{{ LOG_KIND[e.kind] }} · {{ e.age || 'just now' }}</span><span v-if="e.text && e.kind !== 'started'"> — {{ e.text }}</span></span>
+              <span v-if="e.work" class=log-work>Work {{ e.work }}</span>
+            </component>
           </div>
         </div>
         <FromMessages :rows="item.data.from_messages" :env="env"/>
