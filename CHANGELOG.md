@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.115.4 — Blocked to-dos are listed above open ones
+
+On Home and on the To-dos page, the Blocked group now comes before Open: In progress,
+Waiting on the user, Blocked, Open, Done.
+
 ## 1.115.3 — Both docs entries are called Documents
 
 The sidebar's "Environment docs" and "Project docs" both read "Documents"; their group
