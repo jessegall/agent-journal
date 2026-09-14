@@ -174,6 +174,11 @@ function renderMarkdown(src) {
   return out.join("\n");
 }
 
+// page view -> its help file under static/help/
+const HELP_TOPICS = { Todos: "todos", Inbox: "messages", Questions: "questions", Suggestions: "suggestions", Reports: "reports",
+  Pins: "pins", Reminders: "reminders", Work: "work", EnvDocs: "docs", Docs: "docs", DocDetail: "docs", Rules: "rules", Tools: "tools" };
+const HELP_CACHE = {};
+
 // ─────────────────────────────────────────────────────────────── icons
 const Icon = {
   props: ["name"],
@@ -182,6 +187,7 @@ const Icon = {
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
+      <template v-else-if="name === 'info'"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></template>
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
       <template v-else-if="name === 'activity'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></template>
       <template v-else-if="name === 'collapse'"><path d="M6 4.5l3.5 3.5L6 11.5"/><path d="M11.5 3.5v9"/></template>
@@ -272,7 +278,24 @@ const TopBar = {
     const KEPT = [{ key: "suggestions", label: "Suggestions", view: "Suggestions" },
                   { key: "reports", label: "Reports", view: "Reports" }, { key: "pins", label: "Pins", view: "Pins" },
                   { key: "reminders", label: "Reminders", view: "Reminders" }];
-    return { env, waiting, openCount, drop, notes, suggestions, asks, openQuestions, readOne, readAll, activity, toggleActivity, view, KEPT };
+    // each resource page explains itself from static/help/<topic>.md
+    const helpTopic = HELP_TOPICS[view] || "";
+    const help = reactive({ html: "", open: false });
+    const helpDialog = ref(null);
+    const openHelp = async () => {
+      if (!helpDialog.value) return;
+      helpDialog.value.showModal();
+      help.open = true;
+      if (help.html) return;
+      if (!(helpTopic in HELP_CACHE)) {
+        const res = await fetch(`/help/${helpTopic}.md`);
+        HELP_CACHE[helpTopic] = res.ok ? await res.text() : "";
+      }
+      help.html = renderMarkdown(HELP_CACHE[helpTopic]) || "<p>No help written for this page yet.</p>";
+    };
+    const closeHelp = () => { if (helpDialog.value) helpDialog.value.close(); };
+    return { env, waiting, openCount, drop, notes, suggestions, asks, openQuestions, readOne, readAll, activity, toggleActivity, view, KEPT,
+             helpTopic, help, helpDialog, openHelp, closeHelp };
   },
   template: `
     <div class=top>
@@ -280,7 +303,14 @@ const TopBar = {
         <template v-for="(c, i) in crumbs" :key="i">
           <span v-if="i" class=sep>/</span><b v-if="i === crumbs.length - 1">{{ c }}</b><span v-else>{{ c }}</span>
         </template>
+        <button v-if="helpTopic" type=button class="icon-btn help-btn" :title="'What are ' + crumbs[crumbs.length - 1] + '?'"
+          :aria-label="'About ' + crumbs[crumbs.length - 1]" @click="openHelp"><Icon name="info"/></button>
       </div>
+      <dialog v-if="helpTopic" ref=helpDialog class=help @click.self="closeHelp" @close="help.open = false">
+        <div class=help-head><span>{{ crumbs[crumbs.length - 1] }}</span>
+          <button type=button class=icon-btn title="Close" aria-label="Close" @click="closeHelp"><Icon name="close"/></button></div>
+        <div class="help-body md" v-html="help.html"></div>
+      </dialog>
       <div class=top-tools>
         <slot/>
         <template v-if="env">

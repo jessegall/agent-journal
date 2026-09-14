@@ -52,6 +52,7 @@ ROUTES: list[tuple[re.Pattern, Callable]] = []
 
 MESSAGES = {
     "no_env": "no environment called {env}",
+    "no_help": "no help page called {topic}",
     "no_doc": "no doc {ref}",
     "no_attachment": "no attachment {name} on doc {n}",
     "no_question": "no question {n} on environment {env}",
@@ -116,6 +117,14 @@ def _index(root: Path, project: Path, m: re.Match):
 def _app_js(root: Path, project: Path, m: re.Match):
     f = STATIC / "app.js"
     return 200, "text/javascript; charset=utf-8", f.read_bytes()
+
+
+@route(r"^/help/(?P<topic>[a-z]+)\.md$")
+def _help(root: Path, project: Path, m: re.Match):
+    f = STATIC / "help" / f"{m.group('topic')}.md"
+    if not f.is_file():
+        return _not_found(say("no_help", topic=m.group("topic")))
+    return 200, "text/markdown; charset=utf-8", f.read_bytes()
 
 
 @route(r"^/favicon\.ico$")
