@@ -384,6 +384,9 @@
   .linked a { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--text); }
   .linked a:last-child { border-bottom: none; }
   .linked a:hover { color: var(--accent-text); }
+  /* a web address inside text stays part of the sentence, not a row of a linked list */
+  .linked a.autolink, a.autolink { display: inline; padding: 0; border: none; color: var(--accent-text); overflow-wrap: anywhere; }
+  .linked a.autolink:hover, a.autolink:hover { color: var(--text); text-decoration: underline; }
   .linked .answer { color: var(--text-3); }
 
   /* compose: the inbox's message box and a question's answer box */

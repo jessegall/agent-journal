@@ -145,6 +145,22 @@ function _escapeHtml(s) {
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+// a bare web address in escaped text, and what trails it that is punctuation rather than address
+const URL_IN_TEXT = /https?:\/\/[^\s<>"']+/g;
+
+function _linkUrls(escaped) {
+  return escaped.replace(URL_IN_TEXT, (url) => {
+    const trail = (url.match(/[.,;:!?)\]]+$/) || [""])[0];
+    const href = url.slice(0, url.length - trail.length);
+    return `<a class="autolink" href="${href}" target="_blank" rel="noopener">${href}</a>${trail}`;
+  });
+}
+
+// plain text as HTML, escaped, with every web address a link: for text that is not markdown
+function linkify(text) {
+  return _linkUrls(_escapeHtml(String(text ?? "")));
+}
+
 function _mdInline(text) {
   text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
   text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
@@ -153,6 +169,8 @@ function _mdInline(text) {
   text = text.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, href) =>
     (/^(https?:\/\/|mailto:|#|\/|\.\.?\/)/i.test(href) || !/^[a-z][a-z0-9+.\-]*:/i.test(href)
       ? `<a href="${href}" target="_blank" rel="noopener">${t}</a>` : t));
+  // a bare address becomes a link too; one already inside a link's href or text is left alone
+  text = text.split(/(<a [^>]*>.*?<\/a>|<code>.*?<\/code>)/).map((part, i) => (i % 2 ? part : _linkUrls(part))).join("");
   return text;
 }
 
@@ -624,11 +642,11 @@ const Comments = {
       <div v-if="list.data && list.data.length" class=comment-list>
         <template v-for="c in list.data" :key="c.n">
           <div class=comment-card>
-            <div>{{ c.text }}</div>
+            <div v-html="$linkify(c.text)"></div>
             <div class=comment-meta>{{ c.source === 'web' ? 'You' : 'The agent' }} · {{ c.age || 'just now' }} · {{ c.done ? 'Handled' : c.told ? 'Seen by the agent' : 'Not seen yet' }}</div>
           </div>
           <div v-if="c.done" class="comment-card comment-reply">
-            <div>{{ c.done }}</div>
+            <div v-html="$linkify(c.done)"></div>
             <div class=comment-meta>The agent · handled it</div>
           </div>
         </template>
@@ -1111,7 +1129,7 @@ const TodoPanel = {
             <component :is="e.work && e.kind !== 'commit' ? 'a' : 'div'" v-for="(e, i) in item.data.log" :key="i" class="sub log-row"
               :href="e.work && e.kind !== 'commit' ? '#/env/' + env + '/work/' + e.work : null" :title="e.work && e.kind !== 'commit' ? 'Open work ' + e.work : null">
               <span class=log-text><span class=muted>{{ LOG_KIND[e.kind] }} · {{ e.age || 'just now' }}</span>
-                <a v-if="e.kind === 'commit'" class="chip sha" :href="'#/env/' + env + '/commits/' + e.sha" :title="'What commit ' + e.sha.slice(0, 7) + ' covered'">{{ e.sha.slice(0, 7) }}</a><span v-if="e.text && e.kind !== 'started'" :class="{'sha-subject': e.kind === 'commit'}"> — {{ e.text }}</span></span>
+                <a v-if="e.kind === 'commit'" class="chip sha" :href="'#/env/' + env + '/commits/' + e.sha" :title="'What commit ' + e.sha.slice(0, 7) + ' covered'">{{ e.sha.slice(0, 7) }}</a><span v-if="e.text && e.kind !== 'started'" :class="{'sha-subject': e.kind === 'commit'}"> — <span v-html="$linkify(e.text)"></span></span></span>
               <a v-if="e.work && e.kind === 'commit'" class=log-work :href="'#/env/' + env + '/work/' + e.work">Work {{ e.work }}</a>
               <span v-else-if="e.work" class=log-work>Work {{ e.work }}</span>
             </component>
@@ -1253,7 +1271,7 @@ const MessagePanel = {
     <Panel :label="'Message #' + n" :close="close" :onClose="onClose" :link="link">
       <p v-if="item.error" class=error>{{ item.error }}</p>
       <template v-else-if="item.data">
-        <div class="prose message">{{ item.data.text }}</div>
+        <div class="prose message" v-html="$linkify(item.data.text)"></div>
         <dl class=props>
           <dt>Status</dt><dd :title="item.data.status === 'waiting' && item.data.read ? 'The agent read it ' + item.data.read_age : null"><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled' : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
           <dt>Left</dt><dd>{{ item.data.age || '—' }}</dd>
@@ -1374,7 +1392,7 @@ const WorkPanel = {
         </div>
         <div v-if="item.data.notes.length">
           <p class=section-label data-shut>Work log <span class=muted>{{ item.data.notes.length }}</span></p>
-          <div class=linked><div v-for="(note, i) in item.data.notes" :key="i" class=sub>{{ note.text }}</div></div>
+          <div class=linked><div v-for="(note, i) in item.data.notes" :key="i" class=sub v-html="$linkify(note.text)"></div></div>
         </div>
         <Comments :about="'work ' + item.data.n" :env="env" :key="'c-work' + item.data.n"/>
       </template>
@@ -2093,7 +2111,7 @@ const DocDetail = {
           <div class=linked>
             <a v-for="(c, i) in s.data.cited_by" :key="i" :href="citedHref(c)">
               <span class=muted>{{ c.kind }} {{ c.n }}<template v-if="c.env"> · {{ c.env }}</template></span>
-              <span>{{ c.text }}</span>
+              <span v-html="$linkify(c.text)"></span>
             </a>
           </div>
         </div>
@@ -2210,7 +2228,7 @@ const EnvHome = {
           <button type=button class="btn more" @click="readAll">Mark all read</button></div>
         <div class=block>
           <div v-for="x in otherNotes" :key="x.n" class=note-row>
-            <div class=note-text>{{ x.text }}
+            <div class=note-text><span v-html="$linkify(x.text)"></span>
               <span class=muted> · {{ x.age || 'just now' }}</span>
             </div>
             <span class=note-actions>
@@ -3275,4 +3293,5 @@ const app = createApp(App);
 app.config.globalProperties.$md = renderMarkdown;
 app.config.globalProperties.$human = humanSize;
 app.config.globalProperties.$refHref = refHref;
+app.config.globalProperties.$linkify = linkify;
 app.mount("#app");

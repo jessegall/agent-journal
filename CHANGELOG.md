@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.28 — Web addresses in the viewer's text are links
+
+A web address in the viewer's text now opens in a new tab when clicked: in a work log, a work entry, a
+message, a comment and its handled note, and a notification, as well as in markdown bodies, where only
+`[text](url)` links worked before. Only `http` and `https` addresses become links; the text around them is
+escaped as before, and punctuation after an address stays outside the link. Activity lines and the
+notification drop-down, which are links already, are left as they are.
+
 ## 1.136.27 — The tests remove every temporary folder they make
 
 1.136.26 was not enough. It removed the projects built by `testkit.make`, but most suites also call
