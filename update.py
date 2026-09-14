@@ -44,7 +44,7 @@ MESSAGES = {
     "reload": "\nRELOAD THE JOURNAL SKILL NOW — invoke the `journal` skill again — because its rules and commands "
               "changed with this version and what you remember of it is stale.",
     "available": "AGENT-JOURNAL {version} IS AVAILABLE (this project has {have})[ — {headline}]. `journal upgrade` "
-                 "pulls it, runs its tests first, and prints what changed.",
+                 "copies it in and prints what changed; it runs no tests.",
     "clone_failed": "could not clone {src}:\n{error}",
     "migrated": "\n\n  Migrated:\n{lines:\n}",
     "migrated_line": "  {line}",
