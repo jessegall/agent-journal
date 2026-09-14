@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.13 — The stop hook sees the turn's final message again
+
+1.136.11's transcript cache read only up to the last newline, leaving a record still being written for
+the next read. At a stop, that record is often the turn's final message. Without it, the text written
+before the turn's last tool call looked like the final message, and a correctly tagged reply was
+reported as "1 untagged message(s)". This happened on every turn that used a tool before answering.
+
+A cached read now also reads a complete last record that has no newline yet, keeping its saved position
+before it so it is read again once finished. The context reading does the same. The test for a
+duplicate to-do title follows 1.136.12's new refusal.
+
 ## 1.136.12 — Amending a to-do no longer reads as adding one, and the skill says what goes where
 
 An agent recording progress with `journal todos amend` showed in Activity as "Adding to to-do 380",

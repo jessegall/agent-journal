@@ -540,7 +540,7 @@ check("a to-do is a file under its environment",
 took, msg = todo.add(r, "default", "", "", AT)
 check("a to-do needs a title", (took, "needs a title" in msg), (False, True))
 took, msg = todo.add(r, "default", "Convert the remaining WIDGETS", "", AT)
-check("a duplicate open title is refused", (took, "already waiting" in msg), (False, True))
+check("a duplicate open title is refused", (took, "already on the list" in msg), (False, True))
 todo.add(r, "default", "write the docs", "", AT)
 todo.add(r, "other environment", "something else", "", AT)
 listed = todo.render(r, "default")
@@ -1377,6 +1377,19 @@ check("after lines are appended, and one is half written, the cached read still 
       _shape(transcript.read(_tp, _tcache)), _shape(transcript.read(_tp)))
 _kept = _pickle.load(_tcache.open("rb")) if (_pickle := __import__("pickle")) else None
 check("the cache stops at the last complete line", _kept["offset"], _tp.read_bytes().rfind(b"\n") + 1)
+_final = json.dumps({"type": "assistant", "timestamp": "t", "message": {"role": "assistant",
+                     "content": [{"type": "text", "text": "[!reply] the final message, not yet followed by a newline"}]}})
+_tp.write_text(_tp.read_text().rsplit("\n", 1)[0] + "\n")
+_before = _tp.stat().st_size
+with _tp.open("a") as _fh:
+    _fh.write(_final)
+check("a complete last record with no newline yet is read by a cached read, as by a full one",
+      ("the final message, not yet followed by a newline" in transcript.read(_tp, _tcache)[0][-1].text,
+       _shape(transcript.read(_tp, _tcache)) == _shape(transcript.read(_tp))), (True, True))
+check("but the kept position stays before it, so it is read again once it is finished",
+      __import__("pickle").load(_tcache.open("rb"))["offset"], _before)
+with _tp.open("a") as _fh:
+    _fh.write("\n" + '{"type": "user", "message": {"role": "user", "content": "half wr')
 with _tp.open("a") as _fh:
     _fh.write('itten"}, "timestamp": "t"}\n')
 check("once that line is finished, the next cached read picks it up", _shape(transcript.read(_tp, _tcache)), _shape(transcript.read(_tp)))

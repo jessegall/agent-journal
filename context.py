@@ -129,6 +129,16 @@ def reading(path: Path, cache: Path | None = None) -> tuple[int, int] | None:
     _READ[str(path)] = (start + end, used, peak)
     if cache is not None and end:
         _remember(cache, path, st, (start + end, used, peak))
+    # a last record with no newline yet still counts now; the kept position is before it, so it is read again
+    if end < len(data) and b'"usage"' in data[end:]:
+        try:
+            rec = json.loads(data[end:])
+        except ValueError:
+            rec = {}
+        usage = ((rec.get("message") or {}).get("usage") or {}) if rec.get("type") == "assistant" else {}
+        if usage:
+            used = usage.get("input_tokens", 0) + usage.get("cache_read_input_tokens", 0) + usage.get("cache_creation_input_tokens", 0)
+            peak = max(peak, used)
     if used is None:
         return None
     return used, peak
