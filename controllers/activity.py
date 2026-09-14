@@ -165,9 +165,18 @@ class ActivityController(Controller):
                 continue
             add(m.get("at"), "message", say("message_left"), n, USER, True)
             add(m.get("processed"), "message", say("message_processed"), n, AGENT, detail=became(m))
+        comments_mod = __import__("comments")
+        about_of: dict[int, str] = {}
         for c in commandlog.entries(root, env):
+            detail, about = c.get("detail", ""), ""
+            # a line about one comment names what the comment is on, and opens it
+            if c.get("kind") == "comment" and str(c.get("n") or "").isdigit():
+                if not about_of:
+                    about_of = numbered(comments_mod._all(root, env), "about") or {0: ""}
+                about = about_of.get(int(c["n"]), "")
+                detail = detail or (comments_mod.label(about) if about else "")
             add(c.get("at"), c.get("kind") or "command", c.get("text", ""), c.get("n"), c.get("by") or AGENT, c.get("titled", False),
-                detail=c.get("detail", ""))
+                detail=detail, about=about)
         out.sort(key=lambda e: e["at"], reverse=True)
         # the same line twice in a row, like a message read again for more context, shows once
         same = lambda a, b: (a["kind"], a["n"], a["text"], a["by"], a["title"]) == (b["kind"], b["n"], b["text"], b["by"], b["title"])

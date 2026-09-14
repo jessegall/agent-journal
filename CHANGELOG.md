@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.25 — Reading a comment says what it is on
+
+When the agent read one comment, Activity showed "Reading comment · 3" and nothing about where
+that comment was. The line now names what the comment is on, like "Reading comment · 3 ·
+to-do 98". Clicking the line opens that to-do, document, pin, rule or reminder.
+
 ## 1.131.24 — Work records the files it changed
 
 While work is open, every file the agent changes is recorded on that piece of work, with the
