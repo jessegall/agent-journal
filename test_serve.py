@@ -658,6 +658,14 @@ commandlog.record(root, "alpha", _commands.REGISTRY.parse(["comments", "show", "
 _read_comment = [(e["text"], e["n"], e["detail"], e["about"]) for e in json.loads(get("/api/env/alpha/activity")[2])["events"]
                  if e["text"] == "Reading comment"]
 check("reading one comment names what it is on, and opens it", _read_comment[:1], [("Reading comment", 1, "to-do 1", "todo:1")])
+_row_1 = lambda: [(t["questions_open"], t["questions_answered"]) for t in json.loads(get("/api/env/alpha/todos?all=1")[2]) if t["n"] == 1][0]  # noqa: E731
+_open0, _answered0 = _row_1()
+# dated early, so these lines do not crowd the newest Activity lines later checks read
+_questions.add(root, "is to-do 1 still wanted?", "2000-01-02T00:00:02+00:00", about_refs=["todo:1"], track="alpha")
+_q_on_1 = len(_questions._all(root, "alpha"))
+check("a to-do row counts the questions linked to it: one more open", _row_1(), (_open0 + 1, _answered0))
+_questions.answer(root, _q_on_1, "yes", "2000-01-02T00:00:03+00:00", track="alpha")
+check("and once it is answered, it counts as answered, not open", _row_1(), (_open0, _answered0 + 1))
 check("the same line twice in a row shows once",
       len([e for e in json.loads(body)["events"] if e["kind"] == "report" and e["n"] == 5]), 1)
 _undescribed = sorted({f"{c.noun}:{c.verb}" for group in _commands.REGISTRY._commands.values() for c in group

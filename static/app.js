@@ -656,7 +656,7 @@ const ResourceList = {
     const closable = computed(() => props.groups.some((g) => g.closed));
     const cols = computed(() => {
       const c = props.columns;
-      return [c.priority && "22px", c.status && "22px", c.num && (c.numWidth || "44px"), "minmax(0, 1fr)",
+      return [c.priority && "22px", c.status && "22px", c.num && (c.numWidth || "44px"), c.question && "16px", "minmax(0, 1fr)",
               c.cite && "var(--cite-col, minmax(0, 180px))", c.age && "var(--age-col, 112px)"].filter(Boolean).join(" ");
     });
     const setSort = (key, by, dir) => { state.sort[key] = { by, dir }; };
@@ -698,6 +698,8 @@ const ResourceList = {
           <PriorityIcon v-if="columns.priority" :value="columns.priority(r)"/>
           <StatusIcon v-if="columns.status" :kind="columns.status(r)"/>
           <span v-if="columns.num" class=num>{{ columns.num(r) }}</span>
+          <span v-if="columns.question" :class="['qmark', columns.question(r).state]" :title="columns.question(r).title"
+            :aria-label="columns.question(r).title || null"><Icon v-if="columns.question(r).state" name="questions"/></span>
           <div class=stack><div class=title>{{ columns.title(r) }}</div><div v-if="columns.sub && columns.sub(r)" class=sub>{{ columns.sub(r) }}</div></div>
           <span v-if="columns.cite" class=cite>{{ columns.cite(r) }}</span>
           <span v-if="columns.age" class=age>{{ columns.age(r) }}</span>
@@ -764,10 +766,18 @@ function todoStatus(t) {
 
 function messageBecame(m) { return [...new Set(m.parts.flatMap((p) => p.became.map((b) => b.label)))].join(", "); }
 
+// a to-do row's question marker: lit while a linked question is open, faint once all are answered
+function todoQuestionMark(t) {
+  const open = t.questions_open || 0, answered = t.questions_answered || 0;
+  if (open) return { state: "open", title: open === 1 ? "1 open question" : `${open} open questions` };
+  if (answered) return { state: "answered", title: answered === 1 ? "1 answered question" : `${answered} answered questions` };
+  return { state: "", title: "" };
+}
+
 const TODO_LIST = {
   groups: GROUPS.map((g) => ({ ...g, kind: g.key, closed: g.key === "done", match: (t) => todoStatus(t) === g.key })),
-  columns: { priority: (t) => t.priority, status: (t) => todoStatus(t), num: (t) => `#${t.n}`, title: (t) => t.title,
-             cite: (t) => (t.doc ? `Doc ${t.doc}` : ""), age: (t) => t.age },
+  columns: { priority: (t) => t.priority, status: (t) => todoStatus(t), num: (t) => `#${t.n}`, question: todoQuestionMark,
+             title: (t) => t.title, cite: (t) => (t.doc ? `Doc ${t.doc}` : ""), age: (t) => t.age },
   sorts: [{ key: "n", label: "ID" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
   count: (rows) => `${rows.filter((t) => todoStatus(t) !== "done").length} open`,
   showLabel: "Show done", empty: "Nothing is waiting on this environment.", name: "todos",
