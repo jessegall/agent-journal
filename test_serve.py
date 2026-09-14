@@ -730,6 +730,31 @@ commandlog.record(root, "alpha", _commands.REGISTRY.parse(["work", "await", "the
 check("waiting names what the agent waits on",
       [(e["text"], e["detail"]) for e in commandlog.entries(root, "alpha") if e["at"] == "2099-01-01T00:00:07+00:00"],
       [("Waiting on", "the reviewer finishing")])
+_code = Path(tempfile.mkdtemp()) / ".journal"
+(_code / "commands").mkdir(parents=True)
+(_code / "serve.py").write_text("x = 1\n")
+(_code / "commands" / "system.py").write_text("x = 1\n")
+(_code / "notes.md").write_text("x\n")
+_before_code = serve._snapshot(_code)
+os.utime(_code / "notes.md", ns=(1, 1))
+check("the viewer does not restart for a file that is not code", serve._snapshot(_code), _before_code)
+os.utime(_code / "commands" / "system.py", ns=(2, 2))
+check("it notices a change to the journal's Python, in a subfolder too",
+      serve._snapshot(_code) != _before_code and str(_code / "commands" / "system.py") in _before_code, True)
+_srv_code = serve._Server(("127.0.0.1", 0), _code, _code.parent)
+threading.Thread(target=_srv_code.serve_forever, daemon=True).start()
+_changed = threading.Event()
+_old_watch, _old_settle = serve.WATCH_SECONDS, serve.SETTLE_SECONDS
+serve.WATCH_SECONDS, serve.SETTLE_SECONDS = 0.05, 0.1
+_watcher = threading.Thread(target=serve._watch_code, args=(_code, _srv_code, _changed), daemon=True)
+_watcher.start()
+import time as _time  # noqa: E402
+_time.sleep(0.2)
+os.utime(_code / "serve.py", ns=(3, 3))
+_watcher.join(timeout=5)
+serve.WATCH_SECONDS, serve.SETTLE_SECONDS = _old_watch, _old_settle
+check("once the change settles, the watcher stops the server so it can restart", (_changed.is_set(), _watcher.is_alive()), (True, False))
+_srv_code.server_close()
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))

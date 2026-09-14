@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.63 — The viewer picks up new code by itself
+
+After an upgrade, or any change to the journal's Python files, a running viewer kept serving the
+old code until someone stopped it and started it again. Now it notices the change, waits until
+the files have stopped changing, and restarts itself on the same port. Pages that are open keep
+working: they reconnect on their next refresh. Changes to the viewer's own page files never
+needed a restart, and still do not. A viewer started before this version has to be restarted
+once by hand to get it.
+
 ## 1.131.62 — Activity says what the agent is waiting on
 
 When the agent waited on something (a subagent, a build, a review), Activity said only

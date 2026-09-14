@@ -68,6 +68,7 @@ MESSAGES = {
     "no_free_port": "ports {first} to {last} are all in use — pick one: --port=<n>",
     "url": "http://{host}:{port}/",
     "serving": "serving the journal at {url}  (Ctrl-C to stop)",
+    "restarting": "the journal's code changed; restarting on the same port",
 }
 
 def say(message: str, /, **values) -> str:
@@ -468,8 +469,43 @@ def bind(root: Path, project: Path, port: int | None = None, first: int = DEFAUL
     raise SystemExit(1)
 
 
+#: how often the viewer looks at its own code, and how long a change must settle before it restarts
+WATCH_SECONDS = 1.0
+SETTLE_SECONDS = 1.5
+
+
+def _snapshot(root: Path) -> dict[str, int]:
+    """Every Python file of the package under `root`, with when it last changed."""
+    out = {}
+    for f in root.rglob("*.py"):
+        if "__pycache__" in f.parts or "runtime" in f.relative_to(root).parts[:1]:
+            continue
+        try:
+            out[str(f)] = f.stat().st_mtime_ns
+        except OSError:
+            continue
+    return out
+
+
+def _watch_code(root: Path, server: "_Server", changed) -> None:
+    """Stop the server once the package's Python has changed and then stayed still, so an upgrade lands whole."""
+    import time
+    seen = _snapshot(root)
+    last_change = None
+    while not changed.is_set():
+        time.sleep(WATCH_SECONDS)
+        now = _snapshot(root)
+        if now != seen:
+            seen, last_change = now, time.monotonic()
+        elif last_change is not None and time.monotonic() - last_change >= SETTLE_SECONDS:
+            changed.set()
+            server.shutdown()
+
+
 def run(root: Path, project: Path, port: int | None = None, open_browser: bool = False) -> None:
-    """Start the server in the foreground; Ctrl-C stops it. No daemon mode in the MVP."""
+    """Start the server in the foreground; Ctrl-C stops it. It restarts itself when the journal's code changes."""
+    import os
+    import threading
     server = bind(root, project, port)
     url = say("url", host=HOST, port=server.server_port)
     import state
@@ -479,12 +515,17 @@ def run(root: Path, project: Path, port: int | None = None, open_browser: bool =
     if open_browser:
         import webbrowser
         webbrowser.open(url)
+    changed = threading.Event()
+    threading.Thread(target=_watch_code, args=(root, server, changed), daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
         server.server_close()
+    if changed.is_set():
+        print(say("restarting"), flush=True)
+        os.execv(sys.executable, [sys.executable, str(root / "journal.py"), "serve", f"--port={server.server_port}"])
 
 
 if __name__ == "__main__":
