@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.18 — A loop is asked for only when it has something to pick up, and is not assumed after a restart
+
+- With auto mode on, the stop hook asked for a loop whenever work was open, even with nothing on the list
+  ready, so an agent could start a loop that woke every 15 minutes to nothing. It now asks only when a
+  to-do is ready, the same condition the write gate already used.
+- Once the journal had seen a loop it remembered it for good, even in a session resumed the next day
+  whose loop was long gone, and then nothing asked for one and auto mode stalled. The memory is now
+  cleared when a session ends and when one starts or resumes; a compaction keeps it.
+- `/loop` counts only when the user typed it. A tool result or file that merely mentions it no longer
+  reads as a loop running.
+
 ## 1.136.17 — Narrating the next step no longer reads as putting work off
 
 The check for work deferred in words matched an agent describing its next step: "Let me read the file,

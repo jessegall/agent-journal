@@ -891,7 +891,9 @@ def _p_loop(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     m = conf.get("auto_loop_minutes", 0)
     if not m or not todo.auto(ROOT, here):
         return None
-    if not (work.open_work(ROOT) or todo.ready(ROOT, here)):
+    # THE SAME CONDITION AS THE WRITE GATE: a loop is owed only when the list has something
+    # ready for it to pick up. Open work alone is being worked; a loop would wake to nothing.
+    if not todo.ready(ROOT, here):
         return None
     if _loop_running(ctx, lines):
         return None
@@ -1262,7 +1264,9 @@ def _loop_running(ctx: Ctx, lines) -> bool:
     if state.get(ROOT, "loop_set", False, stem=ctx.stem):
         return True
     for l in lines:
-        if any(t in _LOOP_TOOLS for t in l.tools) or (l.role == "user" and "/loop" in (l.text or "")):
+        # `/loop` COUNTS ONLY WHEN THE USER TYPED IT. A tool result or an injected block that
+        # mentions it (a grep of a changelog, this very docstring) is not a loop running.
+        if any(t in _LOOP_TOOLS for t in l.tools) or (l.kind == "human" and "/loop" in (l.text or "")):
             state.put(ROOT, "loop_set", True, stem=ctx.stem)
             return True
     return False
@@ -3117,6 +3121,10 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     source = payload.get("source") or "startup"
     _floor(ctx)
     state.put(ROOT, "session_started", source, stem=ctx.stem)
+    # A LOOP DOES NOT SURVIVE ITS PROCESS. A resumed or restarted session starts with none,
+    # whatever the runtime file remembers; only a compaction keeps the process, and the loop.
+    if source in ("resume", "startup"):
+        state.put(ROOT, "loop_set", False, stem=ctx.stem)
     # a --continue or --resume starts a session that once ended; it is running again
     if state.get(ROOT, "ended", None, stem=ctx.stem):
         state.put(ROOT, "ended", None, stem=ctx.stem)
@@ -3294,6 +3302,7 @@ def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
     state.put(ROOT, "ended", payload.get("reason") or "exit", stem=ctx.stem)
     # the parsed transcript is megabytes; a resumed session parses it again once
     _drop_caches(ctx.stem, lines_only=True)
+    state.put(ROOT, "loop_set", False, stem=ctx.stem)
     return 0
 
 
