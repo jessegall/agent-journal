@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.126.0 — Search inside one resource: journal todos search <term>
+
+To-dos, messages, questions, reports, suggestions, reminders, pins, rules, work and
+comments each have a search: `journal todos search lantern` lists every line of the open
+to-dos that mentions "lantern", grouped by to-do, with the word marked. Closed items are
+left out and counted; `--all` includes them. Searching ignores case and pages at 25 lines.
+`journal search` still reads the transcript and `journal docs search` the documents.
+
 ## 1.125.0 — Every command the agent runs has a plain Activity line
 
 All 168 journal commands now have a plain description in Activity. Before, 102 of them
