@@ -126,6 +126,9 @@ class Start(Resource):
         else:
             fmt.say(render(TEXT["started"], n=n, title=result.data["title"]))
             fmt.say(render(TEXT["trailer"], trailer=todo.TRAILER, n=n))
+        import reports
+        if tip := reports.hint(result.data["title"], result.data.get("body", "")):
+            fmt.say(tip)
         return code
 
 

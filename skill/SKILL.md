@@ -609,11 +609,19 @@ saying what is now true, pointing at the to-do, report or doc it is about.
     journal reports                                            what has been reported here
     journal reports archive <n> "<why>"                        off the list
 
-When the user asks for something to be checked, measured or researched — or you send
-subagents to find out — the answer is a report, not a doc. A doc is what was settled and
-stays true; a report is the situation as it was when you looked, written for the user to
-read in the viewer. Title it by what was asked, start with the answer, then the evidence.
-No session is handed a report, so if it settles something, pin that too or write the doc.
+**A report is temporary; a doc is lasting.** They are easy to mix up, and the user reads them in
+different places, so decide before you write:
+
+    a REPORT   the situation as it was when you looked: what you checked, measured or researched,
+               what a subagent found, where something stands. True today, stale next week.
+    a DOC      documentation of the codebase or the environment: a design once it is ruled, how
+               a part works, the numbers behind a decision. Stays true until it is changed.
+    neither    a one-line answer goes in your reply; a fact that must survive goes in a pin.
+
+When the user asks for something to be checked, measured or researched, or asks for a report, or
+you send subagents to find out, the answer is a report, not a doc, even when it is long. Title
+it by what was asked, start with the answer, then the evidence. No session is handed a report,
+so if it settles something that stays true, pin that too or write it into a doc.
 
 ## Comments: what the user said about something
 
@@ -664,14 +672,15 @@ process gets there first — `journal migrate` says what is pending and what has
     journal docs files <doc>                    its attachments, as a tree (also: `docs <doc> files`)
     journal docs paths <doc>                    one absolute path per attached file — put these in a subagent's prompt
     journal docs add "<title>" --abstract="<one line>" --brief    a new doc, its intro on stdin
-    journal docs part <doc> "<title>" --brief   a report, a section, a finding — as one part
+    journal docs part <doc> "<title>" --brief   a section or a lasting finding, as one part
     journal docs attach <doc> <path> "<what it is>"   a file or a folder, copied in beside the parts
     journal docs strike <doc>.<p> "<why>"       drop a part, on the record
     journal docs final <doc>                    when it is settled
     journal docs search <term>                  every line of every doc mentioning it
 
-A pin is a claim, a rule binds, a to-do is work. A **doc** is a finding: a design once it
-is ruled, a subagent's report, an investigation with its numbers. It lives in the
+A pin is a claim, a rule binds, a to-do is work. A **doc** is lasting documentation: a design
+once it is ruled, how a part of the codebase or the environment works, an investigation's
+numbers that a decision rests on. What things look like right now is a report, not a doc. It lives in the
 project's `docs/` folder as ordinary markdown the user reads and edits, and the journal
 catalogues it: every session is handed the catalogue, one line per doc, so nobody
 re-investigates what a doc settles.
@@ -680,8 +689,8 @@ re-investigates what a doc settles.
 give it a TITLE that says what it settles, because the title is all a later session sees
 until it opens the doc — the injected block carries titles only, and the abstract waits in
 `journal carry` and `journal docs`. A title that needs its abstract to make sense is a
-title nobody will follow. A subagent's report goes in as a part of the doc it
-belongs to, filed by you, which is the moment to judge whether it is worth keeping.
+title nobody will follow. A subagent's findings are a report
+(`journal reports add`); only what in them stays true goes into a doc, as a part, filed by you.
 Everything else that is long — a survey, the numbers behind a decision — is a part too.
 One doc, many parts; a part is what you replace or strike when it stops being true.
 

@@ -98,5 +98,17 @@ kept = json.loads(f.read_text())["reports"]
 check("its text is removed from the store, and its place is kept so later numbers do not shift",
       (len(kept) == _ancient, "from long ago" in json.dumps(kept), bool(kept[-1].get("removed"))), (True, False, True))
 
+j("todos", "add", "write a report on the slow build")
+_n = next(line.split()[0] for line in j("todos")[1].splitlines() if "write a report on the slow build" in line)
+code, out = j("todos", "start", _n)
+check("starting a to-do that asks for a report reminds the agent how to write one", "journal reports add" in out, True)
+j("work", "end", "write a report on the slow build")
+code, out = j("todos", "start", "1")
+check("a to-do that does not mention a report gets no such reminder", "journal reports add" in out, False)
+j("messages", "add", "can you report on what the tests cover")
+_m = len(json.loads((d / ".journal" / "environments" / "default" / "inbox.json").read_text())["inbox"])
+code, out = j("messages", "show", str(_m))
+check("reading a message that asks for a report reminds the agent too", "journal reports add" in out, True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -148,7 +148,7 @@ class TodosController(Controller):
         if t is None:
             return Result("refused", err)
         return Result.of(work.start(root, t["title"], p.at, {**(p.where or {}), "todo": p.id}),
-                         {"n": p.id, "title": t["title"]})
+                         {"n": p.id, "title": t["title"], "body": t.get("body") or ""})
 
     def move(self, root: Path, p: MovePayload) -> Result:
         return Result.of(todo.move(root, self.env(root), p.id, p.environment, p.at))

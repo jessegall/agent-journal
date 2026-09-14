@@ -62,6 +62,9 @@ class Show(Resource):
         if not result.ok:
             return super().render(p, result)
         print(inbox.show_text(result.data))
+        import reports
+        if tip := reports.hint(result.data.get("text", "")):
+            print(tip)
         return 0
 
 
