@@ -863,7 +863,7 @@ const MESSAGE_LIST = {
   groups: [{ key: "waiting", label: "Waiting", kind: "waiting", match: (m) => m.status === "waiting" },
            { key: "processed", label: "Processed", kind: "done", closed: true, match: (m) => m.status === "processed" || m.status === "moved" },
            { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (m) => m.status === "archived" }],
-  columns: { status: (m) => (m.status === "waiting" ? "waiting" : "done"), num: (m) => `#${m.n}`, title: (m) => m.text,
+  columns: { status: (m) => (m.status !== "waiting" ? "done" : m.read ? "progress" : "waiting"), num: (m) => `#${m.n}`, title: (m) => m.text,
              cite: messageBecame, age: (m) => m.age },
   count: (rows) => `${rows.filter((m) => m.status === "waiting").length} waiting`,
   empty: "No messages yet.",
@@ -1155,7 +1155,7 @@ const MessagePanel = {
       <template v-else-if="item.data">
         <div class="prose message">{{ item.data.text }}</div>
         <dl class=props>
-          <dt>Status</dt><dd><StatusIcon :kind="item.data.status === 'waiting' ? 'waiting' : 'done'"/>{{ item.data.status === 'waiting' ? 'Waiting to be processed' : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
+          <dt>Status</dt><dd><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled · the agent read it ' + item.data.read_age : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
           <dt>Left</dt><dd>{{ item.data.age || '—' }}</dd>
           <dt>From</dt><dd>{{ item.data.source === 'web' ? 'The browser' : 'The terminal' }}</dd>
         </dl>
@@ -1215,6 +1215,7 @@ const MessagePanel = {
             </template>
           </div>
         </div>
+        <p v-else-if="item.data.status === 'waiting' && item.data.read" class="prose muted">The agent has read it and is handling it. It splits it into parts and records what each became.</p>
         <p v-else-if="item.data.status === 'waiting'" class="prose muted">Not processed yet. At its next stop the agent splits it into parts and records what each became.</p>
         <Comments :about="'message ' + item.data.n" :env="env" :key="'c-message' + item.data.n"/>
       </template>

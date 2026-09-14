@@ -74,6 +74,8 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
     import comments
     import inbox
     import questions
+    # stamps are whole seconds, so something from the second the channel started still counts
+    since = float(int(since))
     got = []
     for n, m in inbox.unprocessed(ROOT, env):
         if _epoch(m.get("at")) < since:

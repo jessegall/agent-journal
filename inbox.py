@@ -40,6 +40,7 @@ MESSAGES = {
                 'journal messages process {n} --part="<words>" --became=noted',
     "done": "message {n} is processed: it became {became:, } ({waiting} waiting)",
     "fact_waiting": "waiting",
+    "fact_reading": "being handled",
     "fact_processed": "processed[ {age}]",
     "fact_source": "from {source}",
     "fact_became": "became {became:, }",
@@ -464,6 +465,19 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
     return True, say("replied", n=n)
 
 
+def mark_read(root: Path, numbers: list[int], at: str, track: str | None = None) -> None:
+    """The agent has read these waiting messages: the viewer shows them as being handled until they are processed."""
+    with state.locked(root):
+        items = _all(root, track)
+        changed = False
+        for n in numbers:
+            m, _ = _find(items, n)
+            if m is not None and not m.get("processed") and not m.get("archived") and not m.get("read"):
+                m["read"], changed = at, True
+        if changed:
+            _put(root, items, track)
+
+
 def archive(root: Path, n: int, why: str, at: str, track: str | None = None) -> tuple[bool, str]:
     """Take a message off the list, with the reason. A waiting one stops waiting; nothing is deleted."""
     why = " ".join((why or "").split())
@@ -487,7 +501,8 @@ def _facts(m: dict) -> list[str]:
     elif m.get("moved_to"):
         out = [say("fact_moved", to=m["moved_to"].replace(":", " message "))]
     else:
-        out = [say("fact_processed", age=age(m["processed"])) if m.get("processed") else say("fact_waiting")]
+        out = [say("fact_processed", age=age(m["processed"])) if m.get("processed")
+               else say("fact_reading") if m.get("read") else say("fact_waiting")]
     if age(m.get("at", "")):
         out.append(age(m["at"]))
     if m.get("source") and m["source"] != "cli":
@@ -564,6 +579,7 @@ def row_response(n: int, m: dict) -> dict:
                      "who": say("reply_user") if r.get("source") == "web" else say("reply_agent")}
                     for r in m.get("replies") or []],
         "moved_to": m.get("moved_to") or "",
+        "read": m.get("read") or "", "read_age": age(m["read"]) if m.get("read") else "",
         "age": age(m.get("at", "")), "processed_age": age(m.get("processed") or ""),
         "source": m.get("source") or "",
         "files": [{"name": f["name"], "size": f.get("size", 0), "filed": f.get("filed") or "", "filed_label": _filed_label(f),
