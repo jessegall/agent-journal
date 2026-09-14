@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.10 — The sidebar shows the agent compacting
+
+While the agent compacts its context, the agent status at the bottom of the viewer's sidebar says
+Compacting instead of Working. The PreCompact hook is wired again for this: it says nothing to the
+agent, and records the event so the viewer can tell, until the session starts again on the far side
+of the compaction.
+
+Run `journal upgrade` so the new hook is added to `.claude/settings.json`.
+
 ## 1.136.9 — A clicked skill opens in the side panel with its quick actions
 
 Clicking a skill in the agent page's Skills table opens it in the side panel instead of leaving the

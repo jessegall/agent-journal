@@ -53,7 +53,7 @@ from templates import render as fill
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
 EVENTS = ("Stop", "SessionStart", "SessionEnd", "PostToolUse", "PreToolUse",
-          "UserPromptSubmit", "SubagentStop")
+          "UserPromptSubmit", "SubagentStop", "PreCompact")
 
 #: EVENTS THIS PACKAGE ONCE WIRED AND MUST NOW UNWIRE, because leaving them is worse than
 #: never having added them.

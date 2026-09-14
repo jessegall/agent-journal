@@ -3240,7 +3240,7 @@ const App = {
         <div v-if="activity.data" class=side-foot>
           <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}</a>
           <div class=side-foot-head>
-            <span>Agent<span v-if="activity.data.agent" :class="['side-foot-state', {working: activity.data.agent.working}]">{{ activity.data.agent.working ? 'Working' : 'Idle' }}</span></span>
+            <span>Agent<span v-if="activity.data.agent" :class="['side-foot-state', {working: activity.data.agent.working}]">{{ activity.data.agent.compacting ? 'Compacting' : activity.data.agent.working ? 'Working' : 'Idle' }}</span></span>
             <span v-if="activity.data.agent && activity.data.agent.context" :class="['side-foot-ctx', {high: activity.data.agent.context.share >= 70}]"
               :title="'Context ' + activity.data.agent.context.share + '% used: ' + activity.data.agent.context.used.toLocaleString() + ' of ' + activity.data.agent.context.window.toLocaleString() + ' tokens'">
               <span class=ctx-bar><span :style="{width: activity.data.agent.context.share + '%'}"></span></span>{{ activity.data.agent.context.share }}%</span>

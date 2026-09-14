@@ -2740,12 +2740,11 @@ def _context(event: str, text: str, system: str | None = None) -> int:
     return 0
 
 
-# `on_pre_compact` LIVED HERE. PreCompact cannot shape the summary — the harness accepts no
-# additionalContext on it, verified by having the payload rejected while the hook exited 0
-# — and the one thing left for it to do was write `compacted_pending`, which nothing read.
-# The bridge that delivers is SessionStart(source="compact"), on the far side of the loss.
-# A doorbell wired to a handler that does nothing is the wired-and-silent shape `verify`
-# exists to report, so the event is no longer wired at all.
+def on_pre_compact(conf: dict, payload: dict, ctx: Ctx) -> int:
+    """Says nothing: the harness accepts no context on PreCompact. `main` has already recorded it as
+    the session's last event, which is how the viewer shows the agent compacting until the
+    SessionStart(source="compact") on the far side of it."""
+    return 0
 
 
 #: THE HARNESS'S OWN CEILING, and it is documented — not measured, not folklore:
@@ -3260,6 +3259,8 @@ HANDLERS = {
     "pre-tool-use": on_pre_tool,
     "PostToolUse": on_post_tool,
     "post-tool-use": on_post_tool,
+    "PreCompact": on_pre_compact,
+    "pre-compact": on_pre_compact,
 }
 
 
