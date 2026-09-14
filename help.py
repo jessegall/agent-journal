@@ -228,7 +228,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal update [--from=<path or git url>]    pull the latest journal and print what changed",
         "journal settings              every setting, its value, and where it came from",
         "journal loop set              this session has a loop running (the hook could not see it); `journal loop` says whether one is known",
-        "journal serve [--port=<n>] [--open]   a local, read-only web viewer over this journal — 127.0.0.1 only, Ctrl-C to stop",
+        "journal serve [--port=<n>] [--open]   a local web viewer over this journal on 127.0.0.1, at 8420 or the next free port — Ctrl-C to stop",
         "journal statusline [--install]   the one line Claude Code's status bar shows: environment, open work, viewer; --install adds it to .claude/settings.json",
         "journal channel --install       add the journal's channel server to .mcp.json, so a message left in the viewer wakes an idle session (start Claude with --dangerously-load-development-channels server:journal)",
         "journal claude [prompt]         start Claude with the channel, adding it to .mcp.json first if needed; --continue, --resume=<id>, --dry-run to only show the command",

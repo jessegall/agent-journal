@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.60 — `journal serve` takes the next free port
+
+When another project's viewer already held port 8420, `journal serve` stopped with "port 8420
+is already in use". Two projects on one machine could not both have a viewer without someone
+picking a port by hand. Now `journal serve` starts on 8420, or on the next free port up to 8439,
+and prints the URL it took. `journal serve --port=<n>` still uses exactly that port and says
+so when it is taken.
+
 ## 1.131.59 — Enter sends a message
 
 In the Messages page's message box and the Activity column's box, Enter now sends and

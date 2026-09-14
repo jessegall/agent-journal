@@ -785,6 +785,22 @@ _other.mkdir(parents=True)
 state.put(_other, serve.VIEWER_PORT, srv.server_port)
 check("another project whose recorded port this viewer holds is not told a viewer runs for it",
       serve.running(_other), "")
+import socket as _socket  # noqa: E402
+_held = _socket.socket()
+_held.bind(("127.0.0.1", 0))
+_held.listen(1)
+_busy = _held.getsockname()[1]
+_moved = serve.bind(root, project, first=_busy)
+check("with its first port in use, a viewer takes a later free one",
+      _busy < _moved.server_port < _busy + serve.PORT_TRIES, True)
+_moved.server_close()
+try:
+    serve.bind(root, project, port=_busy)
+    _refused = False
+except SystemExit:
+    _refused = True
+check("a port asked for by number that is in use is refused, not moved", _refused, True)
+_held.close()
 import views  # noqa: E402
 line = views.status_line(root, None)
 check("the status line names the environment, the open work and the viewer",

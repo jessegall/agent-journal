@@ -243,7 +243,7 @@ class Serve(Command):
     def run(self, p: Parsed) -> int:
         import serve
         try:
-            serve.run(root(), project(), port=p.option("port") or serve.DEFAULT_PORT,
+            serve.run(root(), project(), port=p.option("port"),
                       open_browser=bool(p.option("open")))
         except SystemExit as e:
             return e.code if isinstance(e.code, int) else 1

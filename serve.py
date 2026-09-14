@@ -65,6 +65,7 @@ MESSAGES = {
     "internal": "internal error: {error}",
     "nothing_at": "nothing at {path}",
     "port_taken": "port {port} is already in use — pick another: --port=<n>",
+    "no_free_port": "ports {first} to {last} are all in use — pick one: --port=<n>",
     "url": "http://{host}:{port}/",
     "serving": "serving the journal at {url}  (Ctrl-C to stop)",
 }
@@ -410,15 +411,37 @@ def running(root: Path) -> str:
     return say("url", host=HOST, port=port)
 
 
-def run(root: Path, project: Path, port: int = DEFAULT_PORT, open_browser: bool = False) -> None:
+#: how many ports from the default a viewer tries before it gives up
+PORT_TRIES = 20
+
+
+def _taken(e: OSError) -> bool:
+    return getattr(e, "errno", None) in (48, 98) or "already in use" in str(e).lower()
+
+
+def bind(root: Path, project: Path, port: int | None = None, first: int = DEFAULT_PORT) -> "_Server":
+    """A server on `port`, or on the first free port from `first` when no port is asked for."""
+    if port:
+        try:
+            return _Server((HOST, port), root, project)
+        except OSError as e:
+            if _taken(e):
+                print(say("port_taken", port=port), file=sys.stderr)
+                raise SystemExit(1)
+            raise
+    for candidate in range(first, first + PORT_TRIES):
+        try:
+            return _Server((HOST, candidate), root, project)
+        except OSError as e:
+            if not _taken(e):
+                raise
+    print(say("no_free_port", first=first, last=first + PORT_TRIES - 1), file=sys.stderr)
+    raise SystemExit(1)
+
+
+def run(root: Path, project: Path, port: int | None = None, open_browser: bool = False) -> None:
     """Start the server in the foreground; Ctrl-C stops it. No daemon mode in the MVP."""
-    try:
-        server = _Server((HOST, port), root, project)
-    except OSError as e:
-        if getattr(e, "errno", None) in (48, 98) or "already in use" in str(e).lower():
-            print(say("port_taken", port=port), file=sys.stderr)
-            raise SystemExit(1)
-        raise
+    server = bind(root, project, port)
     url = say("url", host=HOST, port=server.server_port)
     import state
     state.put(root, VIEWER_PORT, server.server_port)
