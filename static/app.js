@@ -1296,13 +1296,15 @@ const Inbox = {
   template: `
     <TopBar :crumbs="[env, 'Messages']"/>
     <div class=body>
-      <div class=list>
-        <div class=compose-wrap>
+      <div class=chat>
+        <div class=list>
+          <ResourceList v-bind="MESSAGE_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+            :href="(m) => base + '/' + m.n" :selected="(m) => String(m.n) === n"/>
+        </div>
+        <div class="compose-wrap at-bottom">
           <Compose placeholder="Leave a message for the agent: an instruction, a follow-up, anything"
             submit="Send" :hint="hint" :send="send" :attach="true"/>
         </div>
-        <ResourceList v-bind="MESSAGE_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
-          :href="(m) => base + '/' + m.n" :selected="(m) => String(m.n) === n"/>
       </div>
       <MessagePanel v-if="n" :key="'message' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
     </div>`,
