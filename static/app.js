@@ -185,6 +185,8 @@ const Icon = {
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
       <template v-else-if="name === 'activity'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></template>
       <template v-else-if="name === 'collapse'"><path d="M6 4.5l3.5 3.5L6 11.5"/><path d="M11.5 3.5v9"/></template>
+      <template v-else-if="name === 'sort-asc'"><path d="M5 12.5v-9M2.5 6L5 3.5 7.5 6"/><path d="M9.5 5h4M9.5 8h3M9.5 11h2"/></template>
+      <template v-else-if="name === 'sort-desc'"><path d="M5 3.5v9M2.5 10L5 12.5 7.5 10"/><path d="M9.5 5h2M9.5 8h3M9.5 11h4"/></template>
       <template v-else-if="name === 'empty'"><path d="M2.5 9.5l1.8-5h7.4l1.8 5V13h-11z"/><path d="M2.5 9.5h3l1 1.5h3l1-1.5h3"/></template>
       <template v-else-if="name === 'reports'"><path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/></template>
       <template v-else-if="name === 'work'"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></template>
@@ -501,11 +503,11 @@ const ResourceList = {
     rows: Array, loading: Boolean, error: String,
     groups: { type: Array, default: () => [{ key: "all", label: "", match: () => true }] },
     columns: Object, href: Function, selected: Function, pick: Function,
-    sorts: { type: Array, default: () => [{ key: "n", label: "Number" }] },
+    sorts: { type: Array, default: () => [{ key: "n", label: "ID" }] },
     count: Function, showLabel: String, empty: String, name: String, showDefault: Boolean,
     bar: { type: Boolean, default: true }, limit: { type: Number, default: PAGE_ROWS },
   },
-  components: { StatusIcon, PriorityIcon, Switch },
+  components: { StatusIcon, PriorityIcon, Switch, Icon },
   setup(props) {
     // a switch the viewer flipped is remembered per list, in this browser only
     const key = props.name ? `journal:show:${props.name}` : "";
@@ -550,7 +552,7 @@ const ResourceList = {
       return [c.priority && "22px", c.status && "22px", c.num && (c.numWidth || "44px"), "minmax(0, 1fr)",
               c.cite && "minmax(0, 180px)", c.age && "112px"].filter(Boolean).join(" ");
     });
-    const setSort = (key, value) => { const [by, dir] = value.split(":"); state.sort[key] = { by, dir }; };
+    const setSort = (key, by, dir) => { state.sort[key] = { by, dir }; };
     const more = (key) => { state.pages[key] = (state.pages[key] || 1) + 1; };
     const open = (event, row) => { if (props.pick) { event.preventDefault(); props.pick(row); } };
     const moving = (r) => !!state.held[rowKey(r)];
@@ -568,12 +570,19 @@ const ResourceList = {
       <template v-for="g in sections" :key="g.key">
         <div v-if="g.label" class=ghead>
           <StatusIcon v-if="g.kind" :kind="g.kind"/>{{ g.label }}<span class=n>{{ g.total }}</span>
-          <select class=sort :value="sortOf(g.key).by + ':' + sortOf(g.key).dir" @change="setSort(g.key, $event.target.value)" aria-label="Sort">
-            <template v-for="o in sorts" :key="o.key">
-              <option :value="o.key + ':desc'">{{ o.label }}, high to low</option>
-              <option :value="o.key + ':asc'">{{ o.label }}, low to high</option>
+          <span class=sort>
+            <template v-if="sorts.length > 1">
+              <button v-for="o in sorts" :key="o.key" type=button :class="['sort-field', {on: sortOf(g.key).by === o.key}]"
+                :aria-pressed="sortOf(g.key).by === o.key" @click="setSort(g.key, o.key, sortOf(g.key).dir)">{{ o.label }}</button>
             </template>
-          </select>
+            <span v-else class=sort-field>{{ sorts[0].label }}</span>
+            <button type=button class="icon-btn sort-dir"
+              :title="sortOf(g.key).dir === 'asc' ? 'Ascending — click for descending' : 'Descending — click for ascending'"
+              :aria-label="sortOf(g.key).dir === 'asc' ? 'Sorted ascending' : 'Sorted descending'"
+              @click="setSort(g.key, sortOf(g.key).by, sortOf(g.key).dir === 'asc' ? 'desc' : 'asc')">
+              <Icon :name="sortOf(g.key).dir === 'asc' ? 'sort-asc' : 'sort-desc'"/>
+            </button>
+          </span>
         </div>
         <a v-for="r in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
           :style="{gridTemplateColumns: cols}" :href="href(r)" @click="open($event, r)">
@@ -648,7 +657,7 @@ const TODO_LIST = {
   groups: GROUPS.map((g) => ({ ...g, kind: g.key, closed: g.key === "done", match: (t) => todoStatus(t) === g.key })),
   columns: { priority: (t) => t.priority, status: (t) => todoStatus(t), num: (t) => `#${t.n}`, title: (t) => t.title,
              cite: (t) => (t.doc ? `Doc ${t.doc}` : ""), age: (t) => t.age },
-  sorts: [{ key: "n", label: "Number" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
+  sorts: [{ key: "n", label: "ID" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
   count: (rows) => `${rows.filter((t) => todoStatus(t) !== "done").length} open`,
   showLabel: "Show done", empty: "Nothing is waiting on this environment.", name: "todos",
 };
@@ -703,7 +712,7 @@ const DOC_LIST = {
 const TOOL_LIST = {
   groups: [{ key: "tools", label: "Catalogued", match: () => true }],
   columns: { num: (t) => t.name, numWidth: "120px", title: (t) => t.title, sub: (t) => t.summary, age: (t) => t.age },
-  sorts: [{ key: "n", label: "Number" }, { key: "name", label: "Name" }],
+  sorts: [{ key: "n", label: "ID" }, { key: "name", label: "Name" }],
   count: (rows) => `${rows.length} catalogued`, empty: "No tools are catalogued.",
 };
 

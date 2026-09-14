@@ -131,9 +131,14 @@
   .lrow { padding-top: 8px; padding-bottom: 8px; }
   .list > .viewbar { position: sticky; top: 0; z-index: 2; background: var(--bg); }
   .list .ghead { top: 40px; }
-  .ghead .sort { margin-left: auto; height: 24px; padding: 0 16px 0 0; border: none; border-radius: 0; appearance: none;
-    background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5l3 3 3-3' fill='none' stroke='%2383868e' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right center; color: var(--text-3); font: inherit; font-size: 12px; cursor: pointer; }
-  .ghead .sort:hover { color: var(--text-2); }
+  .ghead .sort { margin-left: auto; display: inline-flex; align-items: center; gap: 2px; }
+  .sort-field { height: 22px; padding: 0 6px; border: none; border-radius: 5px; background: none; color: var(--text-3);
+    font: inherit; font-size: 12px; line-height: 22px; }
+  button.sort-field { cursor: pointer; }
+  button.sort-field:hover { color: var(--text-2); background: var(--hover); }
+  .sort-field.on { color: var(--text); }
+  .sort-dir { width: 22px; height: 22px; }
+  .sort-dir .ico { width: 13px; height: 13px; }
   .more-rows { margin: 10px 20px; }
   .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; }
   .viewbar .bar-switch { margin-left: auto; }

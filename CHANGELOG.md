@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.124.0 — Lists sort by a field, with an arrow that flips the direction
+
+Each list group's header shows what it sorts by, "ID" or "Priority", as buttons (or just
+the label when there is one choice), and an arrow button beside it that switches between
+ascending and descending. "Number" is now called "ID". The dropdown is gone.
+
 ## 1.123.3 — The footer's latest-activity line starts at the left edge
 
 The italic line under "Agent active" in the sidebar footer starts at the footer's left
