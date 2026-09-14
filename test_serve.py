@@ -485,6 +485,11 @@ check("a part is added to a doc",
       (status, [x["title"] for x in json.loads(get("/api/docs/1")[2])["parts"]][-1]), (201, "a part from the browser"))
 _new_part = json.loads(get("/api/docs/1")[2])["parts"][-1]["p"]
 status, got = post(f"/api/docs/1.{_new_part}", {"body": "its text, rewritten in the browser"}, method="PATCH")
+status, got = post("/api/docs/1/final", {})
+_final_status = json.loads(get("/api/docs/1")[2])["status"]
+status2, got = post("/api/docs/1/draft", {})
+check("a doc is marked final and back to a draft from the viewer, each in one request",
+      (status, _final_status, status2, json.loads(get("/api/docs/1")[2])["status"]), (200, "final", 200, "draft"))
 check("a part's text is replaced from the viewer by its doc.part number",
       (status, [x["body"].strip() for x in json.loads(get("/api/docs/1")[2])["parts"] if x["p"] == _new_part]),
       (200, ["its text, rewritten in the browser"]))
