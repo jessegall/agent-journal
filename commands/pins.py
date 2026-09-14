@@ -47,8 +47,8 @@ TEXT = {
     "builtin_inject": "{id} ships with the journal and is already in CLAUDE.md's journal block; inject takes a rule "
                       "of this project, by number",
     "builtin_strike": "{id} is the journal's own rule, not this project's — it holds wherever the journal is "
-                      "installed, so striking it here would be a local opinion wearing the tool's authority. "
-                      "`builtin_rules: false` in settings.json turns them all off.",
+                      "installed, so striking it here would be a local opinion wearing the tool's authority, "
+                      "and no setting turns it off.",
     "rule_move": "a rule binds EVERY environment, so there is nowhere to move it to. If it only describes one "
                  "line of work it was never a rule: strike it and pin it there —\n"
                  '  journal rules strike <n> "<why>"\n  journal pins add "<the claim>"',

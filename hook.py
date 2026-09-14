@@ -2831,10 +2831,9 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
     parts.append(_standing(short))
     # THE PACKAGE'S OWN RULES FIRST OF ALL, before anything this project decided: they bind
     # every project, so a reader meets what is true everywhere before what is true here.
-    if conf_of({})["builtin_rules"]:
-        shipped = builtin.carry(brief=short)
-        if shipped:
-            parts.append(shipped)
+    shipped = builtin.carry(brief=short)
+    if shipped:
+        parts.append(shipped)
     # REMINDERS ARE NOT INJECTED AT A START. They fire at every stop and every
     # `reminder_every` tool calls, so putting them here pays for the same text twice — and
     # they were the second-largest thing in a block that had stopped being delivered at all.

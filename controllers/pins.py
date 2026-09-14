@@ -158,9 +158,7 @@ class RulesController(ClaimsController):
         import builtin
         result = super().index(root, p)
         if result.ok:
-            conf, _ = settings_mod.load(root)
-            result.meta["builtin"] = ([{"id": r["id"], "fact": r["fact"]} for r in builtin.RULES]
-                                      if conf["builtin_rules"] else [])
+            result.meta["builtin"] = [{"id": r["id"], "fact": r["fact"]} for r in builtin.RULES]
         return result
 
     def _questions(self, root: Path, p: Payload) -> list[dict]:

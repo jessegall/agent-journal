@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.9 — The journal's own rules are always written and shown
+
+As you answered on question 22, the rules the journal ships, with the model rule (B1) among them, can no
+longer be switched off. Every install and upgrade writes them into `CLAUDE.md` and `AGENTS.md`, and every
+session is shown them at its start. The rules list always includes them too. The `builtin_rules` setting
+is gone. A project that still has it in `settings.json` is told "unknown setting 'builtin_rules' — it
+does nothing", and gets the rules back on its next upgrade.
+
 ## 1.134.8 — The agent page lists the skills
 
 An agent's page has a read-only Skills section. It lists every skill on disk, this project's and your
