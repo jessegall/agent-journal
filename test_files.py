@@ -100,6 +100,9 @@ import controllers.activity as activity  # noqa: E402
 j("work", "end", "change some files")
 ended = [e for e in activity.ActivityController._events(d / ".journal", "w") if e["text"] == "Ended work"]
 check("the Ended work line in Activity says how many files changed", [e["detail"] for e in ended], ["3 files changed"])
+import commandlog  # noqa: E402
+check("the tool uses since the last journal command become one line when a journal command runs",
+      "Ran 2 commands, edited 5 files" in [e["text"] for e in commandlog.entries(d / ".journal", "w")], True)
 
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

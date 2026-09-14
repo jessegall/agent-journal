@@ -1928,6 +1928,19 @@ def _record_files(payload: dict, ctx: Ctx) -> None:
         work.record_files(ROOT, _owners(ctx), changes, datetime.now(timezone.utc).isoformat(timespec="seconds"))
 
 
+def _queue_tool(payload: dict, ctx: Ctx) -> None:
+    """Count a tool use for Activity's summed line. A shell line that runs the journal is not counted:
+    the journal command itself writes out the queue."""
+    from datetime import datetime, timezone
+    import commandlog
+    name = payload.get("tool_name") or ""
+    if not name or (name == "Bash" and any(_is_journal_verb(w[0]) for w in
+                                           _pieces(str((payload.get("tool_input") or {}).get("command", ""))) if w)):
+        return
+    commandlog.queue_tool(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, name,
+                          datetime.now(timezone.utc).isoformat(timespec="seconds"))
+
+
 def _git_tracked(project: Path, path: Path) -> bool:
     import subprocess
     try:
@@ -2346,7 +2359,8 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     _floor(ctx)
     try:
         _record_files(payload, ctx)
-    except Exception as e:  # counting files must never stop a tool call
+        _queue_tool(payload, ctx)
+    except Exception as e:  # counting files and tool uses must never stop a tool call
         print(f"journal files: {e}", file=sys.stderr)
     # AN ACTION BEATS A HINT: this one CHANGED the record, so it is said before any nudge
     # that only advises, and it is said to the user too — an automatic close they cannot

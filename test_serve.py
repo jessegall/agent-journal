@@ -685,6 +685,20 @@ check("a change made in the viewer is an Activity line by you, naming what chang
       (("Changed to-do priority", _urgent, "low", "You") in _mine, ("Edited to-do", _urgent, "", "You") in _mine), (True, True))
 for _i, _value in enumerate(("150", "100", "120")):
     commandlog.record_web(root, "alpha", "todos", "update", "900", {"priority": _value}, f"2099-01-04T00:00:0{_i}+00:00")
+_tool_stem = "toolqueue-session"
+for _tool in ("Bash", "Bash", "Edit", "Bash", "Write"):
+    commandlog.queue_tool(root, "alpha", _tool_stem, _tool, "2000-01-05T00:00:00+00:00")
+check("tool uses are queued, not written one by one",
+      [e for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:00+00:00"], [])
+commandlog.flush_tools(root, "alpha", _tool_stem, "2000-01-05T00:00:01+00:00")
+check("a flush writes the queue as one plain line by the agent, and empties it",
+      ([(e["text"], e["by"], e["n"]) for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:01+00:00"],
+       state.get(root, commandlog.QUEUE, None, stem=_tool_stem)),
+      ([("Ran 3 commands, edited 2 files", "Agent", None)], {}))
+for _i in range(commandlog.QUEUE_SIZE):
+    commandlog.queue_tool(root, "alpha", _tool_stem, "Read", "2000-01-05T00:00:02+00:00")
+check("the tenth tool use writes the line by itself",
+      [e["text"] for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:02+00:00"], ["Read 10 files"])
 check("a priority that matches a named level shows the name; any other number shows as it is",
       [e["detail"] for e in commandlog.entries(root, "alpha") if e.get("n") == 900], ["high", "default", "120"])
 commandlog.record(root, "alpha", _commands.REGISTRY.parse(["todos", "priority", "140", "high"])[0], "2099-01-01T00:00:06+00:00")

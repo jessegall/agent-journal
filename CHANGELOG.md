@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.29 — Activity sums up the agent's other tool use
+
+Activity showed the journal commands the agent ran, but not the rest of its work between
+them: shell commands, edits, reads, searches. Those are now counted as they happen and shown
+as one line, like "Ran 4 commands, edited 3 files, read 2 files". The line is written after 10
+tool uses, or as soon as the agent runs a journal command, whichever comes first. A journal
+command run through the shell counts as that journal command, not as a queued command.
+
 ## 1.131.28 — Message the agent from the Activity column
 
 Sending a message meant going to the Messages page. The Activity column now has a small
