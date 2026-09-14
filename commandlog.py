@@ -3,9 +3,38 @@ from __future__ import annotations
 from pathlib import Path
 
 import state
+from templates import render
 
 KEY = "activity"
-CAP = 250
+SHOW, KEEP = "activity_show", "activity_keep"
+DEFAULTS = {SHOW: 50, KEEP: 250}
+
+MESSAGES = {
+    "set_usage": "{key} wants a whole number of at least 1",
+    "set_show": "{env}: Activity shows the last {n} line(s)",
+    "set_keep": "{env}: the activity log keeps the last {n} line(s)",
+}
+
+
+def say(message: str, /, **values) -> str:
+    return render(MESSAGES[message], **values)
+
+
+def setting(root: Path, track: str, key: str) -> int:
+    got = state.get(root, key, {})
+    value = got.get(track) if isinstance(got, dict) else None
+    return DEFAULTS[key] if value is None else int(value)
+
+
+def set_setting(root: Path, track: str, key: str, value) -> tuple[bool, str]:
+    if value is None or int(value) < 1:
+        return False, say("set_usage", key=key)
+    with state.locked(root):
+        got = state.get(root, key, {})
+        got = got if isinstance(got, dict) else {}
+        got[track] = int(value)
+        state.put(root, key, got)
+    return True, say("set_show" if key == SHOW else "set_keep", env=track, n=int(value))
 SKIP = {"statusline", "serve", "channel", "migrate", "version"}
 # writes that Activity already shows from the stores they change
 SHOWN = {"todos:add", "todos:done", "work:start", "work:update", "work:end", "questions:add", "messages:done"}
@@ -89,7 +118,7 @@ def record(root: Path, track: str, parsed, at: str) -> None:
     with state.locked(root):
         items = state.tracked(root, KEY, track, [])
         items = (items if isinstance(items, list) else []) + [entry]
-        state.put_tracked(root, KEY, track, items[-CAP:])
+        state.put_tracked(root, KEY, track, items[-setting(root, track, KEEP):])
 
 
 def entries(root: Path, track: str) -> list[dict]:

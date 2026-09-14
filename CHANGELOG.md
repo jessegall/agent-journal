@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.117.0 — Activity shows the last 50 lines, and both numbers are set in Settings
+
+Activity lists the last 50 lines instead of 12, scrolling where they do not fit. The
+environment's Settings page has an Activity section: how many lines Activity shows
+(default 50) and how many the activity log keeps before removing the oldest (default 250).
+
 ## 1.116.0 — Activity is an always-visible right column
 
 Activity sits in a fixed column on the right of every page, full height, and only its list
