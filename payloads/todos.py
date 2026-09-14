@@ -14,6 +14,7 @@ class StorePayload(WherePayload):
     body = Field(str, verbatim=True)
     after = Field(str)
     needs = Field(str)
+    priority = Field(str)
 
 
 class UpdatePayload(Payload):

@@ -635,6 +635,10 @@ _, _, body = get("/api/env/alpha/activity")
 import comments as _comments  # noqa: E402
 _comments.add(root, "todo:1", "check the colour first", "2099-01-02T00:00:00+00:00", source="web", track="alpha")
 _, _, body = get("/api/env/alpha/activity")
+status, got = post("/api/env/alpha/todos", {"title": "an urgent thing to fix", "priority": "high"})
+_, _, body = get("/api/env/alpha/todos")
+check("a to-do created with a priority keeps it",
+      (status in (200, 201), [t["priority"] for t in json.loads(body) if t["title"] == "an urgent thing to fix"]), (True, [150]))
 import questions as _questions  # noqa: E402
 _questions.add(root, "which shade of blue?", "2099-01-03T00:00:00+00:00", track="alpha")
 _answered_q = len(_questions._all(root, "alpha"))
