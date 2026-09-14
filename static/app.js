@@ -238,8 +238,7 @@ const PriorityIcon = {
 // the page's top bar: crumbs, the page's own button, then Search and Notifications on every page
 const TopBar = {
   props: { crumbs: { type: Array, default: () => [] } },
-  // a getter: QuestionAnswer is defined further down this file, and Vue reads this at first render
-  get components() { return { Icon, QuestionAnswer }; },
+  components: { Icon },
   setup() {
     const hashEnv = parseHash().params.env || "";
     const env = computed(() => {
@@ -288,11 +287,10 @@ const TopBar = {
               <div class=drop-head><span>Notifications</span>
                 <button v-if="notes.data && notes.data.length" type=button class="btn more" @click="readAll">Mark all read</button></div>
               <p v-if="!(notes.data && notes.data.length) && !suggestions.length && !openQuestions.length" class="muted drop-empty">Nothing waiting.</p>
-              <div v-for="q in openQuestions" :key="'q' + q.n" class="drop-row drop-question">
-                <a class=drop-kind :href="'#/env/' + env + '/questions/' + q.n" @click="drop.open = false">Question {{ q.n }}</a>
-                <span class=drop-text>{{ q.text }}</span>
-                <QuestionAnswer compact :env="env" :q="q" @answered="asks.reload()"/>
-              </div>
+              <a v-for="q in openQuestions" :key="'q' + q.n" class=drop-row @click="drop.open = false"
+                :href="(q.links && q.links.length && $refHref(q.links[0].ref, env)) || '#/env/' + env + '/questions/' + q.n">
+                <span class=drop-kind>Question {{ q.n }}</span><span class=drop-text>{{ q.text }}</span>
+              </a>
               <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
                 <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
               </a>

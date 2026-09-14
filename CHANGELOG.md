@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.128.2 — Questions in Notifications are links, not answer forms
+
+In the top bar's Notifications list an open question is now one short row, "Question 14"
+and its text, like a suggestion. Clicking it opens the to-do or other item the question is
+about, where it can be answered, or the question page when it is about nothing. The answer
+box stays in panels only.
+
 ## 1.128.1 — The sidebar footer: Agent with a blinking dot, a divider, then what it is doing
 
 The agent status at the bottom of the sidebar has a top row with "Agent" on the left and the
