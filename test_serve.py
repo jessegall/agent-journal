@@ -789,18 +789,18 @@ _tl = [_tx.Line(1, "user", "human", "fix the build", "2026-09-14T10:00:00Z"),
        _tx.Line(6, "user", "tool_result", "12 passed", "2026-09-14T10:00:20Z"),
        _tx.Line(7, "user", "human", "thanks", "2026-09-14T10:30:00Z")]
 _p1 = _tx.page(_tl, limit=3)
-check("the transcript page reads from the top: the first lines, and where the next load starts",
-      ([r["n"] for r in _p1["lines"]], _p1["next"], _p1["total"]), ([1, 2, 3], 3, 7))
-check("the next load carries on after the last line shown", [r["n"] for r in _tx.page(_tl, after=_p1["next"], limit=3)["lines"]], [4, 5, 6])
-_p3 = _tx.page(_tl, after=6, limit=3)
-check("and the last load says there is nothing more to load", ([r["n"] for r in _p3["lines"]], _p3["next"]), ([7], None))
+check("the transcript page opens at the newest lines, and says where the older ones start",
+      ([r["n"] for r in _p1["lines"]], _p1["prev"], _p1["total"]), ([5, 6, 7], 5, 7))
+check("the next load is the lines just before the oldest shown", [r["n"] for r in _tx.page(_tl, before=_p1["prev"], limit=3)["lines"]], [2, 3, 4])
+_p3 = _tx.page(_tl, before=2, limit=3)
+check("and at the start of the transcript there is nothing older to load", ([r["n"] for r in _p3["lines"]], _p3["prev"]), ([1], None))
 import controllers.agent as _agc  # noqa: E402
 check("an environment no session has worked on has no agent to show",
       _agc.AgentController._session(root, "zz-nobody-here", ""), None)
 from payloads import agent as _agp  # noqa: E402
-_built = _agp.AgentPayload.build("alpha", None, {"agent": "abc123de", "kind": "subagent", "transcript": "1", "after": "1000"}, "web")
+_built = _agp.AgentPayload.build("alpha", None, {"agent": "abc123de", "kind": "subagent", "transcript": "1", "before": "1000"}, "web")
 check("the agent, its kind and where to read from reach the request, not the request's own id",
-      (_built.agent, _built.kind, _built.transcript, _built.after), ("abc123de", "subagent", True, 1000))
+      (_built.agent, _built.kind, _built.transcript, _built.before), ("abc123de", "subagent", True, 1000))
 _sess = "11111111-2222-3333-4444-555555555555"
 _w_beta = state.tracked(root, "work", "beta", [])
 _w_beta.append({"subject": "work opened by that session", "at": "2026-09-14T10:00:00+00:00", "ended": None, "session": _sess + ".jsonl"})
