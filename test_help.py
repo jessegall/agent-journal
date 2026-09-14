@@ -484,6 +484,13 @@ check("the core skill itself names the model rule, not only journal-agents",
       all(w in _core for w in ("haiku", "sonnet", "opus")), True)
 # agents filed to-dos that rested on each other without saying so, because no skill taught it
 _todos_skill = (SRC / "skills" / "journal-todos" / "SKILL.md").read_text()
+# THE HOLD TABLE HAD DRIFTED FROM WHAT THE HOOK PRINTS: an agent told to load the skill because it was
+# held looked up the line it was shown and found no row for it
+check("every hold the stop queue prints has its row in the skill, spelled as printed",
+      [p for p in ("untagged message(s)", "work still open", "work deferred in words, not parked",
+                   "auto is on, no loop running", "opened by another session", "nothing on the list can be picked up",
+                   "have evidence against them", "questions, suggestions, suggest_hint, work, auto, recall, cleanup")
+       if p not in _skill], [])
 check("the to-do skill teaches that a brief changes with the task and progress goes in work update",
       ("journal todos amend " in _todos_skill, "progress is `journal work update`" in _todos_skill), (True, True))
 check("the to-do skill teaches recording that a to-do waits on another, and the core skill points at it",

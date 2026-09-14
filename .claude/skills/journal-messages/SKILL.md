@@ -91,7 +91,8 @@ controllers the terminal commands use, so it lands in the same record and obeys 
 refusals (a closed to-do cannot be edited, a struck pin cannot change).
 
 **A session started with `journal claude` hears the viewer while idle.** A message the user
-leaves wakes it; with auto mode on, an answered question and a comment do too. With auto mode
+leaves wakes it; with auto mode on, an answered question, a comment and a decided suggestion do too,
+and only while it is idle. With auto mode
 off, nothing but a message wakes it, and a wake-up is never a reason to start on the to-do list.
 
 **So the record can change under you.** A to-do you are working may have been re-prioritised

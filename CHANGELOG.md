@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.25 — The skills name the holds the way the hook prints them
+
+The core skill tells an agent that has been held to look the line up in its table. Several rows no longer
+matched what the hook prints, and some holds had no row at all, so the agent found nothing and improvised.
+
+- The table now spells each hold as printed: "N untagged message(s)", "work still open", "work deferred in
+  words, not parked", "N thing(s) in the record have evidence against them". New rows cover work opened by
+  another session, nothing on the list can be picked up, the to-dos-waiting note and the recall note.
+- The order the stop queue raises things in now includes suggest_hint, recall and cleanup.
+- `journal reports keep` archives after 7 days by default, not 30 as the command reference said.
+- The messages skill says a decided suggestion also wakes an idle session under auto mode.
+
+A test now fails if a hold's printed text has no row in the skills.
+
 ## 1.136.24 — The start block and the open-work hold speak to the right session
 
 - A session on no environment was told, in the same block, to ask the user which environment to use and

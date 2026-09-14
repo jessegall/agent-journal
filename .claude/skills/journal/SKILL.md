@@ -257,7 +257,7 @@ The noun answers to `env`, `envs`, `environment`, `tracks` and `track` as well.
 ## If a hook holds or denies you
 
 Read what it says and do that one thing. A hold is one line, and holds come one per
-stop in a fixed order — claimed, environment, inbox, comments, loop, context, deferral, untagged, questions, suggestions, work, auto — so what
+stop in a fixed order — claimed, environment, inbox, comments, loop, context, deferral, untagged, questions, suggestions, suggest_hint, work, auto, recall, cleanup — so what
 you are shown is the first thing owed, and the next stop shows the next. When the line ends with
 "details: `.journal/journal.py next`", run that first: it prints the full text of the
 hold, which to-do is next, the questions the user answered, or what is filling the
@@ -274,17 +274,21 @@ thing to do now.
 | *your reply proposes a change nobody asked for*                | a hint: `journal suggest "<the change>" --brief` if the user should decide it; otherwise ignore |
 | *A subagent dispatch must name its model*                       | add `model`: haiku, sonnet or opus. A fork, or an agent whose definition sets its model, goes through |
 | *AUTO IS ON, so the question tool is refused*                  | `questions add "<question>" --about=<ref>` and carry on with what does not depend on it |
-| *N message(s) carried no tag*                                  | tag your next message; it will not hold for those lines again |
-| *N piece(s) of work still open*                                | `work end` it, `update` where it got to, or `work await "<what>"` if it is in flight |
+| *N untagged message(s)*                                        | tag your next message; it will not hold for those lines again |
+| *work still open* / *auto is on, work still open*              | `work end` it, `update` where it got to, or `work await "<what>"` if it is in flight |
+| *auto is on, but the open work was opened by another session*  | not yours to end: leave it to that session; if that session is gone, `work end --force "<note>"` if it is finished, or ask the user |
 | *Nothing is open, so this edit would not be filed*             | `work start` the work, then edit                            |
 | *context N% full — decide before any other tool runs*          | `pin`, `rule` or `nothing "<why>"`                |
-| *your reply puts work off — park it as a to-do*                | `todo "<title>" --brief`, then say so; or run the call again if nothing is deferred |
+| *work deferred in words, not parked*                           | `todo "<title>" --brief`, then say so. If nothing was put off: at a stop, say so in one line; before a tool call, run the call again |
 | *journal: work is open — … If this asks for something else*    | decide: same work, park it, or `update` and `work start` |
 | *auto is on, N to-do(s) waiting*                               | `journal next`, then `todo start <n>`                  |
+| *auto is on for `x`, but nothing on the list can be picked up* | nothing to start: each reason is named. Answer or wait; a row reported finished by an agent is yours to close with `todos done <n>` |
+| *N to-do(s) waiting on `x`*                                    | shown to the user: delayed work, not an instruction to start any of it |
 | *auto is on, no loop running*                                  | start one: the `loop` skill with `15m journal next`; `journal loop set` if one already runs. While it stands the next WRITE is refused — auto without a loop is a promise nothing keeps |
 | *a cleanup report is ready — N entr(ies) …*                     | when you reach a pause: `journal cleanup`, then `cleanup read`; strike what you judge dead. Never a hold |
-| *N entr(ies) in the record have evidence against them*         | `journal cleanup`, then `cleanup read`, then strike what you judged dead |
+| *N thing(s) in the record have evidence against them*          | `journal cleanup`, then `cleanup read`, then strike what you judged dead |
 | *the reading pass … was never done / N d ago*                  | `journal cleanup read` — judge every rule and pin against the code you just worked in |
+| *… are in force here, and the block that handed them to you is far behind* | `journal cleanup read` if the reading pass is owed; otherwise `journal rules` and `journal pins` read them back |
 | *environment `x` is taken by another session*                        | ask the user which environment this session works on, then `switch "<name>"`; if the holder is gone and they say so, `claim "<name>" "<why>"` |
 | *environment `x` was claimed by another session*                     | another session took it and said why; you are bound to nothing — `switch "<name>"`, or `claim "<name>" "<why>"` to take it back |
 | *THIS SESSION HAS NO ENVIRONMENT*                              | take one from what the user just asked — `switch "<name>"` — and say which; ask them if it named none |
