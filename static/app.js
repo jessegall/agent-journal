@@ -2293,9 +2293,27 @@ const Commit = {
         <template v-else-if="found.data">
           <h1 class=p-title>{{ found.data.subject || 'Commit ' + sha.slice(0, 7) }}</h1>
           <dl class=props>
-            <dt>Commit</dt><dd><span class="chip sha">{{ found.data.sha }}</span></dd>
-            <dt>Made</dt><dd>{{ found.data.age || 'just now' }}</dd>
+            <dt>Commit</dt><dd><span class="chip sha">{{ found.data.sha.slice(0, 12) }}</span>
+              <a v-if="found.data.url" class="btn flush" :href="found.data.url" target=_blank rel=noopener>View on GitHub</a></dd>
+            <template v-if="found.data.author"><dt>Author</dt><dd>{{ found.data.author }}</dd></template>
+            <dt>Made</dt><dd>{{ found.data.date ? new Date(found.data.date).toLocaleString() : '' }}<span class=muted>{{ found.data.date ? ' · ' : '' }}{{ found.data.age || 'just now' }}</span></dd>
+            <dt>Pull request</dt><dd>
+              <a v-if="found.data.pull_request" class=chip :href="found.data.pull_request.url" target=_blank rel=noopener>#{{ found.data.pull_request.number }} {{ found.data.pull_request.title }} · {{ found.data.pull_request.state.toLowerCase() }}</a>
+              <span v-else class=muted>{{ found.data.url ? 'None holds this commit' : 'Not known' }}</span></dd>
           </dl>
+          <div v-if="found.data.body">
+            <p class=section-label>Message</p>
+            <div class="prose commit-body">{{ found.data.body }}</div>
+          </div>
+          <div v-if="found.data.files && found.data.files.length">
+            <p class=section-label>Files changed <span class=muted>{{ found.data.files.length }}</span></p>
+            <div class=work-files>
+              <div v-for="f in found.data.files" :key="f.path" class=work-file :title="f.path">
+                <span class=work-file-path>{{ f.path }}</span>
+                <span class=work-file-add>+{{ f.added }}</span><span class=work-file-del>−{{ f.removed }}</span>
+              </div>
+            </div>
+          </div>
           <div>
             <p class=section-label>Work <span class=muted>{{ found.data.work.length }}</span></p>
             <div class=linked>

@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.81 — The commit page shows the whole commit
+
+A commit's page showed only its subject, its hash and the work and to-dos it belonged to. It now
+also shows who made it and when, the rest of its message, every file it changed with lines added and
+removed, a **View on GitHub** link, and the pull request that holds it when there is one. The pull
+request is looked up with the GitHub CLI, once per commit; without it the page says the pull request
+is not known.
+
 ## 1.131.80 — Commit hashes are easier to see and click
 
 The short commit hash in a to-do's work log, a piece of work's commit list and the commit page was

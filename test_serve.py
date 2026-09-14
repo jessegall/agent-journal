@@ -773,6 +773,13 @@ check("and the work item lists the commit",
       [c["sha"] for c in json.loads(get(f"/api/env/beta/work/{_beta_n}")[2])["commits"]], [_sha])
 check("a hash nobody committed is not found, and a word that is not a hash is refused",
       (get("/api/env/beta/commits?sha=0000000")[0], get("/api/env/beta/commits?sha=nothex")[0]), (404, 400))
+import controllers.commits as _commits  # noqa: E402
+check("a git remote becomes the repository's web address, over https or ssh, and anything else gives none",
+      [_commits.repo_url(r) for r in ("https://github.com/o/r.git", "git@github.com:o/r.git", "ssh://git@gitlab.com/g/p.git", "not a remote")],
+      ["https://github.com/o/r", "https://github.com/o/r", "https://gitlab.com/g/p", ""])
+check("a commit git knows nothing about still has its page, without files, a link or a pull request",
+      [(d["files"], d["url"], d["pull_request"], d["subject"]) for d in [json.loads(get(f"/api/env/beta/commits?sha={_sha[:7]}")[2])]],
+      [([], "", None, "ship the thing")])
 import transcript as _tx  # noqa: E402
 _tl = [_tx.Line(1, "user", "human", "fix the build", "2026-09-14T10:00:00Z"),
        _tx.Line(2, "assistant", "text", "", "2026-09-14T10:00:05Z", tools=["Bash"]),
