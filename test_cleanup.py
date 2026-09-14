@@ -19,6 +19,7 @@ os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
+import testkit  # noqa: E402,F401  (removes this suite's temporary folders when it exits)
 import cleanup, docs as docs_mod, pins, state, tracks, work  # noqa: E402
 import todo as todo_mod  # noqa: E402
 

@@ -211,10 +211,15 @@ _code = ("import sys, tempfile; from pathlib import Path; sys.path.insert(0, %r)
 _gone = _subprocess.run([sys.executable, "-c", _code % (str(SRC), str(SRC), "True")],
                         capture_output=True, text=True, timeout=120).stdout.strip()
 _kept = _subprocess.run([sys.executable, "-c", _code % (str(SRC), str(SRC), "False")],
-                        capture_output=True, text=True, timeout=120).stdout.strip()
+                        capture_output=True, text=True, timeout=120,
+                        env={**os.environ, "AGENT_JOURNAL_KEEP_TMP": "1"}).stdout.strip()
 check("a test project is removed when the process that made it exits, and kept when asked",
       (bool(_gone) and Path(_gone).exists(), bool(_kept) and Path(_kept).exists()), (False, True))
 _shutil.rmtree(_kept, ignore_errors=True)
+_plain = _subprocess.run([sys.executable, "-c", "import sys, tempfile; sys.path.insert(0, %r); import testkit; "
+                          "print(tempfile.mkdtemp())" % str(SRC)], capture_output=True, text=True, timeout=120).stdout.strip()
+check("any temporary folder a test process makes is removed when it exits, not only projects",
+      (bool(_plain), bool(_plain) and Path(_plain).exists()), (True, False))
 
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

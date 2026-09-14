@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.27 — The tests remove every temporary folder they make
+
+1.136.26 was not enough. It removed the projects built by `testkit.make`, but most suites also call
+`tempfile.mkdtemp()` directly, for a package copy, a bare record or a transcript, and a full run of the
+suites still left 73 folders behind.
+
+Importing `testkit` now points the process's temporary folder at one scratch folder, and removes that
+folder when the process exits, so every temporary folder a test makes goes with it. The four suites that
+made temporary folders without importing `testkit` now import it. A process whose folders must outlive it,
+such as a child that builds a project for its parent to use, sets `AGENT_JOURNAL_KEEP_TMP=1`. A test checks
+that a plain temporary folder made in a test process is gone after it exits.
+
 ## 1.136.26 — The tests remove the projects they make
 
 Every test scenario built a throwaway project in the system's temporary folder and never removed it.
