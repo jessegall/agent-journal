@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.75 — Home's cards show what waits on you
+
+The four cards at the top of Home were Message queue, Questions for you, In progress and Blocked.
+Messages rarely wait, because the agent picks them up quickly, and in progress and blocked were two
+cards for one list. Now the cards are **Notifications** (unread, for you), **Questions for you**,
+**Suggestions** waiting on your decision, and **Open to-dos**, which counts every open to-do and
+shows underneath how many are in progress, waiting on you, and blocked.
+
 ## 1.131.74 — A Transcript page for reading the agent's session
 
 There is a new Transcript page in the sidebar. It shows the session working on the environment:
