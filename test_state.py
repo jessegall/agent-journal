@@ -769,6 +769,16 @@ subprocess.run([I], capture_output=True, text=True, timeout=180)
 installed = d / ".claude" / "skills" / "journal"
 check("install carries SKILL.md and its references",
       ((installed / "SKILL.md").is_file(), (installed / "references" / "commands.md").is_file()), (True, True))
+# the rule every project must see: install writes it into both briefing files, and an update keeps it whole
+_brief = {n: (d / n).read_text() if (d / n).is_file() else "" for n in ("CLAUDE.md", "AGENTS.md")}
+check("install writes the journal's rules, the model rule among them, into CLAUDE.md and AGENTS.md",
+      [n for n, t in _brief.items() if "BEGIN: agent-journal" not in t or "B1 — Never dispatch a subagent without naming its model" not in t], [])
+(d / "CLAUDE.md").write_text("# mine, kept\n\n" + _brief["CLAUDE.md"].replace("haiku for mechanical", "EDITED BY HAND"))
+subprocess.run([I], capture_output=True, text=True, timeout=180)
+_again = (d / "CLAUDE.md").read_text()
+check("an update puts an edited block back as shipped, once, and keeps what is outside it",
+      ("EDITED BY HAND" in _again, _again.count("BEGIN: agent-journal"), "# mine, kept" in _again, "haiku for mechanical" in _again),
+      (False, 1, True, True))
 check("and every focused skill beside it",
       [n for n in ("journal-todos", "journal-questions", "journal-messages", "journal-memory", "journal-docs", "journal-agents")
        if not (d / ".claude" / "skills" / n / "SKILL.md").is_file()], [])

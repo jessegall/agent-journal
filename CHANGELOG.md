@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.7 — A test holds the model rule in every CLAUDE.md
+
+Nothing changes for projects. Every install and upgrade already writes the journal's rules, with the
+model rule (B1) among them, into a managed block in `CLAUDE.md` and `AGENTS.md`. A test now makes sure
+of it: a fresh install writes the rule into both files, and an update restores a hand-edited block
+without touching anything outside it. The only way to leave the block out is `builtin_rules` set to
+false in the project's settings.
+
 ## 1.134.6 — The journal skills load when they should
 
 Reviewed against skill-creator's guidance. The core `journal` skill's description was 1037
