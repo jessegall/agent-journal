@@ -400,7 +400,7 @@ check("activity lists the latest journal events, newest first, and no agent when
 status, got = post("/api/env/alpha/questions", {"text": "Which colour?", "description": "The button needs one.",
                                                 "options": ["blue", "green", " blue "]})
 check("a question keeps its description and its options, each once",
-      (status, got["data"]["description"], got["data"]["options"]), (201, "The button needs one.", ["blue", "green"]))
+      (status, got["data"]["description"], [o["label"] for o in got["data"]["options"]]), (201, "The button needs one.", ["blue", "green"]))
 n_q = got["data"]["n"]
 status, got = post(f"/api/env/alpha/questions/{n_q}/answer", {"answer": "green"})
 check("choosing an option answers with it", (status, got["data"]["answer"]), (200, "green"))

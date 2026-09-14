@@ -241,5 +241,22 @@ check("changing only the options of an open question does not touch its history"
       (code, [a["answer"] for a in q_mod._all(root, "default")[-1].get("earlier_answers") or []]), (0, ["blue"]))
 j("questions", "withdraw", str(n_colour), "only testing the reword")
 
+# ------------------------------------------------------------------ an option carries a description and a code example
+code, out = j("questions", "add", "where does the cache live?",
+              "--option=In memory", "--option-description=Fast, lost on restart",
+              "--option=On disk", "--option-description=Survives restarts", "--option-code=cache = DiskCache('.cache')")
+n_cache = len(q_mod._all(root, "default"))
+check("each option keeps the description and code given in its position",
+      (code, q_mod.row_response(n_cache, q_mod._all(root, "default")[-1])["options"]),
+      (0, [{"label": "In memory", "description": "Fast, lost on restart", "code": ""},
+           {"label": "On disk", "description": "Survives restarts", "code": "cache = DiskCache('.cache')"}]))
+code, out = j("questions", "show", str(n_cache))
+check("show prints each option's description and code under it",
+      ("1. In memory" in out, "Fast, lost on restart" in out, "cache = DiskCache('.cache')" in out), (True, True, True))
+check("an option stored as a bare string, as older questions have, reads as its label",
+      q_mod._options(["8420", {"label": "9000", "code": "port = 9000"}]),
+      [{"label": "8420", "description": "", "code": ""}, {"label": "9000", "description": "", "code": "port = 9000"}])
+j("questions", "withdraw", str(n_cache), "only testing option descriptions")
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

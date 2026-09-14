@@ -92,10 +92,14 @@ def parse_signature(signature: str, casts: dict | None = None) -> tuple[str, str
 
 
 class Parsed:
-    __slots__ = ("command", "_args", "_opts")
+    __slots__ = ("command", "_args", "_opts", "_raw")
 
-    def __init__(self, command: Command, args: dict, opts: dict):
-        self.command, self._args, self._opts = command, args, opts
+    def __init__(self, command: Command, args: dict, opts: dict, raw: tuple = ()):
+        self.command, self._args, self._opts, self._raw = command, args, opts, tuple(raw)
+
+    def options_in_order(self) -> list[tuple[str, str | None]]:
+        """Every --name=value as typed, in command-line order: for options that belong to the one before them."""
+        return list(self._raw)
 
     def arg(self, name: str, default=None):
         return self._args.get(name, default)
@@ -269,7 +273,7 @@ class Registry:
             opts, why = self._options(cmd, raw)
             if opts is None:
                 return None, why
-            return Parsed(cmd, bound, opts), ""
+            return Parsed(cmd, bound, opts, raw), ""
         return None, first
 
     def command_of(self, words: list[str]) -> Command | None:

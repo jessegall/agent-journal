@@ -57,25 +57,38 @@ class Show(Resource):
         return 0
 
 
+def options_of(p: Parsed) -> list[dict]:
+    """Each --option, with the --option-description and --option-code typed after it and before the next --option."""
+    out: list[dict] = []
+    for name, value in p.options_in_order():
+        if name == "option":
+            out.append({"label": value or "", "description": "", "code": ""})
+        elif name in ("option-description", "option-code") and out:
+            out[-1]["description" if name == "option-description" else "code"] = value or ""
+    return out
+
+
 class Add(Resource):
-    signature = "questions:add {text* : the question, in one short line} {--about=*} {--description=} {--option=*} {--pick=}"
+    signature = ("questions:add {text* : the question, in one short line} {--about=*} {--description=} {--option=*}"
+                 " {--option-description=*} {--option-code=*} {--pick=}")
     writes = True
     controller = CONTROLLER
     action = "store"
 
     def extra(self, p: Parsed):
-        return {"options": p.option("option") or [], **({"pick": p.option("pick")} if p.option("pick") else {})}
+        return {"options": options_of(p), **({"pick": p.option("pick")} if p.option("pick") else {})}
 
 
 class Edit(Resource):
-    signature = "questions:edit {n : a question number} {text* : the question, reworded} {--description=} {--option=*} {--pick=}"
+    signature = ("questions:edit {n : a question number} {text* : the question, reworded} {--description=} {--option=*}"
+                 " {--option-description=*} {--option-code=*} {--pick=}")
     casts = QUESTION
     writes = True
     controller = CONTROLLER
     action = "update"
 
     def extra(self, p: Parsed):
-        return {**({"options": p.option("option")} if p.option("option") else {}),
+        return {**({"options": options_of(p)} if p.option("option") else {}),
                 **({"pick": p.option("pick")} if p.option("pick") else {})}
 
 

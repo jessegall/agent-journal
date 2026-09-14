@@ -459,9 +459,11 @@ const QuestionAnswer = {
       <div v-if="q.options && q.options.length" class=options>
         <p v-if="!compact" class=section-label>{{ locked ? 'Options' : q.answer ? 'Choose again' : 'Choose one' }}</p>
         <button v-for="(o, i) in q.options" :key="i" type=button
-          :class="['option', {picked: state.picked === o, chosen: !state.picked && q.answer === o, locked, 'has-pick': q.pick === i + 1}]"
-          :disabled="locked || state.answering" :aria-pressed="state.picked === o" @click="pick(o)">
-          <span v-if="q.pick === i + 1" class=option-pick>Agent's pick</span>{{ o }}</button>
+          :class="['option', {picked: state.picked === o.label, chosen: !state.picked && q.answer === o.label, locked, 'has-pick': q.pick === i + 1}]"
+          :disabled="locked || state.answering" :aria-pressed="state.picked === o.label" @click="pick(o.label)">
+          <span v-if="q.pick === i + 1" class=option-pick>Agent's pick</span>{{ o.label }}
+          <span v-if="o.description" class=option-description>{{ o.description }}</span>
+          <code v-if="o.code" class=option-code>{{ o.code }}</code></button>
         <div v-if="!locked" role=button :tabindex="state.answering ? -1 : 0" :aria-pressed="state.picked === CUSTOM"
           :class="['option', 'option-custom', {picked: state.picked === CUSTOM}]"
           @click="pick(CUSTOM)" @keydown.enter.self.prevent="pick(CUSTOM)" @keydown.space.self.prevent="pick(CUSTOM)">
