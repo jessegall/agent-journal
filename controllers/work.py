@@ -58,7 +58,8 @@ class WorkController(Controller):
                 "todo": t["n"] if t else None, "doc": (t.get("doc") or None) if t else None,
                 "notes": [{"at": x.get("at", ""), "text": x.get("text", "")} for x in w.notes],
                 "files": [{"path": f.get("path", ""), "created": bool(f.get("created")), "added": f.get("added", 0),
-                           "removed": f.get("removed", 0)} for f in w.files]}
+                           "removed": f.get("removed", 0)} for f in w.files],
+                "commits": [{"sha": c.get("sha", ""), "subject": c.get("subject", ""), "at": c.get("at", "")} for c in w.commits]}
 
     def index(self, root: Path, p: ListingPayload) -> Result:
         repo = self.repository(root, p)

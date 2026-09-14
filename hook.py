@@ -1914,6 +1914,17 @@ def _snapshot_files(payload: dict, ctx: Ctx) -> None:
         state.put(ROOT, "files_before", None, stem=ctx.stem)
 
 
+def _record_commits(before: dict | None, after: dict | None, ctx: Ctx) -> None:
+    """A shell command that moved HEAD made commits; each goes on the open work with its subject."""
+    from datetime import datetime, timezone
+    if not before or not after or before["head"] == after["head"]:
+        return
+    got = _git_out(ROOT.parent, "log", "--format=%H%x09%s", f"{before['head']}..{after['head']}")
+    commits = [{"sha": sha, "subject": subject} for sha, _, subject in
+               (line.partition("\t") for line in (got or "").splitlines()) if sha]
+    work.record_commits(ROOT, _owners(ctx), list(reversed(commits)), datetime.now(timezone.utc).isoformat(timespec="seconds"))
+
+
 def _record_files(payload: dict, ctx: Ctx) -> None:
     """The files this tool call changed go on the open work, with lines added and removed."""
     from datetime import datetime, timezone
@@ -1923,7 +1934,9 @@ def _record_files(payload: dict, ctx: Ctx) -> None:
         if not before:
             return
         state.put(ROOT, "files_before", None, stem=ctx.stem)
-        changes = _bash_file_changes(before, _git_snapshot(ROOT.parent), ROOT.parent)
+        after = _git_snapshot(ROOT.parent)
+        changes = _bash_file_changes(before, after, ROOT.parent)
+        _record_commits(before, after, ctx)
     if changes:
         work.record_files(ROOT, _owners(ctx), changes, datetime.now(timezone.utc).isoformat(timespec="seconds"))
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from controllers.activity import ActivityController
 from controllers.comments import CommentsController
+from controllers.commits import CommitsController
 from controllers.docs import DocsController
 from controllers.environments import EnvironmentController
 from controllers.files import FilesController
@@ -22,4 +23,4 @@ CONTROLLERS = {c.resource: c for c in (RemindersController(), QuestionsControlle
                                           WorkController(), DocsController(),
                                           EnvironmentController(), SearchController(), ToolsController(),
                                           ActivityController(), CommentsController(), ReportsController(), NotificationsController(), SuggestionsController(),
-                                          FilesController())}
+                                          FilesController(), CommitsController())}
