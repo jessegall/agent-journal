@@ -1115,6 +1115,13 @@ const QuestionPanel = {
       ];
     });
     const done = panelDone(props, item);
+    // opening an open question is the user seeing it: Activity stops asking for their attention
+    let marked = false;
+    watch(() => item.data, (q) => {
+      if (marked || !q || q.status !== "open" || q.seen) return;
+      marked = true;
+      postJSON(`${api.value}/${q.n}/seen`, {}).then(() => changed()).catch(() => { marked = false; });
+    }, { immediate: true });
     return { item, onAnswered, questionKind, actions, done };
   },
   template: `

@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.16 — An asked question stops asking once you open it
+
+An "Asked question" line in Activity stayed amber until you answered the question. It now stops
+being amber as soon as you open the question, in its panel on Home or on the Questions page, since
+opening it means you have seen it. An answer, or a withdrawal, clears it as before. Opening a
+question writes no Activity line of its own.
+
 ## 1.134.15 — Ask the agent to load a skill, now or at every start
 
 A skill's page has two buttons. "Ask the agent to load it now" leaves the agent a message to load that

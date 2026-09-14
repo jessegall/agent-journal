@@ -27,6 +27,7 @@ MESSAGES = {
     "fact_open": "open",
     "fact_about": "about {links}",
     "needs_text": 'a question needs its text: journal questions add "<question>"',
+    "seen": "question {n} is marked seen",
     "choices_in_text": "the question lists its choices in its text ({found}), so the user cannot click one. Ask it in one line and give "
                        'each choice as its own option: journal questions add "<the question>" --description="<the context>" '
                        '--option="<a choice>" [--option-description="<why>"] --option="<another choice>"',
@@ -224,6 +225,19 @@ def _find(items: list[dict], n: int) -> tuple[dict | None, str]:
     return entries._find(items, n, _STORE)
 
 
+def seen(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, str]:
+    """The user opened the question in the viewer; the first time is kept."""
+    with state.locked(root):
+        items = _all(root, track)
+        q, why = _find(items, n)
+        if q is None:
+            return False, why
+        if not q.get("seen_at"):
+            q["seen_at"] = at
+            _put(root, items, track)
+    return True, say("seen", n=n)
+
+
 def answer(root: Path, n: int, text: str, at: str, track: str | None = None) -> tuple[bool, str]:
     text = (text or "").strip()
     if not text:
@@ -367,7 +381,7 @@ def row_response(n: int, q: dict) -> dict:
     return {
         "n": n, "text": q["text"], "status": ("withdrawn" if q.get("withdrawn")
                                              else "answered" if q.get("answer") else "open"),
-        "answer": q.get("answer") or "", "age": age(q.get("at", "")),
+        "answer": q.get("answer") or "", "age": age(q.get("at", "")), "seen": bool(q.get("seen_at")),
         "answered_age": age(q.get("answered_at") or ""), "source": q.get("source") or "",
         "withdrawn": q.get("withdrawn") or "",
         "closed_at": (q.get("withdrawn_at") or "") if q.get("withdrawn") else (q.get("answered_at") or "") if q.get("answer") else "",

@@ -12,11 +12,11 @@ from payloads.common import AnswerPayload, ListingPayload, TextPayload, WhyPaylo
 class QuestionsController(Controller):
     resource = "questions"
     noun = "question"
-    actions = ("index", "show", "store", "update", "destroy", "answer", "link", "unlink")
-    numbered = ("show", "update", "destroy", "answer", "link", "unlink")
+    actions = ("index", "show", "store", "update", "destroy", "answer", "link", "unlink", "seen")
+    numbered = ("show", "update", "destroy", "answer", "link", "unlink", "seen")
     payloads = {"index": ListingPayload, "store": question_payloads.StorePayload, "update": question_payloads.UpdatePayload,
                 "destroy": WhyPayload, "answer": AnswerPayload, "link": question_payloads.RefPayload,
-                "unlink": question_payloads.RefPayload}
+                "unlink": question_payloads.RefPayload, "seen": Payload}
 
     def repository(self, root: Path, p: Payload):
         from resources import Questions
@@ -60,6 +60,12 @@ class QuestionsController(Controller):
                                  options=p.options if p.has("options") else None,
                                  pick=p.pick if p.has("pick") else None)
         return Result.of(outcome, self._row(root, p, p.id))
+
+    def seen(self, root: Path, p: Payload) -> Result:
+        # the user opened it in the viewer: its Activity line stops asking for their attention
+        from datetime import datetime, timezone
+        at = p.at or datetime.now(timezone.utc).isoformat(timespec="seconds")
+        return Result.of(questions.seen(root, p.id, at, p.env or None), self._row(root, p, p.id))
 
     def answer(self, root: Path, p: AnswerPayload) -> Result:
         # a new answer is added and the old one kept; the agent is told again
