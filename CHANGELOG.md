@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.116.0 — Activity is an always-visible right column
+
+Activity sits in a fixed column on the right of every page, full height, and only its list
+scrolls. The left sidebar is navigation only, with the "Agent active" line at its bottom.
+The sidebar, floating and docked choices are gone, and so is the floating window.
+
 ## 1.115.5 — Activity leaves out the commit hook's own command
 
 A commit ran `journal todos from-commit` through the git hook, and Activity showed it as
