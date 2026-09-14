@@ -46,7 +46,7 @@ MESSAGES = {
                   "code it covers; `journal style` lists them.",
     "block_row": "- **`{skill}`** — {title}: {decision}",
     "skill_rule": "**The rule here:** {decision}",
-    "skill_examples": "Worked examples are in [reference/examples.md](reference/examples.md).",
+    "skill_examples": "Worked examples are in \\[reference/examples.md\\](reference/examples.md).",
     "examples_head": "# {title} — examples",
     "no_examples": "No examples were recorded for this rule yet.",
     "marker": "Generated from .journal/style/{subject}/item.md by `journal style sync`. Edit the rule, not this folder.\n",
@@ -177,7 +177,7 @@ def triggers(body: str) -> list[str]:
 
 
 def _description(item: dict) -> str:
-    text = f"{item['when']} This project's rule: {item['decision']}"
+    text = f"Use when {item['when'].rstrip('.')}. This project's rule: {item['decision']}"
     return text.replace('"', "'").replace("<", "").replace(">", "")[:1024]
 
 
