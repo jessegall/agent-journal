@@ -741,5 +741,20 @@ check("the agent is handed the same note with the user's next prompt, once",
       ("nothing on the list can be picked up" in (_prompt.get("hookSpecificOutput") or {}).get("additionalContext", ""),
        "nothing on the list can be picked up" in (_again.get("hookSpecificOutput") or {}).get("additionalContext", "")), (True, False))
 
+# ---------------------------------------------------------------- an answer on a to-do that is not next still reaches the agent
+import questions as _qmod  # noqa: E402
+d = project(); s = Session(d, "s1")
+s.journal("todo", "a plain chore")
+s.journal("todo", "one that asked")
+s.journal("todo", "auto", "on"); s.journal("loop", "set")
+s.journal("todo", "ask", "2", "which way?")
+s.journal("todo", "after", "2", "1")
+s.journal("todo", "answer", "2", "left")
+_before = _qmod.untold(d / ".journal", "default")
+for _ in range(4):
+    s.stop(True)
+check("an answered to-do that waits on another still has its answer told at a stop",
+      (len(_before) >= 1, _qmod.untold(d / ".journal", "default")), (True, []))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

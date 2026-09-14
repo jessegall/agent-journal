@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.22 — What the channel delivers is not delivered again at the next stop
+
+- A comment, an answered question or a decided suggestion pushed to an idle agent through the channel was
+  delivered a second time by the next stop, because the channel kept its own list of what it had pushed and
+  never marked the item told. The channel now marks what it pushes as told, in the same record the stop
+  hook reads. A changed answer or decision is still pushed again.
+- The stop hook marked comments, answers and decisions told before building the message that tells them,
+  so a failure while building it lost them for good. They are now marked once the message exists.
+- With auto mode on and nothing open, an answer on a to-do that was not next in line (for example one
+  waiting on another to-do) was left to the auto notice, which only names the next one, and so was never
+  told. It is now told like any other answer unless the auto notice will name it at this stop.
+
 ## 1.136.21 — A subagent cannot hide a journal write, close a row, or decide a suggestion
 
 - A subagent's journal command written through a shell variable (`J=.journal/journal.py; $J pins add "x"`)

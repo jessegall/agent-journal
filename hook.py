@@ -1114,11 +1114,13 @@ def _p_comments(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     fresh = comments.untold(ROOT, here)
     if not fresh:
         return None
-    comments.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
     head = (say("commented_one", label=comments.label(fresh[0][1]["about"])) if len(fresh) == 1
             else say("commented_many", n=len(fresh)))
-    return _say(head, say("commented_do"),
+    said = _say(head, say("commented_do"),
                 rows=[say("commented_row", n=n, label=comments.label(c["about"]), text=c["text"]) for n, c in fresh])
+    # TOLD ONCE THE MESSAGE EXISTS. Marked first, a failure building it lost the comments for good.
+    comments.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
+    return said
 
 
 @nudges.subject("questions", 45)
@@ -1126,17 +1128,22 @@ def _p_questions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     import questions
     fresh = questions.untold(ROOT, here)
     if not work.open_work(ROOT):
-        # with nothing open, an answered to-do's own notice tells its questions beside it
-        left = {f"todo:{t['n']}" for t in todo.answered(ROOT, here)}
-        fresh = [(n, q) for n, q in fresh if not left & set(q.get("links") or [])]
+        # WITH NOTHING OPEN, THE AUTO NOTICE TELLS AN ANSWERED TO-DO'S QUESTIONS BESIDE IT, but only
+        # when it will: auto off, or auto on with an answered to-do next in line. An answered to-do
+        # that is not ready (it waits on another) was skipped here and never named there.
+        ready = todo.ready(ROOT, here)
+        if not todo.auto(ROOT, here) or (ready and todo.answered_one(ready[0])):
+            left = {f"todo:{t['n']}" for t in todo.answered(ROOT, here)}
+            fresh = [(n, q) for n, q in fresh if not left & set(q.get("links") or [])]
     if not fresh:
         return None
-    questions.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
     head = (say("answered_one", n=fresh[0][0]) if len(fresh) == 1
             else say("answered_many", n=len(fresh)))
-    return _say(head, say("answered_do"),
+    said = _say(head, say("answered_do"),
                 rows=[say("answered_row", n=n, text=q["text"], answer=q["answer"],
                           changed=say("answer_changed") if q.get("earlier_answers") else None) for n, q in fresh])
+    questions.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
+    return said
 
 
 def _told_with(here: str, rows: list[dict]) -> None:
@@ -1154,7 +1161,6 @@ def _p_suggestions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool
     fresh = suggestions.untold(ROOT, here)
     if not fresh:
         return None
-    suggestions.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
     rows = []
     for n, s in fresh:
         st = suggestions.status(s)
@@ -1163,7 +1169,9 @@ def _p_suggestions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool
         else:
             rows.append(say(f"decided_{st}", n=n, title=s["title"], todo=questions.label(s["became"])))
     head = say("decided_one", n=fresh[0][0]) if len(fresh) == 1 else say("decided_many", n=len(fresh))
-    return _say(head, say("decided_do"), rows=rows)
+    said = _say(head, say("decided_do"), rows=rows)
+    suggestions.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
+    return said
 
 
 @nudges.subject("suggest_hint", 47)

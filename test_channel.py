@@ -85,6 +85,7 @@ params = (push or {}).get("params") or {}
 check("an answered question is pushed to an idle session, naming it",
       ("yes, Friday" in params.get("content", ""), params.get("meta", {}).get("question")), (True, "1"))
 check("and not pushed twice", read_line(7), None)
+check("a pushed answer is told, so the next stop does not deliver it again", questions.untold(root, "default"), [])
 j("questions", "answer", "1", "no, Monday")
 push = read_line(12)
 check("a changed answer is pushed again", "no, Monday" in (((push or {}).get("params") or {}).get("content", "")), True)
@@ -96,6 +97,8 @@ params = (push or {}).get("params") or {}
 check("a new comment is pushed to an idle session, naming it",
       ("use the other colour" in params.get("content", ""), params.get("meta", {}).get("comment")), (True, "1"))
 check("and not pushed twice", read_line(7), None)
+import comments as _comments  # noqa: E402
+check("a pushed comment is told, so the next stop does not deliver it again", _comments.untold(root, "default"), [])
 
 P.cli("suggest", "poll the to-dos less often", "--brief", stdin="the list reloads every five seconds")
 P.cli("suggestions", "accept", "1")
