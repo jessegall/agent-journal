@@ -33,6 +33,13 @@
   .side > * { flex: none; }
   /* each section pads itself, so the Activity section can run edge to edge */
   .side > .project { margin-inline: 10px; }
+  .side > .journal-switch { margin-inline: 10px; }
+  button.project { width: 100%; background: transparent; border: none; border-radius: 6px; cursor: pointer; text-align: left; font-family: inherit; }
+  button.project:hover { background: var(--hover); }
+  button.project .fold { margin-left: auto; }
+  /* the sidebar clips what sticks out, so the list keeps to its width */
+  .journal-switch .drop { left: 0; right: 0; top: 36px; width: auto; }
+  .journal-switch .drop-row.current { background: var(--sel); }
   .side > .group { padding-inline: 10px; }
   .project { display: flex; align-items: center; gap: 9px; padding: 6px 8px; font-weight: 600; font-size: 13.5px; color: var(--text); }
   .project:hover { color: var(--text); }

@@ -801,6 +801,20 @@ except SystemExit:
     _refused = True
 check("a port asked for by number that is in use is refused, not moved", _refused, True)
 _held.close()
+_ident = json.loads(get("/api/identity")[2])
+check("a viewer says whose journal it serves, and which version",
+      (_ident["root"], bool(_ident["project"]), bool(_ident["version"])), (str(root.resolve()), True, True))
+(_other / "VERSION").write_text("0.0.1\n")
+_other_srv = serve._Server(("127.0.0.1", 0), _other, _other.parent)
+threading.Thread(target=_other_srv.serve_forever, daemon=True).start()
+_found = {v["port"]: (v["current"], v["project"], v["version"])
+          for v in serve.viewers(root, ports=[srv.server_port, _other_srv.server_port])}
+check("a viewer finds the other viewers running, and knows which one is its own",
+      _found, {srv.server_port: (True, _ident["project"], _ident["version"]), _other_srv.server_port: (False, "other", "0.0.1")})
+check("and serves that list to its page, itself included",
+      [v["current"] for v in json.loads(get("/api/viewers")[2]) if v["port"] == srv.server_port], [True])
+_other_srv.shutdown()
+_other_srv.server_close()
 import views  # noqa: E402
 line = views.status_line(root, None)
 check("the status line names the environment, the open work and the viewer",

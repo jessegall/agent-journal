@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.61 — Jump between the journals running on this machine
+
+Each project's viewer runs on its own port, so with two projects open you had to know which
+port belonged to which. A viewer now finds the other journal viewers running on this machine.
+When there is more than one, click the name at the top of the sidebar: it lists every running
+journal with its project, port and version, and clicking one opens that viewer. A project
+on an older version is opened in its own viewer, so it shows that version's pages. A viewer
+older than 1.131.57 cannot be found this way.
+
 ## 1.131.60 — `journal serve` takes the next free port
 
 When another project's viewer already held port 8420, `journal serve` stopped with "port 8420
