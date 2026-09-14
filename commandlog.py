@@ -54,7 +54,8 @@ DETAIL = {"todos:priority": "value", "reports:keep": "days", "switch:": "name", 
           "environments:": "name", "environments:show": "name", "environments:remove": "name",
           "environments:prepare": "name", "environments:claim": "name", "prepare:": "name", "claim:": "name",
           "grant:": "name", "tools:run": "name", "tools:show": "name", "tools:add": "name", "tools:set": "name",
-          "tools:remove": "name"}
+          "tools:remove": "name", "style:show": "subject", "style:add": "subject", "style:set": "subject",
+          "style:remove": "subject"}
 # run by git hooks, not by the agent
 HOOKS = {"todos:from-commit"}
 # lines that introduce something, so Activity shows its title under them; reads and closes do not repeat it
@@ -218,6 +219,12 @@ DESCRIBE = {
     "tools:set": "Changing a tool",
     "tools:remove": "Retiring a tool",
     "tools:index": "Rebuilding the tools index",
+    "style:list": "Reading the coding style",
+    "style:show": "Reading a coding style rule",
+    "style:add": "Adding a coding style rule",
+    "style:set": "Changing a coding style rule",
+    "style:remove": "Retiring a coding style rule",
+    "style:sync": "Generating the coding style skills",
     "tools:run": "Running a tool",
     "todos:search": "Searching the to-dos",
     "messages:search": "Searching your messages",
@@ -259,6 +266,10 @@ WEB_FIELD = {"todos:update": ("priority", "Changed to-do priority")}
 
 # resource:action -> the line shown in Activity for a write made in the viewer; {n} is the id in the path
 WEB = {
+    "style:store": "Added a coding style rule",
+    "style:update": "Changed coding style rule {n}",
+    "style:destroy": "Retired coding style rule {n}",
+    "style:sync": "Generated the coding style skills",
     "todos:update": "Edited to-do {n}",
     "todos:destroy": "Removed to-do {n}",
     "todos:reopen": "Reopened to-do {n}",

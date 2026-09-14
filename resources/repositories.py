@@ -12,11 +12,12 @@ import reports
 import suggestions
 import questions
 import reminders
+import style
 import todo
 import tools
 import work
 from resources.base import Query, Repository
-from resources.models import Attachment, Claim, Comment, Doc, Notification, Report, Suggestion, Message, Part, Question, Reminder, Rule, Todo, Tool, Work
+from resources.models import Attachment, Claim, Comment, Doc, Notification, Report, Suggestion, Message, Part, Question, Reminder, Rule, StyleItem, Todo, Tool, Work
 
 
 class Todos(Repository[Todo]):
@@ -162,3 +163,10 @@ class Attachments(_OfDoc, Repository[Attachment]):
     def rows(self) -> list[dict]:
         got = self._doc()
         return docs.attachments(got) if got else []
+
+
+class StyleBook(Repository[StyleItem]):
+    model = StyleItem
+
+    def rows(self) -> list[dict]:
+        return style.all_items(self.root)

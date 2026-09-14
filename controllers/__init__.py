@@ -14,6 +14,7 @@ from controllers.pins import PinsController, RulesController
 from controllers.questions import QuestionsController
 from controllers.reports import ReportsController
 from controllers.search import SearchController
+from controllers.style import StyleController
 from controllers.suggestions import SuggestionsController
 from controllers.reminders import RemindersController
 from controllers.todos import TodosController
@@ -25,4 +26,4 @@ CONTROLLERS = {c.resource: c for c in (RemindersController(), QuestionsControlle
                                           WorkController(), DocsController(),
                                           EnvironmentController(), SearchController(), ToolsController(),
                                           ActivityController(), CommentsController(), ReportsController(), NotificationsController(), SuggestionsController(),
-                                          FilesController(), CommitsController(), AgentsController(), AgentController())}
+                                          FilesController(), CommitsController(), AgentsController(), AgentController(), StyleController())}

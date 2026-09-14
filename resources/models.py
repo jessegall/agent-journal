@@ -266,3 +266,16 @@ class Doc(Model):
         made = super().of(n, {k: v for k, v in row.items() if k != "parts"})
         made.raw, made.parts = row, [Part.of(p["p"], p) for p in row.get("parts") or []]
         return made
+
+
+@dataclass
+class StyleItem(Model):
+    subject: str = ""
+    title: str = ""
+    decision: str = ""
+    when: str = ""
+    source: str = ""
+    body: str = ""
+
+    noun: ClassVar[str] = "rule"
+    sortable: ClassVar[tuple[str, ...]] = ("n", "at", "subject", "title")

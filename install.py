@@ -184,6 +184,14 @@ def briefing(project: Path, check: bool, conf: dict) -> list[str]:
     return out
 
 
+def style_skills(check: bool) -> list[str]:
+    """The project's coding style rules, regenerated into their skills on every install and upgrade."""
+    if check:
+        return []
+    import style
+    return style.sync(ROOT, PROJECT)
+
+
 MESSAGES = {
     "briefing_new": "# {name}\n\n{block}\n",
     "briefing_current": "  = {name} briefing up to date",
@@ -718,7 +726,7 @@ def main(argv: list[str]) -> int:
     if not _installed_at(ROOT):
         lines.append(say("source_checkout", name=ROOT.name, project=PROJECT.name))
     else:
-        lines += wire(check) + skill(check) + briefing(PROJECT, check, _conf)
+        lines += wire(check) + skill(check) + briefing(PROJECT, check, _conf) + style_skills(check)
     if "--alias" in argv:
         lines += alias(check)
     if "--git-hook" in argv:
