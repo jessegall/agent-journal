@@ -1443,6 +1443,7 @@ def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
         "meta": facts_text(root, track, t, short_refs),
         "started": t.get("started") or "",
         "done": t.get("done") or "",
+        "closed_at": t.get("done") or "",
         "done_age": _age(t.get("done") or ""),
         "how": close_note(t),
     }

@@ -211,6 +211,15 @@ def expired(r: dict, days: int) -> bool:
     return (datetime.now(timezone.utc) - when).total_seconds() > days * 86400
 
 
+def _expired_at(r: dict, days: int) -> str:
+    """When a report aged out under the keep setting: written `days` days after it was."""
+    from datetime import datetime, timedelta
+    try:
+        return (datetime.fromisoformat(r["at"].replace("Z", "+00:00")) + timedelta(days=days)).isoformat(timespec="seconds")
+    except (KeyError, ValueError):
+        return ""
+
+
 def archived_why(r: dict, days: int) -> str:
     return r.get("archived") or (say("expired", days=days) if expired(r, days) else "")
 
@@ -228,6 +237,7 @@ def row_response(n: int, r: dict, body: bool = False, days: int = 0) -> dict:
     row = {"n": n, "title": r.get("title", ""), "gist": fmt.gist(" ".join((r.get("body") or "").split())),
            "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "", "about": r.get("about") or "",
            "about_label": label(r.get("about") or ""), "archived": archived_why(r, days), "meta": facts(r, days),
+           "closed_at": r.get("archived_at") or (_expired_at(r, days) if expired(r, days) else ""),
            "doc": r.get("doc") or None}
     if body:
         row["body"] = r.get("body", "")

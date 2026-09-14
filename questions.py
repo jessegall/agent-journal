@@ -348,6 +348,7 @@ def row_response(n: int, q: dict) -> dict:
         "answer": q.get("answer") or "", "age": age(q.get("at", "")),
         "answered_age": age(q.get("answered_at") or ""), "source": q.get("source") or "",
         "withdrawn": q.get("withdrawn") or "",
+        "closed_at": (q.get("withdrawn_at") or "") if q.get("withdrawn") else (q.get("answered_at") or "") if q.get("answer") else "",
         "changed": bool(q.get("earlier_answers")),
         "meta": " · ".join(_facts(q, n)),
         "links": [{"ref": r, "label": label(r)} for r in q.get("links") or []],

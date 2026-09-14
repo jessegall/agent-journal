@@ -363,7 +363,7 @@ def refused(fact: str, limit: int) -> str | None:
     return say("too_long", length=len(fact), limit=limit, keep=fact[:limit - 20], cut=fact[limit - 20:][:120])
 
 
-def strike(root: Path, n: int, why: str, key: str = KEY) -> tuple[bool, str]:
+def strike(root: Path, n: int, why: str, key: str = KEY, at: str = "") -> tuple[bool, str]:
     """Retire a pin that has simply STOPPED BEING TRUE, without inventing a replacement.
 
     `--supersedes` already struck a pin, but only by putting another one in its place — it
@@ -376,7 +376,7 @@ def strike(root: Path, n: int, why: str, key: str = KEY) -> tuple[bool, str]:
     THE REASON IS REQUIRED, and it is the whole safeguard — see `entries.retire`, which is
     where that safeguard lives for every store that has it.
     """
-    return entries.retire(root, _store(key), n, why)
+    return entries.retire(root, _store(key), n, why, at)
 
 
 def move(root: Path, n: int, dst: str, at: str) -> tuple[bool, str]:

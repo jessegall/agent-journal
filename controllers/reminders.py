@@ -24,7 +24,9 @@ class RemindersController(Controller):
 
     @staticmethod
     def _rows(root: Path) -> dict[int, dict]:
-        return {r["n"]: r for r in reminders.rows_response(root, all_of_them=True)[0]}
+        stored = reminders._all(root, None)
+        done_at = lambda n: (stored[n - 1].get("done_at") or "") if 1 <= n <= len(stored) and stored[n - 1].get("done") else ""  # noqa: E731
+        return {r["n"]: {**r, "closed_at": done_at(r["n"])} for r in reminders.rows_response(root, all_of_them=True)[0]}
 
     def index(self, root: Path, p: ListingPayload) -> Result:
         every = self.repository(root, p).all()

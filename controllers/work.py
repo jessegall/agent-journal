@@ -53,7 +53,7 @@ class WorkController(Controller):
     def _row(w, todos: dict) -> dict:
         t = todos["by_n"].get(int(w.todo)) if str(w.todo).isdigit() else todos["by_title"].get(w.subject.lower())
         return {"n": w.n, "subject": w.subject, "at": w.at, "age": pins.age(w.at) if w.at else "",
-                "ended": w.ended, "ended_age": pins.age(w.ended) if w.ended else "",
+                "ended": w.ended, "ended_age": pins.age(w.ended) if w.ended else "", "closed_at": w.ended or "",
                 "awaiting": (w.awaiting or {}).get("what") or "",
                 "todo": t["n"] if t else None, "doc": (t.get("doc") or None) if t else None,
                 "notes": [{"at": x.get("at", ""), "text": x.get("text", "")} for x in w.notes],
