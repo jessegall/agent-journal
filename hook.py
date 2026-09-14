@@ -1512,17 +1512,27 @@ def _declared_first(payload: dict) -> bool:
     """
     declared = False
     for words in _pieces(str((payload.get("tool_input") or {}).get("command", ""))):
-        if _is_journal_verb(words[0]) and len(words) > 1 and (
-                words[1] == "start" or (words[1] in ("todo", "work") and len(words) > 2 and words[2] == "start")):
+        rest = _journal_args(words)
+        if rest is not None and rest and (
+                rest[0] == "start" or (rest[0] in ("todo", "todos", "work") and len(rest) > 1 and rest[1] == "start")):
             declared = True
         elif _piece_is_write(words) and not declared:
             return False
     return declared
 
 
+def _journal_args(words: list[str]) -> list[str] | None:
+    """The words after `journal`, its leading flags (`--env=x`, `--as=y`) skipped; None when this is not the journal."""
+    if not words or not _is_journal_verb(words[0]):
+        return None
+    return [w for w in words[1:] if not w.startswith("-")]
+
+
 #: The journal verbs that answer a context rung. A chain that OPENS with one of these has
 #: decided before anything after it runs, so the rung gate lets the whole line through.
 DECIDES = frozenset({"pin", "rule", "nothing"})
+#: the two-word spellings that decide the same way: `pins add`, `rules add`
+DECIDES_ADD = frozenset({"pins", "rules"})
 
 
 def _is_journal(payload: dict) -> bool:
@@ -1542,8 +1552,24 @@ def _is_journal(payload: dict) -> bool:
     if (any(_is_journal_verb(w[0]) for w in pieces)
             and all(_is_journal_verb(w[0]) or w[0] in _FILTERS for w in pieces)):
         return True
-    first = pieces[0]
-    return _is_journal_verb(first[0]) and len(first) > 1 and first[1] in DECIDES
+    rest = _journal_args(pieces[0])
+    return bool(rest) and (rest[0] in DECIDES or (rest[0] in DECIDES_ADD and len(rest) > 1 and rest[1] == "add"))
+
+
+def _journal_only(payload: dict) -> bool:
+    """Is this line nothing but the journal's own commands, and filters over their output?
+
+    NOT `_is_journal`. That one also passes a line that OPENS with a decision, because it
+    answers the context rung, and it is right for that gate alone. Used for the others, it let
+    `journal nothing "x"; rm -rf build` past the environment, loop and wait gates, the `rm`
+    riding on a decision nobody owed.
+    """
+    if (payload.get("tool_name") or "") != "Bash":
+        return False
+    pieces = [w for w in _pieces(str((payload.get("tool_input") or {}).get("command", "")))
+              if w[0] not in _NEUTRAL]
+    return bool(pieces) and any(_is_journal_verb(w[0]) for w in pieces) and \
+        all(_is_journal_verb(w[0]) or w[0] in _FILTERS for w in pieces)
 
 
 #: Where a `pin` stops on a command line: the next shell separator or redirection.
@@ -1769,13 +1795,13 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     # that will remember to say so. A WRITE is the signal and a read is not: reading IS what
     # waiting looks like (polling a log, checking a build), so a read leaves the wait
     # standing, and this is the same line the gate below already draws.
-    if _is_write(payload) and not _is_journal(payload):
+    if _is_write(payload) and not _journal_only(payload):
         woke = work.resumed(ROOT, _owners(ctx))
         if woke:
             state.put(ROOT, "held_work", {}, stem=ctx.stem)   # it may be held for again
-    if _is_write(payload) and not _is_journal(payload) and _unbound(conf, ctx):
+    if _is_write(payload) and not _journal_only(payload) and _unbound(conf, ctx):
         return _deny(say("unbound_deny", block=_choose_block("")))
-    if _is_write(payload) and not _is_journal(payload):
+    if _is_write(payload) and not _journal_only(payload):
         taken = _track_due(conf, ctx)
         if taken:
             return _deny(_taken_block(taken))
@@ -1788,7 +1814,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     # the user: "the agent forgets to turn the loop on quite often after turning on auto".
     # A denial cannot be stepped over. Reads are never gated, and neither is the journal's
     # own CLI — `journal loop set` is the way out and must always run.
-    if _is_write(payload) and not _is_journal(payload):
+    if _is_write(payload) and not _journal_only(payload):
         owed = _loop_owed(conf, ctx, tracks.current(ROOT, ctx.stem))
         if owed:
             return _deny(owed)
@@ -3125,6 +3151,12 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     # whatever the runtime file remembers; only a compaction keeps the process, and the loop.
     if source in ("resume", "startup"):
         state.put(ROOT, "loop_set", False, stem=ctx.stem)
+    # A COMPACTION EMPTIES THE WINDOW, so the ladder starts again from its first rung. Left
+    # standing, `pin_due` refused the first call of a nearly empty window, and `warned_at`
+    # stuck at the old rung silenced every warning after it.
+    if source == "compact":
+        state.put(ROOT, "warned_at", 0.0, stem=ctx.stem)
+        state.put(ROOT, "pin_due", None, stem=ctx.stem)
     # a --continue or --resume starts a session that once ended; it is running again
     if state.get(ROOT, "ended", None, stem=ctx.stem):
         state.put(ROOT, "ended", None, stem=ctx.stem)

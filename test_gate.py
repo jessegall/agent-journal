@@ -140,6 +140,8 @@ for cmd, want in (
     ('cd proj\njournal rule "r" && journal todo 1 && git checkout -b x && journal start "w"', False),
     ('git add -A && journal start "w"', False),
     ('journal todo "t" && rm -rf build', False),
+    ('journal todos start 3 && git commit -am x', True),
+    ('.journal/journal.py --env=foo work start "x" && git add .', True),
 ):
     got = hook._declared_first({"tool_name": "Bash", "tool_input": {"command": cmd}})
     if got == want:
@@ -153,6 +155,10 @@ for cmd, fn, want in (
     ('J=./.journal/journal.py; $J start "w" && git commit -m x', hook._declared_first, True),
     ('J=.journal/journal.py; ${J} nothing "no"', hook._is_journal, True),
     ('X=1; $UNKNOWN pin "c"', hook._is_journal, False),
+    ('journal pins add "x" && git commit -m y', hook._is_journal, True),
+    ('journal --env=foo rules add "r" && git commit -m y', hook._is_journal, True),
+    ('journal nothing "x"; rm -rf build', hook._journal_only, False),
+    ('journal todos && journal open | head', hook._journal_only, True),
 ):
     got = fn({"tool_name": "Bash", "tool_input": {"command": cmd}})
     if got == want:
