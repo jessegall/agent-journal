@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.12 — A journal read with a shell redirection is no longer taken for a write
+
+A research subagent ran `journal todos --all 2>&1 | head` and was refused, as if it had written to the
+journal. The hook passed the shell's `2>&1` along as an argument, and `journal todos <word>` is the
+shorthand for adding a to-do. The same misreading could refuse a main session's read while no work
+was open. Redirections (`2>&1`, `2>/dev/null`, `> file`) are no longer counted as arguments, and a
+separator stuck to a word (`head -150;`) ends the command. A real write is still recognised, with a
+redirection or without.
+
 ## 1.134.11 — A subagent dispatch that names no model is refused
 
 As you asked in message 259, the hook now refuses an Agent call that does not name its model. The
