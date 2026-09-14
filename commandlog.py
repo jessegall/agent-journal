@@ -81,7 +81,7 @@ DESCRIBE = {
     "todos:ask": "Asking you about to-do {n}",
     "todos:block": "Marking to-do {n} blocked",
     "todos:move": "Moving to-do {n}",
-    "messages:list": "Reading your messages",
+    "messages:list": "Reading messages",
     "messages:show": "Reading message {n}",
     "messages:process": "Filing message {n}",
     "messages:done": "Marking message {n} processed",
@@ -232,6 +232,10 @@ DESCRIBE = {
 }
 
 
+# wording that changed: lines already logged read the new wording
+RENAMED = {"Reading your messages": "Reading messages"}
+
+
 def describe(noun: str, verb: str) -> str:
     """The line's wording. The number is not part of it: Activity shows it on its own."""
     text = DESCRIBE.get(f"{noun}:{verb}") or DESCRIBE.get(f"{noun}:")
@@ -282,6 +286,8 @@ def entries(root: Path, track: str) -> list[dict]:
     items = got if isinstance(got, list) else []
     out = []
     for e in items:
+        if isinstance(e, dict) and e.get("text") in RENAMED:
+            e = {**e, "text": RENAMED[e["text"]]}
         read = kind_of(e.get("text", "")) if isinstance(e, dict) else {}
         if not read:
             out.append(e)
