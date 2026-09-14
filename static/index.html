@@ -439,6 +439,24 @@
   .work-file-add { color: rgb(96, 186, 126); }
   .work-file-del { color: var(--danger); }
   .block .lgroup:last-child > .rows:last-child > .row:last-child { border-bottom: none; }
+  /* a document part is its own bordered block, so where it starts and ends is plain; its header carries Edit */
+  .doc-part { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .doc-part-head { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 8px 0 14px;
+    background: var(--raised); border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--text-2); }
+  .doc-part-head .doc-part-num { color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .doc-part-head .doc-part-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 500; }
+  .doc-part-head .doc-part-age { color: var(--text-3); font-size: 11.5px; }
+  .doc-part-head .btn { height: 24px; padding: 0 9px; font-size: 12px; opacity: 0; transition: opacity .12s; }
+  .doc-part:hover .doc-part-head .btn, .doc-part-head .btn:focus-visible, .doc-part.editing .doc-part-head .btn { opacity: 1; }
+  .doc-part-body { padding: 10px 14px 14px; }
+  .doc-part-edit { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 14px; }
+  .doc-part-edit textarea { box-sizing: border-box; width: 100%; min-height: 180px; resize: vertical; padding: 9px 11px;
+    border: 1px solid var(--border-2); border-radius: 8px; background: var(--bg); color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; line-height: 1.55; }
+  .doc-part-edit textarea:focus { outline: none; border-color: var(--accent); }
+  .doc-part-edit-bar { display: flex; align-items: center; gap: 8px; }
+  .doc-part-edit-bar .hint { margin-left: auto; font-size: 11.5px; color: var(--text-3); }
+  @media (hover: none) { .doc-part-head .btn { opacity: 1; } }
   .block .ghead { position: static; }
 
   .list, .panel-body, .page, .side { scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }

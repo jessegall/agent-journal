@@ -479,6 +479,11 @@ check("store at /api/docs writes a project doc",
 status, got = post("/api/env/alpha/docs/1/part", {"title": "a part from the browser", "body": "its text"})
 check("a part is added to a doc",
       (status, [x["title"] for x in json.loads(get("/api/docs/1")[2])["parts"]][-1]), (201, "a part from the browser"))
+_new_part = json.loads(get("/api/docs/1")[2])["parts"][-1]["p"]
+status, got = post(f"/api/docs/1.{_new_part}", {"body": "its text, rewritten in the browser"}, method="PATCH")
+check("a part's text is replaced from the viewer by its doc.part number",
+      (status, [x["body"].strip() for x in json.loads(get("/api/docs/1")[2])["parts"] if x["p"] == _new_part]),
+      (200, ["its text, rewritten in the browser"]))
 status, got = post("/api/docs/1", {"abstract": "a sharper abstract"}, method="PATCH")
 check("update changes the abstract", (status, json.loads(get("/api/docs/1")[2])["abstract"]), (200, "a sharper abstract"))
 status, got = post("/api/docs/1/attach", {"path": "/etc/hosts"})
