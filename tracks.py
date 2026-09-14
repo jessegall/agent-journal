@@ -42,7 +42,8 @@ MESSAGES = {
                "  that session is unbound now and is told at its next stop; nothing of the environment was deleted",
     "age_none": "not seen",
     "age_now": "active just now",
-    "age_minutes": "active {n} min ago",
+    "age_minute": "active 1 minute ago",
+    "age_minutes": "active {n} minutes ago",
     "age_hours": "idle {n} h",
     "age_days": "idle {n} d",
     "page_none": "no environment is called {name}. `journal environments` lists them.",
@@ -258,10 +259,10 @@ def occupants(root: Path, track: str, stem: str | None, stale_hours: float = 24.
 def age_text(seconds: float | None) -> str:
     if seconds is None:
         return say("age_none")
-    if seconds < 90:
+    if seconds < 60:
         return say("age_now")
     if seconds < 3600:
-        return say("age_minutes", n=int(seconds // 60))
+        return say("age_minute") if seconds < 120 else say("age_minutes", n=int(seconds // 60))
     if seconds < 86400:
         return say("age_hours", n=f"{seconds / 3600:.1f}")
     return say("age_days", n=f"{seconds / 86400:.1f}")

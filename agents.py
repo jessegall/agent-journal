@@ -64,7 +64,8 @@ def touch(root: Path, track: str, agent: str) -> None:
 MESSAGES = {
     "age_never": "never written",
     "age_now": "active just now",
-    "age_minutes": "last wrote {n} min ago",
+    "age_minute": "last wrote 1 minute ago",
+    "age_minutes": "last wrote {n} minutes ago",
     "age_hours": "last wrote {n} h ago",
     "called": ' — "{called}"',
     "env_one": '--env="{env}"',
@@ -105,10 +106,10 @@ def age(root: Path, track: str, agent: str) -> str:
     if not got:
         return say("age_never")
     secs = time.time() - float(got)
-    if secs < 90:
+    if secs < 60:
         return say("age_now")
     if secs < 3600:
-        return say("age_minutes", n=int(secs // 60))
+        return say("age_minute") if secs < 120 else say("age_minutes", n=int(secs // 60))
     return say("age_hours", n=f"{secs / 3600:.1f}")
 
 

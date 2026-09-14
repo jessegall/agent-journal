@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.109.1 — "just now" means the last minute
+
+An age says "just now" for the first minute, then "1 minute ago", "2 minutes ago" and so on up
+to an hour, then hours and days, in the terminal and in the viewer. The same minute applies to
+"active just now" on environments and agents. 1.94.1 had made it five minutes.
+
 ## 1.109.0 — the Activity panel can float or dock on the right
 
 Three small buttons in the Activity panel's header choose where it shows: in the sidebar (as
