@@ -603,13 +603,13 @@ The next stop tells you what the user decided. Act on the latest decision.
 
 ## Notifications: tell the user, sparingly
 
-    journal notify "<what finished>" [--about="todo 22"]   it lands at the top of the user's Home
+    journal notify "<what finished>" [--about="todo 22"|"message 5"]   it lands at the top of the user's Home
 
 **Notify when the user asked to be told**, or when a long piece of work has landed that they
 are waiting on: a migration through, a research report ready, a to-do they cared about done.
 **Not for progress.** Each step, each commit, each to-do closed in auto mode is a `work
 update` or nothing; a Home full of notifications is one the user stops reading. One line,
-saying what is now true, pointing at the to-do, report or doc it is about.
+saying what is now true, pointing at the to-do, report, doc or message it is about.
 
 ## Reports: what the user asked to have checked
 
@@ -637,14 +637,17 @@ so if it settles something that stays true, pin that too or write it into a doc.
     journal comments show <n>                   one in full
     journal comments done <n> "<what was done>" it is handled
 
-The user comments on a to-do, doc, pin, rule or reminder from the viewer. Every comment is
-a nudge: the next stop names it. Act on what it asks — amend the to-do, strike the pin,
-add a part to the doc, answer it in your reply — then `comments done` it, saying what was
-done. A comment that asks for new work is a to-do like any other request.
+The user comments from the viewer on a to-do, doc, pin, rule, reminder, suggestion, message
+or piece of work. Every comment is a nudge: the next stop names it. Act on what it asks —
+amend the to-do, strike the pin, add a part to the doc, answer it in your reply — then
+`comments done` it, saying what was done. A comment on a piece of work (`work 7`) is about
+that work while it runs: a question to answer or a steer to follow before you end it. A
+comment that asks for new work is a to-do like any other request.
 
 ## The viewer: what the user does in the browser
 
     journal serve [--port=<n>]      the web viewer, on this machine only: 8420, or the next free port
+    journal claude [flags] ["<prompt>"]   start Claude with the journal's channel; other flags pass through to claude
     journal statusline --install    show environment, open work and viewer in the status bar — only if the user wants it
 
 The user reads and changes the journal in a browser while you work: they leave messages,
@@ -653,6 +656,10 @@ priority or what it waits on, retire what is stale, switch auto mode on an envir
 Settings page, and remove old environments. Every one of those goes through the same
 controllers the terminal commands use, so it lands in the same record and obeys the same
 refusals (a closed to-do cannot be edited, a struck pin cannot change).
+
+**A session started with `journal claude` hears the viewer while idle.** A message the user
+leaves wakes it; with auto mode on, an answered question and a comment do too. With auto mode
+off, nothing but a message wakes it, and a wake-up is never a reason to start on the to-do list.
 
 **So the record can change under you.** A to-do you are working may have been re-prioritised
 or rewritten, and a pin you rely on may have been struck. Before acting on something you read

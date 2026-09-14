@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.3 — The journal skill catches up
+
+The skill now says what shipped without it. A comment can be on a suggestion, a message or a piece of
+work too, and a comment on a piece of work is a question or a steer while it runs. `journal notify
+--about` can point at a message. `journal claude` starts Claude with the journal's channel, and a
+session started that way is woken while idle: by a message, and with auto mode on, by answers and
+comments as well. Nothing else changes; `journal upgrade` brings the new skill.
+
 ## 1.134.2 — A session's subagents as a table, with their model
 
 On a session's page, "Subagents it sent" is now a table like "Most recent work", with a column each
