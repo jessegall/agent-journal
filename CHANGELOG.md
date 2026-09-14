@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.6 — An "Answered your question" notification opens the answer
+
+The notification only said an answer was there; it could be marked read but not opened. It now has an
+Open button, in the bell's dropdown and on Home, that goes to the message: your question quoted, with
+the agent's answer under it. A notification can point at a message now
+(`journal notify "…" --about="message 5"`). The two answer notifications sent before this fix were
+given their message back.
+
 ## 1.132.5 — "Being handled" stays short
 
 A message the agent has read showed "Being handled · the agent read it 1 minute ago" in its Status

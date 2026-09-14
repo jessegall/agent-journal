@@ -54,5 +54,10 @@ code, out = j("notifications")
 check("a read one leaves the list", ("1 unread" in out, "the migration finished" in out), (True, False))
 check("--all still shows it", "the migration finished" in j("notifications", "--all")[1], True)
 
+code, out = j("notify", "your question was answered", "--about=message 2")
+check("a notification can point at a message, so it opens there", code, 0)
+import notifications as _n  # noqa: E402
+check("stored as the message it opens", _n._all(d / ".journal", "default")[-1]["about"], "inbox:2")
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

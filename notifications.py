@@ -9,9 +9,9 @@ from templates import render
 
 KEY = "notifications"
 
-KINDS = {"todo": "to-do", "question": "question", "report": "report", "doc": "doc"}
+KINDS = {"inbox": "message", "todo": "to-do", "question": "question", "report": "report", "doc": "doc"}
 
-_REF = re.compile(r"^\s*(to-?dos?|questions?|reports?|docs?)\s*[:#\s]\s*(\d+)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|questions?|reports?|docs?|messages?|inbox)\s*[:#\s]\s*(\d+)\s*$", re.I)
 
 MESSAGES = {
     "needs_text": 'a notification needs its text: journal notify "<what finished>"',
@@ -37,7 +37,7 @@ def parse_ref(text: str) -> tuple[str | None, str]:
     if not m:
         return None, say("not_a_ref", text=repr(text))
     word = m.group(1).lower()
-    kind = "todo" if word.startswith("to") else word.rstrip("s")
+    kind = "todo" if word.startswith("to") else "inbox" if word in ("message", "messages", "inbox") else word.rstrip("s")
     return f"{kind}:{m.group(2)}", ""
 
 

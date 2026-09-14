@@ -480,8 +480,7 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
         return True, say("replied", n=n)
     if source != "web":
         import notifications
-        if not notifications.add(root, say("answer_note", n=n), at, f"inbox {n}", source, track)[0]:
-            notifications.add(root, say("answer_note", n=n), at, "", source, track)
+        notifications.add(root, say("answer_note", n=n), at, f"message {n}", source, track)
     return True, say("answered_part", n=n, excerpt=fmt.gist(part, 60))
 
 
