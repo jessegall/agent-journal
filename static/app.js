@@ -238,7 +238,8 @@ const PriorityIcon = {
 // the page's top bar: crumbs, the page's own button, then Search and Notifications on every page
 const TopBar = {
   props: { crumbs: { type: Array, default: () => [] } },
-  components: { Icon },
+  // a getter: QuestionAnswer is defined further down this file, and Vue reads this at first render
+  get components() { return { Icon, QuestionAnswer }; },
   setup() {
     const hashEnv = parseHash().params.env || "";
     const env = computed(() => {
@@ -247,10 +248,12 @@ const TopBar = {
       return (envs.find((e) => e.active) || envs.find((e) => e.current) || envs[0] || {}).name || "";
     });
     const row = computed(() => (OVERVIEW.data && env.value ? OVERVIEW.data.environments.find((e) => e.name === env.value) : null));
-    const waiting = computed(() => (row.value ? (row.value.notifications || 0) + (row.value.suggestions || 0) : 0));
+    const waiting = computed(() => (row.value ? (row.value.notifications || 0) + (row.value.suggestions || 0) + (row.value.questions || 0) : 0));
     const drop = reactive({ open: false });
     const notes = useFetch(() => drop.open && env.value && `/api/env/${env.value}/notifications`);
     const ideas = useFetch(() => drop.open && env.value && `/api/env/${env.value}/suggestions`);
+    const asks = useFetch(() => drop.open && env.value && `/api/env/${env.value}/questions`);
+    const openQuestions = computed(() => (asks.data || []).filter((q) => q.status === "open"));
     const suggestions = computed(() => (ideas.data || []).filter((s) => s.status === "open"));
     const changed = () => { notes.reload(); window.dispatchEvent(new CustomEvent("journal:changed")); };
     const readOne = (x) => send("POST", `/api/env/${env.value}/notifications/${x.n}/read`).then(changed);
@@ -263,7 +266,7 @@ const TopBar = {
     });
     const activity = ACTIVITY;
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
-    return { env, waiting, drop, notes, suggestions, readOne, readAll, activity, toggleActivity };
+    return { env, waiting, drop, notes, suggestions, asks, openQuestions, readOne, readAll, activity, toggleActivity };
   },
   template: `
     <div class=top>
@@ -284,7 +287,12 @@ const TopBar = {
             <div v-if="drop.open" class=drop>
               <div class=drop-head><span>Notifications</span>
                 <button v-if="notes.data && notes.data.length" type=button class="btn more" @click="readAll">Mark all read</button></div>
-              <p v-if="!(notes.data && notes.data.length) && !suggestions.length" class="muted drop-empty">Nothing waiting.</p>
+              <p v-if="!(notes.data && notes.data.length) && !suggestions.length && !openQuestions.length" class="muted drop-empty">Nothing waiting.</p>
+              <div v-for="q in openQuestions" :key="'q' + q.n" class="drop-row drop-question">
+                <a class=drop-kind :href="'#/env/' + env + '/questions/' + q.n" @click="drop.open = false">Question {{ q.n }}</a>
+                <span class=drop-text>{{ q.text }}</span>
+                <QuestionAnswer compact :env="env" :q="q" @answered="asks.reload()"/>
+              </div>
               <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
                 <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
               </a>
@@ -365,18 +373,56 @@ const Compose = {
 
 function questionKind(q) { return q.status === "open" ? "waiting" : q.status === "answered" ? "done" : "withdrawn"; }
 
+// answering a question: pick an option and Save, or write an answer; the same wherever a question shows
+const QuestionAnswer = {
+  props: { env: String, q: Object, compact: Boolean },
+  emits: ["answered"],
+  components: { Compose },
+  setup(props, { emit }) {
+    const state = reactive({ answering: false, picked: "" });
+    const answer = (text) => postJSON(`/api/env/${props.env}/questions/${props.q.n}/answer`, { answer: text })
+      .then((body) => { emit("answered", body.data); changed(); });
+    // clicking an option only picks it; Save sends it, so a stray click never answers
+    const pick = (option) => { state.picked = state.picked === option ? "" : option; };
+    const save = () => {
+      if (!state.picked || state.answering) return;
+      state.answering = true;
+      answer(state.picked).then(() => { state.picked = ""; }).finally(() => { state.answering = false; });
+    };
+    return { state, answer, pick, save };
+  },
+  template: `
+    <div :class="['question-answer', {compact}]">
+      <div v-if="q.options && q.options.length" class=options>
+        <p v-if="!compact" class=section-label>{{ q.answer ? 'Choose again' : 'Choose one' }}</p>
+        <button v-for="(o, i) in q.options" :key="i" type=button
+          :class="['option', {picked: state.picked === o, chosen: !state.picked && q.answer === o}]" :disabled="state.answering"
+          :aria-pressed="state.picked === o" @click="pick(o)">{{ o }}</button>
+        <div class=option-save>
+          <button type=button class="btn primary" :disabled="!state.picked || state.answering" @click="save">Save answer</button>
+          <span v-if="state.picked" class=hint>Not sent until you save</span>
+        </div>
+      </div>
+      <Compose :placeholder="q.options && q.options.length ? 'Or write your own answer' : q.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
+        :submit="q.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
+    </div>`,
+};
+
 const LinkedQuestions = {
   props: { rows: { type: Array, default: () => [] }, env: { type: String, default: "" } },
-  components: { StatusIcon },
+  components: { StatusIcon, QuestionAnswer },
   setup() { return { questionKind }; },
   template: `
     <div v-if="rows && rows.length">
       <p class=section-label>Questions</p>
       <div class=linked>
-        <a v-for="q in rows" :key="(q.env || env) + ':' + q.n" :href="'#/env/' + (q.env || env) + '/questions/' + q.n">
-          <StatusIcon :kind="questionKind(q)"/>
-          <span>{{ q.text }}<span v-if="q.answer" class=answer> → {{ q.answer }}</span></span>
-        </a>
+        <div v-for="q in rows" :key="(q.env || env) + ':' + q.n" class=linked-q>
+          <a :href="'#/env/' + (q.env || env) + '/questions/' + q.n">
+            <StatusIcon :kind="questionKind(q)"/>
+            <span>{{ q.text }}<span v-if="q.answer" class=answer> → {{ q.answer }}</span></span>
+          </a>
+          <QuestionAnswer v-if="q.status === 'open'" compact :env="q.env || env" :q="q"/>
+        </div>
       </div>
     </div>`,
 };
@@ -805,20 +851,11 @@ const TodoPanel = {
 
 const QuestionPanel = {
   props: PANEL_PROPS,
-  components: { Panel, StatusIcon, Compose, ActionBar, FromMessages },
+  components: { Panel, StatusIcon, ActionBar, FromMessages, QuestionAnswer },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/questions`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
-    const answer = (text) => postJSON(`${api.value}/${props.n}/answer`, { answer: text })
-      .then((body) => { item.data = body.data; if (props.reloaded) props.reloaded(); changed(); });
-    // clicking an option only picks it; Save sends it, so a stray click never answers
-    const state = reactive({ answering: false, picked: "" });
-    const pick = (option) => { state.picked = state.picked === option ? "" : option; };
-    const save = () => {
-      if (!state.picked || state.answering) return;
-      state.answering = true;
-      answer(state.picked).then(() => { state.picked = ""; }).finally(() => { state.answering = false; });
-    };
+    const onAnswered = (data) => { item.data = data; if (props.reloaded) props.reloaded(); };
     const actions = computed(() => {
       const q = item.data;
       if (!q || q.withdrawn) return [];
@@ -830,8 +867,7 @@ const QuestionPanel = {
       ];
     });
     const done = panelDone(props, item);
-    return { item, answer, pick, save, picked: computed(() => state.picked), answering: computed(() => state.answering),
-             questionKind, actions, done };
+    return { item, onAnswered, questionKind, actions, done };
   },
   template: `
     <Panel :label="'Question #' + n" :close="close" :onClose="onClose" :link="link">
@@ -852,23 +888,12 @@ const QuestionPanel = {
         <ActionBar :actions="actions" :done="done" :key="'question' + item.data.n + item.data.status"/>
         <FromMessages :rows="item.data.from_messages" :env="env"/>
         <div v-if="item.data.description" class="md prose" v-html="$md(item.data.description)"></div>
-        <div v-if="item.data.options.length && !item.data.withdrawn" class=options>
-          <p class=section-label>{{ item.data.answer ? 'Choose again' : 'Choose one' }}</p>
-          <button v-for="(o, i) in item.data.options" :key="i" type=button
-            :class="['option', {picked: picked === o, chosen: !picked && item.data.answer === o}]" :disabled="answering"
-            :aria-pressed="picked === o" @click="pick(o)">{{ o }}</button>
-          <div class=option-save>
-            <button type=button class="btn primary" :disabled="!picked || answering" @click="save">Save answer</button>
-            <span v-if="picked" class=hint>Not sent until you save</span>
-          </div>
-        </div>
         <div v-if="item.data.answer">
           <p class=section-label>Answer<span v-if="item.data.answered_age"> · {{ item.data.answered_age }}</span></p>
           <div class="md prose" v-html="$md(item.data.answer)"></div>
         </div>
         <div v-if="item.data.withdrawn" class=note>Withdrawn: {{ item.data.withdrawn }}</div>
-        <Compose v-else :placeholder="item.data.options.length ? 'Or write your own answer' : item.data.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
-          :submit="item.data.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
+        <QuestionAnswer v-else :env="env" :q="item.data" @answered="onAnswered"/>
       </template>
     </Panel>`,
 };
@@ -1880,7 +1905,6 @@ const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "", count: "notifications" },
   { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
-  { key: "questions", label: "Questions", views: ["Questions"], path: "questions", count: "questions" },
   { key: "reports", label: "Reports", views: ["Reports"], path: "reports", count: "reports" },
   { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
   { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
