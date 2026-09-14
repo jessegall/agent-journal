@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.106.0 — choosing a question's option no longer sends it
+
+Clicking one of a question's options only selects it; a Save answer button sends the choice,
+and the panel says "Not sent until you save" while one is selected. Clicking the selected option
+again clears it, and opening another question drops a choice that was not saved. Writing your
+own answer works as before.
+
 ## 1.105.1 — a row that moves after a refresh is shown before it goes
 
 When a list refreshes and a row changes group (a to-do started, done, a message processed) or
