@@ -1881,10 +1881,12 @@ const NAV = [
 
 // the Activity panel, always shown in the right column
 const ActivityPanel = {
-  props: { data: Object, href: Function },
+  props: { data: Object, href: Function, env: String },
   components: { Icon },
-  setup() {
-    return { hide: () => setActivityShown(false) };
+  setup(props) {
+    const accept = (e) => send("POST", `/api/env/${props.env}/suggestions/${e.n}/accept`)
+      .then(() => window.dispatchEvent(new CustomEvent("journal:changed")));
+    return { hide: () => setActivityShown(false), accept };
   },
   template: `
     <div class=activity-panel>
@@ -1894,13 +1896,27 @@ const ActivityPanel = {
       <template v-if="data">
         <div class=activity-list>
           <template v-for="(e, i) in data.events" :key="i">
-            <a v-if="href(e)" class="activity-row activity-link" :href="href(e)">
-              <span class=activity-line><span class=activity-text>{{ e.text }}</span><span v-if="e.n" class=activity-n>#{{ e.n }}</span></span>
+            <div v-if="e.needs === 'open' && href(e)" class="activity-row activity-alert">
+              <a class=activity-alert-body :href="href(e)">
+                <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span></span>
+                <span v-if="e.title" class=activity-title>{{ e.title }}</span>
+                <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
+              </a>
+              <span class=activity-actions>
+                <a v-if="e.kind === 'question'" class="btn warn" :href="href(e)">Answer</a>
+                <template v-else-if="e.kind === 'suggestion'">
+                  <button type=button class="btn warn" @click="accept(e)">Accept</button>
+                  <a class=btn :href="href(e)">Review</a>
+                </template>
+              </span>
+            </div>
+            <a v-else-if="href(e)" :class="['activity-row', 'activity-link', {'activity-soft': e.needs === 'answered'}]" :href="href(e)">
+              <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span></span>
               <span v-if="e.title" class=activity-title>{{ e.title }}</span>
               <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
             </a>
             <div v-else class=activity-row>
-              <span class=activity-line><span class=activity-text>{{ e.text }}</span><span v-if="e.n" class=activity-n>#{{ e.n }}</span></span>
+              <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span></span>
               <span v-if="e.title" class=activity-title>{{ e.title }}</span>
               <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
             </div>
@@ -2007,7 +2023,7 @@ const App = {
         <component :is="route.view" v-bind="route.params" :key="key"/>
       </main>
       <aside v-if="activity.data && ACTIVITY.shown" class=activity-dock>
-        <ActivityPanel :data="activity.data" :href="activityHref"/>
+        <ActivityPanel :data="activity.data" :href="activityHref" :env="envName"/>
       </aside>
     </div>`,
 };
