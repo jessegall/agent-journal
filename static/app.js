@@ -185,8 +185,8 @@ const Icon = {
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
       <template v-else-if="name === 'activity'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></template>
       <template v-else-if="name === 'collapse'"><path d="M6 4.5l3.5 3.5L6 11.5"/><path d="M11.5 3.5v9"/></template>
-      <template v-else-if="name === 'sort-asc'"><path d="M5 12.5v-9M2.5 6L5 3.5 7.5 6"/><path d="M9.5 5h4M9.5 8h3M9.5 11h2"/></template>
-      <template v-else-if="name === 'sort-desc'"><path d="M5 3.5v9M2.5 10L5 12.5 7.5 10"/><path d="M9.5 5h2M9.5 8h3M9.5 11h4"/></template>
+      <template v-else-if="name === 'sort-asc'"><path d="M8 13V3M4 7l4-4 4 4"/></template>
+      <template v-else-if="name === 'sort-desc'"><path d="M8 3v10M4 9l4 4 4-4"/></template>
       <template v-else-if="name === 'empty'"><path d="M2.5 9.5l1.8-5h7.4l1.8 5V13h-11z"/><path d="M2.5 9.5h3l1 1.5h3l1-1.5h3"/></template>
       <template v-else-if="name === 'reports'"><path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/></template>
       <template v-else-if="name === 'work'"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></template>
@@ -617,10 +617,10 @@ const ResourceList = {
         <div v-if="g.label" class=ghead>
           <StatusIcon v-if="g.kind" :kind="g.kind"/>{{ g.label }}<span class=n>{{ g.total }}</span>
           <span class=sort>
-            <template v-if="sorts.length > 1">
-              <button v-for="o in sorts" :key="o.key" type=button :class="['sort-field', {on: sortOf(g.key).by === o.key}]"
-                :aria-pressed="sortOf(g.key).by === o.key" @click="setSort(g.key, o.key, sortOf(g.key).dir)">{{ o.label }}</button>
-            </template>
+            <select v-if="sorts.length > 1" class=sort-select :value="sortOf(g.key).by" aria-label="Sort by"
+              @change="setSort(g.key, $event.target.value, sortOf(g.key).dir)">
+              <option v-for="o in sorts" :key="o.key" :value="o.key">{{ o.label }}</option>
+            </select>
             <span v-else class=sort-field>{{ sorts[0].label }}</span>
             <button type=button class="icon-btn sort-dir"
               :title="sortOf(g.key).dir === 'asc' ? 'Ascending — click for descending' : 'Descending — click for ascending'"

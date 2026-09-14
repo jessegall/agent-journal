@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.127.2 — Sorting picks its field from a flush select, with a plain arrow
+
+Each list group header chooses what it sorts by (ID, Priority) from a select with no border,
+sitting level with the header text. The direction button beside it is a single up or down
+arrow.
+
 ## 1.127.1 — List titles stay visible with a panel open
 
 With an item's panel open on a list page, the list sat between the panel and the Activity
