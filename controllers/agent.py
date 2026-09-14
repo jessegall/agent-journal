@@ -65,7 +65,7 @@ class AgentController(Controller):
             if path is None:
                 return Result("missing", say("no_transcript", kind=kind, agent=full[:8]))
             lines, _ = transcript.read(path)
-            return Result("ok", "", transcript.page(lines, after=p.after or 0, limit=max(50, min(int(p.limit or 1000), 2000))))
+            return Result("ok", "", transcript.page(lines, before=p.before or None, limit=max(50, min(int(p.limit or 1000), 2000))))
         return Result("ok", "", self._about(root, p.env, kind, full, path))
 
     @staticmethod

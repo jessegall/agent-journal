@@ -2391,44 +2391,49 @@ const Agent = {
     </div></div></div>`,
 };
 
-// an agent's raw transcript, read from the top down a thousand lines at a time
+// an agent's raw transcript: the newest lines first, older ones a thousand at a time as you scroll up
 const AgentTranscript = {
   props: ["env", "kind", "id"],
   components: { TopBar },
   setup(props) {
-    const log = reactive({ rows: [], next: 0, total: 0, loading: false, error: "", done: false });
-    const end = ref(null);
-    const near = () => end.value && end.value.getBoundingClientRect().top < window.innerHeight + 800;
-    const more = async () => {
-      if (log.loading || log.done) return;
+    const log = reactive({ rows: [], prev: null, total: 0, loading: false, error: "", started: false });
+    const top = ref(null);
+    const scroller = () => (top.value ? top.value.closest(".page") : null);
+    const load = async () => {
+      if (log.loading || (log.started && log.prev == null)) return;
       log.loading = true;
       log.error = "";
+      const box = scroller();
+      const fromBottom = box ? box.scrollHeight - box.scrollTop : 0;
       try {
-        const res = await fetch(`/api/env/${props.env}/agent?kind=${props.kind}&agent=${props.id}&transcript=1&limit=1000&after=${log.next}`);
+        const before = log.started ? `&before=${log.prev}` : "";
+        const res = await fetch(`/api/env/${props.env}/agent?kind=${props.kind}&agent=${props.id}&transcript=1&limit=1000${before}`);
         const body = await res.json();
-        if (!res.ok) { log.error = body.error || "The transcript could not be read."; log.done = true; return; }
-        log.rows = log.rows.concat(body.lines);
-        log.total = body.total;
-        if (body.next == null) log.done = true; else log.next = body.next;
+        if (!res.ok) { log.error = body.error || "The transcript could not be read."; log.started = true; log.prev = null; return; }
+        const first = !log.started;
+        log.rows = body.lines.concat(log.rows);
+        Object.assign(log, { prev: body.prev, total: body.total, started: true });
+        await Vue.nextTick();
+        const el = scroller();
+        if (!el) return;
+        // the first load opens at the newest line; an older page keeps the reader where they were
+        el.scrollTop = first ? el.scrollHeight : el.scrollHeight - fromBottom;
+        if (first) requestAnimationFrame(() => { el.scrollTop = el.scrollHeight; });
       } catch (err) {
         log.error = err.message;
-        log.done = true;
       } finally {
         log.loading = false;
       }
-      await Vue.nextTick();
-      // a short page leaves the end in view, and nothing scrolls to ask for more
-      if (near()) more();
     };
     let watcher = null;
     onMounted(() => {
-      watcher = new IntersectionObserver((seen) => { if (seen.some((e) => e.isIntersecting)) more(); }, { rootMargin: "800px 0px" });
-      if (end.value) watcher.observe(end.value);
+      watcher = new IntersectionObserver((seen) => { if (log.started && seen.some((e) => e.isIntersecting)) load(); }, { rootMargin: "600px 0px" });
+      if (top.value) watcher.observe(top.value);
     });
     onUnmounted(() => { if (watcher) watcher.disconnect(); });
-    more();
+    load();
     const time = (ts) => (ts ? new Date(ts).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "");
-    return { log, end, time, TRANSCRIPT_WHO };
+    return { log, top, time, TRANSCRIPT_WHO };
   },
   template: `
     <TopBar :crumbs="[env, 'Agents', (kind === 'subagent' ? 'Subagent ' : 'Session ') + id, 'Transcript']"/>
@@ -2437,14 +2442,15 @@ const AgentTranscript = {
         <a class="btn flush" :href="'#/env/' + env + '/agents/' + kind + '/' + id">Back to the agent</a>
         <span class=muted>{{ log.total ? log.rows.length + ' of ' + log.total + ' lines' : '' }}</span>
       </div>
+      <div ref=top class=tlog-end>{{ log.loading && log.rows.length ? 'Loading earlier lines…' : log.started && log.prev == null && log.rows.length ? 'Start of the transcript.' : '' }}</div>
       <p v-if="log.error" class=error>{{ log.error }}</p>
+      <p v-if="log.loading && !log.rows.length" class=empty>Loading…</p>
       <div v-for="l in log.rows" :key="l.n" :class="['tlog-line', 'tlog-' + l.kind]">
         <div class=tlog-meta><span class=tlog-who>{{ TRANSCRIPT_WHO[l.kind] || l.kind }}</span><span>{{ time(l.ts) }}</span><span class=tlog-n>#{{ l.n }}</span></div>
         <div v-if="l.tools.length" class=tlog-tools>Used {{ l.tools.join(', ') }}</div>
         <pre v-if="l.text" class=tlog-text>{{ l.text }}</pre>
         <span v-if="l.clipped" class=muted>Cut short here.</span>
       </div>
-      <div ref=end class=tlog-end>{{ log.loading ? 'Loading…' : log.done && log.rows.length ? 'End of the transcript.' : '' }}</div>
     </div></div></div>`,
 };
 

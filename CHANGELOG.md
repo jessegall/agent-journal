@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.82 — A transcript opens at its newest lines
+
+An agent's transcript page started at the first line, so reaching what the agent did last meant
+scrolling through the whole session. It now opens at the newest lines, scrolled to the bottom.
+Scrolling up loads the thousand lines before them, and keeps your place while they arrive.
+
 ## 1.131.81 — The commit page shows the whole commit
 
 A commit's page showed only its subject, its hash and the work and to-dos it belonged to. It now

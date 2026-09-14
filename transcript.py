@@ -463,12 +463,13 @@ def last_model(path: Path | None, limit: int = 300_000) -> str:
     return model
 
 
-def page(lines: list[Line], *, after: int = 0, limit: int = 1000) -> dict:
-    """The next `limit` lines after line `after`, for reading a transcript from the top down."""
-    start = next((i for i, x in enumerate(lines) if x.n > after), len(lines))
-    rows = lines[start:start + limit]
+def page(lines: list[Line], *, before: int | None = None, limit: int = 1000) -> dict:
+    """The `limit` lines ending just before line `before`, or the last `limit`: a transcript read from the newest end."""
+    end = len(lines) if before is None else next((i for i, x in enumerate(lines) if x.n >= before), len(lines))
+    start = max(0, end - limit)
+    rows = lines[start:end]
     cap = 20000
-    return {"total": len(lines), "next": rows[-1].n if rows and start + limit < len(lines) else None,
+    return {"total": len(lines), "prev": rows[0].n if rows and start > 0 else None,
             "lines": [{"n": x.n, "kind": x.kind, "role": x.role, "ts": x.ts, "tools": list(x.tools),
                        "text": (x.text or "")[:cap], "clipped": len(x.text or "") > cap} for x in rows]}
 

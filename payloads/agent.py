@@ -7,5 +7,5 @@ class AgentPayload(Payload):
     agent = Field(str)
     kind = Field(str)
     transcript = Field(bool)
-    after = Field(int)
+    before = Field(int)
     limit = Field(int)
