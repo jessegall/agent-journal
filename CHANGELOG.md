@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.6 — A bigger attach icon
+
+The paperclip inside the message box was small and faint, and hard to recognise as an attach
+button. It is now larger and darker.
+
 ## 1.131.5 — Reminders has its own icon
 
 In the top bar the Reminders icon was a bell, the same as the Notifications bell beside it.
