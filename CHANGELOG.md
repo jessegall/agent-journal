@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.2 — A status icon stays beside its text
+
+In a panel's Status row, a long status such as "Being handled · the agent read it 1 minute ago" wrapped
+under its icon, leaving the icon alone on the line above. The icon now stays beside the first line,
+and the wrapped text lines up under the text.
+
 ## 1.132.1 — Each journal wears its project's colour when several are open
 
 With more than one journal viewer running on the machine, it was easy to lose track of which tab
