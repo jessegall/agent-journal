@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.114.0 — Activity shows each journal command the agent runs, in short plain words
+
+When a session runs a journal command, Activity gets a line for it: "Reading your messages",
+"Reading to-do 98", "Filing message 91". Writes that already show from what they change are
+not repeated, and the status line is never logged. Up to 250 lines are kept per environment.
+Activity lines are short and name only the number: "Closed to-do 98", not its title.
+
 ## 1.113.2 — Activity rows show in full, with who did it; times are never cut off
 
 Each Activity row shows its whole text (at most 100 characters, cut at a word) with a small
