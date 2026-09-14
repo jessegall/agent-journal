@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.21 — A subagent cannot hide a journal write, close a row, or decide a suggestion
+
+- A subagent's journal command written through a shell variable (`J=.journal/journal.py; $J pins add "x"`)
+  or inside `bash -c` was not recognised as a journal write, so an agent lent nothing could file a pin under
+  the name of the session that dispatched it. Variables are now resolved and `bash -c` / `sh -c` scripts
+  read, and a journal line the hook cannot parse is refused for a subagent.
+- A subagent lent an environment could close to-dos (`todos done`, `drop`, `reopen`, `work end --todo`)
+  and decide suggestions. The skill always said a subagent reports a row finished and the dispatching
+  session closes it, and suggestion decisions are the user's; both are now refused.
+- The briefing pasted into a subagent's prompt showed example writes without `--as`, and each was refused
+  on first use. The examples now carry `--as="<your name>"`.
+- A heredoc body that only mentions a journal command (a patch script, a test) is no longer read as that
+  command, so it is not refused as a suggestion decision.
+
 ## 1.136.20 — The write gate sees writes run through git options, xargs and find, and lets reads saved to temp files through
 
 The gate that refuses writes while no work is open judged each command by its first word, so some

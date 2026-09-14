@@ -158,8 +158,8 @@ MESSAGES = {
                 "    Run `.journal/journal.py lent` first: it answers with your own name.\n"
                 "    You work on your own journal: environment `{name}`. Every journal command\n"
                 '    you run must carry --env="{name}", e.g.\n'
-                '      .journal/journal.py --env="{name}" work start "<what you are doing>"\n'
-                '      .journal/journal.py --env="{name}" todos report <n> "<how it was done>"\n'
+                '      .journal/journal.py --env="{name}" --as="<your name>" work start "<what you are doing>"\n'
+                '      .journal/journal.py --env="{name}" --as="<your name>" todos report <n> "<how it was done>"\n'
                 "    Without the flag your writes are refused, because your shell carries the\n"
                 "    dispatching session's id and would file under its name.\n"
                 '    You INHERIT this environment\'s pins and reminders — `--env="{name}" pins`\n'

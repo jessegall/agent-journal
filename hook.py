@@ -79,6 +79,11 @@ MESSAGES = {
                     "parked as to-do n. If nothing is deferred — you were describing the order of the current work — "
                     "run the call again; this is said once per reply.",
     "deferral_fact": "work deferred in words, not parked",
+    "agent_unreadable": "this line runs the journal in a way the hook cannot read, and a subagent's journal command has to be "
+                        "readable to be allowed. Write it plainly: .journal/journal.py --env=\"<name>\" --as=\"<your name>\" <verb> …",
+    "agent_closes_row": "a subagent does not close a to-do. Say it is finished with "
+                        "`.journal/journal.py --env=\"<name>\" --as=\"<your name>\" todos report <n> \"<how it was done>\"`; "
+                        "the session that dispatched you closes it.",
     "deferral_stop_do": "park it as a to-do, or say in one line that nothing was put off; this is not asked again for this reply",
     "deferral_stop_why": "You wrote:\n  …{said}…\n\nThe user asked for something and this says it will happen later. Work "
                          "held only in words lives in this window, and one distraction or one compaction loses it. Park it "
@@ -1712,33 +1717,67 @@ def _command_words(toks: list[str], start: int) -> list[str]:
     return out
 
 
+def _journal_lines(line: str) -> list[str]:
+    """The line as the shell runs it: heredoc bodies dropped, `NAME=value` variables put back, and each
+    `bash -c` / `sh -c` script as a line of its own.
+
+    A SUBAGENT'S PIN HID BEHIND A VARIABLE. `J=.journal/journal.py; $J pins add "x"` and
+    `bash -c ".journal/journal.py pins add x"` were not seen as journal writes at all, so an
+    agent that was lent nothing filed a pin under its dispatcher's name. And a heredoc body is
+    data: a patch script that merely mentions `suggestions accept` was refused as a decision.
+    """
+    line = _HEREDOC_BODY.sub(r"\1", line)
+    names = {k: v.strip("'\"") for k, v in re.findall(r"(?:^|[\s;&|])([A-Za-z_][A-Za-z0-9_]*)=([^\s;&|]+)", line)}
+
+    def put(text: str) -> str:
+        return re.sub(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?", lambda m: names.get(m.group(1), m.group(0)), text)
+
+    return [put(line)] + [put(m.group(2)) for m in re.finditer(r"\b(?:ba|z)?sh\s+-c\s+(['\"])(.*?)\1", line, re.S)]
+
+
+def _journal_cmds(payload: dict) -> list[tuple[str, object, list[str]]] | None:
+    """(verb, command, its words) for each journal command a Bash line runs; None when a journal line cannot be read."""
+    if (payload.get("tool_name") or "") != "Bash":
+        return []
+    import shlex
+    found = []
+    for text in _journal_lines(str((payload.get("tool_input") or {}).get("command", ""))):
+        if "journal" not in text:
+            continue
+        try:
+            toks = shlex.split(text)
+        except ValueError:
+            return None
+        for i, t in enumerate(toks[:-1]):
+            if "journal" not in t:
+                continue
+            # THE VERB IS THE FIRST WORD THAT IS NOT A FLAG, so `journal --env=other pins add "x"` is a write.
+            j = i + 1
+            while j < len(toks) and toks[j].startswith("-"):
+                j += 1
+            verb = toks[j] if j < len(toks) else ""
+            if commands.REGISTRY.knows(verb):
+                cmd = commands.REGISTRY.command_of(_command_words(toks, j))
+                if cmd is not None:
+                    found.append((verb, cmd, toks[j:]))
+    return found
+
+
+#: the commands that close a to-do row, which only the session that owns the row may run
+_CLOSES_ROW = frozenset({"todos:done", "todos:drop", "todos:reopen"})
+
+
+def _closes_row(cmd, words: list[str]) -> bool:
+    signature = str(getattr(cmd, "signature", "") or "")
+    name = signature.split()[0] if signature else ""
+    return name in _CLOSES_ROW or (name in ("work:end", "end") and any(w in ("--todo", "--todos") for w in words))
+
+
 def _journal_write(payload: dict) -> str | None:
     """The journal write verb on this command line, if it is one, anywhere in a chain."""
-    if (payload.get("tool_name") or "") != "Bash":
-        return None
-    if "journal" not in str((payload.get("tool_input") or {}).get("command", "")):
-        return None
-    import shlex
-    try:
-        toks = shlex.split(str((payload.get("tool_input") or {}).get("command", "")))
-    except ValueError:
-        return None
-    for i, t in enumerate(toks[:-1]):
-        if "journal" not in t:
-            continue
-        # THE VERB IS THE FIRST WORD THAT IS NOT A FLAG. It was read as the token
-        # IMMEDIATELY after the path, so anything with an option in front of it — `journal
-        # --env=other pins add "x"` — parsed as no write at all and sailed through every
-        # gate this function guards: the write gate, the context rung's hold, and the
-        # subagent refusal. Found by a test that expected a refusal and got silence.
-        j = i + 1
-        while j < len(toks) and toks[j].startswith("-"):
-            j += 1
-        verb = toks[j] if j < len(toks) else ""
-        if commands.REGISTRY.knows(verb):
-            cmd = commands.REGISTRY.command_of(_command_words(toks, j))
-            if cmd is not None and cmd.writes:
-                return verb
+    for verb, cmd, _ in _journal_cmds(payload) or ():
+        if cmd.writes:
+            return verb
     return None
 
 
@@ -1746,7 +1785,7 @@ def _user_only(payload: dict) -> str | None:
     """The verb of a journal command on this line that only the user may run, or None."""
     if (payload.get("tool_name") or "") != "Bash":
         return None
-    line = str((payload.get("tool_input") or {}).get("command", ""))
+    line = _HEREDOC_BODY.sub(r"\1", str((payload.get("tool_input") or {}).get("command", "")))
     if "journal" not in line:
         return None
     import shlex
@@ -3495,6 +3534,18 @@ def main(raw: str | None = None) -> int:
                     agents.touch(ROOT, env, aid)
                     agents.dir_of(ROOT, env, aid).mkdir(parents=True, exist_ok=True)
                 return _context("PostToolUse", agents.briefing(lent, aid, called))
+        if handler is on_pre_tool:
+            # THREE THINGS NO GRANT LETS A SUBAGENT DO: hide what it runs, close a row, or
+            # decide a suggestion. Its row is reported, never closed (journal-agents); a
+            # suggestion is the user's; and a line the hook cannot read cannot be allowed.
+            cmds = _journal_cmds(payload)
+            if cmds is None:
+                return _deny(say("agent_unreadable"))
+            if any(_closes_row(c, w) for _, c, w in cmds):
+                return _deny(say("agent_closes_row"))
+            mine = _user_only(payload)
+            if mine:
+                return _deny(say("user_only", verb=mine))
         verb = _journal_write(payload) if handler is on_pre_tool else ""
         if verb:
             command = str((payload.get("tool_input") or {}).get("command", ""))
