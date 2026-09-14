@@ -284,6 +284,13 @@ const TopBar = {
     const changed = () => { notes.reload(); window.dispatchEvent(new CustomEvent("journal:changed")); };
     const readOne = (x) => send("POST", `/api/env/${env.value}/notifications/${x.n}/read`).then(changed);
     const readAll = () => send("POST", `/api/env/${env.value}/notifications/readall`).then(changed);
+    const onHome = () => /^#\/env\/[^/]+\/?$/.test(location.hash);
+    const openFromBell = (event, x) => {
+      const kind = String(x.about || "").split(":")[0];
+      if (!onHome() || !["inbox", "todo", "question", "suggestion", "work"].includes(kind)) return;
+      event.preventDefault();
+      window.dispatchEvent(new CustomEvent("journal:peek", { detail: { about: x.about } }));
+    };
     const outside = (e) => { if (!e.target.closest(".drop-wrap")) drop.open = false; };
     watchEffect((onCleanup) => {
       if (!drop.open) return;
@@ -313,7 +320,7 @@ const TopBar = {
       help.html = renderMarkdown(HELP_CACHE[helpTopic]) || "<p>No help written for this page yet.</p>";
     };
     const closeHelp = () => { if (helpDialog.value) helpDialog.value.close(); };
-    return { env, waiting, openCount, drop, notes, suggestions, asks, openQuestions, readOne, readAll, activity, toggleActivity, view, KEPT,
+    return { env, waiting, openCount, drop, notes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, activity, toggleActivity, view, KEPT,
              helpTopic, help, helpDialog, openHelp, closeHelp };
   },
   template: `
@@ -356,10 +363,10 @@ const TopBar = {
               <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
                 <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
               </a>
-              <div v-for="x in notes.data || []" :key="'n' + x.n" :class="['drop-row', {answer: String(x.about).startsWith('inbox:')}]">
+              <div v-for="x in notes.data || []" :key="'n' + x.n" class=drop-row>
                 <span class=drop-text>{{ x.text }}</span>
                 <span class=drop-meta>{{ x.age || 'just now' }}
-                  <a v-if="x.about && $refHref(x.about, env)" class="btn more" :href="$refHref(x.about, env)" :title="'Open ' + x.about_label" @click="drop.open = false">Open</a>
+                  <a v-if="x.about && $refHref(x.about, env)" class="btn more" :href="$refHref(x.about, env)" :title="'Open ' + x.about_label" @click="readOne(x); openFromBell($event, x); drop.open = false">Open</a>
                   <button type=button class="btn more" @click="readOne(x)">Mark read</button>
                 </span>
               </div>
@@ -1976,9 +1983,16 @@ const EnvHome = {
     const view = reactive({ finished: false, kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; };
     const unpeek = () => { view.kind = ""; view.n = 0; };
+    // a notification about something the side panel shows opens there, without leaving Home
+    const peekOf = (x) => { const [k, num] = String((x && x.about) || "").split(":"); const kind = k === "inbox" ? "message" : k;
+                            return PEEK[kind] && Number(num) ? { kind, n: Number(num) } : null; };
+    const openNote = (x) => { const got = peekOf(x); if (got) peek(got.kind, got.n); if (x && x.n && !x.read) readOne(x); };
+    const onPeek = (e) => openNote(e.detail);
+    window.addEventListener("journal:peek", onPeek);
+    onUnmounted(() => window.removeEventListener("journal:peek", onPeek));
     const picked = (kind) => (r) => view.kind === kind && view.n === r.n;
     const reloadAll = () => [work, todos, inbox, questions].forEach((f) => f.reload());
-    return { work, allWork, endedWork, todos, inbox, questions, notes, readOne, readAll, reloadAll, view, peek, unpeek, picked, waiting, asking, stats, openTodos, finishedTodos,
+    return { work, allWork, endedWork, todos, inbox, questions, notes, readOne, readAll, reloadAll, view, peek, unpeek, picked, peekOf, openNote, waiting, asking, stats, openTodos, finishedTodos,
              waitingMessages, openQuestions, openWork };
   },
   template: `
@@ -1993,7 +2007,8 @@ const EnvHome = {
               <span class=muted> · {{ x.age || 'just now' }}</span>
             </div>
             <span class=note-actions>
-              <a v-if="x.about && $refHref(x.about, env)" class=btn :href="$refHref(x.about, env)" :title="'Open ' + x.about_label">Open</a>
+              <button v-if="peekOf(x)" type=button class=btn :title="'Show ' + x.about_label + ' here'" @click="openNote(x)">Open</button>
+              <a v-else-if="x.about && $refHref(x.about, env)" class=btn :href="$refHref(x.about, env)" :title="'Open ' + x.about_label" @click="readOne(x)">Open</a>
               <button type=button class=btn @click="readOne(x)">Mark read</button>
             </span>
           </div>

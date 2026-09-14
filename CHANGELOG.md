@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.9 — A notification opens in Home's side panel, and is read when opened
+
+On Home, Open on a notification used to leave the page for the message's own page. It now shows the
+message, to-do, question, suggestion or piece of work in Home's side panel. Open in the bell's dropdown
+does the same while you are on Home; a notification about a report or document still opens its page.
+Opening a notification marks it read. Amber is kept for Home's notification rows: the bell's dropdown
+is plain again, as it was before 1.132.7.
+
 ## 1.132.8 — The strip's project tab switches journals
 
 With several journals running, the project name on the colored strip at the top is a button. It opens
