@@ -61,9 +61,34 @@ class ActivityController(Controller):
         from pins import age
         out: list[dict] = []
 
+        def numbered(items, field: str) -> dict:
+            return {i: x.get(field, "") for i, x in enumerate(items, 1) if isinstance(x, dict)}
+
+        # kind -> {number: title}, built only for the kinds that appear
+        lookups = {
+            "todo": lambda: {t["n"]: t.get("title", "") for t in todo._all(root, env)},
+            "message": lambda: numbered(inbox._all(root, env), "text"),
+            "question": lambda: numbered(questions._all(root, env), "text"),
+            "work": lambda: numbered(work._all(root, env), "subject"),
+            "report": lambda: numbered(__import__("reports")._all(root, env), "title"),
+            "suggestion": lambda: numbered(__import__("suggestions")._all(root, env), "title"),
+            "reminder": lambda: numbered(__import__("reminders")._all(root, env), "text"),
+            "pin": lambda: numbered(__import__("pins")._all(root, track=env), "fact"),
+            "rule": lambda: numbered(__import__("pins")._all(root, "rules"), "fact"),
+            "doc": lambda: {d["n"]: d.get("title", "") for d in __import__("docs").all_docs(root)},
+        }
+        titles: dict[str, dict] = {}
+
+        def title_of(kind: str, n) -> str:
+            if not str(n or "").isdigit() or kind not in lookups:
+                return ""
+            if kind not in titles:
+                titles[kind] = lookups[kind]()
+            return short(titles[kind].get(int(n), "") or "")
+
         def add(at, kind: str, text: str, n: int | None, by: str) -> None:
             if at:
-                out.append({"at": at, "kind": kind, "n": n, "text": short(text), "by": by})
+                out.append({"at": at, "kind": kind, "n": n, "text": short(text), "title": title_of(kind, n), "by": by})
 
         for wn, w in enumerate(work._all(root, env), 1):
             if w.get("removed"):
