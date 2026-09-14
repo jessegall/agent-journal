@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.4 — Reports, Pins and Reminders move to the top bar
+
+The sidebar now lists what the user reads and manages: Home, Messages, To-dos, Documents
+and Settings. Reports, Pins and Reminders, which hold what the agent keeps, are icons in the
+top bar after Questions; each opens its page and is lit while that page is open.
+
 ## 1.131.3 — A Questions icon in the top bar
 
 The top bar has a Questions icon between Search and Notifications. It opens the questions
