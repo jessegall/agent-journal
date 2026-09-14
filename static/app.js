@@ -2759,6 +2759,8 @@ const App = {
       const name = here.project || (ov.data && ov.data.project) || "";
       return name ? { name, color: colorOf(name), label: paletteOf(name)[1] } : null;
     });
+    // the pickers list this journal first; colours still come from the whole list, so none changes
+    const journalsOrdered = computed(() => [...journals.list.filter((j) => j.current), ...journals.list.filter((j) => !j.current)]);
     const loadJournals = () => fetch("/api/viewers").then((r) => r.json())
       .then((d) => { journals.list = Array.isArray(d) ? d : []; }).catch(() => {});
     const journalsTimer = setInterval(() => { if (document.visibilityState === "visible") loadJournals(); }, 20000);
@@ -2794,7 +2796,7 @@ const App = {
     };
     document.addEventListener("visibilitychange", onVisibility);
     onUnmounted(() => { document.removeEventListener("visibilitychange", onVisibility); clearTimeout(awayTimer); });
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, strip, colorOf, stripMenu, loadJournals };
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
   },
   template: `
     <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
@@ -2804,7 +2806,7 @@ const App = {
       </div>
       <div v-if="strip && stripMenu.open" class="drop strip-drop">
         <div class=drop-head><span>Journals running on this machine</span></div>
-        <template v-for="j in journals.list" :key="j.port">
+        <template v-for="j in journalsOrdered" :key="j.port">
           <div v-if="j.current" class="drop-row current">
             <span class=drop-kind>This journal · port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
             <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
@@ -2824,7 +2826,7 @@ const App = {
           </button>
           <div v-if="journals.open" class=drop>
             <div class=drop-head><span>Journals running on this machine</span></div>
-            <template v-for="j in journals.list" :key="j.port">
+            <template v-for="j in journalsOrdered" :key="j.port">
               <div v-if="j.current" class="drop-row current">
                 <span class=drop-kind>This journal · port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
                 <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.15 — The journal pickers put this journal first
+
+In both journal pickers, the one in the sidebar and the one on the strip's tab, the journal you are in
+is listed first with the selected background. Its row answers the pointer without looking like a link,
+and every other journal's row highlights on hover. Colours are unchanged.
+
 ## 1.132.14 — Activity is newest first again
 
 1.132.13 moved the newest Activity line to the bottom; you preferred it at the top after all. The
