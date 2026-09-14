@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.98 — Coming back to the tab: no pile-up, and what happened meanwhile
+
+After a while on another tab, every change arrived at once when you came back. Rows lingered and
+slid out together, and they piled up at the bottom of a list. On that first refresh back, new rows
+still fade in, but rows that left go at once and nothing slides. A notice at the bottom then says
+what the agent did while you were away, for example "4 to-dos closed · 1 to-do added · 2 messages
+filed". It only shows after more than a minute away, and it goes after 15 seconds or when dismissed.
+
 ## 1.131.97 — Reports and documents, told apart
 
 An agent asked to have subagents write a report sometimes wrote a document instead. The skill now

@@ -47,6 +47,10 @@ function parseHash() {
 // on screen while the next request is in flight, so opening another item does not flash.
 // every list and item on screen refreshes itself while the tab is visible
 const POLL_MS = 5000;
+// when the tab was last hidden and shown again: the first refresh after a long absence carries everything that changed meanwhile
+const TAB = { hiddenAt: 0, shownAt: 0 };
+document.addEventListener("visibilitychange", () => { if (document.hidden) TAB.hiddenAt = Date.now(); else TAB.shownAt = Date.now(); });
+const cameBack = () => TAB.hiddenAt > 0 && TAB.shownAt > TAB.hiddenAt && TAB.shownAt - TAB.hiddenAt > POLL_MS && Date.now() - TAB.shownAt < 2 * POLL_MS;
 // when this viewer last wrote something: list changes that land soon after are its own, not news
 const LAST_WRITE = { at: 0 };
 const QUIET_MS = 4000;
@@ -683,7 +687,7 @@ const ResourceList = {
   },
   components: { StatusIcon, PriorityIcon, Icon },
   setup(props) {
-    const state = reactive({ sort: {}, pages: {}, held: {}, arrived: {} });
+    const state = reactive({ sort: {}, pages: {}, held: {}, arrived: {}, quiet: false });
     // a closed section shows what closed in the last week; anything older, or closed at an unknown time, is archived
     const recent = (r) => !!r.closed_at && Date.now() - Date.parse(r.closed_at) < RECENT_MS;
     // after a refresh, a row that changed group or left the list stays put in blue for a moment, and a new row is lit
@@ -694,15 +698,18 @@ const ResourceList = {
       if (!rows || !before) return;
       // only what a poll brings is marked; a change the viewer just made itself is not news
       if (Date.now() - LAST_WRITE.at < QUIET_MS) return;
+      // back from another tab: everything that changed arrives at once, so rows only fade in; none linger or slide out in a heap
+      const back = cameBack();
+      if (back) { state.quiet = true; setTimeout(() => { state.quiet = false; }, 1200); }
       const was = Object.fromEntries(before.map((r) => [rowKey(r), { group: groupOf(r), row: r }]));
       const now = new Set(rows.map(rowKey));
       const lit = (bag, k, value) => { bag[k] = value; setTimeout(() => { delete bag[k]; }, HOLD_MS); };
       rows.forEach((r) => {
         const k = rowKey(r);
         if (!was[k]) lit(state.arrived, k, true);
-        else if (was[k].group !== groupOf(r)) lit(state.held, k, was[k]);
+        else if (!back && was[k].group !== groupOf(r)) lit(state.held, k, was[k]);
       });
-      Object.entries(was).forEach(([k, v]) => { if (!now.has(k)) lit(state.held, k, v); });
+      if (!back) Object.entries(was).forEach(([k, v]) => { if (!now.has(k)) lit(state.held, k, v); });
     });
     const sortOf = (key) => state.sort[key] || { by: props.sorts[0].key, dir: "desc" };
     const sections = computed(() => (props.rows ? props.groups.filter((g) => !props.archive || g.closed).map((g) => {
@@ -763,7 +770,7 @@ const ResourceList = {
             </button>
           </span>
         </div>
-        <TransitionGroup tag="div" class=rows name="row" appear>
+        <TransitionGroup tag="div" :class="['rows', {quiet: state.quiet}]" name="row" appear>
         <a v-for="(r, i) in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
           :style="{gridTemplateColumns: cols, '--i': i}" :href="href(r)" @click="open($event, r)">
           <PriorityIcon v-if="columns.priority" :value="columns.priority(r)"/>
@@ -2706,7 +2713,34 @@ const App = {
     document.addEventListener("mousedown", outsideJournals);
     onUnmounted(() => { clearInterval(journalsTimer); document.removeEventListener("mousedown", outsideJournals); });
     loadJournals();
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals };
+    // what the agent did while this tab was hidden, said once when the user comes back to it
+    const away = reactive({ since: "", text: "" });
+    const AWAY_WORDS = [["Closed to-do", "to-do closed", "to-dos closed"], ["Added to-do", "to-do added", "to-dos added"],
+                        ["Ended work", "piece of work finished", "pieces of work finished"], ["Filed message", "message filed", "messages filed"],
+                        ["Asked question", "question for you", "questions for you"], ["Suggested a change", "suggestion", "suggestions"],
+                        ["Handled comment", "comment handled", "comments handled"]];
+    let awayTimer = null;
+    const onVisibility = () => {
+      if (document.hidden) { away.since = away.since || new Date().toISOString(); return; }
+      const since = Date.parse(away.since);
+      away.since = "";
+      if (!since || Date.now() - since < 60000) return;
+      activity.reload();
+      setTimeout(() => {
+        const events = (activity.data && activity.data.events) || [];
+        const said = AWAY_WORDS.map(([text, one, many]) => {
+          const n = events.filter((e) => e.text === text && e.by !== "You" && Date.parse(e.at) >= since).length;
+          return n ? `${n} ${n === 1 ? one : many}` : "";
+        }).filter(Boolean);
+        if (!said.length) return;
+        away.text = said.join(" · ");
+        clearTimeout(awayTimer);
+        awayTimer = setTimeout(() => { away.text = ""; }, 15000);
+      }, 1500);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    onUnmounted(() => { document.removeEventListener("visibilitychange", onVisibility); clearTimeout(awayTimer); });
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away };
   },
   template: `
     <div class=app>
@@ -2786,6 +2820,10 @@ const App = {
       <aside v-if="activity.data && ACTIVITY.shown" class=activity-dock>
         <ActivityPanel :data="activity.data" :href="activityHref" :env="envName"/>
       </aside>
+      <div v-if="away.text" class=away-toast role=status>
+        <span>While you were away: {{ away.text }}</span>
+        <button type=button class=away-close aria-label="Dismiss" title="Dismiss" @click="away.text = ''">×</button>
+      </div>
     </div>`,
 };
 
