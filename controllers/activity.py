@@ -155,7 +155,7 @@ class ActivityController(Controller):
             withdrawn = q.get("withdrawn") or q.get("withdrawn_at")
             state = "withdrawn" if withdrawn else "answered" if q.get("answered_at") else ""
             add(q.get("at"), "question", say("question_asked"), n, AGENT, True,
-                "answered" if state == "answered" else "" if state else "open", detail=state)
+                "answered" if state == "answered" else "" if state or q.get("seen_at") else "open", detail=state)
             add(q.get("answered_at"), "question", say("question_answered"), n, USER, needs="answered")
         suggestions = __import__("suggestions")
         for n, s in enumerate(suggestions._all(root, env), 1):

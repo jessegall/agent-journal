@@ -688,7 +688,7 @@ _undescribed = sorted({f"{c.noun}:{c.verb}" for group in _commands.REGISTRY._com
 check("every registered command has a plain Activity line, or a reason it is not logged", _undescribed, [])
 import controllers as _controllers  # noqa: E402
 _web_undescribed = sorted(f"{c.resource}:{a}" for c in _controllers.CONTROLLERS.values() for a in c.actions
-                          if a not in commandlog.READS and f"{c.resource}:{a}" not in set(commandlog.WEB) | commandlog.WEB_SHOWN)
+                          if a not in commandlog.READS and f"{c.resource}:{a}" not in set(commandlog.WEB) | commandlog.WEB_SHOWN | commandlog.WEB_QUIET)
 check("every write the viewer can make has a plain Activity line, or a reason it is not logged", _web_undescribed, [])
 _urgent = [t["n"] for t in json.loads(get("/api/env/alpha/todos")[2]) if t["title"] == "an urgent thing to fix"][0]
 post(f"/api/env/alpha/todos/{_urgent}", {"priority": "low"}, method="PATCH")
@@ -974,6 +974,14 @@ check("an age says just now for a minute, then minutes, hours and days",
 _about = json.loads(get("/api/about")[2])
 check("the About endpoint says the running version and carries the changelog",
       (bool(_about.get("version")), isinstance(_about.get("changelog"), str)), (True, True))
+import questions as _q_seen  # noqa: E402
+_q_seen.add(root, "which shade for the header?", "2099-01-07T00:00:00+00:00", track="alpha")
+_qn = len(_q_seen._all(root, "alpha"))
+_asked = lambda: [e["needs"] for e in _activity.ActivityController._events(root, "alpha") if e["text"] == "Asked question" and e["n"] == _qn]
+check("an open question nobody has opened asks for attention in Activity", _asked(), ["open"])
+_st, _got = post(f"/api/env/alpha/questions/{_qn}/seen", {})
+check("opening it in the viewer marks it seen, and its Activity line stops asking",
+      (_st, _asked(), json.loads(get(f"/api/env/alpha/questions/{_qn}")[2])["seen"]), (200, [""], True))
 srv.shutdown()
 srv.server_close()
 thread.join(timeout=5)
