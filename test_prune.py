@@ -93,6 +93,12 @@ check("really gone from disk — not moved anywhere", any(todo_dir.rglob("002-*.
 code, out = j("todos", "prune", "--older-than=nonsense")
 check("garbage age is refused, not silently treated as 0", code, 1)
 
+# ------------------------------------------------------------------ a to-do already on the list is not added again
+j("todos", "add", "Flush the queue, after a minute!")
+code, out = j("todos", "add", "flush the queue after a minute")
+check("a title that differs only in case and punctuation is refused as the same to-do, pointing at amend and work update",
+      (code, "already on the list" in out, "todos amend" in out, "work update" in out), (1, True, True, True))
+
 # ------------------------------------------------------------------ done to-dos archive themselves
 import prune as prune_mod  # noqa: E402
 import todo as todo_mod  # noqa: E402

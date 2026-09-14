@@ -36,11 +36,24 @@ def _send(obj: dict) -> None:
         sys.stdout.flush()
 
 
+#: how long before this server started its session's hook may last have run; an older entry is another session's
+TRUST_SECONDS = 120
+
+
 def _session() -> str | None:
-    """This server's session: Claude Code started it, and the hook recorded which session that process runs."""
+    """This server's session: Claude Code started it, and the hook recorded which session that process runs.
+
+    A process id is reused once its process is gone, so an entry left by an earlier session can name this
+    server's parent. It is believed only when that session's hook has run since shortly before this server
+    started.
+    """
     import state
     got = state.get(ROOT, PIDS, {})
-    return got.get(str(os.getppid())) if isinstance(got, dict) else None
+    stem = got.get(str(os.getppid())) if isinstance(got, dict) else None
+    if not stem:
+        return None
+    seen = state.get(ROOT, "seen_at", 0, stem=stem) or 0
+    return stem if seen >= STARTED[0] - TRUST_SECONDS else None
 
 
 def _gist(text: str) -> str:
@@ -58,13 +71,31 @@ def pending(stem: str) -> list[tuple[str, dict]]:
     got = []
     # a session on no environment is woken for new messages only; answers and comments belong to whoever asked.
     # With auto mode off only a message wakes it: nothing else may set it working on its own
+    live = tracks.live(ROOT)
     for env in [bound] if bound else tracks.choices(ROOT):
+        if not _recipient(stem, env, live):
+            continue
         auto = todo.auto(ROOT, env)
         if auto and not idle:
             continue
         got.extend(_waiting(env, STARTED[0], answers=bool(bound) and auto))
     pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
     return [(key, params) for key, params in got if key not in pushed]
+
+
+def _recipient(stem: str, env: str, live: dict) -> bool:
+    """Is this session the one to wake for `env`? Another agent's environment is never its business.
+
+    A session on no environment hears only environments no live session holds, and of two sessions
+    on one environment only the one seen most recently is woken.
+    """
+    others = {sid: v["age"] for sid, v in live.items() if v["track"] == env and sid != stem}
+    if not others:
+        return True
+    mine = live.get(stem)
+    if not mine or mine["track"] != env:
+        return False
+    return mine["age"] is not None and all(age is None or mine["age"] <= age for age in others.values())
 
 
 def _epoch(stamp) -> float:

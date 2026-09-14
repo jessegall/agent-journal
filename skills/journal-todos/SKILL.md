@@ -116,6 +116,22 @@ is a ruling or a review only the user can give, park that remainder as a to-do w
 questions in its brief, and `work end` the work. Otherwise the journal sees work in flight,
 nothing else starts, and with auto on the stop hook will hold you to do exactly this.
 
+## The brief is what to do; progress is work
+
+    journal todos amend <n> "<section>" --brief         add a section to a to-do's brief
+    journal todos replace <n> ["<section>"] --brief     rewrite one section, or the whole brief; the old text is kept under struck/
+
+**A brief says what the to-do is, not how far it got.** Amend it when the TASK changes: the
+user adds a requirement, a constraint turns up, a decision narrows it. What you did, found or
+tried while working on it is progress, and progress is `journal work update` on the open work,
+which files it in the to-do's work log. A progress note amended into the brief buries the task
+under a diary, and Activity shows it as a change to the to-do.
+
+**A to-do already on the list is never added again.** `journal todos add` refuses a title that
+matches an open to-do, whatever its case or punctuation. More to say about that task is an
+amend. Only genuinely separate work is a new to-do, and when it rests on the first, add
+`--after=<n>`.
+
 ## A to-do that rests on another: say so
 
     journal todos add "<title>" --after=<n>[,<n>]   file it waiting on the ones that must land first

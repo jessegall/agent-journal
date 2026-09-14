@@ -181,5 +181,43 @@ second = chan_mod._poller()
 check("when a package file changes, the next poll runs the code as it is on disk now", second is not first, True)
 check("the fresh code keeps the server's start time, so nothing older is pushed", second.STARTED[0], 12345.0)
 
+# ------------------------------------------------------------------ no other agent's environment is pushed to this one
+import inbox as _inbox  # noqa: E402
+
+_now = time.time()
+for _stem, _env, _age in (("holder-a", "default", 5), ("stale-d", "default", 600), ("free-b", None, 5)):
+    if _env:
+        tracks.bind(root, _stem, _env)
+    state.put(root, "seen_at", int(_now - _age), stem=_stem)
+    state.put(root, "last_event", "Stop", stem=_stem)
+tracks.create(root, "spare", at="2026-09-14T10:00:00+00:00")
+chan_mod.STARTED[0] = 0.0
+_inbox.add(root, "a message for whoever works default", "2099-01-01T00:00:00+00:00", track="default")
+_inbox.add(root, "a message on an environment nobody holds", "2099-01-01T00:00:00+00:00", track="spare")
+
+
+def _heard(stem):
+    return sorted(p["content"].split(": ", 1)[1] for _, p in chan_mod.pending(stem) if p["meta"].get("message"))
+
+
+check("the session on the environment is woken for its message",
+      "a message for whoever works default" in _heard("holder-a"), True)
+check("a session on no environment is not woken for another live session's environment",
+      "a message for whoever works default" in _heard("free-b"), False)
+check("but it is woken for an environment no live session holds", "a message on an environment nobody holds" in _heard("free-b"), True)
+check("of two sessions bound to one environment, only the one seen most recently is woken",
+      ("a message for whoever works default" in _heard("holder-a"), "a message for whoever works default" in _heard("stale-d")), (True, False))
+
+_real_ppid = chan_mod.os.getppid
+try:
+    chan_mod.os.getppid = lambda: 424242
+    state.put(root, "session_pids", {"424242": "holder-a"})
+    chan_mod.STARTED[0] = _now
+    check("a process id whose session ran its hook just now is trusted", chan_mod._session(), "holder-a")
+    state.put(root, "seen_at", int(_now - 3 * 3600), stem="holder-a")
+    check("a process id left by a session last seen hours before this server started is not", chan_mod._session(), None)
+finally:
+    chan_mod.os.getppid = _real_ppid
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
