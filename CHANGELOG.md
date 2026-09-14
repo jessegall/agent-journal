@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.77 — No Add note on work, and no Transcript page
+
+A piece of work had an **Add note** button in the viewer, but the agent was never told about a note
+added there. Worse, such a note counted as the agent making progress, and it cancelled whatever the
+agent had marked itself as waiting on. The button is gone. Notes on work are the agent's own record,
+written with `journal work update`. To tell the agent something about a piece of work, leave a
+comment on it: comments reach the agent at its next stop.
+
+The Transcript page from 1.131.74 is gone too, with its sidebar item and the Activity links to it.
+An agent's conversation will be part of a page per agent, reached from the agents list in the
+Activity header.
+
 ## 1.131.76 — The side panel on Home has an Open page button
 
 When you click a to-do, message, question, suggestion or piece of work on Home, it opens in the
