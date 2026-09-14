@@ -250,6 +250,11 @@ for cmd, want in (('.journal/journal.py pin "a fact"', True),
                   ('.journal/journal.py todos', False),
                   ('.journal/journal.py todos 3', False),
                   ('.journal/journal.py rules 3 --full', False),
+                  # a shell redirection is not an argument: `todos --all 2>&1` once read as `todos add "2>&1"`,
+                  # and a research subagent's plain read was refused for it
+                  ('.journal/journal.py suggestions --all 2>&1 | head -150; .journal/journal.py todos --all 2>&1 | head -150; ls', False),
+                  ('.journal/journal.py todos 2>/dev/null', False),
+                  ('.journal/journal.py todo "a title" 2>&1 | tail -1', True),
                   ('cat file.py', False)):
     code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
                           tool_input={"command": cmd})
