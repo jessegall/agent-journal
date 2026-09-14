@@ -121,18 +121,41 @@ def _mark(stem: str, keys: list[str]) -> None:
     state.put(ROOT, PUSHED, (was + keys)[-500:], stem=stem)
 
 
+#: the poll code loaded from disk, and the newest modification time of the package it was loaded at
+_LOADED: dict = {"stamp": None, "module": None}
+
+
+def _code_stamp() -> float:
+    return max((f.stat().st_mtime for f in (*ROOT.glob("*.py"), *ROOT.glob("*/*.py"))), default=0.0)
+
+
+def _poller():
+    """This module as it is on disk now: the server lives as long as the session, and an upgrade must reach it."""
+    stamp = _code_stamp()
+    if _LOADED["module"] is None or stamp != _LOADED["stamp"]:
+        for name, mod in list(sys.modules.items()):
+            path = getattr(mod, "__file__", None)
+            if name != "__main__" and path and Path(path).resolve().is_relative_to(ROOT):
+                del sys.modules[name]
+        import channel as fresh
+        fresh.STARTED[0] = STARTED[0]
+        _LOADED.update(stamp=stamp, module=fresh)
+    return _LOADED["module"]
+
+
 def _watch() -> None:
     while True:
         time.sleep(POLL_SECONDS)
         try:
-            stem = _session()
+            poll = _poller()
+            stem = poll._session()
             if not stem:
                 continue
-            got = pending(stem)
+            got = poll.pending(stem)
             for _, params in got:
                 _send({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": params})
             if got:
-                _mark(stem, [key for key, _ in got])
+                poll._mark(stem, [key for key, _ in got])
         except Exception as e:  # a bad poll must never end the server
             print(f"journal channel: {e}", file=sys.stderr)
 

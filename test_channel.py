@@ -167,5 +167,17 @@ code, out = j("channel", "--bogus")
 check("a command that does not opt into passthrough still refuses an unknown option",
       (code, "unknown option '--bogus'" in out), (1, True))
 
+# ------------------------------------------------------------------ an upgrade reaches a running server
+import channel as chan_mod  # noqa: E402
+
+chan_mod.STARTED[0] = 12345.0
+first = chan_mod._poller()
+check("the poll code is loaded once and reused while nothing on disk changes", chan_mod._poller() is first, True)
+_later = time.time() + 60
+os.utime(root / "suggestions.py", (_later, _later))
+second = chan_mod._poller()
+check("when a package file changes, the next poll runs the code as it is on disk now", second is not first, True)
+check("the fresh code keeps the server's start time, so nothing older is pushed", second.STARTED[0], 12345.0)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
