@@ -80,7 +80,7 @@ class AgentController(Controller):
             out.update(name=agents.described(root.parent, parent, full) or f"Subagent {full[:8]}",
                        status="working" if working else "finished" if agents.finished(root, env, full) else "idle", seen=agents.age(root, env, full),
                        parent=parent[:8], context=None, work=[], dispatched=[])
-            out["skills"] = skills.rows(root.parent, path)
+            out["skills"] = skills.rows(root.parent, path, skills.always(root))
             return out
         live = tracks.live(root).get(full)
         working = bool(live) and state.get(root, "last_event", "", stem=full) not in ("Stop", "")
@@ -96,5 +96,5 @@ class AgentController(Controller):
                               "model": transcript.last_model(transcript.find(root.parent, f"agent-{a}")),
                               "working": agents.working(root, env, a), "age": agents.age(root, env, a)}
                              for a, parent in parents.items() if parent == full]
-        out["skills"] = skills.rows(root.parent, path)
+        out["skills"] = skills.rows(root.parent, path, skills.always(root))
         return out

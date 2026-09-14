@@ -148,8 +148,11 @@ def _api_identity(root: Path, project: Path, m: re.Match):
 @route(r"^/api/skills/([A-Za-z0-9_.:-]+)$")
 def _api_skill(root: Path, project: Path, m: re.Match):
     """One skill's text, read-only: skills are edited in the project's files, not through the journal."""
-    got = __import__("skills").find(root.resolve().parent, m.group(1))
-    return _json(got) if got else _json({"error": f"there is no skill {m.group(1)} on disk here"}, 404)
+    skills = __import__("skills")
+    got = skills.find(root.resolve().parent, m.group(1))
+    if not got:
+        return _json({"error": f"there is no skill {m.group(1)} on disk here"}, 404)
+    return _json({**got, "always": got["name"] in skills.always(root)})
 
 
 @route(r"^/api/about$")

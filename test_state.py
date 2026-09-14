@@ -803,6 +803,11 @@ check("install writes the journal's rules even where builtin_rules is false",
 import settings as _settings_mod  # noqa: E402
 check("and the setting reads as unknown, so whoever kept it learns it does nothing",
       any("builtin_rules" in p for p in _settings_mod.load(d / ".journal")[1]), True)
+import skills as _skills_mod  # noqa: E402
+_skills_mod.set_always(d / ".journal", "journal-memory", True)
+code, out, err = fire(d, "SessionStart", path, source="startup")
+check("a skill set to load at every start is named in the start block", ("LOAD THESE SKILLS NOW" in out, "journal-memory" in out), (True, True))
+_skills_mod.set_always(d / ".journal", "journal-memory", False)
 check("and every focused skill beside it",
       [n for n in ("journal-todos", "journal-questions", "journal-messages", "journal-memory", "journal-docs", "journal-agents")
        if not (d / ".claude" / "skills" / n / "SKILL.md").is_file()], [])

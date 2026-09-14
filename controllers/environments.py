@@ -11,6 +11,9 @@ from payloads.environments import AutoPayload, RemovePayload, SettingsPayload
 from templates import render
 
 MESSAGES = {
+    "no_such_skill": "there is no skill {name} on disk here; a skill is added in the project's .claude/skills folder",
+    "skill_always_on": "every session is told to load the {name} skill at its start",
+    "skill_always_off": "sessions are no longer told to load the {name} skill at their start",
     "nothing_to_change": "send a setting to change: auto, reports_archive_days, activity_show, activity_keep",
     "auto_wants": "auto mode is enabled or disabled, got {got}",
 }
@@ -56,6 +59,14 @@ class EnvironmentController(Controller):
                 if not ok:
                     return Result("refused", message)
                 said.append(message)
+        if p.has("always_load"):
+            import skills
+            name = p.always_load.strip()
+            if not skills.find(root.parent, name):
+                return Result("refused", say("no_such_skill", name=name))
+            on = p.always_on if p.has("always_on") else True
+            skills.set_always(root, name, on)
+            said.append(say("skill_always_on" if on else "skill_always_off", name=name))
         if not said:
             return Result("refused", say("nothing_to_change"))
         return Result("ok", "\n".join(said))

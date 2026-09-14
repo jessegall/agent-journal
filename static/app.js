@@ -26,6 +26,7 @@ const ROUTES = [
   { re: /^\/rules(\/archive)?(?:\/(\d+|new))?$/, view: "Rules", params: ["archive", "n"] },
   { re: /^\/tools(?:\/(\d+|new))?$/, view: "Tools", params: ["n"] },
   { re: /^\/about$/, view: "About", params: [] },
+  { re: /^\/env\/([a-z0-9-]+)\/skills\/([A-Za-z0-9_.:-]+)$/, view: "SkillView", params: ["env", "name"] },
   { re: /^\/skills\/([A-Za-z0-9_.:-]+)$/, view: "SkillView", params: ["name"] },
   { re: /^\/docs(?:\/(new))?$/, view: "Docs", params: ["n"] },
   { re: /^\/docs\/(\d+(?:\.\d+)?)$/, view: "DocDetail", params: ["docref"] },
@@ -2528,8 +2529,8 @@ const Agent = {
           <div class="agent-work skills">
             <div class=agent-work-head><span>Skill</span><span>Where</span><span>Loaded</span></div>
             <component :is="s.readable ? 'a' : 'div'" v-for="s in about.data.skills" :key="s.source + s.name" class=agent-work-row
-              :href="s.readable ? '#/skills/' + s.name : null" :title="s.description || null">
-              <span class=title>{{ s.name }}</span>
+              :href="s.readable ? '#/env/' + env + '/skills/' + s.name : null" :title="s.description || null">
+              <span class=title>{{ s.name }}<span v-if="s.always" class=skill-always>every start</span></span>
               <span class=num>{{ s.source }}</span>
               <span :class="['agent-work-status', {open: s.loaded}]">{{ s.loaded ? (s.loaded === 1 ? 'Once' : s.loaded + ' times') : '—' }}</span>
             </component>
@@ -2629,12 +2630,30 @@ const About = {
 
 // one skill's text, read-only: skills are edited in the project's files, not here
 const SkillView = {
-  props: ["name"],
+  props: ["env", "name"],
   components: { TopBar },
   setup(props) {
     const skill = useFetch(() => props.name && `/api/skills/${props.name}`, { poll: false });
     const body = computed(() => String((skill.data && skill.data.text) || "").replace(/^---\n[\s\S]*?\n---\n/, ""));
-    return { skill, body };
+    // the viewer cannot load a skill itself: it asks the agent, now or at every start
+    const acting = reactive({ busy: false, said: "", error: "" });
+    const act = async (fn) => {
+      if (acting.busy) return;
+      Object.assign(acting, { busy: true, said: "", error: "" });
+      try { acting.said = await fn(); } catch (e) { acting.error = e.message; } finally { acting.busy = false; }
+    };
+    const loadNow = () => act(async () => {
+      await postJSON(`/api/env/${props.env}/inbox`, { text: `Please load the \`${props.name}\` skill now.`, files: [] });
+      changed();
+      return "The agent is asked to load it. It gets the message at its next stop, or at once if it is idle.";
+    });
+    const toggleAlways = () => act(async () => {
+      const on = !(skill.data && skill.data.always);
+      await postJSON(`/api/env/${props.env}/environment/settings`, { always_load: props.name, always_on: on });
+      skill.reload();
+      return on ? "Every session is told to load it at its start." : "Sessions are no longer told to load it at their start.";
+    });
+    return { skill, body, acting, loadNow, toggleAlways };
   },
   template: `
     <TopBar :crumbs="['Skills', name]"/>
@@ -2644,7 +2663,15 @@ const SkillView = {
       <template v-else>
         <h1 class=p-title>{{ skill.data.name }}</h1>
         <dl class=props><dt>Where</dt><dd>{{ skill.data.source === 'user' ? "Your own skills" : "This project's skills" }}</dd>
-          <dt>Loads when</dt><dd>{{ skill.data.description }}</dd></dl>
+          <dt>Loads when</dt><dd>{{ skill.data.description }}</dd>
+          <dt>At every start</dt><dd>{{ skill.data.always ? 'Yes, every session is told to load it' : 'No' }}</dd></dl>
+        <div v-if="env" class=skill-actions>
+          <button type=button class=btn :disabled="acting.busy" @click="loadNow">Ask the agent to load it now</button>
+          <button type=button :class="['btn', {on: skill.data.always}]" :disabled="acting.busy" @click="toggleAlways">
+            {{ skill.data.always ? 'Stop loading it at every start' : 'Load it at every start' }}</button>
+        </div>
+        <p v-if="acting.said" class="prose muted">{{ acting.said }}</p>
+        <p v-if="acting.error" class=error>{{ acting.error }}</p>
         <p class="prose muted">Read-only. A skill is changed in its SKILL.md file, not through the journal.</p>
         <div class="md prose" v-html="$md(body)"></div>
       </template>
