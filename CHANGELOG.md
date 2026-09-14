@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.109.2 — a report opens on its own page
+
+Clicking a report in the viewer opens it on a full page, like a doc: its title, when it was
+written, what it answers, Archive, and the text at full width. All reports takes you back to the
+list; New report still opens beside the list.
+
 ## 1.109.1 — "just now" means the last minute
 
 An age says "just now" for the first minute, then "1 minute ago", "2 minutes ago" and so on up
