@@ -11,13 +11,17 @@ from templates import render
 
 KEY = "questions"
 
-KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "inbox": "inbox message", "suggestion": "suggestion"}
+KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "inbox": "inbox message", "suggestion": "suggestion", "style": "coding style"}
 
 _REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|inbox|suggestions?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
+# the coding style as a whole, or one of its rules by subject
+_STYLE = re.compile(r"^\s*(?:coding[\s-]*)?style(?:\s*[:#\s]\s*([a-z0-9][a-z0-9-]*))?\s*$", re.I)
 
 MESSAGES = {
     "label": "{kind} {num}",
-    "not_a_ref": "{text} is not a reference; write one as `todo 22`, `doc 4.1`, `pin 3`, `rule 2` or `inbox 5`",
+    "label_style": "the coding style",
+    "label_style_rule": "coding style rule {subject}",
+    "not_a_ref": "{text} is not a reference; write one as `todo 22`, `doc 4.1`, `pin 3`, `rule 2`, `inbox 5`, `style` or `style naming`",
     "part_on_non_doc": "only a doc takes a part number; {text} names a {kind}",
     "no_todo": "there is no to-do {n} on this environment",
     "no_entry": "there is no {kind} {n}. `journal {key}` numbers them.",
@@ -55,6 +59,9 @@ def say(message: str, /, **values) -> str:
 
 
 def parse_ref(text: str) -> tuple[str | None, str]:
+    m = _STYLE.match(text or "")
+    if m:
+        return ("style:" + m.group(1).lower() if m.group(1) else "style"), ""
     m = _REF.match(text or "")
     if not m:
         return None, say("not_a_ref", text=repr(text))
@@ -69,6 +76,8 @@ def parse_ref(text: str) -> tuple[str | None, str]:
 
 def label(ref: str) -> str:
     kind, _, num = ref.partition(":")
+    if kind == "style":
+        return say("label_style_rule", subject=num) if num else say("label_style")
     return say("label", kind=KINDS.get(kind, kind), num=num)
 
 
@@ -82,6 +91,9 @@ def check_ref(root: Path, ref: str, track: str | None = None) -> str | None:
     if kind == "doc":
         import docs
         return docs.check_ref(root, num)
+    if kind == "style":
+        import style
+        return style.get(root, num)[1] if num else None
     n = int(num)
     if kind == "suggestion":
         import suggestions
