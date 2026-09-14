@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.41 — No outline on a focused select
+
+Clicking a select, such as a list's sort control or a choice in a form, drew the browser's
+outline around it. That outline is gone. When you move to a select with the keyboard, a form's
+select still turns its border the accent colour, and the sort control gets a soft background,
+so you can see where you are.
+
 ## 1.131.40 — Comments are cards with room around them
 
 In a panel's Comments section, the comments ran together, and the last one sat right on top
