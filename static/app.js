@@ -1,7 +1,7 @@
 // The journal's browser renderer. Vue does the layout; the server only ever answers with
 // JSON (see serve.py) — this file is the second renderer of that response, fmt.py the first.
 "use strict";
-const { createApp, reactive, computed, watchEffect, onUnmounted } = Vue;
+const { createApp, reactive, computed, watch, watchEffect, onUnmounted } = Vue;
 
 // ─────────────────────────────────────────────────────────────── a hash router
 // A detail route renders the same view as its list, with the item open in the side panel.
@@ -448,14 +448,34 @@ const ResourceList = {
     // a switch the viewer flipped is remembered per list, in this browser only
     const key = props.name ? `journal:show:${props.name}` : "";
     const remembered = () => { try { return key ? localStorage.getItem(key) : null; } catch (e) { return null; } };
-    const state = reactive({ show: remembered() === null ? props.showDefault : remembered() === "1", sort: {}, pages: {} });
+    const state = reactive({ show: remembered() === null ? props.showDefault : remembered() === "1", sort: {}, pages: {},
+                             held: {}, arrived: {} });
+    // after a refresh, a row that changed group or left the list stays put in blue for a moment, and a new row is lit
+    const rowKey = (r) => String(r.n ?? r.name);
+    const groupOf = (r) => (props.groups.find((g) => g.match(r)) || {}).key;
+    const HOLD_MS = 2500;
+    watch(() => props.rows, (rows, before) => {
+      if (!rows || !before) return;
+      const was = Object.fromEntries(before.map((r) => [rowKey(r), { group: groupOf(r), row: r }]));
+      const now = new Set(rows.map(rowKey));
+      const lit = (bag, k, value) => { bag[k] = value; setTimeout(() => { delete bag[k]; }, HOLD_MS); };
+      rows.forEach((r) => {
+        const k = rowKey(r);
+        if (!was[k]) lit(state.arrived, k, true);
+        else if (was[k].group !== groupOf(r)) lit(state.held, k, was[k]);
+      });
+      Object.entries(was).forEach(([k, v]) => { if (!now.has(k)) lit(state.held, k, v); });
+    });
     watchEffect(() => { const on = state.show; try { if (key) localStorage.setItem(key, on ? "1" : "0"); } catch (e) { /* storage off */ } });
     const sortOf = (key) => state.sort[key] || { by: props.sorts[0].key, dir: "desc" };
     const sections = computed(() => (props.rows ? props.groups.filter((g) => state.show || !g.closed).map((g) => {
       const order = sortOf(g.key);
       const spec = props.sorts.find((x) => x.key === order.by) || props.sorts[0];
       const value = spec.value || ((r) => r[spec.key]);
-      const rows = props.rows.filter(g.match).sort((a, b) => {
+      const current = Object.fromEntries(props.rows.map((r) => [rowKey(r), r]));
+      const held = Object.entries(state.held).filter(([, v]) => v.group === g.key).map(([k, v]) => current[k] || v.row);
+      const moving = new Set(Object.keys(state.held));
+      const rows = props.rows.filter((r) => g.match(r) && !moving.has(rowKey(r))).concat(held).sort((a, b) => {
         const x = value(a), y = value(b);
         const c = x < y ? -1 : x > y ? 1 : 0;
         return order.dir === "asc" ? c : -c;
@@ -471,7 +491,9 @@ const ResourceList = {
     const setSort = (key, value) => { const [by, dir] = value.split(":"); state.sort[key] = { by, dir }; };
     const more = (key) => { state.pages[key] = (state.pages[key] || 1) + 1; };
     const open = (event, row) => { if (props.pick) { event.preventDefault(); props.pick(row); } };
-    return { state, sections, closable, cols, sortOf, setSort, more, open };
+    const moving = (r) => !!state.held[rowKey(r)];
+    const fresh = (r) => !!state.arrived[rowKey(r)];
+    return { state, sections, closable, cols, sortOf, setSort, more, open, moving, fresh };
   },
   template: `
     <div v-if="bar" class=viewbar>
@@ -491,7 +513,7 @@ const ResourceList = {
             </template>
           </select>
         </div>
-        <a v-for="r in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r)}]"
+        <a v-for="r in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
           :style="{gridTemplateColumns: cols}" :href="href(r)" @click="open($event, r)">
           <PriorityIcon v-if="columns.priority" :value="columns.priority(r)"/>
           <StatusIcon v-if="columns.status" :kind="columns.status(r)"/>
