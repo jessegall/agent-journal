@@ -332,6 +332,18 @@ def tracked(root: Path, key: str, track: str, default=None):
     return entry.get(key, default) if isinstance(entry, dict) else default
 
 
+def put_many(root: Path, values: dict, *, stem: str) -> None:
+    """Write several runtime keys of one session with a single read and a single write."""
+    if not stem or any(k in TRACKED or is_record(k) for k in values):
+        for key, value in values.items():
+            put(root, key, value, stem=stem)
+        return
+    f = runtime_file(root, stem)
+    data = _read(f)
+    data.update(values)
+    _write(f, data)
+
+
 def put_tracked(root: Path, key: str, track: str, value) -> None:
     """Write one TRACKED key on a NAMED environment.
 

@@ -423,6 +423,18 @@ def untagged(lines, units: set[int]) -> list:
     ]
 
 
+def _caches(stem: str) -> tuple[Path, Path]:
+    """Where a session's parsed transcript and its context reading are kept between hook processes."""
+    d = ROOT / state.RUNTIME_DIR
+    return d / f"{stem}.lines.cache", d / f"{stem}.context.cache"
+
+
+def _drop_caches(stem: str, *, lines_only: bool = False) -> None:
+    for f in _caches(stem)[:1] if lines_only else _caches(stem):
+        with contextlib.suppress(OSError):
+            f.unlink()
+
+
 def _floor(ctx: Ctx, lines=None) -> int:
     """The line under which nothing is held against anyone, written on FIRST SIGHT.
 
@@ -441,7 +453,7 @@ def _floor(ctx: Ctx, lines=None) -> int:
     if got is not None:
         return got
     if lines is None:
-        lines = transcript.read(ctx.path)[0] if ctx.path else []
+        lines = transcript.read(ctx.path, _caches(ctx.stem)[0])[0] if ctx.path else []
     floor = lines[-1].n if lines else 0
     state.put(ROOT, "floor", floor, stem=ctx.stem)
     return floor
@@ -682,7 +694,7 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
         return _remind_only()
     _HOLD_CTX[:] = [ctx.stem]
     active = bool(payload.get("stop_hook_active"))
-    lines, boundaries = transcript.read(ctx.path)
+    lines, boundaries = transcript.read(ctx.path, _caches(ctx.stem)[0])
     raised = _still_raised(conf, ctx, lines, active)
     stretch = transcript.since(lines, boundaries, 0)
     _floor(ctx, lines)
@@ -849,7 +861,7 @@ def _p_context(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
 
     # ONE RUNG, ONCE; then, while the decision is owed, said again once per turn. The
     # PreToolUse gate enforces it between stops; this is the stop's share.
-    got = context.pressure(ctx.path, conf["context_window"], state.get(ROOT, "window", 0) or 0)
+    got = context.pressure(ctx.path, conf["context_window"], state.get(ROOT, "window", 0) or 0, _caches(ctx.stem)[1])
     rung = _rung(conf, ctx, got, stretch) if got and got[3] else None
     if rung:
         return rung
@@ -1232,7 +1244,7 @@ def _loop_owed(conf: dict, ctx: Ctx, here: str) -> str:
     # and a session that started one and has not stopped since would otherwise be refused
     # for a loop it already has. That read costs real time on a large transcript, so it is
     # reached only when every cheaper condition already says a denial is owed.
-    if _loop_running(ctx, transcript.read(ctx.path)[0] if ctx.path else []):
+    if _loop_running(ctx, transcript.read(ctx.path, _caches(ctx.stem)[0])[0] if ctx.path else []):
         return ""
     return say("loop_owed", env=here, m=m)
 
@@ -3034,6 +3046,7 @@ def _prune(keep: str = "") -> None:
                 state.runtime_file(ROOT, stem).unlink()
             except OSError:
                 pass
+            _drop_caches(stem)
     tracks.prune(ROOT, lambda stem: stem == keep or present(stem))
 
 
@@ -3076,7 +3089,7 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
         peak = context.peak_before_compaction(ctx.path)
         if peak and not state.get(ROOT, "window", 0):
             state.put(ROOT, "window", context.window_from_peak(peak))
-    began = transcript.read(ctx.path)[0] if ctx.path is not None and ctx.path.is_file() else []
+    began = transcript.read(ctx.path, _caches(ctx.stem)[0])[0] if ctx.path is not None and ctx.path.is_file() else []
     tracks.carried(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, (began[-1].n + 1) if began else 1)
     _prune(ctx.stem)
     loose = _unbound(conf, ctx)
@@ -3237,6 +3250,8 @@ def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
     tracks.unbind(ROOT, ctx.stem)
     state.put(ROOT, "granted", [], stem=ctx.stem)
     state.put(ROOT, "ended", payload.get("reason") or "exit", stem=ctx.stem)
+    # the parsed transcript is megabytes; a resumed session parses it again once
+    _drop_caches(ctx.stem, lines_only=True)
     return 0
 
 

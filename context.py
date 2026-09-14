@@ -10,7 +10,10 @@ is still budget to spend on deciding what must survive it.
 """
 from __future__ import annotations
 
+import contextlib
 import json
+import os
+import tempfile
 from pathlib import Path
 from templates import render as fill
 
@@ -72,53 +75,87 @@ def window_for(peak: int, setting: int = 0, learned: int = 0) -> tuple[int, bool
 _READ: dict = {}
 
 
-def reading(path: Path) -> tuple[int, int] | None:
+def reading(path: Path, cache: Path | None = None) -> tuple[int, int] | None:
     """(tokens in context, peak this transcript has held) from the assistant's own `usage`.
 
     IT RESUMES WHERE IT STOPPED. The file is append-only — the harness writes one record per
     line and never rewrites one — so a scan that has already covered the first N bytes starts
     at N next time and takes the larger peak. A file that got SHORTER is not a transcript
-    that shrank, it is a different file at the same path, so that case starts over.
+    that shrank, it is a different file at the same path, so that case starts over. With
+    `cache`, where it stopped is kept on disk, so the next hook process resumes too instead of
+    scanning the whole transcript again.
     """
     if not path.is_file():
         return None
-    size = path.stat().st_size
+    st = path.stat()
+    size = st.st_size
     had = _READ.get(str(path))
+    if had is None and cache is not None:
+        had = _resumed(cache, path, st)
     start, used, peak = (had if had and had[0] <= size else (0, None, 0))
     if had and had[0] == size:
+        _READ[str(path)] = had
         return (used, peak) if used is not None else None
-    with path.open() as fh:
-        if start:
-            fh.seek(start)
-        for line in fh:
-            # A LINE THAT CANNOT CARRY THE FIELD IS NOT PARSED. `reading_tail` has done this
-            # since it was written; this one parsed every record of the transcript to find the
-            # few that are assistant turns with usage — 10,780 `json.loads` calls and 0.23s of
-            # a 0.81s command in a real project, to read a number that lives on maybe 400 of
-            # them. A substring test on the raw line is two orders of magnitude cheaper, and
-            # it can only ever admit MORE candidates than it should, never fewer.
-            if '"usage"' not in line:
-                continue
-            try:
-                rec = json.loads(line)
-            except ValueError:
-                continue
-            if rec.get("type") != "assistant":
-                continue
-            msg = rec.get("message") or {}
-            usage = msg.get("usage")
-            if not usage:
-                continue
-            used = (
-                usage.get("input_tokens", 0)
-                + usage.get("cache_read_input_tokens", 0)
-                + usage.get("cache_creation_input_tokens", 0)
-            )
-            peak = max(peak, used)
-    _READ[str(path)] = (size, used, peak)
+    with path.open("rb") as fh:
+        fh.seek(start)
+        data = fh.read(size - start)
+    # stop at the last complete line: a record still being written is read next time, not lost
+    end = data.rfind(b"\n") + 1
+    for line in data[:end].splitlines():
+        # A LINE THAT CANNOT CARRY THE FIELD IS NOT PARSED. `reading_tail` has done this
+        # since it was written; this one parsed every record of the transcript to find the
+        # few that are assistant turns with usage — 10,780 `json.loads` calls and 0.23s of
+        # a 0.81s command in a real project, to read a number that lives on maybe 400 of
+        # them. A substring test on the raw line is two orders of magnitude cheaper, and
+        # it can only ever admit MORE candidates than it should, never fewer.
+        if b'"usage"' not in line:
+            continue
+        try:
+            rec = json.loads(line)
+        except ValueError:
+            continue
+        if rec.get("type") != "assistant":
+            continue
+        msg = rec.get("message") or {}
+        usage = msg.get("usage")
+        if not usage:
+            continue
+        used = (
+            usage.get("input_tokens", 0)
+            + usage.get("cache_read_input_tokens", 0)
+            + usage.get("cache_creation_input_tokens", 0)
+        )
+        peak = max(peak, used)
+    _READ[str(path)] = (start + end, used, peak)
+    if cache is not None and end:
+        _remember(cache, path, st, (start + end, used, peak))
     if used is None:
         return None
     return used, peak
+
+
+def _resumed(cache: Path, path: Path, st) -> tuple[int, int | None, int] | None:
+    try:
+        got = json.loads(cache.read_text())
+    except (OSError, ValueError):
+        return None
+    if not isinstance(got, dict) or got.get("path") != str(path) or got.get("inode") != st.st_ino:
+        return None
+    return got.get("offset", 0), got.get("used"), got.get("peak", 0)
+
+
+def _remember(cache: Path, path: Path, st, point: tuple[int, int | None, int]) -> None:
+    tmp = None
+    try:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(dir=cache.parent, prefix=f".{cache.name}.", suffix=".tmp")
+        with os.fdopen(fd, "w") as fh:
+            json.dump({"path": str(path), "inode": st.st_ino, "offset": point[0], "used": point[1], "peak": point[2]}, fh)
+        os.replace(tmp, cache)
+    except OSError:
+        if tmp:
+            with contextlib.suppress(OSError):
+                os.unlink(tmp)
 
 
 def reading_tail(path: Path, limit: int = 300_000) -> int | None:
@@ -154,9 +191,9 @@ def reading_tail(path: Path, limit: int = 300_000) -> int | None:
     return used
 
 
-def pressure(path: Path, setting: int = 0, learned: int = 0) -> tuple[float, int, int, bool] | None:
+def pressure(path: Path, setting: int = 0, learned: int = 0, cache: Path | None = None) -> tuple[float, int, int, bool] | None:
     """(share full, tokens, window, window KNOWN). The share is a guess when the last is False."""
-    got = reading(path)
+    got = reading(path, cache)
     if not got:
         return None
     used, peak = got

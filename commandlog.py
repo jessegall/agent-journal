@@ -443,9 +443,7 @@ def queue_tool(root: Path, track: str, stem: str, tool: str, at: str) -> None:
     counts = state.get(root, QUEUE, None, stem=stem) or {}
     bucket = BUCKETS.get(tool, "other")
     counts[bucket] = counts.get(bucket, 0) + 1
-    state.put(root, QUEUE, counts, stem=stem)
-    state.put(root, QUEUE_AT, at, stem=stem)
-    state.put(root, QUEUE_ENV, track, stem=stem)
+    state.put_many(root, {QUEUE: counts, QUEUE_AT: at, QUEUE_ENV: track}, stem=stem)
     if sum(counts.values()) >= QUEUE_SIZE:
         flush_tools(root, track, stem, at)
 
