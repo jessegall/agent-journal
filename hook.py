@@ -1561,6 +1561,34 @@ def _pin_overflow(payload: dict, limit: int) -> str | None:
 _SHELL_BREAKS = frozenset({"&&", "||", "|", ";"})
 
 
+#: A redirection is the shell's, never an argument: `2>&1`, `2>/dev/null`, `>out`, `&>log`, and a bare `>` before its file.
+_REDIRECT = re.compile(r"^(\d*>>?|\d*<|&>>?)(&?\d+|\S+)?$")
+
+
+def _command_words(toks: list[str], start: int) -> list[str]:
+    """The words of one journal command from its verb: up to the next separator, even one glued to a word
+    (`-150;`), and without the shell's redirections. `journal todos --all 2>&1` once read as `todos add "2>&1"`,
+    a write, and a subagent's plain read was refused for it."""
+    out: list[str] = []
+    k = start
+    while k < len(toks):
+        tok = toks[k]
+        if tok in _SHELL_BREAKS:
+            break
+        glued = next((b for b in (";", "&&", "||", "|") if tok.endswith(b) and tok != b), None)
+        word = tok[: -len(glued)] if glued else tok
+        if _REDIRECT.match(word):
+            # a bare `>` or `2>` takes the next word as its file
+            if re.fullmatch(r"\d*>>?|\d*<|&>>?", word) and not glued:
+                k += 1
+        elif word:
+            out.append(word)
+        if glued:
+            break
+        k += 1
+    return out
+
+
 def _journal_write(payload: dict) -> str | None:
     """The journal write verb on this command line, if it is one, anywhere in a chain."""
     if (payload.get("tool_name") or "") != "Bash":
@@ -1585,8 +1613,7 @@ def _journal_write(payload: dict) -> str | None:
             j += 1
         verb = toks[j] if j < len(toks) else ""
         if commands.REGISTRY.knows(verb):
-            end = next((k for k in range(j, len(toks)) if toks[k] in _SHELL_BREAKS), len(toks))
-            cmd = commands.REGISTRY.command_of(toks[j:end])
+            cmd = commands.REGISTRY.command_of(_command_words(toks, j))
             if cmd is not None and cmd.writes:
                 return verb
     return None
