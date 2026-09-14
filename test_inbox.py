@@ -299,5 +299,22 @@ check("a part that is not in the message is refused", code, 1)
 code, out = j("messages", "show", str(_q))
 check("showing a message says how to answer a question in it", "--part=" in out and "messages reply" in out, True)
 
+j("messages", "add", "would the log read better newest at the bottom?")
+_f = len(stored())
+code, out = j("messages", "reply", str(_f), "Yes, I think so.", "--part=would the log read better newest at the bottom?",
+              "--follow-up=Should I switch the log to newest at the bottom?", "--option=Switch it", "--option-description=newest right above the box",
+              "--option=Leave it", "--pick=1")
+import questions as _qs  # noqa: E402
+_asked = [q for n, q in _qs.about(d / ".journal", f"inbox:{_f}", "default")]
+check("a reply can end with a follow-up question about the message, with its options and pick",
+      (code, [q["text"] for q in _asked], [o["label"] for o in (_asked[0]["options"] if _asked else [])], _asked[0]["pick"] if _asked else None),
+      (0, ["Should I switch the log to newest at the bottom?"], ["Switch it", "Leave it"], 1))
+j("messages", "add", "and what about the colours?")
+_g = len(stored())
+code, out = j("messages", "reply", str(_g), "Either works.", "--part=and what about the colours?",
+              "--follow-up=Which? A) blue B) green")
+check("a follow-up that lists its choices in its text is refused, and the reply is not written either",
+      (code, "--option=" in out, stored()[-1].get("replies")), (1, True, None))
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

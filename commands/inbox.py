@@ -147,11 +147,20 @@ class Done(Resource):
 
 
 class Reply(Resource):
-    signature = "messages:reply {n : a message number} {text* : what you did, a clarification, or a call you made} {--part=}"
+    signature = ("messages:reply {n : a message number} {text* : what you did, a clarification, or a call you made} {--part=}"
+                 " {--follow-up=} {--option=*} {--option-description=*} {--option-code=*} {--pick=}")
     casts = MESSAGE
     writes = True
     controller = CONTROLLER
     action = "reply"
+
+    def extra(self, p: Parsed):
+        # a follow-up is a question about the message, asked in the same step as the answer
+        if not p.option("follow-up"):
+            return {}
+        from commands.questions import options_of
+        return {"follow_up": p.option("follow-up"), "options": options_of(p),
+                **({"pick": p.option("pick")} if p.option("pick") else {})}
 
 
 class Archive(Resource):
