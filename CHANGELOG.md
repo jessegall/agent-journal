@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.107.1 — opening a panel on Home no longer moves the page
+
+Home keeps a column for its side panel at all times, about a quarter of the width, showing
+"Select a row to see it here." when nothing is open. Opening a to-do, message, question or piece
+of work fills that column, so the stat cards and the sections below keep their size and place;
+before, the cards reflowed into two rows and everything below jumped down. List pages were
+already stable and are unchanged. On narrow screens the panel still slides over the page.
+
 ## 1.107.0 — the agent can reply to a message
 
 `journal messages reply <n> "<text>"` puts a short note under a message: what the agent did

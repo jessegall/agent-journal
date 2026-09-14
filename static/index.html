@@ -254,6 +254,10 @@
   .home-head .more { margin-left: auto; font-size: 12.5px; }
   .segmented { display: inline-flex; gap: 4px; margin-left: 10px; }
   .body > .page { flex: 1; min-width: 0; }
+  /* Home keeps its panel column at all times, so opening a panel never reflows the page */
+  .home-body { display: grid; grid-template-columns: minmax(0, 1fr) clamp(340px, 28%, 420px); }
+  .home-body > .panel { width: auto; }
+  .peek-idle { align-items: center; justify-content: center; color: var(--text-3); font-size: 12.5px; }
   .panel-link { color: inherit; text-decoration: none; }
   .panel-link:hover { color: var(--text); text-decoration: underline; }
   .block { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
@@ -265,6 +269,8 @@
   @media (max-width: 960px) {
     .side { display: none; }
     .panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); z-index: 5; box-shadow: -12px 0 32px rgba(0, 0, 0, .45); }
+    .home-body { display: flex; }
+    .home-body > .peek-idle { display: none; }
   }
   @media (max-width: 640px) {
     .lrow .cite { display: none; }
