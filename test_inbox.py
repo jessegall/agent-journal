@@ -210,5 +210,18 @@ check("twice is refused", code, 1)
 code, out = j("messages", "process", str(_an), "--part=never mind", "--became=noted")
 check("an archived message cannot be processed", code, 1)
 
+# ------------------------------------------------------------------ a reply under a message
+code, out = j("messages", "add", "rename the flag to --json")
+_rn = int(re.search(r"message (\d+)", out).group(1))
+check("a reply wants its text", j("messages", "reply", str(_rn))[0], 1)
+code, out = j("messages", "reply", str(_rn), "Renamed it to --format=json instead: --json was already taken by export.")
+check("the agent replies to a waiting message", (code, "replied to message" in out), (0, True))
+code, out = j("messages", "show", str(_rn))
+check("show lists the reply, by the agent", ("REPLIES" in out.upper(), "--format=json instead" in out, "the agent" in out), (True, True, True))
+j("messages", "process", str(_rn), "--part=rename the flag", "--became=noted")
+j("messages", "done", str(_rn))
+check("a processed message can still be replied to", j("messages", "reply", str(_rn), "One more thing: the old flag still works.")[0], 0)
+check("a message that is not there is refused", j("messages", "reply", "999", "x")[0], 1)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

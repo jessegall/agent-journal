@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.107.0 — the agent can reply to a message
+
+`journal messages reply <n> "<text>"` puts a short note under a message: what the agent did
+differently than written, a call it made on something left open, or a clarification. It works
+on a waiting or a processed message. The message's panel in the viewer lists the replies with
+who wrote them and when, and `messages show` prints them. The skill says a reply is optional
+and not for "done", which the parts already record.
+
 ## 1.106.1 — the sidebar's Activity section runs edge to edge
 
 The sidebar no longer pads its sides as a whole; each section pads itself. The Activity

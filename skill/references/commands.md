@@ -121,6 +121,7 @@ A brief on stdin:
     journal messages process N --part="<words>" --became=<ref> [--became=<ref>]   one part: the words it quotes, and what it became — todo 22, pin 3, rule 2, reminder 1, question 4, work or noted
     journal messages file N <name> "doc <doc>"|keep   an attached file: copied into the doc (the held copy removed), or kept
     journal messages archive N "<why>"   off the list, kept with its reason; it no longer waits
+    journal messages reply N "<text>"    an optional note under the message: what you did, a clarification, a call you made
     journal messages done N              processed; refused until at least one part is recorded and every file is filed
     journal messages edit N "<text>"     reword a message that still waits
     journal messages move N "<env>"      carry a waiting message to another environment

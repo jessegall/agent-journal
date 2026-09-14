@@ -55,6 +55,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal messages edit N "<text>"   reword a waiting message',
         'journal messages move N "<env>"    carry a waiting message to another environment',
         'journal messages archive N "<why>"   take a message off the list, kept with its reason',
+        'journal messages reply N "<text>"   an optional note under a message for the user: what you did, a clarification, a call you made',
     ),
     "suggestions": (
         'journal suggest "<the change>" [--about=<ref>]... --brief   propose a change nobody asked for; the reasoning on stdin; the work goes on as asked',

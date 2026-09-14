@@ -844,6 +844,15 @@ const MessagePanel = {
             </template>
           </div>
         </div>
+        <div v-if="item.data.replies && item.data.replies.length">
+          <p class=section-label>Replies</p>
+          <div class=linked>
+            <div v-for="(r, i) in item.data.replies" :key="i" class=sub>
+              <div class=muted>{{ r.who === 'the agent' ? 'The agent' : 'You' }} · {{ r.age || 'just now' }}</div>
+              <div class="md prose" v-html="$md(r.text)"></div>
+            </div>
+          </div>
+        </div>
         <div v-if="item.data.parts.length">
           <p class=section-label>What it became</p>
           <div class=part v-for="(p, i) in item.data.parts" :key="i">

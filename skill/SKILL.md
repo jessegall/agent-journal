@@ -521,6 +521,12 @@ stop says the user left messages, process them before anything else — one at a
 4. **Record each part, then close the message:** one `messages process` per part, several
    `--became` if a part became several things, then `messages done <n>`.
 
+**You may reply to a message**, and it is never required: `journal messages reply <n> "<text>"`
+puts a short note under it in the viewer. Use it when the user would want to know how their
+words landed beyond what the parts record: you did it differently than they wrote, you had to
+make a call on something they left open, or a part needs a word of explanation. Not for
+"done" — the parts already say that.
+
 A message is never deleted. Its record — each part beside what it became — is how the user
 sees their words landed where they meant. Between stops, the first tool call after a new
 message mentions it once; that never blocks, so finish the step you are on first.

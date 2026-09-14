@@ -57,6 +57,12 @@ MESSAGES = {
     "cmd_ask_what": "a part you do not understand becomes a question",
     "cmd_done": "journal messages done {n}",
     "cmd_done_what": "mark it processed once every part is recorded",
+    "reply_what": 'say the reply: journal messages reply {n} "<what you did, or what you decided>"',
+    "replied": "replied to message {n}; the user reads it under the message in the viewer",
+    "show_replies": "replies",
+    "show_reply": "  {who} · {age}\n    {text}",
+    "reply_agent": "the agent",
+    "reply_user": "you",
     "archive_why": 'say why: journal messages archive {n} "<why it needs nothing more>"',
     "already_archived": "message {n} is already archived",
     "archived": "message {n} is archived: {why}\n  it is off the list; `journal messages --all` still shows it",
@@ -376,6 +382,21 @@ def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tup
     return True, say("moved", n=n, env=dst, there=len(there))
 
 
+def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
+    """A short answer under a message: what was done, a clarification, a call the agent made. Any status."""
+    text = (text or "").strip()
+    if not text:
+        return False, say("reply_what", n=n)
+    with state.locked(root):
+        items = _all(root, track)
+        m, err = _find(items, n)
+        if m is None:
+            return False, err
+        m.setdefault("replies", []).append({"text": text, "at": at, "source": source})
+        _put(root, items, track)
+    return True, say("replied", n=n)
+
+
 def archive(root: Path, n: int, why: str, at: str, track: str | None = None) -> tuple[bool, str]:
     """Take a message off the list, with the reason. A waiting one stops waiting; nothing is deleted."""
     why = " ".join((why or "").split())
@@ -452,6 +473,9 @@ def show_text(d: dict) -> str:
     if d.get("files"):
         out.append(fmt.section(say("show_files")))
         out += [say("show_file", name=f["name"], status=f["filed_label"], path=f["path"]) for f in d["files"]]
+    if d.get("replies"):
+        out.append(fmt.section(say("show_replies")))
+        out += [say("show_reply", who=r["who"], age=r["age"] or "just now", text=r["text"]) for r in d["replies"]]
     if d["questions"]:
         out.append(fmt.section(say("show_questions")))
         out += [say("show_question", n=q["n"], text=q["text"], answer=q["answer"] or None) for q in d["questions"]]
@@ -468,6 +492,9 @@ def row_response(n: int, m: dict) -> dict:
         "n": n, "text": m["text"], "gist": fmt.gist(m["text"]), "facts": " · ".join(_facts(m)),
         "status": "archived" if m.get("archived") else "moved" if m.get("moved_to") else "processed" if m.get("processed") else "waiting",
         "archived": m.get("archived") or "",
+        "replies": [{"text": r["text"], "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "",
+                     "who": say("reply_user") if r.get("source") == "web" else say("reply_agent")}
+                    for r in m.get("replies") or []],
         "moved_to": m.get("moved_to") or "",
         "age": age(m.get("at", "")), "processed_age": age(m.get("processed") or ""),
         "source": m.get("source") or "",
