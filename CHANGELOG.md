@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.109.0 — the Activity panel can float or dock on the right
+
+Three small buttons in the Activity panel's header choose where it shows: in the sidebar (as
+before), as a floating window you drag by its header anywhere on the page, or docked as a column
+on the right. Floating or docked, it lists up to 20 events instead of 6. The browser remembers the
+choice and where the window was left. Activity no longer folds. On narrow screens the docked
+column is hidden, like the sidebar.
+
 ## 1.108.1 — an activity row opens what it is about
 
 A row in the sidebar's Activity section that is about a to-do, question, message or piece of

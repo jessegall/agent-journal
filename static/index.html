@@ -48,6 +48,18 @@
   .clamp1 { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .activity-age { font-size: 11px; color: var(--text-3); white-space: nowrap; }
   .activity-link { color: inherit; border-radius: 6px; }
+  .activity-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .activity-modes { display: flex; gap: 2px; flex: none; }
+  .mode-btn { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; border: 0;
+    border-radius: 5px; background: none; color: var(--text-3); cursor: pointer; }
+  .mode-btn:hover { background: var(--hover); color: var(--text-2); }
+  .mode-btn.on { color: var(--text); background: var(--sel); }
+  .mode-btn .ico { width: 14px; height: 14px; }
+  .activity-dock { width: 290px; flex: none; min-height: 0; overflow-y: auto; padding: 12px 10px;
+    background: var(--side); border-left: 1px solid var(--border); }
+  .activity-float { position: fixed; z-index: 20; width: 300px; max-height: 60vh; overflow-y: auto; padding: 8px 10px 10px;
+    background: var(--side); border: 1px solid var(--border-2); border-radius: 10px; box-shadow: 0 16px 40px rgba(0, 0, 0, .45); }
+  .activity-float .activity-head { cursor: move; user-select: none; }
   .activity-link:hover { background: var(--hover); }
   .activity-link:hover .activity-text { color: var(--text); }
   .group-label { font-size: 11.5px; font-weight: 500; color: var(--text-3); padding: 4px 8px 6px;
@@ -271,6 +283,7 @@
 
   @media (max-width: 960px) {
     .side { display: none; }
+    .activity-dock { display: none; }
     .panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); z-index: 5; box-shadow: -12px 0 32px rgba(0, 0, 0, .45); }
     .home-body { display: flex; }
     .home-body > .peek-idle { display: none; }
