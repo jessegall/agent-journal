@@ -75,6 +75,26 @@ check("a waiting message is pushed to an idle session, naming it",
       ("notifications/claude/channel", True, "1"))
 check("and not pushed twice", read_line(7), None)
 
+import questions  # noqa: E402
+questions.add(root, "ship it on Friday?", "2026-09-14T10:00:00+00:00", track="default")
+j("questions", "answer", "1", "yes, Friday")
+push = read_line(12)
+params = (push or {}).get("params") or {}
+check("an answered question is pushed to an idle session, naming it",
+      ("yes, Friday" in params.get("content", ""), params.get("meta", {}).get("question")), (True, "1"))
+check("and not pushed twice", read_line(7), None)
+j("questions", "answer", "1", "no, Monday")
+push = read_line(12)
+check("a changed answer is pushed again", "no, Monday" in (((push or {}).get("params") or {}).get("content", "")), True)
+
+j("todos", "add", "a to-do to comment on")
+j("comments", "add", "todo 1", "use the other colour")
+push = read_line(12)
+params = (push or {}).get("params") or {}
+check("a new comment is pushed to an idle session, naming it",
+      ("use the other colour" in params.get("content", ""), params.get("meta", {}).get("comment")), (True, "1"))
+check("and not pushed twice", read_line(7), None)
+
 j("auto-mode", "enable")
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("messages", "add", "another one while working")
