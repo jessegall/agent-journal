@@ -2712,6 +2712,16 @@ const App = {
     const journals = reactive({ list: [], open: false });
     // with several journals open, each viewer wears its project's colour in a strip along the top, so tabs are told apart
     const colorOf = (name) => { let h = 0; for (const ch of String(name || "")) h = (h * 31 + ch.codePointAt(0)) % 360; return `hsl(${h}, 62%, 58%)`; };
+    // the strip's tab opens a switcher to the other journals running on this machine
+    const stripMenu = reactive({ open: false });
+    const outsideStrip = (e) => { if (!e.target.closest(".project-strip-name, .strip-drop")) stripMenu.open = false; };
+    const escStrip = (e) => { if (e.key === "Escape") stripMenu.open = false; };
+    watchEffect((onCleanup) => {
+      if (!stripMenu.open) return;
+      document.addEventListener("mousedown", outsideStrip);
+      document.addEventListener("keydown", escStrip);
+      onCleanup(() => { document.removeEventListener("mousedown", outsideStrip); document.removeEventListener("keydown", escStrip); });
+    });
     const strip = computed(() => {
       if (journals.list.length < 2) return null;
       const here = journals.list.find((j) => j.current) || {};
@@ -2753,11 +2763,27 @@ const App = {
     };
     document.addEventListener("visibilitychange", onVisibility);
     onUnmounted(() => { document.removeEventListener("visibilitychange", onVisibility); clearTimeout(awayTimer); });
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, strip, colorOf };
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, strip, colorOf, stripMenu, loadJournals };
   },
   template: `
     <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color} : null">
-      <div v-if="strip" class=project-strip role=presentation><span class=project-strip-name>{{ strip.name }}</span></div>
+      <div v-if="strip" class=project-strip role=presentation>
+        <button type=button class=project-strip-name :aria-expanded="stripMenu.open" title="Journals running on this machine"
+          @click="stripMenu.open = !stripMenu.open; loadJournals()">{{ strip.name }}</button>
+      </div>
+      <div v-if="strip && stripMenu.open" class="drop strip-drop">
+        <div class=drop-head><span>Journals running on this machine</span></div>
+        <template v-for="j in journals.list" :key="j.port">
+          <div v-if="j.current" class="drop-row current">
+            <span class=drop-kind>This journal · port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
+            <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
+          </div>
+          <a v-else class=drop-row :href="j.url" @click="stripMenu.open = false">
+            <span class=drop-kind>Port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
+            <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
+          </a>
+        </template>
+      </div>
       <aside class=side>
         <div v-if="journals.list.length > 1" class="drop-wrap journal-switch">
           <button type=button class=project :aria-expanded="journals.open" :title="'Journals running on this machine'"

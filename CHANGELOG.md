@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.8 — The strip's project tab switches journals
+
+With several journals running, the project name on the colored strip at the top is a button. It opens
+a list of the journals running on this machine, each with its colour, port and version. This one is
+marked, and a click on another opens its viewer. Escape or a click elsewhere closes the list. With
+one journal running there is still no strip.
+
 ## 1.132.7 — An answer to your question stands out
 
 An "Answered your question" line was easy to miss. Until you read its notification, it now shows
