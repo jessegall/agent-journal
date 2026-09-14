@@ -465,6 +465,8 @@ def last_model(path: Path | None, limit: int = 300_000) -> str:
 
 def page(lines: list[Line], *, before: int | None = None, limit: int = 1000) -> dict:
     """The `limit` lines ending just before line `before`, or the last `limit`: a transcript read from the newest end."""
+    # a record with neither text nor a tool says nothing a reader can use; line numbers stay as they are
+    lines = [x for x in lines if (x.text or "").strip() or x.tools]
     end = len(lines) if before is None else next((i for i, x in enumerate(lines) if x.n >= before), len(lines))
     start = max(0, end - limit)
     rows = lines[start:end]
