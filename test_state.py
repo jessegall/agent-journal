@@ -825,6 +825,12 @@ for text, want in (
     ("[!reply] Renamed it. The tests pass.", False),
     ("[!reply] Once and for all, the answer is no.", False),
     ("[!reply] I'll rename it now.", False),
+    ("Let me read the file, then fix the bug.", False),
+    ("Let me run the tests first and then commit.", False),
+    ("I'll check the hook next.", False),
+    ("For now, reading the file.", False),
+    ("Private list:\n1. Start the to-do.\n2. Then: judge only a turn's final message.", False),
+    ("[!reply] I'll do the banner once this batch is green.", True),
 ):
     check(f"deferral detected: {text[:40]!r}", hook.deferred(text) is not None, want)
 d, path = project_with(2, tagged=True)
@@ -889,6 +895,16 @@ check("at a stop, the same deferral is held once",
       (brief, "park it as a to-do" in why), ("journal reminded Claude: work deferred in words, not parked", True))
 code, out, err = fire(d, "Stop", path)
 check("and not twice", "deferred in words" in out, False)
+check("the stop's hold asks for a to-do or one line, never to run a call again",
+      ("run this call again" in why, "say in one line" in why or "say so in one line" in why), (False, True))
+prompt("and fix the footer too")
+reply("[!reply] I'll do the footer once the banner lands.")
+with path.open("a") as fh:
+    fh.write(json.dumps({"type": "assistant", "uuid": "a-tool", "message": {"role": "assistant", "content": [
+        {"type": "tool_use", "id": "t1", "name": "Bash", "input": {"command": "ls"}}]}}) + "\n")
+code, out, err = fire(d, "Stop", path)
+check("text a tool call follows is not the reply: a stop that runs before the final message is written holds nothing for it",
+      "deferred in words" in out, False)
 
 # auto: off, to-dos are listed and never started without the user's word; on, the idle stop autos
 d, path = project_with(4, tagged=True)

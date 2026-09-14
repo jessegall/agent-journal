@@ -83,8 +83,12 @@ def last_reply(path: Path, limit: int = 400_000) -> tuple[str, str] | None:
             continue
         if typ != "assistant":
             continue
-        text, _, _, _ = _text_of(rec.get("message") or {})
-        if text.strip():
+        text, tools, _, _ = _text_of(rec.get("message") or {})
+        # TEXT A TOOL CALL FOLLOWS IS NOT THE REPLY. At a stop the final message may not be
+        # written yet, and the line before the last tool call was being judged in its place.
+        if tools and not any(t in ASKS for t in tools):
+            latest = None
+        elif text.strip():
             latest = (text, str(rec.get("uuid") or rec.get("timestamp") or ""))
     return latest
 

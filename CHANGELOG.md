@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.17 — Narrating the next step no longer reads as putting work off
+
+The check for work deferred in words matched an agent describing its next step: "Let me read the file,
+then fix the bug", "I'll check the hook next", "For now, reading the file". The next tool call was
+refused, or the stop held, and agents parked to-dos for work they were already doing.
+
+- The pattern now needs a promise about later: "I'll … once / after / later / afterwards / as soon as",
+  "come back to that", "circle back", "after this". "Let me", and "then", "next", "when" and "for now"
+  on their own no longer count.
+- Text that a tool call follows is not taken for the reply, so a stop that runs before the final
+  message is written holds nothing for the line before the last tool call.
+- At a stop, the hold asks for a to-do or one line saying nothing was put off. "Run this call again"
+  stays only where there is a call: the refusal before a tool runs.
+
 ## 1.136.16 — A note that is only said no longer wakes the agent
 
 Some things the stop hook tells the agent ask nothing of it: to-dos waiting while auto is off, a newer
