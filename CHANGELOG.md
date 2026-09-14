@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.5 — Reminders has its own icon
+
+In the top bar the Reminders icon was a bell, the same as the Notifications bell beside it.
+Reminders now shows a clock with a looping arrow, and the bell is only Notifications.
+
 ## 1.131.4 — Reports, Pins and Reminders move to the top bar
 
 The sidebar now lists what the user reads and manages: Home, Messages, To-dos, Documents
