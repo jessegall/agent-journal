@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.128.5 — An answered question no longer looks open in Activity
+
+Once a question is answered, its "Asked question" line drops the ember card, says "answered"
+after its number and takes the same light tint as the "Answered question" line. A withdrawn
+question's line says "withdrawn". An open question still shows the ember card with Answer.
+
 ## 1.128.4 — Home keeps four statistics
 
 Home's counts are now Message queue (messages waiting), Questions for you, In progress and
