@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.103.0 — the agent is taught to suggest
+
+The skill has a Suggestions section: when the agent thinks something should be done
+differently, it files a suggestion instead of saying it, keeps doing the work as asked, never
+decides its own, and does not file a declined one again. The session start counts the
+suggestions waiting on the user. When the agent's reply proposes a change ("we could…", "it
+would be better to…") and it filed nothing since the prompt, the next stop says once that a
+suggestion exists for that; never a hold, not when the user asked for an opinion, and quiet
+after three in a session. Silence it with `"silenced": ["suggest_hint"]`.
+
 ## 1.102.0 — suggestions: the agent proposes, the user decides
 
 `journal suggest "<the change>" [--about="todo 22"] --brief` files a proposal nobody asked for,
