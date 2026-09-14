@@ -136,7 +136,13 @@ def _favicon(root: Path, project: Path, m: re.Match):
 # ───────────────────────────────────────────────────────────────────── the API
 @route(r"^/api/identity$")
 def _api_identity(root: Path, project: Path, m: re.Match):
-    return _json({"root": str(root.resolve())})
+    return _json({"root": str(root.resolve()), "project": root.resolve().parent.name,
+                  "version": __import__("update").current(root)})
+
+
+@route(r"^/api/viewers$")
+def _api_viewers(root: Path, project: Path, m: re.Match):
+    return _json(viewers(root))
 
 
 @route(r"^/api/overview$")
@@ -386,9 +392,23 @@ class _Handler(BaseHTTPRequestHandler):
 VIEWER_PORT = "viewer_port"
 
 
+def _identity(port: int, timeout: float = 0.5) -> dict | None:
+    """What the viewer on `port` says about itself; None when nothing answers or it does not say."""
+    import http.client
+    try:
+        conn = http.client.HTTPConnection(HOST, int(port), timeout=timeout)
+        conn.request("GET", "/api/identity")
+        res = conn.getresponse()
+        body = res.read()
+        conn.close()
+        got = json.loads(body) if res.status == 200 else None
+    except (OSError, ValueError, http.client.HTTPException):
+        return None
+    return got if isinstance(got, dict) and got.get("root") else None
+
+
 def running(root: Path) -> str:
     """This project's viewer URL when it answers on its last port (or the default), else ''."""
-    import http.client
     import socket
     import state
     port = state.get(root, VIEWER_PORT, DEFAULT_PORT) or DEFAULT_PORT
@@ -398,17 +418,26 @@ def running(root: Path) -> str:
     except OSError:
         return ""
     # another project's viewer can hold the port; a viewer too old to say whose it is keeps the old answer
-    try:
-        conn = http.client.HTTPConnection(HOST, int(port), timeout=0.5)
-        conn.request("GET", "/api/identity")
-        res = conn.getresponse()
-        body = res.read()
-        conn.close()
-        if res.status == 200 and json.loads(body).get("root") != str(root.resolve()):
-            return ""
-    except (OSError, ValueError, http.client.HTTPException):
-        pass
+    got = _identity(port)
+    if got and got["root"] != str(root.resolve()):
+        return ""
     return say("url", host=HOST, port=port)
+
+
+def viewers(root: Path, ports=None) -> list[dict]:
+    """Every journal viewer answering on this machine's viewer ports, with this project's marked current."""
+    from concurrent.futures import ThreadPoolExecutor
+    import state
+    if ports is None:
+        ports = set(range(DEFAULT_PORT, DEFAULT_PORT + PORT_TRIES))
+        ports.add(int(state.get(root, VIEWER_PORT, DEFAULT_PORT) or DEFAULT_PORT))
+    ports = sorted(ports)
+    with ThreadPoolExecutor(max_workers=len(ports) or 1) as pool:
+        found = list(zip(ports, pool.map(lambda port: _identity(port, 0.4), ports)))
+    mine = str(root.resolve())
+    return [{"port": port, "url": say("url", host=HOST, port=port), "version": got.get("version") or "",
+             "project": got.get("project") or Path(got["root"]).parent.name, "current": got["root"] == mine}
+            for port, got in found if got]
 
 
 #: how many ports from the default a viewer tries before it gives up
@@ -445,7 +474,8 @@ def run(root: Path, project: Path, port: int | None = None, open_browser: bool =
     url = say("url", host=HOST, port=server.server_port)
     import state
     state.put(root, VIEWER_PORT, server.server_port)
-    print(say("serving", url=url))
+    # flushed: an agent that starts the viewer in the background reads the port it took from this line
+    print(say("serving", url=url), flush=True)
     if open_browser:
         import webbrowser
         webbrowser.open(url)

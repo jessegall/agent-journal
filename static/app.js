@@ -2377,12 +2377,41 @@ const App = {
       postJSON(`/api/env/${envName.value}/environment/settings`, { auto: on })
         .then(() => { activity.reload(); changed(); }, () => activity.reload());
     };
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto };
+    // other projects' journals running on this machine, each at its own port
+    const journals = reactive({ list: [], open: false });
+    const loadJournals = () => fetch("/api/viewers").then((r) => r.json())
+      .then((d) => { journals.list = Array.isArray(d) ? d : []; }).catch(() => {});
+    const journalsTimer = setInterval(() => { if (document.visibilityState === "visible") loadJournals(); }, 20000);
+    const outsideJournals = (e) => { if (!e.target.closest(".journal-switch")) journals.open = false; };
+    document.addEventListener("mousedown", outsideJournals);
+    onUnmounted(() => { clearInterval(journalsTimer); document.removeEventListener("mousedown", outsideJournals); });
+    loadJournals();
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals };
   },
   template: `
     <div class=app>
       <aside class=side>
-        <a class=project :href="envName ? '#/env/' + envName : '#/'" :title="ov.data ? ov.data.project : ''">
+        <div v-if="journals.list.length > 1" class="drop-wrap journal-switch">
+          <button type=button class=project :aria-expanded="journals.open" :title="'Journals running on this machine'"
+            @click="journals.open = !journals.open">
+            <span class=logo>{{ (envName || 'j').charAt(0).toUpperCase() }}</span>{{ envName || 'journal' }}
+            <span :class="['fold', {shut: !journals.open}]"></span>
+          </button>
+          <div v-if="journals.open" class=drop>
+            <div class=drop-head><span>Journals running on this machine</span></div>
+            <template v-for="j in journals.list" :key="j.port">
+              <div v-if="j.current" class="drop-row current">
+                <span class=drop-kind>This journal · port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
+                <span class=drop-text>{{ j.project }}</span>
+              </div>
+              <a v-else class=drop-row :href="j.url" @click="journals.open = false">
+                <span class=drop-kind>Port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
+                <span class=drop-text>{{ j.project }}</span>
+              </a>
+            </template>
+          </div>
+        </div>
+        <a v-else class=project :href="envName ? '#/env/' + envName : '#/'" :title="ov.data ? ov.data.project : ''">
           <span class=logo>{{ (envName || 'j').charAt(0).toUpperCase() }}</span>{{ envName || 'journal' }}
         </a>
         <div class=group v-if="envName">
