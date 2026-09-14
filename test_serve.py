@@ -565,6 +565,15 @@ status, _, body = get("/api/env/alpha/environment")
 check("and reads it back", json.loads(body).get("reports_archive_days"), 7)
 status, got = post("/api/env/alpha/environment/settings", {"reports_archive_days": -1})
 check("a negative number is refused", status, 400)
+status, _, body = get("/api/env/alpha/environment")
+check("Activity shows 50 lines and keeps 250 by default",
+      (json.loads(body)["activity_show"], json.loads(body)["activity_keep"]), (50, 250))
+status, got = post("/api/env/alpha/environment/settings", {"activity_show": 3, "activity_keep": 400})
+_, _, body = get("/api/env/alpha/activity")
+check("Settings changes how many lines Activity shows", (status, len(json.loads(body)["events"]) <= 3), (200, True))
+status, got = post("/api/env/alpha/environment/settings", {"activity_show": 0})
+check("showing no lines is refused", status, 400)
+post("/api/env/alpha/environment/settings", {"activity_show": 50, "activity_keep": 250})
 
 status, _, body = get("/api/env/alpha/activity")
 _work_events = [e for e in json.loads(body)["events"] if e["kind"] == "work"]

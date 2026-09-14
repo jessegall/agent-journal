@@ -17,7 +17,6 @@ MESSAGES = {
     "message_processed": "Processed message {n}",
 }
 
-LIMIT = 12
 TEXT_MAX = 100
 AGENT, USER = "Agent", "You"
 
@@ -89,4 +88,4 @@ class ActivityController(Controller):
         for c in commandlog.entries(root, env):
             add(c.get("at"), "command", c.get("text", ""), None, AGENT)
         out.sort(key=lambda e: e["at"], reverse=True)
-        return [{**e, "age": age(e["at"])} for e in out[:LIMIT]]
+        return [{**e, "age": age(e["at"])} for e in out[:commandlog.setting(root, env, commandlog.SHOW)]]

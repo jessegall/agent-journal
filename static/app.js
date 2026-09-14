@@ -1744,7 +1744,13 @@ const Settings = {
       shape: (p) => ({ reports_archive_days: parseInt(p.reports_archive_days, 10) }),
     }] : []));
     const kept = () => { s.reload(); changed(); };
-    return { s, auto, setAuto, removing, done, keeping, kept };
+    const showing = computed(() => (s.data ? [{
+      label: "Change", method: "POST", url: `${api.value}/settings`, submit: "Save",
+      fields: [{ name: "activity_show", label: "Lines Activity shows", value: String(s.data.activity_show) },
+               { name: "activity_keep", label: "Lines the activity log keeps", value: String(s.data.activity_keep) }],
+      shape: (p) => ({ activity_show: parseInt(p.activity_show, 10), activity_keep: parseInt(p.activity_keep, 10) }),
+    }] : []));
+    return { s, auto, setAuto, removing, done, keeping, kept, showing };
   },
   template: `
     <TopBar :crumbs="[env, 'Settings']"/>
@@ -1765,6 +1771,13 @@ const Settings = {
           <div class=setting>
             <p class="prose muted">{{ (s.data.reports_archive_days ? 'A report is archived ' + s.data.reports_archive_days + ' day(s) after it is written. ' : 'Reports stay listed until you archive them. ') + 'Every report is removed for good 30 days after it is written.' }}</p>
             <ActionBar :actions="keeping" :done="kept" :key="'keep' + s.data.reports_archive_days"/>
+          </div>
+        </section>
+        <section>
+          <div class=home-head><h2>Activity</h2></div>
+          <div class=setting>
+            <p class="prose muted">Activity shows the last {{ s.data.activity_show }} line(s). The activity log keeps the last {{ s.data.activity_keep }} and removes older ones.</p>
+            <ActionBar :actions="showing" :done="kept" :key="'show' + s.data.activity_show + '-' + s.data.activity_keep"/>
           </div>
         </section>
         <section>

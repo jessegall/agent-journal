@@ -6,6 +6,8 @@ from payloads.base import Field, Payload
 class SettingsPayload(Payload):
     auto = Field(bool)
     reports_archive_days = Field(int)
+    activity_show = Field(int)
+    activity_keep = Field(int)
 
 
 class RemovePayload(Payload):

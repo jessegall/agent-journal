@@ -42,7 +42,7 @@ LOCK = "record.json.lock"
 #: write them into the session running the upgrade — the defect being fixed.
 RETIRED = "state.json"
 
-IN_RECORD = {"pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto",
+IN_RECORD = {"activity_show", "activity_keep", "pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto",
              "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read",
              "cleanup_kept", "ideas",
              "agent_seen", "schema", "hooks_enabled", "viewer_port", "reports_archive_days", "session_pids"}

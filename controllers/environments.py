@@ -11,7 +11,7 @@ from payloads.environments import AutoPayload, RemovePayload, SettingsPayload
 from templates import render
 
 MESSAGES = {
-    "nothing_to_change": "send a setting to change: auto, reports_archive_days",
+    "nothing_to_change": "send a setting to change: auto, reports_archive_days, activity_show, activity_keep",
     "auto_wants": "auto mode is enabled or disabled, got {got}",
 }
 
@@ -32,11 +32,15 @@ class EnvironmentController(Controller):
         row = next((e for e in views.environments(root) if e["name"] == p.env), None)
         if row is None:
             return Result("missing", tracks.say("remove_none", name=repr(p.env)))
+        import commandlog
         import reports
         return Result("ok", "", {**row, "auto": todo.auto(root, p.env), "start": row["current"],
-                                 "reports_archive_days": reports.archive_days(root, p.env)})
+                                 "reports_archive_days": reports.archive_days(root, p.env),
+                                 "activity_show": commandlog.setting(root, p.env, commandlog.SHOW),
+                                 "activity_keep": commandlog.setting(root, p.env, commandlog.KEEP)})
 
     def settings(self, root: Path, p: SettingsPayload) -> Result:
+        import commandlog
         import reports
         said = []
         if p.has("auto"):
@@ -46,6 +50,12 @@ class EnvironmentController(Controller):
             if not ok:
                 return Result("refused", message)
             said.append(message)
+        for key in (commandlog.SHOW, commandlog.KEEP):
+            if p.has(key):
+                ok, message = commandlog.set_setting(root, p.env, key, getattr(p, key))
+                if not ok:
+                    return Result("refused", message)
+                said.append(message)
         if not said:
             return Result("refused", say("nothing_to_change"))
         return Result("ok", "\n".join(said))
