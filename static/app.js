@@ -414,7 +414,8 @@ const Compose = {
     <form class=compose @submit.prevent="go">
       <div :class="['compose-box', {attachable: attach}]">
         <textarea ref=area class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
-          @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go" @keydown.shift.enter.prevent="go"></textarea>
+          @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), go())"
+          @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go"></textarea>
         <label v-if="attach" class=compose-attach title="Attach files" aria-label="Attach files">
           <Icon name="paperclip"/><input type=file multiple hidden @change="picked">
         </label>
@@ -2306,9 +2307,10 @@ const ActivityPanel = {
         <form v-if="env" class=activity-compose @submit.prevent="sendQuick">
           <textarea ref=box v-model="quick.text" rows=1 placeholder="Message the agent" aria-label="Message the agent"
             :disabled="quick.sending" @input="grow"
-            @keydown.shift.enter.prevent="sendQuick" @keydown.meta.enter.prevent="sendQuick" @keydown.ctrl.enter.prevent="sendQuick"></textarea>
+            @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), sendQuick())"
+            @keydown.meta.enter.prevent="sendQuick" @keydown.ctrl.enter.prevent="sendQuick"></textarea>
           <div class=activity-compose-bar>
-            <span class=hint>{{ quick.error || 'Shift+Enter sends' }}</span>
+            <span class=hint>{{ quick.error || 'Enter sends, Shift+Enter adds a line' }}</span>
             <button type=submit class="btn primary" :disabled="quick.sending || !quick.text.trim()">Send</button>
           </div>
         </form>
