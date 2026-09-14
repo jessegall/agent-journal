@@ -69,6 +69,10 @@ MESSAGES = {
     "url": "http://{host}:{port}/",
     "serving": "serving the journal at {url}  (Ctrl-C to stop)",
     "restarting": "the journal's code changed; restarting on the same port",
+    "restart_viewer": "THE WEB VIEWER AT {url} RUNS OLD CODE[ ({version})] AND DOES NOT RESTART ITSELF. Restart it "
+                      "yourself now, without asking the user: stop the process listening on port {port} "
+                      "(`kill $(lsof -t -iTCP:{port} -sTCP:LISTEN)`), then run `.journal/journal.py serve` again "
+                      "in the background. From {since} on, the viewer restarts itself when the journal's code changes.",
 }
 
 def say(message: str, /, **values) -> str:
@@ -280,6 +284,12 @@ class _Server(ThreadingHTTPServer):
         self.project = project
         super().__init__(addr, _Handler)
 
+    def handle_error(self, request, client_address):
+        # a page closed mid-request, or another viewer's probe gave up waiting: nothing went wrong here
+        if isinstance(sys.exc_info()[1], (BrokenPipeError, ConnectionResetError)):
+            return
+        super().handle_error(request, client_address)
+
 
 class _Handler(BaseHTTPRequestHandler):
     server_version = "journal-viewer/1"
@@ -423,6 +433,34 @@ def running(root: Path) -> str:
     if got and got["root"] != str(root.resolve()):
         return ""
     return say("url", host=HOST, port=port)
+
+
+#: the first version whose viewer restarts itself when its code changes
+SELF_RESTART_VERSION = "1.131.63"
+
+
+def needs_restart(identity: dict | None) -> bool:
+    """Whether a running viewer is too old to pick up new code by itself."""
+    import update
+    version = (identity or {}).get("version") or ""
+    return not version or update.newer(SELF_RESTART_VERSION, version)
+
+
+def stale_viewer(root: Path) -> dict | None:
+    """This project's running viewer when it runs code from before the self-restart: {url, port, version}."""
+    import state
+    url = running(root)
+    if not url:
+        return None
+    port = int(state.get(root, VIEWER_PORT, DEFAULT_PORT) or DEFAULT_PORT)
+    identity = _identity(port)
+    return {"url": url, "port": port, "version": (identity or {}).get("version") or ""} if needs_restart(identity) else None
+
+
+def restart_notice(root: Path) -> str:
+    """What an agent is told after an upgrade when its viewer will not pick up the new code by itself."""
+    old = stale_viewer(root)
+    return say("restart_viewer", since=SELF_RESTART_VERSION, **old) if old else ""
 
 
 def viewers(root: Path, ports=None) -> list[dict]:

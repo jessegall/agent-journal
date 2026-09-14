@@ -755,6 +755,11 @@ _watcher.join(timeout=5)
 serve.WATCH_SECONDS, serve.SETTLE_SECONDS = _old_watch, _old_settle
 check("once the change settles, the watcher stops the server so it can restart", (_changed.is_set(), _watcher.is_alive()), (True, False))
 _srv_code.server_close()
+check("a viewer from before the self-restart, or one that does not say its version, must be restarted by hand",
+      [serve.needs_restart(x) for x in ({"version": "1.131.62"}, {}, None, {"version": serve.SELF_RESTART_VERSION}, {"version": "1.140.0"})],
+      [True, True, True, False, False])
+check("this project's viewer on the current version is not flagged, so no notice is given",
+      (serve.stale_viewer(root), serve.restart_notice(root)), (None, ""))
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
