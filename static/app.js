@@ -359,7 +359,7 @@ const TopBar = {
               <div v-for="x in notes.data || []" :key="'n' + x.n" class=drop-row>
                 <span class=drop-text>{{ x.text }}</span>
                 <span class=drop-meta>{{ x.age || 'just now' }}
-                  <a v-if="x.about && $refHref(x.about, env)" class=chip :href="$refHref(x.about, env)" @click="drop.open = false">{{ x.about_label }}</a>
+                  <a v-if="x.about && $refHref(x.about, env)" class="btn more" :href="$refHref(x.about, env)" :title="'Open ' + x.about_label" @click="drop.open = false">Open</a>
                   <button type=button class="btn more" @click="readOne(x)">Mark read</button>
                 </span>
               </div>
@@ -1991,8 +1991,8 @@ const EnvHome = {
           <div v-for="x in notes.data" :key="x.n" class=note-row>
             <div class=note-text>{{ x.text }}
               <span class=muted> · {{ x.age || 'just now' }}</span>
-              <a v-if="x.about && $refHref(x.about, env)" class=chip :href="$refHref(x.about, env)">{{ x.about_label }}</a>
             </div>
+            <a v-if="x.about && $refHref(x.about, env)" class=btn :href="$refHref(x.about, env)" :title="'Open ' + x.about_label">Open</a>
             <button type=button class=btn @click="readOne(x)">Mark read</button>
           </div>
         </div>
