@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.31 — The footer says whether the agent is working
+
+The sidebar footer's dot blinked for any agent seen in the last day, and during a long tool
+call the latest Activity line's age kept growing, so a busy agent looked like it had stopped
+minutes ago. The footer now says **Working** or **Idle** beside "Agent". It reads Working from
+the moment a tool call or turn starts until the agent stops and waits for you, however long
+the call takes. The dot blinks only while it is working.
+
 ## 1.131.30 — Activity lines from the same second read newest first
 
 When the agent ran two journal commands within the same second, Activity listed the earlier
