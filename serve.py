@@ -83,7 +83,7 @@ BODY_LIMIT = 64_000
 #: the static shell: sent with a fingerprint, so an unchanged file is answered 304 instead of re-sent
 _FINGERPRINTED = frozenset({"/", "/app.js"})
 UPLOAD_LIMIT = 28_000_000   # a message with attached files, base64 in JSON
-_UPLOAD = re.compile(r"^/api/env/[a-z0-9-]+/inbox$")
+_UPLOAD = re.compile(r"^/api/env/[a-z0-9-]+/inbox(/\d+/attach)?$")
 
 
 def route(pattern: str, table: list = ROUTES):
