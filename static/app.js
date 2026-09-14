@@ -1751,7 +1751,6 @@ const EnvHome = {
       </section>
     </div></div>
     <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>
-    <aside v-else class="panel peek-idle" aria-hidden="true"><Icon name="empty"/></aside>
     </div>`,
 };
 
