@@ -135,6 +135,21 @@
   .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); min-width: 0; }
   .crumb b { color: var(--text); font-weight: 500; }
   .crumb .sep { color: var(--text-3); }
+  .help-btn { width: 22px; height: 22px; margin-left: -4px; color: var(--text-3); }
+  .help-btn .ico { width: 14px; height: 14px; }
+  .help-btn:hover { color: var(--text); }
+  dialog.help { width: min(560px, calc(100vw - 32px)); max-height: min(78vh, 720px); padding: 0; border: 1px solid var(--border-2);
+    border-radius: 12px; background: var(--raised); color: var(--text); box-shadow: 0 24px 64px rgba(0, 0, 0, .5); }
+  dialog.help::backdrop { background: rgba(0, 0, 0, .5); }
+  dialog.help[open] { animation: help-in .18s ease-out; }
+  @keyframes help-in { from { opacity: 0; transform: translateY(6px) scale(.99); } to { opacity: 1; transform: none; } }
+  .help-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 12px 12px 20px;
+    border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 500; }
+  .help-body { padding: 4px 20px 18px; overflow-y: auto; max-height: calc(min(78vh, 720px) - 50px); font-size: 13px; line-height: 1.6; color: var(--text-2); }
+  /* the dialog's head already names the page, so the file's own title is not repeated */
+  .help-body > h1:first-child { display: none; }
+  .help-body > h1:first-child + * { margin-top: 14px; }
+  @media (prefers-reduced-motion: reduce) { dialog.help[open] { animation: none; } }
   .viewbar { height: 40px; flex: none; display: flex; align-items: center; gap: 14px; padding: 0 20px;
     border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--text-3); }
   .viewbar b { color: var(--text-2); font-weight: 500; }

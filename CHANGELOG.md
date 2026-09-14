@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.23 — Every resource page explains itself
+
+Each resource page now has a small ⓘ button beside its title: to-dos, messages, questions,
+suggestions, reports, pins, reminders, work, documents, rules and tools. It opens a short,
+plain explanation of what that page holds, who writes it, and what you can do there. The
+text lives in Markdown files under `static/help/`, one per page, so it can be edited without
+touching the code.
+
 ## 1.131.22 — Rows fade in and out of lists
 
 Rows used to pop in and out of lists. They now come in and go out smoothly:

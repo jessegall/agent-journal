@@ -684,6 +684,13 @@ check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
 check("Activity says whether auto mode is on, for the footer's switch",
       isinstance(json.loads(get("/api/env/alpha/activity")[2]).get("auto"), bool), True)
+status, headers, body = get("/help/pins.md")
+check("a resource page's help is served as Markdown from static/help", (status, body.startswith(b"# ")), (200, True))
+check("a help page that does not exist, or a path outside static/help, is not served",
+      (get("/help/nothing.md")[0], get("/help/..%2Fapp.js")[0]), (404, 404))
+import re  # noqa: E402
+_topics = set(re.findall(r'"([a-z]+)"', re.search(r"const HELP_TOPICS = \{(.*?)\};", (serve.STATIC / "app.js").read_text(), re.S).group(1)))
+check("every page with a help button has its help file", sorted(t for t in _topics if not (serve.STATIC / "help" / f"{t}.md").is_file()), [])
 _tail = root / "context-tail.jsonl"
 _tail.write_text(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 1000, "cache_read_input_tokens": 149000}}}) + "\n")
 check("the agent's context use is its last reading against the window, and nothing without a window or a reading",
