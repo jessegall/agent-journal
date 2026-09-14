@@ -187,6 +187,8 @@ holds while messages wait; the first tool call after a new one mentions it once.
 
 **The viewer**
 
+    journal notify "<what finished>" [--about=<ref>]   a notification on the user's Home; only what they want to hear about
+    journal notifications [--all]    the unread ones; `notifications read <n>` marks one read
     journal reports [--all]          what the user asked to have checked or researched, for the user to read
     journal reports add "<title>" [--about="todo 22"] --brief   file one; never a doc, never handed to a session
     journal reports archive <n> "<why>"   take one off the list

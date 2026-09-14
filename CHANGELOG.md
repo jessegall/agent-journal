@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.101.0 — the agent can notify the user
+
+`journal notify "<what finished>" [--about="todo 22"]` puts a notification at the top of the
+user's Home, pointing at the to-do, question, report or doc it is about. It is for what the
+user asked to hear about, or a long piece of work that landed, not for progress. The sidebar's
+Home entry shows how many are unread; Home has Mark read on each and Mark all read.
+`journal notifications` lists the unread ones, `--all` the read ones too, and `notifications
+read <n>` marks one read.
+
 ## 1.100.0 — a rule can be written into CLAUDE.md
 
 `journal rules inject <n>` writes a rule of this project into the project's CLAUDE.md, inside

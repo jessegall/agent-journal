@@ -547,6 +547,18 @@ _req = urllib.request.Request(BASE + "/app.js", headers={"If-None-Match": '"stal
 with urllib.request.urlopen(_req, timeout=10) as r:
     check("a changed one is sent in full", (r.status, len(r.read()) > 1000), (200, True))
 
+status, got = post("/api/env/alpha/notifications", {"text": "the long run finished", "about": "todo 1"})
+check("a notification is sent through the API", status, 201)
+status, _, body = get("/api/overview")
+check("the overview counts the unread ones", [e["notifications"] for e in json.loads(body)["environments"] if e["name"] == "alpha"], [1])
+status, got = post("/api/env/alpha/notifications/1/read", {})
+check("the viewer marks one read", status, 200)
+status, _, body = get("/api/env/alpha/notifications")
+check("a read one leaves the default list", json.loads(body), [])
+post("/api/env/alpha/notifications", {"text": "a"}); post("/api/env/alpha/notifications", {"text": "b"})
+status, got = post("/api/env/alpha/notifications/readall", {})
+check("mark all read", (status, got.get("message", "").startswith("2 notification")), (200, True))
+
 state.put(root, serve.VIEWER_PORT, srv.server_port)
 check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)
 import views  # noqa: E402

@@ -555,6 +555,16 @@ understand it is a question they will answer wrong.
 again: the new answer replaces the old one, which is kept, and the next stop tells you again,
 marked "(a new answer)". Act on the latest answer, not the one you remember.
 
+## Notifications: tell the user, sparingly
+
+    journal notify "<what finished>" [--about="todo 22"]   it lands at the top of the user's Home
+
+**Notify when the user asked to be told**, or when a long piece of work has landed that they
+are waiting on: a migration through, a research report ready, a to-do they cared about done.
+**Not for progress.** Each step, each commit, each to-do closed in auto mode is a `work
+update` or nothing; a Home full of notifications is one the user stops reading. One line,
+saying what is now true, pointing at the to-do, report or doc it is about.
+
 ## Reports: what the user asked to have checked
 
     journal reports add "<title>" [--about="todo 22"] --brief   the report, its text on stdin
