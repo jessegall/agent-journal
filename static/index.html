@@ -51,7 +51,9 @@
   button.project .fold { margin-left: auto; }
   /* the sidebar clips what sticks out, so the list keeps to its width */
   .journal-switch .drop { left: 0; right: 0; top: 36px; width: auto; }
-  .journal-switch .drop-row.current { background: var(--sel); }
+  /* this journal, in both pickers: selected, and still answering the pointer without looking like a link */
+  .journal-switch .drop-row.current, .strip-drop .drop-row.current { background: var(--sel); cursor: default; }
+  .journal-switch .drop-row.current:hover, .strip-drop .drop-row.current:hover { background: color-mix(in srgb, var(--sel) 88%, var(--text) 12%); }
   .side > .group { padding-inline: 10px; }
   .project { display: flex; align-items: center; gap: 9px; padding: 6px 8px; font-weight: 600; font-size: 13.5px; color: var(--text); }
   .project:hover { color: var(--text); }
