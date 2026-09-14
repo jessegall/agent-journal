@@ -11,7 +11,17 @@ import os
 import re
 from pathlib import Path
 
-PROJECTS = Path.home() / ".claude" / "projects"
+def _projects() -> Path:
+    """Claude Code's projects folder; the test suites use a temporary one so they never fill the real folder."""
+    if os.environ.get("AGENT_JOURNAL_PROJECTS"):
+        return Path(os.environ["AGENT_JOURNAL_PROJECTS"])
+    if os.environ.get("AGENT_JOURNAL_IN_TESTS"):
+        import tempfile
+        return Path(tempfile.gettempdir()) / "agent-journal-test-projects"
+    return Path.home() / ".claude" / "projects"
+
+
+PROJECTS = _projects()
 
 
 def project_dir(cwd: Path) -> Path:
@@ -202,14 +212,41 @@ def _find(cwd: Path, stem: str) -> Path | None:
     # unique across every project, so it is looked for everywhere before it is given up.
     # Measured: `journal nothing` in a worktree found no transcript, wrote no mark, and
     # the hook — which reads its path from the payload — went on denying every call.
-    if PROJECTS.is_dir() and _SESSION_ID.fullmatch(stem):
-        for f in PROJECTS.glob(f"*/{stem}.jsonl"):
-            if f.is_file():
-                return f
-        for f in PROJECTS.glob(f"*/*/subagents/{stem}.jsonl"):
-            if f.is_file():
-                return f
+    # only this repository's other checkouts are searched; scanning every project folder cost seconds per lookup
+    if _SESSION_ID.fullmatch(stem):
+        for other in _checkouts(cwd):
+            od = project_dir(other)
+            if od == d:
+                continue
+            got = od / f"{stem}.jsonl"
+            if got.is_file():
+                return got
+            for f in od.glob(f"*/subagents/{stem}.jsonl"):
+                if f.is_file():
+                    return f
     return None
+
+
+_CHECKOUTS: dict = {}
+
+
+def _checkouts(cwd: Path) -> list[Path]:
+    """The main checkout and every git worktree of the repository `cwd` is in, once per process."""
+    key = str(cwd)
+    if key not in _CHECKOUTS:
+        import worktree
+        found = [Path(cwd).resolve()]
+        main = worktree.main_root(Path(cwd))
+        if main is not None:
+            found.append(Path(main).resolve())
+        listing = worktree._git(Path(cwd), "worktree", "list", "--porcelain") or ""
+        for line in listing.splitlines():
+            if line.startswith("worktree "):
+                path = Path(line[len("worktree "):]).resolve()
+                if path not in found:
+                    found.append(path)
+        _CHECKOUTS[key] = found
+    return _CHECKOUTS[key]
 
 
 def session_transcript(cwd: Path) -> tuple[Path, bool] | None:

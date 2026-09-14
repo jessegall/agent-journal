@@ -2784,6 +2784,13 @@ def _prune(keep: str = "") -> None:
     Only `*.json` is touched: a writer's tmp is somebody else's file mid-flight.
     """
     project = ROOT.parent
+    found: dict[str, bool] = {}
+
+    def present(stem: str) -> bool:
+        if stem not in found:
+            found[stem] = transcript.find(project, stem) is not None
+        return found[stem]
+
     for stem, _ in state.runtime_files(ROOT):
         # NEVER THE SESSION THAT IS STARTING. A transcript is not always on disk when
         # SessionStart fires — the harness writes it once there is something to write — so
@@ -2793,12 +2800,12 @@ def _prune(keep: str = "") -> None:
         # already threaded here for `tracks.prune`; the file loop simply ignored it.
         if stem == keep:
             continue
-        if transcript.find(project, stem) is None:
+        if not present(stem):
             try:
                 state.runtime_file(ROOT, stem).unlink()
             except OSError:
                 pass
-    tracks.prune(ROOT, lambda stem: stem == keep or transcript.find(project, stem) is not None)
+    tracks.prune(ROOT, lambda stem: stem == keep or present(stem))
 
 
 def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
