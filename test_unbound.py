@@ -124,8 +124,9 @@ check("a write is no longer denied for the environment",
       .get("hookSpecificOutput", {}).get("permissionDecisionReason", ""), False)
 check("a later start names the environment it took", "bound to environment `nudges`" in
       context_of(fire(d, "SessionStart", "s1", source="startup")), True)
-check("and says nothing to the user", "systemMessage" in
-      fire(d, "SessionStart", "s1", source="startup"), False)
+# the user still sees where the web viewer is; what must be gone is the choice
+check("and does not ask the user to choose", "has no environment yet" in
+      fire(d, "SessionStart", "s1", source="startup").get("systemMessage", ""), False)
 
 # ------------------------------------------------- an unbound session holds no environment
 d2 = project()
@@ -155,7 +156,7 @@ out = fire(d4, "SessionStart", "s1", source="startup")
 check("with bind_on_start the session is bound at its start",
       tracks.bound(d4 / ".journal", "s1"), "default")
 check("the block names the environment", "bound to environment `default`" in context_of(out), True)
-check("the user is told nothing", "systemMessage" in out, False)
+check("the user is not asked to choose", "has no environment yet" in out.get("systemMessage", ""), False)
 check("and no prompt carries a choice", context_of(
     fire(d4, "UserPromptSubmit", "s1", prompt="hello")), "")
 
