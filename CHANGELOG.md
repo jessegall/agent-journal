@@ -4,6 +4,23 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.35 — The refresh highlight marks only what changed in the background
+
+Lists outlined a row in blue whenever it arrived or moved, including right after you saved
+something yourself, when there is nothing to point out. Now only changes that come in while
+the list refreshes on its own are marked, such as the agent closing a to-do or filing a
+message. Your own saves are not marked.
+
+The mark is a soft tint instead of an outline:
+
+- **Coming in:** a row new to the list, or arriving in another group, is tinted blue and
+  settles.
+- **Going out:** a row leaving the list, or leaving its group, is tinted amber and fades away
+  before it goes.
+
+In Home's rounded lists the tint keeps the rounded corners. With reduced motion switched on,
+the tint shows without fading.
+
 ## 1.131.34 — A stray character is gone from the viewer script
 
 1.131.33 left an invisible NUL character in `static/app.js`, inside the marker for the Custom
