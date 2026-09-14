@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.80 — Commit hashes are easier to see and click
+
+The short commit hash in a to-do's work log, a piece of work's commit list and the commit page was
+faint and gave no sign it could be clicked. In the work log it also stretched into a wide box on its
+own line, with the commit's subject wrapping underneath. The hash is now a small button on the same
+line as the subject, in the accent colour, and it lights up when you hover it.
+
 ## 1.131.79 — The channel no longer floods a new session with old answers
 
 Since 1.131.53 a session started with the channel, and on no environment yet, was pushed everything
