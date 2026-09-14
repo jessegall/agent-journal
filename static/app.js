@@ -183,6 +183,8 @@ const Icon = {
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
+      <template v-else-if="name === 'activity'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></template>
+      <template v-else-if="name === 'collapse'"><path d="M6 4.5l3.5 3.5L6 11.5"/><path d="M11.5 3.5v9"/></template>
       <template v-else-if="name === 'empty'"><path d="M2.5 9.5l1.8-5h7.4l1.8 5V13h-11z"/><path d="M2.5 9.5h3l1 1.5h3l1-1.5h3"/></template>
       <template v-else-if="name === 'reports'"><path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/></template>
       <template v-else-if="name === 'work'"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></template>
@@ -257,7 +259,9 @@ const TopBar = {
       document.addEventListener("mousedown", outside);
       onCleanup(() => document.removeEventListener("mousedown", outside));
     });
-    return { env, waiting, drop, notes, suggestions, readOne, readAll };
+    const activity = ACTIVITY;
+    const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
+    return { env, waiting, drop, notes, suggestions, readOne, readAll, activity, toggleActivity };
   },
   template: `
     <div class=top>
@@ -291,6 +295,10 @@ const TopBar = {
               </div>
             </div>
           </div>
+          <button type=button :class="['icon-btn', {on: activity.shown}]" :title="activity.shown ? 'Hide Activity' : 'Show Activity'"
+            :aria-label="activity.shown ? 'Hide Activity' : 'Show Activity'" :aria-pressed="activity.shown" @click="toggleActivity">
+            <Icon name="activity"/>
+          </button>
         </template>
       </div>
     </div>`,
@@ -595,6 +603,13 @@ function settle(body, action, base, ...shown) {
 
 // one overview for the whole page: the shell loads and polls it, every view reads this
 const OVERVIEW = reactive({ data: null });
+// whether the Activity column is shown, remembered in this browser
+const ACTIVITY_KEY = "journal.activity.shown";
+const ACTIVITY = reactive({ shown: (() => { try { return localStorage.getItem(ACTIVITY_KEY) !== "0"; } catch (e) { return true; } })() });
+function setActivityShown(shown) {
+  ACTIVITY.shown = shown;
+  try { localStorage.setItem(ACTIVITY_KEY, shown ? "1" : "0"); } catch (e) { /* storage off */ }
+}
 
 function useEnvironments(current) {
   return computed(() => (OVERVIEW.data ? OVERVIEW.data.environments.map((e) => e.name).filter((name) => name !== current()) : []));
@@ -1867,9 +1882,15 @@ const NAV = [
 // the Activity panel, always shown in the right column
 const ActivityPanel = {
   props: { data: Object, href: Function },
+  components: { Icon },
+  setup() {
+    return { hide: () => setActivityShown(false) };
+  },
   template: `
     <div class=activity-panel>
-      <div class=activity-head><span class=group-label>Activity</span></div>
+      <div class=activity-head><span class=group-label>Activity</span>
+        <button type=button class=icon-btn title="Hide Activity" aria-label="Hide Activity" @click="hide"><Icon name="collapse"/></button>
+      </div>
       <template v-if="data">
         <div class=activity-list>
           <template v-for="(e, i) in data.events" :key="i">
@@ -1937,7 +1958,7 @@ const App = {
       if (!page || !envName.value) return null;
       return `#/env/${envName.value}/${page}` + (e.n ? `/${e.n}` : "");
     };
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref };
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY };
   },
   template: `
     <div class=app>
@@ -1980,7 +2001,7 @@ const App = {
       <main class=main>
         <component :is="route.view" v-bind="route.params" :key="key"/>
       </main>
-      <aside v-if="activity.data" class=activity-dock>
+      <aside v-if="activity.data && ACTIVITY.shown" class=activity-dock>
         <ActivityPanel :data="activity.data" :href="activityHref"/>
       </aside>
     </div>`,
