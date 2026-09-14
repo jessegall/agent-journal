@@ -58,24 +58,25 @@ class Show(Resource):
 
 
 class Add(Resource):
-    signature = "questions:add {text* : the question, in one short line} {--about=*} {--description=} {--option=*}"
+    signature = "questions:add {text* : the question, in one short line} {--about=*} {--description=} {--option=*} {--pick=}"
     writes = True
     controller = CONTROLLER
     action = "store"
 
     def extra(self, p: Parsed):
-        return {"options": p.option("option") or []}
+        return {"options": p.option("option") or [], **({"pick": p.option("pick")} if p.option("pick") else {})}
 
 
 class Edit(Resource):
-    signature = "questions:edit {n : a question number} {text* : the question, reworded} {--description=} {--option=*}"
+    signature = "questions:edit {n : a question number} {text* : the question, reworded} {--description=} {--option=*} {--pick=}"
     casts = QUESTION
     writes = True
     controller = CONTROLLER
     action = "update"
 
     def extra(self, p: Parsed):
-        return {"options": p.option("option")} if p.option("option") else {}
+        return {**({"options": p.option("option")} if p.option("option") else {}),
+                **({"pick": p.option("pick")} if p.option("pick") else {})}
 
 
 class Answer(Resource):

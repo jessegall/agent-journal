@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.11 — Change answer, and the agent's pick
+
+An answered question in the viewer used to leave its options clickable, so a stray click
+could start a new answer. Now its options are read-only, with the chosen one marked, until
+you press Change answer. Cancel puts it back.
+
+`journal questions add ... --option="<a>" --option="<b>" --pick=2` records which option the
+agent recommends, and the viewer marks that option with an "Agent's pick" band. Agents stop
+writing "(my pick)" into option text. `questions edit` takes `--pick` too.
+
 ## 1.131.10 — The sidebar footer shows how much context the agent has used
 
 While an agent is working, the footer's Agent row shows how full its context is, as a

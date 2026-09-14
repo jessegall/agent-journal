@@ -39,6 +39,8 @@ MESSAGES = {
     "show_withdrawn": "  withdrawn: {why}",
     "show_answered": "\n  ANSWERED[ {age}]\n{answer}",
     "show_option": "  {n}. {option}",
+    "show_pick": "  (the agent's pick)",
+    "pick_range": "--pick is the number of one of the options, 1 to {count}; got {pick}",
     "show_open": '\n  open — journal questions answer {n} "<the answer>"',
 }
 
@@ -164,17 +166,20 @@ def _refs(root: Path, raw: list[str], track: str | None = None) -> tuple[list[st
 
 def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
         source: str = "cli", track: str | None = None, description: str = "",
-        options: list[str] | None = None) -> tuple[bool, str]:
+        options: list[str] | None = None, pick: int | None = None) -> tuple[bool, str]:
     text = (text or "").strip()
     if not text:
         return False, say("needs_text")
     links, why = _refs(root, about_refs or [], track)
     if why:
         return False, why
+    options = _options(options)
+    if pick and not 1 <= pick <= len(options):
+        return False, say("pick_range", count=len(options), pick=pick)
     with state.locked(root):
         items = _all(root, track)
         items.append({"text": text, "at": at, "source": source, "links": links,
-                      "description": (description or "").strip(), "options": _options(options),
+                      "description": (description or "").strip(), "options": options, "pick": pick or None,
                       "answer": None, "answered_at": None, "told_at": None, "withdrawn": None})
         _put(root, items, track)
         n = len(items)
@@ -213,8 +218,8 @@ def answer(root: Path, n: int, text: str, at: str, track: str | None = None) -> 
 
 
 def edit(root: Path, n: int, text: str | None, track: str | None = None, description: str | None = None,
-         options: list[str] | None = None) -> tuple[bool, str]:
-    """Reword a question, and/or change its description or options; what is not given stays."""
+         options: list[str] | None = None, pick: int | None = None) -> tuple[bool, str]:
+    """Reword a question, and/or change its description, options or pick; what is not given stays."""
     if text is not None and not text.strip():
         return False, say("needs_text")
     with state.locked(root):
@@ -228,6 +233,13 @@ def edit(root: Path, n: int, text: str | None, track: str | None = None, descrip
             q["description"] = description.strip()
         if options is not None:
             q["options"] = _options(options)
+        count = len(q.get("options") or [])
+        if pick and not 1 <= pick <= count:
+            return False, say("pick_range", count=count, pick=pick)
+        if pick:
+            q["pick"] = pick
+        elif q.get("pick") and q["pick"] > count:
+            q["pick"] = None
         text = q["text"]
         if q.get("answer"):
             q["told_at"] = None
@@ -288,7 +300,8 @@ def show_text(q: dict) -> str:
     if q["description"]:
         text += "\n\n" + fmt.wrap(q["description"], indent=2)
     if q["options"]:
-        text += "\n\n" + "\n".join(say("show_option", n=i, option=o) for i, o in enumerate(q["options"], 1))
+        text += "\n\n" + "\n".join(say("show_option", n=i, option=o) + (say("show_pick") if q["pick"] == i else "")
+                                   for i, o in enumerate(q["options"], 1))
     if q["withdrawn"]:
         tail = say("show_withdrawn", why=q["withdrawn"])
     elif q["answer"]:
@@ -324,6 +337,7 @@ def row_response(n: int, q: dict) -> dict:
         "links": [{"ref": r, "label": label(r)} for r in q.get("links") or []],
         "description": q.get("description") or "",
         "options": list(q.get("options") or []),
+        "pick": q.get("pick") or None,
     }
 
 

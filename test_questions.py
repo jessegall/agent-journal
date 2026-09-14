@@ -219,6 +219,14 @@ code, out = j("questions", "show", str(n_port))
 check("show prints the description and the numbered options",
       (code, "The viewer needs one." in out, "1. 8420" in out, "2. 9000" in out), (0, True, True, True))
 j("questions", "withdraw", str(n_port), "only testing the options")
+code, out = j("questions", "add", "which shell?", "--option=zsh", "--option=bash", "--pick=2")
+n_shell = len(q_mod._all(root, "default"))
+check("the agent's pick is stored as the option's number and shown beside it",
+      (code, q_mod._all(root, "default")[-1].get("pick"), "2. bash  (the agent's pick)" in j("questions", "show", str(n_shell))[1]),
+      (0, 2, True))
+code, out = j("questions", "add", "which editor?", "--option=vim", "--pick=3")
+check("a pick that is not one of the options is refused", (code != 0, "1 to 1" in out, len(q_mod._all(root, "default"))), (True, True, n_shell))
+j("questions", "withdraw", str(n_shell), "only testing the pick")
 
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

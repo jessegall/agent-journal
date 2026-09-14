@@ -394,9 +394,12 @@ const QuestionAnswer = {
   emits: ["answered"],
   components: { Compose },
   setup(props, { emit }) {
-    const state = reactive({ answering: false, picked: "" });
+    const state = reactive({ answering: false, picked: "", changing: false });
+    // an answered question stays read-only until Change answer is pressed
+    const locked = computed(() => !!props.q.answer && !state.changing);
+    const cancel = () => { state.changing = false; state.picked = ""; };
     const answer = (text) => postJSON(`/api/env/${props.env}/questions/${props.q.n}/answer`, { answer: text })
-      .then((body) => { emit("answered", body.data); changed(); });
+      .then((body) => { state.changing = false; emit("answered", body.data); changed(); });
     // clicking an option only picks it; Save sends it, so a stray click never answers
     const pick = (option) => { state.picked = state.picked === option ? "" : option; };
     const save = () => {
@@ -404,22 +407,32 @@ const QuestionAnswer = {
       state.answering = true;
       answer(state.picked).then(() => { state.picked = ""; }).finally(() => { state.answering = false; });
     };
-    return { state, answer, pick, save };
+    return { state, answer, pick, save, locked, cancel };
   },
   template: `
     <div :class="['question-answer', {compact}]">
       <div v-if="q.options && q.options.length" class=options>
-        <p v-if="!compact" class=section-label>{{ q.answer ? 'Choose again' : 'Choose one' }}</p>
+        <p v-if="!compact" class=section-label>{{ locked ? 'Options' : q.answer ? 'Choose again' : 'Choose one' }}</p>
         <button v-for="(o, i) in q.options" :key="i" type=button
-          :class="['option', {picked: state.picked === o, chosen: !state.picked && q.answer === o}]" :disabled="state.answering"
-          :aria-pressed="state.picked === o" @click="pick(o)">{{ o }}</button>
-        <div class=option-save>
+          :class="['option', {picked: state.picked === o, chosen: !state.picked && q.answer === o, locked, 'has-pick': q.pick === i + 1}]"
+          :disabled="locked || state.answering" :aria-pressed="state.picked === o" @click="pick(o)">
+          <span v-if="q.pick === i + 1" class=option-pick>Agent's pick</span>{{ o }}</button>
+      </div>
+      <div v-if="locked" class=option-save>
+        <button type=button class=btn @click="state.changing = true">Change answer</button>
+      </div>
+      <template v-else>
+        <div v-if="q.options && q.options.length" class=option-save>
           <button type=button class="btn primary" :disabled="!state.picked || state.answering" @click="save">Save answer</button>
+          <button v-if="q.answer" type=button class=btn @click="cancel">Cancel</button>
           <span v-if="state.picked" class=hint>Not sent until you save</span>
         </div>
-      </div>
-      <Compose :placeholder="q.options && q.options.length ? 'Or write your own answer' : q.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
-        :submit="q.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
+        <Compose :placeholder="q.options && q.options.length ? 'Or write your own answer' : q.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
+          :submit="q.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
+        <div v-if="q.answer && !(q.options && q.options.length)" class=option-save>
+          <button type=button class=btn @click="cancel">Cancel</button>
+        </div>
+      </template>
     </div>`,
 };
 
