@@ -25,6 +25,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/search$/, view: "Search", params: ["env"] },
   { re: /^\/rules(\/archive)?(?:\/(\d+|new))?$/, view: "Rules", params: ["archive", "n"] },
   { re: /^\/tools(?:\/(\d+|new))?$/, view: "Tools", params: ["n"] },
+  { re: /^\/about$/, view: "About", params: [] },
   { re: /^\/docs(?:\/(new))?$/, view: "Docs", params: ["n"] },
   { re: /^\/docs\/(\d+(?:\.\d+)?)$/, view: "DocDetail", params: ["docref"] },
 ];
@@ -2520,7 +2521,32 @@ const AgentTranscript = {
     </div></div></div>`,
 };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, NotFound };
+// the version this viewer runs and what changed, newest first
+const About = {
+  components: { TopBar },
+  setup() {
+    const about = useFetch(() => "/api/about", { poll: false });
+    // the file's own title and preamble stay out: the page has its own head
+    const log = computed(() => { const t = (about.data && about.data.changelog) || ""; const i = t.indexOf("\n## "); return i < 0 ? t : t.slice(i + 1); });
+    return { about, log };
+  },
+  template: `
+    <TopBar :crumbs="['About']"/>
+    <div class=body><div class=page><div class=page-inner>
+      <p v-if="about.error" class=error>{{ about.error }}</p>
+      <p v-else-if="!about.data" class=empty>Loading…</p>
+      <template v-else>
+        <h1 class=p-title>Agent journal</h1>
+        <dl class=props><dt>Version</dt><dd>{{ about.data.version }}</dd></dl>
+        <div>
+          <p class=section-label>Changelog</p>
+          <div class="md prose about-log" v-html="$md(log)"></div>
+        </div>
+      </template>
+    </div></div></div>`,
+};
+
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -2743,6 +2769,7 @@ const App = {
     });
     const paletteOf = (name) => STRIP_POOL[stripSlots.value[name] ?? slotOf(name)];
     const colorOf = (name) => paletteOf(name)[0];
+    const identity = useFetch(() => "/api/identity", { poll: false });
     // the strip's tab opens a switcher to the other journals running on this machine
     const stripMenu = reactive({ open: false });
     const outsideStrip = (e) => { if (!e.target.closest(".project-strip-name, .strip-drop")) stripMenu.open = false; };
@@ -2796,7 +2823,7 @@ const App = {
     };
     document.addEventListener("visibilitychange", onVisibility);
     onUnmounted(() => { document.removeEventListener("visibilitychange", onVisibility); clearTimeout(awayTimer); });
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
   },
   template: `
     <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
@@ -2868,6 +2895,7 @@ const App = {
           </a>
         </div>
         <div v-if="activity.data" class=side-foot>
+          <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}</a>
           <div class=side-foot-head>
             <span>Agent<span v-if="activity.data.agent" :class="['side-foot-state', {working: activity.data.agent.working}]">{{ activity.data.agent.working ? 'Working' : 'Idle' }}</span></span>
             <span v-if="activity.data.agent && activity.data.agent.context" :class="['side-foot-ctx', {high: activity.data.agent.context.share >= 70}]"
