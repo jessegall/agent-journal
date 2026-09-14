@@ -427,7 +427,7 @@ const QuestionAnswer = {
   emits: ["answered"],
   components: { Compose },
   setup(props, { emit }) {
-    const CUSTOM = " custom";
+    const CUSTOM = Symbol("custom");
     const state = reactive({ answering: false, picked: "", changing: false, custom: "" });
     // an answered question stays read-only until Change answer is pressed
     const locked = computed(() => !!props.q.answer && !state.changing);
