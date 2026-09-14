@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.84 — Files can be added to a sent message again
+
+Adding files to a message that was already sent failed with "the body is larger than 64000 bytes"
+for anything but a tiny file. That path now takes as much as sending a message with files does.
+
 ## 1.131.83 — The transcript leaves out empty lines
 
 An agent's transcript showed many lines with nothing on them: just "Agent" or "Tool result", a time

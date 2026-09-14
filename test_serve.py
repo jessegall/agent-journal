@@ -860,11 +860,13 @@ check("a listed message file opens", get(_shot[0]["url"])[0], 200)
 _shot_msg = [m["n"] for m in json.loads(get("/api/env/alpha/inbox?all=1")[2]) if m["text"] == "a message carrying a picture"][0]
 status, got = post(f"/api/env/alpha/inbox/{_shot_msg}/attach",
                    {"files": [{"name": "later.txt", "data": "data:text/plain;base64," + base64.b64encode(b"added afterwards").decode()}]})
+check("a file bigger than an ordinary request can be added to a message after it is sent",
+      post(f"/api/env/alpha/inbox/{_shot_msg}/attach", {"files": [{"name": "big.bin", "data": base64.b64encode(b"x" * 100_000).decode()}]})[0], 200)
 check("files are added to a message after it is sent",
-      (status, [f["name"] for f in json.loads(get(f"/api/env/alpha/inbox/{_shot_msg}")[2])["files"]]), (200, ["shot.png", "later.txt"]))
+      (status, [f["name"] for f in json.loads(get(f"/api/env/alpha/inbox/{_shot_msg}")[2])["files"]]), (200, ["shot.png", "later.txt", "big.bin"]))
 check("added from the viewer, it is a comment on the message, so the agent is told",
       [(c["about"], c["text"]) for c in json.loads(get(f"/api/env/alpha/comments?about=inbox%3A{_shot_msg}&all=1")[2])],
-      [(f"inbox:{_shot_msg}", f"added later.txt to message {_shot_msg}")])
+      [(f"inbox:{_shot_msg}", f"added big.bin to message {_shot_msg}"), (f"inbox:{_shot_msg}", f"added later.txt to message {_shot_msg}")])
 _lists = {
     "to-dos": [(bool(t["done"]), t["closed_at"]) for t in json.loads(get("/api/env/alpha/todos?all=1")[2])],
     "work": [(bool(w["ended"]), w["closed_at"]) for w in json.loads(get("/api/env/beta/work?all=1")[2])],
