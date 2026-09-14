@@ -16,6 +16,8 @@ NAME = "journal"
 POLL_SECONDS = 3.0
 PIDS = "session_pids"
 PUSHED = "channel_pushed"
+#: when this server started; nothing that happened before it is pushed
+STARTED = [0.0]
 
 INSTRUCTIONS = ("What the user does in the journal viewer while you are idle arrives as "
                 '<channel source="journal" env="...">. A message (message="N"): handle it the way a stop that says the '
@@ -50,30 +52,46 @@ def pending(stem: str) -> list[tuple[str, dict]]:
     import todo
     import tracks
     idle = state.get(ROOT, "last_event", "", stem=stem) == "Stop"
-    # a session starts on no environment until the agent switches, so an unbound one hears from every environment
     bound = tracks.bound(ROOT, stem)
     got = []
+    # a session on no environment is woken for new messages only; answers and comments belong to whoever asked
     for env in [bound] if bound else tracks.choices(ROOT):
         if not todo.auto(ROOT, env) or idle:
-            got.extend(_waiting(env))
+            got.extend(_waiting(env, STARTED[0], answers=bool(bound)))
     pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
     return [(key, params) for key, params in got if key not in pushed]
 
 
-def _waiting(env: str) -> list[tuple[str, dict]]:
+def _epoch(stamp) -> float:
+    from datetime import datetime
+    try:
+        return datetime.fromisoformat(str(stamp).replace("Z", "+00:00")).timestamp()
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[str, dict]]:
     import comments
     import inbox
     import questions
     got = []
     for n, m in inbox.unprocessed(ROOT, env):
+        if _epoch(m.get("at")) < since:
+            continue
         got.append((f"{env}:{n}", {"content": f"The user left message {n} on {env}: {_gist(m.get('text', ''))}",
                                     "meta": {"env": env, "message": str(n)}}))
+    if not answers:
+        return got
     # keyed by when it was answered, so a changed answer wakes the session again
     for n, q in questions.untold(ROOT, env):
+        if _epoch(q.get("answered_at")) < since:
+            continue
         got.append((f"{env}:question:{n}:{q.get('answered_at') or ''}",
                     {"content": f"The user answered question {n} on {env}: {_gist(q.get('answer', ''))}",
                      "meta": {"env": env, "question": str(n)}}))
     for n, c in comments.untold(ROOT, env):
+        if _epoch(c.get("at")) < since:
+            continue
         got.append((f"{env}:comment:{n}",
                     {"content": f"The user commented on {comments.label(c.get('about', ''))} on {env}: {_gist(c.get('text', ''))}",
                      "meta": {"env": env, "comment": str(n)}}))
@@ -110,6 +128,7 @@ def _version() -> str:
 
 
 def main() -> int:
+    STARTED[0] = time.time()
     threading.Thread(target=_watch, daemon=True).start()
     for line in sys.stdin:
         line = line.strip()

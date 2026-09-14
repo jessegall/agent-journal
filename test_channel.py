@@ -110,6 +110,12 @@ params = (push or {}).get("params") or {}
 check("a session on no environment yet is still woken, told which environment it is for",
       ("while on no environment" in params.get("content", ""), params.get("meta", {}).get("env")), (True, "default"))
 
+import channel  # noqa: E402
+check("nothing that happened before the channel started is pushed", channel._waiting("default", time.time() + 60), [])
+check("a session on no environment yet is woken for new messages only, not for another environment's answers or comments",
+      sorted({next(k for k in ("message", "question", "comment") if k in params["meta"]) for _, params in channel._waiting("default", 0, answers=False)}),
+      ["message"])
+
 srv.stdin.close()
 srv.wait(timeout=10)
 
