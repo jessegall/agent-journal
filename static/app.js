@@ -627,6 +627,32 @@ const Switch = {
     </label>`,
 };
 
+// one choice out of a few, like Open / Done: options [{value, label}], v-model the chosen value; arrow keys move the choice
+const RadioGroup = {
+  props: { options: { type: Array, default: () => [] }, modelValue: { type: String, default: "" }, label: { type: String, default: "" } },
+  emits: ["update:modelValue"],
+  setup(props, { emit }) {
+    const choose = (value) => { if (value !== props.modelValue) emit("update:modelValue", value); };
+    const step = (event, by) => {
+      const count = props.options.length;
+      const i = props.options.findIndex((o) => o.value === props.modelValue);
+      // the position, not the option object: a parent that builds its options inline hands over a new array on the next render
+      const j = (i + by + count) % count;
+      const group = event.currentTarget.parentElement;
+      choose(props.options[j].value);
+      requestAnimationFrame(() => { const button = group.querySelectorAll("[role=radio]")[j]; if (button) button.focus(); });
+    };
+    return { choose, step };
+  },
+  template: `
+    <span class=radio-group role=radiogroup :aria-label="label || null">
+      <button v-for="o in options" :key="o.value" type=button role=radio :aria-checked="o.value === modelValue ? 'true' : 'false'"
+        :tabindex="o.value === modelValue ? 0 : -1" :class="['radio-option', {on: o.value === modelValue}]" @click="choose(o.value)"
+        @keydown.right.prevent="step($event, 1)" @keydown.down.prevent="step($event, 1)"
+        @keydown.left.prevent="step($event, -1)" @keydown.up.prevent="step($event, -1)">{{ o.label }}</button>
+    </span>`,
+};
+
 const PAGE_ROWS = 25;
 
 // groups: {key, label, kind, closed, match(row)}; columns: {priority, status, num, numWidth, title, sub, cite, age, struck}
@@ -1826,7 +1852,7 @@ const Peek = {
 // ─────────────────────────────────────────────────────────────── an environment's home
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, StatusIcon, PriorityIcon, Peek, ResourceList },
+  components: { TopBar, Icon, StatusIcon, PriorityIcon, Peek, ResourceList, RadioGroup },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     const summary = useFetch(url(""));
@@ -1842,7 +1868,7 @@ const EnvHome = {
     const openTodos = { ...TODO_LIST, groups: TODO_LIST.groups.filter((g) => !g.closed) };
     const finishedTodos = { groups: [{ key: "finished", label: "", match: (t) => t.done }],
                             columns: { num: (t) => `#${t.n}`, title: (t) => t.title, age: (t) => t.done_age },
-                            sorts: [{ key: "done", label: "Finished" }], empty: "Nothing has been finished yet." };
+                            sorts: [{ key: "done", label: "Done" }], empty: "Nothing is done yet." };
     const waitingMessages = { ...MESSAGE_LIST, groups: [{ ...MESSAGE_LIST.groups[0], label: "" }] };
     const openQuestions = { ...QUESTION_LIST, groups: [{ ...QUESTION_LIST.groups[0], label: "" }] };
     const openWork = { ...WORK_LIST, groups: [{ ...WORK_LIST.groups[0], label: "" }] };
@@ -1929,10 +1955,8 @@ const EnvHome = {
 
       <section>
         <div class=home-head><h2>To-dos</h2>
-          <span class=segmented>
-            <button type=button :class="['btn', {on: !view.finished}]" @click="view.finished = false">Open</button>
-            <button type=button :class="['btn', {on: view.finished}]" @click="view.finished = true">Recently finished</button>
-          </span>
+          <RadioGroup label="Which to-dos" :options="[{ value: 'open', label: 'Open' }, { value: 'done', label: 'Done' }]"
+            :modelValue="view.finished ? 'done' : 'open'" @update:modelValue="(v) => (view.finished = v === 'done')"/>
           <a class=more :href="'#/env/' + env + '/todos'">All to-dos</a></div>
         <div class=block>
           <ResourceList v-if="view.finished" v-bind="finishedTodos" :bar="false" :limit="8" :rows="todos.data"

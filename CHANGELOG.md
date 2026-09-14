@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.44 — Home's to-dos switch reads Open / Done
+
+Home's to-dos section switched between "Open" and "Recently finished" with two separate
+buttons. It is now a single radio control reading **Open** and **Done**: click one, or move
+between them with the arrow keys. The control is reusable, so any other one-of-a-few choice in
+the viewer can use it too.
+
 ## 1.131.43 — Home shows the work that just ended
 
 Home's Open work section showed only the work in progress, so once a piece of work ended it

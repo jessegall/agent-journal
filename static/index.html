@@ -439,7 +439,15 @@
   .home-head h2 { font-size: 13.5px; font-weight: 600; margin: 0; }
   .home-head .n { color: var(--text-3); font-size: 12.5px; }
   .home-head .more { margin-left: auto; font-size: 12.5px; }
-  .segmented { display: inline-flex; gap: 4px; margin-left: 10px; }
+  /* a radio group: one small track, the chosen option raised inside it */
+  .radio-group { display: inline-flex; gap: 2px; margin-left: 10px; padding: 2px; border: 1px solid var(--border); border-radius: 7px;
+    background: var(--bg); }
+  .radio-option { height: 22px; padding: 0 10px; border: none; border-radius: 5px; background: transparent; color: var(--text-3);
+    font: inherit; font-size: 12px; cursor: pointer; }
+  .radio-option:hover { color: var(--text); }
+  .radio-option.on { background: var(--raised); color: var(--text); box-shadow: 0 0 0 1px var(--border-2); }
+  .radio-option:focus { outline: none; }
+  .radio-option:focus-visible { box-shadow: 0 0 0 1px var(--accent); }
   .body > .page { flex: 1; min-width: 0; }
   /* Home is full width; the panel column appears only while something is picked */
   .home-body { display: grid; grid-template-columns: minmax(0, 1fr); }
