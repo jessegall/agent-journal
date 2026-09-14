@@ -70,6 +70,8 @@ MESSAGES = {
                 "`messages process`, a question for any part you do not understand, then `messages done`",
     "inbox_mention": "the user left {n} new message(s) for you — `journal messages waiting` reads them when you reach a "
                      "pause; nothing is blocked",
+    "comments_mention": "the user left {n} new comment(s) for you — `journal comments` reads them when you reach a "
+                        "pause; nothing is blocked",
     "deferral_do": "park it as a to-do before going on, or run this call again if nothing is deferred",
     "deferral_why": "You wrote:\n  …{said}…\n\nThe user asked for something and this says it will happen later. Work "
                     "held only in words lives in this window, and one distraction or one compaction loses it. Park it "
@@ -2172,6 +2174,23 @@ def _inbox_news(conf: dict, ctx: Ctx) -> str:
     return say("inbox_mention", n=len(fresh))
 
 
+def _comments_news(conf: dict, ctx: Ctx) -> str:
+    """New comments, mentioned once each after a tool call: at a stop the messages reminder outranks them."""
+    if "comments" in conf["silenced"]:
+        return ""
+    import comments
+    here = tracks.current(ROOT, ctx.stem)
+    waiting = [n for n, _ in comments.untold(ROOT, here)]
+    told = state.get(ROOT, "comments_told", {}, stem=ctx.stem) or {}
+    said = told.get(here) or []
+    fresh = [n for n in waiting if n not in said]
+    if not fresh:
+        return ""
+    told[here] = sorted(set(said) | set(fresh))
+    state.put(ROOT, "comments_told", told, stem=ctx.stem)
+    return say("comments_mention", n=len(fresh))
+
+
 def _reminder_due(conf: dict, ctx: Ctx) -> str:
     """Every `reminder_every` tool calls, the standing reminders again — or "".
 
@@ -2232,6 +2251,9 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     if due:
         return _context("PostToolUse", due)
     news = _inbox_news(conf, ctx)
+    if news:
+        return _context("PostToolUse", news)
+    news = _comments_news(conf, ctx)
     if news:
         return _context("PostToolUse", news)
     # THE CONTEXT LADDER, MID-WORK. Only with the window set: a tail reading has no peak

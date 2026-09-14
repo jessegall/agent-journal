@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.130.1 — The agent hears about new comments between stops
+
+A comment the user adds is now mentioned to the agent after its next tool call, the same way
+a new message is: "the user left 1 new comment(s) — `journal comments` reads them". Before,
+comments were only raised at a stop, and a stop shows one reminder at a time with waiting
+messages ahead of comments, so while messages kept arriving the comments were never raised.
+
 ## 1.130.0 — Set a to-do's priority from the viewer
 
 The New to-do form has a Priority field (Low, Default, High, Critical). In an open to-do's
