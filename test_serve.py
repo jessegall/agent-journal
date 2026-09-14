@@ -725,6 +725,17 @@ for _i in range(commandlog.QUEUE_SIZE):
     commandlog.queue_tool(root, "alpha", _tool_stem, "Read", "2000-01-05T00:00:02+00:00")
 check("the tenth tool use writes the line by itself",
       [e["text"] for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:02+00:00"], ["Read 10 files"])
+from datetime import datetime as _dt, timezone as _tz  # noqa: E402
+commandlog.queue_tool(root, "alpha", _tool_stem, "Bash", "2000-01-05T00:00:03+00:00")
+commandlog.flush_stale(root, "alpha", now=_dt(2000, 1, 5, 0, 0, 30, tzinfo=_tz.utc))
+check("a queued tool use waits while its session may still be working",
+      state.get(root, commandlog.QUEUE, None, stem=_tool_stem), {"ran": 1})
+commandlog.flush_stale(root, "beta")
+check("opening another environment's Activity leaves it queued", state.get(root, commandlog.QUEUE, None, stem=_tool_stem), {"ran": 1})
+get("/api/env/alpha/activity")
+check("after a minute with no tool use, opening Activity writes the line, at the time of the last tool use",
+      ([e["text"] for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:03+00:00"],
+       state.get(root, commandlog.QUEUE, None, stem=_tool_stem)), (["Ran 1 command"], {}))
 commandlog.queue_tool(root, "alpha", _tool_stem, "Bash", "2099-01-06T00:00:00+00:00")
 commandlog.flush_tools(root, "alpha", _tool_stem, "2099-01-06T00:00:00+00:00")
 for _argv in (["messages", "waiting"], ["comments", "list"]):

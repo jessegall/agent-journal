@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from functools import lru_cache
+from datetime import datetime, timezone
 from pathlib import Path
 
 import state
@@ -416,7 +417,10 @@ def record(root: Path, track: str, parsed, at: str) -> None:
 
 
 QUEUE = "tool_queue"
+QUEUE_AT = "tool_queue_at"
+QUEUE_ENV = "tool_queue_env"
 QUEUE_SIZE = 10
+QUIET_SECONDS = 60
 # tool name -> the bucket a summed line counts it in
 BUCKETS = {"Bash": "ran", "Edit": "edited", "Write": "edited", "MultiEdit": "edited", "NotebookEdit": "edited",
            "Read": "read", "Grep": "searched", "Glob": "searched"}
@@ -440,6 +444,8 @@ def queue_tool(root: Path, track: str, stem: str, tool: str, at: str) -> None:
     bucket = BUCKETS.get(tool, "other")
     counts[bucket] = counts.get(bucket, 0) + 1
     state.put(root, QUEUE, counts, stem=stem)
+    state.put(root, QUEUE_AT, at, stem=stem)
+    state.put(root, QUEUE_ENV, track, stem=stem)
     if sum(counts.values()) >= QUEUE_SIZE:
         flush_tools(root, track, stem, at)
 
@@ -452,6 +458,21 @@ def flush_tools(root: Path, track: str, stem: str, at: str) -> None:
     state.put(root, QUEUE, {}, stem=stem)
     _append(root, track, {"at": at, "text": tools_text(counts), "kind": None, "n": None, "titled": False,
                           "detail": "", "by": "Agent"})
+
+
+def flush_stale(root: Path, env: str, now: datetime | None = None) -> None:
+    """Write the queued tool uses of every session on this environment that has used no tool for a minute."""
+    now = now or datetime.now(timezone.utc)
+    for stem, marks in state.runtime_files(root):
+        if marks.get(QUEUE_ENV) != env or not sum((marks.get(QUEUE) or {}).values()):
+            continue
+        try:
+            last = datetime.fromisoformat(str(marks.get(QUEUE_AT)).replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        last = last if last.tzinfo else last.replace(tzinfo=timezone.utc)
+        if (now - last).total_seconds() >= QUIET_SECONDS:
+            flush_tools(root, env, stem, marks[QUEUE_AT])
 
 
 def record_dispatch(root: Path, track: str, stem: str, description: str, at: str) -> None:
