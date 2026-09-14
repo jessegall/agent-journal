@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.121.0 — Activity can be hidden, and brought back from the top bar
+
+The Activity header has a button that hides the column. An Activity button in the top
+bar, after the Notifications bell, shows or hides it on every page. The choice is
+remembered in this browser.
+
 ## 1.120.1 — Activity has a header like the page's top bar
 
 The Activity column's header is as tall as the page's top bar and lines up with it, with a
