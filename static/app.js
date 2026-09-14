@@ -732,8 +732,14 @@ const QuestionPanel = {
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const answer = (text) => postJSON(`${api.value}/${props.n}/answer`, { answer: text })
       .then((body) => { item.data = body.data; if (props.reloaded) props.reloaded(); changed(); });
-    const state = reactive({ answering: false });
-    const choose = (option) => { state.answering = true; answer(option).finally(() => { state.answering = false; }); };
+    // clicking an option only picks it; Save sends it, so a stray click never answers
+    const state = reactive({ answering: false, picked: "" });
+    const pick = (option) => { state.picked = state.picked === option ? "" : option; };
+    const save = () => {
+      if (!state.picked || state.answering) return;
+      state.answering = true;
+      answer(state.picked).then(() => { state.picked = ""; }).finally(() => { state.answering = false; });
+    };
     const actions = computed(() => {
       const q = item.data;
       if (!q || q.withdrawn) return [];
@@ -745,7 +751,8 @@ const QuestionPanel = {
       ];
     });
     const done = panelDone(props, item);
-    return { item, answer, choose, answering: computed(() => state.answering), questionKind, actions, done };
+    return { item, answer, pick, save, picked: computed(() => state.picked), answering: computed(() => state.answering),
+             questionKind, actions, done };
   },
   template: `
     <Panel :label="'Question #' + n" :close="close" :onClose="onClose" :link="link">
@@ -769,7 +776,12 @@ const QuestionPanel = {
         <div v-if="item.data.options.length && !item.data.withdrawn" class=options>
           <p class=section-label>{{ item.data.answer ? 'Choose again' : 'Choose one' }}</p>
           <button v-for="(o, i) in item.data.options" :key="i" type=button
-            :class="['option', {chosen: item.data.answer === o}]" :disabled="answering" @click="choose(o)">{{ o }}</button>
+            :class="['option', {picked: picked === o, chosen: !picked && item.data.answer === o}]" :disabled="answering"
+            :aria-pressed="picked === o" @click="pick(o)">{{ o }}</button>
+          <div class=option-save>
+            <button type=button class="btn primary" :disabled="!picked || answering" @click="save">Save answer</button>
+            <span v-if="picked" class=hint>Not sent until you save</span>
+          </div>
         </div>
         <div v-if="item.data.answer">
           <p class=section-label>Answer<span v-if="item.data.answered_age"> · {{ item.data.answered_age }}</span></p>
