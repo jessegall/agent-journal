@@ -203,5 +203,18 @@ code, out = j("next")
 check("a row reported finished reads as yours to close, not as held by an agent still working",
       ("reported finished" in out, "held by an agent still working" in out), (True, False))
 
+# ------------------------------------------------------------------ a test project does not outlive its process
+import shutil as _shutil  # noqa: E402
+import subprocess as _subprocess  # noqa: E402
+_code = ("import sys, tempfile; from pathlib import Path; sys.path.insert(0, %r); import testkit; "
+         "d = Path(tempfile.mkdtemp()) / 'proj'; testkit.make(d, Path(%r), cleanup=%s); print(d.parent)")
+_gone = _subprocess.run([sys.executable, "-c", _code % (str(SRC), str(SRC), "True")],
+                        capture_output=True, text=True, timeout=120).stdout.strip()
+_kept = _subprocess.run([sys.executable, "-c", _code % (str(SRC), str(SRC), "False")],
+                        capture_output=True, text=True, timeout=120).stdout.strip()
+check("a test project is removed when the process that made it exits, and kept when asked",
+      (bool(_gone) and Path(_gone).exists(), bool(_kept) and Path(_kept).exists()), (False, True))
+_shutil.rmtree(_kept, ignore_errors=True)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

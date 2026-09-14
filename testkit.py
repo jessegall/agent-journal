@@ -21,12 +21,14 @@ spawning, and are worth their cost. `spawn()` is here for them.
 """
 from __future__ import annotations
 
+import atexit
 import contextlib
 import json
 import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 #: The loop the server runs. It imports the project's own copy once, then answers calls.
@@ -133,9 +135,39 @@ _SKIP = {"runtime", "todo", "docs", "tools", "environments", ".journal", ".git",
          ".claude", "__pycache__"}
 
 
-def make(project: Path, src: Path, settings: dict | None = None) -> Path:
-    """A test project at `project`, with `src`'s package hardlinked into `.journal`."""
+#: the temporary folders this process made projects in, removed when it exits
+_MADE: set[str] = set()
+
+
+def _remove_made() -> None:
+    for d in _MADE:
+        shutil.rmtree(d, ignore_errors=True)
+
+
+def _clean_up_later(project: Path) -> None:
+    """Remove the temporary folder around `project` when this process exits, if it is one.
+
+    THE SUITES NEVER REMOVED WHAT THEY MADE. Each scenario builds a project in `tempfile.mkdtemp()`,
+    and nothing deleted it: 47,698 of them filled the disk until every command failed. Only a `tmp…`
+    folder directly in the system's temporary folder is removed, so a project made anywhere else is
+    never touched.
+    """
+    holder = project.resolve().parent
+    if holder.name.startswith("tmp") and holder.parent == Path(tempfile.gettempdir()).resolve():
+        if not _MADE:
+            atexit.register(_remove_made)
+        _MADE.add(str(holder))
+
+
+def make(project: Path, src: Path, settings: dict | None = None, cleanup: bool = True) -> Path:
+    """A test project at `project`, with `src`'s package hardlinked into `.journal`.
+
+    Removed when this process exits (`cleanup=False` keeps it, for a project built by a child process
+    and used after it has ended).
+    """
     project = Path(project)
+    if cleanup:
+        _clean_up_later(project)
     (project / ".claude").mkdir(parents=True, exist_ok=True)
     root = project / ".journal"
     root.mkdir(parents=True, exist_ok=True)
