@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.128.3 — The sidebar footer's divider runs edge to edge
+
+The line under "Agent" and the status dot now reaches both edges of the sidebar, and it is
+fainter than the other dividers. "Agent" and the dot keep their place.
+
 ## 1.128.2 — Questions in Notifications are links, not answer forms
 
 In the top bar's Notifications list an open question is now one short row, "Question 14"
