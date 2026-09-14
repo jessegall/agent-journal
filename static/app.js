@@ -13,6 +13,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(?:\/(\d+))?$/, view: "Inbox", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/questions(?:\/(\d+))?$/, view: "Questions", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reports(?:\/(\d+|new))?$/, view: "Reports", params: ["env", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/suggestions(?:\/(\d+))?$/, view: "Suggestions", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/work(?:\/(\d+|new))?$/, view: "Work", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reminders(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
@@ -96,6 +97,7 @@ function refHref(ref, env) {
   if (kind === "doc") return `#/docs/${num}`;
   if (kind === "question") return `#/env/${env}/questions/${num}`;
   if (kind === "report") return `#/env/${env}/reports/${num}`;
+  if (kind === "suggestion") return `#/env/${env}/suggestions/${num}`;
   if (kind === "reminder") return `#/env/${env}/reminders`;
   if (kind === "inbox") return `#/env/${env}/messages/${num}`;
   if (kind === "work") return `#/env/${env}/work`;
@@ -179,6 +181,7 @@ const Icon = {
     <svg class=ico viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
+      <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
       <template v-else-if="name === 'reports'"><path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/></template>
       <template v-else-if="name === 'work'"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></template>
       <path v-else-if="name === 'reminders'" d="M4 11V7a4 4 0 0 1 8 0v4l1 1.5H3L4 11ZM6.5 14h3"/>
@@ -860,6 +863,97 @@ const WorkPanel = {
     </Panel>`,
 };
 
+const SUGGESTION_LIST = {
+  groups: [{ key: "open", label: "Waiting on you", kind: "waiting", match: (s) => s.status === "open" },
+           { key: "accepted", label: "Accepted", kind: "done", match: (s) => s.status === "accepted" || s.status === "adjusted" },
+           { key: "declined", label: "Declined", kind: "withdrawn", closed: true, match: (s) => s.status === "declined" },
+           { key: "withdrawn", label: "Withdrawn", kind: "withdrawn", closed: true, match: (s) => s.status === "withdrawn" }],
+  columns: { num: (s) => `#${s.n}`, title: (s) => s.title, sub: (s) => s.gist, age: (s) => s.age,
+             struck: (s) => s.status === "declined" || s.status === "withdrawn" },
+  count: (rows) => `${rows.filter((s) => s.status === "open").length} waiting on you`, showLabel: "Show declined and withdrawn",
+  name: "suggestions", empty: "No suggestions on this environment.",
+};
+
+const SUGGESTION_STATUS = { open: "Waiting on you", accepted: "Accepted", adjusted: "Accepted with your change",
+                            declined: "Declined", withdrawn: "Withdrawn by the agent" };
+
+const SuggestionPanel = {
+  props: PANEL_PROPS,
+  components: { Panel, ActionBar, Comments },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/suggestions`);
+    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
+    const actions = computed(() => {
+      const s = item.data;
+      if (!s || s.status !== "open") return [];
+      const url = `${api.value}/${s.n}`;
+      return [
+        { label: "Accept", method: "POST", url: `${url}/accept`, submit: "Accept",
+          fields: [{ name: "note", label: "A note for the to-do (optional)" }],
+          note: "A to-do is filed from it." },
+        { label: "Adjust", method: "POST", url: `${url}/adjust`, submit: "Accept with this change",
+          fields: [{ name: "change", label: "What to do differently", kind: "area" }],
+          note: "A to-do is filed from it, carrying your change." },
+        { label: "Decline", method: "POST", url: `${url}/decline`, danger: true, submit: "Decline",
+          fields: [{ name: "why", label: "Why not (optional)" }],
+          note: "The agent does not suggest it again." },
+      ];
+    });
+    const done = panelDone(props, item);
+    return { item, actions, done, SUGGESTION_STATUS };
+  },
+  template: `
+    <Panel :label="'Suggestion #' + n" :close="close" :onClose="onClose" :link="link">
+      <p v-if="item.error" class=error>{{ item.error }}</p>
+      <template v-else-if="item.data">
+        <h2 class=p-title>{{ item.data.title }}</h2>
+        <dl class=props>
+          <dt>Status</dt><dd>{{ SUGGESTION_STATUS[item.data.status] }}</dd>
+          <dt>Suggested</dt><dd>{{ item.data.age || 'just now' }}</dd>
+          <dt>About</dt><dd>
+            <template v-for="l in item.data.links" :key="l.ref">
+              <a v-if="$refHref(l.ref, env)" :href="$refHref(l.ref, env)" class=chip>{{ l.label }}</a>
+              <span v-else class=chip>{{ l.label }}</span>
+            </template>
+            <span v-if="!item.data.links.length" class=muted>—</span>
+          </dd>
+          <template v-if="item.data.became"><dt>Became</dt><dd><a class=chip :href="$refHref(item.data.became, env)">{{ item.data.became.replace('todo:', 'To-do ') }}</a></dd></template>
+        </dl>
+        <ActionBar :actions="actions" :done="done" :key="'suggestion' + item.data.n + item.data.status"/>
+        <div v-if="item.data.declined" class=note>Declined: {{ item.data.declined }}</div>
+        <div v-if="item.data.withdrawn" class=note>Withdrawn: {{ item.data.withdrawn }}</div>
+        <div>
+          <p class=section-label>Why</p>
+          <div class="md prose" v-html="$md(item.data.body)"></div>
+        </div>
+        <div v-if="item.data.change">
+          <p class=section-label>Your change</p>
+          <div class="md prose" v-html="$md(item.data.change)"></div>
+        </div>
+        <Comments :about="'suggestion ' + item.data.n" :env="env" :key="'c-suggestion' + item.data.n"/>
+      </template>
+    </Panel>`,
+};
+
+const Suggestions = {
+  props: ["env", "n"],
+  components: { TopBar, ResourceList, SuggestionPanel },
+  setup(props) {
+    const base = computed(() => `#/env/${props.env}/suggestions`);
+    const list = useFetch(() => props.env && `/api/env/${props.env}/suggestions?all=1`);
+    return { list, base, SUGGESTION_LIST };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Suggestions']"/>
+    <div class=body>
+      <div class=list>
+        <ResourceList v-bind="SUGGESTION_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(s) => base + '/' + s.n" :selected="(s) => String(s.n) === n"/>
+      </div>
+      <SuggestionPanel v-if="n" :key="'suggestion' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
+    </div>`,
+};
+
 const Todos = {
   props: ["env", "n"],
   components: { TopBar, Panel, ActionBar, ResourceList, TodoPanel },
@@ -1306,13 +1400,14 @@ const PEEK = {
   todo: { panel: "TodoPanel", page: (env, n) => `#/env/${env}/todos/${n}` },
   message: { panel: "MessagePanel", page: (env, n) => `#/env/${env}/messages/${n}` },
   question: { panel: "QuestionPanel", page: (env, n) => `#/env/${env}/questions/${n}` },
+  suggestion: { panel: "SuggestionPanel", page: (env, n) => `#/env/${env}/suggestions/${n}` },
   work: { panel: "WorkPanel", page: (env, n) => `#/env/${env}/work/${n}` },
 };
 
 // Home's side panel: the resource's own panel, with its header linking to the page
 const Peek = {
   props: ["env", "kind", "n", "close", "reloaded"],
-  components: { TodoPanel, MessagePanel, QuestionPanel, WorkPanel },
+  components: { TodoPanel, MessagePanel, QuestionPanel, WorkPanel, SuggestionPanel },
   setup() { return { PEEK }; },
   template: `
     <component :is="PEEK[kind].panel" :env="env" :n="n" :onClose="close" :link="PEEK[kind].page(env, n)" :reloaded="reloaded"/>`,
@@ -1613,7 +1708,7 @@ const Settings = {
 const Home = { template: `<p class=empty>Loading…</p>` };
 const NotFound = { components: { TopBar }, template: `<TopBar :crumbs="['Not found']"/><p class=empty>Nothing here.</p>` };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -1623,6 +1718,7 @@ const NAV = [
   { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "questions", label: "Questions", views: ["Questions"], path: "questions", count: "questions" },
+  { key: "suggestions", label: "Suggestions", views: ["Suggestions"], path: "suggestions", count: "suggestions" },
   { key: "reports", label: "Reports", views: ["Reports"], path: "reports", count: "reports" },
   { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
   { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
