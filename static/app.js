@@ -2632,13 +2632,76 @@ const AGENT_STATUS = { working: "Working", idle: "Idle", ended: "Ended", finishe
 const TRANSCRIPT_WHO = { human: "You", text: "Agent", tool_result: "Tool result", injected: "Journal", task: "Task",
                          peer: "Another session", superseded: "You, edited" };
 
+// the viewer cannot load a skill itself: it asks the agent, now or at every start
+function useSkillActions(env, name, skill, reloaded) {
+  const acting = reactive({ busy: false, said: "", error: "" });
+  const act = async (fn) => {
+    if (acting.busy) return;
+    Object.assign(acting, { busy: true, said: "", error: "" });
+    try { acting.said = await fn(); } catch (e) { acting.error = e.message; } finally { acting.busy = false; }
+  };
+  const loadNow = () => act(async () => {
+    await postJSON(`/api/env/${env()}/inbox`, { text: `Please load the \`${name()}\` skill now.`, files: [] });
+    changed();
+    return "The agent is asked to load it. It gets the message at its next stop, or at once if it is idle.";
+  });
+  const toggleAlways = () => act(async () => {
+    const on = !(skill.data && skill.data.always);
+    await postJSON(`/api/env/${env()}/environment/settings`, { always_load: name(), always_on: on });
+    skill.reload();
+    if (reloaded) reloaded();
+    return on ? "Every session is told to load it at its start." : "Sessions are no longer told to load it at their start.";
+  });
+  return { acting, loadNow, toggleAlways };
+}
+
+const SkillPanel = {
+  props: ["env", "name", "onClose", "reloaded"],
+  components: { Panel },
+  setup(props) {
+    const skill = useFetch(() => props.name && `/api/skills/${props.name}`, { poll: false });
+    const page = computed(() => `#/env/${props.env}/skills/${props.name}`);
+    return { skill, page, ...useSkillActions(() => props.env, () => props.name, skill, props.reloaded) };
+  },
+  template: `
+    <Panel label="Skill" :onClose="onClose" :link="page">
+      <p v-if="skill.error" class=error>{{ skill.error }}</p>
+      <p v-else-if="!skill.data" class=empty>Loading…</p>
+      <template v-else>
+        <h2 class=p-title>{{ skill.data.name }}</h2>
+        <dl class=props><dt>Where</dt><dd>{{ skill.data.source === 'user' ? "Your own skills" : "This project's skills" }}</dd>
+          <dt>At every start</dt><dd>{{ skill.data.always ? 'Yes, every session is told to load it' : 'No' }}</dd></dl>
+        <div class=skill-actions>
+          <button type=button :class="['btn', {on: skill.data.always}]" :disabled="acting.busy" @click="toggleAlways">
+            {{ skill.data.always ? 'Stop loading it at every start' : 'Load it at every start' }}</button>
+          <button type=button class=btn :disabled="acting.busy" @click="loadNow">Ask the agent to load it now</button>
+          <a class=btn :href="page">Read the skill</a>
+        </div>
+        <p v-if="acting.said" class="prose muted">{{ acting.said }}</p>
+        <p v-if="acting.error" class=error>{{ acting.error }}</p>
+        <div>
+          <p class=section-label>Loads when</p>
+          <p class=prose>{{ skill.data.description }}</p>
+        </div>
+      </template>
+    </Panel>`,
+};
+
 const Agent = {
   props: ["env", "kind", "id"],
-  components: { TopBar },
+  components: { TopBar, SkillPanel },
   setup(props) {
     const about = useFetch(() => props.env && props.id && `/api/env/${props.env}/agent?kind=${props.kind}&agent=${props.id}`);
     const shown = ref(10);
-    return { about, AGENT_STATUS, shown };
+    // a skill opens in the side panel first; its page is one click further
+    const picked = ref(null);
+    const pickSkill = (event, s) => {
+      if (!s.readable || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      event.preventDefault();
+      picked.value = s.name;
+    };
+    const closeSkill = () => { picked.value = null; };
+    return { about, AGENT_STATUS, shown, picked, pickSkill, closeSkill };
   },
   template: `
     <TopBar :crumbs="[env, 'Agents', about.data ? about.data.name : (kind === 'subagent' ? 'Subagent ' : 'Session ') + id]"/>
@@ -2692,8 +2755,8 @@ const Agent = {
           <p class=section-label>Skills <span class=muted>{{ about.data.skills.filter((s) => s.loaded).length }} loaded of {{ about.data.skills.length }}</span></p>
           <div class="agent-work skills">
             <div class=agent-work-head><span>Skill</span><span>Where</span><span>Loaded</span></div>
-            <component :is="s.readable ? 'a' : 'div'" v-for="s in about.data.skills" :key="s.source + s.name" class=agent-work-row
-              :href="s.readable ? '#/env/' + env + '/skills/' + s.name : null" :title="s.description || null">
+            <component :is="s.readable ? 'a' : 'div'" v-for="s in about.data.skills" :key="s.source + s.name" :class="['agent-work-row', {picked: picked === s.name}]"
+              :href="s.readable ? '#/env/' + env + '/skills/' + s.name : null" :title="s.description || null" @click="pickSkill($event, s)">
               <span class=title>{{ s.name }}<span v-if="s.always" class=skill-always>every start</span></span>
               <span class=num>{{ s.source }}</span>
               <span :class="['agent-work-status', {open: s.loaded}]">{{ s.loaded ? (s.loaded === 1 ? 'Once' : s.loaded + ' times') : '—' }}</span>
@@ -2701,7 +2764,9 @@ const Agent = {
           </div>
         </div>
       </template>
-    </div></div></div>`,
+    </div></div>
+    <SkillPanel v-if="picked" :key="'skill' + picked" :env="env" :name="picked" :onClose="closeSkill" :reloaded="about.reload"/>
+    </div>`,
 };
 
 // an agent's raw transcript: the newest lines first, older ones a thousand at a time as you scroll up
@@ -2799,25 +2864,7 @@ const SkillView = {
   setup(props) {
     const skill = useFetch(() => props.name && `/api/skills/${props.name}`, { poll: false });
     const body = computed(() => String((skill.data && skill.data.text) || "").replace(/^---\n[\s\S]*?\n---\n/, ""));
-    // the viewer cannot load a skill itself: it asks the agent, now or at every start
-    const acting = reactive({ busy: false, said: "", error: "" });
-    const act = async (fn) => {
-      if (acting.busy) return;
-      Object.assign(acting, { busy: true, said: "", error: "" });
-      try { acting.said = await fn(); } catch (e) { acting.error = e.message; } finally { acting.busy = false; }
-    };
-    const loadNow = () => act(async () => {
-      await postJSON(`/api/env/${props.env}/inbox`, { text: `Please load the \`${props.name}\` skill now.`, files: [] });
-      changed();
-      return "The agent is asked to load it. It gets the message at its next stop, or at once if it is idle.";
-    });
-    const toggleAlways = () => act(async () => {
-      const on = !(skill.data && skill.data.always);
-      await postJSON(`/api/env/${props.env}/environment/settings`, { always_load: props.name, always_on: on });
-      skill.reload();
-      return on ? "Every session is told to load it at its start." : "Sessions are no longer told to load it at their start.";
-    });
-    return { skill, body, acting, loadNow, toggleAlways };
+    return { skill, body, ...useSkillActions(() => props.env, () => props.name, skill) };
   },
   template: `
     <TopBar :crumbs="['Skills', name]"/>

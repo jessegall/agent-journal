@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.9 — A clicked skill opens in the side panel with its quick actions
+
+Clicking a skill in the agent page's Skills table opens it in the side panel instead of leaving the
+page: where it comes from, when it loads, and its actions, Load it at every start and Ask the agent to
+load it now, so setting several skills is a click each without navigating. Read the skill, or the
+panel's title, opens its full page. Ctrl- or Cmd-click still opens the page directly.
+
 ## 1.136.8 — The agent page's Skills table scrolls
 
 A project with many skills made the agent page's Skills table run on down the page. It now scrolls
