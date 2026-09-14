@@ -2573,22 +2573,29 @@ const ActivityPanel = {
       onCleanup(() => document.removeEventListener("mousedown", outsideCrew));
     });
     // each line keyed by when, what and which, so a line keeps its place while newer ones arrive above it
+    // oldest first, newest last, right above the message box; counted from the oldest, so a new line never renumbers the rest
     const keyed = computed(() => {
       const seen = {};
-      return ((props.data && props.data.events) || []).map((e) => {
+      return ((props.data && props.data.events) || []).slice().reverse().map((e) => {
         const k = `${e.at}|${e.kind}|${e.n}|${e.text}|${e.title}`;
         seen[k] = (seen[k] || 0) + 1;
         return { e, key: `${k}#${seen[k]}` };
       });
     });
-    // a new line brings the list back to the top, unless the pointer is over it
+    // the list follows new lines while it is scrolled to the bottom; scrolled up to read, it stays put
     const list = ref(null);
-    const hovered = ref(false);
-    watch(() => keyed.value[0] && keyed.value[0].key, (now, was) => {
-      if (!now || !was || now === was || hovered.value || !list.value) return;
-      list.value.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    const pinned = ref(true);
+    const onScroll = () => { const el = list.value; if (el) pinned.value = el.scrollHeight - el.scrollTop - el.clientHeight < 24; };
+    const toBottom = (smooth) => Vue.nextTick(() => {
+      const el = list.value;
+      if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth && !matchMedia("(prefers-reduced-motion: reduce)").matches ? "smooth" : "auto" });
     });
-    return { accept, quick, box, grow, sendQuick, crew, agentsList, working, crewGroups, keyed, list, hovered };
+    watch(() => { const last = keyed.value[keyed.value.length - 1]; return last && last.key; }, (now, was) => {
+      if (!now || now === was) return;
+      if (!was) toBottom(false);
+      else if (pinned.value) toBottom(true);
+    }, { immediate: true });
+    return { accept, quick, box, grow, sendQuick, crew, agentsList, working, crewGroups, keyed, list, onScroll };
   },
   template: `
     <div class=activity-panel>
@@ -2615,7 +2622,7 @@ const ActivityPanel = {
         </span>
       </div>
       <template v-if="data">
-        <div class=activity-list ref=list @mouseenter="hovered = true" @mouseleave="hovered = false">
+        <div class=activity-list ref=list @scroll.passive="onScroll">
           <TransitionGroup name=act>
           <template v-for="{ e, key } in keyed" :key="key">
             <div v-if="e.needs === 'open' && href(e)" class="activity-row activity-alert">
