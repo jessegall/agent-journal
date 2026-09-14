@@ -86,6 +86,6 @@ class ActivityController(Controller):
             add(m.get("at"), "message", say("message_left", n=n), n, USER)
             add(m.get("processed"), "message", say("message_processed", n=n), n, AGENT)
         for c in commandlog.entries(root, env):
-            add(c.get("at"), "command", c.get("text", ""), None, AGENT)
+            add(c.get("at"), c.get("kind") or "command", c.get("text", ""), c.get("n"), AGENT)
         out.sort(key=lambda e: e["at"], reverse=True)
         return [{**e, "age": age(e["at"])} for e in out[:commandlog.setting(root, env, commandlog.SHOW)]]

@@ -36,6 +36,10 @@ def set_setting(root: Path, track: str, key: str, value) -> tuple[bool, str]:
         state.put(root, key, got)
     return True, say("set_show" if key == SHOW else "set_keep", env=track, n=int(value))
 SKIP = {"statusline", "serve", "channel", "migrate", "version"}
+# noun -> the kind of resource a line is about, so Activity can open it
+KINDS = {"todos": "todo", "messages": "message", "questions": "question", "reports": "report",
+         "suggestions": "suggestion", "docs": "doc", "pins": "pin", "rules": "rule", "comments": "comment",
+         "reminders": "reminder", "work": "work"}
 # writes that Activity already shows from the stores they change
 SHOWN = {"todos:add", "todos:done", "work:start", "work:update", "work:end", "questions:add", "messages:done"}
 # run by git hooks, not by the agent
@@ -114,7 +118,9 @@ def record(root: Path, track: str, parsed, at: str) -> None:
     noun, verb = parsed.command.noun, parsed.command.verb
     if noun in SKIP or f"{noun}:{verb}" in SHOWN or f"{noun}:{verb}" in HOOKS:
         return
-    entry = {"at": at, "text": describe(noun, verb, parsed.arg("n"))}
+    n = parsed.arg("n")
+    entry = {"at": at, "text": describe(noun, verb, n), "kind": KINDS.get(noun),
+             "n": int(n) if str(n).isdigit() else None}
     with state.locked(root):
         items = state.tracked(root, KEY, track, [])
         items = (items if isinstance(items, list) else []) + [entry]

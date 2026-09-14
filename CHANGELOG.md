@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.118.0 — Activity lines for commands open what they name
+
+A line like "Filing message 95" or "Reading to-do 98" now opens that message or to-do. A
+line without a number, like "Reading your messages", opens that list. Lines logged before
+this version stay as plain text.
+
 ## 1.117.0 — Activity shows the last 50 lines, and both numbers are set in Settings
 
 Activity lists the last 50 lines instead of 12, scrolling where they do not fit. The

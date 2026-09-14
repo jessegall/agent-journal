@@ -601,8 +601,9 @@ for _argv in (["messages", "list"], ["todos", "show", "3"], ["todos", "done", "3
 check("a command the agent runs is logged in plain words; writes Activity already shows and the status line are not",
       [e["text"] for e in commandlog.entries(root, "alpha")], ["Reading your messages", "Reading to-do 3"])
 status, _, body = get("/api/env/alpha/activity")
-check("and Activity lists it as the agent's",
-      [(e["kind"], e["by"]) for e in json.loads(body)["events"] if e["text"] == "Reading to-do 3"], [("command", "Agent")])
+check("and Activity lists it as the agent's, naming the resource it is about so the line can open it",
+      {(e["kind"], e["n"], e["by"]) for e in json.loads(body)["events"] if e["text"] in ("Reading to-do 3", "Reading your messages")},
+      {("todo", 3, "Agent"), ("message", None, "Agent")})
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))

@@ -1874,8 +1874,15 @@ const App = {
       try { localStorage.setItem(FOLDED, JSON.stringify(folded)); } catch (e) { /* storage off */ }
     };
     // an activity row opens what it is about, when it is about something with a page
-    const ACTIVITY_PAGES = { todo: "todos", question: "questions", message: "messages", work: "work" };
-    const activityHref = (e) => (e.n && ACTIVITY_PAGES[e.kind] && envName.value ? `#/env/${envName.value}/${ACTIVITY_PAGES[e.kind]}/${e.n}` : null);
+    const ACTIVITY_PAGES = { todo: "todos", question: "questions", message: "messages", work: "work", report: "reports",
+                             suggestion: "suggestions", pin: "pins", reminder: "reminders" };
+    const activityHref = (e) => {
+      if (e.kind === "doc") return e.n ? `#/docs/${e.n}` : "#/docs";
+      if (e.kind === "rule") return e.n ? `#/rules/${e.n}` : "#/rules";
+      const page = ACTIVITY_PAGES[e.kind];
+      if (!page || !envName.value) return null;
+      return `#/env/${envName.value}/${page}` + (e.n ? `/${e.n}` : "");
+    };
     return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref };
   },
   template: `
