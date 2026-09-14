@@ -563,6 +563,9 @@
   .agent-work-head span:last-child { text-align: right; }
   .agent-work-status.open { color: var(--accent-text); }
   .agent-work-more { align-self: center; margin: 8px 0; }
+  /* the subagents a session sent: name, status, the model it ran on, when it last wrote */
+  .agent-work.dispatched .agent-work-head, .agent-work.dispatched .agent-work-row { grid-template-columns: minmax(0, 1fr) 72px 124px 104px; }
+  .agent-work.dispatched .num { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .panel-link { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; margin-left: -8px; border-radius: 6px;
     color: inherit; text-decoration: none; }
   .panel-link:hover { background: var(--hover); color: var(--text); }

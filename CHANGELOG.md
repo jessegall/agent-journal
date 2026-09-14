@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.2 — A session's subagents as a table, with their model
+
+On a session's page, "Subagents it sent" is now a table like "Most recent work", with a column each
+for the subagent, its status, the model it ran on and when it last wrote. Each row still opens that
+subagent's page.
+
 ## 1.134.1 — Side panel sections fold
 
 Every section in a side panel folds from its label: Brief, Work log, Files changed, Commits, Replies,

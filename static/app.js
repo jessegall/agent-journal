@@ -2496,9 +2496,13 @@ const Agent = {
           <div>
             <p class=section-label>Subagents it sent <span class=muted>{{ about.data.dispatched.length }}</span></p>
             <p v-if="!about.data.dispatched.length" class="prose muted">No subagents from this session are recorded here.</p>
-            <div v-else class=linked>
-              <a v-for="a in about.data.dispatched" :key="a.id" class="sub log-row" :href="'#/env/' + env + '/agents/subagent/' + a.id">
-                <span class=log-text>{{ a.name }}</span><span class=log-work>{{ a.working ? 'Working' : 'Finished' }}{{ a.model ? ' · ' + a.model : '' }} · {{ a.age }}</span>
+            <div v-else class="agent-work dispatched">
+              <div class=agent-work-head><span>Subagent</span><span>Status</span><span>Model</span><span>Last wrote</span></div>
+              <a v-for="a in about.data.dispatched" :key="a.id" class=agent-work-row :href="'#/env/' + env + '/agents/subagent/' + a.id">
+                <span class=title>{{ a.name }}</span>
+                <span :class="['agent-work-status', {open: a.working}]">{{ a.working ? 'Working' : 'Finished' }}</span>
+                <span class=num>{{ a.model || '—' }}</span>
+                <span class=age>{{ String(a.age || '').replace(/^last wrote /, '') }}</span>
               </a>
             </div>
           </div>
