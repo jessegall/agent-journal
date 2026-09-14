@@ -123,19 +123,19 @@ class ActivityController(Controller):
             return short(titles[kind].get(int(n), "") or "", TITLE_MAX)
 
         def add(at, kind: str, text: str, n: int | None, by: str, titled: bool = False, needs: str = "",
-                detail: str = "", about: str = "") -> None:
+                detail: str = "", about: str = "", title: str = "") -> None:
             """`needs`: "open" when the line waits on the user, "answered" once they have answered it."""
             if at:
                 out.append({"at": at, "kind": kind, "n": n, "text": short(text),
-                            "title": title_of(kind, n) if titled else "", "by": by, "needs": needs, "detail": detail,
-                            "about": about})
+                            "title": short(title, TITLE_MAX) if title else title_of(kind, n) if titled else "",
+                            "by": by, "needs": needs, "detail": detail, "about": about})
 
         for wn, w in enumerate(work._all(root, env), 1):
             if w.get("removed"):
                 continue
             add(w.get("at"), "work", say("work_started"), wn, AGENT, True)
             for note in w.get("notes") or []:
-                add(note.get("at"), "work", say("work_note"), wn, AGENT)
+                add(note.get("at"), "work", say("work_note"), wn, AGENT, title=note.get("text") or "")
             add(w.get("ended"), "work", say("work_ended"), wn, AGENT)
         for t in todo._all(root, env):
             add(t.get("at"), "todo", say("todo_added"), t["n"], AGENT if t.get("session") else USER, True)
@@ -170,6 +170,6 @@ class ActivityController(Controller):
                 detail=c.get("detail", ""))
         out.sort(key=lambda e: e["at"], reverse=True)
         # the same line twice in a row, like a message read again for more context, shows once
-        same = lambda a, b: (a["kind"], a["n"], a["text"], a["by"]) == (b["kind"], b["n"], b["text"], b["by"])
+        same = lambda a, b: (a["kind"], a["n"], a["text"], a["by"], a["title"]) == (b["kind"], b["n"], b["text"], b["by"], b["title"])
         kept = [e for i, e in enumerate(out) if not i or not same(e, out[i - 1])]
         return [{**e, "age": age(e["at"])} for e in kept[:commandlog.setting(root, env, commandlog.SHOW)]]

@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.13 — Updated work in Activity shows what moved
+
+An "Updated work" line in Activity named only the work's number. It now shows the note the
+agent filed underneath, the same way "Started work" shows the subject.
+
 ## 1.131.12 — Auto mode switch in the sidebar footer
 
 The sidebar footer has an Auto mode row with a switch that turns auto mode on or off for the
