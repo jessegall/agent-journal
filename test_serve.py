@@ -830,6 +830,11 @@ state.put(root, _agents.PARENT, {**state.get(root, _agents.PARENT, {}), "alpha":
 _crew = [a for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"]
 check("the agents list shows a live subagent, with the session that sent it",
       [(a["id"], a["parent"], a["working"]) for a in _crew], [("abc123de", "parentst", True)])
+_agents.finish(root, "alpha", "abc123def")
+check("a subagent that stopped is listed as finished, not working",
+      [(a["working"], a["state"]) for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"], [(False, "finished")])
+import install as _install  # noqa: E402
+check("SubagentStop is wired, so a finished subagent is known the moment it stops", "SubagentStop" in _install.EVENTS, True)
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))

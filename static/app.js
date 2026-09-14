@@ -2536,6 +2536,10 @@ const ActivityPanel = {
     const crew = reactive({ open: false });
     const agentsList = useFetch(() => props.env && `/api/env/${props.env}/agents`);
     const working = computed(() => (agentsList.data || []).filter((a) => a.working).length);
+    const crewGroups = computed(() => [
+      { key: "active", label: "Active", rows: (agentsList.data || []).filter((a) => a.working) },
+      { key: "idle", label: "Idle", rows: (agentsList.data || []).filter((a) => !a.working) },
+    ].filter((g) => g.rows.length));
     const outsideCrew = (e) => { if (!e.target.closest(".drop-wrap.crew")) crew.open = false; };
     watchEffect((onCleanup) => {
       if (!crew.open) return;
@@ -2558,7 +2562,7 @@ const ActivityPanel = {
       if (!now || !was || now === was || hovered.value || !list.value) return;
       list.value.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     });
-    return { accept, quick, box, grow, sendQuick, crew, agentsList, working, keyed, list, hovered };
+    return { accept, quick, box, grow, sendQuick, crew, agentsList, working, crewGroups, keyed, list, hovered };
   },
   template: `
     <div class=activity-panel>
@@ -2571,12 +2575,15 @@ const ActivityPanel = {
             </button>
             <div v-if="crew.open" class=drop>
               <div class=drop-head><span>Agents on {{ env }}</span></div>
-              <p v-if="!(agentsList.data && agentsList.data.length)" class="muted drop-empty">No agent is working on this environment.</p>
-              <a v-for="a in agentsList.data || []" :key="a.kind + a.id" class=drop-row :href="'#/env/' + env + '/agents/' + a.kind + '/' + a.id"
+              <p v-if="!crewGroups.length" class="muted drop-empty">No agent is working on this environment.</p>
+              <template v-for="g in crewGroups" :key="g.key">
+              <p class=drop-sub>{{ g.label }} <span class=muted>{{ g.rows.length }}</span></p>
+              <a v-for="a in g.rows" :key="a.kind + a.id" :class="['drop-row', {idle: !a.working}]" :href="'#/env/' + env + '/agents/' + a.kind + '/' + a.id"
                 :title="'Open ' + (a.name || (a.kind === 'subagent' ? 'subagent ' : 'session ') + a.id)" @click="crew.open = false">
-                <span class=drop-kind>{{ a.kind === 'subagent' ? 'Subagent' : 'Session' }} · {{ a.kind === 'subagent' ? (a.age_text || 'just now') : (a.working ? 'Working' : 'Idle') }}</span>
+                <span class=drop-kind>{{ a.kind === 'subagent' ? 'Subagent' : 'Session' }} · {{ a.working ? 'Working' : a.state === 'finished' ? 'Finished' : 'Idle' }}{{ a.kind === 'subagent' && !a.working && a.age_text ? ' · ' + a.age_text : '' }}</span>
                 <span class=drop-text>{{ a.name || (a.kind === 'subagent' ? 'Subagent ' + a.id : 'Session ' + a.id) }}<span v-if="a.parent" class=muted> · from session {{ a.parent }}</span></span>
               </a>
+              </template>
             </div>
           </span>
         </span>

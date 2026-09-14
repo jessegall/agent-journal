@@ -33,6 +33,9 @@ from templates import render as fill
 
 SEEN = "agent_seen"      # {track: {agent: unix seconds}} — the heartbeat, in the record
 PARENT = "agent_parent"  # {track: {agent: the dispatching session}} — who sent it
+DONE = "agents_done"  # {track: {agent: when its SubagentStop came}}
+#: a subagent with no tool call for this long is idle, not working
+ACTIVE_MINUTES = 2
 
 
 def dir_of(root: Path, track: str, agent: str) -> Path:
@@ -103,6 +106,29 @@ def heartbeat(root: Path, track: str, agent: str, parent: str, every: float = 30
         got = got if isinstance(got, dict) else {}
         got.setdefault(track, {})[agent] = parent
         state.put(root, PARENT, got)
+
+
+def finish(root: Path, track: str, agent: str) -> None:
+    """The subagent has stopped: it is finished until it makes another tool call."""
+    agent = state.slug(agent)
+    if not agent:
+        return
+    with state.locked(root):
+        got = state.get(root, DONE, {})
+        got = got if isinstance(got, dict) else {}
+        got.setdefault(track, {})[agent] = int(time.time())
+        state.put(root, DONE, got)
+
+
+def finished(root: Path, track: str, agent: str) -> bool:
+    got = state.get(root, DONE, {})
+    done = ((got if isinstance(got, dict) else {}).get(track) or {}).get(state.slug(agent))
+    last = (seen(root).get(track) or {}).get(state.slug(agent))
+    return bool(done) and (not last or float(done) >= float(last))
+
+
+def working(root: Path, track: str, agent: str) -> bool:
+    return not finished(root, track, agent) and active(root, track, agent, ACTIVE_MINUTES)
 
 
 def parent_of(root: Path, track: str, agent: str) -> str:
