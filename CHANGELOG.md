@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.20 — Home uses the full width until you pick something
+
+On Home an empty inspector panel took up the right side even when nothing was picked. The
+panel now appears only when you pick a row, and otherwise Home's lists use the full width.
+
 ## 1.131.19 — A row's highlight fits inside rounded lists
 
 When a new or moved row was lit in a list with rounded corners, the corners cut off its
