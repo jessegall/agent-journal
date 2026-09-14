@@ -267,7 +267,7 @@ def _docs(root: Path) -> list[dict]:
 
 #: THE MARK THE OLD AUTO-CLOSE LEFT. `work end` used to close any started to-do whose title
 #: matched, and wrote this reason on the way past. Nothing else ever writes it, and the
-#: current code writes "closed with the work that finished it", so the two eras are
+#: current code writes todo.WORK_CLOSED ("its work ended"), so the two eras are
 #: distinguishable in the store without a migration — which is what makes an audit possible
 #: rather than a guess.
 AUTO_CLOSED = "closed with the work of the same name"

@@ -237,7 +237,7 @@ _code, _out = j("work", "end", "a row somebody is in the middle of", "--todo")
 check("--todo closes both", (f"to-do {_n} is done with it" in _out,
                              "a row somebody is in the middle of" in j("todos")[1]), (True, False))
 check("and the reason distinguishes this era from the auto-closed one",
-      ("same name" in j("todos", "--all")[1], "the work that finished it" in j("todos", str(_n))[1]),
+      ("same name" in j("todos", "--all")[1], "its work ended" in j("todos", str(_n))[1]),
       (False, True))
 
 # ─────────── the ledger is a reading of the files, and must prove itself against them ──────

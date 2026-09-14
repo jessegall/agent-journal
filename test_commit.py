@@ -91,7 +91,7 @@ check("the commit's trailer closes the to-do, naming its environment",
       (True, True, True))
 code, listed = j("todos", "--all")
 check("and the close cites the commit, not a summary of it",
-      ("the placement ruling landed" in listed, "(" in listed and ")" in listed), (True, True))
+      ("the placement ruling landed" in listed, __import__("re").search(r"commit [0-9a-f]{9}", listed) is not None), (True, True))
 check("to-do 2, which only the prose named, is untouched", "2  second one" in listed, True)
 
 check("a second event on the same sha says nothing", fire(), "")

@@ -514,7 +514,7 @@ def assign(root: Path, track: str, n: int, agent: str) -> tuple[bool, str]:
     if t is None:
         return False, err
     if t.get("done"):
-        return False, say("already_done", n=n, how=t.get("how"))
+        return False, say("already_done", n=n, how=close_note(t))
     if agent in ("--off", "off", ""):
         was = t.get("assigned")
         if not was:
@@ -544,7 +544,7 @@ def report(root: Path, track: str, n: int, how: str, agent: str) -> tuple[bool, 
     if t is None:
         return False, err
     if t.get("done"):
-        return False, say("already_closed", n=n, how=t.get("how"))
+        return False, say("already_closed", n=n, how=close_note(t))
     if state.slug(agent) != (t.get("assigned") or ""):
         held = t.get("assigned")
         return False, (say("report_not_yours", n=n, held=held) if held
@@ -681,7 +681,7 @@ def answer(root: Path, track: str, n: int, text: str) -> tuple[bool, str]:
     if t is None:
         return False, err
     if t.get("done"):
-        return False, say("already_done", n=n, how=t.get("how"))
+        return False, say("already_done", n=n, how=close_note(t))
     import questions
     waiting = [m for m, q in questions.about(root, f"todo:{n}", track) if questions.is_open(q)]
     if not waiting:
@@ -711,7 +711,7 @@ def ask(root: Path, track: str, n: int, question: str) -> tuple[bool, str]:
     if t is None:
         return False, err
     if t.get("done"):
-        return False, say("already_done", n=n, how=t.get("how"))
+        return False, say("already_done", n=n, how=close_note(t))
     import questions
     ok, msg = questions.add(root, question, now(), [say("ask_link", n=n)], track=track)
     if not ok:
@@ -741,7 +741,7 @@ def block(root: Path, track: str, n: int, why: str) -> tuple[bool, str]:
     if t is None:
         return False, err
     if t.get("done"):
-        return False, say("already_done", n=n, how=t.get("how"))
+        return False, say("already_done", n=n, how=close_note(t))
     _update(root, track, n, blocked=why, started="")
     return True, say("blocked", n=n, why=why)
 
@@ -982,7 +982,7 @@ def start(root: Path, track: str, n: int, at: str, strict: bool = False,
     if t is None:
         return None, err
     if t.get("done"):
-        return None, say("already_done", n=n, how=t.get("how") or say("no_reason"))
+        return None, say("already_done", n=n, how=close_note(t) or say("no_reason"))
     if strict and t.get("asks") and not t.get("answer"):
         # A DELEGATED ACTOR CANNOT REACH THE USER: what waits on them is not startable for
         # it. A session may start it — the user answered in the conversation.
@@ -1007,7 +1007,7 @@ def done(root: Path, track: str, n: int, how: str, at: str) -> tuple[bool, str]:
     if t is None:
         return False, err
     if t.get("done"):
-        return False, say("already_done", n=n, how=t.get("how"))
+        return False, say("already_done", n=n, how=close_note(t))
     _update(root, track, n, done=at, how=how)
     return True, say("done", n=n, title=t["title"], how=how)
 
@@ -1056,7 +1056,7 @@ def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str
         return False, err
     if not t.get("done"):
         return False, say("reopen_open", n=n)
-    was = t.get("how") or say("no_reason")
+    was = close_note(t) or say("no_reason")
     _update(root, track, n, done="", how="", reopened=f"{at} · {why} (was closed: {was})")
     return True, say("reopened", n=n, title=t["title"], why=why, was=was)
 
@@ -1144,6 +1144,17 @@ def titled(root: Path, track: str, title: str) -> dict | None:
                  if t["title"].lower() == want and t.get("started")), None)
 
 
+#: the note `work end --todo` writes; read after "Closed:" in the viewer and "done 3h ago:" in the CLI
+WORK_CLOSED = "its work ended"
+#: notes written before, shown with today's wording
+OLD_CLOSE_NOTES = {"closed with the work that finished it": WORK_CLOSED}
+
+
+def close_note(t: dict) -> str:
+    how = t.get("how") or ""
+    return OLD_CLOSE_NOTES.get(how, how)
+
+
 def close_titled(root: Path, track: str, title: str, at: str,
                  agent: str = "") -> tuple[str, str]:
     """Close the to-do whose title these words are. ASKED FOR, never automatic.
@@ -1182,7 +1193,7 @@ def close_titled(root: Path, track: str, title: str, at: str,
     held = t.get("assigned") or ""
     if held and state.slug(agent) == held:
         return "", say("stays_open", n=t["n"], held=held)
-    _update(root, track, t["n"], done=at, how="closed with the work that finished it")
+    _update(root, track, t["n"], done=at, how=WORK_CLOSED)
     return str(t["n"]), ""
 
 
@@ -1315,7 +1326,7 @@ def close_from_commit(root: Path, message: str, how_default: str, at: str,
         if t.get("done"):
             # AN AMEND OR A REBASE RUNS THE HOOK AGAIN over the same message. That is a
             # no-op with a note, not a failure: nothing about the record is wrong.
-            said.append((False, say("commit_closed_already", n=n, env=env, how=t.get("how"))))
+            said.append((False, say("commit_closed_already", n=n, env=env, how=close_note(t))))
             continue
         ok, msg = done(root, env, n, how or how_default, at)
         said.append((ok, say("commit_closed", line=msg.splitlines()[0], env=env) if ok else msg))
@@ -1414,7 +1425,7 @@ def row_response(root: Path, track: str, t: dict, short_refs: bool = False) -> d
         "started": t.get("started") or "",
         "done": t.get("done") or "",
         "done_age": _age(t.get("done") or ""),
-        "how": t.get("how") or "",
+        "how": close_note(t),
     }
 
 
@@ -1462,7 +1473,7 @@ def _started(root: Path, track: str, t: dict) -> str:
 #: THE TABLE FROM STATE TO SENTENCE. One entry per name `_state` can return, and every name
 #: it can return has one: adding a state means adding a row here, not another `elif`.
 _STATE_TEXT = {
-    "done": lambda root, track, t: say("state_done", age=_age(t["done"]), how=t.get("how") or say("no_reason")),
+    "done": lambda root, track, t: say("state_done", age=_age(t["done"]), how=close_note(t) or say("no_reason")),
     "answered": lambda root, track, t: say("state_answered"),
     "asks": lambda root, track, t: say("state_asks"),
     "reported": lambda root, track, t: say("state_reported", by=t.get("by") or "?", how=t["reported"]),
@@ -1559,7 +1570,7 @@ def detail(root: Path, track: str, t: dict) -> dict:
     if t.get("started"):
         meta.append(say("meta_started", age=_age(t["started"])))
     if t.get("done"):
-        meta.append(say("meta_done", age=_age(t["done"]), how=t.get("how")))
+        meta.append(say("meta_done", age=_age(t["done"]), how=close_note(t)))
     doc_files, doc_n = [], ""
     if t.get("doc"):
         import docs as docs_mod
@@ -1569,7 +1580,7 @@ def detail(root: Path, track: str, t: dict) -> dict:
             doc_n = doc["n"]
             doc_files = [str(p.relative_to(root.parent.resolve())) if root.parent.resolve() in p.parents else str(p)
                          for p in docs_mod.file_paths(doc)]
-    return {**row_response(root, track, t), "body": t.get("body", ""), "how": t.get("how") or "",
+    return {**row_response(root, track, t), "body": t.get("body", ""), "how": close_note(t),
             "doc_n": doc_n, "doc_files": doc_files, "log": work_log(root, track, t),
             "facts": " · ".join(meta), "file": str(t["path"].relative_to(root.parent)) if t.get("path") else ""}
 
