@@ -68,7 +68,7 @@ MESSAGES = {
     "inbox_fact": "the user left {n} message(s) for you",
     "inbox_do": "process them before anything else: `.journal/journal.py messages` lists them; split each into parts with "
                 "`messages process`, a question for any part you do not understand, then `messages done`",
-    "inbox_mention": "the user left {n} new message(s) for you — `journal messages` reads them when you reach a "
+    "inbox_mention": "the user left {n} new message(s) for you — `journal messages waiting` reads them when you reach a "
                      "pause; nothing is blocked",
     "deferral_do": "park it as a to-do before going on, or run this call again if nothing is deferred",
     "deferral_why": "You wrote:\n  …{said}…\n\nThe user asked for something and this says it will happen later. Work "

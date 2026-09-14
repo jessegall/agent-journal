@@ -118,6 +118,7 @@ A brief on stdin:
 
     journal messages "<message>"         leave a message for the agent — `journal messages add "<message>"` is the same
     journal messages [--page=N] [--order=asc|desc]   waiting messages first, then processed ones
+    journal messages waiting             only the messages still waiting to be processed, oldest first, each in full — what to read when a stop says messages wait
     journal messages show N              the message, the parts it was split into and what each became, and the questions about it
     journal messages search <term> [--all]   every line of the waiting messages that mentions it; --all adds processed and archived ones
     journal messages process N --part="<words>" --became=<ref> [--became=<ref>]   one part: the words it quotes, and what it became — todo 22, pin 3, rule 2, reminder 1, question 4, work or noted

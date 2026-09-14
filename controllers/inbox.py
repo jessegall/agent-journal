@@ -12,7 +12,7 @@ from payloads.inbox import FilePayload, ProcessPayload, StorePayload
 class InboxController(Controller):
     resource = "inbox"
     noun = "message"
-    actions = ("index", "show", "store", "update", "process", "file", "done", "move", "destroy", "reply")
+    actions = ("index", "show", "store", "update", "process", "file", "done", "move", "destroy", "reply", "waiting")
     numbered = ("show", "update", "process", "file", "done", "move", "destroy", "reply")
     payloads = {"index": ListingPayload, "store": StorePayload, "update": TextPayload, "process": ProcessPayload,
                 "file": FilePayload, "move": MovePayload, "destroy": WhyPayload, "reply": TextPayload}
@@ -52,6 +52,11 @@ class InboxController(Controller):
 
     def show(self, root: Path, p: Payload) -> Result:
         return Result("ok", "", inbox.detail(root, p.id, self.repository(root, p).find(p.id).raw, p.env or None))
+
+    def waiting(self, root: Path, p: Payload) -> Result:
+        """Every message still waiting to be processed, oldest first, each in full."""
+        rows = [m for m in self.repository(root, p).query().order_by("n", fmt.ASC) if m.waiting]
+        return Result("ok", "", [inbox.detail(root, m.n, m.raw, p.env or None) for m in rows])
 
     def store(self, root: Path, p: StorePayload) -> Result:
         files = p.files if isinstance(p.files, list) else []

@@ -63,6 +63,21 @@ class Show(Resource):
         return 0
 
 
+class Waiting(Resource):
+    signature = "messages:waiting"
+    controller = CONTROLLER
+    action = "waiting"
+
+    def render(self, p: Parsed, result) -> int:
+        if not result.ok:
+            return super().render(p, result)
+        if not result.data:
+            print("No messages waiting.")
+            return 0
+        print("\n\n".join(inbox.show_text(d) for d in result.data))
+        return 0
+
+
 class Add(Resource):
     signature = "messages:add {text* : the message} {--file=*}"
     casts = {"text": words("a message")}
@@ -131,4 +146,4 @@ class Move(Resource):
     action = "move"
 
 
-COMMANDS = (List, Show, Add, Edit, Process, File, Done, Reply, Archive, Move)
+COMMANDS = (List, Show, Waiting, Add, Edit, Process, File, Done, Reply, Archive, Move)
