@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.13 — Activity reads top to bottom, newest last
+
+As you chose on question 19, the Activity column now lists the newest line at the bottom, right above
+the message box. It opens at the newest line and follows new ones as they arrive, but only while you
+are at the bottom: scroll up to read something older and it stays where you are. New lines slide up in
+from below. This replaces the jump to the top from 1.131.90.
+
 ## 1.132.12 — An answer can end with a question you can click
 
 When the agent answers a question in your message and the answer leaves a decision open, it can ask a
