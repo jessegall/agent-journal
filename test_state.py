@@ -769,6 +769,9 @@ subprocess.run([I], capture_output=True, text=True, timeout=180)
 installed = d / ".claude" / "skills" / "journal"
 check("install carries SKILL.md and its references",
       ((installed / "SKILL.md").is_file(), (installed / "references" / "commands.md").is_file()), (True, True))
+check("and every focused skill beside it",
+      [n for n in ("journal-todos", "journal-questions", "journal-messages", "journal-memory", "journal-docs", "journal-agents")
+       if not (d / ".claude" / "skills" / n / "SKILL.md").is_file()], [])
 (installed / "references" / "stale.md").write_text("old")
 p = subprocess.run([I], capture_output=True, text=True, timeout=180)
 check("a file the package no longer ships is removed, by name",

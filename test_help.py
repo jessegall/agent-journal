@@ -460,7 +460,20 @@ check("and a short one stays beside the title", fmt.title("PINS", sub="7 standin
 # mentioned. A refusal the documentation does not name is one the reader learns by tripping
 # over it, which is the shape this whole package argues against.
 import grants as _g  # noqa: E402
-_skill = (SRC / "skill" / "SKILL.md").read_text()
+# the skill is several now: a verb or a rule counts as taught if any of them teaches it
+_skill_files = [SRC / "skill" / "SKILL.md", *sorted((SRC / "skills").glob("*/SKILL.md"))]
+_skill = "\n".join(f.read_text() for f in _skill_files)
+_core = _skill_files[0].read_text()
+_focused = sorted(f.parent.name for f in _skill_files[1:])
+check("there is a focused skill per part, beside the core one", _focused,
+      ["journal-agents", "journal-docs", "journal-memory", "journal-messages", "journal-questions", "journal-todos"])
+check("the core skill names every focused skill, so an agent knows when to load each",
+      [n for n in _focused if f"`{n}`" not in _core], [])
+import re as _re  # noqa: E402
+check("every focused skill is named after its folder and says when it loads",
+      [f.parent.name for f in _skill_files[1:]
+       if not _re.search(rf"(?m)^name: {_re.escape(f.parent.name)}$", f.read_text())
+       or not _re.search(r'(?m)^description: ".*Use it (when|before)', f.read_text())], [])
 check("every verb NEVER refuses is named in the skill",
       [v for v in sorted(_g.NEVER) if f"`{v}`" not in _skill], [])
 check("and the skill teaches the one rule the package ships: name the model",

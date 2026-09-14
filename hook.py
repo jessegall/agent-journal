@@ -88,7 +88,7 @@ MESSAGES = {
     "rules_decided": "Decided, and still in force:",
     "rules_again": "Again, because the block you read at the start is far behind you:",
     "context_fact": "context {pct}% full",
-    "context_decide": 'decide before any other tool runs: `pin "<claim>"` or `nothing "<why>"`',
+    "context_decide": 'decide before any other tool runs: `pin "<claim>"` or `nothing "<why>"` — the `journal-memory` skill says which',
     "context_consider": "consider what must outlive it",
     "update_run": "{note} Run it now if nothing is mid-flight: `.journal/journal.py update`.",
     "waiting_fact": "{n} to-do(s) waiting on `{env}`",
@@ -232,7 +232,7 @@ MESSAGES = {
                   "which auto exists to prevent. Ask through the journal instead — it never halts — and carry on with "
                   'what does not depend on the answer:\n  .journal/journal.py questions add "<the question>" '
                   '--about="todo <n>"\n  .journal/journal.py work update "<what you chose, and why>"   if you can '
-                  "decide it yourself\nThe user answers with `journal questions answer <n>` and the next stop tells you.",
+                  "decide it yourself\nThe user answers with `journal questions answer <n>` and the next stop tells you. The `journal-questions` skill says how to ask well.",
     "unbound_deny": "{block}\n\nThis call is denied until one has been chosen. Reads are never gated; only changes.",
     "gate": "Nothing is open, so this edit would not be filed against any work. Say what you are doing first — one "
             'line, and then this stops asking:\n  .journal/journal.py work start "<the work, in your own words>"\n'
@@ -301,7 +301,9 @@ MESSAGES = {
                "ending work is not finishing a row.\n\nIF YOU ARE UNSURE WHAT WAS DECIDED, LOOK — do not answer from "
                "what survived: `journal search <term>`, `journal conversation --back=1`, `journal user`.\n\n"
                "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in this session, and again "
-               "whenever a hook holds or denies you.",
+               "whenever a hook holds or denies you. Its focused skills — `journal-todos`, `journal-questions`, "
+               "`journal-messages`, `journal-memory`, `journal-docs`, `journal-agents` — load when their part comes up; "
+               "load one yourself if it has not.",
     "docs_cite": "{catalogue}\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.",
     "compact_tail": "THE SUMMARY YOU ARE HOLDING DROPPED WHAT WAS DECIDED. Before you touch anything:\n"
                     "  .journal/journal.py conversation --back=1    the stretch that summary REPLACED\n"
