@@ -95,6 +95,10 @@ git(d, "add", "-A")
 git(d, "commit", "-q", "-m", "x")
 fire("PostToolUse", tool_name="Bash", tool_input={"command": "git commit -am x"}, tool_response={"stdout": ""})
 check("a command that commits adds nothing: HEAD moved, so its numbers are not edits", files().get("a.txt"), (False, 4, 1))
+_head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(d), capture_output=True, text=True).stdout.strip()
+check("but the commit it made goes on the open work, with its hash and subject",
+      [(c["sha"], c["subject"]) for w in state.tracked(d / ".journal", "work", "w", []) for c in w.get("commits") or []],
+      [(_head, "x")])
 
 import controllers.activity as activity  # noqa: E402
 j("work", "end", "change some files")

@@ -327,6 +327,22 @@ def record_files(root: Path, owners: set, changes: list[dict], at: str) -> int:
         return len(changes)
 
 
+def record_commits(root: Path, owners: set, commits: list[dict], at: str) -> int:
+    """Add each commit made during a tool call to the open work this session answers for, once per sha."""
+    with state.locked(root):
+        items = _all(root)
+        standing = [w for w in items if not w.get("ended")]
+        mine = [w for w in standing if w.get("session") in owners] or (standing if len(standing) == 1 else [])
+        if not mine or not commits:
+            return 0
+        kept = mine[-1].setdefault("commits", [])
+        known = {c["sha"] for c in kept}
+        added = [{"sha": c["sha"], "subject": c.get("subject", ""), "at": at} for c in commits if c["sha"] not in known]
+        kept.extend(added)
+        state.put(root, KEY, items)
+        return len(added)
+
+
 def files_changed(w: dict) -> str:
     n = len(w.get("files") or [])
     return "" if not n else "1 file changed" if n == 1 else f"{n} files changed"

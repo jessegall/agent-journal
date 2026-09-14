@@ -760,6 +760,19 @@ check("a viewer from before the self-restart, or one that does not say its versi
       [True, True, True, False, False])
 check("this project's viewer on the current version is not flagged, so no notice is given",
       (serve.stale_viewer(root), serve.restart_notice(root)), (None, ""))
+_beta_work = state.tracked(root, "work", "beta", [])
+_sha = "abcdef1234567890abcdef1234567890abcdef12"
+_beta_work[-1].setdefault("commits", []).append({"sha": _sha, "subject": "ship the thing", "at": "2026-09-14T10:00:00+00:00"})
+state.put_tracked(root, "work", "beta", _beta_work)
+_beta_n = len(_beta_work)
+status, _, body = get(f"/api/env/beta/commits?sha={_sha[:7]}")
+_commit = json.loads(body)
+check("a commit is found by its short hash, with the work it was made during",
+      (status, _commit["sha"], _commit["subject"], [w["n"] for w in _commit["work"]]), (200, _sha, "ship the thing", [_beta_n]))
+check("and the work item lists the commit",
+      [c["sha"] for c in json.loads(get(f"/api/env/beta/work/{_beta_n}")[2])["commits"]], [_sha])
+check("a hash nobody committed is not found, and a word that is not a hash is refused",
+      (get("/api/env/beta/commits?sha=0000000")[0], get("/api/env/beta/commits?sha=nothex")[0]), (404, 400))
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))

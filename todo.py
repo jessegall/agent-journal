@@ -1474,6 +1474,8 @@ def work_log(root: Path, track: str, t: dict) -> list[dict]:
         out.extend({"at": x.get("at", ""), "kind": "update", "text": x.get("text", ""), "work": wn} for x in w.get("notes") or [])
         if w.get(work.AWAIT):
             out.append({"at": w[work.AWAIT].get("at", ""), "kind": "waiting", "text": w[work.AWAIT].get("what", ""), "work": wn})
+        out.extend({"at": c.get("at", ""), "kind": "commit", "text": c.get("subject", ""), "sha": c.get("sha", ""), "work": wn}
+                   for c in w.get("commits") or [])
         if w.get("ended"):
             out.append({"at": w["ended"], "kind": "ended", "text": w.get("ended_note") or "", "work": wn})
     out.sort(key=lambda e: e["at"])

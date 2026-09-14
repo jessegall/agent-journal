@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.65 — See what each commit covered
+
+When the agent commits while a piece of work is open, the journal now keeps the commit's hash
+and subject on that work. A to-do's work log shows a "Committed" line with the short hash, and
+a work item lists its commits. Click a hash to open the commit's page: it shows the work the
+commit was made during and the to-dos that work belongs to. Commits made before this version
+were not recorded, so they have no page.
+
 ## 1.131.64 — An agent is told to restart a viewer that cannot restart itself
 
 A viewer started before 1.131.63 does not pick up new code by itself. Until now nothing told the

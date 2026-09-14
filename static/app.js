@@ -19,6 +19,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/settings$/, view: "Settings", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/files$/, view: "Files", params: ["env"] },
+  { re: /^\/env\/([a-z0-9-]+)\/commits\/([0-9a-f]{7,40})$/, view: "Commit", params: ["env", "sha"] },
   { re: /^\/env\/([a-z0-9-]+)\/search$/, view: "Search", params: ["env"] },
   { re: /^\/rules(\/archive)?(?:\/(\d+|new))?$/, view: "Rules", params: ["archive", "n"] },
   { re: /^\/tools(?:\/(\d+|new))?$/, view: "Tools", params: ["n"] },
@@ -865,7 +866,7 @@ const QUESTION_LIST = {
              cite: (q) => q.links.map((l) => l.label).join(", "), age: (q) => q.age },
   count: (rows) => `${rows.filter((q) => q.status === "open").length} open`,  empty: "Nothing has been asked on this environment.", name: "questions",
 };
-const LOG_KIND = { started: "Started", update: "Update", waiting: "Waiting on", ended: "Ended" };
+const LOG_KIND = { started: "Started", update: "Update", waiting: "Waiting on", commit: "Committed", ended: "Ended" };
 const WORK_LIST = {
   groups: [{ key: "open", label: "Open", kind: "progress", match: (w) => !w.ended },
            { key: "ended", label: "Ended", kind: "done", closed: true, match: (w) => w.ended }],
@@ -1004,10 +1005,12 @@ const TodoPanel = {
         <div v-if="item.data.log && item.data.log.length">
           <p class=section-label>Work log</p>
           <div class=linked>
-            <component :is="e.work ? 'a' : 'div'" v-for="(e, i) in item.data.log" :key="i" class="sub log-row"
-              :href="e.work ? '#/env/' + env + '/work/' + e.work : null" :title="e.work ? 'Open work ' + e.work : null">
-              <span class=log-text><span class=muted>{{ LOG_KIND[e.kind] }} · {{ e.age || 'just now' }}</span><span v-if="e.text && e.kind !== 'started'"> — {{ e.text }}</span></span>
-              <span v-if="e.work" class=log-work>Work {{ e.work }}</span>
+            <component :is="e.work && e.kind !== 'commit' ? 'a' : 'div'" v-for="(e, i) in item.data.log" :key="i" class="sub log-row"
+              :href="e.work && e.kind !== 'commit' ? '#/env/' + env + '/work/' + e.work : null" :title="e.work && e.kind !== 'commit' ? 'Open work ' + e.work : null">
+              <span class=log-text><span class=muted>{{ LOG_KIND[e.kind] }} · {{ e.age || 'just now' }}</span>
+                <a v-if="e.kind === 'commit'" class="chip sha" :href="'#/env/' + env + '/commits/' + e.sha" :title="'What commit ' + e.sha.slice(0, 7) + ' covered'">{{ e.sha.slice(0, 7) }}</a><span v-if="e.text && e.kind !== 'started'"> — {{ e.text }}</span></span>
+              <a v-if="e.work && e.kind === 'commit'" class=log-work :href="'#/env/' + env + '/work/' + e.work">Work {{ e.work }}</a>
+              <span v-else-if="e.work" class=log-work>Work {{ e.work }}</span>
             </component>
           </div>
         </div>
@@ -1247,6 +1250,14 @@ const WorkPanel = {
               <span class=work-file-path>{{ f.path }}</span>
               <span v-if="f.created" class=work-file-new>new</span>
               <span class=work-file-add>+{{ f.added }}</span><span class=work-file-del>−{{ f.removed }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-if="item.data.commits && item.data.commits.length">
+          <p class=section-label>Commits <span class=muted>{{ item.data.commits.length }}</span></p>
+          <div class=linked>
+            <div v-for="c in item.data.commits" :key="c.sha" class="sub log-row">
+              <span class=log-text><a class="chip sha" :href="'#/env/' + env + '/commits/' + c.sha" :title="'What commit ' + c.sha.slice(0, 7) + ' covered'">{{ c.sha.slice(0, 7) }}</a> {{ c.subject }}</span>
             </div>
           </div>
         </div>
@@ -2229,7 +2240,49 @@ const Files = {
     </div>`,
 };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, NotFound };
+// what one commit covered: the work it was made during, and that work's to-dos
+const Commit = {
+  props: ["env", "sha"],
+  components: { TopBar },
+  setup(props) {
+    const found = useFetch(() => props.env && props.sha && `/api/env/${props.env}/commits?sha=${props.sha}`);
+    return { found };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Commit ' + sha.slice(0, 7)]"/>
+    <div class=page>
+      <div class=page-inner>
+        <p v-if="found.loading && !found.data" class=empty>Loading…</p>
+        <p v-else-if="found.error" class=error>{{ found.error }}</p>
+        <template v-else-if="found.data">
+          <h1 class=p-title>{{ found.data.subject || 'Commit ' + sha.slice(0, 7) }}</h1>
+          <dl class=props>
+            <dt>Commit</dt><dd><span class="chip sha">{{ found.data.sha }}</span></dd>
+            <dt>Made</dt><dd>{{ found.data.age || 'just now' }}</dd>
+          </dl>
+          <div>
+            <p class=section-label>Work <span class=muted>{{ found.data.work.length }}</span></p>
+            <div class=linked>
+              <a v-for="w in found.data.work" :key="w.n" class="sub log-row" :href="'#/env/' + env + '/work/' + w.n">
+                <span class=log-text>{{ w.subject }}</span><span class=log-work>{{ w.ended ? 'Ended' : 'Open' }} · Work {{ w.n }}</span>
+              </a>
+            </div>
+          </div>
+          <div>
+            <p class=section-label>To-dos <span class=muted>{{ found.data.todos.length }}</span></p>
+            <p v-if="!found.data.todos.length" class="prose muted">The work this commit was made during is not tied to a to-do.</p>
+            <div v-else class=linked>
+              <a v-for="t in found.data.todos" :key="t.n" class="sub log-row" :href="'#/env/' + env + '/todos/' + t.n">
+                <span class=log-text>{{ t.title }}</span><span class=log-work>{{ t.done ? 'Done' : 'Open' }} · To-do {{ t.n }}</span>
+              </a>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>`,
+};
+
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
