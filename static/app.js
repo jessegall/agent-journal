@@ -1932,12 +1932,14 @@ const EnvHome = {
     const stats = computed(() => {
       const s = summary.data || {};
       const count = (status) => (todos.data ? todos.data.filter((t) => todoStatus(t) === status).length : undefined);
-      const blocked = count("blocked");
+      const open = todos.data ? todos.data.filter((t) => todoStatus(t) !== "done").length : undefined;
+      const waitingOnYou = count("waiting");
       return [
-        { key: "messages", label: "Message queue", n: s.inbox, icon: "inbox", path: "messages", hot: s.inbox },
+        { key: "notifications", label: "Notifications", n: s.notifications, icon: "bell", path: "", hot: s.notifications },
         { key: "questions", label: "Questions for you", n: s.questions, icon: "questions", path: "questions", hot: s.questions },
-        { key: "progress", label: "In progress", n: count("progress"), icon: "todos", path: "todos" },
-        { key: "blocked", label: "Blocked", n: blocked, icon: "todos", path: "todos", hot: blocked },
+        { key: "suggestions", label: "Suggestions", n: s.suggestions, icon: "suggestions", path: "suggestions", hot: s.suggestions },
+        { key: "todos", label: "Open to-dos", n: open, icon: "todos", path: "todos", hot: waitingOnYou,
+          sub: todos.data ? `${count("progress")} in progress · ${waitingOnYou} waiting on you · ${count("blocked")} blocked` : "" },
       ];
     });
     const about = (q) => q.links.map((l) => l.label).join(", ");
@@ -1966,9 +1968,10 @@ const EnvHome = {
         </div>
       </section>
       <div class=stats>
-        <a v-for="s in stats" :key="s.key" :class="['stat', {hot: s.hot}]" :href="'#/env/' + env + '/' + s.path">
+        <a v-for="s in stats" :key="s.key" :class="['stat', {hot: s.hot}]" :href="'#/env/' + env + (s.path ? '/' + s.path : '')">
           <span class=stat-top><span>{{ s.label }}</span><Icon :name="s.icon"/></span>
           <span class=stat-n>{{ s.n ?? '–' }}</span>
+          <span v-if="s.sub" class=stat-sub>{{ s.sub }}</span>
         </a>
       </div>
 
