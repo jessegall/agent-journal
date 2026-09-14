@@ -1823,7 +1823,10 @@ const App = {
       folded[name] = !folded[name];
       try { localStorage.setItem(FOLDED, JSON.stringify(folded)); } catch (e) { /* storage off */ }
     };
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold };
+    // an activity row opens what it is about, when it is about something with a page
+    const ACTIVITY_PAGES = { todo: "todos", question: "questions", message: "messages", work: "work" };
+    const activityHref = (e) => (e.n && ACTIVITY_PAGES[e.kind] && envName.value ? `#/env/${envName.value}/${ACTIVITY_PAGES[e.kind]}/${e.n}` : null);
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref };
   },
   template: `
     <div class=app>
@@ -1865,9 +1868,14 @@ const App = {
             <div class=activity-meta><span class="env-dot live"></span>Agent<span v-if="activity.data.agent.seen"> · {{ activity.data.agent.seen }}</span></div>
             <div v-if="activity.data.agent.text" class="activity-text clamp">{{ activity.data.agent.text }}</div>
           </div>
-          <div v-for="(e, i) in activity.data.events.slice(0, 6)" :key="i" class=activity-row>
-            <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
-          </div>
+          <template v-for="(e, i) in activity.data.events.slice(0, 6)" :key="i">
+            <a v-if="activityHref(e)" class="activity-row activity-link" :href="activityHref(e)">
+              <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
+            </a>
+            <div v-else class=activity-row>
+              <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
+            </div>
+          </template>
           </template>
         </div>
       </aside>

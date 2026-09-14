@@ -566,6 +566,11 @@ check("and reads it back", json.loads(body).get("reports_archive_days"), 7)
 status, got = post("/api/env/alpha/environment/settings", {"reports_archive_days": -1})
 check("a negative number is refused", status, 400)
 
+status, _, body = get("/api/env/alpha/activity")
+_work_events = [e for e in json.loads(body)["events"] if e["kind"] == "work"]
+check("a work event says which work it is about, so its row can open it",
+      (status, bool(_work_events), all(isinstance(e["n"], int) and e["n"] >= 1 for e in _work_events)), (200, True, True))
+
 state.put(root, serve.VIEWER_PORT, srv.server_port)
 check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)
 import views  # noqa: E402
