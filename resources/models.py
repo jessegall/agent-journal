@@ -197,6 +197,7 @@ class Work(Model):
     session: str = ""
     awaiting: dict = field(default_factory=dict)
     notes: list[dict] = field(default_factory=list)
+    todo: int | str = ""
 
     noun: ClassVar[str] = "work"
     sortable: ClassVar[tuple[str, ...]] = ("n", "at", "subject", "ended")

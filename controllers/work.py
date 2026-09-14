@@ -45,10 +45,17 @@ class WorkController(Controller):
         return None
 
     @staticmethod
-    def _row(w) -> dict:
+    def _todos(root: Path, env: str) -> dict:
+        return {"by_n": {t["n"]: t for t in todo._all(root, env)},
+                "by_title": {t["title"].lower(): t for t in todo._all(root, env)}}
+
+    @staticmethod
+    def _row(w, todos: dict) -> dict:
+        t = todos["by_n"].get(int(w.todo)) if str(w.todo).isdigit() else todos["by_title"].get(w.subject.lower())
         return {"n": w.n, "subject": w.subject, "at": w.at, "age": pins.age(w.at) if w.at else "",
                 "ended": w.ended, "ended_age": pins.age(w.ended) if w.ended else "",
                 "awaiting": (w.awaiting or {}).get("what") or "",
+                "todo": t["n"] if t else None, "doc": (t.get("doc") or None) if t else None,
                 "notes": [{"at": x.get("at", ""), "text": x.get("text", "")} for x in w.notes]}
 
     def index(self, root: Path, p: ListingPayload) -> Result:
@@ -58,10 +65,11 @@ class WorkController(Controller):
         if isinstance(query, Result):
             return query
         page = self.paged(query, p)
-        return Result("ok", "", [self._row(w) for w in page.rows], {"left": page.left})
+        todos = self._todos(root, p.env)
+        return Result("ok", "", [self._row(w, todos) for w in page.rows], {"left": page.left})
 
     def show(self, root: Path, p: Payload) -> Result:
-        return Result("ok", "", self._row(self.repository(root, p).find(p.id)))
+        return Result("ok", "", self._row(self.repository(root, p).find(p.id), self._todos(root, p.env)))
 
     def store(self, root: Path, p: work_payloads.StartPayload) -> Result:
         subject = " ".join((p.subject or "").split()).lower()

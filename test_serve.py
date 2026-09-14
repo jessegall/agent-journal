@@ -574,6 +574,17 @@ _events = json.loads(body)["events"]
 check("every activity event says who did it and stays within 100 characters",
       (all(e["by"] in ("Agent", "You") for e in _events), all(len(e["text"]) <= 100 for e in _events),
        {e["by"] for e in _work_events}), (True, True, {"Agent"}))
+import todo as _todo, work as _work  # noqa: E402
+_todo.add(root, "alpha", "link me to my work", "", "2026-09-14T00:00:00+00:00")
+_tn = max(t["n"] for t in _todo._all(root, "alpha"))
+_todo._update(root, "alpha", _tn, doc="1")
+_was_track = list(state._TRACK)
+state.use_track("alpha")
+_work.start(root, "link me to my work", "2026-09-14T00:00:01+00:00")
+state._TRACK[:] = _was_track
+status, _, body = get("/api/env/alpha/work?all=1")
+check("a work item names the to-do of its title and that to-do's document",
+      [(w["todo"], w["doc"]) for w in json.loads(body) if w["subject"] == "link me to my work"], [(_tn, "1")])
 import commandlog  # noqa: E402
 import commands as _commands  # noqa: E402
 for _argv in (["messages", "list"], ["todos", "show", "3"], ["todos", "done", "3", "x"], ["statusline"]):
