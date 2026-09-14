@@ -1635,6 +1635,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     # The first event a transcript's hook sees is nearly always a tool call, so this is
     # where a session joined late gets its floor. One small read, once.
     _floor(ctx)
+    _note_dispatch(payload, ctx)
     over = _pin_overflow(payload, conf["pin_max_chars"])
     if over:
         return _deny(say("pin_refused", why=over))
@@ -1947,11 +1948,22 @@ def _queue_tool(payload: dict, ctx: Ctx) -> None:
     from datetime import datetime, timezone
     import commandlog
     name = payload.get("tool_name") or ""
-    if not name or (name == "Bash" and any(_is_journal_verb(w[0]) for w in
+    if not name or name == "Agent" or (name == "Bash" and any(_is_journal_verb(w[0]) for w in
                                            _pieces(str((payload.get("tool_input") or {}).get("command", ""))) if w)):
         return
     commandlog.queue_tool(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, name,
                           datetime.now(timezone.utc).isoformat(timespec="seconds"))
+
+
+def _note_dispatch(payload: dict, ctx: Ctx) -> None:
+    """The session hands work to a subagent: Activity says so, with the dispatcher's description."""
+    from datetime import datetime, timezone
+    import commandlog
+    if payload.get("tool_name") != "Agent" or payload.get("agent_id"):
+        return
+    description = str((payload.get("tool_input") or {}).get("description") or "")
+    commandlog.record_dispatch(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, description,
+                               datetime.now(timezone.utc).isoformat(timespec="seconds"))
 
 
 def _git_tracked(project: Path, path: Path) -> bool:
@@ -2994,6 +3006,9 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     source = payload.get("source") or "startup"
     _floor(ctx)
     state.put(ROOT, "session_started", source, stem=ctx.stem)
+    # a --continue or --resume starts a session that once ended; it is running again
+    if state.get(ROOT, "ended", None, stem=ctx.stem):
+        state.put(ROOT, "ended", None, stem=ctx.stem)
     # NOT BOUND AT THE START. A session used to be put on the project's start environment
     # here, which meant every fresh session was working an environment it had never been
     # asked about; `bind_on_start` restores that. Unbound, the choice is made on the first
@@ -3243,6 +3258,7 @@ def main(raw: str | None = None) -> int:
         # spends its whole design avoiding.
         aid = state.slug(str(payload.get("agent_id") or ""))
         here = tracks.current(ROOT, ctx.stem if ctx else None)
+        agents.heartbeat(ROOT, here, aid, _parent_of(payload))
         lent = grants.granted(ROOT, _parent_of(payload))
         # ON THE TOOL'S RESULT, NOT BEFORE IT. `DELIVERS_CONTEXT` does not list PreToolUse
         # — the harness rejects `additionalContext` there, measured, and the reference

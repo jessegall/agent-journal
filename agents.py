@@ -32,6 +32,7 @@ import state
 from templates import render as fill
 
 SEEN = "agent_seen"      # {track: {agent: unix seconds}} — the heartbeat, in the record
+PARENT = "agent_parent"  # {track: {agent: the dispatching session}} — who sent it
 
 
 def dir_of(root: Path, track: str, agent: str) -> Path:
@@ -86,6 +87,27 @@ MESSAGES = {
 
 def say(message: str, /, **values) -> str:
     return fill(MESSAGES[message], **values)
+
+
+def heartbeat(root: Path, track: str, agent: str, parent: str, every: float = 30.0) -> None:
+    """Mark a subagent alive from its tool calls, and who dispatched it; at most once per `every` seconds."""
+    agent = state.slug(agent)
+    if not agent:
+        return
+    last = (seen(root).get(track) or {}).get(agent)
+    if last and time.time() - float(last) < every:
+        return
+    touch(root, track, agent)
+    with state.locked(root):
+        got = state.get(root, PARENT, {})
+        got = got if isinstance(got, dict) else {}
+        got.setdefault(track, {})[agent] = parent
+        state.put(root, PARENT, got)
+
+
+def parent_of(root: Path, track: str, agent: str) -> str:
+    got = state.get(root, PARENT, {})
+    return ((got if isinstance(got, dict) else {}).get(track) or {}).get(state.slug(agent), "")
 
 
 def active(root: Path, track: str, agent: str, stale_minutes: float) -> bool:

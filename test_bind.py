@@ -620,6 +620,7 @@ r.fire("SessionEnd", reason="exit")
 check("a session that ends leaves its environment", tracks.bound(root2, "rrrrrrrr-9"), None)
 r.fire("SessionStart", source="resume")
 check("and resumed, it is back on it", tracks.bound(root2, "rrrrrrrr-9"), "resumeenv")
+check("and it counts as running again, not as the session that ended", "rrrrrrrr-9" in tracks.live(root2), True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

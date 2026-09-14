@@ -773,6 +773,21 @@ check("and the work item lists the commit",
       [c["sha"] for c in json.loads(get(f"/api/env/beta/work/{_beta_n}")[2])["commits"]], [_sha])
 check("a hash nobody committed is not found, and a word that is not a hash is refused",
       (get("/api/env/beta/commits?sha=0000000")[0], get("/api/env/beta/commits?sha=nothex")[0]), (404, 400))
+import agents as _agents  # noqa: E402
+commandlog.record_dispatch(root, "alpha", "dispatch-stem", "  review   the diff ", "2099-01-01T00:00:08+00:00")
+check("handing work to a subagent is its own Activity line, with the dispatcher's description",
+      [(e["text"], e["detail"], e["by"]) for e in commandlog.entries(root, "alpha") if e["at"] == "2099-01-01T00:00:08+00:00"],
+      [("Dispatched a subagent", "review the diff", "Agent")])
+_agents.heartbeat(root, "alpha", "abc123def", "parentstem123")
+_first_seen = _agents.seen(root)["alpha"]["abc123def"]
+state.put(root, _agents.PARENT, {**state.get(root, _agents.PARENT, {}), "alpha": {"abc123def": "someone-else"}})
+_agents.heartbeat(root, "alpha", "abc123def", "parentstem123")
+check("a subagent's heartbeat is written at most once in a short while",
+      (_agents.seen(root)["alpha"]["abc123def"], _agents.parent_of(root, "alpha", "abc123def")), (_first_seen, "someone-else"))
+state.put(root, _agents.PARENT, {**state.get(root, _agents.PARENT, {}), "alpha": {"abc123def": "parentstem123"}})
+_crew = [a for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"]
+check("the agents list shows a live subagent, with the session that sent it",
+      [(a["id"], a["parent"], a["working"]) for a in _crew], [("abc123de", "parentst", True)])
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
