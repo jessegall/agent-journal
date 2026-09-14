@@ -168,6 +168,11 @@ before you act:
 | `journal-docs` | the user asks for something checked or researched; something was ruled and should be written down; you would write a reusable script |
 | `journal-agents` | before every subagent dispatch; a subagent must write; a subagent's journal command is refused |
 
+**One rule from `journal-agents` belongs here, because a dispatch does not wait for a skill to load:
+name the model on every subagent you dispatch** — `haiku` for mechanical work with a known answer,
+`sonnet` for care without invention, `opus` only where the task turns on judgement. It is rule B1,
+shipped to every project and injected at every start.
+
 ## The environment is chosen once, and never by you again
 
 **You choose an environment at the START, by asking the user, and you never switch again on
