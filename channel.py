@@ -46,18 +46,24 @@ def _gist(text: str) -> str:
 
 def pending(stem: str) -> list[tuple[str, dict]]:
     """(key, notification params) for each thing this session should be woken for now and has not been."""
-    import comments
-    import inbox
-    import questions
     import state
     import todo
     import tracks
-    env = tracks.bound(ROOT, stem)
-    if not env:
-        return []
     idle = state.get(ROOT, "last_event", "", stem=stem) == "Stop"
-    if todo.auto(ROOT, env) and not idle:
-        return []
+    # a session starts on no environment until the agent switches, so an unbound one hears from every environment
+    bound = tracks.bound(ROOT, stem)
+    got = []
+    for env in [bound] if bound else tracks.choices(ROOT):
+        if not todo.auto(ROOT, env) or idle:
+            got.extend(_waiting(env))
+    pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
+    return [(key, params) for key, params in got if key not in pushed]
+
+
+def _waiting(env: str) -> list[tuple[str, dict]]:
+    import comments
+    import inbox
+    import questions
     got = []
     for n, m in inbox.unprocessed(ROOT, env):
         got.append((f"{env}:{n}", {"content": f"The user left message {n} on {env}: {_gist(m.get('text', ''))}",
@@ -71,8 +77,7 @@ def pending(stem: str) -> list[tuple[str, dict]]:
         got.append((f"{env}:comment:{n}",
                     {"content": f"The user commented on {comments.label(c.get('about', ''))} on {env}: {_gist(c.get('text', ''))}",
                      "meta": {"env": env, "comment": str(n)}}))
-    pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
-    return [(key, params) for key, params in got if key not in pushed]
+    return got
 
 
 def _mark(stem: str, keys: list[str]) -> None:

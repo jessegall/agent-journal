@@ -103,6 +103,13 @@ state.put(root, "last_event", "Stop", stem=STEM)
 push = read_line(12)
 check("once the session stops, it is pushed", "another one while working" in (((push or {}).get("params") or {}).get("content", "")), True)
 
+tracks.unbind(root, STEM)
+j("messages", "add", "while on no environment")
+push = read_line(12)
+params = (push or {}).get("params") or {}
+check("a session on no environment yet is still woken, told which environment it is for",
+      ("while on no environment" in params.get("content", ""), params.get("meta", {}).get("env")), (True, "default"))
+
 srv.stdin.close()
 srv.wait(timeout=10)
 
