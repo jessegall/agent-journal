@@ -203,6 +203,10 @@ def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
     if newer(now, had):
         log = (root / "CHANGELOG.md").read_text() if (root / "CHANGELOG.md").is_file() else ""
         out += "\n\n" + render_since(log, had, now)
+        import serve
+        notice = serve.restart_notice(root)
+        if notice:
+            out += "\n\n" + notice
         # every session started from now on is handed the same, once
         import state
         with state.locked(root):

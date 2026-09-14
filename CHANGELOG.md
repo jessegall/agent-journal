@@ -4,14 +4,26 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.64 — An agent is told to restart a viewer that cannot restart itself
+
+A viewer started before 1.131.63 does not pick up new code by itself. Until now nothing told the
+agent, so after an upgrade someone had to notice and ask for a restart. Now, when this project's
+viewer is running such old code, the upgrade output and the message at the next session start
+tell the agent to restart it, with the port and the command. The agent does it without asking
+you. A viewer on 1.131.63 or later restarts itself, and no notice is shown.
+
 ## 1.131.63 — The viewer picks up new code by itself
 
 After an upgrade, or any change to the journal's Python files, a running viewer kept serving the
 old code until someone stopped it and started it again. Now it notices the change, waits until
 the files have stopped changing, and restarts itself on the same port. Pages that are open keep
 working: they reconnect on their next refresh. Changes to the viewer's own page files never
-needed a restart, and still do not. A viewer started before this version has to be restarted
-once by hand to get it.
+needed a restart, and still do not.
+
+AGENT, DO THIS YOURSELF: if this project's web viewer was already running when you upgraded, it is
+still on the old code and cannot restart itself. Restart it once now, without asking the user:
+stop the process listening on its port and run `.journal/journal.py serve` again in the
+background. After that it keeps itself up to date.
 
 ## 1.131.62 — Activity says what the agent is waiting on
 

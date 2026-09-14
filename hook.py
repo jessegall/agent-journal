@@ -3013,6 +3013,11 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
         text = update.render_since(log, str(up.get("from", "0")), now)
         if text:
             block = text + "\n\n" + block
+        # a viewer from before the self-restart keeps serving the old code until the agent restarts it
+        import serve
+        notice = serve.restart_notice(ROOT)
+        if notice:
+            block = notice + "\n\n" + block
     state.put(ROOT, "seen_version", now, stem=ctx.stem)
     if "update_check" not in conf["silenced"]:
         note = update.notice(ROOT)
