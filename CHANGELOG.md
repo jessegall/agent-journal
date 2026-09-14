@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.128.4 — Home keeps four statistics
+
+Home's counts are now Message queue (messages waiting), Questions for you, In progress and
+Blocked. Suggestions is no longer counted on Home; its waiting ones are in the top bar's
+Notifications.
+
 ## 1.128.3 — The sidebar footer's divider runs edge to edge
 
 The line under "Agent" and the status dot now reaches both edges of the sidebar, and it is
