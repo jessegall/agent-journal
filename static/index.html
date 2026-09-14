@@ -40,14 +40,19 @@
     justify-content: center; font-size: 11px; color: var(--text-2); }
   .group { display: flex; flex-direction: column; gap: 1px; }
   .side { display: flex; flex-direction: column; }
-  .side-foot { display: flex; align-items: center; gap: 4px; margin: auto 0 -12px; padding: 5px 10px 4px; border-top: 1px solid var(--border);
-    font-size: 11.5px; color: var(--text-3); white-space: nowrap; flex-wrap: wrap; }
-  .side-foot-now { flex-basis: 100%; overflow: hidden; text-overflow: ellipsis;
+  .side-foot { display: flex; flex-direction: column; gap: 2px; margin: auto 0 -12px; padding: 5px 10px 4px; border-top: 1px solid var(--border);
+    font-size: 11.5px; color: var(--text-3); white-space: nowrap; }
+  .side-foot-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 4px; margin-bottom: 2px;
+    border-bottom: 1px solid var(--border); }
+  .side-foot-now { overflow: hidden; text-overflow: ellipsis;
     font-size: 10.5px; font-style: italic; color: var(--text-3); opacity: .75; }
-  .side-foot-age { flex-basis: 100%; font-size: 10px; color: var(--text-3); opacity: .55; }
-  /* the dot sits on the edge; the lines under it start where "Agent" starts: dot 7px + 2px + the 4px gap */
-  .side-foot .env-dot { margin: 0 2px 0 0; }
-  .side-foot-now, .side-foot-age { padding-left: 13px; }
+  .side-foot-age { font-size: 10px; color: var(--text-3); opacity: .55; }
+  /* in the footer the dot sits at the far right and blinks while an agent works */
+  .side-foot .env-dot { margin: 0; }
+  .side-foot .env-dot.live { animation: env-blink 1.6s ease-in-out infinite; }
+  .side-foot .env-dot.live::after { display: none; }
+  @keyframes env-blink { 50% { opacity: .3; } }
+  @media (prefers-reduced-motion: reduce) { .side-foot .env-dot.live { animation: none; } }
   .activity-text { font-size: 12px; color: var(--text-2); line-height: 1.45; }
   .clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .activity-row { display: flex; flex-direction: column; gap: 1px; padding: 5px 8px; }
