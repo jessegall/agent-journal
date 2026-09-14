@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.85 — Quieter counts and commit subjects
+
+Activity says "used 3 tools" rather than "used 3 other tools". The agents count in the Activity
+header is a grey outlined badge, so it no longer looks like something unseen. Home's Open to-dos card
+lists only the counts that are not zero. The commit subject after a hash is smaller and fainter, so
+the hash is the thing to click.
+
 ## 1.131.84 — Files can be added to a sent message again
 
 Adding files to a message that was already sent failed with "the body is larger than 64000 bytes"

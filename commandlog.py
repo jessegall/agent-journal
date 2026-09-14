@@ -381,7 +381,7 @@ BUCKETS = {"Bash": "ran", "Edit": "edited", "Write": "edited", "MultiEdit": "edi
 # bucket -> (one, many) wording, in the order the line names them
 WORDING = {"ran": ("ran 1 command", "ran {n} commands"), "edited": ("edited 1 file", "edited {n} files"),
            "read": ("read 1 file", "read {n} files"), "searched": ("searched 1 time", "searched {n} times"),
-           "other": ("used 1 other tool", "used {n} other tools")}
+           "other": ("used 1 tool", "used {n} tools")}
 
 
 def tools_text(counts: dict) -> str:
