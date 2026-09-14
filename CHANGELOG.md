@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.10 — The strip's project tab has room around its name
+
+The project name on the strip's tab ran into the tab's bottom edge and rendered larger than meant. A
+`font` shorthand holding `inherit` is invalid CSS, so the button fell back to its own font size. The
+tab now has an explicit 10px font and padding, and the name sits centred below the strip.
+
 ## 1.132.9 — A notification opens in Home's side panel, and is read when opened
 
 On Home, Open on a notification used to leave the page for the message's own page. It now shows the
