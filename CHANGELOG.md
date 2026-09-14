@@ -4,6 +4,28 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.135.0 — Skills that load when they should, rules that always hold, and a clearer viewer
+
+A minor release that gathers everything since 1.134.0:
+
+- **The journal skills.** The one long skill is now a core `journal` skill plus six focused ones:
+  `journal-todos`, `journal-questions`, `journal-messages`, `journal-memory`, `journal-docs` and
+  `journal-agents`. Each loads when its part comes up, and each description is tuned to trigger. The
+  skills cover what shipped recently: comments on work, notifying about a message, `journal claude`.
+- **The model rule.** The rules the journal ships, with B1 (name the model on every dispatch), are
+  always written into `CLAUDE.md` and `AGENTS.md` and shown at every start; `builtin_rules` no longer
+  turns them off. The hook refuses a subagent dispatch that names no model, except a fork or an agent
+  whose definition sets one.
+- **Subagents and skills in the viewer.** A session's subagents are a table with their model. Home
+  shows the subagents at work. The agent page lists the skills, and which the session loaded. A skill's
+  page can ask the agent to load it now, or at every start. Helpers that only stop no longer show as
+  nameless subagents.
+- **Smaller changes.** Side panel sections fold. A commit's work and to-dos come before its files. An
+  asked question stops being amber once you open it. A journal read with a shell redirection
+  (`2>&1`) is no longer taken for a write.
+
+Nothing to do beyond `journal upgrade`.
+
 ## 1.134.16 — An asked question stops asking once you open it
 
 An "Asked question" line in Activity stayed amber until you answered the question. It now stops
