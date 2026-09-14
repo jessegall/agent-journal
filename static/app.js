@@ -1831,6 +1831,7 @@ const EnvHome = {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     const summary = useFetch(url(""));
     const work = useFetch(url("/work"));
+    const allWork = useFetch(url("/work?all=1"));
     const todos = useFetch(url("/todos"));
     const inbox = useFetch(url("/inbox"));
     const questions = useFetch(url("/questions"));
@@ -1845,6 +1846,9 @@ const EnvHome = {
     const waitingMessages = { ...MESSAGE_LIST, groups: [{ ...MESSAGE_LIST.groups[0], label: "" }] };
     const openQuestions = { ...QUESTION_LIST, groups: [{ ...QUESTION_LIST.groups[0], label: "" }] };
     const openWork = { ...WORK_LIST, groups: [{ ...WORK_LIST.groups[0], label: "" }] };
+    // the last work that ended, newest first, shown small under the open work
+    const endedWork = computed(() => (allWork.data || []).filter((w) => w.ended)
+      .sort((a, b) => (a.ended < b.ended ? 1 : a.ended > b.ended ? -1 : 0)).slice(0, 3));
     const waiting = computed(() => (inbox.data || []).filter((m) => m.status === "waiting"));
     const asking = computed(() => (questions.data || []).filter((q) => q.status === "open"));
     const stats = computed(() => {
@@ -1864,7 +1868,7 @@ const EnvHome = {
     const unpeek = () => { view.kind = ""; view.n = 0; };
     const picked = (kind) => (r) => view.kind === kind && view.n === r.n;
     const reloadAll = () => [work, todos, inbox, questions].forEach((f) => f.reload());
-    return { work, todos, inbox, questions, notes, readOne, readAll, reloadAll, view, peek, unpeek, picked, waiting, asking, stats, openTodos, finishedTodos,
+    return { work, allWork, endedWork, todos, inbox, questions, notes, readOne, readAll, reloadAll, view, peek, unpeek, picked, waiting, asking, stats, openTodos, finishedTodos,
              waitingMessages, openQuestions, openWork };
   },
   template: `
@@ -1895,6 +1899,13 @@ const EnvHome = {
         <div class=block>
           <ResourceList v-bind="openWork" :bar="false" :rows="work.data" :loading="work.loading" :error="work.error"
             :href="(w) => '#/env/' + env + '/work/' + w.n" :pick="(w) => peek('work', w.n)" :selected="picked('work')"/>
+        </div>
+        <div v-if="endedWork.length" class=recent-ended>
+          <a v-for="w in endedWork" :key="w.n" class=recent-ended-row :href="'#/env/' + env + '/work/' + w.n"
+            @click.prevent="peek('work', w.n)" :title="w.subject">
+            <span class=recent-ended-title>{{ w.subject }}</span>
+            <span class=recent-ended-age>ended {{ w.ended_age || 'just now' }}</span>
+          </a>
         </div>
       </section>
 

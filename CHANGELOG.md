@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.43 — Home shows the work that just ended
+
+Home's Open work section showed only the work in progress, so once a piece of work ended it
+disappeared from Home. The last few pieces of ended work now show under the open work, in
+smaller, muted text, each with when it ended. Click one to open that work.
+
 ## 1.131.42 — Rewording an answered question asks it again
 
 The journal skill says that rewording a question after it was answered means you are asked
