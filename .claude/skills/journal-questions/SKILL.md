@@ -57,7 +57,12 @@ typical, and reports each place where the same thing is written two ways: naming
 clauses, error handling, how a class is laid out. It reports with a short real excerpt of each
 way. It writes nothing.
 
-**Each difference becomes one question.** Ask it `--about="style"`, or `--about="style
+**Settle the obvious ones yourself.** When one way clearly dominates, or a rule, pin or
+earlier answer already decides it, write the rule with `journal style add` and name it in
+your reply; do not ask. The user said so: most of these have obvious answers. Ask only where
+the code is genuinely split, or where the choice is a real preference.
+
+**Each remaining difference becomes one question.** Ask it `--about="style"`, or `--about="style
 <subject>"` when a rule already exists and the difference is about it. Give each way as an
 `--option` with an `--option-code` example long enough to judge, a few real lines rather than
 one token. The Coding style page puts these at the top, with the code side by side.

@@ -4,6 +4,29 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.0 — A coding style of the project's own, and to-dos that archive themselves
+
+A minor release that gathers everything since 1.135.0:
+
+- **Coding style.** A project keeps its coding style as rules, one per subject, and each rule is
+  generated into its own `style-<subject>` skill, listed in `CLAUDE.md` and `AGENTS.md`
+  (`journal style add|show|set|remove|sync`). The viewer has a Coding style page: the rules, the
+  open questions about the style with their code side by side, and **Ask for a coding style review**,
+  which has the agent send a subagent to read the code and settle or ask about each difference.
+  Questions can be about the style (`--about="style"` or `--about="style <subject>"`). A generated
+  skill's description reads "Use when …. This project's rule: …", and its examples link works.
+- **Done to-dos archive themselves** 7 days after they close, into `todo/archived/`, set per
+  environment in Settings or with `journal todos keep <days>`. A new to-do never reuses an archived
+  or deleted to-do's number.
+- **Suggestions and safety.** A decided suggestion reaches an idle agent through the channel. Links in
+  the viewer's markdown can no longer run script. A failing viewer request answers with its error.
+  The to-do list and environment requests are much faster.
+- **This project's own rules.** The package now keeps six coding style rules of its own: no module
+  docstrings, imports at the top, function declarations and template literals in the viewer, the
+  positional-only `say()` helper, and `ok` for unpacked outcomes.
+
+Nothing to do beyond `journal upgrade`.
+
 ## 1.135.8 — Done to-dos archive themselves
 
 A done to-do now leaves the list on its own, 7 days after it was closed. It moves into the
