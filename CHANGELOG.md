@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.6 — The skills teach saying which to-do waits on which
+
+The journal could always record that one to-do waits on another (`journal todos add --after=` and
+`journal todos after <n> <m>`), and `journal next` and auto mode skip a to-do until what it waits on
+has closed. No skill mentioned it, so agents filed dependent to-dos without saying so. The
+`journal-todos` skill now has a section on it: set it while filing, set it when the work shows one,
+read the other to-do's brief before designing against it, and use `block` for anything that is not a
+to-do. The core skill points at it where a request is parked, and the skill loads when one to-do
+depends on, builds on or has to wait for another.
+
+Run `journal upgrade` to get the new skill text.
+
 ## 1.136.5 — Answers to your messages read like questions, not like something waiting on you
 
 When the agent answers part of your message, Home shows it under Answers to your messages, in the same
