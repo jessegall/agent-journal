@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.7 — The package follows its own coding style where it was quick to
+
+- `say()` in `reminders.py` and `work.py` now takes its message name positional-only, like every other
+  module's.
+- The viewer's top-level helpers are function declarations, and it builds strings with template
+  literals throughout.
+- The `outcome-names` rule is corrected: test files count their passing checks in a global `ok`, so
+  a test unpacks an outcome as `took`, and only the package uses `ok`.
+
+The older module docstrings and import placement are left as they are: the rules apply to modules
+being written or reworked.
+
 ## 1.136.6 — The skills teach saying which to-do waits on which
 
 The journal could always record that one to-do waits on another (`journal todos add --after=` and

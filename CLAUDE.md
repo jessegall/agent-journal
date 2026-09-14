@@ -17,7 +17,7 @@ This project's coding style, one skill per subject. Load a subject's skill befor
 - **`style-js-helpers`** — Helper functions in the viewer: A top-level helper in static/app.js is a function declaration, not a const arrow function
 - **`style-js-strings`** — Building strings in the viewer: The viewer's JavaScript builds strings from pieces with template literals, not + concatenation
 - **`style-module-docstrings`** — What a module says about itself at the top: A module has no module docstring; the file opens on its imports
-- **`style-outcome-names`** — Naming an unpacked outcome: Unpack an (ok, message) outcome as ok, in tests as well as the package
+- **`style-outcome-names`** — Naming an unpacked outcome: Unpack an (ok, message) outcome as ok; in a test file whose pass counter is the global ok, unpack it as took
 - **`style-say-helper`** — A module's say() helper: Declare say(message: str, /, **values) with the message name positional-only
 
 <!-- END: agent-journal style -->

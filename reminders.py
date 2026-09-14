@@ -72,8 +72,8 @@ MESSAGES = {
 }
 
 
-def say(key: str, **values) -> str:
-    return fill(MESSAGES[key], **values)
+def say(message: str, /, **values) -> str:
+    return fill(MESSAGES[message], **values)
 
 
 def _facts(r: dict, n: int) -> list[str]:
