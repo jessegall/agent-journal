@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.76 — The side panel on Home has an Open page button
+
+When you click a to-do, message, question, suggestion or piece of work on Home, it opens in the
+panel on the right. Its title linked to the item's own page, but nothing showed that it could be
+clicked. The panel's header now has an **Open page** button with an arrow, next to the close
+button.
+
 ## 1.131.75 — Home's cards show what waits on you
 
 The four cards at the top of Home were Message queue, Questions for you, In progress and Blocked.

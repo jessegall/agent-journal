@@ -204,6 +204,7 @@ const Icon = {
       <template v-else-if="name === 'paperclip'"><path d="M10.5 5.5l-4.3 4.3a1.3 1.3 0 0 0 1.8 1.8l4.6-4.6a2.6 2.6 0 0 0-3.7-3.7L4.3 8a3.9 3.9 0 0 0 5.5 5.5l3.7-3.7"/></template>
       <template v-else-if="name === 'sort-asc'"><path d="M8 13V3M4 7l4-4 4 4"/></template>
       <template v-else-if="name === 'sort-desc'"><path d="M8 3v10M4 9l4 4 4-4"/></template>
+      <template v-else-if="name === 'open'"><path d="M9 3.5h3.5V7"/><path d="M12.5 3.5L7.5 8.5"/><path d="M11 9.5v3H3.5V5h3"/></template>
       <template v-else-if="name === 'transcript'"><path d="M3.5 3.5h9M3.5 6.5h9M3.5 9.5h6M3.5 12.5h4"/></template>
       <template v-else-if="name === 'agents'"><circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/></template>
       <template v-else-if="name === 'empty'"><path d="M2.5 9.5l1.8-5h7.4l1.8 5V13h-11z"/><path d="M2.5 9.5h3l1 1.5h3l1-1.5h3"/></template>
@@ -373,9 +374,12 @@ const Panel = {
   components: { Icon },
   template: `
     <aside class=panel>
-      <div class=panel-top><a v-if="link" class=panel-link :href="link" title="Open the page">{{ label }}</a><span v-else>{{ label }}</span>
-        <button v-if="onClose" type=button class=icon-btn title="Close" @click="onClose"><Icon name="close"/></button>
-        <a v-else class=icon-btn :href="close" title="Close"><Icon name="close"/></a></div>
+      <div class=panel-top><a v-if="link" class=panel-link :href="link" :title="'Open ' + label + ' on its own page'">{{ label }}</a><span v-else>{{ label }}</span>
+        <span class=panel-tools>
+          <a v-if="link" class="btn flush panel-open" :href="link" :title="'Open ' + label + ' on its own page'"><Icon name="open"/>Open page</a>
+          <button v-if="onClose" type=button class=icon-btn title="Close" @click="onClose"><Icon name="close"/></button>
+          <a v-else class=icon-btn :href="close" title="Close"><Icon name="close"/></a>
+        </span></div>
       <div class=panel-body><slot/></div>
     </aside>`,
 };
