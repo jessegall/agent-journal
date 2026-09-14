@@ -1943,7 +1943,7 @@ const App = {
         </div>
         <div v-if="activity.data" class=side-foot>
           <span :class="['env-dot', {live: activity.data.agent}]"></span>
-          <span v-if="activity.data.agent">Agent working · {{ activity.data.agent.seen || 'just now' }}</span>
+          <span v-if="activity.data.agent">Agent {{ activity.data.agent.seen || 'active just now' }}</span>
           <span v-else>No agent working</span>
         </div>
       </aside>

@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.115.2 — The sidebar footer fits on screen
+
+The footer that says whether an agent is working was pushed below the bottom of the sidebar.
+It now fits, and reads "Agent active just now" instead of "Agent working · active just now".
+
 ## 1.115.1 — Activity shows only activity; whether an agent is working moves to a footer
 
 The agent's latest chat text and its "active" line are gone from the Activity panel. A small
