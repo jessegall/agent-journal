@@ -1,6 +1,6 @@
 ---
 name: journal-todos
-description: "Journal to-dos and auto mode: parking work as a to-do with a brief, priorities, starting and closing rows (todos start, work end --todo, a 'Journal: todos done' commit trailer), blocking a row or asking the user about it, and working the list with auto mode and a loop. Use it whenever work is put off: the user says later, not now, add it to the list, park it, or after this. Also use it when you start, finish or close a to-do, when auto mode is on or a hold says to-dos are waiting, when the user says work through the list, when a to-do cannot be done yet, and when a commit finishes one. Not for subagents."
+description: "Journal to-dos and auto mode: parking work as a to-do with a brief, priorities, starting and closing rows (todos start, work end --todo, a 'Journal: todos done' commit trailer), saying which to-do waits on which (--after, todos after), blocking a row or asking the user about it, and working the list with auto mode and a loop. Use it whenever work is put off: the user says later, not now, add it to the list, park it, or after this. Also use it when you start, finish or close a to-do, when auto mode is on or a hold says to-dos are waiting, when the user says work through the list, when a to-do cannot be done yet, when one to-do depends on, builds on or has to wait for another, and when a commit finishes one. Not for subagents."
 ---
 
 # Journal to-dos and auto mode
@@ -12,6 +12,8 @@ Every command runs through `.journal/journal.py`; `journal` is an alias for it.
 ## Delayed work: the to-do
 
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)
+    journal todos add "<title>" --after=12,14   add one that waits on to-dos 12 and 14
+    journal todos after <n> 12,14       to-do n waits on 12 and 14; `--none` clears it
     journal todos                      the titles, HIGHEST PRIORITY FIRST (--order-by-id for plain number order)
     journal todos show <n>             the brief (also: `journal todo <n>`)
     journal todos priority <n> <value>  bigger is more important; a number or a name (low/default/high/critical); 100 unless set
@@ -113,6 +115,44 @@ switched on to prevent. `todos ask` and `questions add` are the questions that d
 is a ruling or a review only the user can give, park that remainder as a to-do with the
 questions in its brief, and `work end` the work. Otherwise the journal sees work in flight,
 nothing else starts, and with auto on the stop hook will hold you to do exactly this.
+
+## A to-do that rests on another: say so
+
+    journal todos add "<title>" --after=<n>[,<n>]   file it waiting on the ones that must land first
+    journal todos after <n> <m>[,<m>]               say it later, when the work shows it
+    journal todos after <n> --none                  it waits on nothing now
+
+**When one to-do only makes sense once another has landed, record it.** "Waits on" is how
+the list knows the order the work allows: `journal next` and auto mode skip a to-do while
+anything it waits on is still open, and it becomes ready by itself when the last one closes.
+The viewer shows it on the row and in the panel. A dependency held only in a brief, or in
+your head, is invisible to all of that, and auto will pick the row up too early.
+
+**Set it while filing, not afterwards.** Before `todos add`, look at what is open
+(`journal todos`) and ask: does this build on one of them, change what one of them decides,
+or break if it lands first? If yes, `--after=` that number. The user saying "after that",
+"once X is in", "on top of", "that depends on", "that weighs on the other one" is the
+dependency said out loud: write it down.
+
+**Set it again when the work shows one.** Mid-way through a to-do, finding that it needs
+another row finished first is a fact to record, not a detour to take: `journal todos after
+<this> <that>`, `work update` what you found, end the work, and pick up `<that>`.
+
+**A dependency is a reason to think it through.** When a to-do waits on another, read that
+one's brief before designing this one, and design against what it will leave behind, not
+what is there today. If the two could be designed apart and collide, say so in the brief of
+the later one.
+
+**`after` waits on a to-do; `block` waits on anything else.** A release, a batch, a
+decision outside the list: that is a block. Another row on the list: that is `after`,
+because the journal can tell when a to-do closes and cannot tell when a condition came true.
+
+    user: "add a CSV export, and after that a scheduled export that uses it"
+    → journal todos add "CSV export" --brief         (to-do 7)
+    → journal todos add "scheduled export using the CSV export" --after=7 --brief
+
+    working to-do 9, you find it needs the settings page from to-do 5 first
+    → journal todos after 9 5 · journal work update "…needs to-do 5's settings page first" · journal work end "<9's title>"
 
 ## A to-do you cannot do yet: block it, do not route around it
 

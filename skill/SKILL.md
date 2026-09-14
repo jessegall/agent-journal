@@ -28,7 +28,8 @@ Every request is one of three things, and deciding which comes before anything e
    direction changes, `journal work update "<what changed>"` says so.
 2. **It is different. This is a to-do — the default, and it needs no justification.**
    `journal todos add "<title>" --brief` with the brief on stdin, then say in your reply
-   that it is parked as to-do n, and carry on with what is open. **Do not `work end` to
+   that it is parked as to-do n, and carry on with what is open. If it builds on or has to
+   wait for another open to-do, add `--after=<n>` (the `journal-todos` skill). **Do not `work end` to
    make room**: ending work is not finishing a row, and the row you are on stays yours.
 3. **It is different and the user said to do it NOW.** That is the exception and it is
    THEIR word, not your judgement — "now", "first", "stop", "instead", "actually" — or it

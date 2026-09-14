@@ -482,6 +482,10 @@ check("and the skill teaches the one rule the package ships: name the model",
 # wait for journal-agents to load, so the core skill must say it on its own
 check("the core skill itself names the model rule, not only journal-agents",
       all(w in _core for w in ("haiku", "sonnet", "opus")), True)
+# agents filed to-dos that rested on each other without saying so, because no skill taught it
+_todos_skill = (SRC / "skills" / "journal-todos" / "SKILL.md").read_text()
+check("the to-do skill teaches recording that a to-do waits on another, and the core skill points at it",
+      ("--after=" in _todos_skill, "journal todos after " in _todos_skill, "--after=" in _core), (True, True, True))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
