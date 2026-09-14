@@ -1,6 +1,6 @@
 ---
 name: journal-memory
-description: "What the journal hands to every later session: pins (facts that stay true), rules (bind every environment), reminders (instructions said again until retired), the context-warning decision, moving claims between environments, and cleaning out what stopped being true. Use it before writing a pin, rule or reminder, when a context warning asks for a decision, when the user rules something project-wide or has had to say something twice, and when a cleanup report is ready. Not for subagents."
+description: "What the journal hands to every later session: pins (facts that stay true), rules (bind every environment), reminders (instructions said again until retired), the context-warning decision, moving claims between environments, and cleaning out what stopped being true. Use it before writing a pin, rule or reminder; whenever the user says remember this, always, never, from now on, that is a rule, or has had to say something twice; when a context warning asks you to decide; and when a cleanup report is ready or a claim looks stale. Not for subagents."
 ---
 
 # Journal pins, rules and reminders

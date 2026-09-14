@@ -1,6 +1,6 @@
 ---
 name: journal-docs
-description: "Where findings go: a report for what was checked or researched (temporary), a doc for lasting documentation of the codebase or environment (catalogued, cited, with attachments), and a tool for a script worth keeping. Use it when the user asks for something to be checked, measured or researched, when something is ruled and should be written down, before re-investigating what a doc may already settle, and before writing a script the next session could reuse. Not for subagents."
+description: "Where findings go: a report for what was checked, measured or researched (temporary), a doc for lasting documentation of the codebase or environment (catalogued, cited, with attachments), and a tool for a script worth keeping. Use it whenever the user asks you to check, measure, investigate or research something, asks for a report, or asks to document or write something down; when something is ruled and should be recorded; before re-investigating what a doc may already settle; and before writing a script the next session could reuse. Not for subagents."
 ---
 
 # Journal reports, docs and tools

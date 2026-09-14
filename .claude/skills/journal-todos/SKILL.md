@@ -1,6 +1,6 @@
 ---
 name: journal-todos
-description: "Journal to-dos and auto mode: parking work as a to-do with a brief, priorities, starting and closing rows (`todos start`, `work end --todo`, a `Journal: todos done` commit trailer), blocking a row or asking the user about it, and working the list with auto mode and a loop. Use it when you park or start a to-do, when auto mode is on or a hold says to-dos are waiting, when a to-do cannot be done yet, and when a commit should close one. Not for subagents."
+description: "Journal to-dos and auto mode: parking work as a to-do with a brief, priorities, starting and closing rows (todos start, work end --todo, a 'Journal: todos done' commit trailer), blocking a row or asking the user about it, and working the list with auto mode and a loop. Use it whenever work is put off: the user says later, not now, add it to the list, park it, or after this. Also use it when you start, finish or close a to-do, when auto mode is on or a hold says to-dos are waiting, when the user says work through the list, when a to-do cannot be done yet, and when a commit finishes one. Not for subagents."
 ---
 
 # Journal to-dos and auto mode

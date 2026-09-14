@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.6 — The journal skills load when they should
+
+Reviewed against skill-creator's guidance. The core `journal` skill's description was 1037
+characters, over the 1024-character limit. It is now 895 and still names the six focused skills. Each
+focused skill's description now includes the words that should load it: "later" and "park it" for
+`journal-todos`, "which do you prefer" for `journal-questions`, "remember this" and "from now on" for
+`journal-memory`, "research" and "write a report" for `journal-docs`, "use a subagent" for
+`journal-agents`, and a channel notice or comment for `journal-messages`. All seven pass
+skill-creator's checks: front matter, name, no angle brackets, description length, a body under 500
+lines. A test now checks that the core skill names the model rule by itself.
+
 ## 1.134.5 — The core skill names the model rule again; skill-creator in this project
 
 The split in 1.134.4 moved the model rule into `journal-agents`, which left the core `journal` skill

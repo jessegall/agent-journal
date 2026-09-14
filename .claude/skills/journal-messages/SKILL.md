@@ -1,6 +1,6 @@
 ---
 name: journal-messages
-description: "Handling what the user sends through the journal: processing a message part by part (routing each part, answering a question part with `messages reply --part` and a clickable follow-up), acting on comments on to-dos, docs, messages or work, notifying the user sparingly, and what the web viewer and its channel do. Use it when a stop, a hint or the channel says the user left a message or a comment, before sending a notification, and when the user talks about the viewer. Not for subagents."
+description: "Handling what the user sends through the journal: processing a message part by part (routing each part, answering a question part with messages reply --part and a clickable follow-up), acting on comments on to-dos, docs, messages or work, notifying the user sparingly, and what the web viewer and its channel do. Use it whenever a stop, a hint or a channel notice says the user left a message or a comment, before you send a notification or the user asks to be told when something is done, and whenever the user talks about the viewer, its pages or the channel. Not for subagents."
 ---
 
 # Journal messages, comments, notifications and the viewer
