@@ -29,6 +29,7 @@ MESSAGES = {
     "needs_text": 'a question needs its text: journal questions add "<question>"',
     "added": "question {n}[, about {links}] ({open} open)",
     "edited": "question {n} now reads: {text}",
+    "reopened": "question {n} now reads: {text}\n  it was answered, so it is open again and the user is asked again; the old answer is kept",
     "needs_answer": 'say the answer: journal questions answer {n} "<the answer>"',
     "answered": "{verb} question {n}: {text}\n  the agent is told at its next stop",
     "already_about": "question {n} is already about {ref}",
@@ -227,6 +228,7 @@ def edit(root: Path, n: int, text: str | None, track: str | None = None, descrip
         q, why = _find(items, n)
         if q is None:
             return False, why
+        before = q["text"]
         if text is not None:
             q["text"] = text.strip()
         if description is not None:
@@ -240,11 +242,16 @@ def edit(root: Path, n: int, text: str | None, track: str | None = None, descrip
             q["pick"] = pick
         elif q.get("pick") and q["pick"] > count:
             q["pick"] = None
+        reopened = False
+        # reworded after it was answered, it is a new question: the answer is kept as an earlier one and the user is asked again
+        if text is not None and q.get("answer") and text.strip() != before:
+            q.setdefault("earlier_answers", []).append({"answer": q["answer"], "at": q.get("answered_at")})
+            q.update(answer=None, answered_at=None)
+            reopened = True
         text = q["text"]
-        if q.get("answer"):
-            q["told_at"] = None
+        q["told_at"] = None
         _put(root, items, track)
-    return True, say("edited", n=n, text=text[:70])
+    return True, say("reopened" if reopened else "edited", n=n, text=text[:70])
 
 
 def link(root: Path, n: int, raw: str) -> tuple[bool, str]:

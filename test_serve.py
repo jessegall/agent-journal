@@ -289,6 +289,10 @@ check("changing an answer keeps the earlier one and tells the agent again",
       (200, "green", True, None))
 status, got = post("/api/env/alpha/questions/1", {"text": "which colour, exactly?"}, method="PATCH")
 check("editing a question rewords it", (status, got["data"]["text"]), (200, "which colour, exactly?"))
+check("reworded after it was answered, it is open again and the answer is kept as an earlier one",
+      (got["data"]["status"], got["data"]["answer"], [a["answer"] for a in questions._all(root, "alpha")[0].get("earlier_answers") or []][-1:]),
+      ("open", "", ["green"]))
+questions.answer(root, 1, "green", AT, track="alpha")  # answered again, as the checks below expect
 status, got = post("/api/env/alpha/questions/99/answer", {"answer": "x"})
 check("answering an unknown question is 404", status, 404)
 status, got = post("/api/env/alpha/questions/2/answer", {"answer": ""})

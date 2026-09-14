@@ -228,5 +228,18 @@ code, out = j("questions", "add", "which editor?", "--option=vim", "--pick=3")
 check("a pick that is not one of the options is refused", (code != 0, "1 to 1" in out, len(q_mod._all(root, "default"))), (True, True, n_shell))
 j("questions", "withdraw", str(n_shell), "only testing the pick")
 
+# ------------------------------------------------------------------ rewording an answered question asks it again
+code, out = j("questions", "add", "which colour for the header?")
+n_colour = len(q_mod._all(root, "default"))
+j("questions", "answer", str(n_colour), "blue")
+code, out = j("questions", "edit", str(n_colour), "which colour for the header, in dark mode?")
+q = q_mod._all(root, "default")[-1]
+check("rewording an answered question opens it again and says so",
+      (code, "open again" in out, q_mod.is_open(q), [a["answer"] for a in q.get("earlier_answers") or []]), (0, True, True, ["blue"]))
+code, out = j("questions", "edit", str(n_colour), "which colour for the header, in dark mode?", "--option=blue", "--option=grey")
+check("changing only the options of an open question does not touch its history",
+      (code, [a["answer"] for a in q_mod._all(root, "default")[-1].get("earlier_answers") or []]), (0, ["blue"]))
+j("questions", "withdraw", str(n_colour), "only testing the reword")
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
