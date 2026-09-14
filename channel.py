@@ -176,6 +176,25 @@ def _mark(stem: str, keys: list[str]) -> None:
     import state
     was = state.get(ROOT, PUSHED, [], stem=stem) or []
     state.put(ROOT, PUSHED, (was + keys)[-500:], stem=stem)
+    _told(keys)
+
+
+def _told(keys: list[str]) -> None:
+    """What the channel pushed is told, in the same record the stop hook reads.
+
+    PUSHED AND TOLD WERE TWO RECORDS. The channel kept its own list and never marked an item told,
+    so every comment, answer and decided suggestion it pushed was held again at the next stop.
+    """
+    from datetime import datetime, timezone
+    import comments
+    import questions
+    import suggestions
+    stores = {"question": questions, "suggestion": suggestions, "comment": comments}
+    at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    for key in keys:
+        parts = key.split(":")
+        if len(parts) >= 3 and parts[1] in stores and parts[2].isdigit():
+            stores[parts[1]].mark_told(ROOT, parts[0], [int(parts[2])], at)
 
 
 #: the poll code loaded from disk, and the newest modification time of the package it was loaded at
