@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.91 — A message shows the agent is handling it
+
+When the agent reads a waiting message (`journal messages show` or `messages waiting`), the message
+is marked as being handled. The viewer shows it with the in-progress icon and "Being handled · the
+agent read it …" until it is processed. Opening it in the viewer does not count as the agent reading it.
+
+The channel also missed a message sent in the same second it started: times are stored in whole
+seconds, and it compared them with its exact start time.
+
 ## 1.131.90 — New buttons with a plus; quieter sort controls; a livelier Activity
 
 The New buttons in each list's bar are flush, with a plus before the label. A list's sort controls

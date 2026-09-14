@@ -274,5 +274,17 @@ j("messages", "done", str(_wn))
 code, out = j("messages", "waiting")
 check("and once it is processed it is no longer listed", (code, "the lantern relay clicks at night" in out), (0, False))
 
+j("messages", "add", "the agent reads this one")
+_n = len(stored())
+check("a message nobody has read has no read time", stored()[-1].get("read"), None)
+j("messages", "show", str(_n))
+_read = stored()[-1].get("read")
+code, out = j("messages")
+check("once the agent reads it, it is still waiting but marked as being handled",
+      (bool(_read), stored()[-1].get("processed"), "being handled" in out), (True, None, True))
+j("messages", "add", "and this one is read by waiting")
+j("messages", "waiting")
+check("reading the waiting messages marks each as being handled", bool(stored()[-1].get("read")), True)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
