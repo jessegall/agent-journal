@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.133.1 — The agent's replies stand out
+
+Under a message, a reply from the agent is now boxed: a thin border and a slightly lighter background,
+so it is easy to spot among the message's details. Your own replies stay plain.
+
 ## 1.133.0 — Several journals told apart, and answers you can act on
 
 A minor release that gathers everything since 1.132.0:

@@ -1213,7 +1213,7 @@ const MessagePanel = {
         <div v-if="item.data.replies && item.data.replies.length">
           <p class=section-label>Replies</p>
           <div class=linked>
-            <div v-for="(r, i) in item.data.replies" :key="i" class=sub>
+            <div v-for="(r, i) in item.data.replies" :key="i" :class="['sub', 'reply', {'from-agent': r.who === 'the agent'}]">
               <div class=muted>{{ r.who === 'the agent' ? 'The agent' : 'You' }}{{ r.part ? ' answered' : '' }} · {{ r.age || 'just now' }}</div>
               <blockquote v-if="r.part" class=reply-part>{{ r.part }}</blockquote>
               <div class="md prose" v-html="$md(r.text)"></div>
