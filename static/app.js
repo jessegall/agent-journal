@@ -2074,7 +2074,12 @@ const App = {
     };
     // what the agent did last, in the footer under its status
     const latest = computed(() => ((activity.data && activity.data.events) || []).find((e) => e.by === "Agent"));
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest };
+    const setAuto = (on) => {
+      activity.data.auto = on;
+      postJSON(`/api/env/${envName.value}/environment/settings`, { auto: on })
+        .then(() => { activity.reload(); changed(); }, () => activity.reload());
+    };
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto };
   },
   template: `
     <div class=app>
@@ -2115,6 +2120,12 @@ const App = {
               :title="'Context ' + activity.data.agent.context.share + '% used: ' + activity.data.agent.context.used.toLocaleString() + ' of ' + activity.data.agent.context.window.toLocaleString() + ' tokens'">
               <span class=ctx-bar><span :style="{width: activity.data.agent.context.share + '%'}"></span></span>{{ activity.data.agent.context.share }}%</span>
             <span :class="['env-dot', {live: activity.data.agent}]" :title="activity.data.agent ? 'An agent is working' : 'No agent is working'"></span>
+          </div>
+          <div class=side-foot-auto>
+            <span>Auto mode</span>
+            <button type=button role=switch :aria-checked="activity.data.auto ? 'true' : 'false'" :class="['switch', {on: activity.data.auto}]"
+              :title="activity.data.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
+              @click="setAuto(!activity.data.auto)"><span class=knob></span></button>
           </div>
           <span v-if="latest" class=side-foot-now
             :title="[latest.text, latest.n, latest.detail].filter(Boolean).join(' ')">{{ [latest.text, latest.n, latest.detail].filter(Boolean).join(' ') }}</span>
