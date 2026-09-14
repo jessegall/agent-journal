@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.53 — The channel wakes a session that has not picked an environment yet
+
+A session starts on no environment until the agent runs `journal switch`, and the channel
+pushed nothing to a session like that. So a session started or continued with the channel
+flag heard nothing: an idle agent that had not switched yet, which is exactly when it needs
+waking, was never told about a message, an answer or a comment. Now a session on no
+environment is woken for what is waiting on every environment, and each push names the
+environment it is for.
+
 ## 1.131.52 — The channel wakes an idle session for answers and comments too
 
 With the channel installed (`journal channel --install`, then Claude started with
