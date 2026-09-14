@@ -1162,7 +1162,7 @@ const MessagePanel = {
       <template v-else-if="item.data">
         <div class="prose message">{{ item.data.text }}</div>
         <dl class=props>
-          <dt>Status</dt><dd><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled · the agent read it ' + item.data.read_age : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
+          <dt>Status</dt><dd :title="item.data.status === 'waiting' && item.data.read ? 'The agent read it ' + item.data.read_age : null"><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled' : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
           <dt>Left</dt><dd>{{ item.data.age || '—' }}</dd>
           <dt>From</dt><dd>{{ item.data.source === 'web' ? 'The browser' : 'The terminal' }}</dd>
         </dl>

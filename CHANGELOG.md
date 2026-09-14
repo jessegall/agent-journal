@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.5 — "Being handled" stays short
+
+A message the agent has read showed "Being handled · the agent read it 1 minute ago" in its Status
+row, which wrapped in the side panel. It now says "Being handled"; hover the row to see when the
+agent read it.
+
 ## 1.132.4 — With auto mode off, only a message wakes the agent
 
 Before, the channel woke an idle session for an answered question or a comment even with auto mode
