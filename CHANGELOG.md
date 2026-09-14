@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.123.1 — The same Activity line twice in a row shows once
+
+When the agent runs the same thing again right away, like reading a message a second time
+for more context, Activity shows one line instead of two. The same action with other lines
+in between still shows each time.
+
 ## 1.123.0 — Activity lines that need you stand out, with their action
 
 A question the agent asked and you have not answered shows in Activity as an ember card
