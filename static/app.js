@@ -1498,13 +1498,14 @@ const EnvHome = {
     const asking = computed(() => (questions.data || []).filter((q) => q.status === "open"));
     const stats = computed(() => {
       const s = summary.data || {};
+      const count = (status) => (todos.data ? todos.data.filter((t) => todoStatus(t) === status).length : undefined);
+      const blocked = count("blocked");
       return [
-        { label: "Messages waiting", n: s.inbox, icon: "inbox", path: "messages", hot: s.inbox },
-        { label: "Open questions", n: s.questions, icon: "questions", path: "questions", hot: s.questions },
-        { label: "Open to-dos", n: s.todos, icon: "todos", path: "todos" },
-        { label: "Pins", n: s.pins, icon: "pins", path: "pins" },
-        { label: "Reminders", n: s.reminders, icon: "reminders", path: "reminders" },
-        { label: "Documents", n: s.docs, icon: "docs", path: "docs" },
+        { key: "messages", label: "Messages waiting", n: s.inbox, icon: "inbox", path: "messages", hot: s.inbox },
+        { key: "questions", label: "Questions for you", n: s.questions, icon: "questions", path: "questions", hot: s.questions },
+        { key: "suggestions", label: "Suggestions", n: s.suggestions, icon: "suggestions", path: "suggestions", hot: s.suggestions },
+        { key: "progress", label: "In progress", n: count("progress"), icon: "todos", path: "todos" },
+        { key: "blocked", label: "Blocked", n: blocked, icon: "todos", path: "todos", hot: blocked },
       ];
     });
     const about = (q) => q.links.map((l) => l.label).join(", ");
@@ -1533,7 +1534,7 @@ const EnvHome = {
         </div>
       </section>
       <div class=stats>
-        <a v-for="s in stats" :key="s.path" :class="['stat', {hot: s.hot}]" :href="'#/env/' + env + '/' + s.path">
+        <a v-for="s in stats" :key="s.key" :class="['stat', {hot: s.hot}]" :href="'#/env/' + env + '/' + s.path">
           <span class=stat-top><span>{{ s.label }}</span><Icon :name="s.icon"/></span>
           <span class=stat-n>{{ s.n ?? '–' }}</span>
         </a>
