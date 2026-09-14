@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.33 — A custom answer is one of the options
+
+A question with options had its options, and a separate box underneath for writing your
+own answer. The list of options now ends with **Custom answer**. Pick it like any other
+option and a text box opens inside it. The same **Save answer** button sends either the
+option you picked or the text you wrote. Questions without options keep their answer box
+as before.
+
 ## 1.131.32 — Document parts are blocks you can edit
 
 On a document's page the parts ran together, so it was hard to see where one ended and the
