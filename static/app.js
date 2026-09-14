@@ -54,7 +54,9 @@ const POLL_MS = 5000;
 // when the tab was last hidden and shown again: the first refresh after a long absence carries everything that changed meanwhile
 const TAB = { hiddenAt: 0, shownAt: 0 };
 document.addEventListener("visibilitychange", () => { if (document.hidden) TAB.hiddenAt = Date.now(); else TAB.shownAt = Date.now(); });
-const cameBack = () => TAB.hiddenAt > 0 && TAB.shownAt > TAB.hiddenAt && TAB.shownAt - TAB.hiddenAt > POLL_MS && Date.now() - TAB.shownAt < 2 * POLL_MS;
+function cameBack() {
+  return TAB.hiddenAt > 0 && TAB.shownAt > TAB.hiddenAt && TAB.shownAt - TAB.hiddenAt > POLL_MS && Date.now() - TAB.shownAt < 2 * POLL_MS;
+}
 // when this viewer last wrote something: list changes that land soon after are its own, not news
 const LAST_WRITE = { at: 0 };
 const QUIET_MS = 4000;
@@ -132,7 +134,7 @@ function humanSize(n) {
   const units = ["B", "KB", "MB", "GB"];
   let i = 0;
   while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
-  return (i === 0 ? n : n.toFixed(1)) + " " + units[i];
+  return `${i === 0 ? n : n.toFixed(1)} ${units[i]}`;
 }
 
 // ─────────────────────────────────────────────────────────────── markdown
@@ -392,8 +394,12 @@ const TopBar = {
 
 // a section of any panel folds from its label; what is folded is remembered by the label's name
 const FOLDED_KEY = "journal:folded";
-const foldedNames = () => { try { return new Set(JSON.parse(localStorage.getItem(FOLDED_KEY) || "[]")); } catch (e) { return new Set(); } };
-const saveFolded = (names) => { try { localStorage.setItem(FOLDED_KEY, JSON.stringify([...names])); } catch (e) { /* folding still works for this view */ } };
+function foldedNames() {
+  try { return new Set(JSON.parse(localStorage.getItem(FOLDED_KEY) || "[]")); } catch (e) { return new Set(); }
+}
+function saveFolded(names) {
+  try { localStorage.setItem(FOLDED_KEY, JSON.stringify([...names])); } catch (e) { /* folding still works for this view */ }
+}
 // a label marked data-shut starts folded; the ones the viewer opened are remembered instead
 const OPENED_KEY = "journal:opened";
 function openedNames() {
@@ -1749,7 +1755,9 @@ const STYLE_LIST = {
   empty: "No coding style rules yet. Ask for a review to find them.",
 };
 
-const aboutStyle = (q, ref) => (q.links || []).some((l) => (ref ? l.ref === ref : l.ref === "style" || l.ref.startsWith("style:")));
+function aboutStyle(q, ref) {
+  return (q.links || []).some((l) => (ref ? l.ref === ref : l.ref === "style" || l.ref.startsWith("style:")));
+}
 
 // a rule is routed by its subject; the API numbers them, so the list says which number it is
 const StylePanel = {
@@ -2856,7 +2864,7 @@ const ActivityPanel = {
     // a quick message from the bottom of the column: the same message the Messages page sends
     const quick = reactive({ text: "", sending: false, error: "" });
     const box = ref(null);
-    const grow = () => { const el = box.value; if (!el) return; el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 120) + "px"; };
+    const grow = () => { const el = box.value; if (!el) return; el.style.height = "auto"; el.style.height = `${Math.min(el.scrollHeight, 120)}px`; };
     const sendQuick = async () => {
       if (!quick.text.trim() || quick.sending || !props.env) return;
       quick.sending = true;
@@ -3011,7 +3019,7 @@ const App = {
     watchEffect(() => {
       if (route.view === "Home" && envName.value) location.replace(`#/env/${envName.value}`);
     });
-    const key = computed(() => route.view + ":" + (route.params.env || ""));
+    const key = computed(() => `${route.view}:${route.params.env || ""}`);
     const FOLDED = "journal.sidebar.folded";
     const folded = reactive((() => { try { return JSON.parse(localStorage.getItem(FOLDED) || "{}"); } catch (e) { return {}; } })());
     const fold = (name) => {

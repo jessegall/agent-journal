@@ -59,8 +59,8 @@ MESSAGES = {
 }
 
 
-def say(key: str, **values) -> str:
-    return render(MESSAGES[key], **values)
+def say(message: str, /, **values) -> str:
+    return render(MESSAGES[message], **values)
 
 
 def _subjects(items: list[dict]) -> list[str]:
