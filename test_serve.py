@@ -699,6 +699,13 @@ for _i in range(commandlog.QUEUE_SIZE):
     commandlog.queue_tool(root, "alpha", _tool_stem, "Read", "2000-01-05T00:00:02+00:00")
 check("the tenth tool use writes the line by itself",
       [e["text"] for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:02+00:00"], ["Read 10 files"])
+commandlog.queue_tool(root, "alpha", _tool_stem, "Bash", "2099-01-06T00:00:00+00:00")
+commandlog.flush_tools(root, "alpha", _tool_stem, "2099-01-06T00:00:00+00:00")
+for _argv in (["messages", "waiting"], ["comments", "list"]):
+    commandlog.record(root, "alpha", _commands.REGISTRY.parse(_argv)[0], "2099-01-06T00:00:00+00:00")
+check("lines logged in the same second list newest first, and a tool summary sits under the command that ended it",
+      [e["text"] for e in json.loads(get("/api/env/alpha/activity")[2])["events"] if e["at"] == "2099-01-06T00:00:00+00:00"],
+      ["Reading comments", "Checking for new messages", "Ran 1 command"])
 check("a priority that matches a named level shows the name; any other number shows as it is",
       [e["detail"] for e in commandlog.entries(root, "alpha") if e.get("n") == 900], ["high", "default", "120"])
 commandlog.record(root, "alpha", _commands.REGISTRY.parse(["todos", "priority", "140", "high"])[0], "2099-01-01T00:00:06+00:00")
