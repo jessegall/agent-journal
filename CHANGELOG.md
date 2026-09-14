@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.127.0 — Questions are answered where they show up, not from a sidebar page
+
+Open questions now appear in the top bar's Notifications list, counted in the bell's badge,
+and can be answered right there: pick an option and Save, or write an answer. A to-do,
+message or other item that an open question is about shows the same answer box under the
+question in its own panel. Questions is no longer in the sidebar; its page still opens from
+links. The question panel, the notifications list and those inline spots share one answer
+component.
+
 ## 1.126.0 — Search inside one resource: journal todos search <term>
 
 To-dos, messages, questions, reports, suggestions, reminders, pins, rules, work and
