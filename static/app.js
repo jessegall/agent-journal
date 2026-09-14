@@ -1826,10 +1826,6 @@ const ActivityPanel = {
         </span>
       </div>
       <template v-if="data">
-        <div v-if="data.agent" class=activity-agent>
-          <div class=activity-meta><span class="env-dot live"></span>Agent<span v-if="data.agent.seen"> · {{ data.agent.seen }}</span></div>
-          <div v-if="data.agent.text" class="activity-text clamp">{{ data.agent.text }}</div>
-        </div>
         <div class=activity-list>
           <template v-for="(e, i) in data.events" :key="i">
             <a v-if="href(e)" class="activity-row activity-link" :href="href(e)">
@@ -1944,6 +1940,11 @@ const App = {
         </div>
         <div class="group activity" v-if="activity.data && act.mode === 'sidebar'">
           <ActivityPanel :data="activity.data" :href="activityHref" mode="sidebar" :setMode="setMode"/>
+        </div>
+        <div v-if="activity.data" class=side-foot>
+          <span :class="['env-dot', {live: activity.data.agent}]"></span>
+          <span v-if="activity.data.agent">Agent working · {{ activity.data.agent.seen || 'just now' }}</span>
+          <span v-else>No agent working</span>
         </div>
       </aside>
       <main class=main>
