@@ -654,6 +654,10 @@ check("an answered question's Asked line says answered and is no longer an open 
 check("a comment written in the viewer is an Activity line by you, titled with its text, opening what it is about",
       [(e["text"], e["by"], e["title"], e["about"]) for e in json.loads(body)["events"] if e["kind"] == "comment"][:1],
       [("Wrote comment", "You", "check the colour first", "todo:1")])
+commandlog.record(root, "alpha", _commands.REGISTRY.parse(["comments", "show", "1"])[0], "2099-01-02T00:00:01+00:00")
+_read_comment = [(e["text"], e["n"], e["detail"], e["about"]) for e in json.loads(get("/api/env/alpha/activity")[2])["events"]
+                 if e["text"] == "Reading comment"]
+check("reading one comment names what it is on, and opens it", _read_comment[:1], [("Reading comment", 1, "to-do 1", "todo:1")])
 check("the same line twice in a row shows once",
       len([e for e in json.loads(body)["events"] if e["kind"] == "report" and e["n"] == 5]), 1)
 _undescribed = sorted({f"{c.noun}:{c.verb}" for group in _commands.REGISTRY._commands.values() for c in group
