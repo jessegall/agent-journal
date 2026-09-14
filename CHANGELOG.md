@@ -4,6 +4,24 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.4 — The journal skill is split into a core skill and six focused ones
+
+The one long journal skill (842 lines) is now a core `journal` skill of about 290 lines. It covers the
+first decision on every request, tags, declaring work, choosing the environment, looking before you
+answer, starts and compactions, and hook holds. Beside it are six focused skills, each loading when
+its part comes up:
+
+- `journal-todos` — to-dos, blocking, auto mode and the loop, commit trailers.
+- `journal-questions` — asking the user, answers, suggestions.
+- `journal-messages` — messages and their replies, comments, notifications, the viewer and its channel.
+- `journal-memory` — pins, rules, reminders, the context-warning decision, cleanup.
+- `journal-docs` — reports, docs and tools.
+- `journal-agents` — dispatching subagents, grants, what a subagent may not do.
+
+The text moved as it was; nothing was dropped. The core skill lists the focused ones with when to load
+each. The start block, the refused question tool, the context warning and the upgrade notice name the
+skill the moment needs. `journal upgrade` installs all seven into `.claude/skills/`.
+
 ## 1.134.3 — The journal skill catches up
 
 The skill now says what shipped without it. A comment can be on a suggestion, a message or a piece of

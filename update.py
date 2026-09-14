@@ -41,7 +41,7 @@ def newer(a: str, b: str) -> bool:
 MESSAGES = {
     "upgraded": "THE JOURNAL WAS UPGRADED: {had} → {now}. What changed, newest first:",
     "version": "\n{version}[ — {head}]",
-    "reload": "\nRELOAD THE JOURNAL SKILL NOW — invoke the `journal` skill again — because its rules and commands "
+    "reload": "\nRELOAD THE JOURNAL SKILL NOW — invoke the `journal` skill again, and any `journal-*` skill you have loaded — because its rules and commands "
               "changed with this version and what you remember of it is stale.",
     "available": "AGENT-JOURNAL {version} IS AVAILABLE (this project has {have})[ — {headline}]. `journal upgrade` "
                  "copies it in and prints what changed; it runs no tests.",
