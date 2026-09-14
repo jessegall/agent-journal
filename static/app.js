@@ -1170,8 +1170,9 @@ const Reports = {
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reports`);
     const base = computed(() => `#/env/${props.env}/reports`);
-    const list = useFetch(() => props.env && `${api.value}?all=1`);
-    const item = useFetch(() => props.env && props.n && props.n !== "new" && `${api.value}/${props.n}`);
+    const reading = computed(() => props.n && props.n !== "new");
+    const list = useFetch(() => props.env && !reading.value && `${api.value}?all=1`);
+    const item = useFetch(() => props.env && reading.value && `${api.value}/${props.n}`);
     const creating = computed(() => [{
       label: "New report", method: "POST", url: api.value, submit: "Add report", leave: true,
       fields: [{ name: "title", label: "Title" }, { name: "body", label: "Text", kind: "area" },
@@ -1183,23 +1184,16 @@ const Reports = {
       return [{ label: "Archive", method: "DELETE", url: `${api.value}/${r.n}`, danger: true, submit: "Archive",
                 fields: [{ name: "why", label: "Why it is taken off the list" }] }];
     });
-    const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, creating, actions, done, base, REPORT_LIST };
+    const done = (body, a) => settle(body, a, reading.value ? "" : base.value, list, item);
+    return { list, item, reading, creating, actions, done, base, REPORT_LIST };
   },
   template: `
-    <TopBar :crumbs="[env, 'Reports']"><a class="btn new" :href="base + '/new'">New report</a></TopBar>
-    <div class=body>
-      <div class=list>
-        <ResourceList v-bind="REPORT_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
-          :href="(r) => base + '/' + r.n" :selected="(r) => String(r.n) === n"/>
-      </div>
-      <Panel v-if="n === 'new'" label="New report" :close="base">
-        <ActionBar :actions="creating" open="New report" :done="done"/>
-      </Panel>
-      <Panel v-else-if="n" :label="'Report #' + n" :close="base">
+    <template v-if="reading">
+      <TopBar :crumbs="[env, 'Reports', '#' + n]"><a class="btn new" :href="base">All reports</a></TopBar>
+      <div class=body><div class=page><div class=page-inner>
         <p v-if="item.error" class=error>{{ item.error }}</p>
         <template v-else-if="item.data">
-          <h2 class=p-title>{{ item.data.title }}</h2>
+          <h1 class=p-title>{{ item.data.title }}</h1>
           <dl class=props>
             <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
             <dt>For</dt><dd><a v-if="item.data.about && $refHref(item.data.about, env)" :href="$refHref(item.data.about, env)" class=chip>{{ item.data.about_label }}</a><span v-else class=muted>—</span></dd>
@@ -1208,8 +1202,20 @@ const Reports = {
           <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
           <div class="md prose" v-html="$md(item.data.body)"></div>
         </template>
-      </Panel>
-    </div>`,
+      </div></div></div>
+    </template>
+    <template v-else>
+      <TopBar :crumbs="[env, 'Reports']"><a class="btn new" :href="base + '/new'">New report</a></TopBar>
+      <div class=body>
+        <div class=list>
+          <ResourceList v-bind="REPORT_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+            :href="(r) => base + '/' + r.n"/>
+        </div>
+        <Panel v-if="n === 'new'" label="New report" :close="base">
+          <ActionBar :actions="creating" open="New report" :done="done"/>
+        </Panel>
+      </div>
+    </template>`,
 };
 
 const Questions = {
