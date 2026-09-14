@@ -368,7 +368,7 @@ doing real work over a long stretch, where losing the record at the end is the l
 A to-do is work that was **put off**: the user said later, or you found something and
 were told not to touch it yet. It is a titled file under `todo/<environment>/`, and the brief is
 what you will need in a week: what exactly, why, where to start, what the user said. Not
-for imagined work; "it might be nice to refactor this" is a message with a tag.
+for imagined work; "it might be nice to refactor this" is a suggestion (`journal suggest`), not a to-do.
 
 **A commit closes the to-do it finishes.** Put a trailer at the start of a line in the
 commit message — unindented, anywhere in it, the footer being where it is read — spelled as
@@ -554,6 +554,33 @@ understand it is a question they will answer wrong.
 **An answer can change.** The user answers from the viewer or the terminal, and may answer
 again: the new answer replaces the old one, which is kept, and the next stop tells you again,
 marked "(a new answer)". Act on the latest answer, not the one you remember.
+
+## Suggestions: propose, and let the user decide
+
+    journal suggest "<the change, in one line>" --brief [--about=<ref>]...   propose; the work goes on as asked
+    journal suggestions                              the ones waiting on the user
+    journal suggestions show <n>                     one in full, with the user's decision
+    journal suggestions withdraw <n> "<why>"         it stopped being worth it
+
+**When you think "we should do this differently", file it, do not say it.** A thought in a
+reply scrolls away; a suggestion waits in the viewer until the user accepts, adjusts or
+declines it. The title is the change. The brief says what you saw, what it costs now, and
+what it would cost later.
+
+**A suggestion never changes the work in hand.** Keep doing what was asked, the way it was
+asked, until the user decides. If the asked way is wrong — it breaks something — that is
+`[!blocked]` or a question, not a suggestion.
+
+**Not a suggestion:** something the user asked for (a to-do), a choice you can make under
+the rules that stand (make it), or a matter of taste.
+
+**Accept, adjust and decline are the user's**, from the viewer or their own terminal, and
+are refused when you run them. Accepting or adjusting files a to-do; with auto off, it waits
+for the user's word like any other. **A decline is a ruling:** do not file it again in other
+words. Only something that has changed reopens it, and `--despite=<n> --because="<what changed>"`
+says what. At most five wait on the user per environment.
+
+The next stop tells you what the user decided. Act on the latest decision.
 
 ## Notifications: tell the user, sparingly
 
@@ -749,7 +776,7 @@ The noun answers to `env`, `envs`, `environment`, `tracks` and `track` as well.
 ## If a hook holds or denies you
 
 Read what it says and do that one thing. A hold is one line, and holds come one per
-stop in a fixed order — claimed, environment, inbox, loop, context, deferral, untagged, questions, work, auto — so what
+stop in a fixed order — claimed, environment, inbox, comments, loop, context, deferral, untagged, questions, suggestions, work, auto — so what
 you are shown is the first thing owed, and the next stop shows the next. When the line ends with
 "details: `.journal/journal.py next`", run that first: it prints the full text of the
 hold, which to-do is next, the questions the user answered, or what is filling the
@@ -762,6 +789,8 @@ thing to do now.
 | *the user left N new message(s) for you — … nothing is blocked* | finish the step you are on, then process them the same way |
 | *the user commented on to-do N*                                | act on what it asks, then `comments done <n> "<what was done>"` |
 | *the user answered question N*                                 | act on the answer; `journal questions show <n>` reads it in full |
+| *the user decided suggestion N*                                | accepted or adjusted: a to-do was filed, work it like any other; declined: drop it and do not file it again |
+| *your reply proposes a change nobody asked for*                | a hint: `journal suggest "<the change>" --brief` if the user should decide it; otherwise ignore |
 | *AUTO IS ON, so the question tool is refused*                  | `questions add "<question>" --about=<ref>` and carry on with what does not depend on it |
 | *N message(s) carried no tag*                                  | tag your next message; it will not hold for those lines again |
 | *N piece(s) of work still open*                                | `work end` it, `update` where it got to, or `work await "<what>"` if it is in flight |

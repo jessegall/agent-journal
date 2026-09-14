@@ -107,6 +107,18 @@ turn("and now", "[!reply] still fine")
 label, text = testkit.hold(fire("Stop", stop_hook_active=False))
 check("and not twice", "drop the render cache" in (text or ""), False)
 
+# ------------------------------------------------------------------ a reply that proposes a change earns a quiet hint
+turn("fix the parser", "[!reply] Fixed it. We could also drop the old cache entirely, it is never read.")
+out = fire("Stop", stop_hook_active=False)
+check("a reply proposing a change nobody asked for is told a suggestion exists, without a hold",
+      ("proposes a change" in out, "journal.py suggest" in out, '"decision": "block"' in out), (True, True, False))
+out = fire("Stop", stop_hook_active=False)
+check("once per reply", "proposes a change" in out, False)
+turn("what do you think we should do about the cache?", "[!reply] We could drop it; it is never read.")
+check("not when the user asked for an opinion", "proposes a change" in fire("Stop", stop_hook_active=False), False)
+turn("rename the flag", "[!reply] Renamed. Nothing else changed.")
+check("not when the reply proposes nothing", "proposes a change" in fire("Stop", stop_hook_active=False), False)
+
 # ------------------------------------------------------------------ the user's verbs are the user's
 out = fire("PreToolUse", tool_name="Bash", tool_input={"command": ".journal/journal.py suggestions accept 4"})
 check("the agent running accept is refused", "deny" in out, True)

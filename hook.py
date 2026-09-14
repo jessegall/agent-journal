@@ -318,6 +318,9 @@ MESSAGES = {
     "count_row": "{n}  {cmd}",
     "count_carry": "      journal carry",
     "count_carry_what": "all of it, in full, in one read",
+    "count_suggestions": "waiting on the user's decision; `journal suggest \"<the change>\" --brief` proposes one",
+    "suggest_hint_fact": "your reply proposes a change nobody asked for — «{said}»",
+    "suggest_hint_do": 'if the user should decide it: `.journal/journal.py suggest "<the change>" --brief`; otherwise ignore this',
     "counts": "WHAT ELSE STANDS HERE — the number is the command's, not a summary:\n{rows}",
     "keep_loop": "KEEP A LOOP RUNNING while auto is on, if none is: the `loop` skill with `{m}m journal next`, so that "
                  "an idle session comes back every {m} minutes and carries on until nothing is left it can do; stop "
@@ -494,6 +497,18 @@ def _deferral(conf: dict, ctx: Ctx) -> tuple[str, str] | None:
     return say("deferral_do"), say("deferral_why", said=said)
 
 
+def _filed(here: str) -> int:
+    """How many to-dos, suggestions and questions exist here: a rise since the prompt means one was filed."""
+    import questions
+    import suggestions
+    return (len(todo._all(ROOT, here)) + len(suggestions._all(ROOT, here)) + len(questions._all(ROOT, here)))
+
+
+_PROPOSES = re.compile(r"\b(?:we could|we might want to|it (?:might|would) be (?:better|cleaner|simpler) to|"
+                       r"i(?:'d| would) (?:suggest|recommend)|consider (?:switching|moving|replacing|dropping|using)|"
+                       r"a (?:better|cleaner) (?:way|approach) would be|worth (?:switching|reconsidering))\b[^.!?\n]*", re.I)
+
+
 def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     """The moment the user asks. Record whether they asked for work; remind if work is open.
 
@@ -504,7 +519,8 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     prompt = str(payload.get("prompt") or "")
     asked = asks.asks_for_work(prompt)
     here = tracks.current(ROOT, ctx.stem)
-    state.put(ROOT, "prompt", {"asked": asked, "todos": len(todo.open_items(ROOT, here))},
+    state.put(ROOT, "prompt", {"asked": asked, "todos": len(todo.open_items(ROOT, here)),
+                               "opinion": asks.asks_opinion(prompt), "filed": _filed(here)},
               stem=ctx.stem)
     # THE CHOICE COMES FIRST, and it rides the prompt because the prompt is what decides
     # it. It is repeated on every prompt until an environment is taken: a session that
@@ -1078,6 +1094,32 @@ def _p_suggestions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool
             rows.append(say(f"decided_{st}", n=n, title=s["title"], todo=questions.label(s["became"])))
     head = say("decided_one", n=fresh[0][0]) if len(fresh) == 1 else say("decided_many", n=len(fresh))
     return _say(head, say("decided_do"), rows=rows)
+
+
+@nudges.subject("suggest_hint", 47)
+def _p_suggest_hint(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    """A reply that proposes a change and filed nothing: say once that a suggestion exists for that. Never held."""
+    if ctx.path is None:
+        return None
+    asked = state.get(ROOT, "prompt", None, stem=ctx.stem)
+    if not asked or asked.get("opinion") or _filed(here) > asked.get("filed", 0):
+        return None
+    if (state.get(ROOT, "suggest_hints", 0, stem=ctx.stem) or 0) >= 3:
+        return None
+    got = transcript.last_reply(ctx.path)
+    if not got:
+        return None
+    text, uid = got
+    if uid in (state.get(ROOT, "suggest_hint_at", "", stem=ctx.stem), state.get(ROOT, "deferral_at", "", stem=ctx.stem)):
+        return None
+    plain = re.sub(r"```.*?```|`[^`]*`", " ", text, flags=re.S)
+    plain = "\n".join(l for l in plain.splitlines() if not l.lstrip().startswith(">"))
+    m = _PROPOSES.search(plain)
+    if not m:
+        return None
+    state.put(ROOT, "suggest_hint_at", uid, stem=ctx.stem)
+    state.put(ROOT, "suggest_hints", (state.get(ROOT, "suggest_hints", 0, stem=ctx.stem) or 0) + 1, stem=ctx.stem)
+    return _said(say("suggest_hint_fact", said=fmt.gist(m.group(0), 90)), say("suggest_hint_do"))
 
 
 @nudges.subject("auto", 60)
@@ -2709,6 +2751,7 @@ def _counts(here: str) -> str:
         (len(rem.live(ROOT)), "journal reminders", say("count_reminders")),
         (len(todo.open_items(ROOT, here)), "journal todos", _todo_note(here)),
         (len(tools._all(ROOT)), "journal tools", say("count_tools")),
+        (len(__import__("suggestions").open_items(ROOT, here)), "journal suggestions", say("count_suggestions")),
     ]
     have = [(say("count_row", n=str(n).rjust(4), cmd=cmd), what) for n, cmd, what in rows if n]
     # THE HEADING BELONGS TO THE ROWS. With none of them standing it announced an empty

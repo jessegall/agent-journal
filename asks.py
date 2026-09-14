@@ -151,3 +151,13 @@ def asks_for_work(text: str) -> bool:
         if _ACTION_NOUN.search(clause) and any(w in WORK_VERBS for w in words):
             return True
     return False
+
+
+_OPINION = re.compile(r"\b(?:what do you think|what would you|should we|would you|do you think|your (?:opinion|take|view)|"
+                      r"any (?:ideas|suggestions)|suggest|recommend|options?|pros and cons|which is better)\b|\?\s*$", re.I)
+
+
+def asks_opinion(text: str) -> bool:
+    """The prompt asks what the agent thinks, so a proposal in the reply is the answer, not a suggestion to file."""
+    return bool(_OPINION.search(text or ""))
+

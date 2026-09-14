@@ -187,6 +187,8 @@ holds while messages wait; the first tool call after a new one mentions it once.
 
 **The viewer**
 
+    journal suggest "<the change>" [--about=<ref>] --brief   propose a change nobody asked for; the user decides
+    journal suggestions [--all]      waiting ones; `suggestions withdraw <n> "<why>"` takes one back
     journal notify "<what finished>" [--about=<ref>]   a notification on the user's Home; only what they want to hear about
     journal notifications [--all]    the unread ones; `notifications read <n>` marks one read
     journal reports [--all]          what the user asked to have checked or researched, for the user to read
