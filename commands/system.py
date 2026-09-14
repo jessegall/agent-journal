@@ -315,6 +315,7 @@ class Channel(Command):
 class Claude(Command):
     signature = ("claude {prompt*? : what to ask Claude first} {--continue} {--resume= : a session id} "
                  "{--dry-run}")
+    passthrough = True
 
     def run(self, p: Parsed) -> int:
         import os
@@ -328,6 +329,7 @@ class Claude(Command):
             command.append("--continue")
         if p.option("resume"):
             command += ["--resume", p.option("resume")]
+        command += p.passthrough_options()
         if p.arg("prompt"):
             command.append(p.arg("prompt"))
         if p.option("dry-run"):

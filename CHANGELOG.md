@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.69 — `journal claude` passes your other flags to Claude
+
+`journal claude` refused any flag it did not know, so `journal claude --continue
+--dangerously-skip-permissions` failed. Now every flag it does not use itself goes straight to
+`claude`, in the order you typed it, before the prompt. `--dry-run` is still the journal's own.
+Give a flag's value with `=`, as in `--model=sonnet`; a value after a space is read as part of the
+prompt.
+
 ## 1.131.68 — A subagent shows on the environment it works on
 
 The agents list in the Activity header showed no subagents. A subagent's own id is bound to no

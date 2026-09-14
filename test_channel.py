@@ -127,5 +127,16 @@ check("journal claude adds the channel if it is missing and shows the command it
        "claude --dangerously-load-development-channels server:journal --continue 'fix the build'" in out),
       (0, True, True))
 
+code, out = j("claude", "--dry-run", "--continue", "--dangerously-skip-permissions", "--model=sonnet",
+             "fix", "the", "build")
+check("journal claude passes undeclared flags through to claude, in order, before the prompt",
+      (code, "claude --dangerously-load-development-channels server:journal --continue "
+             "--dangerously-skip-permissions --model=sonnet 'fix the build'" in out),
+      (0, True))
+
+code, out = j("channel", "--bogus")
+check("a command that does not opt into passthrough still refuses an unknown option",
+      (code, "unknown option '--bogus'" in out), (1, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

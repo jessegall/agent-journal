@@ -231,7 +231,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal serve [--port=<n>] [--open]   a local web viewer over this journal on 127.0.0.1, at 8420 or the next free port; it restarts itself when the journal's code changes — Ctrl-C to stop",
         "journal statusline [--install]   the one line Claude Code's status bar shows: environment, open work, viewer; --install adds it to .claude/settings.json",
         "journal channel --install       add the journal's channel server to .mcp.json, so a message left in the viewer wakes an idle session (start Claude with --dangerously-load-development-channels server:journal)",
-        "journal claude [prompt]         start Claude with the channel, adding it to .mcp.json first if needed; --continue, --resume=<id>, --dry-run to only show the command",
+        "journal claude [prompt]         start Claude with the channel, adding it to .mcp.json first if needed; --continue, --resume=<id>, --dry-run to only show the command; any other flag is passed through to claude",
         "journal enable / journal disable   the kill switch: disable makes every hook inert — no hold, no gate, no context — until enable; the USER's call, never the agent's own idea",
     ),
 }
