@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.124.1 — The agent status dot reads clearly as working or not
+
+The small marker beside "Agent active" in the sidebar footer and beside each environment
+name is now a round dot: solid green with a soft pulse while an agent is working, an empty
+grey ring when none is. It was a faint square with a green edge. With reduced motion
+turned on, the dot stays still.
+
 ## 1.124.0 — Lists sort by a field, with an arrow that flips the direction
 
 Each list group's header shows what it sorts by, "ID" or "Priority", as buttons (or just
