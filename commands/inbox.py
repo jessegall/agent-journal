@@ -107,6 +107,14 @@ class Done(Resource):
     action = "done"
 
 
+class Reply(Resource):
+    signature = "messages:reply {n : a message number} {text* : what you did, a clarification, or a call you made}"
+    casts = MESSAGE
+    writes = True
+    controller = CONTROLLER
+    action = "reply"
+
+
 class Archive(Resource):
     signature = "messages:archive {n : a message number} {why* : why it no longer needs anything done}"
     casts = MESSAGE
@@ -123,4 +131,4 @@ class Move(Resource):
     action = "move"
 
 
-COMMANDS = (List, Show, Add, Edit, Process, File, Done, Archive, Move)
+COMMANDS = (List, Show, Add, Edit, Process, File, Done, Reply, Archive, Move)
