@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.14 — Activity is newest first again
+
+1.132.13 moved the newest Activity line to the bottom; you preferred it at the top after all. The
+newest line is first again. When a line arrives, the list returns to the top unless the pointer is over
+it, and new lines slide in from above, as in 1.131.90.
+
 ## 1.132.13 — Activity reads top to bottom, newest last
 
 As you chose on question 19, the Activity column now lists the newest line at the bottom, right above
