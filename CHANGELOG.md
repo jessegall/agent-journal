@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.119.2 — Home shows only the counts that call for something
+
+Home's counts are now: messages waiting, questions for you, suggestions, to-dos in
+progress and blocked to-dos. Open to-dos, pins, reminders and documents are gone from
+Home; their pages still show them.
+
+On windows narrower than 1440px, Home's empty panel column is hidden until you pick a row,
+so the list has room for its titles beside the Activity column and the counts fit on one
+line. Wider windows keep the empty column with its faint icon.
+
 ## 1.119.1 — Older Activity lines open what they name too
 
 Lines logged before 1.118.0, like "Filing message 101", had no link. What they name is now
