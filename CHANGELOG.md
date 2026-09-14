@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.62 — Activity says what the agent is waiting on
+
+When the agent waited on something (a subagent, a build, a review), Activity said only
+"Waiting on something". It now shows what the agent named, for example "Waiting on · the
+reviewer subagent finishing", and the footer under the agent's status reads the same.
+
 ## 1.131.61 — Jump between the journals running on this machine
 
 Each project's viewer runs on its own port, so with two projects open you had to know which

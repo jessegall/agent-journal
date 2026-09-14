@@ -49,7 +49,7 @@ NUMBER_ARG = {"docs:files": "doc", "docs:part": "doc", "docs:final": "doc", "doc
               "docs:title": "doc", "docs:paths": "doc", "docs:archive": "doc", "docs:move": "doc", "docs:attach": "doc",
               "docs:detach": "doc", "rules:strike": "id", "rules:inject": "id", "rules:uninject": "id"}
 # the argument whose value Activity shows after the number, like "high" for a priority
-DETAIL = {"todos:priority": "value", "reports:keep": "days", "switch:": "name", "environments:switch": "name",
+DETAIL = {"todos:priority": "value", "reports:keep": "days", "switch:": "name", "environments:switch": "name", "work:await": "what",
           "environments:": "name", "environments:show": "name", "environments:remove": "name",
           "environments:prepare": "name", "environments:claim": "name", "prepare:": "name", "claim:": "name",
           "grant:": "name", "tools:run": "name", "tools:show": "name", "tools:add": "name", "tools:set": "name",
@@ -94,7 +94,7 @@ DESCRIBE = {
     "questions:withdraw": "Withdrawing question {n}",
     "work:start": "Starting work",
     "work:update": "Noting progress",
-    "work:await": "Waiting on something",
+    "work:await": "Waiting on",
     "work:end": "Ending work",
     "pins:list": "Reading pins",
     "pins:show": "Reading pin {n}",
@@ -250,7 +250,7 @@ WEB_SHOWN = {"todos:store", "todos:done", "inbox:store", "questions:answer", "co
              "work:note", "work:end"}
 WEB_KINDS = {**KINDS, "inbox": "message", "notifications": None}
 # the field a viewer write carries that Activity shows after the number
-WEB_DETAIL = {"todos:update": "priority", "todos:priority": "value", "reports:keep": "days"}
+WEB_DETAIL = {"todos:update": "priority", "todos:priority": "value", "reports:keep": "days", "work:wait": "what"}
 # a write whose body changes only this field reads as this line instead
 WEB_FIELD = {"todos:update": ("priority", "Changed to-do priority")}
 
@@ -336,7 +336,7 @@ WEB = {
     "tools:adopt": "Added an existing tool",
     "work:update": "Edited work {n}",
     "work:destroy": "Removed work {n}",
-    "work:wait": "Waiting on something",
+    "work:wait": "Waiting on",
     "comments:done": "Closed comment {n}",
 }
 

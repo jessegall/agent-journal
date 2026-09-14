@@ -726,6 +726,10 @@ commandlog.record(root, "alpha", _commands.REGISTRY.parse(["todos", "priority", 
 check("setting a priority names the to-do and the value",
       [(e["text"], e["n"], e["detail"]) for e in commandlog.entries(root, "alpha") if e.get("detail") == "high" and e.get("by") != "You"],
       [("Setting to-do priority", 140, "high")])
+commandlog.record(root, "alpha", _commands.REGISTRY.parse(["work", "await", "the reviewer finishing"])[0], "2099-01-01T00:00:07+00:00")
+check("waiting names what the agent waits on",
+      [(e["text"], e["detail"]) for e in commandlog.entries(root, "alpha") if e["at"] == "2099-01-01T00:00:07+00:00"],
+      [("Waiting on", "the reviewer finishing")])
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
