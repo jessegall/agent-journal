@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.105.1 — a row that moves after a refresh is shown before it goes
+
+When a list refreshes and a row changes group (a to-do started, done, a message processed) or
+leaves the list, it stays where it was for about two and a half seconds with a blue highlight,
+then moves. A row that appears in a list already on screen gets the same highlight briefly.
+Nothing is highlighted on the first load of a page.
+
 ## 1.105.0 — the viewer has a Suggestions page
 
 Each environment has a Suggestions page, listed in the Environment section of the sidebar with
