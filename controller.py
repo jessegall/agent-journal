@@ -16,7 +16,34 @@ MESSAGES = {
     "bad_id": "{resource} {action} wants a number, got {id}",
     "no_item": "there is no {noun} {id}",
     "wrong_payload": "{resource} {action} takes a {kind}, not a {given}",
+    "search_wants": "search for what? journal {resource} search <a word or phrase>",
 }
+
+# resource -> the fields `search` reads, first one names the item
+SEARCHABLE = {"todos": ("title", "body"), "inbox": ("text",), "questions": ("text", "answer"),
+              "reports": ("title", "body"), "suggestions": ("title", "body"), "reminders": ("text",),
+              "pins": ("fact",), "rules": ("fact",), "work": ("subject", "notes"), "comments": ("text",)}
+
+
+def _is_open(m) -> bool:
+    if hasattr(m, "state"):
+        return m.state == "open"
+    for name in ("open", "waiting", "standing"):
+        if hasattr(m, name):
+            return bool(getattr(m, name))
+    if hasattr(m, "closed"):
+        return not m.closed
+    return not getattr(m, "archived", "")
+
+
+def _lines(m, names: tuple) -> list[str]:
+    out = []
+    for name in names:
+        value = getattr(m, name, "") or ""
+        texts = [x.get("text", "") for x in value if isinstance(x, dict)] if isinstance(value, list) else [str(value)]
+        for text in texts:
+            out.extend(line for line in text.splitlines() if line.strip())
+    return out
 
 
 def say(message: str, /, **values) -> str:
@@ -76,7 +103,31 @@ class Controller:
     scoped = True           # served under /api/env/<env>/; False for project-wide, None for both
 
     def payload_for(self, action: str) -> type[Payload] | None:
+        if action == "search" and self.resource in SEARCHABLE:
+            from payloads.docs import SearchPayload
+            return SearchPayload
         return self.payloads.get(action, Payload) if action in self.actions else None
+
+    def search(self, root: Path, p: Payload) -> Result:
+        """Lines of this resource that mention the term, open items first; closed ones are counted unless --all."""
+        needle = (p.term or "").lower()
+        if not needle:
+            return Result("refused", say("search_wants", resource=self.resource))
+        names = SEARCHABLE[self.resource]
+        hits, closed = [], 0
+        for m in self.repository(root, p).query():
+            live = _is_open(m)
+            lines = _lines(m, names)
+            title = " ".join((_lines(m, names[:1]) or [""])[0].split())[:80]
+            for i, line in enumerate(lines, 1):
+                if needle not in line.lower():
+                    continue
+                if live or p.all:
+                    hits.append({"n": m.n, "title": title, "line": i, "text": line, "open": live})
+                else:
+                    closed += 1
+        hits.sort(key=lambda h: (not h["open"], -h["n"], h["line"]))
+        return Result("ok", "", hits, {"closed": closed})
 
     def repository(self, root: Path, payload: Payload):
         raise NotImplementedError

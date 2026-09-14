@@ -219,6 +219,16 @@ DESCRIBE = {
     "tools:remove": "Retiring a tool",
     "tools:index": "Rebuilding the tools index",
     "tools:run": "Running a tool",
+    "todos:search": "Searching the to-dos",
+    "messages:search": "Searching your messages",
+    "questions:search": "Searching questions",
+    "reports:search": "Searching reports",
+    "suggestions:search": "Searching suggestions",
+    "reminders:search": "Searching reminders",
+    "pins:search": "Searching pins",
+    "rules:search": "Searching rules",
+    "work:search": "Searching work",
+    "comments:search": "Searching comments",
 }
 
 

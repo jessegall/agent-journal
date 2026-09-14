@@ -82,6 +82,7 @@ the claim rather than erasing it, so being wrong about one is cheap.
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin — bare `journal todo "<title>"` is the same
     journal todos [--all]            the titles, numbered — `journal todos list` is the same
     journal todos show N             the whole brief — bare `journal todo N` is the same
+    journal todos search <term> [--all] [--page=N]   every line of the open to-dos that mentions it, grouped by to-do; --all adds closed ones. Messages, questions, reports, suggestions, reminders, pins, rules, work and comments have the same `search`
     journal todos start N             open work with that title; `work end` closes both
     journal todos done N "<how>"      resolved without starting it
     journal todos reopen N "<why>"    undo a close; the reason and the close it undoes are kept
@@ -118,6 +119,7 @@ A brief on stdin:
     journal messages "<message>"         leave a message for the agent — `journal messages add "<message>"` is the same
     journal messages [--page=N] [--order=asc|desc]   waiting messages first, then processed ones
     journal messages show N              the message, the parts it was split into and what each became, and the questions about it
+    journal messages search <term> [--all]   every line of the waiting messages that mentions it; --all adds processed and archived ones
     journal messages process N --part="<words>" --became=<ref> [--became=<ref>]   one part: the words it quotes, and what it became — todo 22, pin 3, rule 2, reminder 1, question 4, work or noted
     journal messages file N <name> "doc <doc>"|keep   an attached file: copied into the doc (the held copy removed), or kept
     journal messages archive N "<why>"   off the list, kept with its reason; it no longer waits
@@ -134,6 +136,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal questions add "<question>" [--about=<ref>]... [--description="<context>"] [--option="<a choice>"]...   ask; never halts the session. A ref is todo 22, doc 4.1, pin 3, rule 2 or inbox 5; each --option is a choice the user can click in the viewer
     journal questions [--all]         open first, then answered; --all adds withdrawn ones
     journal questions show N          the question, what it is about, and the answer
+    journal questions search <term> [--all]   questions and answers that mention it; --all adds answered and withdrawn ones
     journal questions answer N "<answer>"   the user answers; answering again adds a new answer, the old one is kept, and the agent is told again
     journal questions edit N "<question>"   reword it
     journal questions link N <ref>    about one more thing — `questions unlink N <ref>` takes one off
