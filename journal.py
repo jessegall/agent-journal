@@ -174,9 +174,9 @@ def _dispatch(argv: list[str]) -> int:
             import commandlog
             from app import now
             at = now()
-            commandlog.record(_ROOT, _state.current_track(_ROOT), parsed, at)
-            # the tool uses queued before this command end with it; written after, so Activity lists them under it
+            # the tool uses queued before this command end with it; written first, so newest-first lists them under it
             commandlog.flush_tools(_ROOT, _state.current_track(_ROOT), _stem(), at)
+            commandlog.record(_ROOT, _state.current_track(_ROOT), parsed, at)
         except Exception as e:  # the activity line must never stop the command
             print(f"journal activity: {e}", file=sys.stderr)
     return parsed.command.run(parsed)

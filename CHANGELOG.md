@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.30 — Activity lines from the same second read newest first
+
+When the agent ran two journal commands within the same second, Activity listed the earlier
+one on top. Lines from the same second now follow the order they happened, newest first,
+like the rest of the list. A summed tool line such as "Ran 2 commands" still sits under the
+journal command that ended its count.
+
 ## 1.131.29 — Activity sums up the agent's other tool use
 
 Activity showed the journal commands the agent ran, but not the rest of its work between
