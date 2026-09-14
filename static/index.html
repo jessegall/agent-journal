@@ -210,7 +210,9 @@
   .row.fresh { background: rgba(99, 132, 255, .08); animation: row-tint-in 2.5s ease-out both; }
   .row.moving { background: rgba(201, 149, 94, .04); animation: row-tint-out 2.5s ease-in both; }
   /* inside a rounded block the tint rounds too, so the block's corners do not clip it */
-  .block .row.moving, .block .row.fresh { border-radius: 9px; }
+  /* a highlight rounds only where its row meets the card's rounded top or bottom edge */
+  .block .lgroup:first-child > .rows:first-child > .row:first-child:is(.moving, .fresh) { border-top-left-radius: 9px; border-top-right-radius: 9px; }
+  .block .lgroup:last-child > .rows:last-child > .row:last-child:is(.moving, .fresh) { border-bottom-left-radius: 9px; border-bottom-right-radius: 9px; }
   @media (prefers-reduced-motion: reduce) {
     .row.fresh { animation: none; background: rgba(99, 132, 255, .12); }
     .row.moving { animation: none; background: rgba(201, 149, 94, .14); }

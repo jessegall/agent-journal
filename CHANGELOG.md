@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.72 — Row highlights on Home keep a straight edge in the middle of a list
+
+When a row on Home was highlighted, because it was new or had just moved, the highlight had
+rounded corners on every row, so rows in the middle of a list looked like separate pills. Now a
+highlight is square, and rounds only on the corners where its row meets the list's rounded top or
+bottom edge.
+
 ## 1.131.71 — A message you send shows in Activity right away
 
 After sending a message from the Messages page or from the box under Activity, the "Wrote message"
