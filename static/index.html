@@ -372,7 +372,8 @@
   .home-body > .panel { width: auto; }
   .panel-link { color: inherit; text-decoration: none; }
   .panel-link:hover { color: var(--text); text-decoration: underline; }
-  .block { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  /* a block is a list container too, so Home's lists narrow their columns beside an open panel */
+  .block { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; container: list / inline-size; }
   .block .row:last-child { border-bottom: none; }
   .block .ghead { position: static; }
 
