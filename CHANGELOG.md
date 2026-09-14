@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.106.1 — the sidebar's Activity section runs edge to edge
+
+The sidebar no longer pads its sides as a whole; each section pads itself. The Activity
+section's top border now spans the full width of the sidebar, while everything inside it keeps
+the same inset as before.
+
 ## 1.106.0 — choosing a question's option no longer sends it
 
 Clicking one of a question's options only selects it; a Save answer button sends the choice,
