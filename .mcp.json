@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "journal": {
+      "command": "python3",
+      "args": [
+        ".journal/channel.py"
+      ]
+    }
+  }
+}
