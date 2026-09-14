@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.3 — Activity says which setting you changed
+
+Changing a setting in the viewer showed only "Changed the settings" in Activity. The line now says
+what changed: "Turned auto mode on", "Activity shows the last 80 line(s)", "Reports stay listed
+for 7 day(s)". Several settings changed at once are listed together.
+
 ## 1.132.2 — A status icon stays beside its text
 
 In a panel's Status row, a long status such as "Being handled · the agent read it 1 minute ago" wrapped
