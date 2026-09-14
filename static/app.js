@@ -1619,7 +1619,26 @@ const DocDetail = {
       ];
     });
     const done = (body, a) => settle(body, a, "", s);
-    return { s, restParts, citedHref, actions, done, fileUrl, isImage, envs };
+    // one part at a time is edited in place; saving replaces its text and keeps the old one under struck/
+    const editing = reactive({ p: null, text: "", saving: false, error: "" });
+    const startEdit = (part) => { Object.assign(editing, { p: part.p, text: part.body || "", saving: false, error: "" }); };
+    const cancelEdit = () => { editing.p = null; editing.error = ""; };
+    const saveEdit = async () => {
+      if (editing.saving || editing.p === null || !s.data) return;
+      editing.saving = true;
+      editing.error = "";
+      try {
+        await send("PATCH", `/api/docs/${s.data.n}.${editing.p}`, { body: editing.text });
+        editing.p = null;
+        s.reload();
+        changed();
+      } catch (err) {
+        editing.error = err.message;
+      } finally {
+        editing.saving = false;
+      }
+    };
+    return { s, restParts, citedHref, actions, done, fileUrl, isImage, envs, editing, startEdit, cancelEdit, saveEdit };
   },
   template: `
     <TopBar :crumbs="['Documents', s.data ? '#' + s.data.n : docref]"/>
@@ -1637,15 +1656,26 @@ const DocDetail = {
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'doc' + s.data.n"/>
         <div><p class=section-label>Abstract</p><p class=prose>{{ s.data.abstract }}</p></div>
-        <div v-if="s.data.part">
-          <p class=section-label>{{ s.data.n }}.{{ s.data.part.p }} {{ s.data.part.title }}</p>
-          <div class="md prose" v-html="$md(s.data.part.body)"></div>
-        </div>
-        <div v-else-if="s.data.body" class="md prose" v-html="$md(s.data.body)"></div>
-        <div v-for="p in restParts" :key="p.p" :id="'part-' + p.p">
-          <p class=section-label>{{ s.data.n }}.{{ p.p }} {{ p.title }}<span v-if="p.age"> · {{ p.age }}</span></p>
-          <div class="md prose" v-html="$md(p.body)"></div>
-        </div>
+        <div v-if="!s.data.part && s.data.body" class="md prose" v-html="$md(s.data.body)"></div>
+        <section v-for="p in (s.data.part ? [s.data.part] : []).concat(restParts)" :key="p.p" :id="'part-' + p.p"
+          :class="['doc-part', {editing: editing.p === p.p}]">
+          <header class=doc-part-head>
+            <span class=doc-part-num>{{ s.data.n }}.{{ p.p }}</span>
+            <span class=doc-part-title>{{ p.title }}</span>
+            <span v-if="p.age" class=doc-part-age>{{ p.age }}</span>
+            <button v-if="editing.p !== p.p" type=button class=btn :aria-label="'Edit part ' + s.data.n + '.' + p.p" @click="startEdit(p)">Edit</button>
+          </header>
+          <form v-if="editing.p === p.p" class=doc-part-edit @submit.prevent="saveEdit">
+            <textarea v-model="editing.text" :aria-label="'Text of part ' + s.data.n + '.' + p.p" :disabled="editing.saving"
+              @keydown.meta.enter.prevent="saveEdit" @keydown.ctrl.enter.prevent="saveEdit" @keydown.esc.prevent="cancelEdit"></textarea>
+            <div class=doc-part-edit-bar>
+              <button type=submit class="btn primary" :disabled="editing.saving">Save</button>
+              <button type=button class=btn :disabled="editing.saving" @click="cancelEdit">Cancel</button>
+              <span class=hint>{{ editing.error || 'The old text is kept under struck/' }}</span>
+            </div>
+          </form>
+          <div v-else class="doc-part-body md prose" v-html="$md(p.body)"></div>
+        </section>
         <div v-if="s.data.attachments.length" class=files>
           <p class=section-label>Files</p>
           <template v-for="a in s.data.attachments" :key="a.name">

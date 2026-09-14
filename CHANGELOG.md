@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.32 — Document parts are blocks you can edit
+
+On a document's page the parts ran together, so it was hard to see where one ended and the
+next began, and a part could not be changed from the viewer. Each part is now its own
+bordered block, with its number, title and age in a header. The header has an **Edit**
+button, shown on hover and reachable with the keyboard, that opens the part's text in place.
+Saving replaces the text, the same as `journal docs replace <doc>.<p>`, and the old text is
+kept under `struck/`. Cancel leaves the part as it was.
+
 ## 1.131.31 — The footer says whether the agent is working
 
 The sidebar footer's dot blinked for any agent seen in the last day, and during a long tool
