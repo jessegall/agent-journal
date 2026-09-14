@@ -264,6 +264,29 @@ for cmd, want in (('.journal/journal.py pin "a fact"', True),
           bool(testkit.denied(out)), want)
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Edit", tool_input={})
 check("a subagent's edit is not gated on open work", out.strip(), "")
+for cmd in ('J=.journal/journal.py; $J pins add "fact"', 'bash -c ".journal/journal.py pins add fact"',
+            'JOURNAL=.journal/journal.py; "$JOURNAL" rules add "x"'):
+    code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash", tool_input={"command": cmd})
+    check(f"a subagent's journal write behind a variable or bash -c is still seen and refused: {cmd[:36]}",
+          bool(testkit.denied(out)), True)
+code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
+                      tool_input={"command": '.journal/journal.py pins add "unclosed'})
+check("a journal line a subagent's hook cannot read is refused", bool(testkit.denied(out)), True)
+import grants as _grants  # noqa: E402
+state.put(d / ".journal", _grants.KEY, ["default"], stem="s1")
+for cmd, want in (('.journal/journal.py --env="default" --as="abc" todos done 1 "fixed"', True),
+                  ('.journal/journal.py --env="default" --as="abc" work end "the work" --todo', True),
+                  ('.journal/journal.py --env="default" --as="abc" suggestions accept 1', True),
+                  ('.journal/journal.py --env="default" --as="abc" todos report 1 "fixed"', False)):
+    code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash", tool_input={"command": cmd})
+    check(f"a lent subagent may report a row but not close it or decide a suggestion: {cmd[45:80]}",
+          bool(testkit.denied(out)), want)
+state.put(d / ".journal", _grants.KEY, [], stem="s1")
+check("the briefing a subagent is given shows --as on its example writes",
+      _grants.say("briefing", head="h", name="n").count('--as="<your name>"'), 2)
+code, out, err = fire(d, "PreToolUse", path, tool_name="Bash",
+                      tool_input={"command": "python3 - <<'PY'\nprint('.journal/journal.py suggestions accept 1')\nPY"})
+check("a heredoc that only mentions a suggestion decision is data, not a decision", "user's decision" in out, False)
 # a stop alone is not a subagent: the harness's own helpers stop with an agent_id, call no tool and keep no transcript
 import agents as _agents_seen  # noqa: E402
 _track_seen = lambda: {a for m in (_agents_seen.seen(d / ".journal") or {}).values() for a in m}
