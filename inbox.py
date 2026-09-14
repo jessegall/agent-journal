@@ -11,7 +11,7 @@ from templates import render
 KEY = "inbox"
 
 KINDS = {"todo": "to-do", "pin": "pin", "rule": "rule", "reminder": "reminder", "question": "question"}
-PLAIN = ("work", "noted")
+PLAIN = ("work", "noted", "answered")
 
 _REF = re.compile(r"^\s*(to-?dos?|pins?|rules?|reminders?|questions?)\s*[:#\s]\s*(\d+)\s*$", re.I)
 
@@ -28,6 +28,9 @@ MESSAGES = {
     "label": "{kind} {n}",
     "plain_work": "a work update",
     "plain_noted": "noted",
+    "plain_answered": "answered",
+    "answered_part": "answered part of message {n} ({excerpt}); the user is notified and reads it under the message",
+    "answer_note": "Answered your question in message {n}",
     "needs_text": 'a message needs its text: journal messages add "<message>"',
     "added": "message {n} is left for the agent ({waiting} waiting to be processed)",
     "no_such": "there is no message {n}. `journal messages` numbers them.",
@@ -56,6 +59,8 @@ MESSAGES = {
     "cmd_process_what": "record one part and what it became",
     "cmd_ask": 'journal questions add "<question>" --about="inbox {n}"',
     "cmd_ask_what": "a part you do not understand becomes a question",
+    "cmd_reply": 'journal messages reply {n} "<the answer>" --part="<the question\'s words>"',
+    "cmd_reply_what": "a part that asks something: answer it; the user is notified",
     "cmd_done": "journal messages done {n}",
     "cmd_done_what": "mark it processed once every part is recorded",
     "reply_what": 'say the reply: journal messages reply {n} "<what you did, or what you decided>"',
@@ -450,9 +455,12 @@ def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tup
     return True, say("moved", n=n, env=dst, there=len(there))
 
 
-def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
-    """A short answer under a message: what was done, a clarification, a call the agent made. Any status."""
+def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: str | None = None,
+          part: str = "") -> tuple[bool, str]:
+    """A short answer under a message: what was done, a clarification, a call the agent made. Any status.
+    With `part`, it answers the question those words ask: the part is recorded as answered and the user is notified."""
     text = (text or "").strip()
+    part = " ".join((part or "").split())
     if not text:
         return False, say("reply_what", n=n)
     with state.locked(root):
@@ -460,9 +468,21 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
         m, err = _find(items, n)
         if m is None:
             return False, err
-        m.setdefault("replies", []).append({"text": text, "at": at, "source": source})
+        if part and _flat(part) not in _flat(m["text"]):
+            return False, say("not_in_message", n=n)
+        if part and m.get("processed"):
+            return False, say("already_processed", n=n)
+        m.setdefault("replies", []).append({"text": text, "at": at, "source": source, **({"part": part} if part else {})})
+        if part:
+            m.setdefault("parts", []).append({"excerpt": part, "became": ["answered"], "at": at})
         _put(root, items, track)
-    return True, say("replied", n=n)
+    if not part:
+        return True, say("replied", n=n)
+    if source != "web":
+        import notifications
+        if not notifications.add(root, say("answer_note", n=n), at, f"inbox {n}", source, track)[0]:
+            notifications.add(root, say("answer_note", n=n), at, "", source, track)
+    return True, say("answered_part", n=n, excerpt=fmt.gist(part, 60))
 
 
 def mark_read(root: Path, numbers: list[int], at: str, track: str | None = None) -> None:
@@ -564,6 +584,7 @@ def show_text(d: dict) -> str:
     if d["status"] == "waiting":
         out += ["", fmt.commands([(say("cmd_process", n=n), say("cmd_process_what")),
                                   *([(say("cmd_file", n=n), say("cmd_file_what"))] if d.get("files") else []),
+                                  (say("cmd_reply", n=n), say("cmd_reply_what")),
                                   (say("cmd_ask", n=n), say("cmd_ask_what")),
                                   (say("cmd_done", n=n), say("cmd_done_what"))])]
     return "\n".join(out)
@@ -575,7 +596,7 @@ def row_response(n: int, m: dict) -> dict:
         "status": "archived" if m.get("archived") else "moved" if m.get("moved_to") else "processed" if m.get("processed") else "waiting",
         "archived": m.get("archived") or "",
         "closed_at": m.get("archived_at") or m.get("processed") or "",
-        "replies": [{"text": r["text"], "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "",
+        "replies": [{"text": r["text"], "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "", "part": r.get("part") or "",
                      "who": say("reply_user") if r.get("source") == "web" else say("reply_agent")}
                     for r in m.get("replies") or []],
         "moved_to": m.get("moved_to") or "",

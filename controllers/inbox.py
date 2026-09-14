@@ -6,7 +6,7 @@ import fmt
 import inbox
 from controller import Controller, Payload, Result
 from payloads.common import ListingPayload, MovePayload, TextPayload, WhyPayload
-from payloads.inbox import AttachPayload, DetachPayload, FilePayload, ProcessPayload, StorePayload
+from payloads.inbox import AttachPayload, DetachPayload, FilePayload, ProcessPayload, StorePayload, ReplyPayload
 
 
 class InboxController(Controller):
@@ -16,7 +16,7 @@ class InboxController(Controller):
     numbered = ("show", "update", "process", "file", "detach", "attach", "done", "move", "destroy", "reply")
     payloads = {"index": ListingPayload, "store": StorePayload, "update": TextPayload, "process": ProcessPayload,
                 "file": FilePayload, "detach": DetachPayload, "attach": AttachPayload, "move": MovePayload,
-                "destroy": WhyPayload, "reply": TextPayload}
+                "destroy": WhyPayload, "reply": ReplyPayload}
     # a processed or moved message is the record of what it became
     EDITS = frozenset({"update", "process", "file", "done", "move"})
 
@@ -92,9 +92,10 @@ class InboxController(Controller):
     def destroy(self, root: Path, p: WhyPayload) -> Result:
         return Result.of(inbox.archive(root, p.id, p.why, p.at, p.env or None), self._row(root, p, p.id))
 
-    def reply(self, root: Path, p: TextPayload) -> Result:
+    def reply(self, root: Path, p: ReplyPayload) -> Result:
         # a reply is allowed on any message, processed or not, so it is not one of the EDITS
-        return Result.of(inbox.reply(root, p.id, p.text, p.at, source=p.source, track=p.env or None), self._row(root, p, p.id))
+        return Result.of(inbox.reply(root, p.id, p.text, p.at, source=p.source, track=p.env or None,
+                                     part=p.part if p.has("part") else ""), self._row(root, p, p.id))
 
     def done(self, root: Path, p: Payload) -> Result:
         return Result.of(inbox.done(root, p.id, p.at, p.env or None), self._row(root, p, p.id))

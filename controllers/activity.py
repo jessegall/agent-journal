@@ -15,6 +15,7 @@ MESSAGES = {
     "question_answered": "Answered question",
     "message_left": "Wrote message",
     "message_processed": "Filed message",
+    "message_answered": "Answered your question",
     "suggestion_made": "Suggested a change",
     "comment_written": "Wrote comment",
     "comment_handled": "Handled comment",
@@ -173,6 +174,9 @@ class ActivityController(Controller):
                 continue
             add(m.get("at"), "message", say("message_left"), n, USER, True)
             add(m.get("processed"), "message", say("message_processed"), n, AGENT, detail=became(m))
+            for r in m.get("replies") or []:
+                if r.get("part") and r.get("source") != "web":
+                    add(r.get("at"), "message", say("message_answered"), n, AGENT)
         comments_mod = __import__("comments")
         about_of: dict[int, str] = {}
         for order, c in enumerate(commandlog.entries(root, env)):

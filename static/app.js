@@ -1207,7 +1207,8 @@ const MessagePanel = {
           <p class=section-label>Replies</p>
           <div class=linked>
             <div v-for="(r, i) in item.data.replies" :key="i" class=sub>
-              <div class=muted>{{ r.who === 'the agent' ? 'The agent' : 'You' }} · {{ r.age || 'just now' }}</div>
+              <div class=muted>{{ r.who === 'the agent' ? 'The agent' : 'You' }}{{ r.part ? ' answered' : '' }} · {{ r.age || 'just now' }}</div>
+              <blockquote v-if="r.part" class=reply-part>{{ r.part }}</blockquote>
               <div class="md prose" v-html="$md(r.text)"></div>
             </div>
           </div>
@@ -2718,7 +2719,8 @@ const App = {
     const AWAY_WORDS = [["Closed to-do", "to-do closed", "to-dos closed"], ["Added to-do", "to-do added", "to-dos added"],
                         ["Ended work", "piece of work finished", "pieces of work finished"], ["Filed message", "message filed", "messages filed"],
                         ["Asked question", "question for you", "questions for you"], ["Suggested a change", "suggestion", "suggestions"],
-                        ["Handled comment", "comment handled", "comments handled"]];
+                        ["Handled comment", "comment handled", "comments handled"],
+                        ["Answered your question", "question of yours answered", "questions of yours answered"]];
     let awayTimer = null;
     const onVisibility = () => {
       if (document.hidden) { away.since = away.since || new Date().toISOString(); return; }

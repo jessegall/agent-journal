@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.99 — The agent answers the questions in a message
+
+When a message asks the agent something ("are we doing this already?"), the agent answers that part
+instead of filing it away. It replies with `journal messages reply <n> "<the answer>" --part="<the
+question's words>"`. That records the part as answered, puts the answer under the quoted question in
+the message's Replies, sends you a notification, and shows "Answered your question" in Activity. The
+rest of the message is handled as before. The skill, and the commands listed under a shown message,
+tell the agent to do this.
+
 ## 1.131.98 — Coming back to the tab: no pile-up, and what happened meanwhile
 
 After a while on another tab, every change arrived at once when you came back. Rows lingered and

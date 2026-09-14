@@ -147,7 +147,7 @@ class Done(Resource):
 
 
 class Reply(Resource):
-    signature = "messages:reply {n : a message number} {text* : what you did, a clarification, or a call you made}"
+    signature = "messages:reply {n : a message number} {text* : what you did, a clarification, or a call you made} {--part=}"
     casts = MESSAGE
     writes = True
     controller = CONTROLLER
