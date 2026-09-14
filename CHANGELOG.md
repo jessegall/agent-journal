@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.128.7 — A closed to-do says plainly how it was closed
+
+A to-do closed by `work end --todo` now reads "Closed: its work ended" instead of "Closed:
+closed with the work that finished it"; to-dos closed that way before show the new wording
+too. A to-do closed by a commit trailer reads "Closed: commit 60c651f1a: <the commit's
+subject>", so it is clear a commit closed it.
+
 ## 1.128.6 — The sort control in list headers is smaller and sits at the right edge
 
 In each list group header, the sort field and its arrow are smaller and fainter, and they
