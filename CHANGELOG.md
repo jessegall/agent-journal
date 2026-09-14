@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.67 — New and Archive sit in the bar above each list
+
+The buttons that belong to a list, New (New to-do, New pin, Start work and so on) and Archive,
+moved out of the top bar into the bar right above the list, beside its count ("3 open"). The top
+bar keeps the page's name and the tools that work on every page. Documents and Tools have their
+New button there too.
+
+The hide button in the Activity column's header is gone. The Activity button in the top bar
+still shows and hides the column.
+
 ## 1.131.66 — See which agents are working, and when one hands work to a subagent
 
 When the agent dispatches a subagent, Activity now shows "Dispatched a subagent" with the
