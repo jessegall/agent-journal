@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.26 — The tests remove the projects they make
+
+Every test scenario built a throwaway project in the system's temporary folder and never removed it.
+After many runs there were 47,698 of them, the disk filled, and every command failed until they were
+deleted. `testkit.make` now removes the temporary folder around each project when the test process
+exits; `cleanup=False` keeps one that a child process builds for its parent to use. Only a `tmp…`
+folder directly in the temporary folder is ever removed. A test checks both.
+
 ## 1.136.25 — The skills name the holds the way the hook prints them
 
 The core skill tells an agent that has been held to look the line up in its table. Several rows no longer
