@@ -2048,8 +2048,10 @@ const App = {
           </a>
         </div>
         <div v-if="activity.data" class=side-foot>
-          <span :class="['env-dot', {live: activity.data.agent}]" :title="activity.data.agent ? 'An agent is working' : 'No agent is working'"></span>
-          <span>Agent</span>
+          <div class=side-foot-head>
+            <span>Agent</span>
+            <span :class="['env-dot', {live: activity.data.agent}]" :title="activity.data.agent ? 'An agent is working' : 'No agent is working'"></span>
+          </div>
           <span v-if="latest" class=side-foot-now
             :title="[latest.text, latest.n, latest.detail].filter(Boolean).join(' ')">{{ [latest.text, latest.n, latest.detail].filter(Boolean).join(' ') }}</span>
           <span v-if="latest" class=side-foot-age>{{ latest.age || 'just now' }}</span>

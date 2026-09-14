@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.128.1 — The sidebar footer: Agent with a blinking dot, a divider, then what it is doing
+
+The agent status at the bottom of the sidebar has a top row with "Agent" on the left and the
+status dot at the far right; the dot blinks while an agent is working and is a grey ring
+when none is. A faint line divides that row from the agent's latest activity and its time
+below. With reduced motion on, the dot does not blink.
+
 ## 1.128.0 — Comments show up in Activity, yours and the agent's
 
 Writing a comment is now an Activity line, "Wrote comment", by You when it was written in
