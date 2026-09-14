@@ -562,8 +562,8 @@ const PRIORITIES = [{ value: "low", label: "Low" }, { value: "default", label: "
 const GROUPS = [
   { key: "progress", label: "In progress" },
   { key: "waiting", label: "Waiting on the user" },
-  { key: "open", label: "Open" },
   { key: "blocked", label: "Blocked" },
+  { key: "open", label: "Open" },
   { key: "done", label: "Done" },
 ];
 const STATUS_LABEL = Object.fromEntries(GROUPS.map((g) => [g.key, g.label]));
