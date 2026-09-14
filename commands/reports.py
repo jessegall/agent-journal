@@ -89,4 +89,12 @@ class Keep(Resource):
     action = "keep"
 
 
-COMMANDS = (List, Show, Add, Archive, Keep)
+class ToDoc(Resource):
+    signature = "reports:doc {n : a report number}"
+    casts = REPORT
+    writes = True
+    controller = CONTROLLER
+    action = "todoc"
+
+
+COMMANDS = (List, Show, Add, Archive, Keep, ToDoc)

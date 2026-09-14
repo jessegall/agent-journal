@@ -1181,8 +1181,13 @@ const Reports = {
     const actions = computed(() => {
       const r = item.data;
       if (!r || r.archived) return [];
-      return [{ label: "Archive", method: "DELETE", url: `${api.value}/${r.n}`, danger: true, submit: "Archive",
-                fields: [{ name: "why", label: "Why it is taken off the list" }] }];
+      return [
+        { label: "Turn into doc", method: "POST", url: `${api.value}/${r.n}/todoc`, submit: "Turn into doc",
+          note: "A document is made from this report and kept for good; the report is archived.",
+          follow: (body) => (body.data && body.data.doc ? `#/docs/${body.data.doc}` : null) },
+        { label: "Archive", method: "DELETE", url: `${api.value}/${r.n}`, danger: true, submit: "Archive",
+          fields: [{ name: "why", label: "Why it is taken off the list" }] },
+      ];
     });
     const done = (body, a) => settle(body, a, reading.value ? "" : base.value, list, item);
     return { list, item, reading, creating, actions, done, base, REPORT_LIST };
@@ -1198,6 +1203,7 @@ const Reports = {
             <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
             <dt>For</dt><dd><a v-if="item.data.about && $refHref(item.data.about, env)" :href="$refHref(item.data.about, env)" class=chip>{{ item.data.about_label }}</a><span v-else class=muted>—</span></dd>
             <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
+            <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a></dd></template>
           </dl>
           <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
           <div class="md prose" v-html="$md(item.data.body)"></div>

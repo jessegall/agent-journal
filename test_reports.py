@@ -77,6 +77,15 @@ check("keep 0 keeps reports listed", (code, "until archived by hand" in out, "an
 code, out = j("reports", "keep", "7")
 check("keep 7 sets a week", (code, "for 7 day(s)" in out, "an old measurement" in j("reports")[1]), (0, True, False))
 
+# ------------------------------------------------------------------ a report turned into a document is kept
+code, out = j("reports", "add", "worth keeping", "--brief", stdin="The finding that matters.\nMore detail.\n")
+_keep = len(json.loads(f.read_text())["reports"])
+code, out = j("reports", "doc", str(_keep))
+check("a report is turned into a doc", (code, "is now doc" in out), (0, True))
+check("the doc holds the report's title and text", ("worth keeping" in j("docs", "--all")[1],), (True,))
+check("the report is archived, pointing at the doc", ("worth keeping" in j("reports")[1], "turned into doc" in j("reports", "--all")[1]), (False, True))
+check("twice is refused", j("reports", "doc", str(_keep))[0], 1)
+
 # ------------------------------------------------------------------ after 30 days a report is removed for good
 j("reports", "add", "an ancient note", "--brief", stdin="from long ago\n")
 data = json.loads(f.read_text())
