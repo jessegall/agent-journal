@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.34 — A stray character is gone from the viewer script
+
+1.131.33 left an invisible NUL character in `static/app.js`, inside the marker for the Custom
+answer option. Browsers ignored it, so the viewer worked, but tools like `grep` treated the
+whole file as binary and found nothing in it. The marker is now written without it. Custom
+answer works the same.
+
 ## 1.131.33 — A custom answer is one of the options
 
 A question with options had its options, and a separate box underneath for writing your
