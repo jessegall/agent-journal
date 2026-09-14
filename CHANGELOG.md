@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.55 — An upgrade leaves the source's Claude Code config behind
+
+Upgrading from a git checkout copied every tracked file, and that included the checkout's own
+`.mcp.json` and `.claude/` folder: its channel setup, its hook settings and its installed
+skill copies. They landed in `.journal/`, where nothing reads them, and would have gone out
+to every project that upgrades from it. They are no longer copied. The skill still installs
+from `skill/`, and your project's `.claude/settings.json` is still set up the usual way.
+
 ## 1.131.54 — A continued session starts back on its environment
 
 Quitting Claude freed the session's environment, and `claude --continue` or `--resume` then

@@ -637,6 +637,10 @@ subprocess.run(["git", "-C", str(g), "add", "hook.py", ".gitignore"], capture_ou
 (g / "new.py").write_text("")
 check("a checkout's package is what git counts: tracked, and new but not ignored",
       [str(f) for f in install._package_files(g)], [".gitignore", "hook.py", "new.py"])
+(g / ".mcp.json").write_text("{}"); (g / ".claude").mkdir(); (g / ".claude" / "settings.json").write_text("{}")
+subprocess.run(["git", "-C", str(g), "add", ".mcp.json", ".claude/settings.json"], capture_output=True, timeout=30)
+check("and never the checkout's own Claude Code config, tracked or not",
+      [str(f) for f in install._package_files(g)], [".gitignore", "hook.py", "new.py"])
 
 # with nothing open, a line that starts work first may write; one that writes first may not
 d, path = project_with(2)
