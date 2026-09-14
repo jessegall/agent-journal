@@ -165,6 +165,13 @@ check("and the next one does not repeat it", "new message" in fire("PostToolUse"
 j("inbox", "add", "one more thing")
 check("a newer message is mentioned in its turn", "1 new message(s)" in fire("PostToolUse", **read), True)
 
+# ------------------------------------------------------------------ a tool call mentions a new comment once
+j("todos", "add", "a thing to comment on")
+j("comments", "add", "todo 1", "please check this one first")
+check("the first tool call after a comment mentions it, even while the stop is busy with messages",
+      "1 new comment(s)" in fire("PostToolUse", **read), True)
+check("and the next one does not repeat it", "new comment" in fire("PostToolUse", **read), False)
+
 # ------------------------------------------------------------------ a message carries files
 import re  # noqa: E402
 _src = Path(tempfile.mkdtemp())
