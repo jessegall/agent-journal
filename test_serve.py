@@ -559,6 +559,13 @@ post("/api/env/alpha/notifications", {"text": "a"}); post("/api/env/alpha/notifi
 status, got = post("/api/env/alpha/notifications/readall", {})
 check("mark all read", (status, got.get("message", "").startswith("2 notification")), (200, True))
 
+status, got = post("/api/env/alpha/environment/settings", {"reports_archive_days": 7})
+check("the Settings page sets how long reports stay listed", status, 200)
+status, _, body = get("/api/env/alpha/environment")
+check("and reads it back", json.loads(body).get("reports_archive_days"), 7)
+status, got = post("/api/env/alpha/environment/settings", {"reports_archive_days": -1})
+check("a negative number is refused", status, 400)
+
 state.put(root, serve.VIEWER_PORT, srv.server_port)
 check("the viewer is found on the port it recorded", serve.running(root).startswith("http://127.0.0.1:"), True)
 import views  # noqa: E402

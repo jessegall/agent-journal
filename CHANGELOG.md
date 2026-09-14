@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.108.0 — reports archive themselves after a set number of days
+
+A report older than the environment's setting — 30 days unless changed — is off the reports
+list and shows under `--all` as archived, "older than N day(s)". Nothing is written or deleted:
+raise the number, or set 0, and the report is listed again. Set it on the environment's
+Settings page in the viewer, or with `journal reports keep <days>`.
+
 ## 1.107.1 — opening a panel on Home no longer moves the page
 
 Home keeps a column for its side panel at all times, about a quarter of the width, showing

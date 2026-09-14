@@ -81,4 +81,12 @@ class Archive(Resource):
     action = "destroy"
 
 
-COMMANDS = (List, Show, Add, Archive)
+class Keep(Resource):
+    signature = "reports:keep {days : days a report stays listed on this environment, 0 to keep them}"
+    casts = {"days": number("a number of days")}
+    writes = True
+    controller = CONTROLLER
+    action = "keep"
+
+
+COMMANDS = (List, Show, Add, Archive, Keep)

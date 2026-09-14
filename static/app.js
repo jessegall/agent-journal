@@ -1722,7 +1722,13 @@ const Settings = {
       note: s.data ? `This deletes its ${s.data.pins} pin(s), ${s.data.todos} open to-do(s), its open work and its messages for good. Docs stay with the project.` : "",
     }]);
     const done = () => { changed(); location.hash = "#/"; };
-    return { s, auto, setAuto, removing, done };
+    const keeping = computed(() => (s.data ? [{
+      label: "Change", method: "POST", url: `${api.value}/settings`, submit: "Save",
+      fields: [{ name: "reports_archive_days", label: "Days a report stays listed (0 keeps them)", value: String(s.data.reports_archive_days) }],
+      shape: (p) => ({ reports_archive_days: parseInt(p.reports_archive_days, 10) }),
+    }] : []));
+    const kept = () => { s.reload(); changed(); };
+    return { s, auto, setAuto, removing, done, keeping, kept };
   },
   template: `
     <TopBar :crumbs="[env, 'Settings']"/>
@@ -1736,6 +1742,13 @@ const Settings = {
             <Switch label="Work through the to-do list without asking" :modelValue="s.data.auto" @update:modelValue="setAuto"/>
             <p class="prose muted">When this is on and nothing is open, the agent starts the next ready to-do by itself.</p>
             <p v-if="auto.error" class=error>{{ auto.error }}</p>
+          </div>
+        </section>
+        <section>
+          <div class=home-head><h2>Reports</h2></div>
+          <div class=setting>
+            <p class="prose muted">{{ s.data.reports_archive_days ? 'A report is archived ' + s.data.reports_archive_days + ' day(s) after it is written. It stays readable, and shows again if you raise the number.' : 'Reports stay listed until you archive them.' }}</p>
+            <ActionBar :actions="keeping" :done="kept" :key="'keep' + s.data.reports_archive_days"/>
           </div>
         </section>
         <section>

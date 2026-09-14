@@ -195,6 +195,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal reports [--all]          what the user asked to have checked or researched, for the user to read
     journal reports add "<title>" [--about="todo 22"] --brief   file one; never a doc, never handed to a session
     journal reports archive <n> "<why>"   take one off the list
+    journal reports keep <days>      a report older than this is archived (30 by default, 0 never); also on the environment's Settings page
     journal comments [--all]         what the user said about a to-do, doc, pin, rule or reminder
     journal comments done <n> "<what was done>"   a comment is handled
     journal serve [--port=8420]      the web viewer on 127.0.0.1: every resource, with the same actions the commands have, and Search and Settings per environment
