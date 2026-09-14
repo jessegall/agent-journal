@@ -230,6 +230,13 @@ code, out = j("messages", "attach", str(_dn), f"--file={_src / 'late.txt'}")
 check("a second file of the same name gets its own name", (code, (_dheld / "late-2.txt").is_file()), (0, True))
 check("added from the terminal, it leaves no comment", "added late.txt" in j("comments", "--all")[1], False)
 
+# ------------------------------------------------------------------ a follow-up comment on a message
+code, out = j("comments", "add", f"message {_dn}", "one more thing: it only happens on Safari")
+check("a comment can be about a message", code, 0)
+check("the comments list names the message it is on", f"message {_dn}" in j("comments")[1], True)
+code, out = j("comments", "add", "message 999", "about a message that is not there")
+check("a comment on a message that does not exist is refused", code, 1)
+
 # ------------------------------------------------------------------ archive
 code, out = j("messages", "add", "never mind this one")
 _an = int(re.search(r"message (\d+)", out).group(1))
