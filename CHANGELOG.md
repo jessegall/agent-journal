@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.122.0 — Activity lines show the number on the right, and titles only where they add something
+
+Each line's wording no longer carries the number: "Closed to-do" with a muted "#98" on the
+right. The item's title shows under a line only when the line introduces something (Left
+message, Added to-do, Asked question, Started work, a new report or document). Lines that
+read, file or close something already shown have no second line, so a message's text is
+not repeated under every line about it.
+
 ## 1.121.0 — Activity can be hidden, and brought back from the top bar
 
 The Activity header has a button that hides the column. An Activity button in the top
