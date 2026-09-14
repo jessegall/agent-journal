@@ -67,7 +67,7 @@ DIR = "todo"
 STRUCK = "struck"
 FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how",
           "blocked", "after", "assigned", "reported", "by", "doc", "reopened", "moved_from",
-          "priority")
+          "priority", "suggestion")
 
 MESSAGES = {
     "from_messages": "from the user's message {ns:, }",

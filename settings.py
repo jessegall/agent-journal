@@ -159,6 +159,8 @@ DEFAULTS = {
     "session_stale_hours": 24.0,
     # How often, at most, a session runs the mechanical cleanup pass itself and says what it found. 0 turns it off.
     "cleanup_every_minutes": 60,
+    # How many suggestions may wait on the user's decision per environment; one more is refused.
+    "suggestion_max_open": 5,
 
     # THE ORDER OF THE STOP QUEUE, by subject: lower runs first. {"work": 1} puts open work
     # at the head. The defaults are NOT restated here — a list in a comment beside a

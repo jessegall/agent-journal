@@ -9,13 +9,14 @@ import inbox
 import notifications
 import pins
 import reports
+import suggestions
 import questions
 import reminders
 import todo
 import tools
 import work
 from resources.base import Query, Repository
-from resources.models import Attachment, Claim, Comment, Doc, Notification, Report, Message, Part, Question, Reminder, Rule, Todo, Tool, Work
+from resources.models import Attachment, Claim, Comment, Doc, Notification, Report, Suggestion, Message, Part, Question, Reminder, Rule, Todo, Tool, Work
 
 
 class Todos(Repository[Todo]):
@@ -66,6 +67,13 @@ class Questions(Repository[Question]):
 
     def about(self, ref: str) -> Query[Question]:
         return self.query().where(lambda q: ref in q.links and not q.withdrawn)
+
+
+class Suggestions(Repository[Suggestion]):
+    model = Suggestion
+
+    def rows(self) -> list[dict]:
+        return suggestions._all(self.root, self.env or None)
 
 
 class Notifications(Repository[Notification]):

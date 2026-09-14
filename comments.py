@@ -9,9 +9,9 @@ from templates import render
 
 KEY = "comments"
 
-KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "reminder": "reminder"}
+KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "reminder": "reminder", "suggestion": "suggestion"}
 
-_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|reminders?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|reminders?|suggestions?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
 
 MESSAGES = {
     "label": "{kind} {num}",

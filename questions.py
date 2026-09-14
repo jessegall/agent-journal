@@ -11,9 +11,9 @@ from templates import render
 
 KEY = "questions"
 
-KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "inbox": "inbox message"}
+KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "inbox": "inbox message", "suggestion": "suggestion"}
 
-_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|inbox)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|inbox|suggestions?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
 
 MESSAGES = {
     "label": "{kind} {num}",
@@ -76,6 +76,9 @@ def check_ref(root: Path, ref: str, track: str | None = None) -> str | None:
         import docs
         return docs.check_ref(root, num)
     n = int(num)
+    if kind == "suggestion":
+        import suggestions
+        return None if 1 <= n <= len(suggestions._all(root, track)) else say("no_entry", kind=KINDS[kind], n=n, key="suggestions")
     if kind == "inbox":
         import inbox
         return None if 1 <= n <= len(inbox._all(root, track)) else say("no_entry", kind=KINDS[kind], n=n, key="inbox")

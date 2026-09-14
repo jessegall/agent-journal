@@ -145,6 +145,15 @@ MESSAGES = {
     "cleanup_clean_fact": "nothing in the record has evidence against it, but the reading pass was {never}",
     "cleanup_clean_do": "`.journal/journal.py cleanup read` — every rule and pin judged against the code — when the "
                         "work you just did touched what they claim",
+    "decided_one": "the user decided suggestion {n}",
+    "decided_many": "the user decided {n} suggestions",
+    "decided_do": "act on each decision; a declined one is a ruling and is not filed again; "
+                  "`.journal/journal.py suggestions show <n>` reads one in full",
+    "decided_accepted": "suggestion {n}: {title} → accepted, {todo} filed",
+    "decided_adjusted": "suggestion {n}: {title} → accepted with the user's change, {todo} filed",
+    "decided_declined": "suggestion {n}: {title} → declined[: {why}]",
+    "user_only": "`journal suggestions {verb}` is the user's decision to make, from the viewer or their own terminal. "
+                 "File the proposal and keep working; the next stop tells you what they decided.",
     "commented_one": "the user commented on {label}",
     "commented_many": "the user left {n} comments",
     "commented_do": "act on what each asks — amend, drop or answer what it is about — then "
@@ -1052,6 +1061,25 @@ def _told_with(here: str, rows: list[dict]) -> None:
         questions.mark_told(ROOT, here, ns, todo.now())
 
 
+@nudges.subject("suggestions", 46)
+def _p_suggestions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    import questions
+    import suggestions
+    fresh = suggestions.untold(ROOT, here)
+    if not fresh:
+        return None
+    suggestions.mark_told(ROOT, here, [n for n, _ in fresh], todo.now())
+    rows = []
+    for n, s in fresh:
+        st = suggestions.status(s)
+        if st == "declined":
+            rows.append(say("decided_declined", n=n, title=s["title"], why=s.get("declined") or None))
+        else:
+            rows.append(say(f"decided_{st}", n=n, title=s["title"], todo=questions.label(s["became"])))
+    head = say("decided_one", n=fresh[0][0]) if len(fresh) == 1 else say("decided_many", n=len(fresh))
+    return _say(head, say("decided_do"), rows=rows)
+
+
 @nudges.subject("auto", 60)
 def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     if work.open_work(ROOT):
@@ -1514,6 +1542,33 @@ def _journal_write(payload: dict) -> str | None:
     return None
 
 
+def _user_only(payload: dict) -> str | None:
+    """The verb of a journal command on this line that only the user may run, or None."""
+    if (payload.get("tool_name") or "") != "Bash":
+        return None
+    line = str((payload.get("tool_input") or {}).get("command", ""))
+    if "journal" not in line:
+        return None
+    import shlex
+    try:
+        toks = shlex.split(line)
+    except ValueError:
+        return None
+    for i, t in enumerate(toks[:-1]):
+        if "journal" not in t:
+            continue
+        j = i + 1
+        while j < len(toks) and toks[j].startswith("-"):
+            j += 1
+        if j >= len(toks) or not commands.REGISTRY.knows(toks[j]):
+            continue
+        end = next((k for k in range(j, len(toks)) if toks[k] in _SHELL_BREAKS), len(toks))
+        cmd = commands.REGISTRY.command_of(toks[j:end])
+        if cmd is not None and getattr(cmd, "user_only", False):
+            return cmd.signature.split()[0].partition(":")[2] or toks[j]
+    return None
+
+
 def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     """Refuse a write while no work is open. The one rule that stands IN THE PATH of an act.
 
@@ -1560,6 +1615,10 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     # after the question is already on screen.
     if payload.get("tool_name") == "AskUserQuestion" and todo.auto(ROOT, tracks.current(ROOT, ctx.stem)):
         return _deny(say("ask_denied"))
+    # A DECISION ON A SUGGESTION IS THE USER'S: the agent that proposed a change cannot also approve it.
+    mine = _user_only(payload)
+    if mine:
+        return _deny(say("user_only", verb=mine))
     # A WAIT ENDS WHEN THE WORK STARTS AGAIN, without being told. The user's ruling. `await`
     # buys silence, and that silence is right while the agent is blocked and wrong the
     # instant it is not — and the agent that has picked the work back up is the last thing
