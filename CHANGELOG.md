@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.115.1 — Activity shows only activity; whether an agent is working moves to a footer
+
+The agent's latest chat text and its "active" line are gone from the Activity panel. A small
+footer at the bottom of the sidebar says "Agent working · just now" or "No agent working".
+
 ## 1.115.0 — Work links to the to-do and document it was for
 
 A work item names the to-do it was started for (or the to-do with its title) and that

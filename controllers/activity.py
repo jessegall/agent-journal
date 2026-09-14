@@ -47,13 +47,9 @@ class ActivityController(Controller):
     @staticmethod
     def _agent(root: Path, env: str) -> dict | None:
         import tracks
-        import transcript
         for stem, info in tracks.live(root).items():
-            if info["track"] != env:
-                continue
-            path = transcript.find(root.parent, stem)
-            got = transcript.last_reply(path) if path else None
-            return {"session": stem[:8], "seen": tracks.age_text(info["age"]), "text": got[0] if got else ""}
+            if info["track"] == env:
+                return {"session": stem[:8], "seen": tracks.age_text(info["age"])}
         return None
 
     @staticmethod
