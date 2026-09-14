@@ -1,6 +1,6 @@
 ---
 name: journal-questions
-description: "Asking the user through the journal and proposing changes: `questions add` with a one-line question, `--description`, each choice as an `--option` and a `--pick` (never choices in the question's own text), acting on answers, and filing a suggestion instead of saying it. Use it before asking the user anything, when the question tool is refused, when a hold says a question was answered or a suggestion decided, and when you think something should be done differently. Not for subagents."
+description: "Asking the user through the journal and proposing changes: questions add with a one-line question, --description, each choice as its own --option and a --pick, never the choices written into the question's text; acting on answers; and filing a suggestion instead of saying it. Use it before you ask the user anything, including 'which do you prefer' or 'should I', whenever the question tool is refused, when a hold says a question was answered or a suggestion decided, and whenever you think something should be done differently than asked. Not for subagents."
 ---
 
 # Journal questions and suggestions

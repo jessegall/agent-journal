@@ -1,6 +1,6 @@
 ---
 name: journal-agents
-description: "Dispatching subagents under the journal: always name the model (haiku, sonnet, opus), lend an environment so a subagent may write (`grant`, `--env`, `--as`), what stays refused for a subagent, and assigning it rows. Use it before every Agent dispatch, when a subagent must write to the journal, and when a hook refuses a subagent's journal command."
+description: "Dispatching subagents under the journal: always name the model (haiku, sonnet, opus), lend an environment so a subagent may write (grant, --env, --as), what stays refused for a subagent, and assigning it rows. Use it before every Agent dispatch, whenever the user says use a subagent, run agents in parallel or delegate this, when a subagent must write to the journal, and when a hook refuses a subagent's journal command."
 ---
 
 # Journal subagents and grants

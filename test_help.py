@@ -478,6 +478,10 @@ check("every verb NEVER refuses is named in the skill",
       [v for v in sorted(_g.NEVER) if f"`{v}`" not in _skill], [])
 check("and the skill teaches the one rule the package ships: name the model",
       all(w in _skill for w in ("haiku", "sonnet", "opus")), True)
+# the split into focused skills once left the core skill without this rule: a dispatch does not
+# wait for journal-agents to load, so the core skill must say it on its own
+check("the core skill itself names the model rule, not only journal-agents",
+      all(w in _core for w in ("haiku", "sonnet", "opus")), True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
