@@ -3196,7 +3196,13 @@ def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
     return 0
 
 
+def on_subagent_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
+    """A subagent stopped; the subagent branch in main marks it finished. Nothing else about it is the journal's."""
+    return 0
+
+
 HANDLERS = {
+    "SubagentStop": on_subagent_stop,
     "SessionEnd": on_session_end,
     "session-end": on_session_end,
     "Stop": on_stop,
@@ -3236,7 +3242,7 @@ def main(raw: str | None = None) -> int:
         migrate.ensure(ROOT)
     event = payload.get("hook_event_name") or payload.get("event") or ""
     handler = HANDLERS.get(event)
-    if handler is None:
+    if handler is None or (handler is on_subagent_stop and not payload.get("agent_id")):
         return 0
     state.retire_old(ROOT)
     ctx = _ctx(payload)
@@ -3272,6 +3278,9 @@ def main(raw: str | None = None) -> int:
         here = tracks.current(ROOT, ctx.stem if ctx else None)
         # the subagent's own id is bound to nothing; it works on the environment of the session that sent it
         agents.heartbeat(ROOT, tracks.current(ROOT, _parent_of(payload)), aid, _parent_of(payload))
+        if handler is on_subagent_stop:
+            agents.finish(ROOT, tracks.current(ROOT, _parent_of(payload)), aid)
+            return 0
         lent = grants.granted(ROOT, _parent_of(payload))
         # ON THE TOOL'S RESULT, NOT BEFORE IT. `DELIVERS_CONTEXT` does not list PreToolUse
         # — the harness rejects `additionalContext` there, measured, and the reference

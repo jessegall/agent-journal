@@ -75,9 +75,9 @@ class AgentController(Controller):
         out = {"kind": kind, "id": full[:8], "env": env, "model": transcript.last_model(path), "has_transcript": path is not None}
         if kind == "subagent":
             parent = agents.parent_of(root, env, full)
-            working = agents.active(root, env, full, SUBAGENT_MINUTES)
+            working = agents.working(root, env, full)
             out.update(name=agents.described(root.parent, parent, full) or f"Subagent {full[:8]}",
-                       status="working" if working else "finished", seen=agents.age(root, env, full),
+                       status="working" if working else "finished" if agents.finished(root, env, full) else "idle", seen=agents.age(root, env, full),
                        parent=parent[:8], context=None, work=[], dispatched=[])
             return out
         live = tracks.live(root).get(full)
@@ -91,6 +91,6 @@ class AgentController(Controller):
                        if Path(str(w.get("session") or "")).stem == full and not w.get("removed")][::-1]
         parents = (state.get(root, agents.PARENT, {}) or {}).get(env) or {}
         out["dispatched"] = [{"id": a[:8], "name": agents.described(root.parent, full, a) or f"Subagent {a[:8]}",
-                              "working": agents.active(root, env, a, SUBAGENT_MINUTES), "age": agents.age(root, env, a)}
+                              "working": agents.working(root, env, a), "age": agents.age(root, env, a)}
                              for a, parent in parents.items() if parent == full]
         return out

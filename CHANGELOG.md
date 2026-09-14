@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.95 — The agents list splits active from idle
+
+The agents button in the Activity header lists agents under Active and Idle, and its count is the
+active ones. A session is active while it works and idle once it stops. An idle session drops off
+the list after 30 minutes. A subagent is active while it makes tool calls, idle after two quiet
+minutes, and finished the moment it stops.
+
+The journal now listens for Claude Code's SubagentStop event to know when a subagent stops.
+`journal upgrade` adds it to `.claude/settings.json`, as it does for the other events.
+
 ## 1.131.94 — Ask the agent for suggestions from the Suggestions page
 
 The Suggestions page has an "Ask for suggestions" button. It opens a panel where you can say what to
