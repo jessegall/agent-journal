@@ -93,5 +93,65 @@ check("really gone from disk — not moved anywhere", any(todo_dir.rglob("002-*.
 code, out = j("todos", "prune", "--older-than=nonsense")
 check("garbage age is refused, not silently treated as 0", code, 1)
 
+# ------------------------------------------------------------------ done to-dos archive themselves
+import prune as prune_mod  # noqa: E402
+import todo as todo_mod  # noqa: E402
+
+j("switch", "auto")
+auto_dir = root / "environments" / "auto" / "todo"
+
+
+def aged(n: int, days: int):
+    f = next(auto_dir.glob(f"{n:03d}-*.md"))
+    when = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat(timespec="seconds")
+    f.write_text(re.sub(r"^done: .*$", f"done: {when}", f.read_text(), flags=re.M))
+
+
+def listed():
+    return [t["n"] for t in todo_mod._all(root, "auto")]
+
+
+# the old layout: done to-dos from before this version, all still in the to-do folder itself
+for title in ("done long ago", "done last week", "done today", "still open"):
+    j("todos", "add", title)
+for n in (1, 2, 3):
+    j("todos", "done", str(n), "finished")
+aged(1, 20)
+aged(2, 8)
+check("a done to-do stays listed for 7 days by default", todo_mod.archive_days(root, "auto"), 7)
+check("before the sweep, the old layout lists every row", listed(), [1, 2, 3, 4])
+check("the sweep archives the done to-dos older than that", prune_mod.sweep(root, "auto").get("todos_archived"), 2)
+check("they are moved into archived/, not deleted",
+      sorted(f.name[:3] for f in (auto_dir / "archived").glob("*.md")), ["001", "002"])
+check("the list keeps the recent done one and the open one", listed(), [3, 4])
+check("a second sweep has nothing left to archive", "todos_archived" in prune_mod.sweep(root, "auto"), False)
+
+j("todos", "done", "4", "finished")
+aged(4, 10)
+prune_mod.sweep(root, "auto")
+check("with the highest-numbered to-do archived, the list is down to one", listed(), [3])
+code, out = j("todos", "add", "after the archive")
+check("a new to-do never takes an archived to-do's number", sorted(f.name[:3] for f in auto_dir.glob("*.md")), ["003", "005"])
+
+j("todos", "done", "5", "finished")
+aged(5, 60)
+prune_mod.sweep(root, "auto")
+check("a done to-do past 30 days is still deleted outright", any(auto_dir.rglob("005-*.md")), False)
+j("todos", "add", "after the deletion")
+check("and its number is not given out again either", sorted(f.name[:3] for f in auto_dir.glob("*.md")), ["003", "006"])
+
+code, out = j("todos", "keep", "0")
+check("todos keep 0 keeps done to-dos listed", (code, "until archived by hand" in out), (0, True))
+check("the setting is per environment", (todo_mod.archive_days(root, "auto"), todo_mod.archive_days(root, "t")), (0, 7))
+j("todos", "done", "6", "finished")
+aged(6, 10)
+prune_mod.sweep(root, "auto")
+check("with 0, the sweep archives nothing", listed(), [3, 6])
+check("a negative number of days is refused", todo_mod.set_archive_days(root, "auto", -1)[0], False)
+code, out = j("todos", "keep", "3")
+check("todos keep sets the days", (code, "3 day(s)" in out, todo_mod.archive_days(root, "auto")), (0, True, 3))
+prune_mod.sweep(root, "auto")
+check("and the next sweep uses them", listed(), [3])
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

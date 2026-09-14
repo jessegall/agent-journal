@@ -35,7 +35,7 @@ class TodosController(Controller):
     resource = "todos"
     noun = "to-do"
     actions = ("index", "show", "store", "update", "destroy", "done", "reopen", "start", "move", "ask",
-               "answer", "block", "unblock", "after", "report", "priority", "amend", "replace", "prune", "commit")
+               "answer", "block", "unblock", "after", "report", "priority", "amend", "replace", "prune", "keep", "commit")
     numbered = ("show", "update", "destroy", "done", "reopen", "start", "move", "ask", "answer", "block", "unblock",
                 "after", "report", "priority", "amend", "replace")
     payloads = {"index": todo_payloads.ListPayload, "store": todo_payloads.StorePayload,
@@ -45,6 +45,7 @@ class TodosController(Controller):
                 "after": todo_payloads.AfterPayload, "report": todo_payloads.ReportPayload,
                 "priority": todo_payloads.PriorityPayload, "amend": SectionPayload, "replace": SectionPayload,
                 "prune": todo_payloads.PrunePayload,
+                "keep": todo_payloads.KeepPayload,
                 "commit": todo_payloads.CommitPayload}
     # a closed row is the record of how it ended; reopening is the only way to change it
     EDITS = frozenset({"update", "destroy", "done", "start", "move", "ask", "block", "unblock", "after",
@@ -182,6 +183,9 @@ class TodosController(Controller):
 
     def replace(self, root: Path, p: SectionPayload) -> Result:
         return Result.of(todo.replace_section(root, self.env(root), p.id, p.title, p.body))
+
+    def keep(self, root: Path, p: todo_payloads.KeepPayload) -> Result:
+        return Result.of(todo.set_archive_days(root, self.env(root), p.days))
 
     def prune(self, root: Path, p: todo_payloads.PrunePayload) -> Result:
         return Result.of(todo.prune(root, self.env(root), p.older_than or p.before, p.at, p.force))

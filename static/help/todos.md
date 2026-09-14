@@ -26,3 +26,7 @@ With **auto mode** on, the agent works through the open to-dos by itself, one af
 - **Picking one up.** `journal todos start <n>` opens the work. The start of each session shows how many to-dos are waiting.
 - **Closing is explicit.** A to-do closes only through `journal todos done <n> "<how>"`, `journal work end "<title>" --todo`, or a commit trailer that names it. Ending work alone does not close it.
 - **Auto mode.** With it on, each stop with nothing open hands the agent the next to-do to start.
+
+## Old done to-dos
+
+A done to-do leaves the list on its own 7 days after it was closed. It is moved into the environment's `archived` folder, not deleted, and its number is never given to a new to-do. Change the number of days in Settings, or with `journal todos keep <days>`. 0 keeps done to-dos listed.

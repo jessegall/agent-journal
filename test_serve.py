@@ -581,6 +581,10 @@ status, _, body = get("/api/env/alpha/environment")
 check("and reads it back", json.loads(body).get("reports_archive_days"), 7)
 status, got = post("/api/env/alpha/environment/settings", {"reports_archive_days": -1})
 check("a negative number is refused", status, 400)
+status, got = post("/api/env/alpha/environment/settings", {"todos_archive_days": 14})
+status2, _, body = get("/api/env/alpha/environment")
+check("the Settings page sets how long done to-dos stay listed, and reads it back",
+      (status, json.loads(body).get("todos_archive_days")), (200, 14))
 status, _, body = get("/api/env/alpha/environment")
 check("Activity shows 50 lines and keeps 250 by default",
       (json.loads(body)["activity_show"], json.loads(body)["activity_keep"]), (50, 250))
@@ -701,7 +705,8 @@ for _i, _value in enumerate(("150", "100", "120")):
     commandlog.record_web(root, "alpha", "todos", "update", "900", {"priority": _value}, f"2099-01-04T00:00:0{_i}+00:00")
 for _body, _want in (({"auto": True}, "Turned auto mode on"), ({"auto": False}, "Turned auto mode off"),
                      ({"activity_show": 80}, "Activity shows the last 80 line(s)"),
-                     ({"reports_archive_days": 0}, "Reports stay listed until archived by hand")):
+                     ({"reports_archive_days": 0}, "Reports stay listed until archived by hand"),
+                     ({"todos_archive_days": 5}, "Done to-dos stay listed for 5 day(s)")):
     commandlog.record_web(root, "alpha", "environment", "settings", None, _body, "2099-01-05T00:00:00+00:00")
     check(f"a settings change in the viewer names what changed: {_want}", commandlog.entries(root, "alpha")[-1]["text"], _want)
 commandlog.record_web(root, "alpha", "environment", "auto", None, {"state": "disable"}, "2099-01-05T00:00:01+00:00")

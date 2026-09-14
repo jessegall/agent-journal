@@ -2407,6 +2407,11 @@ const Settings = {
       fields: [{ name: "reports_archive_days", label: "Days a report stays listed (0 keeps them)", value: String(s.data.reports_archive_days) }],
       shape: (p) => ({ reports_archive_days: parseInt(p.reports_archive_days, 10) }),
     }] : []));
+    const archiving = computed(() => (s.data ? [{
+      label: "Change", method: "POST", url: `${api.value}/settings`, submit: "Save",
+      fields: [{ name: "todos_archive_days", label: "Days a done to-do stays listed (0 keeps them)", value: String(s.data.todos_archive_days) }],
+      shape: (p) => ({ todos_archive_days: parseInt(p.todos_archive_days, 10) }),
+    }] : []));
     const kept = () => { s.reload(); changed(); };
     const showing = computed(() => (s.data ? [{
       label: "Change", method: "POST", url: `${api.value}/settings`, submit: "Save",
@@ -2414,7 +2419,7 @@ const Settings = {
                { name: "activity_keep", label: "Lines the activity log keeps", value: String(s.data.activity_keep) }],
       shape: (p) => ({ activity_show: parseInt(p.activity_show, 10), activity_keep: parseInt(p.activity_keep, 10) }),
     }] : []));
-    return { s, auto, setAuto, removing, done, keeping, kept, showing };
+    return { s, auto, setAuto, removing, done, keeping, archiving, kept, showing };
   },
   template: `
     <TopBar :crumbs="[env, 'Settings']"/>
@@ -2428,6 +2433,13 @@ const Settings = {
             <Switch label="Work through the to-do list without asking" :modelValue="s.data.auto" @update:modelValue="setAuto"/>
             <p class="prose muted">When this is on and nothing is open, the agent starts the next ready to-do by itself.</p>
             <p v-if="auto.error" class=error>{{ auto.error }}</p>
+          </div>
+        </section>
+        <section>
+          <div class=home-head><h2>To-dos</h2></div>
+          <div class=setting>
+            <p class="prose muted">{{ s.data.todos_archive_days ? 'A done to-do is archived ' + s.data.todos_archive_days + ' day(s) after it was closed, and leaves the list.' : 'Done to-dos stay listed until you archive them.' }}</p>
+            <ActionBar :actions="archiving" :done="kept" :key="'archive' + s.data.todos_archive_days"/>
           </div>
         </section>
         <section>
