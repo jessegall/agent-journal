@@ -2707,6 +2707,14 @@ const App = {
     };
     // other projects' journals running on this machine, each at its own port
     const journals = reactive({ list: [], open: false });
+    // with several journals open, each viewer wears its project's colour in a strip along the top, so tabs are told apart
+    const colorOf = (name) => { let h = 0; for (const ch of String(name || "")) h = (h * 31 + ch.codePointAt(0)) % 360; return `hsl(${h}, 62%, 58%)`; };
+    const strip = computed(() => {
+      if (journals.list.length < 2) return null;
+      const here = journals.list.find((j) => j.current) || {};
+      const name = here.project || (ov.data && ov.data.project) || "";
+      return name ? { name, color: colorOf(name) } : null;
+    });
     const loadJournals = () => fetch("/api/viewers").then((r) => r.json())
       .then((d) => { journals.list = Array.isArray(d) ? d : []; }).catch(() => {});
     const journalsTimer = setInterval(() => { if (document.visibilityState === "visible") loadJournals(); }, 20000);
@@ -2742,10 +2750,11 @@ const App = {
     };
     document.addEventListener("visibilitychange", onVisibility);
     onUnmounted(() => { document.removeEventListener("visibilitychange", onVisibility); clearTimeout(awayTimer); });
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away };
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, strip, colorOf };
   },
   template: `
-    <div class=app>
+    <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color} : null">
+      <div v-if="strip" class=project-strip role=presentation><span class=project-strip-name>{{ strip.name }}</span></div>
       <aside class=side>
         <div v-if="journals.list.length > 1" class="drop-wrap journal-switch">
           <button type=button class=project :aria-expanded="journals.open" :title="'Journals running on this machine'"
@@ -2758,11 +2767,11 @@ const App = {
             <template v-for="j in journals.list" :key="j.port">
               <div v-if="j.current" class="drop-row current">
                 <span class=drop-kind>This journal · port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
-                <span class=drop-text>{{ j.project }}</span>
+                <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
               </div>
               <a v-else class=drop-row :href="j.url" @click="journals.open = false">
                 <span class=drop-kind>Port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
-                <span class=drop-text>{{ j.project }}</span>
+                <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
               </a>
             </template>
           </div>
