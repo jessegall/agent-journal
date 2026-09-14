@@ -2726,7 +2726,23 @@ const App = {
     // other projects' journals running on this machine, each at its own port
     const journals = reactive({ list: [], open: false });
     // with several journals open, each viewer wears its project's colour in a strip along the top, so tabs are told apart
-    const colorOf = (name) => { let h = 0; for (const ch of String(name || "")) h = (h * 31 + ch.codePointAt(0)) % 360; return `hsl(${h}, 62%, 58%)`; };
+    // ten colours, each with the label colour that reads best on it; running journals never share one
+    const STRIP_POOL = [["#e5484d", "#0d0e10"], ["#f76b15", "#0d0e10"], ["#ffc53d", "#0d0e10"], ["#30a46c", "#0d0e10"], ["#12a594", "#0d0e10"], ["#0090ff", "#0d0e10"], ["#3e63dd", "#ffffff"], ["#8e4ec6", "#ffffff"], ["#d6409f", "#0d0e10"], ["#a18072", "#0d0e10"]];
+    const slotOf = (name) => { let h = 0; for (const ch of String(name || "")) h = (h * 31 + ch.codePointAt(0)) % STRIP_POOL.length; return h; };
+    const stripSlots = computed(() => {
+      const taken = new Set();
+      const slots = {};
+      // every viewer sees the same list, so every viewer hands out the same colours
+      [...new Set(journals.list.map((j) => j.project))].sort().forEach((name) => {
+        let slot = slotOf(name);
+        for (let i = 0; i < STRIP_POOL.length && taken.has(slot); i++) slot = (slot + 1) % STRIP_POOL.length;
+        taken.add(slot);
+        slots[name] = slot;
+      });
+      return slots;
+    });
+    const paletteOf = (name) => STRIP_POOL[stripSlots.value[name] ?? slotOf(name)];
+    const colorOf = (name) => paletteOf(name)[0];
     // the strip's tab opens a switcher to the other journals running on this machine
     const stripMenu = reactive({ open: false });
     const outsideStrip = (e) => { if (!e.target.closest(".project-strip-name, .strip-drop")) stripMenu.open = false; };
@@ -2741,7 +2757,7 @@ const App = {
       if (journals.list.length < 2) return null;
       const here = journals.list.find((j) => j.current) || {};
       const name = here.project || (ov.data && ov.data.project) || "";
-      return name ? { name, color: colorOf(name) } : null;
+      return name ? { name, color: colorOf(name), label: paletteOf(name)[1] } : null;
     });
     const loadJournals = () => fetch("/api/viewers").then((r) => r.json())
       .then((d) => { journals.list = Array.isArray(d) ? d : []; }).catch(() => {});
@@ -2781,7 +2797,7 @@ const App = {
     return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, strip, colorOf, stripMenu, loadJournals };
   },
   template: `
-    <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color} : null">
+    <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
       <div v-if="strip" class=project-strip role=presentation>
         <button type=button class=project-strip-name :aria-expanded="stripMenu.open" title="Journals running on this machine"
           @click="stripMenu.open = !stripMenu.open; loadJournals()">{{ strip.name }}</button>

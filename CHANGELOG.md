@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.11 — Each running journal gets its own colour, with a readable label
+
+The strip's colour came from the project's name, so two journals could land on similar colours. It
+now comes from a pool of ten colours, and journals running at the same time never share one. Every
+viewer hands out the same colours from the same list of running journals, so the strip and the
+switcher's dots agree across tabs. Each colour carries the label colour that reads best on it, white
+on the violets and near-black on the rest. Another project's viewer shows its strip once that project
+upgrades.
+
 ## 1.132.10 — The strip's project tab has room around its name
 
 The project name on the strip's tab ran into the tab's bottom edge and rendered larger than meant. A
