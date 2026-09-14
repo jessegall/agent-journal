@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.17 — The Agent and Auto mode rows are the same height
+
+In the sidebar footer the Auto mode switch made its row taller than the Agent row above it.
+Both rows now have the same height, and the Auto mode label is centred in its row.
+
 ## 1.131.16 — The ideas setting is gone
 
 `idea_max_chars` belonged to the ideas command removed in 1.131.0 and no longer did anything.
