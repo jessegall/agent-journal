@@ -520,7 +520,10 @@ stop says the user left messages, process them before anything else — one at a
    - a question the user asks you ("are we doing this already?") is answered, not parked:
      `messages reply <n> "<the answer>" --part="<the question's words>"` records that part as
      answered, puts the answer under it in the viewer and notifies the user. Only the question
-     parts: the rest of the message is routed as usual.
+     parts: the rest of the message is routed as usual. **An answer that leaves a decision
+     open ends with a follow-up the user can click:** add `--follow-up="<the question>"
+     --option="<a choice>" [--option-description="<why>"] --option="<another>" [--pick=<n>]`
+     to the same reply — make it a to-do, change it now, leave it as it is.
 3. **A part you do not understand becomes a question, never a guess:** `journal questions
    add "<question>" --about="inbox <n>"`, recorded as `--became="question <q>"`.
 4. **Record each part, then close the message:** one `messages process` per part, several

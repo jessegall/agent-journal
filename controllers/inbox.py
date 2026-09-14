@@ -94,8 +94,20 @@ class InboxController(Controller):
 
     def reply(self, root: Path, p: ReplyPayload) -> Result:
         # a reply is allowed on any message, processed or not, so it is not one of the EDITS
-        return Result.of(inbox.reply(root, p.id, p.text, p.at, source=p.source, track=p.env or None,
-                                     part=p.part if p.has("part") else ""), self._row(root, p, p.id))
+        import questions
+        follow_up = p.follow_up if p.has("follow_up") else ""
+        # the follow-up is checked before anything is written, so a refused question leaves no half-done reply
+        if follow_up and (found := questions.listed_choices(follow_up)):
+            return Result("refused", questions.say("choices_in_text", found=found))
+        ok, message = inbox.reply(root, p.id, p.text, p.at, source=p.source, track=p.env or None,
+                                  part=p.part if p.has("part") else "")
+        if ok and follow_up:
+            asked, said = questions.add(root, follow_up, p.at, [f"inbox {p.id}"], source=p.source, track=p.env or None,
+                                        options=p.options if p.has("options") else None, pick=p.pick if p.has("pick") else None)
+            if not asked:
+                return Result("refused", said)
+            message = f"{message}\n{said}"
+        return Result.of((ok, message), self._row(root, p, p.id))
 
     def done(self, root: Path, p: Payload) -> Result:
         return Result.of(inbox.done(root, p.id, p.at, p.env or None), self._row(root, p, p.id))

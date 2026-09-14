@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.12 — An answer can end with a question you can click
+
+When the agent answers a question in your message and the answer leaves a decision open, it can ask a
+follow-up in the same step. The command is `journal messages reply <n> "<answer>" --part="<the
+question>" --follow-up="<question>" --option="…" --option="…"`. The follow-up is a question about
+the message, with options you click, and you get a notification for it. A follow-up that lists its
+choices in its own text is refused like any other question, and the reply is not written either. The
+skill tells the agent to ask one whenever an answer leaves something to decide.
+
 ## 1.132.11 — Each running journal gets its own colour, with a readable label
 
 The strip's colour came from the project's name, so two journals could land on similar colours. It
