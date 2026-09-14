@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.135.3 — A failing request answers with its error
+
+When a request the viewer makes hit an error inside the journal, the server closed the connection
+without an answer. The page showed a failed fetch, and after a write you could not tell whether it
+went through. It now answers 500 with the error, as its other routes already did, so the page shows
+what went wrong and the write reads as not done.
+
 ## 1.135.2 — No script links in the viewer's markdown
 
 The viewer turned any markdown link into a clickable link, `javascript:` ones included. Such a link in

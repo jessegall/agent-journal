@@ -974,6 +974,19 @@ check("an age says just now for a minute, then minutes, hours and days",
 _about = json.loads(get("/api/about")[2])
 check("the About endpoint says the running version and carries the changelog",
       (bool(_about.get("version")), isinstance(_about.get("changelog"), str)), (True, True))
+# a controller that raises answers 500 with the error instead of dropping the connection
+import controllers.questions as _qc_boom  # noqa: E402
+def _boom(self, root, p):
+    raise RuntimeError("the store is unreadable")
+_orig_show, _orig_update = _qc_boom.QuestionsController.show, _qc_boom.QuestionsController.update
+_qc_boom.QuestionsController.show = _boom
+_qc_boom.QuestionsController.update = _boom
+_b_status, _, _b_body = get("/api/env/alpha/questions/1")
+check("a controller that raises on a read answers 500 with the error", (_b_status, "the store is unreadable" in _b_body.decode()), (500, True))
+_bw_status, _bw_got = post("/api/env/alpha/questions/1", {"text": "reworded"}, method="PATCH")
+check("and on a write, so the viewer knows the write did not go through",
+      (_bw_status, "the store is unreadable" in str(_bw_got.get("error", ""))), (500, True))
+_qc_boom.QuestionsController.show, _qc_boom.QuestionsController.update = _orig_show, _orig_update
 import questions as _q_seen  # noqa: E402
 _q_seen.add(root, "which shade for the header?", "2099-01-07T00:00:00+00:00", track="alpha")
 _qn = len(_q_seen._all(root, "alpha"))
