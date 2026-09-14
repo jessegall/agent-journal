@@ -159,5 +159,49 @@ check("todos keep sets the days", (code, "3 day(s)" in out, todo_mod.archive_day
 prune_mod.sweep(root, "auto")
 check("and the next sweep uses them", listed(), [3])
 
+# ------------------------------------------------------------------ closing, starting, moving and naming rows
+j("switch", "life")
+j("todos", "add", "first step")        # 1
+j("todos", "add", "needs the first")   # 2
+j("todos", "after", "2", "1")
+j("todos", "drop", "1", "not needed after all")
+check("a dropped prerequisite keeps the row that waits on it waiting",
+      todo.waiting_on(root, "life", todo._get(root, "life", 2)[0]), [1])
+j("todos", "reopen", "1", "needed after all")
+check("reopening clears the drop", todo._get(root, "life", 1)[0].get("struck") or "", "")
+
+j("todos", "add", "third")             # 3
+j("todos", "start", "3")
+code, out = j("todos", "done", "3", "finished")
+check("closing a to-do ends the work it opened, and says so", (code, "ended the work `third`" in out, "third" in j("open")[1]), (0, True, False))
+
+j("work", "start", "fourth")
+j("todos", "add", "fourth")            # 4
+code, out = j("todos", "start", "4")
+check("a start refused because the work is already open leaves the row unstarted",
+      (code != 0, bool(todo._get(root, "life", 4)[0].get("started"))), (True, False))
+j("work", "end", "fourth")
+
+j("todos", "add", "fifth")             # 5
+check("a to-do cannot be retitled to another open to-do's title", todo.retitle(root, "life", 5, "needs the first")[0], False)
+
+j("switch", "dst2")
+j("todos", "add", "old one")
+todo._update(root, "dst2", 1, done="2020-01-01T00:00:00+00:00", how="done")
+todo.prune(root, "dst2", "1d", "2026-09-14T00:00:00+00:00")
+ok_move, _ = todo.move(root, "life", 5, "dst2", "2026-09-14T00:00:00+00:00")
+check("a moved to-do never takes the number of a row archived at its destination",
+      (ok_move, sorted(f.name[:3] for f in (root / "environments" / "dst2" / "todo").glob("*.md"))), (True, ["002"]))
+
+j("switch", "rep")
+j("todos", "add", "a job for a helper")
+j("todos", "start", "1", "--as=helper")
+j("todos", "report", "1", "fixed it", "--as=helper")
+j("work", "end", "a job for a helper")
+j("todo", "auto", "on")
+code, out = j("next")
+check("a row reported finished reads as yours to close, not as held by an agent still working",
+      ("reported finished" in out, "held by an agent still working" in out), (True, False))
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

@@ -185,6 +185,7 @@ MESSAGES = {
     "reason_aside": "set aside on a condition",
     "reason_after": "waiting on a to-do that must land first",
     "reason_held": "held by an agent still working",
+    "reason_reported": "reported finished by an agent, yours to close with `journal todos done <n>`",
     "reason": "{n} {what}",
     "stuck_fact": "auto is on for `{env}`, but nothing on the list can be picked up",
     "stuck_do": "[{why:, }; ]`journal todo` shows what each waits on",
@@ -1234,7 +1235,8 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
                 (todo.asking(ROOT, here), say("reason_asking")),
                 (held_back, say("reason_aside")),
                 (owed, say("reason_after")),
-                ([t for t in todo.open_items(ROOT, here) if t.get("assigned")], say("reason_held")),
+                ([t for t in todo.open_items(ROOT, here) if t.get("reported")], say("reason_reported")),
+                ([t for t in todo.open_items(ROOT, here) if t.get("assigned") and not t.get("reported")], say("reason_held")),
             )
             why = [say("reason", n=len(rows), what=what) for rows, what in reasons if rows]
             return _said(say("stuck_fact", env=here), say("stuck_do", why=why))

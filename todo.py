@@ -67,7 +67,7 @@ DIR = "todo"
 STRUCK = "struck"
 FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how",
           "blocked", "after", "assigned", "reported", "by", "doc", "reopened", "moved_from",
-          "priority", "suggestion", "closed_by")
+          "priority", "suggestion", "closed_by", "struck")
 
 MESSAGES = {
     "from_messages": "from the user's message {ns:, }",
@@ -142,6 +142,7 @@ MESSAGES = {
     "prune_nothing": "nothing to prune — no done to-do here closed before {date}",
     "pruned_deleted": "deleted {n} done to-do(s)",
     "pruned_archived": "archived {n} done to-do(s) under {archive}/",
+    "closed_its_work": "; ended the work `{title}` with it",
     "keep_usage": "journal todos keep <days>: how many days a done to-do stays listed on this environment; 0 keeps them",
     "kept": "done to-dos on `{env}` stay listed for {days} day(s), then are archived",
     "kept_always": "done to-dos on `{env}` stay listed until archived by hand",
@@ -854,6 +855,10 @@ def retitle(root: Path, track: str, n: int, title: str) -> tuple[bool, str]:
     title = " ".join((title or "").split())
     if not title:
         return False, say("add_empty")
+    # the same rule as adding: two open rows with one title make `work end "<title>" --todo` ambiguous
+    for other in open_items(root, track):
+        if other["n"] != n and _same_title(other["title"], title):
+            return False, say("duplicate", n=other["n"])
     t, err = _update(root, track, n, title=title)
     return (True, say("retitled", n=n, title=title)) if t else (False, err)
 
@@ -1039,7 +1044,9 @@ def move(root: Path, track: str, n: int, dst: str, at: str) -> tuple[bool, str]:
     if t is None:
         return False, err
     there = _all(root, dst)
-    to = (there[-1]["n"] if there else 0) + 1
+    # THE DESTINATION'S NEXT NUMBER, archived rows counted: `len + 1` gave a moved to-do the
+    # number of a row archived there, and a reference to that number then meant two rows.
+    to = _next_n(root, dst, there)
     meta = {k: t.get(k, "") for k in FIELDS}
     meta["track"] = dst
     meta["moved_from"] = f"{track}/{n}"
@@ -1067,7 +1074,7 @@ def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str
     if not t.get("done"):
         return False, say("reopen_open", n=n)
     was = close_note(t) or say("no_reason")
-    _update(root, track, n, done="", how="", reopened=f"{at} · {why} (was closed: {was})")
+    _update(root, track, n, done="", how="", struck="", reopened=f"{at} · {why} (was closed: {was})")
     return True, say("reopened", n=n, title=t["title"], why=why, was=was)
 
 
@@ -1395,8 +1402,22 @@ def close_from_commit(root: Path, message: str, how_default: str, at: str,
             said.append((False, say("commit_closed_already", n=n, env=env, how=close_note(t))))
             continue
         ok, msg = done(root, env, n, how or how_default, at)
-        said.append((ok, say("commit_closed", line=msg.splitlines()[0], env=env) if ok else msg))
+        said.append((ok, (say("commit_closed", line=msg.splitlines()[0], env=env) + _end_its_work(root, t["title"], at))
+                     if ok else msg))
     return said
+
+
+def _end_its_work(root: Path, title: str, at: str) -> str:
+    """End the open work named after a to-do that just closed: a closed row leaves no work standing.
+
+    ONLY `ask` AND `block` DID THIS. `todos done`, a drop and a commit trailer closed the row and left
+    its work open for good, holding every stop after it.
+    """
+    import work
+    if not any(w["subject"] == title for w in work.open_work(root)):
+        return ""
+    closed, _ = work.end(root, title, at)
+    return say("closed_its_work", title=title) if closed else ""
 
 
 def _age(at: str) -> str:

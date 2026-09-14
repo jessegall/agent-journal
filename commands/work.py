@@ -206,7 +206,8 @@ class Next(Command):
             (todo.asking(root(), here), "waiting on your answer"),
             (todo.blocked(root(), here), "set aside on a condition"),
             ([t for t in waiting if todo.waiting_on(root(), here, t)], "waiting on a to-do that must land first"),
-            ([t for t in waiting if t.get("assigned")], "held by an agent still working"),
+            ([t for t in waiting if t.get("reported")], "reported finished by an agent, yours to close with `journal todos done <n>`"),
+            ([t for t in waiting if t.get("assigned") and not t.get("reported")], "held by an agent still working"),
         )
         why = ", ".join(render(TEXT["next_reason"], n=len(rows), what=what) for rows, what in reasons if rows)
         fmt.say(render(TEXT["next_blocked"], why=why))
