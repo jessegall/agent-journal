@@ -794,6 +794,14 @@ check("the transcript page opens at the newest lines, and says where the older o
 check("the next load is the lines just before the oldest shown", [r["n"] for r in _tx.page(_tl, before=_p1["prev"], limit=3)["lines"]], [2, 3, 4])
 _p3 = _tx.page(_tl, before=2, limit=3)
 check("and at the start of the transcript there is nothing older to load", ([r["n"] for r in _p3["lines"]], _p3["prev"]), ([1], None))
+_gappy = [_tx.Line(1, "user", "human", "go", "2026-09-14T10:00:00Z"),
+          _tx.Line(2, "assistant", "text", "", "2026-09-14T10:00:01Z"),
+          _tx.Line(3, "user", "tool_result", "", "2026-09-14T10:00:02Z"),
+          _tx.Line(4, "assistant", "text", "", "2026-09-14T10:00:03Z", tools=["Bash"]),
+          _tx.Line(5, "assistant", "text", "done", "2026-09-14T10:00:04Z")]
+_pg = _tx.page(_gappy)
+check("a line with neither text nor a tool is left out, the others keep their numbers, and the total counts what is shown",
+      ([r["n"] for r in _pg["lines"]], _pg["total"]), ([1, 4, 5], 3))
 import controllers.agent as _agc  # noqa: E402
 check("an environment no session has worked on has no agent to show",
       _agc.AgentController._session(root, "zz-nobody-here", ""), None)

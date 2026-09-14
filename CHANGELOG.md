@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.83 — The transcript leaves out empty lines
+
+An agent's transcript showed many lines with nothing on them: just "Agent" or "Tool result", a time
+and a line number. They are records the agent's session writes with no text and no tool in them.
+The transcript page now leaves them out. Every other line keeps its number, and the line count at
+the top counts only the lines shown.
+
 ## 1.131.82 — A transcript opens at its newest lines
 
 An agent's transcript page started at the first line, so reaching what the agent did last meant
