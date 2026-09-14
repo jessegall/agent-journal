@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.102.0 — suggestions: the agent proposes, the user decides
+
+`journal suggest "<the change>" [--about="todo 22"] --brief` files a proposal nobody asked for,
+with its reasoning on stdin; the work in hand goes on as asked. The user decides each one:
+`journal suggestions accept <n>` files a to-do from it, `adjust <n> "<change>"` files a to-do
+carrying their change, `decline <n> "<why>"` declines it. Those three are the user's, and are
+refused when the agent runs them. The next stop tells the agent what was decided. At most
+`suggestion_max_open` (5) wait on the user per environment; a proposal close to a declined one
+is refused unless `--despite=<n> --because="<what changed>"` says what changed. The agent can
+`withdraw` its own. Questions and comments can be about `suggestion N`. The viewer page and
+the skill section follow.
+
 ## 1.101.1 — the message box says when no agent will see a message yet
 
 A message reaches an agent only at that session's next hook event, so a message left while no

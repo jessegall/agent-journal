@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import ClassVar
 
 import questions
+import suggestions
 import todo
 from resources.base import Model
 
@@ -80,6 +81,23 @@ class Reminder(Model):
     @property
     def standing(self) -> bool:
         return not self.done
+
+
+@dataclass
+class Suggestion(Model):
+    title: str = ""
+    body: str = ""
+    links: list[str] = field(default_factory=list)
+    became: str = ""
+    declined: str = ""
+    withdrawn: str = ""
+
+    noun: ClassVar[str] = "suggestion"
+    sortable: ClassVar[tuple[str, ...]] = ("n", "at", "title")
+
+    @property
+    def state(self) -> str:
+        return suggestions.status(self.raw)
 
 
 @dataclass

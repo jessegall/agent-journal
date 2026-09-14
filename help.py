@@ -56,6 +56,15 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal messages move N "<env>"    carry a waiting message to another environment',
         'journal messages archive N "<why>"   take a message off the list, kept with its reason',
     ),
+    "suggestions": (
+        'journal suggest "<the change>" [--about=<ref>]... --brief   propose a change nobody asked for; the reasoning on stdin; the work goes on as asked',
+        "journal suggestions [--all]    the ones waiting on the user; --all adds decided and withdrawn ones",
+        "journal suggestion ...         the same commands; `suggestion` and `suggestions` are twins",
+        "journal suggestions show N     one in full, with the user's decision",
+        'journal suggestions withdraw N "<why>"   take back your own; the reason is required',
+        'journal suggestions accept N ["<note>"] | adjust N "<change>" | decline N ["<why>"]   the user\'s decision — a to-do is filed on accept or adjust; refused when the agent runs them',
+        'journal suggest "<the change>" --despite=N --because="<what changed>" --brief   file one close to a declined one, saying what changed',
+    ),
     "notifications": (
         'journal notify "<what finished>" [--about="todo 22"|"question 4"|"report 1"|"doc 3"]   tell the user, on their Home; sparingly',
         "journal notifications [--all]   the unread ones; --all adds read ones",
@@ -246,6 +255,7 @@ ALIAS: dict[str, str] = {
     "comment": "comments",
     "report": "reports",
     "notification": "notifications", "notify": "notifications",
+    "suggestion": "suggestions", "suggest": "suggestions",
     "pin": "pins", "promote": "pins", "strike": "pins",
     "nothing": "pins",
     "rule": "rules",
