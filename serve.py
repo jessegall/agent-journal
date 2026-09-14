@@ -109,7 +109,9 @@ def _not_found(what: str) -> tuple[int, str, bytes]:
 
 
 def _known_env(root: Path, env: str) -> bool:
-    return env in {e["name"] for e in views.environments(root)}
+    # the same names views.environments lists, without counting everything in every environment on each request
+    import tracks
+    return env in tracks._all(root)
 
 
 # ─────────────────────────────────────────────────────────────── the static shell
