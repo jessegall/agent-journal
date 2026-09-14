@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.8 — The message box sits at the bottom of Messages
+
+On the Messages page the box for a new message was at the top, above the list. It now sits
+at the bottom like a chat box, and only the list above it scrolls.
+
 ## 1.131.7 — Your changes in the viewer show in Activity
 
 Activity listed what the agent ran and what the stores recorded, but a change you made in
