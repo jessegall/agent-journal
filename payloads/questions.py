@@ -8,12 +8,14 @@ class StorePayload(Payload):
     about = Field(list)
     description = Field(str, verbatim=True)
     options = Field(list)
+    pick = Field(int)
 
 
 class UpdatePayload(Payload):
     text = Field(str, verbatim=True)
     description = Field(str, verbatim=True)
     options = Field(list)
+    pick = Field(int)
 
 
 class RefPayload(Payload):

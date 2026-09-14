@@ -250,6 +250,10 @@
   .note-text .chip { margin-left: 6px; }
   .option.picked { box-shadow: inset 0 0 0 1px rgba(99, 132, 255, .8); background: rgba(99, 132, 255, .12); color: var(--text); }
   .option-save { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .option.locked { cursor: default; opacity: 1; }
+  .option.locked:not(.chosen) { color: var(--text-2); }
+  .option-pick { display: block; margin: -9px -12px 7px; padding: 3px 12px; border-radius: 7px 7px 0 0; font-size: 10px;
+    font-weight: 500; letter-spacing: .03em; text-transform: uppercase; color: var(--accent); background: rgba(94, 100, 201, .14); }
   .prio-wrap { position: relative; }
   .prio-current { display: inline-flex; align-items: center; gap: 6px; margin: -3px -6px; padding: 3px 6px; border: none;
     border-radius: 6px; background: none; color: inherit; font: inherit; cursor: pointer; }
