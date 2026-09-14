@@ -145,7 +145,10 @@ function _mdInline(text) {
   text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
   text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   text = text.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>");
-  text = text.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, href) => `<a href="${href}" target="_blank" rel="noopener">${t}</a>`);
+  // only web links, mail, anchors and relative paths become links: a javascript: (or any other scheme) link is shown as its text
+  text = text.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, href) =>
+    (/^(https?:\/\/|mailto:|#|\/|\.\.?\/)/i.test(href) || !/^[a-z][a-z0-9+.\-]*:/i.test(href)
+      ? `<a href="${href}" target="_blank" rel="noopener">${t}</a>` : t));
   return text;
 }
 
