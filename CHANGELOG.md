@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.0 — An About page, and a quieter message box
+
+A minor release that gathers everything since 1.133.0:
+
+- **About.** The sidebar footer shows the journal's version, just above the agent's status. It opens
+  an About page with the version and the whole changelog, newest first.
+- **The Activity message box.** The Send button sits inside the box, bottom right, and shows only
+  while there is something to send. The Enter hint under the box is gone, and a send error shows on its
+  own line.
+- **Replies.** The agent's replies under a message are boxed with a thin border and a lighter
+  background, so they are easy to find.
+- **Subagents.** A listed subagent names the model it ran on, in a session's "Subagents it sent" list
+  and in the agents dropdown.
+
+Nothing to do beyond `journal upgrade`.
+
 ## 1.133.5 — The Activity send button sits inside the message box
 
 The Send button under the Activity message box is gone. A small arrow button now sits inside the box,
