@@ -106,6 +106,9 @@ class TodosController(Controller):
         if added and after:
             _, note = todo.after(root, env, int(added.group(1)), after)
             message += say("after_note", note=note)
+        if added and p.priority and p.priority.lower() != "default":
+            set_ok, said = todo.priority(root, env, int(added.group(1)), p.priority)
+            message += "\n" + said
         return Result("created" if ok else "refused", message, {"n": int(added.group(1))} if added else None)
 
     def update(self, root: Path, p: todo_payloads.UpdatePayload) -> Result:

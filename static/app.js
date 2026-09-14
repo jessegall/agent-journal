@@ -803,7 +803,17 @@ const TodoPanel = {
     });
     const done = panelDone(props, item);
     const todoHref = (a) => `#/env/${props.env}/todos/${a}`;
-    return { item, actions, done, todoHref, todoStatus, STATUS_LABEL, priorityName, LOG_KIND };
+    // the priority row is its own picker: one click saves
+    const LEVELS = [{ value: "low", n: 50 }, { value: "default", n: 100 }, { value: "high", n: 150 }, { value: "critical", n: 200 }];
+    const saving = reactive({ on: false });
+    const setPriority = (level) => {
+      if (saving.on || !item.data || priorityName(item.data.priority).toLowerCase() === level.value) return;
+      saving.on = true;
+      send("PATCH", `${api.value}/${item.data.n}`, { priority: level.value })
+        .then(() => { item.reload(); if (props.reloaded) props.reloaded(); changed(); })
+        .finally(() => { saving.on = false; });
+    };
+    return { item, actions, done, todoHref, todoStatus, STATUS_LABEL, priorityName, LOG_KIND, LEVELS, saving, setPriority };
   },
   template: `
     <Panel :label="'To-do #' + n" :close="close" :onClose="onClose" :link="link">
@@ -812,7 +822,15 @@ const TodoPanel = {
         <h2 class=p-title>{{ item.data.title }}</h2>
         <dl class=props>
           <dt>Status</dt><dd><StatusIcon :kind="todoStatus(item.data)"/>{{ STATUS_LABEL[todoStatus(item.data)] }}</dd>
-          <dt>Priority</dt><dd><PriorityIcon :value="item.data.priority"/>{{ priorityName(item.data.priority) }}</dd>
+          <dt>Priority</dt>
+          <dd v-if="item.data.done"><PriorityIcon :value="item.data.priority"/>{{ priorityName(item.data.priority) }}</dd>
+          <dd v-else class=prio-pick role=group aria-label="Priority">
+            <button v-for="l in LEVELS" :key="l.value" type=button
+              :class="['prio-btn', {on: priorityName(item.data.priority).toLowerCase() === l.value}]" :disabled="saving.on"
+              :title="priorityName(l.n)" :aria-label="priorityName(l.n)" :aria-pressed="priorityName(item.data.priority).toLowerCase() === l.value"
+              @click="setPriority(l)"><PriorityIcon :value="l.n"/></button>
+            <span class=prio-name>{{ priorityName(item.data.priority) }}</span>
+          </dd>
           <dt>Cites</dt><dd><a v-if="item.data.doc" :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a><span v-else class=muted>—</span></dd>
           <dt>Added</dt><dd>{{ item.data.age || '—' }}</dd>
           <template v-if="item.data.after.length">
@@ -1112,7 +1130,8 @@ const Todos = {
       label: "New to-do", method: "POST", url: api.value, submit: "Add to-do", leave: true,
       fields: [{ name: "title", label: "Title", placeholder: "What needs doing, in a few words" },
                { name: "body", label: "Brief", kind: "area", placeholder: "Anything the agent needs to know to do it" },
-               { name: "after", label: "Waits on (optional)", placeholder: "to-do numbers, like 3, 7" }],
+               { name: "after", label: "Waits on (optional)", placeholder: "to-do numbers, like 3, 7" },
+               { name: "priority", label: "Priority", kind: "select", value: "default", options: PRIORITIES }],
     }]);
     const done = (body, a) => settle(body, a, base.value, list);
     return { list, creating, done, base, TODO_LIST };

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.130.0 — Set a to-do's priority from the viewer
+
+The New to-do form has a Priority field (Low, Default, High, Critical). In an open to-do's
+panel the Priority row is a row of four priority icons: click one and the priority is saved
+at once and the list re-sorts. A done to-do shows its priority without the picker.
+
 ## 1.129.0 — journal messages waiting: only the messages still waiting, in full
 
 `journal messages waiting` prints every message that is still waiting to be processed,
