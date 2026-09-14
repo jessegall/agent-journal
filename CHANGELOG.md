@@ -4,6 +4,23 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.79 — The channel no longer floods a new session with old answers
+
+Since 1.131.53 a session started with the channel, and on no environment yet, was pushed everything
+waiting on every environment. A fresh session could receive a burst of "The user answered question
+N" lines from other environments, some of them answered long ago and never marked as told. Now the
+channel only pushes what arrived after it started, and a session that has no environment yet is
+woken for new messages only. Answers and comments reach the session on their own environment.
+
+## 1.131.78 — A page for each agent, and its transcript
+
+Each agent in the list in the Activity header now opens its own page. A session's page shows
+whether it is working or idle, its model and how full its context is, the work it declared with the
+files and commits on each, and the subagents it sent. A subagent's page shows what it was sent to
+do, whether it is still working, and the session that sent it. **Open transcript** on that page
+shows the agent's raw transcript from the start, a thousand lines at a time: scrolling down loads
+the next thousand. The transcript endpoint from 1.131.74 is gone.
+
 ## 1.131.77 — No Add note on work, and no Transcript page
 
 A piece of work had an **Add note** button in the viewer, but the agent was never told about a note

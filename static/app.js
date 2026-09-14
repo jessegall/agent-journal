@@ -19,6 +19,8 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/settings$/, view: "Settings", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/files$/, view: "Files", params: ["env"] },
+  { re: /^\/env\/([a-z0-9-]+)\/agents\/(session|subagent)\/([0-9a-f-]{6,40})$/, view: "Agent", params: ["env", "kind", "id"] },
+  { re: /^\/env\/([a-z0-9-]+)\/agents\/(session|subagent)\/([0-9a-f-]{6,40})\/transcript$/, view: "AgentTranscript", params: ["env", "kind", "id"] },
   { re: /^\/env\/([a-z0-9-]+)\/commits\/([0-9a-f]{7,40})$/, view: "Commit", params: ["env", "sha"] },
   { re: /^\/env\/([a-z0-9-]+)\/search$/, view: "Search", params: ["env"] },
   { re: /^\/rules(\/archive)?(?:\/(\d+|new))?$/, view: "Rules", params: ["archive", "n"] },
@@ -2316,7 +2318,119 @@ const Commit = {
     </div>`,
 };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, NotFound };
+// ─────────────────────────────────────────────────────────────── one agent
+const AGENT_STATUS = { working: "Working", idle: "Idle", ended: "Ended", finished: "Finished" };
+const TRANSCRIPT_WHO = { human: "You", text: "Agent", tool_result: "Tool result", injected: "Journal", task: "Task",
+                         peer: "Another session", superseded: "You, edited" };
+
+const Agent = {
+  props: ["env", "kind", "id"],
+  components: { TopBar },
+  setup(props) {
+    const about = useFetch(() => props.env && props.id && `/api/env/${props.env}/agent?kind=${props.kind}&agent=${props.id}`);
+    return { about, AGENT_STATUS };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Agents', about.data ? about.data.name : (kind === 'subagent' ? 'Subagent ' : 'Session ') + id]"/>
+    <div class=body><div class=page><div class=page-inner>
+      <p v-if="about.error" class=error>{{ about.error }}</p>
+      <p v-else-if="!about.data" class=empty>Loading…</p>
+      <template v-else>
+        <h1 class=p-title>{{ about.data.name }}</h1>
+        <dl class=props>
+          <dt>Status</dt><dd><span :class="['agent-status', about.data.status]">{{ AGENT_STATUS[about.data.status] || about.data.status }}</span><span v-if="about.data.seen" class=muted> · last seen {{ about.data.seen }}</span></dd>
+          <dt>Agent</dt><dd>{{ about.data.kind === 'subagent' ? 'Subagent' : 'Session' }} {{ about.data.id }}</dd>
+          <template v-if="about.data.parent"><dt>Sent by</dt><dd><a class=chip :href="'#/env/' + env + '/agents/session/' + about.data.parent">Session {{ about.data.parent }}</a></dd></template>
+          <dt>Environment</dt><dd>{{ about.data.env }}</dd>
+          <template v-if="about.data.model"><dt>Model</dt><dd>{{ about.data.model }}</dd></template>
+          <template v-if="about.data.context"><dt>Context</dt><dd>{{ about.data.context.share }}% used</dd></template>
+        </dl>
+        <div v-if="about.data.has_transcript" class=agent-links>
+          <a class=btn :href="'#/env/' + env + '/agents/' + kind + '/' + id + '/transcript'">Open transcript</a>
+        </div>
+        <template v-if="about.data.kind === 'session'">
+          <div>
+            <p class=section-label>Work <span class=muted>{{ about.data.work.length }}</span></p>
+            <p v-if="!about.data.work.length" class="prose muted">This session has not declared any work here.</p>
+            <div v-else class=linked>
+              <a v-for="w in about.data.work.slice().reverse()" :key="w.n" class="sub log-row" :href="'#/env/' + env + '/work/' + w.n">
+                <span class=log-text>{{ w.subject }}</span>
+                <span class=log-work>{{ w.ended ? 'Ended' : 'Open' }}{{ w.files ? ' · ' + w.files + (w.files === 1 ? ' file' : ' files') : '' }}{{ w.commits ? ' · ' + w.commits + (w.commits === 1 ? ' commit' : ' commits') : '' }}</span>
+              </a>
+            </div>
+          </div>
+          <div>
+            <p class=section-label>Subagents it sent <span class=muted>{{ about.data.dispatched.length }}</span></p>
+            <p v-if="!about.data.dispatched.length" class="prose muted">No subagents from this session are recorded here.</p>
+            <div v-else class=linked>
+              <a v-for="a in about.data.dispatched" :key="a.id" class="sub log-row" :href="'#/env/' + env + '/agents/subagent/' + a.id">
+                <span class=log-text>{{ a.name }}</span><span class=log-work>{{ a.working ? 'Working' : 'Finished' }} · {{ a.age }}</span>
+              </a>
+            </div>
+          </div>
+        </template>
+      </template>
+    </div></div></div>`,
+};
+
+// an agent's raw transcript, read from the top down a thousand lines at a time
+const AgentTranscript = {
+  props: ["env", "kind", "id"],
+  components: { TopBar },
+  setup(props) {
+    const log = reactive({ rows: [], next: 0, total: 0, loading: false, error: "", done: false });
+    const end = ref(null);
+    const near = () => end.value && end.value.getBoundingClientRect().top < window.innerHeight + 800;
+    const more = async () => {
+      if (log.loading || log.done) return;
+      log.loading = true;
+      log.error = "";
+      try {
+        const res = await fetch(`/api/env/${props.env}/agent?kind=${props.kind}&agent=${props.id}&transcript=1&limit=1000&after=${log.next}`);
+        const body = await res.json();
+        if (!res.ok) { log.error = body.error || "The transcript could not be read."; log.done = true; return; }
+        log.rows = log.rows.concat(body.lines);
+        log.total = body.total;
+        if (body.next == null) log.done = true; else log.next = body.next;
+      } catch (err) {
+        log.error = err.message;
+        log.done = true;
+      } finally {
+        log.loading = false;
+      }
+      await Vue.nextTick();
+      // a short page leaves the end in view, and nothing scrolls to ask for more
+      if (near()) more();
+    };
+    let watcher = null;
+    onMounted(() => {
+      watcher = new IntersectionObserver((seen) => { if (seen.some((e) => e.isIntersecting)) more(); }, { rootMargin: "800px 0px" });
+      if (end.value) watcher.observe(end.value);
+    });
+    onUnmounted(() => { if (watcher) watcher.disconnect(); });
+    more();
+    const time = (ts) => (ts ? new Date(ts).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "");
+    return { log, end, time, TRANSCRIPT_WHO };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Agents', (kind === 'subagent' ? 'Subagent ' : 'Session ') + id, 'Transcript']"/>
+    <div class=body><div class=page><div class="page-inner tlog">
+      <div class=tlog-head>
+        <a class="btn flush" :href="'#/env/' + env + '/agents/' + kind + '/' + id">Back to the agent</a>
+        <span class=muted>{{ log.total ? log.rows.length + ' of ' + log.total + ' lines' : '' }}</span>
+      </div>
+      <p v-if="log.error" class=error>{{ log.error }}</p>
+      <div v-for="l in log.rows" :key="l.n" :class="['tlog-line', 'tlog-' + l.kind]">
+        <div class=tlog-meta><span class=tlog-who>{{ TRANSCRIPT_WHO[l.kind] || l.kind }}</span><span>{{ time(l.ts) }}</span><span class=tlog-n>#{{ l.n }}</span></div>
+        <div v-if="l.tools.length" class=tlog-tools>Used {{ l.tools.join(', ') }}</div>
+        <pre v-if="l.text" class=tlog-text>{{ l.text }}</pre>
+        <span v-if="l.clipped" class=muted>Cut short here.</span>
+      </div>
+      <div ref=end class=tlog-end>{{ log.loading ? 'Loading…' : log.done && log.rows.length ? 'End of the transcript.' : '' }}</div>
+    </div></div></div>`,
+};
+
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -2379,10 +2493,11 @@ const ActivityPanel = {
             <div v-if="crew.open" class=drop>
               <div class=drop-head><span>Agents on {{ env }}</span></div>
               <p v-if="!(agentsList.data && agentsList.data.length)" class="muted drop-empty">No agent is working on this environment.</p>
-              <div v-for="a in agentsList.data || []" :key="a.kind + a.id" class=drop-row>
+              <a v-for="a in agentsList.data || []" :key="a.kind + a.id" class=drop-row :href="'#/env/' + env + '/agents/' + a.kind + '/' + a.id"
+                :title="'Open ' + (a.name || (a.kind === 'subagent' ? 'subagent ' : 'session ') + a.id)" @click="crew.open = false">
                 <span class=drop-kind>{{ a.kind === 'subagent' ? 'Subagent' : 'Session' }} · {{ a.kind === 'subagent' ? (a.age_text || 'just now') : (a.working ? 'Working' : 'Idle') }}</span>
                 <span class=drop-text>{{ a.name || (a.kind === 'subagent' ? 'Subagent ' + a.id : 'Session ' + a.id) }}<span v-if="a.parent" class=muted> · from session {{ a.parent }}</span></span>
-              </div>
+              </a>
             </div>
           </span>
         </span>
