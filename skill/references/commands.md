@@ -205,7 +205,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal serve [--port=<n>]       the web viewer on 127.0.0.1, at 8420 or the next free port (read the URL it prints): every resource, with the same actions the commands have, and Search and Settings per environment
     journal statusline [--install]   the status bar line: environment, open work, viewer; --install adds it to .claude/settings.json, never over one that exists
     journal channel --install        add the channel server to .mcp.json; with claude --dangerously-load-development-channels server:journal, a message left in the viewer wakes an idle session
-    journal claude [prompt]          start Claude with the channel (added to .mcp.json first if missing); --continue, --resume=<id>, --dry-run shows the command
+    journal claude [prompt]          start Claude with the channel (added to .mcp.json first if missing); --continue, --resume=<id>, --dry-run shows the command; any other flag is passed through to claude
 
 Everything the viewer changes goes through the same controllers as these commands, marked as
 coming from the web where a record keeps a source. The API is `/api/env/<env>/<resource>[/<n>][/<action>]`

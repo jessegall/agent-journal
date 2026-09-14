@@ -92,14 +92,19 @@ def parse_signature(signature: str, casts: dict | None = None) -> tuple[str, str
 
 
 class Parsed:
-    __slots__ = ("command", "_args", "_opts", "_raw")
+    __slots__ = ("command", "_args", "_opts", "_raw", "_extra")
 
-    def __init__(self, command: Command, args: dict, opts: dict, raw: tuple = ()):
+    def __init__(self, command: Command, args: dict, opts: dict, raw: tuple = (), extra: tuple = ()):
         self.command, self._args, self._opts, self._raw = command, args, opts, tuple(raw)
+        self._extra = tuple(extra)
 
     def options_in_order(self) -> list[tuple[str, str | None]]:
         """Every --name=value as typed, in command-line order: for options that belong to the one before them."""
         return list(self._raw)
+
+    def passthrough_options(self) -> list[str]:
+        """Options the command did not declare, as typed (`--flag` or `--opt=value`), in order."""
+        return list(self._extra)
 
     def arg(self, name: str, default=None):
         return self._args.get(name, default)
@@ -123,6 +128,7 @@ class Command:
     default: bool = False         # also answers the bare noun
     needs: tuple = ()             # options that must be present for this command to be chosen
     writes: bool = False
+    passthrough: bool = False     # keeps undeclared options instead of refusing them
 
     noun: str = ""
     verb: str = ""
@@ -220,29 +226,33 @@ class Registry:
             return None, say("extra", usage=cmd.usage(), words=repr(" ".join(left)))
         return out, ""
 
-    def _options(self, cmd: Command, raw: list[tuple[str, str | None]]) -> tuple[dict | None, str]:
+    def _options(self, cmd: Command, raw: list[tuple[str, str | None]]) -> tuple[dict | None, list, str]:
         specs = {**self.shared, **{o.name: o for o in cmd.opts}}
         out: dict = {o.name: ([] if o.repeat else o.default) for o in specs.values()}
+        extra: list = []
         for name, val in raw:
             spec = specs.get(name)
             if spec is None:
-                return None, say("unknown_option", name=name, usage=cmd.usage())
+                if cmd.passthrough:
+                    extra.append(f"--{name}" if val is None else f"--{name}={val}")
+                    continue
+                return None, extra, say("unknown_option", name=name, usage=cmd.usage())
             if spec.bare:
                 if val is not None:
-                    return None, say("bare_option", name=name)
+                    return None, extra, say("bare_option", name=name)
                 out[name] = True
                 continue
             if val is None:
-                return None, say("option_value", name=name)
+                return None, extra, say("option_value", name=name)
             try:
                 got = spec.type(val)
             except ValueError as e:
-                return None, say("option_error", name=name, error=e)
+                return None, extra, say("option_error", name=name, error=e)
             if spec.repeat:
                 out[name].append(got)
             else:
                 out[name] = got
-        return out, ""
+        return out, extra, ""
 
     def parse(self, argv: list[str]) -> tuple[Parsed | None, str]:
         argv = list(argv)
@@ -270,10 +280,10 @@ class Registry:
             if bound is None:
                 first = first or why
                 continue
-            opts, why = self._options(cmd, raw)
+            opts, extra, why = self._options(cmd, raw)
             if opts is None:
                 return None, why
-            return Parsed(cmd, bound, opts, raw), ""
+            return Parsed(cmd, bound, opts, raw, extra), ""
         return None, first
 
     def command_of(self, words: list[str]) -> Command | None:
