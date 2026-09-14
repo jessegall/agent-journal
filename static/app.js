@@ -1502,7 +1502,7 @@ const EnvHome = {
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
-    <div class=body><div class=page><div class=home>
+    <div class="body home-body"><div class=page><div class=home>
       <section v-if="notes.data && notes.data.length" class=notifications>
         <div class=home-head><h2>Notifications</h2><span class=n>{{ notes.data.length }} unread</span>
           <button type=button class="btn more" @click="readAll">Mark all read</button></div>
@@ -1565,6 +1565,7 @@ const EnvHome = {
       </section>
     </div></div>
     <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>
+    <aside v-else class="panel peek-idle"><p>Select a row to see it here.</p></aside>
     </div>`,
 };
 
