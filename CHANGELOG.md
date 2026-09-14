@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.135.5 — The to-do list reads its folder once
+
+Loading the to-do list re-read the whole to-do folder once for every row, to check what each row was
+waiting on. With a few hundred to-dos that took about a quarter of a second, every five seconds, on
+Home and on the To-dos page. The list is now read once per request and handed to every row. The rows
+are unchanged, and the terminal's `journal todos` does the same.
+
 ## 1.135.4 — Environment requests no longer count everything first
 
 Every request the viewer made for an environment first checked that the environment existed by

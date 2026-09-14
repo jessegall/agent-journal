@@ -974,6 +974,23 @@ check("an age says just now for a minute, then minutes, hours and days",
 _about = json.loads(get("/api/about")[2])
 check("the About endpoint says the running version and carries the changelog",
       (bool(_about.get("version")), isinstance(_about.get("changelog"), str)), (True, True))
+# the to-dos list reads the folder once per request: the rows come out the same, with and without the list passed in
+import todo as _todo_rows  # noqa: E402
+_every = _todo_rows._all(root, "alpha")
+_by_n = {x["n"]: x for x in _every}
+check("a to-do row is the same whether its list is passed in or read again",
+      [_todo_rows.row_response(root, "alpha", t) == _todo_rows.row_response(root, "alpha", t, by_n=_by_n) for t in _every], [True] * len(_every))
+_after_row = {"n": 9999, "title": "waits on the first", "after": str(_every[0]["n"]) if _every else "1"}
+check("and so is what a row waiting on another is still waiting on",
+      _todo_rows.waiting_on(root, "alpha", _after_row), _todo_rows.waiting_on(root, "alpha", _after_row, by_n=_by_n))
+_real_all, _scans = _todo_rows._all, []
+_todo_rows._all = lambda r, tr: (_scans.append(1), _real_all(r, tr))[1]
+try:
+    _todos_status = get("/api/env/alpha/todos?all=1")[0]
+finally:
+    _todo_rows._all = _real_all
+check("the to-dos list reads the folder a few times per request, not once per row",
+      (_todos_status, len(_scans) <= 3, len(_every) > 3), (200, True, True))
 # an environment is known by name without building every environment's counts, and the answer is the same
 check("an environment is known exactly when views.environments lists it",
       [(e, serve._known_env(root, e), e in {x["name"] for x in views.environments(root)}) for e in ("alpha", "beta", "zz-nobody")],
