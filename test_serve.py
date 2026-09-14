@@ -389,7 +389,7 @@ check("a to-do's detail names the message it came from", [m["n"] for m in json.l
 status, _, body = get("/api/env/alpha/activity")
 activity = json.loads(body)
 check("activity lists the latest journal events, newest first, and no agent when no session works it",
-      (status, "Started work: something in flight on alpha" in [e["text"] for e in activity["events"]], activity["agent"]),
+      (status, any(e["text"].startswith("Started work ") for e in activity["events"]), activity["agent"]),
       (200, True, None))
 
 # ─────────────────────────────────────────────────────────────── a question with a description and options
@@ -574,6 +574,15 @@ _events = json.loads(body)["events"]
 check("every activity event says who did it and stays within 100 characters",
       (all(e["by"] in ("Agent", "You") for e in _events), all(len(e["text"]) <= 100 for e in _events),
        {e["by"] for e in _work_events}), (True, True, {"Agent"}))
+import commandlog  # noqa: E402
+import commands as _commands  # noqa: E402
+for _argv in (["messages", "list"], ["todos", "show", "3"], ["todos", "done", "3", "x"], ["statusline"]):
+    commandlog.record(root, "alpha", _commands.REGISTRY.parse(_argv)[0], "2099-01-01T00:00:00+00:00")
+check("a command the agent runs is logged in plain words; writes Activity already shows and the status line are not",
+      [e["text"] for e in commandlog.entries(root, "alpha")], ["Reading your messages", "Reading to-do 3"])
+status, _, body = get("/api/env/alpha/activity")
+check("and Activity lists it as the agent's",
+      [(e["kind"], e["by"]) for e in json.loads(body)["events"] if e["text"] == "Reading to-do 3"], [("command", "Agent")])
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))

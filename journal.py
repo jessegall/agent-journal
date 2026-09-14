@@ -168,7 +168,16 @@ def _retired(verb: str) -> int | None:
 
 def _dispatch(argv: list[str]) -> int:
     parsed, why = commands.REGISTRY.parse(argv)
-    return parsed.command.run(parsed) if parsed else _refuse(why)
+    if not parsed:
+        return _refuse(why)
+    if _stem():
+        try:
+            import commandlog
+            from app import now
+            commandlog.record(_ROOT, _state.current_track(_ROOT), parsed, now())
+        except Exception as e:  # the activity line must never stop the command
+            print(f"journal activity: {e}", file=sys.stderr)
+    return parsed.command.run(parsed)
 
 
 
