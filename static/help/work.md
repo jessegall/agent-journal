@@ -14,7 +14,8 @@ Declaring work first means every change in the project belongs to something you 
 ## What you can do
 
 - See what is open, and the notes on each piece of work.
-- Add a note, or end work yourself.
+- End work yourself.
+- To tell the agent something about a piece of work, leave a comment on it. Notes are the agent's own record: it reads comments, not notes.
 
 ## How the agent uses work
 
