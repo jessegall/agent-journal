@@ -41,7 +41,9 @@ class ClaimsController(Controller):
     def _rows(self, root: Path, p: Payload) -> dict[int, dict]:
         import views
         rows, _ = pins.rows_response(root, all_of_them=True, key=self.key, track=p.env or None)
-        return {r["n"]: {**views._split_meta(r), "facts": r["meta"]} for r in rows}
+        stored = pins._all(root, self.key, p.env or None)
+        struck_at = lambda n: (stored[n - 1].get("struck_at") or "") if 1 <= n <= len(stored) and stored[n - 1].get("struck") else ""  # noqa: E731
+        return {r["n"]: {**views._split_meta(r), "facts": r["meta"], "closed_at": struck_at(r["n"])} for r in rows}
 
     def _questions(self, root: Path, p: Payload) -> list[dict]:
         import views
@@ -101,7 +103,7 @@ class ClaimsController(Controller):
         return Result("ok", "\n".join(said), {"n": n})
 
     def destroy(self, root: Path, p: WhyPayload) -> Result:
-        return Result.of(pins.strike(root, p.id, p.why, key=self.key))
+        return Result.of(pins.strike(root, p.id, p.why, key=self.key, at=p.at))
 
     def amend(self, root: Path, p: SectionPayload) -> Result:
         return Result.of(pins.amend_body(root, p.id, p.title, p.body, self.key, p.at))

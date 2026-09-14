@@ -559,6 +559,7 @@ def row_response(n: int, m: dict) -> dict:
         "n": n, "text": m["text"], "gist": fmt.gist(m["text"]), "facts": " · ".join(_facts(m)),
         "status": "archived" if m.get("archived") else "moved" if m.get("moved_to") else "processed" if m.get("processed") else "waiting",
         "archived": m.get("archived") or "",
+        "closed_at": m.get("archived_at") or m.get("processed") or "",
         "replies": [{"text": r["text"], "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "",
                      "who": say("reply_user") if r.get("source") == "web" else say("reply_agent")}
                     for r in m.get("replies") or []],

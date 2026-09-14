@@ -230,7 +230,8 @@ def row_response(n: int, s: dict) -> dict:
             "status": status(s), "at": s.get("at", ""), "age": age(s.get("at", "")) if s.get("at") else "",
             "links": [{"ref": r, "label": questions.label(r)} for r in s.get("links") or []],
             "became": s.get("became") or "", "change": s.get("change") or "", "note": s.get("note") or "",
-            "declined": s.get("declined") or "", "withdrawn": s.get("withdrawn") or "", "meta": facts(s)}
+            "declined": s.get("declined") or "", "withdrawn": s.get("withdrawn") or "", "meta": facts(s),
+            "closed_at": (s.get("withdrawn_at") or s.get("declined_at") or s.get("decided_at") or "") if status(s) != "open" else ""}
 
 
 def show_text(d: dict) -> str:

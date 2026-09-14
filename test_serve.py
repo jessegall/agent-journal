@@ -761,6 +761,17 @@ check("files are added to a message after it is sent",
 check("added from the viewer, it is a comment on the message, so the agent is told",
       [(c["about"], c["text"]) for c in json.loads(get(f"/api/env/alpha/comments?about=inbox%3A{_shot_msg}&all=1")[2])],
       [(f"inbox:{_shot_msg}", f"added later.txt to message {_shot_msg}")])
+_lists = {
+    "to-dos": [(bool(t["done"]), t["closed_at"]) for t in json.loads(get("/api/env/alpha/todos?all=1")[2])],
+    "work": [(bool(w["ended"]), w["closed_at"]) for w in json.loads(get("/api/env/beta/work?all=1")[2])],
+    "messages": [(m["status"] in ("processed", "archived"), m["closed_at"]) for m in json.loads(get("/api/env/alpha/inbox?all=1")[2])],
+    "questions": [(q["status"] != "open", q["closed_at"]) for q in json.loads(get("/api/env/alpha/questions?all=1")[2])],
+    "pins": [(bool(c["struck"]), c["closed_at"]) for c in json.loads(get("/api/env/alpha/pins?all=1")[2])],
+}
+check("an open item's row has no closed time",
+      sorted(name for name, rows in _lists.items() if any(not closed and at for closed, at in rows)), [])
+check("each list has closed items whose row says when they closed",
+      sorted(name for name, rows in _lists.items() if not any(closed and at for closed, at in rows)), [])
 _tail = root / "context-tail.jsonl"
 _tail.write_text(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 1000, "cache_read_input_tokens": 149000}}}) + "\n")
 check("the agent's context use is its last reading against the window, and nothing without a window or a reading",

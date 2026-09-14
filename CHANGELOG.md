@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.48 — Every list knows when its items closed
+
+The first step toward the Archive. Every list the viewer shows now says when each closed item
+closed, in a `closed_at` field on its rows: when a to-do was done, work ended, a message was
+processed or archived, a question answered or withdrawn, a suggestion decided, declined or
+withdrawn, a report archived (or aged out under its keep setting), and a pin, rule or reminder
+struck. Nothing on screen changes yet. The next releases use it to keep only the last week of
+closed items in each list and move the rest behind an Archive button.
+
+Striking a pin or a rule from the viewer did not record when it was struck. It does now. A pin
+or rule struck before this has no time and counts as long closed.
+
 ## 1.131.47 — A working agent is marked in the accent colour, not green
 
 The dot that says an agent is working, in the Environments list and the sidebar footer, was a
