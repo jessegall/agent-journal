@@ -117,7 +117,8 @@ def archive(root: Path, n: int, why: str, at: str, track: str | None = None) -> 
 
 
 ARCHIVE_DAYS = "reports_archive_days"
-DEFAULT_ARCHIVE_DAYS = 30
+DEFAULT_ARCHIVE_DAYS = 7
+REMOVE_DAYS = 30
 
 
 def archive_days(root: Path, track: str) -> int:
@@ -136,6 +137,36 @@ def set_archive_days(root: Path, track: str, days: int) -> tuple[bool, str]:
         got[track] = int(days)
         state.put(root, ARCHIVE_DAYS, got)
     return True, say("kept", env=track, days=int(days)) if int(days) else say("kept_always", env=track)
+
+
+def _age_days(r: dict) -> float | None:
+    from datetime import datetime, timezone
+    try:
+        when = datetime.fromisoformat((r.get("at") or "").replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    return (datetime.now(timezone.utc) - when).total_seconds() / 86400
+
+
+def prune(root: Path, track: str | None = None) -> int:
+    """Reports older than REMOVE_DAYS lose their title and text for good; the entry stays, so numbers do not shift."""
+    from datetime import datetime, timezone
+    with state.locked(root):
+        items = _all(root, track)
+        gone = 0
+        for r in items:
+            if r.get("removed"):
+                continue
+            days = _age_days(r)
+            if days is not None and days > REMOVE_DAYS:
+                r.clear()
+                r["removed"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+                gone += 1
+        if gone:
+            _put(root, items, track)
+    return gone
 
 
 def expired(r: dict, days: int) -> bool:

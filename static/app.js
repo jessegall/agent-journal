@@ -1756,7 +1756,7 @@ const Settings = {
         <section>
           <div class=home-head><h2>Reports</h2></div>
           <div class=setting>
-            <p class="prose muted">{{ s.data.reports_archive_days ? 'A report is archived ' + s.data.reports_archive_days + ' day(s) after it is written. It stays readable, and shows again if you raise the number.' : 'Reports stay listed until you archive them.' }}</p>
+            <p class="prose muted">{{ (s.data.reports_archive_days ? 'A report is archived ' + s.data.reports_archive_days + ' day(s) after it is written. ' : 'Reports stay listed until you archive them. ') + 'Every report is removed for good 30 days after it is written.' }}</p>
             <ActionBar :actions="keeping" :done="kept" :key="'keep' + s.data.reports_archive_days"/>
           </div>
         </section>

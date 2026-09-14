@@ -66,15 +66,28 @@ check("twice is refused", j("reports", "archive", "1", "again")[0], 1)
 j("reports", "add", "an old measurement", "--brief", stdin="numbers from last month\n")
 f = d / ".journal" / "environments" / "default" / "reports.json"
 data = json.loads(f.read_text())
-data["reports"][-1]["at"] = "2020-01-01T00:00:00+00:00"
+from datetime import datetime, timedelta, timezone
+data["reports"][-1]["at"] = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat(timespec="seconds")
 f.write_text(json.dumps(data))
 code, out = j("reports")
-check("by default a report older than 30 days is off the list", ("an old measurement" in out, "1 archived" in out or "2 archived" in out), (False, True))
-check("--all lists it, saying why", ("an old measurement" in j("reports", "--all")[1], "older than 30 day(s)" in j("reports", "--all")[1]), (True, True))
+check("by default a report older than 7 days is off the list", ("an old measurement" in out, "1 archived" in out or "2 archived" in out), (False, True))
+check("--all lists it, saying why", ("an old measurement" in j("reports", "--all")[1], "older than 7 day(s)" in j("reports", "--all")[1]), (True, True))
 code, out = j("reports", "keep", "0")
 check("keep 0 keeps reports listed", (code, "until archived by hand" in out, "an old measurement" in j("reports")[1]), (0, True, True))
 code, out = j("reports", "keep", "7")
 check("keep 7 sets a week", (code, "for 7 day(s)" in out, "an old measurement" in j("reports")[1]), (0, True, False))
+
+# ------------------------------------------------------------------ after 30 days a report is removed for good
+j("reports", "add", "an ancient note", "--brief", stdin="from long ago\n")
+data = json.loads(f.read_text())
+_ancient = len(data["reports"])
+data["reports"][-1]["at"] = "2020-01-01T00:00:00+00:00"
+f.write_text(json.dumps(data))
+code, out = j("reports", "--all")
+check("a report older than 30 days is gone, even under --all", "an ancient note" in out, False)
+kept = json.loads(f.read_text())["reports"]
+check("its text is removed from the store, and its place is kept so later numbers do not shift",
+      (len(kept) == _ancient, "from long ago" in json.dumps(kept), bool(kept[-1].get("removed"))), (True, False, True))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

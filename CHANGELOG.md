@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.110.0 — reports are archived after 7 days and removed after 30
+
+A report is archived 7 days after it is written (the default on the environment's Settings page
+is now 7), and removed for good 30 days after it is written: its title and text are deleted, and
+its number is kept so other reports keep theirs. To keep a report, make it a document (coming).
+
 ## 1.109.2 — a report opens on its own page
 
 Clicking a report in the viewer opens it on a full page, like a doc: its title, when it was
