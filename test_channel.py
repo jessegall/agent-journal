@@ -96,6 +96,14 @@ check("a new comment is pushed to an idle session, naming it",
       ("use the other colour" in params.get("content", ""), params.get("meta", {}).get("comment")), (True, "1"))
 check("and not pushed twice", read_line(7), None)
 
+P.cli("suggest", "poll the to-dos less often", "--brief", stdin="the list reloads every five seconds")
+P.cli("suggestions", "accept", "1")
+push = read_line(12)
+params = (push or {}).get("params") or {}
+check("a suggestion the user decides is pushed to an idle session, naming it",
+      ("accepted suggestion 1" in params.get("content", ""), params.get("meta", {}).get("suggestion")), (True, "1"))
+check("and not pushed twice", read_line(7), None)
+
 j("auto-mode", "enable")
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("messages", "add", "another one while working")
