@@ -22,3 +22,8 @@ document.
 
 Browse and open files here. To add a file, attach it to a message or ask the agent to add it
 to a document.
+
+## How the agent uses files
+
+- **Files on messages.** The agent sees a message's files when it reads the message, and can file one into a document with `journal messages file`.
+- **Files on documents.** `journal docs files <n>` lists a document's attachments, and `journal docs paths <n>` gives their full paths to hand to a subagent.

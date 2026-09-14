@@ -17,3 +17,9 @@ A reminder can carry a condition, like "until the migration is finished". The ag
 
 - See what the agent is being reminded of here.
 - Edit, move or retire a reminder.
+
+## How the agent uses reminders
+
+- **Repeated, on purpose.** Every standing reminder is told to the agent at each stop, and again every 50 tool calls in between (the **reminder_every** setting).
+- **Writing one.** The agent adds one with `journal reminders add` when you have had to say something twice.
+- **Retiring one.** When its condition is true, the agent runs `journal reminders done <n> "<why>"`. The reason is required.

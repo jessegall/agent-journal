@@ -13,3 +13,8 @@ A question can come with a few **options** to click. The one the agent recommend
 - Answer an open question: pick an option and save, or write your own.
 - Change an answer later with **Change answer**. The old answer is kept, and the agent is told again.
 - See what a question is about: a to-do, a document, a pin, a rule or a message.
+
+## How the agent uses questions
+
+- **Asking without stopping.** The agent files a question with `journal questions add`, with options and its pick when it has them, and carries on with everything that does not wait on the answer.
+- **Hearing the answer.** Your answer is handed to the agent at its next stop. If Claude was started with the channel, it also wakes an idle session. A changed answer is told again.

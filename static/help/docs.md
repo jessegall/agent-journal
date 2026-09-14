@@ -16,3 +16,9 @@ Pins, rules and to-dos can point at a document, or at one part of it.
 - Read a document and its attachments.
 - Comment on it.
 - Archive one that is no longer useful. It stays readable.
+
+## How the agent uses documents
+
+- **Knowing what exists.** Every session starts with the list of documents and their abstracts, so the agent can find what was already worked out.
+- **Reading before re-investigating.** It reads one with `journal docs <n>` and searches every line with `journal docs search <term>`.
+- **Pointing at one.** A pin, rule or to-do that rests on a document cites it, so the reasoning can be found again.

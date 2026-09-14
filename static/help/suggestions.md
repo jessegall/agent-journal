@@ -13,3 +13,9 @@ You do. The agent does not act on a suggestion until you say so, and it keeps wo
 - **Decline** it, with a reason if you like.
 
 Declined and withdrawn suggestions are hidden until you switch them on.
+
+## How the agent uses suggestions
+
+- **Proposing, not doing.** The agent files a change nobody asked for with `journal suggest "<the change>" --brief` and keeps doing what you asked, the way you asked.
+- **Hearing your decision.** When you accept, adjust or decline, the agent is told at its next stop and acts on it.
+- **Withdrawing.** If a suggestion stops being worth it, the agent withdraws it with a reason.

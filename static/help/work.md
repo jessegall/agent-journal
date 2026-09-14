@@ -15,3 +15,10 @@ Declaring work first means every change in the project belongs to something you 
 
 - See what is open, and the notes on each piece of work.
 - Add a note, or end work yourself.
+
+## How the agent uses work
+
+- **Declared before changing anything.** The journal refuses an edit, a deletion or a commit while no work is open. Reading is never refused.
+- **Commands.** `journal work start` names the work, `journal work update` records what moved, `journal work await` marks waiting on a subagent or a build, and `journal work end` closes it.
+- **Handed back.** Open work is listed in the block the agent receives at the start of each session and after a summary, so it picks up where it left off.
+- **Recorded for it.** Files it changes and commits it makes while work is open are added to that work automatically.
