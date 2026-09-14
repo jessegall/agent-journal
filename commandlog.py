@@ -9,6 +9,8 @@ CAP = 250
 SKIP = {"statusline", "serve", "channel", "migrate", "version"}
 # writes that Activity already shows from the stores they change
 SHOWN = {"todos:add", "todos:done", "work:start", "work:update", "work:end", "questions:add", "messages:done"}
+# run by git hooks, not by the agent
+HOOKS = {"todos:from-commit"}
 
 # noun:verb -> the line shown in Activity; "noun:" is a command with no verb; {n} is its number argument
 DESCRIBE = {
@@ -81,7 +83,7 @@ def describe(noun: str, verb: str, n=None) -> str:
 
 def record(root: Path, track: str, parsed, at: str) -> None:
     noun, verb = parsed.command.noun, parsed.command.verb
-    if noun in SKIP or f"{noun}:{verb}" in SHOWN:
+    if noun in SKIP or f"{noun}:{verb}" in SHOWN or f"{noun}:{verb}" in HOOKS:
         return
     entry = {"at": at, "text": describe(noun, verb, parsed.arg("n"))}
     with state.locked(root):
