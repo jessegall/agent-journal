@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.119.0 — Each Activity line shows the title of what it names
+
+Under "Processed message 97" or "Closed to-do 98", a smaller line gives that item's title:
+the to-do's title, the message's first words, the question, the work, the report, the
+suggestion, the document, the pin or the rule. Lines about a list ("Reading your
+messages") have no second line.
+
 ## 1.118.0 — Activity lines for commands open what they name
 
 A line like "Filing message 95" or "Reading to-do 98" now opens that message or to-do. A
