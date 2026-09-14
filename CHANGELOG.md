@@ -4,6 +4,38 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.0 — The viewer grows up: agent pages, answered questions, comments on work, and a calmer Activity
+
+A minor release that gathers everything since 1.131.79. What changed, in short:
+
+- **Agents.** Each session and subagent has its own page, with its most recent work as a table and
+  its raw transcript, newest lines first and without empty lines. The agents list in the Activity
+  header splits active from idle, and the journal listens for SubagentStop to know when a subagent
+  is finished. `journal upgrade` adds that event to `.claude/settings.json`.
+- **Messages.** A message shows "Being handled" as soon as the agent reads it. The agent answers a
+  question in a message with `journal messages reply <n> "<answer>" --part="<the question>"`: you get
+  a notification and see the answer under the quoted question. Adding files to a sent message works
+  again for files over 64 KB.
+- **Questions.** `journal questions add` refuses a question that lists its choices in its own text,
+  and says to give each choice as an `--option`. "Agent's pick" shows only while you choose.
+- **Work.** Every file a piece of work changes is recorded on it, including files a script writes
+  and edits made in the same line as a commit. A work item takes comments, like a to-do does.
+- **Commits.** Commit hashes are easy to spot and click, a commit has its own page, and the subject
+  beside a hash is quieter.
+- **Suggestions and reports.** The Suggestions page can ask the agent for suggestions, with an
+  optional focus. The skill tells reports (temporary) from documents (lasting), and reminds the
+  agent how to write a report when a to-do or message asks for one.
+- **Files.** Files lives under Documents, with an image library, and lists the files the agent kept.
+  Image previews keep their shape.
+- **The viewer.** A side panel's title is the link to its page. New buttons carry a plus, sort
+  controls show on hover, and counts that are zero are left out. Activity lines slide in, and the
+  list returns to the newest line when one arrives. Coming back to the tab no longer piles up the
+  animations, and a notice says what the agent did while you were away.
+- **The channel** no longer misses a message sent in the same second it started.
+
+Nothing to do beyond `journal upgrade`. If a viewer is running from before 1.131.63, restart it
+once with `journal serve`; after that it restarts itself when the journal's code changes.
+
 ## 1.131.99 — The agent answers the questions in a message
 
 When a message asks the agent something ("are we doing this already?"), the agent answers that part
