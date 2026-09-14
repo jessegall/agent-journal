@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.115.5 — Activity leaves out the commit hook's own command
+
+A commit ran `journal todos from-commit` through the git hook, and Activity showed it as
+"Running journal todos from-commit". Commands run by git hooks are no longer logged.
+
 ## 1.115.4 — Blocked to-dos are listed above open ones
 
 On Home and on the To-dos page, the Blocked group now comes before Open: In progress,
