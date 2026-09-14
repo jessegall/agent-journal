@@ -182,6 +182,9 @@ const Icon = {
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
+      <template v-else-if="name === 'dock-left'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.5 3v10"/></template>
+      <template v-else-if="name === 'float'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><rect x="7.5" y="7" width="4.5" height="4" rx=".8"/></template>
+      <template v-else-if="name === 'dock-right'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10"/></template>
       <template v-else-if="name === 'reports'"><path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/></template>
       <template v-else-if="name === 'work'"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></template>
       <path v-else-if="name === 'reminders'" d="M4 11V7a4 4 0 0 1 8 0v4l1 1.5H3L4 11ZM6.5 14h3"/>
@@ -1783,8 +1786,49 @@ const NAV = [
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 
+// the Activity panel: one component, shown in the sidebar, docked on the right, or as a window you drag
+const ACTIVITY_MODES = [{ value: "sidebar", label: "Show in the sidebar", icon: "dock-left" },
+                        { value: "float", label: "Show as a floating window", icon: "float" },
+                        { value: "right", label: "Dock on the right", icon: "dock-right" }];
+
+const ActivityPanel = {
+  props: { data: Object, href: Function, mode: String, setMode: Function },
+  emits: ["drag"],
+  components: { Icon },
+  setup(props) {
+    const limit = computed(() => (props.mode === "sidebar" ? 6 : 20));
+    return { limit, ACTIVITY_MODES };
+  },
+  template: `
+    <div :class="['activity-panel', 'mode-' + mode]">
+      <div class=activity-head @mousedown="$emit('drag', $event)">
+        <span class=group-label>Activity</span>
+        <span class=activity-modes>
+          <button v-for="m in ACTIVITY_MODES" :key="m.value" type=button :class="['mode-btn', {on: mode === m.value}]"
+            :title="m.label" :aria-label="m.label" :aria-pressed="mode === m.value" @mousedown.stop @click="setMode(m.value)">
+            <Icon :name="m.icon"/>
+          </button>
+        </span>
+      </div>
+      <template v-if="data">
+        <div v-if="data.agent" class=activity-agent>
+          <div class=activity-meta><span class="env-dot live"></span>Agent<span v-if="data.agent.seen"> · {{ data.agent.seen }}</span></div>
+          <div v-if="data.agent.text" class="activity-text clamp">{{ data.agent.text }}</div>
+        </div>
+        <template v-for="(e, i) in data.events.slice(0, limit)" :key="i">
+          <a v-if="href(e)" class="activity-row activity-link" :href="href(e)">
+            <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
+          </a>
+          <div v-else class=activity-row>
+            <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
+          </div>
+        </template>
+      </template>
+    </div>`,
+};
+
 const App = {
-  components: { ...VIEWS, Icon },
+  components: { ...VIEWS, Icon, ActivityPanel },
   setup() {
     const route = reactive(parseHash());
     const ov = OVERVIEW;
@@ -1826,7 +1870,28 @@ const App = {
     // an activity row opens what it is about, when it is about something with a page
     const ACTIVITY_PAGES = { todo: "todos", question: "questions", message: "messages", work: "work" };
     const activityHref = (e) => (e.n && ACTIVITY_PAGES[e.kind] && envName.value ? `#/env/${envName.value}/${ACTIVITY_PAGES[e.kind]}/${e.n}` : null);
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref };
+    // where Activity shows, and where its window was dragged to, remembered in this browser
+    const ACT = "journal.activity";
+    const remembered = (() => { try { return JSON.parse(localStorage.getItem(ACT) || "{}"); } catch (e) { return {}; } })();
+    const act = reactive({ mode: "sidebar", x: null, y: null, ...remembered });
+    const saveAct = () => { try { localStorage.setItem(ACT, JSON.stringify({ mode: act.mode, x: act.x, y: act.y })); } catch (e) { /* storage off */ } };
+    const setMode = (mode) => { act.mode = mode; saveAct(); };
+    const drag = (ev) => {
+      const box = ev.target.closest(".activity-float");
+      if (!box || ev.button !== 0) return;
+      const r = box.getBoundingClientRect();
+      const dx = ev.clientX - r.left, dy = ev.clientY - r.top;
+      const move = (e) => {
+        act.x = Math.max(0, Math.min(window.innerWidth - r.width, e.clientX - dx));
+        act.y = Math.max(0, Math.min(window.innerHeight - 40, e.clientY - dy));
+      };
+      const up = () => { window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up); saveAct(); };
+      window.addEventListener("mousemove", move);
+      window.addEventListener("mouseup", up);
+      ev.preventDefault();
+    };
+    const floatStyle = computed(() => (act.x == null ? { right: "24px", bottom: "24px" } : { left: act.x + "px", top: act.y + "px" }));
+    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, act, setMode, drag, floatStyle };
   },
   template: `
     <div class=app>
@@ -1860,28 +1925,19 @@ const App = {
             <span :class="['env-dot', {live: e.active}]"></span>{{ e.name }}
           </a>
         </div>
-        <div class="group activity" v-if="activity.data">
-          <button type=button class="group-label fold-head" @click="fold('activity')" :aria-expanded="!folded.activity">
-            Activity<span :class="['fold', {shut: folded.activity}]"></span></button>
-          <template v-if="!folded.activity">
-          <div v-if="activity.data.agent" class=activity-agent>
-            <div class=activity-meta><span class="env-dot live"></span>Agent<span v-if="activity.data.agent.seen"> · {{ activity.data.agent.seen }}</span></div>
-            <div v-if="activity.data.agent.text" class="activity-text clamp">{{ activity.data.agent.text }}</div>
-          </div>
-          <template v-for="(e, i) in activity.data.events.slice(0, 6)" :key="i">
-            <a v-if="activityHref(e)" class="activity-row activity-link" :href="activityHref(e)">
-              <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
-            </a>
-            <div v-else class=activity-row>
-              <span class="activity-text clamp1">{{ e.text }}</span><span class=activity-age>{{ e.age }}</span>
-            </div>
-          </template>
-          </template>
+        <div class="group activity" v-if="activity.data && act.mode === 'sidebar'">
+          <ActivityPanel :data="activity.data" :href="activityHref" mode="sidebar" :setMode="setMode"/>
         </div>
       </aside>
       <main class=main>
         <component :is="route.view" v-bind="route.params" :key="key"/>
       </main>
+      <aside v-if="activity.data && act.mode === 'right'" class=activity-dock>
+        <ActivityPanel :data="activity.data" :href="activityHref" mode="right" :setMode="setMode"/>
+      </aside>
+      <div v-if="activity.data && act.mode === 'float'" class=activity-float :style="floatStyle">
+        <ActivityPanel :data="activity.data" :href="activityHref" mode="float" :setMode="setMode" @drag="drag"/>
+      </div>
     </div>`,
 };
 
