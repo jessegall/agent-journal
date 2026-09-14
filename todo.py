@@ -627,7 +627,7 @@ def after_of(t: dict) -> list[int]:
     return [int(x) for x in raw if x.isdigit()]
 
 
-def waiting_on(root: Path, track: str, t: dict) -> list[int]:
+def waiting_on(root: Path, track: str, t: dict, by_n: dict | None = None) -> list[int]:
     """Which of this to-do's prerequisites are not done yet — [] when it is free to start.
 
     A PREREQUISITE IS A `blocked` WHOSE CONDITION THE CODE CAN CHECK. `blocked` is prose the
@@ -639,7 +639,8 @@ def waiting_on(root: Path, track: str, t: dict) -> list[int]:
     depended on it may no longer make sense — it stays waiting and `journal todos` says which
     number it is waiting on, rather than quietly becoming ready because the blocker vanished.
     """
-    by_n = {x["n"]: x for x in _all(root, track)}
+    # a list of many rows passes `by_n` in once; reading the folder again for every row made it quadratic
+    by_n = by_n if by_n is not None else {x["n"]: x for x in _all(root, track)}
     return [n for n in after_of(t)
             if n in by_n and not (by_n[n].get("done") and not by_n[n].get("struck"))]
 
@@ -1416,7 +1417,7 @@ def question_counts(root: Path, track: str) -> dict[int, tuple[int, int]]:
 
 
 def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
-                 counts: dict[int, tuple[int, int]] | None = None) -> dict:
+                 counts: dict[int, tuple[int, int]] | None = None, by_n: dict | None = None) -> dict:
     """One to-do as a plain, JSON-safe dict — the shape the web viewer serves, built
     from the SAME predicates (`states_of`, `after_of`, `waiting_on`) the terminal
     renderer's own `facts()` reads to build its one-line sentence per row. Neither
@@ -1435,12 +1436,12 @@ def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
         "age": _age(t.get("at", "")),
         "blocked": t.get("blocked") or "",
         "after": after_of(t),
-        "waiting_on": waiting_on(root, track, t),
+        "waiting_on": waiting_on(root, track, t, by_n=by_n),
         "asks": t.get("asks") or "",
         "answer": t.get("answer") or "",
         "doc": str(t["doc"]) if t.get("doc") else "",
         "priority": priority_of(t),
-        "meta": facts_text(root, track, t, short_refs),
+        "meta": facts_text(root, track, t, short_refs, by_n=by_n),
         "started": t.get("started") or "",
         "done": t.get("done") or "",
         "closed_at": t.get("done") or "",
@@ -1452,7 +1453,9 @@ def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
 def rows_response(root: Path, track: str) -> list[dict]:
     """Every to-do on this environment, as plain dicts, newest first — what
     the to-dos controller serves; its `show` starts from `row_response` for one."""
-    rows = [row_response(root, track, t) for t in _all(root, track)]
+    items = _all(root, track)
+    by_n = {x["n"]: x for x in items}
+    rows = [row_response(root, track, t, by_n=by_n) for t in items]
     return sorted(rows, key=lambda r: r["n"], reverse=True)
 
 
@@ -1493,6 +1496,10 @@ def _started(root: Path, track: str, t: dict) -> str:
     return say("started_live" if live else "started_ended", age=_age(t["started"]))
 
 
+def _after_text(t: dict, left: list[int]) -> str:
+    return say("state_after", after=t["after"], tail=say("state_after_open", n=len(left)) if left else say("state_after_done"))
+
+
 #: THE TABLE FROM STATE TO SENTENCE. One entry per name `_state` can return, and every name
 #: it can return has one: adding a state means adding a row here, not another `elif`.
 _STATE_TEXT = {
@@ -1502,9 +1509,7 @@ _STATE_TEXT = {
     "reported": lambda root, track, t: say("state_reported", by=t.get("by") or "?", how=t["reported"]),
     "assigned": _held,
     "blocked": lambda root, track, t: say("state_blocked", why=t["blocked"]),
-    "after": lambda root, track, t: say("state_after", after=t["after"], tail=(
-        say("state_after_open", n=len(waiting_on(root, track, t))) if waiting_on(root, track, t)
-        else say("state_after_done"))),
+    "after": lambda root, track, t: _after_text(t, waiting_on(root, track, t)),
     "started": _started,
     "waiting": lambda root, track, t: say("state_waiting", age=_age(t.get("at", ""))),
 }
@@ -1538,20 +1543,23 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int | No
     """
     width = fmt.room(width)
     import entries
-    items = _all(root, track) if all_of_them else open_items(root, track)
+    everything = _all(root, track)
+    by_n = {x["n"]: x for x in everything}
+    items = everything if all_of_them else [t for t in everything if not t.get("done")]
     if not items:
         return say("empty_all" if all_of_them else "empty_open")
     if not order_by_id:
         items = sorted(items, key=priority_of)
 
-    rows, left = entries.listing(items, lambda t: row_response(root, track, t, short_refs), cap=cap, page=page,
+    rows, left = entries.listing(items, lambda t: row_response(root, track, t, short_refs, by_n=by_n), cap=cap, page=page,
                                  order=order)
     return render_rows(rows, width) + fmt.more("todos", left, page, order)
 
 
-def facts_text(root: Path, track: str, t: dict, short_refs: bool = False) -> str:
+def facts_text(root: Path, track: str, t: dict, short_refs: bool = False, by_n: dict | None = None) -> str:
     """The line beneath a to-do's title: where it stands, its priority, its brief, its doc."""
-    out = [_STATE_TEXT[_state(t)](root, track, t)]
+    state = _state(t)
+    out = [_after_text(t, waiting_on(root, track, t, by_n=by_n)) if state == "after" else _STATE_TEXT[state](root, track, t)]
     if priority_of(t) != DEFAULT_PRIORITY:
         out.append(say("fact_priority", label=priority_label(priority_of(t))))
     out.append(say("fact_brief") if t.get("brief") or t.get("body") else say("fact_title_only"))
