@@ -122,7 +122,12 @@
   .toggle { margin-left: auto; display: flex; align-items: center; gap: 6px; cursor: pointer; }
   .toggle input { accent-color: var(--accent); margin: 0; }
   .body { flex: 1; min-height: 0; display: flex; }
-  .list { flex: 1; min-width: 0; overflow-y: auto; }
+  .list { flex: 1; min-width: 0; overflow-y: auto; container: list / inline-size; }
+  /* a list squeezed beside an open panel keeps room for titles: the cite column goes, age narrows */
+  @container list (max-width: 600px) {
+    .row { --cite-col: 0px; --age-col: 84px; padding: 0 12px; }
+    .row .cite { visibility: hidden; }
+  }
   .page { flex: 1; min-height: 0; overflow-y: auto; }
   .page-inner { max-width: 760px; padding: 28px 32px 64px; display: flex; flex-direction: column; gap: 22px; }
 
@@ -169,7 +174,7 @@
   .muted { color: var(--text-3); }
 
   /* detail panel */
-  .panel { width: 400px; flex: none; min-height: 0; display: flex; flex-direction: column;
+  .panel { width: clamp(320px, 30vw, 400px); flex: none; min-height: 0; display: flex; flex-direction: column;
     border-left: 1px solid var(--border); background: var(--bg); }
   .panel-top { height: 44px; flex: none; display: flex; align-items: center; justify-content: space-between;
     padding: 0 12px 0 20px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12.5px; }

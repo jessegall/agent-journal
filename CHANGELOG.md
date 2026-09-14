@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.127.1 — List titles stay visible with a panel open
+
+With an item's panel open on a list page, the list sat between the panel and the Activity
+column and its rows lost their titles, showing only numbers and ages. The panel now narrows
+on smaller windows, and a list narrower than 600px drops its cite column and narrows its age
+column so the titles keep their room.
+
 ## 1.127.0 — Questions are answered where they show up, not from a sidebar page
 
 Open questions now appear in the top bar's Notifications list, counted in the bell's badge,
