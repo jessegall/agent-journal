@@ -267,7 +267,11 @@ const TopBar = {
     });
     const activity = ACTIVITY;
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
-    return { env, waiting, openCount, drop, notes, suggestions, asks, openQuestions, readOne, readAll, activity, toggleActivity };
+    // what the agent keeps lives here as icons; the one whose page is open is lit
+    const view = parseHash().view || "";
+    const KEPT = [{ key: "reports", label: "Reports", view: "Reports" }, { key: "pins", label: "Pins", view: "Pins" },
+                  { key: "reminders", label: "Reminders", view: "Reminders" }];
+    return { env, waiting, openCount, drop, notes, suggestions, asks, openQuestions, readOne, readAll, activity, toggleActivity, view, KEPT };
   },
   template: `
     <div class=top>
@@ -281,9 +285,11 @@ const TopBar = {
         <template v-if="env">
           <a class=icon-btn :href="'#/env/' + env + '/search'" title="Search" aria-label="Search"><Icon name="search"/></a>
           <span class=tool-wrap>
-            <a class=icon-btn :href="'#/env/' + env + '/questions'" title="Questions" aria-label="Questions"><Icon name="questions"/></a>
+            <a :class="['icon-btn', {on: view === 'Questions'}]" :href="'#/env/' + env + '/questions'" title="Questions" aria-label="Questions"><Icon name="questions"/></a>
             <span v-if="openCount" class=tool-badge>{{ openCount }}</span>
           </span>
+          <a v-for="k in KEPT" :key="k.key" :class="['icon-btn', {on: view === k.view}]" :href="'#/env/' + env + '/' + k.key"
+            :title="k.label" :aria-label="k.label" :aria-current="view === k.view ? 'page' : null"><Icon :name="k.key"/></a>
           <div class=drop-wrap>
             <button type=button :class="['icon-btn', {on: drop.open}]" title="Notifications" aria-label="Notifications"
               :aria-expanded="drop.open" @click="drop.open = !drop.open">
@@ -1948,9 +1954,6 @@ const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "", count: "notifications" },
   { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
-  { key: "reports", label: "Reports", views: ["Reports"], path: "reports", count: "reports" },
-  { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
-  { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
   { key: "docs", label: "Documents", views: ["EnvDocs"], path: "docs", count: "docs" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
