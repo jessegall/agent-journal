@@ -18,15 +18,16 @@ MESSAGES = {
 }
 
 TEXT_MAX = 100
+TITLE_MAX = 200
 AGENT, USER = "Agent", "You"
 
 
-def short(text: str) -> str:
+def short(text: str, limit: int = TEXT_MAX) -> str:
     text = " ".join(text.split())
-    if len(text) <= TEXT_MAX:
+    if len(text) <= limit:
         return text
-    cut = text[:TEXT_MAX - 1]
-    return (cut.rsplit(" ", 1)[0] if " " in cut[TEXT_MAX // 2:] else cut) + "…"
+    cut = text[:limit - 1]
+    return (cut.rsplit(" ", 1)[0] if " " in cut[limit // 2:] else cut) + "…"
 
 
 def say(message: str, /, **values) -> str:
@@ -84,7 +85,7 @@ class ActivityController(Controller):
                 return ""
             if kind not in titles:
                 titles[kind] = lookups[kind]()
-            return short(titles[kind].get(int(n), "") or "")
+            return short(titles[kind].get(int(n), "") or "", TITLE_MAX)
 
         def add(at, kind: str, text: str, n: int | None, by: str) -> None:
             if at:

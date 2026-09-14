@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.119.1 — Older Activity lines open what they name too
+
+Lines logged before 1.118.0, like "Filing message 101", had no link. What they name is now
+read from their text, so they open it and show its title like newer lines.
+
+The title under a line wraps onto more lines instead of being cut off at the edge, and
+shows up to 200 characters.
+
 ## 1.119.0 — Each Activity line shows the title of what it names
 
 Under "Processed message 97" or "Closed to-do 98", a smaller line gives that item's title:

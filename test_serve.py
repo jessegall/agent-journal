@@ -608,6 +608,12 @@ _t3 = next((t["title"] for t in _todo._all(root, "alpha") if t["n"] == 3), "")
 check("a line gives the title of what it names on a second line",
       [e["title"] for e in json.loads(body)["events"] if e["text"] == "Reading to-do 3"], [" ".join(_t3.split())[:100]])
 check("a line about a list has no title", [e["title"] for e in json.loads(body)["events"] if e["text"] == "Reading your messages"], [""])
+state.put_tracked(root, "activity", "alpha",
+                  commandlog.entries(root, "alpha") + [{"at": "2099-01-01T00:00:01+00:00", "text": "Filing message 7"},
+                                                       {"at": "2099-01-01T00:00:02+00:00", "text": "Reading reports"}])
+check("a line logged before lines named their resource is read back from its text",
+      [(e["text"], e.get("kind"), e.get("n")) for e in commandlog.entries(root, "alpha") if e["text"] in ("Filing message 7", "Reading reports")],
+      [("Filing message 7", "message", 7), ("Reading reports", "report", None)])
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
