@@ -13,7 +13,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(\/archive)?(?:\/(\d+))?$/, view: "Inbox", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/questions(\/archive)?(?:\/(\d+))?$/, view: "Questions", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reports(\/archive)?(?:\/(\d+|new))?$/, view: "Reports", params: ["env", "archive", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/suggestions(\/archive)?(?:\/(\d+))?$/, view: "Suggestions", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/suggestions(\/archive)?(?:\/(\d+|ask))?$/, view: "Suggestions", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/work(\/archive)?(?:\/(\d+|new))?$/, view: "Work", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reminders(\/archive)?(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
@@ -1352,21 +1352,37 @@ const SuggestionPanel = {
 
 const Suggestions = {
   props: ["env", "archive", "n"],
-  components: { TopBar, ResourceList, SuggestionPanel },
+  components: { TopBar, ResourceList, SuggestionPanel, Panel, ActionBar },
   setup(props) {
     const home = computed(() => `#/env/${props.env}/suggestions`);
     const base = computed(() => home.value + (props.archive || ""));
     const list = useFetch(() => props.env && `/api/env/${props.env}/suggestions?all=1`);
-    return { list, home, base, SUGGESTION_LIST };
+    // the viewer cannot start an agent, so asking is a message: the agent sends a subagent to look and files what it finds
+    const asking = computed(() => [{
+      label: "Ask for suggestions", method: "POST", url: `/api/env/${props.env}/inbox`, submit: "Send to the agent", leave: true,
+      fields: [{ name: "scope", label: "What to look at (optional)", kind: "area",
+                 placeholder: "An area, a worry or a goal to focus on. Leave empty to let the agent choose." }],
+      shape: ({ scope }) => ({ files: [], text: "Please look for suggestions: send a background subagent to research this environment "
+        + "and file what it finds with `journal suggest`, while you carry on with your own work."
+        + (scope && scope.trim() ? `\n\nFocus on: ${scope.trim()}` : "") }),
+    }]);
+    const done = (body, a) => { changed(); location.hash = base.value; };
+    return { list, home, base, SUGGESTION_LIST, asking, done };
   },
   template: `
     <TopBar :crumbs="archive ? [env, 'Suggestions', 'Archive'] : [env, 'Suggestions']"/>
     <div class=body>
       <div class=list>
         <ResourceList v-bind="SUGGESTION_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
-          :href="(s) => base + '/' + s.n" :selected="(s) => String(s.n) === n"/>
+          :href="(s) => base + '/' + s.n" :selected="(s) => String(s.n) === n">
+          <template #tools><a class="btn new" :href="home + '/ask'">Ask for suggestions</a></template>
+        </ResourceList>
       </div>
-      <SuggestionPanel v-if="n" :key="'suggestion' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
+      <Panel v-if="n === 'ask'" label="Ask for suggestions" :close="base">
+        <p class="prose muted">The agent gets this as a message. It sends a subagent to look for improvements and files what comes back here, while it carries on with its own work.</p>
+        <ActionBar :actions="asking" open="Ask for suggestions" :done="done"/>
+      </Panel>
+      <SuggestionPanel v-else-if="n" :key="'suggestion' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
     </div>`,
 };
 

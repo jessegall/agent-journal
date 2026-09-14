@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.94 — Ask the agent for suggestions from the Suggestions page
+
+The Suggestions page has an "Ask for suggestions" button. It opens a panel where you can say what to
+look at, or leave it empty. Sending it leaves the agent a message: send a background subagent to
+research this environment, file what it finds with `journal suggest`, and carry on with its own work
+meanwhile. The suggestions show up on the page as they are filed.
+
 ## 1.131.93 — Every file a piece of work changes is recorded on it
 
 Files changed by an edit showed on the work item as they changed, but two kinds of change were never
