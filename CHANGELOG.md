@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.56 — `journal claude` starts Claude with the channel
+
+Using the channel meant typing `claude --dangerously-load-development-channels server:journal`
+every time. `journal claude` does it for you: it adds the channel to `.mcp.json` if it is not
+there yet, then starts Claude with the flag from the project folder. Pass a first prompt as
+words (`journal claude fix the build`), `--continue` or `--resume=<id>` to pick a session back
+up, and `--dry-run` to see the command without running it. It is not called `journal start`
+because that already starts a piece of work.
+
 ## 1.131.55 — An upgrade leaves the source's Claude Code config behind
 
 Upgrading from a git checkout copied every tracked file, and that included the checkout's own

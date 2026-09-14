@@ -120,5 +120,12 @@ check("channel --install adds the server to .mcp.json and says how to start Clau
 code, out = j("channel", "--install")
 check("a second install leaves it as it is", "left as it is" in out, True)
 
+(d / ".mcp.json").unlink()
+code, out = j("claude", "--dry-run", "--continue", "fix the build")
+check("journal claude adds the channel if it is missing and shows the command it would run",
+      (code, "journal" in json.loads((d / ".mcp.json").read_text())["mcpServers"],
+       "claude --dangerously-load-development-channels server:journal --continue 'fix the build'" in out),
+      (0, True, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
