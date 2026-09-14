@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.4 — The work log starts folded
+
+A piece of work's panel opens on what it is and where it stands. Its updates, now titled Work log with
+their count, start folded and open from the label; once you open it, it stays open on the next visit.
+
 ## 1.136.3 — Tool use shows in Activity after a minute of quiet
 
 The agent's commands, edits and reads are summed into one Activity line ("Ran 7 commands, edited 3

@@ -394,6 +394,14 @@ const TopBar = {
 const FOLDED_KEY = "journal:folded";
 const foldedNames = () => { try { return new Set(JSON.parse(localStorage.getItem(FOLDED_KEY) || "[]")); } catch (e) { return new Set(); } };
 const saveFolded = (names) => { try { localStorage.setItem(FOLDED_KEY, JSON.stringify([...names])); } catch (e) { /* folding still works for this view */ } };
+// a label marked data-shut starts folded; the ones the viewer opened are remembered instead
+const OPENED_KEY = "journal:opened";
+function openedNames() {
+  try { return new Set(JSON.parse(localStorage.getItem(OPENED_KEY) || "[]")); } catch (e) { return new Set(); }
+}
+function saveOpened(names) {
+  try { localStorage.setItem(OPENED_KEY, JSON.stringify([...names])); } catch (e) { /* folding still works for this view */ }
+}
 
 const Panel = {
   props: ["label", "close", "onClose", "link"],
@@ -410,10 +418,11 @@ const Panel = {
     const decorate = () => {
       if (!body.value) return;
       const folded = foldedNames();
+      const opened = openedNames();
       body.value.querySelectorAll(".section-label:not([data-foldable])").forEach((label) => {
         const section = sectionOf(label);
         if (!section) return;
-        const shut = folded.has(nameOf(label));
+        const shut = label.hasAttribute("data-shut") ? !opened.has(nameOf(label)) : folded.has(nameOf(label));
         label.dataset.foldable = "";
         label.setAttribute("role", "button");
         label.setAttribute("tabindex", "0");
@@ -427,6 +436,12 @@ const Panel = {
       const shut = !section.classList.contains("folded");
       section.classList.toggle("folded", shut);
       label.setAttribute("aria-expanded", String(!shut));
+      if (label.hasAttribute("data-shut")) {
+        const names = openedNames();
+        if (shut) names.delete(nameOf(label)); else names.add(nameOf(label));
+        saveOpened(names);
+        return;
+      }
       const names = foldedNames();
       if (shut) names.add(nameOf(label)); else names.delete(nameOf(label));
       saveFolded(names);
@@ -1352,7 +1367,7 @@ const WorkPanel = {
           </div>
         </div>
         <div v-if="item.data.notes.length">
-          <p class=section-label>Notes</p>
+          <p class=section-label data-shut>Work log <span class=muted>{{ item.data.notes.length }}</span></p>
           <div class=linked><div v-for="(note, i) in item.data.notes" :key="i" class=sub>{{ note.text }}</div></div>
         </div>
         <Comments :about="'work ' + item.data.n" :env="env" :key="'c-work' + item.data.n"/>
