@@ -27,10 +27,12 @@ class ReportsController(Controller):
         return None
 
     def index(self, root: Path, p: ListingPayload) -> Result:
+        reports.prune(root, p.env or None)
         repo = self.repository(root, p)
         days = reports.archive_days(root, p.env or state.current_track(root))
         gone = lambda r: bool(reports.archived_why(r.raw, days))  # noqa: E731
-        query = repo.query() if p.all else repo.query().where(lambda r: not gone(r))
+        present = repo.query().where(lambda r: not r.raw.get("removed"))
+        query = present if p.all else present.where(lambda r: not gone(r))
         query = self.sorted(query, p)
         if isinstance(query, Result):
             return query
