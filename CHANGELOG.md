@@ -4,6 +4,23 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.135.6 — Coding style rules, each generated into a skill
+
+The first part of the Coding style tool. A project keeps its coding style as rules, one per subject,
+at `.journal/style/<subject>/item.md`. Each rule holds its title, the decision, when it applies, the
+reasoning, bad and good examples, and the phrases that should load it.
+
+- `journal style add <subject> "<title>" --decision="…" --when="…" --brief` records a rule (its body on
+  stdin). `journal style`, `style show`, `style set` and `style remove` list, read, change and retire
+  them.
+- Every change regenerates the skills. Each rule becomes a `style-<subject>` skill in `.claude/skills/`,
+  with its `SKILL.md`, worked examples and trigger phrases, so an agent loads it while writing code that
+  subject covers. A retired rule's skill is removed, but a hand-written `style-…` skill never is.
+- `CLAUDE.md` and `AGENTS.md` get a Coding style block listing the skills, and it goes away when no rule
+  is left. `journal style sync` regenerates everything, and install and upgrade run it too.
+
+Next come the viewer page and the questionnaire an agent asks to find the rules.
+
 ## 1.135.5 — The to-do list reads its folder once
 
 Loading the to-do list re-read the whole to-do folder once for every row, to check what each row was
