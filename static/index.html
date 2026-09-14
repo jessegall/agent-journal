@@ -157,6 +157,14 @@
   .icon-btn.on { background: var(--sel); color: var(--text); }
   .tool-badge { position: absolute; top: -2px; right: -3px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px;
     background: var(--accent); color: #fff; font-size: 10px; line-height: 15px; text-align: center; pointer-events: none; }
+  /* said once when the user comes back to the tab: what the agent did meanwhile */
+  .away-toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 50; display: flex; align-items: center; gap: 12px;
+    max-width: calc(100vw - 32px); padding: 8px 8px 8px 16px; border: 1px solid var(--border-2); border-radius: 10px; background: var(--raised);
+    color: var(--text); font-size: 13px; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); animation: away-in .24s ease-out both; }
+  @keyframes away-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  .away-close { flex: none; width: 24px; height: 24px; border: none; border-radius: 6px; background: transparent; color: var(--text-3); font-size: 16px; cursor: pointer; }
+  .away-close:hover { background: var(--hover); color: var(--text); }
+  @media (prefers-reduced-motion: reduce) { .away-toast { animation: none; } }
   .drop-sub { margin: 0; padding: 8px 8px 2px; font-size: 11px; color: var(--text-3); }
   .drop-row.idle .drop-text { color: var(--text-2); }
   .tool-badge.count { background: var(--side); color: var(--text-2); box-shadow: inset 0 0 0 1px var(--border-2); }
@@ -234,6 +242,9 @@
   .row-leave-active { transition: opacity .18s ease-in, transform .18s ease-in; position: absolute; left: 0; right: 0; z-index: 0; }
   .row-move { transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
   .row-enter-from { opacity: 0; transform: translateY(6px); }
+  /* back from another tab: rows that left go at once and the rest do not slide, so nothing piles up at the bottom */
+  .rows.quiet .row-leave-active { display: none; }
+  .rows.quiet .row-move { transition: none; }
   .row-leave-to { opacity: 0; transform: scale(.98); }
   /* a whole group (its head, rows and Show more) fades in and out, and the groups after it glide */
   .groups { position: relative; }
