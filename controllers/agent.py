@@ -8,6 +8,7 @@ import state
 import tracks
 import transcript
 import work
+from pins import age
 from controller import Controller, Result
 from controllers.activity import context_use
 from payloads import agent as agent_payloads
@@ -84,10 +85,10 @@ class AgentController(Controller):
         out.update(name=f"Session {full[:8]}", status="working" if working else "idle" if live else "ended",
                    seen=tracks.age_text(live["age"]) if live else "", parent="", context=context_use(path, window))
         out["work"] = [{"n": n, "subject": w.get("subject", ""), "ended": bool(w.get("ended")), "files": len(w.get("files") or []),
-                        "commits": len(w.get("commits") or [])}
+                        "commits": len(w.get("commits") or []), "when": age(w.get("ended") or w.get("at") or "")}
                        # work records the transcript file that opened it, not the bare session id
                        for n, w in enumerate(work._all(root, env), 1)
-                       if Path(str(w.get("session") or "")).stem == full and not w.get("removed")][-10:]
+                       if Path(str(w.get("session") or "")).stem == full and not w.get("removed")][::-1]
         parents = (state.get(root, agents.PARENT, {}) or {}).get(env) or {}
         out["dispatched"] = [{"id": a[:8], "name": agents.described(root.parent, full, a) or f"Subagent {a[:8]}",
                               "working": agents.active(root, env, a, SUBAGENT_MINUTES), "age": agents.age(root, env, a)}

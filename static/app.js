@@ -2347,7 +2347,8 @@ const Agent = {
   components: { TopBar },
   setup(props) {
     const about = useFetch(() => props.env && props.id && `/api/env/${props.env}/agent?kind=${props.kind}&agent=${props.id}`);
-    return { about, AGENT_STATUS };
+    const shown = ref(10);
+    return { about, AGENT_STATUS, shown };
   },
   template: `
     <TopBar :crumbs="[env, 'Agents', about.data ? about.data.name : (kind === 'subagent' ? 'Subagent ' : 'Session ') + id]"/>
@@ -2369,13 +2370,18 @@ const Agent = {
         </div>
         <template v-if="about.data.kind === 'session'">
           <div>
-            <p class=section-label>Work <span class=muted>{{ about.data.work.length }}</span></p>
+            <p class=section-label>Most recent work <span class=muted>{{ about.data.work.length }}</span></p>
             <p v-if="!about.data.work.length" class="prose muted">This session has not declared any work here.</p>
-            <div v-else class=linked>
-              <a v-for="w in about.data.work.slice().reverse()" :key="w.n" class="sub log-row" :href="'#/env/' + env + '/work/' + w.n">
-                <span class=log-text>{{ w.subject }}</span>
-                <span class=log-work>{{ w.ended ? 'Ended' : 'Open' }}{{ w.files ? ' · ' + w.files + (w.files === 1 ? ' file' : ' files') : '' }}{{ w.commits ? ' · ' + w.commits + (w.commits === 1 ? ' commit' : ' commits') : '' }}</span>
+            <div v-else class=agent-work>
+              <div class=agent-work-head><span>Work</span><span>Status</span><span>Files</span><span>Commits</span><span>When</span></div>
+              <a v-for="w in about.data.work.slice(0, shown)" :key="w.n" class=agent-work-row :href="'#/env/' + env + '/work/' + w.n">
+                <span class=title>{{ w.subject }}</span>
+                <span :class="['agent-work-status', {open: !w.ended}]">{{ w.ended ? 'Ended' : 'Open' }}</span>
+                <span class=num>{{ w.files || '—' }}</span>
+                <span class=num>{{ w.commits || '—' }}</span>
+                <span class=age>{{ w.when }}</span>
               </a>
+              <button v-if="about.data.work.length > shown" type=button class="btn agent-work-more" @click="shown += 10">Load more</button>
             </div>
           </div>
           <div>

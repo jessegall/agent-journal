@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.89 — The agent page lists its work as a table
+
+An agent's page showed its last ten pieces of work as plain rows. It now shows "Most recent work" as
+a table, newest first: the work, whether it is open, files, commits and when. Load more shows ten more.
+
 ## 1.131.88 — A side panel's title opens its page
 
 The side panel's "Open page" button is gone. Its title ("To-do #239") is the link now: hovering it
