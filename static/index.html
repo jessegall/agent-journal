@@ -29,7 +29,10 @@
 
   /* sidebar */
   .side { width: 236px; flex: none; background: var(--side); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; gap: 18px; padding: 12px 10px; overflow-y: auto; }
+    display: flex; flex-direction: column; gap: 18px; padding: 12px 0; overflow-y: auto; }
+  /* each section pads itself, so the Activity section can run edge to edge */
+  .side > .project { margin-inline: 10px; }
+  .side > .group { padding-inline: 10px; }
   .project { display: flex; align-items: center; gap: 9px; padding: 6px 8px; font-weight: 600; font-size: 13.5px; color: var(--text); }
   .project:hover { color: var(--text); }
   .project .logo { width: 20px; height: 20px; border-radius: 5px; background: #2a2c33; display: flex; align-items: center;
