@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.133.5 — The Activity send button sits inside the message box
+
+The Send button under the Activity message box is gone. A small arrow button now sits inside the box,
+bottom right, and shows only while there is something to send. Enter still sends. If a message cannot
+be sent, the error shows on its own line under the box.
+
 ## 1.133.4 — An About page with the version and the changelog
 
 The sidebar footer shows the journal's version, for example "Agent journal 1.133.4", just above the
