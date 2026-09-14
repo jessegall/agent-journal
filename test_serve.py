@@ -24,6 +24,7 @@ os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
+import testkit  # noqa: E402,F401  (removes this suite's temporary folders when it exits)
 import docs, inbox, pins, questions, reminders, serve, state, todo, tracks, views, work  # noqa: E402
 
 AT = "2026-09-11T12:00:00+00:00"

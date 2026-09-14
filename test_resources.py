@@ -6,6 +6,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import testkit  # noqa: E402,F401  (removes this suite's temporary folders when it exits)
 
 import docs, inbox, pins, questions, reminders, state, todo, tracks, work  # noqa: E401,E402
 from resources import (Claim, Doc, Docs, Messages, Part, Pins, Query, Question, Questions, Reminder, Reminders,  # noqa: E402

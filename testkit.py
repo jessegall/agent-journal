@@ -135,6 +135,22 @@ _SKIP = {"runtime", "todo", "docs", "tools", "environments", ".journal", ".git",
          ".claude", "__pycache__"}
 
 
+#: EVERY TEMPORARY FOLDER A TEST MAKES LIVES IN ONE SCRATCH FOLDER FOR ITS PROCESS, removed when it
+#: exits. Cleaning up only what `make` built was not enough: most suites also call
+#: `tempfile.mkdtemp()` directly, for a package copy, a bare record, a transcript, and one full run
+#: still left 73 folders behind. Pointing `tempfile.tempdir` here catches all of them. A process whose
+#: folders must outlive it (a child that builds a project for its parent) sets AGENT_JOURNAL_KEEP_TMP=1.
+if os.environ.get("AGENT_JOURNAL_KEEP_TMP") != "1":
+    _SCRATCH = tempfile.mkdtemp(prefix="agent-journal-tests-")
+    tempfile.tempdir = _SCRATCH
+    # THE HOOKS AND THE CLI A TEST STARTS MUST SEE THE SAME FOLDERS. They do not import this module, so the
+    # scratch folder reaches them through the environment; transcripts are looked for where the test wrote them.
+    os.environ["TMPDIR"] = _SCRATCH
+    os.environ["AGENT_JOURNAL_PROJECTS"] = str(Path(_SCRATCH) / "agent-journal-test-projects")
+    if "transcript" in sys.modules:
+        sys.modules["transcript"].PROJECTS = Path(os.environ["AGENT_JOURNAL_PROJECTS"])
+    atexit.register(shutil.rmtree, _SCRATCH, True)
+
 #: the temporary folders this process made projects in, removed when it exits
 _MADE: set[str] = set()
 
