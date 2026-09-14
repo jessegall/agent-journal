@@ -34,3 +34,5 @@ __pycache__/
 
 # the IDE's own folder, never this project's
 /.idea
+# the browser tool's snapshots and screenshots
+/.playwright-mcp

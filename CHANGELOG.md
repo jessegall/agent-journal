@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.51 — An upgrade from a checkout copies only the package
+
+`journal upgrade --from=<a git checkout>` copied every file in that folder that was not
+project data, including folders that have nothing to do with the package: an editor's `.idea`,
+a browser tool's `.playwright-mcp`. From a git checkout it now copies only what git counts as
+the package: tracked files, and new files that are not ignored. Stray folders an earlier
+upgrade copied into `.journal/` are removed by the upgrade after this one.
+
 ## 1.131.50 — An Archive button on every list
 
 To-dos, Messages, Questions, Suggestions, Reports, Open work, Reminders, Pins and Rules have an
