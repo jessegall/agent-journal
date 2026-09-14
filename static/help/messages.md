@@ -10,7 +10,7 @@ A message waits until an agent picks it up. If no agent is working on this envir
 
 ## What you can do
 
-- Send a message from the box at the bottom. **Shift+Enter** sends.
+- Send a message from the box at the bottom. **Enter** sends; **Shift+Enter** starts a new line.
 - Edit a message while it still waits.
 - Open a processed one to check your words landed where you meant.
 

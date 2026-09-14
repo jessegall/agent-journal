@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.59 — Enter sends a message
+
+In the Messages page's message box and the Activity column's box, Enter now sends and
+Shift+Enter starts a new line, like most chat apps. Before, Shift+Enter sent and Enter only
+added a line. Cmd+Enter and Ctrl+Enter still send. While you are composing text with an input
+method, Enter confirms the text instead of sending.
+
 ## 1.131.58 — The upgrade notice no longer says it runs the tests
 
 The notice that a newer journal is available said `journal upgrade` "runs its tests first",
