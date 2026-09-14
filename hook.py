@@ -2808,6 +2808,18 @@ def _prune(keep: str = "") -> None:
     tracks.prune(ROOT, lambda stem: stem == keep or present(stem))
 
 
+def _remember_pid(stem: str) -> None:
+    """Claude Code's process id for this session, so the channel server it starts can find its session."""
+    import os
+    pid = str(os.getppid())
+    got = state.get(ROOT, "session_pids", {})
+    got = got if isinstance(got, dict) else {}
+    if got.get(pid) == stem:
+        return
+    got[pid] = stem
+    state.put(ROOT, "session_pids", dict(list(got.items())[-50:]))
+
+
 def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     """Hand the session the store, and mark that this hook is alive in this transcript.
 
@@ -3112,6 +3124,9 @@ def main(raw: str | None = None) -> int:
         # ALIVE, AS OF NOW. What `tracks.occupants` reads to tell a running session from a
         # terminal that was closed without a SessionEnd.
         state.put(ROOT, "seen_at", int(time.time()), stem=ctx.stem)
+        # which event came last tells an idle session (Stop) from a working one, for the channel server
+        state.put(ROOT, "last_event", event, stem=ctx.stem)
+        _remember_pid(ctx.stem)
         return handler(conf, payload, ctx)
     except Exception as e:  # noqa: BLE001
         print(say("handler_failed", event=event, kind=type(e).__name__, error=e), file=sys.stderr)

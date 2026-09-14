@@ -8,7 +8,7 @@ from command import Command, Parsed, number
 from templates import render
 
 NOUNS = (("cleanup", "tidy"), ("migrate", "migrations"), ("loop",), ("update",), ("upgrade",),
-         ("verify",), ("settings",), ("serve",), ("statusline", "status-line"), ("enable",), ("disable",), ("version",))
+         ("verify",), ("settings",), ("serve",), ("statusline", "status-line"), ("channel",), ("enable",), ("disable",), ("version",))
 
 TEXT = {
     "cleanup_extra": "cleanup takes no argument (got {word}) — `journal cleanup` for what a check can see, "
@@ -30,6 +30,10 @@ TEXT = {
                     '  journal work update "<what moved>"',
     "enabled": "hooks ENABLED: every hold, gate and reminder is back in force.",
     "rules_block_removed": "the rules injected into CLAUDE.md are taken out; `journal rules inject <n>` puts one back",
+    "channel_installed": "the journal channel is added to {path}. Start Claude with it so a message you leave wakes an "
+                         "idle session:\n  claude --dangerously-load-development-channels server:journal",
+    "channel_taken": "{path} already has a server named journal; it was left as it is",
+    "channel_usage": "journal channel --install adds the journal's channel server to .mcp.json",
     "statusline_offer": "Want the environment, the open work and the web viewer in Claude Code's status bar? "
                         "`journal statusline --install`",
     "statusline_installed": "status line added to {path}; it shows from the next prompt",
@@ -279,6 +283,27 @@ class Statusline(Command):
         return 0
 
 
+class Channel(Command):
+    signature = "channel {--install}"
+
+    def run(self, p: Parsed) -> int:
+        if not p.option("install"):
+            fmt.say(TEXT["channel_usage"])
+            return 0
+        import json
+        path = project() / ".mcp.json"
+        data = json.loads(path.read_text()) if path.is_file() else {}
+        servers = data.setdefault("mcpServers", {})
+        shown = path.relative_to(project())
+        if "journal" in servers:
+            fmt.say(render(TEXT["channel_taken"], path=shown))
+            return 0
+        servers["journal"] = {"command": "python3", "args": [".journal/channel.py"]}
+        path.write_text(json.dumps(data, indent=2) + "\n")
+        fmt.say(render(TEXT["channel_installed"], path=shown))
+        return 0
+
+
 def has_statusline() -> bool:
     import json
     for f in (project() / ".claude" / "settings.json", project() / ".claude" / "settings.local.json"):
@@ -331,4 +356,4 @@ class Version(Command):
 
 
 COMMANDS = (Cleanup, CleanupRead, CleanupKeep, Migrate, MigrateRun, Loop, LoopSet, LoopUnset,
-            Upgrade, Update, Verify, Settings, Serve, Statusline, Enable, Disable, Version)
+            Upgrade, Update, Verify, Settings, Serve, Statusline, Channel, Enable, Disable, Version)
