@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.1 — Side panel sections fold
+
+Every section in a side panel folds from its label: Brief, Work log, Files changed, Commits, Replies,
+Comments and the rest. A click on the label, or Enter on it, hides the section and a chevron shows its
+state. Your browser remembers which sections are folded, by name, so a long Files changed list can
+stay out of the way of Comments. A message's Files section keeps its Attach files button while folded,
+and a question's answer choices never fold.
+
 ## 1.134.0 — An About page, and a quieter message box
 
 A minor release that gathers everything since 1.133.0:
