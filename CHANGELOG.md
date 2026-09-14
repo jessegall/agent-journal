@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.42 — Rewording an answered question asks it again
+
+The journal skill says that rewording a question after it was answered means you are asked
+again, but the question stayed answered and never showed as open. Now
+`journal questions edit <n> "<new wording>"` on an answered question opens it again. The old
+answer is kept under the question's earlier answers, and the question shows as open in the
+terminal and the viewer until you answer it. Changing only a question's options or the
+agent's pick leaves its answer alone.
+
 ## 1.131.41 — No outline on a focused select
 
 Clicking a select, such as a list's sort control or a choice in a form, drew the browser's
