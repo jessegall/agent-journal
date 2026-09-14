@@ -4,6 +4,23 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.23 — To-dos close, start, move and wait the way they say they do
+
+- Dropping a to-do made every to-do waiting on it ready, so auto mode could start work whose prerequisite
+  was abandoned rather than finished. A dropped to-do is now marked struck, and what waits on it keeps
+  waiting until it is reopened and finished. Reopening clears the mark.
+- `journal todos done`, a drop and a `Journal: todos done N` commit trailer closed the row but left the work
+  it had opened standing, holding every stop after it. They now end that work too and say so, as asking a
+  question or setting a to-do aside already did.
+- A `todos start` refused because work of that title was already open still marked the row started. A
+  refused start now leaves the row as it was.
+- A to-do a subagent reported finished was counted as "held by an agent still working", so auto mode seemed
+  stuck on an agent that had finished. It is now listed as reported finished, yours to close with
+  `journal todos done <n>`, in the stop notice and in `journal next`.
+- Moving a to-do could give it the number of a row archived at its destination; it now takes the next
+  number there, archived rows counted. Retitling a to-do to another open to-do's title is refused, as adding
+  one is.
+
 ## 1.136.22 — What the channel delivers is not delivered again at the next stop
 
 - A comment, an answered question or a decided suggestion pushed to an idle agent through the channel was

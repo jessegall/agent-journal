@@ -21,6 +21,7 @@ MESSAGES = {
     "closed_waiting": "\n  closed the work `{title}` — it waits on the answer",
     "closed_aside": "\n  closed the work `{title}` — it is set aside",
     "closed_note": "\n  {note}",
+    "closed_done": "\n  ended the work `{title}` with it",
     "after_note": "\n  {note}",
     "no_commit": "no commit at {ref} to read",
     "commit_how": "{subject} ({sha})",
@@ -132,7 +133,11 @@ class TodosController(Controller):
     def destroy(self, root: Path, p: WhyPayload) -> Result:
         if not p.why:
             return Result("refused", say("say_why"))
-        return self._closed(root, p, todo.done(root, self.env(root), p.id, say("dropped", why=p.why), p.at))
+        got = todo.done(root, self.env(root), p.id, say("dropped", why=p.why), p.at)
+        if got[0]:
+            # ABANDONED, NOT FINISHED: a row that waits on this one stays waiting (`todo.waiting_on`)
+            todo._update(root, self.env(root), p.id, struck="1")
+        return self._closed(root, p, got)
 
     def done(self, root: Path, p: todo_payloads.HowPayload) -> Result:
         return self._closed(root, p, todo.done(root, self.env(root), p.id, p.how, p.at))
@@ -140,17 +145,24 @@ class TodosController(Controller):
     def _closed(self, root: Path, p, got: tuple[bool, str]) -> Result:
         if got[0] and p.source == "web":
             todo._update(root, self.env(root), p.id, closed_by="web")
+        if got[0]:
+            got = (True, got[1] + self._close_work(root, p.id, p.at, "closed_done"))
         return Result.of(got)
 
     def reopen(self, root: Path, p: WhyPayload) -> Result:
         return Result.of(todo.reopen(root, self.env(root), p.id, p.why, p.at))
 
     def start(self, root: Path, p: todo_payloads.StartPayload) -> Result:
+        before = todo.item(root, self.env(root), p.id)[0] or {}
         t, err = todo.start(root, self.env(root), p.id, p.at, agent=p.agent)
         if t is None:
             return Result("refused", err)
-        return Result.of(work.start(root, t["title"], p.at, {**(p.where or {}), "todo": p.id}),
-                         {"n": p.id, "title": t["title"], "body": t.get("body") or ""})
+        opened = work.start(root, t["title"], p.at, {**(p.where or {}), "todo": p.id})
+        if not opened[0]:
+            # A REFUSED START CHANGES NOTHING. The row was marked started before its work was refused,
+            # so the refusal said no while the record said yes.
+            todo._update(root, self.env(root), p.id, started=before.get("started", ""), assigned=before.get("assigned", ""))
+        return Result.of(opened, {"n": p.id, "title": t["title"], "body": t.get("body") or ""})
 
     def move(self, root: Path, p: MovePayload) -> Result:
         return Result.of(todo.move(root, self.env(root), p.id, p.environment, p.at))
