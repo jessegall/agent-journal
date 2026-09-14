@@ -1345,5 +1345,68 @@ check("a cap of zero silences a section, never unlimits it", _small[4] < _small[
 check("gist cuts at a word and says it cut",
       (fmt.gist("one two three", 40), fmt.gist("a" * 30 + " tail", 34)), ("one two three", "a" * 30 + "…"))
 
+# ------------------------------------------------------------------ a long transcript is parsed once, then only what was appended
+import context as _ctx  # noqa: E402
+_tcd = Path(tempfile.mkdtemp())
+_tp, _tcache, _ccache = _tcd / "long.jsonl", _tcd / "long.lines.cache", _tcd / "long.context.cache"
+
+
+def _recs(start: int, count: int) -> str:
+    out = []
+    for i in range(start, start + count):
+        out.append(json.dumps({"type": "user", "timestamp": "2026-09-14T10:00:00Z", "parentUuid": f"a{i}", "origin": {"kind": "human"},
+                               "message": {"role": "user", "content": f"prompt {i}"}}))
+        out.append(json.dumps({"type": "assistant", "timestamp": "2026-09-14T10:00:01Z", "uuid": f"a{i + 1}",
+                               "message": {"role": "assistant", "content": [{"type": "text", "text": f"[!reply] answer {i}"}],
+                                           "usage": {"input_tokens": 100 * (i + 1), "cache_read_input_tokens": 5}}}))
+    return "\n".join(out) + "\n"
+
+
+def _shape(got):
+    return [(l.n, l.role, l.kind, l.text, l.parent) for l in got[0]], got[1]
+
+
+_tp.write_text(_recs(0, 20) + json.dumps({"type": "system", "subtype": "compact_boundary"}) + "\n" + _recs(20, 5))
+check("a cached read gives exactly what a full read gives", _shape(transcript.read(_tp, _tcache)), _shape(transcript.read(_tp)))
+with _tp.open("a") as _fh:
+    _fh.write(_recs(25, 3))
+    _fh.write(json.dumps({"type": "user", "timestamp": "t", "parentUuid": "a27", "origin": {"kind": "human"},
+                          "message": {"role": "user", "content": "prompt 27 again"}}) + "\n")
+    _fh.write('{"type": "user", "message": {"role": "user", "content": "half wr')
+check("after lines are appended, and one is half written, the cached read still matches a full read",
+      _shape(transcript.read(_tp, _tcache)), _shape(transcript.read(_tp)))
+_kept = _pickle.load(_tcache.open("rb")) if (_pickle := __import__("pickle")) else None
+check("the cache stops at the last complete line", _kept["offset"], _tp.read_bytes().rfind(b"\n") + 1)
+with _tp.open("a") as _fh:
+    _fh.write('itten"}, "timestamp": "t"}\n')
+check("once that line is finished, the next cached read picks it up", _shape(transcript.read(_tp, _tcache)), _shape(transcript.read(_tp)))
+with _tp.open("a") as _fh:
+    _fh.write(json.dumps({"type": "user", "timestamp": "t", "parentUuid": "dup", "origin": {"kind": "human"},
+                          "message": {"role": "user", "content": "first version"}}) + "\n")
+transcript.read(_tp, _tcache)
+with _tp.open("a") as _fh:
+    _fh.write(json.dumps({"type": "user", "timestamp": "t", "parentUuid": "dup", "origin": {"kind": "human"},
+                          "message": {"role": "user", "content": "the version sent"}}) + "\n")
+check("a prompt sent again after the cached part marks the cached copy superseded, as a full read does",
+      ([l.kind for l in transcript.read(_tp, _tcache)[0] if l.parent == "dup"], _shape(transcript.read(_tp, _tcache)) == _shape(transcript.read(_tp))),
+      (["superseded", "human"], True))
+_tp.unlink()
+_tp.write_text(_recs(100, 2))
+check("a different, shorter file at the same path is read afresh", _shape(transcript.read(_tp, _tcache)), _shape(transcript.read(_tp)))
+
+_tp.write_text(_recs(0, 30))
+_ctx._READ.clear()
+_full = _ctx.reading(_tp)
+_ctx._READ.clear()
+check("the context reading with a cache matches one without", _ctx.reading(_tp, _ccache), _full)
+with _tp.open("a") as _fh:
+    _fh.write(_recs(30, 2))
+_ctx._READ.clear()  # a new hook process: nothing in memory, only the cache on disk
+_resumed_from = json.loads(_ccache.read_text())["offset"]
+_after = _ctx.reading(_tp, _ccache)
+_ctx._READ.clear()
+check("a new process resumes the context reading from the cache and reaches the same numbers",
+      (_resumed_from > 0, _after, json.loads(_ccache.read_text())["offset"]), (True, _ctx.reading(_tp), _tp.stat().st_size))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

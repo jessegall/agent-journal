@@ -6,9 +6,12 @@ disk lost nothing. Everything here exists to get back to it.
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import os
+import pickle
 import re
+import tempfile
 from pathlib import Path
 
 def _projects() -> Path:
@@ -476,82 +479,134 @@ def page(lines: list[Line], *, before: int | None = None, limit: int = 1000) -> 
                        "text": (x.text or "")[:cap], "clipped": len(x.text or "") > cap} for x in rows]}
 
 
-def read(path: Path) -> tuple[list[Line], list[int]]:
+#: bumped whenever what `read` builds changes, so a cache written by an older version is parsed afresh
+CACHE_VERSION = 1
+
+
+def read(path: Path, cache: Path | None = None) -> tuple[list[Line], list[int]]:
     """Every line, and the indices where a compaction fell.
 
     The boundaries are what make `--back=N` possible: a summary is not a thing you can
     read, but the stretch it REPLACED is, and it is the stretch that was dropped.
+
+    With `cache`, what was parsed is kept in that file and the next read parses only the bytes
+    appended since. A long session's transcript runs past a hundred megabytes, and the stop
+    hook reads it at every turn.
     """
+    if not path.is_file():
+        return [], []  # a transcript not yet written has no lines, not an error
+    st = path.stat()
     lines: list[Line] = []
     boundaries: list[int] = []
-    n = 0
     asked: set[str] = set()  # tool_use ids of questions put to the user, awaiting answers
-    if not path.is_file():
-        return lines, boundaries  # a transcript not yet written has no lines, not an error
-    with path.open() as fh:
-        for raw in fh:
-            raw = raw.strip()
-            if not raw:
-                continue
-            try:
-                rec = json.loads(raw)
-            except ValueError:
-                continue  # a half-written line is not a reason to lose the rest
-            typ = rec.get("type")
-            if typ == "system" and rec.get("subtype") == "compact_boundary":
-                boundaries.append(n)
-                continue
-            if typ == "attachment":
-                got = _hook_line(rec)
-                if got is None:
-                    continue
-                n += 1
-                lines.append(Line(n=n, role="user", kind="injected",
-                                  text=got[0], ts=got[1]))
-                continue
-            if typ not in ("user", "assistant"):
-                continue
-            msg = rec.get("message") or {}
-            text, tools, asks, answered = _text_of(msg)
-            asked |= set(asks)
-            content = msg.get("content")
-            has_result = isinstance(content, list) and any(
-                b.get("type") == "tool_result" for b in content
-            )
-            kind = _kind(rec, has_result)
-            # THE ANSWER TO A QUESTION IS THE USER'S OWN WORDS, however the harness filed
-            # it. It arrives as a tool_result, and a tool_result is the one kind the reader
-            # treats as nobody's speech — so `journal user` lost every choice the user
-            # made through the question tool. Filed as human, because it is.
-            if kind == "tool_result" and any(a in asked for a in answered):
-                kind = "human"
-            n += 1
-            line = Line(
-                n=n,
-                role=msg.get("role", typ),
-                kind=kind,
-                text=text,
-                ts=rec.get("timestamp", ""),
-                tools=tools,
-                parent=str(rec.get("parentUuid") or ""),
-            )
-            # THE SAME PROMPT, RECORDED TWICE. A message sent mid-turn is filed when it is
-            # queued and again when it becomes the prompt, and one edited before the agent
-            # answered is filed in each version — every copy answering the SAME parent
-            # record. Measured: "dont start building it yet yhough", "…though", "…though.
-            # First come back with a design", three lines for one thought. The last copy
-            # is the one the agent answered, so the earlier ones are marked superseded and
-            # stay in place: numbering is a citation, and dropping a record would shift
-            # every line after it.
-            if line.kind == "human" and line.parent:
-                for prev in reversed(lines):
-                    if prev.kind == "text" and (prev.text or "").strip():
-                        break  # the agent answered in between: a genuinely new prompt
-                    if prev.kind == "human" and prev.parent == line.parent:
-                        prev.kind = "superseded"
-                        break
-            lines.append(line)
+    start = 0
+    got = _cached(cache, path, st) if cache is not None else None
+    if got:
+        lines, boundaries, asked, start = got
+    if start >= st.st_size:
+        return lines, boundaries
+    with path.open("rb") as fh:
+        fh.seek(start)
+        data = fh.read(st.st_size - start)
+    # a cached read stops at the last complete line: the one still being written is parsed next time
+    end = data.rfind(b"\n") + 1 if cache is not None else len(data)
+    for raw in data[:end].splitlines():
+        _take(raw, lines, boundaries, asked)
+    if cache is not None and end:
+        _keep(cache, path, st, lines, boundaries, asked, start + end)
     return lines, boundaries
+
+
+def _take(raw: bytes, lines: list[Line], boundaries: list[int], asked: set[str]) -> None:
+    """One transcript record, added to the lines parsed so far."""
+    raw = raw.strip()
+    if not raw:
+        return
+    try:
+        rec = json.loads(raw)
+    except ValueError:
+        return  # a half-written line is not a reason to lose the rest
+    typ = rec.get("type")
+    if typ == "system" and rec.get("subtype") == "compact_boundary":
+        boundaries.append(len(lines))
+        return
+    if typ == "attachment":
+        got = _hook_line(rec)
+        if got is None:
+            return
+        lines.append(Line(n=len(lines) + 1, role="user", kind="injected", text=got[0], ts=got[1]))
+        return
+    if typ not in ("user", "assistant"):
+        return
+    msg = rec.get("message") or {}
+    text, tools, asks, answered = _text_of(msg)
+    asked |= set(asks)
+    content = msg.get("content")
+    has_result = isinstance(content, list) and any(
+        b.get("type") == "tool_result" for b in content
+    )
+    kind = _kind(rec, has_result)
+    # THE ANSWER TO A QUESTION IS THE USER'S OWN WORDS, however the harness filed
+    # it. It arrives as a tool_result, and a tool_result is the one kind the reader
+    # treats as nobody's speech — so `journal user` lost every choice the user
+    # made through the question tool. Filed as human, because it is.
+    if kind == "tool_result" and any(a in asked for a in answered):
+        kind = "human"
+    line = Line(
+        n=len(lines) + 1,
+        role=msg.get("role", typ),
+        kind=kind,
+        text=text,
+        ts=rec.get("timestamp", ""),
+        tools=tools,
+        parent=str(rec.get("parentUuid") or ""),
+    )
+    # THE SAME PROMPT, RECORDED TWICE. A message sent mid-turn is filed when it is
+    # queued and again when it becomes the prompt, and one edited before the agent
+    # answered is filed in each version — every copy answering the SAME parent
+    # record. Measured: "dont start building it yet yhough", "…though", "…though.
+    # First come back with a design", three lines for one thought. The last copy
+    # is the one the agent answered, so the earlier ones are marked superseded and
+    # stay in place: numbering is a citation, and dropping a record would shift
+    # every line after it.
+    if line.kind == "human" and line.parent:
+        for prev in reversed(lines):
+            if prev.kind == "text" and (prev.text or "").strip():
+                break  # the agent answered in between: a genuinely new prompt
+            if prev.kind == "human" and prev.parent == line.parent:
+                prev.kind = "superseded"
+                break
+    lines.append(line)
+
+
+def _cached(cache: Path, path: Path, st) -> tuple[list[Line], list[int], set[str], int] | None:
+    """What an earlier read of this same file kept, or None when the cache is missing, stale or another file's."""
+    try:
+        with cache.open("rb") as fh:
+            got = pickle.load(fh)
+    except (OSError, EOFError, AttributeError, TypeError, ValueError, pickle.PickleError):
+        return None
+    if (not isinstance(got, dict) or got.get("version") != CACHE_VERSION or got.get("path") != str(path)
+            or got.get("inode") != st.st_ino or not 0 <= got.get("offset", -1) <= st.st_size):
+        return None
+    return got["lines"], got["boundaries"], got["asked"], got["offset"]
+
+
+def _keep(cache: Path, path: Path, st, lines: list[Line], boundaries: list[int], asked: set[str], offset: int) -> None:
+    """Write the cache atomically; a failed write only costs the next read its speed."""
+    data = {"version": CACHE_VERSION, "path": str(path), "inode": st.st_ino, "offset": offset,
+            "lines": lines, "boundaries": boundaries, "asked": asked}
+    tmp = None
+    try:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(dir=cache.parent, prefix=f".{cache.name}.", suffix=".tmp")
+        with os.fdopen(fd, "wb") as fh:
+            pickle.dump(data, fh, protocol=pickle.HIGHEST_PROTOCOL)
+        os.replace(tmp, cache)
+    except OSError:
+        if tmp:
+            with contextlib.suppress(OSError):
+                os.unlink(tmp)
 
 
 def since(lines: list[Line], boundaries: list[int], back: int = 0) -> list[Line]:

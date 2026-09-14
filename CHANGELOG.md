@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.11 — Stop and SessionStart stop re-reading the whole transcript
+
+The stop hook parsed the session's entire transcript at the end of every reply, and the context
+check scanned it again. Each hook runs as a new process, so neither could remember what it had
+already read. A long session's transcript passes a hundred megabytes, and there the pause after
+each reply was over a second.
+
+Both now keep what they parsed on disk, in `.journal/runtime/<session>.lines.cache` and
+`<session>.context.cache`, and read only what the transcript has gained since. Measured on a 122 MB
+transcript: a Stop went from 1.15 s to 0.26 s, and a SessionStart from 0.79 s to 0.27 s. Hooks on a
+short transcript cost what they did in 1.135.0. A line still being written is left for the next read,
+a replaced transcript is read afresh, and the parsed-lines cache is removed when its session ends.
+
 ## 1.136.10 — The sidebar shows the agent compacting
 
 While the agent compacts its context, the agent status at the bottom of the viewer's sidebar says
