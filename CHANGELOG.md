@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.5 — Answers to your messages read like questions, not like something waiting on you
+
+When the agent answers part of your message, Home shows it under Answers to your messages, in the same
+list as Questions: the answer, the message it is about, and when. Opening one marks it read. It is no
+longer an amber notification, and in Activity it is an ordinary line that opens the message, since an
+answer asks nothing of you. Other notifications stay where they were.
+
 ## 1.136.4 — The work log starts folded
 
 A piece of work's panel opens on what it is and where it stands. Its updates, now titled Work log with
