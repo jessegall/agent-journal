@@ -59,7 +59,7 @@ TEXT = {
     "version_unreachable": "Could not reach the repository to check for a newer one.",
 }
 
-UPGRADE_ROW = ("journal upgrade", "pull it, tests first, and print what changed")
+UPGRADE_ROW = ("journal upgrade", "pull it and print what changed; no tests are run")
 
 
 def here() -> str:

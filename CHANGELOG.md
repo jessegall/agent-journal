@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.58 — The upgrade notice no longer says it runs the tests
+
+The notice that a newer journal is available said `journal upgrade` "runs its tests first",
+and the help said the same. It does not: an upgrade copies the package in and runs nothing.
+Agents read the notice and told their users otherwise. The notice, the help and the installer's
+own text now say what happens. `.journal/install.py --from=… --test` still runs the suites
+first, for the times you want that.
+
 ## 1.131.57 — A session is told about its own project's viewer only
 
 At a session start the journal told you "the web viewer is running at …" whenever anything

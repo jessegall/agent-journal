@@ -7,7 +7,7 @@
                                       make yourself closes the to-do its trailer names
     .journal/install.py --no-git-hook remove that hook, if it is the one this wrote
     .journal/install.py --check   say what would change, write nothing
-    .journal/install.py --from <path or git url>   pull that package in first (tests run before anything lands)
+    .journal/install.py --from <path or git url>   pull that package in first (add --test to run its suites before anything lands)
 
 WHAT THIS IS CAREFUL ABOUT, and why each one is a real way to lose somebody's work:
 
@@ -25,7 +25,7 @@ IT REFUSES TO GUESS ABOUT MALFORMED JSON. If `settings.json` does not parse, thi
 and says so rather than starting from `{}`. Starting fresh would silently delete every
 hook the user had, and the failure would look like an install that worked.
 
---from PULLS THE PACKAGE, NEVER THE DATA. The code, the tests and the skill come across;
+--from PULLS THE PACKAGE, NEVER THE DATA. The code and the skill come across, not the suites;
 the record, the settings and the runtime files are this project's and stay. A pull is a
 copy: the package is tested where it is developed, not in every consumer. `--test` runs
 the pulled copy's suites first, for the one time you want that. Until this existed every
@@ -290,7 +290,7 @@ def _package_files(root: Path) -> list[Path]:
 
 
 def pull(src: Path, check: bool) -> list[str]:
-    """Bring another checkout's package here. Tests first, in staging; then the files."""
+    """Bring another checkout's package here. No suites run unless --test asked for them; then the files."""
     src = src.resolve()
     # a repository whose ROOT is the package also holds its own .journal/ instance inside;
     # the root is the source, the instance is that project's data
