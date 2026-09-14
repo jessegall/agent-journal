@@ -87,7 +87,8 @@ class TodosController(Controller):
                 return query
         page = self.paged(query, p)
         waiting = len([t for t in every if not t.closed])
-        return Result("ok", "", [todo.row_response(root, env, t.raw) for t in page.rows],
+        counts = todo.question_counts(root, env)
+        return Result("ok", "", [todo.row_response(root, env, t.raw, counts=counts) for t in page.rows],
                       {"env": env, "waiting": waiting, "done": len(every) - waiting, "left": page.left,
                        "auto": todo.auto(root, env)})
 

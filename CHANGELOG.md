@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.27 — To-do rows show when they have a question
+
+A to-do with a question linked to it looked the same in the list as any other. Its row now
+shows a small question icon right after the number: in the warning colour while a question
+waits on your answer, faint once every question is answered, and nothing when it has no
+questions. Hover it for the count. It shows in the to-do list on the To-dos page and on
+Home.
+
 ## 1.131.26 — A to-do's work log opens its work
 
 In a to-do's panel, the Work log listed when work started, was updated, waited and ended,

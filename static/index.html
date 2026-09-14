@@ -219,6 +219,11 @@
   .switch.on { background: var(--accent); }
   .switch.on .knob { transform: translateX(12px); background: #fff; }
   .row .num { color: var(--text-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  /* after the number: a question marker, warm while a linked question waits on you, faint once answered */
+  .row .qmark { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; }
+  .row .qmark .ico { width: 13px; height: 13px; }
+  .row .qmark.open { color: var(--warn); }
+  .row .qmark.answered { color: var(--text-3); opacity: .6; }
   .row .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13.5px; }
   .row .cite, .row .age, .row .tag { color: var(--text-3); font-size: 12.5px; text-align: right;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

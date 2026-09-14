@@ -1400,7 +1400,23 @@ def states_of(t: dict) -> list[str]:
     return [name for name, is_it in _STATES[:-1] if is_it(t)]
 
 
-def row_response(root: Path, track: str, t: dict, short_refs: bool = False) -> dict:
+def question_counts(root: Path, track: str) -> dict[int, tuple[int, int]]:
+    """to-do number -> (open, answered) questions linked to it, read in one pass."""
+    import questions
+    out: dict[int, list[int]] = {}
+    for q in questions._all(root, track):
+        if q.get("withdrawn") or q.get("removed"):
+            continue
+        for ref in q.get("links") or []:
+            kind, _, num = str(ref).partition(":")
+            if kind == "todo" and num.isdigit():
+                pair = out.setdefault(int(num), [0, 0])
+                pair[0 if questions.is_open(q) else 1] += 1
+    return {n: (a, b) for n, (a, b) in out.items()}
+
+
+def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
+                 counts: dict[int, tuple[int, int]] | None = None) -> dict:
     """One to-do as a plain, JSON-safe dict — the shape the web viewer serves, built
     from the SAME predicates (`states_of`, `after_of`, `waiting_on`) the terminal
     renderer's own `facts()` reads to build its one-line sentence per row. Neither
@@ -1408,7 +1424,10 @@ def row_response(root: Path, track: str, t: dict, short_refs: bool = False) -> d
     is finally SAID differs — a joined sentence for a terminal, separate fields for
     a page that renders its own badges and links from them.
     """
+    asked = (question_counts(root, track) if counts is None else counts).get(t["n"], (0, 0))
     return {
+        "questions_open": asked[0],
+        "questions_answered": asked[1],
         "n": t["n"],
         "title": t.get("title", ""),
         "states": states_of(t),
