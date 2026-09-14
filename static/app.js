@@ -1601,9 +1601,8 @@ const EnvHome = {
       const count = (status) => (todos.data ? todos.data.filter((t) => todoStatus(t) === status).length : undefined);
       const blocked = count("blocked");
       return [
-        { key: "messages", label: "Messages waiting", n: s.inbox, icon: "inbox", path: "messages", hot: s.inbox },
+        { key: "messages", label: "Message queue", n: s.inbox, icon: "inbox", path: "messages", hot: s.inbox },
         { key: "questions", label: "Questions for you", n: s.questions, icon: "questions", path: "questions", hot: s.questions },
-        { key: "suggestions", label: "Suggestions", n: s.suggestions, icon: "suggestions", path: "suggestions", hot: s.suggestions },
         { key: "progress", label: "In progress", n: count("progress"), icon: "todos", path: "todos" },
         { key: "blocked", label: "Blocked", n: blocked, icon: "todos", path: "todos", hot: blocked },
       ];
