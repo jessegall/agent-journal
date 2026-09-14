@@ -286,5 +286,18 @@ j("messages", "add", "and this one is read by waiting")
 j("messages", "waiting")
 check("reading the waiting messages marks each as being handled", bool(stored()[-1].get("read")), True)
 
+j("messages", "add", "are we caching the build already? also add a to-do to speed up the linter")
+_q = len(stored())
+code, out = j("messages", "reply", str(_q), "Yes, since last week.", "--part=are we caching the build already?")
+_m = stored()[-1]
+check("a reply with --part answers that question: the part is recorded as answered and the reply names it",
+      (code, [p["became"] for p in _m["parts"]], _m["replies"][-1].get("part")), (0, [["answered"]], "are we caching the build already?"))
+import notifications as _notes  # noqa: E402
+check("and the user is notified", any(f"message {_q}" in x["text"] for x in _notes._all(d / ".journal", "default")), True)
+code, out = j("messages", "reply", str(_q), "no", "--part=words that are not there")
+check("a part that is not in the message is refused", code, 1)
+code, out = j("messages", "show", str(_q))
+check("showing a message says how to answer a question in it", "--part=" in out and "messages reply" in out, True)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

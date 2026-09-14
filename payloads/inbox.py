@@ -22,6 +22,11 @@ class AttachPayload(Payload):
     files = Field(object)
 
 
+class ReplyPayload(Payload):
+    text = Field(str, verbatim=True)
+    part = Field(str)
+
+
 class ProcessPayload(Payload):
     part = Field(str)
     became = Field(list)

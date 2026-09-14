@@ -499,6 +499,7 @@ wall — and an agent routes around a wall.
     journal messages                                              waiting messages first, then processed ones
     journal messages show <n>                                     the message, its parts, and the questions about it
     journal messages process <n> --part="<words>" --became=<ref>  one part, and what it became
+    journal messages reply <n> "<answer>" --part="<words>"        a part that asks something: answered, and the user notified
     journal messages file <n> <name> "doc <doc>"|keep             an attached file: into the doc it belongs to, or kept
     journal messages done <n>                                     processed, once its parts say what they became and its files are filed
     journal messages move <n> "<environment>"                     left on the wrong environment: carry it there
@@ -515,7 +516,11 @@ stop says the user left messages, process them before anything else — one at a
    - a correction to the open work is `work update`, recorded as `--became=work`;
    - a fact that must survive is a pin, one that binds every environment is a rule, and
      something you keep having to be told is a reminder;
-   - an acknowledgement, or something already done, is `--became=noted`.
+   - an acknowledgement, or something already done, is `--became=noted`;
+   - a question the user asks you ("are we doing this already?") is answered, not parked:
+     `messages reply <n> "<the answer>" --part="<the question's words>"` records that part as
+     answered, puts the answer under it in the viewer and notifies the user. Only the question
+     parts: the rest of the message is routed as usual.
 3. **A part you do not understand becomes a question, never a guess:** `journal questions
    add "<question>" --about="inbox <n>"`, recorded as `--became="question <q>"`.
 4. **Record each part, then close the message:** one `messages process` per part, several
