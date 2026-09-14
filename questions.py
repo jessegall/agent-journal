@@ -27,6 +27,9 @@ MESSAGES = {
     "fact_open": "open",
     "fact_about": "about {links}",
     "needs_text": 'a question needs its text: journal questions add "<question>"',
+    "choices_in_text": "the question lists its choices in its text ({found}), so the user cannot click one. Ask it in one line and give "
+                       'each choice as its own option: journal questions add "<the question>" --description="<the context>" '
+                       '--option="<a choice>" [--option-description="<why>"] --option="<another choice>"',
     "added": "question {n}[, about {links}] ({open} open)",
     "edited": "question {n} now reads: {text}",
     "reopened": "question {n} now reads: {text}\n  it was answered, so it is open again and the user is asked again; the old answer is kept",
@@ -171,6 +174,8 @@ def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
     text = (text or "").strip()
     if not text:
         return False, say("needs_text")
+    if found := listed_choices(text):
+        return False, say("choices_in_text", found=found)
     links, why = _refs(root, about_refs or [], track)
     if why:
         return False, why
@@ -185,6 +190,21 @@ def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
         _put(root, items, track)
         n = len(items)
     return True, say("added", n=n, links=labels(links), open=len(open_items(root, track)))
+
+
+_MARKER = re.compile(r"(?:^|[\s(\[])([A-Za-z]|\d{1,2})[).:](?=\s)")
+_BULLET = re.compile(r"^\s*(?:[-*\u2022]|\d{1,2}[.)])\s+\S", re.M)
+
+
+def listed_choices(text: str) -> str:
+    """The choice markers a question's text lists, such as "A) … B) …", "1. … 2. …" or bullet lines; empty when it lists none."""
+    marks = [m.lower() for m in _MARKER.findall(text)]
+    for first, second in (("a", "b"), ("1", "2")):
+        if first in marks and second in marks:
+            return f"{first.upper() if first.isalpha() else first}, {second.upper() if second.isalpha() else second}, …"
+    if len(_BULLET.findall(text)) >= 2:
+        return "a list of lines"
+    return ""
 
 
 def _options(raw: list | None) -> list[dict]:
@@ -226,6 +246,8 @@ def edit(root: Path, n: int, text: str | None, track: str | None = None, descrip
     """Reword a question, and/or change its description, options or pick; what is not given stays."""
     if text is not None and not text.strip():
         return False, say("needs_text")
+    if text is not None and (found := listed_choices(text)):
+        return False, say("choices_in_text", found=found)
     with state.locked(root):
         items = _all(root, track)
         q, why = _find(items, n)
