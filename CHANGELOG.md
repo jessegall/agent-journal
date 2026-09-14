@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.115.3 — Both docs entries are called Documents
+
+The sidebar's "Environment docs" and "Project docs" both read "Documents"; their group
+already says which is which. Page crumbs and Home's count say "Documents" too.
+
 ## 1.115.2 — The sidebar footer fits on screen
 
 The footer that says whether an agent is working was pushed below the bottom of the sidebar.

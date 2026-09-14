@@ -1355,9 +1355,9 @@ function docList({ crumbs, url, base, empty }) {
   };
 }
 
-const Docs = docList({ crumbs: () => ["Project", "Project docs"], url: () => "/api/docs?archived=1", base: () => "#/docs",
+const Docs = docList({ crumbs: () => ["Project", "Documents"], url: () => "/api/docs?archived=1", base: () => "#/docs",
                        empty: "No project-wide docs are catalogued." });
-const EnvDocs = docList({ crumbs: (p) => [p.env, "Environment docs"], url: (p) => p.env && `/api/env/${p.env}/docs?archived=1`,
+const EnvDocs = docList({ crumbs: (p) => [p.env, "Documents"], url: (p) => p.env && `/api/env/${p.env}/docs?archived=1`,
                           base: (p) => `#/env/${p.env}/docs`,
                           empty: "No docs are scoped to this environment; the project's docs still apply." });
 
@@ -1399,7 +1399,7 @@ const DocDetail = {
     return { s, restParts, citedHref, actions, done, fileUrl, isImage, envs };
   },
   template: `
-    <TopBar :crumbs="['Docs', s.data ? '#' + s.data.n : docref]"/>
+    <TopBar :crumbs="['Documents', s.data ? '#' + s.data.n : docref]"/>
     <div class=page>
       <p v-if="s.loading && !s.data" class=empty>Loading…</p>
       <p v-else-if="s.error" class=error>{{ s.error }}</p>
@@ -1507,7 +1507,7 @@ const EnvHome = {
         { label: "Open to-dos", n: s.todos, icon: "todos", path: "todos" },
         { label: "Pins", n: s.pins, icon: "pins", path: "pins" },
         { label: "Reminders", n: s.reminders, icon: "reminders", path: "reminders" },
-        { label: "Environment docs", n: s.docs, icon: "docs", path: "docs" },
+        { label: "Documents", n: s.docs, icon: "docs", path: "docs" },
       ];
     });
     const about = (q) => q.links.map((l) => l.label).join(", ");
@@ -1798,7 +1798,7 @@ const NAV = [
   { key: "reports", label: "Reports", views: ["Reports"], path: "reports", count: "reports" },
   { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
   { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
-  { key: "docs", label: "Environment docs", views: ["EnvDocs"], path: "docs", count: "docs" },
+  { key: "docs", label: "Documents", views: ["EnvDocs"], path: "docs", count: "docs" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 
@@ -1927,7 +1927,7 @@ const App = {
           <template v-if="!folded.project">
             <a :class="['item', {on: route.view === 'Rules'}]" href="#/rules"><Icon name="rules"/>Rules<span class=count>{{ ov.data ? ov.data.rules : '' }}</span></a>
             <a :class="['item', {on: route.view === 'Tools'}]" href="#/tools"><Icon name="tools"/>Tools</a>
-            <a :class="['item', {on: route.view === 'Docs' || route.view === 'DocDetail'}]" href="#/docs"><Icon name="folder"/>Project docs<span class=count>{{ ov.data ? ov.data.docs : '' }}</span></a>
+            <a :class="['item', {on: route.view === 'Docs' || route.view === 'DocDetail'}]" href="#/docs"><Icon name="folder"/>Documents<span class=count>{{ ov.data ? ov.data.docs : '' }}</span></a>
           </template>
         </div>
         <div class=group v-if="ov.data">
