@@ -8,19 +8,19 @@ const { createApp, reactive, computed, watch, watchEffect, onUnmounted, onMounte
 const ROUTES = [
   { re: /^\/$/, view: "Home" },
   { re: /^\/env\/([a-z0-9-]+)$/, view: "EnvHome", params: ["env"] },
-  { re: /^\/env\/([a-z0-9-]+)\/todos(?:\/(\d+|new))?$/, view: "Todos", params: ["env", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/pins(?:\/(\d+|new))?$/, view: "Pins", params: ["env", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(?:\/(\d+))?$/, view: "Inbox", params: ["env", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/questions(?:\/(\d+))?$/, view: "Questions", params: ["env", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/reports(?:\/(\d+|new))?$/, view: "Reports", params: ["env", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/suggestions(?:\/(\d+))?$/, view: "Suggestions", params: ["env", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/work(?:\/(\d+|new))?$/, view: "Work", params: ["env", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/reminders(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/todos(\/archive)?(?:\/(\d+|new))?$/, view: "Todos", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/pins(\/archive)?(?:\/(\d+|new))?$/, view: "Pins", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(\/archive)?(?:\/(\d+))?$/, view: "Inbox", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/questions(\/archive)?(?:\/(\d+))?$/, view: "Questions", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/reports(\/archive)?(?:\/(\d+|new))?$/, view: "Reports", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/suggestions(\/archive)?(?:\/(\d+))?$/, view: "Suggestions", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/work(\/archive)?(?:\/(\d+|new))?$/, view: "Work", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/reminders(\/archive)?(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/settings$/, view: "Settings", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/files$/, view: "Files", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/search$/, view: "Search", params: ["env"] },
-  { re: /^\/rules(?:\/(\d+|new))?$/, view: "Rules", params: ["n"] },
+  { re: /^\/rules(\/archive)?(?:\/(\d+|new))?$/, view: "Rules", params: ["archive", "n"] },
   { re: /^\/tools(?:\/(\d+|new))?$/, view: "Tools", params: ["n"] },
   { re: /^\/docs(?:\/(new))?$/, view: "Docs", params: ["n"] },
   { re: /^\/docs\/(\d+(?:\.\d+)?)$/, view: "DocDetail", params: ["docref"] },
@@ -253,7 +253,7 @@ const PriorityIcon = {
 // ─────────────────────────────────────────────────────────────── shared pieces
 // the page's top bar: crumbs, the page's own button, then Search and Notifications on every page
 const TopBar = {
-  props: { crumbs: { type: Array, default: () => [] } },
+  props: { crumbs: { type: Array, default: () => [] }, archive: Object },
   components: { Icon },
   setup() {
     const hashEnv = parseHash().params.env || "";
@@ -321,6 +321,8 @@ const TopBar = {
         <div class="help-body md" v-html="help.html"></div>
       </dialog>
       <div class=top-tools>
+        <a v-if="archive" :class="['btn', 'flush', {on: archive.on}]" :href="archive.on ? archive.list : archive.list + '/archive'"
+          :title="archive.on ? 'Back to the list' : 'Items closed more than a week ago'">{{ archive.on ? 'Close archive' : 'Archive' }}</a>
         <slot/>
         <template v-if="env">
           <a class=icon-btn :href="'#/env/' + env + '/search'" title="Search" aria-label="Search"><Icon name="search"/></a>
@@ -669,7 +671,7 @@ const ResourceList = {
     columns: Object, href: Function, selected: Function, pick: Function,
     sorts: { type: Array, default: () => [{ key: "n", label: "ID" }] },
     count: Function, empty: String, name: String,
-    bar: { type: Boolean, default: true }, limit: { type: Number, default: PAGE_ROWS },
+    bar: { type: Boolean, default: true }, limit: { type: Number, default: PAGE_ROWS }, archive: Boolean,
   },
   components: { StatusIcon, PriorityIcon, Icon },
   setup(props) {
@@ -695,14 +697,14 @@ const ResourceList = {
       Object.entries(was).forEach(([k, v]) => { if (!now.has(k)) lit(state.held, k, v); });
     });
     const sortOf = (key) => state.sort[key] || { by: props.sorts[0].key, dir: "desc" };
-    const sections = computed(() => (props.rows ? props.groups.map((g) => {
+    const sections = computed(() => (props.rows ? props.groups.filter((g) => !props.archive || g.closed).map((g) => {
       const order = sortOf(g.key);
       const spec = props.sorts.find((x) => x.key === order.by) || props.sorts[0];
       const value = spec.value || ((r) => r[spec.key]);
       const current = Object.fromEntries(props.rows.map((r) => [rowKey(r), r]));
       const held = Object.entries(state.held).filter(([, v]) => v.group === g.key).map(([k, v]) => current[k] || v.row);
       const moving = new Set(Object.keys(state.held));
-      const rows = props.rows.filter((r) => g.match(r) && !moving.has(rowKey(r)) && (!g.closed || recent(r))).concat(held).sort((a, b) => {
+      const rows = props.rows.filter((r) => g.match(r) && !moving.has(rowKey(r)) && (!g.closed || recent(r) !== props.archive)).concat(held).sort((a, b) => {
         const x = value(a), y = value(b);
         const c = x < y ? -1 : x > y ? 1 : 0;
         return order.dir === "asc" ? c : -c;
@@ -710,6 +712,7 @@ const ResourceList = {
       return { ...g, total: rows.length, rows: rows.slice(0, props.limit * (state.pages[g.key] || 1)) };
     }).filter((g) => g.total) : []));
     const closable = computed(() => props.groups.some((g) => g.closed));
+    const archived = computed(() => sections.value.reduce((sum, g) => sum + g.total, 0));
     const cols = computed(() => {
       const c = props.columns;
       return [c.priority && "22px", c.status && "22px", c.num && (c.numWidth || "44px"), c.question && "16px", "minmax(0, 1fr)",
@@ -720,11 +723,12 @@ const ResourceList = {
     const open = (event, row) => { if (props.pick) { event.preventDefault(); props.pick(row); } };
     const moving = (r) => !!state.held[rowKey(r)];
     const fresh = (r) => !!state.arrived[rowKey(r)];
-    return { state, sections, closable, cols, sortOf, setSort, more, open, moving, fresh };
+    return { state, sections, closable, archived, cols, sortOf, setSort, more, open, moving, fresh };
   },
   template: `
     <div v-if="bar" class=viewbar>
-      <span v-if="rows && count">{{ count(rows) }}</span>
+      <span v-if="rows && archive">{{ archived }} archived</span>
+      <span v-else-if="rows && count">{{ count(rows) }}</span>
     </div>
     <p v-if="loading && !rows" class=empty>Loading…</p>
     <p v-else-if="error && !rows" class=error>{{ error }}</p>
@@ -763,7 +767,7 @@ const ResourceList = {
         <button v-if="g.rows.length < g.total" type=button class="btn more-rows" @click="more(g.key)">Show {{ Math.min(limit, g.total - g.rows.length) }} more</button>
       </div>
       </TransitionGroup>
-      <p v-if="!sections.length" class=empty>{{ rows.length && closable ? 'Nothing here is open, and nothing closed in the last week.' : empty }}</p>
+      <p v-if="!sections.length" class=empty>{{ archive ? 'Nothing here closed more than a week ago.' : rows.length && closable ? 'Nothing here is open, and nothing closed in the last week.' : empty }}</p>
     </template>`,
 };
 
@@ -845,8 +849,8 @@ const CLAIM_LIST = {
   count: (rows) => `${rows.filter((c) => !c.struck).length} standing`,};
 const MESSAGE_LIST = {
   groups: [{ key: "waiting", label: "Waiting", kind: "waiting", match: (m) => m.status === "waiting" },
-           { key: "processed", label: "Processed", kind: "done", match: (m) => m.status === "processed" || m.status === "moved" },
-           { key: "archived", label: "Archived", kind: "withdrawn", match: (m) => m.status === "archived" }],
+           { key: "processed", label: "Processed", kind: "done", closed: true, match: (m) => m.status === "processed" || m.status === "moved" },
+           { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (m) => m.status === "archived" }],
   columns: { status: (m) => (m.status === "waiting" ? "waiting" : "done"), num: (m) => `#${m.n}`, title: (m) => m.text,
              cite: messageBecame, age: (m) => m.age },
   count: (rows) => `${rows.filter((m) => m.status === "waiting").length} waiting`,
@@ -1255,7 +1259,7 @@ const WorkPanel = {
 
 const SUGGESTION_LIST = {
   groups: [{ key: "open", label: "Waiting on you", kind: "waiting", match: (s) => s.status === "open" },
-           { key: "accepted", label: "Accepted", kind: "done", match: (s) => s.status === "accepted" || s.status === "adjusted" },
+           { key: "accepted", label: "Accepted", kind: "done", closed: true, match: (s) => s.status === "accepted" || s.status === "adjusted" },
            { key: "declined", label: "Declined", kind: "withdrawn", closed: true, match: (s) => s.status === "declined" },
            { key: "withdrawn", label: "Withdrawn", kind: "withdrawn", closed: true, match: (s) => s.status === "withdrawn" }],
   columns: { num: (s) => `#${s.n}`, title: (s) => s.title, sub: (s) => s.gist, age: (s) => s.age,
@@ -1325,18 +1329,19 @@ const SuggestionPanel = {
 };
 
 const Suggestions = {
-  props: ["env", "n"],
+  props: ["env", "archive", "n"],
   components: { TopBar, ResourceList, SuggestionPanel },
   setup(props) {
-    const base = computed(() => `#/env/${props.env}/suggestions`);
+    const home = computed(() => `#/env/${props.env}/suggestions`);
+    const base = computed(() => home.value + (props.archive || ""));
     const list = useFetch(() => props.env && `/api/env/${props.env}/suggestions?all=1`);
-    return { list, base, SUGGESTION_LIST };
+    return { list, home, base, SUGGESTION_LIST };
   },
   template: `
-    <TopBar :crumbs="[env, 'Suggestions']"/>
+    <TopBar :crumbs="archive ? [env, 'Suggestions', 'Archive'] : [env, 'Suggestions']" :archive="{list: home, on: !!archive}"/>
     <div class=body>
       <div class=list>
-        <ResourceList v-bind="SUGGESTION_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+        <ResourceList v-bind="SUGGESTION_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
           :href="(s) => base + '/' + s.n" :selected="(s) => String(s.n) === n"/>
       </div>
       <SuggestionPanel v-if="n" :key="'suggestion' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
@@ -1344,11 +1349,12 @@ const Suggestions = {
 };
 
 const Todos = {
-  props: ["env", "n"],
+  props: ["env", "archive", "n"],
   components: { TopBar, Panel, ActionBar, ResourceList, TodoPanel },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/todos`);
-    const base = computed(() => `#/env/${props.env}/todos`);
+    const home = computed(() => `#/env/${props.env}/todos`);
+    const base = computed(() => home.value + (props.archive || ""));
     const list = useFetch(() => props.env && api.value);
     const creating = computed(() => [{
       label: "New to-do", method: "POST", url: api.value, submit: "Add to-do", leave: true,
@@ -1358,13 +1364,13 @@ const Todos = {
                { name: "priority", label: "Priority", kind: "select", value: "default", options: PRIORITIES }],
     }]);
     const done = (body, a) => settle(body, a, base.value, list);
-    return { list, creating, done, base, TODO_LIST };
+    return { list, creating, done, home, base, TODO_LIST };
   },
   template: `
-    <TopBar :crumbs="[env, 'To-dos']"><a class="btn new" :href="base + '/new'">New to-do</a></TopBar>
+    <TopBar :crumbs="archive ? [env, 'To-dos', 'Archive'] : [env, 'To-dos']" :archive="{list: home, on: !!archive}"><a class="btn new" :href="home + '/new'">New to-do</a></TopBar>
     <div class=body>
       <div class=list>
-        <ResourceList v-bind="TODO_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+        <ResourceList v-bind="TODO_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
           :href="(t) => base + '/' + t.n" :selected="(t) => String(t.n) === n"/>
       </div>
       <Panel v-if="n === 'new'" label="New to-do" :close="base">
@@ -1377,7 +1383,7 @@ const Todos = {
 // ─────────────────────────────────────────────────────────────── pins and rules
 function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
   return {
-    props: ["env", "n"],
+    props: ["env", "archive", "n"],
     components: { TopBar, Panel, LinkedQuestions, ActionBar, ResourceList, FromMessages, Comments },
     setup(props) {
       const list = useFetch(() => api(props) && `${api(props)}?all=1`);
@@ -1413,15 +1419,17 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
           { label: "Strike", method: "DELETE", url, danger: true, fields: [{ name: "why", label: "Why it stopped being true" }] },
         ];
       });
-      const done = (body, a) => settle(body, a, base(props), list, item);
-      return { list, item, creating, actions, done, ageOf, docOf, word, envs, crumbs: computed(() => crumbs(props)),
-               base: computed(() => base(props)), scope: computed(() => scope(props)), noun, word, empty, CLAIM_LIST };
+      const done = (body, a) => settle(body, a, base(props) + (props.archive || ""), list, item);
+      return { list, item, creating, actions, done, ageOf, docOf, word, envs,
+               crumbs: computed(() => (props.archive ? [...crumbs(props), "Archive"] : crumbs(props))),
+               home: computed(() => base(props)), base: computed(() => base(props) + (props.archive || "")),
+               scope: computed(() => scope(props)), noun, word, empty, CLAIM_LIST };
     },
     template: `
-      <TopBar :crumbs="crumbs"><a class="btn new" :href="base + '/new'">New {{ word }}</a></TopBar>
+      <TopBar :crumbs="crumbs" :archive="{list: home, on: !!archive}"><a class="btn new" :href="home + '/new'">New {{ word }}</a></TopBar>
       <div class=body>
         <div class=list>
-          <ResourceList v-bind="CLAIM_LIST" :name="word + 's'" :empty="empty" :rows="list.data" :loading="list.loading" :error="list.error"
+          <ResourceList v-bind="CLAIM_LIST" :archive="!!archive" :name="word + 's'" :empty="empty" :rows="list.data" :loading="list.loading" :error="list.error"
             :href="(c) => base + '/' + c.n" :selected="(c) => String(c.n) === n"/>
         </div>
         <Panel v-if="n === 'new'" :label="'New ' + word" :close="base">
@@ -1468,11 +1476,12 @@ const Rules = claimsView({
 
 // ─────────────────────────────────────────────────────────────── inbox and questions
 const Inbox = {
-  props: ["env", "n"],
+  props: ["env", "archive", "n"],
   components: { TopBar, Compose, ResourceList, MessagePanel },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/inbox`);
-    const base = computed(() => `#/env/${props.env}/messages`);
+    const home = computed(() => `#/env/${props.env}/messages`);
+    const base = computed(() => home.value + (props.archive || ""));
     const list = useFetch(() => props.env && `${api.value}?all=1`);
     const send = (text, files) => postJSON(api.value, { text, files }).then(() => { list.reload(); changed(); });
     // a message only reaches an agent at its next hook event; say so when none is working here
@@ -1482,17 +1491,17 @@ const Inbox = {
     });
     const hint = computed(() => (live.value ? "The agent is told at its next stop"
       : "No agent is working on this environment right now; the message waits until a session picks it up"));
-    return { list, send, base, MESSAGE_LIST, hint };
+    return { list, send, home, base, MESSAGE_LIST, hint };
   },
   template: `
-    <TopBar :crumbs="[env, 'Messages']"/>
+    <TopBar :crumbs="archive ? [env, 'Messages', 'Archive'] : [env, 'Messages']" :archive="{list: home, on: !!archive}"/>
     <div class=body>
       <div class=chat>
         <div class=list>
-          <ResourceList v-bind="MESSAGE_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          <ResourceList v-bind="MESSAGE_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
             :href="(m) => base + '/' + m.n" :selected="(m) => String(m.n) === n"/>
         </div>
-        <div class="compose-wrap at-bottom">
+        <div v-if="!archive" class="compose-wrap at-bottom">
           <Compose placeholder="Leave a message for the agent: an instruction, a follow-up, anything"
             submit="Send" :hint="hint" :send="send" :attach="true" :autofocus="!n"/>
         </div>
@@ -1511,11 +1520,12 @@ const REPORT_LIST = {
 };
 
 const Reports = {
-  props: ["env", "n"],
+  props: ["env", "archive", "n"],
   components: { TopBar, Panel, ActionBar, ResourceList },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reports`);
-    const base = computed(() => `#/env/${props.env}/reports`);
+    const home = computed(() => `#/env/${props.env}/reports`);
+    const base = computed(() => home.value + (props.archive || ""));
     const reading = computed(() => props.n && props.n !== "new");
     const list = useFetch(() => props.env && !reading.value && `${api.value}?all=1`);
     const item = useFetch(() => props.env && reading.value && `${api.value}/${props.n}`);
@@ -1536,7 +1546,7 @@ const Reports = {
       ];
     });
     const done = (body, a) => settle(body, a, reading.value ? "" : base.value, list, item);
-    return { list, item, reading, creating, actions, done, base, REPORT_LIST };
+    return { list, item, reading, creating, actions, done, home, base, REPORT_LIST };
   },
   template: `
     <template v-if="reading">
@@ -1557,10 +1567,10 @@ const Reports = {
       </div></div></div>
     </template>
     <template v-else>
-      <TopBar :crumbs="[env, 'Reports']"><a class="btn new" :href="base + '/new'">New report</a></TopBar>
+      <TopBar :crumbs="archive ? [env, 'Reports', 'Archive'] : [env, 'Reports']" :archive="{list: home, on: !!archive}"><a class="btn new" :href="home + '/new'">New report</a></TopBar>
       <div class=body>
         <div class=list>
-          <ResourceList v-bind="REPORT_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          <ResourceList v-bind="REPORT_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
             :href="(r) => base + '/' + r.n"/>
         </div>
         <Panel v-if="n === 'new'" label="New report" :close="base">
@@ -1571,18 +1581,19 @@ const Reports = {
 };
 
 const Questions = {
-  props: ["env", "n"],
+  props: ["env", "archive", "n"],
   components: { TopBar, ResourceList, QuestionPanel },
   setup(props) {
-    const base = computed(() => `#/env/${props.env}/questions`);
+    const home = computed(() => `#/env/${props.env}/questions`);
+    const base = computed(() => home.value + (props.archive || ""));
     const list = useFetch(() => props.env && `/api/env/${props.env}/questions?all=1`);
-    return { list, base, QUESTION_LIST };
+    return { list, home, base, QUESTION_LIST };
   },
   template: `
-    <TopBar :crumbs="[env, 'Questions']"/>
+    <TopBar :crumbs="archive ? [env, 'Questions', 'Archive'] : [env, 'Questions']" :archive="{list: home, on: !!archive}"/>
     <div class=body>
       <div class=list>
-        <ResourceList v-bind="QUESTION_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+        <ResourceList v-bind="QUESTION_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
           :href="(q) => base + '/' + q.n" :selected="(q) => String(q.n) === n"/>
       </div>
       <QuestionPanel v-if="n" :key="'question' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
@@ -1591,24 +1602,25 @@ const Questions = {
 
 // ─────────────────────────────────────────────────────────────── work and reminders
 const Work = {
-  props: ["env", "n"],
+  props: ["env", "archive", "n"],
   components: { TopBar, Panel, ActionBar, ResourceList, WorkPanel },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/work`);
-    const base = computed(() => `#/env/${props.env}/work`);
+    const home = computed(() => `#/env/${props.env}/work`);
+    const base = computed(() => home.value + (props.archive || ""));
     const list = useFetch(() => props.env && `${api.value}?all=1`);
     const creating = computed(() => [{
       label: "Start work", method: "POST", url: api.value, submit: "Start", leave: true,
       fields: [{ name: "subject", label: "The work, in a sentence" }],
     }]);
     const done = (body, a) => settle(body, a, base.value, list);
-    return { list, creating, done, base, WORK_LIST };
+    return { list, creating, done, home, base, WORK_LIST };
   },
   template: `
-    <TopBar :crumbs="[env, 'Open work']"><a class="btn new" :href="base + '/new'">Start work</a></TopBar>
+    <TopBar :crumbs="archive ? [env, 'Open work', 'Archive'] : [env, 'Open work']" :archive="{list: home, on: !!archive}"><a class="btn new" :href="home + '/new'">Start work</a></TopBar>
     <div class=body>
       <div class=list>
-        <ResourceList v-bind="WORK_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+        <ResourceList v-bind="WORK_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
           :href="(w) => base + '/' + w.n" :selected="(w) => String(w.n) === n"/>
       </div>
       <Panel v-if="n === 'new'" label="Start work" :close="base">
@@ -1619,11 +1631,12 @@ const Work = {
 };
 
 const Reminders = {
-  props: ["env", "n"],
+  props: ["env", "archive", "n"],
   components: { TopBar, Panel, ActionBar, ResourceList, FromMessages, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reminders`);
-    const base = computed(() => `#/env/${props.env}/reminders`);
+    const home = computed(() => `#/env/${props.env}/reminders`);
+    const base = computed(() => home.value + (props.archive || ""));
     const list = useFetch(() => props.env && `${api.value}?all=1`);
     const item = useFetch(() => props.env && props.n && props.n !== "new" && `${api.value}/${props.n}`);
     const envs = useEnvironments(() => props.env);
@@ -1644,13 +1657,13 @@ const Reminders = {
       ];
     });
     const done = (body, a) => settle(body, a, base.value, list, item);
-    return { list, item, creating, actions, done, base, REMINDER_LIST };
+    return { list, item, creating, actions, done, home, base, REMINDER_LIST };
   },
   template: `
-    <TopBar :crumbs="[env, 'Reminders']"><a class="btn new" :href="base + '/new'">New reminder</a></TopBar>
+    <TopBar :crumbs="archive ? [env, 'Reminders', 'Archive'] : [env, 'Reminders']" :archive="{list: home, on: !!archive}"><a class="btn new" :href="home + '/new'">New reminder</a></TopBar>
     <div class=body>
       <div class=list>
-        <ResourceList v-bind="REMINDER_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+        <ResourceList v-bind="REMINDER_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
           :href="(r) => base + '/' + r.n" :selected="(r) => String(r.n) === n"/>
       </div>
       <Panel v-if="n === 'new'" label="New reminder" :close="base">

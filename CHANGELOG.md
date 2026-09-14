@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.50 — An Archive button on every list
+
+To-dos, Messages, Questions, Suggestions, Reports, Open work, Reminders, Pins and Rules have an
+Archive button in the top bar. It opens the same list showing only the items that closed more
+than a week ago, and "Close archive" goes back. An item opened from the archive stays in it.
+Processed messages and accepted suggestions now count as closed too, so they leave their list
+after a week like everything else.
+
 ## 1.131.49 — Closed items stay in a list for a week
 
 Lists used to hide their closed items (Done, Answered, Struck, Ended, Retired, Declined,
