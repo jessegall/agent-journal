@@ -182,6 +182,7 @@ const Icon = {
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
+      <template v-else-if="name === 'empty'"><path d="M2.5 9.5l1.8-5h7.4l1.8 5V13h-11z"/><path d="M2.5 9.5h3l1 1.5h3l1-1.5h3"/></template>
       <template v-else-if="name === 'dock-left'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M6.5 3v10"/></template>
       <template v-else-if="name === 'float'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><rect x="7.5" y="7" width="4.5" height="4" rx=".8"/></template>
       <template v-else-if="name === 'dock-right'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10"/></template>
@@ -1580,7 +1581,7 @@ const EnvHome = {
       </section>
     </div></div>
     <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>
-    <aside v-else class="panel peek-idle"><p>Select a row to see it here.</p></aside>
+    <aside v-else class="panel peek-idle" aria-hidden="true"><Icon name="empty"/></aside>
     </div>`,
 };
 
