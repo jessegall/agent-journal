@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""channel.py: the MCP channel server declares itself and pushes a waiting message only to an idle or non-auto session."""
+"""channel.py: the MCP channel server declares itself; with auto off it pushes messages only, with auto on everything once idle."""
 import json, os, subprocess, sys, tempfile, time
 from pathlib import Path
 
@@ -75,6 +75,7 @@ check("a waiting message is pushed to an idle session, naming it",
       ("notifications/claude/channel", True, "1"))
 check("and not pushed twice", read_line(7), None)
 
+j("auto-mode", "enable")
 import questions  # noqa: E402
 questions.add(root, "ship it on Friday?", "2026-09-14T10:00:00+00:00", track="default")
 j("questions", "answer", "1", "yes, Friday")
@@ -102,6 +103,20 @@ check("with auto on and the session working, nothing is pushed", read_line(8), N
 state.put(root, "last_event", "Stop", stem=STEM)
 push = read_line(12)
 check("once the session stops, it is pushed", "another one while working" in (((push or {}).get("params") or {}).get("content", "")), True)
+
+j("auto-mode", "disable")
+j("questions", "answer", "1", "no, Tuesday")
+check("with auto mode off an answered question does not wake the session: only messages do", read_line(8), None)
+j("messages", "add", "a message with auto off")
+push = read_line(12)
+check("while a message still does", "a message with auto off" in (((push or {}).get("params") or {}).get("content", "")), True)
+j("questions", "answer", "1", "no, Wednesday")
+state.put(root, "last_event", "PreToolUse", stem=STEM)
+j("messages", "add", "sent while it works, auto off")
+push = read_line(12)
+check("with auto off a message reaches a working session too, and the answer still does not",
+      [((p or {}).get("params") or {}).get("meta", {}).get("message") is not None for p in [push, read_line(6)] if p], [True])
+state.put(root, "last_event", "Stop", stem=STEM)
 
 tracks.unbind(root, STEM)
 j("messages", "add", "while on no environment")
