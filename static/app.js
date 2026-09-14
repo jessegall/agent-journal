@@ -14,6 +14,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/questions(\/archive)?(?:\/(\d+))?$/, view: "Questions", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reports(\/archive)?(?:\/(\d+|new))?$/, view: "Reports", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/suggestions(\/archive)?(?:\/(\d+|ask))?$/, view: "Suggestions", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/style(?:\/([a-z0-9-]+))?$/, view: "Style", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/work(\/archive)?(?:\/(\d+|new))?$/, view: "Work", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reminders(\/archive)?(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
@@ -118,6 +119,7 @@ function refHref(ref, env) {
   if (kind === "reminder") return `#/env/${env}/reminders`;
   if (kind === "inbox") return `#/env/${env}/messages/${num}`;
   if (kind === "work") return `#/env/${env}/work/${num}`;
+  if (kind === "style") return num ? `#/env/${env}/style/${num}` : `#/env/${env}/style`;
   return null;
 }
 
@@ -197,7 +199,7 @@ function renderMarkdown(src) {
 // page view -> its help file under static/help/
 const HELP_TOPICS = { Todos: "todos", Inbox: "messages", Questions: "questions", Suggestions: "suggestions", Reports: "reports",
   Pins: "pins", Reminders: "reminders", Work: "work", EnvDocs: "docs", Docs: "docs", DocDetail: "docs", Rules: "rules", Tools: "tools",
-  Files: "files" };
+  Files: "files", Style: "style" };
 const HELP_CACHE = {};
 
 // ─────────────────────────────────────────────────────────────── icons
@@ -207,6 +209,7 @@ const Icon = {
     <svg class=ico viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
+      <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
       <template v-else-if="name === 'info'"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></template>
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
@@ -307,7 +310,7 @@ const TopBar = {
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
     // what the agent keeps lives here as icons; the one whose page is open is lit
     const view = parseHash().view || "";
-    const KEPT = [{ key: "suggestions", label: "Suggestions", view: "Suggestions" },
+    const KEPT = [{ key: "suggestions", label: "Suggestions", view: "Suggestions" }, { key: "style", label: "Coding style", view: "Style" },
                   { key: "reports", label: "Reports", view: "Reports" }, { key: "pins", label: "Pins", view: "Pins" },
                   { key: "reminders", label: "Reminders", view: "Reminders" }];
     // each resource page explains itself from static/help/<topic>.md
@@ -335,7 +338,7 @@ const TopBar = {
         <template v-for="(c, i) in crumbs" :key="i">
           <span v-if="i" class=sep>/</span><b v-if="i === crumbs.length - 1">{{ c }}</b><span v-else>{{ c }}</span>
         </template>
-        <button v-if="helpTopic" type=button class="icon-btn help-btn" :title="'What are ' + crumbs[crumbs.length - 1] + '?'"
+        <button v-if="helpTopic" type=button class="icon-btn help-btn" :title="'Help for ' + crumbs[crumbs.length - 1]"
           :aria-label="'About ' + crumbs[crumbs.length - 1]" @click="openHelp"><Icon name="info"/></button>
       </div>
       <dialog v-if="helpTopic" ref=helpDialog class=help @click.self="closeHelp" @close="help.open = false">
@@ -567,12 +570,12 @@ const QuestionAnswer = {
 };
 
 const LinkedQuestions = {
-  props: { rows: { type: Array, default: () => [] }, env: { type: String, default: "" } },
+  props: { rows: { type: Array, default: () => [] }, env: { type: String, default: "" }, label: { type: String, default: "Questions" } },
   components: { StatusIcon, QuestionAnswer },
   setup() { return { questionKind }; },
   template: `
     <div v-if="rows && rows.length">
-      <p class=section-label>Questions</p>
+      <p class=section-label>{{ label }}</p>
       <div class=linked>
         <div v-for="q in rows" :key="(q.env || env) + ':' + q.n" class=linked-q>
           <a :href="'#/env/' + (q.env || env) + '/questions/' + q.n">
@@ -1722,6 +1725,101 @@ const Questions = {
     </div>`,
 };
 
+// ─────────────────────────────────────────────────────────────── coding style
+const STYLE_LIST = {
+  groups: [{ key: "rules", label: "Rules", kind: "open", match: () => true }],
+  columns: { title: (r) => r.title, sub: (r) => r.decision, cite: (r) => r.skill },
+  sorts: [{ key: "n", label: "Added" }, { key: "subject", label: "Subject" }],
+  count: (rows) => `${rows.length} ${rows.length === 1 ? "rule" : "rules"}`, name: "rules",
+  empty: "No coding style rules yet. Ask for a review to find them.",
+};
+
+const aboutStyle = (q, ref) => (q.links || []).some((l) => (ref ? l.ref === ref : l.ref === "style" || l.ref.startsWith("style:")));
+
+// a rule is routed by its subject; the API numbers them, so the list says which number it is
+const StylePanel = {
+  props: ["env", "n", "rows", "questions", "close", "base", "reloaded"],
+  components: { Panel, ActionBar, LinkedQuestions },
+  setup(props) {
+    const rule = computed(() => (props.rows || []).find((r) => r.subject === props.n));
+    const item = useFetch(() => rule.value && `/api/style/${rule.value.n}`);
+    const asked = computed(() => (props.questions || []).filter((q) => aboutStyle(q, `style:${props.n}`)));
+    const actions = computed(() => {
+      const r = item.data;
+      if (!r) return [];
+      const url = `/api/style/${r.n}`;
+      return [
+        { label: "Edit", method: "PATCH", url, only: true, submit: "Save",
+          fields: [{ name: "title", label: "Title", value: r.title }, { name: "decision", label: "Decision", value: r.decision },
+                   { name: "when", label: "Loads when", value: r.when }],
+          note: "Its skill is written again with the change." },
+        { label: "Remove", method: "DELETE", url, danger: true, leave: true, submit: "Remove",
+          fields: [{ name: "why", label: "Why it no longer applies" }], note: "Its skill is deleted too." },
+      ];
+    });
+    const done = (body, a) => { settle(body, a, props.base, item); if (props.reloaded) props.reloaded(); };
+    return { rule, item, asked, actions, done };
+  },
+  template: `
+    <Panel :label="'Rule ' + n" :close="close">
+      <p v-if="rows && !rule" class="prose muted">There is no coding style rule named {{ n }}.</p>
+      <p v-else-if="item.error" class=error>{{ item.error }}</p>
+      <template v-else-if="item.data">
+        <h2 class=p-title>{{ item.data.title }}</h2>
+        <dl class=props>
+          <dt>Decision</dt><dd>{{ item.data.decision }}</dd>
+          <dt>Loads when</dt><dd>{{ item.data.when }}</dd>
+          <dt>Skill</dt><dd><a class=chip :href="'#/env/' + env + '/skills/' + item.data.skill">{{ item.data.skill }}</a></dd>
+        </dl>
+        <ActionBar :actions="actions" :done="done" :key="'style' + item.data.n"/>
+        <div v-if="item.data.body">
+          <div class="md prose" v-html="$md(item.data.body)"></div>
+        </div>
+        <p v-else class="prose muted">No reasoning or examples are written down for this rule.</p>
+        <LinkedQuestions :rows="asked" :env="env"/>
+      </template>
+    </Panel>`,
+};
+
+const Style = {
+  props: ["env", "n"],
+  components: { TopBar, ResourceList, StylePanel, Panel, ActionBar, LinkedQuestions },
+  setup(props) {
+    const home = computed(() => `#/env/${props.env}/style`);
+    const list = useFetch(() => "/api/style?all=1");
+    const questions = useFetch(() => props.env && `/api/env/${props.env}/questions?all=1`);
+    const open = computed(() => (questions.data || []).filter((q) => q.status === "open" && aboutStyle(q)));
+    // like suggestions, a review is a message: the agent sends a subagent to read the code and asks what it finds
+    const asking = computed(() => [{
+      label: "Ask for a coding style review", method: "POST", url: `/api/env/${props.env}/inbox`, submit: "Send to the agent", leave: true,
+      fields: [{ name: "scope", label: "Where to look (optional)", kind: "area",
+                 placeholder: "A folder, a layer or a kind of code. Leave empty to let the agent choose." }],
+      shape: ({ scope }) => ({ files: [], text: "Please run a coding style review: send a background subagent to read the code "
+        + "and find where its style differs, then ask me about each difference with `journal questions add --about=\"style\"`, "
+        + "one option per style with its code example, and turn my answers into rules with `journal style add`."
+        + (scope && scope.trim() ? `\n\nLook at: ${scope.trim()}` : "") }),
+    }]);
+    const done = () => { changed(); location.hash = home.value; };
+    return { home, list, questions, open, asking, done, STYLE_LIST };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Coding style']"/>
+    <div class=body>
+      <div class=list>
+        <div v-if="open.length" class=style-questions><LinkedQuestions :rows="open" :env="env" label="Waiting on your answer"/></div>
+        <ResourceList v-bind="STYLE_LIST" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(r) => home + '/' + r.subject" :selected="(r) => r.subject === n">
+          <template #tools><a class="btn new" :href="home + '/ask'">Ask for a coding style review</a></template>
+        </ResourceList>
+      </div>
+      <Panel v-if="n === 'ask'" label="Ask for a coding style review" :close="home">
+        <p class="prose muted">The agent gets this as a message. It sends a subagent to read the code, then asks you about each difference it finds, with the code side by side. Your answers become rules, and each rule becomes a skill.</p>
+        <ActionBar :actions="asking" open="Ask for a coding style review" :done="done"/>
+      </Panel>
+      <StylePanel v-else-if="n" :key="'style' + n" :env="env" :n="n" :rows="list.data" :questions="questions.data" :close="home" :base="home" :reloaded="list.reload"/>
+    </div>`,
+};
+
 // ─────────────────────────────────────────────────────────────── work and reminders
 const Work = {
   props: ["env", "archive", "n"],
@@ -2688,7 +2786,7 @@ const SkillView = {
     </div></div></div>`,
 };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, SkillView, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Style, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, SkillView, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it

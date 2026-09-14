@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.135.7 — The Coding style page, and questions about the coding style
+
+The second part of the Coding style tool. The viewer has a Coding style page, opened from its new
+icon in the top bar.
+
+- The page lists the rules. A rule's panel shows its decision, when it loads, its skill and its
+  reasoning, with Edit and Remove.
+- **Ask for a coding style review** sends the agent a message, with where to look if you say. The agent
+  sends a subagent to read the code, asks you about each difference with the code side by side, and
+  turns your answers into rules.
+- Open questions about the coding style sit at the top of the page, answerable right there.
+- A question can be about the coding style: `--about="style"`, or `--about="style <subject>"` for one
+  rule, which must exist. Its chip links to the page.
+- The `journal-questions` skill says how an agent runs the review.
+- The help button's title reads "Help for <page>".
+
 ## 1.135.6 — Coding style rules, each generated into a skill
 
 The first part of the Coding style tool. A project keeps its coding style as rules, one per subject,

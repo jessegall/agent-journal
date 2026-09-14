@@ -269,5 +269,22 @@ for title in ("ship 1.131.85 today, or wait for the 2.0 branch?", "is e.g. the F
 code, out = j("questions", "edit", "1", "Which? A) this B) that")
 check("rewording a question into a list of choices is refused too", (code, "--option=" in out), (1, True))
 
+# ------------------------------------------------------------------ questions about the coding style
+check("bare style is a reference to the coding style as a whole",
+      [q_mod.parse_ref(t)[0] for t in ("style", "coding style", "Style")], ["style", "style", "style"])
+check("style with a subject names one rule", [q_mod.parse_ref(t)[0] for t in ("style naming", "style:early-returns")],
+      ["style:naming", "style:early-returns"])
+check("each reads back in words", q_mod.labels(["style", "style:naming"]), ["the coding style", "coding style rule naming"])
+code, out = j("questions", "add", "tabs or spaces?", "--about=style")
+check("a question about the coding style as a whole needs no rule to exist", (code, "about the coding style" in out), (0, True))
+code, out = j("questions", "add", "camelCase?", "--about=style naming")
+check("a question about a rule that does not exist is refused", (code, "no coding style rule" in out), (1, True))
+j("style", "add", "naming", "How things are named", "--decision=camelCase for variables", "--when=naming anything")
+code, out = j("questions", "add", "camelCase for constants too?", "--about=style naming")
+check("once the rule exists, the question is filed about it", (code, "about coding style rule naming" in out), (0, True))
+check("about() finds each by its reference", ([len(q_mod.about(root, "style", "default")), len(q_mod.about(root, "style:naming", "default"))]), [1, 1])
+check("the row carries the reference the viewer links by",
+      [l["ref"] for l in q_mod.row_response(1, q_mod.about(root, "style:naming", "default")[0][1])["links"]], ["style:naming"])
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

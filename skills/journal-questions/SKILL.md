@@ -44,6 +44,30 @@ understand it is a question they will answer wrong.
 again: the new answer replaces the old one, which is kept, and the next stop tells you again,
 marked "(a new answer)". Act on the latest answer, not the one you remember.
 
+## Coding style: a review becomes rules
+
+    journal questions add "<which is right?>" --about="style" --option="<one way>" --option-code="<its example>" ...
+    journal style add <subject> "<title>" --decision="<the rule, one line>" --when="<what code it covers>" --brief
+    journal style                                   the rules there are
+
+**When the user asks for a coding style review**, from the Coding style page or in words,
+dispatch a background subagent to do the reading, and name its model (`sonnet`: careful
+reading, nothing to invent). It reads where the user said to look, or the code it judges most
+typical, and reports each place where the same thing is written two ways: naming, guard
+clauses, error handling, how a class is laid out. It reports with a short real excerpt of each
+way. It writes nothing.
+
+**Each difference becomes one question.** Ask it `--about="style"`, or `--about="style
+<subject>"` when a rule already exists and the difference is about it. Give each way as an
+`--option` with an `--option-code` example long enough to judge, a few real lines rather than
+one token. The Coding style page puts these at the top, with the code side by side.
+
+**Each answer becomes a rule, one subject each.** `journal style add` with the chosen way as
+the decision. The brief on stdin carries `## Why`, `## Examples` (the bad and the good, from
+the question's code) and `## Triggers` (a phrase per line that should load it). A rule that
+already covers the subject is changed with `journal style set`, never duplicated. Every change
+writes the rule's `style-<subject>` skill for you.
+
 ## Suggestions: propose, and let the user decide
 
     journal suggest "<the change, in one line>" --brief [--about=<ref>]...   propose; the work goes on as asked
