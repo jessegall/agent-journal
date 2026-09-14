@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.88 — A side panel's title opens its page
+
+The side panel's "Open page" button is gone. Its title ("To-do #239") is the link now: hovering it
+highlights it and shows an arrow.
+
 ## 1.131.87 — A question that lists its choices in its text is refused
 
 An agent sometimes wrote a question as "Which way? A) keep it B) drop it", which the user can only

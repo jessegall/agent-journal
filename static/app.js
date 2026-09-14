@@ -201,6 +201,7 @@ const Icon = {
       <template v-else-if="name === 'info'"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></template>
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
       <template v-else-if="name === 'activity'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></template>
+      <path v-else-if="name === 'arrow'" d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/>
       <template v-else-if="name === 'collapse'"><path d="M6 4.5l3.5 3.5L6 11.5"/><path d="M11.5 3.5v9"/></template>
       <template v-else-if="name === 'paperclip'"><path d="M10.5 5.5l-4.3 4.3a1.3 1.3 0 0 0 1.8 1.8l4.6-4.6a2.6 2.6 0 0 0-3.7-3.7L4.3 8a3.9 3.9 0 0 0 5.5 5.5l3.7-3.7"/></template>
       <template v-else-if="name === 'sort-asc'"><path d="M8 13V3M4 7l4-4 4 4"/></template>
@@ -374,9 +375,8 @@ const Panel = {
   components: { Icon },
   template: `
     <aside class=panel>
-      <div class=panel-top><a v-if="link" class=panel-link :href="link" :title="'Open ' + label + ' on its own page'">{{ label }}</a><span v-else>{{ label }}</span>
+      <div class=panel-top><a v-if="link" class=panel-link :href="link" :title="'Open ' + label + ' on its own page'">{{ label }}<Icon name="arrow"/></a><span v-else>{{ label }}</span>
         <span class=panel-tools>
-          <a v-if="link" class="btn flush panel-open" :href="link" :title="'Open ' + label + ' on its own page'"><Icon name="open"/>Open page</a>
           <button v-if="onClose" type=button class=icon-btn title="Close" @click="onClose"><Icon name="close"/></button>
           <a v-else class=icon-btn :href="close" title="Close"><Icon name="close"/></a>
         </span></div>
