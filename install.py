@@ -250,6 +250,10 @@ DATA = ("record.json", "record.json.lock", "settings.json", "state.json", "state
 #: red suite in front of an agent in a consumer project, and it started fixing the tool
 #: instead of doing its own work — a job it was never given. So a pull leaves them out,
 #: and removes the ones an earlier pull left behind.
+#: this checkout's own Claude Code config, never the package
+PROJECT_CONFIG = (".mcp.json", ".claude")
+
+
 def _is_test(rel: Path) -> bool:
     return len(rel.parts) == 1 and (rel.name == "testkit.py" or (rel.name.startswith("test_") and rel.suffix == ".py"))
 
@@ -275,7 +279,7 @@ def _package_files(root: Path) -> list[Path]:
         rel = f.relative_to(root)
         # a clone's .git is not the package: copying it once put a nested repository
         # into a consumer's .journal
-        if not f.is_file() or rel.parts[0] in DATA or rel.parts[0] == ".git" or f.suffix in (".tmp", ".pyc"):
+        if not f.is_file() or rel.parts[0] in DATA or rel.parts[0] in (".git", *PROJECT_CONFIG) or f.suffix in (".tmp", ".pyc"):
             continue
         if listed is not None and rel not in listed:
             continue
