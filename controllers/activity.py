@@ -124,4 +124,7 @@ class ActivityController(Controller):
         for c in commandlog.entries(root, env):
             add(c.get("at"), c.get("kind") or "command", c.get("text", ""), c.get("n"), AGENT, c.get("titled", False))
         out.sort(key=lambda e: e["at"], reverse=True)
-        return [{**e, "age": age(e["at"])} for e in out[:commandlog.setting(root, env, commandlog.SHOW)]]
+        # the same line twice in a row, like a message read again for more context, shows once
+        same = lambda a, b: (a["kind"], a["n"], a["text"], a["by"]) == (b["kind"], b["n"], b["text"], b["by"])
+        kept = [e for i, e in enumerate(out) if not i or not same(e, out[i - 1])]
+        return [{**e, "age": age(e["at"])} for e in kept[:commandlog.setting(root, env, commandlog.SHOW)]]

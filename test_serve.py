@@ -623,6 +623,12 @@ state.put_tracked(root, "activity", "alpha",
                   commandlog.entries(root, "alpha") + [{"at": "2099-01-01T00:00:03+00:00", "text": "Reading question 9", "kind": "question", "n": 9}])
 check("a line that already names its resource but still has the number in its wording shows the wording alone",
       [(e["text"], e["n"]) for e in commandlog.entries(root, "alpha") if e.get("kind") == "question" and e.get("n") == 9], [("Reading question", 9)])
+state.put_tracked(root, "activity", "alpha",
+                  commandlog.entries(root, "alpha") + [{"at": "2099-01-01T00:00:04+00:00", "text": "Reading report", "kind": "report", "n": 5},
+                                                       {"at": "2099-01-01T00:00:05+00:00", "text": "Reading report", "kind": "report", "n": 5}])
+_, _, body = get("/api/env/alpha/activity")
+check("the same line twice in a row shows once",
+      len([e for e in json.loads(body)["events"] if e["kind"] == "report" and e["n"] == 5]), 1)
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
