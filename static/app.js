@@ -1074,7 +1074,32 @@ const MessagePanel = {
         removing.busy = false;
       }
     };
-    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove };
+    // adding files to a message already sent: read each as a data URL, the way the message box does
+    const attaching = reactive({ busy: false, error: "" });
+    const readFile = (file) => new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve({ name: file.name, data: String(r.result) });
+      r.onerror = () => reject(new Error(`Could not read ${file.name}`));
+      r.readAsDataURL(file);
+    });
+    const attachFiles = async (event) => {
+      const picked = Array.from(event.target.files || []);
+      event.target.value = "";
+      if (!picked.length || attaching.busy || !item.data) return;
+      attaching.busy = true;
+      attaching.error = "";
+      try {
+        const files = await Promise.all(picked.map(readFile));
+        await postJSON(`${api.value}/${item.data.n}/attach`, { files });
+        item.reload();
+        changed();
+      } catch (err) {
+        attaching.error = err.message;
+      } finally {
+        attaching.busy = false;
+      }
+    };
+    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles };
   },
   template: `
     <Panel :label="'Message #' + n" :close="close" :onClose="onClose" :link="link">
@@ -1087,9 +1112,16 @@ const MessagePanel = {
           <dt>From</dt><dd>{{ item.data.source === 'web' ? 'The browser' : 'The terminal' }}</dd>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'message' + item.data.n + item.data.status"/>
-        <div v-if="item.data.files && item.data.files.length">
-          <p class=section-label>Files</p>
-          <div class=files>
+        <div>
+          <div class=files-head>
+            <p class=section-label>Files</p>
+            <label :class="['btn', {disabled: attaching.busy}]" :aria-disabled="attaching.busy">
+              {{ attaching.busy ? 'Adding…' : 'Attach files' }}<input type=file multiple hidden :disabled="attaching.busy" @change="attachFiles">
+            </label>
+          </div>
+          <p v-if="attaching.error" class=error>{{ attaching.error }}</p>
+          <p v-if="!item.data.files || !item.data.files.length" class="prose muted">No files. Files you add are kept with the message, and the agent is told.</p>
+          <div v-else class=files>
             <template v-for="f in item.data.files" :key="f.name">
               <div v-if="f.removed" class="file-row removed">
                 <span class=file-name :title="f.name">{{ f.name }}</span><span class=file-meta :title="f.filed_label">{{ f.filed_label }} · {{ $human(f.size) }}</span>

@@ -25,6 +25,7 @@ PAGE = {
                  ('journal messages process <n> --part="<words>" --became=<ref>', "record a part"),
                  ('journal messages file <n> <name> "doc <doc>"', "file an attached file into a doc, or keep it"),
                  ('journal messages detach <n> <name> "<why>"', "take a file off a message; it is kept under struck/"),
+                 ("journal messages attach <n> --file=<path>", "add a file to a message already sent"),
                  ("journal messages done <n>", "mark it processed"),
                  ('journal messages move <n> "<environment>"', "carry a waiting one to another environment")),
 }
@@ -107,6 +108,17 @@ class Detach(Resource):
     action = "detach"
 
 
+class Attach(Resource):
+    signature = "messages:attach {n : a message number} {--file=*}"
+    casts = MESSAGE
+    writes = True
+    controller = CONTROLLER
+    action = "attach"
+
+    def extra(self, p: Parsed):
+        return {"files": [{"path": f} for f in p.option("file") or []]}
+
+
 class Edit(Resource):
     signature = "messages:edit {n : a message number} {text* : the message, reworded}"
     casts = MESSAGE
@@ -155,4 +167,4 @@ class Move(Resource):
     action = "move"
 
 
-COMMANDS = (List, Show, Waiting, Add, Edit, Process, File, Detach, Done, Reply, Archive, Move)
+COMMANDS = (List, Show, Waiting, Add, Edit, Process, File, Detach, Attach, Done, Reply, Archive, Move)

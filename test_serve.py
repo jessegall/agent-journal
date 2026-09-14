@@ -744,6 +744,14 @@ check("the Files page lists a message's file with where it came from, its link a
 check("and the attachments of the environment's documents",
       any(f["source"] == "doc" and f["n"] == 1 and f["url"].startswith("/docs/1/files/") for f in _files), True)
 check("a listed message file opens", get(_shot[0]["url"])[0], 200)
+_shot_msg = [m["n"] for m in json.loads(get("/api/env/alpha/inbox?all=1")[2]) if m["text"] == "a message carrying a picture"][0]
+status, got = post(f"/api/env/alpha/inbox/{_shot_msg}/attach",
+                   {"files": [{"name": "later.txt", "data": "data:text/plain;base64," + base64.b64encode(b"added afterwards").decode()}]})
+check("files are added to a message after it is sent",
+      (status, [f["name"] for f in json.loads(get(f"/api/env/alpha/inbox/{_shot_msg}")[2])["files"]]), (200, ["shot.png", "later.txt"]))
+check("added from the viewer, it is a comment on the message, so the agent is told",
+      [(c["about"], c["text"]) for c in json.loads(get(f"/api/env/alpha/comments?about=inbox%3A{_shot_msg}&all=1")[2])],
+      [(f"inbox:{_shot_msg}", f"added later.txt to message {_shot_msg}")])
 _tail = root / "context-tail.jsonl"
 _tail.write_text(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 1000, "cache_read_input_tokens": 149000}}}) + "\n")
 check("the agent's context use is its last reading against the window, and nothing without a window or a reading",

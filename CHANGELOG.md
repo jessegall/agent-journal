@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.38 — Add files to a message after sending it
+
+Once a message was sent, there was no way to add a file you forgot. A message's panel now
+has **Attach files**, and the terminal has `journal messages attach <n> --file=<path>`. The
+files are kept with the message like the ones sent with it. A file you add from the viewer
+also leaves a comment on the message ("added notes.txt to message 5"), so the agent hears
+about it at its next stop. This works on a message the agent already processed too.
+
+Comments can now be about a message too: `journal comments add "message 5" "<text>"`.
+
 ## 1.131.37 — Remove a file from a message
 
 A file attached to a message could be filed into a document or kept, but not taken off. Each

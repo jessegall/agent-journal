@@ -9,14 +9,15 @@ from templates import render
 
 KEY = "comments"
 
-KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "reminder": "reminder", "suggestion": "suggestion"}
+KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "reminder": "reminder", "suggestion": "suggestion",
+         "inbox": "message"}
 
-_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|reminders?|suggestions?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|reminders?|suggestions?|messages?|inbox)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
 
 MESSAGES = {
     "label": "{kind} {num}",
     "not_a_ref": "{text} is not something a comment can be about; write it as `todo 22`, `doc 4`, `pin 3`, "
-                 "`rule 2` or `reminder 1`",
+                 "`rule 2`, `reminder 1` or `message 5`",
     "no_reminder": "there is no reminder {n} on this environment",
     "needs_text": 'a comment needs its text: journal comments add "todo 22" "<the comment>"',
     "added": "comment {n} on {label}; the agent is told at its next stop",
@@ -40,7 +41,7 @@ def parse_ref(text: str) -> tuple[str | None, str]:
     if not m:
         return None, say("not_a_ref", text=repr(text))
     word, num = m.group(1).lower().replace("-", ""), m.group(2)
-    kind = "todo" if word.startswith("todo") else word.rstrip("s")
+    kind = "todo" if word.startswith("todo") else "inbox" if word in ("message", "messages", "inbox") else word.rstrip("s")
     if "." in num and kind != "doc":
         return None, say("not_a_ref", text=repr(text))
     return f"{kind}:{num}", ""

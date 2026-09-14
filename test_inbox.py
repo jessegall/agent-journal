@@ -220,6 +220,16 @@ check("a removed file does not hold up done", j("messages", "done", str(_dn))[0]
 code, out = j("messages", "detach", str(_mn), "shot.png", "it is in the doc")
 check("a file already filed into a doc is removed there, not from the message", (code, "docs detach" in out), (1, True))
 
+# ------------------------------------------------------------------ files are added to a message already sent
+(_src / "late.txt").write_text("forgot this one")
+code, out = j("messages", "attach", str(_dn))
+check("attach wants at least one file", code, 1)
+code, out = j("messages", "attach", str(_dn), f"--file={_src / 'late.txt'}")
+check("a file is added to a processed message and held with it", (code, (_dheld / "late.txt").read_text()), (0, "forgot this one"))
+code, out = j("messages", "attach", str(_dn), f"--file={_src / 'late.txt'}")
+check("a second file of the same name gets its own name", (code, (_dheld / "late-2.txt").is_file()), (0, True))
+check("added from the terminal, it leaves no comment", "added late.txt" in j("comments", "--all")[1], False)
+
 # ------------------------------------------------------------------ archive
 code, out = j("messages", "add", "never mind this one")
 _an = int(re.search(r"message (\d+)", out).group(1))
