@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.10 — The sidebar footer shows how much context the agent has used
+
+While an agent is working, the footer's Agent row shows how full its context is, as a
+percentage with a thin bar. The bar turns the warning colour from 70%. Hover it for the token
+count. Nothing shows when no agent is working or the context window is unknown.
+
 ## 1.131.9 — A priority line in Activity names the level
 
 A priority change in Activity showed the number, like "Changed to-do priority · 174 · 100".
