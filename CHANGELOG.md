@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.86 — Image previews keep their shape; Agent's pick only while choosing
+
+A tall image attached to a message or document was stretched to the panel's width. Previews now keep
+their proportions. On an answered question, "Agent's pick" shows only while you change the answer.
+
 ## 1.131.85 — Quieter counts and commit subjects
 
 Activity says "used 3 tools" rather than "used 3 other tools". The agents count in the Activity
