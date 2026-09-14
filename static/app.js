@@ -2001,6 +2001,9 @@ const EnvHome = {
     const inbox = useFetch(url("/inbox"));
     const questions = useFetch(url("/questions"));
     const notes = useFetch(url("/notifications"));
+    // subagents at work, shown on Home only while there are any
+    const agentsList = useFetch(url("/agents"));
+    const workingSubagents = computed(() => (agentsList.data || []).filter((a) => a.kind === "subagent" && a.working));
     const noted = () => { notes.reload(); changed(); };
     const readOne = (x) => send("POST", `/api/env/${props.env}/notifications/${x.n}/read`).then(noted);
     const readAll = () => send("POST", `/api/env/${props.env}/notifications/readall`).then(noted);
@@ -2043,7 +2046,7 @@ const EnvHome = {
     onUnmounted(() => window.removeEventListener("journal:peek", onPeek));
     const picked = (kind) => (r) => view.kind === kind && view.n === r.n;
     const reloadAll = () => [work, todos, inbox, questions].forEach((f) => f.reload());
-    return { work, allWork, endedWork, todos, inbox, questions, notes, readOne, readAll, reloadAll, view, peek, unpeek, picked, peekOf, openNote, waiting, asking, stats, openTodos, finishedTodos,
+    return { work, allWork, endedWork, todos, inbox, questions, notes, workingSubagents, readOne, readAll, reloadAll, view, peek, unpeek, picked, peekOf, openNote, waiting, asking, stats, openTodos, finishedTodos,
              waitingMessages, openQuestions, openWork };
   },
   template: `
@@ -2084,6 +2087,18 @@ const EnvHome = {
             @click.prevent="peek('work', w.n)" :title="w.subject">
             <span class=recent-ended-title>{{ w.subject }}</span>
             <span class=recent-ended-age>ended {{ w.ended_age || 'just now' }}</span>
+          </a>
+        </div>
+      </section>
+
+      <section v-if="workingSubagents.length" class=home-subagents>
+        <div class=home-head><h2>Subagents at work</h2><span class=n>{{ workingSubagents.length }}</span></div>
+        <div class=recent-ended>
+          <a v-for="a in workingSubagents" :key="a.id" class="recent-ended-row subagent-row" :href="'#/env/' + env + '/agents/subagent/' + a.id"
+            :title="a.name || ('Subagent ' + a.id)">
+            <span class=recent-ended-title>{{ a.name || 'Subagent ' + a.id }}</span>
+            <span v-if="a.model" class=subagent-model>{{ a.model }}</span>
+            <span class=recent-ended-age>{{ a.age_text || 'just now' }}</span>
           </a>
         </div>
       </section>
