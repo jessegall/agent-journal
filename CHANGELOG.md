@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.96 — Comment on a piece of work
+
+A work item takes comments like a to-do or a message does: from the Comments section of its panel in
+the viewer, or with `journal comments add "work 7" "<the comment>"`. The agent is told at its next
+stop, and the channel wakes an idle session for it. Use it to ask about a piece of work or steer it
+while it is under way.
+
 ## 1.131.95 — The agents list splits active from idle
 
 The agents button in the Activity header lists agents under Active and Idle, and its count is the
