@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.16 — The ideas setting is gone
+
+`idea_max_chars` belonged to the ideas command removed in 1.131.0 and no longer did anything.
+It is no longer a setting. If your `.journal/settings.json` still sets it, the journal
+reports it as an unknown key, and you can delete that line.
+
 ## 1.131.15 — The message box is ready to type in, and Shift+Enter sends
 
 Opening the Messages page puts the cursor in the message box, so you can start typing
