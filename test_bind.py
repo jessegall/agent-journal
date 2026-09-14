@@ -612,5 +612,14 @@ check("reporting a row nobody holds says how to claim it",
                               aP.cli("--env=shared", "--as=b7c1", "todos", "report", "4",
                                      "x", session="as1"))[1][1], True)
 
+# a continued or resumed session starts back on the environment it ended on
+tracks.create(root2, "resumeenv")
+r = T("rrrrrrrr-9")
+tracks.bind(root2, "rrrrrrrr-9", "resumeenv")
+r.fire("SessionEnd", reason="exit")
+check("a session that ends leaves its environment", tracks.bound(root2, "rrrrrrrr-9"), None)
+r.fire("SessionStart", source="resume")
+check("and resumed, it is back on it", tracks.bound(root2, "rrrrrrrr-9"), "resumeenv")
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
