@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.1 — A to-do's priority is one button with a menu
+
+In an open to-do's panel the Priority row shows the current priority's icon and name as one
+button. Clicking it opens a small menu of Low, Default, High and Critical with their icons,
+the current one marked; choosing one saves it and closes the menu, and a click elsewhere or
+Escape closes it without a change. It replaces the four icons shown side by side.
+
 ## 1.131.0 — The ideas command is gone
 
 `journal ideas` (add, list, drop, promote) and `journal idea` are removed, with their help,

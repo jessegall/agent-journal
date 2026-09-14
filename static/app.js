@@ -803,17 +803,27 @@ const TodoPanel = {
     });
     const done = panelDone(props, item);
     const todoHref = (a) => `#/env/${props.env}/todos/${a}`;
-    // the priority row is its own picker: one click saves
+    // the priority row is one button; it opens a menu of the levels, and choosing one saves
     const LEVELS = [{ value: "low", n: 50 }, { value: "default", n: 100 }, { value: "high", n: 150 }, { value: "critical", n: 200 }];
     const saving = reactive({ on: false });
+    const menu = reactive({ open: false });
+    const outside = (e) => { if (!e.target.closest(".prio-wrap")) menu.open = false; };
+    const escape = (e) => { if (e.key === "Escape") menu.open = false; };
+    watchEffect((onCleanup) => {
+      if (!menu.open) return;
+      document.addEventListener("mousedown", outside);
+      document.addEventListener("keydown", escape);
+      onCleanup(() => { document.removeEventListener("mousedown", outside); document.removeEventListener("keydown", escape); });
+    });
     const setPriority = (level) => {
+      menu.open = false;
       if (saving.on || !item.data || priorityName(item.data.priority).toLowerCase() === level.value) return;
       saving.on = true;
       send("PATCH", `${api.value}/${item.data.n}`, { priority: level.value })
         .then(() => { item.reload(); if (props.reloaded) props.reloaded(); changed(); })
         .finally(() => { saving.on = false; });
     };
-    return { item, actions, done, todoHref, todoStatus, STATUS_LABEL, priorityName, LOG_KIND, LEVELS, saving, setPriority };
+    return { item, actions, done, todoHref, todoStatus, STATUS_LABEL, priorityName, LOG_KIND, LEVELS, saving, menu, setPriority };
   },
   template: `
     <Panel :label="'To-do #' + n" :close="close" :onClose="onClose" :link="link">
@@ -824,12 +834,18 @@ const TodoPanel = {
           <dt>Status</dt><dd><StatusIcon :kind="todoStatus(item.data)"/>{{ STATUS_LABEL[todoStatus(item.data)] }}</dd>
           <dt>Priority</dt>
           <dd v-if="item.data.done"><PriorityIcon :value="item.data.priority"/>{{ priorityName(item.data.priority) }}</dd>
-          <dd v-else class=prio-pick role=group aria-label="Priority">
-            <button v-for="l in LEVELS" :key="l.value" type=button
-              :class="['prio-btn', {on: priorityName(item.data.priority).toLowerCase() === l.value}]" :disabled="saving.on"
-              :title="priorityName(l.n)" :aria-label="priorityName(l.n)" :aria-pressed="priorityName(item.data.priority).toLowerCase() === l.value"
-              @click="setPriority(l)"><PriorityIcon :value="l.n"/></button>
-            <span class=prio-name>{{ priorityName(item.data.priority) }}</span>
+          <dd v-else class=prio-wrap>
+            <button type=button class=prio-current :disabled="saving.on" aria-haspopup=menu :aria-expanded="menu.open"
+              :title="'Priority: ' + priorityName(item.data.priority) + ' (click to change)'" @click="menu.open = !menu.open">
+              <PriorityIcon :value="item.data.priority"/><span>{{ priorityName(item.data.priority) }}</span>
+            </button>
+            <div v-if="menu.open" class=prio-menu role=menu>
+              <button v-for="l in LEVELS" :key="l.value" type=button role=menuitemradio
+                :class="['prio-option', {on: priorityName(item.data.priority).toLowerCase() === l.value}]"
+                :aria-checked="priorityName(item.data.priority).toLowerCase() === l.value" @click="setPriority(l)">
+                <PriorityIcon :value="l.n"/><span>{{ priorityName(l.n) }}</span>
+              </button>
+            </div>
           </dd>
           <dt>Cites</dt><dd><a v-if="item.data.doc" :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a><span v-else class=muted>—</span></dd>
           <dt>Added</dt><dd>{{ item.data.age || '—' }}</dd>
