@@ -443,6 +443,8 @@ status, got = post("/api/env/beta/work/1", {"text": "got halfway"}, method="PATC
 check("update files a note on it", (status, [n["text"] for n in work._all(root, "beta")[0]["notes"]]), (200, ["got halfway"]))
 status, got = post("/api/env/beta/work/1", {}, method="DELETE")
 check("destroy ends it", (status, bool(work._all(root, "beta")[0]["ended"])), (200, True))
+check("an Updated work line in Activity shows the note that was filed",
+      [e["title"] for e in json.loads(get("/api/env/beta/activity")[2])["events"] if e["text"] == "Updated work"], ["got halfway"])
 status, got = post("/api/env/beta/work/1", {"text": "more"}, method="PATCH")
 check("ended work refuses a change", status, 400)
 
