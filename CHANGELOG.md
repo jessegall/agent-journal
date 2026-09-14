@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.22 — Rows fade in and out of lists
+
+Rows used to pop in and out of lists. They now come in and go out smoothly:
+
+- When a list opens, its rows rise and fade in one after another, quickly.
+- A new row, a row moving to another group, and the rows "Show more" adds come in the same way.
+- A row that leaves a list fades out after its moment on screen, and the rows below slide up
+  into its place instead of jumping.
+- An ordinary refresh that changes nothing does not animate.
+
+With reduced motion switched on in your system, rows show and hide instantly as before.
+
 ## 1.131.21 — Home's lists keep their titles beside an open panel
 
 When a panel was open beside Home's lists in a narrow window, the titles disappeared: the

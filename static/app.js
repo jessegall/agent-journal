@@ -644,7 +644,8 @@ const ResourceList = {
     <p v-if="loading && !rows" class=empty>Loading…</p>
     <p v-else-if="error && !rows" class=error>{{ error }}</p>
     <template v-else-if="rows">
-      <template v-for="g in sections" :key="g.key">
+      <TransitionGroup tag="div" class=groups name="group" appear>
+      <div v-for="g in sections" :key="g.key" class=lgroup>
         <div v-if="g.label" class=ghead>
           <StatusIcon v-if="g.kind" :kind="g.kind"/>{{ g.label }}<span class=n>{{ g.total }}</span>
           <span class=sort>
@@ -661,8 +662,9 @@ const ResourceList = {
             </button>
           </span>
         </div>
-        <a v-for="r in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
-          :style="{gridTemplateColumns: cols}" :href="href(r)" @click="open($event, r)">
+        <TransitionGroup tag="div" class=rows name="row" appear>
+        <a v-for="(r, i) in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
+          :style="{gridTemplateColumns: cols, '--i': i}" :href="href(r)" @click="open($event, r)">
           <PriorityIcon v-if="columns.priority" :value="columns.priority(r)"/>
           <StatusIcon v-if="columns.status" :kind="columns.status(r)"/>
           <span v-if="columns.num" class=num>{{ columns.num(r) }}</span>
@@ -670,8 +672,10 @@ const ResourceList = {
           <span v-if="columns.cite" class=cite>{{ columns.cite(r) }}</span>
           <span v-if="columns.age" class=age>{{ columns.age(r) }}</span>
         </a>
+        </TransitionGroup>
         <button v-if="g.rows.length < g.total" type=button class="btn more-rows" @click="more(g.key)">Show {{ Math.min(limit, g.total - g.rows.length) }} more</button>
-      </template>
+      </div>
+      </TransitionGroup>
       <p v-if="!sections.length" class=empty>{{ rows.length && closable && !state.show ? 'Nothing here is open. Switch on “' + showLabel + '” to see the rest.' : empty }}</p>
     </template>`,
 };
