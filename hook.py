@@ -3049,6 +3049,11 @@ def _register(payload: dict, ctx: Ctx) -> str | None:
     """
     if tracks.bound(ROOT, ctx.stem):
         return tracks.current(ROOT, ctx.stem)
+    # a continued or resumed session goes back on the environment it ended on, if that still exists and is free
+    ended_on = state.get(ROOT, "ended_on", "", stem=ctx.stem) if payload.get("source") == "resume" else ""
+    if ended_on in tracks.choices(ROOT) and not tracks.occupants(ROOT, ended_on, ctx.stem):
+        tracks.bind(ROOT, ctx.stem, ended_on)
+        return tracks.current(ROOT, ctx.stem)
     if _track_due(conf_of(payload), ctx):
         return None
     # Registered on the start environment for READS, and bound to it only if the project
@@ -3138,6 +3143,8 @@ def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
     nobody was watching. That is a door left open by a session that has stopped looking,
     which is the exact failure the grant exists to prevent.
     """
+    # remembered so a --continue or --resume of this session starts back on it
+    state.put(ROOT, "ended_on", tracks.bound(ROOT, ctx.stem) or "", stem=ctx.stem)
     tracks.unbind(ROOT, ctx.stem)
     state.put(ROOT, "granted", [], stem=ctx.stem)
     state.put(ROOT, "ended", payload.get("reason") or "exit", stem=ctx.stem)

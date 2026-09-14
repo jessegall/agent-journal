@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.54 — A continued session starts back on its environment
+
+Quitting Claude freed the session's environment, and `claude --continue` or `--resume` then
+started the same session on no environment. The agent had to run `journal switch` again
+before it could write anything, and the channel could not tell which environment it was
+for. Now the environment a session was on when it ended is remembered, and a continued or
+resumed session is put straight back on it, as long as that environment still exists.
+
 ## 1.131.53 — The channel wakes a session that has not picked an environment yet
 
 A session starts on no environment until the agent runs `journal switch`, and the channel
