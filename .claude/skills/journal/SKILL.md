@@ -558,7 +558,8 @@ the user clicks one, or writes their own. When you recommend one, say which with
 number>`: the viewer marks it as the agent's pick, so never write "(my pick)" into the option's
 text. An option that needs explaining gets `--option-description="<why>"`, and one best shown in
 code gets `--option-code="<example>"`, each right after its `--option`, so the label stays one
-short line. A question that makes them read your transcript to
+short line. Never list the choices in the question's own text ("A) … B) …", "1. … 2. …", bullet
+lines): the user cannot click those, and `questions add` refuses it. A question that makes them read your transcript to
 understand it is a question they will answer wrong.
 
 **An answer can change.** The user answers from the viewer or the terminal, and may answer

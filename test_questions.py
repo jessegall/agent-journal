@@ -258,5 +258,16 @@ check("an option stored as a bare string, as older questions have, reads as its 
       [{"label": "8420", "description": "", "code": ""}, {"label": "9000", "description": "", "code": "port = 9000"}])
 j("questions", "withdraw", str(n_cache), "only testing option descriptions")
 
+for title in ("Which way? A) keep it B) drop it", "Which port: 1. 8420 2. 9000", "pick one:\n- vim\n- emacs",
+              "which do you want (a) the fast one (b) the safe one"):
+    code, out = j("questions", "add", title)
+    check(f"a question that lists its choices in its text is refused, pointing at --option: {title[:24]!r}",
+          (code, "--option=" in out, "--description=" in out), (1, True, True))
+for title in ("ship 1.131.85 today, or wait for the 2.0 branch?", "is e.g. the Files page (the one in the sidebar) still needed?"):
+    code, out = j("questions", "add", title)
+    check(f"an ordinary question is not mistaken for a list of choices: {title[:24]!r}", code, 0)
+code, out = j("questions", "edit", "1", "Which? A) this B) that")
+check("rewording a question into a list of choices is refused too", (code, "--option=" in out), (1, True))
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

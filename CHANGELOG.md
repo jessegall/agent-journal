@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.87 — A question that lists its choices in its text is refused
+
+An agent sometimes wrote a question as "Which way? A) keep it B) drop it", which the user can only
+read, not click. `journal questions add` and `questions edit` now refuse a question whose text lists
+choices ("A) … B) …", "1. … 2. …" or bullet lines) and say how to ask it: the question in one line,
+the context in `--description`, and each choice as its own `--option`. The skill says the same.
+
 ## 1.131.86 — Image previews keep their shape; Agent's pick only while choosing
 
 A tall image attached to a message or document was stretched to the panel's width. Previews now keep
