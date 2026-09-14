@@ -60,6 +60,12 @@ def agent_working(root: Path, stem: str) -> bool:
     return state.get(root, "last_event", "", stem=stem) not in ("Stop", "")
 
 
+def agent_compacting(root: Path, stem: str) -> bool:
+    """Is the session compacting its context? PreCompact is its last event until the SessionStart that follows."""
+    import state
+    return state.get(root, "last_event", "", stem=stem) == "PreCompact"
+
+
 def context_use(path: Path | None, window: int) -> dict | None:
     """How full the session's context is, or None when the window or the reading is unknown."""
     import context
@@ -93,6 +99,7 @@ class ActivityController(Controller):
             if info["track"] == env:
                 window = settings.load(root)[0].get("context_window") or state.get(root, "window", 0) or 0
                 return {"session": stem[:8], "seen": tracks.age_text(info["age"]), "working": agent_working(root, stem),
+                        "compacting": agent_compacting(root, stem),
                         "context": context_use(transcript.find(root.parent, stem), window)}
         return None
 

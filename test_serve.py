@@ -888,6 +888,16 @@ for _event, _want in (("PreToolUse", True), ("PostToolUse", True), ("UserPromptS
     check(f"an agent whose last hook event is {_event} reads as {'working' if _want else 'idle'}",
           _activity.agent_working(root, "presence-session"), _want)
 check("an agent with no hook event on record does not read as working", _activity.agent_working(root, "no-such-session"), False)
+state.put(root, "last_event", "PreCompact", stem="presence-session")
+check("an agent whose last hook event is PreCompact reads as compacting, and still as working",
+      (_activity.agent_compacting(root, "presence-session"), _activity.agent_working(root, "presence-session")), (True, True))
+state.put(root, "last_event", "SessionStart", stem="presence-session")
+check("the SessionStart after a compaction ends it", _activity.agent_compacting(root, "presence-session"), False)
+import ast as _ast  # noqa: E402
+_handlers = next(n.value for n in _ast.parse((SRC / "hook.py").read_text()).body
+                 if isinstance(n, _ast.Assign) and getattr(n.targets[0], "id", "") == "HANDLERS")
+check("PreCompact is wired and handled, so the viewer can show an agent compacting",
+      ("PreCompact" in _install.EVENTS, "PreCompact" in [k.value for k in _handlers.keys]), (True, True))
 check("Activity says whether auto mode is on, for the footer's switch",
       isinstance(json.loads(get("/api/env/alpha/activity")[2]).get("auto"), bool), True)
 status, headers, body = get("/help/pins.md")
