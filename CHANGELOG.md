@@ -4,6 +4,23 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.20 — The write gate sees writes run through git options, xargs and find, and lets reads saved to temp files through
+
+The gate that refuses writes while no work is open judged each command by its first word, so some
+writes passed as reads and some reads were refused. An agent refused for `rm` could learn the ways
+around it.
+
+- Now writes: `git -C dir commit` and other git options before the subcommand; `git clean`, `merge`,
+  `rebase`, `cherry-pick`, `revert`, `am`, `pull` and `switch`; `git stash` and `git worktree` unless they
+  only list or show; `xargs rm` and anything else `xargs` runs that writes; `find` with `-delete`, or with
+  `-exec`, `-execdir` or `-ok` running a write; `sed -i.bak` and `--in-place`; `perl -pi` and `-i`.
+- Now reads: a read whose output is redirected into a temporary or scratch folder (`/tmp`,
+  `/private/tmp`, `/var/folders`), such as `grep … > /tmp/out.txt` or `journal todos > /tmp/t.txt`.
+- A session whose environment was claimed away can no longer carry a write past its refusal by starting
+  the line with a journal decision.
+
+`python3 -c` is still not judged: its script is quoted text, which the gate does not read.
+
 ## 1.136.19 — The context gate starts over after a compaction, and journal lines are judged fairly
 
 - A context warning that was still waiting for a decision when the window compacted refused the first tool

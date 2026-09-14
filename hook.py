@@ -1371,7 +1371,16 @@ WRITE_CMDS = frozenset({
 })
 
 #: `git` is only a write in some of its moods.
-WRITE_GIT = frozenset({"commit", "apply", "checkout", "reset", "restore", "rm", "mv", "add"})
+WRITE_GIT = frozenset({"commit", "apply", "checkout", "reset", "restore", "rm", "mv", "add",
+                       "clean", "merge", "rebase", "cherry-pick", "revert", "am", "pull", "switch"})
+#: git subcommands that write unless they only list or show
+WRITE_GIT_UNLESS_READ = frozenset({"stash", "worktree"})
+#: git options that come before the subcommand and take a value
+_GIT_VALUED = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace"})
+#: where a redirect writes nothing the project owns: scratch and temporary files
+_SCRATCH_DIRS = ("/tmp/", "/private/tmp/", "/var/folders/", "/private/var/folders/")
+#: perl's in-place flag, alone or bundled: -i, -i.bak, -pi, -pie
+_PERL_INPLACE = re.compile(r"^-[A-Za-z]*i")
 
 #: Where one command ends and the next begins. A write anywhere in a chain is a write.
 _SPLIT = re.compile(r"[;&|]+|\n")
@@ -1406,6 +1415,10 @@ def _piece_is_write(words: list[str]) -> bool:
         # read.
         if target.startswith("@") or target.startswith("/dev/null"):
             continue
+        # A READ SAVED TO A SCRATCH FILE CHANGES NOTHING THE PROJECT OWNS. `grep … > /tmp/out`
+        # was refused as a write, under a message that says reads are never gated.
+        if target.startswith(_SCRATCH_DIRS):
+            continue
         return True
     verb = words[0]
     if _is_journal_verb(verb):
@@ -1415,10 +1428,35 @@ def _piece_is_write(words: list[str]) -> bool:
         return False
     if verb in WRITE_CMDS:
         return True
-    if verb == "sed" and "-i" in words:
+    # A COMMAND RUN BY ANOTHER COMMAND IS STILL THAT COMMAND. `ls | xargs rm` and
+    # `find . -exec rm {} \;` were reads by their first word, and an agent refused for `rm`
+    # learned they went through.
+    if verb == "xargs":
+        i = 1
+        while i < len(words) and (words[i].startswith("-") or words[i].isdigit()):
+            i += 1
+        return _piece_is_write(words[i:])
+    if verb == "find":
+        if "-delete" in words:
+            return True
+        for flag in ("-exec", "-execdir", "-ok"):
+            if flag in words:
+                return _piece_is_write([w for w in words[words.index(flag) + 1:] if w not in ("{}", "\\", ";", "+")])
+        return False
+    if verb == "sed" and any(w.startswith("-i") or w == "--in-place" for w in words[1:]):
         return True
-    if verb == "git" and len(words) > 1 and words[1] in WRITE_GIT:
+    if verb == "perl" and any(_PERL_INPLACE.match(w) for w in words[1:]):
         return True
+    if verb == "git":
+        # `git -C sub commit`: the subcommand is the first word that is not an option or its value
+        i = 1
+        while i < len(words) and words[i].startswith("-"):
+            i += 2 if words[i] in _GIT_VALUED else 1
+        sub = words[i] if i < len(words) else ""
+        if sub in WRITE_GIT:
+            return True
+        if sub in WRITE_GIT_UNLESS_READ:
+            return not (i + 1 < len(words) and words[i + 1] in ("list", "show"))
     return False
 
 
@@ -3291,7 +3329,7 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
             verb = _journal_write(payload)
             if verb and verb not in ("switch", "prepare"):
                 return _deny(say("unregistered_deny", verb=verb, block=_taken_block(due)))
-            if _is_write(payload) and not _is_journal(payload):
+            if _is_write(payload) and not _journal_only(payload):
                 return _deny(_taken_block(due))
             return 0
         if handler is on_stop:

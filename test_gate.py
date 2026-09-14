@@ -51,6 +51,14 @@ READS = [
     '.journal/journal.py pin "y"',
     'journal todo "park this" --brief <<\'EOF\'\nwhy and where\nEOF',
     'journal todo "park this" && journal open && git status',
+    'grep -rn foo . > /tmp/out.txt',
+    'grep -c a f 2> /private/tmp/err.log',
+    'journal todos > /tmp/t.txt',
+    'git stash list',
+    'git worktree list',
+    'find . -name "*.py" -exec grep -l foo {} \;',
+    'ls | xargs wc -l',
+    'git -C sub status',
 ]
 
 WRITES = [
@@ -75,6 +83,15 @@ WRITES = [
     # A JOURNAL COMMAND EXEMPTS ITSELF, NOT THE LINE. These were waved through entirely.
     'journal todo "x" && rm -rf build',
     'git add -A && journal end "w"',
+    'git -C sub commit -m x',
+    'git clean -fdx',
+    'git stash && git merge main',
+    'git worktree add ../wt',
+    'ls | xargs rm',
+    'find . -name "*.pyc" -exec rm {} \;',
+    'find . -name "*.pyc" -delete',
+    'sed -i.bak s/a/b/ f.py',
+    "perl -pi -e 's/a/b/' f.py",
 ]
 
 ok = fail = 0
