@@ -58,7 +58,7 @@ DETAIL = {"todos:priority": "value", "reports:keep": "days", "switch:": "name", 
 HOOKS = {"todos:from-commit"}
 # lines that introduce something, so Activity shows its title under them; reads and closes do not repeat it
 TITLED = {"questions:add", "reports:add", "docs:add", "suggestions:add", "suggest:", "pins:add", "rules:add",
-          "reminders:add", "notifications:add", "ideas:add", "comments:add"}
+          "reminders:add", "notifications:add", "comments:add"}
 
 # noun:verb -> the line shown in Activity; "noun:" is a command with no verb; {n} is its number argument
 DESCRIBE = {
@@ -82,7 +82,7 @@ DESCRIBE = {
     "todos:block": "Marking to-do {n} blocked",
     "todos:move": "Moving to-do {n}",
     "messages:list": "Reading messages",
-    "messages:waiting": "Reading waiting messages",
+    "messages:waiting": "Checking for new messages",
     "messages:show": "Reading message {n}",
     "messages:process": "Filing message {n}",
     "messages:done": "Marking message {n} processed",
@@ -186,10 +186,6 @@ DESCRIBE = {
     "suggestions:accept": "Accepting suggestion {n}",
     "suggestions:adjust": "Adjusting suggestion {n}",
     "suggestions:decline": "Declining suggestion {n}",
-    "ideas:list": "Reading ideas",
-    "ideas:add": "Writing an idea",
-    "ideas:drop": "Dropping idea {n}",
-    "ideas:promote": "Turning idea {n} into a to-do",
     "docs:": "Reading a document",
     "docs:files": "Reading document {n}'s files",
     "docs:part": "Adding a part to document {n}",
@@ -234,7 +230,7 @@ DESCRIBE = {
 
 
 # wording that changed: lines already logged read the new wording
-RENAMED = {"Reading your messages": "Reading messages"}
+RENAMED = {"Reading your messages": "Reading messages", "Reading waiting messages": "Checking for new messages"}
 
 
 def describe(noun: str, verb: str) -> str:

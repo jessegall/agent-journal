@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.0 — The ideas command is gone
+
+`journal ideas` (add, list, drop, promote) and `journal idea` are removed, with their help,
+their Activity lines and their tests, as the user decided. Ideas already written stay in the
+record untouched; nothing reads them anymore. A stray thought now goes where it fits: a
+to-do when it is work, a pin or a note in a message when it is not.
+
+Running `journal messages waiting` shows in Activity as "Checking for new messages"; lines
+logged as "Reading waiting messages" show the new wording too.
+
 ## 1.130.1 — The agent hears about new comments between stops
 
 A comment the user adds is now mentioned to the agent after its next tool call, the same way

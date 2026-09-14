@@ -967,7 +967,7 @@ J = str(d / ".journal" / "journal.py")
 env = {**os.environ, transcript.SESSION_ENV: "s1"}
 subprocess.run([J, "pin", "a pin of the environment"], env=env, capture_output=True, timeout=180)
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
-                      tool_input={"command": f"{J} ideas add 'from a subagent'"})
+                      tool_input={"command": f"{J} todos add 'from a subagent'"})
 check("a subagent's journal write is refused, and told why",
       ("deny" in out, "the journal is the main" in out), (True, True))
 code, out, err = fire(d, "PreToolUse", path, agent_id="abc", tool_name="Bash",
