@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.8 — The agent page's Skills table scrolls
+
+A project with many skills made the agent page's Skills table run on down the page. It now scrolls
+inside its own height, with its header row staying in view.
+
 ## 1.136.7 — The package follows its own coding style where it was quick to
 
 - `say()` in `reminders.py` and `work.py` now takes its message name positional-only, like every other

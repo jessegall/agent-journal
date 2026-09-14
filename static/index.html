@@ -566,6 +566,10 @@
   .agent-work.dispatched .num { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .agent-work.skills .agent-work-head, .agent-work.skills .agent-work-row { grid-template-columns: minmax(0, 1fr) 90px 90px; }
   .agent-work.skills div.agent-work-row { color: var(--text-2); }
+  /* a project can carry many skills: the table scrolls inside its own height, its header staying in view */
+  .agent-work.skills { max-height: 420px; overflow-y: auto; }
+  .agent-work.skills .agent-work-head, .agent-work.skills .agent-work-row { flex: none; }
+  .agent-work.skills .agent-work-head { position: sticky; top: 0; z-index: 1; }
   .skill-always { margin-left: 8px; padding: 0 6px; border: 1px solid var(--border-2); border-radius: 4px; font-size: 10.5px; color: var(--text-3); }
   .skill-actions { display: flex; flex-wrap: wrap; gap: 8px; }
   .panel-link { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; margin-left: -8px; border-radius: 6px;
