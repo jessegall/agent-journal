@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.111.1 — session start is fast again
+
+Session start took several seconds on machines with many Claude projects: looking up a session
+whose transcript was not in this project's folder searched every folder under
+`~/.claude/projects`. It now checks this project and this repository's other checkouts only, so a
+lookup takes milliseconds and session start about 200 ms. The test suites write their fake
+transcripts to a temporary folder instead of `~/.claude/projects`. A failed update check now waits
+fifteen minutes before trying again, so an unreachable GitHub no longer slows every stop.
+
 ## 1.111.0 — anything closed more than 30 days ago is removed
 
 Once an hour, each session sweeps its environment: ended work, processed or archived messages,

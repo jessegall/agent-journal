@@ -123,7 +123,9 @@ def check(root: Path, force: bool = False) -> dict:
         return cached
     version = _fetch(f"{RAW}/VERSION", timeout=2.0)
     if version is None:
+        # a failed check waits the same fifteen minutes, or every hook event pays the timeout while GitHub is unreachable
         cached.setdefault("version", "")
+        cached["at"] = time.time()
     else:
         version = version.strip()
         # THE CHANGELOG IS 124KB AND IS ONLY READABLE WHEN THERE IS SOMETHING TO READ. It
