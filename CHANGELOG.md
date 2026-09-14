@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.108.1 — an activity row opens what it is about
+
+A row in the sidebar's Activity section that is about a to-do, question, message or piece of
+work is now a link to it. Work events carry the number of the work they are about, so "Started
+work", its notes and "Ended work" open that work. Rows about nothing with a page stay plain text.
+
 ## 1.108.0 — reports archive themselves after a set number of days
 
 A report older than the environment's setting — 30 days unless changed — is off the reports

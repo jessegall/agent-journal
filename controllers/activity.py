@@ -59,11 +59,11 @@ class ActivityController(Controller):
             if at:
                 out.append({"at": at, "kind": kind, "n": n, "text": text})
 
-        for w in work._all(root, env):
-            add(w.get("at"), "work", say("work_started", subject=w["subject"]))
+        for wn, w in enumerate(work._all(root, env), 1):
+            add(w.get("at"), "work", say("work_started", subject=w["subject"]), wn)
             for note in w.get("notes") or []:
-                add(note.get("at"), "work", say("work_note", text=note.get("text", "")))
-            add(w.get("ended"), "work", say("work_ended", subject=w["subject"]))
+                add(note.get("at"), "work", say("work_note", text=note.get("text", "")), wn)
+            add(w.get("ended"), "work", say("work_ended", subject=w["subject"]), wn)
         for t in todo._all(root, env):
             add(t.get("at"), "todo", say("todo_added", n=t["n"], title=t.get("title", "")), t["n"])
             add(t.get("done"), "todo", say("todo_closed", n=t["n"], title=t.get("title", "")), t["n"])
