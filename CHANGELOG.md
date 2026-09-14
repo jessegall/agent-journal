@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.14 — The Auto mode row matches the Agent row
+
+In the sidebar footer the Auto mode label was larger and brighter than the Agent label above
+it, and its divider was darker. It is now smaller and the same muted colour, and its divider
+matches the one under Agent.
+
 ## 1.131.13 — Updated work in Activity shows what moved
 
 An "Updated work" line in Activity named only the work's number. It now shows the note the
