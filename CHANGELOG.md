@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.37 — Remove a file from a message
+
+A file attached to a message could be filed into a document or kept, but not taken off. Each
+file in a message's panel now has a **Remove** button that asks why, and the terminal has
+`journal messages detach <n> <name> "<why>"`. The file is not deleted: it moves to a `struck`
+folder beside the message's other files. The message still lists it, marked as removed with
+your reason. A removed file no longer counts as waiting to be filed, and it leaves the Files
+page.
+
 ## 1.131.36 — Every stored file in one place
 
 Files lived in two places you had to open one by one: attached to a message, or attached

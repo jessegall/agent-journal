@@ -24,6 +24,7 @@ PAGE = {
                  ("journal messages show <n>", "read one, with what it became"),
                  ('journal messages process <n> --part="<words>" --became=<ref>', "record a part"),
                  ('journal messages file <n> <name> "doc <doc>"', "file an attached file into a doc, or keep it"),
+                 ('journal messages detach <n> <name> "<why>"', "take a file off a message; it is kept under struck/"),
                  ("journal messages done <n>", "mark it processed"),
                  ('journal messages move <n> "<environment>"', "carry a waiting one to another environment")),
 }
@@ -98,6 +99,14 @@ class File(Resource):
     action = "file"
 
 
+class Detach(Resource):
+    signature = "messages:detach {n : a message number} {name : the attached file} {why* : why it is removed}"
+    casts = MESSAGE
+    writes = True
+    controller = CONTROLLER
+    action = "detach"
+
+
 class Edit(Resource):
     signature = "messages:edit {n : a message number} {text* : the message, reworded}"
     casts = MESSAGE
@@ -146,4 +155,4 @@ class Move(Resource):
     action = "move"
 
 
-COMMANDS = (List, Show, Waiting, Add, Edit, Process, File, Done, Reply, Archive, Move)
+COMMANDS = (List, Show, Waiting, Add, Edit, Process, File, Detach, Done, Reply, Archive, Move)

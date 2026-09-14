@@ -76,6 +76,11 @@ MESSAGES = {
     "file_where": 'say where it goes: journal messages file {n} {name} "doc <doc>" — or keep',
     "filed_doc": "{name} of message {n} is filed into doc {doc}\n  {path}",
     "filed_kept": "{name} of message {n} is kept where it is\n  {path}",
+    "detach_why": 'say why it is removed: journal messages detach {n} {name} "<why>"',
+    "detach_in_doc": "{name} of message {n} is filed into doc {doc}; remove it there: journal docs detach {doc} {name} \"<why>\"",
+    "already_removed": "{name} of message {n} is already removed: {why}",
+    "detached": "{name} is removed from message {n}: {why}\n  kept at {path}",
+    "filed_label_removed": "removed: {why}",
     "filed_label_doc": "filed into doc {doc}",
     "filed_label_kept": "kept",
     "filed_label_none": "not filed yet",
@@ -235,7 +240,36 @@ def add(root: Path, text: str, at: str, source: str = "cli", track: str | None =
 
 
 def unfiled(m: dict) -> list[str]:
-    return [f["name"] for f in m.get("files") or [] if not f.get("filed")]
+    return [f["name"] for f in m.get("files") or [] if not f.get("filed") and not f.get("removed")]
+
+
+def detach(root: Path, n: int, name: str, why: str, at: str, track: str | None = None) -> tuple[bool, str]:
+    """Take a held file off a message: it moves to a struck folder beside the others, and the message keeps why."""
+    why = " ".join((why or "").split())
+    if not why:
+        return False, say("detach_why", n=n, name=name)
+    here = track or state.current_track(root)
+    with state.locked(root):
+        items = _all(root, here)
+        m, err = _find(items, n)
+        if m is None:
+            return False, err
+        f = next((x for x in m.get("files") or [] if x["name"] == name), None)
+        if f is None:
+            return False, say("no_file", n=n, name=repr(name))
+        if f.get("removed"):
+            return False, say("already_removed", n=n, name=name, why=f["removed"])
+        if str(f.get("filed") or "").startswith("doc:"):
+            return False, say("detach_in_doc", n=n, name=name, doc=f["filed"][4:])
+        held = files_dir(root, here, n)
+        struck = held / "struck"
+        struck.mkdir(parents=True, exist_ok=True)
+        dst = struck / _file_name(name, {p.name for p in struck.iterdir()})
+        if (held / name).exists():
+            (held / name).rename(dst)
+        f["removed"], f["removed_at"] = why, at
+        _put(root, items, here)
+    return True, say("detached", n=n, name=name, why=why, path=dst.relative_to(root.parent))
 
 
 def file_into(root: Path, n: int, name: str, into: str, at: str, track: str | None = None) -> tuple[bool, str]:
@@ -279,6 +313,8 @@ def file_into(root: Path, n: int, name: str, into: str, at: str, track: str | No
 
 
 def _filed_label(f: dict) -> str:
+    if f.get("removed"):
+        return say("filed_label_removed", why=f["removed"])
     filed = f.get("filed") or ""
     if filed.startswith("doc:"):
         return say("filed_label_doc", doc=filed[4:])
@@ -498,7 +534,8 @@ def row_response(n: int, m: dict) -> dict:
         "moved_to": m.get("moved_to") or "",
         "age": age(m.get("at", "")), "processed_age": age(m.get("processed") or ""),
         "source": m.get("source") or "",
-        "files": [{"name": f["name"], "size": f.get("size", 0), "filed": f.get("filed") or "", "filed_label": _filed_label(f)}
+        "files": [{"name": f["name"], "size": f.get("size", 0), "filed": f.get("filed") or "", "filed_label": _filed_label(f),
+                   "removed": f.get("removed") or ""}
                   for f in m.get("files") or []],
         "parts": [{"excerpt": p["excerpt"], "became": [{"ref": r, "label": label(r)} for r in p["became"]]}
                   for p in m.get("parts") or []],

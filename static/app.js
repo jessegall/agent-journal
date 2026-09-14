@@ -1055,7 +1055,26 @@ const MessagePanel = {
       ];
     });
     const done = panelDone(props, item);
-    return { item, actions, done, heldUrl, isImage };
+    // taking one file off the message: it asks why, and the file is kept under struck/
+    const removing = reactive({ name: "", why: "", busy: false, error: "" });
+    const startRemove = (f) => Object.assign(removing, { name: f.name, why: "", busy: false, error: "" });
+    const cancelRemove = () => { removing.name = ""; removing.error = ""; };
+    const confirmRemove = async () => {
+      if (!removing.why.trim() || removing.busy || !item.data) return;
+      removing.busy = true;
+      removing.error = "";
+      try {
+        await postJSON(`${api.value}/${item.data.n}/detach`, { name: removing.name, why: removing.why });
+        removing.name = "";
+        item.reload();
+        changed();
+      } catch (err) {
+        removing.error = err.message;
+      } finally {
+        removing.busy = false;
+      }
+    };
+    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove };
   },
   template: `
     <Panel :label="'Message #' + n" :close="close" :onClose="onClose" :link="link">
@@ -1072,13 +1091,28 @@ const MessagePanel = {
           <p class=section-label>Files</p>
           <div class=files>
             <template v-for="f in item.data.files" :key="f.name">
-              <a v-if="!f.filed.startsWith('doc:')" class=file-row :href="heldUrl(item.data, f)" target=_blank rel=noopener>
+              <div v-if="f.removed" class="file-row removed">
+                <span class=file-name :title="f.name">{{ f.name }}</span><span class=file-meta :title="f.filed_label">{{ f.filed_label }} · {{ $human(f.size) }}</span>
+              </div>
+              <a v-else-if="f.filed.startsWith('doc:')" class=file-row :href="'#/docs/' + f.filed.slice(4)">
                 <span class=file-name>{{ f.name }}</span><span class=file-meta>{{ f.filed_label }} · {{ $human(f.size) }}</span>
               </a>
-              <a v-else class=file-row :href="'#/docs/' + f.filed.slice(4)">
-                <span class=file-name>{{ f.name }}</span><span class=file-meta>{{ f.filed_label }} · {{ $human(f.size) }}</span>
-              </a>
-              <img v-if="isImage(f.name) && !f.filed.startsWith('doc:')" class=file-preview :src="heldUrl(item.data, f)" :alt="f.name" loading=lazy>
+              <template v-else>
+                <div class=file-held>
+                  <a class=file-row :href="heldUrl(item.data, f)" target=_blank rel=noopener>
+                    <span class=file-name>{{ f.name }}</span><span class=file-meta>{{ f.filed_label }} · {{ $human(f.size) }}</span>
+                  </a>
+                  <button v-if="removing.name !== f.name" type=button class=btn :aria-label="'Remove ' + f.name" @click="startRemove(f)">Remove</button>
+                </div>
+                <form v-if="removing.name === f.name" class=file-remove @submit.prevent="confirmRemove">
+                  <input v-model="removing.why" :placeholder="'Why remove ' + f.name + '?'" :aria-label="'Why remove ' + f.name" :disabled="removing.busy"
+                    @keydown.esc.prevent="cancelRemove" @vue:mounted="({ el }) => el.focus()">
+                  <button type=submit class="btn danger" :disabled="removing.busy || !removing.why.trim()">Remove</button>
+                  <button type=button class=btn :disabled="removing.busy" @click="cancelRemove">Cancel</button>
+                </form>
+                <p v-if="removing.name === f.name && removing.error" class=error>{{ removing.error }}</p>
+                <img v-if="isImage(f.name)" class=file-preview :src="heldUrl(item.data, f)" :alt="f.name" loading=lazy>
+              </template>
             </template>
           </div>
         </div>
