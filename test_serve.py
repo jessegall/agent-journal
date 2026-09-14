@@ -822,6 +822,20 @@ _w_beta.append({"subject": "work opened by that session", "at": "2026-09-14T10:0
 state.put_tracked(root, "work", "beta", _w_beta)
 check("a session's page lists the work it opened, which records the transcript file rather than the bare id",
       [w["subject"] for w in _agc.AgentController._about(root, "beta", "session", _sess, None)["work"]], ["work opened by that session"])
+(project / ".claude" / "skills" / "demo-skill").mkdir(parents=True, exist_ok=True)
+(project / ".claude" / "skills" / "demo-skill" / "SKILL.md").write_text('---\nname: demo-skill\ndescription: "Use it for demos."\n---\n\n# Demo\n\nthe body\n')
+_sk_tx = project / "skills-transcript.jsonl"
+_sk_tx.write_text("\n".join(json.dumps({"type": "assistant", "timestamp": "2026-09-14T10:00:0%d+00:00" % i,
+    "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": name}}]}}) for i, name in enumerate(["demo-skill", "loop", "demo-skill"])) + "\n")
+_sk_rows = {r["name"]: r for r in _agc.AgentController._about(root, "beta", "session", _sess, _sk_tx)["skills"]}
+check("the agent page lists the project's skills and how often the session loaded each, from its transcript",
+      (_sk_rows["demo-skill"]["source"], _sk_rows["demo-skill"]["loaded"], _sk_rows["demo-skill"]["readable"]), ("project", 2, True))
+check("a skill it loaded that has no file here is listed as built in, and cannot be opened",
+      (_sk_rows["loop"]["source"], _sk_rows["loop"]["loaded"], _sk_rows["loop"]["readable"]), ("built in", 1, False))
+_sk_status, _, _sk_body = get("/api/skills/demo-skill")
+check("a skill's text is read by name, read-only", (_sk_status, "the body" in json.loads(_sk_body).get("text", "")), (200, True))
+check("a name that is not a skill on disk is not found, and a path is not a name",
+      (get("/api/skills/nope")[0], get("/api/skills/..%2F..%2Fetc")[0]), (404, 404))
 import agents as _agents  # noqa: E402
 commandlog.record_dispatch(root, "alpha", "dispatch-stem", "  review   the diff ", "2099-01-01T00:00:08+00:00")
 check("handing work to a subagent is its own Activity line, with the dispatcher's description",

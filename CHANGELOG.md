@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.8 — The agent page lists the skills
+
+An agent's page has a read-only Skills section. It lists every skill on disk, this project's and your
+own, with where each comes from and how often that session loaded it. The count comes from the Skill
+tool calls in its transcript. A skill it loaded that has no file here, such as `loop`, is listed as
+built in. A skill with a file opens on its own read-only page. Skills are changed in their SKILL.md
+files, not through the journal.
+
 ## 1.134.7 — A test holds the model rule in every CLAUDE.md
 
 Nothing changes for projects. Every install and upgrade already writes the journal's rules, with the
