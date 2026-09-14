@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.21 — Home's lists keep their titles beside an open panel
+
+When a panel was open beside Home's lists in a narrow window, the titles disappeared: the
+columns for what a row is about and its age kept their full width, leaving the title no room.
+Home's lists now narrow those columns the way the other list pages already did, so the title
+stays readable.
+
 ## 1.131.20 — Home uses the full width until you pick something
 
 On Home an empty inspector panel took up the right side even when nothing was picked. The
