@@ -886,13 +886,13 @@ const REMINDER_LIST = {
   count: (rows) => `${rows.filter((r) => !r.struck).length} standing`,  empty: "Nothing is being repeated.", name: "reminders",
 };
 const DOC_LIST = {
-  groups: [{ key: "draft", label: "Draft", kind: "open", match: (d) => !d.superseded_by && d.status !== "final" },
-           { key: "final", label: "Final", kind: "done", match: (d) => !d.superseded_by && d.status === "final" },
-           { key: "superseded", label: "Superseded", kind: "withdrawn", match: (d) => d.superseded_by },
+  groups: [{ key: "draft", label: "Draft", kind: "open", match: (d) => !d.archived && !d.superseded_by && d.status !== "final" },
+           { key: "final", label: "Final", kind: "done", match: (d) => !d.archived && !d.superseded_by && d.status === "final" },
+           { key: "superseded", label: "Superseded", kind: "withdrawn", match: (d) => !d.archived && d.superseded_by },
            { key: "archived", label: "Archived", kind: "withdrawn", match: (d) => d.archived && !d.superseded_by }],
   columns: { num: (d) => `#${d.n}`, title: (d) => d.title, sub: (d) => d.abstract, age: (d) => d.age, struck: (d) => d.superseded_by,
              cite: (d) => (d.attachments ? (d.attachments === 1 ? "1 file" : `${d.attachments} files`) : "") },
-  count: (rows) => `${rows.filter((d) => !d.archived).length} catalogued`, name: "docs",
+  count: (rows) => (rows.length && rows.every((d) => d.archived) ? `${rows.length} archived` : `${rows.length} catalogued`), name: "docs",
 };
 const TOOL_LIST = {
   groups: [{ key: "tools", label: "Catalogued", match: () => true }],
@@ -1716,9 +1716,12 @@ const Reminders = {
 function docList({ crumbs, url, base, empty }) {
   return {
     props: ["env", "n"],
-    components: { TopBar, ActionBar, ResourceList },
+    components: { TopBar, ActionBar, ResourceList, RadioGroup },
     setup(props) {
       const s = useFetch(() => url(props));
+      // open and archived documents are shown apart, one or the other
+      const shown = reactive({ archived: false });
+      const rows = computed(() => (s.data ? s.data.filter((d) => !!d.archived === shown.archived) : null));
       const creating = computed(() => [{
         label: "New doc", method: "POST", url: url(props), submit: "Add doc", leave: true,
         follow: (body) => { const m = /doc (\d+)/.exec(body.message || ""); return m ? `#/docs/${m[1]}` : null; },
@@ -1726,14 +1729,20 @@ function docList({ crumbs, url, base, empty }) {
                  { name: "body", label: "Text", kind: "area" }],
       }]);
       const done = (body, a) => settle(body, a, base(props), s);
-      return { s, creating, done, crumbs: computed(() => crumbs(props)), base: computed(() => base(props)), empty, DOC_LIST };
+      return { s, rows, shown, creating, done, crumbs: computed(() => crumbs(props)), base: computed(() => base(props)), empty, DOC_LIST };
     },
     template: `
       <TopBar :crumbs="crumbs"/>
       <div class=body><div class=list>
         <div v-if="n === 'new'" class=compose-wrap><ActionBar :actions="creating" open="New doc" :done="done"/></div>
-        <ResourceList v-bind="DOC_LIST" :empty="empty" :rows="s.data" :loading="s.loading" :error="s.error" :href="(d) => '#/docs/' + d.n">
-          <template #tools><a class="btn new" :href="base + '/new'">New doc</a></template>
+        <ResourceList v-bind="DOC_LIST" :key="shown.archived ? 'archived' : 'open'"
+          :empty="shown.archived ? 'No documents here are archived.' : empty" :rows="rows"
+          :loading="s.loading" :error="s.error" :href="(d) => '#/docs/' + d.n">
+          <template #tools>
+            <RadioGroup label="Which documents" :options="[{ value: 'open', label: 'Open' }, { value: 'archived', label: 'Archived' }]"
+              :modelValue="shown.archived ? 'archived' : 'open'" @update:modelValue="(v) => (shown.archived = v === 'archived')"/>
+            <a class="btn new" :href="base + '/new'">New doc</a>
+          </template>
         </ResourceList>
       </div></div>`,
   };

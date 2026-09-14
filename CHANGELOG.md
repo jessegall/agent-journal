@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.73 — Documents show open or archived, not both
+
+The Documents pages, for the project and for an environment, listed archived documents in among
+the open ones. An archived project document then sat with the project documents, which read as if
+archiving had moved it there. It had not: archiving never changes which environment a document
+belongs to. Both pages now have an Open / Archived switch beside New doc, and show one or the
+other.
+
 ## 1.131.72 — Row highlights on Home keep a straight edge in the middle of a list
 
 When a row on Home was highlighted, because it was new or had just moved, the highlight had
