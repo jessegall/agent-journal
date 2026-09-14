@@ -52,13 +52,15 @@ def loaded(path: Path | None) -> dict[str, dict]:
     return got
 
 
-def rows(project: Path, path: Path | None) -> list[dict]:
+def rows(project: Path, path: Path | None, every_start: list[str] | None = None) -> list[dict]:
     """Every skill on disk with how often this session loaded it, then loaded ones that have no file here."""
     used = loaded(path)
+    wanted = set(every_start or [])
     out = [{"name": s["name"], "description": s["description"], "source": s["source"],
-            "loaded": used.get(s["name"], {}).get("count", 0), "readable": True} for s in available(project)]
+            "loaded": used.get(s["name"], {}).get("count", 0), "readable": True, "always": s["name"] in wanted}
+           for s in available(project)]
     known = {r["name"] for r in out}
-    out += [{"name": n, "description": "", "source": "built in", "loaded": u["count"], "readable": False}
+    out += [{"name": n, "description": "", "source": "built in", "loaded": u["count"], "readable": False, "always": n in wanted}
             for n, u in sorted(used.items()) if n not in known]
     return out
 
@@ -72,3 +74,21 @@ def find(project: Path, name: str) -> dict | None:
             return {"name": s["name"], "description": s["description"], "source": s["source"],
                     "text": s["path"].read_text(errors="replace")}
     return None
+
+
+ALWAYS = "always_load_skills"
+
+
+def always(root: Path) -> list[str]:
+    """The skills the user asked every session to load at its start."""
+    import state
+    got = state.get(root, ALWAYS, [])
+    return [str(x) for x in got] if isinstance(got, list) else []
+
+
+def set_always(root: Path, name: str, on: bool) -> list[str]:
+    import state
+    with state.locked(root):
+        now = [x for x in always(root) if x != name] + ([name] if on else [])
+        state.put(root, ALWAYS, now)
+    return now

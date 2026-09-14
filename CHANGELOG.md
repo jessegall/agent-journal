@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.134.15 — Ask the agent to load a skill, now or at every start
+
+A skill's page has two buttons. "Ask the agent to load it now" leaves the agent a message to load that
+skill, and it gets it at its next stop, or at once if it is idle. "Load it at every start" puts the
+skill in the block every session is given when it starts, with the words LOAD THESE SKILLS NOW. The
+same button takes it off again. The page says whether a skill loads at every start, and the agent
+page's Skills table marks those with "every start". A skill page now opens under its environment,
+`#/env/<name>/skills/<skill>`.
+
 ## 1.134.14 — No more nameless subagents with nothing to open
 
 The agents lists and pages showed subagents with no name, no model and no transcript. They were the

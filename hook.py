@@ -228,6 +228,7 @@ MESSAGES = {
                     '  .journal/journal.py nothing "<why nothing here needs pinning>"\nNothing is the right answer more '
                     "often than not — say so and carry on. `journal search`, `journal conversation --back=1` and "
                     "`journal pins` still run, to decide with.",
+    "always_skills": "LOAD THESE SKILLS NOW — the user asked for them at every start: {names}.",
     "model_denied": "A subagent dispatch must name its model — rule B1, the journal's own: add `model`, haiku for "
                     "mechanical work with a known answer, sonnet for care without invention, opus only where the task "
                     "turns on judgement. A fork, which cannot take a model, and an agent whose own definition sets one "
@@ -2872,6 +2873,11 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
     shipped = builtin.carry(brief=short)
     if shipped:
         parts.append(shipped)
+    # SKILLS THE USER WANTS AT EVERY START, set on a skill's page in the viewer
+    import skills
+    wanted = skills.always(ROOT)
+    if wanted:
+        parts.append(say("always_skills", names=", ".join(f"`{n}`" for n in wanted)))
     # REMINDERS ARE NOT INJECTED AT A START. They fire at every stop and every
     # `reminder_every` tool calls, so putting them here pays for the same text twice — and
     # they were the second-largest thing in a block that had stopped being delivered at all.

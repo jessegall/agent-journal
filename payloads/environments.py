@@ -8,6 +8,8 @@ class SettingsPayload(Payload):
     reports_archive_days = Field(int)
     activity_show = Field(int)
     activity_keep = Field(int)
+    always_load = Field(str)
+    always_on = Field(bool)
 
 
 class RemovePayload(Payload):

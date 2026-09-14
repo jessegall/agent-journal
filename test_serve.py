@@ -836,6 +836,12 @@ _sk_status, _, _sk_body = get("/api/skills/demo-skill")
 check("a skill's text is read by name, read-only", (_sk_status, "the body" in json.loads(_sk_body).get("text", "")), (200, True))
 check("a name that is not a skill on disk is not found, and a path is not a name",
       (get("/api/skills/nope")[0], get("/api/skills/..%2F..%2Fetc")[0]), (404, 404))
+_st, _ = post("/api/env/alpha/environment/settings", {"always_load": "demo-skill", "always_on": True})
+check("a skill can be set to load at every start, through the settings route",
+      (_st, json.loads(get("/api/skills/demo-skill")[2])["always"]), (200, True))
+_st, _ = post("/api/env/alpha/environment/settings", {"always_load": "demo-skill", "always_on": False})
+check("and taken off again", (_st, json.loads(get("/api/skills/demo-skill")[2])["always"]), (200, False))
+check("a skill that is not on disk cannot be set to load", post("/api/env/alpha/environment/settings", {"always_load": "nope"})[0] >= 400, True)
 import agents as _agents  # noqa: E402
 commandlog.record_dispatch(root, "alpha", "dispatch-stem", "  review   the diff ", "2099-01-01T00:00:08+00:00")
 check("handing work to a subagent is its own Activity line, with the dispatcher's description",
