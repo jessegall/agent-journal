@@ -464,6 +464,13 @@
   .work-file-add { color: rgb(96, 186, 126); }
   .work-file-del { color: var(--danger); }
   .block .lgroup:last-child > .rows:last-child > .row:last-child { border-bottom: none; }
+  /* Home: the last work that ended, under the open work, smaller and muted */
+  .recent-ended { display: flex; flex-direction: column; margin-top: 8px; }
+  .recent-ended-row { display: flex; align-items: baseline; gap: 10px; padding: 5px 12px; border-radius: 6px;
+    color: var(--text-3); font-size: 12px; text-decoration: none; }
+  .recent-ended-row:hover { background: var(--hover); color: var(--text-2); }
+  .recent-ended-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .recent-ended-age { flex: none; font-size: 11.5px; opacity: .8; }
   /* the Files page: one row per stored file, with a thumbnail or icon, where it came from, size and age */
   .files-page { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
   .files-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
