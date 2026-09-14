@@ -2038,7 +2038,26 @@ const ActivityPanel = {
   setup(props) {
     const accept = (e) => send("POST", `/api/env/${props.env}/suggestions/${e.n}/accept`)
       .then(() => window.dispatchEvent(new CustomEvent("journal:changed")));
-    return { hide: () => setActivityShown(false), accept };
+    // a quick message from the bottom of the column: the same message the Messages page sends
+    const quick = reactive({ text: "", sending: false, error: "" });
+    const box = ref(null);
+    const grow = () => { const el = box.value; if (!el) return; el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 120) + "px"; };
+    const sendQuick = async () => {
+      if (!quick.text.trim() || quick.sending || !props.env) return;
+      quick.sending = true;
+      quick.error = "";
+      try {
+        await postJSON(`/api/env/${props.env}/inbox`, { text: quick.text, files: [] });
+        quick.text = "";
+        requestAnimationFrame(grow);
+        window.dispatchEvent(new CustomEvent("journal:changed"));
+      } catch (err) {
+        quick.error = err.message;
+      } finally {
+        quick.sending = false;
+      }
+    };
+    return { hide: () => setActivityShown(false), accept, quick, box, grow, sendQuick };
   },
   template: `
     <div class=activity-panel>
@@ -2074,6 +2093,15 @@ const ActivityPanel = {
             </div>
           </template>
         </div>
+        <form v-if="env" class=activity-compose @submit.prevent="sendQuick">
+          <textarea ref=box v-model="quick.text" rows=1 placeholder="Message the agent" aria-label="Message the agent"
+            :disabled="quick.sending" @input="grow"
+            @keydown.shift.enter.prevent="sendQuick" @keydown.meta.enter.prevent="sendQuick" @keydown.ctrl.enter.prevent="sendQuick"></textarea>
+          <div class=activity-compose-bar>
+            <span class=hint>{{ quick.error || 'Shift+Enter sends' }}</span>
+            <button type=submit class="btn primary" :disabled="quick.sending || !quick.text.trim()">Send</button>
+          </div>
+        </form>
       </template>
     </div>`,
 };

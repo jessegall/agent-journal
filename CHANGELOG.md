@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.28 — Message the agent from the Activity column
+
+Sending a message meant going to the Messages page. The Activity column now has a small
+"Message the agent" box at its bottom. It grows while you type, and it sends the same message
+the Messages page does. **Shift+Enter** (or Cmd+Enter) sends, the same as the message box on
+Messages, and Enter starts a new line. After sending it clears, and your "Wrote message"
+line appears in Activity above it. The list scrolls above the box, and the box never covers
+its last line. Attaching files stays on the Messages page.
+
 ## 1.131.27 — To-do rows show when they have a question
 
 A to-do with a question linked to it looked the same in the list as any other. Its row now
