@@ -1089,6 +1089,8 @@ ARCHIVE = "archived"
 ARCHIVE_DAYS = "todos_archive_days"
 DEFAULT_ARCHIVE_DAYS = 7
 LAST_N = "todos_last_n"
+#: the highest number given out on an environment, kept in its own to-do folder
+LAST_FILE = ".last_number"
 
 
 def _next_n(root: Path, track: str, items: list[dict]) -> int:
@@ -1103,12 +1105,22 @@ def _next_n(root: Path, track: str, items: list[dict]) -> int:
                     highest = max(highest, int(m.group(1)))
     except OSError:
         pass
-    with state.locked(root):
-        got = state.get(root, LAST_N, {})
-        got = got if isinstance(got, dict) else {}
-        n = max(highest, int(got.get(track) or 0)) + 1
-        got[track] = n
-        state.put(root, LAST_N, got)
+    # IN THE ENVIRONMENT'S OWN FOLDER, NOT THE RECORD. Kept in record.json, every `todos add` wrote the
+    # project-wide record, and a subagent lent one environment touched a file every session shares.
+    # A number kept there by an older version is still read, never written.
+    got = state.get(root, LAST_N, {})
+    kept = int(got.get(track) or 0) if isinstance(got, dict) else 0
+    counter = folder(root, track) / LAST_FILE
+    try:
+        kept = max(kept, int(counter.read_text().strip() or 0))
+    except (OSError, ValueError):
+        pass
+    n = max(highest, kept) + 1
+    try:
+        counter.parent.mkdir(parents=True, exist_ok=True)
+        counter.write_text(f"{n}\n")
+    except OSError:
+        pass
     return n
 
 
