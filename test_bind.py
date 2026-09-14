@@ -429,9 +429,9 @@ for args in (["--env=scout", "work", "start", "digging"], ["--env=scout", "pins"
 _touched = sorted(k for k in set(_before) | set(_snap()) if _before.get(k) != _snap().get(k))
 check("a granted write touches only its own environment's files",
       [k for k in _touched if not k.startswith("environments/scout/")], [])
-check("and it touches all four of them",
+check("and it touches all four of them, and the activity it logged",
       sorted({k.split("/")[2] for k in _touched}),
-      ["pins.json", "reminders.json", "todo", "work.json"])
+      ["activity.json", "pins.json", "reminders.json", "todo", "work.json"])
 for v in ('docs add "r" --abstract=x', 'tools add t "T" --summary=s --usage=u --entry=x'):
     _why = testkit.denied(sub(f'{J2} --env="scout" {v}'))
     check(f"a granted subagent may not write the project's own stores: {v[:9]}",
