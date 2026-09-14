@@ -69,7 +69,9 @@ class ActivityController(Controller):
     numbered = ()
 
     def index(self, root: Path, p: Payload) -> Result:
-        return Result("ok", "", {"agent": self._agent(root, p.env), "events": self._events(root, p.env)})
+        import todo
+        return Result("ok", "", {"agent": self._agent(root, p.env), "auto": todo.auto(root, p.env),
+                                 "events": self._events(root, p.env)})
 
     @staticmethod
     def _agent(root: Path, env: str) -> dict | None:

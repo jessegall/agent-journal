@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.12 — Auto mode switch in the sidebar footer
+
+The sidebar footer has an Auto mode row with a switch that turns auto mode on or off for the
+environment, the same setting as on the Settings page.
+
 ## 1.131.11 — Change answer, and the agent's pick
 
 An answered question in the viewer used to leave its options clickable, so a stray click

@@ -680,6 +680,8 @@ check("setting a priority names the to-do and the value",
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
+check("Activity says whether auto mode is on, for the footer's switch",
+      isinstance(json.loads(get("/api/env/alpha/activity")[2]).get("auto"), bool), True)
 _tail = root / "context-tail.jsonl"
 _tail.write_text(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 1000, "cache_read_input_tokens": 149000}}}) + "\n")
 check("the agent's context use is its last reading against the window, and nothing without a window or a reading",
