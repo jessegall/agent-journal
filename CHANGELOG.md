@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.39 — Follow up on a message with a comment
+
+A message could not be added to once sent, except by sending another message. A message's
+panel now has a Comments section, the same as a to-do's or a document's. Write a follow-up
+there, like "it only happens on Safari", and the agent is told about it at its next stop,
+naming the message. From the terminal: `journal comments add "message 5" "<text>"`.
+
 ## 1.131.38 — Add files to a message after sending it
 
 Once a message was sent, there was no way to add a file you forgot. A message's panel now

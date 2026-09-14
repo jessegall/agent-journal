@@ -1034,7 +1034,7 @@ const QuestionPanel = {
 
 const MessagePanel = {
   props: PANEL_PROPS,
-  components: { Panel, StatusIcon, ActionBar },
+  components: { Panel, StatusIcon, ActionBar, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/inbox`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -1168,6 +1168,7 @@ const MessagePanel = {
           </div>
         </div>
         <p v-else-if="item.data.status === 'waiting'" class="prose muted">Not processed yet. At its next stop the agent splits it into parts and records what each became.</p>
+        <Comments :about="'message ' + item.data.n" :env="env" :key="'c-message' + item.data.n"/>
       </template>
     </Panel>`,
 };
