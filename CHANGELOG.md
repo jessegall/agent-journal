@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.135.1 — Deciding a suggestion wakes the agent
+
+The channel woke an idle agent for your messages, answered questions and comments, but not when you
+accepted, adjusted or declined a suggestion. It does now. Each decision is pushed once, naming the
+suggestion, and a changed decision is pushed again. As with answers and comments, it happens only
+with auto mode on; with auto mode off, only a message wakes the agent.
+
 ## 1.135.0 — Skills that load when they should, rules that always hold, and a clearer viewer
 
 A minor release that gathers everything since 1.134.0:

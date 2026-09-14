@@ -23,7 +23,8 @@ INSTRUCTIONS = ("What the user does in the journal viewer while you are idle arr
                 '<channel source="journal" env="...">. A message (message="N"): handle it the way a stop that says the '
                 "user left messages is handled: `.journal/journal.py messages show N`, split it into parts, file what each "
                 "became. An answered question (question=\"N\"): `.journal/journal.py questions show N` and act on the answer. "
-                "A comment (comment=\"N\"): `.journal/journal.py comments show N` and handle it. With auto mode off only messages "
+                "A comment (comment=\"N\"): `.journal/journal.py comments show N` and handle it. A decided suggestion "
+                "(suggestion=\"N\"): `.journal/journal.py suggestions show N` and act on the decision. With auto mode off only messages "
                 "arrive, and none of them is a reason to start on the to-do list.")
 
 _OUT = threading.Lock()
@@ -78,6 +79,7 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
     import comments
     import inbox
     import questions
+    import suggestions
     # stamps are whole seconds, so something from the second the channel started still counts
     since = float(int(since))
     got = []
@@ -95,6 +97,15 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
         got.append((f"{env}:question:{n}:{q.get('answered_at') or ''}",
                     {"content": f"The user answered question {n} on {env}: {_gist(q.get('answer', ''))}",
                      "meta": {"env": env, "question": str(n)}}))
+    # keyed by when it was decided, so a changed decision wakes the session again
+    for n, s in suggestions.untold(ROOT, env):
+        decided = s.get("decided_at") or s.get("declined_at")
+        if _epoch(decided) < since:
+            continue
+        verb = {"accepted": "accepted", "adjusted": "accepted with a change", "declined": "declined"}.get(suggestions.status(s), "decided")
+        got.append((f"{env}:suggestion:{n}:{decided or ''}",
+                    {"content": f"The user {verb} suggestion {n} on {env}: {_gist(s.get('title', ''))}",
+                     "meta": {"env": env, "suggestion": str(n)}}))
     for n, c in comments.untold(ROOT, env):
         if _epoch(c.get("at")) < since:
             continue
