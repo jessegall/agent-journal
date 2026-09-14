@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.120.1 — Activity has a header like the page's top bar
+
+The Activity column's header is as tall as the page's top bar and lines up with it, with a
+divider under it where the list begins.
+
 ## 1.120.0 — Search and Notifications live in the top bar
 
 Every page's top bar keeps its crumbs on the left. On the right come the page's own button

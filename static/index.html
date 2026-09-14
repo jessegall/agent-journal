@@ -49,11 +49,13 @@
   .activity-title { font-size: 11.5px; color: var(--text-3); line-height: 1.4; overflow-wrap: anywhere; }
   .activity-age { font-size: 11px; color: var(--text-3); white-space: nowrap; opacity: .8; }
   .activity-link { color: inherit; border-radius: 6px; }
-  .activity-head { display: flex; align-items: center; gap: 8px; }
-  .activity-dock { width: 290px; flex: none; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding: 12px 10px 0;
+  .activity-head { height: 48px; flex: none; display: flex; align-items: center; gap: 8px; margin: 0 -10px; padding: 0 10px;
+    border-bottom: 1px solid var(--border); box-sizing: border-box; }
+  .activity-head .group-label { padding-block: 0; }
+  .activity-dock { width: 290px; flex: none; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding: 0 10px;
     background: var(--side); border-left: 1px solid var(--border); }
   .activity-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-  .activity-list { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 12px;
+  .activity-list { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 0 12px;
     scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
   .activity-link:hover { background: var(--hover); }
   .activity-link:hover .activity-text { color: var(--text); }
