@@ -19,6 +19,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/settings$/, view: "Settings", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/files$/, view: "Files", params: ["env"] },
+  { re: /^\/env\/([a-z0-9-]+)\/transcript(?:\/at\/(\d+))?$/, view: "Transcript", params: ["env", "at"] },
   { re: /^\/env\/([a-z0-9-]+)\/commits\/([0-9a-f]{7,40})$/, view: "Commit", params: ["env", "sha"] },
   { re: /^\/env\/([a-z0-9-]+)\/search$/, view: "Search", params: ["env"] },
   { re: /^\/rules(\/archive)?(?:\/(\d+|new))?$/, view: "Rules", params: ["archive", "n"] },
@@ -185,7 +186,7 @@ function renderMarkdown(src) {
 // page view -> its help file under static/help/
 const HELP_TOPICS = { Todos: "todos", Inbox: "messages", Questions: "questions", Suggestions: "suggestions", Reports: "reports",
   Pins: "pins", Reminders: "reminders", Work: "work", EnvDocs: "docs", Docs: "docs", DocDetail: "docs", Rules: "rules", Tools: "tools",
-  Files: "files" };
+  Files: "files", Transcript: "transcript" };
 const HELP_CACHE = {};
 
 // ─────────────────────────────────────────────────────────────── icons
@@ -203,6 +204,7 @@ const Icon = {
       <template v-else-if="name === 'paperclip'"><path d="M10.5 5.5l-4.3 4.3a1.3 1.3 0 0 0 1.8 1.8l4.6-4.6a2.6 2.6 0 0 0-3.7-3.7L4.3 8a3.9 3.9 0 0 0 5.5 5.5l3.7-3.7"/></template>
       <template v-else-if="name === 'sort-asc'"><path d="M8 13V3M4 7l4-4 4 4"/></template>
       <template v-else-if="name === 'sort-desc'"><path d="M8 3v10M4 9l4 4 4-4"/></template>
+      <template v-else-if="name === 'transcript'"><path d="M3.5 3.5h9M3.5 6.5h9M3.5 9.5h6M3.5 12.5h4"/></template>
       <template v-else-if="name === 'agents'"><circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/></template>
       <template v-else-if="name === 'empty'"><path d="M2.5 9.5l1.8-5h7.4l1.8 5V13h-11z"/><path d="M2.5 9.5h3l1 1.5h3l1-1.5h3"/></template>
       <template v-else-if="name === 'reports'"><path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/></template>
@@ -2310,7 +2312,72 @@ const Commit = {
     </div>`,
 };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, NotFound };
+// ─────────────────────────────────────────────────────────────── transcript
+const TX_ROLE = { human: "You", text: "Agent", tool_result: "Tool result", injected: "Journal", task: "Task", peer: "Another session",
+                  superseded: "You, edited" };
+
+const Transcript = {
+  props: ["env", "at"],
+  components: { TopBar, RadioGroup },
+  setup(props) {
+    const tx = reactive({ mode: "compact", lines: [], first: null, more: false, loading: false, error: "", session: "", total: 0, focus: [] });
+    const load = async (extra, prepend) => {
+      tx.loading = true;
+      tx.error = "";
+      try {
+        const res = await fetch(`/api/env/${props.env}/transcript?mode=${tx.mode}&limit=200${extra}`);
+        const body = await res.json();
+        if (!res.ok) { tx.error = body.error || "The transcript could not be read."; return; }
+        tx.lines = prepend ? body.lines.concat(tx.lines) : body.lines;
+        Object.assign(tx, { first: body.first, more: body.more, session: body.session, total: body.total });
+        if (!prepend) tx.focus = body.focus || [];
+      } catch (err) {
+        tx.error = err.message;
+      } finally {
+        tx.loading = false;
+      }
+    };
+    const newest = async () => {
+      await load(props.at ? `&moment=${props.at}` : "", false);
+      // opened at a moment: that moment in view; otherwise the newest end, like a conversation
+      await Vue.nextTick();
+      const el = document.querySelector(tx.focus.length ? ".tx-row.focus" : ".tx-page > .tx-row:last-child");
+      if (el) el.scrollIntoView({ block: tx.focus.length ? "start" : "end" });
+    };
+    const earlier = () => load(`&before=${tx.first}`, true);
+    const setMode = (mode) => { tx.mode = mode; newest(); };
+    watch(() => [props.env, props.at], newest);
+    newest();
+    const time = (ts) => (ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "");
+    return { tx, earlier, setMode, newest, time, TX_ROLE };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Transcript']"/>
+    <div class=body><div class=list>
+      <div class=viewbar>
+        <span>{{ tx.session ? 'Session ' + tx.session + ' · ' + tx.total + ' lines' : '' }}</span>
+        <span class=viewbar-tools>
+          <RadioGroup label="How much to show" :options="[{ value: 'compact', label: 'Compact' }, { value: 'full', label: 'Full' }]"
+            :modelValue="tx.mode" @update:modelValue="setMode"/>
+          <a v-if="at" class="btn flush" :href="'#/env/' + env + '/transcript'">Newest</a>
+          <button v-else type=button class="btn flush" :disabled="tx.loading" @click="newest">Newest</button>
+        </span>
+      </div>
+      <p v-if="tx.error" class=error>{{ tx.error }}</p>
+      <p v-else-if="tx.loading && !tx.lines.length" class=empty>Loading…</p>
+      <div v-else class=tx-page>
+        <button v-if="tx.more" type=button class="btn more-rows" :disabled="tx.loading" @click="earlier">Load earlier</button>
+        <div v-for="l in tx.lines" :key="l.n" :class="['tx-row', 'tx-' + l.kind, {focus: tx.focus.includes(l.n)}]">
+          <div class=tx-meta><span class=tx-role>{{ TX_ROLE[l.kind] || l.kind }}</span><span class=tx-time>{{ time(l.ts) }}</span><span class=tx-n>#{{ l.n }}</span></div>
+          <div v-if="l.tools.length" class=tx-tools><span v-for="(name, i) in l.tools" :key="i" class=chip>{{ name }}</span><span v-if="l.tools_more" class=muted>+{{ l.tools_more }} more</span></div>
+          <pre v-if="l.text" class=tx-text>{{ l.text }}</pre>
+          <span v-if="l.clipped" class=muted>Cut short here.</span>
+        </div>
+      </div>
+    </div></div>`,
+};
+
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Transcript, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -2320,6 +2387,7 @@ const NAV = [
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "docs", label: "Documents", views: ["EnvDocs"], path: "docs", count: "docs" },
   { key: "files", label: "Files", views: ["Files"], path: "files" },
+  { key: "transcript", label: "Transcript", views: ["Transcript"], path: "transcript" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 
@@ -2477,6 +2545,8 @@ const App = {
       // a comment has no page of its own: its line opens what it is about
       if (e.kind === "comment") return e.about && envName.value ? refHref(e.about, envName.value) : null;
       const page = ACTIVITY_PAGES[e.kind];
+      // what the agent did without a page of its own opens the transcript at that moment
+      if (!page && e.by === "Agent" && e.at && envName.value) return `#/env/${envName.value}/transcript/at/${Math.floor(Date.parse(e.at) / 1000)}`;
       if (!page || !envName.value) return null;
       return `#/env/${envName.value}/${page}` + (e.n ? `/${e.n}` : "");
     };

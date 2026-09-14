@@ -773,6 +773,41 @@ check("and the work item lists the commit",
       [c["sha"] for c in json.loads(get(f"/api/env/beta/work/{_beta_n}")[2])["commits"]], [_sha])
 check("a hash nobody committed is not found, and a word that is not a hash is refused",
       (get("/api/env/beta/commits?sha=0000000")[0], get("/api/env/beta/commits?sha=nothex")[0]), (404, 400))
+import transcript as _tx  # noqa: E402
+_tl = [_tx.Line(1, "user", "human", "fix the build", "2026-09-14T10:00:00Z"),
+       _tx.Line(2, "assistant", "text", "", "2026-09-14T10:00:05Z", tools=["Bash"]),
+       _tx.Line(3, "user", "tool_result", "ok", "2026-09-14T10:00:06Z"),
+       _tx.Line(4, "assistant", "text", "Running the tests", "2026-09-14T10:00:10Z"),
+       _tx.Line(5, "assistant", "text", "", "2026-09-14T10:00:12Z", tools=["Bash"]),
+       _tx.Line(6, "user", "tool_result", "12 passed", "2026-09-14T10:00:20Z"),
+       _tx.Line(7, "user", "human", "thanks", "2026-09-14T10:30:00Z")]
+check("the compact view leaves out tool output and folds a tool-only step into the agent's line before it",
+      [(r["n"], r["kind"], r["tools"]) for r in _tx.chunk(_tl, mode="compact")["lines"]],
+      [(1, "human", []), (2, "text", ["Bash"]), (4, "text", ["Bash"]), (7, "human", [])])
+_page = _tx.chunk(_tl, mode="full", limit=2)
+check("a page is the newest lines, and says there is more before it",
+      ([r["n"] for r in _page["lines"]], _page["first"], _page["more"]), ([6, 7], 6, True))
+check("the page before a line ends just above it",
+      [r["n"] for r in _tx.chunk(_tl, mode="full", limit=2, before=6)["lines"]], [4, 5])
+_busy = []
+for _i in range(1, 61):
+    _busy.append(_tx.Line(_i, "assistant", "text", "step %d" % _i if _i % 3 == 1 else "", "2026-09-14T11:00:00Z", tools=[] if _i % 3 == 1 else ["Bash"] * 20))
+_cpage = _tx.chunk(_busy, mode="compact", limit=5)
+check("a compact page holds as many rows as asked for, however many tool steps fold into them",
+      (len(_cpage["lines"]), _cpage["more"], [r["n"] for r in _cpage["lines"]]), (5, True, [46, 49, 52, 55, 58]))
+check("and a line with many tools shows the first dozen and counts the rest",
+      (len(_cpage["lines"][-1]["tools"]), _cpage["lines"][-1]["tools_more"]), (12, 28))
+check("the compact page before a row ends just above it",
+      [r["n"] for r in _tx.chunk(_busy, mode="compact", limit=2, before=46)["lines"]], [40, 43])
+_at = _tx._epoch("2026-09-14T10:00:12Z")
+check("opened at a moment, the steps just before it are highlighted",
+      _tx.chunk(_tl, mode="full", at=_at)["focus"], [1, 2, 3, 4, 5])
+import controllers.transcript as _txc  # noqa: E402
+check("an environment no session has worked on has no transcript to show",
+      _txc.TranscriptController._session(root, "zz-nobody-here", ""), None)
+from payloads import transcript as _txp  # noqa: E402
+check("the moment to open the transcript at reaches the request, not the request's own timestamp",
+      _txp.ChunkPayload.build("alpha", None, {"moment": "1789387709", "before": "12"}, "web").moment, 1789387709)
 import agents as _agents  # noqa: E402
 commandlog.record_dispatch(root, "alpha", "dispatch-stem", "  review   the diff ", "2099-01-01T00:00:08+00:00")
 check("handing work to a subagent is its own Activity line, with the dispatcher's description",

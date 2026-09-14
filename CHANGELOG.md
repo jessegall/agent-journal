@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.74 — A Transcript page for reading the agent's session
+
+There is a new Transcript page in the sidebar. It shows the session working on the environment:
+your messages, the agent's replies and the tools each step used. **Compact** shows the
+conversation; **Full** adds every tool's output and what the journal told the agent. The newest
+part loads first, and **Load earlier** goes back a page at a time, so a long session never loads
+all at once. Clicking one of the agent's own lines in Activity, like "Ran 3 commands", opens the
+transcript at that moment with those steps highlighted.
+
 ## 1.131.73 — Documents show open or archived, not both
 
 The Documents pages, for the project and for an environment, listed archived documents in among
