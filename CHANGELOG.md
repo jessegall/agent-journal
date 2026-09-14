@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.133.2 — No Enter hint under the Activity message box
+
+The line "Enter sends, Shift+Enter adds a line" under the message box in the Activity column is gone.
+The box still sends on Enter and adds a line on Shift+Enter, and the same spot still shows an error if
+a message cannot be sent.
+
 ## 1.133.1 — The agent's replies stand out
 
 Under a message, a reply from the agent is now boxed: a thin border and a slightly lighter background,
