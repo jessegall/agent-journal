@@ -1421,5 +1421,24 @@ _ctx._READ.clear()
 check("a new process resumes the context reading from the cache and reaches the same numbers",
       (_resumed_from > 0, _after, json.loads(_ccache.read_text())["offset"]), (True, _ctx.reading(_tp), _tp.stat().st_size))
 
+# ------------------------------------------------------------------ the text before a tool call is never a turn's message
+_L = transcript.Line
+
+
+def _turn(*rows):
+    return [_L(n=i + 1, role=r, kind=k, text=x, ts="", tools=tl) for i, (r, k, x, tl) in enumerate(rows)]
+
+
+_waiting = _turn(("user", "human", "a question", []), ("assistant", "text", "Private list: check the code", []),
+                 ("assistant", "text", "", ["Bash"]), ("user", "tool_result", "output", []))
+check("while the final message is not written yet, the text before the tool call is not taken for it",
+      transcript.filing_units(_waiting), set())
+_done = _waiting + _turn(("assistant", "text", "[!reply] the answer", []))
+_done[-1].n = len(_done)
+check("once the final message is there, it is the turn's message and the earlier text is not",
+      transcript.filing_units(_done), {len(_done)})
+_asked = _turn(("user", "human", "go", []), ("assistant", "text", "Which one?", ["AskUserQuestion"]))
+check("a question put through the question tool still counts as the message", transcript.filing_units(_asked), {2})
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

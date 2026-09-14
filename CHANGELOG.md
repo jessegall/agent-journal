@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.14 — Text before a tool call is never a turn's message
+
+1.136.13 was not enough. The stop hook can read the transcript before Claude Code has written the
+turn's final message at all, and with the fast cached read it usually did. The text written before the
+last tool call was then judged as the reply, and a correctly tagged answer was reported as untagged.
+
+A turn's message is now the last text that no tool call follows. While the final message is not yet
+written, the turn has nothing to judge and nothing is held. A question put through the question tool
+still counts as a message.
+
 ## 1.136.13 — The stop hook sees the turn's final message again
 
 1.136.11's transcript cache read only up to the last newline, leaving a record still being written for

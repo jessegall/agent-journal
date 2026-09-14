@@ -685,6 +685,13 @@ def filing_units(lines: list[Line]) -> set[int]:
             if current is not None:
                 units.add(current)
             current = None
+        # TEXT FOLLOWED BY A TOOL CALL IS NOT THE TURN'S MESSAGE, whatever comes after. At a stop
+        # the hook can read the transcript before the harness has written the final message, and
+        # then the line before the last tool call looked like the last word. Measured: every such
+        # turn held as untagged once the stop hook's read became fast. A question to the user
+        # speaks through its tool and stays a message.
+        elif l.role == "assistant" and l.tools and not any(t in ASKS for t in l.tools):
+            current = None
         elif l.kind == "text" and (l.text or "").strip():
             current = l.n
     if current is not None:
