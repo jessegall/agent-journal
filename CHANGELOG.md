@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.52 — The channel wakes an idle session for answers and comments too
+
+With the channel installed (`journal channel --install`, then Claude started with
+`--dangerously-load-development-channels server:journal`), an idle session was woken only
+when the user left a message. Answering a question or leaving a comment in the viewer woke
+nothing, and the agent learned about it only at its next stop. Now an answered question and a
+new comment are pushed as well, once each. A question whose answer is changed is pushed again.
+
 ## 1.131.51 — An upgrade from a checkout copies only the package
 
 `journal upgrade --from=<a git checkout>` copied every file in that folder that was not

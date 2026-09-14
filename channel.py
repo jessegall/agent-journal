@@ -17,9 +17,11 @@ POLL_SECONDS = 3.0
 PIDS = "session_pids"
 PUSHED = "channel_pushed"
 
-INSTRUCTIONS = ("Messages the user leaves for you in the journal viewer arrive as "
-                '<channel source="journal" env="..." message="N">. Handle one the way a stop that says the user left '
-                "messages is handled: `.journal/journal.py messages show N`, split it into parts, file what each became.")
+INSTRUCTIONS = ("What the user does in the journal viewer while you are idle arrives as "
+                '<channel source="journal" env="...">. A message (message="N"): handle it the way a stop that says the '
+                "user left messages is handled: `.journal/journal.py messages show N`, split it into parts, file what each "
+                "became. An answered question (question=\"N\"): `.journal/journal.py questions show N` and act on the answer. "
+                "A comment (comment=\"N\"): `.journal/journal.py comments show N` and handle it.")
 
 _OUT = threading.Lock()
 
@@ -37,9 +39,16 @@ def _session() -> str | None:
     return got.get(str(os.getppid())) if isinstance(got, dict) else None
 
 
-def pending(stem: str) -> list[tuple[str, int, str]]:
-    """(environment, message number, text) for each waiting message this session should be woken for now."""
+def _gist(text: str) -> str:
+    gist = " ".join((text or "").split())
+    return gist if len(gist) <= 200 else gist[:199] + "…"
+
+
+def pending(stem: str) -> list[tuple[str, dict]]:
+    """(key, notification params) for each thing this session should be woken for now and has not been."""
+    import comments
     import inbox
+    import questions
     import state
     import todo
     import tracks
@@ -49,8 +58,21 @@ def pending(stem: str) -> list[tuple[str, int, str]]:
     idle = state.get(ROOT, "last_event", "", stem=stem) == "Stop"
     if todo.auto(ROOT, env) and not idle:
         return []
+    got = []
+    for n, m in inbox.unprocessed(ROOT, env):
+        got.append((f"{env}:{n}", {"content": f"The user left message {n} on {env}: {_gist(m.get('text', ''))}",
+                                    "meta": {"env": env, "message": str(n)}}))
+    # keyed by when it was answered, so a changed answer wakes the session again
+    for n, q in questions.untold(ROOT, env):
+        got.append((f"{env}:question:{n}:{q.get('answered_at') or ''}",
+                    {"content": f"The user answered question {n} on {env}: {_gist(q.get('answer', ''))}",
+                     "meta": {"env": env, "question": str(n)}}))
+    for n, c in comments.untold(ROOT, env):
+        got.append((f"{env}:comment:{n}",
+                    {"content": f"The user commented on {comments.label(c.get('about', ''))} on {env}: {_gist(c.get('text', ''))}",
+                     "meta": {"env": env, "comment": str(n)}}))
     pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
-    return [(env, n, m.get("text", "")) for n, m in inbox.unprocessed(ROOT, env) if f"{env}:{n}" not in pushed]
+    return [(key, params) for key, params in got if key not in pushed]
 
 
 def _mark(stem: str, keys: list[str]) -> None:
@@ -67,14 +89,10 @@ def _watch() -> None:
             if not stem:
                 continue
             got = pending(stem)
-            for env, n, text in got:
-                gist = " ".join(text.split())
-                gist = gist if len(gist) <= 200 else gist[:199] + "…"
-                _send({"jsonrpc": "2.0", "method": "notifications/claude/channel",
-                       "params": {"content": f"The user left message {n} on {env}: {gist}",
-                                  "meta": {"env": env, "message": str(n)}}})
+            for _, params in got:
+                _send({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": params})
             if got:
-                _mark(stem, [f"{env}:{n}" for env, n, _ in got])
+                _mark(stem, [key for key, _ in got])
         except Exception as e:  # a bad poll must never end the server
             print(f"journal channel: {e}", file=sys.stderr)
 
