@@ -83,6 +83,17 @@ class Reminder(Model):
 
 
 @dataclass
+class Notification(Model):
+    text: str = ""
+    about: str = ""
+    source: str = ""
+    read_at: str = ""
+
+    noun: ClassVar[str] = "notification"
+    sortable: ClassVar[tuple[str, ...]] = ("n", "at")
+
+
+@dataclass
 class Report(Model):
     title: str = ""
     body: str = ""

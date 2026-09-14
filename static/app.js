@@ -1294,6 +1294,10 @@ const EnvHome = {
     const todos = useFetch(url("/todos"));
     const inbox = useFetch(url("/inbox"));
     const questions = useFetch(url("/questions"));
+    const notes = useFetch(url("/notifications"));
+    const noted = () => { notes.reload(); changed(); };
+    const readOne = (x) => send("POST", `/api/env/${props.env}/notifications/${x.n}/read`).then(noted);
+    const readAll = () => send("POST", `/api/env/${props.env}/notifications/readall`).then(noted);
     const openTodos = { ...TODO_LIST, groups: TODO_LIST.groups.filter((g) => !g.closed) };
     const finishedTodos = { groups: [{ key: "finished", label: "", match: (t) => t.done }],
                             columns: { num: (t) => `#${t.n}`, title: (t) => t.title, age: (t) => t.done_age },
@@ -1319,12 +1323,25 @@ const EnvHome = {
     const peek = (kind, n) => { view.kind = kind; view.n = n; };
     const unpeek = () => { view.kind = ""; view.n = 0; };
     const picked = (kind) => (r) => view.kind === kind && view.n === r.n;
-    return { work, todos, inbox, questions, view, peek, unpeek, picked, waiting, asking, stats, openTodos, finishedTodos,
+    return { work, todos, inbox, questions, notes, readOne, readAll, view, peek, unpeek, picked, waiting, asking, stats, openTodos, finishedTodos,
              waitingMessages, openQuestions, openWork };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
     <div class=body><div class=page><div class=home>
+      <section v-if="notes.data && notes.data.length" class=notifications>
+        <div class=home-head><h2>Notifications</h2><span class=n>{{ notes.data.length }} unread</span>
+          <button type=button class="btn more" @click="readAll">Mark all read</button></div>
+        <div class=block>
+          <div v-for="x in notes.data" :key="x.n" class=note-row>
+            <div class=note-text>{{ x.text }}
+              <span class=muted> · {{ x.age || 'just now' }}</span>
+              <a v-if="x.about && $refHref(x.about, env)" class=chip :href="$refHref(x.about, env)">{{ x.about_label }}</a>
+            </div>
+            <button type=button class=btn @click="readOne(x)">Mark read</button>
+          </div>
+        </div>
+      </section>
       <div class=stats>
         <a v-for="s in stats" :key="s.path" :class="['stat', {hot: s.hot}]" :href="'#/env/' + env + '/' + s.path">
           <span class=stat-top><span>{{ s.label }}</span><Icon :name="s.icon"/></span>
@@ -1565,7 +1582,7 @@ const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Reports, Wo
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
 const NAV = [
-  { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "" },
+  { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "", count: "notifications" },
   { key: "search", label: "Search", views: ["Search"], path: "search" },
   { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
@@ -1631,7 +1648,7 @@ const App = {
           <a v-if="!folded.environment" v-for="item in NAV" :key="item.key" :class="['item', {on: item.views.includes(route.view)}]"
             :href="'#/env/' + envName + (item.path ? '/' + item.path : '')">
             <Icon :name="item.key"/>{{ item.label }}
-            <span v-if="item.count" :class="['count', {hot: item.key === 'inbox' && envRow && envRow.inbox}]">{{ envRow && envRow[item.count] ? envRow[item.count] : '' }}</span>
+            <span v-if="item.count" :class="['count', {hot: (item.key === 'inbox' || item.key === 'home') && envRow && envRow[item.count]}]">{{ envRow && envRow[item.count] ? envRow[item.count] : '' }}</span>
           </a>
         </div>
         <div class=group>
