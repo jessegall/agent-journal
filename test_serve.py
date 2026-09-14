@@ -635,6 +635,16 @@ _, _, body = get("/api/env/alpha/activity")
 import comments as _comments  # noqa: E402
 _comments.add(root, "todo:1", "check the colour first", "2099-01-02T00:00:00+00:00", source="web", track="alpha")
 _, _, body = get("/api/env/alpha/activity")
+import questions as _questions  # noqa: E402
+_questions.add(root, "which shade of blue?", "2099-01-03T00:00:00+00:00", track="alpha")
+_answered_q = len(_questions._all(root, "alpha"))
+_questions.answer(root, _answered_q, "navy", "2099-01-03T00:01:00+00:00", track="alpha")
+_questions.add(root, "which font size?", "2099-01-03T00:02:00+00:00", track="alpha")
+_open_q = len(_questions._all(root, "alpha"))
+_, _, body = get("/api/env/alpha/activity")
+_asked = {e["n"]: (e["needs"], e["detail"]) for e in json.loads(body)["events"] if e["text"] == "Asked question"}
+check("an answered question's Asked line says answered and is no longer an open card; an open one still is",
+      (_asked.get(_answered_q), _asked.get(_open_q)), (("answered", "answered"), ("open", "")))
 check("a comment written in the viewer is an Activity line by you, titled with its text, opening what it is about",
       [(e["text"], e["by"], e["title"], e["about"]) for e in json.loads(body)["events"] if e["kind"] == "comment"][:1],
       [("Wrote comment", "You", "check the colour first", "todo:1")])
