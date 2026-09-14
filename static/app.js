@@ -1019,7 +1019,7 @@ const TodoPanel = {
             <component :is="e.work && e.kind !== 'commit' ? 'a' : 'div'" v-for="(e, i) in item.data.log" :key="i" class="sub log-row"
               :href="e.work && e.kind !== 'commit' ? '#/env/' + env + '/work/' + e.work : null" :title="e.work && e.kind !== 'commit' ? 'Open work ' + e.work : null">
               <span class=log-text><span class=muted>{{ LOG_KIND[e.kind] }} · {{ e.age || 'just now' }}</span>
-                <a v-if="e.kind === 'commit'" class="chip sha" :href="'#/env/' + env + '/commits/' + e.sha" :title="'What commit ' + e.sha.slice(0, 7) + ' covered'">{{ e.sha.slice(0, 7) }}</a><span v-if="e.text && e.kind !== 'started'"> — {{ e.text }}</span></span>
+                <a v-if="e.kind === 'commit'" class="chip sha" :href="'#/env/' + env + '/commits/' + e.sha" :title="'What commit ' + e.sha.slice(0, 7) + ' covered'">{{ e.sha.slice(0, 7) }}</a><span v-if="e.text && e.kind !== 'started'" :class="{'sha-subject': e.kind === 'commit'}"> — {{ e.text }}</span></span>
               <a v-if="e.work && e.kind === 'commit'" class=log-work :href="'#/env/' + env + '/work/' + e.work">Work {{ e.work }}</a>
               <span v-else-if="e.work" class=log-work>Work {{ e.work }}</span>
             </component>
@@ -1267,7 +1267,7 @@ const WorkPanel = {
           <p class=section-label>Commits <span class=muted>{{ item.data.commits.length }}</span></p>
           <div class=linked>
             <div v-for="c in item.data.commits" :key="c.sha" class="sub log-row">
-              <span class=log-text><a class="chip sha" :href="'#/env/' + env + '/commits/' + c.sha" :title="'What commit ' + c.sha.slice(0, 7) + ' covered'">{{ c.sha.slice(0, 7) }}</a> {{ c.subject }}</span>
+              <span class=log-text><a class="chip sha" :href="'#/env/' + env + '/commits/' + c.sha" :title="'What commit ' + c.sha.slice(0, 7) + ' covered'">{{ c.sha.slice(0, 7) }}</a> <span class=sha-subject>{{ c.subject }}</span></span>
             </div>
           </div>
         </div>
@@ -1942,7 +1942,8 @@ const EnvHome = {
         { key: "questions", label: "Questions for you", n: s.questions, icon: "questions", path: "questions", hot: s.questions },
         { key: "suggestions", label: "Suggestions", n: s.suggestions, icon: "suggestions", path: "suggestions", hot: s.suggestions },
         { key: "todos", label: "Open to-dos", n: open, icon: "todos", path: "todos", hot: waitingOnYou,
-          sub: todos.data ? `${count("progress")} in progress · ${waitingOnYou} waiting on you · ${count("blocked")} blocked` : "" },
+          sub: todos.data ? [[count("progress"), "in progress"], [waitingOnYou, "waiting on you"], [count("blocked"), "blocked"]]
+            .filter(([n]) => n).map(([n, what]) => `${n} ${what}`).join(" · ") : "" },
       ];
     });
     const about = (q) => q.links.map((l) => l.label).join(", ");
@@ -2512,7 +2513,7 @@ const ActivityPanel = {
           <span class="drop-wrap crew">
             <button type=button :class="['icon-btn', {on: crew.open}]" title="Agents working here" aria-label="Agents working here"
               :aria-expanded="crew.open" @click="crew.open = !crew.open; agentsList.reload()">
-              <Icon name="agents"/><span v-if="working" class=tool-badge>{{ working }}</span>
+              <Icon name="agents"/><span v-if="working" class="tool-badge count">{{ working }}</span>
             </button>
             <div v-if="crew.open" class=drop>
               <div class=drop-head><span>Agents on {{ env }}</span></div>
