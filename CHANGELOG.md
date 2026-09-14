@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.113.1 — Home's empty panel column shows a faint icon
+
+When nothing is open, Home's panel column shows a faint empty icon instead of the sentence
+"Select a row to see it here."
+
 ## 1.113.0 — a message you leave can wake an idle session
 
 The journal ships a channel server, `.journal/channel.py`. `journal channel --install` adds it to
