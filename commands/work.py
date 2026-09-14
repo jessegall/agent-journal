@@ -56,6 +56,8 @@ TEXT = {
     "open_subject": "  {subject}",
     "open_since": "since {since}",
     "open_note": "{at}  {text}",
+    "open_file": "changed  {path}  +{added} -{removed}{new}",
+    "open_file_new": "  (new)",
     "disabled": "hooks are disabled. `journal enable` turns them back on.",
     "next_open": "Open work: {subjects:; }",
     "next_carry_on": 'Carry on with it; `journal work end "<the same words>"` when it is done, or\n'
@@ -154,6 +156,9 @@ class Open(Resource):
             fmt.say("     " + fmt.dim(render(TEXT["open_since"], since=w["at"][:16].replace("T", " "))))
             for note in w["notes"]:
                 fmt.say(fmt.wrap(render(TEXT["open_note"], at=note["at"][11:16], text=note["text"]), indent=5))
+            for f in w.get("files") or []:
+                fmt.say("     " + render(TEXT["open_file"], path=f["path"], added=f["added"], removed=f["removed"],
+                                         new=TEXT["open_file_new"] if f["created"] else ""))
         fmt.say()
         fmt.say(fmt.commands(list(OPEN_COMMANDS)))
         return 0

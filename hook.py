@@ -1692,6 +1692,10 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
         owed = _loop_owed(conf, ctx, tracks.current(ROOT, ctx.stem))
         if owed:
             return _deny(owed)
+    try:
+        _snapshot_files(payload, ctx)
+    except Exception as e:  # counting files must never stop a tool call
+        print(f"journal files: {e}", file=sys.stderr)
     if not conf["gate_writes_on_start"] or "gate" in conf["silenced"]:
         return 0
     if not _is_write(payload) or work.open_work(ROOT) or _declared_first(payload):
@@ -1818,6 +1822,110 @@ def _read_path(payload: dict) -> str:
         return ""
     args = [a for a in pieces[0][1:] if not a.startswith("-")]
     return args[0] if len(args) == 1 else ""
+
+
+FILE_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
+
+
+def _project_path(path: str) -> str:
+    """The path relative to the project, or "" when it lies outside it or inside the journal."""
+    try:
+        rel = Path(path).resolve().relative_to(ROOT.parent.resolve())
+    except (ValueError, OSError):
+        return ""
+    return "" if not rel.parts or rel.parts[0] == ROOT.name else rel.as_posix()
+
+
+def _tool_file_changes(payload: dict) -> list[dict]:
+    """An Edit or Write names its file and hands back the patch: its + and - lines are the counts."""
+    resp = payload.get("tool_response")
+    if payload.get("tool_name") not in FILE_TOOLS or not isinstance(resp, dict):
+        return []
+    rel = _project_path(str(resp.get("filePath") or (payload.get("tool_input") or {}).get("file_path") or ""))
+    if not rel:
+        return []
+    added = removed = 0
+    for hunk in resp.get("structuredPatch") or []:
+        for line in hunk.get("lines") or []:
+            added += line.startswith("+")
+            removed += line.startswith("-")
+    created = resp.get("type") == "create"
+    if created and not added:
+        added = len(str(resp.get("content") or "").splitlines())
+    return [{"path": rel, "created": created, "added": added, "removed": removed}]
+
+
+def _git_out(project: Path, *args: str) -> str | None:
+    import subprocess
+    try:
+        p = subprocess.run(["git", *args], cwd=str(project), capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return p.stdout if p.returncode == 0 else None
+
+
+def _git_snapshot(project: Path) -> dict | None:
+    """HEAD, lines changed against it per tracked file, and the untracked files: what a shell command is measured by."""
+    head = _git_out(project, "rev-parse", "HEAD")
+    numstat = _git_out(project, "diff", "--numstat", "HEAD")
+    untracked = _git_out(project, "ls-files", "--others", "--exclude-standard")
+    if head is None or numstat is None or untracked is None:
+        return None
+    stats = {}
+    for line in numstat.splitlines():
+        parts = line.split("\t", 2)
+        if len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit():
+            stats[parts[2]] = [int(parts[0]), int(parts[1])]
+    return {"head": head.strip(), "numstat": stats, "untracked": untracked.splitlines()}
+
+
+def _bash_file_changes(before: dict | None, after: dict | None, project: Path) -> list[dict]:
+    # a command that moved HEAD committed; its numbers against the new HEAD say nothing about edits
+    if not before or not after or before["head"] != after["head"]:
+        return []
+    out = []
+    for path, (a, r) in after["numstat"].items():
+        a0, r0 = before["numstat"].get(path, [0, 0])
+        if (a, r) != (a0, r0) and _project_path(str(project / path)):
+            out.append({"path": path, "created": False, "added": max(0, a - a0), "removed": max(0, r - r0)})
+    known = set(before["untracked"])
+    for path in after["untracked"]:
+        if path not in known and _project_path(str(project / path)):
+            try:
+                lines = len((project / path).read_bytes()[:1_000_000].splitlines())
+            except OSError:
+                lines = 0
+            out.append({"path": path, "created": True, "added": lines, "removed": 0})
+    return out
+
+
+def _owns_open_work(ctx: Ctx) -> bool:
+    standing = work.open_work(ROOT)
+    return any(w.get("session") in _owners(ctx) for w in standing) or len(standing) == 1
+
+
+def _snapshot_files(payload: dict, ctx: Ctx) -> None:
+    """Before a shell command that writes, remember what git sees, so the files it changed can be counted after."""
+    if payload.get("tool_name") != "Bash":
+        return
+    if _is_write(payload) and _owns_open_work(ctx):
+        state.put(ROOT, "files_before", _git_snapshot(ROOT.parent), stem=ctx.stem)
+    elif state.get(ROOT, "files_before", None, stem=ctx.stem):
+        state.put(ROOT, "files_before", None, stem=ctx.stem)
+
+
+def _record_files(payload: dict, ctx: Ctx) -> None:
+    """The files this tool call changed go on the open work, with lines added and removed."""
+    from datetime import datetime, timezone
+    changes = _tool_file_changes(payload)
+    if payload.get("tool_name") == "Bash":
+        before = state.get(ROOT, "files_before", None, stem=ctx.stem)
+        if not before:
+            return
+        state.put(ROOT, "files_before", None, stem=ctx.stem)
+        changes = _bash_file_changes(before, _git_snapshot(ROOT.parent), ROOT.parent)
+    if changes:
+        work.record_files(ROOT, _owners(ctx), changes, datetime.now(timezone.utc).isoformat(timespec="seconds"))
 
 
 def _git_tracked(project: Path, path: Path) -> bool:
@@ -2236,6 +2344,10 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     it never saw. A subagent no longer reaches the hook at all — see `main`.
     """
     _floor(ctx)
+    try:
+        _record_files(payload, ctx)
+    except Exception as e:  # counting files must never stop a tool call
+        print(f"journal files: {e}", file=sys.stderr)
     # AN ACTION BEATS A HINT: this one CHANGED the record, so it is said before any nudge
     # that only advises, and it is said to the user too — an automatic close they cannot
     # see is the one thing this protocol must never be.

@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.24 — Work records the files it changed
+
+While work is open, every file the agent changes is recorded on that piece of work, with the
+lines added and removed and whether the file is new. This covers Edit and Write, and shell
+commands too: a command's changes are measured with git before and after it runs, and a
+command that commits is not counted as an edit. Files outside the project and inside
+`.journal/` are left out.
+
+The work panel in the viewer lists them under **Files changed**. `journal open` lists them
+under each piece of open work, and the **Ended work** line in Activity says how many files
+changed.
+
 ## 1.131.23 — Every resource page explains itself
 
 Each resource page now has a small ⓘ button beside its title: to-dos, messages, questions,

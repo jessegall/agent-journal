@@ -136,7 +136,7 @@ class ActivityController(Controller):
             add(w.get("at"), "work", say("work_started"), wn, AGENT, True)
             for note in w.get("notes") or []:
                 add(note.get("at"), "work", say("work_note"), wn, AGENT, title=note.get("text") or "")
-            add(w.get("ended"), "work", say("work_ended"), wn, AGENT)
+            add(w.get("ended"), "work", say("work_ended"), wn, AGENT, detail=work.files_changed(w))
         for t in todo._all(root, env):
             add(t.get("at"), "todo", say("todo_added"), t["n"], AGENT if t.get("session") else USER, True)
             add(t.get("done"), "todo", say("todo_closed"), t["n"], USER if t.get("closed_by") == "web" else AGENT)
