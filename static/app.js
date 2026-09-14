@@ -255,7 +255,7 @@ const PriorityIcon = {
 // ─────────────────────────────────────────────────────────────── shared pieces
 // the page's top bar: crumbs, the page's own button, then Search and Notifications on every page
 const TopBar = {
-  props: { crumbs: { type: Array, default: () => [] }, archive: Object },
+  props: { crumbs: { type: Array, default: () => [] } },
   components: { Icon },
   setup() {
     const hashEnv = parseHash().params.env || "";
@@ -323,8 +323,6 @@ const TopBar = {
         <div class="help-body md" v-html="help.html"></div>
       </dialog>
       <div class=top-tools>
-        <a v-if="archive" :class="['btn', 'flush', {on: archive.on}]" :href="archive.on ? archive.list : archive.list + '/archive'"
-          :title="archive.on ? 'Back to the list' : 'Items closed more than a week ago'">{{ archive.on ? 'Close archive' : 'Archive' }}</a>
         <slot/>
         <template v-if="env">
           <a class=icon-btn :href="'#/env/' + env + '/search'" title="Search" aria-label="Search"><Icon name="search"/></a>
@@ -675,6 +673,7 @@ const ResourceList = {
     sorts: { type: Array, default: () => [{ key: "n", label: "ID" }] },
     count: Function, empty: String, name: String,
     bar: { type: Boolean, default: true }, limit: { type: Number, default: PAGE_ROWS }, archive: Boolean,
+    home: String,
   },
   components: { StatusIcon, PriorityIcon, Icon },
   setup(props) {
@@ -732,6 +731,11 @@ const ResourceList = {
     <div v-if="bar" class=viewbar>
       <span v-if="rows && archive">{{ archived }} archived</span>
       <span v-else-if="rows && count">{{ count(rows) }}</span>
+      <span class=viewbar-tools>
+        <a v-if="home && closable" :class="['btn', 'flush', {on: archive}]" :href="archive ? home : home + '/archive'"
+          :title="archive ? 'Back to the list' : 'Items closed more than a week ago'">{{ archive ? 'Close archive' : 'Archive' }}</a>
+        <slot name="tools"/>
+      </span>
     </div>
     <p v-if="loading && !rows" class=empty>Loading…</p>
     <p v-else-if="error && !rows" class=error>{{ error }}</p>
@@ -1351,10 +1355,10 @@ const Suggestions = {
     return { list, home, base, SUGGESTION_LIST };
   },
   template: `
-    <TopBar :crumbs="archive ? [env, 'Suggestions', 'Archive'] : [env, 'Suggestions']" :archive="{list: home, on: !!archive}"/>
+    <TopBar :crumbs="archive ? [env, 'Suggestions', 'Archive'] : [env, 'Suggestions']"/>
     <div class=body>
       <div class=list>
-        <ResourceList v-bind="SUGGESTION_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
+        <ResourceList v-bind="SUGGESTION_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
           :href="(s) => base + '/' + s.n" :selected="(s) => String(s.n) === n"/>
       </div>
       <SuggestionPanel v-if="n" :key="'suggestion' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
@@ -1380,11 +1384,13 @@ const Todos = {
     return { list, creating, done, home, base, TODO_LIST };
   },
   template: `
-    <TopBar :crumbs="archive ? [env, 'To-dos', 'Archive'] : [env, 'To-dos']" :archive="{list: home, on: !!archive}"><a class="btn new" :href="home + '/new'">New to-do</a></TopBar>
+    <TopBar :crumbs="archive ? [env, 'To-dos', 'Archive'] : [env, 'To-dos']"/>
     <div class=body>
       <div class=list>
-        <ResourceList v-bind="TODO_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
-          :href="(t) => base + '/' + t.n" :selected="(t) => String(t.n) === n"/>
+        <ResourceList v-bind="TODO_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(t) => base + '/' + t.n" :selected="(t) => String(t.n) === n">
+          <template #tools><a class="btn new" :href="home + '/new'">New to-do</a></template>
+        </ResourceList>
       </div>
       <Panel v-if="n === 'new'" label="New to-do" :close="base">
         <ActionBar :actions="creating" open="New to-do" :done="done"/>
@@ -1439,11 +1445,13 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
                scope: computed(() => scope(props)), noun, word, empty, CLAIM_LIST };
     },
     template: `
-      <TopBar :crumbs="crumbs" :archive="{list: home, on: !!archive}"><a class="btn new" :href="home + '/new'">New {{ word }}</a></TopBar>
+      <TopBar :crumbs="crumbs"/>
       <div class=body>
         <div class=list>
-          <ResourceList v-bind="CLAIM_LIST" :archive="!!archive" :name="word + 's'" :empty="empty" :rows="list.data" :loading="list.loading" :error="list.error"
-            :href="(c) => base + '/' + c.n" :selected="(c) => String(c.n) === n"/>
+          <ResourceList v-bind="CLAIM_LIST" :archive="!!archive" :home="home" :name="word + 's'" :empty="empty" :rows="list.data" :loading="list.loading" :error="list.error"
+            :href="(c) => base + '/' + c.n" :selected="(c) => String(c.n) === n">
+            <template #tools><a class="btn new" :href="home + '/new'">New {{ word }}</a></template>
+          </ResourceList>
         </div>
         <Panel v-if="n === 'new'" :label="'New ' + word" :close="base">
           <ActionBar :actions="creating" :open="'New ' + word" :done="done"/>
@@ -1507,11 +1515,11 @@ const Inbox = {
     return { list, send, home, base, MESSAGE_LIST, hint };
   },
   template: `
-    <TopBar :crumbs="archive ? [env, 'Messages', 'Archive'] : [env, 'Messages']" :archive="{list: home, on: !!archive}"/>
+    <TopBar :crumbs="archive ? [env, 'Messages', 'Archive'] : [env, 'Messages']"/>
     <div class=body>
       <div class=chat>
         <div class=list>
-          <ResourceList v-bind="MESSAGE_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
+          <ResourceList v-bind="MESSAGE_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
             :href="(m) => base + '/' + m.n" :selected="(m) => String(m.n) === n"/>
         </div>
         <div v-if="!archive" class="compose-wrap at-bottom">
@@ -1580,11 +1588,13 @@ const Reports = {
       </div></div></div>
     </template>
     <template v-else>
-      <TopBar :crumbs="archive ? [env, 'Reports', 'Archive'] : [env, 'Reports']" :archive="{list: home, on: !!archive}"><a class="btn new" :href="home + '/new'">New report</a></TopBar>
+      <TopBar :crumbs="archive ? [env, 'Reports', 'Archive'] : [env, 'Reports']"/>
       <div class=body>
         <div class=list>
-          <ResourceList v-bind="REPORT_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
-            :href="(r) => base + '/' + r.n"/>
+          <ResourceList v-bind="REPORT_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
+            :href="(r) => base + '/' + r.n">
+            <template #tools><a class="btn new" :href="home + '/new'">New report</a></template>
+          </ResourceList>
         </div>
         <Panel v-if="n === 'new'" label="New report" :close="base">
           <ActionBar :actions="creating" open="New report" :done="done"/>
@@ -1603,10 +1613,10 @@ const Questions = {
     return { list, home, base, QUESTION_LIST };
   },
   template: `
-    <TopBar :crumbs="archive ? [env, 'Questions', 'Archive'] : [env, 'Questions']" :archive="{list: home, on: !!archive}"/>
+    <TopBar :crumbs="archive ? [env, 'Questions', 'Archive'] : [env, 'Questions']"/>
     <div class=body>
       <div class=list>
-        <ResourceList v-bind="QUESTION_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
+        <ResourceList v-bind="QUESTION_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
           :href="(q) => base + '/' + q.n" :selected="(q) => String(q.n) === n"/>
       </div>
       <QuestionPanel v-if="n" :key="'question' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
@@ -1630,11 +1640,13 @@ const Work = {
     return { list, creating, done, home, base, WORK_LIST };
   },
   template: `
-    <TopBar :crumbs="archive ? [env, 'Open work', 'Archive'] : [env, 'Open work']" :archive="{list: home, on: !!archive}"><a class="btn new" :href="home + '/new'">Start work</a></TopBar>
+    <TopBar :crumbs="archive ? [env, 'Open work', 'Archive'] : [env, 'Open work']"/>
     <div class=body>
       <div class=list>
-        <ResourceList v-bind="WORK_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
-          :href="(w) => base + '/' + w.n" :selected="(w) => String(w.n) === n"/>
+        <ResourceList v-bind="WORK_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(w) => base + '/' + w.n" :selected="(w) => String(w.n) === n">
+          <template #tools><a class="btn new" :href="home + '/new'">Start work</a></template>
+        </ResourceList>
       </div>
       <Panel v-if="n === 'new'" label="Start work" :close="base">
         <ActionBar :actions="creating" open="Start work" :done="done"/>
@@ -1673,11 +1685,13 @@ const Reminders = {
     return { list, item, creating, actions, done, home, base, REMINDER_LIST };
   },
   template: `
-    <TopBar :crumbs="archive ? [env, 'Reminders', 'Archive'] : [env, 'Reminders']" :archive="{list: home, on: !!archive}"><a class="btn new" :href="home + '/new'">New reminder</a></TopBar>
+    <TopBar :crumbs="archive ? [env, 'Reminders', 'Archive'] : [env, 'Reminders']"/>
     <div class=body>
       <div class=list>
-        <ResourceList v-bind="REMINDER_LIST" :archive="!!archive" :rows="list.data" :loading="list.loading" :error="list.error"
-          :href="(r) => base + '/' + r.n" :selected="(r) => String(r.n) === n"/>
+        <ResourceList v-bind="REMINDER_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(r) => base + '/' + r.n" :selected="(r) => String(r.n) === n">
+          <template #tools><a class="btn new" :href="home + '/new'">New reminder</a></template>
+        </ResourceList>
       </div>
       <Panel v-if="n === 'new'" label="New reminder" :close="base">
         <ActionBar :actions="creating" open="New reminder" :done="done"/>
@@ -1715,10 +1729,12 @@ function docList({ crumbs, url, base, empty }) {
       return { s, creating, done, crumbs: computed(() => crumbs(props)), base: computed(() => base(props)), empty, DOC_LIST };
     },
     template: `
-      <TopBar :crumbs="crumbs"><a class="btn new" :href="base + '/new'">New doc</a></TopBar>
+      <TopBar :crumbs="crumbs"/>
       <div class=body><div class=list>
         <div v-if="n === 'new'" class=compose-wrap><ActionBar :actions="creating" open="New doc" :done="done"/></div>
-        <ResourceList v-bind="DOC_LIST" :empty="empty" :rows="s.data" :loading="s.loading" :error="s.error" :href="(d) => '#/docs/' + d.n"/>
+        <ResourceList v-bind="DOC_LIST" :empty="empty" :rows="s.data" :loading="s.loading" :error="s.error" :href="(d) => '#/docs/' + d.n">
+          <template #tools><a class="btn new" :href="base + '/new'">New doc</a></template>
+        </ResourceList>
       </div></div>`,
   };
 }
@@ -2026,11 +2042,13 @@ const Tools = {
     return { list, item, creating, actions, done, base, TOOL_LIST };
   },
   template: `
-    <TopBar :crumbs="['Project', 'Tools']"><a class="btn new" :href="base + '/new'">New tool</a></TopBar>
+    <TopBar :crumbs="['Project', 'Tools']"/>
     <div class=body>
       <div class=list>
         <ResourceList v-bind="TOOL_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
-          :href="(t) => base + '/' + t.n" :selected="(t) => String(t.n) === n"/>
+          :href="(t) => base + '/' + t.n" :selected="(t) => String(t.n) === n">
+          <template #tools><a class="btn new" :href="base + '/new'">New tool</a></template>
+        </ResourceList>
       </div>
       <Panel v-if="n === 'new'" label="New tool" :close="base">
         <ActionBar :actions="creating" open="New tool" :done="done"/>
@@ -2332,7 +2350,7 @@ const ActivityPanel = {
       document.addEventListener("mousedown", outsideCrew);
       onCleanup(() => document.removeEventListener("mousedown", outsideCrew));
     });
-    return { hide: () => setActivityShown(false), accept, quick, box, grow, sendQuick, crew, agentsList, working };
+    return { accept, quick, box, grow, sendQuick, crew, agentsList, working };
   },
   template: `
     <div class=activity-panel>
@@ -2352,7 +2370,6 @@ const ActivityPanel = {
               </div>
             </div>
           </span>
-          <button type=button class=icon-btn title="Hide Activity" aria-label="Hide Activity" @click="hide"><Icon name="collapse"/></button>
         </span>
       </div>
       <template v-if="data">
