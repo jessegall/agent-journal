@@ -2448,7 +2448,7 @@ const Agent = {
             <p v-if="!about.data.dispatched.length" class="prose muted">No subagents from this session are recorded here.</p>
             <div v-else class=linked>
               <a v-for="a in about.data.dispatched" :key="a.id" class="sub log-row" :href="'#/env/' + env + '/agents/subagent/' + a.id">
-                <span class=log-text>{{ a.name }}</span><span class=log-work>{{ a.working ? 'Working' : 'Finished' }} · {{ a.age }}</span>
+                <span class=log-text>{{ a.name }}</span><span class=log-work>{{ a.working ? 'Working' : 'Finished' }}{{ a.model ? ' · ' + a.model : '' }} · {{ a.age }}</span>
               </a>
             </div>
           </div>
@@ -2606,7 +2606,7 @@ const ActivityPanel = {
               <p class=drop-sub>{{ g.label }} <span class=muted>{{ g.rows.length }}</span></p>
               <a v-for="a in g.rows" :key="a.kind + a.id" :class="['drop-row', {idle: !a.working}]" :href="'#/env/' + env + '/agents/' + a.kind + '/' + a.id"
                 :title="'Open ' + (a.name || (a.kind === 'subagent' ? 'subagent ' : 'session ') + a.id)" @click="crew.open = false">
-                <span class=drop-kind>{{ a.kind === 'subagent' ? 'Subagent' : 'Session' }} · {{ a.working ? 'Working' : a.state === 'finished' ? 'Finished' : 'Idle' }}{{ a.kind === 'subagent' && !a.working && a.age_text ? ' · ' + a.age_text : '' }}</span>
+                <span class=drop-kind>{{ a.kind === 'subagent' ? 'Subagent' : 'Session' }} · {{ a.working ? 'Working' : a.state === 'finished' ? 'Finished' : 'Idle' }}{{ a.kind === 'subagent' && a.model ? ' · ' + a.model : '' }}{{ a.kind === 'subagent' && !a.working && a.age_text ? ' · ' + a.age_text : '' }}</span>
                 <span class=drop-text>{{ a.name || (a.kind === 'subagent' ? 'Subagent ' + a.id : 'Session ' + a.id) }}<span v-if="a.parent" class=muted> · from session {{ a.parent }}</span></span>
               </a>
               </template>
