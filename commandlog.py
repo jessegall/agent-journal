@@ -368,6 +368,45 @@ def record(root: Path, track: str, parsed, at: str) -> None:
     _append(root, track, entry)
 
 
+QUEUE = "tool_queue"
+QUEUE_SIZE = 10
+# tool name -> the bucket a summed line counts it in
+BUCKETS = {"Bash": "ran", "Edit": "edited", "Write": "edited", "MultiEdit": "edited", "NotebookEdit": "edited",
+           "Read": "read", "Grep": "searched", "Glob": "searched"}
+# bucket -> (one, many) wording, in the order the line names them
+WORDING = {"ran": ("ran 1 command", "ran {n} commands"), "edited": ("edited 1 file", "edited {n} files"),
+           "read": ("read 1 file", "read {n} files"), "searched": ("searched 1 time", "searched {n} times"),
+           "other": ("used 1 other tool", "used {n} other tools")}
+
+
+def tools_text(counts: dict) -> str:
+    """"Ran 4 commands, edited 3 files, read 2 files": the queued tool uses as one line."""
+    parts = [(one if counts[b] == 1 else many.replace("{n}", str(counts[b])))
+             for b, (one, many) in WORDING.items() if counts.get(b)]
+    text = ", ".join(parts)
+    return text[:1].upper() + text[1:]
+
+
+def queue_tool(root: Path, track: str, stem: str, tool: str, at: str) -> None:
+    """Count one tool use the agent made outside the journal; ten of them become one Activity line."""
+    counts = state.get(root, QUEUE, None, stem=stem) or {}
+    bucket = BUCKETS.get(tool, "other")
+    counts[bucket] = counts.get(bucket, 0) + 1
+    state.put(root, QUEUE, counts, stem=stem)
+    if sum(counts.values()) >= QUEUE_SIZE:
+        flush_tools(root, track, stem, at)
+
+
+def flush_tools(root: Path, track: str, stem: str, at: str) -> None:
+    """Write whatever tool uses are queued as one Activity line, and empty the queue."""
+    counts = state.get(root, QUEUE, None, stem=stem) or {}
+    if not sum(counts.values()):
+        return
+    state.put(root, QUEUE, {}, stem=stem)
+    _append(root, track, {"at": at, "text": tools_text(counts), "kind": None, "n": None, "titled": False,
+                          "detail": "", "by": "Agent"})
+
+
 def _append(root: Path, track: str, entry: dict) -> None:
     with state.locked(root):
         items = state.tracked(root, KEY, track, [])
