@@ -251,5 +251,13 @@ check("past it, the counts and the two commands — never the claims themselves"
        any("a ruling that binds" in x for x in seen)), (True, False))
 check("and each mark fires once", sR.stop(True), "")
 
+# ---------------------------------------------------------------- a loop is owed only when something is ready, and does not outlive its process
+s11 = S(); s11.j("work", "start", "being worked"); s11.j("todo", "auto", "on"); s11.say("[!reply] on it")
+check("open work with nothing ready does not ask for a loop", s11.stop() != "auto is on, no loop running", True)
+s12 = S(); s12.j("todo", "chore"); s12.j("todo", "auto", "on"); s12.j("loop", "set"); s12.say("[!reply] looping")
+check("with a loop set, none is asked for", s12.stop() != "auto is on, no loop running", True)
+s12.fire("SessionStart", source="resume"); s12.say("[!reply] back")
+check("a resumed session has no loop, whatever it had before: it is asked again", s12.stop(), "auto is on, no loop running")
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
