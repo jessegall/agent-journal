@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.3 — A Questions icon in the top bar
+
+The top bar has a Questions icon between Search and Notifications. It opens the questions
+page and shows how many questions are waiting on you. Questions is still not in the
+sidebar.
+
 ## 1.131.2 — Attach files sits inside the message box
 
 The button for attaching files to a message is now a small paperclip in the top-right

@@ -249,6 +249,7 @@ const TopBar = {
     });
     const row = computed(() => (OVERVIEW.data && env.value ? OVERVIEW.data.environments.find((e) => e.name === env.value) : null));
     const waiting = computed(() => (row.value ? (row.value.notifications || 0) + (row.value.suggestions || 0) + (row.value.questions || 0) : 0));
+    const openCount = computed(() => (row.value ? row.value.questions || 0 : 0));
     const drop = reactive({ open: false });
     const notes = useFetch(() => drop.open && env.value && `/api/env/${env.value}/notifications`);
     const ideas = useFetch(() => drop.open && env.value && `/api/env/${env.value}/suggestions`);
@@ -266,7 +267,7 @@ const TopBar = {
     });
     const activity = ACTIVITY;
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
-    return { env, waiting, drop, notes, suggestions, asks, openQuestions, readOne, readAll, activity, toggleActivity };
+    return { env, waiting, openCount, drop, notes, suggestions, asks, openQuestions, readOne, readAll, activity, toggleActivity };
   },
   template: `
     <div class=top>
@@ -279,6 +280,10 @@ const TopBar = {
         <slot/>
         <template v-if="env">
           <a class=icon-btn :href="'#/env/' + env + '/search'" title="Search" aria-label="Search"><Icon name="search"/></a>
+          <span class=tool-wrap>
+            <a class=icon-btn :href="'#/env/' + env + '/questions'" title="Questions" aria-label="Questions"><Icon name="questions"/></a>
+            <span v-if="openCount" class=tool-badge>{{ openCount }}</span>
+          </span>
           <div class=drop-wrap>
             <button type=button :class="['icon-btn', {on: drop.open}]" title="Notifications" aria-label="Notifications"
               :aria-expanded="drop.open" @click="drop.open = !drop.open">
