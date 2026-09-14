@@ -102,6 +102,8 @@ push = read_line(12)
 params = (push or {}).get("params") or {}
 check("a suggestion the user decides is pushed to an idle session, naming it",
       ("accepted suggestion 1" in params.get("content", ""), params.get("meta", {}).get("suggestion")), (True, "1"))
+check("an accepted suggestion names the to-do it became and how to start it",
+      (" as to-do " in params.get("content", ""), "todos start " in params.get("content", "")), (True, True))
 check("and not pushed twice", read_line(7), None)
 
 j("auto-mode", "enable")

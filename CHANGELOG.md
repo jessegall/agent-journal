@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.2 — An accepted suggestion tells the agent which to-do to pick up
+
+When you accept a suggestion, an idle agent is told through the channel that it was accepted, which
+to-do it became, and the command to start it. Accepted with your change says the to-do carries the
+change, and a declined one says not to suggest it again, with your reason.
+
 ## 1.136.1 — The channel runs the code it was upgraded to
 
 The channel server runs as long as its session and loaded its code once, when the session started.
