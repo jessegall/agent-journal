@@ -669,6 +669,10 @@ _mine = [(e["text"], e["n"], e["detail"], e["by"]) for e in json.loads(get("/api
          if e["kind"] == "todo" and e["n"] == _urgent and e["by"] == "You"]
 check("a change made in the viewer is an Activity line by you, naming what changed",
       (("Changed to-do priority", _urgent, "low", "You") in _mine, ("Edited to-do", _urgent, "", "You") in _mine), (True, True))
+for _i, _value in enumerate(("150", "100", "120")):
+    commandlog.record_web(root, "alpha", "todos", "update", "900", {"priority": _value}, f"2099-01-04T00:00:0{_i}+00:00")
+check("a priority that matches a named level shows the name; any other number shows as it is",
+      [e["detail"] for e in commandlog.entries(root, "alpha") if e.get("n") == 900], ["high", "default", "120"])
 commandlog.record(root, "alpha", _commands.REGISTRY.parse(["todos", "priority", "140", "high"])[0], "2099-01-01T00:00:06+00:00")
 check("setting a priority names the to-do and the value",
       [(e["text"], e["n"], e["detail"]) for e in commandlog.entries(root, "alpha") if e.get("detail") == "high" and e.get("by") != "You"],

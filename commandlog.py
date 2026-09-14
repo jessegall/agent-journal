@@ -395,7 +395,24 @@ def kind_of(text: str) -> dict:
     return {}
 
 
+PRIORITY_LINES = {"Setting to-do priority", "Changed to-do priority"}
+
+
+def _named_priority(e: dict) -> dict:
+    """A priority line whose number is a named level shows the name."""
+    detail = str(e.get("detail") or "")
+    if e.get("text") not in PRIORITY_LINES or not detail.lstrip("-").isdigit():
+        return e
+    import todo
+    names = {num: name for name, num in todo.PRIORITY_LEVELS.items()}
+    return {**e, "detail": names.get(int(detail), detail)}
+
+
 def entries(root: Path, track: str) -> list[dict]:
+    return [_named_priority(e) if isinstance(e, dict) else e for e in _entries(root, track)]
+
+
+def _entries(root: Path, track: str) -> list[dict]:
     got = state.tracked(root, KEY, track, [])
     items = got if isinstance(got, list) else []
     out = []
