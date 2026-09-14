@@ -954,5 +954,16 @@ srv.server_close()
 thread.join(timeout=5)
 check("and once it stops, the status line says how to start one", "journal serve" in views.status_line(root, None), True)
 
+import notifications as _notif  # noqa: E402
+import inbox as _inbox_answer  # noqa: E402
+_inbox_answer.add(root, "is the cache on already? and tidy the logs", "2099-01-06T00:00:00+00:00", track="alpha")
+_qm = len(_inbox_answer._all(root, "alpha"))
+_inbox_answer.reply(root, _qm, "Yes.", "2099-01-06T00:00:01+00:00", track="alpha", part="is the cache on already?")
+_answered = lambda: [e for e in _activity.ActivityController._events(root, "alpha") if e["text"] == "Answered your question" and e["n"] == _qm]
+check("an answer the user has not read stands out in Activity", [e["needs"] for e in _answered()], ["open"])
+_nn = next(n for n, x in enumerate(_notif._all(root, "alpha"), 1) if x.get("about") == f"inbox:{_qm}")
+_notif.read(root, _nn, "2099-01-06T00:00:02+00:00", "alpha")
+check("once its notification is read, it is an ordinary line", [e["needs"] for e in _answered()], [""])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

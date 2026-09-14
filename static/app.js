@@ -356,7 +356,7 @@ const TopBar = {
               <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
                 <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
               </a>
-              <div v-for="x in notes.data || []" :key="'n' + x.n" class=drop-row>
+              <div v-for="x in notes.data || []" :key="'n' + x.n" :class="['drop-row', {answer: String(x.about).startsWith('inbox:')}]">
                 <span class=drop-text>{{ x.text }}</span>
                 <span class=drop-meta>{{ x.age || 'just now' }}
                   <a v-if="x.about && $refHref(x.about, env)" class="btn more" :href="$refHref(x.about, env)" :title="'Open ' + x.about_label" @click="drop.open = false">Open</a>
@@ -1988,12 +1988,14 @@ const EnvHome = {
         <div class=home-head><h2>Notifications</h2><span class=n>{{ notes.data.length }} unread</span>
           <button type=button class="btn more" @click="readAll">Mark all read</button></div>
         <div class=block>
-          <div v-for="x in notes.data" :key="x.n" class=note-row>
+          <div v-for="x in notes.data" :key="x.n" :class="['note-row', {answer: String(x.about).startsWith('inbox:')}]">
             <div class=note-text>{{ x.text }}
               <span class=muted> · {{ x.age || 'just now' }}</span>
             </div>
-            <a v-if="x.about && $refHref(x.about, env)" class=btn :href="$refHref(x.about, env)" :title="'Open ' + x.about_label">Open</a>
-            <button type=button class=btn @click="readOne(x)">Mark read</button>
+            <span class=note-actions>
+              <a v-if="x.about && $refHref(x.about, env)" class=btn :href="$refHref(x.about, env)" :title="'Open ' + x.about_label">Open</a>
+              <button type=button class=btn @click="readOne(x)">Mark read</button>
+            </span>
           </div>
         </div>
       </section>
@@ -2609,6 +2611,7 @@ const ActivityPanel = {
               </a>
               <span class=activity-actions>
                 <a v-if="e.kind === 'question'" class="btn warn" :href="href(e)">Answer</a>
+                <a v-else-if="e.kind === 'message'" class="btn warn" :href="href(e)">Open</a>
                 <template v-else-if="e.kind === 'suggestion'">
                   <button type=button class="btn warn" @click="accept(e)">Accept</button>
                   <a class=btn :href="href(e)">Review</a>

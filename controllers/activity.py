@@ -169,6 +169,8 @@ class ActivityController(Controller):
             by = USER if c.get("source") == "web" else AGENT
             add(c.get("at"), "comment", say("comment_written"), n, by, True, about=c.get("about") or "")
             add(c.get("done_at"), "comment", say("comment_handled"), n, AGENT, about=c.get("about") or "")
+        unread_answers = {int(x["about"].split(":")[1]) for _, x in __import__("notifications").unread(root, env)
+                          if str(x.get("about") or "").startswith("inbox:")}
         for n, m in enumerate(inbox._all(root, env), 1):
             if m.get("removed"):
                 continue
@@ -176,7 +178,9 @@ class ActivityController(Controller):
             add(m.get("processed"), "message", say("message_processed"), n, AGENT, detail=became(m))
             for r in m.get("replies") or []:
                 if r.get("part") and r.get("source") != "web":
-                    add(r.get("at"), "message", say("message_answered"), n, AGENT)
+                    # an answer the user has not read yet stands out, like a question waiting on them
+                    add(r.get("at"), "message", say("message_answered"), n, AGENT,
+                        needs="open" if n in unread_answers else "")
         comments_mod = __import__("comments")
         about_of: dict[int, str] = {}
         for order, c in enumerate(commandlog.entries(root, env)):

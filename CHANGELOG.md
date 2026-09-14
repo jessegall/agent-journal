@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.132.7 — An answer to your question stands out
+
+An "Answered your question" line was easy to miss. Until you read its notification, it now shows
+amber in Activity with an Open button, like a question waiting on you. Its notification is amber on
+Home and in the bell's dropdown too. The Open button on a Home notification sat in the middle of the
+row; it now sits with Mark read on the right.
+
 ## 1.132.6 — An "Answered your question" notification opens the answer
 
 The notification only said an answer was there; it could be marked read but not opened. It now has an
