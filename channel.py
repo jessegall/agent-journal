@@ -102,10 +102,17 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
         decided = s.get("decided_at") or s.get("declined_at")
         if _epoch(decided) < since:
             continue
-        verb = {"accepted": "accepted", "adjusted": "accepted with a change", "declined": "declined"}.get(suggestions.status(s), "decided")
-        got.append((f"{env}:suggestion:{n}:{decided or ''}",
-                    {"content": f"The user {verb} suggestion {n} on {env}: {_gist(s.get('title', ''))}",
-                     "meta": {"env": env, "suggestion": str(n)}}))
+        status, title, todo_n = suggestions.status(s), _gist(s.get("title", "")), (s.get("became") or "").partition(":")[2]
+        if status in ("accepted", "adjusted") and todo_n:
+            change = " with a change of their own, which the to-do carries" if status == "adjusted" else ""
+            content = (f"The user accepted suggestion {n} on {env}{change}: {title}. It is filed as to-do {todo_n}: "
+                       f"pick it up with `.journal/journal.py todos start {todo_n}`, or leave it on the list if other work comes first.")
+        elif status == "declined":
+            why = f" Why: {_gist(s['declined'])}" if s.get("declined") and s["declined"] is not True else ""
+            content = f"The user declined suggestion {n} on {env}: {title}. Do not suggest it again.{why}"
+        else:
+            content = f"The user decided suggestion {n} on {env}: {title}"
+        got.append((f"{env}:suggestion:{n}:{decided or ''}", {"content": content, "meta": {"env": env, "suggestion": str(n)}}))
     for n, c in comments.untold(ROOT, env):
         if _epoch(c.get("at")) < since:
             continue
