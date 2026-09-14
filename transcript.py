@@ -514,6 +514,10 @@ def read(path: Path, cache: Path | None = None) -> tuple[list[Line], list[int]]:
         _take(raw, lines, boundaries, asked)
     if cache is not None and end:
         _keep(cache, path, st, lines, boundaries, asked, start + end)
+    # THE LAST RECORD MAY HAVE NO NEWLINE YET, and it is often the turn's final message, the one the
+    # stop hook judges. It is read now when it parses, and parsed again next time from the kept position.
+    if cache is not None and end < len(data):
+        _take(data[end:], lines, boundaries, asked)
     return lines, boundaries
 
 
