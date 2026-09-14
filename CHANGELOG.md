@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.49 — Closed items stay in a list for a week
+
+Lists used to hide their closed items (Done, Answered, Struck, Ended, Retired, Declined,
+Withdrawn, Archived) behind a "Show …" switch, and switching it on showed every closed item ever.
+The switch is gone. Each list now shows its closed section with only the items closed in the
+last 7 days. Anything older is out of the list, and the next release adds an Archive button to
+reach it. Documents are never archived, so superseded and archived documents stay listed.
+
 ## 1.131.48 — Every list knows when its items closed
 
 The first step toward the Archive. Every list the viewer shows now says when each closed item
