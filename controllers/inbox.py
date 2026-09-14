@@ -6,16 +6,16 @@ import fmt
 import inbox
 from controller import Controller, Payload, Result
 from payloads.common import ListingPayload, MovePayload, TextPayload, WhyPayload
-from payloads.inbox import FilePayload, ProcessPayload, StorePayload
+from payloads.inbox import DetachPayload, FilePayload, ProcessPayload, StorePayload
 
 
 class InboxController(Controller):
     resource = "inbox"
     noun = "message"
-    actions = ("index", "show", "store", "update", "process", "file", "done", "move", "destroy", "reply", "waiting")
-    numbered = ("show", "update", "process", "file", "done", "move", "destroy", "reply")
+    actions = ("index", "show", "store", "update", "process", "file", "detach", "done", "move", "destroy", "reply", "waiting")
+    numbered = ("show", "update", "process", "file", "detach", "done", "move", "destroy", "reply")
     payloads = {"index": ListingPayload, "store": StorePayload, "update": TextPayload, "process": ProcessPayload,
-                "file": FilePayload, "move": MovePayload, "destroy": WhyPayload, "reply": TextPayload}
+                "file": FilePayload, "detach": DetachPayload, "move": MovePayload, "destroy": WhyPayload, "reply": TextPayload}
     # a processed or moved message is the record of what it became
     EDITS = frozenset({"update", "process", "file", "done", "move"})
 
@@ -72,6 +72,9 @@ class InboxController(Controller):
 
     def file(self, root: Path, p: FilePayload) -> Result:
         return Result.of(inbox.file_into(root, p.id, p.name, p.into, p.at, p.env or None), self._row(root, p, p.id))
+
+    def detach(self, root: Path, p: DetachPayload) -> Result:
+        return Result.of(inbox.detach(root, p.id, p.name, p.why, p.at, p.env or None), self._row(root, p, p.id))
 
     def destroy(self, root: Path, p: WhyPayload) -> Result:
         return Result.of(inbox.archive(root, p.id, p.why, p.at, p.env or None), self._row(root, p, p.id))

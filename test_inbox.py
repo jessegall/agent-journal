@@ -202,6 +202,24 @@ check("keep leaves it where it is held", (code, (_held / "notes.txt").is_file())
 code, out = j("messages", "done", str(_mn))
 check("and then done is allowed", code, 0)
 
+# ------------------------------------------------------------------ a file is taken off a message
+(_src / "extra.log").write_text("not needed after all")
+code, out = j("messages", "add", "and the log too", f"--file={_src / 'extra.log'}")
+_dn = int(re.search(r"message (\d+)", out).group(1))
+_dheld = d / ".journal" / "environments" / "default" / "inbox-files" / str(_dn)
+code, out = j("messages", "detach", str(_dn), "extra.log")
+check("removing a file wants a reason", (code, (_dheld / "extra.log").is_file()), (1, True))
+code, out = j("messages", "detach", str(_dn), "extra.log", "the user sent the wrong file")
+check("a removed file moves to struck/, not deleted", (code, (_dheld / "extra.log").exists(), (_dheld / "struck" / "extra.log").read_text()),
+      (0, False, "not needed after all"))
+check("the message still lists it, marked removed with the reason", "removed: the user sent the wrong file" in j("messages", "show", str(_dn))[1], True)
+code, out = j("messages", "detach", str(_dn), "extra.log", "again")
+check("removing it twice is refused", code, 1)
+j("messages", "process", str(_dn), "--part=and the log too", "--became=noted")
+check("a removed file does not hold up done", j("messages", "done", str(_dn))[0], 0)
+code, out = j("messages", "detach", str(_mn), "shot.png", "it is in the doc")
+check("a file already filed into a doc is removed there, not from the message", (code, "docs detach" in out), (1, True))
+
 # ------------------------------------------------------------------ archive
 code, out = j("messages", "add", "never mind this one")
 _an = int(re.search(r"message (\d+)", out).group(1))

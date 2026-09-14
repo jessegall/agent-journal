@@ -13,6 +13,11 @@ class FilePayload(Payload):
     into = Field(str)
 
 
+class DetachPayload(Payload):
+    name = Field(str)
+    why = Field(str)
+
+
 class ProcessPayload(Payload):
     part = Field(str)
     became = Field(list)
