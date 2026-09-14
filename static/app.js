@@ -561,6 +561,8 @@ const ActionBar = {
       if (s.open === a.label && !props.open) { s.open = ""; return; }
       s.open = a.label;
       s.values = Object.fromEntries((a.fields || []).map((f) => [f.name, f.value ?? ""]));
+      // an action with nothing to fill in runs on the click; if it fails, its form stays open with the error
+      if (a.immediate) go();
     }
     if (props.open) {
       const a = props.actions.find((x) => x.label === props.open);
@@ -1728,9 +1730,10 @@ const DocDetail = {
       const url = `/api/docs/${d.n}`;
       return [
         { label: "Edit", method: "PATCH", url, only: true, submit: "Save",
-          fields: [{ name: "abstract", label: "Abstract", value: d.abstract },
-                   { name: "status", label: "Status", kind: "select", value: d.status,
-                     options: [{ value: "draft", label: "Draft" }, { value: "final", label: "Final" }] }] },
+          fields: [{ name: "abstract", label: "Abstract", value: d.abstract }] },
+        d.status === "final"
+          ? { label: "Mark as draft", method: "POST", url: `${url}/draft`, immediate: true, submit: "Mark as draft" }
+          : { label: "Mark final", method: "POST", url: `${url}/final`, immediate: true, submit: "Mark final" },
         { label: "Add part", method: "POST", url: `${url}/part`, submit: "Add part",
           fields: [{ name: "title", label: "Title" }, { name: "body", label: "Text", kind: "area" }] },
         { label: "Move", method: "POST", url: `${url}/move`,

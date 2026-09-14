@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.46 — Mark a document final, or back to a draft, in one click
+
+A document's status could only be changed inside its Edit form, from a select. A document's page
+now has its own button: **Mark final** on a draft, and **Mark as draft** on a final one. One click
+changes it. The Edit form now holds just the abstract.
+
 ## 1.131.45 — A question's options can explain themselves
 
 An option on a question was a single line, so the reasoning behind a choice, or what it would
