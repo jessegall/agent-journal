@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.105.0 — the viewer has a Suggestions page
+
+Each environment has a Suggestions page, listed in the Environment section of the sidebar with
+how many wait on you. A suggestion's panel shows what the agent proposes and why, what it is
+about, and Accept, Adjust (accept with your change) and Decline; an accepted one links to the
+to-do filed from it. Declined and withdrawn ones are hidden until you show them. Comments work
+on a suggestion like on any other resource.
+
 ## 1.104.0 — Home's side panel is the resource's own panel
 
 A to-do, question, message or piece of work opened from Home shows the same panel as on its own
