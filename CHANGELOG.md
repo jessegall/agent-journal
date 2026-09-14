@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.136.1 — The channel runs the code it was upgraded to
+
+The channel server runs as long as its session and loaded its code once, when the session started.
+An upgrade in between never reached it, so a session started before 1.135.1 was never told about an
+accepted or declined suggestion. The server now checks the package's files on every poll and, when one
+changed, reloads its poll code from disk, keeping its start time so nothing older is pushed.
+
+A channel server already running is still the old code: reconnect it once (`/mcp`) or start a new
+session, and it follows upgrades from then on.
+
 ## 1.136.0 — A coding style of the project's own, and to-dos that archive themselves
 
 A minor release that gathers everything since 1.135.0:
