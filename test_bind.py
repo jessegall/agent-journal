@@ -621,6 +621,11 @@ check("a session that ends leaves its environment", tracks.bound(root2, "rrrrrrr
 r.fire("SessionStart", source="resume")
 check("and resumed, it is back on it", tracks.bound(root2, "rrrrrrrr-9"), "resumeenv")
 check("and it counts as running again, not as the session that ended", "rrrrrrrr-9" in tracks.live(root2), True)
+r.fire("PostToolUse", agent_id="sub123abc", tool_name="Read", tool_input={"file_path": "x.py"}, tool_response={})
+import agents  # noqa: E402
+check("a subagent's heartbeat lands on the environment of the session that sent it",
+      ("sub123abc" in (agents.seen(root2).get("resumeenv") or {}), agents.parent_of(root2, "resumeenv", "sub123abc")),
+      (True, "rrrrrrrr-9"))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -3258,7 +3258,8 @@ def main(raw: str | None = None) -> int:
         # spends its whole design avoiding.
         aid = state.slug(str(payload.get("agent_id") or ""))
         here = tracks.current(ROOT, ctx.stem if ctx else None)
-        agents.heartbeat(ROOT, here, aid, _parent_of(payload))
+        # the subagent's own id is bound to nothing; it works on the environment of the session that sent it
+        agents.heartbeat(ROOT, tracks.current(ROOT, _parent_of(payload)), aid, _parent_of(payload))
         lent = grants.granted(ROOT, _parent_of(payload))
         # ON THE TOOL'S RESULT, NOT BEFORE IT. `DELIVERS_CONTEXT` does not list PreToolUse
         # — the harness rejects `additionalContext` there, measured, and the reference
