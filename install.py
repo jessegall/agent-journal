@@ -160,8 +160,7 @@ def briefing(project: Path, check: bool, conf: dict) -> list[str]:
     """
     import builtin
     out = []
-    if not conf.get("builtin_rules", True):
-        return out
+    # always written: the package's own rules hold in every project, and no setting turns them off
     block = builtin.block()
     for name in BRIEFED:
         f = project / name

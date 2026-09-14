@@ -779,6 +779,15 @@ _again = (d / "CLAUDE.md").read_text()
 check("an update puts an edited block back as shipped, once, and keeps what is outside it",
       ("EDITED BY HAND" in _again, _again.count("BEGIN: agent-journal"), "# mine, kept" in _again, "haiku for mechanical" in _again),
       (False, 1, True, True))
+# the package's own rules cannot be switched off: an old settings file that tried is told the key does nothing
+(d / ".journal" / "settings.json").write_text(json.dumps({"builtin_rules": False}))
+(d / "CLAUDE.md").write_text("# mine\n")
+subprocess.run([I], capture_output=True, text=True, timeout=180)
+check("install writes the journal's rules even where builtin_rules is false",
+      "B1 — Never dispatch a subagent without naming its model" in (d / "CLAUDE.md").read_text(), True)
+import settings as _settings_mod  # noqa: E402
+check("and the setting reads as unknown, so whoever kept it learns it does nothing",
+      any("builtin_rules" in p for p in _settings_mod.load(d / ".journal")[1]), True)
 check("and every focused skill beside it",
       [n for n in ("journal-todos", "journal-questions", "journal-messages", "journal-memory", "journal-docs", "journal-agents")
        if not (d / ".claude" / "skills" / n / "SKILL.md").is_file()], [])
