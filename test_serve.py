@@ -715,6 +715,11 @@ check("setting a priority names the to-do and the value",
 import controllers.activity as _activity  # noqa: E402
 check("a long activity text is cut at a word with an ellipsis",
       (len(_activity.short("word " * 40)) <= 100, _activity.short("word " * 40).endswith("word…")), (True, True))
+for _event, _want in (("PreToolUse", True), ("PostToolUse", True), ("UserPromptSubmit", True), ("Stop", False)):
+    state.put(root, "last_event", _event, stem="presence-session")
+    check(f"an agent whose last hook event is {_event} reads as {'working' if _want else 'idle'}",
+          _activity.agent_working(root, "presence-session"), _want)
+check("an agent with no hook event on record does not read as working", _activity.agent_working(root, "no-such-session"), False)
 check("Activity says whether auto mode is on, for the footer's switch",
       isinstance(json.loads(get("/api/env/alpha/activity")[2]).get("auto"), bool), True)
 status, headers, body = get("/help/pins.md")

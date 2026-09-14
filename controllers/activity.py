@@ -52,6 +52,13 @@ def say(message: str, /, **values) -> str:
     return render(MESSAGES[message], **values)
 
 
+def agent_working(root: Path, stem: str) -> bool:
+    """Is the session busy right now? Its last hook event says: a Stop means it is waiting for the user.
+    A long tool call fires nothing until it ends, so its last event stays the PreToolUse that started it."""
+    import state
+    return state.get(root, "last_event", "", stem=stem) not in ("Stop", "")
+
+
 def context_use(path: Path | None, window: int) -> dict | None:
     """How full the session's context is, or None when the window or the reading is unknown."""
     import context
@@ -82,7 +89,7 @@ class ActivityController(Controller):
         for stem, info in tracks.live(root).items():
             if info["track"] == env:
                 window = settings.load(root)[0].get("context_window") or state.get(root, "window", 0) or 0
-                return {"session": stem[:8], "seen": tracks.age_text(info["age"]),
+                return {"session": stem[:8], "seen": tracks.age_text(info["age"]), "working": agent_working(root, stem),
                         "context": context_use(transcript.find(root.parent, stem), window)}
         return None
 
