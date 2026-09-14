@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.71 — A message you send shows in Activity right away
+
+After sending a message from the Messages page or from the box under Activity, the "Wrote message"
+line appeared only when Activity next refreshed, up to five seconds later. Activity now reloads as
+soon as the message is stored, and after any other change you make in the viewer.
+
 ## 1.131.70 — Help pages say how the agent uses each resource
 
 Each page's information button explained what a resource is and what you can do with it, but not
