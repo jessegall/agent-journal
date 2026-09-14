@@ -111,10 +111,10 @@ s.journal("todo", "third chore")
 s.start()
 s.say("hello", "user"); s.say("[!reply] hi")
 label, text = s.stop()
-# HELD AND SAID ARE THE SAME SHAPE NOW. Both travel in additionalContext and both re-open
-# the turn — the reference is explicit about it — so an empty label no longer means "said
-# rather than held". What is worth asserting is which subject spoke, and that it does not
-# read as an instruction.
+# A NOTE THAT IS ONLY SAID goes to the user as systemMessage and to the agent with the next
+# prompt: additionalContext at a stop would re-open the turn for something nobody owes an
+# action on. What is worth asserting is which subject spoke, and that it does not read as an
+# instruction.
 check("auto off: an idle stop says what waits, and does not instruct",
       (label, "not an instruction" in text), ("journal reminded Claude: 3 to-do(s) waiting on `default`", True))
 s.journal("todo", "auto", "on")
@@ -725,6 +725,21 @@ label, text = s.stop()
 s.journal("todo", "add", "a third row")
 check("a snapshot the record has not moved past is still shown in full",
       "the second row" in s.journal("next")[1] or "to-do 2" in s.journal("next")[1], True)
+
+# ---------------------------------------------------------------- a note that is only said does not re-open the turn
+d = project(); s = Session(d, "s1")
+s.journal("todo", "one that waits on a person")
+s.journal("todo", "auto", "on")
+s.journal("todo", "ask", "1", "which way?")
+_raw = json.loads(s.fire("Stop") or "{}")
+check("nothing to pick up is shown to the user, and the stop does not re-open the agent's turn",
+      ("nothing on the list can be picked up" in _raw.get("systemMessage", ""), "hookSpecificOutput" in _raw, _raw.get("decision")),
+      (True, False, None))
+_prompt = json.loads(s.fire("UserPromptSubmit", prompt="ok, carry on") or "{}")
+_again = json.loads(s.fire("UserPromptSubmit", prompt="and again") or "{}")
+check("the agent is handed the same note with the user's next prompt, once",
+      ("nothing on the list can be picked up" in (_prompt.get("hookSpecificOutput") or {}).get("additionalContext", ""),
+       "nothing on the list can be picked up" in (_again.get("hookSpecificOutput") or {}).get("additionalContext", "")), (True, False))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
