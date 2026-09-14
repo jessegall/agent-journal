@@ -479,6 +479,19 @@
   .home-body { display: grid; grid-template-columns: minmax(0, 1fr); }
   .home-body:has(> .panel) { grid-template-columns: minmax(0, 1fr) clamp(340px, 28%, 420px); }
   .home-body > .panel { width: auto; }
+  .agent-work { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .agent-work-head, .agent-work-row { display: grid; grid-template-columns: minmax(0, 1fr) 64px 48px 60px 96px; column-gap: 12px;
+    align-items: center; padding: 0 14px; }
+  .agent-work-head { height: 32px; font-size: 11.5px; color: var(--text-3); border-bottom: 1px solid var(--border); background: var(--raised); }
+  .agent-work-row { min-height: 38px; border-bottom: 1px solid var(--border); color: var(--text); text-decoration: none; font-size: 13px; }
+  .agent-work-row:last-of-type { border-bottom: none; }
+  .agent-work-row:hover { background: var(--hover); }
+  .agent-work-row .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-work-row .num, .agent-work-row .age, .agent-work-status { color: var(--text-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .agent-work-row .age { text-align: right; }
+  .agent-work-head span:last-child { text-align: right; }
+  .agent-work-status.open { color: var(--accent-text); }
+  .agent-work-more { align-self: center; margin: 8px 0; }
   .panel-link { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; margin-left: -8px; border-radius: 6px;
     color: inherit; text-decoration: none; }
   .panel-link:hover { background: var(--hover); color: var(--text); }
