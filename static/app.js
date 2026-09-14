@@ -2652,7 +2652,7 @@ const ActivityPanel = {
             @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), sendQuick())"
             @keydown.meta.enter.prevent="sendQuick" @keydown.ctrl.enter.prevent="sendQuick"></textarea>
           <div class=activity-compose-bar>
-            <span class=hint>{{ quick.error || 'Enter sends, Shift+Enter adds a line' }}</span>
+            <span class=hint>{{ quick.error }}</span>
             <button type=submit class="btn primary" :disabled="quick.sending || !quick.text.trim()">Send</button>
           </div>
         </form>
