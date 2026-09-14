@@ -131,6 +131,19 @@ def working(root: Path, track: str, agent: str) -> bool:
     return not finished(root, track, agent) and active(root, track, agent, ACTIVE_MINUTES)
 
 
+def defined_model(project: Path, kind: str, home: Path | None = None) -> str:
+    """The model a custom agent's own definition sets, matched by its `name:`, in the project's or the user's agents; else ""."""
+    if not kind:
+        return ""
+    for base in (project / ".claude" / "agents", (home or Path.home()) / ".claude" / "agents"):
+        for f in sorted(base.glob("*.md")) if base.is_dir() else []:
+            head = f.read_text(errors="replace").split("\n---", 1)[0]
+            fields = {k.strip(): v.strip() for k, _, v in (line.partition(":") for line in head.splitlines()[1:])}
+            if fields.get("name") == kind and fields.get("model"):
+                return fields["model"]
+    return ""
+
+
 def parent_of(root: Path, track: str, agent: str) -> str:
     got = state.get(root, PARENT, {})
     return ((got if isinstance(got, dict) else {}).get(track) or {}).get(state.slug(agent), "")

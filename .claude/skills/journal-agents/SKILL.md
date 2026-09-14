@@ -16,7 +16,8 @@ Every command runs through `.journal/journal.py`; `journal` is an alias for it.
 without invention, `opus` only where the task turns on judgement. Unset hands out the
 orchestrator's own, which is the most expensive model in the room. The user naming a model
 is not an exception to this — it is the rule being followed; what it forbids is dispatching
-without deciding.
+without deciding. The hook enforces it: a dispatch with no `model` is refused, except a fork,
+which cannot take one, and a custom agent whose own definition sets its model.
 
 **A dispatched agent works YOUR environment, and a worktree does not change that.** A
 worktree is orthogonal to the journal: it is not an environment, does not hold one, and

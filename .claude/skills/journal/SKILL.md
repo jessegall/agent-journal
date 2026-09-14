@@ -271,6 +271,7 @@ thing to do now.
 | *the user answered question N*                                 | act on the answer; `journal questions show <n>` reads it in full |
 | *the user decided suggestion N*                                | accepted or adjusted: a to-do was filed, work it like any other; declined: drop it and do not file it again |
 | *your reply proposes a change nobody asked for*                | a hint: `journal suggest "<the change>" --brief` if the user should decide it; otherwise ignore |
+| *A subagent dispatch must name its model*                       | add `model`: haiku, sonnet or opus. A fork, or an agent whose definition sets its model, goes through |
 | *AUTO IS ON, so the question tool is refused*                  | `questions add "<question>" --about=<ref>` and carry on with what does not depend on it |
 | *N message(s) carried no tag*                                  | tag your next message; it will not hold for those lines again |
 | *N piece(s) of work still open*                                | `work end` it, `update` where it got to, or `work await "<what>"` if it is in flight |
