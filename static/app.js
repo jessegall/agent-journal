@@ -2673,14 +2673,14 @@ const ActivityPanel = {
           </TransitionGroup>
         </div>
         <form v-if="env" class=activity-compose @submit.prevent="sendQuick">
-          <textarea ref=box v-model="quick.text" rows=1 placeholder="Message the agent" aria-label="Message the agent"
-            :disabled="quick.sending" @input="grow"
-            @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), sendQuick())"
-            @keydown.meta.enter.prevent="sendQuick" @keydown.ctrl.enter.prevent="sendQuick"></textarea>
-          <div class=activity-compose-bar>
-            <span class=hint>{{ quick.error }}</span>
-            <button type=submit class="btn primary" :disabled="quick.sending || !quick.text.trim()">Send</button>
+          <div class=compose-field>
+            <textarea ref=box v-model="quick.text" rows=1 placeholder="Message the agent" aria-label="Message the agent"
+              :disabled="quick.sending" @input="grow"
+              @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), sendQuick())"
+              @keydown.meta.enter.prevent="sendQuick" @keydown.ctrl.enter.prevent="sendQuick"></textarea>
+            <button v-if="quick.text.trim()" type=submit class=compose-send :disabled="quick.sending" title="Send" aria-label="Send"><Icon name="arrow"/></button>
           </div>
+          <p v-if="quick.error" class=compose-error>{{ quick.error }}</p>
         </form>
       </template>
     </div>`,
