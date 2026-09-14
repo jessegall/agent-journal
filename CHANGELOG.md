@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.131.47 — A working agent is marked in the accent colour, not green
+
+The dot that says an agent is working, in the Environments list and the sidebar footer, was a
+bright green. Green already means "done" elsewhere in the viewer, and it read like a random
+colour for that environment. The dot now uses the viewer's indigo accent, with a slow, soft
+pulse, so it reads as "working right now". An environment with no agent keeps a plain grey dot,
+and green is left for done.
+
 ## 1.131.46 — Mark a document final, or back to a draft, in one click
 
 A document's status could only be changed inside its Edit form, from a select. A document's page
