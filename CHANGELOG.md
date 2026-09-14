@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.101.1 — the message box says when no agent will see a message yet
+
+A message reaches an agent only at that session's next hook event, so a message left while no
+session is working the environment waits. The viewer's message box now says so under the text
+field ("No agent is working on this environment right now; the message waits until a session
+picks it up") instead of promising the agent will be told at its next stop.
+
 ## 1.101.0 — the agent can notify the user
 
 `journal notify "<what finished>" [--about="todo 22"]` puts a notification at the top of the
