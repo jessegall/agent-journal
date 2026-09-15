@@ -145,6 +145,12 @@ check("a plan the user approves in the viewer is pushed to an idle session, nami
       (params.get("meta", {}).get("plan"), "approved plan 1" in params.get("content", ""), "the first phase, is current" in params.get("content", "")),
       ("1", True, True))
 check("and only once", read_line(7), None)
+_plans.set_auto(root, 1, True, _dt.now(_tz.utc).isoformat(timespec="seconds"), source="web", track="default")
+push = read_line(12)
+params = (push or {}).get("params") or {}
+check("switching a plan to auto mode in the viewer is pushed to an idle session",
+      (params.get("meta", {}).get("plan"), "to auto mode" in params.get("content", "")), ("1", True))
+check("and that push comes once", read_line(7), None)
 
 j("auto-mode", "enable")
 state.put(root, "last_event", "PreToolUse", stem=STEM)
