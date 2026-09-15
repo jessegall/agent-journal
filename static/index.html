@@ -139,6 +139,11 @@
   .fold { width: 5px; height: 5px; margin-right: 4px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
     transform: rotate(45deg); transition: transform .15s; opacity: .7; }
   .fold.shut { transform: rotate(-45deg); }
+  /* a list group's header folds its rows away; the count stays, so a folded group still says how much it holds */
+  .ghead-fold { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: -2px; padding: 0;
+    border: none; background: transparent; color: var(--text-3); cursor: pointer; }
+  .ghead-fold:hover { color: var(--text); }
+  .ghead-fold .fold { margin: 0; }
   .item { display: flex; align-items: center; gap: 9px; padding: 6px 8px; border-radius: 6px; color: var(--text-2); font-size: 13px; }
   .item:hover { background: var(--hover); color: var(--text); }
   .item.on { background: var(--sel); color: var(--text); }

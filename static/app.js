@@ -493,6 +493,15 @@ const TopBar = {
 };
 
 // a section of any panel folds from its label; what is folded is remembered by the label's name
+//: list name -> {group key: folded}, so a group the user folded or opened keeps that state here
+const LIST_FOLDS_KEY = "journal.list.folded";
+function listFolds() {
+  try { return JSON.parse(localStorage.getItem(LIST_FOLDS_KEY) || "{}"); } catch (e) { return {}; }
+}
+function saveListFolds(folds) {
+  try { localStorage.setItem(LIST_FOLDS_KEY, JSON.stringify(folds)); } catch (e) { /* storage off */ }
+}
+
 const FOLDED_KEY = "journal:folded";
 function foldedNames() {
   try { return new Set(JSON.parse(localStorage.getItem(FOLDED_KEY) || "[]")); } catch (e) { return new Set(); }
@@ -952,7 +961,7 @@ const PAGE_ROWS = 25;
 // how long a closed item stays in its list before it counts as archived
 const RECENT_MS = 7 * 24 * 60 * 60 * 1000;
 
-// groups: {key, label, kind, closed, match(row)}; a row marked live stays listed in a closed group until it closes; columns: {priority, status, num, numWidth, title, sub, cite, age, ageWidth, library, struck}
+// groups: {key, label, kind, closed, folded, match(row)}; a row marked live stays listed in a closed group until it closes; columns: {priority, status, num, numWidth, title, sub, cite, age, ageWidth, library, struck}
 // a row's type is a plain tinted word; the status dot beside it already carries state
 const TYPES = {
   question: { label: "Question", tint: "#c9955e" }, message: { label: "Message", tint: "#6fae7d" },
@@ -1036,7 +1045,19 @@ const ResourceList = {
     const open = (event, row) => { if (props.pick) { event.preventDefault(); props.pick(row); } };
     const moving = (r) => !!state.held[rowKey(r)];
     const fresh = (r) => !!state.arrived[rowKey(r)];
-    return { state, sections, closable, archived, sortOf, setSort, more, open, moving, fresh, TYPES };
+    // a group starts as its list asks, and keeps whatever the user chose here
+    const folds = reactive(listFolds());
+    const folded = (g) => {
+      const kept = folds[props.name || ""];
+      const chose = kept ? kept[g.key] : undefined;
+      return chose === undefined ? !!g.folded : chose;
+    };
+    const fold = (g) => {
+      const list = props.name || "";
+      folds[list] = { ...(folds[list] || {}), [g.key]: !folded(g) };
+      saveListFolds(folds);
+    };
+    return { state, sections, closable, archived, sortOf, setSort, more, open, moving, fresh, folded, fold, TYPES };
   },
   template: `
     <div v-if="bar" class=viewbar>
@@ -1057,6 +1078,8 @@ const ResourceList = {
       <TransitionGroup tag="div" class=groups name="group" appear>
       <div v-for="g in sections" :key="g.key" class=lgroup>
         <div v-if="g.label" class=ghead>
+          <button type=button class=ghead-fold :aria-expanded="!folded(g)" :title="folded(g) ? 'Show these' : 'Fold these away'"
+            :aria-label="(folded(g) ? 'Show ' : 'Fold away ') + g.label" @click="fold(g)"><span :class="['fold', {shut: folded(g)}]"></span></button>
           <StatusIcon v-if="g.kind" :kind="g.kind"/>{{ g.label }}<span class=n>{{ g.total }}</span>
           <span class=sort>
             <select v-if="sorts.length > 1" class=sort-select :value="sortOf(g.key).by" aria-label="Sort by"
@@ -1071,7 +1094,7 @@ const ResourceList = {
             </button>
           </span>
         </div>
-        <TransitionGroup tag="div" :class="['rows', {quiet: state.quiet}]" name="row" appear>
+        <TransitionGroup v-if="!folded(g)" tag="div" :class="['rows', {quiet: state.quiet}]" name="row" appear>
         <a v-for="(r, i) in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {library: columns.library, sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
           :style="{'--i': i, '--num-w': columns.numWidth || '44px', ...(columns.ageWidth ? {'--age-col': columns.ageWidth} : {})}" :href="href(r)" @click="open($event, r)">
           <PriorityIcon v-if="columns.priority" :value="columns.priority(r)"/>
@@ -1086,7 +1109,7 @@ const ResourceList = {
           <span v-if="columns.age" :class="['age', {warn: columns.ageWarn && columns.ageWarn(r)}]" :title="r.age || null">{{ columns.age(r) }}</span>
         </a>
         </TransitionGroup>
-        <button v-if="g.rows.length < g.total" type=button class="btn more-rows" @click="more(g.key)">Show {{ Math.min(limit, g.total - g.rows.length) }} more</button>
+        <button v-if="!folded(g) && g.rows.length < g.total" type=button class="btn more-rows" @click="more(g.key)">Show {{ Math.min(limit, g.total - g.rows.length) }} more</button>
       </div>
       </TransitionGroup>
       <p v-if="!sections.length" class=empty>{{ archive ? 'Nothing here closed more than a week ago.' : rows.length && closable ? 'Nothing here is open, and nothing closed in the last week.' : empty }}</p>
@@ -1960,7 +1983,7 @@ function suggestionKind(s) { return s.status === "open" ? "waiting" : s.status =
 
 const INBOX_LIST = {
   groups: [{ key: "you", label: "Waiting on you", kind: "waiting", match: (r) => r.group === "you" },
-           { key: "handled", label: "Handled", kind: "done", closed: true, match: (r) => r.group !== "you" }],
+           { key: "handled", label: "Handled", kind: "done", closed: true, folded: true, match: (r) => r.group !== "you" }],
   columns: { status: (r) => r.status, tint: (r) => (r.group === "you" ? (TYPES[r.type] || {}).tint || null : null), type: (r) => r.type, num: (r) => `#${r.num}`, numWidth: "34px", title: (r) => r.title, age: (r) => shortAge(r.age), ageWidth: "52px", struck: (r) => r.struck },
   sorts: [{ key: "at", label: "Newest", value: (r) => r.at || "" }],
   count: (rows) => `${rows.filter((r) => r.group === "you").length} waiting · ${rows.filter((r) => r.at && Date.now() - Date.parse(r.at) < 7 * 86400000).length} this week`,
