@@ -2941,14 +2941,9 @@ const EnvHome = {
     const goPlan = () => { if (plan.value) location.hash = `#/env/${props.env}/plans/${plan.value.n}`; };
     const crew = useFetch(url("/agents"));
     // the answer, in words: how many things need the user, what that means, and the facts about the agent in one muted line
+    // who is working here, in one muted line: the page leads with it and goes straight into what needs the user
     const lead = computed(() => {
       const agent = SHELL.activity && SHELL.activity.agent;
-      const rows = queue.value.length + (held.value ? 1 : 0);
-      const headline = rows === 0 ? "Nothing needs you." : rows === 1 ? "One thing needs you." : `${rows} things need you.`;
-      const p = plan.value;
-      const sub = held.value ? `The agent is holding at a checkpoint in plan ${p.n} and will not go on until you continue.`
-        : !agent ? "No agent is on this environment; what you leave waits for the next session."
-        : agent.working ? "The agent is working and will carry on without you." : "The agent is idle and will pick up what you leave at its next turn.";
       const session = (crew.data || []).find((a) => a.kind === "session" && agent && a.id === agent.session);
       const branch = SHELL.activity && SHELL.activity.branch;
       const facts = [
@@ -2959,7 +2954,7 @@ const EnvHome = {
         agent && agent.started ? `${spanText(Date.now() - Date.parse(agent.started))} in` : "",
         agent && agent.context ? `${agent.context.share}% context` : "",
       ].filter(Boolean);
-      return { headline, sub, facts };
+      return { facts };
     });
     const SLOTS = 5;
     const queueMeta = (it) => (wide.value ? `${it.label} ${it.n} · ${it.age}` : it.age);
@@ -3009,11 +3004,7 @@ const EnvHome = {
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
     <div class=body><div class=page><div class=home>
-      <div class=home-lead>
-        <h1 class=home-headline>{{ lead.headline }}</h1>
-        <p class=home-sub>{{ lead.sub }}</p>
-        <div class=home-facts><span v-for="(f, i) in lead.facts" :key="i" :class="{first: i === 0}">{{ f }}</span></div>
-      </div>
+      <div class=home-facts><span v-for="(f, i) in lead.facts" :key="i" :class="{first: i === 0}">{{ f }}</span></div>
       <section class=home-section>
         <div class=home-head><h2>Needs you</h2><span>{{ queue.length + (held ? 1 : 0) ? (queue.length + (held ? 1 : 0)) + ' waiting' : 'clear' }}</span>
           <span v-if="queue.length + (held ? 1 : 0) > SLOTS" class=home-hint>{{ queue.length + (held ? 1 : 0) - SLOTS }} more — scroll the list</span></div>
