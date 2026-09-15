@@ -339,7 +339,7 @@ const StatusBar = {
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
-        <button v-if="inspectWork && !view.held" type=button class="btn statusbar-inspect" title="Open the agent's work here" @click="inspect(inspectWork)">Inspect<Icon name="sidepanel"/></button>
+        <button v-if="inspectWork" type=button class="btn statusbar-inspect" title="Open the agent's work here" @click="inspect(inspectWork)">Inspect<Icon name="sidepanel"/></button>
         <a v-else-if="view.href" class="btn statusbar-inspect" :href="view.href" title="Open what the agent is on">Inspect<Icon name="sidepanel"/></a>
       </span>
     </div>`,
@@ -348,7 +348,7 @@ const StatusBar = {
 const TopBar = {
   props: { crumbs: { type: Array, default: () => [] } },
   components: { Icon, StatusBar },
-  setup() {
+  setup(props) {
     const hashEnv = parseHash().params.env || "";
     const env = computed(() => {
       if (hashEnv) return hashEnv;
@@ -402,14 +402,22 @@ const TopBar = {
       help.html = renderMarkdown(HELP_CACHE[helpTopic]) || "<p>No help written for this page yet.</p>";
     };
     const closeHelp = () => { if (helpDialog.value) helpDialog.value.close(); };
+    // a crumb before the last opens its page: the environment's home, or the area it names
+    const CRUMB_PATHS = { Home: "", Inbox: "messages", "To-dos": "todos", Documents: "docs", Docs: "docs", Reports: "reports", Plans: "plans", Settings: "settings" };
+    const crumbHref = (i) => {
+      const c = props.crumbs[i];
+      if (!env.value) return null;
+      if (i === 0 && c === env.value) return `#/env/${env.value}`;
+      return c in CRUMB_PATHS ? `#/env/${env.value}${CRUMB_PATHS[c] ? `/${CRUMB_PATHS[c]}` : ""}` : null;
+    };
     return { env, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, activity, toggleActivity, view,
-             helpTopic, help, helpDialog, openHelp, closeHelp };
+             helpTopic, help, helpDialog, openHelp, closeHelp, crumbHref };
   },
   template: `
     <div class=top>
       <div class=crumb>
         <template v-for="(c, i) in crumbs" :key="i">
-          <span v-if="i" class=sep>/</span><b v-if="i === crumbs.length - 1">{{ c }}</b><span v-else>{{ c }}</span>
+          <span v-if="i" class=sep>/</span><b v-if="i === crumbs.length - 1">{{ c }}</b><a v-else-if="crumbHref(i)" class=crumb-link :href="crumbHref(i)">{{ c }}</a><span v-else>{{ c }}</span>
         </template>
         <button v-if="helpTopic" type=button class="icon-btn help-btn" :title="'Help for ' + crumbs[crumbs.length - 1]"
           :aria-label="'About ' + crumbs[crumbs.length - 1]" @click="openHelp"><Icon name="info"/></button>
@@ -530,7 +538,9 @@ const Panel = {
     const hash = ref(location.hash);
     const onHash = () => { hash.value = location.hash; };
     const at = computed(() => trailIndex(hash.value));
-    const place = computed(() => (at.value >= 0 && INSPECTOR_TRAIL.items.length > 1 ? `${at.value + 1} of ${INSPECTOR_TRAIL.items.length}` : ""));
+    const place = computed(() => (at.value >= 0 && INSPECTOR_TRAIL.items.length ? `${at.value + 1} of ${INSPECTOR_TRAIL.items.length}` : ""));
+    const KIND_OF = { "to-do": "todo", message: "message", question: "question", suggestion: "suggestion", work: "work", plan: "plan", report: "report", doc: "doc" };
+    const chipTint = computed(() => { const kind = KIND_OF[String(props.label || "").split(" ")[0].toLowerCase()]; return kind && TYPES[kind] ? TYPES[kind].tint : null; });
     const step = (by) => {
       const items = INSPECTOR_TRAIL.items;
       if (at.value < 0 || items.length < 2) return;
@@ -607,22 +617,22 @@ const Panel = {
     let watcher = null;
     onMounted(() => { decorate(); watcher = new MutationObserver(decorate); watcher.observe(body.value, { childList: true, subtree: true }); });
     onUnmounted(() => { if (watcher) watcher.disconnect(); });
-    return { body, onClick, onKey, dismiss, closing, drag, inspector, place, step };
+    return { body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, INSPECTOR_TRAIL };
   },
   template: `
     <div :class="['panel-scrim', {closing}]" @click="dismiss"></div>
     <aside :class="['panel', {closing}]" :style="{ width: inspector.width + 'px' }">
       <div class=panel-grip title="Drag to resize" @pointerdown="drag"></div>
       <div class=panel-top>
-        <span class=panel-ref><span class=panel-chip>{{ label }}</span>
+        <span class=panel-ref><span class=panel-chip :style="chipTint ? { color: chipTint } : null">{{ label }}</span>
           <a v-if="link" class=panel-open :href="link" :title="'Open ' + label + ' on its own page'">Open page<Icon name="arrow"/></a></span>
         <span class=panel-tools>
           <span v-if="place" class=panel-place>{{ place }}</span>
-          <button v-if="place" type=button class=icon-btn title="Previous (↑)" aria-label="Previous" @click="step(-1)"><Icon name="up"/></button>
-          <button v-if="place" type=button class=icon-btn title="Next (↓)" aria-label="Next" @click="step(1)"><Icon name="down"/></button>
+          <button v-if="place" type=button class=icon-btn title="Previous (↑)" aria-label="Previous" :disabled="INSPECTOR_TRAIL.items.length < 2" @click="step(-1)"><Icon name="up"/></button>
+          <button v-if="place" type=button class=icon-btn title="Next (↓)" aria-label="Next" :disabled="INSPECTOR_TRAIL.items.length < 2" @click="step(1)"><Icon name="down"/></button>
           <button type=button class=icon-btn title="Close" aria-label="Close" @click="dismiss"><Icon name="close"/></button>
         </span></div>
-      <div class=panel-body ref=body @click="onClick" @keydown="onKey"><slot/></div>
+      <div class=panel-body ref=body @click="onClick" @keydown="onKey"><slot/><p class=panel-hint>{{ place ? '↑↓ steps · Esc closes' : 'Esc closes' }}</p></div>
     </aside>`,
 };
 
@@ -912,12 +922,13 @@ const PAGE_ROWS = 25;
 // how long a closed item stays in its list before it counts as archived
 const RECENT_MS = 7 * 24 * 60 * 60 * 1000;
 
-// groups: {key, label, kind, closed, match(row)}; columns: {priority, status, num, numWidth, title, sub, cite, age, struck}
+// groups: {key, label, kind, closed, match(row)}; a row marked live stays listed in a closed group until it closes; columns: {priority, status, num, numWidth, title, sub, cite, age, struck}
 // a row's type is a plain tinted word; the status dot beside it already carries state
 const TYPES = {
   question: { label: "Question", tint: "#c9955e" }, message: { label: "Message", tint: "#6fae7d" },
   suggestion: { label: "Suggestion", tint: "#a3a8f0" }, doc: { label: "Doc", tint: "#6fae7d" },
   report: { label: "Report", tint: "#d9a441" }, plan: { label: "Plan", tint: "#5b8def" },
+  todo: { label: "To-do", tint: "#5b8def" }, work: { label: "Work", tint: "#5b8def" },
   todo: { label: "To-do", tint: "#5b8def" }, work: { label: "Work", tint: "#5b8def" },
 };
 
@@ -969,7 +980,7 @@ const ResourceList = {
       const current = Object.fromEntries(props.rows.map((r) => [rowKey(r), r]));
       const held = Object.entries(state.held).filter(([, v]) => v.group === g.key).map(([k, v]) => current[k] || v.row);
       const moving = new Set(Object.keys(state.held));
-      const rows = props.rows.filter((r) => g.match(r) && !moving.has(rowKey(r)) && (!g.closed || recent(r) !== props.archive)).concat(held).sort((a, b) => {
+      const rows = props.rows.filter((r) => g.match(r) && !moving.has(rowKey(r)) && (!g.closed || (r.live ? !props.archive : recent(r) !== props.archive))).concat(held).sort((a, b) => {
         const x = value(a), y = value(b);
         const c = x < y ? -1 : x > y ? 1 : 0;
         return order.dir === "asc" ? c : -c;
@@ -1088,9 +1099,9 @@ const PRIORITIES = [{ value: "low", label: "Low" }, { value: "default", label: "
 // ─────────────────────────────────────────────────────────────── to-dos
 const GROUPS = [
   { key: "progress", label: "In progress" },
-  { key: "waiting", label: "Waiting on the user" },
-  { key: "blocked", label: "Blocked" },
+  { key: "waiting", label: "Waiting on you" },
   { key: "open", label: "Open" },
+  { key: "blocked", label: "Blocked" },
   { key: "done", label: "Done" },
 ];
 const STATUS_LABEL = Object.fromEntries(GROUPS.map((g) => [g.key, g.label]));
@@ -1119,7 +1130,7 @@ const TODO_LIST = {
   columns: { priority: (t) => t.priority, status: (t) => todoStatus(t), num: (t) => `#${t.n}`, question: todoQuestionMark,
              title: (t) => t.title, cite: (t) => (t.doc ? `Doc ${t.doc}` : ""), age: (t) => t.age },
   sorts: [{ key: "n", label: "ID" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
-  count: (rows) => `${rows.filter((t) => todoStatus(t) !== "done").length} open`,
+  count: (rows) => `${rows.length} to-dos, ${rows.filter((t) => todoStatus(t) !== "done").length} open`,
   empty: "Nothing is waiting on this environment.", name: "todos",
 };
 const CLAIM_LIST = {
@@ -1248,7 +1259,7 @@ const TodoPanel = {
     return { item, actions, done, todoHref, todoStatus, STATUS_LABEL, priorityName, LOG_KIND, LEVELS, saving, menu, setPriority };
   },
   template: `
-    <Panel :label="'To-do #' + n" :close="close" :onClose="onClose" :link="link">
+    <Panel :label=\"'To-do ' + n" :close="close" :onClose="onClose" :link="link">
       <p v-if="item.error" class=error>{{ item.error }}</p>
       <template v-else-if="item.data">
         <h2 class=p-title>{{ item.data.title }}</h2>
@@ -1341,7 +1352,7 @@ const QuestionPanel = {
     return { item, onAnswered, questionKind, actions, done };
   },
   template: `
-    <Panel :label="'Question #' + n" :close="close" :onClose="onClose" :link="link">
+    <Panel :label=\"'Question ' + n" :close="close" :onClose="onClose" :link="link">
       <p v-if="item.error" class=error>{{ item.error }}</p>
       <template v-else-if="item.data">
         <div class="md p-title" v-html="$md(item.data.text)"></div>
@@ -1437,13 +1448,42 @@ const MessagePanel = {
         attaching.busy = false;
       }
     };
-    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles };
+    // each part of the message beside the agent's answer to it, so the reply reads where the question was asked
+    const answered = computed(() => {
+      const m = item.data;
+      if (!m) return { rows: [], others: [], heading: "" };
+      const agentReplies = (m.replies || []).filter((r) => r.who === "the agent" && r.part);
+      const used = new Set();
+      const matches = (p, r) => p.excerpt && r.part && (p.excerpt.includes(r.part) || r.part.includes(p.excerpt));
+      // a part answered by a reply is recorded twice, once filed and once as answered: fold them into one row
+      const byAsk = new Map();
+      (m.parts || []).forEach((p) => {
+        const seen = byAsk.get(p.excerpt);
+        const became = p.became.filter((b) => b.ref !== "answered");
+        if (seen) seen.became.push(...became.filter((b) => !seen.became.some((x) => x.ref === b.ref)));
+        else byAsk.set(p.excerpt, { excerpt: p.excerpt, became });
+      });
+      const rows = [...byAsk.values()].map((p) => {
+        const reply = agentReplies.find((r) => matches(p, r));
+        if (reply) used.add(reply);
+        return { ask: p.excerpt, answer: reply ? reply.text : "", became: p.became, age: reply ? reply.age || "just now" : "" };
+      });
+      agentReplies.filter((r) => !used.has(r)).forEach((r) => { used.add(r); rows.push({ ask: r.part, answer: r.text, became: [], age: r.age || "just now" }); });
+      const waiting = m.status === "waiting";
+      const shaped = rows.map((r) => ({ ...r, done: !!r.answer || !waiting, pending: !r.answer && waiting,
+                                        chip: r.answer ? "answered" : waiting ? "still working" : "filed" }));
+      const count = shaped.filter((r) => r.answer).length;
+      return { rows: shaped, others: (m.replies || []).filter((r) => !used.has(r)),
+               heading: count ? `Replied to your message — ${count} of ${shaped.length} ${shaped.length === 1 ? "part" : "parts"} answered` : "" };
+    });
+    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered };
   },
   template: `
-    <Panel :label="'Message #' + n" :close="close" :onClose="onClose" :link="link">
+    <Panel :label=\"'Message ' + n" :close="close" :onClose="onClose" :link="link">
       <p v-if="item.error" class=error>{{ item.error }}</p>
       <template v-else-if="item.data">
-        <div class="prose message" v-html="$linkify(item.data.text)"></div>
+        <h2 v-if="answered.heading" class=panel-title>{{ answered.heading }}</h2>
+        <div><p class=section-label>Your message</p><div class="prose message" v-html="$linkify(item.data.text)"></div></div>
         <dl class=props>
           <dt>Status</dt><dd :title="item.data.status === 'waiting' && item.data.read ? 'The agent read it ' + item.data.read_age : null"><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled' : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
           <dt>Left</dt><dd>{{ item.data.age || '—' }}</dd>
@@ -1486,28 +1526,36 @@ const MessagePanel = {
             </template>
           </div>
         </div>
-        <div v-if="item.data.replies && item.data.replies.length">
+        <div v-if="answered.rows.length">
+          <div class=files-head><p class=section-label>What it answered</p><span class=muted>{{ answered.rows.filter((r) => r.answer).length }} of {{ answered.rows.length }} answered</span></div>
+          <div class=part-cards>
+            <div v-for="(p, i) in answered.rows" :key="i" class=part-card>
+              <div class=reply-ask><span class=reply-bar></span><span class=part-ask>{{ p.ask }}</span></div>
+              <div v-if="p.answer" class="md prose" v-html="$md(p.answer)"></div>
+              <p v-else-if="p.pending" class=part-working>Still working on this one</p>
+              <div class=part-foot>
+                <span :class="['part-chip', {done: p.done}]">{{ p.chip }}</span>
+                <template v-for="b in p.became" :key="b.ref">
+                  <a v-if="$refHref(b.ref, env)" :href="$refHref(b.ref, env)" class=part-ref>{{ b.label }}</a>
+                  <span v-else class=part-ref>{{ b.label }}</span>
+                </template>
+                <span class=reply-age>{{ p.age }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p v-else-if="item.data.status === 'waiting' && item.data.read" class="prose muted">The agent has read it and is handling it. It splits it into parts and answers or files each one.</p>
+        <p v-else-if="item.data.status === 'waiting'" class="prose muted">Not processed yet. At its next stop the agent splits it into parts and answers or files each one.</p>
+        <div v-if="answered.others.length">
           <p class=section-label>Replies</p>
           <div class=linked>
-            <div v-for="(r, i) in item.data.replies" :key="i" :class="['sub', 'reply', {'from-agent': r.who === 'the agent'}]">
+            <div v-for="(r, i) in answered.others" :key="i" :class="['sub', 'reply', {'from-agent': r.who === 'the agent'}]">
               <div class=muted>{{ r.who === 'the agent' ? 'The agent' : 'You' }}{{ r.part ? ' answered' : '' }} · {{ r.age || 'just now' }}</div>
               <blockquote v-if="r.part" class=reply-part>{{ r.part }}</blockquote>
               <div class="md prose" v-html="$md(r.text)"></div>
             </div>
           </div>
         </div>
-        <div v-if="item.data.parts.length">
-          <p class=section-label>What it became</p>
-          <div class=part v-for="(p, i) in item.data.parts" :key="i">
-            <div class=excerpt>«{{ p.excerpt }}»</div>
-            <template v-for="b in p.became" :key="b.ref">
-              <a v-if="$refHref(b.ref, env)" :href="$refHref(b.ref, env)" class=chip>{{ b.label }}</a>
-              <span v-else class=chip>{{ b.label }}</span>
-            </template>
-          </div>
-        </div>
-        <p v-else-if="item.data.status === 'waiting' && item.data.read" class="prose muted">The agent has read it and is handling it. It splits it into parts and records what each became.</p>
-        <p v-else-if="item.data.status === 'waiting'" class="prose muted">Not processed yet. At its next stop the agent splits it into parts and records what each became.</p>
         <Comments :about="'message ' + item.data.n" :env="env" :key="'c-message' + item.data.n"/>
       </template>
     </Panel>`,
@@ -1532,7 +1580,7 @@ const WorkPanel = {
     return { item, actions, done };
   },
   template: `
-    <Panel :label="'Work #' + n" :close="close" :onClose="onClose" :link="link">
+    <Panel :label=\"'Work ' + n" :close="close" :onClose="onClose" :link="link">
       <p v-if="item.error" class=error>{{ item.error }}</p>
       <template v-else-if="item.data">
         <h2 class=p-title>{{ item.data.subject }}</h2>
@@ -1611,7 +1659,7 @@ const SuggestionPanel = {
     return { item, actions, done, SUGGESTION_STATUS };
   },
   template: `
-    <Panel :label="'Suggestion #' + n" :close="close" :onClose="onClose" :link="link">
+    <Panel :label=\"'Suggestion ' + n" :close="close" :onClose="onClose" :link="link">
       <p v-if="item.error" class=error>{{ item.error }}</p>
       <template v-else-if="item.data">
         <h2 class=p-title>{{ item.data.title }}</h2>
@@ -1770,7 +1818,7 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
         <Panel v-if="n === 'new'" :label="'New ' + word" :close="base">
           <ActionBar :actions="creating" :open="'New ' + word" :done="done"/>
         </Panel>
-        <Panel v-else-if="n" :label="noun + ' #' + n" :close="base">
+        <Panel v-else-if="n" :label="noun + ' ' + n" :close="base">
           <p v-if="item.error" class=error>{{ item.error }}</p>
           <template v-else-if="item.data">
             <h2 class=p-title>{{ item.data.fact }}</h2>
@@ -1817,11 +1865,10 @@ function suggestionKind(s) { return s.status === "open" ? "waiting" : s.status =
 
 const INBOX_LIST = {
   groups: [{ key: "you", label: "Waiting on you", kind: "waiting", match: (r) => r.group === "you" },
-           { key: "agent", label: "Waiting on the agent", kind: "progress", match: (r) => r.group === "agent" },
-           { key: "handled", label: "Handled", kind: "done", closed: true, match: (r) => r.group === "handled" }],
+           { key: "handled", label: "Handled", kind: "done", closed: true, match: (r) => r.group !== "you" }],
   columns: { status: (r) => r.status, type: (r) => r.type, num: (r) => `#${r.num}`, title: (r) => r.title, age: (r) => r.age, struck: (r) => r.struck },
   sorts: [{ key: "at", label: "Newest", value: (r) => r.at || "" }],
-  count: (rows) => `${rows.filter((r) => r.group === "you").length} waiting on you`,
+  count: (rows) => `${rows.filter((r) => r.group === "you").length} waiting · ${rows.filter((r) => r.at && Date.now() - Date.parse(r.at) < 7 * 86400000).length} this week`,
   empty: "Nothing has arrived here yet.", name: "inbox",
 };
 
@@ -1840,7 +1887,7 @@ const Inbox = {
       if (!messages.data || !questions.data || !suggestions.data) return null;
       return [
         ...messages.data.map((m) => ({ name: `m${m.n}`, type: "message", num: m.n, title: m.text, age: m.age, at: m.at, closed_at: m.closed_at,
-                                       group: m.status === "waiting" ? "agent" : "handled", status: MESSAGE_LIST.columns.status(m), struck: m.status === "archived" })),
+                                       group: "handled", live: m.status === "waiting", status: MESSAGE_LIST.columns.status(m), struck: m.status === "archived" })),
         ...questions.data.map((q) => ({ name: `q${q.n}`, type: "question", num: q.n, title: q.text, age: q.age, at: q.at, closed_at: q.closed_at,
                                         group: q.status === "open" ? "you" : "handled", status: questionKind(q), struck: q.status === "withdrawn" })),
         ...suggestions.data.map((s) => ({ name: `s${s.n}`, type: "suggestion", num: s.n, title: s.title, age: s.age, at: s.at, closed_at: s.closed_at,
@@ -1852,7 +1899,6 @@ const Inbox = {
       if (!m) return null;
       return { type: m[1] === "q" ? "question" : m[1] === "s" ? "suggestion" : "message", num: m[2] };
     });
-    const send = (text, files) => postJSON(api.value, { text, files }).then(() => { messages.reload(); changed(); });
     // a message only reaches an agent at its next hook event; say so when none is working here
     const live = computed(() => {
       const row = OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null;
@@ -1860,7 +1906,9 @@ const Inbox = {
     });
     const hint = computed(() => (live.value ? "The agent is told at its next stop"
       : "No agent is working on this environment right now; the message waits until a session picks it up"));
-    return { rows, messages, reloadAll, opened, send, home, base, INBOX_LIST, hint, inboxRef };
+    const readAll = () => send("POST", `/api/env/${props.env}/notifications/readall`).then(changed);
+    const writeMessage = () => Object.assign(QUICK, { open: true, q: "", i: 0, writing: true });
+    return { rows, messages, reloadAll, opened, home, base, INBOX_LIST, hint, inboxRef, readAll, writeMessage };
   },
   template: `
     <TopBar :crumbs="archive ? [env, 'Inbox', 'Archive'] : [env, 'Inbox']"/>
@@ -1868,11 +1916,12 @@ const Inbox = {
       <div class=chat>
         <div class=list>
           <ResourceList v-bind="INBOX_LIST" :archive="!!archive" :home="home" :rows="rows" :loading="messages.loading" :error="messages.error"
-            :href="(r) => base + '/' + inboxRef(r)" :selected="(r) => inboxRef(r) === n"/>
-        </div>
-        <div v-if="!archive" class="compose-wrap at-bottom">
-          <Compose placeholder="Leave a message for the agent: an instruction, a follow-up, anything"
-            submit="Send" :hint="hint" :send="send" :attach="true" :autofocus="!n"/>
+            :href="(r) => base + '/' + inboxRef(r)" :selected="(r) => inboxRef(r) === n">
+            <template #tools>
+              <button type=button class=btn @click="readAll">Mark all read</button>
+              <button type=button class="btn new" :title="hint" @click="writeMessage">Message the agent</button>
+            </template>
+          </ResourceList>
         </div>
       </div>
       <MessagePanel v-if="opened && opened.type === 'message'" :key="'message' + opened.num" :env="env" :n="opened.num" :close="base" :base="base" :reloaded="reloadAll"/>
@@ -2359,7 +2408,7 @@ const Reminders = {
       <Panel v-if="n === 'new'" label="New reminder" :close="base">
         <ActionBar :actions="creating" open="New reminder" :done="done"/>
       </Panel>
-      <Panel v-else-if="n" :label="'Reminder #' + n" :close="base">
+      <Panel v-else-if="n" :label=\"'Reminder ' + n" :close="base">
         <p v-if="item.error" class=error>{{ item.error }}</p>
         <template v-else-if="item.data">
           <h2 class=p-title>{{ item.data.text }}</h2>
@@ -3408,7 +3457,7 @@ const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
 const NAV = [
-  { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "", count: "notifications" },
+  { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "" },
   { key: "inbox", label: "Inbox", views: ["Inbox", "Questions", "Suggestions"], path: "messages", count: ["questions", "suggestions"] },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "docs", label: "Documents", views: ["EnvDocs", "Files", "Reports", "Plans"], path: "docs", count: "docs" },
@@ -3551,7 +3600,7 @@ const QuickMenu = {
   setup(props) {
     const input = ref(null);
     const area = ref(null);
-    onMounted(() => { if (input.value) input.value.focus(); });
+    onMounted(() => { const el = QUICK.writing ? area.value : input.value; if (el) el.focus(); });
     const questions = useFetch(() => props.env && `/api/env/${props.env}/questions`);
     const suggestions = useFetch(() => props.env && `/api/env/${props.env}/suggestions`);
     const plans = useFetch(() => props.env && `/api/env/${props.env}/plans`);
@@ -3658,7 +3707,7 @@ const QuickMenu = {
           <textarea ref=area v-model="QUICK.draft" placeholder="Ask it something, or tell it what to do next…" aria-label="Message the agent"
             :disabled="sending" @keydown="onAreaKey"></textarea>
         </div>
-        <div class=quick-foot><span class=quick-foot-grow>⇧↵ new line · esc back to actions</span>
+        <div class="quick-foot writing"><span class=quick-foot-grow>⇧↵ new line · esc back to actions</span>
           <button type=button class=btn @click="back">Back</button>
           <button type=button :class="['quick-send', {ready: QUICK.draft.trim()}]" :disabled="sending || !QUICK.draft.trim()" @click="sendDraft">Send<Icon name="arrow"/></button>
         </div>
@@ -3923,7 +3972,7 @@ const App = {
       <div v-if="AWAY.open && envName" class=away-card role=status>
         <div class=away-head>
           <span class=away-dot></span><span class=away-title>While you were away</span><span class=away-for>{{ away.for }}</span>
-          <button type=button class=icon-btn aria-label="Dismiss" title="Dismiss" @click="AWAY.open = false"><Icon name="close"/></button>
+          <button type=button class=away-close aria-label="Dismiss" title="Dismiss" @click="AWAY.open = false"><Icon name="close"/></button>
         </div>
         <div class=away-lines>
           <div v-for="d in away.lines" :key="d.key" class=away-line><span>{{ d.text }}</span><span class=away-age>{{ d.age }}</span></div>
