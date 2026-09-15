@@ -166,7 +166,7 @@ before you act:
 | `journal-questions` | you are about to ask the user anything; the question tool is refused; a question was answered; you would propose a change |
 | `journal-messages` | the user left a message or a comment; you are about to notify them; the viewer or its channel comes up |
 | `journal-memory` | you are about to pin, rule or remind; a context warning asks for a decision; a cleanup report is ready |
-| `journal-docs` | the user asks for something checked or researched; something was ruled and should be written down; you would write a reusable script |
+| `journal-docs` | the user asks for something checked or researched; something was ruled and should be written down; you are about to write a plan; you would write a reusable script |
 | `journal-agents` | before every subagent dispatch; a subagent must write; a subagent's journal command is refused |
 
 **One rule from `journal-agents` belongs here, because a dispatch does not wait for a skill to load:
