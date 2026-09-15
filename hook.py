@@ -757,7 +757,9 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
         if note:
             if latest and latest != state.get(ROOT, "update_said", "", stem=ctx.stem):
                 state.put(ROOT, "update_said", latest, stem=ctx.stem)
-                _for_next_prompt(ctx, say("update_run", note=note))
+                if state.get(ROOT, UPDATE_TOLD, "", stem=ctx.stem) != latest:
+                    state.put(ROOT, UPDATE_TOLD, latest, stem=ctx.stem)
+                    _for_next_prompt(ctx, say("update_run", note=note))
                 return _tell_user(_remembering(say("update_run", note=note)))
     if not work.open_work(ROOT) and not todo.auto(ROOT, here):
         ids = sorted(t["n"] for t in todo.open_items(ROOT, here))
@@ -2563,6 +2565,21 @@ def _response_size(payload: dict) -> int:
     return len(json.dumps(r)) if r is not None else 0
 
 
+#: runtime key, per session: the newest version the AGENT was told about (the channel sets it too)
+UPDATE_TOLD = "update_told"
+
+
+def _update_news(conf: dict, ctx: Ctx) -> str:
+    """A newer journal upstream, told to a working agent once per version: a stop tells only the user."""
+    if "update_check" in conf["silenced"]:
+        return ""
+    note, latest = update.available(ROOT)
+    if not note or state.get(ROOT, UPDATE_TOLD, "", stem=ctx.stem) == latest:
+        return ""
+    state.put(ROOT, UPDATE_TOLD, latest, stem=ctx.stem)
+    return say("update_run", note=note)
+
+
 def _inbox_news(conf: dict, ctx: Ctx) -> str:
     if "inbox" in conf["silenced"]:
         return ""
@@ -2663,6 +2680,9 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     if news:
         return _context("PostToolUse", news)
     news = _comments_news(conf, ctx)
+    if news:
+        return _context("PostToolUse", news)
+    news = _update_news(conf, ctx)
     if news:
         return _context("PostToolUse", news)
     # THE CONTEXT LADDER, MID-WORK. Only with the window set: a tail reading has no peak

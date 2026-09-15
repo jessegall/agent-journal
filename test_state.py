@@ -1003,6 +1003,12 @@ env = {**os.environ, transcript.SESSION_ENV: "s1"}
 (d / ".journal" / "runtime").mkdir(exist_ok=True)
 (d / ".journal" / "runtime" / "upstream.cache").write_text(json.dumps({"version": "9.9.9", "headline": "everything", "at": 9e12}))
 fire(d, "SessionStart", path, source="startup")
+_tool = {"tool_name": "Read", "tool_input": {"file_path": "x.py"}, "tool_response": {}}
+code, out, err = fire(d, "PostToolUse", path, **_tool)
+check("a working agent is told about the newer version after a tool call, with the upgrade command",
+      ("9.9.9 IS AVAILABLE" in out, "journal.py update" in out), (True, True))
+code, out, err = fire(d, "PostToolUse", path, **_tool)
+check("and told once per version", "9.9.9" in out, False)
 code, out, err = fire(d, "Stop", path)
 check("a newer version upstream: the stop says so as context, with the upgrade command",
       ("9.9.9 IS AVAILABLE" in out, "journal.py update" in out, '"decision"' in out), (True, True, False))

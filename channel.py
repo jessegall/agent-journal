@@ -24,8 +24,12 @@ INSTRUCTIONS = ("What the user does in the journal viewer while you are idle arr
                 "user left messages is handled: `.journal/journal.py messages show N`, split it into parts, file what each "
                 "became. An answered question (question=\"N\"): `.journal/journal.py questions show N` and act on the answer. "
                 "A comment (comment=\"N\"): `.journal/journal.py comments show N` and handle it. A decided suggestion "
-                "(suggestion=\"N\"): `.journal/journal.py suggestions show N` and act on the decision. They arrive only while you are idle, "
+                "(suggestion=\"N\"): `.journal/journal.py suggestions show N` and act on the decision. A newer journal "
+                "(update=\"X\"): run `.journal/journal.py update` once nothing is mid-flight. They arrive only while you are idle, "
                 "whatever auto mode is; with auto mode off handle that one item and do not start on the to-do list.")
+
+#: runtime key shared with the hook: the newest version this session's agent was told about
+UPDATE_TOLD = "update_told"
 
 AUTO_OFF_NOTE = " Auto mode is off: handle this only, and do not start on the to-do list."
 
@@ -84,6 +88,8 @@ def pending(stem: str) -> list[tuple[str, dict]]:
         for key, params in _waiting(env, STARTED[0], answers=bool(bound)):
             quiet = auto or "message" in params["meta"]
             got.append((key, params if quiet else {**params, "content": params["content"] + AUTO_OFF_NOTE}))
+    if idle:
+        got.extend(_update(stem))
     pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
     return [(key, params) for key, params in got if key not in pushed]
 
@@ -176,10 +182,27 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
     return got
 
 
+def _update(stem: str) -> list[tuple[str, dict]]:
+    """A newer journal upstream, for an idle session not yet told about that version."""
+    import settings
+    import state
+    import update
+    if "update_check" in settings.load(ROOT)[0]["silenced"]:
+        return []
+    note, latest = update.available(ROOT)
+    if not note or state.get(ROOT, UPDATE_TOLD, "", stem=stem) == latest:
+        return []
+    return [(f"update:{latest}", {"content": f"{note} Run it now if nothing is mid-flight: `.journal/journal.py update`.",
+                                  "meta": {"update": latest}})]
+
+
 def _mark(stem: str, keys: list[str]) -> None:
     import state
     was = state.get(ROOT, PUSHED, [], stem=stem) or []
     state.put(ROOT, PUSHED, (was + keys)[-500:], stem=stem)
+    for key in keys:
+        if key.startswith("update:"):
+            state.put(ROOT, UPDATE_TOLD, key.partition(":")[2], stem=stem)
     _told(keys)
 
 
