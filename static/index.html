@@ -586,6 +586,9 @@
   .radio-option:hover { color: var(--text); }
   .radio-option.on { background: var(--raised); color: var(--text); box-shadow: 0 0 0 1px var(--border-2); }
   .radio-option:focus { outline: none; }
+  /* the Documents tabs are links that look like the segmented control they sit beside */
+  .doc-tabs { margin: 0 auto 0 0; }
+  .doc-tabs .radio-option { display: inline-flex; align-items: center; text-decoration: none; }
   .radio-option:focus-visible { box-shadow: 0 0 0 1px var(--accent); }
   .body > .page { flex: 1; min-width: 0; }
   /* Home is full width; the panel column appears only while something is picked */
