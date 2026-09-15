@@ -52,6 +52,12 @@ to-dos outside the plan only when their priority is above the default. A phase i
 its to-dos are done; nobody ticks it. A phase marked `--checkpoint` stops the work once it is
 complete, until the user continues it. When the plan is done, write what in it stays true into a doc.
 
+**"Plan with me" is a message from the viewer's New plan.** The user knows roughly what they want and
+not yet the goal. Shape it with them before you draft anything: one question at a time, each with two to
+four answers to pick, `journal questions add "<question>" --option="<answer>" --option="<answer>"`, and
+read each answer before the next question. When the goal is one clear line, draft the plan with
+`journal plans add`, its phases and their to-dos, and tell the user it is ready to approve.
+
 ## Docs: what was settled, catalogued
 
     journal docs                                the catalogue: number, title, status, parts, files, abstract

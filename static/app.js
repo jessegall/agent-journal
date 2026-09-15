@@ -1751,8 +1751,15 @@ const Plans = {
     const reading = computed(() => props.n && props.n !== "new");
     const list = useFetch(() => props.env && !reading.value && `${api.value}?all=1`);
     const item = useFetch(() => props.env && reading.value && `${api.value}/${props.n}`);
+    // the viewer cannot start an agent, so planning together is a message: the agent asks back with questions to click
     const creating = computed(() => [{
-      label: "New plan", method: "POST", url: api.value, submit: "Save draft", leave: true,
+      label: "Plan it with the agent", method: "POST", url: `/api/env/${props.env}/inbox`, submit: "Send to the agent", leave: true,
+      fields: [{ name: "wish", label: "What do you want to achieve?", kind: "area",
+                 placeholder: "In your own words, as rough as you like. The agent asks back until the goal is clear." }],
+      note: "The agent asks you questions, each with answers to pick or your own words, then drafts the plan for you to approve.",
+      shape: ({ wish }) => ({ files: [], text: `Plan with me: I want to start a new plan on this environment. What I want to achieve, roughly: ${(wish || "").trim() || "(not sure yet, help me find it)"}\n\nShape the goal with me first. Ask me one question at a time with \`journal questions add "<question>" --option="<answer>" --option="<answer>"\`, so I can pick an answer or write my own, and keep going until the goal is clear. Then draft the plan with \`journal plans add\`, its phases and their to-dos, and tell me it is ready to approve.` }),
+    }, {
+      label: "Write it myself", method: "POST", url: api.value, submit: "Save draft", leave: true,
       fields: [{ name: "title", label: "Title" }, { name: "goal", label: "Goal", placeholder: "What is true when the plan is done" },
                { name: "body", label: "Approach (optional)", kind: "area" }],
       note: "A plan starts as a draft. Add its phases and to-dos, then approve it.",
@@ -1783,8 +1790,9 @@ const Plans = {
       return out;
     });
     const done = (body, a) => settle(body, a, reading.value ? "" : base.value, list, item);
+    const leaveNew = () => { changed(); location.hash = base.value; };
     const doneCount = (ph) => ph.todos.filter((t) => t.done).length;
-    return { list, item, reading, creating, actions, done, home, base, PLAN_LIST, PLAN_STATUS, doneCount, planStepState, planRefHref };
+    return { list, item, reading, creating, actions, done, leaveNew, api, home, base, PLAN_LIST, PLAN_STATUS, doneCount, planStepState, planRefHref };
   },
   template: `
     <template v-if="reading">
@@ -1838,7 +1846,7 @@ const Plans = {
           </ResourceList>
         </div>
         <Panel v-if="n === 'new'" label="New plan" :close="base">
-          <ActionBar :actions="creating" open="New plan" :done="done"/>
+          <ActionBar :actions="creating" :done="(body, a) => (a.url === api ? done(body, a) : leaveNew())"/>
         </Panel>
       </div>
     </template>`,
