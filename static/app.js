@@ -1,7 +1,7 @@
 // The journal's browser renderer. Vue does the layout; the server only ever answers with
 // JSON (see serve.py) — this file is the second renderer of that response, fmt.py the first.
 "use strict";
-const { createApp, reactive, computed, watch, watchEffect, onUnmounted, onMounted, ref } = Vue;
+const { createApp, reactive, computed, watch, watchEffect, onUnmounted, onMounted, ref, nextTick } = Vue;
 
 // ─────────────────────────────────────────────────────────────── a hash router
 // A detail route renders the same view as its list, with the item open in the side panel.
@@ -260,6 +260,7 @@ const Icon = {
       <path v-else-if="name === 'home'" d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>
       <path v-else-if="name === 'close'" d="M4 4l8 8M12 4l-8 8"/>
       <template v-else-if="name === 'tools'"><path d="M9.8 2.3a3 3 0 0 0-3.6 3.9L2.5 9.9a1.2 1.2 0 0 0 1.7 1.7l3.7-3.7a3 3 0 0 0 3.9-3.6L10 6 8.6 5.4 8 4l1.8-1.7Z"/></template>
+      <path v-else-if="name === 'plan'" d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/>
       <template v-else-if="name === 'search'"><circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/></template>
       <template v-else-if="name === 'settings'"><circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></template>
     </svg>`,
@@ -318,7 +319,7 @@ const StatusBar = {
       const base = `#/env/${env.value}`;
       const planHref = plan ? `${base}/plans/${plan.n}` : null;
       const workHref = w ? `${base}/work/${w.n}` : planHref;
-      if (plan && plan.held) return { state: "Stopped", held: true, what: `phase ${plan.held} is a checkpoint, waiting for you to continue`, href: planHref };
+      if (plan && plan.held) return { state: "Stopped", held: true, what: `plan ${plan.n} · phase ${plan.held} is a checkpoint — waiting for you to continue`, href: planHref };
       if (!agent) return { state: "Stopped", what: "no agent is on this environment", href: planHref };
       const onIt = w ? w.subject : plan ? `plan ${plan.n} · phase ${plan.current}: ${plan.current_title}` : "";
       if (agent.compacting) return { state: "Working", live: true, what: "compacting its context", href: workHref };
@@ -515,9 +516,16 @@ const Panel = {
   setup(props) {
     const body = ref(null);
     // a panel lies over the whole app: the scrim, Esc and the close button all leave it the same way
+    // it slides out before it goes, so it leaves a beat after the click
+    const closing = ref(false);
     const dismiss = () => {
-      if (props.onClose) props.onClose();
-      else if (props.close) location.hash = props.close;
+      if (closing.value) return;
+      closing.value = true;
+      const leave = () => {
+        if (props.onClose) props.onClose();
+        else if (props.close) location.hash = props.close;
+      };
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) leave(); else setTimeout(leave, 160);
     };
     const hash = ref(location.hash);
     const onHash = () => { hash.value = location.hash; };
@@ -599,11 +607,11 @@ const Panel = {
     let watcher = null;
     onMounted(() => { decorate(); watcher = new MutationObserver(decorate); watcher.observe(body.value, { childList: true, subtree: true }); });
     onUnmounted(() => { if (watcher) watcher.disconnect(); });
-    return { body, onClick, onKey, dismiss, drag, inspector, place, step };
+    return { body, onClick, onKey, dismiss, closing, drag, inspector, place, step };
   },
   template: `
-    <div class=panel-scrim @click="dismiss"></div>
-    <aside class=panel :style="{ width: inspector.width + 'px' }">
+    <div :class="['panel-scrim', {closing}]" @click="dismiss"></div>
+    <aside :class="['panel', {closing}]" :style="{ width: inspector.width + 'px' }">
       <div class=panel-grip title="Drag to resize" @pointerdown="drag"></div>
       <div class=panel-top>
         <span class=panel-ref><span class=panel-chip>{{ label }}</span>
@@ -612,8 +620,7 @@ const Panel = {
           <span v-if="place" class=panel-place>{{ place }}</span>
           <button v-if="place" type=button class=icon-btn title="Previous (↑)" aria-label="Previous" @click="step(-1)"><Icon name="up"/></button>
           <button v-if="place" type=button class=icon-btn title="Next (↓)" aria-label="Next" @click="step(1)"><Icon name="down"/></button>
-          <button v-if="onClose" type=button class=icon-btn title="Close" @click="onClose"><Icon name="close"/></button>
-          <a v-else class=icon-btn :href="close" title="Close"><Icon name="close"/></a>
+          <button type=button class=icon-btn title="Close" aria-label="Close" @click="dismiss"><Icon name="close"/></button>
         </span></div>
       <div class=panel-body ref=body @click="onClick" @keydown="onKey"><slot/></div>
     </aside>`,
@@ -3364,25 +3371,6 @@ const ActivityPanel = {
   setup(props) {
     const accept = (e) => send("POST", `/api/env/${props.env}/suggestions/${e.n}/accept`)
       .then(() => window.dispatchEvent(new CustomEvent("journal:changed")));
-    // a quick message from the bottom of the column: the same message the Messages page sends
-    const quick = reactive({ text: "", sending: false, error: "" });
-    const box = ref(null);
-    const grow = () => { const el = box.value; if (!el) return; el.style.height = "auto"; el.style.height = `${Math.min(el.scrollHeight, 120)}px`; };
-    const sendQuick = async () => {
-      if (!quick.text.trim() || quick.sending || !props.env) return;
-      quick.sending = true;
-      quick.error = "";
-      try {
-        await postJSON(`/api/env/${props.env}/inbox`, { text: quick.text, files: [] });
-        quick.text = "";
-        requestAnimationFrame(grow);
-        window.dispatchEvent(new CustomEvent("journal:changed"));
-      } catch (err) {
-        quick.error = err.message;
-      } finally {
-        quick.sending = false;
-      }
-    };
     // who is working on this environment: its sessions, and the subagents they dispatched
     const crew = reactive({ open: false });
     const agentsList = useFetch(() => props.env && `/api/env/${props.env}/agents`);
@@ -3413,7 +3401,7 @@ const ActivityPanel = {
       if (!now || !was || now === was || hovered.value || !list.value) return;
       list.value.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     });
-    return { accept, quick, box, grow, sendQuick, crew, agentsList, working, crewGroups, keyed, list, hovered };
+    return { accept, crew, agentsList, working, crewGroups, keyed, list, hovered };
   },
   template: `
     <div class=activity-panel>
@@ -3475,22 +3463,12 @@ const ActivityPanel = {
           </template>
           </TransitionGroup>
         </div>
-        <form v-if="env" class=activity-compose @submit.prevent="sendQuick">
-          <div class=compose-field>
-            <textarea ref=box v-model="quick.text" rows=1 placeholder="Message the agent" aria-label="Message the agent"
-              :disabled="quick.sending" @input="grow"
-              @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), sendQuick())"
-              @keydown.meta.enter.prevent="sendQuick" @keydown.ctrl.enter.prevent="sendQuick"></textarea>
-            <button v-if="quick.text.trim()" type=submit class=compose-send :disabled="quick.sending" title="Send" aria-label="Send"><Icon name="arrow"/></button>
-          </div>
-          <p v-if="quick.error" class=compose-error>{{ quick.error }}</p>
-        </form>
       </template>
     </div>`,
 };
 
-// the quick menu: space opens it anywhere; what is typed goes to the agent unless a command is picked
-const QUICK = reactive({ open: false, q: "", i: 0 });
+// the quick menu: space opens it anywhere to search actions; space again on an empty search writes a message to the agent
+const QUICK = reactive({ open: false, q: "", i: 0, writing: false, draft: "" });
 const TOAST = reactive({ text: "" });
 let toastTimer = 0;
 
@@ -3500,78 +3478,140 @@ function flash(text) {
   toastTimer = setTimeout(() => { TOAST.text = ""; }, 2600);
 }
 
+// what the agent did while the tab was away, shown bottom right when the user comes back
+const AWAY = reactive({ open: false, since: 0, back: 0 });
+const AWAY_DONE = /^(Closed|Committed|Ended|Wrote|Writing|Replied|Replying|Answered|Filed|Drafted|Suggest|Turned)/;
+
+function awayLines(events, since) {
+  return (events || []).filter((e) => e.by === "Agent" && e.at && Date.parse(e.at) >= since && AWAY_DONE.test(e.text)).slice(0, 6)
+    .map((e, i) => ({ key: `${e.at}${i}`, age: e.age || "just now",
+                      text: `${[e.text, e.n, e.detail].filter(Boolean).join(" ")}${e.title ? ` — ${e.title}` : ""}` }));
+}
+
+function awayFor(ms) {
+  const minutes = Math.max(1, Math.round(ms / 60000));
+  if (minutes < 60) return `${minutes}m away`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m away`;
+}
+
 const QuickMenu = {
   props: ["env"],
   components: { Icon },
   setup(props) {
     const input = ref(null);
+    const area = ref(null);
     onMounted(() => { if (input.value) input.value.focus(); });
     const questions = useFetch(() => props.env && `/api/env/${props.env}/questions`);
     const suggestions = useFetch(() => props.env && `/api/env/${props.env}/suggestions`);
     const plans = useFetch(() => props.env && `/api/env/${props.env}/plans`);
-    const close = () => Object.assign(QUICK, { open: false, q: "", i: 0 });
+    const close = () => Object.assign(QUICK, { open: false, q: "", i: 0, writing: false });
     const goTo = (hash) => () => { close(); location.hash = hash; };
+    const write = (draft) => {
+      Object.assign(QUICK, { writing: true, draft: draft === undefined ? QUICK.draft : draft });
+      nextTick(() => { const el = area.value; if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
+    };
+    const back = () => {
+      Object.assign(QUICK, { writing: false, i: 0 });
+      nextTick(() => { if (input.value) input.value.focus(); });
+    };
+    const plan = computed(() => (plans.data || []).find((p) => p.status === "active") || null);
     const rows = computed(() => {
       const base = `#/env/${props.env}`;
       const q = QUICK.q.trim();
       const openQuestions = (questions.data || []).filter((x) => x.status === "open");
       const openSuggestions = (suggestions.data || []).filter((x) => x.status === "open");
       const waiting = openQuestions.length + openSuggestions.length;
-      const plan = (plans.data || []).find((p) => p.status === "active") || null;
       const auto = !!(SHELL.activity && SHELL.activity.auto);
+      const p = plan.value;
       const commands = [
-        { label: "Go to Home", keys: "home queue cockpit", hint: "page", run: goTo(base) },
-        { label: "Go to Inbox", keys: "inbox messages questions suggestions", hint: "page", run: goTo(`${base}/messages`) },
-        { label: "Go to To-dos", keys: "todos todo tasks", hint: "page", run: goTo(`${base}/todos`) },
-        { label: "Go to Documents", keys: "documents docs reports plans", hint: "page", run: goTo(`${base}/docs`) },
-        ...(plan ? [{ label: "Go to the plan", keys: "plan phases checkpoint", hint: "page", run: goTo(`${base}/plans/${plan.n}`) }] : []),
-        { label: "Go to Settings", keys: "settings preferences", hint: "page", run: goTo(`${base}/settings`) },
+        { label: "Go to Home", keys: "home queue cockpit", hint: "page", icon: "home", run: goTo(base) },
+        { label: "Go to Inbox", keys: "inbox messages questions suggestions", hint: "page", icon: "inbox", run: goTo(`${base}/messages`) },
+        { label: "Go to To-dos", keys: "todos todo tasks", hint: "page", icon: "todos", run: goTo(`${base}/todos`) },
+        { label: "Go to Documents", keys: "documents docs reports plans", hint: "page", icon: "docs", run: goTo(`${base}/docs`) },
+        ...(p ? [{ label: "Go to the plan", keys: "plan phases checkpoint", hint: "page", icon: "plan", run: goTo(`${base}/plans/${p.n}`) }] : []),
+        { label: "Go to Settings", keys: "settings preferences", hint: "page", icon: "settings", run: goTo(`${base}/settings`) },
       ];
       if (waiting) {
         const first = openQuestions.length ? `${base}/messages/q/${openQuestions[0].n}` : `${base}/messages/s/${openSuggestions[0].n}`;
-        commands.unshift({ label: `Answer the first of ${waiting} waiting on you`, keys: "answer waiting", hint: "inspector", run: goTo(first) });
+        commands.unshift({ label: `Answer the first of ${waiting} waiting on you`, keys: "answer waiting", hint: "inspector", icon: "questions", run: goTo(first) });
       }
-      if (plan && plan.held) {
-        commands.push({ label: "Continue past the checkpoint", keys: "continue checkpoint plan", hint: "agent",
-                        run: () => { close(); send("POST", `/api/env/${props.env}/plans/${plan.n}/proceed`).then(() => { changed(); flash("The agent is working again"); }); } });
+      if (p && p.held) {
+        commands.push({ label: "Continue past the checkpoint", keys: "continue checkpoint plan", hint: "agent", icon: "work",
+                        run: () => { close(); send("POST", `/api/env/${props.env}/plans/${p.n}/proceed`).then(() => { changed(); flash("The agent is working again"); }); } });
       }
-      commands.push({ label: auto ? "Pause auto mode" : "Resume auto mode", keys: "auto mode", hint: "agent",
+      commands.push({ label: auto ? "Pause auto mode" : "Resume auto mode", keys: "auto mode", hint: "agent", icon: "agents",
                       run: () => { close(); if (SHELL.setAuto) SHELL.setAuto(!auto); flash(auto ? "Auto mode paused" : "Auto mode on"); } });
-      commands.push({ label: ACTIVITY.shown ? "Hide the activity column" : "Show the activity column", keys: "activity column", hint: "view",
+      commands.push({ label: "Show what happened while you were away", keys: "away digest notification recap", hint: "notify", icon: "bell",
+                      run: () => { close(); AWAY.open = true; } });
+      commands.push({ label: ACTIVITY.shown ? "Hide the activity column" : "Show the activity column", keys: "activity column", hint: "view", icon: "activity",
                       run: () => { close(); setActivityShown(!ACTIVITY.shown); } });
       const needle = q.toLowerCase();
       const found = commands.filter((c) => !q || `${c.label} ${c.keys}`.toLowerCase().includes(needle));
-      if (!q) return found;
-      const message = { label: `Send “${q}” to the agent`, hint: "message",
-                        run: () => { close(); postJSON(`/api/env/${props.env}/inbox`, { text: q, files: [] }).then(() => { changed(); flash("Sent to the agent"); }); } };
-      return [message, ...found];
+      if (!q) return [{ label: "Message the agent", hint: "space", key: true, icon: "arrow", run: () => write() }, ...found];
+      return [...found, { label: `Message the agent: “${q}”`, hint: "write it", icon: "arrow", run: () => write(q) }];
     });
     const at = computed(() => Math.max(0, Math.min(QUICK.i, rows.value.length - 1)));
     const onKey = (e) => {
-      if (e.key === "ArrowDown") { e.preventDefault(); QUICK.i = Math.min(at.value + 1, rows.value.length - 1); }
+      if (e.isComposing) return;
+      if (e.key === " " && !QUICK.q) { e.preventDefault(); write(); }
+      else if (e.key === "ArrowDown") { e.preventDefault(); QUICK.i = Math.min(at.value + 1, rows.value.length - 1); }
       else if (e.key === "ArrowUp") { e.preventDefault(); QUICK.i = Math.max(at.value - 1, 0); }
       else if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); if (rows.value[at.value]) rows.value[at.value].run(); }
       else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); }
     };
     const onInput = (e) => { QUICK.q = e.target.value; QUICK.i = 0; };
-    return { QUICK, input, rows, at, onKey, onInput, close };
+    const sending = ref(false);
+    const sendDraft = () => {
+      const text = QUICK.draft.trim();
+      if (!text || sending.value) return;
+      sending.value = true;
+      postJSON(`/api/env/${props.env}/inbox`, { text, files: [] })
+        .then(() => { QUICK.draft = ""; close(); changed(); flash("Sent to the agent"); }, (err) => flash(err.message))
+        .finally(() => { sending.value = false; });
+    };
+    const onAreaKey = (e) => {
+      if (e.isComposing) return;
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); sendDraft(); }
+      else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); back(); }
+    };
+    const agentNote = computed(() => {
+      const agent = SHELL.activity && SHELL.activity.agent;
+      if (plan.value && plan.value.held) return "it is stopped at a checkpoint";
+      if (!agent) return "no agent is here; it waits for the next session";
+      return agent.working ? "it is working" : "it is idle";
+    });
+    return { QUICK, input, area, rows, at, onKey, onInput, close, back, sendDraft, onAreaKey, agentNote, sending };
   },
   template: `
     <div class=quick-scrim @click="close"></div>
     <div class=quick-menu role=dialog aria-label="Quick menu">
-      <div class=quick-head>
-        <Icon name="arrow"/>
-        <input ref=input class=quick-input :value="QUICK.q" placeholder="Message the agent, or type a command…"
-          aria-label="Message the agent, or type a command" @input="onInput" @keydown="onKey">
-        <button type=button class=quick-key @click="close">esc</button>
-      </div>
-      <div class=quick-rows>
-        <button v-for="(r, i) in rows" :key="r.label" type=button :class="['quick-row', {on: i === at}]" @click="r.run" @mouseenter="QUICK.i = i">
-          <span class=quick-label>{{ r.label }}</span><span class=quick-hint>{{ r.hint }}</span>
-        </button>
-      </div>
-      <div class=quick-foot><span>↑↓ move</span><span>↵ run</span>
-        <span class=quick-foot-note>{{ QUICK.q.trim() ? '↵ sends it to the agent' : 'Just start typing to message the agent' }}</span></div>
+      <template v-if="!QUICK.writing">
+        <div class=quick-head>
+          <Icon name="search"/>
+          <input ref=input class=quick-input :value="QUICK.q" placeholder="Search actions…" aria-label="Search actions" @input="onInput" @keydown="onKey">
+          <button type=button class=quick-key @click="close">esc</button>
+        </div>
+        <div class=quick-rows>
+          <button v-for="(r, i) in rows" :key="r.label" type=button :class="['quick-row', {on: i === at}]" @click="r.run" @mouseenter="QUICK.i = i">
+            <Icon :name="r.icon"/><span class=quick-label>{{ r.label }}</span><span :class="r.key ? 'quick-cap' : 'quick-hint'">{{ r.hint }}</span>
+          </button>
+        </div>
+        <div class=quick-foot><span>↑↓ move</span><span>↵ run</span>
+          <span class=quick-foot-note>{{ QUICK.q.trim() ? rows.length + (rows.length === 1 ? ' match' : ' matches') : 'space writes a message' }}</span></div>
+      </template>
+      <template v-else>
+        <div class="quick-head writing">
+          <Icon name="arrow"/><span class=quick-write-title>Message the agent</span><span class=quick-write-note>{{ agentNote }}</span>
+        </div>
+        <div class=quick-write>
+          <textarea ref=area v-model="QUICK.draft" placeholder="Ask it something, or tell it what to do next…" aria-label="Message the agent"
+            :disabled="sending" @keydown="onAreaKey"></textarea>
+        </div>
+        <div class=quick-foot><span class=quick-foot-grow>⇧↵ new line · esc back to actions</span>
+          <button type=button class=btn @click="back">Back</button>
+          <button type=button :class="['quick-send', {ready: QUICK.draft.trim()}]" :disabled="sending || !QUICK.draft.trim()" @click="sendDraft">Send<Icon name="arrow"/></button>
+        </div>
+      </template>
     </div>`,
 };
 
@@ -3695,41 +3735,54 @@ const App = {
     document.addEventListener("mousedown", outsideJournals);
     onUnmounted(() => { clearInterval(journalsTimer); document.removeEventListener("mousedown", outsideJournals); });
     loadJournals();
-    // what the agent did while this tab was hidden, said once when the user comes back to it
-    const away = reactive({ since: "", text: "" });
-    const AWAY_WORDS = [["Closed to-do", "to-do closed", "to-dos closed"], ["Added to-do", "to-do added", "to-dos added"],
-                        ["Ended work", "piece of work finished", "pieces of work finished"], ["Filed message", "message filed", "messages filed"],
-                        ["Asked question", "question for you", "questions for you"], ["Suggested a change", "suggestion", "suggestions"],
-                        ["Handled comment", "comment handled", "comments handled"],
-                        ["Answered your question", "question of yours answered", "questions of yours answered"]];
-    let awayTimer = null;
-    const onVisibility = () => {
-      if (document.hidden) { away.since = away.since || new Date().toISOString(); return; }
-      const since = Date.parse(away.since);
-      away.since = "";
-      if (!since || Date.now() - since < 60000) return;
+    // the away digest: stamped when the tab is hidden or loses focus, shown once when the user comes back after a minute or more
+    let leftAt = 0;
+    const onLeave = () => { leftAt = leftAt || Date.now(); };
+    const onReturn = () => {
+      if (document.visibilityState !== "visible" || !leftAt) return;
+      const since = leftAt;
+      leftAt = 0;
+      if (Date.now() - since < 60000) return;
       activity.reload();
       setTimeout(() => {
-        const events = (activity.data && activity.data.events) || [];
-        const said = AWAY_WORDS.map(([text, one, many]) => {
-          const n = events.filter((e) => e.text === text && e.by !== "You" && Date.parse(e.at) >= since).length;
-          return n ? `${n} ${n === 1 ? one : many}` : "";
-        }).filter(Boolean);
-        if (!said.length) return;
-        away.text = said.join(" · ");
-        clearTimeout(awayTimer);
-        awayTimer = setTimeout(() => { away.text = ""; }, 15000);
+        if (!awayLines(activity.data && activity.data.events, since).length) return;
+        Object.assign(AWAY, { open: true, since, back: Date.now() });
       }, 1500);
     };
-    document.addEventListener("visibilitychange", onVisibility);
-    onUnmounted(() => { document.removeEventListener("visibilitychange", onVisibility); clearTimeout(awayTimer); });
+    const onHidden = () => { if (document.hidden) onLeave(); else onReturn(); };
+    document.addEventListener("visibilitychange", onHidden);
+    window.addEventListener("blur", onLeave);
+    window.addEventListener("focus", onReturn);
+    // Esc peels the digest before anything under it; the quick menu takes its own Esc first
+    const onAwayEscape = (e) => {
+      if (e.key !== "Escape" || !AWAY.open || QUICK.open) return;
+      e.preventDefault();
+      e.stopPropagation();
+      AWAY.open = false;
+    };
+    window.addEventListener("keydown", onAwayEscape, true);
+    onUnmounted(() => {
+      document.removeEventListener("visibilitychange", onHidden);
+      window.removeEventListener("blur", onLeave);
+      window.removeEventListener("focus", onReturn);
+      window.removeEventListener("keydown", onAwayEscape, true);
+    });
+    const away = computed(() => {
+      const since = AWAY.since || Date.now() - 86400000;
+      const inbox = NAV.find((item) => item.key === "inbox");
+      const waiting = navCount(inbox);
+      return { lines: awayLines(activity.data && activity.data.events, since),
+               for: AWAY.since ? awayFor((AWAY.back || Date.now()) - AWAY.since) : "last 24 hours",
+               waiting: waiting ? `${waiting} waiting on you` : "Nothing waiting on you" };
+    });
+    const openInbox = () => { AWAY.open = false; location.hash = `#/env/${envName.value}/messages`; };
     watchEffect(() => { SHELL.env = envName.value; SHELL.activity = activity.data; });
     // a nav count may add several of the environment's counts, as the Inbox does for questions and suggestions
     const navCount = (item) => (envRow.value ? [].concat(item.count).reduce((sum, k) => sum + (envRow.value[k] || 0), 0) : 0);
     SHELL.setAuto = setAuto;
     const envSettings = useFetch(() => envName.value && `/api/env/${envName.value}/environment`);
     watchEffect(() => { RETENTION.table = envSettings.data ? envSettings.data.retention || null : null; });
-    return { QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
+    return { QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
   },
   template: `
     <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
@@ -3803,7 +3856,7 @@ const App = {
         <div class="side-foot side-foot-row">
           <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}<span v-if="activity.data && activity.data.branch" class=side-foot-branch-name
             :title="activity.data.branch.detached ? 'Not on a branch: HEAD is at commit ' + activity.data.branch.name : 'The git branch checked out in this project'"> · {{ activity.data.branch.detached ? 'detached at ' + activity.data.branch.name : activity.data.branch.name }}</span></a>
-          <button type=button class=space-hint title="Quick menu: type to message the agent" @click="openQuick">space</button>
+          <button type=button class=space-hint title="Quick menu: search actions, or press space again to message the agent" @click="openQuick">space</button>
         </div>
       </aside>
       <main class=main>
@@ -3816,9 +3869,16 @@ const App = {
       <aside v-if="activity.data && ACTIVITY.shown" class=activity-dock>
         <ActivityPanel :data="activity.data" :href="activityHref" :env="envName"/>
       </aside>
-      <div v-if="away.text" class=away-toast role=status>
-        <span>While you were away: {{ away.text }}</span>
-        <button type=button class=away-close aria-label="Dismiss" title="Dismiss" @click="away.text = ''">×</button>
+      <div v-if="AWAY.open && envName" class=away-card role=status>
+        <div class=away-head>
+          <span class=away-dot></span><span class=away-title>While you were away</span><span class=away-for>{{ away.for }}</span>
+          <button type=button class=icon-btn aria-label="Dismiss" title="Dismiss" @click="AWAY.open = false"><Icon name="close"/></button>
+        </div>
+        <div class=away-lines>
+          <div v-for="d in away.lines" :key="d.key" class=away-line><span>{{ d.text }}</span><span class=away-age>{{ d.age }}</span></div>
+          <p v-if="!away.lines.length" class="away-line muted">Nothing new from the agent.</p>
+        </div>
+        <div class=away-foot><span>{{ away.waiting }}</span><button type=button class=away-go @click="openInbox">Open the inbox</button></div>
       </div>
     </div>`,
 };
