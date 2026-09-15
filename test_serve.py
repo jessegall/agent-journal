@@ -1095,6 +1095,10 @@ _said_file.write_text("\n".join(json.dumps(x) for x in [
     {"type": "user", "origin": {"kind": "human"}, "message": {"content": "carry on"}},
 ]) + "\n")
 check("Activity shows the agent's latest text even while a tool call follows it", _activity.last_said(_said_file), "working on the inspector now")
+_tagged_file = Path(tempfile.mkdtemp()) / "tagged.jsonl"
+_tagged_file.write_text(json.dumps(
+    {"type": "assistant", "message": {"content": [{"type": "text", "text": "[!info] the inspector no longer replays its slide-in"}]}}) + "\n")
+check("Activity drops the tag a reply opens with, like [!info]", _activity.last_said(_tagged_file), "the inspector no longer replays its slide-in")
 import transcript as _transcript  # noqa: E402
 check("the stop hook's reading still ignores text a tool call follows", _transcript.last_reply(_said_file), None)
 
