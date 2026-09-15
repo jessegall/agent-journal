@@ -1090,8 +1090,6 @@ const ResourceList = {
       <TransitionGroup tag="div" class=groups name="group" appear>
       <div v-for="g in sections" :key="g.key" class=lgroup>
         <div v-if="g.label" class=ghead>
-          <button type=button class=ghead-fold :aria-expanded="!folded(g)" :title="folded(g) ? 'Show these' : 'Fold these away'"
-            :aria-label="(folded(g) ? 'Show ' : 'Fold away ') + g.label" @click="fold(g)"><span :class="['fold', {shut: folded(g)}]"></span></button>
           <StatusIcon v-if="g.kind" :kind="g.kind"/>{{ g.label }}<span class=n>{{ g.total }}</span>
           <span class=sort>
             <select v-if="sorts.length > 1" class=sort-select :value="sortOf(g.key).by" aria-label="Sort by"
@@ -1105,6 +1103,8 @@ const ResourceList = {
               <Icon :name="sortOf(g.key).dir === 'asc' ? 'sort-asc' : 'sort-desc'"/>
             </button>
           </span>
+          <button type=button class=ghead-fold :aria-expanded="!folded(g)" :title="folded(g) ? 'Show these' : 'Fold these away'"
+            :aria-label="(folded(g) ? 'Show ' : 'Fold away ') + g.label" @click="fold(g)"><span :class="['fold', {shut: folded(g)}]"></span></button>
         </div>
         <TransitionGroup v-if="!folded(g)" tag="div" :class="['rows', {quiet: state.quiet}]" name="row" appear>
         <a v-for="(r, i) in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {library: columns.library, sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"

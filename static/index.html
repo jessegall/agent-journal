@@ -143,7 +143,7 @@
     transform: rotate(45deg); transition: transform .15s; opacity: .7; }
   .fold.shut { transform: rotate(-45deg); }
   /* a list group's header folds its rows away; the count stays, so a folded group still says how much it holds */
-  .ghead-fold { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: -2px; padding: 0;
+  .ghead-fold { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin-left: auto; margin-right: -4px; padding: 0;
     border: none; background: transparent; color: var(--text-3); cursor: pointer; }
   .ghead-fold:hover { color: var(--text); }
   .ghead-fold .fold { margin: 0; }
@@ -395,7 +395,7 @@
   .lrow.library .sub.only-cite { display: block; }
   .list > .viewbar { position: sticky; top: 0; z-index: 2; background: var(--bg); }
   .list .ghead { top: 40px; }
-  .ghead .sort { margin-left: auto; margin-right: -12px; display: inline-flex; align-items: center; gap: 0; opacity: 0; transition: opacity .12s; }
+  .ghead .sort { margin-left: auto; margin-right: 2px; display: inline-flex; align-items: center; gap: 0; opacity: 0; transition: opacity .12s; }
   /* the sort controls show only while the group's header is hovered or holds focus */
   .ghead:hover .sort, .ghead:focus-within .sort { opacity: 1; }
   @media (hover: none) { .ghead .sort { opacity: 1; } }
