@@ -45,6 +45,8 @@ MESSAGES = {
     "fix_reminder": 'journal reminders done {n} "<why>"',
     "doc_orphan": "its environment `{env}` is gone",
     "doc_draft": "a draft with no parts, {days}d old",
+    "doc_plan": "reads like a plan: what will be done, in what order",
+    "fix_doc_plan": "journal plans from-doc {n}   a draft plan from its phase parts; the doc stays as it is",
     "fix_doc_orphan": 'the doc still stands — edit `track:` in its index.md, or strike what no longer holds: '
                       'journal docs strike {n}.<p> "<why>"',
     "fix_doc_draft": 'journal docs final {n}   (or `docs strike {n}.<p> "<why>"`)',
@@ -235,8 +237,10 @@ def _reminders(root: Path, here: str) -> list[dict]:
 
 
 def _docs(root: Path) -> list[dict]:
+    import plans
     out = []
     names = set(tracks._all(root))
+    made = plans.made_from_docs(root)
     for d in docs_mod._load(root):
         if d.get("superseded_by") or d.get("archived"):
             continue
@@ -254,6 +258,9 @@ def _docs(root: Path) -> list[dict]:
             days = _days(d.get("at", ""))
             if days is not None and days >= DRAFT_DAYS:
                 why = say("doc_draft", days=int(days))
+        planned = not why and d["n"] not in made and plans.reads_like_plan(d)
+        if planned:
+            why = say("doc_plan")
         if not why:
             continue
         # THE FIX MUST ANSWER THE FINDING. An orphaned doc is not a finished doc, and
@@ -261,7 +268,7 @@ def _docs(root: Path) -> list[dict]:
         # not address what it just reported — the field is what is stale, not the status.
         out.append({"kind": "doc", "n": d["n"], "where": "", "text": d.get("title", ""),
                     "why": why, "age": pins_mod.age(d.get("at", "")),
-                    "fix": say("fix_doc_orphan" if gone else "fix_doc_draft", n=d["n"])})
+                    "fix": say("fix_doc_orphan" if gone else "fix_doc_plan" if planned else "fix_doc_draft", n=d["n"])})
     return out
 
 

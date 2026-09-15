@@ -75,6 +75,13 @@ class Add(Resource):
         return {"body": body}
 
 
+class FromDoc(Resource):
+    signature = "plans:from-doc {doc : a doc number or name}"
+    writes = True
+    controller = CONTROLLER
+    action = "fromdoc"
+
+
 class Phase(Resource):
     signature = "plans:phase {n : a plan number} {title* : the phase's title} {--when=} {--checkpoint}"
     casts = PLAN
@@ -123,4 +130,4 @@ class Link(Resource):
     action = "link"
 
 
-COMMANDS = (List, Show, Add, Phase, Todos, Activate, Continue, Abandon, Link)
+COMMANDS = (List, Show, Add, FromDoc, Phase, Todos, Activate, Continue, Abandon, Link)

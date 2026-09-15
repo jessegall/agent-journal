@@ -205,7 +205,8 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal plans phase <n> "<title>" [--when="<complete when>"] [--checkpoint]   add a phase
     journal plans todos <n> <phase> <to-do numbers> [--off] [--reopen="<why>"]   put to-dos in a phase, or take them out
     journal plans show <n>           the plan, its phases and their to-dos
-    journal plans link <n> "doc 4.2"   a doc or report it rests on
+    journal plans link <n> "doc 4.2"   a doc or report it rests on; a report it links is kept while it runs
+    journal plans from-doc <doc>     a draft plan from a doc's "Phase …" parts, holding the to-dos that cite them
     journal plans abandon <n> "<why>"   stop it
     journal comments [--all]         what the user said about a to-do, doc, pin, rule or reminder
     journal comments done <n> "<what was done>"   a comment is handled

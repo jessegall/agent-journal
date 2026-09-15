@@ -14,6 +14,8 @@ DRAFT, ACTIVE, DONE, ABANDONED = "draft", "active", "done", "abandoned"
 #: project-wide: "user" (default) lets only the viewer activate a plan, "agent" lets the CLI do it too
 APPROVAL = "plans_approval"
 
+_PHASE_PART = re.compile(r"^\s*phase\s*\d*\s*[:.\-–—]?\s*(.*)$", re.I)
+
 _REF = re.compile(r"^\s*(docs?|reports?)\s*[:#\s]?\s*(\d+(?:\.\d+)?)\s*$", re.I)
 
 MESSAGES = {
@@ -56,6 +58,12 @@ MESSAGES = {
     "carry": "PLAN {n} IS ACTIVE here: {title}\n  phase {p} of {total} is current: {phase}[ — complete when {when}]\n"
              "  auto mode picks to-dos from this phase only; `journal plans show {n}` reads the plan",
     "carry_held": "PLAN {n} IS ACTIVE here: {title}\n  it stopped after checkpoint phase {p}, {phase}; the user continues it in the viewer",
+    "from_doc_again": "doc {doc} is already plan {n}",
+    "from_doc_none": "doc {doc} has no parts titled \"Phase …\", so there are no phases to take; "
+                     "write the plan with journal plans add and journal plans phase",
+    "from_doc_body": "Made from doc {doc}. The doc is left as it was.",
+    "from_doc": "plan {n}: a draft made from doc {doc}, with {phases} phase(s) and {todos} to-do(s) placed by the doc part they cite\n"
+                "  read it with journal plans show {n}; the user approves it in the viewer",
     "progress": "{done} of {total} phase(s) complete",
     "current": "phase {p} current: {title}",
     "show": "PLAN {n}  {title}  ({status})\n  goal: {goal}\n  {meta}[\n  links: {refs}]",
@@ -416,6 +424,63 @@ def link(root: Path, n: int, ref: str, track: str | None = None) -> tuple[bool, 
         refs.append(got)
         _put(root, items, here)
     return True, say("linked", n=n, ref=got)
+
+
+def reads_like_plan(doc: dict) -> bool:
+    """A doc titled like a plan, or with parts titled "Phase …"."""
+    import docs
+    return bool(docs._PLAN_WORDS.search(doc.get("title", ""))) or any(
+        _PHASE_PART.match(p.get("title", "")) for p in doc.get("parts") or [])
+
+
+def made_from_docs(root: Path) -> set[int]:
+    """Doc numbers some environment already turned into a plan that is not abandoned."""
+    import tracks
+    return {plan["from_doc"] for name in tracks._all(root) for plan in _all(root, name)
+            if plan.get("from_doc") and plan.get("status") != ABANDONED}
+
+
+def from_doc(root: Path, ref: str, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
+    """A draft plan from a doc: its "Phase …" parts become phases, holding the to-dos that cite them."""
+    import docs
+    here = _here(root, track)
+    doc, _, err = docs.get(root, str(ref or "").strip())
+    if doc is None:
+        return False, err
+    for m, plan in enumerate(_all(root, here), 1):
+        if plan.get("from_doc") == doc["n"] and plan.get("status") != ABANDONED:
+            return False, say("from_doc_again", doc=doc["n"], n=m)
+    phased = [(p, (got.group(1).strip() or p["title"])) for p in doc.get("parts") or []
+              for got in [_PHASE_PART.match(p.get("title", ""))] if got]
+    if not phased:
+        return False, say("from_doc_none", doc=doc["n"])
+    member = membership(root, here)
+    cited: dict[int, list[int]] = {}
+    for t in todo._all(root, here):
+        base, _, p = str(t.get("doc") or "").partition(".")
+        if base == str(doc["n"]) and p.isdigit() and t["n"] not in member:
+            cited.setdefault(int(p), []).append(t["n"])
+    rows = [{"title": title, "when": "", "checkpoint": False, "todos": sorted(cited.get(p["p"], [])), "at": at}
+            for p, title in phased]
+    with state.locked(root):
+        items = _all(root, here)
+        items.append({"title": doc.get("title", ""), "goal": " ".join((doc.get("abstract") or doc.get("title", "")).split()),
+                      "body": say("from_doc_body", doc=doc["n"]), "status": DRAFT, "at": at, "source": source,
+                      "phases": rows, "refs": [f"doc {doc['n']}"], "from_doc": doc["n"]})
+        _put(root, items, here)
+        n = len(items)
+    return True, say("from_doc", n=n, doc=doc["n"], phases=len(rows), todos=sum(len(r["todos"]) for r in rows))
+
+
+def linked_reports(root: Path, track: str) -> set[int]:
+    """Report numbers a plan that is not finished links: kept listed and never removed while it runs."""
+    known = _todos(root, track)
+    out = set()
+    for plan in _all(root, track):
+        if status(plan, phases(root, plan, track, known)) in (DONE, ABANDONED):
+            continue
+        out |= {int(ref.split()[1]) for ref in plan.get("refs") or [] if ref.startswith("report ")}
+    return out
 
 
 def row_response(root: Path, n: int, plan: dict, track: str, full: bool = False) -> dict:
