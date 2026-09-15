@@ -1859,12 +1859,24 @@ const DOC_TABS = [{ key: "docs", label: "Docs" }, { key: "reports", label: "Repo
 
 const DocTabs = {
   props: { env: String, current: String },
-  setup() { return { DOC_TABS }; },
+  setup(props) {
+    const docs = useFetch(() => props.env && `/api/env/${props.env}/docs?archived=1`);
+    const reports = useFetch(() => props.env && `/api/env/${props.env}/reports`);
+    const plans = useFetch(() => props.env && `/api/env/${props.env}/plans`);
+    const counts = computed(() => ({ docs: docs.data ? docs.data.filter((d) => !d.archived).length : "",
+                                     reports: reports.data ? reports.data.length : "", plans: plans.data ? plans.data.length : "" }));
+    return { DOC_TABS, counts };
+  },
+  // the head of the Documents area: the type switch with its counts, then the page's quiet links, then its New button
   template: `
-    <nav class="radio-group doc-tabs" aria-label="Documents">
-      <a v-for="t in DOC_TABS" :key="t.key" :class="['radio-option', {on: t.key === current}]" :href="'#/env/' + env + '/' + t.key"
-        :aria-current="t.key === current ? 'page' : null">{{ t.label }}</a>
-    </nav>`,
+    <div class=doc-head>
+      <nav class=doc-switch aria-label="Documents">
+        <a v-for="t in DOC_TABS" :key="t.key" :class="['doc-switch-opt', {on: t.key === current}]" :href="'#/env/' + env + '/' + t.key"
+          :aria-current="t.key === current ? 'page' : null">{{ t.label }}<span class=doc-switch-n>{{ counts[t.key] }}</span></a>
+      </nav>
+      <slot/>
+      <span class=doc-head-new><slot name="new"/></span>
+    </div>`,
 };
 
 const PLAN_STATUS = { draft: "Draft", active: "Active", done: "Done", abandoned: "Abandoned" };
@@ -1945,7 +1957,7 @@ const Plans = {
   },
   template: `
     <template v-if="reading">
-      <TopBar :crumbs="[env, 'Plans', '#' + n]"><a class=btn :href="base">All plans</a></TopBar>
+      <TopBar :crumbs="[env, 'Documents', 'Plans', '#' + n]"><a class=btn :href="base">All plans</a></TopBar>
       <div class=body><div class=page><div class=page-inner>
         <p v-if="item.error" class=error>{{ item.error }}</p>
         <template v-else-if="item.data">
@@ -1987,13 +1999,15 @@ const Plans = {
       </div></div></div>
     </template>
     <template v-else>
-      <TopBar :crumbs="archive ? [env, 'Plans', 'Archive'] : [env, 'Plans']"/>
+      <TopBar :crumbs="archive ? [env, 'Documents', 'Plans', 'Archive'] : [env, 'Documents', 'Plans']"/>
       <div class=body>
         <div class=list>
-          <ResourceList v-bind="PLAN_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
-            :href="(p) => base + '/' + p.n">
-            <template #tools><DocTabs :env="env" current="plans"/><a class="btn new" :href="home + '/new'">New plan</a></template>
-          </ResourceList>
+          <DocTabs :env="env" current="plans">
+            <a :class="['viewbar-archive', {on: archive}]" :href="archive ? home : home + '/archive'">{{ archive ? 'Close archive' : 'Archive' }}</a>
+            <template #new><a class="btn new" :href="home + '/new'">New plan</a></template>
+          </DocTabs>
+          <ResourceList v-bind="PLAN_LIST" :bar="false" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
+            :href="(p) => base + '/' + p.n"/>
         </div>
         <Panel v-if="n === 'new'" label="New plan" :close="base">
           <ActionBar :actions="creating" :done="(body, a) => (a.url === api ? done(body, a) : leaveNew())"/>
@@ -2059,13 +2073,15 @@ const Reports = {
       </div></div></div>
     </template>
     <template v-else>
-      <TopBar :crumbs="archive ? [env, 'Reports', 'Archive'] : [env, 'Reports']"/>
+      <TopBar :crumbs="archive ? [env, 'Documents', 'Reports', 'Archive'] : [env, 'Documents', 'Reports']"/>
       <div class=body>
         <div class=list>
-          <ResourceList v-bind="REPORT_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
-            :href="(r) => base + '/' + r.n">
-            <template #tools><DocTabs :env="env" current="reports"/><a class="btn new" :href="home + '/new'">New report</a></template>
-          </ResourceList>
+          <DocTabs :env="env" current="reports">
+            <a :class="['viewbar-archive', {on: archive}]" :href="archive ? home : home + '/archive'">{{ archive ? 'Close archive' : 'Archive' }}</a>
+            <template #new><a class="btn new" :href="home + '/new'">New report</a></template>
+          </DocTabs>
+          <ResourceList v-bind="REPORT_LIST" :bar="false" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
+            :href="(r) => base + '/' + r.n"/>
         </div>
         <Panel v-if="n === 'new'" label="New report" :close="base">
           <ActionBar :actions="creating" open="New report" :done="done"/>
@@ -2303,11 +2319,15 @@ function docList({ crumbs, url, base, empty }) {
       <TopBar :crumbs="crumbs"/>
       <div class=body><div class=list>
         <div v-if="n === 'new'" class=compose-wrap><ActionBar :actions="creating" open="New doc" :done="done"/></div>
-        <ResourceList v-bind="DOC_LIST" :key="shown.archived ? 'archived' : 'open'"
+        <DocTabs v-if="env" :env="env" current="docs">
+          <button type=button :class="['viewbar-archive', {on: shown.archived}]" @click="shown.archived = !shown.archived">{{ shown.archived ? 'Close archive' : 'Archive' }}</button>
+          <a class=viewbar-archive :href="base.slice(0, -4) + 'files'">Files</a>
+          <template #new><a class="btn new" :href="base + '/new'">New document</a></template>
+        </DocTabs>
+        <ResourceList v-bind="DOC_LIST" :bar="!env" :key="shown.archived ? 'archived' : 'open'"
           :empty="shown.archived ? 'No documents here are archived.' : empty" :rows="rows"
           :loading="s.loading" :error="s.error" :href="(d) => '#/docs/' + d.n">
           <template #tools>
-            <DocTabs v-if="env" :env="env" current="docs"/>
             <RadioGroup label="Which documents" :options="[{ value: 'open', label: 'Open' }, { value: 'archived', label: 'Archived' }]"
               :modelValue="shown.archived ? 'archived' : 'open'" @update:modelValue="(v) => (shown.archived = v === 'archived')"/>
             <a v-if="base.startsWith('#/env/')" class=btn :href="base.slice(0, -4) + 'files'">Files</a>
@@ -2320,7 +2340,7 @@ function docList({ crumbs, url, base, empty }) {
 
 const Docs = docList({ crumbs: () => ["Project", "Documents"], url: () => "/api/docs?archived=1", base: () => "#/docs",
                        empty: "No project-wide docs are catalogued." });
-const EnvDocs = docList({ crumbs: (p) => [p.env, "Documents"], url: (p) => p.env && `/api/env/${p.env}/docs?archived=1`,
+const EnvDocs = docList({ crumbs: (p) => [p.env, "Documents", "Docs"], url: (p) => p.env && `/api/env/${p.env}/docs?archived=1`,
                           base: (p) => `#/env/${p.env}/docs`,
                           empty: "No docs are scoped to this environment; the project's docs still apply." });
 
