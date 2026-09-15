@@ -42,7 +42,7 @@ def set_setting(root: Path, track: str, key: str, value) -> tuple[bool, str]:
     return True, say("set_show" if key == SHOW else "set_keep", env=track, n=int(value))
 SKIP = {"statusline", "serve", "channel", "claude", "migrate", "version"}
 # noun -> the kind of resource a line is about, so Activity can open it
-KINDS = {"todos": "todo", "messages": "message", "questions": "question", "reports": "report",
+KINDS = {"todos": "todo", "messages": "message", "questions": "question", "reports": "report", "plans": "plan",
          "suggestions": "suggestion", "docs": "doc", "pins": "pin", "rules": "rule", "comments": "comment",
          "reminders": "reminder", "work": "work"}
 # writes that Activity already shows from the stores they change
@@ -61,7 +61,7 @@ DETAIL = {"todos:priority": "value", "reports:keep": "days", "todos:keep": "days
 # run by git hooks, not by the agent
 HOOKS = {"todos:from-commit"}
 # lines that introduce something, so Activity shows its title under them; reads and closes do not repeat it
-TITLED = {"questions:add", "reports:add", "docs:add", "suggestions:add", "suggest:", "pins:add", "rules:add",
+TITLED = {"questions:add", "reports:add", "plans:add", "docs:add", "suggestions:add", "suggest:", "pins:add", "rules:add",
           "reminders:add", "notifications:add", "comments:add"}
 
 # noun:verb -> the line shown in Activity; "noun:" is a command with no verb; {n} is its number argument
@@ -188,6 +188,14 @@ DESCRIBE = {
     "reports:keep": "Setting how long reports stay listed",
     "todos:keep": "Setting how long done to-dos stay listed",
     "reports:doc": "Turning report {n} into a document",
+    "plans:list": "Reading plans",
+    "plans:show": "Reading plan {n}",
+    "plans:add": "Drafting a plan",
+    "plans:phase": "Adding a phase to plan {n}",
+    "plans:todos": "Putting to-dos in a phase of plan {n}",
+    "plans:activate": "Activating plan {n}",
+    "plans:abandon": "Abandoning plan {n}",
+    "plans:link": "Linking plan {n}",
     "suggestions:edit": "Rewording suggestion {n}",
     "suggestions:withdraw": "Withdrawing suggestion {n}",
     "suggestions:accept": "Accepting suggestion {n}",
@@ -342,6 +350,12 @@ WEB = {
     "reports:keep": "Set how long reports stay listed",
     "todos:keep": "Set how long done to-dos stay listed",
     "reports:todoc": "Turned report {n} into a document",
+    "plans:store": "Drafted a plan",
+    "plans:phase": "Added a phase to plan {n}",
+    "plans:todos": "Changed the to-dos of plan {n}",
+    "plans:activate": "Approved plan {n}",
+    "plans:destroy": "Abandoned plan {n}",
+    "plans:link": "Linked plan {n}",
     "suggestions:store": "Suggested a change",
     "suggestions:update": "Edited suggestion {n}",
     "suggestions:accept": "Accepted suggestion {n}",

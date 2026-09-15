@@ -8,6 +8,7 @@ import docs
 import inbox
 import notifications
 import pins
+import plans
 import reports
 import suggestions
 import questions
@@ -17,7 +18,7 @@ import todo
 import tools
 import work
 from resources.base import Query, Repository
-from resources.models import Attachment, Claim, Comment, Doc, Notification, Report, Suggestion, Message, Part, Question, Reminder, Rule, StyleItem, Todo, Tool, Work
+from resources.models import Attachment, Claim, Comment, Doc, Notification, Report, Suggestion, Message, Part, Plan, Question, Reminder, Rule, StyleItem, Todo, Tool, Work
 
 
 class Todos(Repository[Todo]):
@@ -89,6 +90,13 @@ class Reports(Repository[Report]):
 
     def rows(self) -> list[dict]:
         return reports._all(self.root, self.env or None)
+
+
+class Plans(Repository[Plan]):
+    model = Plan
+
+    def rows(self) -> list[dict]:
+        return plans._all(self.root, self.env or None)
 
 
 class Comments(Repository[Comment]):
