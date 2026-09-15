@@ -3875,8 +3875,19 @@ const QuickMenu = {
         { label: "Go to Settings", keys: "settings preferences", hk: "6", icon: "settings", run: goTo(`${base}/settings`) },
       ];
       if (waiting) {
-        const first = openQuestions.length ? `${base}/messages/q/${openQuestions[0].n}` : `${base}/messages/s/${openSuggestions[0].n}`;
-        commands.unshift({ label: `Answer the first of ${waiting} waiting on you`, keys: "answer waiting", hk: "a", icon: "questions", run: goTo(first) });
+        // it opens on Home, where the queue is: the hash change clears the overlay, so the item opens after it
+        const first = openQuestions.length
+          ? { kind: "question", n: openQuestions[0].n }
+          : { kind: "suggestion", n: openSuggestions[0].n };
+        commands.unshift({ label: `Answer the first of ${waiting} waiting on you`, keys: "answer waiting", hk: "a", icon: "questions",
+                           run: () => {
+                             close();
+                             // going to Home clears any open overlay, so the item opens once that has happened
+                             const show = () => { OVERLAY.kind = first.kind; OVERLAY.n = first.n; };
+                             if (location.hash === base) { nextTick(show); return; }
+                             window.addEventListener("hashchange", () => nextTick(show), { once: true });
+                             location.hash = base;
+                           } });
       }
       if (p && p.held) {
         commands.push({ label: "Continue past the checkpoint", keys: "continue checkpoint plan", hk: "c", icon: "work",
