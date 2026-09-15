@@ -447,6 +447,16 @@ const inspector = reactive({ width: storedInspectorWidth() });
 // the rows of the list that opened the inspector, in the order shown: its position and its up and down steps read from here
 const INSPECTOR_TRAIL = reactive({ owner: null, hrefs: [] });
 
+// an item dealt with in the inspector hands over to the next one in its list; with none left, the inspector closes
+function advanceInspector(props) {
+  const hrefs = INSPECTOR_TRAIL.hrefs;
+  const i = hrefs.indexOf(location.hash);
+  const next = i >= 0 ? hrefs[i + 1] || hrefs[i - 1] : null;
+  if (next) location.hash = next;
+  else if (props.onClose) props.onClose();
+  else if (props.base || props.close) location.hash = props.base || props.close;
+}
+
 function storedInspectorWidth() {
   try {
     const got = Number(localStorage.getItem(INSPECTOR_WIDTH.key));
@@ -657,7 +667,7 @@ const QuestionAnswer = {
           :class="['option', 'option-custom', {picked: state.picked === CUSTOM}]"
           @click="pick(CUSTOM)" @keydown.enter.self.prevent="pick(CUSTOM)" @keydown.space.self.prevent="pick(CUSTOM)">
           Custom answer
-          <textarea v-if="state.picked === CUSTOM" v-model="state.custom" placeholder="Write your answer" aria-label="Your custom answer"
+          <textarea v-if="state.picked === CUSTOM" v-model="state.custom" placeholder="Write your answer" aria-label="Your custom answer" @keydown.meta.enter.prevent="save" @keydown.ctrl.enter.prevent="save"
             :disabled="state.answering" @click.stop @keydown.meta.enter.prevent="save" @keydown.ctrl.enter.prevent="save"
             @vue:mounted="({ el }) => el.focus()"></textarea>
         </div>
@@ -1229,7 +1239,12 @@ const QuestionPanel = {
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/questions`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
-    const onAnswered = (data) => { item.data = data; if (props.reloaded) props.reloaded(); };
+    const onAnswered = (data) => {
+      const wasOpen = item.data && item.data.status === "open";
+      item.data = data;
+      if (props.reloaded) props.reloaded();
+      if (wasOpen) advanceInspector(props);
+    };
     const actions = computed(() => {
       const q = item.data;
       if (!q || q.withdrawn) return [];
@@ -1301,7 +1316,8 @@ const MessagePanel = {
           note: "For a message left on the wrong environment: it waits there instead." },
       ];
     });
-    const done = panelDone(props, item);
+    const settled = panelDone(props, item);
+    const done = (body, a) => { settled(body, a); if (a.label === "Archive") advanceInspector(props); };
     // taking one file off the message: it asks why, and the file is kept under struck/
     const removing = reactive({ name: "", why: "", busy: false, error: "" });
     const startRemove = (f) => Object.assign(removing, { name: f.name, why: "", busy: false, error: "" });
@@ -1515,7 +1531,8 @@ const SuggestionPanel = {
           note: "The agent does not suggest it again." },
       ];
     });
-    const done = panelDone(props, item);
+    const settled = panelDone(props, item);
+    const done = (body, a) => { settled(body, a); if (["Accept", "Adjust", "Decline"].includes(a.label)) advanceInspector(props); };
     return { item, actions, done, SUGGESTION_STATUS };
   },
   template: `
