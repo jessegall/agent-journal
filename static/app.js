@@ -2901,14 +2901,12 @@ const EnvHome = {
     const work = useFetch(url("/work"));
     const questions = useFetch(url("/questions"));
     const suggestions = useFetch(url("/suggestions"));
-    const notes = useFetch(url("/notifications"));
     const plans = useFetch(url("/plans"));
     const messages = useFetch(url("/messages?all=1"));
     const view = reactive({ kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
     const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
-    const reloadAll = () => [work, questions, suggestions, notes, plans, messages].forEach((f) => f.reload());
-    const readOne = (x) => send("POST", `/api/env/${props.env}/notifications/${x.n}/read`).then(() => { notes.reload(); changed(); });
+    const reloadAll = () => [work, questions, suggestions, plans, messages].forEach((f) => f.reload());
 
     // Dismiss takes a row off this list without acting on it, remembered in this browser
     const dismissKey = computed(() => `journal.dismissed.${props.env}`);
@@ -2928,12 +2926,10 @@ const EnvHome = {
     const queue = computed(() => {
       const rows = [
         ...(questions.data || []).filter((q) => q.status === "open").map((q) => ({ kind: "question", n: q.n, title: q.text, age: q.age })),
-        ...(notes.data || []).filter((x) => String(x.about).startsWith("inbox:"))
-          .map((x) => ({ kind: "reply", n: Number(String(x.about).split(":")[1]), title: x.text, age: x.age || "just now", note: x })),
         ...(suggestions.data || []).filter((s) => s.status === "open").map((s) => ({ kind: "suggestion", n: s.n, title: s.title, age: s.age })),
       ];
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
-        .map((r) => ({ ...r, open: () => { if (r.note) readOne(r.note); peek(r.kind, r.n); } }));
+        .map((r) => ({ ...r, open: () => peek(r.kind, r.n) }));
     });
     const trailOwner = {};
     watchEffect(() => {
