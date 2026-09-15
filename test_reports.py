@@ -110,5 +110,20 @@ _m = len(json.loads((d / ".journal" / "environments" / "default" / "inbox.json")
 code, out = j("messages", "show", str(_m))
 check("reading a message that asks for a report reminds the agent too", "journal reports add" in out, True)
 
+# ------------------------------------------------------------------ a report that is ready is news on Home
+import notifications as _notif  # noqa: E402
+import reports as _reports  # noqa: E402
+_root = d / ".journal"
+code, out = j("reports", "add", "what the flaky test turned out to be", "--brief", stdin="the retry hides a race")
+_n = len(stored())
+_mine = [x for x in _notif._all(_root, "default") if x.get("about") == f"report:{_n}"]
+check("filing a report tells the user it is ready, with the report to open",
+      (code, len(_mine), bool(_mine) and "Your report is ready: what the flaky test turned out to be" in _mine[0]["text"],
+       bool(_mine) and _mine[0].get("read_at")), (0, 1, True, None))
+_before = len(_notif._all(_root, "default"))
+_reports.add(_root, "a report the user wrote in the viewer", "their own words", "2026-09-15T10:00:00+00:00",
+             source="web", track="default")
+check("a report filed from the viewer does not notify the user who wrote it", len(_notif._all(_root, "default")), _before)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
