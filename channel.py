@@ -197,6 +197,11 @@ def _plan_events(env: str, since: float) -> list[tuple[str, dict]]:
         if at and plan.get("activated_by") == "web" and _epoch(at) >= since:
             got.append((f"{env}:plan:{n}:approved:{at}",
                         {"content": f"The user approved plan {n} on {env}: {title}.{ahead}", "meta": {"env": env, "plan": str(n)}}))
+        at = plan.get("auto_at") or ""
+        if at and plan.get("auto") and _epoch(at) >= since:
+            got.append((f"{env}:plan:{n}:auto:{at}",
+                        {"content": f"The user switched plan {n} on {env} to auto mode: it continues past its checkpoints on its own.{ahead}",
+                         "meta": {"env": env, "plan": str(n)}}))
         for p, ph in enumerate(plan.get("phases") or [], 1):
             at = ph.get("continued_at") or ""
             if at and _epoch(at) >= since:
