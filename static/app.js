@@ -2903,10 +2903,20 @@ const EnvHome = {
     const suggestions = useFetch(url("/suggestions"));
     const plans = useFetch(url("/plans"));
     const messages = useFetch(url("/messages?all=1"));
+    const notes = useFetch(url("/notifications"));
     const view = reactive({ kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
     const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
-    const reloadAll = () => [work, questions, suggestions, plans, messages].forEach((f) => f.reload());
+    const reloadAll = () => [work, questions, suggestions, plans, messages, notes].forEach((f) => f.reload());
+    // the agent's reply raises a notification about that message: while it is unread, so is the reply
+    const unreadReplies = computed(() => new Set((notes.data || [])
+      .filter((x) => !x.read && String(x.about).startsWith("inbox:"))
+      .map((x) => Number(String(x.about).split(":")[1]))));
+    const markRead = (n) => {
+      const unread = (notes.data || []).filter((x) => !x.read && String(x.about) === `inbox:${n}`);
+      if (!unread.length) return;
+      Promise.all(unread.map((x) => send("POST", `/api/env/${props.env}/notifications/${x.n}/read`))).then(() => notes.reload());
+    };
 
     // Dismiss takes a row off this list without acting on it, remembered in this browser
     const dismissKey = computed(() => `journal.dismissed.${props.env}`);
@@ -2986,7 +2996,7 @@ const EnvHome = {
       const weekAgo = Date.now() - 7 * 86400000;
       const rows = [];
       for (const m of messages.data || []) {
-        if (m.status === "archived") continue;
+        if (m.status === "archived" || !unreadReplies.value.has(m.n)) continue;
         const answered = (m.replies || []).filter((r) => r.who !== "you" && r.who !== "You" && r.part && (!r.at || Date.parse(r.at) >= weekAgo));
         for (const r of answered) {
           const part = (m.parts || []).find((x) => x.excerpt && (x.excerpt.includes(r.part) || r.part.includes(x.excerpt)));
@@ -3003,7 +3013,7 @@ const EnvHome = {
       // what the agent answered leads; what it is still working on follows, so a reply is never crowded out
       const newest = (a, b) => (b.at > a.at ? 1 : b.at < a.at ? -1 : 0);
       return [...rows.filter((r) => r.done).sort(newest), ...rows.filter((r) => !r.done).sort(newest)].slice(0, 4)
-        .map((r) => ({ ...r, open: () => peek("reply", r.n) }));
+        .map((r) => ({ ...r, open: () => { markRead(r.n); peek("reply", r.n); } }));
     });
     const repliesNote = computed(() => {
       const done = replies.value.filter((r) => r.done).length;
@@ -3052,7 +3062,7 @@ const EnvHome = {
           <span class=reply-line-ask>{{ r.ask }}</span>
           <div class=reply-line-row><span :class="['reply-line-answer', {pending: !r.done}]">{{ r.done ? r.answer : (r.waitingOn ? 'Working on it — ' + r.waitingOn : 'Working on it') }}</span><span class=needs-meta>{{ r.ref }}</span></div>
         </div>
-        <p v-if="!replies.length" class=home-empty>No replies from the agent this week.</p>
+        <p v-if="!replies.length" class=home-empty>Nothing unread from the agent.</p>
       </section>
       <section class=home-section>
         <div class=home-head><h2>Subagents</h2><span>{{ crewNote }}</span></div>
