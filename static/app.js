@@ -2987,10 +2987,15 @@ const EnvHome = {
           rows.push({ key: `${m.n}:${r.at}:${r.part}`, at: r.at || "", ask: r.part, answer: r.text, ref, age: r.age || "just now", done: true, n: m.n });
         }
         if (m.status === "waiting" && m.read) {
-          rows.push({ key: `${m.n}:working`, at: m.read, ask: m.gist || m.text, answer: "", ref: `message ${m.n}`, age: m.read_age || "just now", done: false, n: m.n });
+          const made = (m.parts || []).flatMap((p) => p.became.map((b) => b.label)).filter((label) => label !== "answered");
+          rows.push({ key: `${m.n}:working`, at: m.read, ask: m.gist || m.text, answer: "",
+                      waitingOn: made.length ? made.join(", ") : "", ref: made.length ? made.join(", ") : `message ${m.n}`,
+                      age: m.read_age || "just now", done: false, n: m.n });
         }
       }
-      return rows.sort((a, b) => (b.at > a.at ? 1 : b.at < a.at ? -1 : 0)).slice(0, 4)
+      // what the agent answered leads; what it is still working on follows, so a reply is never crowded out
+      const newest = (a, b) => (b.at > a.at ? 1 : b.at < a.at ? -1 : 0);
+      return [...rows.filter((r) => r.done).sort(newest), ...rows.filter((r) => !r.done).sort(newest)].slice(0, 4)
         .map((r) => ({ ...r, open: () => peek("reply", r.n) }));
     });
     const repliesNote = computed(() => {
@@ -3038,7 +3043,7 @@ const EnvHome = {
         <div class=home-head><h2>Replies to you</h2><span>{{ repliesNote }}</span></div>
         <div v-for="r in replies" :key="r.key" class=reply-line @click="r.open">
           <span class=reply-line-ask>{{ r.ask }}</span>
-          <div class=reply-line-row><span :class="['reply-line-answer', {pending: !r.done}]">{{ r.done ? r.answer : 'Still working on it' }}</span><span class=needs-meta>{{ r.ref }}</span></div>
+          <div class=reply-line-row><span :class="['reply-line-answer', {pending: !r.done}]">{{ r.done ? r.answer : (r.waitingOn ? 'Working on it — ' + r.waitingOn : 'Working on it') }}</span><span class=needs-meta>{{ r.ref }}</span></div>
         </div>
         <p v-if="!replies.length" class=home-empty>No replies from the agent this week.</p>
       </section>
