@@ -235,6 +235,7 @@ const Icon = {
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
       <path v-else-if="name === 'up'" d="M8 12.5V4M4.5 7.5L8 4l3.5 3.5"/>
       <path v-else-if="name === 'down'" d="M8 3.5V12M4.5 8.5L8 12l3.5-3.5"/>
+      <template v-else-if="name === 'open'"><path d="M9 3.5h3.5V7"/><path d="M12.5 3.5L7.5 8.5"/><path d="M11 9.5v3H3.5V5h3"/></template>
       <template v-else-if="name === 'sidepanel'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10"/></template>
       <template v-else-if="name === 'info'"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></template>
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
@@ -1899,7 +1900,7 @@ function planStepState(ph) { return ph.complete ? "Complete" : ph.current ? "Cur
 
 const Plans = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, DocTabs },
+  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, DocTabs, TodoPanel, Icon },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const home = computed(() => `#/env/${props.env}/plans`);
@@ -1925,19 +1926,11 @@ const Plans = {
       if (!p || p.status === "done" || p.status === "abandoned") return [];
       const url = `${api.value}/${p.n}`;
       const out = [];
-      if (p.status === "draft") {
-        out.push({ label: "Approve plan", method: "POST", url: `${url}/activate`, submit: "Approve",
-                   note: "The plan becomes active. The agent works its phases in order, starting with phase 1." });
-      }
       out.push(p.auto
         ? { label: "Stop at checkpoints", method: "POST", url: `${url}/auto`, submit: "Stop at checkpoints", shape: () => ({ on: false }),
             note: "The agent waits at each checkpoint again until you continue." }
         : { label: "Auto mode", method: "POST", url: `${url}/auto`, submit: "Continue past checkpoints on its own", shape: () => ({ on: true }),
             note: "The agent works the whole plan without stopping at checkpoints. They still mark their phase, and you are still notified as each completes." });
-      if (p.held) {
-        out.push({ label: "Continue", method: "POST", url: `${url}/proceed`, submit: "Continue",
-                   note: `Phase ${p.held} is a checkpoint. Continuing lets the agent start the next phase.` });
-      }
       out.push(
         { label: "Add phase", method: "POST", url: `${url}/phase`, submit: "Add phase",
           fields: [{ name: "title", label: "Title" }, { name: "when", label: "Complete when (optional)" }] },
@@ -1952,51 +1945,109 @@ const Plans = {
     });
     const done = (body, a) => settle(body, a, reading.value ? "" : base.value, list, item);
     const leaveNew = () => { changed(); location.hash = base.value; };
+    // a to-do row on the plan opens in the inspector over the plan, stepping through the plan's to-dos
+    const todoView = reactive({ n: 0 });
+    const planTodos = computed(() => (item.data && item.data.phases ? item.data.phases.flatMap((ph) => ph.todos) : []));
+    const trailOwner = {};
+    watchEffect(() => {
+      if (!reading.value) return;
+      INSPECTOR_TRAIL.owner = trailOwner;
+      INSPECTOR_TRAIL.items = planTodos.value.map((t) => ({ key: `todo:${t.n}`, go: () => { todoView.n = t.n; } }));
+      INSPECTOR_TRAIL.current = todoView.n ? `todo:${todoView.n}` : null;
+    });
+    onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
+    const openTodo = (t) => { todoView.n = t.n; };
+    const closeTodo = () => { todoView.n = 0; };
+    const progress = computed(() => {
+      const p = item.data;
+      if (!p) return null;
+      const finished = planTodos.value.filter((t) => t.done).length;
+      return { phases: `${p.phases_done} of ${p.phases_total} phases complete`, todos: `${finished} of ${planTodos.value.length} to-dos done`,
+               width: p.phases_total ? `${(100 * p.phases_done) / p.phases_total}%` : "0%" };
+    });
+    // one primary action: approving a draft, or going on past a checkpoint
+    const primary = computed(() => {
+      const p = item.data;
+      if (!p) return null;
+      const after = () => { item.reload(); changed(); };
+      if (p.status === "draft") return { label: "Approve plan", go: () => send("POST", `${api.value}/${p.n}/activate`).then(after) };
+      if (p.held) return { label: "Continue past the checkpoint", go: () => send("POST", `${api.value}/${p.n}/proceed`).then(after) };
+      return null;
+    });
+    const quiet = computed(() => (item.data && item.data.status === "active" && item.data.current ? `Working phase ${item.data.current}` : ""));
+    const PLAN_TINT = { active: "#5b8def", draft: "#c9955e", done: "#6fae7d", abandoned: "#83868e" };
+    const planChip = (status) => { const c = PLAN_TINT[status] || "#83868e"; return { color: c, borderColor: `${c}73`, background: `${c}29` }; };
+    const citedDocs = useFetch(() => props.env && reading.value && `/api/env/${props.env}/docs?archived=1`);
+    const citedReports = useFetch(() => props.env && reading.value && `/api/env/${props.env}/reports?all=1`);
+    const cites = computed(() => ((item.data && item.data.refs) || []).map((ref) => {
+      const [kind, num] = ref.split(" ");
+      const pool = kind === "doc" ? citedDocs.data : citedReports.data;
+      const got = (pool || []).find((x) => x.n === Number(String(num).split(".")[0]));
+      return { ref, label: `${TYPES[kind].label} ${num}`, title: got ? got.title : ref, tint: TYPES[kind].tint, href: planRefHref(ref, props.env) };
+    }));
     const doneCount = (ph) => ph.todos.filter((t) => t.done).length;
-    return { list, item, reading, creating, actions, done, leaveNew, api, home, base, PLAN_LIST, PLAN_STATUS, doneCount, planStepState, planRefHref };
+    return { list, item, reading, creating, actions, done, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, planChip, cites, PLAN_LIST, PLAN_STATUS, doneCount, planStepState, planRefHref };
   },
   template: `
     <template v-if="reading">
       <TopBar :crumbs="[env, 'Documents', 'Plans', '#' + n]"><a class=btn :href="base">All plans</a></TopBar>
-      <div class=body><div class=page><div class=page-inner>
+      <div class=body><div class=page><div class=plan-screen>
         <p v-if="item.error" class=error>{{ item.error }}</p>
         <template v-else-if="item.data">
-          <h1 class=p-title>{{ item.data.title }}</h1>
-          <dl class=props>
-            <dt>Status</dt><dd>{{ PLAN_STATUS[item.data.status] }}<span v-if="item.data.why" class=muted>{{ item.data.why }}</span></dd>
-            <dt>Goal</dt><dd>{{ item.data.goal }}</dd>
-            <dt>Progress</dt><dd>{{ item.data.phases_done }} of {{ item.data.phases_total }} phases complete</dd>
-            <dt>Checkpoints</dt><dd>{{ item.data.auto ? 'Auto mode: continues past them on its own' : 'Stops at each until you continue' }}</dd>
-            <dt>Links</dt><dd><template v-if="item.data.refs.length"><a v-for="r in item.data.refs" :key="r" class=chip :href="planRefHref(r, env)">{{ r }}</a></template><span v-else class=muted>—</span></dd>
-            <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
-          </dl>
-          <p v-if="item.data.held" class=plan-held>Stopped after phase {{ item.data.held }}, a checkpoint. The agent waits until you continue.</p>
-          <ActionBar :actions="actions" :done="done" :key="'plan' + item.data.n + item.data.status + (item.data.held || '')"/>
-          <ol v-if="item.data.phases.length" class=plan-steps>
-            <li v-for="ph in item.data.phases" :key="ph.p" :class="['plan-step', {complete: ph.complete, current: ph.current}]">
-              <span class=plan-step-mark>{{ ph.complete ? '✓' : ph.p }}</span>
-              <div class=plan-step-body>
-                <div class=plan-step-head>
-                  <span class=plan-step-title>Phase {{ ph.p }}: {{ ph.title }}</span>
-                  <span class=plan-step-state>{{ planStepState(ph) }} · {{ doneCount(ph) }} of {{ ph.todos.length }} to-dos done</span>
-                  <span v-if="ph.checkpoint" class="chip plan-checkpoint">Checkpoint</span>
-                </div>
-                <p v-if="ph.when" class="muted plan-step-when">Complete when {{ ph.when }}</p>
-                <ul class=plan-step-todos>
-                  <li v-for="t in ph.todos" :key="t.n">
-                    <StatusIcon :kind="t.done ? 'done' : 'open'"/>
-                    <a :href="'#/env/' + env + '/todos/' + t.n">#{{ t.n }}</a>
-                    <span :class="{'plan-todo-done': t.done}">{{ t.title || 'archived' }}</span>
-                  </li>
-                  <li v-if="!ph.todos.length" class=muted>No to-dos yet</li>
-                </ul>
+          <div class=plan-top>
+            <div class=plan-top-meta>
+              <span class=plan-chip :style="planChip(item.data.status)">{{ PLAN_STATUS[item.data.status] }}</span>
+              <span class=muted>plan {{ item.data.n }} · drafted {{ item.data.age || 'just now' }}<template v-if="item.data.why"> · {{ item.data.why }}</template></span>
+            </div>
+            <h1 class=plan-title>{{ item.data.title }}</h1>
+            <p class=plan-goal><span class=muted>Goal — </span>{{ item.data.goal }}</p>
+          </div>
+          <div class=plan-progress>
+            <div class=plan-progress-text>
+              <div class=plan-progress-line><b>{{ progress.phases }}</b><span class=muted>· {{ progress.todos }}</span></div>
+              <span class=plan-bar><span :style="{ width: progress.width }"></span></span>
+              <span class="muted plan-progress-note">{{ item.data.auto ? 'Auto mode: continues past checkpoints on its own' : 'Stops at each checkpoint until you continue' }}</span>
+            </div>
+            <div class=plan-progress-actions>
+              <button v-if="primary" type=button class=band-primary @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
+              <span v-else-if="quiet" class=plan-quiet>{{ quiet }}</span>
+            </div>
+          </div>
+          <ActionBar :actions="actions" :done="done" :key="'plan' + item.data.n + item.data.status + (item.data.held || '') + item.data.auto"/>
+          <section v-for="ph in item.data.phases" :key="ph.p" :class="['phase-card', {current: ph.current, complete: ph.complete}]">
+            <div class=phase-head>
+              <span class=phase-num>{{ ph.p }}</span>
+              <div class=phase-name>
+                <span class=phase-title>{{ ph.title }}</span>
+                <span v-if="ph.when || ph.checkpoint" class=phase-when>{{ [ph.checkpoint ? 'Checkpoint' : '', ph.when ? 'complete when ' + ph.when : ''].filter(Boolean).join(' — ') }}</span>
               </div>
-            </li>
-          </ol>
-          <p v-else class=muted>No phases yet.</p>
-          <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
+              <span class=phase-state>{{ planStepState(ph) }}</span>
+              <span class=phase-count>{{ doneCount(ph) }} of {{ ph.todos.length }} done</span>
+            </div>
+            <div v-for="t in ph.todos" :key="t.n" :class="['phase-todo', {sel: todoView.n === t.n}]" @click="openTodo(t)">
+              <StatusIcon :kind="t.done ? 'done' : 'open'"/>
+              <span class=phase-todo-n>#{{ t.n }}</span>
+              <span :class="['phase-todo-title', {done: t.done}]">{{ t.title || 'archived' }}</span>
+              <span class=phase-todo-state>{{ t.done ? 'Done' : ph.current ? 'Open' : 'Not started' }}</span>
+            </div>
+            <p v-if="!ph.todos.length" class="muted phase-empty">No to-dos yet</p>
+          </section>
+          <p v-if="!item.data.phases.length" class=muted>No phases yet.</p>
+          <section v-if="cites.length" class=plan-cites>
+            <h2 class=col-title>What this plan cites</h2>
+            <div class=cites-list>
+              <a v-for="c in cites" :key="c.ref" class=cite-row :href="c.href">
+                <span class=cite-dot :style="{ borderColor: c.tint }"></span>
+                <span class=cite-ref>{{ c.label }}</span>
+                <span class=cite-title>{{ c.title }}</span>
+                <Icon name="open"/>
+              </a>
+            </div>
+          </section>
+          <div v-if="item.data.body" class=plan-approach><h2 class=col-title>Approach</h2><div class="md prose" v-html="$md(item.data.body)"></div></div>
         </template>
       </div></div></div>
+      <TodoPanel v-if="todoView.n" :key="'todo' + todoView.n" :env="env" :n="todoView.n" :onClose="closeTodo" :link="'#/env/' + env + '/todos/' + todoView.n" :reloaded="item.reload"/>
     </template>
     <template v-else>
       <TopBar :crumbs="archive ? [env, 'Documents', 'Plans', 'Archive'] : [env, 'Documents', 'Plans']"/>
