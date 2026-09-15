@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.137.5 — The channel is used only while the agent is idle
+
+The channel is the fallback for an agent that has stopped: while it works, its hooks tell it about new
+messages, answers, comments and suggestions. With auto mode off, 1.137.4 still pushed a message over the
+channel to a working agent, so it could hear the same message twice. Now the channel pushes nothing while
+the agent works, and everything once it is idle, whatever auto mode is. With auto mode off, an answer,
+comment or suggestion still says to handle that item only and not to start on the to-do list.
+
 ## 1.137.4 — With auto mode off, answers, comments and suggestions reach the agent too
 
 Since 1.132.4, auto mode off meant the channel woke an idle agent only for a message you left. An
