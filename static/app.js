@@ -1576,7 +1576,7 @@ const SuggestionPanel = {
       const url = `${api.value}/${s.n}`;
       return [
         { label: "Accept", method: "POST", url: `${url}/accept`, submit: "Accept",
-          fields: [{ name: "note", label: "A note for the to-do (optional)" }],
+          fields: [{ name: "note", label: "A note for the to-do (optional)", kind: "area" }],
           note: "A to-do is filed from it." },
         { label: "Adjust", method: "POST", url: `${url}/adjust`, submit: "Accept with this change",
           fields: [{ name: "change", label: "What to do differently", kind: "area" }],
