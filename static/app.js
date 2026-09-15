@@ -1022,7 +1022,7 @@ const ResourceList = {
           <div class=stack><div class=title>{{ columns.title(r) }}</div>
             <div v-if="(columns.sub && columns.sub(r)) || (columns.cite && columns.cite(r))" :class="['sub', {'only-cite': !(columns.sub && columns.sub(r))}]">{{ columns.sub ? columns.sub(r) : '' }}<span v-if="columns.cite && columns.cite(r)" class=sub-cite>{{ columns.sub && columns.sub(r) ? ' · ' : '' }}{{ columns.cite(r) }}</span></div></div>
           <span v-if="columns.cite" class=cite>{{ columns.cite(r) }}</span>
-          <span v-if="columns.age" class=age>{{ columns.age(r) }}</span>
+          <span v-if="columns.age" :class="['age', {warn: columns.ageWarn && columns.ageWarn(r)}]">{{ columns.age(r) }}</span>
         </a>
         </TransitionGroup>
         <button v-if="g.rows.length < g.total" type=button class="btn more-rows" @click="more(g.key)">Show {{ Math.min(limit, g.total - g.rows.length) }} more</button>
@@ -2019,7 +2019,9 @@ const Plans = {
 const REPORT_LIST = {
   groups: [{ key: "reports", label: "Reports", kind: "open", match: (r) => !r.archived },
            { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (r) => r.archived }],
+  // a report within two days of aging off the list shows its age in amber
   columns: { num: (r) => `#${r.n}`, title: (r) => r.title, sub: (r) => r.gist, cite: (r) => r.about_label, age: (r) => r.age,
+             ageWarn: (r) => r.ages_out_in !== null && r.ages_out_in !== undefined && r.ages_out_in <= 2,
              struck: (r) => r.archived },
   count: (rows) => `${rows.filter((r) => !r.archived).length} reports`, name: "reports",
   empty: "No reports on this environment yet.",
