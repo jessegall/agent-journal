@@ -12,8 +12,8 @@ from payloads.common import ListingPayload, WhyPayload
 class PlansController(Controller):
     resource = "plans"
     noun = "plan"
-    actions = ("index", "show", "store", "phase", "todos", "activate", "destroy", "link")
-    numbered = ("show", "phase", "todos", "activate", "destroy", "link")
+    actions = ("index", "show", "store", "phase", "todos", "activate", "proceed", "destroy", "link")
+    numbered = ("show", "phase", "todos", "activate", "proceed", "destroy", "link")
     payloads = {"index": ListingPayload, "store": plan_payloads.StorePayload, "phase": plan_payloads.PhasePayload,
                 "todos": plan_payloads.TodosPayload, "destroy": WhyPayload, "link": plan_payloads.LinkPayload}
 
@@ -57,6 +57,9 @@ class PlansController(Controller):
 
     def activate(self, root: Path, p: Payload) -> Result:
         return Result.of(plans.activate(root, p.id, p.at, source=p.source, track=p.env or None))
+
+    def proceed(self, root: Path, p: Payload) -> Result:
+        return Result.of(plans.proceed(root, p.id, p.at, source=p.source, track=p.env or None))
 
     def destroy(self, root: Path, p: WhyPayload) -> Result:
         return Result.of(plans.abandon(root, p.id, p.why, p.at, track=p.env or None))

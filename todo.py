@@ -499,7 +499,10 @@ def ready(root: Path, track: str) -> list[dict]:
     # word to do it now — that is a stronger signal than a number nobody has looked at
     # since it was set, so it stays the first sort key. Priority decides the rest: the
     # highest-priority ready row is what auto picks up and what `journal next` names.
-    return sorted(items, key=lambda t: (0 if answered_one(t) else 1, -priority_of(t)))
+    # AN ACTIVE PLAN NARROWS IT: its current phase, and outside the plan only what beats the default priority
+    import plans
+    ranked = plans.order(root, track, items)
+    return [t for _, t in sorted(ranked, key=lambda rt: (0 if answered_one(rt[1]) else 1, rt[0], -priority_of(rt[1])))]
 
 
 def blocked(root: Path, track: str) -> list[dict]:
@@ -870,6 +873,9 @@ def _update(root: Path, track: str, n: int, **fields) -> tuple[dict | None, str]
     meta = {k: t.get(k, "") for k in FIELDS}
     meta.update({k: v for k, v in fields.items()})
     _write(t["path"], meta, t["body"])
+    if fields.get("done"):
+        import plans
+        plans.announce(root, track, str(fields["done"]))
     return {**t, **meta}, ""
 
 
@@ -1803,9 +1809,11 @@ def carry(root: Path, track: str, cap: int = 0) -> str:
     tail means what is dropped is the ordinary end of the list, and `fmt.cut` says how many
     and which command reads them.
     """
+    import plans
+    plan = plans.carry_line(root, track)
     waiting = open_items(root, track)
     if not waiting:
-        return ""
+        return plan
     def line(t):
         s = say("carry_line", n=str(t["n"]).rjust(3), title=t["title"])
         if answered_one(t):
@@ -1820,6 +1828,8 @@ def carry(root: Path, track: str, cap: int = 0) -> str:
     unstuck = answered(root, track)
     lead = say("carry_lead", n=len(unstuck)) if unstuck else ""
     if auto(root, track):
-        return say("carry_auto", n=len(waiting), loop=_loop_line(root), lead=lead, titles=titles,
-                   asking=say("carry_asking", n=len(blocked)) if blocked else "")
-    return say("carry_manual", n=len(waiting), lead=lead, titles=titles)
+        block = say("carry_auto", n=len(waiting), loop=_loop_line(root), lead=lead, titles=titles,
+                    asking=say("carry_asking", n=len(blocked)) if blocked else "")
+    else:
+        block = say("carry_manual", n=len(waiting), lead=lead, titles=titles)
+    return f"{plan}\n\n{block}" if plan else block

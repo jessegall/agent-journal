@@ -99,6 +99,14 @@ class Activate(Resource):
     action = "activate"
 
 
+class Continue(Resource):
+    signature = "plans:continue {n : a plan number}"
+    casts = PLAN
+    writes = True
+    controller = CONTROLLER
+    action = "proceed"
+
+
 class Abandon(Resource):
     signature = "plans:abandon {n : a plan number} {why* : why it is stopped}"
     casts = PLAN
@@ -115,4 +123,4 @@ class Link(Resource):
     action = "link"
 
 
-COMMANDS = (List, Show, Add, Phase, Todos, Activate, Abandon, Link)
+COMMANDS = (List, Show, Add, Phase, Todos, Activate, Continue, Abandon, Link)

@@ -46,6 +46,16 @@ MESSAGES = {
     "no_report": "there is no report {n} on this environment",
     "linked": "plan {n} links {ref}",
     "already_linked": "plan {n} already links {ref}",
+    "stall_checkpoint": "plan {n} stopped after phase {p}, {title}: it is a checkpoint, and the user continues the plan in the viewer",
+    "stall_empty": "plan {n} phase {p}, {title}, is current and has no to-dos: break it down with `journal todos add` "
+                   "and `journal plans todos {n} {p} <numbers>`",
+    "continue_user": "only the user continues a plan past a checkpoint: they do it in the viewer",
+    "no_checkpoint": "plan {n} is not stopped at a checkpoint",
+    "continued": "plan {n} continues past phase {p}, {title}",
+    "phase_note": "Plan {n}, phase {p} is complete: {title}",
+    "carry": "PLAN {n} IS ACTIVE here: {title}\n  phase {p} of {total} is current: {phase}[ — complete when {when}]\n"
+             "  auto mode picks to-dos from this phase only; `journal plans show {n}` reads the plan",
+    "carry_held": "PLAN {n} IS ACTIVE here: {title}\n  it stopped after checkpoint phase {p}, {phase}; the user continues it in the viewer",
     "progress": "{done} of {total} phase(s) complete",
     "current": "phase {p} current: {title}",
     "show": "PLAN {n}  {title}  ({status})\n  goal: {goal}\n  {meta}[\n  links: {refs}]",
@@ -213,6 +223,7 @@ def put_todos(root: Path, n: int, p: int, numbers, at: str, off: bool = False, r
             if not why:
                 return False, say("phase_done", n=n, p=p)
             phase.setdefault("reopened", []).append({"at": at, "why": why, "todos": fresh})
+            phase.pop("announced_at", None)
         held.extend(fresh)
         _put(root, items, here)
     return True, say("put", n=n, p=p, todos=", ".join(map(str, wanted)))
@@ -245,6 +256,111 @@ def activate(root: Path, n: int, at: str, source: str = "cli", track: str | None
         plan.update(status=ACTIVE, activated_at=at, activated_by=source)
         _put(root, items, here)
     return True, say("activated", n=n, title=rows[0]["title"])
+
+
+def active(root: Path, track: str, known: dict[int, dict] | None = None) -> tuple[int, dict, list[dict]] | None:
+    """(number, plan, its phases) of the active plan on this environment, or None."""
+    known = _todos(root, track) if known is None else known
+    for n, plan in enumerate(_all(root, track), 1):
+        rows = phases(root, plan, track, known)
+        if status(plan, rows) == ACTIVE:
+            return n, plan, rows
+    return None
+
+
+def checkpoint(plan: dict, rows: list[dict]) -> dict | None:
+    """A complete checkpoint phase before the current one that the user has not continued past."""
+    now = current(plan, rows)
+    if now is None:
+        return None
+    for row, ph in zip(rows, plan.get("phases") or []):
+        if row["p"] >= now["p"]:
+            break
+        if row["checkpoint"] and not ph.get("continued_at"):
+            return row
+    return None
+
+
+def order(root: Path, track: str, items: list[dict]) -> list[tuple[int, dict]]:
+    """(rank, to-do) for what auto may pick: the current phase (0), then to-dos in no plan above default priority (1)."""
+    got = active(root, track)
+    if got is None:
+        return [(0, t) for t in items]
+    n, plan, rows = got
+    now, held, member = current(plan, rows), checkpoint(plan, rows), membership(root, track)
+    out = []
+    for t in items:
+        where = member.get(t["n"])
+        if where is None:
+            if todo.priority_of(t) > todo.DEFAULT_PRIORITY:
+                out.append((1, t))
+        elif where == (n, now["p"]) and not held:
+            out.append((0, t))
+    return out
+
+
+def stall(root: Path, track: str) -> str:
+    """Why the active plan gives auto nothing to pick up: a checkpoint, or a current phase with no to-dos; else ""."""
+    got = active(root, track)
+    if got is None:
+        return ""
+    n, plan, rows = got
+    held = checkpoint(plan, rows)
+    if held:
+        return say("stall_checkpoint", n=n, p=held["p"], title=held["title"])
+    now = current(plan, rows)
+    return say("stall_empty", n=n, p=now["p"], title=now["title"]) if not now["todos"] else ""
+
+
+def proceed(root: Path, n: int, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
+    """The user's word to go on past a checkpoint phase."""
+    if source != "web" and approval(root) != "agent":
+        return False, say("continue_user")
+    here = _here(root, track)
+    with state.locked(root):
+        items = _all(root, here)
+        plan = _get(items, n)
+        if plan is None:
+            return False, say("no_plan", n=n)
+        held = checkpoint(plan, phases(root, plan, here))
+        if held is None:
+            return False, say("no_checkpoint", n=n)
+        plan["phases"][held["p"] - 1]["continued_at"] = at
+        _put(root, items, here)
+    return True, say("continued", n=n, p=held["p"], title=held["title"])
+
+
+def announce(root: Path, track: str, at: str) -> None:
+    """Tell the user once when a phase of an active plan completes."""
+    import notifications
+    with state.locked(root):
+        items = _all(root, track)
+        known = _todos(root, track)
+        told = []
+        for n, plan in enumerate(items, 1):
+            if plan.get("status") != ACTIVE:
+                continue
+            for row, ph in zip(phases(root, plan, track, known), plan.get("phases") or []):
+                if row["complete"] and not ph.get("announced_at"):
+                    ph["announced_at"] = at
+                    told.append((n, row))
+        if told:
+            _put(root, items, track)
+    for n, row in told:
+        notifications.add(root, say("phase_note", n=n, p=row["p"], title=row["title"]), at, f"plan {n}", "journal", track)
+
+
+def carry_line(root: Path, track: str) -> str:
+    """The active plan, for the block a session start hands over; "" when there is none."""
+    got = active(root, track)
+    if got is None:
+        return ""
+    n, plan, rows = got
+    held = checkpoint(plan, rows)
+    if held:
+        return say("carry_held", n=n, title=plan.get("title", ""), p=held["p"], phase=held["title"])
+    now = current(plan, rows)
+    return say("carry", n=n, title=plan.get("title", ""), p=now["p"], total=len(rows), phase=now["title"], when=now["when"] or None)
 
 
 def abandon(root: Path, n: int, why: str, at: str, track: str | None = None) -> tuple[bool, str]:

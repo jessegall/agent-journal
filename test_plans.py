@@ -118,5 +118,39 @@ code, out = j("plans", "show", "1")
 check("show draws the phases with their to-dos",
       ("✓ 1  the core — complete when the CLI works" in out, "[x] to-do 1  storage" in out, "(checkpoint)" in out), (True, True, True))
 
+# ---------------------------------------------------------------- an active plan steers auto mode
+import notifications, todo  # noqa: E402,E401
+for title in ("phase one work", "phase two work", "an urgent bug", "an idle chore"):
+    j("todos", "add", title)
+j("todos", "priority", "7", "high")
+j("plans", "add", "phased", "--goal=the phases run in order", "--brief", stdin="x")
+j("plans", "phase", "3", "first", "--checkpoint")
+j("plans", "phase", "3", "second")
+j("plans", "phase", "3", "third, broken down later")
+j("plans", "todos", "3", "1", "5")
+j("plans", "todos", "3", "2", "6")
+check("with no active plan, auto may pick any ready to-do", sorted(t["n"] for t in todo.ready(root, "default")), [4, 5, 6, 7, 8])
+plans.activate(root, 3, AT, source="web", track="default")
+check("with a plan active, auto picks the current phase first, then only urgent to-dos outside any plan",
+      [t["n"] for t in todo.ready(root, "default")], [5, 7])
+check("the session start names the active plan and its current phase", "PLAN 3 IS ACTIVE here: phased" in todo.carry(root, "default"), True)
+j("todos", "done", "5", "phase one landed")
+check("a completed phase tells the user once",
+      [x["text"] for x in notifications._all(root, "default")].count("Plan 3, phase 1 is complete: first"), 1)
+check("after a checkpoint phase auto stops at the plan: only urgent work outside it", [t["n"] for t in todo.ready(root, "default")], [7])
+check("and says why", "it is a checkpoint" in plans.stall(root, "default"), True)
+code, out = j("plans", "continue", "3")
+check("an agent cannot continue past a checkpoint", (code, "only the user continues" in out), (1, True))
+check("the user continues it", plans.proceed(root, 3, AT, source="web", track="default")[0], True)
+check("then the next phase is picked", [t["n"] for t in todo.ready(root, "default")], [6, 7])
+j("todos", "done", "6", "phase two landed")
+check("a current phase with no to-dos says to break it down", "has no to-dos" in plans.stall(root, "default"), True)
+j("auto-mode", "enable")
+code, out = j("next")
+check("journal next still offers urgent work outside the plan first", "to-do 7" in out, True)
+j("todos", "done", "7", "fixed")
+code, out = j("next")
+check("and once that is done, says the current phase needs breaking down", "has no to-dos" in out, True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

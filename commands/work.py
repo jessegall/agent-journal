@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import fmt
 import state
+import plans
 import todo
 import tracks
 import work
@@ -201,6 +202,10 @@ class Next(Command):
             return 0
         if not waiting:
             fmt.say(TEXT["next_empty"])
+            return 0
+        stalled = plans.stall(root(), here)
+        if stalled:
+            fmt.say(stalled)
             return 0
         reasons = (
             (todo.asking(root(), here), "waiting on your answer"),
