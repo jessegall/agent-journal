@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.137.7 — The bell keeps your recent notifications after you read them
+
+The notifications pop-up showed only unread notifications, so a notification cleared by a stray
+click was gone from it. It now lists your last 50. Unread ones stay at the top with Open and Mark
+read, and read ones stay underneath under a Read heading, with Open, so you can read them again.
+
 ## 1.137.6 — Agents are told when a newer journal is out
 
 A newer version was shown to the user at a stop, and reached the agent only with the user's next
