@@ -125,6 +125,18 @@ class Report(Model):
 
 
 @dataclass
+class Plan(Model):
+    title: str = ""
+    goal: str = ""
+    body: str = ""
+    status: str = ""
+    source: str = ""
+
+    noun: ClassVar[str] = "plan"
+    sortable: ClassVar[tuple[str, ...]] = ("n", "at", "title")
+
+
+@dataclass
 class Comment(Model):
     text: str = ""
     about: str = ""
