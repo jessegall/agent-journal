@@ -327,20 +327,22 @@ const StatusBar = {
       return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
     });
     const inspectWork = computed(() => (work.data || [])[0] || null);
-    const inspect = (w) => { OVERLAY.kind = "work"; OVERLAY.n = w.n; };
-    return { env, view, SHELL, inspectWork, inspect };
+    // the sentence is the control: it opens the current work over the page, or the plan when no work is open
+    const openCurrent = () => {
+      if (inspectWork.value) { OVERLAY.kind = "work"; OVERLAY.n = inspectWork.value.n; } else if (view.value.href) location.hash = view.value.href;
+    };
+    const branch = computed(() => (SHELL.activity && SHELL.activity.branch) || null);
+    return { env, view, SHELL, openCurrent, branch };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
-      <a v-if="view.href" class=statusbar-text :href="view.href"><b>{{ view.state }}</b><span>{{ view.what }}</span></a>
-      <span v-else class=statusbar-text><b>{{ view.state }}</b><span>{{ view.what }}</span></span>
+      <button type=button class=statusbar-text title="Open what it is on" @click="openCurrent"><b>{{ view.state }}</b><span>{{ view.what }}</span></button>
       <span class=statusbar-tools>
+        <span v-if="branch" class=statusbar-branch :title="branch.detached ? 'Not on a branch: HEAD is at commit ' + branch.name : 'The git branch checked out in this project'"><Icon name="style"/><span>{{ branch.detached ? 'detached at ' + branch.name : branch.name }}</span></span>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
-        <button v-if="inspectWork" type=button class="btn statusbar-inspect" title="Open the agent's work here" @click="inspect(inspectWork)">Inspect<Icon name="sidepanel"/></button>
-        <a v-else-if="view.href" class="btn statusbar-inspect" :href="view.href" title="Open what the agent is on">Inspect<Icon name="sidepanel"/></a>
       </span>
     </div>`,
 };
@@ -2763,7 +2765,6 @@ const EnvHome = {
     const QUEUE_TYPES = { question: { label: "Question", tint: "#c9955e", action: "Answer" },
                           message: { label: "Message", tint: "#6fae7d", action: "Read" },
                           suggestion: { label: "Suggestion", tint: "#a3a8f0", action: "Accept" } };
-    const SLOTS = 3;
     const queue = computed(() => {
       const rows = [
         ...(questions.data || []).filter((q) => q.status === "open").map((q) => ({ kind: "question", n: q.n, title: q.text, age: q.age })),
@@ -2782,7 +2783,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    // the queue is a full list only while the two columns sit side by side; stacked, it is a fixed slot that scrolls
+    // the lead's facts, the status bar's branch and the queue's meta all read the content width
     const wide = ref(true);
     const measure = () => {
       const main = document.querySelector("main");
@@ -2797,54 +2798,51 @@ const EnvHome = {
     });
     onUnmounted(() => { if (observer) observer.disconnect(); });
 
-    // what the agent did since the last visit to Home, for the band's summary line
-    const since = (() => { try { return Number(localStorage.getItem(`journal.home.seen.${props.env}`)) || Date.now() - 86400000; } catch (e) { return Date.now() - 86400000; } })();
-    onUnmounted(() => { try { localStorage.setItem(`journal.home.seen.${props.env}`, String(Date.now())); } catch (e) { /* storage off */ } });
-    const agentEvents = computed(() => ((SHELL.activity && SHELL.activity.events) || [])
-      .filter((e) => e.by === "Agent" && e.at && Date.parse(e.at) >= since));
-    const awayLine = computed(() => {
-      const count = (re) => agentEvents.value.filter((e) => re.test(e.text)).length;
-      const parts = [[count(/^Closed to-do/), "closed", "to-do", "to-dos"], [count(/^Committed/), "made", "commit", "commits"],
-                     [count(/^Repl/), "answered", "of your messages", "of your messages"], [count(/^(Wrote|Writing) a report/), "wrote", "report", "reports"]]
-        .filter(([n]) => n).map(([n, verb, one, many]) => (one.startsWith("of ") ? `${verb} ${n} ${one}` : `${verb} ${n} ${n === 1 ? one : many}`));
-      if (!parts.length) return "Nothing new since you last looked.";
-      const list = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}` : parts[0];
-      return `While you were away it ${list}.`;
-    });
-
     const plan = computed(() => (plans.data || []).find((p) => p.status === "active") || null);
-    const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(() => { plans.reload(); changed(); });
+    const planDetail = useFetch(() => props.env && plan.value && `/api/env/${props.env}/plans/${plan.value.n}`);
+    const held = computed(() => !!(plan.value && plan.value.held));
+    const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(() => { plans.reload(); planDetail.reload(); changed(); });
     const goPlan = () => { if (plan.value) location.hash = `#/env/${props.env}/plans/${plan.value.n}`; };
-    const openWork = computed(() => (work.data || []).map((w) => {
-      const added = w.files.reduce((sum, f) => sum + (f.added || 0), 0);
-      const removed = w.files.reduce((sum, f) => sum + (f.removed || 0), 0);
-      return { ...w, files_text: w.files.length ? `${w.files.length} file${w.files.length === 1 ? "" : "s"} · +${added} −${removed}` : "" };
-    }));
-    // state, then where, then what changed; the queue below owns the individual items, so the band never singles one out
-    const band = computed(() => {
+    const crew = useFetch(url("/agents"));
+    // the answer, in words: how many things need the user, what that means, and the facts about the agent in one muted line
+    const lead = computed(() => {
       const agent = SHELL.activity && SHELL.activity.agent;
+      const rows = queue.value.length + (held.value ? 1 : 0);
+      const headline = rows === 0 ? "Nothing needs you." : rows === 1 ? "One thing needs you." : `${rows} things need you.`;
       const p = plan.value;
-      const n = queue.value.length;
-      const held = !!(p && p.held);
-      const tint = held ? "#d9a441" : agent && agent.working ? "#5e64c9" : "#83868e";
-      const title = held ? "The agent stopped at a checkpoint"
-        : !agent ? "No agent is on this environment" : agent.working ? "The agent is working" : "The agent is idle";
-      const where = p ? `phase ${held ? p.held : p.current} of ${p.phases_total}` : "";
-      const meta = [where, n ? `${n} ${n === 1 ? "thing" : "things"} waiting below` : "nothing waiting on you"].filter(Boolean).join(" · ");
-      const sub = held ? `It will not go past phase ${p.held} until you continue. ${awayLine.value}` : awayLine.value;
-      const ctx = agent && agent.context ? `${agent.context.share}%` : "—";
-      const auto = SHELL.activity ? (SHELL.activity.auto ? "On" : "Off") : "—";
-      const session = agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "—";
-      return { tint, title, meta, sub, held,
-               stats: [{ label: "Agent", value: held ? "Stopped" : !agent ? "Stopped" : agent.working ? "Working" : "Idle" },
-                       { label: "Context", value: ctx }, { label: "Auto mode", value: auto }, { label: "Session", value: session }] };
+      const sub = held.value ? `The agent is holding at a checkpoint in plan ${p.n} and will not go on until you continue.`
+        : !agent ? "No agent is on this environment; what you leave waits for the next session."
+        : agent.working ? "The agent is working and will carry on without you." : "The agent is idle and will pick up what you leave at its next turn.";
+      const session = (crew.data || []).find((a) => a.kind === "session" && agent && a.id === agent.session);
+      const branch = SHELL.activity && SHELL.activity.branch;
+      const facts = [
+        session && session.name ? session.name : agent ? "Claude Code" : "No agent",
+        agent && agent.model ? agent.model : "",
+        branch ? branch.name : "",
+        agent ? `session ${agent.session}` : "",
+        agent && agent.started ? `${spanText(Date.now() - Date.parse(agent.started))} in` : "",
+        agent && agent.context ? `${agent.context.share}% context` : "",
+      ].filter(Boolean);
+      return { headline, sub, facts };
     });
-    const activePlan = computed(() => {
+    const SLOTS = 5;
+    const queueMeta = (it) => (wide.value ? `${it.label} ${it.n} · ${it.age}` : it.age);
+    // Current work: the assigned plan with its progress, then the open work as one-line rows
+    const currentWork = computed(() => {
       const p = plan.value;
       if (!p) return null;
-      return { badge: `Plan ${p.n}`, title: p.title, open: `Open plan ${p.n}`,
-               where: p.held ? `Phase ${p.held} of ${p.phases_total} · checkpoint, waiting on you` : `Phase ${p.current} of ${p.phases_total} · working` };
+      const todos = planDetail.data && planDetail.data.phases ? planDetail.data.phases.flatMap((ph) => ph.todos) : [];
+      return { title: p.title, ref: `plan ${p.n} · ${p.held ? "held" : "working"}`,
+               width: p.phases_total ? `${(100 * p.phases_done) / p.phases_total}%` : "0%",
+               progress: `${p.phases_done} of ${p.phases_total} phases${todos.length ? ` · ${todos.filter((t) => t.done).length} of ${todos.length} to-dos` : ""}` };
     });
+    const workLines = computed(() => (work.data || []).map((w, i) => ({ n: w.n, title: w.subject, meta: `work ${w.n} · ${w.age || "just now"}`, live: i === 0 })));
+    // Subagents: the ones the agents list still carries, working first
+    const subagents = computed(() => (crew.data || []).filter((a) => a.kind === "subagent")
+      .sort((x, y) => Number(y.working) - Number(x.working))
+      .map((a) => ({ key: a.id, name: a.name || `Subagent ${a.id}`, live: a.working, href: `#/env/${props.env}/agents/subagent/${a.id}`,
+                     meta: [a.state, a.model, a.age_text].filter(Boolean).join(" · ") })));
+    const crewNote = computed(() => `${subagents.value.filter((a) => a.live).length} working · ${subagents.value.length} recently`);
 
     // Replies to you: each part of a message the agent answered, so a reply is not buried in the message
     const replies = computed(() => {
@@ -2870,65 +2868,61 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, band, activePlan, goPlan, continuePlan, openWork, wide, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, lead, held, plan, continuePlan, goPlan, queueMeta, currentWork, workLines, subagents, crewNote, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
-    <div class=body><div class=page><div class=cockpit>
-      <section class=band>
-        <div class=band-main>
-          <div class=band-head><span class=band-dot :style="{ background: band.tint }"></span><h2 class=band-title>{{ band.title }}</h2></div>
-          <span class=band-meta>{{ band.meta }}</span>
-          <p class=band-sub>{{ band.sub }}</p>
-          <div v-if="band.held || activePlan" class=band-actions>
-            <button v-if="band.held" type=button class=band-continue @click="continuePlan">Continue past the checkpoint</button>
-            <button v-if="activePlan" type=button class=band-open @click="goPlan">{{ activePlan.open }}</button>
+    <div class=body><div class=page><div class=home>
+      <div class=home-lead>
+        <h1 class=home-headline>{{ lead.headline }}</h1>
+        <p class=home-sub>{{ lead.sub }}</p>
+        <div class=home-facts><span v-for="(f, i) in lead.facts" :key="i" :class="{first: i === 0}">{{ f }}</span></div>
+      </div>
+      <section class=home-section>
+        <div class=home-head><h2>Needs you</h2><span>{{ queue.length + (held ? 1 : 0) ? (queue.length + (held ? 1 : 0)) + ' waiting' : 'clear' }}</span>
+          <span v-if="queue.length + (held ? 1 : 0) > SLOTS" class=home-hint>{{ queue.length + (held ? 1 : 0) - SLOTS }} more — scroll the list</span></div>
+        <div class=needs-slot>
+          <div v-if="held" class=needs-row @click="goPlan">
+            <span class="needs-dot held"></span>
+            <span class=needs-title>Continue past the checkpoint</span>
+            <span class=needs-meta>plan {{ plan.n }} · phase {{ plan.held }}</span>
+            <button type=button class=needs-continue @click.stop="continuePlan">Continue</button>
           </div>
-          <button v-if="activePlan" type=button class=band-plan title="The plan the agent is working" @click="goPlan">
-            <span class=band-plan-badge>{{ activePlan.badge }}</span>
-            <span class=band-plan-text><span class=band-plan-title>{{ activePlan.title }}</span><span class=band-plan-where>{{ activePlan.where }}</span></span>
-            <Icon name="arrow"/>
-          </button>
-        </div>
-        <div class=band-stats>
-          <div v-for="s in band.stats" :key="s.label" class=band-stat><span>{{ s.label }}</span><span>{{ s.value }}</span></div>
+          <div v-for="it in queue" :key="it.key" :class="['needs-row', {sel: view.kind + ':' + view.n === it.key}]" @click="it.open">
+            <span class=needs-dot></span>
+            <span class=needs-title>{{ it.title }}</span>
+            <span class=needs-meta>{{ queueMeta(it) }}</span>
+            <button type=button class=needs-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(it)"><Icon name="close"/></button>
+          </div>
+          <div v-if="!queue.length && !held" class=needs-empty>Nothing needs you.</div>
         </div>
       </section>
-      <div class=cockpit-cols>
-        <section class=queue-col>
-          <div class=queue-head><h2>Over to you</h2><span class=n>{{ queue.length ? queue.length + ' waiting' : 'clear' }}</span>
-            <span v-if="!wide && queue.length > SLOTS" class=queue-hint>{{ queue.length - SLOTS }} more — scroll the list</span></div>
-          <div :class="['queue-slot', {wide}]">
-            <div v-for="it in queue" :key="it.key" :class="['queue-row', {sel: view.kind + ':' + view.n === it.key}]" @click="it.open">
-              <span class=queue-dot :style="{ background: it.tint }"></span>
-              <div class=queue-text>
-                <span class=queue-label>{{ it.label }} {{ it.n }}<span class=queue-age> · {{ it.age }}</span></span>
-                <span class=queue-title>{{ it.title }}</span>
-              </div>
-              <button type=button class=queue-act @click.stop="it.open">{{ it.action }}</button>
-              <button type=button class=queue-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(it)"><Icon name="close"/></button>
-            </div>
-            <div v-if="!queue.length" class=queue-empty>Clear. The agent can carry on.</div>
-            <div v-else-if="queue.length < SLOTS" class=queue-room>{{ queue.length === 1 ? 'Last one. Nothing else waiting on you.' : 'Nothing else waiting on you.' }}</div>
-          </div>
-        </section>
-        <section class=work-col>
-          <h2 class=col-title>The agent's work</h2>
-          <a v-for="w in openWork" :key="w.n" class=work-card :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
-            <span class=work-card-meta>work {{ w.n }} · {{ w.age || 'just now' }}</span>
-            <span class=work-card-title>{{ w.subject }}</span>
-            <span v-if="w.files_text" class=work-card-meta>{{ w.files_text }}</span>
-          </a>
-          <p v-if="!openWork.length" class="muted col-empty">No work is open.</p>
-          <div class=replies-head><h2 class=col-title>Replies to you</h2><span>{{ repliesNote }}</span></div>
-          <div v-for="r in replies" :key="r.key" class=reply-card @click="r.open">
-            <div class=reply-ask><span class=reply-bar></span><span>{{ r.ask }}</span></div>
-            <span :class="['reply-answer', {pending: !r.done}]">{{ r.done ? r.answer : 'Still working on this one' }}</span>
-            <div class=reply-foot><span :class="['part-chip', {done: r.done}]">{{ r.done ? 'answered' : 'still working' }}</span><span>{{ r.ref }}</span><span class=reply-age>{{ r.age }}</span></div>
-          </div>
-          <p v-if="!replies.length" class="muted col-empty">No replies from the agent this week.</p>
-        </section>
-      </div>
+      <section class=home-section>
+        <div class=home-head><h2>Current work</h2></div>
+        <div v-if="currentWork" class=work-now @click="goPlan">
+          <div class=work-now-top><span class=work-now-title>{{ currentWork.title }}</span><span class=work-now-ref>{{ currentWork.ref }}</span></div>
+          <div class=work-now-bar><span class=work-now-track><span :style="{ width: currentWork.width }"></span></span><span class=work-now-ref>{{ currentWork.progress }}</span></div>
+        </div>
+        <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
+          <span :class="['needs-dot', {live: w.live}]"></span><span class=home-line-title>{{ w.title }}</span><span class=needs-meta>{{ w.meta }}</span>
+        </a>
+        <p v-if="!currentWork && !workLines.length" class=home-empty>No work is open.</p>
+      </section>
+      <section class=home-section>
+        <div class=home-head><h2>Replies to you</h2><span>{{ repliesNote }}</span></div>
+        <div v-for="r in replies" :key="r.key" class=reply-line @click="r.open">
+          <span class=reply-line-ask>{{ r.ask }}</span>
+          <div class=reply-line-row><span :class="['reply-line-answer', {pending: !r.done}]">{{ r.done ? r.answer : 'Still working on it' }}</span><span class=needs-meta>{{ r.ref }}</span></div>
+        </div>
+        <p v-if="!replies.length" class=home-empty>No replies from the agent this week.</p>
+      </section>
+      <section class=home-section>
+        <div class=home-head><h2>Subagents</h2><span>{{ crewNote }}</span></div>
+        <a v-for="a in subagents" :key="a.key" class=home-line :href="a.href">
+          <span :class="['needs-dot', 'crew', {live: a.live}]"></span><span class="home-line-title strong">{{ a.name }}</span><span class=needs-meta>{{ a.meta }}</span>
+        </a>
+        <p v-if="!subagents.length" class=home-empty>No subagents have run recently.</p>
+      </section>
     </div></div></div>
     <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>`,
 };
@@ -4067,8 +4061,7 @@ const App = {
           </a>
         </div>
         <div class="side-foot side-foot-row">
-          <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}<span v-if="activity.data && activity.data.branch" class=side-foot-branch-name
-            :title="activity.data.branch.detached ? 'Not on a branch: HEAD is at commit ' + activity.data.branch.name : 'The git branch checked out in this project'"> · {{ activity.data.branch.detached ? 'detached at ' + activity.data.branch.name : activity.data.branch.name }}</span></a>
+          <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}</a>
           <button type=button class=space-hint title="Quick menu: search actions, or press space again to message the agent" @click="openQuick">space</button>
         </div>
       </aside>
