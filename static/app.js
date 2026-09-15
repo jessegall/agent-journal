@@ -1175,7 +1175,8 @@ const DOC_LIST = {
            { key: "final", label: "Final", kind: "done", match: (d) => !d.archived && !d.superseded_by && d.status === "final" },
            { key: "superseded", label: "Superseded", kind: "withdrawn", match: (d) => !d.archived && d.superseded_by },
            { key: "archived", label: "Archived", kind: "withdrawn", match: (d) => d.archived && !d.superseded_by }],
-  columns: { num: (d) => `#${d.n}`, title: (d) => d.title, sub: (d) => d.abstract, age: (d) => d.age, struck: (d) => d.superseded_by,
+  columns: { status: (d) => (d.archived || d.superseded_by ? "withdrawn" : d.status === "final" ? "done" : "open"),
+             num: (d) => `#${d.n}`, title: (d) => d.title, sub: (d) => d.abstract, age: (d) => d.age, struck: (d) => d.superseded_by,
              cite: (d) => (d.attachments ? (d.attachments === 1 ? "1 file" : `${d.attachments} files`) : "") },
   count: (rows) => (rows.length && rows.every((d) => d.archived) ? `${rows.length} archived` : `${rows.length} catalogued`), name: "docs",
 };
@@ -1962,7 +1963,7 @@ const PLAN_LIST = {
            { key: "draft", label: "Drafts", kind: "open", match: (p) => p.status === "draft" },
            { key: "done", label: "Done", kind: "done", closed: true, match: (p) => p.status === "done" },
            { key: "abandoned", label: "Abandoned", kind: "withdrawn", closed: true, match: (p) => p.status === "abandoned" }],
-  columns: { num: (p) => `#${p.n}`, title: (p) => p.title, sub: (p) => p.goal, cite: (p) => `${p.phases_done} of ${p.phases_total} phases`,
+  columns: { status: (p) => ({ active: "progress", draft: "open", done: "done", abandoned: "withdrawn" })[p.status] || "open", num: (p) => `#${p.n}`, title: (p) => p.title, sub: (p) => p.goal, cite: (p) => `${p.phases_done} of ${p.phases_total} phases`,
              age: (p) => p.age, struck: (p) => p.status === "abandoned" },
   count: (rows) => `${rows.filter((p) => p.status === "active" || p.status === "draft").length} plans`, name: "plans",
   empty: "No plans on this environment yet.",
@@ -1973,16 +1974,65 @@ function planRefHref(ref, env) { return refHref(String(ref).replace(" ", ":"), e
 
 function planStepState(ph) { return ph.complete ? "Complete" : ph.current ? "Current" : "Not started"; }
 
+const PlanPanel = {
+  props: PANEL_PROPS,
+  components: { Panel, ActionBar },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/plans`);
+    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
+    const actions = computed(() => {
+      const p = item.data;
+      if (!p || p.status === "done" || p.status === "abandoned") return [];
+      const url = `${api.value}/${p.n}`;
+      return [
+        ...(p.status === "draft" ? [{ label: "Approve plan", method: "POST", url: `${url}/activate`, submit: "Approve plan",
+                                      note: "The agent is assigned this plan and starts its first phase. One plan at a time." }] : []),
+        { label: "Abandon", method: "DELETE", url, danger: true, submit: "Abandon", fields: [{ name: "why", label: "Why the plan is stopped" }] },
+      ];
+    });
+    const done = panelDone(props, item);
+    return { item, actions, done, PLAN_STATUS };
+  },
+  template: `
+    <Panel :label="'Plan ' + n" :close="close" :onClose="onClose" :link="link">
+      <p v-if="item.error" class=error>{{ item.error }}</p>
+      <template v-else-if="item.data">
+        <h2 class=panel-title>{{ item.data.title }}</h2>
+        <dl class=props>
+          <dt>Type</dt><dd>Plan — ends with the work</dd>
+          <dt>Status</dt><dd>{{ PLAN_STATUS[item.data.status] }}, {{ item.data.phases_done }} of {{ item.data.phases_total }} phases</dd>
+          <dt>Goal</dt><dd>{{ item.data.goal || '—' }}</dd>
+          <template v-if="item.data.from_doc"><dt>From</dt><dd><a class=chip :href="'#/docs/' + item.data.from_doc">Doc {{ item.data.from_doc }}</a></dd></template>
+          <dt>{{ item.data.status === 'done' ? 'Ended' : 'Drafted' }}</dt><dd>{{ item.data.age || 'just now' }}</dd>
+        </dl>
+        <ActionBar :actions="actions" :done="done" :key="'plan' + item.data.n + item.data.status"/>
+        <div v-if="item.data.phases && item.data.phases.length">
+          <p class=section-label>Phases</p>
+          <div class=plan-panel-phases>
+            <div v-for="ph in item.data.phases" :key="ph.p" class=plan-panel-phase>
+              <span class=phase-num>{{ ph.p }}</span><span class=plan-panel-phase-title>{{ ph.title }}</span>
+              <span class=muted>{{ ph.todos.filter((t) => t.done).length }} of {{ ph.todos.length }} done</span>
+            </div>
+          </div>
+        </div>
+        <div v-if="item.data.body"><p class=section-label>Approach</p><div class="md prose" v-html="$md(item.data.body)"></div></div>
+      </template>
+    </Panel>`,
+};
+
 const Plans = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, DocTabs, TodoPanel, Icon },
+  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, DocTabs, TodoPanel, PlanPanel, Icon },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const home = computed(() => `#/env/${props.env}/plans`);
     const base = computed(() => home.value + (props.archive || ""));
     const reading = computed(() => props.n && props.n !== "new");
-    const list = useFetch(() => props.env && !reading.value && `${api.value}?all=1`);
+    const list = useFetch(() => props.env && `${api.value}?all=1`);
     const item = useFetch(() => props.env && reading.value && `${api.value}/${props.n}`);
+    // only the plan assigned to the agent has a page; a draft or a finished plan opens in the inspector over the list
+    const onPage = computed(() => reading.value && (!item.data || item.data.status === "active"));
+    const todos = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/todos?all=1`);
     // the viewer cannot start an agent, so planning together is a message: the agent asks back with questions to click
     const creating = computed(() => [{
       label: "Plan it with the agent", method: "POST", url: `/api/env/${props.env}/inbox`, submit: "Send to the agent", leave: true,
@@ -1998,15 +2048,14 @@ const Plans = {
     }]);
     const actions = computed(() => {
       const p = item.data;
-      if (!p || p.status === "done" || p.status === "abandoned") return [];
+      if (!p || p.status !== "active") return [];
       const url = `${api.value}/${p.n}`;
-      const out = [];
-      out.push(p.auto
-        ? { label: "Stop at checkpoints", method: "POST", url: `${url}/auto`, submit: "Stop at checkpoints", shape: () => ({ on: false }),
-            note: "The agent waits at each checkpoint again until you continue." }
-        : { label: "Auto mode", method: "POST", url: `${url}/auto`, submit: "Continue past checkpoints on its own", shape: () => ({ on: true }),
-            note: "The agent works the whole plan without stopping at checkpoints. They still mark their phase, and you are still notified as each completes." });
-      out.push(
+      return [
+        p.auto
+          ? { label: "Stop at checkpoints", method: "POST", url: `${url}/auto`, submit: "Stop at checkpoints", shape: () => ({ on: false }),
+              note: "The agent waits at each checkpoint again until you continue." }
+          : { label: "Auto mode", method: "POST", url: `${url}/auto`, submit: "Continue past checkpoints on its own", shape: () => ({ on: true }),
+              note: "The agent works the whole plan without stopping at checkpoints. They still mark their phase, and you are still notified as each completes." },
         { label: "Add phase", method: "POST", url: `${url}/phase`, submit: "Add phase",
           fields: [{ name: "title", label: "Title" }, { name: "when", label: "Complete when (optional)" }] },
         { label: "Add to-dos", method: "POST", url: `${url}/todos`, submit: "Add",
@@ -2015,17 +2064,24 @@ const Plans = {
         { label: "Link", method: "POST", url: `${url}/link`, submit: "Link",
           fields: [{ name: "ref", label: "Document or report", placeholder: "doc 4.2 or report 1" }] },
         { label: "Abandon", method: "DELETE", url, danger: true, submit: "Abandon",
-          fields: [{ name: "why", label: "Why the plan is stopped" }] });
-      return out;
+          fields: [{ name: "why", label: "Why the plan is stopped" }] },
+      ];
     });
-    const done = (body, a) => settle(body, a, reading.value ? "" : base.value, list, item);
+    const done = (body, a) => settle(body, a, onPage.value ? "" : base.value, list, item);
     const leaveNew = () => { changed(); location.hash = base.value; };
+    // the switcher: every plan the agent could hold, the assigned one first
+    const PLAN_DOT = { active: "#5b8def", draft: "#83868e", done: "#3ecf74" };
+    const planTabs = computed(() => ["active", "draft", "done"].flatMap((status) => (list.data || []).filter((p) => p.status === status))
+      .map((p) => ({ n: p.n, title: p.title, note: p.status, on: String(p.n) === String(props.n), dot: PLAN_DOT[p.status], href: `${home.value}/${p.n}` })));
     // a to-do row on the plan opens in the inspector over the plan, stepping through the plan's to-dos
     const todoView = reactive({ n: 0 });
     const planTodos = computed(() => (item.data && item.data.phases ? item.data.phases.flatMap((ph) => ph.todos) : []));
     const trailOwner = {};
     watchEffect(() => {
-      if (!reading.value) return;
+      if (!onPage.value) {
+        if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null });
+        return;
+      }
       INSPECTOR_TRAIL.owner = trailOwner;
       INSPECTOR_TRAIL.items = planTodos.value.map((t) => ({ key: `todo:${t.n}`, go: () => { todoView.n = t.n; } }));
       INSPECTOR_TRAIL.current = todoView.n ? `todo:${todoView.n}` : null;
@@ -2040,20 +2096,14 @@ const Plans = {
       return { phases: `${p.phases_done} of ${p.phases_total} phases complete`, todos: `${finished} of ${planTodos.value.length} to-dos done`,
                width: p.phases_total ? `${(100 * p.phases_done) / p.phases_total}%` : "0%" };
     });
-    // one primary action: approving a draft, or going on past a checkpoint
     const primary = computed(() => {
       const p = item.data;
-      if (!p) return null;
-      const after = () => { item.reload(); changed(); };
-      if (p.status === "draft") return { label: "Approve plan", go: () => send("POST", `${api.value}/${p.n}/activate`).then(after) };
-      if (p.held) return { label: "Continue past the checkpoint", go: () => send("POST", `${api.value}/${p.n}/proceed`).then(after) };
-      return null;
+      if (!p || !p.held) return null;
+      return { label: "Continue past the checkpoint", go: () => send("POST", `${api.value}/${p.n}/proceed`).then(() => { item.reload(); changed(); }) };
     });
-    const quiet = computed(() => (item.data && item.data.status === "active" && item.data.current ? `Working phase ${item.data.current}` : ""));
-    const PLAN_TINT = { active: "#5b8def", draft: "#c9955e", done: "#3ecf74", abandoned: "#83868e" };
-    const planChip = (status) => { const c = PLAN_TINT[status] || "#83868e"; return { color: c, borderColor: `${c}73`, background: `${c}29` }; };
-    const citedDocs = useFetch(() => props.env && reading.value && `/api/env/${props.env}/docs?archived=1`);
-    const citedReports = useFetch(() => props.env && reading.value && `/api/env/${props.env}/reports?all=1`);
+    const quiet = computed(() => (item.data && item.data.current ? `Working phase ${item.data.current}` : ""));
+    const citedDocs = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/docs?archived=1`);
+    const citedReports = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/reports?all=1`);
     const cites = computed(() => ((item.data && item.data.refs) || []).map((ref) => {
       const [kind, num] = ref.split(" ");
       const pool = kind === "doc" ? citedDocs.data : citedReports.data;
@@ -2061,18 +2111,34 @@ const Plans = {
       return { ref, label: `${TYPES[kind].label} ${num}`, title: got ? got.title : ref, tint: TYPES[kind].tint, href: planRefHref(ref, props.env) };
     }));
     const doneCount = (ph) => ph.todos.filter((t) => t.done).length;
-    return { list, item, reading, creating, actions, done, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, planChip, cites, PLAN_LIST, PLAN_STATUS, doneCount, planStepState, planRefHref };
+    // each to-do on a phase shows its real state: in progress, waiting on you, blocked, done or open
+    const TODO_WORD = { progress: "In progress", waiting: "Waiting on you", blocked: "Blocked", done: "Done", open: "Open" };
+    const todoState = (t) => {
+      if (t.done) return "done";
+      const got = (todos.data || []).find((x) => x.n === t.n);
+      return got ? todoStatus(got) : "open";
+    };
+    const meta = computed(() => {
+      const p = item.data;
+      return p ? [`plan ${p.n}`, p.from_doc ? `from doc ${p.from_doc}` : "", `drafted ${p.age || "just now"}`].filter(Boolean).join(" · ") : "";
+    });
+    return { list, item, reading, onPage, creating, actions, done, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, planTabs, todoState, TODO_WORD, meta };
   },
   template: `
-    <template v-if="reading">
+    <template v-if="onPage">
       <TopBar :crumbs="[env, 'Documents', 'Plans', '#' + n]"><a class=btn :href="base">All plans</a></TopBar>
       <div class=body><div class=page><div class=plan-screen>
         <p v-if="item.error" class=error>{{ item.error }}</p>
         <template v-else-if="item.data">
+          <div class=plan-switch>
+            <a v-for="p in planTabs" :key="p.n" :class="['plan-tab', {on: p.on}]" :href="p.href" :title="p.title">
+              <span class=plan-tab-dot :style="{ background: p.dot }"></span>Plan {{ p.n }}<span class=plan-tab-note>{{ p.note }}</span></a>
+            <span class=plan-switch-note>one plan at a time</span>
+          </div>
           <div class=plan-top>
             <div class=plan-top-meta>
-              <span class=plan-chip :style="planChip(item.data.status)">{{ PLAN_STATUS[item.data.status] }}</span>
-              <span class=muted>plan {{ item.data.n }} · drafted {{ item.data.age || 'just now' }}<template v-if="item.data.why"> · {{ item.data.why }}</template></span>
+              <span class=plan-assigned>Assigned to the agent</span>
+              <span class=muted>{{ meta }}</span>
             </div>
             <h1 class=plan-title>{{ item.data.title }}</h1>
             <p class=plan-goal><span class=muted>Goal — </span>{{ item.data.goal }}</p>
@@ -2081,7 +2147,6 @@ const Plans = {
             <div class=plan-progress-text>
               <div class=plan-progress-line><b>{{ progress.phases }}</b><span class=muted>· {{ progress.todos }}</span></div>
               <span class=plan-bar><span :style="{ width: progress.width }"></span></span>
-              <span class="muted plan-progress-note">{{ item.data.auto ? 'Auto mode: continues past checkpoints on its own' : 'Stops at each checkpoint until you continue' }}</span>
             </div>
             <div class=plan-progress-actions>
               <button v-if="primary" type=button class=band-primary @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
@@ -2100,10 +2165,10 @@ const Plans = {
               <span class=phase-count>{{ doneCount(ph) }} of {{ ph.todos.length }} done</span>
             </div>
             <div v-for="t in ph.todos" :key="t.n" :class="['phase-todo', {sel: todoView.n === t.n}]" @click="openTodo(t)">
-              <StatusIcon :kind="t.done ? 'done' : 'open'"/>
+              <StatusIcon :kind="todoState(t)"/>
               <span class=phase-todo-n>#{{ t.n }}</span>
               <span :class="['phase-todo-title', {done: t.done}]">{{ t.title || 'archived' }}</span>
-              <span class=phase-todo-state>{{ t.done ? 'Done' : ph.current ? 'Open' : 'Not started' }}</span>
+              <span class=phase-todo-state>{{ TODO_WORD[todoState(t)] }}</span>
             </div>
             <p v-if="!ph.todos.length" class="muted phase-empty">No to-dos yet</p>
           </section>
@@ -2133,11 +2198,12 @@ const Plans = {
             <template #new><a class="btn new" :href="home + '/new'">New plan</a></template>
           </DocTabs>
           <ResourceList v-bind="PLAN_LIST" :bar="false" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
-            :href="(p) => base + '/' + p.n"/>
+            :href="(p) => base + '/' + p.n" :selected="(p) => String(p.n) === String(n)"/>
         </div>
         <Panel v-if="n === 'new'" label="New plan" :close="base">
           <ActionBar :actions="creating" :done="(body, a) => (a.url === api ? done(body, a) : leaveNew())"/>
         </Panel>
+        <PlanPanel v-else-if="reading" :key="'plan' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
       </div>
     </template>`,
 };
@@ -2146,28 +2212,19 @@ const REPORT_LIST = {
   groups: [{ key: "reports", label: "Reports", kind: "open", match: (r) => !r.archived },
            { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (r) => r.archived }],
   // a report within two days of aging off the list shows its age in amber
-  columns: { num: (r) => `#${r.n}`, title: (r) => r.title, sub: (r) => r.gist, cite: (r) => r.about_label, age: (r) => r.age,
+  columns: { status: (r) => (r.archived ? "withdrawn" : "open"), num: (r) => `#${r.n}`, title: (r) => r.title, sub: (r) => r.gist, cite: (r) => r.about_label, age: (r) => r.age,
              ageWarn: (r) => r.ages_out_in !== null && r.ages_out_in !== undefined && r.ages_out_in <= 2,
              struck: (r) => r.archived },
   count: (rows) => `${rows.filter((r) => !r.archived).length} reports`, name: "reports",
   empty: "No reports on this environment yet.",
 };
 
-const Reports = {
-  props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, DocTabs },
+const ReportPanel = {
+  props: PANEL_PROPS,
+  components: { Panel, ActionBar },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reports`);
-    const home = computed(() => `#/env/${props.env}/reports`);
-    const base = computed(() => home.value + (props.archive || ""));
-    const reading = computed(() => props.n && props.n !== "new");
-    const list = useFetch(() => props.env && !reading.value && `${api.value}?all=1`);
-    const item = useFetch(() => props.env && reading.value && `${api.value}/${props.n}`);
-    const creating = computed(() => [{
-      label: "New report", method: "POST", url: api.value, submit: "Add report", leave: true,
-      fields: [{ name: "title", label: "Title" }, { name: "body", label: "Text", kind: "area" },
-               { name: "about", label: "For (optional)", placeholder: "todo 22 or question 4" }],
-    }]);
+    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const actions = computed(() => {
       const r = item.data;
       if (!r || r.archived) return [];
@@ -2179,43 +2236,60 @@ const Reports = {
           fields: [{ name: "why", label: "Why it is taken off the list" }] },
       ];
     });
-    const done = (body, a) => settle(body, a, reading.value ? "" : base.value, list, item);
-    return { list, item, reading, creating, actions, done, home, base, REPORT_LIST };
+    const done = panelDone(props, item);
+    return { item, actions, done };
   },
   template: `
-    <template v-if="reading">
-      <TopBar :crumbs="[env, 'Reports', '#' + n]"><a class=btn :href="base">All reports</a></TopBar>
-      <div class=body><div class=page><div class=page-inner>
-        <p v-if="item.error" class=error>{{ item.error }}</p>
-        <template v-else-if="item.data">
-          <h1 class=p-title>{{ item.data.title }}</h1>
-          <dl class=props>
-            <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
-            <dt>For</dt><dd><a v-if="item.data.about && $refHref(item.data.about, env)" :href="$refHref(item.data.about, env)" class=chip>{{ item.data.about_label }}</a><span v-else class=muted>—</span></dd>
-            <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
-            <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a></dd></template>
-          </dl>
-          <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
-          <div class="md prose" v-html="$md(item.data.body)"></div>
-        </template>
-      </div></div></div>
-    </template>
-    <template v-else>
-      <TopBar :crumbs="archive ? [env, 'Documents', 'Reports', 'Archive'] : [env, 'Documents', 'Reports']"/>
-      <div class=body>
-        <div class=list>
-          <DocTabs :env="env" current="reports">
-            <a :class="['viewbar-archive', {on: archive}]" :href="archive ? home : home + '/archive'">{{ archive ? 'Close archive' : 'Archive' }}</a>
-            <template #new><a class="btn new" :href="home + '/new'">New report</a></template>
-          </DocTabs>
-          <ResourceList v-bind="REPORT_LIST" :bar="false" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
-            :href="(r) => base + '/' + r.n"/>
-        </div>
-        <Panel v-if="n === 'new'" label="New report" :close="base">
-          <ActionBar :actions="creating" open="New report" :done="done"/>
-        </Panel>
+    <Panel :label="'Report ' + n" :close="close" :onClose="onClose" :link="link">
+      <p v-if="item.error" class=error>{{ item.error }}</p>
+      <template v-else-if="item.data">
+        <h2 class=panel-title>{{ item.data.title }}</h2>
+        <dl class=props>
+          <dt>Type</dt><dd>Report — ages out<template v-if="!item.data.archived && item.data.ages_out_in !== null && item.data.ages_out_in !== undefined"> in {{ item.data.ages_out_in }} {{ item.data.ages_out_in === 1 ? 'day' : 'days' }}</template></dd>
+          <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
+          <dt>For</dt><dd><a v-if="item.data.about && $refHref(item.data.about, env)" :href="$refHref(item.data.about, env)" class=chip>{{ item.data.about_label }}</a><span v-else class=muted>—</span></dd>
+          <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
+          <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a></dd></template>
+        </dl>
+        <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
+        <div class="md prose" v-html="$md(item.data.body)"></div>
+      </template>
+    </Panel>`,
+};
+
+const Reports = {
+  props: ["env", "archive", "n"],
+  components: { TopBar, Panel, ActionBar, ResourceList, DocTabs, ReportPanel },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/reports`);
+    const home = computed(() => `#/env/${props.env}/reports`);
+    const base = computed(() => home.value + (props.archive || ""));
+    const reading = computed(() => props.n && props.n !== "new");
+    const list = useFetch(() => props.env && `${api.value}?all=1`);
+    const creating = computed(() => [{
+      label: "New report", method: "POST", url: api.value, submit: "Add report", leave: true,
+      fields: [{ name: "title", label: "Title" }, { name: "body", label: "Text", kind: "area" },
+               { name: "about", label: "For (optional)", placeholder: "todo 22 or question 4" }],
+    }]);
+    const done = (body, a) => settle(body, a, base.value, list);
+    return { list, reading, creating, done, home, base, REPORT_LIST };
+  },
+  template: `
+    <TopBar :crumbs="archive ? [env, 'Documents', 'Reports', 'Archive'] : [env, 'Documents', 'Reports']"/>
+    <div class=body>
+      <div class=list>
+        <DocTabs :env="env" current="reports">
+          <a :class="['viewbar-archive', {on: archive}]" :href="archive ? home : home + '/archive'">{{ archive ? 'Close archive' : 'Archive' }}</a>
+          <template #new><a class="btn new" :href="home + '/new'">New report</a></template>
+        </DocTabs>
+        <ResourceList v-bind="REPORT_LIST" :bar="false" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(r) => base + '/' + r.n" :selected="(r) => String(r.n) === String(n)"/>
       </div>
-    </template>`,
+      <Panel v-if="n === 'new'" label="New report" :close="base">
+        <ActionBar :actions="creating" open="New report" :done="done"/>
+      </Panel>
+      <ReportPanel v-else-if="reading" :key="'report' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
+    </div>`,
 };
 
 const Questions = {
