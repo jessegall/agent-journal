@@ -1395,7 +1395,7 @@ const QuestionPanel = {
 
 const MessagePanel = {
   props: PANEL_PROPS,
-  components: { Panel, StatusIcon, ActionBar, Comments },
+  components: { Panel, StatusIcon, ActionBar, Comments, Icon },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/inbox`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -1489,7 +1489,7 @@ const MessagePanel = {
       return { rows: shaped, others: (m.replies || []).filter((r) => !used.has(r)),
                heading: count ? `Replied to your message — ${count} of ${shaped.length} ${shaped.length === 1 ? "part" : "parts"} answered` : "" };
     });
-    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered };
+    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered, TYPES };
   },
   template: `
     <Panel :label=\"'Message ' + n" :close="close" :onClose="onClose" :link="link">
@@ -1540,19 +1540,24 @@ const MessagePanel = {
           </div>
         </div>
         <div v-if="answered.rows.length">
-          <div class=files-head><p class=section-label>What it answered</p><span class=muted>{{ answered.rows.filter((r) => r.answer).length }} of {{ answered.rows.length }} answered</span></div>
+          <div class=files-head><p class=section-label>Point by point</p><span class=muted>you asked {{ answered.rows.length }} {{ answered.rows.length === 1 ? 'thing' : 'things' }} · {{ answered.rows.filter((r) => r.answer).length }} answered</span></div>
           <div class=part-cards>
-            <div v-for="(p, i) in answered.rows" :key="i" class=part-card>
-              <div class=reply-ask><span class=reply-bar></span><span class=part-ask>{{ p.ask }}</span></div>
-              <div v-if="p.answer" class="md prose" v-html="$md(p.answer)"></div>
-              <p v-else-if="p.pending" class=part-working>Still working on this one</p>
-              <div class=part-foot>
+            <div v-for="(p, i) in answered.rows" :key="i" :class="['part-card', {pending: p.pending}]">
+              <div class=part-strip>
+                <span class=part-ordinal>{{ i + 1 }}/{{ answered.rows.length }}</span>
                 <span :class="['part-chip', {done: p.done}]">{{ p.chip }}</span>
-                <template v-for="b in p.became" :key="b.ref">
-                  <a v-if="$refHref(b.ref, env)" :href="$refHref(b.ref, env)" class=part-ref>{{ b.label }}</a>
-                  <span v-else class=part-ref>{{ b.label }}</span>
-                </template>
-                <span class=reply-age>{{ p.age }}</span>
+                <span class=part-age>{{ p.age }}</span>
+              </div>
+              <div class=part-main>
+                <div class=reply-ask><span class=reply-bar></span><span class=part-ask>{{ p.ask }}</span></div>
+                <div v-if="p.answer" class="md prose part-answer" v-html="$md(p.answer)"></div>
+                <p v-else-if="p.pending" class=part-working>Still working on this one.</p>
+                <a v-for="b in p.became" :key="b.ref" class=part-made :href="$refHref(b.ref, env) || null">
+                  <span class=part-made-label>{{ p.pending ? 'it is making' : 'it made' }}</span>
+                  <span class=part-made-dot :style="{ background: (TYPES[String(b.ref).split(':')[0]] || {}).tint || '#83868e' }"></span>
+                  <span class=part-made-ref>{{ b.label }}</span>
+                  <Icon name="open"/>
+                </a>
               </div>
             </div>
           </div>

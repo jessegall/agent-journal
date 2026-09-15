@@ -583,17 +583,28 @@
   .primary-act:hover, .primary-act.on { filter: brightness(1.08); }
   .primary-act .ico { width: 13px; height: 13px; }
   .panel-title { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.35; text-wrap: pretty; }
+  /* Point by point: each part of a message beside the agent's answer and what it produced */
   .part-cards { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-  .part-card { display: flex; flex-direction: column; gap: 7px; padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px; background: #18191c; }
+  .part-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: #18191c; }
+  .part-card.pending { border-color: rgba(217, 164, 65, .34); }
+  .part-strip { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid #212329; background: #151619; }
+  .part-ordinal { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 5px;
+    background: #212329; color: var(--text-3); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+  .part-age { margin-left: auto; font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .part-main { display: flex; flex-direction: column; gap: 9px; padding: 11px 12px 12px; }
   .part-card .reply-ask { display: flex; gap: 9px; }
   .reply-bar { flex: none; width: 2px; border-radius: 1px; background: #3a3d44; }
+  .part-card .reply-bar { background: #33363d; }
   .part-ask { flex: 1; min-width: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-3); }
-  .part-card .md { font-size: 13px; line-height: 1.55; }
+  .part-answer { font-size: 13px; line-height: 1.55; color: var(--text); }
   .part-working { margin: 0; font-size: 13px; line-height: 1.55; color: #d9a441; }
-  .part-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-  .part-ref { display: inline-flex; align-items: center; white-space: nowrap; height: 22px; padding: 0 8px; border-radius: 5px; color: var(--text-3); font-size: 11.5px; text-decoration: none; }
-  a.part-ref:hover { background: #212329; color: var(--text); }
-  .part-foot .reply-age { margin-left: auto; font-size: 11px; color: #6f727a; white-space: nowrap; }
+  .part-made { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 8px; background: #151619;
+    color: inherit; text-decoration: none; }
+  a.part-made[href]:hover { border-color: var(--border-2); }
+  .part-made-label { flex: none; font-size: 11px; color: var(--text-3); }
+  .part-made-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; }
+  .part-made-ref { flex: 1; min-width: 0; font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .part-made .ico { flex: none; width: 12px; height: 12px; color: var(--text-3); }
   .p-title { font-size: 16px; font-weight: 600; line-height: 1.4; margin: 0; text-wrap: pretty; }
   .page .p-title { font-size: 20px; }
   .props { display: grid; grid-template-columns: 104px 1fr; row-gap: 10px; column-gap: 12px; font-size: 13px; margin: 0; }
