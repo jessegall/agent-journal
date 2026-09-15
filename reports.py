@@ -15,6 +15,7 @@ KINDS = {"todo": "to-do", "question": "question"}
 _REF = re.compile(r"^\s*(to-?dos?|questions?)\s*[:#\s]\s*(\d+)\s*$", re.I)
 
 MESSAGES = {
+    "ready_note": "Your report is ready: {title}",
     "needs_title": 'a report needs a title: journal reports add "<title>" --brief',
     "needs_body": "a report needs its text — pass it on stdin with --brief",
     "not_a_ref": "{text} is not something a report answers; write `todo 22` or `question 4`",
@@ -110,6 +111,11 @@ def add(root: Path, title: str, body: str, at: str, about: str = "", source: str
                       "archived": None, "archived_at": None})
         _put(root, items, track)
         n = len(items)
+    # A REPORT IS SOMETHING THE USER ASKED FOR, so its arrival is news: a notice on Home and in the bell,
+    # opening the report. Filed from the viewer, it is the user's own and needs no notice.
+    if source != "web":
+        import notifications
+        notifications.add(root, say("ready_note", title=title), at, f"report {n}", source, track)
     return True, say("added", n=n, title=title, about=label(ref) or None)
 
 

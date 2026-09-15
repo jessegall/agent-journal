@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.137.1 — The user is told on Home when a report is ready
+
+A report the agent files arrived with no notice: it appeared under Reports and nothing said so. Filing one
+now also sends the user a notification, "Your report is ready: <title>", shown in Home's Notifications
+section and the bell, with Open going straight to the report. A report the user files from the viewer is
+their own and sends no notice.
+
 ## 1.137.0 — Agents are held for what they owe, not for noise; the hooks stay fast in long sessions
 
 A minor release that gathers everything since 1.136.0:
