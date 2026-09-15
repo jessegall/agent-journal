@@ -785,7 +785,7 @@ const QuestionAnswer = {
           <button v-if="q.answer" type=button class=btn @click="cancel">Cancel</button>
           <span v-if="state.picked" class=hint>{{ state.picked === CUSTOM && !chosen ? 'Write your answer to save it' : 'Not sent until you save' }}</span>
         </div>
-        <Compose v-if="!(q.options && q.options.length)" :placeholder="q.answer ? 'Write a new answer. The old one stays in the history.' : 'Your answer'"
+        <Compose v-if="!(q.options && q.options.length)" :placeholder="q.answer ? 'Write a new answer. The old one stays in the history.' : 'Answer the agent…'"
           :submit="q.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
         <div v-if="q.answer && !(q.options && q.options.length)" class=option-save>
           <button type=button class=btn @click="cancel">Cancel</button>
