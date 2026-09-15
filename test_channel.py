@@ -121,6 +121,15 @@ check("an accepted suggestion names the to-do it became and how to start it",
       (" as to-do " in params.get("content", ""), "todos start " in params.get("content", "")), (True, True))
 check("and not pushed twice", read_line(7), None)
 
+(root / "runtime").mkdir(exist_ok=True)
+(root / "runtime" / "upstream.cache").write_text(json.dumps({"version": "9.9.9", "headline": "", "at": 9e12}))
+push = read_line(12)
+params = (push or {}).get("params") or {}
+check("a newer journal upstream is pushed to an idle session, with the upgrade command",
+      (params.get("meta", {}).get("update"), "journal.py update" in params.get("content", "")), ("9.9.9", True))
+check("once per version", read_line(7), None)
+(root / "runtime" / "upstream.cache").unlink()
+
 j("auto-mode", "enable")
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("messages", "add", "another one while working")

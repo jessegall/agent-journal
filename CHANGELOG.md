@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.137.6 — Agents are told when a newer journal is out
+
+A newer version was shown to the user at a stop, and reached the agent only with the user's next
+prompt. An idle agent, or one working through its to-dos on its own, could go without hearing it. Now
+the agent is told once per version, with the command to run: after a tool call while it works, and over
+the channel while it is idle. The check still asks GitHub at most once every fifteen minutes for the
+whole project, and every notice reads that cached answer. Turning off `update_check` silences all of them.
+
 ## 1.137.5 — The channel is used only while the agent is idle
 
 The channel is the fallback for an agent that has stopped: while it works, its hooks tell it about new
