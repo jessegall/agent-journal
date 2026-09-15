@@ -24,8 +24,10 @@ INSTRUCTIONS = ("What the user does in the journal viewer while you are idle arr
                 "user left messages is handled: `.journal/journal.py messages show N`, split it into parts, file what each "
                 "became. An answered question (question=\"N\"): `.journal/journal.py questions show N` and act on the answer. "
                 "A comment (comment=\"N\"): `.journal/journal.py comments show N` and handle it. A decided suggestion "
-                "(suggestion=\"N\"): `.journal/journal.py suggestions show N` and act on the decision. With auto mode off only messages "
-                "arrive, and none of them is a reason to start on the to-do list.")
+                "(suggestion=\"N\"): `.journal/journal.py suggestions show N` and act on the decision. With auto mode off they all still "
+                "arrive, a message at once and the rest once you are idle; handle that one item and do not start on the to-do list.")
+
+AUTO_OFF_NOTE = " Auto mode is off: handle this only, and do not start on the to-do list."
 
 _OUT = threading.Lock()
 
@@ -70,7 +72,7 @@ def pending(stem: str) -> list[tuple[str, dict]]:
     bound = tracks.bound(ROOT, stem)
     got = []
     # a session on no environment is woken for new messages only; answers and comments belong to whoever asked.
-    # With auto mode off only a message wakes it: nothing else may set it working on its own
+    # With auto mode off a message wakes it at once and the rest once idle, each saying not to start on the to-do list
     live = tracks.live(ROOT)
     loose = _unbound_live(live)
     for env in [bound] if bound else tracks.choices(ROOT):
@@ -79,7 +81,9 @@ def pending(stem: str) -> list[tuple[str, dict]]:
         auto = todo.auto(ROOT, env)
         if auto and not idle:
             continue
-        got.extend(_waiting(env, STARTED[0], answers=bool(bound) and auto))
+        for key, params in _waiting(env, STARTED[0], answers=bool(bound) and (auto or idle)):
+            quiet = auto or "message" in params["meta"]
+            got.append((key, params if quiet else {**params, "content": params["content"] + AUTO_OFF_NOTE}))
     pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
     return [(key, params) for key, params in got if key not in pushed]
 
