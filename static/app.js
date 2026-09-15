@@ -2955,7 +2955,8 @@ const EnvHome = {
       return { facts };
     });
     const SLOTS = 5;
-    const queueMeta = (it) => (wide.value ? `${it.label} ${it.n} · ${it.age}` : it.age);
+    // the kind reads as part of the sentence here, not as a label: "question 12 · 6m"
+    const queueMeta = (it) => (wide.value ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
     // Current work: the assigned plan with its progress, then the open work as one-line rows
     const currentWork = computed(() => {
       const p = plan.value;
