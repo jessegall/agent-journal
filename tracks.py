@@ -669,3 +669,20 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
         unbind(root, sid)
     note = say("stragglers", n=len(stragglers)) if stragglers else ""
     return True, say("removed", name=name, what=what, note=note)
+
+
+VIEWER_FIRST = "viewer_first"
+
+
+def viewer_first(root: Path, track: str) -> bool:
+    """Does the user work this environment from the viewer, so the agent's answers go where they read them?"""
+    got = state.get(root, VIEWER_FIRST, {})
+    return bool(got.get(track)) if isinstance(got, dict) else False
+
+
+def set_viewer_first(root: Path, track: str, on: bool) -> None:
+    with state.locked(root):
+        got = state.get(root, VIEWER_FIRST, {})
+        got = got if isinstance(got, dict) else {}
+        got[track] = bool(on)
+        state.put(root, VIEWER_FIRST, got)

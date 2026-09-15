@@ -9,6 +9,7 @@ class SettingsPayload(Payload):
     todos_archive_days = Field(int)
     activity_show = Field(int)
     activity_keep = Field(int)
+    viewer_first = Field(bool)
     always_load = Field(str)
     always_on = Field(bool)
 
