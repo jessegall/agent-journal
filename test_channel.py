@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""channel.py: the MCP channel server declares itself; with auto off messages at once and the rest once idle, with auto on everything once idle."""
+"""channel.py: the MCP channel server declares itself; it pushes everything, only while the session is idle, whatever auto mode is."""
 import json, os, subprocess, sys, tempfile, time
 from pathlib import Path
 
@@ -50,16 +50,27 @@ def ask(obj):
     srv.stdin.flush()
 
 
+_unread = [""]
+
+
 def read_line(timeout):
+    # its own buffer: two pushes can land in one read, and select cannot see a line a text reader already holds
     import select
     end = time.time() + timeout
-    while time.time() < end:
-        r, _, _ = select.select([srv.stdout], [], [], max(0.0, end - time.time()))
-        if r:
-            line = srv.stdout.readline()
+    while True:
+        while "\n" in _unread[0]:
+            line, _, _unread[0] = _unread[0].partition("\n")
             if line.strip():
                 return json.loads(line)
-    return None
+        left = end - time.time()
+        if left <= 0:
+            return None
+        r, _, _ = select.select([srv.stdout.fileno()], [], [], left)
+        if r:
+            chunk = os.read(srv.stdout.fileno(), 65536)
+            if not chunk:
+                return None
+            _unread[0] += chunk.decode()
 
 
 ask({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18", "capabilities": {}}})
@@ -132,11 +143,16 @@ j("questions", "answer", "1", "no, Wednesday")
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("messages", "add", "sent while it works, auto off")
 push = read_line(12)
-check("with auto off a message reaches a working session too, and the answer waits until it is idle",
-      [((p or {}).get("params") or {}).get("meta", {}).get("message") is not None for p in [push, read_line(6)] if p], [True])
+check("with auto off a working session is not pushed anything either: its hooks tell it", push, None)
 state.put(root, "last_event", "Stop", stem=STEM)
-push = read_line(12)
-check("once it stops, the changed answer is pushed", "no, Wednesday" in (((push or {}).get("params") or {}).get("content", "")), True)
+_pushed = []
+while not (any("sent while it works, auto off" in c for c in _pushed) and any("no, Wednesday" in c for c in _pushed)):
+    _line = read_line(12)
+    if _line is None:
+        break
+    _pushed.append(((_line.get("params") or {}).get("content", "")))
+check("once it stops, the message and the changed answer are both pushed",
+      (any("sent while it works, auto off" in c for c in _pushed), any("no, Wednesday" in c for c in _pushed)), (True, True))
 
 tracks.unbind(root, STEM)
 j("messages", "add", "while on no environment")
