@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import plans
 import reports
 import state
 from controller import Controller, Payload, Result
@@ -30,14 +31,17 @@ class ReportsController(Controller):
         reports.prune(root, p.env or None)
         repo = self.repository(root, p)
         days = reports.archive_days(root, p.env or state.current_track(root))
-        gone = lambda r: bool(reports.archived_why(r.raw, days))  # noqa: E731
+        # a report an unfinished plan links does not age out; archiving it by hand still does
+        linked = plans.linked_reports(root, p.env or state.current_track(root))
+        aging = lambda r: 0 if r.n in linked else days  # noqa: E731
+        gone = lambda r: bool(reports.archived_why(r.raw, aging(r)))  # noqa: E731
         present = repo.query().where(lambda r: not r.raw.get("removed"))
         query = present if p.all else present.where(lambda r: not gone(r))
         query = self.sorted(query, p)
         if isinstance(query, Result):
             return query
         page = self.paged(query, p)
-        return Result("ok", "", [reports.row_response(r.n, r.raw, days=days) for r in page.rows],
+        return Result("ok", "", [reports.row_response(r.n, r.raw, days=aging(r)) for r in page.rows],
                       {"left": page.left, "archived": len([r for r in repo.all() if gone(r)]), "archive_days": days})
 
     def show(self, root: Path, p: Payload) -> Result:

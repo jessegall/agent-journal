@@ -197,11 +197,13 @@ def _age_days(r: dict) -> float | None:
 def prune(root: Path, track: str | None = None) -> int:
     """Reports older than REMOVE_DAYS lose their title and text for good; the entry stays, so numbers do not shift."""
     from datetime import datetime, timezone
+    import plans
+    linked = plans.linked_reports(root, track or state.current_track(root))
     with state.locked(root):
         items = _all(root, track)
         gone = 0
-        for r in items:
-            if r.get("removed"):
+        for n, r in enumerate(items, 1):
+            if r.get("removed") or n in linked:
                 continue
             days = _age_days(r)
             if days is not None and days > REMOVE_DAYS:

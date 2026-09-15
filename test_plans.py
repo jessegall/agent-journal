@@ -152,5 +152,34 @@ j("todos", "done", "7", "fixed")
 code, out = j("next")
 check("and once that is done, says the current phase needs breaking down", "has no to-dos" in out, True)
 
+# ---------------------------------------------------------------- a plan kept in a doc becomes a plan
+import re, reports  # noqa: E402,E401
+j("docs", "add", "Rollout plan", "--abstract=ship the rollout in phases", "--brief", stdin="the intro")
+for title in ("Phase 1: groundwork", "Phase 2: switch over", "Risks"):
+    j("docs", "part", "1", title, "--brief", stdin="text")
+_cited = []
+for title, part in (("lay the groundwork", "1.1"), ("switch the traffic", "1.2"), ("remove the old path", "1.2")):
+    code, out = j("todos", "add", title, f"--doc={part}", "--brief", stdin="a brief")
+    _cited.append((int(re.search(r"to-do (\d+)", out).group(1)), out))
+check("the third open to-do citing one doc says it reads like a plan",
+      ("cite doc 1 too" in _cited[1][1], "cite doc 1 too" in _cited[2][1]), (False, True))
+code, out = j("plans", "from-doc", "1")
+_made = plans._all(root, "default")[-1]
+check("a doc's Phase parts become a draft plan's phases, holding the to-dos that cite them",
+      (code, _made["status"], [ph["title"] for ph in _made["phases"]], [ph["todos"] for ph in _made["phases"]], _made["refs"]),
+      (0, "draft", ["groundwork", "switch over"], [[_cited[0][0]], [_cited[1][0], _cited[2][0]]], ["doc 1"]))
+code, out = j("plans", "from-doc", "1")
+check("the same doc is not made into a plan twice", (code, "is already plan" in out), (1, True))
+code, out = j("plans", "from-doc", "1.3")
+_n_made = len(plans._all(root, "default"))
+f_rep = root / "environments" / "default" / "reports.json"
+_data = json.loads(f_rep.read_text())
+_data["reports"][0]["at"] = "2020-01-01T00:00:00+00:00"
+f_rep.write_text(json.dumps(_data))
+j("plans", "link", str(_n_made), "report 1")
+check("a report an unfinished plan links is not removed, however old", (reports.prune(root, "default"), bool(reports._all(root, "default")[0].get("title"))), (0, True))
+j("plans", "abandon", str(_n_made), "trying the cleanup")
+check("once the plan is abandoned, the old report is removed as usual", reports.prune(root, "default"), 1)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -114,6 +114,8 @@ MESSAGES = {
     "duplicate": "to-do {n} is already on the list with that title, so nothing was added. More about it goes in its brief: "
                  "journal todos amend {n} \"<section>\" --brief. Progress on it goes in: journal work update \"<what moved>\"",
     "added": "to-do {n} on `{track}`: {title}\n  {path}",
+    "cites_plan_hint": "\n  to-dos {others} cite doc {doc} too. Work in phases belongs in a plan, not a doc: "
+                       "journal plans add \"<title>\" --goal=\"<one line>\" --brief, then journal plans todos <plan> <phase> <numbers>",
     "amend_title": 'amend wants a section title: journal todos amend <n> "<section title>" --brief',
     "amend_body": "amend wants a body on stdin — pass it with --brief",
     "amend_exists": 'to-do {n} already has a section called "{title}" — journal todos replace {n} "{title}" updates it',
@@ -838,6 +840,18 @@ def _same_title(a: str, b: str) -> bool:
     return re.sub(r"[^a-z0-9]+", " ", a.lower()).strip() == re.sub(r"[^a-z0-9]+", " ", b.lower()).strip()
 
 
+def _cites_hint(root: Path, track: str, n: int, meta: dict) -> str:
+    """Three open to-dos citing one doc, none in a plan, read like a plan kept in a doc."""
+    doc = str(meta.get("doc") or "").split(".")[0]
+    if not doc:
+        return ""
+    import plans
+    member = plans.membership(root, track)
+    others = [t["n"] for t in open_items(root, track)
+              if t["n"] != n and str(t.get("doc") or "").split(".")[0] == doc and t["n"] not in member]
+    return say("cites_plan_hint", others=", ".join(map(str, others)), doc=doc) if len(others) >= 2 else ""
+
+
 def add(root: Path, track: str, title: str, body: str, at: str, where: dict | None = None) -> tuple[bool, str]:
     """Write one. Refuses an empty title and a duplicate open one."""
     title = " ".join((title or "").split())
@@ -851,7 +865,7 @@ def add(root: Path, track: str, title: str, body: str, at: str, where: dict | No
     path = folder(root, track) / f"{n:03d}-{_slug(title)}.md"
     meta = {"title": title, "track": track, "at": at, **{k: str(v) for k, v in (where or {}).items()}}
     _write(path, meta, body)
-    return True, say("added", n=n, track=track, title=title, path=path.relative_to(root.parent))
+    return True, say("added", n=n, track=track, title=title, path=path.relative_to(root.parent)) + _cites_hint(root, track, n, meta)
 
 
 def retitle(root: Path, track: str, n: int, title: str) -> tuple[bool, str]:

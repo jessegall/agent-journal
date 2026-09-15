@@ -103,6 +103,12 @@ check("and it says it binds every environment", found[0]["where"], "every enviro
 check("with the rule's own strike", found[0]["fix"], 'journal rules strike 1 "<why>"')
 
 # ------------------------------------------------------------- docs
+_rp = fresh()
+docs_mod.add(_rp, "The migration, in four phases", "abstract", "body", docs_mod.GLOBAL)
+docs_mod.add(_rp, "How the cache works", "abstract", "body", docs_mod.GLOBAL)
+_found = cleanup._docs(_rp)
+check("a doc that reads like a plan is listed, pointing at the command that turns it into one",
+      [(f["n"], "reads like a plan" in f["why"], f["fix"].startswith("journal plans from-doc 1")) for f in _found], [(1, True, True)])
 r5 = fresh()
 docs_mod.add(r5, "a doc on a live environment", "abstract", "body", "default")
 docs_mod.add(r5, "a doc on a dead environment", "abstract", "body", "vanished")

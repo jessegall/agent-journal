@@ -22,5 +22,9 @@ class TodosPayload(Payload):
     reopen = Field(str)
 
 
+class FromDocPayload(Payload):
+    doc = Field(str)
+
+
 class LinkPayload(Payload):
     ref = Field(str)

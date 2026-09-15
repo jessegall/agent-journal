@@ -38,10 +38,12 @@ so if it settles something that stays true, pin that too or write it into a doc.
     journal plans todos <plan> <phase> <to-do numbers> [--off]   put to-dos in a phase, or take them out
     journal plans show <plan>                                   its phases, their to-dos, where it stands
     journal plans link <plan> "doc 4.2"                         a doc or a report it rests on
+    journal plans from-doc <doc>                                a draft plan from a doc's "Phase …" parts
     journal plans abandon <plan> "<why>"                        stop one, with the reason
 
 **Ask what you are about to write.** Does it say what to do next? It is a plan. Would it still be
-worth reading once the work ships? It is a doc. Is it what you found? It is a report. Work of one
+worth reading once the work ships? It is a doc. A plan already written into a doc is
+turned into one with `journal plans from-doc <doc>`, and `journal cleanup` lists the docs that read like one. Is it what you found? It is a report. Work of one
 or two to-dos needs no plan: file the to-dos.
 
 **The user approves a plan; you cannot.** A draft changes nothing until the user approves it in the
