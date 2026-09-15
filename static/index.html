@@ -193,6 +193,32 @@
     font-size: 11.5px; color: var(--text-2); cursor: pointer; }
   .statusbar-inspect { flex: none; display: inline-flex; align-items: center; gap: 6px; }
   .statusbar-inspect .ico { width: 13px; height: 13px; }
+  /* the quick menu: a command box over the whole app that sends what is typed to the agent unless a command is picked */
+  .quick-scrim { position: fixed; inset: 0; z-index: 50; background: rgba(4, 5, 6, .62); }
+  .quick-menu { position: fixed; z-index: 51; top: 92px; left: 50%; transform: translateX(-50%); width: min(580px, calc(100% - 56px));
+    display: flex; flex-direction: column; overflow: hidden; border: 1px solid #33363d; border-radius: 14px; background: #151619; box-shadow: 0 26px 64px rgba(0, 0, 0, .6); }
+  .quick-head { flex: none; display: flex; align-items: center; gap: 11px; height: 54px; padding: 0 15px; border-bottom: 1px solid var(--border); }
+  .quick-head .ico { flex: none; width: 15px; height: 15px; color: var(--accent); }
+  .quick-input { flex: 1; min-width: 0; border: none; background: transparent; color: var(--text); font: inherit; font-size: 14px; outline: none; }
+  .quick-key { flex: none; display: inline-flex; align-items: center; justify-content: center; height: 20px; padding: 0 6px; border: 1px solid var(--border-2);
+    border-radius: 4px; background: transparent; color: var(--text-3); font: inherit; font-size: 10.5px; cursor: pointer; }
+  .quick-rows { flex: 1; min-height: 0; max-height: 294px; overflow-y: auto; overflow-x: hidden; padding: 6px; }
+  .quick-row { display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 10px; border: none; border-radius: 8px;
+    background: transparent; color: var(--text-2); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+  .quick-row.on { background: var(--sel); color: var(--text); }
+  .quick-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .quick-hint { flex: none; font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .quick-row.on .quick-hint { color: var(--text-2); }
+  .quick-foot { flex: none; display: flex; align-items: center; gap: 14px; padding: 9px 15px; border-top: 1px solid var(--border); background: #121316;
+    font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .quick-foot-note { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .quick-toast { position: fixed; z-index: 52; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; height: 34px; padding: 0 15px;
+    border: 1px solid #33363d; border-radius: 9px; background: var(--hover); color: var(--text); font-size: 12.5px; white-space: nowrap; box-shadow: 0 14px 34px rgba(0, 0, 0, .5); }
+  .side-foot.side-foot-row { flex-direction: row; align-items: center; gap: 6px; }
+  .side-foot-row .side-foot-version { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .space-hint { flex: none; display: inline-flex; align-items: center; justify-content: center; height: 17px; padding: 0 5px; border: 1px solid var(--border);
+    border-radius: 4px; background: transparent; color: var(--text-3); font: inherit; font-size: 10px; line-height: 1; cursor: pointer; }
+  .space-hint:hover { border-color: #3a3d44; color: var(--text-2); }
   .drop-wrap { position: relative; }
   .icon-btn.on { background: var(--sel); color: var(--text); }
   .tool-badge { position: absolute; top: -2px; right: -3px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px;

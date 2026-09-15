@@ -3463,8 +3463,94 @@ const ActivityPanel = {
     </div>`,
 };
 
+// the quick menu: space opens it anywhere; what is typed goes to the agent unless a command is picked
+const QUICK = reactive({ open: false, q: "", i: 0 });
+const TOAST = reactive({ text: "" });
+let toastTimer = 0;
+
+function flash(text) {
+  TOAST.text = text;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { TOAST.text = ""; }, 2600);
+}
+
+const QuickMenu = {
+  props: ["env"],
+  components: { Icon },
+  setup(props) {
+    const input = ref(null);
+    onMounted(() => { if (input.value) input.value.focus(); });
+    const questions = useFetch(() => props.env && `/api/env/${props.env}/questions`);
+    const suggestions = useFetch(() => props.env && `/api/env/${props.env}/suggestions`);
+    const plans = useFetch(() => props.env && `/api/env/${props.env}/plans`);
+    const close = () => Object.assign(QUICK, { open: false, q: "", i: 0 });
+    const goTo = (hash) => () => { close(); location.hash = hash; };
+    const rows = computed(() => {
+      const base = `#/env/${props.env}`;
+      const q = QUICK.q.trim();
+      const openQuestions = (questions.data || []).filter((x) => x.status === "open");
+      const openSuggestions = (suggestions.data || []).filter((x) => x.status === "open");
+      const waiting = openQuestions.length + openSuggestions.length;
+      const plan = (plans.data || []).find((p) => p.status === "active") || null;
+      const auto = !!(SHELL.activity && SHELL.activity.auto);
+      const commands = [
+        { label: "Go to Home", keys: "home queue cockpit", hint: "page", run: goTo(base) },
+        { label: "Go to Inbox", keys: "inbox messages questions suggestions", hint: "page", run: goTo(`${base}/messages`) },
+        { label: "Go to To-dos", keys: "todos todo tasks", hint: "page", run: goTo(`${base}/todos`) },
+        { label: "Go to Documents", keys: "documents docs reports plans", hint: "page", run: goTo(`${base}/docs`) },
+        ...(plan ? [{ label: "Go to the plan", keys: "plan phases checkpoint", hint: "page", run: goTo(`${base}/plans/${plan.n}`) }] : []),
+        { label: "Go to Settings", keys: "settings preferences", hint: "page", run: goTo(`${base}/settings`) },
+      ];
+      if (waiting) {
+        const first = openQuestions.length ? `${base}/messages/q/${openQuestions[0].n}` : `${base}/messages/s/${openSuggestions[0].n}`;
+        commands.unshift({ label: `Answer the first of ${waiting} waiting on you`, keys: "answer waiting", hint: "inspector", run: goTo(first) });
+      }
+      if (plan && plan.held) {
+        commands.push({ label: "Continue past the checkpoint", keys: "continue checkpoint plan", hint: "agent",
+                        run: () => { close(); send("POST", `/api/env/${props.env}/plans/${plan.n}/proceed`).then(() => { changed(); flash("The agent is working again"); }); } });
+      }
+      commands.push({ label: auto ? "Pause auto mode" : "Resume auto mode", keys: "auto mode", hint: "agent",
+                      run: () => { close(); if (SHELL.setAuto) SHELL.setAuto(!auto); flash(auto ? "Auto mode paused" : "Auto mode on"); } });
+      commands.push({ label: ACTIVITY.shown ? "Hide the activity column" : "Show the activity column", keys: "activity column", hint: "view",
+                      run: () => { close(); setActivityShown(!ACTIVITY.shown); } });
+      const needle = q.toLowerCase();
+      const found = commands.filter((c) => !q || `${c.label} ${c.keys}`.toLowerCase().includes(needle));
+      if (!q) return found;
+      const message = { label: `Send “${q}” to the agent`, hint: "message",
+                        run: () => { close(); postJSON(`/api/env/${props.env}/inbox`, { text: q, files: [] }).then(() => { changed(); flash("Sent to the agent"); }); } };
+      return [message, ...found];
+    });
+    const at = computed(() => Math.max(0, Math.min(QUICK.i, rows.value.length - 1)));
+    const onKey = (e) => {
+      if (e.key === "ArrowDown") { e.preventDefault(); QUICK.i = Math.min(at.value + 1, rows.value.length - 1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); QUICK.i = Math.max(at.value - 1, 0); }
+      else if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); if (rows.value[at.value]) rows.value[at.value].run(); }
+      else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); }
+    };
+    const onInput = (e) => { QUICK.q = e.target.value; QUICK.i = 0; };
+    return { QUICK, input, rows, at, onKey, onInput, close };
+  },
+  template: `
+    <div class=quick-scrim @click="close"></div>
+    <div class=quick-menu role=dialog aria-label="Quick menu">
+      <div class=quick-head>
+        <Icon name="arrow"/>
+        <input ref=input class=quick-input :value="QUICK.q" placeholder="Message the agent, or type a command…"
+          aria-label="Message the agent, or type a command" @input="onInput" @keydown="onKey">
+        <button type=button class=quick-key @click="close">esc</button>
+      </div>
+      <div class=quick-rows>
+        <button v-for="(r, i) in rows" :key="r.label" type=button :class="['quick-row', {on: i === at}]" @click="r.run" @mouseenter="QUICK.i = i">
+          <span class=quick-label>{{ r.label }}</span><span class=quick-hint>{{ r.hint }}</span>
+        </button>
+      </div>
+      <div class=quick-foot><span>↑↓ move</span><span>↵ run</span>
+        <span class=quick-foot-note>{{ QUICK.q.trim() ? '↵ sends it to the agent' : 'Just start typing to message the agent' }}</span></div>
+    </div>`,
+};
+
 const App = {
-  components: { ...VIEWS, Icon, ActivityPanel, Peek },
+  components: { ...VIEWS, Icon, ActivityPanel, Peek, QuickMenu },
   setup() {
     const route = reactive(parseHash());
     const ov = OVERVIEW;
@@ -3480,9 +3566,20 @@ const App = {
     const onHash = () => { Object.assign(route, parseHash()); closeOverlay(); loadOverview(); };
     window.addEventListener("hashchange", onHash);
     window.addEventListener("journal:changed", loadOverview);
+    // space opens the quick menu, unless it is typing into something or pressing a focused control
+    const openQuick = () => Object.assign(QUICK, { open: true, q: "", i: 0 });
+    const onSpace = (e) => {
+      if (e.key !== " " || QUICK.open || e.defaultPrevented) return;
+      const el = document.activeElement;
+      if (el && el !== document.body && (el.isContentEditable || el.matches("input,textarea,select,button,a[href],[role=button],[tabindex]"))) return;
+      e.preventDefault();
+      openQuick();
+    };
+    window.addEventListener("keydown", onSpace);
     onUnmounted(() => {
       window.removeEventListener("hashchange", onHash);
       window.removeEventListener("journal:changed", loadOverview);
+      window.removeEventListener("keydown", onSpace);
       clearInterval(overviewTimer);
     });
     loadOverview();
@@ -3604,7 +3701,7 @@ const App = {
     // a nav count may add several of the environment's counts, as the Inbox does for questions and suggestions
     const navCount = (item) => (envRow.value ? [].concat(item.count).reduce((sum, k) => sum + (envRow.value[k] || 0), 0) : 0);
     SHELL.setAuto = setAuto;
-    return { OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
+    return { QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
   },
   template: `
     <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
@@ -3675,9 +3772,10 @@ const App = {
             <span :class="['env-dot', {live: e.active}]"></span>{{ e.name }}
           </a>
         </div>
-        <div class=side-foot>
+        <div class="side-foot side-foot-row">
           <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}<span v-if="activity.data && activity.data.branch" class=side-foot-branch-name
             :title="activity.data.branch.detached ? 'Not on a branch: HEAD is at commit ' + activity.data.branch.name : 'The git branch checked out in this project'"> · {{ activity.data.branch.detached ? 'detached at ' + activity.data.branch.name : activity.data.branch.name }}</span></a>
+          <button type=button class=space-hint title="Quick menu: type to message the agent" @click="openQuick">space</button>
         </div>
       </aside>
       <main class=main>
@@ -3685,6 +3783,8 @@ const App = {
       </main>
       <Peek v-if="OVERLAY.kind && envName" :key="'overlay' + OVERLAY.kind + OVERLAY.n" :env="envName" :kind="OVERLAY.kind" :n="OVERLAY.n"
         :close="closeOverlay" :reloaded="reloadActivity"/>
+      <QuickMenu v-if="QUICK.open && envName" :env="envName"/>
+      <div v-if="TOAST.text" class=quick-toast role=status>{{ TOAST.text }}</div>
       <aside v-if="activity.data && ACTIVITY.shown" class=activity-dock>
         <ActivityPanel :data="activity.data" :href="activityHref" :env="envName"/>
       </aside>
