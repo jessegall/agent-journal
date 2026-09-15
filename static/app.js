@@ -3862,37 +3862,42 @@ const QuickMenu = {
       const auto = !!(SHELL.activity && SHELL.activity.auto);
       const p = plan.value;
       const commands = [
-        { label: "Go to Home", keys: "home queue cockpit", hint: "page", icon: "home", run: goTo(base) },
-        { label: "Go to Inbox", keys: "inbox messages questions suggestions", hint: "page", icon: "inbox", run: goTo(`${base}/messages`) },
-        { label: "Go to To-dos", keys: "todos todo tasks", hint: "page", icon: "todos", run: goTo(`${base}/todos`) },
-        { label: "Go to Documents", keys: "documents docs reports plans", hint: "page", icon: "docs", run: goTo(`${base}/docs`) },
+        { label: "Go to Home", keys: "home queue cockpit", hk: "1", icon: "home", run: goTo(base) },
+        { label: "Go to Inbox", keys: "inbox messages questions suggestions", hk: "2", icon: "inbox", run: goTo(`${base}/messages`) },
+        { label: "Go to To-dos", keys: "todos todo tasks", hk: "3", icon: "todos", run: goTo(`${base}/todos`) },
+        { label: "Go to Documents", keys: "documents docs reports plans", hk: "4", icon: "docs", run: goTo(`${base}/docs`) },
         // always listed: it opens the plan the agent is assigned, or the plans list while none is
-        { label: "Go to the plan", keys: "plan plans phases checkpoint", hint: "page", icon: "plan", run: goTo(p ? `${base}/plans/${p.n}` : `${base}/plans`) },
-        { label: "Go to Settings", keys: "settings preferences", hint: "page", icon: "settings", run: goTo(`${base}/settings`) },
+        { label: "Go to the plan", keys: "plan plans phases checkpoint", hk: "5", icon: "plan", run: goTo(p ? `${base}/plans/${p.n}` : `${base}/plans`) },
+        { label: "Go to Settings", keys: "settings preferences", hk: "6", icon: "settings", run: goTo(`${base}/settings`) },
       ];
       if (waiting) {
         const first = openQuestions.length ? `${base}/messages/q/${openQuestions[0].n}` : `${base}/messages/s/${openSuggestions[0].n}`;
-        commands.unshift({ label: `Answer the first of ${waiting} waiting on you`, keys: "answer waiting", hint: "inspector", icon: "questions", run: goTo(first) });
+        commands.unshift({ label: `Answer the first of ${waiting} waiting on you`, keys: "answer waiting", hk: "a", icon: "questions", run: goTo(first) });
       }
       if (p && p.held) {
-        commands.push({ label: "Continue past the checkpoint", keys: "continue checkpoint plan", hint: "agent", icon: "work",
+        commands.push({ label: "Continue past the checkpoint", keys: "continue checkpoint plan", hk: "c", icon: "work",
                         run: () => { close(); send("POST", `/api/env/${props.env}/plans/${p.n}/proceed`).then(() => { changed(); flash("The agent is working again"); }); } });
       }
-      commands.push({ label: auto ? "Pause auto mode" : "Resume auto mode", keys: "auto mode", hint: "agent", icon: "agents",
+      commands.push({ label: auto ? "Pause auto mode" : "Resume auto mode", keys: "auto mode", icon: "agents",
                       run: () => { close(); if (SHELL.setAuto) SHELL.setAuto(!auto); flash(auto ? "Auto mode paused" : "Auto mode on"); } });
-      commands.push({ label: "Show what happened while you were away", keys: "away digest notification recap", hint: "notify", icon: "bell",
+      commands.push({ label: "Show what happened while you were away", keys: "away digest notification recap", icon: "bell",
                       run: () => { close(); AWAY.open = true; } });
-      commands.push({ label: ACTIVITY.shown ? "Hide the activity column" : "Show the activity column", keys: "activity column", hint: "view", icon: "activity",
+      commands.push({ label: ACTIVITY.shown ? "Hide the activity column" : "Show the activity column", keys: "activity column", icon: "activity",
                       run: () => { close(); setActivityShown(!ACTIVITY.shown); } });
       const needle = q.toLowerCase();
       const found = commands.filter((c) => !q || `${c.label} ${c.keys}`.toLowerCase().includes(needle));
-      if (!q) return [{ label: "Message the agent", hint: "space", key: true, icon: "arrow", run: () => write() }, ...found];
-      return [...found, { label: `Message the agent: “${q}”`, hint: "write it", icon: "arrow", run: () => write(q) }];
+      if (!q) return [{ label: "Message the agent", hk: "space", icon: "arrow", run: () => write() }, ...found];
+      return [...found, { label: `Message the agent: “${q}”`, icon: "arrow", run: () => write(q) }];
     });
     const at = computed(() => Math.max(0, Math.min(QUICK.i, rows.value.length - 1)));
     const onKey = (e) => {
       if (e.isComposing) return;
       if (e.key === " " && !QUICK.q) { e.preventDefault(); write(); }
+      else if (!QUICK.q && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey && rows.value.some((r) => r.hk === e.key.toLowerCase())) {
+        e.preventDefault();
+        e.stopPropagation();
+        rows.value.find((r) => r.hk === e.key.toLowerCase()).run();
+      }
       else if (e.key === "ArrowDown") { e.preventDefault(); QUICK.i = Math.min(at.value + 1, rows.value.length - 1); }
       else if (e.key === "ArrowUp") { e.preventDefault(); QUICK.i = Math.max(at.value - 1, 0); }
       else if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); if (rows.value[at.value]) rows.value[at.value].run(); }
@@ -3932,11 +3937,11 @@ const QuickMenu = {
         </div>
         <div class=quick-rows>
           <button v-for="(r, i) in rows" :key="r.label" type=button :class="['quick-row', {on: i === at}]" @click="r.run" @mouseenter="QUICK.i = i">
-            <Icon :name="r.icon"/><span class=quick-label>{{ r.label }}</span><span :class="r.key ? 'quick-cap' : 'quick-hint'">{{ r.hint }}</span>
+            <Icon :name="r.icon"/><span class=quick-label>{{ r.label }}</span><span v-if="r.hk" class=quick-cap>{{ r.hk }}</span>
           </button>
         </div>
         <div class=quick-foot><span>↑↓ move</span><span>↵ run</span>
-          <span class=quick-foot-note>{{ QUICK.q.trim() ? rows.length + (rows.length === 1 ? ' match' : ' matches') : 'space writes a message' }}</span></div>
+          <span class=quick-foot-note>{{ QUICK.q.trim() ? rows.length + (rows.length === 1 ? ' match' : ' matches') : 'press a key, or search' }}</span></div>
       </template>
       <template v-else>
         <div class="quick-head writing">
