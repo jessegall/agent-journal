@@ -85,8 +85,10 @@ class ActivityController(Controller):
     def index(self, root: Path, p: Payload) -> Result:
         import commandlog
         import todo
+        import worktree
         commandlog.flush_stale(root, p.env)
         return Result("ok", "", {"agent": self._agent(root, p.env), "auto": todo.auto(root, p.env),
+                                 "branch": worktree.branch(root.resolve().parent),
                                  "events": self._events(root, p.env)})
 
     @staticmethod

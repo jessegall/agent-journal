@@ -3266,6 +3266,10 @@ const App = {
             <span :class="['env-dot', {live: activity.data.agent && activity.data.agent.working}]"
               :title="!activity.data.agent ? 'No agent on this environment' : activity.data.agent.working ? 'The agent is working' : 'The agent is waiting for you'"></span>
           </div>
+          <div v-if="activity.data.branch" class=side-foot-branch
+            :title="activity.data.branch.detached ? 'Not on a branch: HEAD is at commit ' + activity.data.branch.name : 'The git branch checked out in this project'">
+            <span>Branch</span><span class=side-foot-branch-name>{{ activity.data.branch.detached ? 'detached at ' + activity.data.branch.name : activity.data.branch.name }}</span>
+          </div>
           <div class=side-foot-auto>
             <span>Auto mode</span>
             <button type=button role=switch :aria-checked="activity.data.auto ? 'true' : 'false'" :class="['switch', {on: activity.data.auto}]"

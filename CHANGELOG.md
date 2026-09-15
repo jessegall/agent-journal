@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.137.3 — The sidebar shows the git branch
+
+The Status section at the bottom of the left sidebar now has a Branch row naming the branch checked out
+in the project, so you can see where the agent is working. A detached HEAD shows "detached at" and its
+short sha. The branch is read from git's HEAD file on every Activity refresh, without running git, and a
+project that is not in git shows no row.
+
 ## 1.137.2 — An agent's commit is a line of its own in Activity
 
 A commit an agent made showed only on its work page. Each commit made through a shell command while

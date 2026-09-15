@@ -99,6 +99,30 @@ def _git(cwd: Path, *args: str) -> str | None:
 _MAIN: dict = {}
 
 
+def branch(project: Path) -> dict | None:
+    """The checked-out branch, or the short sha of a detached HEAD; None outside git. Read from HEAD, no subprocess."""
+    for folder in (project, *project.parents):
+        dot = folder / ".git"
+        if dot.is_dir():
+            head = dot / "HEAD"
+        elif dot.is_file():
+            got = dot.read_text(errors="replace").strip()
+            if not got.startswith("gitdir:"):
+                return None
+            gitdir = Path(got[len("gitdir:"):].strip())
+            head = (gitdir if gitdir.is_absolute() else folder / gitdir) / "HEAD"
+        else:
+            continue
+        try:
+            text = head.read_text(errors="replace").strip()
+        except OSError:
+            return None
+        if text.startswith("ref:"):
+            return {"name": text[len("ref:"):].strip().removeprefix("refs/heads/"), "detached": False}
+        return {"name": text[:7], "detached": True} if text else None
+    return None
+
+
 def main_root(project: Path) -> Path | None:
     """The main checkout's root if `project` is a LINKED worktree, else None."""
     key = str(project)

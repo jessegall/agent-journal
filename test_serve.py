@@ -1066,5 +1066,21 @@ check("an agent's commit reaches Activity with its short sha, subject and full s
       [(e["text"], e["detail"], e["title"], e["sha"]) for e in _commits][:1],
       [("Committed", "0123456", "fix the thing that broke", "0123456789abcdef0123")])
 
+# ---------------------------------------------------------------- the checked-out branch, read from HEAD
+import subprocess as _bsp  # noqa: E402
+import worktree as _wt  # noqa: E402
+_bare = Path(tempfile.mkdtemp())
+_repo = Path(tempfile.mkdtemp())
+_bsp.run(["git", "init", "-q", "-b", "feature/x", str(_repo)], capture_output=True, timeout=60)
+(_repo / "sub").mkdir()
+check("outside git there is no branch", _wt.branch(_bare), None)
+check("a repository names its branch, from any folder inside it",
+      (_wt.branch(_repo), _wt.branch(_repo / "sub")), ({"name": "feature/x", "detached": False},) * 2)
+(_repo / ".git" / "HEAD").write_text("0123456789abcdef0123456789abcdef01234567\n")
+check("a detached HEAD shows its short sha", _wt.branch(_repo), {"name": "0123456", "detached": True})
+import types as _types  # noqa: E402
+check("the Activity payload carries the branch field",
+      "branch" in _activity.ActivityController().index(root, _types.SimpleNamespace(env="alpha")).data, True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
