@@ -552,6 +552,8 @@
   .panel.closing { animation: panel-out .16s ease-in both; }
   .panel-scrim { animation: fade-in .18s ease-out both; }
   .panel-scrim.closing { animation: fade-out .16s ease-in both; }
+  /* a panel that replaces another one while stepping stays still: only the first open slides in */
+  .panel.stepped:not(.closing), .panel-scrim.stepped:not(.closing) { animation: none; }
   .quick-scrim { animation: fade-in .15s ease-out both; }
   .quick-menu { animation: quick-in .17s cubic-bezier(.22, .7, .2, 1) both; }
   .quick-toast { animation: toast-in .2s cubic-bezier(.22, .7, .2, 1) both; }
