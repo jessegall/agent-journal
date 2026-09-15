@@ -115,4 +115,4 @@ def facts(x: dict) -> str:
 def row_response(n: int, x: dict) -> dict:
     return {"n": n, "text": x.get("text", ""), "at": x.get("at", ""), "age": age(x.get("at", "")) if x.get("at") else "",
             "about": x.get("about") or "", "about_label": label(x.get("about") or ""),
-            "read": bool(x.get("read_at")), "meta": facts(x)}
+            "read": bool(x.get("read_at")), "closed_at": x.get("read_at") or "", "meta": facts(x)}

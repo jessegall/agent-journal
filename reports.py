@@ -199,7 +199,10 @@ def prune(root: Path, track: str | None = None) -> int:
     """Reports older than REMOVE_DAYS lose their title and text for good; the entry stays, so numbers do not shift."""
     from datetime import datetime, timezone
     import plans
+    import retention
     linked = plans.linked_reports(root, track or state.current_track(root))
+    # archived reports go for good after the environment's delete days; 0 keeps them
+    remove = retention.days(root, track or state.current_track(root), "reports")["delete"]
     with state.locked(root):
         items = _all(root, track)
         gone = 0
@@ -207,7 +210,7 @@ def prune(root: Path, track: str | None = None) -> int:
             if r.get("removed") or n in linked:
                 continue
             days = _age_days(r)
-            if days is not None and days > REMOVE_DAYS:
+            if days is not None and remove and days > remove:
                 r.clear()
                 r["removed"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
                 gone += 1

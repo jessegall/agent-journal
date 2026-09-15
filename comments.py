@@ -139,4 +139,4 @@ def facts(c: dict) -> str:
 def row_response(n: int, c: dict) -> dict:
     return {"n": n, "text": c.get("text", ""), "about": c.get("about", ""), "label": label(c.get("about", "")),
             "at": c.get("at", ""), "age": age(c.get("at", "")) if c.get("at") else "", "source": c.get("source", ""),
-            "told": bool(c.get("told_at")), "done": c.get("done") or "", "meta": facts(c)}
+            "told": bool(c.get("told_at")), "done": c.get("done") or "", "closed_at": c.get("done") or "", "meta": facts(c)}
