@@ -264,7 +264,7 @@ MESSAGES = {
                      "design, a report or a finding, the docs catalogue is where it is handed to every session and "
                      'found by search:\n  .journal/journal.py docs add "<title>" --abstract="<one line>" --brief < the '
                      'file\n  .journal/journal.py docs part <n> "<title>" --brief < the file      as a part of doc n\n'
-                     "A README or a changelog is fine as it is.",
+                     "A plan (what will be done, in what order) is not a doc: `journal plans add`. A README or a changelog is fine as it is.",
     "commit_how": "commit {sha}: {subject}",
     "commit_mixed": "the commit closed {shut}, and could not close {kept}",
     "commit_closed": "the commit's trailer closed what it named",

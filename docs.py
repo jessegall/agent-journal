@@ -100,6 +100,8 @@ MESSAGES = {
     "part_title": 'a part needs a title: journal docs part <n> "<title>" --brief',
     "part_body": "a part needs a body — pass it on stdin with --brief",
     "part_added": "doc {n}.{p}: {title}\n  {path}",
+    "plan_hint": "\n  this reads like a plan. What will be done and in what order belongs in a plan, whose phases are "
+                 "to-dos: journal plans add \"<title>\" --goal=\"<one line>\" --brief. A doc is for what stays true after the work ships.",
     "replace_part": "replace wants a part, like {ref}.1",
     "replace_body": "a replacement needs a body — pass it on stdin with --brief",
     "replaced": "doc {n}.{p} replaced; the old body is in {struck}/",
@@ -633,6 +635,13 @@ def _next_number(root: Path) -> int:
 
 
 # ------------------------------------------------------------------ writing
+_PLAN_WORDS = re.compile(r"\b(plan|phases?|steps|running order|roadmap|milestones?)\b", re.I)
+
+
+def _plan_hint(title: str) -> str:
+    return say("plan_hint") if _PLAN_WORDS.search(title or "") else ""
+
+
 def add(root: Path, title: str, abstract: str, body: str, track: str, source: str = "") -> tuple[bool, str]:
     """A new doc: a folder with an index. The abstract is what every session is handed."""
     title = " ".join((title or "").split())
@@ -651,7 +660,7 @@ def add(root: Path, title: str, abstract: str, body: str, track: str, source: st
     meta = {"n": n, "title": title, "abstract": abstract, "status": "draft", "track": track,
             "source": source or "the agent", "at": _now()}
     _write(d / INDEX, meta, body)
-    return True, say("added", n=n, title=title, path=d.relative_to(root.parent) / INDEX)
+    return True, say("added", n=n, title=title, path=d.relative_to(root.parent) / INDEX) + _plan_hint(title)
 
 
 def _to_folder(root: Path, doc: dict) -> dict:
@@ -685,7 +694,7 @@ def part(root: Path, ref: str, title: str, body: str, track: str, source: str = 
     path = doc["dir"] / f"{p:02d}-{_slug(title)}.md"
     _write(path, {"title": title, "at": _now(), "source": source or "the agent", "track": track},
            body, PART_FIELDS)
-    return True, say("part_added", n=doc["n"], p=p, title=title, path=path.relative_to(root.parent))
+    return True, say("part_added", n=doc["n"], p=p, title=title, path=path.relative_to(root.parent)) + _plan_hint(title)
 
 
 def replace(root: Path, ref: str, body: str, track: str, source: str = "") -> tuple[bool, str]:

@@ -65,14 +65,17 @@ session. Only when the user asked for it. In order:
   1  the source        the issue, the PR, the user's words — fetch it whole (gh, the tracker's tool, or ask)
   2  the brief         journal docs add "{name}: <title>" --abstract="<one line>" --brief   < the source
                        journal docs attach <doc> <path> "<what it is>"                   designs, screenshots, exports
-  3  the plan          a Plan agent: phases and the work in each, from the brief — file it: docs part <doc> "Plan" --brief
-  4  the steps         a second agent: concrete steps per phase, what is missing, what could go wrong — docs part <doc> "Steps" --brief
+  3  the plan          a Plan agent: phases and the work in each, from the brief — file it as a plan, not a doc part:
+                       journal plans add "{name}" --goal="<what is true when it is done>" --brief   < the approach
+                       journal plans phase <plan> "<title>" --when="<complete when>"   one per phase, in order
+  4  the risks         a second agent: what is missing, what could go wrong — journal reports add "{name}: risks" --brief
   5  what must hold    journal pins add "<constraint>" --doc=<doc>      the facts every later reader needs; rule if project-wide
   6  the to-dos        one per unit of work, in order, the brief citing the doc:
-                       journal todos add "<title>" --brief --doc=<doc>.<p>   < the brief
+                       journal todos add "<title>" --brief --doc=<doc>   < the brief
+                       journal plans todos <plan> <phase> <to-do numbers>   put each in its phase
                        journal todos ask <n> "<question>"                what only the user can answer
                        the last one: verify and close — the definition of done
-  7  auto?             ask the user: journal todos auto on   works the list without asking
+  7  approval, auto    the user approves the plan in the viewer; ask about auto: journal todos auto on
   8  the page          journal environments "{name}"   — read it as the one who picks this up would
 
 Then offer: work it now (todo start 1), leave it for a session (journal switch "{name}"), or

@@ -1,9 +1,9 @@
 ---
 name: journal-docs
-description: "Where findings go: a report for what was checked, measured or researched (temporary), a doc for lasting documentation of the codebase or environment (catalogued, cited, with attachments), and a tool for a script worth keeping. Use it whenever the user asks you to check, measure, investigate or research something, asks for a report, or asks to document or write something down; when something is ruled and should be recorded; before re-investigating what a doc may already settle; and before writing a script the next session could reuse. Not for subagents."
+description: "Where findings go: a report for what was checked, measured or researched (temporary), a doc for lasting documentation of the codebase or environment (catalogued, cited, with attachments), a plan for what will be done and in what order (phases of to-dos), and a tool for a script worth keeping. Use it whenever the user asks you to check, measure, investigate or research something, asks for a report, or asks to document or write something down; when you are about to write a plan or break work into phases; when something is ruled and should be recorded; before re-investigating what a doc may already settle; and before writing a script the next session could reuse. Not for subagents."
 ---
 
-# Journal reports, docs and tools
+# Journal reports, docs, plans and tools
 
 **Not for subagents.** A subagent reports what it found; the main conversation files it.
 It is one of the journal's skills; the core `journal` skill says when each applies.
@@ -22,12 +22,33 @@ different places, so decide before you write:
                what a subagent found, where something stands. True today, stale next week.
     a DOC      documentation of the codebase or the environment: a design once it is ruled, how
                a part works, the numbers behind a decision. Stays true until it is changed.
+    a PLAN     what will be done on this environment and in what order: phases, each made of to-dos.
+               It ends when the work ends. Not a doc, and not a doc part titled "Plan".
     neither    a one-line answer goes in your reply; a fact that must survive goes in a pin.
 
 When the user asks for something to be checked, measured or researched, or asks for a report, or
 you send subagents to find out, the answer is a report, not a doc, even when it is long. Title
 it by what was asked, start with the answer, then the evidence. No session is handed a report,
 so if it settles something that stays true, pin that too or write it into a doc.
+
+## Plans: what will be done, in what order
+
+    journal plans add "<title>" --goal="<what is true when it is done>" --brief   a draft, its approach on stdin
+    journal plans phase <plan> "<title>" --when="<complete when>" [--checkpoint]  a phase, added in order
+    journal plans todos <plan> <phase> <to-do numbers> [--off]   put to-dos in a phase, or take them out
+    journal plans show <plan>                                   its phases, their to-dos, where it stands
+    journal plans link <plan> "doc 4.2"                         a doc or a report it rests on
+    journal plans abandon <plan> "<why>"                        stop one, with the reason
+
+**Ask what you are about to write.** Does it say what to do next? It is a plan. Would it still be
+worth reading once the work ships? It is a doc. Is it what you found? It is a report. Work of one
+or two to-dos needs no plan: file the to-dos.
+
+**The user approves a plan; you cannot.** A draft changes nothing until the user approves it in the
+viewer. Then auto mode picks to-dos from the current phase only, the first phase not complete, and
+to-dos outside the plan only when their priority is above the default. A phase is complete when all
+its to-dos are done; nobody ticks it. A phase marked `--checkpoint` stops the work once it is
+complete, until the user continues it. When the plan is done, write what in it stays true into a doc.
 
 ## Docs: what was settled, catalogued
 

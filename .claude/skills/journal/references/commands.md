@@ -200,6 +200,13 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal reports add "<title>" [--about="todo 22"] --brief   file one; never a doc, never handed to a session
     journal reports archive <n> "<why>"   take one off the list
     journal reports keep <days>      a report older than this is archived (7 by default, 0 never); also on the environment's Settings page
+    journal plans [--all]            what will be done here and in what order: phases, each made of to-dos
+    journal plans add "<title>" --goal="<one line>" --brief   a draft; the user approves it in the viewer
+    journal plans phase <n> "<title>" [--when="<complete when>"] [--checkpoint]   add a phase
+    journal plans todos <n> <phase> <to-do numbers> [--off] [--reopen="<why>"]   put to-dos in a phase, or take them out
+    journal plans show <n>           the plan, its phases and their to-dos
+    journal plans link <n> "doc 4.2"   a doc or report it rests on
+    journal plans abandon <n> "<why>"   stop it
     journal comments [--all]         what the user said about a to-do, doc, pin, rule or reminder
     journal comments done <n> "<what was done>"   a comment is handled
     journal serve [--port=<n>]       the web viewer on 127.0.0.1, at 8420 or the next free port (read the URL it prints): every resource, with the same actions the commands have, and Search and Settings per environment
