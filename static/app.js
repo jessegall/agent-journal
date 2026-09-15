@@ -335,16 +335,27 @@ const RETENTION = reactive({ table: null });
 // one overlay the shell hosts for any page: what the status bar inspects opens here, over whatever is showing
 const OVERLAY = reactive({ kind: "", n: 0 });
 
+//: environment -> the work and plan the bar last knew, so it says the same thing on the next page
+// it mounts afresh on every page, and without these it would have nothing to say until its fetches land
+const AGENT_STATE = reactive({});
+
 const StatusBar = {
   components: { Icon },
   setup() {
     const env = computed(() => SHELL.env);
     const work = useFetch(() => env.value && `/api/env/${env.value}/work`);
     const plans = useFetch(() => env.value && `/api/env/${env.value}/plans`);
+    watchEffect(() => {
+      if (!env.value) return;
+      const kept = AGENT_STATE[env.value] || (AGENT_STATE[env.value] = { work: null, plan: null });
+      if (work.data) kept.work = work.data[0] || null;
+      if (plans.data) kept.plan = plans.data.find((p) => p.status === "active") || null;
+    });
     const view = computed(() => {
       const agent = SHELL.activity && SHELL.activity.agent;
-      const plan = (plans.data || []).find((p) => p.status === "active") || null;
-      const w = (work.data || [])[0] || null;
+      const kept = AGENT_STATE[env.value] || { work: null, plan: null };
+      const plan = plans.data ? (plans.data.find((p) => p.status === "active") || null) : kept.plan;
+      const w = work.data ? (work.data[0] || null) : kept.work;
       const base = `#/env/${env.value}`;
       const planHref = plan ? `${base}/plans/${plan.n}` : null;
       const workHref = w ? `${base}/work/${w.n}` : planHref;
@@ -355,7 +366,7 @@ const StatusBar = {
       if (agent.working) return { state: "Working", live: true, what: onIt || "on its own", href: workHref };
       return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
     });
-    const inspectWork = computed(() => (work.data || [])[0] || null);
+    const inspectWork = computed(() => (work.data ? work.data[0] : (AGENT_STATE[env.value] || {}).work) || null);
     // the sentence is the control: it opens the current work over the page, or the plan when no work is open
     const openCurrent = () => {
       if (inspectWork.value) { OVERLAY.kind = "work"; OVERLAY.n = inspectWork.value.n; } else if (view.value.href) location.hash = view.value.href;
