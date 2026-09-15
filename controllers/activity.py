@@ -107,7 +107,10 @@ class ActivityController(Controller):
         import commandlog
         import todo
         import worktree
+        import retention
         commandlog.flush_stale(root, p.env)
+        # closed items past their days listed and archived lose their content here, where the column polls
+        retention.prune(root, p.env)
         return Result("ok", "", {"agent": self._agent(root, p.env), "auto": todo.auto(root, p.env),
                                  "branch": worktree.branch(root.resolve().parent),
                                  "events": self._events(root, p.env)})
