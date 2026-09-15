@@ -140,7 +140,8 @@ class ActivityController(Controller):
                 path = transcript.find(root.parent, stem)
                 return {"session": stem[:8], "seen": tracks.age_text(info["age"]), "working": agent_working(root, stem),
                         "compacting": agent_compacting(root, stem),
-                        "context": context_use(path, window), "said": last_said(path), "started": session_started(path)}
+                        "context": context_use(path, window), "said": last_said(path), "started": session_started(path),
+                        "model": transcript.last_model(path)}
         return None
 
     @staticmethod

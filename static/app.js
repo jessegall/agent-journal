@@ -2882,8 +2882,8 @@ const EnvHome = {
     const subagents = computed(() => (crew.data || []).filter((a) => a.kind === "subagent")
       .sort((x, y) => Number(y.working) - Number(x.working))
       .map((a) => ({ key: a.id, name: a.name || `Subagent ${a.id}`, live: a.working, href: `#/env/${props.env}/agents/subagent/${a.id}`,
-                     meta: [a.state, a.model, a.age_text].filter(Boolean).join(" · ") })));
-    const crewNote = computed(() => `${subagents.value.filter((a) => a.live).length} working · ${subagents.value.length} recently`);
+                     meta: [a.state, a.model, a.age_text ? `wrote ${a.age_text}` : ""].filter(Boolean).join(" · ") })));
+    const crewNote = computed(() => `${subagents.value.filter((a) => a.live).length} working · ${subagents.value.length} in the last 30 minutes`);
 
     // Replies to you: each part of a message the agent answered, so a reply is not buried in the message
     const replies = computed(() => {
@@ -2962,7 +2962,7 @@ const EnvHome = {
         <a v-for="a in subagents" :key="a.key" class=home-line :href="a.href">
           <span :class="['needs-dot', 'crew', {live: a.live}]"></span><span class="home-line-title strong">{{ a.name }}</span><span class=needs-meta>{{ a.meta }}</span>
         </a>
-        <p v-if="!subagents.length" class=home-empty>No subagents have run recently.</p>
+        <p v-if="!subagents.length" class=home-empty>No subagents have run in the last 30 minutes.</p>
       </section>
     </div></div></div>
     <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>`,
