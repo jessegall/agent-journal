@@ -148,6 +148,16 @@ function noteHref(note, env) {
 function ageOf(meta) { return (meta || "").split(" · ").find((s) => / ago$|^just now$/.test(s)) || ""; }
 function docOf(meta) { const m = /→ doc ([\d.]+)/.exec(meta || ""); return m ? m[1] : null; }
 
+// a file the viewer sends: its name and the data URL the server stores it from
+function readFileAsData(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve({ name: file.name, data: String(r.result) });
+    r.onerror = () => reject(new Error(`Could not read ${file.name}`));
+    r.readAsDataURL(file);
+  });
+}
+
 function humanSize(n) {
   if (!n) return "0 B";
   const units = ["B", "KB", "MB", "GB"];
@@ -681,18 +691,12 @@ const Compose = {
     onMounted(() => { if (props.autofocus && area.value) area.value.focus(); });
     const picked = (e) => { draft.files.push(...Array.from(e.target.files || [])); e.target.value = ""; };
     const unpick = (i) => draft.files.splice(i, 1);
-    const encoded = (file) => new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve({ name: file.name, data: String(r.result) });
-      r.onerror = () => reject(new Error(`Could not read ${file.name}`));
-      r.readAsDataURL(file);
-    });
     async function go() {
       if (!draft.text.trim() || draft.sending) return;
       draft.sending = true;
       draft.error = null;
       try {
-        const files = props.attach ? await Promise.all(draft.files.map(encoded)) : [];
+        const files = props.attach ? await Promise.all(draft.files.map(readFileAsData)) : [];
         await props.send(draft.text, files);
         draft.text = "";
         draft.files = [];
@@ -1558,12 +1562,6 @@ const MessagePanel = {
     };
     // adding files to a message already sent: read each as a data URL, the way the message box does
     const attaching = reactive({ busy: false, error: "" });
-    const readFile = (file) => new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve({ name: file.name, data: String(r.result) });
-      r.onerror = () => reject(new Error(`Could not read ${file.name}`));
-      r.readAsDataURL(file);
-    });
     const attachFiles = async (event) => {
       const picked = Array.from(event.target.files || []);
       event.target.value = "";
@@ -1571,7 +1569,7 @@ const MessagePanel = {
       attaching.busy = true;
       attaching.error = "";
       try {
-        const files = await Promise.all(picked.map(readFile));
+        const files = await Promise.all(picked.map(readFileAsData));
         await postJSON(`${api.value}/${item.data.n}/attach`, { files });
         item.reload();
         changed();
@@ -3806,7 +3804,7 @@ const ActivityPanel = {
 };
 
 // the quick menu: space opens it anywhere to search actions; space again on an empty search writes a message to the agent
-const QUICK = reactive({ open: false, q: "", i: 0, writing: false, draft: "" });
+const QUICK = reactive({ open: false, q: "", i: 0, writing: false, draft: "", files: [] });
 const TOAST = reactive({ text: "" });
 let toastTimer = 0;
 
@@ -3905,13 +3903,29 @@ const QuickMenu = {
     };
     const onInput = (e) => { QUICK.q = e.target.value; QUICK.i = 0; };
     const sending = ref(false);
-    const sendDraft = () => {
+    const fileInput = ref(null);
+    const attach = () => { if (fileInput.value) fileInput.value.click(); };
+    const picked = (e) => { QUICK.files.push(...Array.from(e.target.files || [])); e.target.value = ""; };
+    const unpick = (i) => QUICK.files.splice(i, 1);
+    const held = computed(() => QUICK.files.length);
+    const sendDraft = async () => {
       const text = QUICK.draft.trim();
-      if (!text || sending.value) return;
+      if ((!text && !held.value) || sending.value) return;
       sending.value = true;
-      postJSON(`/api/env/${props.env}/inbox`, { text, files: [] })
-        .then(() => { QUICK.draft = ""; close(); changed(); flash("Sent to the agent"); }, (err) => flash(err.message))
-        .finally(() => { sending.value = false; });
+      const count = held.value;
+      try {
+        const files = await Promise.all(QUICK.files.map(readFileAsData));
+        await postJSON(`/api/env/${props.env}/inbox`, { text, files });
+        QUICK.draft = "";
+        QUICK.files = [];
+        close();
+        changed();
+        flash(count ? `Sent to the agent with ${count} ${count === 1 ? "file" : "files"}` : "Sent to the agent");
+      } catch (err) {
+        flash(err.message);
+      } finally {
+        sending.value = false;
+      }
     };
     const onAreaKey = (e) => {
       if (e.isComposing) return;
@@ -3924,7 +3938,11 @@ const QuickMenu = {
       if (!agent) return "no agent is here; it waits for the next session";
       return agent.working ? "it is working" : "it is idle";
     });
-    return { QUICK, input, area, rows, at, onKey, onInput, close, back, sendDraft, onAreaKey, agentNote, sending };
+    const filesHint = computed(() => (held.value
+      ? `${held.value} ${held.value === 1 ? "file" : "files"} attached · ↵ sends`
+      : "⇧↵ new line · esc back to actions"));
+    return { QUICK, input, area, rows, at, onKey, onInput, close, back, sendDraft, onAreaKey, agentNote, sending,
+             fileInput, attach, picked, unpick, held, filesHint, humanSize };
   },
   template: `
     <div class=quick-scrim @click="close"></div>
@@ -3951,9 +3969,18 @@ const QuickMenu = {
           <textarea ref=area v-model="QUICK.draft" placeholder="Ask it something, or tell it what to do next…" aria-label="Message the agent"
             :disabled="sending" @keydown="onAreaKey"></textarea>
         </div>
-        <div class="quick-foot writing"><span class=quick-foot-grow>⇧↵ new line · esc back to actions</span>
+        <div v-if="held" class=quick-files>
+          <span v-for="(f, i) in QUICK.files" :key="i" class=quick-file>
+            <span class=quick-file-name>{{ f.name }}</span><span class=quick-file-size>{{ humanSize(f.size) }}</span>
+            <button type=button class=quick-file-x aria-label="Remove" title="Remove" @click="unpick(i)"><Icon name="close"/></button>
+          </span>
+        </div>
+        <div class="quick-foot writing">
+          <input ref=fileInput type=file multiple hidden @change="picked">
+          <button type=button class=quick-attach title="Attach files" @click="attach"><Icon name="paperclip"/>Attach</button>
+          <span class=quick-foot-grow>{{ filesHint }}</span>
           <button type=button class=btn @click="back">Back</button>
-          <button type=button :class="['quick-send', {ready: QUICK.draft.trim()}]" :disabled="sending || !QUICK.draft.trim()" @click="sendDraft">Send<Icon name="arrow"/></button>
+          <button type=button :class="['quick-send', {ready: QUICK.draft.trim() || held}]" :disabled="sending || (!QUICK.draft.trim() && !held)" @click="sendDraft">Send<Icon name="arrow"/></button>
         </div>
       </template>
     </div>`,
