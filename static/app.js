@@ -10,7 +10,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)$/, view: "EnvHome", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/todos(\/archive)?(?:\/(\d+|new))?$/, view: "Todos", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/pins(\/archive)?(?:\/(\d+|new))?$/, view: "Pins", params: ["env", "archive", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(\/archive)?(?:\/((?:[qs]\/)?\d+))?$/, view: "Inbox", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(\/archive)?(?:\/((?:[qsr]\/)?\d+))?$/, view: "Inbox", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/questions(\/archive)?(?:\/(\d+))?$/, view: "Questions", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reports(\/archive)?(?:\/(\d+|new))?$/, view: "Reports", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/plans(\/archive)?(?:\/(\d+|new))?$/, view: "Plans", params: ["env", "archive", "n"] },
@@ -139,6 +139,11 @@ function shortAge(age) {
   const d = /^(\d+)d ago$/.exec(text);
   if (d) return Number(d[1]) < 14 ? `${d[1]}d` : `${Math.floor(Number(d[1]) / 7)}w`;
   return text;
+}
+// a notification about a message is the agent replying to it, so it opens that reply; anything else opens its own page
+function noteHref(note, env) {
+  const [kind, n] = String((note && note.about) || "").split(":");
+  return kind === "inbox" && n && env ? `#/env/${env}/messages/r/${n}` : refHref(note && note.about, env);
 }
 function ageOf(meta) { return (meta || "").split(" · ").find((s) => / ago$|^just now$/.test(s)) || ""; }
 function docOf(meta) { const m = /→ doc ([\d.]+)/.exec(meta || ""); return m ? m[1] : null; }
@@ -425,7 +430,7 @@ const TopBar = {
       return c in CRUMB_PATHS ? `#/env/${env.value}${CRUMB_PATHS[c] ? `/${CRUMB_PATHS[c]}` : ""}` : null;
     };
     return { env, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, activity, toggleActivity, view,
-             helpTopic, help, helpDialog, openHelp, closeHelp, crumbHref };
+             helpTopic, help, helpDialog, openHelp, closeHelp, crumbHref, noteHref };
   },
   template: `
     <div class=top>
@@ -464,7 +469,7 @@ const TopBar = {
               <div v-for="x in unreadNotes" :key="'n' + x.n" class=drop-row>
                 <span class=drop-text>{{ x.text }}</span>
                 <span class=drop-meta>{{ x.age || 'just now' }}
-                  <a v-if="x.about && $refHref(x.about, env)" class="btn more" :href="$refHref(x.about, env)" :title="'Open ' + x.about_label" @click="readOne(x); openFromBell($event, x); drop.open = false">Open</a>
+                  <a v-if="x.about && noteHref(x, env)" class="btn more" :href="noteHref(x, env)" :title="'Open ' + x.about_label" @click="readOne(x); openFromBell($event, x); drop.open = false">Open</a>
                   <button type=button class="btn more" @click="readOne(x)">Mark read</button>
                 </span>
               </div>
@@ -472,7 +477,7 @@ const TopBar = {
               <div v-for="x in readNotes" :key="'r' + x.n" class="drop-row read">
                 <span class=drop-text>{{ x.text }}</span>
                 <span class=drop-meta>{{ x.age || 'just now' }}
-                  <a v-if="x.about && $refHref(x.about, env)" class="btn more" :href="$refHref(x.about, env)" :title="'Open ' + x.about_label" @click="openFromBell($event, x); drop.open = false">Open</a>
+                  <a v-if="x.about && noteHref(x, env)" class="btn more" :href="noteHref(x, env)" :title="'Open ' + x.about_label" @click="openFromBell($event, x); drop.open = false">Open</a>
                 </span>
               </div>
             </div>
@@ -1426,9 +1431,68 @@ const QuestionPanel = {
     </Panel>`,
 };
 
+// each part of a message beside the agent's answer to it, so a reply reads where the question was asked
+function messageAnswers(m) {
+  if (!m) return { rows: [], others: [], heading: "" };
+  const agentReplies = (m.replies || []).filter((r) => r.who === "the agent" && r.part);
+  const used = new Set();
+  const matches = (p, r) => p.excerpt && r.part && (p.excerpt.includes(r.part) || r.part.includes(p.excerpt));
+  // a part answered by a reply is recorded twice, once filed and once as answered: fold them into one row
+  const byAsk = new Map();
+  (m.parts || []).forEach((p) => {
+    const seen = byAsk.get(p.excerpt);
+    const became = p.became.filter((b) => b.ref !== "answered");
+    if (seen) seen.became.push(...became.filter((b) => !seen.became.some((x) => x.ref === b.ref)));
+    else byAsk.set(p.excerpt, { excerpt: p.excerpt, became });
+  });
+  const rows = [...byAsk.values()].map((p) => {
+    const reply = agentReplies.find((r) => matches(p, r));
+    if (reply) used.add(reply);
+    return { ask: p.excerpt, answer: reply ? reply.text : "", became: p.became, age: reply ? reply.age || "just now" : "" };
+  });
+  agentReplies.filter((r) => !used.has(r)).forEach((r) => { used.add(r); rows.push({ ask: r.part, answer: r.text, became: [], age: r.age || "just now" }); });
+  const waiting = m.status === "waiting";
+  const shaped = rows.map((r) => ({ ...r, done: !!r.answer || !waiting, pending: !r.answer && waiting,
+                                    chip: r.answer ? "answered" : waiting ? "still working" : "filed" }));
+  const count = shaped.filter((r) => r.answer).length;
+  return { rows: shaped, others: (m.replies || []).filter((r) => !used.has(r)),
+           heading: count ? `Replied to your message — ${count} of ${shaped.length} ${shaped.length === 1 ? "part" : "parts"} answered` : "" };
+}
+
+// Point by point: a card per part, what it asked, what the agent answered or is doing, and what it made
+const PointByPoint = {
+  props: { rows: Array, env: String },
+  components: { Icon },
+  setup() { return { TYPES }; },
+  template: `
+    <div v-if="rows.length">
+      <div class=files-head><p class=section-label>Point by point</p><span class=muted>you asked {{ rows.length }} {{ rows.length === 1 ? 'thing' : 'things' }} · {{ rows.filter((r) => r.answer).length }} answered</span></div>
+      <div class=part-cards>
+        <div v-for="(p, i) in rows" :key="i" :class="['part-card', {pending: p.pending}]">
+          <div class=part-strip>
+            <span class=part-ordinal>{{ i + 1 }}/{{ rows.length }}</span>
+            <span :class="['part-chip', {done: p.done}]">{{ p.chip }}</span>
+            <span class=part-age>{{ p.age }}</span>
+          </div>
+          <div class=part-main>
+            <div class=reply-ask><span class=reply-bar></span><span class=part-ask>{{ p.ask }}</span></div>
+            <div v-if="p.answer" class="md prose part-answer" v-html="$md(p.answer)"></div>
+            <p v-else-if="p.pending" class=part-working>Still working on this one.</p>
+            <a v-for="b in p.became" :key="b.ref" class=part-made :href="$refHref(b.ref, env) || null">
+              <span class=part-made-label>{{ p.pending ? 'it is making' : 'it made' }}</span>
+              <span class=part-made-dot :style="{ background: (TYPES[String(b.ref).split(':')[0]] || {}).tint || '#83868e' }"></span>
+              <span class=part-made-ref>{{ b.label }}</span>
+              <Icon name="open"/>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>`,
+};
+
 const MessagePanel = {
   props: PANEL_PROPS,
-  components: { Panel, StatusIcon, ActionBar, Comments, Icon },
+  components: { Panel, StatusIcon, ActionBar, Comments, Icon, PointByPoint },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/inbox`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -1494,35 +1558,8 @@ const MessagePanel = {
         attaching.busy = false;
       }
     };
-    // each part of the message beside the agent's answer to it, so the reply reads where the question was asked
-    const answered = computed(() => {
-      const m = item.data;
-      if (!m) return { rows: [], others: [], heading: "" };
-      const agentReplies = (m.replies || []).filter((r) => r.who === "the agent" && r.part);
-      const used = new Set();
-      const matches = (p, r) => p.excerpt && r.part && (p.excerpt.includes(r.part) || r.part.includes(p.excerpt));
-      // a part answered by a reply is recorded twice, once filed and once as answered: fold them into one row
-      const byAsk = new Map();
-      (m.parts || []).forEach((p) => {
-        const seen = byAsk.get(p.excerpt);
-        const became = p.became.filter((b) => b.ref !== "answered");
-        if (seen) seen.became.push(...became.filter((b) => !seen.became.some((x) => x.ref === b.ref)));
-        else byAsk.set(p.excerpt, { excerpt: p.excerpt, became });
-      });
-      const rows = [...byAsk.values()].map((p) => {
-        const reply = agentReplies.find((r) => matches(p, r));
-        if (reply) used.add(reply);
-        return { ask: p.excerpt, answer: reply ? reply.text : "", became: p.became, age: reply ? reply.age || "just now" : "" };
-      });
-      agentReplies.filter((r) => !used.has(r)).forEach((r) => { used.add(r); rows.push({ ask: r.part, answer: r.text, became: [], age: r.age || "just now" }); });
-      const waiting = m.status === "waiting";
-      const shaped = rows.map((r) => ({ ...r, done: !!r.answer || !waiting, pending: !r.answer && waiting,
-                                        chip: r.answer ? "answered" : waiting ? "still working" : "filed" }));
-      const count = shaped.filter((r) => r.answer).length;
-      return { rows: shaped, others: (m.replies || []).filter((r) => !used.has(r)),
-               heading: count ? `Replied to your message — ${count} of ${shaped.length} ${shaped.length === 1 ? "part" : "parts"} answered` : "" };
-    });
-    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered, TYPES };
+    const answered = computed(() => messageAnswers(item.data));
+    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered };
   },
   template: `
     <Panel :label=\"'Message ' + n" :close="close" :onClose="onClose" :link="link">
@@ -1572,29 +1609,7 @@ const MessagePanel = {
             </template>
           </div>
         </div>
-        <div v-if="answered.rows.length">
-          <div class=files-head><p class=section-label>Point by point</p><span class=muted>you asked {{ answered.rows.length }} {{ answered.rows.length === 1 ? 'thing' : 'things' }} · {{ answered.rows.filter((r) => r.answer).length }} answered</span></div>
-          <div class=part-cards>
-            <div v-for="(p, i) in answered.rows" :key="i" :class="['part-card', {pending: p.pending}]">
-              <div class=part-strip>
-                <span class=part-ordinal>{{ i + 1 }}/{{ answered.rows.length }}</span>
-                <span :class="['part-chip', {done: p.done}]">{{ p.chip }}</span>
-                <span class=part-age>{{ p.age }}</span>
-              </div>
-              <div class=part-main>
-                <div class=reply-ask><span class=reply-bar></span><span class=part-ask>{{ p.ask }}</span></div>
-                <div v-if="p.answer" class="md prose part-answer" v-html="$md(p.answer)"></div>
-                <p v-else-if="p.pending" class=part-working>Still working on this one.</p>
-                <a v-for="b in p.became" :key="b.ref" class=part-made :href="$refHref(b.ref, env) || null">
-                  <span class=part-made-label>{{ p.pending ? 'it is making' : 'it made' }}</span>
-                  <span class=part-made-dot :style="{ background: (TYPES[String(b.ref).split(':')[0]] || {}).tint || '#83868e' }"></span>
-                  <span class=part-made-ref>{{ b.label }}</span>
-                  <Icon name="open"/>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PointByPoint v-if="answered.rows.length" :rows="answered.rows" :env="env"/>
         <p v-else-if="item.data.status === 'waiting' && item.data.read" class="prose muted">The agent has read it and is handling it. It splits it into parts and answers or files each one.</p>
         <p v-else-if="item.data.status === 'waiting'" class="prose muted">Not processed yet. At its next stop the agent splits it into parts and answers or files each one.</p>
         <div v-if="answered.others.length">
@@ -1608,6 +1623,34 @@ const MessagePanel = {
           </div>
         </div>
         <Comments :about="'message ' + item.data.n" :env="env" :key="'c-message' + item.data.n"/>
+      </template>
+    </Panel>`,
+};
+
+// a reply on its own: your message and what the agent answered, with one step to the full message
+const ReplyPanel = {
+  props: PANEL_PROPS,
+  components: { Panel, PointByPoint, Icon },
+  setup(props) {
+    const item = useFetch(() => props.env && props.n && `/api/env/${props.env}/inbox/${props.n}`);
+    const answered = computed(() => messageAnswers(item.data));
+    const openMessage = () => {
+      if (props.onClose && OVERLAY.kind === "reply") { OVERLAY.kind = "message"; return; }
+      location.hash = `#/env/${props.env}/messages/${props.n}`;
+    };
+    return { item, answered, openMessage };
+  },
+  template: `
+    <Panel :label="'Reply to message ' + n" :close="close" :onClose="onClose" :link="link">
+      <p v-if="item.error" class=error>{{ item.error }}</p>
+      <template v-else-if="item.data">
+        <h2 class=panel-title>{{ answered.heading || item.data.gist || item.data.text }}</h2>
+        <div><p class=section-label>Your message</p><div class="prose message" v-html="$linkify(item.data.text)"></div></div>
+        <PointByPoint v-if="answered.rows.length" :rows="answered.rows" :env="env"/>
+        <p v-else class="prose muted">The agent has not answered any part of this message yet.</p>
+        <div class=actions><div class=action-buttons>
+          <button type=button class=primary-act @click="openMessage">Open the full message<Icon name="arrow"/></button>
+        </div></div>
       </template>
     </Panel>`,
 };
@@ -1926,7 +1969,7 @@ const INBOX_LIST = {
 
 const Inbox = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Compose, ResourceList, MessagePanel, QuestionPanel, SuggestionPanel },
+  components: { TopBar, Compose, ResourceList, MessagePanel, ReplyPanel, QuestionPanel, SuggestionPanel },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/inbox`);
     const home = computed(() => `#/env/${props.env}/messages`);
@@ -1947,9 +1990,9 @@ const Inbox = {
       ];
     });
     const opened = computed(() => {
-      const m = /^(?:([qs])\/)?(\d+)$/.exec(props.n || "");
+      const m = /^(?:([qsr])\/)?(\d+)$/.exec(props.n || "");
       if (!m) return null;
-      return { type: m[1] === "q" ? "question" : m[1] === "s" ? "suggestion" : "message", num: m[2] };
+      return { type: { q: "question", s: "suggestion", r: "reply" }[m[1]] || "message", num: m[2] };
     });
     // a message only reaches an agent at its next hook event; say so when none is working here
     const live = computed(() => {
@@ -1979,6 +2022,7 @@ const Inbox = {
       <MessagePanel v-if="opened && opened.type === 'message'" :key="'message' + opened.num" :env="env" :n="opened.num" :close="base" :base="base" :reloaded="reloadAll"/>
       <QuestionPanel v-else-if="opened && opened.type === 'question'" :key="'question' + opened.num" :env="env" :n="opened.num" :close="base" :base="base + '/q'" :reloaded="reloadAll"/>
       <SuggestionPanel v-else-if="opened && opened.type === 'suggestion'" :key="'suggestion' + opened.num" :env="env" :n="opened.num" :close="base" :base="base + '/s'" :reloaded="reloadAll"/>
+      <ReplyPanel v-else-if="opened && opened.type === 'reply'" :key="'reply' + opened.num" :env="env" :n="opened.num" :close="base" :base="base + '/r'" :reloaded="reloadAll"/>
     </div>`,
 };
 
@@ -2786,6 +2830,7 @@ const DocDetail = {
 const PEEK = {
   todo: { panel: "TodoPanel", page: (env, n) => `#/env/${env}/todos/${n}` },
   message: { panel: "MessagePanel", page: (env, n) => `#/env/${env}/messages/${n}` },
+  reply: { panel: "ReplyPanel", page: (env, n) => `#/env/${env}/messages/r/${n}` },
   question: { panel: "QuestionPanel", page: (env, n) => `#/env/${env}/questions/${n}` },
   suggestion: { panel: "SuggestionPanel", page: (env, n) => `#/env/${env}/suggestions/${n}` },
   work: { panel: "WorkPanel", page: (env, n) => `#/env/${env}/work/${n}` },
@@ -2794,7 +2839,7 @@ const PEEK = {
 // Home's side panel: the resource's own panel, with its header linking to the page
 const Peek = {
   props: ["env", "kind", "n", "close", "reloaded"],
-  components: { TodoPanel, MessagePanel, QuestionPanel, WorkPanel, SuggestionPanel },
+  components: { TodoPanel, MessagePanel, ReplyPanel, QuestionPanel, WorkPanel, SuggestionPanel },
   setup() { return { PEEK }; },
   template: `
     <component :is="PEEK[kind].panel" :env="env" :n="n" :onClose="close" :link="PEEK[kind].page(env, n)" :reloaded="reloaded"/>`,
@@ -2831,13 +2876,13 @@ const EnvHome = {
 
     // Over to you: what waits on the user, questions first, in one list
     const QUEUE_TYPES = { question: { label: "Question", tint: "#c9955e", action: "Answer" },
-                          message: { label: "Message", tint: "#6fae7d", action: "Read" },
+                          reply: { label: "Message", tint: "#6fae7d", action: "Read" },
                           suggestion: { label: "Suggestion", tint: "#a3a8f0", action: "Accept" } };
     const queue = computed(() => {
       const rows = [
         ...(questions.data || []).filter((q) => q.status === "open").map((q) => ({ kind: "question", n: q.n, title: q.text, age: q.age })),
         ...(notes.data || []).filter((x) => String(x.about).startsWith("inbox:"))
-          .map((x) => ({ kind: "message", n: Number(String(x.about).split(":")[1]), title: x.text, age: x.age || "just now", note: x })),
+          .map((x) => ({ kind: "reply", n: Number(String(x.about).split(":")[1]), title: x.text, age: x.age || "just now", note: x })),
         ...(suggestions.data || []).filter((s) => s.status === "open").map((s) => ({ kind: "suggestion", n: s.n, title: s.title, age: s.age })),
       ];
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
@@ -2929,7 +2974,7 @@ const EnvHome = {
         }
       }
       return rows.sort((a, b) => (b.at > a.at ? 1 : b.at < a.at ? -1 : 0)).slice(0, 4)
-        .map((r) => ({ ...r, open: () => peek("message", r.n) }));
+        .map((r) => ({ ...r, open: () => peek("reply", r.n) }));
     });
     const repliesNote = computed(() => {
       const done = replies.value.filter((r) => r.done).length;
@@ -3960,6 +4005,8 @@ const App = {
       // a comment has no page of its own: its line opens what it is about
       if (e.kind === "comment") return e.about && envName.value ? refHref(e.about, envName.value) : null;
       if (e.kind === "commit") return e.sha && envName.value ? `#/env/${envName.value}/commits/${e.sha}` : null;
+      // the agent answering a message opens that reply on its own, not the whole message
+      if (e.kind === "message" && e.text === "Answered your question" && e.n && envName.value) return `#/env/${envName.value}/messages/r/${e.n}`;
       const page = ACTIVITY_PAGES[e.kind];
       if (!page || !envName.value) return null;
       return `#/env/${envName.value}/${page}` + (e.n ? `/${e.n}` : "");
