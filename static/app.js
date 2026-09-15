@@ -981,9 +981,12 @@ const ResourceList = {
     <div v-if="bar" class=viewbar>
       <span v-if="rows && archive">{{ archived }} archived</span>
       <span v-else-if="rows && count">{{ count(rows) }}</span>
-      <span class=viewbar-tools>
-        <a v-if="home && closable" :class="['btn', 'flush', {on: archive}]" :href="archive ? home : home + '/archive'"
+      <template v-if="home && closable">
+        <span class=viewbar-sep aria-hidden=true></span>
+        <a :class="['viewbar-archive', {on: archive}]" :href="archive ? home : home + '/archive'"
           :title="archive ? 'Back to the list' : 'Items closed more than a week ago'">{{ archive ? 'Close archive' : 'Archive' }}</a>
+      </template>
+      <span class=viewbar-tools>
         <slot name="tools"/>
       </span>
     </div>
