@@ -44,7 +44,8 @@ class EnvironmentController(Controller):
                                  "reports_archive_days": reports.archive_days(root, p.env),
                                  "activity_show": commandlog.setting(root, p.env, commandlog.SHOW),
                                  "activity_keep": commandlog.setting(root, p.env, commandlog.KEEP),
-                                 "viewer_first": tracks.viewer_first(root, p.env)})
+                                 "viewer_first": tracks.viewer_first(root, p.env),
+                                 "retention": __import__("retention").table(root, p.env)})
 
     def settings(self, root: Path, p: SettingsPayload) -> Result:
         import commandlog
@@ -52,6 +53,13 @@ class EnvironmentController(Controller):
         said = []
         if p.has("auto"):
             said.append(todo.set_auto(root, p.env, p.auto))
+        if p.has("retention"):
+            import retention
+            wanted = p.retention
+            ok, message = retention.set_days(root, p.env, str(wanted.get("resource", "")), wanted.get("archive"), wanted.get("delete"))
+            if not ok:
+                return Result("refused", message)
+            said.append(message)
         if p.has("viewer_first"):
             tracks.set_viewer_first(root, p.env, p.viewer_first)
             said.append(say("viewer_first_on" if p.viewer_first else "viewer_first_off", env=p.env))

@@ -380,9 +380,16 @@ def announce(root: Path, track: str, at: str) -> None:
                 if row["complete"] and not ph.get("announced_at"):
                     ph["announced_at"] = at
                     told.append((n, row))
+            # the plan is done the moment its last phase completes: stamped once, so it can stay listed a while
+            rows = phases(root, plan, track, known)
+            if rows and all(r["complete"] for r in rows) and not plan.get("done_at"):
+                plan["done_at"] = at
+                told.append((0, None))
         if told:
             _put(root, items, track)
     for n, row in told:
+        if row is None:
+            continue
         notifications.add(root, say("phase_note", n=n, p=row["p"], title=row["title"]), at, f"plan {n}", "journal", track)
 
 
@@ -519,7 +526,8 @@ def row_response(root: Path, n: int, plan: dict, track: str, full: bool = False)
            "refs": list(plan.get("refs") or []), "why": plan.get("why") or "",
            "phases_total": len(rows), "phases_done": sum(1 for r in rows if r["complete"]),
            "current": now["p"] if now else None, "current_title": now["title"] if now else "",
-           "held": held["p"] if held else None, "auto": bool(plan.get("auto")), "gist": fmt.gist(plan.get("goal", ""))}
+           "held": held["p"] if held else None, "auto": bool(plan.get("auto")),
+           "closed_at": plan.get("done_at") or plan.get("closed_at") or "", "gist": fmt.gist(plan.get("goal", ""))}
     row["meta"] = " · ".join(x for x in (row["age"], say("progress", done=row["phases_done"], total=row["phases_total"]),
                                          say("current", p=now["p"], title=now["title"]) if now else "",
                                          row["why"]) if x)

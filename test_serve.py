@@ -1098,5 +1098,16 @@ check("Activity shows the agent's latest text even while a tool call follows it"
 import transcript as _transcript  # noqa: E402
 check("the stop hook's reading still ignores text a tool call follows", _transcript.last_reply(_said_file), None)
 
+# ---------------------------------------------------------------- how long each resource is kept
+import retention as _retention  # noqa: E402
+_kept = _retention.table(root, "beta")
+check("each resource has days listed and days archived, keeping today's behaviour by default",
+      ((_kept["reports"]["archive"], _kept["reports"]["delete"]), (_kept["plans"]["archive"], _kept["plans"]["delete"]), (_kept["questions"]["archive"], _kept["questions"]["delete"])),
+      ((7, 30), (3, 0), (7, 0)))
+check("a resource's days are set per environment", (_retention.set_days(root, "beta", "questions", 14, 60)[0], _retention.days(root, "beta", "questions"), _retention.days(root, "alpha", "questions")),
+      (True, {"archive": 14, "delete": 60}, {"archive": 7, "delete": 0}))
+check("to-dos keep their days where they always were", (_retention.set_days(root, "beta", "todos", 21)[0], __import__("todo").archive_days(root, "beta")), (True, 21))
+check("an unknown resource or a negative day is refused", (_retention.set_days(root, "beta", "pins", 3)[0], _retention.set_days(root, "beta", "work", -1)[0]), (False, False))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

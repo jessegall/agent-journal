@@ -10,6 +10,7 @@ class SettingsPayload(Payload):
     activity_show = Field(int)
     activity_keep = Field(int)
     viewer_first = Field(bool)
+    retention = Field(dict)
     always_load = Field(str)
     always_on = Field(bool)
 
