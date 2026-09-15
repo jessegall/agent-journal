@@ -3103,6 +3103,10 @@ const Settings = {
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/environment`);
     const s = useFetch(() => props.env && api.value);
+    // the Project rows say how much each holds: coding style rules and tools belong to the project, not the environment
+    const styleRules = useFetch(() => "/api/style?all=1");
+    const tools = useFetch(() => "/api/tools");
+    const counted = (n, one, many) => (typeof n === "number" ? `${n} ${n === 1 ? one : many}` : "");
     const auto = reactive({ saving: false, error: null });
     async function setAuto(on) {
       auto.saving = true;
@@ -3143,7 +3147,7 @@ const Settings = {
     }] : []));
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
     const saveSetting = (body) => postJSON(`${api.value}/settings`, body).then(() => { s.reload(); changed(); });
-    return { s, auto, setAuto, saveSetting, removing, done, keepingRows, kept, showing, ACTIVITY, toggleActivity };
+    return { s, auto, setAuto, saveSetting, removing, done, keepingRows, kept, showing, ACTIVITY, toggleActivity, styleRules, tools, counted };
   },
   template: `
     <TopBar :crumbs="[env, 'Settings']"/>
@@ -3200,10 +3204,10 @@ const Settings = {
           <p class=settings-note>What is kept on this environment, and what the whole project shares.</p>
           <div class=settings-card>
             <div class=settings-row><span class=settings-label>Pins</span><span class=settings-value>{{ s.data.pins }} standing</span><a class=btn :href="'#/env/' + env + '/pins'">Open</a></div>
-            <div class=settings-row><span class=settings-label>Reminders</span><span class=settings-value></span><a class=btn :href="'#/env/' + env + '/reminders'">Open</a></div>
-            <div class=settings-row><span class=settings-label>Coding style</span><span class=settings-value></span><a class=btn :href="'#/env/' + env + '/style'">Open</a></div>
-            <div class=settings-row><span class=settings-label>Tools</span><span class=settings-value></span><a class=btn href="#/tools">Open</a></div>
-            <div class=settings-row><span class=settings-label>Documents</span><span class=settings-value></span><a class=btn :href="'#/env/' + env + '/docs'">Open</a></div>
+            <div class=settings-row><span class=settings-label>Reminders</span><span class=settings-value>{{ counted(s.data.reminders, 'reminder', 'reminders') }}</span><a class=btn :href="'#/env/' + env + '/reminders'">Open</a></div>
+            <div class=settings-row><span class=settings-label>Coding style rules</span><span class=settings-value>{{ styleRules.data ? counted(styleRules.data.length, 'rule', 'rules') : '' }}</span><a class=btn :href="'#/env/' + env + '/style'">Open</a></div>
+            <div class=settings-row><span class=settings-label>Catalogued tools</span><span class=settings-value>{{ tools.data ? counted(tools.data.length, 'tool', 'tools') : '' }}</span><a class=btn href="#/tools">Open</a></div>
+            <div class=settings-row><span class=settings-label>Documents</span><span class=settings-value>{{ typeof s.data.docs === 'number' ? s.data.docs + ' catalogued' : '' }}</span><a class=btn :href="'#/env/' + env + '/docs'">Open</a></div>
           </div>
         </section>
         <section class=settings-group>
