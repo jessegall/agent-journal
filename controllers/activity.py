@@ -79,6 +79,19 @@ def context_use(path: Path | None, window: int) -> dict | None:
 _SAID: dict = {}
 
 
+def session_started(path) -> str:
+    # the transcript is created when the session starts, so its birth time is the session's start
+    if not path:
+        return ""
+    try:
+        st = Path(path).stat()
+    except OSError:
+        return ""
+    from datetime import datetime, timezone
+    born = getattr(st, "st_birthtime", None) or st.st_ctime
+    return datetime.fromtimestamp(born, timezone.utc).isoformat(timespec="seconds")
+
+
 def last_said(path, cap: int = 600) -> str:
     """The agent's latest reply, cut to a readable length, for the top of the Activity column."""
     import transcript
@@ -127,7 +140,7 @@ class ActivityController(Controller):
                 path = transcript.find(root.parent, stem)
                 return {"session": stem[:8], "seen": tracks.age_text(info["age"]), "working": agent_working(root, stem),
                         "compacting": agent_compacting(root, stem),
-                        "context": context_use(path, window), "said": last_said(path)}
+                        "context": context_use(path, window), "said": last_said(path), "started": session_started(path)}
         return None
 
     @staticmethod
