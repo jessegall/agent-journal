@@ -14,7 +14,9 @@ MESSAGES = {
     "no_such_skill": "there is no skill {name} on disk here; a skill is added in the project's .claude/skills folder",
     "skill_always_on": "every session is told to load the {name} skill at its start",
     "skill_always_off": "sessions are no longer told to load the {name} skill at their start",
-    "nothing_to_change": "send a setting to change: auto, todos_archive_days, reports_archive_days, activity_show, activity_keep",
+    "nothing_to_change": "send a setting to change: auto, viewer_first, todos_archive_days, reports_archive_days, activity_show, activity_keep",
+    "viewer_first_on": "`{env}` is worked from the viewer: the agent keeps terminal messages to a tagged line and answers where the user reads",
+    "viewer_first_off": "`{env}` is worked from the terminal again",
     "auto_wants": "auto mode is enabled or disabled, got {got}",
 }
 
@@ -41,7 +43,8 @@ class EnvironmentController(Controller):
                                  "todos_archive_days": todo.archive_days(root, p.env),
                                  "reports_archive_days": reports.archive_days(root, p.env),
                                  "activity_show": commandlog.setting(root, p.env, commandlog.SHOW),
-                                 "activity_keep": commandlog.setting(root, p.env, commandlog.KEEP)})
+                                 "activity_keep": commandlog.setting(root, p.env, commandlog.KEEP),
+                                 "viewer_first": tracks.viewer_first(root, p.env)})
 
     def settings(self, root: Path, p: SettingsPayload) -> Result:
         import commandlog
@@ -49,6 +52,9 @@ class EnvironmentController(Controller):
         said = []
         if p.has("auto"):
             said.append(todo.set_auto(root, p.env, p.auto))
+        if p.has("viewer_first"):
+            tracks.set_viewer_first(root, p.env, p.viewer_first)
+            said.append(say("viewer_first_on" if p.viewer_first else "viewer_first_off", env=p.env))
         if p.has("todos_archive_days"):
             ok, message = todo.set_archive_days(root, p.env, p.todos_archive_days)
             if not ok:

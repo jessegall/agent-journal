@@ -55,8 +55,11 @@ def newest_session(cwd: Path) -> Path | None:
 SESSION_ENV = "CLAUDE_CODE_SESSION_ID"
 
 
-def last_reply(path: Path, limit: int = 400_000) -> tuple[str, str] | None:
+def last_reply(path: Path, limit: int = 400_000, settled: bool = True) -> tuple[str, str] | None:
     """(the agent's latest non-empty text since the user last spoke, its uuid), or None.
+
+    With `settled` off it is simply the latest text the agent wrote, whatever came after it: what
+    the Activity column shows of the agent while it works.
 
     READ FROM THE TAIL. This runs at every tool call while a deferral may be pending, and
     a 20 MB transcript parsed whole for each one would cost more than the check is worth.
@@ -79,14 +82,15 @@ def last_reply(path: Path, limit: int = 400_000) -> tuple[str, str] | None:
             continue
         typ = rec.get("type")
         if typ == "user" and (rec.get("origin") or {}).get("kind") == "human":
-            latest = None
+            if settled:
+                latest = None
             continue
         if typ != "assistant":
             continue
         text, tools, _, _ = _text_of(rec.get("message") or {})
         # TEXT A TOOL CALL FOLLOWS IS NOT THE REPLY. At a stop the final message may not be
         # written yet, and the line before the last tool call was being judged in its place.
-        if tools and not any(t in ASKS for t in tools):
+        if settled and tools and not any(t in ASKS for t in tools):
             latest = None
         elif text.strip():
             latest = (text, str(rec.get("uuid") or rec.get("timestamp") or ""))

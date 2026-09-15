@@ -1082,5 +1082,21 @@ import types as _types  # noqa: E402
 check("the Activity payload carries the branch field",
       "branch" in _activity.ActivityController().index(root, _types.SimpleNamespace(env="alpha")).data, True)
 
+# ---------------------------------------------------------------- working an environment from the viewer
+import tracks as _tracks  # noqa: E402
+_tracks.set_viewer_first(root, "alpha", True)
+check("the viewer-first switch is kept per environment", (_tracks.viewer_first(root, "alpha"), _tracks.viewer_first(root, "beta")), (True, False))
+_tracks.set_viewer_first(root, "alpha", False)
+check("and switches off again", _tracks.viewer_first(root, "alpha"), False)
+check("the agent's last reply is empty when there is no transcript", _activity.last_said(None), "")
+_said_file = Path(tempfile.mkdtemp()) / "said.jsonl"
+_said_file.write_text("\n".join(json.dumps(x) for x in [
+    {"type": "assistant", "message": {"content": [{"type": "text", "text": "working on the inspector now"}, {"type": "tool_use", "name": "Bash", "input": {}}]}},
+    {"type": "user", "origin": {"kind": "human"}, "message": {"content": "carry on"}},
+]) + "\n")
+check("Activity shows the agent's latest text even while a tool call follows it", _activity.last_said(_said_file), "working on the inspector now")
+import transcript as _transcript  # noqa: E402
+check("the stop hook's reading still ignores text a tool call follows", _transcript.last_reply(_said_file), None)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

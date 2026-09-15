@@ -68,6 +68,8 @@ MESSAGES = {
     "inbox_fact": "the user left {n} message(s) for you",
     "inbox_do": "process them before anything else: `.journal/journal.py messages` lists them; split each into parts with "
                 "`messages process`, a question for any part you do not understand, then `messages done`",
+    "viewer_first_note": "THE USER WORKS FROM THE VIEWER on this environment: keep each terminal message to its one tagged line, and put the "
+                         "answer where they read it: a reply on their message (journal messages reply), a report for research, a question for a decision.",
     "inbox_mention": "the user left {n} new message(s) for you — `journal messages waiting` reads them when you reach a "
                      "pause; nothing is blocked",
     "comments_mention": "the user left {n} new comment(s) for you — `journal comments` reads them when you reach a "
@@ -3328,6 +3330,8 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     _prune(ctx.stem)
     loose = _unbound(conf, ctx)
     block = carried(source, ctx.stem, unbound=loose)
+    if tracks.viewer_first(ROOT, tracks.current(ROOT, ctx.stem)):
+        block = say("viewer_first_note") + "\n\n" + block
     taken = _track_due(conf, ctx)
     if taken:
         block = _taken_block(taken) + "\n\n" + block

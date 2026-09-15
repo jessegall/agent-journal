@@ -2873,7 +2873,8 @@ const Settings = {
       shape: (p) => ({ activity_show: parseInt(p.activity_show, 10), activity_keep: parseInt(p.activity_keep, 10) }),
     }] : []));
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
-    return { s, auto, setAuto, removing, done, keeping, archiving, kept, showing, ACTIVITY, toggleActivity };
+    const saveSetting = (body) => postJSON(`${api.value}/settings`, body).then(() => { s.reload(); changed(); });
+    return { s, auto, setAuto, saveSetting, removing, done, keeping, archiving, kept, showing, ACTIVITY, toggleActivity };
   },
   template: `
     <TopBar :crumbs="[env, 'Settings']"/>
@@ -2890,6 +2891,11 @@ const Settings = {
               <span class=settings-value>{{ s.data.auto ? 'On: it works through to-dos without asking' : 'Off' }}</span>
               <button type=button class=btn :disabled="auto.saving" @click="setAuto(!s.data.auto)">{{ s.data.auto ? 'Turn off' : 'Turn on' }}</button>
               <p v-if="auto.error" class="error settings-wide">{{ auto.error }}</p>
+            </div>
+            <div class=settings-row>
+              <span class=settings-label>Work from the viewer</span>
+              <span class=settings-value>{{ s.data.viewer_first ? 'On: the agent answers here, one line in the terminal' : 'Off' }}</span>
+              <button type=button class=btn @click="saveSetting({ viewer_first: !s.data.viewer_first })">{{ s.data.viewer_first ? 'Turn off' : 'Turn on' }}</button>
             </div>
             <div class=settings-row>
               <span class=settings-label>Days a report stays listed</span>
@@ -3419,6 +3425,10 @@ const ActivityPanel = {
         </span>
       </div>
       <template v-if="data">
+        <div v-if="data.agent && data.agent.said" class=activity-said>
+          <span class=activity-said-head>Agent said</span>
+          <div class=activity-said-text>{{ data.agent.said }}</div>
+        </div>
         <div class=activity-list ref=list @mouseenter="hovered = true" @mouseleave="hovered = false">
           <TransitionGroup name=act>
           <template v-for="{ e, key } in keyed" :key="key">

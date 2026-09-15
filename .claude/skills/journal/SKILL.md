@@ -91,6 +91,11 @@ keepable: every message can carry a tag, so the check needs no judgement. Only t
 message of a turn is judged; connective lines before a tool call are scaffolding. If the
 user interrupts you, nothing in that turn is judged.
 
+**When the user works from the viewer** (Settings, *Work from the viewer*, per environment),
+keep each terminal message to its one tagged line and put the answer where they read it: a
+reply on their message (`journal messages reply`), a report for research, a question for a
+decision. The session start says when it is on. The tag still opens the line.
+
 ## Declare work
 
     journal work start "<the work, in your own words>"

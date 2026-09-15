@@ -75,6 +75,27 @@ def context_use(path: Path | None, window: int) -> dict | None:
     return {"used": used, "window": window, "share": min(100, round(used * 100 / window))}
 
 
+#: path -> (file size, text): the column polls every few seconds, and the transcript only grows
+_SAID: dict = {}
+
+
+def last_said(path, cap: int = 600) -> str:
+    """The agent's latest reply, cut to a readable length, for the top of the Activity column."""
+    import transcript
+    if path is None or not path.is_file():
+        return ""
+    size = path.stat().st_size
+    held = _SAID.get(str(path))
+    if held and held[0] == size:
+        return held[1]
+    # a long session's tail is mostly tool results, so the reply can sit megabytes back
+    got = transcript.last_reply(path, limit=2_000_000, settled=False)
+    text = " ".join((got[0] if got else "").split())
+    text = text if len(text) <= cap else text[:cap].rstrip() + "…"
+    _SAID[str(path)] = (size, text)
+    return text
+
+
 class ActivityController(Controller):
     """What is happening on an environment: the working agent's latest message, and the latest journal events."""
     resource = "activity"
@@ -100,9 +121,10 @@ class ActivityController(Controller):
         for stem, info in tracks.live(root).items():
             if info["track"] == env:
                 window = settings.load(root)[0].get("context_window") or state.get(root, "window", 0) or 0
+                path = transcript.find(root.parent, stem)
                 return {"session": stem[:8], "seen": tracks.age_text(info["age"]), "working": agent_working(root, stem),
                         "compacting": agent_compacting(root, stem),
-                        "context": context_use(transcript.find(root.parent, stem), window)}
+                        "context": context_use(path, window), "said": last_said(path)}
         return None
 
     @staticmethod
