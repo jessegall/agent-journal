@@ -327,7 +327,9 @@ const PriorityIcon = {
 // ─────────────────────────────────────────────────────────────── shared pieces
 // the page's top bar: crumbs, the page's own button, then Search and Notifications on every page
 // what the shell knows about the agent, for the status bar every page carries under its top bar
-const SHELL = reactive({ env: "", activity: null, setAuto: null });
+// wide says whether the content column has room for two of anything: Home's queue reads it, and so does the status bar
+const SHELL = reactive({ env: "", activity: null, setAuto: null, wide: true });
+const WIDE_AT = 782;
 // how long each resource keeps a closed item listed, from the environment's settings
 const RETENTION = reactive({ table: null });
 // one overlay the shell hosts for any page: what the status bar inspects opens here, over whatever is showing
@@ -366,7 +368,7 @@ const StatusBar = {
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
       <button type=button class=statusbar-text title="Open what it is on" @click="openCurrent"><b>{{ view.state }}</b><span>{{ view.what }}</span></button>
       <span class=statusbar-tools>
-        <span v-if="branch" class=statusbar-branch :title="branch.detached ? 'Not on a branch: HEAD is at commit ' + branch.name : 'The git branch checked out in this project'"><Icon name="style"/><span>{{ branch.detached ? 'detached at ' + branch.name : branch.name }}</span></span>
+        <span v-if="branch && SHELL.wide" class=statusbar-branch :title="branch.detached ? 'Not on a branch: HEAD is at commit ' + branch.name : 'The git branch checked out in this project'"><Icon name="style"/><span>{{ branch.detached ? 'detached at ' + branch.name : branch.name }}</span></span>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
@@ -2921,21 +2923,6 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    // the lead's facts, the status bar's branch and the queue's meta all read the content width
-    const wide = ref(true);
-    const measure = () => {
-      const main = document.querySelector("main");
-      const w = main ? main.clientWidth - 56 : 0;
-      if (w) wide.value = w >= 782;
-    };
-    let observer = null;
-    onMounted(() => {
-      measure();
-      const main = document.querySelector("main");
-      if (main && window.ResizeObserver) { observer = new ResizeObserver(measure); observer.observe(main); }
-    });
-    onUnmounted(() => { if (observer) observer.disconnect(); });
-
     const plan = computed(() => (plans.data || []).find((p) => p.status === "active") || null);
     const planDetail = useFetch(() => props.env && plan.value && `/api/env/${props.env}/plans/${plan.value.n}`);
     const held = computed(() => !!(plan.value && plan.value.held));
@@ -2960,7 +2947,7 @@ const EnvHome = {
     });
     const SLOTS = 5;
     // the kind reads as part of the sentence here, not as a label: "question 12 · 6m"
-    const queueMeta = (it) => (wide.value ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
+    const queueMeta = (it) => (SHELL.wide ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
     // Current work: the assigned plan with its progress, then the open work as one-line rows
     const currentWork = computed(() => {
       const p = plan.value;
@@ -3007,7 +2994,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, lead, held, plan, continuePlan, goPlan, queueMeta, currentWork, workLines, subagents, crewNote, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, plan, continuePlan, goPlan, queueMeta, currentWork, workLines, subagents, crewNote, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4020,6 +4007,19 @@ const App = {
       ov.data = d;
     }).catch(() => {});
     const overviewTimer = setInterval(() => { if (document.visibilityState === "visible") loadOverview(); }, POLL_MS);
+    // one observer for the whole app: what has room for two columns, and what must stack
+    const measureWidth = () => {
+      const main = document.querySelector("main");
+      const w = main ? main.clientWidth - 56 : 0;
+      if (w) SHELL.wide = w >= WIDE_AT;
+    };
+    let widthWatch = null;
+    onMounted(() => {
+      measureWidth();
+      const main = document.querySelector("main");
+      if (main && window.ResizeObserver) { widthWatch = new ResizeObserver(measureWidth); widthWatch.observe(main); }
+    });
+    onUnmounted(() => { if (widthWatch) widthWatch.disconnect(); });
     const closeOverlay = () => { OVERLAY.kind = ""; OVERLAY.n = 0; };
     const onHash = () => { Object.assign(route, parseHash()); closeOverlay(); loadOverview(); };
     window.addEventListener("hashchange", onHash);
