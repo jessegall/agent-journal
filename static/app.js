@@ -897,6 +897,14 @@ const PAGE_ROWS = 25;
 const RECENT_MS = 7 * 24 * 60 * 60 * 1000;
 
 // groups: {key, label, kind, closed, match(row)}; columns: {priority, status, num, numWidth, title, sub, cite, age, struck}
+// a row's type is a plain tinted word; the status dot beside it already carries state
+const TYPES = {
+  question: { label: "Question", tint: "#c9955e" }, message: { label: "Message", tint: "#6fae7d" },
+  suggestion: { label: "Suggestion", tint: "#a3a8f0" }, doc: { label: "Doc", tint: "#6fae7d" },
+  report: { label: "Report", tint: "#d9a441" }, plan: { label: "Plan", tint: "#5b8def" },
+  todo: { label: "To-do", tint: "#5b8def" }, work: { label: "Work", tint: "#5b8def" },
+};
+
 const ResourceList = {
   props: {
     rows: Array, loading: Boolean, error: String,
@@ -962,17 +970,12 @@ const ResourceList = {
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
     const closable = computed(() => props.groups.some((g) => g.closed));
     const archived = computed(() => sections.value.reduce((sum, g) => sum + g.total, 0));
-    const cols = computed(() => {
-      const c = props.columns;
-      return [c.priority && "22px", c.status && "22px", c.num && (c.numWidth || "44px"), c.question && "16px", "minmax(0, 1fr)",
-              c.cite && "var(--cite-col, minmax(0, 180px))", c.age && "var(--age-col, 112px)"].filter(Boolean).join(" ");
-    });
     const setSort = (key, by, dir) => { state.sort[key] = { by, dir }; };
     const more = (key) => { state.pages[key] = (state.pages[key] || 1) + 1; };
     const open = (event, row) => { if (props.pick) { event.preventDefault(); props.pick(row); } };
     const moving = (r) => !!state.held[rowKey(r)];
     const fresh = (r) => !!state.arrived[rowKey(r)];
-    return { state, sections, closable, archived, cols, sortOf, setSort, more, open, moving, fresh };
+    return { state, sections, closable, archived, sortOf, setSort, more, open, moving, fresh, TYPES };
   },
   template: `
     <div v-if="bar" class=viewbar>
@@ -1006,13 +1009,15 @@ const ResourceList = {
         </div>
         <TransitionGroup tag="div" :class="['rows', {quiet: state.quiet}]" name="row" appear>
         <a v-for="(r, i) in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
-          :style="{gridTemplateColumns: cols, '--i': i}" :href="href(r)" @click="open($event, r)">
+          :style="{'--i': i, '--num-w': columns.numWidth || '44px'}" :href="href(r)" @click="open($event, r)">
           <PriorityIcon v-if="columns.priority" :value="columns.priority(r)"/>
           <StatusIcon v-if="columns.status" :kind="columns.status(r)"/>
+          <span v-if="columns.type" class=type :style="{ color: (TYPES[columns.type(r)] || {}).tint }">{{ (TYPES[columns.type(r)] || {}).label }}</span>
           <span v-if="columns.num" class=num>{{ columns.num(r) }}</span>
           <span v-if="columns.question" :class="['qmark', columns.question(r).state]" :title="columns.question(r).title"
             :aria-label="columns.question(r).title || null"><Icon v-if="columns.question(r).state" name="questions"/></span>
-          <div class=stack><div class=title>{{ columns.title(r) }}</div><div v-if="columns.sub && columns.sub(r)" class=sub>{{ columns.sub(r) }}</div></div>
+          <div class=stack><div class=title>{{ columns.title(r) }}</div>
+            <div v-if="(columns.sub && columns.sub(r)) || (columns.cite && columns.cite(r))" :class="['sub', {'only-cite': !(columns.sub && columns.sub(r))}]">{{ columns.sub ? columns.sub(r) : '' }}<span v-if="columns.cite && columns.cite(r)" class=sub-cite>{{ columns.sub && columns.sub(r) ? ' · ' : '' }}{{ columns.cite(r) }}</span></div></div>
           <span v-if="columns.cite" class=cite>{{ columns.cite(r) }}</span>
           <span v-if="columns.age" class=age>{{ columns.age(r) }}</span>
         </a>
