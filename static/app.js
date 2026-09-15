@@ -1194,7 +1194,14 @@ const TodoPanel = {
       if (!t) return [];
       const url = `${api.value}/${t.n}`;
       if (t.done) return [{ label: "Reopen", method: "POST", url: `${url}/reopen`, fields: [{ name: "why", label: "Why it is open again" }] }];
+      // with auto mode off, an open to-do nothing holds back can be handed to the agent now; the viewer cannot start an agent, so it is a message
+      const go = !(SHELL.activity && SHELL.activity.auto) && !["blocked", "waiting"].includes(todoStatus(t)) ? [{
+        label: "Implement this", method: "POST", url: `/api/env/${props.env}/inbox`, submit: "Send to the agent",
+        note: "The agent is asked to start this to-do now. If it turns out to be blocked, the agent tells you what blocks it.",
+        shape: () => ({ files: [], text: `Implement to-do ${t.n} now: ${t.title}. Start it with \`journal todos start ${t.n}\`; if it turns out blocked, tell me what blocks it instead.` }),
+      }] : [];
       return [
+        ...go,
         { label: "Edit", method: "PATCH", url, only: true, submit: "Save",
           fields: [{ name: "title", label: "Title", value: t.title },
                    { name: "body", label: "Brief", kind: "area", value: t.body || "" },
