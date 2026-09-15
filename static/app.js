@@ -1985,14 +1985,24 @@ const Inbox = {
 // docs, reports and plans are one Documents area: the same tabs head each of their lists
 const DOC_TABS = [{ key: "docs", label: "Docs" }, { key: "reports", label: "Reports" }, { key: "plans", label: "Plans" }];
 
+// the switch's last known counts per environment: each tab is its own page, so the switch mounts afresh on every
+// change, and without these it would show no numbers until its fetches land and jump in width
+const DOC_COUNTS = reactive({});
+
 const DocTabs = {
   props: { env: String, current: String },
   setup(props) {
     const docs = useFetch(() => props.env && `/api/env/${props.env}/docs?archived=1`);
     const reports = useFetch(() => props.env && `/api/env/${props.env}/reports`);
     const plans = useFetch(() => props.env && `/api/env/${props.env}/plans`);
-    const counts = computed(() => ({ docs: docs.data ? docs.data.filter((d) => !d.archived).length : "",
-                                     reports: reports.data ? reports.data.length : "", plans: plans.data ? plans.data.length : "" }));
+    watchEffect(() => {
+      if (!props.env) return;
+      const kept = DOC_COUNTS[props.env] || (DOC_COUNTS[props.env] = { docs: "", reports: "", plans: "" });
+      if (docs.data) kept.docs = docs.data.filter((d) => !d.archived).length;
+      if (reports.data) kept.reports = reports.data.length;
+      if (plans.data) kept.plans = plans.data.length;
+    });
+    const counts = computed(() => DOC_COUNTS[props.env] || { docs: "", reports: "", plans: "" });
     return { DOC_TABS, counts };
   },
   // the head of the Documents area: the type switch with its counts, then the page's quiet links, then its New button
