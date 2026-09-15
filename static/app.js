@@ -235,6 +235,7 @@ const Icon = {
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
       <path v-else-if="name === 'up'" d="M8 12.5V4M4.5 7.5L8 4l3.5 3.5"/>
       <path v-else-if="name === 'down'" d="M8 3.5V12M4.5 8.5L8 12l3.5-3.5"/>
+      <template v-else-if="name === 'sidepanel'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10"/></template>
       <template v-else-if="name === 'info'"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></template>
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
       <template v-else-if="name === 'activity'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></template>
@@ -295,9 +296,48 @@ const PriorityIcon = {
 
 // ─────────────────────────────────────────────────────────────── shared pieces
 // the page's top bar: crumbs, the page's own button, then Search and Notifications on every page
+// what the shell knows about the agent, for the status bar every page carries under its top bar
+const SHELL = reactive({ env: "", activity: null, setAuto: null });
+
+const StatusBar = {
+  components: { Icon },
+  setup() {
+    const env = computed(() => SHELL.env);
+    const work = useFetch(() => env.value && `/api/env/${env.value}/work`);
+    const plans = useFetch(() => env.value && `/api/env/${env.value}/plans`);
+    const view = computed(() => {
+      const agent = SHELL.activity && SHELL.activity.agent;
+      const plan = (plans.data || []).find((p) => p.status === "active") || null;
+      const w = (work.data || [])[0] || null;
+      const base = `#/env/${env.value}`;
+      const planHref = plan ? `${base}/plans/${plan.n}` : null;
+      const workHref = w ? `${base}/work/${w.n}` : planHref;
+      if (plan && plan.held) return { state: "Stopped", held: true, what: `phase ${plan.held} is a checkpoint, waiting for you to continue`, href: planHref };
+      if (!agent) return { state: "Stopped", what: "no agent is on this environment", href: planHref };
+      const onIt = w ? w.subject : plan ? `plan ${plan.n} · phase ${plan.current}: ${plan.current_title}` : "";
+      if (agent.compacting) return { state: "Working", live: true, what: "compacting its context", href: workHref };
+      if (agent.working) return { state: "Working", live: true, what: onIt || "on its own", href: workHref };
+      return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
+    });
+    return { env, view, SHELL };
+  },
+  template: `
+    <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
+      <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
+      <a v-if="view.href" class=statusbar-text :href="view.href"><b>{{ view.state }}</b><span>{{ view.what }}</span></a>
+      <span v-else class=statusbar-text><b>{{ view.state }}</b><span>{{ view.what }}</span></span>
+      <span class=statusbar-tools>
+        <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
+          :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
+          @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
+        <a v-if="view.href" class="btn statusbar-inspect" :href="view.href" title="Open what the agent is on">Inspect<Icon name="sidepanel"/></a>
+      </span>
+    </div>`,
+};
+
 const TopBar = {
   props: { crumbs: { type: Array, default: () => [] } },
-  components: { Icon },
+  components: { Icon, StatusBar },
   setup() {
     const hashEnv = parseHash().params.env || "";
     const env = computed(() => {
@@ -421,7 +461,8 @@ const TopBar = {
           </button>
         </template>
       </div>
-    </div>`,
+    </div>
+    <StatusBar/>`,
 };
 
 // a section of any panel folds from its label; what is folded is remembered by the label's name
@@ -3453,6 +3494,8 @@ const App = {
     };
     document.addEventListener("visibilitychange", onVisibility);
     onUnmounted(() => { document.removeEventListener("visibilitychange", onVisibility); clearTimeout(awayTimer); });
+    watchEffect(() => { SHELL.env = envName.value; SHELL.activity = activity.data; });
+    SHELL.setAuto = setAuto;
     return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
   },
   template: `
@@ -3524,29 +3567,9 @@ const App = {
             <span :class="['env-dot', {live: e.active}]"></span>{{ e.name }}
           </a>
         </div>
-        <div v-if="activity.data" class=side-foot>
-          <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}</a>
-          <div class=side-foot-head>
-            <span>Agent<span v-if="activity.data.agent" :class="['side-foot-state', {working: activity.data.agent.working}]">{{ activity.data.agent.compacting ? 'Compacting' : activity.data.agent.working ? 'Working' : 'Idle' }}</span></span>
-            <span v-if="activity.data.agent && activity.data.agent.context" :class="['side-foot-ctx', {high: activity.data.agent.context.share >= 70}]"
-              :title="'Context ' + activity.data.agent.context.share + '% used: ' + activity.data.agent.context.used.toLocaleString() + ' of ' + activity.data.agent.context.window.toLocaleString() + ' tokens'">
-              <span class=ctx-bar><span :style="{width: activity.data.agent.context.share + '%'}"></span></span>{{ activity.data.agent.context.share }}%</span>
-            <span :class="['env-dot', {live: activity.data.agent && activity.data.agent.working}]"
-              :title="!activity.data.agent ? 'No agent on this environment' : activity.data.agent.working ? 'The agent is working' : 'The agent is waiting for you'"></span>
-          </div>
-          <div v-if="activity.data.branch" class=side-foot-branch
-            :title="activity.data.branch.detached ? 'Not on a branch: HEAD is at commit ' + activity.data.branch.name : 'The git branch checked out in this project'">
-            <span>Branch</span><span class=side-foot-branch-name>{{ activity.data.branch.detached ? 'detached at ' + activity.data.branch.name : activity.data.branch.name }}</span>
-          </div>
-          <div class=side-foot-auto>
-            <span>Auto mode</span>
-            <button type=button role=switch :aria-checked="activity.data.auto ? 'true' : 'false'" :class="['switch', {on: activity.data.auto}]"
-              :title="activity.data.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
-              @click="setAuto(!activity.data.auto)"><span class=knob></span></button>
-          </div>
-          <span v-if="latest" class=side-foot-now
-            :title="[latest.text, latest.n, latest.detail].filter(Boolean).join(' ')">{{ [latest.text, latest.n, latest.detail].filter(Boolean).join(' ') }}</span>
-          <span v-if="latest" class=side-foot-age>{{ latest.age || 'just now' }}</span>
+        <div class=side-foot>
+          <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}<span v-if="activity.data && activity.data.branch" class=side-foot-branch-name
+            :title="activity.data.branch.detached ? 'Not on a branch: HEAD is at commit ' + activity.data.branch.name : 'The git branch checked out in this project'"> · {{ activity.data.branch.detached ? 'detached at ' + activity.data.branch.name : activity.data.branch.name }}</span></a>
         </div>
       </aside>
       <main class=main>
