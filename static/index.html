@@ -264,10 +264,21 @@
   .toggle input { accent-color: var(--accent); margin: 0; }
   .body { flex: 1; min-height: 0; display: flex; }
   .list { flex: 1; min-width: 0; overflow-y: auto; container: list / inline-size; }
-  /* a list squeezed beside an open panel keeps room for titles: the cite column goes, age narrows */
+  /* list rows are flex with a shrink order: fixed cells never give way, the cite cell goes first, the title keeps a floor and yields last */
+  .row.lrow { display: flex; }
+  .lrow > * { flex: none; }
+  .lrow > .stack { flex: 1 1 auto; min-width: 120px; overflow: hidden; }
+  .lrow > .num { width: var(--num-w, 44px); }
+  .lrow > .type { width: 78px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .lrow > .cite { flex: 0 1 auto; min-width: 0; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lrow > .age { width: var(--age-col, 112px); }
+  .lrow .sub-cite, .lrow .sub.only-cite { display: none; }
+  /* a narrow list drops the cite cell rather than cut it to a stub: its text joins the row's second line */
   @container list (max-width: 600px) {
-    .row { --cite-col: 0px; --age-col: 84px; padding: 0 12px; }
-    .row .cite { visibility: hidden; }
+    .row { --age-col: 84px; padding: 0 12px; }
+    .lrow > .cite { display: none; }
+    .lrow .sub-cite { display: inline; }
+    .lrow .sub.only-cite { display: block; }
   }
   .page { flex: 1; min-height: 0; overflow-y: auto; }
   .page-inner { max-width: 760px; padding: 28px 32px 64px; display: flex; flex-direction: column; gap: 22px; }
