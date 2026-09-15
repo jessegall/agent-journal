@@ -2194,6 +2194,9 @@ const Plans = {
       ];
     });
     const done = (body, a) => settle(body, a, onPage.value ? "" : base.value, list, item);
+    // the card carries adding a phase, beside the primary action; the row below carries the rest
+    const addPhase = computed(() => actions.value.filter((a) => a.label === "Add phase"));
+    const rest = computed(() => actions.value.filter((a) => a.label !== "Add phase"));
     const leaveNew = () => { changed(); location.hash = base.value; };
     // the switcher: every plan the agent could hold, the assigned one first
     const PLAN_DOT = { active: "#5b8def", draft: "#83868e", done: "#3ecf74" };
@@ -2248,7 +2251,7 @@ const Plans = {
       const p = item.data;
       return p ? [`plan ${p.n}`, p.from_doc ? `from doc ${p.from_doc}` : "", `drafted ${p.age || "just now"}`].filter(Boolean).join(" · ") : "";
     });
-    return { list, item, reading, onPage, creating, actions, done, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, planTabs, todoState, TODO_WORD, meta };
+    return { list, item, reading, onPage, creating, actions, addPhase, rest, done, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, planTabs, todoState, TODO_WORD, meta };
   },
   template: `
     <template v-if="onPage">
@@ -2277,9 +2280,10 @@ const Plans = {
             <div class=plan-progress-actions>
               <button v-if="primary" type=button class=band-primary @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
               <span v-else-if="quiet" class=plan-quiet>{{ quiet }}</span>
+              <ActionBar v-if="addPhase.length" :actions="addPhase" :done="done" :key="'addphase' + item.data.n"/>
             </div>
           </div>
-          <ActionBar :actions="actions" :done="done" :key="'plan' + item.data.n + item.data.status + (item.data.held || '') + item.data.auto"/>
+          <ActionBar :actions="rest" :done="done" :key="'plan' + item.data.n + item.data.status + (item.data.held || '') + item.data.auto"/>
           <section v-for="ph in item.data.phases" :key="ph.p" :class="['phase-card', {current: ph.current, complete: ph.complete}]">
             <div class=phase-head>
               <span class=phase-num>{{ ph.p }}</span>
