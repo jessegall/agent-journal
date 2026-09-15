@@ -18,7 +18,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/style(?:\/([a-z0-9-]+))?$/, view: "Style", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/work(\/archive)?(?:\/(\d+|new))?$/, view: "Work", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reminders(\/archive)?(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "archive", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new))?$/, view: "EnvDocs", params: ["env", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new|\d+))?$/, view: "EnvDocs", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/settings$/, view: "Settings", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/files$/, view: "Files", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/agents\/(session|subagent)\/([0-9a-f-]{6,40})$/, view: "Agent", params: ["env", "kind", "id"] },
@@ -2499,10 +2499,48 @@ const Reminders = {
 };
 
 // ─────────────────────────────────────────────────────────────── docs
+// a doc opened from an environment's Documents list: read in the inspector, edited on its own page
+const DocPanel = {
+  props: PANEL_PROPS,
+  components: { Panel },
+  setup(props) {
+    const item = useFetch(() => props.n && `/api/docs/${props.n}`);
+    const state = computed(() => {
+      const d = item.data;
+      if (!d) return "";
+      return d.superseded_by ? `Superseded by doc ${d.superseded_by}` : d.archived ? "Archived" : d.status === "final" ? "Final" : "Draft";
+    });
+    return { item, state };
+  },
+  template: `
+    <Panel :label="'Doc ' + n" :close="close" :onClose="onClose" :link="link">
+      <p v-if="item.error" class=error>{{ item.error }}</p>
+      <template v-else-if="item.data">
+        <h2 class=panel-title>{{ item.data.title }}</h2>
+        <dl class=props>
+          <dt>Type</dt><dd>Doc — kept for good</dd>
+          <dt>Status</dt><dd>{{ state }}</dd>
+          <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
+          <dt>Parts</dt><dd>{{ (item.data.parts || []).length || '—' }}</dd>
+          <dt>Cited by</dt><dd>{{ (item.data.cited_by || []).length ? item.data.cited_by.length + ((item.data.cited_by.length === 1) ? ' entry' : ' entries') : '—' }}</dd>
+        </dl>
+        <p v-if="item.data.abstract" class="prose muted">{{ item.data.abstract }}</p>
+        <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
+        <div v-if="(item.data.parts || []).length">
+          <p class=section-label>Parts</p>
+          <div class=plan-panel-phases>
+            <a v-for="p in item.data.parts" :key="p.p" class=plan-panel-phase :href="'#/docs/' + item.data.n + '.' + p.p">
+              <span class=muted>{{ item.data.n }}.{{ p.p }}</span><span class=plan-panel-phase-title>{{ p.title }}</span></a>
+          </div>
+        </div>
+      </template>
+    </Panel>`,
+};
+
 function docList({ crumbs, url, base, empty }) {
   return {
     props: ["env", "n"],
-    components: { TopBar, ActionBar, ResourceList, RadioGroup, DocTabs },
+    components: { TopBar, ActionBar, ResourceList, RadioGroup, DocTabs, DocPanel },
     setup(props) {
       const s = useFetch(() => url(props));
       // open and archived documents are shown apart, one or the other
@@ -2528,7 +2566,7 @@ function docList({ crumbs, url, base, empty }) {
         </DocTabs>
         <ResourceList v-bind="DOC_LIST" :bar="!env" :key="shown.archived ? 'archived' : 'open'"
           :empty="shown.archived ? 'No documents here are archived.' : empty" :rows="rows"
-          :loading="s.loading" :error="s.error" :href="(d) => '#/docs/' + d.n">
+          :loading="s.loading" :error="s.error" :href="(d) => (env ? base + '/' + d.n : '#/docs/' + d.n)" :selected="(d) => String(d.n) === String(n)">
           <template #tools>
             <RadioGroup label="Which documents" :options="[{ value: 'open', label: 'Open' }, { value: 'archived', label: 'Archived' }]"
               :modelValue="shown.archived ? 'archived' : 'open'" @update:modelValue="(v) => (shown.archived = v === 'archived')"/>
@@ -2536,7 +2574,8 @@ function docList({ crumbs, url, base, empty }) {
             <a class="btn new" :href="base + '/new'">New doc</a>
           </template>
         </ResourceList>
-      </div></div>`,
+      </div></div>
+      <DocPanel v-if="env && n && n !== 'new'" :key="'doc' + n" :env="env" :n="n" :close="base" :base="base" :link="'#/docs/' + n" :reloaded="s.reload"/>`,
   };
 }
 
