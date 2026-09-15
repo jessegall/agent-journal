@@ -4,6 +4,32 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.137.0 — Agents are held for what they owe, not for noise; the hooks stay fast in long sessions
+
+A minor release that gathers everything since 1.136.0:
+
+- **Speed.** The stop and start hooks no longer re-read the whole transcript at every turn: on a 122 MB
+  session a stop went from 1.15 s to about 0.2 s.
+- **A self-audit, fixed.** Six reviewers looked for ways the journal makes agents behave badly, and each
+  finding is fixed with a test:
+  - notes that ask nothing of the agent no longer reopen its turn;
+  - narrating the next step is no longer taken for putting work off;
+  - loop detection, the context gate after a compaction, and the write gate judge commands correctly;
+  - a subagent cannot hide a journal write, close a to-do or decide a suggestion;
+  - the channel and the stop hook no longer both deliver the same event, and the channel wakes only the
+    agent that holds an environment;
+  - dropping, closing, starting, moving and retitling to-dos behave as they say;
+  - the start block speaks to the right session, and the skills name every hold as it is printed.
+- **To-dos.** Done to-dos archive themselves after 7 days, and a to-do number is never reused. The skills
+  teach recording which to-do waits on which, and that progress goes in `work update`, not the brief.
+- **The viewer.** A Coding style page, and coding style rules generated into skills. Answers to your
+  messages read like questions. The work log starts folded, the Skills table scrolls, a skill opens in a
+  side panel with quick actions, the sidebar shows the agent compacting, and web addresses in text are
+  links.
+- **The tests** remove every temporary folder they make; they had filled the disk.
+
+Nothing to do beyond an upgrade.
+
 ## 1.136.28 — Web addresses in the viewer's text are links
 
 A web address in the viewer's text now opens in a new tab when clicked: in a work log, a work entry, a
