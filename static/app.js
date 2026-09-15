@@ -2579,10 +2579,11 @@ const EnvHome = {
     const suggestions = useFetch(url("/suggestions"));
     const notes = useFetch(url("/notifications"));
     const plans = useFetch(url("/plans"));
+    const messages = useFetch(url("/inbox?all=1"));
     const view = reactive({ kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
     const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
-    const reloadAll = () => [work, questions, suggestions, notes, plans].forEach((f) => f.reload());
+    const reloadAll = () => [work, questions, suggestions, notes, plans, messages].forEach((f) => f.reload());
     const readOne = (x) => send("POST", `/api/env/${props.env}/notifications/${x.n}/read`).then(() => { notes.reload(); changed(); });
 
     // Dismiss takes a row off this list without acting on it, remembered in this browser
@@ -2619,17 +2620,26 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    // what happened since the last visit: remembered per browser, stamped on leaving Home
-    const seenKey = computed(() => `journal.home.seen.${props.env}`);
+    // the queue is a full list only while the two columns sit side by side; stacked, it is a fixed slot that scrolls
+    const wide = ref(true);
+    const measure = () => {
+      const main = document.querySelector("main");
+      const w = main ? main.clientWidth - 56 : 0;
+      if (w) wide.value = w >= 782;
+    };
+    let observer = null;
+    onMounted(() => {
+      measure();
+      const main = document.querySelector("main");
+      if (main && window.ResizeObserver) { observer = new ResizeObserver(measure); observer.observe(main); }
+    });
+    onUnmounted(() => { if (observer) observer.disconnect(); });
+
+    // what the agent did since the last visit to Home, for the band's summary line
     const since = (() => { try { return Number(localStorage.getItem(`journal.home.seen.${props.env}`)) || Date.now() - 86400000; } catch (e) { return Date.now() - 86400000; } })();
-    onUnmounted(() => { try { localStorage.setItem(seenKey.value, String(Date.now())); } catch (e) { /* storage off */ } });
+    onUnmounted(() => { try { localStorage.setItem(`journal.home.seen.${props.env}`, String(Date.now())); } catch (e) { /* storage off */ } });
     const agentEvents = computed(() => ((SHELL.activity && SHELL.activity.events) || [])
       .filter((e) => e.by === "Agent" && e.at && Date.parse(e.at) >= since));
-    const DONE_WORDS = /^(Closed|Committed|Ended|Wrote|Writing|Replied|Replying|Answered|Filed|Drafted|Suggest|Turned)/;
-    const doneAway = computed(() => agentEvents.value.filter((e) => DONE_WORDS.test(e.text)).slice(0, 6).map((e, i) => ({
-      key: `${e.at}${i}`, age: e.age || "just now",
-      text: [e.text, e.n, e.detail].filter(Boolean).join(" ") + (e.title ? ` — ${e.title}` : ""),
-    })));
     const awayLine = computed(() => {
       const count = (re) => agentEvents.value.filter((e) => re.test(e.text)).length;
       const parts = [[count(/^Closed to-do/), "closed", "to-do", "to-dos"], [count(/^Committed/), "made", "commit", "commits"],
@@ -2642,44 +2652,81 @@ const EnvHome = {
 
     const plan = computed(() => (plans.data || []).find((p) => p.status === "active") || null);
     const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(() => { plans.reload(); changed(); });
+    const goPlan = () => { if (plan.value) location.hash = `#/env/${props.env}/plans/${plan.value.n}`; };
     const openWork = computed(() => (work.data || []).map((w) => {
       const added = w.files.reduce((sum, f) => sum + (f.added || 0), 0);
       const removed = w.files.reduce((sum, f) => sum + (f.removed || 0), 0);
       return { ...w, files_text: w.files.length ? `${w.files.length} file${w.files.length === 1 ? "" : "s"} · +${added} −${removed}` : "" };
     }));
+    // state, then where, then what changed; the queue below owns the individual items, so the band never singles one out
     const band = computed(() => {
       const agent = SHELL.activity && SHELL.activity.agent;
       const p = plan.value;
       const n = queue.value.length;
       const held = !!(p && p.held);
-      const tag = n || held ? { text: "Waiting on you", tint: "#c9955e" } : agent && agent.working ? { text: "Working", tint: "#a3a8f0" } : { text: "Idle", tint: "#83868e" };
-      const w = openWork.value[0];
-      const headline = n ? (n === 1 ? "One thing is waiting on you" : `${n} things are waiting on you`)
-        : held ? "The agent stopped at a checkpoint and needs you"
-        : agent && agent.working ? (w ? `The agent is working on ${w.subject}` : "The agent is working") : "Nothing is waiting on you";
-      const planHref = p ? `#/env/${props.env}/plans/${p.n}` : "";
-      const primary = n ? { label: "Answer the first one", go: () => queue.value[0].open() }
-        : held ? { label: "Continue past the checkpoint", go: continuePlan }
-        : { label: "Open the to-dos", go: () => { location.hash = `#/env/${props.env}/todos`; } };
+      const tint = held ? "#d9a441" : agent && agent.working ? "#5e64c9" : "#83868e";
+      const title = held ? "The agent stopped at a checkpoint"
+        : !agent ? "No agent is on this environment" : agent.working ? "The agent is working" : "The agent is idle";
+      const where = p ? `phase ${held ? p.held : p.current} of ${p.phases_total}` : "";
+      const meta = [where, n ? `${n} ${n === 1 ? "thing" : "things"} waiting below` : "nothing waiting on you"].filter(Boolean).join(" · ");
+      const sub = held ? `It will not go past phase ${p.held} until you continue. ${awayLine.value}` : awayLine.value;
       const ctx = agent && agent.context ? `${agent.context.share}%` : "—";
       const auto = SHELL.activity ? (SHELL.activity.auto ? "On" : "Off") : "—";
-      return { tag, headline, sub: awayLine.value, primary, planHref,
-               stats: [{ label: "Agent", value: !agent ? "Stopped" : agent.working ? "Working" : "Idle" }, { label: "Context", value: ctx }, { label: "Auto mode", value: auto }] };
+      const session = agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "—";
+      return { tint, title, meta, sub, held,
+               stats: [{ label: "Agent", value: held ? "Stopped" : !agent ? "Stopped" : agent.working ? "Working" : "Idle" },
+                       { label: "Context", value: ctx }, { label: "Auto mode", value: auto }, { label: "Session", value: session }] };
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, band, openWork, doneAway };
+    const activePlan = computed(() => {
+      const p = plan.value;
+      if (!p) return null;
+      return { badge: `Plan ${p.n}`, title: p.title, open: `Open plan ${p.n}`,
+               where: p.held ? `Phase ${p.held} of ${p.phases_total} · checkpoint, waiting on you` : `Phase ${p.current} of ${p.phases_total} · working` };
+    });
+
+    // Replies to you: each part of a message the agent answered, so a reply is not buried in the message
+    const replies = computed(() => {
+      const weekAgo = Date.now() - 7 * 86400000;
+      const rows = [];
+      for (const m of messages.data || []) {
+        if (m.status === "archived") continue;
+        const answered = (m.replies || []).filter((r) => r.who !== "you" && r.who !== "You" && r.part && (!r.at || Date.parse(r.at) >= weekAgo));
+        for (const r of answered) {
+          const part = (m.parts || []).find((x) => x.excerpt && (x.excerpt.includes(r.part) || r.part.includes(x.excerpt)));
+          const ref = part && part.became.length ? part.became.map((b) => b.label).join(", ") : `message ${m.n}`;
+          rows.push({ key: `${m.n}:${r.at}:${r.part}`, at: r.at || "", ask: r.part, answer: r.text, ref, age: r.age || "just now", done: true, n: m.n });
+        }
+        if (m.status === "waiting" && m.read) {
+          rows.push({ key: `${m.n}:working`, at: m.read, ask: m.gist || m.text, answer: "", ref: `message ${m.n}`, age: m.read_age || "just now", done: false, n: m.n });
+        }
+      }
+      return rows.sort((a, b) => (b.at > a.at ? 1 : b.at < a.at ? -1 : 0)).slice(0, 4)
+        .map((r) => ({ ...r, open: () => peek("message", r.n) }));
+    });
+    const repliesNote = computed(() => {
+      const done = replies.value.filter((r) => r.done).length;
+      const working = replies.value.length - done;
+      return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
+    });
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, band, activePlan, goPlan, continuePlan, openWork, wide, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
     <div class=body><div class=page><div class=cockpit>
       <section class=band>
         <div class=band-main>
-          <span class=band-tag :style="{ color: band.tag.tint }">{{ band.tag.text }}</span>
-          <h2 class=band-title>{{ band.headline }}</h2>
+          <div class=band-head><span class=band-dot :style="{ background: band.tint }"></span><h2 class=band-title>{{ band.title }}</h2></div>
+          <span class=band-meta>{{ band.meta }}</span>
           <p class=band-sub>{{ band.sub }}</p>
-          <div class=band-actions>
-            <button type=button class=band-primary @click="band.primary.go">{{ band.primary.label }}<Icon name="arrow"/></button>
-            <a v-if="band.planHref" class=btn :href="band.planHref">Open the plan</a>
+          <div v-if="band.held || activePlan" class=band-actions>
+            <button v-if="band.held" type=button class=band-continue @click="continuePlan">Continue past the checkpoint</button>
+            <button v-if="activePlan" type=button class=band-open @click="goPlan">{{ activePlan.open }}</button>
           </div>
+          <button v-if="activePlan" type=button class=band-plan title="The plan the agent is working" @click="goPlan">
+            <span class=band-plan-badge>{{ activePlan.badge }}</span>
+            <span class=band-plan-text><span class=band-plan-title>{{ activePlan.title }}</span><span class=band-plan-where>{{ activePlan.where }}</span></span>
+            <Icon name="arrow"/>
+          </button>
         </div>
         <div class=band-stats>
           <div v-for="s in band.stats" :key="s.label" class=band-stat><span>{{ s.label }}</span><span>{{ s.value }}</span></div>
@@ -2688,8 +2735,8 @@ const EnvHome = {
       <div class=cockpit-cols>
         <section class=queue-col>
           <div class=queue-head><h2>Over to you</h2><span class=n>{{ queue.length ? queue.length + ' waiting' : 'clear' }}</span>
-            <span v-if="queue.length > SLOTS" class=queue-hint>{{ queue.length - SLOTS }} more — scroll the list</span></div>
-          <div class=queue-slot>
+            <span v-if="!wide && queue.length > SLOTS" class=queue-hint>{{ queue.length - SLOTS }} more — scroll the list</span></div>
+          <div :class="['queue-slot', {wide}]">
             <div v-for="it in queue" :key="it.key" :class="['queue-row', {sel: view.kind + ':' + view.n === it.key}]" @click="it.open">
               <span class=queue-dot :style="{ background: it.tint }"></span>
               <div class=queue-text>
@@ -2697,9 +2744,9 @@ const EnvHome = {
                 <span class=queue-title>{{ it.title }}</span>
               </div>
               <button type=button class=queue-act @click.stop="it.open">{{ it.action }}</button>
-              <button type=button class=queue-dismiss title="Dismiss: take it off this list without acting" aria-label="Dismiss" @click.stop="dismiss(it)"><Icon name="close"/></button>
+              <button type=button class=queue-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(it)"><Icon name="close"/></button>
             </div>
-            <div v-if="!queue.length" class=queue-empty><span>Nothing is waiting on you</span><span class=muted>The agent works on. It lands here when it needs you.</span></div>
+            <div v-if="!queue.length" class=queue-empty>Clear. The agent can carry on.</div>
             <div v-else-if="queue.length < SLOTS" class=queue-room>{{ queue.length === 1 ? 'Last one. Nothing else waiting on you.' : 'Nothing else waiting on you.' }}</div>
           </div>
         </section>
@@ -2711,9 +2758,13 @@ const EnvHome = {
             <span v-if="w.files_text" class=work-card-meta>{{ w.files_text }}</span>
           </a>
           <p v-if="!openWork.length" class="muted col-empty">No work is open.</p>
-          <h2 class="col-title quiet">Done while you were away</h2>
-          <div v-for="d in doneAway" :key="d.key" class=done-row><span class=done-text>{{ d.text }}</span><span class=done-age>{{ d.age }}</span></div>
-          <p v-if="!doneAway.length" class="muted col-empty">Nothing new since you last looked.</p>
+          <div class=replies-head><h2 class=col-title>Replies to you</h2><span>{{ repliesNote }}</span></div>
+          <div v-for="r in replies" :key="r.key" class=reply-card @click="r.open">
+            <div class=reply-ask><span class=reply-bar></span><span>{{ r.ask }}</span></div>
+            <span :class="['reply-answer', {pending: !r.done}]">{{ r.done ? r.answer : 'Still working on this one' }}</span>
+            <div class=reply-foot><span :class="['part-chip', {done: r.done}]">{{ r.done ? 'answered' : 'still working' }}</span><span>{{ r.ref }}</span><span class=reply-age>{{ r.age }}</span></div>
+          </div>
+          <p v-if="!replies.length" class="muted col-empty">No replies from the agent this week.</p>
         </section>
       </div>
     </div></div></div>
@@ -3488,10 +3539,10 @@ function awayLines(events, since) {
                       text: `${[e.text, e.n, e.detail].filter(Boolean).join(" ")}${e.title ? ` — ${e.title}` : ""}` }));
 }
 
-function awayFor(ms) {
+function spanText(ms) {
   const minutes = Math.max(1, Math.round(ms / 60000));
-  if (minutes < 60) return `${minutes}m away`;
-  return `${Math.floor(minutes / 60)}h ${minutes % 60}m away`;
+  if (minutes < 60) return `${minutes}m`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 
 const QuickMenu = {
@@ -3772,7 +3823,7 @@ const App = {
       const inbox = NAV.find((item) => item.key === "inbox");
       const waiting = navCount(inbox);
       return { lines: awayLines(activity.data && activity.data.events, since),
-               for: AWAY.since ? awayFor((AWAY.back || Date.now()) - AWAY.since) : "last 24 hours",
+               for: AWAY.since ? `${spanText((AWAY.back || Date.now()) - AWAY.since)} away` : "last 24 hours",
                waiting: waiting ? `${waiting} waiting on you` : "Nothing waiting on you" };
     });
     const openInbox = () => { AWAY.open = false; location.hash = `#/env/${envName.value}/messages`; };
