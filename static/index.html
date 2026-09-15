@@ -115,6 +115,11 @@
   .activity-actions { display: flex; gap: 6px; }
   .btn.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 55%, transparent); }
   .activity-soft { background: color-mix(in srgb, var(--warn) 5%, transparent); }
+  /* work landing: a commit stands out in its own outline, the short sha set like the commit chips */
+  .activity-commit { margin: 4px 0; padding: 7px 8px; border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .activity-commit .activity-text { color: var(--text); }
+  .activity-commit .activity-d { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: var(--accent-text); opacity: 1; }
   .activity-link { color: inherit; border-radius: 6px; }
   .activity-head { height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 -10px; padding: 0 10px;
     border-bottom: 1px solid var(--border); box-sizing: border-box; }

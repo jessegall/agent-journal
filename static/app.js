@@ -3020,7 +3020,7 @@ const ActivityPanel = {
                 </template>
               </span>
             </div>
-            <a v-else-if="href(e)" :class="['activity-row', 'activity-link', {'activity-soft': e.needs === 'answered'}]" :href="href(e)">
+            <a v-else-if="href(e)" :class="['activity-row', 'activity-link', {'activity-soft': e.needs === 'answered', 'activity-commit': e.kind === 'commit'}]" :href="href(e)">
               <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span><span v-if="e.detail" class=activity-d>{{ e.detail }}</span></span>
               <span v-if="e.title" class=activity-title>{{ e.title }}</span>
               <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
@@ -3099,6 +3099,7 @@ const App = {
       if (e.kind === "rule") return e.n ? `#/rules/${e.n}` : "#/rules";
       // a comment has no page of its own: its line opens what it is about
       if (e.kind === "comment") return e.about && envName.value ? refHref(e.about, envName.value) : null;
+      if (e.kind === "commit") return e.sha && envName.value ? `#/env/${envName.value}/commits/${e.sha}` : null;
       const page = ACTIVITY_PAGES[e.kind];
       if (!page || !envName.value) return null;
       return `#/env/${envName.value}/${page}` + (e.n ? `/${e.n}` : "");

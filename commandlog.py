@@ -17,6 +17,7 @@ MESSAGES = {
     "set_show": "{env}: Activity shows the last {n} line(s)",
     "set_keep": "{env}: the activity log keeps the last {n} line(s)",
     "dispatched": "Dispatched a subagent",
+    "committed": "Committed",
 }
 
 
@@ -471,6 +472,13 @@ def flush_stale(root: Path, env: str, now: datetime | None = None) -> None:
         last = last if last.tzinfo else last.replace(tzinfo=timezone.utc)
         if (now - last).total_seconds() >= QUIET_SECONDS:
             flush_tools(root, env, stem, marks[QUEUE_AT])
+
+
+def record_commit(root: Path, track: str, stem: str, sha: str, subject: str, at: str) -> None:
+    """The agent committed: its own line, with the short sha and the subject, after the tool uses before it."""
+    flush_tools(root, track, stem, at)
+    _append(root, track, {"at": at, "text": say("committed"), "kind": "commit", "n": None, "detail": sha[:7], "sha": sha,
+                          "title": " ".join((subject or "").split()), "by": "Agent"})
 
 
 def record_dispatch(root: Path, track: str, stem: str, description: str, at: str) -> None:
