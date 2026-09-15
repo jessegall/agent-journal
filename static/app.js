@@ -2560,18 +2560,26 @@ const Reminders = {
 };
 
 // ─────────────────────────────────────────────────────────────── docs
+// archiving a doc asks why; the doc page and the inspector share this one action
+function docArchiveAction(url, extra = {}) {
+  return { label: "Archive", method: "POST", url: `${url}/archive`, danger: true, submit: "Archive",
+           fields: [{ name: "why", label: "Why it is no longer needed" }], ...extra };
+}
+
 // a doc opened from an environment's Documents list: read in the inspector, edited on its own page
 const DocPanel = {
   props: PANEL_PROPS,
-  components: { Panel },
+  components: { Panel, ActionBar },
   setup(props) {
     const item = useFetch(() => props.n && `/api/docs/${props.n}`);
+    const actions = computed(() => (item.data && !item.data.archived ? [docArchiveAction(`/api/docs/${item.data.n}`, { advance: true })] : []));
+    const done = panelDone(props, item);
     const state = computed(() => {
       const d = item.data;
       if (!d) return "";
       return d.superseded_by ? `Superseded by doc ${d.superseded_by}` : d.archived ? "Archived" : d.status === "final" ? "Final" : "Draft";
     });
-    return { item, state };
+    return { item, state, actions, done };
   },
   template: `
     <Panel :label="'Doc ' + n" :close="close" :onClose="onClose" :link="link">
@@ -2585,6 +2593,8 @@ const DocPanel = {
           <dt>Parts</dt><dd>{{ (item.data.parts || []).length || '—' }}</dd>
           <dt>Cited by</dt><dd>{{ (item.data.cited_by || []).length ? item.data.cited_by.length + ((item.data.cited_by.length === 1) ? ' entry' : ' entries') : '—' }}</dd>
         </dl>
+        <p v-if="!item.data.archived && (item.data.cited_by || []).length" class="prose muted">Still cited by {{ item.data.cited_by.length }} {{ item.data.cited_by.length === 1 ? 'entry' : 'entries' }}; archiving takes it off the list, and those citations stay.</p>
+        <ActionBar :actions="actions" :done="done" :key="'doc' + item.data.n + (item.data.archived ? 'x' : '')"/>
         <p v-if="item.data.abstract" class="prose muted">{{ item.data.abstract }}</p>
         <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
         <div v-if="(item.data.parts || []).length">
@@ -2677,8 +2687,7 @@ const DocDetail = {
           fields: [{ ...envField(envs.value, "Belongs to"), options: [{ value: "", label: "Choose one" },
                      { value: "__project", label: "The whole project" }, ...envs.value.map((name) => ({ value: name, label: name }))] }],
           shape: (p) => (p.environment === "__project" ? { global: true } : p) },
-        ...(d.archived ? [] : [{ label: "Archive", method: "POST", url: `${url}/archive`, danger: true, submit: "Archive",
-          fields: [{ name: "why", label: "Why it is no longer needed" }] }]),
+        ...(d.archived ? [] : [docArchiveAction(url)]),
       ];
     });
     const done = (body, a) => settle(body, a, "", s);
