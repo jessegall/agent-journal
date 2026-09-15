@@ -125,5 +125,14 @@ _reports.add(_root, "a report the user wrote in the viewer", "their own words", 
              source="web", track="default")
 check("a report filed from the viewer does not notify the user who wrote it", len(_notif._all(_root, "default")), _before)
 
+# ---------------------------------------------------------------- how long a report has before it ages off the list
+import reports as _reports  # noqa: E402
+from datetime import datetime as _dt, timedelta as _td, timezone as _tz  # noqa: E402
+_old = (_dt.now(_tz.utc) - _td(days=6)).isoformat(timespec="seconds")
+check("a report a day from aging off the list says how many days it has left",
+      _reports.row_response(1, {"title": "t", "body": "b", "at": _old}, days=7)["ages_out_in"], 1)
+check("a report kept until archived by hand never ages out",
+      _reports.row_response(1, {"title": "t", "body": "b", "at": _old}, days=0)["ages_out_in"], None)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import re
 from pathlib import Path
 
@@ -251,12 +252,20 @@ def facts(r: dict, days: int = 0) -> str:
     return " · ".join(out)
 
 
+def _ages_out_in(r: dict, days: int) -> int | None:
+    """Whole days left before a report ages off the list; None when it never does or already has."""
+    if not days or r.get("archived"):
+        return None
+    got = _age_days(r)
+    return None if got is None or got > days else max(0, math.ceil(days - got))
+
+
 def row_response(n: int, r: dict, body: bool = False, days: int = 0) -> dict:
     row = {"n": n, "title": r.get("title", ""), "gist": fmt.gist(" ".join((r.get("body") or "").split())),
            "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "", "about": r.get("about") or "",
            "about_label": label(r.get("about") or ""), "archived": archived_why(r, days), "meta": facts(r, days),
            "closed_at": r.get("archived_at") or (_expired_at(r, days) if expired(r, days) else ""),
-           "doc": r.get("doc") or None}
+           "doc": r.get("doc") or None, "ages_out_in": _ages_out_in(r, days)}
     if body:
         row["body"] = r.get("body", "")
     return row
