@@ -246,7 +246,7 @@ function renderMarkdown(src) {
 }
 
 // page view -> its help file under static/help/
-const HELP_TOPICS = { Todos: "todos", Inbox: "messages", Questions: "questions", Suggestions: "suggestions", Reports: "reports", Plans: "plans",
+const HELP_TOPICS = { Todos: "todos", Messages: "messages", Questions: "questions", Suggestions: "suggestions", Reports: "reports", Plans: "plans",
   Pins: "pins", Reminders: "reminders", Work: "work", EnvDocs: "docs", Docs: "docs", DocDetail: "docs", Rules: "rules", Tools: "tools",
   Files: "files", Style: "style" };
 const HELP_CACHE = {};
@@ -432,7 +432,7 @@ const TopBar = {
     };
     const closeHelp = () => { if (helpDialog.value) helpDialog.value.close(); };
     // a crumb before the last opens its page: the environment's home, or the area it names
-    const CRUMB_PATHS = { Home: "", Inbox: "messages", "To-dos": "todos", Documents: "docs", Docs: "docs", Reports: "reports", Plans: "plans", Settings: "settings" };
+    const CRUMB_PATHS = { Home: "", Messages: "messages", "To-dos": "todos", Documents: "docs", Docs: "docs", Reports: "reports", Plans: "plans", Settings: "settings" };
     const crumbHref = (i) => {
       const c = props.crumbs[i];
       if (!env.value) return null;
@@ -1292,7 +1292,7 @@ const TodoPanel = {
       if (t.done) return [{ label: "Reopen", method: "POST", url: `${url}/reopen`, fields: [{ name: "why", label: "Why it is open again" }] }];
       // with auto mode off, an open to-do nothing holds back can be handed to the agent now; the viewer cannot start an agent, so it is a message
       const go = !(SHELL.activity && SHELL.activity.auto) && !["blocked", "waiting"].includes(todoStatus(t)) ? [{
-        label: "Implement this", method: "POST", url: `/api/env/${props.env}/inbox`, submit: "Send to the agent",
+        label: "Implement this", method: "POST", url: `/api/env/${props.env}/messages`, submit: "Send to the agent",
         note: "The agent is asked to start this to-do now. If it turns out to be blocked, the agent tells you what blocks it.",
         shape: () => ({ files: [], text: `Implement to-do ${t.n} now: ${t.title}. Start it with \`journal todos start ${t.n}\`; if it turns out blocked, tell me what blocks it instead.` }),
       }] : [];
@@ -1521,7 +1521,7 @@ const MessagePanel = {
   props: PANEL_PROPS,
   components: { Panel, StatusIcon, ActionBar, Comments, Icon, PointByPoint },
   setup(props) {
-    const api = computed(() => `/api/env/${props.env}/inbox`);
+    const api = computed(() => `/api/env/${props.env}/messages`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const envs = useEnvironments(() => props.env);
     const heldUrl = (m, f) => `/inbox-files/${props.env}/${m.n}/${encodeURIComponent(f.name)}`;
@@ -1653,7 +1653,7 @@ const ReplyPanel = {
   props: PANEL_PROPS,
   components: { Panel, PointByPoint, Icon },
   setup(props) {
-    const item = useFetch(() => props.env && props.n && `/api/env/${props.env}/inbox/${props.n}`);
+    const item = useFetch(() => props.env && props.n && `/api/env/${props.env}/messages/${props.n}`);
     const answered = computed(() => messageAnswers(item.data));
     const openMessage = () => {
       if (props.onClose && OVERLAY.kind === "reply") { OVERLAY.kind = "message"; return; }
@@ -1816,7 +1816,7 @@ const Suggestions = {
     const list = useFetch(() => props.env && `/api/env/${props.env}/suggestions?all=1`);
     // the viewer cannot start an agent, so asking is a message: the agent sends a subagent to look and files what it finds
     const asking = computed(() => [{
-      label: "Ask for suggestions", method: "POST", url: `/api/env/${props.env}/inbox`, submit: "Send to the agent", leave: true,
+      label: "Ask for suggestions", method: "POST", url: `/api/env/${props.env}/messages`, submit: "Send to the agent", leave: true,
       fields: [{ name: "scope", label: "What to look at (optional)", kind: "area",
                  placeholder: "An area, a worry or a goal to focus on. Leave empty to let the agent choose." }],
       shape: ({ scope }) => ({ files: [], text: "Please look for suggestions: send a background subagent to research this environment "
@@ -1992,7 +1992,7 @@ const Inbox = {
   props: ["env", "archive", "n"],
   components: { TopBar, Compose, ResourceList, MessagePanel, ReplyPanel, QuestionPanel, SuggestionPanel },
   setup(props) {
-    const api = computed(() => `/api/env/${props.env}/inbox`);
+    const api = computed(() => `/api/env/${props.env}/messages`);
     const home = computed(() => `#/env/${props.env}/messages`);
     const base = computed(() => home.value + (props.archive || ""));
     const messages = useFetch(() => props.env && `${api.value}?all=1`);
@@ -2027,7 +2027,7 @@ const Inbox = {
     return { rows, messages, reloadAll, opened, home, base, INBOX_LIST, hint, inboxRef, readAll, writeMessage };
   },
   template: `
-    <TopBar :crumbs="archive ? [env, 'Inbox', 'Archive'] : [env, 'Inbox']"/>
+    <TopBar :crumbs="archive ? [env, 'Messages', 'Archive'] : [env, 'Messages']"/>
     <div class=body>
       <div class=chat>
         <div class=list>
@@ -2161,7 +2161,7 @@ const Plans = {
     const todos = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/todos?all=1`);
     // the viewer cannot start an agent, so planning together is a message: the agent asks back with questions to click
     const creating = computed(() => [{
-      label: "Plan it with the agent", method: "POST", url: `/api/env/${props.env}/inbox`, submit: "Send to the agent", leave: true,
+      label: "Plan it with the agent", method: "POST", url: `/api/env/${props.env}/messages`, submit: "Send to the agent", leave: true,
       fields: [{ name: "wish", label: "What do you want to achieve?", kind: "area",
                  placeholder: "In your own words, as rough as you like. The agent asks back until the goal is clear." }],
       note: "The agent asks you questions, each with answers to pick or your own words, then drafts the plan for you to approve.",
@@ -2506,7 +2506,7 @@ const Style = {
     const open = computed(() => (questions.data || []).filter((q) => q.status === "open" && aboutStyle(q)));
     // like suggestions, a review is a message: the agent sends a subagent to read the code and asks what it finds
     const asking = computed(() => [{
-      label: "Ask for a coding style review", method: "POST", url: `/api/env/${props.env}/inbox`, submit: "Send to the agent", leave: true,
+      label: "Ask for a coding style review", method: "POST", url: `/api/env/${props.env}/messages`, submit: "Send to the agent", leave: true,
       fields: [{ name: "scope", label: "Where to look (optional)", kind: "area",
                  placeholder: "A folder, a layer or a kind of code. Leave empty to let the agent choose." }],
       shape: ({ scope }) => ({ files: [], text: "Please run a coding style review: send a background subagent to read the code "
@@ -2877,7 +2877,7 @@ const EnvHome = {
     const suggestions = useFetch(url("/suggestions"));
     const notes = useFetch(url("/notifications"));
     const plans = useFetch(url("/plans"));
-    const messages = useFetch(url("/inbox?all=1"));
+    const messages = useFetch(url("/messages?all=1"));
     const view = reactive({ kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
     const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
@@ -3440,7 +3440,7 @@ function useSkillActions(env, name, skill, reloaded) {
     try { acting.said = await fn(); } catch (e) { acting.error = e.message; } finally { acting.busy = false; }
   };
   const loadNow = () => act(async () => {
-    await postJSON(`/api/env/${env()}/inbox`, { text: `Please load the \`${name()}\` skill now.`, files: [] });
+    await postJSON(`/api/env/${env()}/messages`, { text: `Please load the \`${name()}\` skill now.`, files: [] });
     changed();
     return "The agent is asked to load it. It gets the message at its next stop, or at once if it is idle.";
   });
@@ -3694,7 +3694,7 @@ const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions
 // open work lives on Home, so the sidebar has no entry of its own for it
 const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "" },
-  { key: "inbox", label: "Inbox", views: ["Inbox", "Questions", "Suggestions"], path: "messages", count: ["questions", "suggestions"] },
+  { key: "inbox", label: "Messages", views: ["Inbox", "Questions", "Suggestions"], path: "messages", count: ["questions", "suggestions"] },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "docs", label: "Documents", views: ["EnvDocs", "Files", "Reports", "Plans"], path: "docs", count: "docs" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
@@ -3861,7 +3861,7 @@ const QuickMenu = {
       const p = plan.value;
       const commands = [
         { label: "Go to Home", keys: "home queue cockpit", hk: "1", icon: "home", run: goTo(base) },
-        { label: "Go to Inbox", keys: "inbox messages questions suggestions", hk: "2", icon: "inbox", run: goTo(`${base}/messages`) },
+        { label: "Go to Messages", keys: "messages inbox questions suggestions", hk: "2", icon: "inbox", run: goTo(`${base}/messages`) },
         { label: "Go to To-dos", keys: "todos todo tasks", hk: "3", icon: "todos", run: goTo(`${base}/todos`) },
         { label: "Go to Documents", keys: "documents docs reports plans", hk: "4", icon: "docs", run: goTo(`${base}/docs`) },
         // always listed: it opens the plan the agent is assigned, or the plans list while none is
@@ -3915,7 +3915,7 @@ const QuickMenu = {
       const count = held.value;
       try {
         const files = await Promise.all(QUICK.files.map(readFileAsData));
-        await postJSON(`/api/env/${props.env}/inbox`, { text, files });
+        await postJSON(`/api/env/${props.env}/messages`, { text, files });
         QUICK.draft = "";
         QUICK.files = [];
         close();
@@ -4250,7 +4250,7 @@ const App = {
           <div v-for="d in away.lines" :key="d.key" class=away-line><span>{{ d.text }}</span><span class=away-age>{{ d.age }}</span></div>
           <p v-if="!away.lines.length" class="away-line muted">Nothing new from the agent.</p>
         </div>
-        <div class=away-foot><span>{{ away.waiting }}</span><button type=button class=away-go @click="openInbox">Open the inbox</button></div>
+        <div class=away-foot><span>{{ away.waiting }}</span><button type=button class=away-go @click="openInbox">Open messages</button></div>
       </div>
     </div>`,
 };

@@ -10,7 +10,7 @@ from payloads.inbox import AttachPayload, DetachPayload, FilePayload, ProcessPay
 
 
 class InboxController(Controller):
-    resource = "inbox"
+    resource = "messages"
     noun = "message"
     actions = ("index", "show", "store", "update", "process", "file", "detach", "attach", "done", "move", "destroy", "reply", "waiting")
     numbered = ("show", "update", "process", "file", "detach", "attach", "done", "move", "destroy", "reply")

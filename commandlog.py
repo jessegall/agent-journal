@@ -270,9 +270,9 @@ READS = {"index", "show", "files", "paths", "search", "waiting"}
 # viewer writes that Activity already shows from the stores they change
 # viewer bookkeeping, not something the user did: opening a question marks it seen and writes no Activity line
 WEB_QUIET = {"questions:seen"}
-WEB_SHOWN = {"todos:store", "todos:done", "inbox:store", "questions:answer", "comments:store", "work:store",
+WEB_SHOWN = {"todos:store", "todos:done", "messages:store", "questions:answer", "comments:store", "work:store",
              "work:note", "work:end"}
-WEB_KINDS = {**KINDS, "inbox": "message", "notifications": None}
+WEB_KINDS = {**KINDS, "messages": "message", "notifications": None}
 # the field a viewer write carries that Activity shows after the number
 WEB_DETAIL = {"todos:update": "priority", "todos:priority": "value", "reports:keep": "days", "work:wait": "what"}
 # a write whose body changes only this field reads as this line instead
@@ -315,15 +315,15 @@ WEB = {
     "environment:settings": "Changed the settings",
     "environment:auto": "Changed auto mode",
     "environment:remove": "Removed an environment",
-    "inbox:update": "Edited message {n}",
-    "inbox:process": "Filed message {n}",
-    "inbox:file": "Filed an attachment from message {n}",
-    "inbox:detach": "Removed a file from message {n}",
-    "inbox:attach": "Added files to message {n}",
-    "inbox:done": "Marked message {n} processed",
-    "inbox:move": "Moved message {n}",
-    "inbox:destroy": "Removed message {n}",
-    "inbox:reply": "Replied to message {n}",
+    "messages:update": "Edited message {n}",
+    "messages:process": "Filed message {n}",
+    "messages:file": "Filed an attachment from message {n}",
+    "messages:detach": "Removed a file from message {n}",
+    "messages:attach": "Added files to message {n}",
+    "messages:done": "Marked message {n} processed",
+    "messages:move": "Moved message {n}",
+    "messages:destroy": "Removed message {n}",
+    "messages:reply": "Replied to message {n}",
     "notifications:store": "Sent a notification",
     "notifications:read": "Marked notification {n} read",
     "notifications:readall": "Marked all notifications read",
