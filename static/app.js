@@ -299,6 +299,8 @@ const PriorityIcon = {
 // the page's top bar: crumbs, the page's own button, then Search and Notifications on every page
 // what the shell knows about the agent, for the status bar every page carries under its top bar
 const SHELL = reactive({ env: "", activity: null, setAuto: null });
+// one overlay the shell hosts for any page: what the status bar inspects opens here, over whatever is showing
+const OVERLAY = reactive({ kind: "", n: 0 });
 
 const StatusBar = {
   components: { Icon },
@@ -320,7 +322,9 @@ const StatusBar = {
       if (agent.working) return { state: "Working", live: true, what: onIt || "on its own", href: workHref };
       return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
     });
-    return { env, view, SHELL };
+    const inspectWork = computed(() => (work.data || [])[0] || null);
+    const inspect = (w) => { OVERLAY.kind = "work"; OVERLAY.n = w.n; };
+    return { env, view, SHELL, inspectWork, inspect };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
@@ -331,7 +335,8 @@ const StatusBar = {
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
-        <a v-if="view.href" class="btn statusbar-inspect" :href="view.href" title="Open what the agent is on">Inspect<Icon name="sidepanel"/></a>
+        <button v-if="inspectWork && !view.held" type=button class="btn statusbar-inspect" title="Open the agent's work here" @click="inspect(inspectWork)">Inspect<Icon name="sidepanel"/></button>
+        <a v-else-if="view.href" class="btn statusbar-inspect" :href="view.href" title="Open what the agent is on">Inspect<Icon name="sidepanel"/></a>
       </span>
     </div>`,
 };
@@ -2679,7 +2684,7 @@ const EnvHome = {
         </section>
         <section class=work-col>
           <h2 class=col-title>The agent's work</h2>
-          <a v-for="w in openWork" :key="w.n" class=work-card :href="'#/env/' + env + '/work/' + w.n">
+          <a v-for="w in openWork" :key="w.n" class=work-card :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
             <span class=work-card-meta>work {{ w.n }} · {{ w.age || 'just now' }}</span>
             <span class=work-card-title>{{ w.subject }}</span>
             <span v-if="w.files_text" class=work-card-meta>{{ w.files_text }}</span>
@@ -3441,7 +3446,7 @@ const ActivityPanel = {
 };
 
 const App = {
-  components: { ...VIEWS, Icon, ActivityPanel },
+  components: { ...VIEWS, Icon, ActivityPanel, Peek },
   setup() {
     const route = reactive(parseHash());
     const ov = OVERVIEW;
@@ -3453,7 +3458,8 @@ const App = {
       ov.data = d;
     }).catch(() => {});
     const overviewTimer = setInterval(() => { if (document.visibilityState === "visible") loadOverview(); }, POLL_MS);
-    const onHash = () => { Object.assign(route, parseHash()); loadOverview(); };
+    const closeOverlay = () => { OVERLAY.kind = ""; OVERLAY.n = 0; };
+    const onHash = () => { Object.assign(route, parseHash()); closeOverlay(); loadOverview(); };
     window.addEventListener("hashchange", onHash);
     window.addEventListener("journal:changed", loadOverview);
     onUnmounted(() => {
@@ -3582,7 +3588,7 @@ const App = {
     // a nav count may add several of the environment's counts, as the Inbox does for questions and suggestions
     const navCount = (item) => (envRow.value ? [].concat(item.count).reduce((sum, k) => sum + (envRow.value[k] || 0), 0) : 0);
     SHELL.setAuto = setAuto;
-    return { route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
+    return { OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
   },
   template: `
     <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
@@ -3661,6 +3667,8 @@ const App = {
       <main class=main>
         <component :is="route.view" v-bind="route.params" :key="key"/>
       </main>
+      <Peek v-if="OVERLAY.kind && envName" :key="'overlay' + OVERLAY.kind + OVERLAY.n" :env="envName" :kind="OVERLAY.kind" :n="OVERLAY.n"
+        :close="closeOverlay" :reloaded="reloadActivity"/>
       <aside v-if="activity.data && ACTIVITY.shown" class=activity-dock>
         <ActivityPanel :data="activity.data" :href="activityHref" :env="envName"/>
       </aside>
