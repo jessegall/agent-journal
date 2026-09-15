@@ -2035,7 +2035,7 @@ const Inbox = {
             :href="(r) => base + '/' + inboxRef(r)" :selected="(r) => inboxRef(r) === n">
             <template #tools>
               <button type=button class="btn toolbar-btn" @click="readAll">Mark all read</button>
-              <button type=button class="btn new" :title="hint" @click="writeMessage">Message the agent</button>
+              <button type=button class="btn new" title="Message the agent — space, space" :aria-description="hint" @click="writeMessage">Message the agent</button>
             </template>
           </ResourceList>
         </div>
