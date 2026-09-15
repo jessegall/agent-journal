@@ -1495,7 +1495,7 @@ const MessagePanel = {
     <Panel :label=\"'Message ' + n" :close="close" :onClose="onClose" :link="link">
       <p v-if="item.error" class=error>{{ item.error }}</p>
       <template v-else-if="item.data">
-        <h2 v-if="answered.heading" class=panel-title>{{ answered.heading }}</h2>
+        <h2 class=panel-title>{{ answered.heading || item.data.gist || item.data.text }}</h2>
         <div><p class=section-label>Your message</p><div class="prose message" v-html="$linkify(item.data.text)"></div></div>
         <dl class=props>
           <dt>Status</dt><dd :title="item.data.status === 'waiting' && item.data.read ? 'The agent read it ' + item.data.read_age : null"><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled' : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
