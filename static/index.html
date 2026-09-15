@@ -157,7 +157,18 @@
   .compose-send .ico { width: 14px; height: 14px; }
   /* in the activity column the box is one row tall, and the send button sits in its middle */
   .activity-compose .compose-send { top: 50%; bottom: auto; transform: translateY(-50%); }
-  .setting-links { display: flex; flex-wrap: wrap; gap: 6px; }
+  /* Settings as grouped rows: a label, its current value, and the one action that changes it; a form opens under its row */
+  .settings-page { padding: 26px 28px 56px; display: flex; flex-direction: column; gap: 26px; max-width: 720px; }
+  .settings-group { display: flex; flex-direction: column; gap: 10px; }
+  .settings-group h2 { margin: 0; font-size: 13.5px; font-weight: 600; }
+  .settings-note { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--text-3); }
+  .settings-card { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 11px; overflow: hidden; background: #151619; }
+  .settings-row { box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 46px; padding: 8px 16px; border-bottom: 1px solid #1f2125; }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-label { flex: 1; min-width: 0; margin: 0; font-size: 13px; color: var(--text); }
+  .settings-value { flex: none; font-size: 12.5px; color: var(--text-3); }
+  .settings-row .actions { display: contents; }
+  .settings-row .action-form, .settings-wide { flex-basis: 100%; }
   .compose-error { margin: 0; font-size: 11px; color: var(--danger); }
   .activity-link:hover { background: var(--hover); }
   .activity-link:hover .activity-text { color: var(--text); }
