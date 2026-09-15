@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.137.4 — With auto mode off, answers, comments and suggestions reach the agent too
+
+Since 1.132.4, auto mode off meant the channel woke an idle agent only for a message you left. An
+answered question, a comment or a decided suggestion waited for the agent's next stop. Everything you do
+in the viewer that is meant for the agent now reaches it again, whatever auto mode is: a message at once,
+and the rest once the agent is idle. With auto mode off, each one says to handle that item only and not
+to start on the to-do list, which is what 1.132.4 was guarding against.
+
 ## 1.137.3 — The sidebar shows the git branch
 
 The Status section at the bottom of the left sidebar now has a Branch row naming the branch checked out

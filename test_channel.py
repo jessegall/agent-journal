@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""channel.py: the MCP channel server declares itself; with auto off it pushes messages only, with auto on everything once idle."""
+"""channel.py: the MCP channel server declares itself; with auto off messages at once and the rest once idle, with auto on everything once idle."""
 import json, os, subprocess, sys, tempfile, time
 from pathlib import Path
 
@@ -120,7 +120,11 @@ check("once the session stops, it is pushed", "another one while working" in (((
 
 j("auto-mode", "disable")
 j("questions", "answer", "1", "no, Tuesday")
-check("with auto mode off an answered question does not wake the session: only messages do", read_line(8), None)
+push = read_line(12)
+params = (push or {}).get("params") or {}
+check("with auto mode off an answered question still wakes an idle session, saying not to start the to-do list",
+      (params.get("meta", {}).get("question"), "no, Tuesday" in params.get("content", ""), "do not start on the to-do list" in params.get("content", "")),
+      ("1", True, True))
 j("messages", "add", "a message with auto off")
 push = read_line(12)
 check("while a message still does", "a message with auto off" in (((push or {}).get("params") or {}).get("content", "")), True)
@@ -128,9 +132,11 @@ j("questions", "answer", "1", "no, Wednesday")
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("messages", "add", "sent while it works, auto off")
 push = read_line(12)
-check("with auto off a message reaches a working session too, and the answer still does not",
+check("with auto off a message reaches a working session too, and the answer waits until it is idle",
       [((p or {}).get("params") or {}).get("meta", {}).get("message") is not None for p in [push, read_line(6)] if p], [True])
 state.put(root, "last_event", "Stop", stem=STEM)
+push = read_line(12)
+check("once it stops, the changed answer is pushed", "no, Wednesday" in (((push or {}).get("params") or {}).get("content", "")), True)
 
 tracks.unbind(root, STEM)
 j("messages", "add", "while on no environment")
