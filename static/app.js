@@ -1889,6 +1889,11 @@ const Plans = {
         out.push({ label: "Approve plan", method: "POST", url: `${url}/activate`, submit: "Approve",
                    note: "The plan becomes active. The agent works its phases in order, starting with phase 1." });
       }
+      out.push(p.auto
+        ? { label: "Stop at checkpoints", method: "POST", url: `${url}/auto`, submit: "Stop at checkpoints", shape: () => ({ on: false }),
+            note: "The agent waits at each checkpoint again until you continue." }
+        : { label: "Auto mode", method: "POST", url: `${url}/auto`, submit: "Continue past checkpoints on its own", shape: () => ({ on: true }),
+            note: "The agent works the whole plan without stopping at checkpoints. They still mark their phase, and you are still notified as each completes." });
       if (p.held) {
         out.push({ label: "Continue", method: "POST", url: `${url}/proceed`, submit: "Continue",
                    note: `Phase ${p.held} is a checkpoint. Continuing lets the agent start the next phase.` });
@@ -1921,6 +1926,7 @@ const Plans = {
             <dt>Status</dt><dd>{{ PLAN_STATUS[item.data.status] }}<span v-if="item.data.why" class=muted>{{ item.data.why }}</span></dd>
             <dt>Goal</dt><dd>{{ item.data.goal }}</dd>
             <dt>Progress</dt><dd>{{ item.data.phases_done }} of {{ item.data.phases_total }} phases complete</dd>
+            <dt>Checkpoints</dt><dd>{{ item.data.auto ? 'Auto mode: continues past them on its own' : 'Stops at each until you continue' }}</dd>
             <dt>Links</dt><dd><template v-if="item.data.refs.length"><a v-for="r in item.data.refs" :key="r" class=chip :href="planRefHref(r, env)">{{ r }}</a></template><span v-else class=muted>—</span></dd>
             <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
           </dl>

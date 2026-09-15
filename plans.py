@@ -52,6 +52,10 @@ MESSAGES = {
     "stall_empty": "plan {n} phase {p}, {title}, is current and has no to-dos: break it down with `journal todos add` "
                    "and `journal plans todos {n} {p} <numbers>`",
     "stall_draft": "plan {n} is a draft: its to-dos wait until the user approves it in the viewer",
+    "auto_user": "only the user switches a plan's auto mode: they do it on the plan's page in the viewer",
+    "auto_on": "plan {n} continues past its checkpoints on its own; they still mark and notify",
+    "auto_off": "plan {n} stops at each checkpoint again until the user continues it",
+    "auto_same": "plan {n} auto mode is already {state}",
     "continue_user": "only the user continues a plan past a checkpoint: they do it in the viewer",
     "no_checkpoint": "plan {n} is not stopped at a checkpoint",
     "continued": "plan {n} continues past phase {p}, {title}",
@@ -281,7 +285,8 @@ def active(root: Path, track: str, known: dict[int, dict] | None = None) -> tupl
 def checkpoint(plan: dict, rows: list[dict]) -> dict | None:
     """A complete checkpoint phase before the current one that the user has not continued past."""
     now = current(plan, rows)
-    if now is None:
+    # a plan in auto mode goes on past its checkpoints; they still mark and notify
+    if now is None or plan.get("auto"):
         return None
     for row, ph in zip(rows, plan.get("phases") or []):
         if row["p"] >= now["p"]:
@@ -324,6 +329,23 @@ def stall(root: Path, track: str) -> str:
         return say("stall_checkpoint", n=n, p=held["p"], title=held["title"])
     now = current(plan, rows)
     return say("stall_empty", n=n, p=now["p"], title=now["title"]) if not now["todos"] else ""
+
+
+def set_auto(root: Path, n: int, on: bool, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
+    """The user's switch: a plan in auto mode continues past its checkpoints without waiting."""
+    if source != "web":
+        return False, say("auto_user")
+    here = _here(root, track)
+    with state.locked(root):
+        items = _all(root, here)
+        plan = _get(items, n)
+        if plan is None:
+            return False, say("no_plan", n=n)
+        if bool(plan.get("auto")) == bool(on):
+            return False, say("auto_same", n=n, state="on" if on else "off")
+        plan.update(auto=bool(on), auto_at=at)
+        _put(root, items, here)
+    return True, say("auto_on" if on else "auto_off", n=n)
 
 
 def proceed(root: Path, n: int, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
@@ -497,7 +519,7 @@ def row_response(root: Path, n: int, plan: dict, track: str, full: bool = False)
            "refs": list(plan.get("refs") or []), "why": plan.get("why") or "",
            "phases_total": len(rows), "phases_done": sum(1 for r in rows if r["complete"]),
            "current": now["p"] if now else None, "current_title": now["title"] if now else "",
-           "held": held["p"] if held else None, "gist": fmt.gist(plan.get("goal", ""))}
+           "held": held["p"] if held else None, "auto": bool(plan.get("auto")), "gist": fmt.gist(plan.get("goal", ""))}
     row["meta"] = " · ".join(x for x in (row["age"], say("progress", done=row["phases_done"], total=row["phases_total"]),
                                          say("current", p=now["p"], title=now["title"]) if now else "",
                                          row["why"]) if x)
