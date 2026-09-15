@@ -564,7 +564,7 @@ const PANELS = { open: 0, leftAt: 0 };
 const STEP_MS = 250;
 
 const Panel = {
-  props: ["label", "close", "onClose", "link", "hint"],
+  props: ["label", "close", "onClose", "link"],
   components: { Icon },
   setup(props) {
     const body = ref(null);
@@ -680,7 +680,7 @@ const Panel = {
           <button v-if="place" type=button class=icon-btn title="Next (↓)" aria-label="Next" :disabled="INSPECTOR_TRAIL.items.length < 2" @click="step(1)"><Icon name="down"/></button>
           <button type=button class=icon-btn title="Close" aria-label="Close" @click="dismiss"><Icon name="close"/></button>
         </span></div>
-      <div class=panel-body ref=body @click="onClick" @keydown="onKey"><slot/><p class=panel-hint>{{ hint || (place ? '↑↓ steps · Esc closes' : 'Esc closes') }}</p></div>
+      <div class=panel-body ref=body @click="onClick" @keydown="onKey"><slot/></div>
     </aside>`,
 };
 
@@ -1432,7 +1432,7 @@ const QuestionPanel = {
     return { item, onAnswered, questionKind, actions, done };
   },
   template: `
-    <Panel :label=\"'Question ' + n" :close="close" :onClose="onClose" :link="link" :hint="item.data && item.data.status === 'open' ? '⌘↵ sends and opens the next one' : ''">
+    <Panel :label=\"'Question ' + n" :close="close" :onClose="onClose" :link="link">
       <p v-if="item.error" class=error>{{ item.error }}</p>
       <template v-else-if="item.data">
         <div class="md p-title" v-html="$md(item.data.text)"></div>
