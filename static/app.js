@@ -3521,8 +3521,6 @@ const App = {
       if (!page || !envName.value) return null;
       return `#/env/${envName.value}/${page}` + (e.n ? `/${e.n}` : "");
     };
-    // what the agent did last, in the footer under its status
-    const latest = computed(() => ((activity.data && activity.data.events) || []).find((e) => e.by === "Agent"));
     const setAuto = (on) => {
       activity.data.auto = on;
       postJSON(`/api/env/${envName.value}/environment/settings`, { auto: on })
@@ -3606,7 +3604,7 @@ const App = {
     // a nav count may add several of the environment's counts, as the Inbox does for questions and suggestions
     const navCount = (item) => (envRow.value ? [].concat(item.count).reduce((sum, k) => sum + (envRow.value[k] || 0), 0) : 0);
     SHELL.setAuto = setAuto;
-    return { OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
+    return { OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
   },
   template: `
     <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
