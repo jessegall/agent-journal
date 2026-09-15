@@ -117,6 +117,7 @@ check("and --all shows them", ("ship plans (done)" in out, "another (abandoned)"
 code, out = j("plans", "show", "1")
 check("show draws the phases with their to-dos",
       ("✓ 1  the core — complete when the CLI works" in out, "[x] to-do 1  storage" in out, "(checkpoint)" in out), (True, True, True))
+check("only a checkpoint phase is marked as one", ("the CLI works  (checkpoint)" in out, "the viewer  (checkpoint)" in out), (False, True))
 
 # ---------------------------------------------------------------- an active plan steers auto mode
 import notifications, todo  # noqa: E402,E401

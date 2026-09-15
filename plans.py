@@ -68,7 +68,8 @@ MESSAGES = {
     "progress": "{done} of {total} phase(s) complete",
     "current": "phase {p} current: {title}",
     "show": "PLAN {n}  {title}  ({status})\n  goal: {goal}\n  {meta}[\n  links: {refs}]",
-    "phase_line": "  {mark} {p}  {title}[ — complete when {when}][  (checkpoint)]",
+    "phase_line": "  {mark} {p}  {title}[ — complete when {when}]{checkpoint}",
+    "checkpoint_mark": "  (checkpoint)",
     "todo_line": "        {mark} to-do {t}  {title}",
     "no_todos_yet": "        no to-dos yet",
 }
@@ -513,7 +514,7 @@ def render_show(d: dict) -> str:
     for ph in d["phases"]:
         mark = "✓" if ph["complete"] else "▸" if ph["current"] else "○"
         lines.append(say("phase_line", mark=mark, p=ph["p"], title=ph["title"], when=ph["when"] or None,
-                         checkpoint=ph["checkpoint"] or None))
+                         checkpoint=say("checkpoint_mark") if ph["checkpoint"] else ""))
         lines.extend(say("todo_line", mark="[x]" if t["done"] else "[ ]", t=t["n"], title=t["title"] or "(archived)")
                      for t in ph["todos"])
         if not ph["todos"]:
