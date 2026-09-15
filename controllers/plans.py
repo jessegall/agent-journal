@@ -12,11 +12,11 @@ from payloads.common import ListingPayload, WhyPayload
 class PlansController(Controller):
     resource = "plans"
     noun = "plan"
-    actions = ("index", "show", "store", "fromdoc", "phase", "todos", "activate", "proceed", "destroy", "link")
-    numbered = ("show", "phase", "todos", "activate", "proceed", "destroy", "link")
+    actions = ("index", "show", "store", "fromdoc", "phase", "todos", "activate", "proceed", "auto", "destroy", "link")
+    numbered = ("show", "phase", "todos", "activate", "proceed", "auto", "destroy", "link")
     payloads = {"index": ListingPayload, "store": plan_payloads.StorePayload, "phase": plan_payloads.PhasePayload,
                 "todos": plan_payloads.TodosPayload, "destroy": WhyPayload, "link": plan_payloads.LinkPayload,
-                "fromdoc": plan_payloads.FromDocPayload}
+                "fromdoc": plan_payloads.FromDocPayload, "auto": plan_payloads.AutoPayload}
 
     def repository(self, root: Path, p: Payload):
         from resources import Plans
@@ -67,6 +67,9 @@ class PlansController(Controller):
 
     def proceed(self, root: Path, p: Payload) -> Result:
         return Result.of(plans.proceed(root, p.id, p.at, source=p.source, track=p.env or None))
+
+    def auto(self, root: Path, p: plan_payloads.AutoPayload) -> Result:
+        return Result.of(plans.set_auto(root, p.id, p.on, p.at, source=p.source, track=p.env or None))
 
     def destroy(self, root: Path, p: WhyPayload) -> Result:
         return Result.of(plans.abandon(root, p.id, p.why, p.at, track=p.env or None))

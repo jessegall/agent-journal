@@ -26,5 +26,9 @@ class FromDocPayload(Payload):
     doc = Field(str)
 
 
+class AutoPayload(Payload):
+    on = Field(bool)
+
+
 class LinkPayload(Payload):
     ref = Field(str)
