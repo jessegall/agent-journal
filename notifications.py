@@ -9,13 +9,13 @@ from templates import render
 
 KEY = "notifications"
 
-KINDS = {"inbox": "message", "todo": "to-do", "question": "question", "report": "report", "doc": "doc"}
+KINDS = {"inbox": "message", "todo": "to-do", "question": "question", "report": "report", "doc": "doc", "plan": "plan"}
 
-_REF = re.compile(r"^\s*(to-?dos?|questions?|reports?|docs?|messages?|inbox)\s*[:#\s]\s*(\d+)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|questions?|reports?|docs?|plans?|messages?|inbox)\s*[:#\s]\s*(\d+)\s*$", re.I)
 
 MESSAGES = {
     "needs_text": 'a notification needs its text: journal notify "<what finished>"',
-    "not_a_ref": "{text} is not something a notification can point at; write `todo 22`, `question 4`, `report 1` or `doc 3`",
+    "not_a_ref": "{text} is not something a notification can point at; write `todo 22`, `question 4`, `report 1`, `doc 3` or `plan 2`",
     "sent": "notification {n} is on the user's Home[, pointing at {about}] — keep these for what the user wants to hear about",
     "no_notification": "there is no notification {n}. `journal notifications` numbers them.",
     "read": "notification {n} is read",

@@ -1252,6 +1252,10 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         owed = [t for t in todo.open_items(ROOT, here) if todo.waiting_on(ROOT, here, t)]
         if ids != state.get(ROOT, "todos_said", [], stem=ctx.stem):
             state.put(ROOT, "todos_said", ids, stem=ctx.stem)
+            import plans
+            stalled = plans.stall(ROOT, here)
+            if stalled:
+                return _said(stalled)
             if held_back and not todo.asking(ROOT, here):
                 return _said(say("aside_fact", env=here),
                              say("aside_do", rows=[say("aside_row", n=t["n"], why=t["blocked"]) for t in held_back[:3]]))
