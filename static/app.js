@@ -233,7 +233,6 @@ const Icon = {
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
-      <template v-else-if="name === 'plans'"><circle cx="4" cy="4" r="1.6"/><circle cx="4" cy="12" r="1.6"/><path d="M4 5.6v4.8M7.5 4h6M7.5 12h6M7.5 8h4"/></template>
       <template v-else-if="name === 'info'"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></template>
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
       <template v-else-if="name === 'activity'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></template>
@@ -334,7 +333,7 @@ const TopBar = {
     // what the agent keeps lives here as icons; the one whose page is open is lit
     const view = parseHash().view || "";
     const KEPT = [{ key: "suggestions", label: "Suggestions", view: "Suggestions" }, { key: "style", label: "Coding style", view: "Style" },
-                  { key: "reports", label: "Reports", view: "Reports" }, { key: "plans", label: "Plans", view: "Plans" }, { key: "pins", label: "Pins", view: "Pins" },
+                  { key: "pins", label: "Pins", view: "Pins" },
                   { key: "reminders", label: "Reminders", view: "Reminders" }];
     // each resource page explains itself from static/help/<topic>.md
     const helpTopic = HELP_TOPICS[view] || "";
@@ -1676,6 +1675,19 @@ const Inbox = {
     </div>`,
 };
 
+// docs, reports and plans are one Documents area: the same tabs head each of their lists
+const DOC_TABS = [{ key: "docs", label: "Docs" }, { key: "reports", label: "Reports" }, { key: "plans", label: "Plans" }];
+
+const DocTabs = {
+  props: { env: String, current: String },
+  setup() { return { DOC_TABS }; },
+  template: `
+    <nav class="radio-group doc-tabs" aria-label="Documents">
+      <a v-for="t in DOC_TABS" :key="t.key" :class="['radio-option', {on: t.key === current}]" :href="'#/env/' + env + '/' + t.key"
+        :aria-current="t.key === current ? 'page' : null">{{ t.label }}</a>
+    </nav>`,
+};
+
 const PLAN_STATUS = { draft: "Draft", active: "Active", done: "Done", abandoned: "Abandoned" };
 
 const PLAN_LIST = {
@@ -1721,7 +1733,7 @@ const ActivePlan = {
 
 const Plans = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon },
+  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, DocTabs },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const home = computed(() => `#/env/${props.env}/plans`);
@@ -1812,7 +1824,7 @@ const Plans = {
         <div class=list>
           <ResourceList v-bind="PLAN_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
             :href="(p) => base + '/' + p.n">
-            <template #tools><a class="btn new" :href="home + '/new'">New plan</a></template>
+            <template #tools><DocTabs :env="env" current="plans"/><a class="btn new" :href="home + '/new'">New plan</a></template>
           </ResourceList>
         </div>
         <Panel v-if="n === 'new'" label="New plan" :close="base">
@@ -1833,7 +1845,7 @@ const REPORT_LIST = {
 
 const Reports = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList },
+  components: { TopBar, Panel, ActionBar, ResourceList, DocTabs },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reports`);
     const home = computed(() => `#/env/${props.env}/reports`);
@@ -1884,7 +1896,7 @@ const Reports = {
         <div class=list>
           <ResourceList v-bind="REPORT_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
             :href="(r) => base + '/' + r.n">
-            <template #tools><a class="btn new" :href="home + '/new'">New report</a></template>
+            <template #tools><DocTabs :env="env" current="reports"/><a class="btn new" :href="home + '/new'">New report</a></template>
           </ResourceList>
         </div>
         <Panel v-if="n === 'new'" label="New report" :close="base">
@@ -2104,7 +2116,7 @@ const Reminders = {
 function docList({ crumbs, url, base, empty }) {
   return {
     props: ["env", "n"],
-    components: { TopBar, ActionBar, ResourceList, RadioGroup },
+    components: { TopBar, ActionBar, ResourceList, RadioGroup, DocTabs },
     setup(props) {
       const s = useFetch(() => url(props));
       // open and archived documents are shown apart, one or the other
@@ -2127,6 +2139,7 @@ function docList({ crumbs, url, base, empty }) {
           :empty="shown.archived ? 'No documents here are archived.' : empty" :rows="rows"
           :loading="s.loading" :error="s.error" :href="(d) => '#/docs/' + d.n">
           <template #tools>
+            <DocTabs v-if="env" :env="env" current="docs"/>
             <RadioGroup label="Which documents" :options="[{ value: 'open', label: 'Open' }, { value: 'archived', label: 'Archived' }]"
               :modelValue="shown.archived ? 'archived' : 'open'" @update:modelValue="(v) => (shown.archived = v === 'archived')"/>
             <a v-if="base.startsWith('#/env/')" class=btn :href="base.slice(0, -4) + 'files'">Files</a>
@@ -3067,7 +3080,7 @@ const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "", count: "notifications" },
   { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
-  { key: "docs", label: "Documents", views: ["EnvDocs", "Files"], path: "docs", count: "docs" },
+  { key: "docs", label: "Documents", views: ["EnvDocs", "Files", "Reports", "Plans"], path: "docs", count: "docs" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 
