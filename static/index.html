@@ -368,6 +368,11 @@
     .row-enter-active, .row-leave-active, .row-move, .group-enter-active, .group-leave-active, .group-move { transition: none; }
   }
   .lrow { min-height: 48px; padding-top: 4px; padding-bottom: 4px; }
+  .lrow.library { min-height: 52px; }
+  .lrow.library .sub { font-size: 11.5px; }
+  /* a library row has no cite column, so its cite shows in the sub line at every width */
+  .lrow.library .sub-cite { display: inline; }
+  .lrow.library .sub.only-cite { display: block; }
   .list > .viewbar { position: sticky; top: 0; z-index: 2; background: var(--bg); }
   .list .ghead { top: 40px; }
   .ghead .sort { margin-left: auto; margin-right: -12px; display: inline-flex; align-items: center; gap: 0; opacity: 0; transition: opacity .12s; }

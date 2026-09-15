@@ -939,7 +939,7 @@ const PAGE_ROWS = 25;
 // how long a closed item stays in its list before it counts as archived
 const RECENT_MS = 7 * 24 * 60 * 60 * 1000;
 
-// groups: {key, label, kind, closed, match(row)}; a row marked live stays listed in a closed group until it closes; columns: {priority, status, num, numWidth, title, sub, cite, age, ageWidth, struck}
+// groups: {key, label, kind, closed, match(row)}; a row marked live stays listed in a closed group until it closes; columns: {priority, status, num, numWidth, title, sub, cite, age, ageWidth, library, struck}
 // a row's type is a plain tinted word; the status dot beside it already carries state
 const TYPES = {
   question: { label: "Question", tint: "#c9955e" }, message: { label: "Message", tint: "#6fae7d" },
@@ -1059,7 +1059,7 @@ const ResourceList = {
           </span>
         </div>
         <TransitionGroup tag="div" :class="['rows', {quiet: state.quiet}]" name="row" appear>
-        <a v-for="(r, i) in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
+        <a v-for="(r, i) in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {library: columns.library, sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
           :style="{'--i': i, '--num-w': columns.numWidth || '44px', ...(columns.ageWidth ? {'--age-col': columns.ageWidth} : {})}" :href="href(r)" @click="open($event, r)">
           <PriorityIcon v-if="columns.priority" :value="columns.priority(r)"/>
           <StatusIcon v-if="columns.status" :kind="columns.status(r)" :tint="columns.tint ? columns.tint(r) : null"/>
@@ -1069,7 +1069,7 @@ const ResourceList = {
             :aria-label="columns.question(r).title || null"><Icon v-if="columns.question(r).state" name="questions"/></span>
           <div class=stack><div class=title>{{ columns.title(r) }}</div>
             <div v-if="(columns.sub && columns.sub(r)) || (columns.cite && columns.cite(r))" :class="['sub', {'only-cite': !(columns.sub && columns.sub(r))}]">{{ columns.sub ? columns.sub(r) : '' }}<span v-if="columns.cite && columns.cite(r)" class=sub-cite>{{ columns.sub && columns.sub(r) ? ' · ' : '' }}{{ columns.cite(r) }}</span></div></div>
-          <span v-if="columns.cite" class=cite>{{ columns.cite(r) }}</span>
+          <span v-if="columns.cite && !columns.library" class=cite>{{ columns.cite(r) }}</span>
           <span v-if="columns.age" :class="['age', {warn: columns.ageWarn && columns.ageWarn(r)}]" :title="r.age || null">{{ columns.age(r) }}</span>
         </a>
         </TransitionGroup>
@@ -1206,7 +1206,7 @@ const DOC_LIST = {
            { key: "superseded", label: "Superseded", kind: "withdrawn", match: (d) => !d.archived && d.superseded_by },
            { key: "archived", label: "Archived", kind: "withdrawn", match: (d) => d.archived && !d.superseded_by }],
   columns: { status: (d) => (d.archived || d.superseded_by ? "withdrawn" : d.status === "final" ? "done" : "open"),
-             num: (d) => `#${d.n}`, title: (d) => d.title, sub: (d) => d.abstract, age: (d) => d.age, struck: (d) => d.superseded_by,
+             library: true, num: (d) => `#${d.n}`, numWidth: "34px", title: (d) => d.title, sub: (d) => d.abstract, age: (d) => shortAge(d.age), ageWidth: "52px", struck: (d) => d.superseded_by,
              cite: (d) => (d.attachments ? (d.attachments === 1 ? "1 file" : `${d.attachments} files`) : "") },
   count: (rows) => (rows.length && rows.every((d) => d.archived) ? `${rows.length} archived` : `${rows.length} catalogued`), name: "docs",
 };
@@ -2006,8 +2006,8 @@ const PLAN_LIST = {
            { key: "draft", label: "Drafts", kind: "open", match: (p) => p.status === "draft" },
            { key: "done", label: "Done", kind: "done", closed: true, match: (p) => p.status === "done" },
            { key: "abandoned", label: "Abandoned", kind: "withdrawn", closed: true, match: (p) => p.status === "abandoned" }],
-  columns: { status: (p) => ({ active: "progress", draft: "open", done: "done", abandoned: "withdrawn" })[p.status] || "open", num: (p) => `#${p.n}`, title: (p) => p.title, sub: (p) => p.goal, cite: (p) => `${p.phases_done} of ${p.phases_total} phases`,
-             age: (p) => p.age, struck: (p) => p.status === "abandoned" },
+  columns: { status: (p) => ({ active: "progress", draft: "open", done: "done", abandoned: "withdrawn" })[p.status] || "open", library: true, num: (p) => `#${p.n}`, numWidth: "34px", title: (p) => p.title, sub: (p) => p.goal, cite: (p) => `${p.phases_done} of ${p.phases_total} phases`,
+             age: (p) => shortAge(p.age), ageWidth: "52px", struck: (p) => p.status === "abandoned" },
   count: (rows) => `${rows.filter((p) => p.status === "active" || p.status === "draft").length} plans`, name: "plans",
   empty: "No plans on this environment yet.",
 };
@@ -2255,7 +2255,7 @@ const REPORT_LIST = {
   groups: [{ key: "reports", label: "Reports", kind: "open", match: (r) => !r.archived },
            { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (r) => r.archived }],
   // a report within two days of aging off the list shows its age in amber
-  columns: { status: (r) => (r.archived ? "withdrawn" : "open"), num: (r) => `#${r.n}`, title: (r) => r.title, sub: (r) => r.gist, cite: (r) => r.about_label, age: (r) => r.age,
+  columns: { status: (r) => (r.archived ? "withdrawn" : "open"), library: true, num: (r) => `#${r.n}`, numWidth: "34px", title: (r) => r.title, sub: (r) => r.gist, cite: (r) => r.about_label, age: (r) => shortAge(r.age), ageWidth: "52px",
              ageWarn: (r) => r.ages_out_in !== null && r.ages_out_in !== undefined && r.ages_out_in <= 2,
              struck: (r) => r.archived },
   count: (rows) => `${rows.filter((r) => !r.archived).length} reports`, name: "reports",
