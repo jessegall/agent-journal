@@ -117,23 +117,6 @@
   .activity-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .activity-list { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 0 12px;
     scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
-  /* a quick message box pinned under the list; the list scrolls above it */
-  .activity-compose { flex: none; display: flex; flex-direction: column; gap: 6px; margin: 0 -10px; padding: 10px 10px 12px;
-    border-top: 1px solid var(--border); }
-  .activity-compose textarea { box-sizing: border-box; width: 100%; min-height: 34px; max-height: 120px; resize: none; overflow-y: auto;
-    padding: 7px 10px; border: 1px solid var(--border-2); border-radius: 8px; background: var(--raised); color: var(--text);
-    font: inherit; font-size: 12.5px; line-height: 1.45; }
-  .activity-compose textarea:focus { outline: none; border-color: var(--accent); }
-  /* the send button sits inside the box, bottom right, and only while there is something to send */
-  .compose-field { position: relative; }
-  .activity-compose .compose-field textarea { display: block; padding-right: 36px; }
-  .compose-send { position: absolute; right: 5px; bottom: 5px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-    padding: 0; border: none; border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; }
-  .compose-send:hover { filter: brightness(1.1); }
-  .compose-send:disabled { opacity: .6; cursor: default; }
-  .compose-send .ico { width: 14px; height: 14px; }
-  /* in the activity column the box is one row tall, and the send button sits in its middle */
-  .activity-compose .compose-send { top: 50%; bottom: auto; transform: translateY(-50%); }
   /* Settings as grouped rows: a label, its current value, and the one action that changes it; a form opens under its row */
   .settings-page { padding: 26px 28px 56px; display: flex; flex-direction: column; gap: 26px; max-width: 720px; }
   .settings-group { display: flex; flex-direction: column; gap: 10px; }
@@ -146,7 +129,6 @@
   .settings-value { flex: none; font-size: 12.5px; color: var(--text-3); }
   .settings-row .actions { display: contents; }
   .settings-row .action-form, .settings-wide { flex-basis: 100%; }
-  .compose-error { margin: 0; font-size: 11px; color: var(--danger); }
   .activity-link:hover { background: var(--hover); }
   .activity-link:hover .activity-text { color: var(--text); }
   .group-label { font-size: 11.5px; font-weight: 500; color: var(--text-3); padding: 4px 8px 6px;
@@ -202,7 +184,8 @@
   .quick-menu { position: fixed; z-index: 51; top: 92px; left: 50%; transform: translateX(-50%); width: min(580px, calc(100% - 56px));
     display: flex; flex-direction: column; overflow: hidden; border: 1px solid #33363d; border-radius: 14px; background: #151619; box-shadow: 0 26px 64px rgba(0, 0, 0, .6); }
   .quick-head { flex: none; display: flex; align-items: center; gap: 11px; height: 54px; padding: 0 15px; border-bottom: 1px solid var(--border); }
-  .quick-head .ico { flex: none; width: 15px; height: 15px; color: var(--accent); }
+  .quick-head .ico { flex: none; width: 15px; height: 15px; color: var(--text-3); }
+  .quick-head.writing .ico { color: var(--accent); }
   .quick-input { flex: 1; min-width: 0; border: none; background: transparent; color: var(--text); font: inherit; font-size: 14px; outline: none; }
   .quick-key { flex: none; display: inline-flex; align-items: center; justify-content: center; height: 20px; padding: 0 6px; border: 1px solid var(--border-2);
     border-radius: 4px; background: transparent; color: var(--text-3); font: inherit; font-size: 10.5px; cursor: pointer; }
@@ -216,6 +199,23 @@
   .quick-foot { flex: none; display: flex; align-items: center; gap: 14px; padding: 9px 15px; border-top: 1px solid var(--border); background: #121316;
     font-size: 11px; color: var(--text-3); white-space: nowrap; }
   .quick-foot-note { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .quick-row .ico { flex: none; width: 14px; height: 14px; color: #6f727a; }
+  .quick-row.on .ico { color: var(--accent-text); }
+  .quick-cap { flex: none; display: inline-flex; align-items: center; justify-content: center; height: 18px; padding: 0 6px; border: 1px solid var(--border-2);
+    border-radius: 4px; color: var(--text-3); font-size: 10.5px; line-height: 1; white-space: nowrap; }
+  .quick-row.on .quick-cap { border-color: #3a3d44; color: #c3c7fb; }
+  .quick-head.writing { height: 48px; gap: 10px; background: #17181b; }
+  .quick-write-title { flex: 1; min-width: 0; font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .quick-write-note { flex: none; font-size: 11.5px; color: var(--text-3); white-space: nowrap; }
+  .quick-write { flex: none; padding: 14px 15px 4px; }
+  .quick-write textarea { box-sizing: border-box; display: block; width: 100%; height: 112px; resize: none; padding: 0; border: none; background: transparent;
+    color: var(--text); font: inherit; font-size: 14px; line-height: 1.6; outline: none; }
+  .quick-foot-grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .quick-foot .btn { height: 27px; font-size: 12px; }
+  .quick-send { flex: none; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; height: 27px; padding: 0 11px; border-radius: 7px; border: none;
+    background: #212329; color: #6f727a; font: inherit; font-size: 12px; font-weight: 500; }
+  .quick-send.ready { background: var(--accent); color: #fff; cursor: pointer; }
+  .quick-send .ico { width: 13px; height: 13px; }
   .quick-toast { position: fixed; z-index: 52; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; height: 34px; padding: 0 15px;
     border: 1px solid #33363d; border-radius: 9px; background: var(--hover); color: var(--text); font-size: 12.5px; white-space: nowrap; box-shadow: 0 14px 34px rgba(0, 0, 0, .5); }
   .side-foot.side-foot-row { flex-direction: row; align-items: center; gap: 6px; }
@@ -227,14 +227,23 @@
   .icon-btn.on { background: var(--sel); color: var(--text); }
   .tool-badge { position: absolute; top: -2px; right: -3px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px;
     background: var(--accent); color: #fff; font-size: 10px; line-height: 15px; text-align: center; pointer-events: none; }
-  /* said once when the user comes back to the tab: what the agent did meanwhile */
-  .away-toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 50; display: flex; align-items: center; gap: 12px;
-    max-width: calc(100vw - 32px); padding: 8px 8px 8px 16px; border: 1px solid var(--border-2); border-radius: 10px; background: var(--raised);
-    color: var(--text); font-size: 13px; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); animation: away-in .24s ease-out both; }
-  @keyframes away-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
-  .away-close { flex: none; width: 24px; height: 24px; border: none; border-radius: 6px; background: transparent; color: var(--text-3); font-size: 16px; cursor: pointer; }
-  .away-close:hover { background: var(--hover); color: var(--text); }
-  @media (prefers-reduced-motion: reduce) { .away-toast { animation: none; } }
+  /* the away digest: bottom right when the user comes back, closed by its button or Esc, never on a timer */
+  .away-card { position: fixed; z-index: 53; right: 18px; bottom: 18px; width: min(340px, calc(100vw - 36px)); display: flex; flex-direction: column; overflow: hidden;
+    border: 1px solid #33363d; border-radius: 12px; background: #17181b; box-shadow: 0 20px 48px rgba(0, 0, 0, .55); animation: away-in .24s cubic-bezier(.22, .7, .2, 1) both; }
+  @keyframes away-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .away-head { flex: none; display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 13px; border-bottom: 1px solid var(--border); }
+  .away-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #6fae7d; }
+  .away-title { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .away-for { flex: none; font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .away-lines { display: flex; flex-direction: column; padding: 6px; max-height: 260px; overflow-y: auto; }
+  .away-line { display: flex; align-items: baseline; gap: 10px; margin: 0; padding: 6px 7px; border-radius: 6px; font-size: 12px; line-height: 1.45; color: var(--text-2); }
+  .away-line > span:first-child { flex: 1; min-width: 0; text-wrap: pretty; }
+  .away-age { flex: none; font-size: 11px; color: #6f727a; }
+  .away-foot { flex: none; display: flex; align-items: center; gap: 7px; padding: 9px 13px; border-top: 1px solid var(--border); background: #151619; }
+  .away-foot > span { flex: 1; min-width: 0; font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .away-go { flex: none; display: inline-flex; align-items: center; white-space: nowrap; height: 26px; padding: 0 10px; border-radius: 7px;
+    border: 1px solid rgba(94, 100, 201, .5); background: rgba(94, 100, 201, .16); color: #c3c7fb; font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
+  .away-go:hover { background: rgba(94, 100, 201, .28); }
   /* the agent's reply under a message: boxed and lightly filled, so it is found at a glance */
   .reply.from-agent { margin: 4px 0; padding: 10px 12px; border: 1px solid var(--border-2); border-radius: 8px; background: var(--raised); }
   .reply-part { margin: 4px 0 6px; padding: 2px 0 2px 10px; border-left: 2px solid var(--border-2); color: var(--text-3); font-size: 12.5px; }
@@ -505,6 +514,21 @@
   .panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 41; max-width: 100vw; min-height: 0; display: flex; flex-direction: column;
     border-left: 1px solid var(--border-2); background: var(--bg); box-shadow: -40px 0 90px rgba(0, 0, 0, .6); }
   .panel-grip { position: absolute; top: 0; bottom: 0; left: -3px; width: 6px; cursor: ew-resize; z-index: 1; }
+  /* motion: the inspector slides in and out, the scrim fades, the quick menu pops, the toast rises */
+  .panel { animation: panel-in .22s cubic-bezier(.22, .7, .2, 1) both; }
+  .panel.closing { animation: panel-out .16s ease-in both; }
+  .panel-scrim { animation: fade-in .18s ease-out both; }
+  .panel-scrim.closing { animation: fade-out .16s ease-in both; }
+  .quick-scrim { animation: fade-in .15s ease-out both; }
+  .quick-menu { animation: quick-in .17s cubic-bezier(.22, .7, .2, 1) both; }
+  .quick-toast { animation: toast-in .2s cubic-bezier(.22, .7, .2, 1) both; }
+  @keyframes panel-in { from { transform: translateX(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes panel-out { from { transform: none; opacity: 1; } to { transform: translateX(22px); opacity: 0; } }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes quick-in { from { transform: translate(-50%, -8px) scale(.985); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+  @keyframes toast-in { from { transform: translate(-50%, 10px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .panel, .panel.closing, .panel-scrim, .panel-scrim.closing, .quick-scrim, .quick-menu, .quick-toast, .away-card { animation: none; } }
   .panel-top { height: 52px; flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px;
     padding: 0 10px 0 20px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12.5px; }
   .panel-ref { display: flex; align-items: center; gap: 10px; min-width: 0; }
