@@ -6,6 +6,10 @@
 <title>journal</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
 <style>
+  /* no scrollbars anywhere: what scrolls says so by its content, not by a bar beside it */
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+
   :root {
     color-scheme: dark;
     --side: #0d0e10; --bg: #131416; --raised: #18191c; --hover: #1d1e22; --sel: #212329;
@@ -115,8 +119,7 @@
   .activity-dock { width: 290px; flex: none; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding: 0 10px;
     background: var(--side); border-left: 1px solid var(--border); }
   .activity-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-  .activity-list { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 0 12px;
-    scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
+  .activity-list { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 0 12px; }
   /* Settings as grouped rows: a label, its current value, and the one action that changes it; a form opens under its row */
   .settings-page { padding: 26px 28px 56px; display: flex; flex-direction: column; gap: 26px; max-width: 720px; }
   .settings-group { display: flex; flex-direction: column; gap: 10px; }
@@ -977,7 +980,6 @@
   @media (hover: none) { .doc-part-head .btn { opacity: 1; } }
   .block .ghead { position: static; }
 
-  .list, .panel-body, .page, .side { scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
 
   @media (max-width: 960px) {
     .side { display: none; }
