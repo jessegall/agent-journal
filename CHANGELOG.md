@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.137.2 — An agent's commit is a line of its own in Activity
+
+A commit an agent made showed only on its work page. Each commit made through a shell command while
+work is open now also adds an Activity line, "Committed", with the short sha and the commit subject.
+It has its own outline in the sidebar, in the accent colour, and clicking it opens the commit. In a
+project without git nothing changes.
+
 ## 1.137.1 — The user is told on Home when a report is ready
 
 A report the agent files arrived with no notice: it appeared under Reports and nothing said so. Filing one

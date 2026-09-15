@@ -1059,5 +1059,12 @@ _nn = next(n for n, x in enumerate(_notif._all(root, "alpha"), 1) if x.get("abou
 _notif.read(root, _nn, "2099-01-06T00:00:02+00:00", "alpha")
 check("and it stays one once its notification is read", [e["needs"] for e in _answered()], [""])
 
+# ---------------------------------------------------------------- a commit is a line of its own in Activity
+commandlog.record_commit(root, "alpha", "commit-session", "0123456789abcdef0123", "fix the thing that broke", "2099-01-07T00:00:00+00:00")
+_commits = [e for e in _activity.ActivityController._events(root, "alpha") if e["kind"] == "commit"]
+check("an agent's commit reaches Activity with its short sha, subject and full sha for its link",
+      [(e["text"], e["detail"], e["title"], e["sha"]) for e in _commits][:1],
+      [("Committed", "0123456", "fix the thing that broke", "0123456789abcdef0123")])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

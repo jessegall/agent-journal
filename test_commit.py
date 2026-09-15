@@ -216,5 +216,27 @@ out = fire()
 check("both close from one line, not just the first",
       (f"done {third}:" in out, f"done {fourth}:" in out), (True, True))
 
+# ------------------------------------------------------------------ a commit made through the hook is logged in Activity
+import commandlog  # noqa: E402
+j("work", "start", "commit activity check")
+_cmd = 'git commit -q --allow-empty -m "the commit activity line"'
+
+
+def _hook(event):
+    return subprocess.run([str(root / "hook.py")], input=json.dumps({
+        "hook_event_name": event, "session_id": "s1", "transcript_path": str(pd), "cwd": str(d),
+        "tool_name": "Bash", "tool_input": {"command": _cmd}, "tool_response": {"stdout": ""}}),
+        env=env, cwd=str(d), capture_output=True, text=True, timeout=180)
+
+
+_hook("PreToolUse")
+git("commit", "-q", "--allow-empty", "-m", "the commit activity line")
+_hook("PostToolUse")
+_lines = [e for env_name in ("alpha", "default", "beta") for e in commandlog.entries(root, env_name) if e.get("kind") == "commit"]
+check("a commit made through the hook while work is open is its own Activity line",
+      [(e["text"], e["title"], len(e["sha"]) >= 7) for e in _lines if e.get("title") == "the commit activity line"],
+      [("Committed", "the commit activity line", True)])
+j("work", "end", "commit activity check")
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

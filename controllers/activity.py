@@ -140,13 +140,13 @@ class ActivityController(Controller):
             return short(titles[kind].get(int(n), "") or "", TITLE_MAX)
 
         def add(at, kind: str, text: str, n: int | None, by: str, titled: bool = False, needs: str = "",
-                detail: str = "", about: str = "", title: str = "", order: int = -1) -> None:
+                detail: str = "", about: str = "", title: str = "", order: int = -1, sha: str = "") -> None:
             """`needs`: "open" when the line waits on the user, "answered" once they have answered it.
             `order`: a command-log line's place in the log, so lines logged in the same second list newest first."""
             if at:
                 out.append({"at": at, "kind": kind, "n": n, "text": short(text),
                             "title": short(title, TITLE_MAX) if title else title_of(kind, n) if titled else "",
-                            "by": by, "needs": needs, "detail": detail, "about": about, "order": order})
+                            "by": by, "needs": needs, "detail": detail, "about": about, "order": order, "sha": sha})
 
         for wn, w in enumerate(work._all(root, env), 1):
             if w.get("removed"):
@@ -198,7 +198,7 @@ class ActivityController(Controller):
                 about = about_of.get(int(c["n"]), "")
                 detail = detail or (comments_mod.label(about) if about else "")
             add(c.get("at"), c.get("kind") or "command", c.get("text", ""), c.get("n"), c.get("by") or AGENT, c.get("titled", False),
-                detail=detail, about=about, order=order)
+                detail=detail, about=about, order=order, title=c.get("title", ""), sha=c.get("sha", ""))
         out.sort(key=lambda e: (e["at"], e.pop("order")), reverse=True)
         # the same line twice in a row, like a message read again for more context, shows once
         same = lambda a, b: (a["kind"], a["n"], a["text"], a["by"], a["title"]) == (b["kind"], b["n"], b["text"], b["by"], b["title"])

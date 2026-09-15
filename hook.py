@@ -2169,12 +2169,17 @@ def _snapshot_files(payload: dict, ctx: Ctx) -> None:
 def _record_commits(before: dict | None, after: dict | None, ctx: Ctx) -> None:
     """A shell command that moved HEAD made commits; each goes on the open work with its subject."""
     from datetime import datetime, timezone
+    import commandlog
     if not before or not after or before["head"] == after["head"]:
         return
     got = _git_out(ROOT.parent, "log", "--format=%H%x09%s", f"{before['head']}..{after['head']}")
     commits = [{"sha": sha, "subject": subject} for sha, _, subject in
                (line.partition("\t") for line in (got or "").splitlines()) if sha]
-    work.record_commits(ROOT, _owners(ctx), list(reversed(commits)), datetime.now(timezone.utc).isoformat(timespec="seconds"))
+    at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    work.record_commits(ROOT, _owners(ctx), list(reversed(commits)), at)
+    # EACH COMMIT IS AN ACTIVITY LINE OF ITS OWN: work landing is the news the user watches for
+    for c in reversed(commits):
+        commandlog.record_commit(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, c["sha"], c["subject"], at)
 
 
 def _record_files(payload: dict, ctx: Ctx) -> None:
