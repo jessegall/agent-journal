@@ -375,11 +375,7 @@ const TopBar = {
     });
     const activity = ACTIVITY;
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
-    // what the agent keeps lives here as icons; the one whose page is open is lit
     const view = parseHash().view || "";
-    const KEPT = [{ key: "suggestions", label: "Suggestions", view: "Suggestions" }, { key: "style", label: "Coding style", view: "Style" },
-                  { key: "pins", label: "Pins", view: "Pins" },
-                  { key: "reminders", label: "Reminders", view: "Reminders" }];
     // each resource page explains itself from static/help/<topic>.md
     const helpTopic = HELP_TOPICS[view] || "";
     const help = reactive({ html: "", open: false });
@@ -396,7 +392,7 @@ const TopBar = {
       help.html = renderMarkdown(HELP_CACHE[helpTopic]) || "<p>No help written for this page yet.</p>";
     };
     const closeHelp = () => { if (helpDialog.value) helpDialog.value.close(); };
-    return { env, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, activity, toggleActivity, view, KEPT,
+    return { env, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, activity, toggleActivity, view,
              helpTopic, help, helpDialog, openHelp, closeHelp };
   },
   template: `
@@ -417,12 +413,6 @@ const TopBar = {
         <slot/>
         <template v-if="env">
           <a class=icon-btn :href="'#/env/' + env + '/search'" title="Search" aria-label="Search"><Icon name="search"/></a>
-          <span class=tool-wrap>
-            <a :class="['icon-btn', {on: view === 'Questions'}]" :href="'#/env/' + env + '/questions'" title="Questions" aria-label="Questions"><Icon name="questions"/></a>
-            <span v-if="openCount" class=tool-badge>{{ openCount }}</span>
-          </span>
-          <a v-for="k in KEPT" :key="k.key" :class="['icon-btn', {on: view === k.view}]" :href="'#/env/' + env + '/' + k.key"
-            :title="k.label" :aria-label="k.label" :aria-current="view === k.view ? 'page' : null"><Icon :name="k.key"/></a>
           <div class=drop-wrap>
             <button type=button :class="['icon-btn', {on: drop.open}]" title="Notifications" aria-label="Notifications"
               :aria-expanded="drop.open" @click="drop.open = !drop.open">
@@ -2798,6 +2788,16 @@ const Settings = {
       <p v-if="s.loading && !s.data" class=empty>Loading…</p>
       <p v-else-if="s.error" class=error>{{ s.error }}</p>
       <template v-else-if="s.data">
+        <section>
+          <div class=home-head><h2>Kept on this environment</h2></div>
+          <div class="setting setting-links">
+            <a class=btn :href="'#/env/' + env + '/pins'">Pins</a>
+            <a class=btn :href="'#/env/' + env + '/reminders'">Reminders</a>
+            <a class=btn :href="'#/env/' + env + '/style'">Coding style</a>
+            <a class=btn :href="'#/env/' + env + '/questions'">Questions</a>
+            <a class=btn :href="'#/env/' + env + '/suggestions'">Suggestions</a>
+          </div>
+        </section>
         <section>
           <div class=home-head><h2>Auto mode</h2></div>
           <div class=setting>
