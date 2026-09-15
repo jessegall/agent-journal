@@ -128,6 +128,18 @@ function refHref(ref, env) {
 }
 
 // a pin's or rule's meta is the CLI's own " · " line; its age and doc citation are read back out of it
+// the short age a fixed 52px column holds: "27 minutes ago" is 27m, "3h ago" 3h, "16d ago" 2w
+function shortAge(age) {
+  const text = String(age || "");
+  if (text === "just now") return "now";
+  const m = /^(\d+) minutes? ago$/.exec(text) || /^(\d+)m ago$/.exec(text);
+  if (m) return `${m[1]}m`;
+  const h = /^(\d+)h ago$/.exec(text);
+  if (h) return `${h[1]}h`;
+  const d = /^(\d+)d ago$/.exec(text);
+  if (d) return Number(d[1]) < 14 ? `${d[1]}d` : `${Math.floor(Number(d[1]) / 7)}w`;
+  return text;
+}
 function ageOf(meta) { return (meta || "").split(" · ").find((s) => / ago$|^just now$/.test(s)) || ""; }
 function docOf(meta) { const m = /→ doc ([\d.]+)/.exec(meta || ""); return m ? m[1] : null; }
 
@@ -927,7 +939,7 @@ const PAGE_ROWS = 25;
 // how long a closed item stays in its list before it counts as archived
 const RECENT_MS = 7 * 24 * 60 * 60 * 1000;
 
-// groups: {key, label, kind, closed, match(row)}; a row marked live stays listed in a closed group until it closes; columns: {priority, status, num, numWidth, title, sub, cite, age, struck}
+// groups: {key, label, kind, closed, match(row)}; a row marked live stays listed in a closed group until it closes; columns: {priority, status, num, numWidth, title, sub, cite, age, ageWidth, struck}
 // a row's type is a plain tinted word; the status dot beside it already carries state
 const TYPES = {
   question: { label: "Question", tint: "#c9955e" }, message: { label: "Message", tint: "#6fae7d" },
@@ -1048,7 +1060,7 @@ const ResourceList = {
         </div>
         <TransitionGroup tag="div" :class="['rows', {quiet: state.quiet}]" name="row" appear>
         <a v-for="(r, i) in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
-          :style="{'--i': i, '--num-w': columns.numWidth || '44px'}" :href="href(r)" @click="open($event, r)">
+          :style="{'--i': i, '--num-w': columns.numWidth || '44px', ...(columns.ageWidth ? {'--age-col': columns.ageWidth} : {})}" :href="href(r)" @click="open($event, r)">
           <PriorityIcon v-if="columns.priority" :value="columns.priority(r)"/>
           <StatusIcon v-if="columns.status" :kind="columns.status(r)"/>
           <span v-if="columns.type" class=type :style="{ color: (TYPES[columns.type(r)] || {}).tint }">{{ (TYPES[columns.type(r)] || {}).label }}</span>
@@ -1058,7 +1070,7 @@ const ResourceList = {
           <div class=stack><div class=title>{{ columns.title(r) }}</div>
             <div v-if="(columns.sub && columns.sub(r)) || (columns.cite && columns.cite(r))" :class="['sub', {'only-cite': !(columns.sub && columns.sub(r))}]">{{ columns.sub ? columns.sub(r) : '' }}<span v-if="columns.cite && columns.cite(r)" class=sub-cite>{{ columns.sub && columns.sub(r) ? ' · ' : '' }}{{ columns.cite(r) }}</span></div></div>
           <span v-if="columns.cite" class=cite>{{ columns.cite(r) }}</span>
-          <span v-if="columns.age" :class="['age', {warn: columns.ageWarn && columns.ageWarn(r)}]">{{ columns.age(r) }}</span>
+          <span v-if="columns.age" :class="['age', {warn: columns.ageWarn && columns.ageWarn(r)}]" :title="r.age || null">{{ columns.age(r) }}</span>
         </a>
         </TransitionGroup>
         <button v-if="g.rows.length < g.total" type=button class="btn more-rows" @click="more(g.key)">Show {{ Math.min(limit, g.total - g.rows.length) }} more</button>
@@ -1133,7 +1145,7 @@ function todoQuestionMark(t) {
 const TODO_LIST = {
   groups: GROUPS.map((g) => ({ ...g, kind: g.key, closed: g.key === "done", match: (t) => todoStatus(t) === g.key })),
   columns: { priority: (t) => t.priority, status: (t) => todoStatus(t), num: (t) => `#${t.n}`, question: todoQuestionMark,
-             title: (t) => t.title, cite: (t) => (t.doc ? `Doc ${t.doc}` : ""), age: (t) => t.age },
+             numWidth: "34px", ageWidth: "52px", title: (t) => t.title, age: (t) => shortAge(t.age) },
   sorts: [{ key: "n", label: "ID" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
   count: (rows) => `${rows.length} to-dos, ${rows.filter((t) => todoStatus(t) !== "done").length} open`,
   empty: "Nothing is waiting on this environment.", name: "todos",
@@ -1885,7 +1897,7 @@ function suggestionKind(s) { return s.status === "open" ? "waiting" : s.status =
 const INBOX_LIST = {
   groups: [{ key: "you", label: "Waiting on you", kind: "waiting", match: (r) => r.group === "you" },
            { key: "handled", label: "Handled", kind: "done", closed: true, match: (r) => r.group !== "you" }],
-  columns: { status: (r) => r.status, type: (r) => r.type, num: (r) => `#${r.num}`, title: (r) => r.title, age: (r) => r.age, struck: (r) => r.struck },
+  columns: { status: (r) => r.status, type: (r) => r.type, num: (r) => `#${r.num}`, numWidth: "34px", title: (r) => r.title, age: (r) => shortAge(r.age), ageWidth: "52px", struck: (r) => r.struck },
   sorts: [{ key: "at", label: "Newest", value: (r) => r.at || "" }],
   count: (rows) => `${rows.filter((r) => r.group === "you").length} waiting · ${rows.filter((r) => r.at && Date.now() - Date.parse(r.at) < 7 * 86400000).length} this week`,
   empty: "Nothing has arrived here yet.", name: "inbox",
