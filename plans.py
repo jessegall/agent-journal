@@ -51,6 +51,7 @@ MESSAGES = {
     "stall_checkpoint": "plan {n} stopped after phase {p}, {title}: it is a checkpoint, and the user continues the plan in the viewer",
     "stall_empty": "plan {n} phase {p}, {title}, is current and has no to-dos: break it down with `journal todos add` "
                    "and `journal plans todos {n} {p} <numbers>`",
+    "stall_draft": "plan {n} is a draft: its to-dos wait until the user approves it in the viewer",
     "continue_user": "only the user continues a plan past a checkpoint: they do it in the viewer",
     "no_checkpoint": "plan {n} is not stopped at a checkpoint",
     "continued": "plan {n} continues past phase {p}, {title}",
@@ -292,10 +293,12 @@ def checkpoint(plan: dict, rows: list[dict]) -> dict | None:
 def order(root: Path, track: str, items: list[dict]) -> list[tuple[int, dict]]:
     """(rank, to-do) for what auto may pick: the current phase (0), then to-dos in no plan above default priority (1)."""
     got = active(root, track)
+    member = membership(root, track)
     if got is None:
-        return [(0, t) for t in items]
+        # a draft's to-dos wait for the user to approve the plan
+        return [(0, t) for t in items if t["n"] not in member]
     n, plan, rows = got
-    now, held, member = current(plan, rows), checkpoint(plan, rows), membership(root, track)
+    now, held = current(plan, rows), checkpoint(plan, rows)
     out = []
     for t in items:
         where = member.get(t["n"])
@@ -311,7 +314,9 @@ def stall(root: Path, track: str) -> str:
     """Why the active plan gives auto nothing to pick up: a checkpoint, or a current phase with no to-dos; else ""."""
     got = active(root, track)
     if got is None:
-        return ""
+        drafts = [m for m, plan in enumerate(_all(root, track), 1)
+                  if (plan.get("status") or DRAFT) == DRAFT and any(ph.get("todos") for ph in plan.get("phases") or [])]
+        return say("stall_draft", n=drafts[0]) if drafts else ""
     n, plan, rows = got
     held = checkpoint(plan, rows)
     if held:
