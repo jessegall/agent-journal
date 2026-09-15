@@ -283,9 +283,9 @@ const STATUS_COLOR = {
   progress: "#5b8def", blocked: "#d9a441", done: "#3ecf74", waiting: "#a78bfa", open: "#8b8e96", withdrawn: "#55575d",
 };
 const StatusIcon = {
-  props: ["kind"],
+  props: ["kind", "tint"],
   setup(props) {
-    const color = computed(() => STATUS_COLOR[props.kind] || STATUS_COLOR.open);
+    const color = computed(() => props.tint || STATUS_COLOR[props.kind] || STATUS_COLOR.open);
     return { color };
   },
   // done is filled as well as green, so it stands apart from open by shape, not by colour alone
@@ -1062,7 +1062,7 @@ const ResourceList = {
         <a v-for="(r, i) in g.rows" :key="r.n ?? r.name" :class="['row', 'lrow', {sel: selected && selected(r), struck: columns.struck && columns.struck(r), moving: moving(r), fresh: fresh(r)}]"
           :style="{'--i': i, '--num-w': columns.numWidth || '44px', ...(columns.ageWidth ? {'--age-col': columns.ageWidth} : {})}" :href="href(r)" @click="open($event, r)">
           <PriorityIcon v-if="columns.priority" :value="columns.priority(r)"/>
-          <StatusIcon v-if="columns.status" :kind="columns.status(r)"/>
+          <StatusIcon v-if="columns.status" :kind="columns.status(r)" :tint="columns.tint ? columns.tint(r) : null"/>
           <span v-if="columns.type" class=type :style="{ color: (TYPES[columns.type(r)] || {}).tint }">{{ (TYPES[columns.type(r)] || {}).label }}</span>
           <span v-if="columns.num" class=num>{{ columns.num(r) }}</span>
           <span v-if="columns.question" :class="['qmark', columns.question(r).state]" :title="columns.question(r).title"
@@ -1910,7 +1910,7 @@ function suggestionKind(s) { return s.status === "open" ? "waiting" : s.status =
 const INBOX_LIST = {
   groups: [{ key: "you", label: "Waiting on you", kind: "waiting", match: (r) => r.group === "you" },
            { key: "handled", label: "Handled", kind: "done", closed: true, match: (r) => r.group !== "you" }],
-  columns: { status: (r) => r.status, type: (r) => r.type, num: (r) => `#${r.num}`, numWidth: "34px", title: (r) => r.title, age: (r) => shortAge(r.age), ageWidth: "52px", struck: (r) => r.struck },
+  columns: { status: (r) => r.status, tint: (r) => (r.group === "you" ? (TYPES[r.type] || {}).tint || null : null), type: (r) => r.type, num: (r) => `#${r.num}`, numWidth: "34px", title: (r) => r.title, age: (r) => shortAge(r.age), ageWidth: "52px", struck: (r) => r.struck },
   sorts: [{ key: "at", label: "Newest", value: (r) => r.at || "" }],
   count: (rows) => `${rows.filter((r) => r.group === "you").length} waiting · ${rows.filter((r) => r.at && Date.now() - Date.parse(r.at) < 7 * 86400000).length} this week`,
   empty: "Nothing has arrived here yet.", name: "inbox",
@@ -1962,7 +1962,7 @@ const Inbox = {
           <ResourceList v-bind="INBOX_LIST" :archive="!!archive" :home="home" :rows="rows" :loading="messages.loading" :error="messages.error"
             :href="(r) => base + '/' + inboxRef(r)" :selected="(r) => inboxRef(r) === n">
             <template #tools>
-              <button type=button class=btn @click="readAll">Mark all read</button>
+              <button type=button class="btn toolbar-btn" @click="readAll">Mark all read</button>
               <button type=button class="btn new" :title="hint" @click="writeMessage">Message the agent</button>
             </template>
           </ResourceList>
