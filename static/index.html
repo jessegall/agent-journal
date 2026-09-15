@@ -339,6 +339,37 @@
   .empty { color: var(--text-3); padding: 16px 20px; margin: 0; }
   .error { color: var(--danger); padding: 12px 20px; margin: 0; }
   .muted { color: var(--text-3); }
+  /* a plan's phases as steps: a numbered mark on a line that runs down to the next phase */
+  .plan-steps { list-style: none; margin: 20px 0 0; padding: 0; }
+  .plan-step { position: relative; display: grid; grid-template-columns: 24px 1fr; column-gap: 12px; padding-bottom: 20px; }
+  .plan-step:not(:last-child)::before { content: ""; position: absolute; left: 11.5px; top: 28px; bottom: 4px; width: 1px; background: var(--border-2); }
+  .plan-step-mark { box-sizing: border-box; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; font-weight: 600; border: 1px solid var(--border-2); color: var(--text-3); background: var(--raised); }
+  .plan-step.current .plan-step-mark { border-color: var(--accent); color: var(--accent-text); background: color-mix(in srgb, var(--accent) 16%, transparent); }
+  .plan-step.complete .plan-step-mark { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .plan-step.complete:not(:last-child)::before { background: color-mix(in srgb, var(--accent) 55%, transparent); }
+  .plan-step-body { min-width: 0; }
+  .plan-step-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 24px; }
+  .plan-step-title { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .plan-step:not(.complete):not(.current) .plan-step-title { color: var(--text-2); }
+  .plan-step-state { font-size: 11.5px; color: var(--text-3); }
+  .plan-step.current .plan-step-state { color: var(--accent-text); }
+  .plan-step-head .plan-checkpoint { margin: 0; height: 18px; font-size: 10.5px; }
+  .plan-step-when { margin: 2px 0 0; font-size: 12px; }
+  .plan-step-todos { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
+  .plan-step-todos li { display: flex; align-items: center; gap: 7px; min-width: 0; }
+  .plan-step-todos .ico { width: 14px; height: 14px; flex: none; }
+  .plan-step-todos a { color: var(--text-3); text-decoration: none; font-variant-numeric: tabular-nums; }
+  .plan-step-todos a:hover { color: var(--text); }
+  .plan-todo-done { color: var(--text-3); text-decoration: line-through; }
+  .plan-held { margin: 14px 0 0; padding: 8px 10px; border-radius: 8px; font-size: 12.5px; color: var(--text);
+    border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); background: color-mix(in srgb, var(--warn) 10%, transparent); }
+  .home-plan .plan-strip { display: flex; flex-direction: column; gap: 7px; padding: 12px 14px; text-decoration: none; color: var(--text); }
+  .plan-strip-title { font-weight: 600; font-size: 13.5px; }
+  .plan-strip-phase { font-size: 12px; color: var(--text-2); }
+  .plan-strip-phase.held { color: var(--warn); }
+  .plan-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+  .plan-bar > span { display: block; height: 100%; background: var(--accent); }
 
   /* detail panel */
   .panel { width: clamp(320px, 30vw, 400px); flex: none; min-height: 0; display: flex; flex-direction: column;
