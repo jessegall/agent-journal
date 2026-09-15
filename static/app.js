@@ -521,7 +521,7 @@ function storedInspectorWidth() {
 }
 
 const Panel = {
-  props: ["label", "close", "onClose", "link"],
+  props: ["label", "close", "onClose", "link", "hint"],
   components: { Icon },
   setup(props) {
     const body = ref(null);
@@ -634,7 +634,7 @@ const Panel = {
           <button v-if="place" type=button class=icon-btn title="Next (↓)" aria-label="Next" :disabled="INSPECTOR_TRAIL.items.length < 2" @click="step(1)"><Icon name="down"/></button>
           <button type=button class=icon-btn title="Close" aria-label="Close" @click="dismiss"><Icon name="close"/></button>
         </span></div>
-      <div class=panel-body ref=body @click="onClick" @keydown="onKey"><slot/><p class=panel-hint>{{ place ? '↑↓ steps · Esc closes' : 'Esc closes' }}</p></div>
+      <div class=panel-body ref=body @click="onClick" @keydown="onKey"><slot/><p class=panel-hint>{{ hint || (place ? '↑↓ steps · Esc closes' : 'Esc closes') }}</p></div>
     </aside>`,
 };
 
@@ -815,7 +815,10 @@ const FromMessages = {
 // fields that changed, `leave` returns to the list, `shape` rewrites the payload before it is sent.
 const ActionBar = {
   props: { actions: { type: Array, default: () => [] }, done: Function, open: { type: String, default: "" } },
+  components: { Icon },
   setup(props) {
+    // the one primary action leads the row; the rest keep their order after it
+    const ordered = computed(() => [...props.actions.filter((a) => a.primary), ...props.actions.filter((a) => !a.primary)]);
     const s = reactive({ open: "", values: {}, sending: false, error: null });
     const current = computed(() => props.actions.find((a) => a.label === s.open) || null);
     const initial = (a, name) => ((a.fields || []).find((f) => f.name === name) || {}).value ?? "";
@@ -852,13 +855,13 @@ const ActionBar = {
         s.sending = false;
       }
     }
-    return { s, current, pick, go };
+    return { s, current, pick, go, ordered };
   },
   template: `
     <div v-if="actions.length" class=actions>
       <div v-if="!open" class=action-buttons>
-        <button v-for="a in actions" :key="a.label" type=button :class="['btn', {danger: a.danger, on: s.open === a.label}]"
-          @click="pick(a)">{{ a.label }}</button>
+        <button v-for="a in ordered" :key="a.label" type=button :class="[a.primary ? 'primary-act' : 'btn', {danger: a.danger, on: s.open === a.label}]"
+          @click="pick(a)">{{ a.label }}<Icon v-if="a.primary" name="arrow"/></button>
       </div>
       <form v-if="current" class=action-form @submit.prevent="go">
         <label v-for="f in current.fields || []" :key="f.name" class=field>
@@ -1200,8 +1203,15 @@ function priorityName(value) {
 const PANEL_PROPS = ["env", "n", "close", "onClose", "base", "link", "reloaded"];
 
 function panelDone(props, item) {
-  return (body, a) => { settle(body, a, props.base, item); if (props.reloaded) props.reloaded(); };
+  return (body, a) => {
+    settle(a.advance ? null : body, a.advance ? { ...a, follow: null, leave: false } : a, props.base, item);
+    if (props.reloaded) props.reloaded();
+    if (a.advance) advanceInspector(props);
+  };
 }
+
+// a primary action that also opens the next item says so, while there is a next item to open
+function nextWord() { return INSPECTOR_TRAIL.items.length > 1 ? " & next" : ""; }
 
 const TodoPanel = {
   props: PANEL_PROPS,
@@ -1227,7 +1237,7 @@ const TodoPanel = {
           fields: [{ name: "title", label: "Title", value: t.title },
                    { name: "body", label: "Brief", kind: "area", value: t.body || "" },
                    { name: "priority", label: "Priority", kind: "select", value: priorityName(t.priority).toLowerCase(), options: PRIORITIES }] },
-        { label: "Mark done", method: "POST", url: `${url}/done`, fields: [{ name: "how", label: "How it was finished" }] },
+        { label: `Mark done${nextWord()}`, primary: true, advance: true, method: "POST", url: `${url}/done`, fields: [{ name: "how", label: "How it was finished" }] },
         { label: "Waits on", method: "POST", url: `${url}/after`, submit: "Save",
           fields: [{ name: "names", label: "To-do numbers it waits on", value: t.after.join(", "), placeholder: "3, 7" }],
           note: "It cannot start before those are done. Leave it empty to wait on nothing.",
@@ -1355,7 +1365,7 @@ const QuestionPanel = {
     return { item, onAnswered, questionKind, actions, done };
   },
   template: `
-    <Panel :label=\"'Question ' + n" :close="close" :onClose="onClose" :link="link">
+    <Panel :label=\"'Question ' + n" :close="close" :onClose="onClose" :link="link" :hint="item.data && item.data.status === 'open' ? '⌘↵ sends and opens the next one' : ''">
       <p v-if="item.error" class=error>{{ item.error }}</p>
       <template v-else-if="item.data">
         <div class="md p-title" v-html="$md(item.data.text)"></div>
@@ -1646,7 +1656,7 @@ const SuggestionPanel = {
       if (!s || s.status !== "open") return [];
       const url = `${api.value}/${s.n}`;
       return [
-        { label: "Accept", method: "POST", url: `${url}/accept`, submit: "Accept",
+        { label: `Accept${nextWord()}`, primary: true, advance: true, method: "POST", url: `${url}/accept`, submit: "Accept",
           fields: [{ name: "note", label: "A note for the to-do (optional)", kind: "area" }],
           note: "A to-do is filed from it." },
         { label: "Adjust", method: "POST", url: `${url}/adjust`, submit: "Accept with this change",
@@ -1658,7 +1668,8 @@ const SuggestionPanel = {
       ];
     });
     const settled = panelDone(props, item);
-    const done = (body, a) => { settled(body, a); if (["Accept", "Adjust", "Decline"].includes(a.label)) advanceInspector(props); };
+    // Accept advances through panelDone; adjusting or declining also settles the suggestion, so it opens the next one too
+    const done = (body, a) => { settled(body, a); if (["Adjust", "Decline"].includes(a.label)) advanceInspector(props); };
     return { item, actions, done, SUGGESTION_STATUS };
   },
   template: `
@@ -1987,7 +1998,7 @@ const PlanPanel = {
       if (!p || p.status === "done" || p.status === "abandoned") return [];
       const url = `${api.value}/${p.n}`;
       return [
-        ...(p.status === "draft" ? [{ label: "Approve plan", method: "POST", url: `${url}/activate`, submit: "Approve plan",
+        ...(p.status === "draft" ? [{ label: "Approve the plan", primary: true, advance: true, method: "POST", url: `${url}/activate`, submit: "Approve the plan",
                                       note: "The agent is assigned this plan and starts its first phase. One plan at a time." }] : []),
         { label: "Abandon", method: "DELETE", url, danger: true, submit: "Abandon", fields: [{ name: "why", label: "Why the plan is stopped" }] },
       ];
@@ -2231,7 +2242,7 @@ const ReportPanel = {
       const r = item.data;
       if (!r || r.archived) return [];
       return [
-        { label: "Turn into doc", method: "POST", url: `${api.value}/${r.n}/todoc`, submit: "Turn into doc",
+        { label: "Turn into a doc", primary: true, method: "POST", url: `${api.value}/${r.n}/todoc`, submit: "Turn into a doc",
           note: "A document is made from this report and kept for good; the report is archived.",
           follow: (body) => (body.data && body.data.doc ? `#/docs/${body.data.doc}` : null) },
         { label: "Archive", method: "DELETE", url: `${api.value}/${r.n}`, danger: true, submit: "Archive",
