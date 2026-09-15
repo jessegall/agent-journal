@@ -526,7 +526,7 @@ def row_response(root: Path, n: int, plan: dict, track: str, full: bool = False)
            "refs": list(plan.get("refs") or []), "why": plan.get("why") or "",
            "phases_total": len(rows), "phases_done": sum(1 for r in rows if r["complete"]),
            "current": now["p"] if now else None, "current_title": now["title"] if now else "",
-           "held": held["p"] if held else None, "auto": bool(plan.get("auto")),
+           "held": held["p"] if held else None, "auto": bool(plan.get("auto")), "from_doc": plan.get("from_doc") or None,
            "closed_at": plan.get("done_at") or plan.get("closed_at") or "", "gist": fmt.gist(plan.get("goal", ""))}
     row["meta"] = " · ".join(x for x in (row["age"], say("progress", done=row["phases_done"], total=row["phases_total"]),
                                          say("current", p=now["p"], title=now["title"]) if now else "",
