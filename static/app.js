@@ -13,6 +13,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(\/archive)?(?:\/(\d+))?$/, view: "Inbox", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/questions(\/archive)?(?:\/(\d+))?$/, view: "Questions", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reports(\/archive)?(?:\/(\d+|new))?$/, view: "Reports", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/plans(\/archive)?(?:\/(\d+|new))?$/, view: "Plans", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/suggestions(\/archive)?(?:\/(\d+|ask))?$/, view: "Suggestions", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/style(?:\/([a-z0-9-]+))?$/, view: "Style", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/work(\/archive)?(?:\/(\d+|new))?$/, view: "Work", params: ["env", "archive", "n"] },
@@ -117,6 +118,7 @@ function refHref(ref, env) {
   if (kind === "doc") return `#/docs/${num}`;
   if (kind === "question") return `#/env/${env}/questions/${num}`;
   if (kind === "report") return `#/env/${env}/reports/${num}`;
+  if (kind === "plan") return `#/env/${env}/plans/${num}`;
   if (kind === "suggestion") return `#/env/${env}/suggestions/${num}`;
   if (kind === "reminder") return `#/env/${env}/reminders`;
   if (kind === "inbox") return `#/env/${env}/messages/${num}`;
@@ -217,7 +219,7 @@ function renderMarkdown(src) {
 }
 
 // page view -> its help file under static/help/
-const HELP_TOPICS = { Todos: "todos", Inbox: "messages", Questions: "questions", Suggestions: "suggestions", Reports: "reports",
+const HELP_TOPICS = { Todos: "todos", Inbox: "messages", Questions: "questions", Suggestions: "suggestions", Reports: "reports", Plans: "plans",
   Pins: "pins", Reminders: "reminders", Work: "work", EnvDocs: "docs", Docs: "docs", DocDetail: "docs", Rules: "rules", Tools: "tools",
   Files: "files", Style: "style" };
 const HELP_CACHE = {};
@@ -231,6 +233,7 @@ const Icon = {
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
+      <template v-else-if="name === 'plans'"><circle cx="4" cy="4" r="1.6"/><circle cx="4" cy="12" r="1.6"/><path d="M4 5.6v4.8M7.5 4h6M7.5 12h6M7.5 8h4"/></template>
       <template v-else-if="name === 'info'"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></template>
       <template v-else-if="name === 'bell'"><path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/></template>
       <template v-else-if="name === 'activity'"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></template>
@@ -331,7 +334,7 @@ const TopBar = {
     // what the agent keeps lives here as icons; the one whose page is open is lit
     const view = parseHash().view || "";
     const KEPT = [{ key: "suggestions", label: "Suggestions", view: "Suggestions" }, { key: "style", label: "Coding style", view: "Style" },
-                  { key: "reports", label: "Reports", view: "Reports" }, { key: "pins", label: "Pins", view: "Pins" },
+                  { key: "reports", label: "Reports", view: "Reports" }, { key: "plans", label: "Plans", view: "Plans" }, { key: "pins", label: "Pins", view: "Pins" },
                   { key: "reminders", label: "Reminders", view: "Reminders" }];
     // each resource page explains itself from static/help/<topic>.md
     const helpTopic = HELP_TOPICS[view] || "";
@@ -1105,6 +1108,7 @@ const TodoPanel = {
             </div>
           </dd>
           <dt>Cites</dt><dd><a v-if="item.data.doc" :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a><span v-else class=muted>—</span></dd>
+          <template v-if="item.data.plan"><dt>Plan</dt><dd><a :href="'#/env/' + env + '/plans/' + item.data.plan.n">Plan {{ item.data.plan.n }} · phase {{ item.data.plan.phase }}</a></dd></template>
           <dt>Added</dt><dd>{{ item.data.age || '—' }}</dd>
           <template v-if="item.data.after.length">
             <dt>Waits on</dt><dd><a v-for="a in item.data.after" :key="a" :href="todoHref(a)">#{{ a }}</a></dd>
@@ -1672,6 +1676,152 @@ const Inbox = {
     </div>`,
 };
 
+const PLAN_STATUS = { draft: "Draft", active: "Active", done: "Done", abandoned: "Abandoned" };
+
+const PLAN_LIST = {
+  groups: [{ key: "active", label: "Active", kind: "progress", match: (p) => p.status === "active" },
+           { key: "draft", label: "Drafts", kind: "open", match: (p) => p.status === "draft" },
+           { key: "done", label: "Done", kind: "done", closed: true, match: (p) => p.status === "done" },
+           { key: "abandoned", label: "Abandoned", kind: "withdrawn", closed: true, match: (p) => p.status === "abandoned" }],
+  columns: { num: (p) => `#${p.n}`, title: (p) => p.title, sub: (p) => p.goal, cite: (p) => `${p.phases_done} of ${p.phases_total} phases`,
+             age: (p) => p.age, struck: (p) => p.status === "abandoned" },
+  count: (rows) => `${rows.filter((p) => p.status === "active" || p.status === "draft").length} plans`, name: "plans",
+  empty: "No plans on this environment yet.",
+};
+
+// a plan's links are written "doc 4.2" and "report 1"; refHref reads "doc:4.2"
+function planRefHref(ref, env) { return refHref(String(ref).replace(" ", ":"), env); }
+
+function planStepState(ph) { return ph.complete ? "Complete" : ph.current ? "Current" : "Not started"; }
+
+const ActivePlan = {
+  props: ["env"],
+  setup(props) {
+    const list = useFetch(() => props.env && `/api/env/${props.env}/plans`);
+    const plan = computed(() => (list.data || []).find((p) => p.status === "active") || null);
+    const width = computed(() => (plan.value && plan.value.phases_total ? `${(100 * plan.value.phases_done) / plan.value.phases_total}%` : "0%"));
+    const phaseLine = computed(() => {
+      const p = plan.value;
+      if (!p) return "";
+      return p.held ? `Stopped after phase ${p.held}, a checkpoint: waiting for you to continue` : `Phase ${p.current} of ${p.phases_total} is current: ${p.current_title}`;
+    });
+    return { plan, width, phaseLine };
+  },
+  template: `
+    <section v-if="plan" class=home-plan>
+      <div class=home-head><h2>Plan</h2><span class=n>{{ plan.phases_done }} of {{ plan.phases_total }} phases complete</span>
+        <a class=more :href="'#/env/' + env + '/plans/' + plan.n">Open plan</a></div>
+      <a class="block plan-strip" :href="'#/env/' + env + '/plans/' + plan.n">
+        <span class=plan-strip-title>{{ plan.title }}</span>
+        <span :class="['plan-strip-phase', {held: plan.held}]">{{ phaseLine }}</span>
+        <span class=plan-bar><span :style="{ width }"></span></span>
+      </a>
+    </section>`,
+};
+
+const Plans = {
+  props: ["env", "archive", "n"],
+  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/plans`);
+    const home = computed(() => `#/env/${props.env}/plans`);
+    const base = computed(() => home.value + (props.archive || ""));
+    const reading = computed(() => props.n && props.n !== "new");
+    const list = useFetch(() => props.env && !reading.value && `${api.value}?all=1`);
+    const item = useFetch(() => props.env && reading.value && `${api.value}/${props.n}`);
+    const creating = computed(() => [{
+      label: "New plan", method: "POST", url: api.value, submit: "Save draft", leave: true,
+      fields: [{ name: "title", label: "Title" }, { name: "goal", label: "Goal", placeholder: "What is true when the plan is done" },
+               { name: "body", label: "Approach (optional)", kind: "area" }],
+      note: "A plan starts as a draft. Add its phases and to-dos, then approve it.",
+    }]);
+    const actions = computed(() => {
+      const p = item.data;
+      if (!p || p.status === "done" || p.status === "abandoned") return [];
+      const url = `${api.value}/${p.n}`;
+      const out = [];
+      if (p.status === "draft") {
+        out.push({ label: "Approve plan", method: "POST", url: `${url}/activate`, submit: "Approve",
+                   note: "The plan becomes active. The agent works its phases in order, starting with phase 1." });
+      }
+      if (p.held) {
+        out.push({ label: "Continue", method: "POST", url: `${url}/proceed`, submit: "Continue",
+                   note: `Phase ${p.held} is a checkpoint. Continuing lets the agent start the next phase.` });
+      }
+      out.push(
+        { label: "Add phase", method: "POST", url: `${url}/phase`, submit: "Add phase",
+          fields: [{ name: "title", label: "Title" }, { name: "when", label: "Complete when (optional)" }] },
+        { label: "Add to-dos", method: "POST", url: `${url}/todos`, submit: "Add",
+          fields: [{ name: "phase", label: "Phase number" }, { name: "todos", label: "To-do numbers", placeholder: "4, 5, 6" },
+                   { name: "reopen", label: "Why, if the phase is already complete (optional)" }] },
+        { label: "Link", method: "POST", url: `${url}/link`, submit: "Link",
+          fields: [{ name: "ref", label: "Document or report", placeholder: "doc 4.2 or report 1" }] },
+        { label: "Abandon", method: "DELETE", url, danger: true, submit: "Abandon",
+          fields: [{ name: "why", label: "Why the plan is stopped" }] });
+      return out;
+    });
+    const done = (body, a) => settle(body, a, reading.value ? "" : base.value, list, item);
+    const doneCount = (ph) => ph.todos.filter((t) => t.done).length;
+    return { list, item, reading, creating, actions, done, home, base, PLAN_LIST, PLAN_STATUS, doneCount, planStepState, planRefHref };
+  },
+  template: `
+    <template v-if="reading">
+      <TopBar :crumbs="[env, 'Plans', '#' + n]"><a class=btn :href="base">All plans</a></TopBar>
+      <div class=body><div class=page><div class=page-inner>
+        <p v-if="item.error" class=error>{{ item.error }}</p>
+        <template v-else-if="item.data">
+          <h1 class=p-title>{{ item.data.title }}</h1>
+          <dl class=props>
+            <dt>Status</dt><dd>{{ PLAN_STATUS[item.data.status] }}<span v-if="item.data.why" class=muted>{{ item.data.why }}</span></dd>
+            <dt>Goal</dt><dd>{{ item.data.goal }}</dd>
+            <dt>Progress</dt><dd>{{ item.data.phases_done }} of {{ item.data.phases_total }} phases complete</dd>
+            <dt>Links</dt><dd><template v-if="item.data.refs.length"><a v-for="r in item.data.refs" :key="r" class=chip :href="planRefHref(r, env)">{{ r }}</a></template><span v-else class=muted>—</span></dd>
+            <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
+          </dl>
+          <p v-if="item.data.held" class=plan-held>Stopped after phase {{ item.data.held }}, a checkpoint. The agent waits until you continue.</p>
+          <ActionBar :actions="actions" :done="done" :key="'plan' + item.data.n + item.data.status + (item.data.held || '')"/>
+          <ol v-if="item.data.phases.length" class=plan-steps>
+            <li v-for="ph in item.data.phases" :key="ph.p" :class="['plan-step', {complete: ph.complete, current: ph.current}]">
+              <span class=plan-step-mark>{{ ph.complete ? '✓' : ph.p }}</span>
+              <div class=plan-step-body>
+                <div class=plan-step-head>
+                  <span class=plan-step-title>Phase {{ ph.p }}: {{ ph.title }}</span>
+                  <span class=plan-step-state>{{ planStepState(ph) }} · {{ doneCount(ph) }} of {{ ph.todos.length }} to-dos done</span>
+                  <span v-if="ph.checkpoint" class="chip plan-checkpoint">Checkpoint</span>
+                </div>
+                <p v-if="ph.when" class="muted plan-step-when">Complete when {{ ph.when }}</p>
+                <ul class=plan-step-todos>
+                  <li v-for="t in ph.todos" :key="t.n">
+                    <StatusIcon :kind="t.done ? 'done' : 'open'"/>
+                    <a :href="'#/env/' + env + '/todos/' + t.n">#{{ t.n }}</a>
+                    <span :class="{'plan-todo-done': t.done}">{{ t.title || 'archived' }}</span>
+                  </li>
+                  <li v-if="!ph.todos.length" class=muted>No to-dos yet</li>
+                </ul>
+              </div>
+            </li>
+          </ol>
+          <p v-else class=muted>No phases yet.</p>
+          <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
+        </template>
+      </div></div></div>
+    </template>
+    <template v-else>
+      <TopBar :crumbs="archive ? [env, 'Plans', 'Archive'] : [env, 'Plans']"/>
+      <div class=body>
+        <div class=list>
+          <ResourceList v-bind="PLAN_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
+            :href="(p) => base + '/' + p.n">
+            <template #tools><a class="btn new" :href="home + '/new'">New plan</a></template>
+          </ResourceList>
+        </div>
+        <Panel v-if="n === 'new'" label="New plan" :close="base">
+          <ActionBar :actions="creating" open="New plan" :done="done"/>
+        </Panel>
+      </div>
+    </template>`,
+};
+
 const REPORT_LIST = {
   groups: [{ key: "reports", label: "Reports", kind: "open", match: (r) => !r.archived },
            { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (r) => r.archived }],
@@ -2141,7 +2291,7 @@ const Peek = {
 // ─────────────────────────────────────────────────────────────── an environment's home
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, StatusIcon, PriorityIcon, Peek, ResourceList, RadioGroup },
+  components: { TopBar, Icon, StatusIcon, PriorityIcon, Peek, ResourceList, RadioGroup, ActivePlan },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     const summary = useFetch(url(""));
@@ -2291,6 +2441,8 @@ const EnvHome = {
             :pick="(q) => peek('question', q.n)" :selected="picked('question')"/>
         </div>
       </section>
+
+      <ActivePlan :env="env"/>
 
       <section>
         <div class=home-head><h2>To-dos</h2>
@@ -2907,7 +3059,7 @@ const SkillView = {
     </div></div></div>`,
 };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Style, Reports, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, SkillView, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Style, Reports, Plans, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, SkillView, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -3092,7 +3244,7 @@ const App = {
       try { localStorage.setItem(FOLDED, JSON.stringify(folded)); } catch (e) { /* storage off */ }
     };
     // an activity row opens what it is about, when it is about something with a page
-    const ACTIVITY_PAGES = { todo: "todos", question: "questions", message: "messages", work: "work", report: "reports",
+    const ACTIVITY_PAGES = { todo: "todos", question: "questions", message: "messages", work: "work", report: "reports", plan: "plans",
                              suggestion: "suggestions", pin: "pins", reminder: "reminders" };
     const activityHref = (e) => {
       if (e.kind === "doc") return e.n ? `#/docs/${e.n}` : "#/docs";

@@ -420,12 +420,13 @@ def link(root: Path, n: int, ref: str, track: str | None = None) -> tuple[bool, 
 
 def row_response(root: Path, n: int, plan: dict, track: str, full: bool = False) -> dict:
     rows = phases(root, plan, track)
-    now = current(plan, rows)
+    now, held = current(plan, rows), checkpoint(plan, rows)
     row = {"n": n, "title": plan.get("title", ""), "goal": plan.get("goal", ""), "status": status(plan, rows),
            "at": plan.get("at", ""), "age": age(plan.get("at", "")) if plan.get("at") else "",
            "refs": list(plan.get("refs") or []), "why": plan.get("why") or "",
            "phases_total": len(rows), "phases_done": sum(1 for r in rows if r["complete"]),
-           "current": now["p"] if now else None, "gist": fmt.gist(plan.get("goal", ""))}
+           "current": now["p"] if now else None, "current_title": now["title"] if now else "",
+           "held": held["p"] if held else None, "gist": fmt.gist(plan.get("goal", ""))}
     row["meta"] = " · ".join(x for x in (row["age"], say("progress", done=row["phases_done"], total=row["phases_total"]),
                                          say("current", p=now["p"], title=now["title"]) if now else "",
                                          row["why"]) if x)

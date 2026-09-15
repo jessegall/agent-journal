@@ -1520,6 +1520,12 @@ def question_counts(root: Path, track: str) -> dict[int, tuple[int, int]]:
     return {n: (a, b) for n, (a, b) in out.items()}
 
 
+def _plan_of(root: Path, track: str, n: int) -> dict | None:
+    import plans
+    got = plans.membership(root, track).get(n)
+    return {"n": got[0], "phase": got[1]} if got else None
+
+
 def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
                  counts: dict[int, tuple[int, int]] | None = None, by_n: dict | None = None) -> dict:
     """One to-do as a plain, JSON-safe dict — the shape the web viewer serves, built
@@ -1548,6 +1554,7 @@ def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
         "meta": facts_text(root, track, t, short_refs, by_n=by_n),
         "started": t.get("started") or "",
         "done": t.get("done") or "",
+        "plan": _plan_of(root, track, t["n"]),
         "closed_at": t.get("done") or "",
         "done_age": _age(t.get("done") or ""),
         "how": close_note(t),
