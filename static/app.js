@@ -10,7 +10,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)$/, view: "EnvHome", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/todos(\/archive)?(?:\/(\d+|new))?$/, view: "Todos", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/pins(\/archive)?(?:\/(\d+|new))?$/, view: "Pins", params: ["env", "archive", "n"] },
-  { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(\/archive)?(?:\/(\d+))?$/, view: "Inbox", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(\/archive)?(?:\/((?:[qs]\/)?\d+))?$/, view: "Inbox", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/questions(\/archive)?(?:\/(\d+))?$/, view: "Questions", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reports(\/archive)?(?:\/(\d+|new))?$/, view: "Reports", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/plans(\/archive)?(?:\/(\d+|new))?$/, view: "Plans", params: ["env", "archive", "n"] },
@@ -1783,15 +1783,49 @@ const Rules = claimsView({
 });
 
 // ─────────────────────────────────────────────────────────────── inbox and questions
+// the Inbox: messages, questions and suggestions in one list; a question or suggestion opens as q/3 or s/7
+function inboxRef(r) { return r.type === "message" ? String(r.num) : `${r.type[0]}/${r.num}`; }
+
+function suggestionKind(s) { return s.status === "open" ? "waiting" : s.status === "accepted" || s.status === "adjusted" ? "done" : "withdrawn"; }
+
+const INBOX_LIST = {
+  groups: [{ key: "you", label: "Waiting on you", kind: "waiting", match: (r) => r.group === "you" },
+           { key: "agent", label: "Waiting on the agent", kind: "progress", match: (r) => r.group === "agent" },
+           { key: "handled", label: "Handled", kind: "done", closed: true, match: (r) => r.group === "handled" }],
+  columns: { status: (r) => r.status, type: (r) => r.type, num: (r) => `#${r.num}`, title: (r) => r.title, age: (r) => r.age, struck: (r) => r.struck },
+  sorts: [{ key: "at", label: "Newest", value: (r) => r.at || "" }],
+  count: (rows) => `${rows.filter((r) => r.group === "you").length} waiting on you`,
+  empty: "Nothing has arrived here yet.", name: "inbox",
+};
+
 const Inbox = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Compose, ResourceList, MessagePanel },
+  components: { TopBar, Compose, ResourceList, MessagePanel, QuestionPanel, SuggestionPanel },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/inbox`);
     const home = computed(() => `#/env/${props.env}/messages`);
     const base = computed(() => home.value + (props.archive || ""));
-    const list = useFetch(() => props.env && `${api.value}?all=1`);
-    const send = (text, files) => postJSON(api.value, { text, files }).then(() => { list.reload(); changed(); });
+    const messages = useFetch(() => props.env && `${api.value}?all=1`);
+    const questions = useFetch(() => props.env && `/api/env/${props.env}/questions?all=1`);
+    const suggestions = useFetch(() => props.env && `/api/env/${props.env}/suggestions?all=1`);
+    const reloadAll = () => [messages, questions, suggestions].forEach((f) => f.reload());
+    const rows = computed(() => {
+      if (!messages.data || !questions.data || !suggestions.data) return null;
+      return [
+        ...messages.data.map((m) => ({ name: `m${m.n}`, type: "message", num: m.n, title: m.text, age: m.age, at: m.at, closed_at: m.closed_at,
+                                       group: m.status === "waiting" ? "agent" : "handled", status: MESSAGE_LIST.columns.status(m), struck: m.status === "archived" })),
+        ...questions.data.map((q) => ({ name: `q${q.n}`, type: "question", num: q.n, title: q.text, age: q.age, at: q.at, closed_at: q.closed_at,
+                                        group: q.status === "open" ? "you" : "handled", status: questionKind(q), struck: q.status === "withdrawn" })),
+        ...suggestions.data.map((s) => ({ name: `s${s.n}`, type: "suggestion", num: s.n, title: s.title, age: s.age, at: s.at, closed_at: s.closed_at,
+                                          group: s.status === "open" ? "you" : "handled", status: suggestionKind(s), struck: s.status === "declined" || s.status === "withdrawn" })),
+      ];
+    });
+    const opened = computed(() => {
+      const m = /^(?:([qs])\/)?(\d+)$/.exec(props.n || "");
+      if (!m) return null;
+      return { type: m[1] === "q" ? "question" : m[1] === "s" ? "suggestion" : "message", num: m[2] };
+    });
+    const send = (text, files) => postJSON(api.value, { text, files }).then(() => { messages.reload(); changed(); });
     // a message only reaches an agent at its next hook event; say so when none is working here
     const live = computed(() => {
       const row = OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null;
@@ -1799,22 +1833,24 @@ const Inbox = {
     });
     const hint = computed(() => (live.value ? "The agent is told at its next stop"
       : "No agent is working on this environment right now; the message waits until a session picks it up"));
-    return { list, send, home, base, MESSAGE_LIST, hint };
+    return { rows, messages, reloadAll, opened, send, home, base, INBOX_LIST, hint, inboxRef };
   },
   template: `
-    <TopBar :crumbs="archive ? [env, 'Messages', 'Archive'] : [env, 'Messages']"/>
+    <TopBar :crumbs="archive ? [env, 'Inbox', 'Archive'] : [env, 'Inbox']"/>
     <div class=body>
       <div class=chat>
         <div class=list>
-          <ResourceList v-bind="MESSAGE_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
-            :href="(m) => base + '/' + m.n" :selected="(m) => String(m.n) === n"/>
+          <ResourceList v-bind="INBOX_LIST" :archive="!!archive" :home="home" :rows="rows" :loading="messages.loading" :error="messages.error"
+            :href="(r) => base + '/' + inboxRef(r)" :selected="(r) => inboxRef(r) === n"/>
         </div>
         <div v-if="!archive" class="compose-wrap at-bottom">
           <Compose placeholder="Leave a message for the agent: an instruction, a follow-up, anything"
             submit="Send" :hint="hint" :send="send" :attach="true" :autofocus="!n"/>
         </div>
       </div>
-      <MessagePanel v-if="n" :key="'message' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
+      <MessagePanel v-if="opened && opened.type === 'message'" :key="'message' + opened.num" :env="env" :n="opened.num" :close="base" :base="base" :reloaded="reloadAll"/>
+      <QuestionPanel v-else-if="opened && opened.type === 'question'" :key="'question' + opened.num" :env="env" :n="opened.num" :close="base" :base="base + '/q'" :reloaded="reloadAll"/>
+      <SuggestionPanel v-else-if="opened && opened.type === 'suggestion'" :key="'suggestion' + opened.num" :env="env" :n="opened.num" :close="base" :base="base + '/s'" :reloaded="reloadAll"/>
     </div>`,
 };
 
@@ -2771,8 +2807,6 @@ const Settings = {
             <a class=btn :href="'#/env/' + env + '/pins'">Pins</a>
             <a class=btn :href="'#/env/' + env + '/reminders'">Reminders</a>
             <a class=btn :href="'#/env/' + env + '/style'">Coding style</a>
-            <a class=btn :href="'#/env/' + env + '/questions'">Questions</a>
-            <a class=btn :href="'#/env/' + env + '/suggestions'">Suggestions</a>
           </div>
         </section>
         <section>
@@ -3199,7 +3233,7 @@ const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions
 // open work lives on Home, so the sidebar has no entry of its own for it
 const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "", count: "notifications" },
-  { key: "inbox", label: "Messages", views: ["Inbox"], path: "messages", count: "inbox" },
+  { key: "inbox", label: "Inbox", views: ["Inbox", "Questions", "Suggestions"], path: "messages", count: ["questions", "suggestions"] },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "docs", label: "Documents", views: ["EnvDocs", "Files", "Reports", "Plans"], path: "docs", count: "docs" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
@@ -3472,8 +3506,10 @@ const App = {
     document.addEventListener("visibilitychange", onVisibility);
     onUnmounted(() => { document.removeEventListener("visibilitychange", onVisibility); clearTimeout(awayTimer); });
     watchEffect(() => { SHELL.env = envName.value; SHELL.activity = activity.data; });
+    // a nav count may add several of the environment's counts, as the Inbox does for questions and suggestions
+    const navCount = (item) => (envRow.value ? [].concat(item.count).reduce((sum, k) => sum + (envRow.value[k] || 0), 0) : 0);
     SHELL.setAuto = setAuto;
-    return { route, ov, envName, envRow, NAV, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
+    return { route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, latest, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
   },
   template: `
     <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
@@ -3524,7 +3560,7 @@ const App = {
           <a v-if="!folded.environment" v-for="item in NAV" :key="item.key" :class="['item', {on: item.views.includes(route.view)}]"
             :href="'#/env/' + envName + (item.path ? '/' + item.path : '')">
             <Icon :name="item.key"/>{{ item.label }}
-            <span v-if="item.count" :class="['count', {hot: (item.key === 'inbox' || item.key === 'home') && envRow && envRow[item.count]}]">{{ envRow && envRow[item.count] ? envRow[item.count] : '' }}</span>
+            <span v-if="item.count" :class="['count', {hot: (item.key === 'inbox' || item.key === 'home') && navCount(item)}]">{{ navCount(item) || '' }}</span>
           </a>
         </div>
         <div class=group>
