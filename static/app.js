@@ -3780,7 +3780,8 @@ const QuickMenu = {
         { label: "Go to Inbox", keys: "inbox messages questions suggestions", hint: "page", icon: "inbox", run: goTo(`${base}/messages`) },
         { label: "Go to To-dos", keys: "todos todo tasks", hint: "page", icon: "todos", run: goTo(`${base}/todos`) },
         { label: "Go to Documents", keys: "documents docs reports plans", hint: "page", icon: "docs", run: goTo(`${base}/docs`) },
-        ...(p ? [{ label: "Go to the plan", keys: "plan phases checkpoint", hint: "page", icon: "plan", run: goTo(`${base}/plans/${p.n}`) }] : []),
+        // always listed: it opens the plan the agent is assigned, or the plans list while none is
+        { label: "Go to the plan", keys: "plan plans phases checkpoint", hint: "page", icon: "plan", run: goTo(p ? `${base}/plans/${p.n}` : `${base}/plans`) },
         { label: "Go to Settings", keys: "settings preferences", hint: "page", icon: "settings", run: goTo(`${base}/settings`) },
       ];
       if (waiting) {
