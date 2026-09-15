@@ -532,6 +532,11 @@ function storedInspectorWidth() {
   } catch (e) { return INSPECTOR_WIDTH.fallback; }
 }
 
+// how many inspector panels are showing, and when the last one went: stepping with the arrow keys or advancing
+// after an action unmounts one panel and mounts the next, and only the first open slides in
+const PANELS = { open: 0, leftAt: 0 };
+const STEP_MS = 250;
+
 const Panel = {
   props: ["label", "close", "onClose", "link", "hint"],
   components: { Icon },
@@ -540,6 +545,9 @@ const Panel = {
     // a panel lies over the whole app: the scrim, Esc and the close button all leave it the same way
     // it slides out before it goes, so it leaves a beat after the click
     const closing = ref(false);
+    const stepped = PANELS.open > 0 || Date.now() - PANELS.leftAt < STEP_MS;
+    PANELS.open += 1;
+    onUnmounted(() => { PANELS.open = Math.max(0, PANELS.open - 1); PANELS.leftAt = Date.now(); });
     const dismiss = () => {
       if (closing.value) return;
       closing.value = true;
@@ -631,11 +639,11 @@ const Panel = {
     let watcher = null;
     onMounted(() => { decorate(); watcher = new MutationObserver(decorate); watcher.observe(body.value, { childList: true, subtree: true }); });
     onUnmounted(() => { if (watcher) watcher.disconnect(); });
-    return { body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, INSPECTOR_TRAIL };
+    return { stepped, body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, INSPECTOR_TRAIL };
   },
   template: `
-    <div :class="['panel-scrim', {closing}]" @click="dismiss"></div>
-    <aside :class="['panel', {closing}]" :style="{ width: inspector.width + 'px' }">
+    <div :class="['panel-scrim', {closing, stepped}]" @click="dismiss"></div>
+    <aside :class="['panel', {closing, stepped}]" :style="{ width: inspector.width + 'px' }">
       <div class=panel-grip title="Drag to resize" @pointerdown="drag"></div>
       <div class=panel-top>
         <span class=panel-ref><span class=panel-chip :style="chipTint ? { color: chipTint } : null">{{ label }}</span>
