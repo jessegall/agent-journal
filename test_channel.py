@@ -130,6 +130,22 @@ check("a newer journal upstream is pushed to an idle session, with the upgrade c
 check("once per version", read_line(7), None)
 (root / "runtime" / "upstream.cache").unlink()
 
+import re as _re  # noqa: E402
+from datetime import datetime as _dt, timezone as _tz  # noqa: E402
+import plans as _plans  # noqa: E402
+_code, _out = P.cli("todos", "add", "the first step of the plan")
+_step = _re.search(r"to-do (\d+)", _out).group(1)
+P.cli("plans", "add", "a plan to approve", "--goal=it gets approved", "--brief", stdin="the approach")
+P.cli("plans", "phase", "1", "the first phase")
+P.cli("plans", "todos", "1", "1", _step)
+_plans.activate(root, 1, _dt.now(_tz.utc).isoformat(timespec="seconds"), source="web", track="default")
+push = read_line(12)
+params = (push or {}).get("params") or {}
+check("a plan the user approves in the viewer is pushed to an idle session, naming the phase to start",
+      (params.get("meta", {}).get("plan"), "approved plan 1" in params.get("content", ""), "the first phase, is current" in params.get("content", "")),
+      ("1", True, True))
+check("and only once", read_line(7), None)
+
 j("auto-mode", "enable")
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("messages", "add", "another one while working")

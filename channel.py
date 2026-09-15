@@ -25,7 +25,8 @@ INSTRUCTIONS = ("What the user does in the journal viewer while you are idle arr
                 "became. An answered question (question=\"N\"): `.journal/journal.py questions show N` and act on the answer. "
                 "A comment (comment=\"N\"): `.journal/journal.py comments show N` and handle it. A decided suggestion "
                 "(suggestion=\"N\"): `.journal/journal.py suggestions show N` and act on the decision. A newer journal "
-                "(update=\"X\"): run `.journal/journal.py update` once nothing is mid-flight. They arrive only while you are idle, "
+                "(update=\"X\"): run `.journal/journal.py update` once nothing is mid-flight. A plan approved or continued "
+                "(plan=\"N\"): `.journal/journal.py next` and start the current phase. They arrive only while you are idle, "
                 "whatever auto mode is; with auto mode off handle that one item and do not start on the to-do list.")
 
 #: runtime key shared with the hook: the newest version this session's agent was told about
@@ -150,6 +151,7 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
                                     "meta": {"env": env, "message": str(n)}}))
     if not answers:
         return got
+    got.extend(_plan_events(env, since))
     # keyed by when it was answered, so a changed answer wakes the session again
     for n, q in questions.untold(ROOT, env):
         if _epoch(q.get("answered_at")) < since:
@@ -179,6 +181,28 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
         got.append((f"{env}:comment:{n}",
                     {"content": f"The user commented on {comments.label(c.get('about', ''))} on {env}: {_gist(c.get('text', ''))}",
                      "meta": {"env": env, "comment": str(n)}}))
+    return got
+
+
+def _plan_events(env: str, since: float) -> list[tuple[str, dict]]:
+    """A plan the user approved, or continued past a checkpoint, in the viewer: the agent has work to start."""
+    import plans
+    got = []
+    for n, plan in enumerate(plans._all(ROOT, env), 1):
+        rows = plans.phases(ROOT, plan, env)
+        now = plans.current(plan, rows)
+        ahead = f" Phase {now['p']}, {now['title']}, is current: start its to-dos with `.journal/journal.py next`." if now else ""
+        title = _gist(plan.get("title", ""))
+        at = plan.get("activated_at") or ""
+        if at and plan.get("activated_by") == "web" and _epoch(at) >= since:
+            got.append((f"{env}:plan:{n}:approved:{at}",
+                        {"content": f"The user approved plan {n} on {env}: {title}.{ahead}", "meta": {"env": env, "plan": str(n)}}))
+        for p, ph in enumerate(plan.get("phases") or [], 1):
+            at = ph.get("continued_at") or ""
+            if at and _epoch(at) >= since:
+                got.append((f"{env}:plan:{n}:continued:{p}:{at}",
+                            {"content": f"The user continued plan {n} on {env} past phase {p}, {_gist(ph.get('title', ''))}.{ahead}",
+                             "meta": {"env": env, "plan": str(n)}}))
     return got
 
 
