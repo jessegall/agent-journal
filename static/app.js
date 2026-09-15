@@ -2871,56 +2871,74 @@ const Settings = {
                { name: "activity_keep", label: "Lines the activity log keeps", value: String(s.data.activity_keep) }],
       shape: (p) => ({ activity_show: parseInt(p.activity_show, 10), activity_keep: parseInt(p.activity_keep, 10) }),
     }] : []));
-    return { s, auto, setAuto, removing, done, keeping, archiving, kept, showing };
+    const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
+    return { s, auto, setAuto, removing, done, keeping, archiving, kept, showing, ACTIVITY, toggleActivity };
   },
   template: `
     <TopBar :crumbs="[env, 'Settings']"/>
-    <div class=page><div class=home>
+    <div class=page><div class=settings-page>
       <p v-if="s.loading && !s.data" class=empty>Loading…</p>
       <p v-else-if="s.error" class=error>{{ s.error }}</p>
       <template v-else-if="s.data">
-        <section>
-          <div class=home-head><h2>Kept on this environment</h2></div>
-          <div class="setting setting-links">
-            <a class=btn :href="'#/env/' + env + '/pins'">Pins</a>
-            <a class=btn :href="'#/env/' + env + '/reminders'">Reminders</a>
-            <a class=btn :href="'#/env/' + env + '/style'">Coding style</a>
+        <section class=settings-group>
+          <h2>This environment</h2>
+          <p class=settings-note>How long things stay listed here, and what the agent may do on its own.</p>
+          <div class=settings-card>
+            <div class=settings-row>
+              <span class=settings-label>Auto mode</span>
+              <span class=settings-value>{{ s.data.auto ? 'On: it works through to-dos without asking' : 'Off' }}</span>
+              <button type=button class=btn :disabled="auto.saving" @click="setAuto(!s.data.auto)">{{ s.data.auto ? 'Turn off' : 'Turn on' }}</button>
+              <p v-if="auto.error" class="error settings-wide">{{ auto.error }}</p>
+            </div>
+            <div class=settings-row>
+              <span class=settings-label>Days a report stays listed</span>
+              <span class=settings-value>{{ s.data.reports_archive_days ? s.data.reports_archive_days + ' days' : 'Until archived' }}</span>
+              <ActionBar :actions="keeping" :done="kept" :key="'keep' + s.data.reports_archive_days"/>
+            </div>
+            <div class=settings-row>
+              <span class=settings-label>Days a done to-do stays listed</span>
+              <span class=settings-value>{{ s.data.todos_archive_days ? s.data.todos_archive_days + ' days' : 'Until archived' }}</span>
+              <ActionBar :actions="archiving" :done="kept" :key="'archive' + s.data.todos_archive_days"/>
+            </div>
           </div>
         </section>
-        <section>
-          <div class=home-head><h2>Auto mode</h2></div>
-          <div class=setting>
-            <Switch label="Work through the to-do list without asking" :modelValue="s.data.auto" @update:modelValue="setAuto"/>
-            <p class="prose muted">When this is on and nothing is open, the agent starts the next ready to-do by itself.</p>
-            <p v-if="auto.error" class=error>{{ auto.error }}</p>
+        <section class=settings-group>
+          <h2>Activity column</h2>
+          <p class=settings-note>Whether the column shows, how many lines it shows, and how much history the log keeps.</p>
+          <div class=settings-card>
+            <div class=settings-row>
+              <span class=settings-label>Show the activity column</span>
+              <span class=settings-value>{{ ACTIVITY.shown ? 'Shown' : 'Hidden' }}</span>
+              <button type=button class=btn @click="toggleActivity">{{ ACTIVITY.shown ? 'Hide' : 'Show' }}</button>
+            </div>
+            <div class=settings-row>
+              <span class=settings-label>Lines shown, and lines kept</span>
+              <span class=settings-value>{{ s.data.activity_show }} shown · {{ s.data.activity_keep }} kept</span>
+              <ActionBar :actions="showing" :done="kept" :key="'show' + s.data.activity_show + '-' + s.data.activity_keep"/>
+            </div>
           </div>
         </section>
-        <section>
-          <div class=home-head><h2>To-dos</h2></div>
-          <div class=setting>
-            <p class="prose muted">{{ s.data.todos_archive_days ? 'A done to-do is archived ' + s.data.todos_archive_days + ' day(s) after it was closed, and leaves the list.' : 'Done to-dos stay listed until you archive them.' }}</p>
-            <ActionBar :actions="archiving" :done="kept" :key="'archive' + s.data.todos_archive_days"/>
+        <section class=settings-group>
+          <h2>Project</h2>
+          <p class=settings-note>What is kept on this environment, and what the whole project shares.</p>
+          <div class=settings-card>
+            <div class=settings-row><span class=settings-label>Pins</span><span class=settings-value>{{ s.data.pins }} standing</span><a class=btn :href="'#/env/' + env + '/pins'">Open</a></div>
+            <div class=settings-row><span class=settings-label>Reminders</span><span class=settings-value></span><a class=btn :href="'#/env/' + env + '/reminders'">Open</a></div>
+            <div class=settings-row><span class=settings-label>Coding style</span><span class=settings-value></span><a class=btn :href="'#/env/' + env + '/style'">Open</a></div>
+            <div class=settings-row><span class=settings-label>Tools</span><span class=settings-value></span><a class=btn href="#/tools">Open</a></div>
+            <div class=settings-row><span class=settings-label>Documents</span><span class=settings-value></span><a class=btn :href="'#/env/' + env + '/docs'">Open</a></div>
           </div>
         </section>
-        <section>
-          <div class=home-head><h2>Reports</h2></div>
-          <div class=setting>
-            <p class="prose muted">{{ (s.data.reports_archive_days ? 'A report is archived ' + s.data.reports_archive_days + ' day(s) after it is written. ' : 'Reports stay listed until you archive them. ') + 'Every report is removed for good 30 days after it is written.' }}</p>
-            <ActionBar :actions="keeping" :done="kept" :key="'keep' + s.data.reports_archive_days"/>
-          </div>
-        </section>
-        <section>
-          <div class=home-head><h2>Activity</h2></div>
-          <div class=setting>
-            <p class="prose muted">Activity shows the last {{ s.data.activity_show }} line(s). The activity log keeps the last {{ s.data.activity_keep }} and removes older ones.</p>
-            <ActionBar :actions="showing" :done="kept" :key="'show' + s.data.activity_show + '-' + s.data.activity_keep"/>
-          </div>
-        </section>
-        <section>
-          <div class=home-head><h2>Remove this environment</h2></div>
-          <div class=setting>
-            <p v-if="s.data.start" class="prose muted">New sessions start on this environment, so it cannot be removed. Make another environment the start environment first.</p>
-            <ActionBar v-else :actions="removing" :done="done"/>
+        <section class=settings-group>
+          <h2>Remove this environment</h2>
+          <div class=settings-card>
+            <div class=settings-row>
+              <p v-if="s.data.start" class="settings-label muted">New sessions start on this environment, so it cannot be removed. Make another environment the start environment first.</p>
+              <template v-else>
+                <span class=settings-label>Its pins, open to-dos, open work and messages are deleted for good. Docs stay with the project.</span>
+                <ActionBar :actions="removing" :done="done"/>
+              </template>
+            </div>
           </div>
         </section>
       </template>
