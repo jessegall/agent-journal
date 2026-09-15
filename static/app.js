@@ -305,7 +305,10 @@ const TopBar = {
     const waiting = computed(() => (row.value ? (row.value.notifications || 0) + (row.value.suggestions || 0) + (row.value.questions || 0) : 0));
     const openCount = computed(() => (row.value ? row.value.questions || 0 : 0));
     const drop = reactive({ open: false });
-    const notes = useFetch(() => drop.open && env.value && `/api/env/${env.value}/notifications`);
+    // the last 50, read ones too: a notice cleared by a stray click can still be read again
+    const notes = useFetch(() => drop.open && env.value && `/api/env/${env.value}/notifications?all=1&cap=50`);
+    const unreadNotes = computed(() => (notes.data || []).filter((x) => !x.read));
+    const readNotes = computed(() => (notes.data || []).filter((x) => x.read));
     const ideas = useFetch(() => drop.open && env.value && `/api/env/${env.value}/suggestions`);
     const asks = useFetch(() => drop.open && env.value && `/api/env/${env.value}/questions`);
     const openQuestions = computed(() => (asks.data || []).filter((q) => q.status === "open"));
@@ -349,7 +352,7 @@ const TopBar = {
       help.html = renderMarkdown(HELP_CACHE[helpTopic]) || "<p>No help written for this page yet.</p>";
     };
     const closeHelp = () => { if (helpDialog.value) helpDialog.value.close(); };
-    return { env, waiting, openCount, drop, notes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, activity, toggleActivity, view, KEPT,
+    return { env, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, activity, toggleActivity, view, KEPT,
              helpTopic, help, helpDialog, openHelp, closeHelp };
   },
   template: `
@@ -383,8 +386,8 @@ const TopBar = {
             </button>
             <div v-if="drop.open" class=drop>
               <div class=drop-head><span>Notifications</span>
-                <button v-if="notes.data && notes.data.length" type=button class="btn more" @click="readAll">Mark all read</button></div>
-              <p v-if="!(notes.data && notes.data.length) && !suggestions.length && !openQuestions.length" class="muted drop-empty">Nothing waiting.</p>
+                <button v-if="unreadNotes.length" type=button class="btn more" @click="readAll">Mark all read</button></div>
+              <p v-if="!unreadNotes.length && !suggestions.length && !openQuestions.length" class="muted drop-empty">Nothing waiting.</p>
               <a v-for="q in openQuestions" :key="'q' + q.n" class=drop-row @click="drop.open = false"
                 :href="(q.links && q.links.length && $refHref(q.links[0].ref, env)) || '#/env/' + env + '/questions/' + q.n">
                 <span class=drop-kind>Question {{ q.n }}</span><span class=drop-text>{{ q.text }}</span>
@@ -392,11 +395,18 @@ const TopBar = {
               <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
                 <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
               </a>
-              <div v-for="x in notes.data || []" :key="'n' + x.n" class=drop-row>
+              <div v-for="x in unreadNotes" :key="'n' + x.n" class=drop-row>
                 <span class=drop-text>{{ x.text }}</span>
                 <span class=drop-meta>{{ x.age || 'just now' }}
                   <a v-if="x.about && $refHref(x.about, env)" class="btn more" :href="$refHref(x.about, env)" :title="'Open ' + x.about_label" @click="readOne(x); openFromBell($event, x); drop.open = false">Open</a>
                   <button type=button class="btn more" @click="readOne(x)">Mark read</button>
+                </span>
+              </div>
+              <div v-if="readNotes.length" class=drop-sub>Read</div>
+              <div v-for="x in readNotes" :key="'r' + x.n" class="drop-row read">
+                <span class=drop-text>{{ x.text }}</span>
+                <span class=drop-meta>{{ x.age || 'just now' }}
+                  <a v-if="x.about && $refHref(x.about, env)" class="btn more" :href="$refHref(x.about, env)" :title="'Open ' + x.about_label" @click="openFromBell($event, x); drop.open = false">Open</a>
                 </span>
               </div>
             </div>
