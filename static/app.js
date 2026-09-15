@@ -1201,8 +1201,8 @@ const REMINDER_LIST = {
   count: (rows) => `${rows.filter((r) => !r.struck).length} standing`,  empty: "Nothing is being repeated.", name: "reminders",
 };
 const DOC_LIST = {
-  groups: [{ key: "draft", label: "Draft", kind: "open", match: (d) => !d.archived && !d.superseded_by && d.status !== "final" },
-           { key: "final", label: "Final", kind: "done", match: (d) => !d.archived && !d.superseded_by && d.status === "final" },
+  groups: [{ key: "final", label: "Final", kind: "done", match: (d) => !d.archived && !d.superseded_by && d.status === "final" },
+           { key: "draft", label: "Draft", kind: "open", match: (d) => !d.archived && !d.superseded_by && d.status !== "final" },
            { key: "superseded", label: "Superseded", kind: "withdrawn", match: (d) => !d.archived && d.superseded_by },
            { key: "archived", label: "Archived", kind: "withdrawn", match: (d) => d.archived && !d.superseded_by }],
   columns: { status: (d) => (d.archived || d.superseded_by ? "withdrawn" : d.status === "final" ? "done" : "open"),
@@ -2252,7 +2252,7 @@ const Plans = {
 };
 
 const REPORT_LIST = {
-  groups: [{ key: "reports", label: "Reports", kind: "open", match: (r) => !r.archived },
+  groups: [{ key: "reports", label: "Listed", kind: "open", match: (r) => !r.archived },
            { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (r) => r.archived }],
   // a report within two days of aging off the list shows its age in amber
   columns: { status: (r) => (r.archived ? "withdrawn" : "open"), library: true, num: (r) => `#${r.n}`, numWidth: "34px", title: (r) => r.title, sub: (r) => r.gist, cite: (r) => r.about_label, age: (r) => shortAge(r.age), ageWidth: "52px",
