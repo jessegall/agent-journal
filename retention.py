@@ -12,6 +12,8 @@ LABELS = {"todos": "To-dos", "reports": "Reports", "plans": "Plans", "inbox": "M
 #: (days a closed item stays listed, days it stays archived before it is deleted; 0 is never)
 DEFAULTS = {"reports": (7, 30), "plans": (3, 0)}
 DEFAULT = (7, 0)
+#: the resources whose archived items are deleted on a schedule today; the rest keep their delete days at 0
+DELETES = {"reports"}
 #: to-dos and reports already keep their archive days under these keys; retention reads and writes them there
 LEGACY = {"todos": "todos_archive_days", "reports": "reports_archive_days"}
 
@@ -42,7 +44,7 @@ def days(root: Path, track: str, resource: str) -> dict:
 
 
 def table(root: Path, track: str) -> dict:
-    return {r: {**days(root, track, r), "label": LABELS[r]} for r in RESOURCES}
+    return {r: {**days(root, track, r), "label": LABELS[r], "deletes": r in DELETES} for r in RESOURCES}
 
 
 def set_days(root: Path, track: str, resource: str, archive: int | None = None, delete: int | None = None) -> tuple[bool, str]:

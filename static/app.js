@@ -300,6 +300,8 @@ const PriorityIcon = {
 // the page's top bar: crumbs, the page's own button, then Search and Notifications on every page
 // what the shell knows about the agent, for the status bar every page carries under its top bar
 const SHELL = reactive({ env: "", activity: null, setAuto: null });
+// how long each resource keeps a closed item listed, from the environment's settings
+const RETENTION = reactive({ table: null });
 // one overlay the shell hosts for any page: what the status bar inspects opens here, over whatever is showing
 const OVERLAY = reactive({ kind: "", n: 0 });
 
@@ -925,8 +927,12 @@ const ResourceList = {
   components: { StatusIcon, PriorityIcon, Icon },
   setup(props) {
     const state = reactive({ sort: {}, pages: {}, held: {}, arrived: {}, quiet: false });
-    // a closed section shows what closed in the last week; anything older, or closed at an unknown time, is archived
-    const recent = (r) => !!r.closed_at && Date.now() - Date.parse(r.closed_at) < RECENT_MS;
+    // a closed section shows what closed within the resource's days listed (0 keeps it listed); older, or closed at an unknown time, is archived
+    const listedMs = () => {
+      const kept = RETENTION.table && props.name && RETENTION.table[props.name];
+      return kept ? kept.archive * 86400000 : RECENT_MS;
+    };
+    const recent = (r) => !!r.closed_at && (listedMs() === 0 || Date.now() - Date.parse(r.closed_at) < listedMs());
     // after a refresh, a row that changed group or left the list stays put in blue for a moment, and a new row is lit
     const rowKey = (r) => String(r.n ?? r.name);
     const groupOf = (r) => (props.groups.find((g) => g.match(r)) || {}).key;
@@ -2855,16 +2861,17 @@ const Settings = {
       note: s.data ? `This deletes its ${s.data.pins} pin(s), ${s.data.todos} open to-do(s), its open work and its messages for good. Docs stay with the project.` : "",
     }]);
     const done = () => { changed(); location.hash = "#/"; };
-    const keeping = computed(() => (s.data ? [{
-      label: "Change", method: "POST", url: `${api.value}/settings`, submit: "Save",
-      fields: [{ name: "reports_archive_days", label: "Days a report stays listed (0 keeps them)", value: String(s.data.reports_archive_days) }],
-      shape: (p) => ({ reports_archive_days: parseInt(p.reports_archive_days, 10) }),
-    }] : []));
-    const archiving = computed(() => (s.data ? [{
-      label: "Change", method: "POST", url: `${api.value}/settings`, submit: "Save",
-      fields: [{ name: "todos_archive_days", label: "Days a done to-do stays listed (0 keeps them)", value: String(s.data.todos_archive_days) }],
-      shape: (p) => ({ todos_archive_days: parseInt(p.todos_archive_days, 10) }),
-    }] : []));
+    // one row per resource: its days listed once closed, and, where archived items are deleted, its days in the archive
+    const keepingRows = computed(() => (s.data && s.data.retention ? Object.entries(s.data.retention).map(([key, k]) => {
+      const listed = k.archive ? `listed ${k.archive} day${k.archive === 1 ? "" : "s"}` : "listed until archived by hand";
+      const deleted = k.deletes ? (k.delete ? `deleted ${k.delete} day${k.delete === 1 ? "" : "s"} after` : "never deleted") : "kept in the archive";
+      const fields = [{ name: "archive", label: "Days listed once closed (0 keeps it listed)", value: String(k.archive) }];
+      if (k.deletes) fields.push({ name: "delete", label: "Days in the archive before it is deleted (0 keeps it)", value: String(k.delete) });
+      return { key, label: k.label, value: `${listed} · ${deleted}`,
+               actions: [{ label: "Change", method: "POST", url: `${api.value}/settings`, submit: "Save", fields,
+                           shape: (p) => ({ retention: { resource: key, archive: parseInt(p.archive, 10),
+                                                         ...(k.deletes ? { delete: parseInt(p.delete, 10) } : {}) } }) }] };
+    }) : []));
     const kept = () => { s.reload(); changed(); };
     const showing = computed(() => (s.data ? [{
       label: "Change", method: "POST", url: `${api.value}/settings`, submit: "Save",
@@ -2874,7 +2881,7 @@ const Settings = {
     }] : []));
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
     const saveSetting = (body) => postJSON(`${api.value}/settings`, body).then(() => { s.reload(); changed(); });
-    return { s, auto, setAuto, saveSetting, removing, done, keeping, archiving, kept, showing, ACTIVITY, toggleActivity };
+    return { s, auto, setAuto, saveSetting, removing, done, keepingRows, kept, showing, ACTIVITY, toggleActivity };
   },
   template: `
     <TopBar :crumbs="[env, 'Settings']"/>
@@ -2897,15 +2904,16 @@ const Settings = {
               <span class=settings-value>{{ s.data.viewer_first ? 'On: the agent answers here, one line in the terminal' : 'Off' }}</span>
               <button type=button class=btn @click="saveSetting({ viewer_first: !s.data.viewer_first })">{{ s.data.viewer_first ? 'Turn off' : 'Turn on' }}</button>
             </div>
-            <div class=settings-row>
-              <span class=settings-label>Days a report stays listed</span>
-              <span class=settings-value>{{ s.data.reports_archive_days ? s.data.reports_archive_days + ' days' : 'Until archived' }}</span>
-              <ActionBar :actions="keeping" :done="kept" :key="'keep' + s.data.reports_archive_days"/>
-            </div>
-            <div class=settings-row>
-              <span class=settings-label>Days a done to-do stays listed</span>
-              <span class=settings-value>{{ s.data.todos_archive_days ? s.data.todos_archive_days + ' days' : 'Until archived' }}</span>
-              <ActionBar :actions="archiving" :done="kept" :key="'archive' + s.data.todos_archive_days"/>
+          </div>
+        </section>
+        <section class=settings-group>
+          <h2>Keeping</h2>
+          <p class=settings-note>How long a closed item stays listed before it is archived, and how long it stays in the archive before it is deleted for good. 0 keeps it.</p>
+          <div class=settings-card>
+            <div v-for="k in keepingRows" :key="k.key" class=settings-row>
+              <span class=settings-label>{{ k.label }}</span>
+              <span class=settings-value>{{ k.value }}</span>
+              <ActionBar :actions="k.actions" :done="kept" :key="'keep-' + k.key + k.value"/>
             </div>
           </div>
         </section>
@@ -3712,6 +3720,8 @@ const App = {
     // a nav count may add several of the environment's counts, as the Inbox does for questions and suggestions
     const navCount = (item) => (envRow.value ? [].concat(item.count).reduce((sum, k) => sum + (envRow.value[k] || 0), 0) : 0);
     SHELL.setAuto = setAuto;
+    const envSettings = useFetch(() => envName.value && `/api/env/${envName.value}/environment`);
+    watchEffect(() => { RETENTION.table = envSettings.data ? envSettings.data.retention || null : null; });
     return { QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
   },
   template: `
