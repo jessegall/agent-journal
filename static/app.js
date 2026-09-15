@@ -1142,8 +1142,21 @@ function todoQuestionMark(t) {
   return { state: "", title: "" };
 }
 
+// the closed group names how long a closed to-do stays listed here, from the environment's retention settings
+function closedLabel() {
+  const kept = RETENTION.table && RETENTION.table.todos;
+  const days = kept ? kept.archive : 7;
+  if (days === 0) return "Closed";
+  if (days === 1) return "Closed today";
+  return days === 7 ? "Closed this week" : `Closed in the last ${days} days`;
+}
 const TODO_LIST = {
-  groups: GROUPS.map((g) => ({ ...g, kind: g.key, closed: g.key === "done", match: (t) => todoStatus(t) === g.key })),
+  groups: GROUPS.map((g) => {
+    const group = { ...g, kind: g.key, closed: g.key === "done", match: (t) => todoStatus(t) === g.key };
+    // an accessor, not a copied value, so the label follows the setting when it loads
+    if (g.key === "done") Object.defineProperty(group, "label", { get: closedLabel, enumerable: true });
+    return group;
+  }),
   columns: { priority: (t) => t.priority, status: (t) => todoStatus(t), num: (t) => `#${t.n}`, question: todoQuestionMark,
              numWidth: "34px", ageWidth: "52px", title: (t) => t.title, age: (t) => shortAge(t.age) },
   sorts: [{ key: "n", label: "ID" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
