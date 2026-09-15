@@ -1109,5 +1109,18 @@ check("a resource's days are set per environment", (_retention.set_days(root, "b
 check("to-dos keep their days where they always were", (_retention.set_days(root, "beta", "todos", 21)[0], __import__("todo").archive_days(root, "beta")), (True, 21))
 check("an unknown resource or a negative day is refused", (_retention.set_days(root, "beta", "pins", 3)[0], _retention.set_days(root, "beta", "work", -1)[0]), (False, False))
 
+# ---------------------------------------------------------------- deleting archived items keeps a closed tombstone
+import questions as _q  # noqa: E402
+_q.add(root, "an old question to delete", "2020-01-01T00:00:00+00:00", track="beta")
+_qn = len(_q._all(root, "beta"))
+_q.answer(root, _qn, "yes", "2020-01-01T00:00:00+00:00", track="beta")
+_q.add(root, "an open question to keep", "2020-01-01T00:00:00+00:00", track="beta")
+_retention.set_days(root, "beta", "questions", 1, 1)
+check("a closed item past its days listed and archived is deleted", _retention.prune(root, "beta") >= 1, True)
+_old, _open = _q._all(root, "beta")[_qn - 1], _q._all(root, "beta")[_qn]
+check("the deleted question loses its text but stays answered and closed",
+      ("text" in _old, bool(_old.get("removed")), _old.get("answer"), _q.is_open(_old)), (False, True, "yes", False))
+check("an open question is never deleted", (_open.get("text"), bool(_open.get("removed"))), ("an open question to keep", False))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
