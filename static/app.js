@@ -267,7 +267,7 @@ const Icon = {
 
 // A STATUS IS A PILL: an outline when open, filling as it moves, struck through when blocked.
 const STATUS_COLOR = {
-  progress: "#5b8def", blocked: "#d9a441", done: "#6fae7d", waiting: "#a78bfa", open: "#8b8e96", withdrawn: "#55575d",
+  progress: "#5b8def", blocked: "#d9a441", done: "#3ecf74", waiting: "#a78bfa", open: "#8b8e96", withdrawn: "#55575d",
 };
 const StatusIcon = {
   props: ["kind"],
@@ -275,7 +275,8 @@ const StatusIcon = {
     const color = computed(() => STATUS_COLOR[props.kind] || STATUS_COLOR.open);
     return { color };
   },
-  template: `<span class=dot :style="{borderColor: color}" role=img :aria-label="kind"></span>`,
+  // done is filled as well as green, so it stands apart from open by shape, not by colour alone
+  template: `<span class=dot :style="{borderColor: color, background: kind === 'done' ? color : 'transparent'}" role=img :aria-label="kind"></span>`,
 };
 
 // A PRIORITY IS THREE CHEVRONS: how many are lit is how important it is.
@@ -1980,7 +1981,7 @@ const Plans = {
       return null;
     });
     const quiet = computed(() => (item.data && item.data.status === "active" && item.data.current ? `Working phase ${item.data.current}` : ""));
-    const PLAN_TINT = { active: "#5b8def", draft: "#c9955e", done: "#6fae7d", abandoned: "#83868e" };
+    const PLAN_TINT = { active: "#5b8def", draft: "#c9955e", done: "#3ecf74", abandoned: "#83868e" };
     const planChip = (status) => { const c = PLAN_TINT[status] || "#83868e"; return { color: c, borderColor: `${c}73`, background: `${c}29` }; };
     const citedDocs = useFetch(() => props.env && reading.value && `/api/env/${props.env}/docs?archived=1`);
     const citedReports = useFetch(() => props.env && reading.value && `/api/env/${props.env}/reports?all=1`);
