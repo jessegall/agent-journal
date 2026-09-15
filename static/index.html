@@ -375,8 +375,11 @@
   .plan-bar > span { display: block; height: 100%; background: var(--accent); }
 
   /* detail panel */
-  .panel { width: clamp(320px, 30vw, 400px); flex: none; min-height: 0; display: flex; flex-direction: column;
-    border-left: 1px solid var(--border); background: var(--bg); }
+  /* the inspector lies over the whole app, sidebar and activity column included, so nothing under it is squeezed */
+  .panel-scrim { position: fixed; inset: 0; z-index: 40; background: rgba(4, 5, 6, .55); }
+  .panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 41; max-width: 100vw; min-height: 0; display: flex; flex-direction: column;
+    border-left: 1px solid var(--border-2); background: var(--bg); box-shadow: -40px 0 90px rgba(0, 0, 0, .6); }
+  .panel-grip { position: absolute; top: 0; bottom: 0; left: -3px; width: 6px; cursor: ew-resize; z-index: 1; }
   .panel-top { height: 44px; flex: none; display: flex; align-items: center; justify-content: space-between;
     padding: 0 12px 0 20px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12.5px; }
   .icon-btn { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-3); }
@@ -596,7 +599,6 @@
   .body > .page { flex: 1; min-width: 0; }
   /* Home is full width; the panel column appears only while something is picked */
   .home-body { display: grid; grid-template-columns: minmax(0, 1fr); }
-  .home-body:has(> .panel) { grid-template-columns: minmax(0, 1fr) clamp(340px, 28%, 420px); }
   .home-body > .panel { width: auto; }
   .agent-work { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
   .agent-work-head, .agent-work-row { display: grid; grid-template-columns: minmax(0, 1fr) 64px 48px 60px 96px; column-gap: 12px;

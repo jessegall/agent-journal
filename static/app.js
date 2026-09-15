@@ -439,11 +439,46 @@ function saveOpened(names) {
   try { localStorage.setItem(OPENED_KEY, JSON.stringify([...names])); } catch (e) { /* folding still works for this view */ }
 }
 
+// the inspector's width, dragged by its left edge and remembered per browser
+const INSPECTOR_WIDTH = { key: "journal.inspector.width", min: 420, max: 560, fallback: 500 };
+const inspector = reactive({ width: storedInspectorWidth() });
+
+function storedInspectorWidth() {
+  try {
+    const got = Number(localStorage.getItem(INSPECTOR_WIDTH.key));
+    return got ? Math.min(INSPECTOR_WIDTH.max, Math.max(INSPECTOR_WIDTH.min, got)) : INSPECTOR_WIDTH.fallback;
+  } catch (e) { return INSPECTOR_WIDTH.fallback; }
+}
+
 const Panel = {
   props: ["label", "close", "onClose", "link"],
   components: { Icon },
-  setup() {
+  setup(props) {
     const body = ref(null);
+    // a panel lies over the whole app: the scrim, Esc and the close button all leave it the same way
+    const dismiss = () => {
+      if (props.onClose) props.onClose();
+      else if (props.close) location.hash = props.close;
+    };
+    const onEscape = (e) => {
+      if (e.key !== "Escape" || e.isComposing) return;
+      // a menu open inside the panel takes Esc for itself; a folding section label is not a menu
+      if (document.querySelector('.panel button[aria-expanded="true"]')) return;
+      dismiss();
+    };
+    const drag = (e) => {
+      e.preventDefault();
+      const move = (m) => { inspector.width = Math.min(INSPECTOR_WIDTH.max, Math.max(INSPECTOR_WIDTH.min, window.innerWidth - m.clientX)); };
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        try { localStorage.setItem(INSPECTOR_WIDTH.key, String(Math.round(inspector.width))); } catch (err) { /* storage off */ }
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+    };
+    onMounted(() => window.addEventListener("keydown", onEscape));
+    onUnmounted(() => window.removeEventListener("keydown", onEscape));
     const nameOf = (label) => ([...label.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim()) || label).textContent.trim();
     // the section is the label's element, or the element around a header row that holds the label beside its buttons
     const sectionOf = (label) => {
@@ -491,10 +526,12 @@ const Panel = {
     let watcher = null;
     onMounted(() => { decorate(); watcher = new MutationObserver(decorate); watcher.observe(body.value, { childList: true, subtree: true }); });
     onUnmounted(() => { if (watcher) watcher.disconnect(); });
-    return { body, onClick, onKey };
+    return { body, onClick, onKey, dismiss, drag, inspector };
   },
   template: `
-    <aside class=panel>
+    <div class=panel-scrim @click="dismiss"></div>
+    <aside class=panel :style="{ width: inspector.width + 'px' }">
+      <div class=panel-grip title="Drag to resize" @pointerdown="drag"></div>
       <div class=panel-top><a v-if="link" class=panel-link :href="link" :title="'Open ' + label + ' on its own page'">{{ label }}<Icon name="arrow"/></a><span v-else>{{ label }}</span>
         <span class=panel-tools>
           <button v-if="onClose" type=button class=icon-btn title="Close" @click="onClose"><Icon name="close"/></button>
