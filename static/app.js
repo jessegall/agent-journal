@@ -587,8 +587,14 @@ const Panel = {
     const onHash = () => { hash.value = location.hash; };
     const at = computed(() => trailIndex(hash.value));
     const place = computed(() => (at.value >= 0 && INSPECTOR_TRAIL.items.length ? `${at.value + 1} of ${INSPECTOR_TRAIL.items.length}` : ""));
-    const KIND_OF = { "to-do": "todo", message: "message", question: "question", suggestion: "suggestion", work: "work", plan: "plan", report: "report", doc: "doc" };
-    const chipTint = computed(() => { const kind = KIND_OF[String(props.label || "").split(" ")[0].toLowerCase()]; return kind && TYPES[kind] ? TYPES[kind].tint : null; });
+    const KIND_OF = { "to-do": "todo", message: "message", reply: "message", question: "question", suggestion: "suggestion", work: "work", plan: "plan", report: "report", doc: "doc" };
+    // the page each kind belongs to, named the way the nav names it
+    const PAGE_OF = { todo: "to-dos", message: "messages", question: "messages", suggestion: "messages", work: "work", plan: "plans", report: "reports", doc: "documents" };
+    const kindOf = computed(() => KIND_OF[String(props.label || "").split(" ")[0].toLowerCase()] || "");
+    const chipTint = computed(() => (kindOf.value && TYPES[kindOf.value] ? TYPES[kindOf.value].tint : null));
+    const pageWords = computed(() => `Go to ${PAGE_OF[kindOf.value] || "the page"}`);
+    // the link leaves the inspector for the page behind it, so the panel goes with it
+    const leaveForPage = (e) => { if (props.onClose) { e.preventDefault(); props.onClose(); location.hash = props.link; } };
     const step = (by) => {
       const items = INSPECTOR_TRAIL.items;
       if (at.value < 0 || items.length < 2) return;
@@ -665,7 +671,7 @@ const Panel = {
     let watcher = null;
     onMounted(() => { decorate(); watcher = new MutationObserver(decorate); watcher.observe(body.value, { childList: true, subtree: true }); });
     onUnmounted(() => { if (watcher) watcher.disconnect(); });
-    return { stepped, body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, INSPECTOR_TRAIL };
+    return { stepped, body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, pageWords, leaveForPage, INSPECTOR_TRAIL };
   },
   template: `
     <div :class="['panel-scrim', {closing, stepped}]" @click="dismiss"></div>
@@ -673,7 +679,7 @@ const Panel = {
       <div class=panel-grip title="Drag to resize" @pointerdown="drag"></div>
       <div class=panel-top>
         <span class=panel-ref><span class=panel-chip :style="chipTint ? { color: chipTint } : null">{{ label }}</span>
-          <a v-if="link" class=panel-open :href="link" :title="'Open ' + label + ' on its own page'">Open page<Icon name="arrow"/></a></span>
+          <a v-if="link" class=panel-open :href="link" :title="pageWords + ', leaving this panel'" @click="leaveForPage">{{ pageWords }}<Icon name="arrow"/></a></span>
         <span class=panel-tools>
           <span v-if="place" class=panel-place>{{ place }}</span>
           <button v-if="place" type=button class=icon-btn title="Previous (↑)" aria-label="Previous" :disabled="INSPECTOR_TRAIL.items.length < 2" @click="step(-1)"><Icon name="up"/></button>
@@ -1657,8 +1663,9 @@ const ReplyPanel = {
   setup(props) {
     const item = useFetch(() => props.env && props.n && `/api/env/${props.env}/messages/${props.n}`);
     const answered = computed(() => messageAnswers(item.data));
+    // it swaps what the inspector shows, and never leaves it: the overlay changes kind, a route changes r/N to N
     const openMessage = () => {
-      if (props.onClose && OVERLAY.kind === "reply") { OVERLAY.kind = "message"; return; }
+      if (OVERLAY.kind === "reply") { OVERLAY.kind = "message"; return; }
       location.hash = `#/env/${props.env}/messages/${props.n}`;
     };
     return { item, answered, openMessage };
@@ -2858,8 +2865,8 @@ const PEEK = {
   todo: { panel: "TodoPanel", page: (env, n) => `#/env/${env}/todos/${n}` },
   message: { panel: "MessagePanel", page: (env, n) => `#/env/${env}/messages/${n}` },
   reply: { panel: "ReplyPanel", page: (env, n) => `#/env/${env}/messages/r/${n}` },
-  question: { panel: "QuestionPanel", page: (env, n) => `#/env/${env}/questions/${n}` },
-  suggestion: { panel: "SuggestionPanel", page: (env, n) => `#/env/${env}/suggestions/${n}` },
+  question: { panel: "QuestionPanel", page: (env, n) => `#/env/${env}/messages/q/${n}` },
+  suggestion: { panel: "SuggestionPanel", page: (env, n) => `#/env/${env}/messages/s/${n}` },
   work: { panel: "WorkPanel", page: (env, n) => `#/env/${env}/work/${n}` },
 };
 
