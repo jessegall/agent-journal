@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from controller import Controller, Payload, Result
@@ -20,6 +21,9 @@ MESSAGES = {
     "comment_written": "Wrote comment",
     "comment_handled": "Handled comment",
 }
+
+#: the tag an agent opens every reply with, such as [!info] or [!reply]; the column shows what follows it
+REPLY_TAG = re.compile(r"^\[![a-z]+\]\s*")
 
 TEXT_MAX = 100
 TITLE_MAX = 200
@@ -103,7 +107,7 @@ def last_said(path, cap: int = 600) -> str:
         return held[1]
     # a long session's tail is mostly tool results, so the reply can sit megabytes back
     got = transcript.last_reply(path, limit=2_000_000, settled=False)
-    text = " ".join((got[0] if got else "").split())
+    text = REPLY_TAG.sub("", " ".join((got[0] if got else "").split()))
     text = text if len(text) <= cap else text[:cap].rstrip() + "…"
     _SAID[str(path)] = (size, text)
     return text
