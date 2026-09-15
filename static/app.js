@@ -99,6 +99,8 @@ function send(method, url, payload) {
   return fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload || {}) })
     .then((r) => r.json().then((body) => {
       if (!r.ok) throw new Error(body.error || "request failed");
+      // a write says so here, where every write passes, so Activity shows what you did without waiting for the poll
+      if (method !== "GET") changed();
       return body;
     }))
     .finally(() => { LAST_WRITE.at = Date.now(); });
