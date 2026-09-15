@@ -476,14 +476,19 @@ function saveOpened(names) {
 const INSPECTOR_WIDTH = { key: "journal.inspector.width", min: 420, max: 560, fallback: 500 };
 const inspector = reactive({ width: storedInspectorWidth() });
 // the rows of the list that opened the inspector, in the order shown: its position and its up and down steps read from here
-const INSPECTOR_TRAIL = reactive({ owner: null, hrefs: [] });
+const INSPECTOR_TRAIL = reactive({ owner: null, items: [], current: null });
 
 // an item dealt with in the inspector hands over to the next one in its list; with none left, the inspector closes
+function trailIndex(hash) {
+  const key = INSPECTOR_TRAIL.current ?? hash;
+  return INSPECTOR_TRAIL.items.findIndex((it) => it.key === key);
+}
+
 function advanceInspector(props) {
-  const hrefs = INSPECTOR_TRAIL.hrefs;
-  const i = hrefs.indexOf(location.hash);
-  const next = i >= 0 ? hrefs[i + 1] || hrefs[i - 1] : null;
-  if (next) location.hash = next;
+  const items = INSPECTOR_TRAIL.items;
+  const i = trailIndex(location.hash);
+  const next = i >= 0 ? items[i + 1] || items[i - 1] : null;
+  if (next) next.go();
   else if (props.onClose) props.onClose();
   else if (props.base || props.close) location.hash = props.base || props.close;
 }
@@ -507,12 +512,12 @@ const Panel = {
     };
     const hash = ref(location.hash);
     const onHash = () => { hash.value = location.hash; };
-    const at = computed(() => INSPECTOR_TRAIL.hrefs.indexOf(hash.value));
-    const place = computed(() => (at.value >= 0 && INSPECTOR_TRAIL.hrefs.length > 1 ? `${at.value + 1} of ${INSPECTOR_TRAIL.hrefs.length}` : ""));
+    const at = computed(() => trailIndex(hash.value));
+    const place = computed(() => (at.value >= 0 && INSPECTOR_TRAIL.items.length > 1 ? `${at.value + 1} of ${INSPECTOR_TRAIL.items.length}` : ""));
     const step = (by) => {
-      const hrefs = INSPECTOR_TRAIL.hrefs;
-      if (at.value < 0 || hrefs.length < 2) return;
-      location.hash = hrefs[(at.value + by + hrefs.length) % hrefs.length];
+      const items = INSPECTOR_TRAIL.items;
+      if (at.value < 0 || items.length < 2) return;
+      items[(at.value + by + items.length) % items.length].go();
     };
     const typing = (el) => !!el && (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName) || el.isContentEditable);
     const onEscape = (e) => {
@@ -948,9 +953,13 @@ const ResourceList = {
     watchEffect(() => {
       if (!props.href || props.pick) return;
       INSPECTOR_TRAIL.owner = trailOwner;
-      INSPECTOR_TRAIL.hrefs = sections.value.flatMap((g) => g.rows.map((r) => props.href(r)));
+      INSPECTOR_TRAIL.current = null;
+      INSPECTOR_TRAIL.items = sections.value.flatMap((g) => g.rows.map((r) => {
+        const href = props.href(r);
+        return { key: href, go: () => { location.hash = href; } };
+      }));
     });
-    onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) { INSPECTOR_TRAIL.owner = null; INSPECTOR_TRAIL.hrefs = []; } });
+    onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
     const closable = computed(() => props.groups.some((g) => g.closed));
     const archived = computed(() => sections.value.reduce((sum, g) => sum + g.total, 0));
     const cols = computed(() => {
@@ -1832,31 +1841,6 @@ function planRefHref(ref, env) { return refHref(String(ref).replace(" ", ":"), e
 
 function planStepState(ph) { return ph.complete ? "Complete" : ph.current ? "Current" : "Not started"; }
 
-const ActivePlan = {
-  props: ["env"],
-  setup(props) {
-    const list = useFetch(() => props.env && `/api/env/${props.env}/plans`);
-    const plan = computed(() => (list.data || []).find((p) => p.status === "active") || null);
-    const width = computed(() => (plan.value && plan.value.phases_total ? `${(100 * plan.value.phases_done) / plan.value.phases_total}%` : "0%"));
-    const phaseLine = computed(() => {
-      const p = plan.value;
-      if (!p) return "";
-      return p.held ? `Stopped after phase ${p.held}, a checkpoint: waiting for you to continue` : `Phase ${p.current} of ${p.phases_total} is current: ${p.current_title}`;
-    });
-    return { plan, width, phaseLine };
-  },
-  template: `
-    <section v-if="plan" class=home-plan>
-      <div class=home-head><h2>Plan</h2><span class=n>{{ plan.phases_done }} of {{ plan.phases_total }} phases complete</span>
-        <a class=more :href="'#/env/' + env + '/plans/' + plan.n">Open plan</a></div>
-      <a class="block plan-strip" :href="'#/env/' + env + '/plans/' + plan.n">
-        <span class=plan-strip-title>{{ plan.title }}</span>
-        <span :class="['plan-strip-phase', {held: plan.held}]">{{ phaseLine }}</span>
-        <span class=plan-bar><span :style="{ width }"></span></span>
-      </a>
-    </section>`,
-};
-
 const Plans = {
   props: ["env", "archive", "n"],
   components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, DocTabs },
@@ -2444,174 +2428,153 @@ const Peek = {
 // ─────────────────────────────────────────────────────────────── an environment's home
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, StatusIcon, PriorityIcon, Peek, ResourceList, RadioGroup, ActivePlan },
+  components: { TopBar, Icon, Peek },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
-    const summary = useFetch(url(""));
     const work = useFetch(url("/work"));
-    const allWork = useFetch(url("/work?all=1"));
-    const todos = useFetch(url("/todos"));
-    const inbox = useFetch(url("/inbox"));
     const questions = useFetch(url("/questions"));
+    const suggestions = useFetch(url("/suggestions"));
     const notes = useFetch(url("/notifications"));
-    // subagents at work, shown on Home only while there are any
-    const agentsList = useFetch(url("/agents"));
-    const workingSubagents = computed(() => (agentsList.data || []).filter((a) => a.kind === "subagent" && a.working));
-    const noted = () => { notes.reload(); changed(); };
-    const readOne = (x) => send("POST", `/api/env/${props.env}/notifications/${x.n}/read`).then(noted);
-    const readAll = () => send("POST", `/api/env/${props.env}/notifications/readall`).then(noted);
-    const openTodos = { ...TODO_LIST, groups: TODO_LIST.groups.filter((g) => !g.closed) };
-    const finishedTodos = { groups: [{ key: "finished", label: "", match: (t) => t.done }],
-                            columns: { num: (t) => `#${t.n}`, title: (t) => t.title, age: (t) => t.done_age },
-                            sorts: [{ key: "done", label: "Done" }], empty: "Nothing is done yet." };
-    const waitingMessages = { ...MESSAGE_LIST, groups: [{ ...MESSAGE_LIST.groups[0], label: "" }] };
-    const openQuestions = { ...QUESTION_LIST, groups: [{ ...QUESTION_LIST.groups[0], label: "" }] };
-    // the agent's answers to your messages read like the question list, not like a notification that waits on you
-    const isAnswer = (x) => String(x.about).startsWith("inbox:");
-    const answers = computed(() => (notes.data || []).filter(isAnswer));
-    const otherNotes = computed(() => (notes.data || []).filter((x) => !isAnswer(x)));
-    const ANSWER_LIST = { groups: [{ key: "answers", label: "", kind: "done", match: () => true }],
-                          columns: { status: () => "done", title: (x) => x.text, cite: (x) => x.about_label, age: (x) => x.age || "just now" },
-                          name: "answers", empty: "" };
-    const openAnswer = (x) => {
-      readOne(x);
-      if (peekOf(x)) openNote(x);
-      else if (refHref(x.about, props.env)) location.hash = refHref(x.about, props.env);
-    };
-    const readAnswers = () => Promise.all(answers.value.map(readOne));
-    const openWork = { ...WORK_LIST, groups: [{ ...WORK_LIST.groups[0], label: "" }] };
-    // the last work that ended, newest first, shown small under the open work
-    const endedWork = computed(() => (allWork.data || []).filter((w) => w.ended)
-      .sort((a, b) => (a.ended < b.ended ? 1 : a.ended > b.ended ? -1 : 0)).slice(0, 3));
-    const waiting = computed(() => (inbox.data || []).filter((m) => m.status === "waiting"));
-    const asking = computed(() => (questions.data || []).filter((q) => q.status === "open"));
-    const stats = computed(() => {
-      const s = summary.data || {};
-      const count = (status) => (todos.data ? todos.data.filter((t) => todoStatus(t) === status).length : undefined);
-      const open = todos.data ? todos.data.filter((t) => todoStatus(t) !== "done").length : undefined;
-      const waitingOnYou = count("waiting");
-      return [
-        { key: "notifications", label: "Notifications", n: s.notifications, icon: "bell", path: "", hot: s.notifications },
-        { key: "questions", label: "Questions for you", n: s.questions, icon: "questions", path: "questions", hot: s.questions },
-        { key: "suggestions", label: "Suggestions", n: s.suggestions, icon: "suggestions", path: "suggestions", hot: s.suggestions },
-        { key: "todos", label: "Open to-dos", n: open, icon: "todos", path: "todos", hot: waitingOnYou,
-          sub: todos.data ? [[count("progress"), "in progress"], [waitingOnYou, "waiting on you"], [count("blocked"), "blocked"]]
-            .filter(([n]) => n).map(([n, what]) => `${n} ${what}`).join(" · ") : "" },
-      ];
+    const plans = useFetch(url("/plans"));
+    const view = reactive({ kind: "", n: 0 });
+    const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
+    const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
+    const reloadAll = () => [work, questions, suggestions, notes, plans].forEach((f) => f.reload());
+    const readOne = (x) => send("POST", `/api/env/${props.env}/notifications/${x.n}/read`).then(() => { notes.reload(); changed(); });
+
+    // Dismiss takes a row off this list without acting on it, remembered in this browser
+    const dismissKey = computed(() => `journal.dismissed.${props.env}`);
+    const dismissed = ref(new Set());
+    watchEffect(() => {
+      try { dismissed.value = new Set(JSON.parse(localStorage.getItem(dismissKey.value) || "[]")); } catch (e) { dismissed.value = new Set(); }
     });
-    const about = (q) => q.links.map((l) => l.label).join(", ");
-    const view = reactive({ finished: false, kind: "", n: 0 });
-    const peek = (kind, n) => { view.kind = kind; view.n = n; };
-    const unpeek = () => { view.kind = ""; view.n = 0; };
-    // a notification about something the side panel shows opens there, without leaving Home
-    const peekOf = (x) => { const [k, num] = String((x && x.about) || "").split(":"); const kind = k === "inbox" ? "message" : k;
-                            return PEEK[kind] && Number(num) ? { kind, n: Number(num) } : null; };
-    const openNote = (x) => { const got = peekOf(x); if (got) peek(got.kind, got.n); if (x && x.n && !x.read) readOne(x); };
-    const onPeek = (e) => openNote(e.detail);
-    window.addEventListener("journal:peek", onPeek);
-    onUnmounted(() => window.removeEventListener("journal:peek", onPeek));
-    const picked = (kind) => (r) => view.kind === kind && view.n === r.n;
-    const reloadAll = () => [work, todos, inbox, questions].forEach((f) => f.reload());
-    return { work, allWork, endedWork, todos, inbox, questions, notes, workingSubagents, readOne, readAll, reloadAll, view, peek, unpeek, picked, peekOf, openNote, waiting, asking, stats, openTodos, finishedTodos,
-             waitingMessages, openQuestions, openWork, answers, otherNotes, ANSWER_LIST, openAnswer, readAnswers };
+    const dismiss = (it) => {
+      dismissed.value = new Set([...dismissed.value, it.key]);
+      try { localStorage.setItem(dismissKey.value, JSON.stringify([...dismissed.value].slice(-300))); } catch (e) { /* storage off */ }
+    };
+
+    // Over to you: what waits on the user, questions first, in one list
+    const QUEUE_TYPES = { question: { label: "Question", tint: "#c9955e", action: "Answer" },
+                          message: { label: "Message", tint: "#6fae7d", action: "Read" },
+                          suggestion: { label: "Suggestion", tint: "#a3a8f0", action: "Accept" } };
+    const SLOTS = 3;
+    const queue = computed(() => {
+      const rows = [
+        ...(questions.data || []).filter((q) => q.status === "open").map((q) => ({ kind: "question", n: q.n, title: q.text, age: q.age })),
+        ...(notes.data || []).filter((x) => String(x.about).startsWith("inbox:"))
+          .map((x) => ({ kind: "message", n: Number(String(x.about).split(":")[1]), title: x.text, age: x.age || "just now", note: x })),
+        ...(suggestions.data || []).filter((s) => s.status === "open").map((s) => ({ kind: "suggestion", n: s.n, title: s.title, age: s.age })),
+      ];
+      return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
+        .map((r) => ({ ...r, open: () => { if (r.note) readOne(r.note); peek(r.kind, r.n); } }));
+    });
+    const trailOwner = {};
+    watchEffect(() => {
+      INSPECTOR_TRAIL.owner = trailOwner;
+      INSPECTOR_TRAIL.items = queue.value.map((r) => ({ key: r.key, go: r.open }));
+      INSPECTOR_TRAIL.current = view.kind ? `${view.kind}:${view.n}` : null;
+    });
+    onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
+
+    // what happened since the last visit: remembered per browser, stamped on leaving Home
+    const seenKey = computed(() => `journal.home.seen.${props.env}`);
+    const since = (() => { try { return Number(localStorage.getItem(`journal.home.seen.${props.env}`)) || Date.now() - 86400000; } catch (e) { return Date.now() - 86400000; } })();
+    onUnmounted(() => { try { localStorage.setItem(seenKey.value, String(Date.now())); } catch (e) { /* storage off */ } });
+    const agentEvents = computed(() => ((SHELL.activity && SHELL.activity.events) || [])
+      .filter((e) => e.by === "Agent" && e.at && Date.parse(e.at) >= since));
+    const DONE_WORDS = /^(Closed|Committed|Ended|Wrote|Writing|Replied|Replying|Answered|Filed|Drafted|Suggest|Turned)/;
+    const doneAway = computed(() => agentEvents.value.filter((e) => DONE_WORDS.test(e.text)).slice(0, 6).map((e, i) => ({
+      key: `${e.at}${i}`, age: e.age || "just now",
+      text: [e.text, e.n, e.detail].filter(Boolean).join(" ") + (e.title ? ` — ${e.title}` : ""),
+    })));
+    const awayLine = computed(() => {
+      const count = (re) => agentEvents.value.filter((e) => re.test(e.text)).length;
+      const parts = [[count(/^Closed to-do/), "closed", "to-do", "to-dos"], [count(/^Committed/), "made", "commit", "commits"],
+                     [count(/^Repl/), "answered", "of your messages", "of your messages"], [count(/^(Wrote|Writing) a report/), "wrote", "report", "reports"]]
+        .filter(([n]) => n).map(([n, verb, one, many]) => (one.startsWith("of ") ? `${verb} ${n} ${one}` : `${verb} ${n} ${n === 1 ? one : many}`));
+      if (!parts.length) return "Nothing new since you last looked.";
+      const list = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}` : parts[0];
+      return `While you were away it ${list}.`;
+    });
+
+    const plan = computed(() => (plans.data || []).find((p) => p.status === "active") || null);
+    const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(() => { plans.reload(); changed(); });
+    const openWork = computed(() => (work.data || []).map((w) => {
+      const added = w.files.reduce((sum, f) => sum + (f.added || 0), 0);
+      const removed = w.files.reduce((sum, f) => sum + (f.removed || 0), 0);
+      return { ...w, files_text: w.files.length ? `${w.files.length} file${w.files.length === 1 ? "" : "s"} · +${added} −${removed}` : "" };
+    }));
+    const band = computed(() => {
+      const agent = SHELL.activity && SHELL.activity.agent;
+      const p = plan.value;
+      const n = queue.value.length;
+      const held = !!(p && p.held);
+      const tag = n || held ? { text: "Waiting on you", tint: "#c9955e" } : agent && agent.working ? { text: "Working", tint: "#a3a8f0" } : { text: "Idle", tint: "#83868e" };
+      const w = openWork.value[0];
+      const headline = n ? (n === 1 ? "One thing is waiting on you" : `${n} things are waiting on you`)
+        : held ? "The agent stopped at a checkpoint and needs you"
+        : agent && agent.working ? (w ? `The agent is working on ${w.subject}` : "The agent is working") : "Nothing is waiting on you";
+      const planHref = p ? `#/env/${props.env}/plans/${p.n}` : "";
+      const primary = n ? { label: "Answer the first one", go: () => queue.value[0].open() }
+        : held ? { label: "Continue past the checkpoint", go: continuePlan }
+        : { label: "Open the to-dos", go: () => { location.hash = `#/env/${props.env}/todos`; } };
+      const ctx = agent && agent.context ? `${agent.context.share}%` : "—";
+      const auto = SHELL.activity ? (SHELL.activity.auto ? "On" : "Off") : "—";
+      return { tag, headline, sub: awayLine.value, primary, planHref,
+               stats: [{ label: "Agent", value: !agent ? "Stopped" : agent.working ? "Working" : "Idle" }, { label: "Context", value: ctx }, { label: "Auto mode", value: auto }] };
+    });
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, band, openWork, doneAway };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
-    <div class="body home-body"><div class=page><div class=home>
-      <section v-if="answers.length">
-        <div class=home-head><h2>Answers to your messages</h2><span class=n>{{ answers.length }} new</span>
-          <button type=button class="btn more" @click="readAnswers">Mark all read</button></div>
-        <div class=block>
-          <ResourceList v-bind="ANSWER_LIST" :bar="false" :rows="answers" :href="(x) => $refHref(x.about, env) || '#/env/' + env"
-            :pick="openAnswer"/>
-        </div>
-      </section>
-      <section v-if="otherNotes.length" class=notifications>
-        <div class=home-head><h2>Notifications</h2><span class=n>{{ otherNotes.length }} unread</span>
-          <button type=button class="btn more" @click="readAll">Mark all read</button></div>
-        <div class=block>
-          <div v-for="x in otherNotes" :key="x.n" class=note-row>
-            <div class=note-text><span v-html="$linkify(x.text)"></span>
-              <span class=muted> · {{ x.age || 'just now' }}</span>
-            </div>
-            <span class=note-actions>
-              <button v-if="peekOf(x)" type=button class=btn :title="'Show ' + x.about_label + ' here'" @click="openNote(x)">Open</button>
-              <a v-else-if="x.about && $refHref(x.about, env)" class=btn :href="$refHref(x.about, env)" :title="'Open ' + x.about_label" @click="readOne(x)">Open</a>
-              <button type=button class=btn @click="readOne(x)">Mark read</button>
-            </span>
+    <div class=body><div class=page><div class=cockpit>
+      <section class=band>
+        <div class=band-main>
+          <span class=band-tag :style="{ color: band.tag.tint }">{{ band.tag.text }}</span>
+          <h2 class=band-title>{{ band.headline }}</h2>
+          <p class=band-sub>{{ band.sub }}</p>
+          <div class=band-actions>
+            <button type=button class=band-primary @click="band.primary.go">{{ band.primary.label }}<Icon name="arrow"/></button>
+            <a v-if="band.planHref" class=btn :href="band.planHref">Open the plan</a>
           </div>
         </div>
+        <div class=band-stats>
+          <div v-for="s in band.stats" :key="s.label" class=band-stat><span>{{ s.label }}</span><span>{{ s.value }}</span></div>
+        </div>
       </section>
-      <div class=stats>
-        <a v-for="s in stats" :key="s.key" :class="['stat', {hot: s.hot}]" :href="'#/env/' + env + (s.path ? '/' + s.path : '')">
-          <span class=stat-top><span>{{ s.label }}</span><Icon :name="s.icon"/></span>
-          <span class=stat-n>{{ s.n ?? '–' }}</span>
-          <span v-if="s.sub" class=stat-sub>{{ s.sub }}</span>
-        </a>
+      <div class=cockpit-cols>
+        <section class=queue-col>
+          <div class=queue-head><h2>Over to you</h2><span class=n>{{ queue.length ? queue.length + ' waiting' : 'clear' }}</span>
+            <span v-if="queue.length > SLOTS" class=queue-hint>{{ queue.length - SLOTS }} more — scroll the list</span></div>
+          <div class=queue-slot>
+            <div v-for="it in queue" :key="it.key" :class="['queue-row', {sel: view.kind + ':' + view.n === it.key}]" @click="it.open">
+              <span class=queue-dot :style="{ background: it.tint }"></span>
+              <div class=queue-text>
+                <span class=queue-label>{{ it.label }} {{ it.n }}<span class=queue-age> · {{ it.age }}</span></span>
+                <span class=queue-title>{{ it.title }}</span>
+              </div>
+              <button type=button class=queue-act @click.stop="it.open">{{ it.action }}</button>
+              <button type=button class=queue-dismiss title="Dismiss: take it off this list without acting" aria-label="Dismiss" @click.stop="dismiss(it)"><Icon name="close"/></button>
+            </div>
+            <div v-if="!queue.length" class=queue-empty><span>Nothing is waiting on you</span><span class=muted>The agent works on. It lands here when it needs you.</span></div>
+            <div v-else-if="queue.length < SLOTS" class=queue-room>{{ queue.length === 1 ? 'Last one. Nothing else waiting on you.' : 'Nothing else waiting on you.' }}</div>
+          </div>
+        </section>
+        <section class=work-col>
+          <h2 class=col-title>The agent's work</h2>
+          <a v-for="w in openWork" :key="w.n" class=work-card :href="'#/env/' + env + '/work/' + w.n">
+            <span class=work-card-meta>work {{ w.n }} · {{ w.age || 'just now' }}</span>
+            <span class=work-card-title>{{ w.subject }}</span>
+            <span v-if="w.files_text" class=work-card-meta>{{ w.files_text }}</span>
+          </a>
+          <p v-if="!openWork.length" class="muted col-empty">No work is open.</p>
+          <h2 class="col-title quiet">Done while you were away</h2>
+          <div v-for="d in doneAway" :key="d.key" class=done-row><span class=done-text>{{ d.text }}</span><span class=done-age>{{ d.age }}</span></div>
+          <p v-if="!doneAway.length" class="muted col-empty">Nothing new since you last looked.</p>
+        </section>
       </div>
-
-      <section>
-        <div class=home-head><h2>Open work</h2><span class=n>{{ work.data ? work.data.length : '' }}</span></div>
-        <div class=block>
-          <ResourceList v-bind="openWork" :bar="false" :rows="work.data" :loading="work.loading" :error="work.error"
-            :href="(w) => '#/env/' + env + '/work/' + w.n" :pick="(w) => peek('work', w.n)" :selected="picked('work')"/>
-        </div>
-        <div v-if="endedWork.length" class=recent-ended>
-          <a v-for="w in endedWork" :key="w.n" class=recent-ended-row :href="'#/env/' + env + '/work/' + w.n"
-            @click.prevent="peek('work', w.n)" :title="w.subject">
-            <span class=recent-ended-title>{{ w.subject }}</span>
-            <span class=recent-ended-age>ended {{ w.ended_age || 'just now' }}</span>
-          </a>
-        </div>
-      </section>
-
-      <section v-if="workingSubagents.length" class=home-subagents>
-        <div class=home-head><h2>Subagents at work</h2><span class=n>{{ workingSubagents.length }}</span></div>
-        <div class=recent-ended>
-          <a v-for="a in workingSubagents" :key="a.id" class="recent-ended-row subagent-row" :href="'#/env/' + env + '/agents/subagent/' + a.id"
-            :title="a.name || ('Subagent ' + a.id)">
-            <span class=recent-ended-title>{{ a.name || 'Subagent ' + a.id }}</span>
-            <span v-if="a.model" class=subagent-model>{{ a.model }}</span>
-            <span class=recent-ended-age>{{ a.age_text || 'just now' }}</span>
-          </a>
-        </div>
-      </section>
-
-      <section v-if="waiting.length">
-        <div class=home-head><h2>Messages</h2><span class=n>{{ waiting.length }} waiting</span>
-          <a class=more :href="'#/env/' + env + '/messages'">All messages</a></div>
-        <div class=block>
-          <ResourceList v-bind="waitingMessages" :bar="false" :rows="inbox.data" :href="(m) => '#/env/' + env + '/messages/' + m.n"
-            :pick="(m) => peek('message', m.n)" :selected="picked('message')"/>
-        </div>
-      </section>
-
-      <section v-if="asking.length">
-        <div class=home-head><h2>Questions</h2><span class=n>{{ asking.length }} open</span>
-          <a class=more :href="'#/env/' + env + '/questions'">All questions</a></div>
-        <div class=block>
-          <ResourceList v-bind="openQuestions" :bar="false" :rows="questions.data" :href="(q) => '#/env/' + env + '/questions/' + q.n"
-            :pick="(q) => peek('question', q.n)" :selected="picked('question')"/>
-        </div>
-      </section>
-
-      <ActivePlan :env="env"/>
-
-      <section>
-        <div class=home-head><h2>To-dos</h2>
-          <RadioGroup label="Which to-dos" :options="[{ value: 'open', label: 'Open' }, { value: 'done', label: 'Done' }]"
-            :modelValue="view.finished ? 'done' : 'open'" @update:modelValue="(v) => (view.finished = v === 'done')"/>
-          <a class=more :href="'#/env/' + env + '/todos'">All to-dos</a></div>
-        <div class=block>
-          <ResourceList v-if="view.finished" v-bind="finishedTodos" :bar="false" :limit="8" :rows="todos.data"
-            :href="(t) => '#/env/' + env + '/todos/' + t.n" :pick="(t) => peek('todo', t.n)" :selected="picked('todo')"/>
-          <ResourceList v-else v-bind="openTodos" :bar="false" :limit="5" :rows="todos.data" :loading="todos.loading" :error="todos.error"
-            :href="(t) => '#/env/' + env + '/todos/' + t.n" :pick="(t) => peek('todo', t.n)" :selected="picked('todo')"/>
-        </div>
-      </section>
-    </div></div>
-    <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>
-    </div>`,
+    </div></div></div>
+    <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>`,
 };
 
 // ─────────────────────────────────────────────────────────────── tools
