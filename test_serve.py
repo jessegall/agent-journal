@@ -235,41 +235,41 @@ def post(path: str, payload, headers: dict | None = None, method: str = "POST") 
 
 
 # ─────────────────────────────────────────────────────────────── the inbox
-status, _, body = get("/api/env/alpha/inbox")
+status, _, body = get("/api/env/alpha/messages")
 check("alpha's inbox: 200, the message from the cli",
       (status, [m["text"] for m in json.loads(body)]), (200, ["hello from the cli"]))
-status, _, body = get("/api/env/beta/inbox")
+status, _, body = get("/api/env/beta/messages")
 check("beta's inbox is its own", json.loads(body), [])
-status, got = post("/api/env/beta/inbox", {"text": "a message from the browser"})
+status, got = post("/api/env/beta/messages", {"text": "a message from the browser"})
 check("POST a message: 201, written from the web",
       (status, got["data"]["text"], got["data"]["source"]), (201, "a message from the browser", "web"))
 check("and it landed on beta, not wherever this process is tracked",
       ([m["text"] for m in inbox.rows_response(root, "alpha")], len(inbox.rows_response(root, "beta"))),
       (["hello from the cli"], 1))
-status, got = post("/api/env/beta/inbox", {"text": "  "})
+status, got = post("/api/env/beta/messages", {"text": "  "})
 check("an empty message is refused: 400 with the reason", (status, "needs its text" in got["error"]), (400, True))
-status, got = post("/api/env/nope/inbox", {"text": "x"})
+status, got = post("/api/env/nope/messages", {"text": "x"})
 check("POST to an unknown environment is 404", status, 404)
-status, got = post("/api/env/beta/inbox", b"text=x", headers={"Content-Type": "application/x-www-form-urlencoded"})
+status, got = post("/api/env/beta/messages", b"text=x", headers={"Content-Type": "application/x-www-form-urlencoded"})
 check("a form post is refused: JSON only", status, 415)
-status, got = post("/api/env/beta/inbox", {"text": "x"}, headers={"Origin": "http://elsewhere.example"})
+status, got = post("/api/env/beta/messages", {"text": "x"}, headers={"Origin": "http://elsewhere.example"})
 check("a write from another origin is refused", status, 403)
-status, got = post("/api/env/beta/inbox", b"[1, 2]")
+status, got = post("/api/env/beta/messages", b"[1, 2]")
 check("a body that is not a JSON object is 400", status, 400)
 check("no refused write landed", len(inbox.rows_response(root, "beta")), 1)
-status, got = post("/api/env/beta/inbox/1", {"text": "a message from the browser, reworded"}, method="PATCH")
+status, got = post("/api/env/beta/messages/1", {"text": "a message from the browser, reworded"}, method="PATCH")
 check("a waiting message can be reworded", (status, inbox._all(root, "beta")[0]["text"]), (200, "a message from the browser, reworded"))
-status, got = post("/api/env/beta/inbox/1/move", {"environment": "alpha"})
+status, got = post("/api/env/beta/messages/1/move", {"environment": "alpha"})
 check("move carries a waiting message to another environment",
       (status, [m["text"] for m in inbox.rows_response(root, "alpha")][:1], inbox.rows_response(root, "beta")[0]["status"]),
       (200, ["a message from the browser, reworded"], "moved"))
-status, got = post("/api/env/beta/inbox/1", {"text": "x"}, method="PATCH")
+status, got = post("/api/env/beta/messages/1", {"text": "x"}, method="PATCH")
 check("a moved message refuses a change", status, 400)
-status, got = post("/api/env/alpha/inbox/2/process", {"part": "a message from the browser", "became": ["noted"]})
+status, got = post("/api/env/alpha/messages/2/process", {"part": "a message from the browser", "became": ["noted"]})
 check("a part is recorded through the controller", (status, len(inbox._all(root, "alpha")[1]["parts"])), (200, 1))
-status, got = post("/api/env/alpha/inbox/2/done", {})
+status, got = post("/api/env/alpha/messages/2/done", {})
 check("and the message is marked processed", (status, bool(inbox._all(root, "alpha")[1]["processed"])), (200, True))
-status, got = post("/api/env/alpha/inbox/1", {"text": "x"}, method="DELETE")
+status, got = post("/api/env/alpha/messages/1", {"text": "x"}, method="DELETE")
 check("a DELETE archives, never deletes, and wants a reason", (status, len(inbox._all(root, "alpha")) >= 2), (400, True))
 
 # ─────────────────────────────────────────────────────────────── questions
@@ -384,9 +384,9 @@ status, _, _ = get(f"/docs/1/files/{folder['name']}/..%2F..%2Fattachment.txt")
 check("and nothing outside the folder is", status, 404)
 
 # ─────────────────────────────────────────────────────────────── a resource links back to the message it came from
-status, got = post("/api/env/alpha/inbox", {"text": "please finish it properly"})
+status, got = post("/api/env/alpha/messages", {"text": "please finish it properly"})
 n_msg = got["data"]["n"]
-post(f"/api/env/alpha/inbox/{n_msg}/process", {"part": "finish it properly", "became": ["todo 1"]})
+post(f"/api/env/alpha/messages/{n_msg}/process", {"part": "finish it properly", "became": ["todo 1"]})
 status, _, body = get("/api/env/alpha/todos/1")
 check("a to-do's detail names the message it came from", [m["n"] for m in json.loads(body)["from_messages"]], [n_msg])
 
@@ -525,23 +525,23 @@ status, got = post("/api/env/alpha/comments/1/done", {"how": "split into two"})
 check("and handled through the same route", (status, got.get("message", "").endswith("split into two")), (200, True))
 
 import base64  # noqa: E402
-status, got = post("/api/env/alpha/inbox", {"text": "with a file", "files": [{"name": "../a.txt", "data": base64.b64encode(b"hello").decode()}]})
+status, got = post("/api/env/alpha/messages", {"text": "with a file", "files": [{"name": "../a.txt", "data": base64.b64encode(b"hello").decode()}]})
 _held_n = (got.get("data") or {}).get("n")
 check("a message is posted with a file, its name made safe", (status, [f["name"] for f in (got.get("data") or {}).get("files", [])]),
       (201, ["a.txt"]))
-status, _, body = get(f"/api/env/alpha/inbox")
+status, _, body = get(f"/api/env/alpha/messages")
 status, headers, body = get(f"/inbox-files/alpha/{_held_n}/a.txt")
 check("the held file is served by name", (status, body), (200, b"hello"))
 status, _, _ = get(f"/inbox-files/alpha/{_held_n}/other.txt")
 check("a name the message does not hold is 404", status, 404)
-status, got = post("/api/env/alpha/inbox", {"text": "big", "files": [{"name": "b.bin", "data": base64.b64encode(b"x" * 100_000).decode()}]})
+status, got = post("/api/env/alpha/messages", {"text": "big", "files": [{"name": "b.bin", "data": base64.b64encode(b"x" * 100_000).decode()}]})
 check("a message may carry more than the ordinary body limit", status, 201)
 
-status, got = post(f"/api/env/alpha/inbox/{_held_n}", {"why": "not needed"}, method="DELETE")
+status, got = post(f"/api/env/alpha/messages/{_held_n}", {"why": "not needed"}, method="DELETE")
 check("a message is archived from the viewer", status, 200)
-status, _, body = get("/api/env/alpha/inbox")
+status, _, body = get("/api/env/alpha/messages")
 check("it leaves the default list", _held_n in [m["n"] for m in json.loads(body)], False)
-status, _, body = get("/api/env/alpha/inbox?all=1")
+status, _, body = get("/api/env/alpha/messages?all=1")
 check("and all=1 brings it back, marked archived", [m["status"] for m in json.loads(body) if m["n"] == _held_n], ["archived"])
 status, got = post("/api/docs/1/archive", {"why": "done with it"})
 check("a doc is archived from the viewer", status, 200)
@@ -909,7 +909,7 @@ import re  # noqa: E402
 _topics = set(re.findall(r'"([a-z]+)"', re.search(r"const HELP_TOPICS = \{(.*?)\};", (serve.STATIC / "app.js").read_text(), re.S).group(1)))
 check("every page with a help button has its help file", sorted(t for t in _topics if not (serve.STATIC / "help" / f"{t}.md").is_file()), [])
 import base64  # noqa: E402
-status, got = post("/api/env/alpha/inbox", {"text": "a message carrying a picture",
+status, got = post("/api/env/alpha/messages", {"text": "a message carrying a picture",
                                             "files": [{"name": "shot.png", "data": "data:image/png;base64," + base64.b64encode(b"\x89PNG fake").decode()}]})
 _files = json.loads(get("/api/env/alpha/files")[2])
 _shot = [f for f in _files if f["name"] == "shot.png"]
@@ -918,25 +918,25 @@ check("the Files page lists a message's file with where it came from, its link a
 check("and the attachments of the environment's documents",
       any(f["source"] == "doc" and f["n"] == 1 and f["url"].startswith("/docs/1/files/") for f in _files), True)
 check("a listed message file opens", get(_shot[0]["url"])[0], 200)
-_shot_n = [m["n"] for m in json.loads(get("/api/env/alpha/inbox?all=1")[2]) if m["text"] == "a message carrying a picture"][0]
+_shot_n = [m["n"] for m in json.loads(get("/api/env/alpha/messages?all=1")[2]) if m["text"] == "a message carrying a picture"][0]
 import inbox as _inbox_mod  # noqa: E402
 _inbox_mod.file_into(root, _shot_n, "shot.png", "keep", "2026-09-14T10:00:00+00:00", "alpha")
 check("a message file the agent kept still shows in Files",
       [f["source"] for f in json.loads(get("/api/env/alpha/files")[2]) if f["name"] == "shot.png"], ["message"])
-_shot_msg = [m["n"] for m in json.loads(get("/api/env/alpha/inbox?all=1")[2]) if m["text"] == "a message carrying a picture"][0]
-status, got = post(f"/api/env/alpha/inbox/{_shot_msg}/attach",
+_shot_msg = [m["n"] for m in json.loads(get("/api/env/alpha/messages?all=1")[2]) if m["text"] == "a message carrying a picture"][0]
+status, got = post(f"/api/env/alpha/messages/{_shot_msg}/attach",
                    {"files": [{"name": "later.txt", "data": "data:text/plain;base64," + base64.b64encode(b"added afterwards").decode()}]})
 check("a file bigger than an ordinary request can be added to a message after it is sent",
-      post(f"/api/env/alpha/inbox/{_shot_msg}/attach", {"files": [{"name": "big.bin", "data": base64.b64encode(b"x" * 100_000).decode()}]})[0], 200)
+      post(f"/api/env/alpha/messages/{_shot_msg}/attach", {"files": [{"name": "big.bin", "data": base64.b64encode(b"x" * 100_000).decode()}]})[0], 200)
 check("files are added to a message after it is sent",
-      (status, [f["name"] for f in json.loads(get(f"/api/env/alpha/inbox/{_shot_msg}")[2])["files"]]), (200, ["shot.png", "later.txt", "big.bin"]))
+      (status, [f["name"] for f in json.loads(get(f"/api/env/alpha/messages/{_shot_msg}")[2])["files"]]), (200, ["shot.png", "later.txt", "big.bin"]))
 check("added from the viewer, it is a comment on the message, so the agent is told",
       [(c["about"], c["text"]) for c in json.loads(get(f"/api/env/alpha/comments?about=inbox%3A{_shot_msg}&all=1")[2])],
       [(f"inbox:{_shot_msg}", f"added big.bin to message {_shot_msg}"), (f"inbox:{_shot_msg}", f"added later.txt to message {_shot_msg}")])
 _lists = {
     "to-dos": [(bool(t["done"]), t["closed_at"]) for t in json.loads(get("/api/env/alpha/todos?all=1")[2])],
     "work": [(bool(w["ended"]), w["closed_at"]) for w in json.loads(get("/api/env/beta/work?all=1")[2])],
-    "messages": [(m["status"] in ("processed", "archived"), m["closed_at"]) for m in json.loads(get("/api/env/alpha/inbox?all=1")[2])],
+    "messages": [(m["status"] in ("processed", "archived"), m["closed_at"]) for m in json.loads(get("/api/env/alpha/messages?all=1")[2])],
     "questions": [(q["status"] != "open", q["closed_at"]) for q in json.loads(get("/api/env/alpha/questions?all=1")[2])],
     "pins": [(bool(c["struck"]), c["closed_at"]) for c in json.loads(get("/api/env/alpha/pins?all=1")[2])],
 }
