@@ -386,5 +386,28 @@ j("plans", "abandon", str(_en), "done with the check")
 code, out = j("plans", "edit", str(_en), "--goal=too late")
 check("and a closed plan takes no more changes", (code, "takes no more changes" in out), (1, True))
 
+# ------------------------------------------------- a plan links the transcript it came out of
+# "The transcript should be a file that is created and linked to the to-do list item or to the plan."
+# A transcript is neither a doc nor a report, so it is a third kind of ref -- and it is checked, so a
+# plan can never cite a transcript that is not there.
+j("messages", "add", "Jesse: the loader double-fetches. Sam: fix it this week.", "--kind=transcript")
+_tr = len(__import__("inbox")._all(root, "default"))
+j("messages", "add", "an ordinary message carrying no transcript")
+_plain_msg = len(__import__("inbox")._all(root, "default"))
+code, out = j("plans", "add", "Fix the loader", "--goal=the loader fetches once")
+_ln = len(plans._all(root, "default"))
+code, out = j("plans", "link", str(_ln), f"transcript {_tr}")
+check("a plan can link a transcript", (code, f"links transcript {_tr}" in out), (0, True))
+check("and it is kept as a ref of its own kind",
+      plans._all(root, "default")[_ln - 1]["refs"], [f"transcript {_tr}"])
+code, out = j("plans", "link", str(_ln), f"transcript {_plain_msg}")
+check("a message carrying no transcript is refused", (code, "carries no transcript" in out), (1, True))
+code, out = j("plans", "link", str(_ln), "transcript 999")
+check("and so is one that does not exist", (code, "carries no transcript" in out), (1, True))
+code, out = j("plans", "link", str(_ln), f"transcript {_tr}")
+check("linking the same transcript twice is refused", (code, "already links" in out), (1, True))
+code, out = j("plans", "link", str(_ln), "transcript 4.2")
+check("only a doc has parts, so a dotted transcript is not a ref", code, 1)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
