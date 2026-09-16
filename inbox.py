@@ -33,6 +33,7 @@ MESSAGES = {
     "plain_answered": "answered",
     "answered_part": "answered part of message {n} ({excerpt}); the user is notified and reads it under the message",
     "answer_note": "Answered your question in message {n}",
+    "reply_note": "Replied to your message {n}",
     "needs_text": 'a message needs its text: journal messages add "<message>"',
     "added": "message {n} is left for the agent ({waiting} waiting to be processed)",
     "no_such": "there is no message {n}. `journal messages` numbers them.",
@@ -501,11 +502,12 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
         if part:
             m.setdefault("parts", []).append({"excerpt": part, "became": ["answered"], "at": at})
         _put(root, items, track)
-    if not part:
-        return True, say("replied", n=n)
+    # the user is told either way: a reply they are never shown is a reply that did not land
     if source != "web":
         import notifications
-        notifications.add(root, say("answer_note", n=n), at, f"message {n}", source, track)
+        notifications.add(root, say("answer_note" if part else "reply_note", n=n), at, f"message {n}", source, track)
+    if not part:
+        return True, say("replied", n=n)
     return True, say("answered_part", n=n, excerpt=fmt.gist(part, 60))
 
 

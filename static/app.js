@@ -3505,11 +3505,13 @@ const EnvHome = {
       const rows = [];
       for (const m of messages.data || []) {
         if (m.status === "archived" || !unreadReplies.value.has(m.n)) continue;
-        const answered = (m.replies || []).filter((r) => r.who !== "you" && r.who !== "You" && r.part && (!r.at || Date.parse(r.at) >= weekAgo));
+        const answered = (m.replies || []).filter((r) => r.who !== "you" && r.who !== "You" && (!r.at || Date.parse(r.at) >= weekAgo));
         for (const r of answered) {
-          const part = (m.parts || []).find((x) => x.excerpt && (x.excerpt.includes(r.part) || r.part.includes(x.excerpt)));
+          const part = r.part && (m.parts || []).find((x) => x.excerpt && (x.excerpt.includes(r.part) || r.part.includes(x.excerpt)));
           const ref = part && part.became.length ? part.became.map((b) => b.label).join(", ") : `message ${m.n}`;
-          rows.push({ key: `${m.n}:${r.at}:${r.part}`, at: r.at || "", part: r.part, answer: r.text, ref, age: r.age || "just now", done: true, n: m.n });
+          // a partless reply answers the whole message, so the message's own words are what it is under
+          rows.push({ key: `${m.n}:${r.at}:${r.part || "all"}`, at: r.at || "", part: r.part || m.gist || m.text || `message ${m.n}`,
+                      answer: r.text, ref, age: r.age || "just now", done: true, n: m.n });
         }
         if (m.status === "waiting" && m.read) {
           const made = (m.parts || []).flatMap((p) => p.became.map((b) => b.label)).filter((label) => label !== "answered");
