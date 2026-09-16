@@ -489,10 +489,14 @@
   .needs-leave-active { transition: opacity .16s ease-in, transform .16s ease-in; }
   .needs-leave-to { opacity: 0; transform: translateY(-10px); }
   @media (prefers-reduced-motion: reduce) { .needs-enter-active, .needs-leave-active { transition: none; } }
-  .work-now { display: flex; flex-direction: column; gap: 9px; margin-bottom: 4px; padding: 13px 14px; border: 1px solid #1f2125; border-radius: 10px; background: #151619; cursor: pointer; }
-  .work-now:hover { border-color: var(--border-2); }
+  /* the page's anchor: what the agent is on now carries more weight than the rows under it — a lit left edge, a firmer border and ground */
+  .work-now { position: relative; display: flex; flex-direction: column; gap: 9px; margin-bottom: 8px; padding: 13px 14px 13px 16px;
+    border: 1px solid #26282e; border-radius: 10px; background: #17181c; cursor: pointer; overflow: hidden; }
+  .work-now::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--accent); opacity: .75; }
+  .work-now:hover { border-color: var(--border-2); background: #191a1e; }
+  .work-now:hover::before { opacity: 1; }
   .work-now-top { display: flex; align-items: baseline; gap: 9px; }
-  .work-now-title { flex: 1 1 auto; min-width: 120px; font-size: 13.5px; line-height: 1.4; color: var(--text); text-wrap: pretty; }
+  .work-now-title { flex: 1 1 auto; min-width: 120px; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--text); text-wrap: pretty; }
   .work-now-ref { flex: none; font-size: 11.5px; color: var(--text-3); white-space: nowrap; }
   .work-now-bar { display: flex; align-items: center; gap: 10px; }
   .work-now-track { flex: 1; min-width: 60px; height: 3px; border-radius: 2px; background: var(--border); overflow: hidden; }
