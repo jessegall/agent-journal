@@ -2268,7 +2268,7 @@ const Inbox = {
 
 // docs and reports are one Documents area: the same tabs head each of their lists. Plans left it for
 // a nav entry of their own, on the user's word — a plan is a document, kind of, but it is its own feature.
-const DOC_TABS = [{ key: "docs", label: "Docs" }, { key: "reports", label: "Reports" }];
+const DOC_TABS = [{ key: "docs", label: "Docs" }];
 
 // the switch's last known counts per environment: each tab is its own page, so the switch mounts afresh on every
 // change, and without these it would show no numbers until its fetches land and jump in width
@@ -2683,7 +2683,7 @@ const ReportPanel = {
 
 const Reports = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, DocTabs, ReportPanel },
+  components: { TopBar, Panel, ActionBar, ResourceList, ReportPanel },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reports`);
     const home = computed(() => `#/env/${props.env}/reports`);
@@ -2699,12 +2699,10 @@ const Reports = {
     return { list, reading, creating, done, home, base, REPORT_LIST };
   },
   template: `
-    <TopBar :crumbs="archive ? [env, 'Documents', 'Reports', 'Archive'] : [env, 'Documents', 'Reports']"/>
+    <TopBar :crumbs="archive ? [env, 'Reports', 'Archive'] : [env, 'Reports']"/>
     <div class=body>
       <div class=list>
-        <DocTabs :env="env" current="reports">
-          <template #new><a class="btn new" :href="home + '/new'">New report</a></template>
-        </DocTabs>
+        <div class=doc-head><span class=doc-head-grow></span><span class=doc-head-new><a class="btn new" :href="home + '/new'">New report</a></span></div>
         <ResourceList v-bind="REPORT_LIST" :bar="false" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
           :href="(r) => base + '/' + r.n" :selected="(r) => String(r.n) === String(n)"/>
       </div>
@@ -4179,8 +4177,9 @@ const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "" },
   { key: "inbox", label: "Messages", views: ["Inbox", "Questions", "Suggestions"], path: "messages", count: ["questions", "suggestions"] },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
-  // documents are docs AND reports, each counted only while it is still live
-  { key: "docs", label: "Documents", views: ["EnvDocs", "Files", "Reports"], path: "docs", count: ["docs", "reports"] },
+  { key: "docs", label: "Documents", views: ["EnvDocs", "Files"], path: "docs", count: "docs" },
+  // a report is not a doc: it is written for the user, it ages out, and it is never handed to a session
+  { key: "reports", label: "Reports", views: ["Reports"], path: "reports", count: "reports" },
   // a plan is a document, kind of, but it is a big feature of its own: the user asked for it out of Documents
   { key: "plans", label: "Plans", icon: "plan", views: ["Plans"], path: "plans", count: "plans" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
