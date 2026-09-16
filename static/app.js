@@ -3018,8 +3018,8 @@ const EnvHome = {
                width: p.phases_total ? `${(100 * p.phases_done) / p.phases_total}%` : "0%",
                progress: `${p.phases_done} of ${p.phases_total} phases${todos.length ? ` · ${todos.filter((t) => t.done).length} of ${todos.length} to-dos` : ""}` };
     });
-    // the second line: when it was, and the to-do it serves — they have the width to read in full there
-    const workSub = (w, finished) => [`${finished ? "finished " : ""}${(finished ? w.ended_age : w.age) || "just now"}`,
+    // the second line: when it was, and the to-do it serves — the Finished heading says it is finished, so the line does not
+    const workSub = (w, finished) => [(finished ? w.ended_age : w.age) || "just now",
                                       w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ");
     const workLines = computed(() => (work.data || []).filter((w) => !w.ended)
       .map((w, i) => ({ n: w.n, title: w.subject, sub: workSub(w, false), live: i === 0 })));
@@ -3116,7 +3116,7 @@ const EnvHome = {
         </Transition>
       </section>
       <section class=home-section>
-        <div class=home-head><h2>Current work</h2></div>
+        <div class=home-head><h2>Working on</h2></div>
         <div v-if="currentWork" class=work-now @click="goPlan">
           <div class=work-now-top><span class=work-now-title>{{ currentWork.title }}</span><span class=work-now-ref>{{ currentWork.ref }}</span></div>
           <div class=work-now-bar><span class=work-now-track><span :style="{ width: currentWork.width }"></span></span><span class=work-now-ref>{{ currentWork.progress }}</span></div>
@@ -3125,11 +3125,14 @@ const EnvHome = {
           <span :class="['needs-dot', {live: w.live}]"></span>
           <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
         </a>
+        <p v-if="!currentWork && !workLines.length" class=home-empty>No work is open.</p>
+      </section>
+      <section v-if="finishedLines.length" class=home-section>
+        <div class=home-head><h2>Finished</h2></div>
         <a v-for="w in finishedLines" :key="'done' + w.n" class="home-line quiet" :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
           <span class=needs-dot></span>
           <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
         </a>
-        <p v-if="!currentWork && !workLines.length && !finishedLines.length" class=home-empty>No work is open.</p>
       </section>
       <section v-if="replies.length" class=home-section>
         <div class=home-head><h2>Replies to you</h2><span>{{ repliesNote }}</span></div>
