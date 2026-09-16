@@ -66,7 +66,7 @@ from templates import render as fill
 DIR = "todo"
 STRUCK = "struck"
 FIELDS = ("title", "track", "at", "session", "line", "started", "done", "how",
-          "blocked", "after", "assigned", "reported", "by", "doc", "reopened", "moved_from",
+          "blocked", "after", "assigned", "reported", "by", "doc", "transcript", "reopened", "moved_from",
           "priority", "suggestion", "closed_by", "struck")
 
 MESSAGES = {
@@ -1648,6 +1648,7 @@ def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
         "asks": t.get("asks") or "",
         "answer": t.get("answer") or "",
         "doc": str(t["doc"]) if t.get("doc") else "",
+        "transcript": str(t["transcript"]) if t.get("transcript") else "",
         "priority": priority_of(t),
         "meta": facts_text(root, track, t, short_refs, by_n=by_n),
         "started": t.get("started") or "",

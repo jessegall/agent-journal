@@ -381,5 +381,26 @@ check("a row that already records a dependency is not nudged about it",
 code, out = j("todos", "add", "a row whose brief names only itself")
 check("a brief that names nothing is left alone", (code, "records no dependency" in out), (0, False))
 
+# ------------------------------------------------- a row filed from a transcript says so
+# "whenever it is from a transcript, it should get the tag transcript". The marker goes through the
+# same provenance funnel --doc uses, and it is checked: a tag that points at nothing is worse than none.
+j("messages", "add", "Jesse: the loader double-fetches. Sam: fix it this week.", "--kind=transcript")
+_tr_msg = len(__import__("inbox")._all(root, "default"))
+code, out = j("todos", "add", "swap the loader", f"--transcript={_tr_msg}")
+check("a to-do can be filed from a transcript", code, 0)
+_from_tr = [t for t in todo._all(root, "default") if t["title"] == "swap the loader"][0]
+check("the row records which transcript made it", str(_from_tr.get("transcript")), str(_tr_msg))
+check("and the row the viewer reads carries it",
+      todo.row_response(root, "default", _from_tr)["transcript"], str(_tr_msg))
+code, out = j("todos", "add", "points at nothing", "--transcript=999")
+check("a transcript that does not exist is refused, not tagged",
+      (code, "--transcript" in out), (1, True))
+j("messages", "add", "an ordinary message with no transcript")
+_plain = len(__import__("inbox")._all(root, "default"))
+code, out = j("todos", "add", "points at an ordinary message", f"--transcript={_plain}")
+check("a message carrying no transcript is refused too", (code, "--transcript" in out), (1, True))
+check("and neither refusal filed a row",
+      [t["title"] for t in todo._all(root, "default") if "points at" in t["title"]], [])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

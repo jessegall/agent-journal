@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import fmt
 import todo
-from app import (BRIEF_REFUSED, CATALOGUE_PAGE, answer, brief, doc_where, refuse,
-                 where)
+from app import (BRIEF_REFUSED, CATALOGUE_PAGE, answer, brief, refuse,
+                 transcript_where, where)
 from command import Parsed, number
 from commands.auto import AutoMode
 from commands.resource import Resource
@@ -88,7 +88,8 @@ class Show(Resource):
 
 
 class Add(Resource):
-    signature = "todos:add {title* : the title, in a few words} {--brief} {--doc=} {--after=} {--needs=}"
+    signature = ("todos:add {title* : the title, in a few words} {--brief} {--doc=} {--after=} {--needs=}"
+                 " {--transcript= : the message whose transcript this came out of}")
     casts = {"title": words("a to-do title")}
     default = True
     writes = True
@@ -99,7 +100,7 @@ class Add(Resource):
         body = brief(bool(p.option("brief")))
         if body is None:
             return refuse(BRIEF_REFUSED)
-        got = doc_where(p.option("doc") or "")
+        got = transcript_where(p.option("doc") or "", p.option("transcript") or "")
         if got is None:
             return 1
         return dict(body=body, where=got)
