@@ -4292,6 +4292,10 @@ const NAV = [
   { key: "reports", label: "Reports", views: ["Reports", "ReportDetail"], path: "reports", count: "reports" },
   // a plan is a document, kind of, but it is a big feature of its own: the user asked for it out of Documents
   { key: "plans", label: "Plans", icon: "plan", views: ["Plans"], path: "plans", count: "plans" },
+  // WHAT THE AGENT KNOWS, AND WHAT IT IS TOLD AGAIN. Both are per-environment, unlike the project's
+  // rules and tools below them — and both had a page and a route but no way in from the nav at all.
+  { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
+  { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 
