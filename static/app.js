@@ -3975,7 +3975,7 @@ const ActivityPanel = {
           :role="canComment ? 'button' : null" :tabindex="canComment ? 0 : null"
           :title="canComment ? 'Comment on this, with it quoted' : null"
           @click="commentOnSaid" @keydown.enter.prevent="commentOnSaid" @keydown.space.prevent="commentOnSaid">
-          <span class=activity-said-head>Agent said</span>
+          <span class=activity-said-head>Latest from the agent</span>
           <div class="activity-said-text md" v-html="$md(data.agent.said)"></div>
         </div>
         <div class=activity-list ref=list @mouseenter="hovered = true" @mouseleave="hovered = false">
