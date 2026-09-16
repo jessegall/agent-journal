@@ -804,6 +804,27 @@ check("a git remote becomes the repository's web address, over https or ssh, and
 check("a commit git knows nothing about still has its page, without files, a link or a pull request",
       [(d["files"], d["url"], d["pull_request"], d["subject"]) for d in [json.loads(get(f"/api/env/beta/commits?sha={_sha[:7]}")[2])]],
       [([], "", None, "ship the thing")])
+
+# ───────── a commit the journal never recorded is still read, from the repository itself ─────────
+# THE JOURNAL IS NOT THE ONLY RECORD: Activity links every sha it logged, and a commit made
+# between two pieces of work is on none of them. It exists, so the page shows it with nothing tied to it.
+import subprocess as _sp  # noqa: E402
+_proj = root.parent
+for _cmd in (["git", "init", "-q"], ["git", "config", "user.email", "t@t"], ["git", "config", "user.name", "t"],
+             ["git", "commit", "-q", "--allow-empty", "-m", "a commit nobody recorded"]):
+    _sp.run(_cmd, cwd=str(_proj), capture_output=True, timeout=60)
+_loose = _sp.run(["git", "rev-parse", "HEAD"], cwd=str(_proj), capture_output=True, text=True, timeout=60).stdout.strip()
+status, _, body = get(f"/api/env/beta/commits?sha={_loose[:10]}")
+_got = json.loads(body) if status == 200 else {}
+check("a commit no work recorded is read from the repository, with nothing tied to it",
+      (status, _got.get("subject"), _got.get("sha"), _got.get("work"), _got.get("todos")),
+      (200, "a commit nobody recorded", _loose, [], []))
+status, _, body = get("/api/env/beta/commits?sha=0000000")
+check("a sha no repository knows is refused, and says that is what is missing",
+      (status, "is in this repository" in json.loads(body).get("error", "")), (404, True))
+status, _, body = get("/api/env/beta/commits?sha=nothex")
+check("a sha that is not hex is refused, naming what was given",
+      (status, "`nothex` is not a commit hash" in json.loads(body).get("error", "")), (400, True))
 import transcript as _tx  # noqa: E402
 _tl = [_tx.Line(1, "user", "human", "fix the build", "2026-09-14T10:00:00Z"),
        _tx.Line(2, "assistant", "text", "", "2026-09-14T10:00:05Z", tools=["Bash"]),

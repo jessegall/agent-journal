@@ -12,8 +12,8 @@ from payloads import commits as commit_payloads
 from templates import render as fill
 
 MESSAGES = {
-    "bad_sha": "{sha!r} is not a commit hash: give 7 to 40 of its hex characters",
-    "no_commit": "no commit starting {sha} was made during work on this environment",
+    "bad_sha": "`{sha}` is not a commit hash: give 7 to 40 of its hex characters",
+    "no_commit": "no commit starting {sha} is in this repository",
 }
 
 SHA = re.compile(r"^[0-9a-f]{7,40}$")
@@ -83,6 +83,18 @@ class CommitsController(Controller):
     numbered = ()
     payloads = {"index": commit_payloads.ShowPayload}
 
+    def _from_git(self, root: Path, sha: str) -> Result:
+        """A commit git knows and the journal does not: the same shape, with nothing tied to it."""
+        full = (_git(root.parent, "rev-parse", "--verify", f"{sha}^{{commit}}") or "").strip()
+        if not full:
+            return Result("missing", say("no_commit", sha=sha))
+        subject = (_git(root.parent, "show", "-s", "--format=%s", full) or "").strip()
+        known = details(root.parent, full)
+        at = known["date"]
+        return Result("ok", "", {"sha": full, "subject": subject, "at": at,
+                                 "age": pins.age(at) if at else "", "work": [], "todos": [],
+                                 **known, "pull_request": pull_request(root.parent, full) if known["url"] else None})
+
     def index(self, root: Path, p: commit_payloads.ShowPayload) -> Result:
         sha = (p.sha or "").strip().lower()
         if not SHA.match(sha):
@@ -102,7 +114,11 @@ class CommitsController(Controller):
             if t:
                 tied[t["n"]] = {"n": t["n"], "title": t["title"], "done": bool(t.get("done"))}
         if found is None:
-            return Result("missing", say("no_commit", sha=sha))
+            # THE JOURNAL IS NOT THE ONLY RECORD OF A COMMIT. Activity links every sha it logged,
+            # and a commit made between two pieces of work — or while the work that held it was
+            # another session's — is on none of them. It still exists, and the reader clicked it
+            # because they wanted to see it, so git answers when the journal cannot.
+            return self._from_git(root, sha)
         at = found.get("at", "")
         known = details(root.parent, found["sha"])
         return Result("ok", "", {"sha": found["sha"], "subject": found.get("subject", ""), "at": at,
