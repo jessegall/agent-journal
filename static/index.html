@@ -480,6 +480,14 @@
   .needs-dismiss:hover { background: #212329; color: var(--text-2); }
   .needs-dismiss .ico { width: 12px; height: 12px; }
   .needs-empty { height: 199px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; color: var(--text-3); }
+  /* nothing waiting: one quiet line where the slot was, so the page gets the space back */
+  .needs-clear { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 2px; font-size: 12.5px; color: var(--text-3); }
+  .needs-clear svg { width: 14px; height: 14px; color: #4f8c62; }
+  .needs-enter-active { transition: opacity .22s ease-out, transform .22s cubic-bezier(.2, .8, .2, 1); }
+  .needs-enter-from { opacity: 0; transform: translateY(6px); }
+  .needs-leave-active { transition: opacity .16s ease-in, transform .16s ease-in; }
+  .needs-leave-to { opacity: 0; transform: translateY(-10px); }
+  @media (prefers-reduced-motion: reduce) { .needs-enter-active, .needs-leave-active { transition: none; } }
   .work-now { display: flex; flex-direction: column; gap: 9px; margin-bottom: 4px; padding: 13px 14px; border: 1px solid #1f2125; border-radius: 10px; background: #151619; cursor: pointer; }
   .work-now:hover { border-color: var(--border-2); }
   .work-now-top { display: flex; align-items: baseline; gap: 9px; }
