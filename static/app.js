@@ -4705,8 +4705,14 @@ const App = {
         :close="closeOverlay" :reloaded="reloadActivity"/>
       <QuickMenu v-if="QUICK.open && envName" :env="envName"/>
       <div v-if="TOAST.text" class=quick-toast role=status>{{ TOAST.text }}</div>
-      <aside v-if="activity.data && ACTIVITY.shown" class=activity-dock>
-        <ActivityPanel :data="activity.data" :href="activityHref" :env="envName"/>
+      <aside v-if="(activity.data && ACTIVITY.shown) || (ov.data && ov.data.update)" class=activity-dock>
+        <ActivityPanel v-if="activity.data && ACTIVITY.shown" :data="activity.data" :href="activityHref" :env="envName"/>
+        <!-- it does not close: the journal serving this page is out of date, and nothing but the upgrade makes that untrue -->
+        <div v-if="ov.data && ov.data.update" class=update-bar>
+          <p class=update-bar-head>Agent journal {{ ov.data.update.version }} is available</p>
+          <p class=update-bar-note>This project has {{ ov.data.update.have }}<template v-if="ov.data.update.headline"> — {{ ov.data.update.headline }}</template></p>
+          <p class=update-bar-how>Upgrade it from the terminal: <code>journal upgrade</code></p>
+        </div>
       </aside>
       <div v-if="AWAY.open && envName" class=away-card role=status>
         <div class=away-head>
