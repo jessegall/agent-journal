@@ -2220,7 +2220,8 @@ function suggestionKind(s) { return s.status === "open" ? "waiting" : s.status =
 
 const INBOX_LIST = {
   groups: [{ key: "you", label: "Waiting on you", kind: "waiting", match: (r) => r.group === "you" },
-           { key: "handled", label: "Handled", kind: "done", closed: true, folded: true, match: (r) => r.group !== "you" }],
+           { key: "agent", label: "Waiting on the agent", kind: "progress", match: (r) => r.group === "agent" },
+           { key: "handled", label: "Handled", kind: "done", closed: true, folded: true, match: (r) => r.group === "handled" }],
   columns: { status: (r) => r.status, tint: (r) => (r.group === "you" ? (TYPES[r.type] || {}).tint || null : null), type: (r) => r.type, num: (r) => `#${r.num}`, numWidth: "34px", title: (r) => r.title, age: (r) => shortAge(r.age), ageWidth: "52px", struck: (r) => r.struck },
   sorts: [{ key: "at", label: "Newest", value: (r) => r.at || "" }],
   count: (rows) => `${rows.filter((r) => r.group === "you").length} waiting · ${rows.filter((r) => r.at && Date.now() - Date.parse(r.at) < 7 * 86400000).length} this week`,
@@ -2242,7 +2243,7 @@ const Inbox = {
       if (!messages.data || !questions.data || !suggestions.data) return null;
       return [
         ...messages.data.map((m) => ({ name: `m${m.n}`, type: "message", num: m.n, title: m.text, age: m.age, at: m.at, closed_at: m.closed_at,
-                                       group: "handled", live: m.status === "waiting", status: MESSAGE_LIST.columns.status(m), struck: m.status === "archived" })),
+                                       group: m.status === "waiting" ? "agent" : "handled", live: m.status === "waiting", status: MESSAGE_LIST.columns.status(m), struck: m.status === "archived" })),
         ...questions.data.map((q) => ({ name: `q${q.n}`, type: "question", num: q.n, title: q.text, age: q.age, at: q.at, closed_at: q.closed_at,
                                         group: q.status === "open" ? "you" : "handled", status: questionKind(q), struck: q.status === "withdrawn" })),
         ...suggestions.data.map((s) => ({ name: `s${s.n}`, type: "suggestion", num: s.n, title: s.title, age: s.age, at: s.at, closed_at: s.closed_at,
