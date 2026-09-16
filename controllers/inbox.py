@@ -17,15 +17,18 @@ class InboxController(Controller):
     payloads = {"index": ListingPayload, "store": StorePayload, "update": TextPayload, "process": ProcessPayload,
                 "file": FilePayload, "detach": DetachPayload, "attach": AttachPayload, "move": MovePayload,
                 "destroy": WhyPayload, "reply": ReplyPayload}
-    # a processed or moved message is the record of what it became
-    EDITS = frozenset({"update", "process", "file", "done", "move"})
+    # a processed or moved message is the record of what it became: it is not reworded, refiled,
+    # processed a second time or carried elsewhere — but a LATE part is still the truth about what
+    # the user said, so `process` is not in here
+    EDITS = frozenset({"update", "file", "done", "move"})
 
     def repository(self, root: Path, p: Payload):
         from resources import Messages
         return Messages(root, p.env)
 
     def guard(self, root: Path, action: str, p: Payload) -> Result | None:
-        if action == "destroy" and self.repository(root, p).find(p.id).archived:
+        # the row is only looked up for the actions that name one: index and store carry no id
+        if action in self.EDITS | {"destroy", "process"} and self.repository(root, p).find(p.id).archived:
             return Result("refused", inbox.say("already_archived", n=p.id))
         if action in self.EDITS and not self.repository(root, p).find(p.id).waiting:
             return Result("refused", inbox.say("already_processed", n=p.id))

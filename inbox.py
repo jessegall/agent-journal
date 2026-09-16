@@ -39,6 +39,8 @@ MESSAGES = {
     "not_in_message": "that part is not in message {n}; quote the words it is about",
     "already_processed": "message {n} is already processed",
     "part_recorded": "message {n}: «{excerpt}» became {became:, } ({parts} part(s) recorded)",
+    "part_recorded_late": "message {n} was already processed; «{excerpt}» became {became:, } anyway ({parts} part(s) recorded). "
+                          "A message is the record of what the user said, not a closed ticket.",
     "no_parts": "message {n} has no parts yet; record what each part became first: "
                 'journal messages process {n} --part="<words>" --became=noted',
     "done": "message {n} is processed: it became {became:, } ({waiting} waiting)",
@@ -373,8 +375,7 @@ def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
         m, why = _find(items, n)
         if m is None:
             return False, why
-        if m.get("processed"):
-            return False, say("already_processed", n=n)
+        late = bool(m.get("processed"))
         if _flat(excerpt) not in _flat(m["text"]):
             return False, say("not_in_message", n=n)
         refs: list[str] = []
@@ -390,8 +391,8 @@ def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
         m.setdefault("parts", []).append({"excerpt": excerpt, "became": refs, "at": at})
         _put(root, items, track)
         parts = len(m["parts"])
-    return True, say("part_recorded", n=n, excerpt=fmt.gist(excerpt, 60), became=[label(r) for r in refs],
-                     parts=parts)
+    return True, say("part_recorded_late" if late else "part_recorded", n=n, excerpt=fmt.gist(excerpt, 60),
+                     became=[label(r) for r in refs], parts=parts)
 
 
 def done(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, str]:
@@ -473,8 +474,6 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
             return False, err
         if part and _flat(part) not in _flat(m["text"]):
             return False, say("not_in_message", n=n)
-        if part and m.get("processed"):
-            return False, say("already_processed", n=n)
         m.setdefault("replies", []).append({"text": text, "at": at, "source": source, **({"part": part} if part else {})})
         if part:
             m.setdefault("parts", []).append({"excerpt": part, "became": ["answered"], "at": at})
