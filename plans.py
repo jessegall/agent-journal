@@ -10,7 +10,7 @@ from pins import age
 from templates import render
 
 KEY = "plans"
-DRAFT, ACTIVE, DONE, ABANDONED = "draft", "active", "done", "abandoned"
+DRAFT, ACTIVE, PARKED, DONE, ABANDONED = "draft", "active", "parked", "done", "abandoned"
 #: project-wide: "user" (default) lets only the viewer activate a plan, "agent" lets the CLI do it too
 APPROVAL = "plans_approval"
 
@@ -42,6 +42,10 @@ MESSAGES = {
     "first_empty": "plan {n} cannot start: its first phase has no to-dos",
     "one_active": "plan {other} is already active on this environment, and one plan is active at a time",
     "not_draft": "plan {n} is {status}, not a draft",
+    "park_why": 'say why it is set aside: journal plans park {n} "<why>"',
+    "park_not_active": "plan {n} is {status}; only the plan being worked can be parked",
+    "parked": "plan {n} is parked: {why}\n  its to-dos stop being offered and another plan can run; `journal plans activate {n}` picks it up again",
+    "resumed": "plan {n} is active again; phase {p}, {title}, is current",
     "activated": "plan {n} is active; phase 1, {title}, is current",
     "abandon_why": 'say why: journal plans abandon {n} "<why>"',
     "already_abandoned": "plan {n} is already abandoned",
@@ -54,6 +58,7 @@ MESSAGES = {
     "stall_empty": "plan {n} phase {p}, {title}, is current and has no to-dos: break it down with `journal todos add` "
                    "and `journal plans todos {n} {p} <numbers>`",
     "stall_draft": "plan {n} is a draft: its to-dos wait until the user approves it in the viewer",
+    "stall_parked": "plan {n} is parked: {why}. Its to-dos wait until it is picked up again — `journal plans activate {n}`",
     "continue_user": "only the user continues a plan past a checkpoint: they do it in the viewer",
     "no_checkpoint": "plan {n} is not stopped at a checkpoint",
     "continued": "plan {n} continues past phase {p}, {title}",
@@ -135,6 +140,35 @@ def status(plan: dict, rows: list[dict]) -> str:
     if stored == ACTIVE and rows and all(r["complete"] for r in rows):
         return DONE
     return stored
+
+
+def park(root: Path, n: int, why: str, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
+    """Set the plan being worked aside, without finishing it and without saying it was dropped.
+
+    A PLAN HAD NOWHERE TO WAIT. The states were draft, active, done and abandoned, and only one plan
+    could be active — so a plan that was started and then had to wait could only be finished, which is
+    a lie, or abandoned, which says it was dropped. Parking is the same act `work park` already names
+    for a piece of work: it stays, it says why, and it is picked up again by activating it.
+
+    IT FREES THE SLOT. `active()` finds a plan by its derived status, so a parked plan is no longer
+    active: another plan may be activated, and this one's to-dos leave `order()` on their own, with
+    nothing to remember and nothing to undo.
+    """
+    why = " ".join((why or "").split())
+    if not why:
+        return False, say("park_why", n=n)
+    here = _here(root, track)
+    with state.locked(root):
+        items = _all(root, here)
+        plan = _get(items, n)
+        if plan is None:
+            return False, say("no_plan", n=n)
+        got = status(plan, phases(root, plan, here))
+        if got != ACTIVE:
+            return False, say("park_not_active", n=n, status=got)
+        plan.update(status=PARKED, parked_at=at, parked_why=why, parked_by=source)
+        _put(root, items, here)
+    return True, say("parked", n=n, why=why)
 
 
 def current(plan: dict, rows: list[dict]) -> dict | None:
@@ -281,7 +315,8 @@ def activate(root: Path, n: int, at: str, source: str = "cli", track: str | None
             return False, say("no_plan", n=n)
         known = _todos(root, here)
         rows = phases(root, plan, here, known)
-        if (plan.get("status") or DRAFT) != DRAFT:
+        was = plan.get("status") or DRAFT
+        if was not in (DRAFT, PARKED):
             return False, say("not_draft", n=n, status=status(plan, rows))
         if not rows:
             return False, say("no_phases", n=n)
@@ -291,7 +326,12 @@ def activate(root: Path, n: int, at: str, source: str = "cli", track: str | None
             if other != n and status(it, phases(root, it, here, known)) == ACTIVE:
                 return False, say("one_active", other=other)
         plan.update(status=ACTIVE, activated_at=at, activated_by=source)
+        if was == PARKED:
+            plan.pop("parked_at", None), plan.pop("parked_why", None), plan.pop("parked_by", None)
         _put(root, items, here)
+    if was == PARKED:
+        now = current(plan, phases(root, plan, here))
+        return True, say("resumed", n=n, p=(now or rows[0])["p"], title=(now or rows[0])["title"])
     return True, say("activated", n=n, title=rows[0]["title"])
 
 
@@ -375,6 +415,11 @@ def stall(root: Path, track: str) -> str:
     """Why the active plan gives auto nothing to pick up: a checkpoint, or a current phase with no to-dos; else ""."""
     got = active(root, track)
     if got is None:
+        # A PARKED PLAN IS WHY THE LIST WENT QUIET, and saying nothing would leave `next` unexplained
+        parked = [m for m, plan in enumerate(_all(root, track), 1) if (plan.get("status") or DRAFT) == PARKED]
+        if parked:
+            held = _all(root, track)[parked[0] - 1]
+            return say("stall_parked", n=parked[0], why=held.get("parked_why") or "set aside")
         drafts = [m for m, plan in enumerate(_all(root, track), 1)
                   if (plan.get("status") or DRAFT) == DRAFT and any(ph.get("todos") for ph in plan.get("phases") or [])]
         return say("stall_draft", n=drafts[0]) if drafts else ""
@@ -599,6 +644,7 @@ def row_response(root: Path, n: int, plan: dict, track: str, full: bool = False)
            "auto": todo.auto(root, track), "from_doc": plan.get("from_doc") or None,
            # a finished plan the user has not seen yet still belongs on the home card
            "acknowledged": acknowledged(plan), "acknowledged_at": plan.get("acknowledged_at") or "",
+           "parked_why": plan.get("parked_why") or "", "parked_at": plan.get("parked_at") or "",
            "closed_at": plan.get("done_at") or plan.get("closed_at") or "", "gist": fmt.gist(plan.get("goal", ""))}
     row["meta"] = " · ".join(x for x in (row["age"], say("progress", done=row["phases_done"], total=row["phases_total"]),
                                          say("current", p=now["p"], title=now["title"]) if now else "",
