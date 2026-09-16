@@ -3001,6 +3001,8 @@ const EnvHome = {
       return { facts };
     });
     const SLOTS = 5;
+    // nothing waiting: the section gives its space back rather than holding 200px of empty slot
+    const clear = computed(() => !queue.value.length && !held.value);
     // the kind reads as part of the sentence here, not as a label: "question 12 · 6m"
     const queueMeta = (it) => (SHELL.wide ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
     // Current work: the assigned plan with its progress, then the open work as one-line rows
@@ -3069,7 +3071,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, plan, continuePlan, goPlan, queueMeta, currentWork, workLines, finishedLines, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, currentWork, workLines, finishedLines, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3084,7 +3086,10 @@ const EnvHome = {
         </div>
       </div>
       <section class=home-section>
-        <div class=home-head><h2>Waiting on you</h2><span>{{ queue.length + (held ? 1 : 0) ? (queue.length + (held ? 1 : 0)) + ' waiting' : 'clear' }}</span>
+        <Transition name=needs mode=out-in>
+        <div v-if="clear" key=clear class=needs-clear><Icon name="todos"/><span>Nothing is waiting on you.</span></div>
+        <div v-else key=queue>
+        <div class=home-head><h2>Waiting on you</h2><span>{{ queue.length + (held ? 1 : 0) }} waiting</span>
           <span v-if="queue.length + (held ? 1 : 0) > SLOTS" class=home-hint>{{ queue.length + (held ? 1 : 0) - SLOTS }} more — scroll the list</span></div>
         <div class=needs-slot>
           <div v-if="held" class=needs-row @click="goPlan">
@@ -3099,8 +3104,9 @@ const EnvHome = {
             <span class=needs-meta>{{ queueMeta(it) }}</span>
             <button type=button class=needs-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(it)"><Icon name="close"/></button>
           </div>
-          <div v-if="!queue.length && !held" class=needs-empty>Nothing is waiting on you.</div>
         </div>
+        </div>
+        </Transition>
       </section>
       <section class=home-section>
         <div class=home-head><h2>Current work</h2></div>
