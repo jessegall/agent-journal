@@ -1,6 +1,6 @@
 ---
 name: journal
-description: "The project's journal, core skill: the first decision on every request (the current work, a to-do, or work to do now), the tag on each message, declaring work, choosing the environment, looking before you answer, and what to do at a start, after a compaction or when a hook holds you. Use it whenever the user asks for a feature, a fix or any piece of work, even a small one; whenever a hook holds your stop or refuses a tool call; when the user says later, not yet, also or by the way; when you are about to say 'I think we decided'; and at every start and after every compaction. The detail lives in seven focused skills that load beside it: journal-todos, journal-questions, journal-messages, journal-memory, journal-docs, journal-agents and journal-plans. It also carries the one rule for every dispatch: name the model. Not for subagents: a subagent reports what it found and the main conversation files it."
+description: "The project's journal, core skill: the first decision on every request (the current work, a to-do, or work to do now), the tag on each message, declaring work, choosing the environment, looking before you answer, and what to do at a start, after a compaction or when a hook holds you. Use it whenever the user asks for a feature, a fix or any piece of work, even a small one; whenever a hook holds your stop or refuses a tool call; when the user says later, not yet, also or by the way; when you are about to say 'I think we decided'; and at every start and after every compaction. The detail lives in eight focused skills that load beside it: journal-todos, journal-questions, journal-messages, journal-memory, journal-docs, journal-agents, journal-plans and journal-reports. It also carries the one rule for every dispatch: name the model. Not for subagents: a subagent reports what it found and the main conversation files it."
 ---
 
 # The journal
@@ -174,6 +174,7 @@ before you act:
 | `journal-docs` | the user asks for something checked or researched; something was ruled and should be written down; you would write a reusable script |
 | `journal-agents` | before every subagent dispatch; a subagent must write; a subagent's journal command is refused |
 | `journal-plans` | the user asks for a plan, a roadmap or phases; you are about to draft one; a plan is active, refuses to start or stalls; a plan should be stopped |
+| `journal-reports` | the user asks you to check, research, compare or review something; a dispatch comes back with findings; a report should be archived or become a doc |
 
 **One rule from `journal-agents` belongs here, because a dispatch does not wait for a skill to load:
 name the model on every subagent you dispatch** — `haiku` for mechanical work with a known answer,

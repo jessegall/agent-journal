@@ -833,7 +833,7 @@ check("a skill set to load at every start is named in the start block", ("LOAD T
 _skills_mod.set_always(d / ".journal", "journal-memory", False)
 check("and every focused skill beside it",
       [n for n in ("journal-todos", "journal-questions", "journal-messages", "journal-memory", "journal-docs",
-                  "journal-agents", "journal-plans")
+                  "journal-agents", "journal-plans", "journal-reports")
        if not (d / ".claude" / "skills" / n / "SKILL.md").is_file()], [])
 (installed / "references" / "stale.md").write_text("old")
 p = subprocess.run([I], capture_output=True, text=True, timeout=180)
