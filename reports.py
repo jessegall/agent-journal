@@ -24,6 +24,7 @@ MESSAGES = {
     "no_question": "there is no question {n} on this environment",
     "added": "report {n}: {title}[ — for {about}]\n  the user reads it in the viewer; it is not a doc and is never handed to a session",
     "no_report": "there is no report {n}. `journal reports` numbers them.",
+    "seen": "report {n} is marked seen",
     "archive_why": 'say why: journal reports archive {n} "<why>"',
     "already_archived": "report {n} is already archived",
     "archived": "report {n} is archived: {why}",
@@ -82,6 +83,23 @@ def _check(root: Path, ref: str, track: str | None) -> str | None:
 def _all(root: Path, track: str | None = None) -> list[dict]:
     got = state.tracked(root, KEY, track, []) if track else state.get(root, KEY, [])
     return got if isinstance(got, list) else []
+
+
+def seen(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, str]:
+    """The user opened the report in the viewer; the first time is kept.
+
+    A REPORT IS FOR THE USER, so "have they read it" is a fact about the report, the way it is
+    for a question — it is what lets the home stop asking once they have.
+    """
+    with state.locked(root):
+        items = _all(root, track)
+        if not 1 <= n <= len(items):
+            return False, say("no_report", n=n)
+        r = items[n - 1]
+        if not r.get("seen_at"):
+            r["seen_at"] = at
+            _put(root, items, track)
+    return True, say("seen", n=n)
 
 
 def _put(root: Path, items: list[dict], track: str | None = None) -> None:
@@ -268,7 +286,8 @@ def row_response(n: int, r: dict, body: bool = False, days: int = 0) -> dict:
            "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "", "about": r.get("about") or "",
            "about_label": label(r.get("about") or ""), "archived": archived_why(r, days), "meta": facts(r, days),
            "closed_at": r.get("archived_at") or (_expired_at(r, days) if expired(r, days) else ""),
-           "doc": r.get("doc") or None, "ages_out_in": _ages_out_in(r, days)}
+           "doc": r.get("doc") or None, "ages_out_in": _ages_out_in(r, days),
+           "seen": bool(r.get("seen_at")), "seen_at": r.get("seen_at") or ""}
     if body:
         row["body"] = r.get("body", "")
     return row

@@ -2346,7 +2346,7 @@ function planPrimary(p) {
 
 const PlanPanel = {
   props: PANEL_PROPS,
-  components: { Panel, ActionBar, FromMessages },
+  components: { Panel, ActionBar, FromMessages, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -2389,13 +2389,14 @@ const PlanPanel = {
           </div>
         </div>
         <div v-if="item.data.body"><p class=section-label>Approach</p><div class="md prose" v-html="$md(item.data.body)"></div></div>
+        <Comments :about="'plan ' + item.data.n" :env="env" :key="'c-plan' + item.data.n"/>
       </template>
     </Panel>`,
 };
 
 const Plans = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, TodoPanel, PlanPanel, Icon, ProgressBar, FromMessages },
+  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, TodoPanel, PlanPanel, Icon, ProgressBar, FromMessages, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const home = computed(() => `#/env/${props.env}/plans`);
@@ -2596,6 +2597,7 @@ const Plans = {
             </div>
           </section>
           <div v-if="item.data.body" class=plan-approach><h2 class=col-title>Approach</h2><div class="md prose" v-html="$md(item.data.body)"></div></div>
+          <Comments :about="'plan ' + item.data.n" :env="env" :key="'c-planpage' + item.data.n"/>
         </template>
       </div></div></div>
       <TodoPanel v-if="todoView.n" :key="'todo' + todoView.n" :env="env" :n="todoView.n" :onClose="closeTodo" :link="'#/env/' + env + '/todos/' + todoView.n" :reloaded="item.reload"/>
@@ -2631,7 +2633,7 @@ const REPORT_LIST = {
 
 const ReportPanel = {
   props: PANEL_PROPS,
-  components: { Panel, ActionBar },
+  components: { Panel, ActionBar, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reports`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -2647,6 +2649,13 @@ const ReportPanel = {
       ];
     });
     const done = panelDone(props, item);
+    // opening a report is the user reading it: the home stops asking, the same way a question does
+    let marked = false;
+    watch(() => item.data, (r) => {
+      if (marked || !r || r.seen || r.archived) return;
+      marked = true;
+      postJSON(`${api.value}/${r.n}/seen`, {}).then(() => changed()).catch(() => { marked = false; });
+    }, { immediate: true });
     return { item, actions, done };
   },
   template: `
@@ -2663,6 +2672,7 @@ const ReportPanel = {
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
         <div class="md prose" v-html="$md(item.data.body)"></div>
+        <Comments :about="'report ' + item.data.n" :env="env" :key="'c-report' + item.data.n"/>
       </template>
     </Panel>`,
 };
@@ -3260,6 +3270,7 @@ const EnvHome = {
     const work = useFetch(url("/work?all=1"));
     const questions = useFetch(url("/questions"));
     const suggestions = useFetch(url("/suggestions"));
+    const reports = useFetch(url("/reports"));
     // ?all=1 so a FINISHED plan is here too: its card stays until the user acknowledges it, and the
     // plain list hides done ones, which is why the card used to vanish the moment the last phase closed
     const plans = useFetch(url("/plans?all=1"));
@@ -3293,11 +3304,14 @@ const EnvHome = {
     // Over to you: what waits on the user, questions first, in one list
     const QUEUE_TYPES = { question: { label: "Question", tint: "#c9955e", action: "Answer" },
                           reply: { label: "Message", tint: "#6fae7d", action: "Read" },
+                          report: { label: "Report", tint: "#d9a441", action: "Read" },
                           suggestion: { label: "Suggestion", tint: "#a3a8f0", action: "Accept" } };
     const queue = computed(() => {
       const rows = [
         ...(questions.data || []).filter((q) => q.status === "open").map((q) => ({ kind: "question", n: q.n, title: q.text, age: q.age })),
         ...(suggestions.data || []).filter((s) => s.status === "open").map((s) => ({ kind: "suggestion", n: s.n, title: s.title, age: s.age })),
+        // a report is written FOR the user: it waits here until they have opened it
+        ...(reports.data || []).filter((r) => !r.seen && !r.archived).map((r) => ({ kind: "report", n: r.n, title: r.title, age: r.age })),
       ];
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
         .map((r) => ({ ...r, open: () => peek(r.kind, r.n) }));
