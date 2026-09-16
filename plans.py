@@ -40,6 +40,8 @@ MESSAGES = {
     "user_activates": "only the user activates a plan: they approve plan {n} in the viewer",
     "no_phases": "plan {n} has no phases yet",
     "first_empty": "plan {n} cannot start: its first phase has no to-dos",
+    "phase_empty": "plan {n} is not finished being written: phase {p}, {title}, has no to-dos yet. Break it down with "
+                   "`journal todos add \"<title>\" --brief` and `journal plans todos {n} {p} <numbers>`",
     "one_active": "plan {other} is already active on this environment, and one plan is active at a time",
     "not_draft": "plan {n} is {status}, not a draft",
     "preparing": "plan {n} is being written: its phases are still being added",
@@ -319,8 +321,14 @@ def ready(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, 
         plan = _get(items, n)
         if plan is None:
             return False, say("no_plan", n=n)
+        rows = phases(root, plan, here)
         if (plan.get("status") or DRAFT) != PREPARING:
-            return False, say("not_preparing", n=n, status=status(plan, phases(root, plan, here)))
+            return False, say("not_preparing", n=n, status=status(plan, rows))
+        if not rows:
+            return False, say("no_phases", n=n)
+        empty = next((r for r in rows if not r["todos"]), None)
+        if empty:
+            return False, say("phase_empty", n=n, p=empty["p"], title=empty["title"])
         plan.update(status=DRAFT, ready_at=at)
         _put(root, items, here)
     return True, say("ready", n=n, title=plan.get("title", ""))
