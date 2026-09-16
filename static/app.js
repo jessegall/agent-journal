@@ -397,17 +397,32 @@ const StatusBar = {
       return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
     });
     const inspectWork = computed(() => (work.data ? work.data[0] : (AGENT_STATE[env.value] || {}).work) || null);
+    // WHAT IS BEING WORKED, AND WHERE: the branch this project is on, and the to-do the open work
+    // serves. Both are already in hand — the branch rides in the activity payload, the number is on
+    // the work row — and the bar is the one thing visible on every page.
+    const facts = computed(() => {
+      const b = SHELL.activity && SHELL.activity.branch;
+      const w = inspectWork.value;
+      return {
+        branch: b ? (b.detached ? `detached at ${b.name}` : b.name) : "",
+        hint: b && b.detached ? `Not on a branch: HEAD is at commit ${b.name}` : "The git branch checked out in this project",
+        todo: w && w.todo ? w.todo : 0,
+      };
+    });
     // the sentence is the control: it opens the current work over the page, or the plan when no work is open
     const openCurrent = () => {
       if (inspectWork.value) { OVERLAY.kind = "work"; OVERLAY.n = inspectWork.value.n; } else if (view.value.href) location.hash = view.value.href;
     };
-    return { env, view, SHELL, openCurrent };
+    return { env, view, SHELL, openCurrent, facts };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
       <button type=button class=statusbar-text title="Open what it is on" @click="openCurrent"><b>{{ view.state }}</b><span>{{ view.what }}</span></button>
       <span class=statusbar-tools>
+        <span v-if="facts.branch && SHELL.wide" class=statusbar-facts :title="facts.hint"><Icon name="style"/><span>{{ facts.branch }}</span></span>
+        <a v-if="facts.todo" class=statusbar-todo :href="'#/env/' + env + '/todos/' + facts.todo"
+          title="Open the to-do this work serves">to-do {{ facts.todo }}</a>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
