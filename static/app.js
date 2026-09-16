@@ -2395,12 +2395,6 @@ const Plans = {
     });
     const phaseDone = (body, a) => { closePhase(); done(body, a); };
     const leaveNew = () => { changed(); location.hash = base.value; };
-    // the switcher: every plan the agent could hold, the assigned one first
-    const PLAN_DOT = { active: "#5b8def", draft: "#83868e", done: "#3ecf74" };
-    const planTabs = computed(() => ["active", "draft", "done"].flatMap((status) => (list.data || []).filter((p) => p.status === status))
-      .map((p) => ({ n: p.n, title: p.title, note: p.status, on: String(p.n) === String(props.n), dot: PLAN_DOT[p.status],
-                     // a finished plan is still reachable, but it is not a choice: it reads as the record it is
-                     finished: p.status === "done", href: `${home.value}/${p.n}` })));
     // a to-do row on the plan opens in the inspector over the plan, stepping through the plan's to-dos
     const todoView = reactive({ n: 0 });
     const planTodos = computed(() => (item.data && item.data.phases ? item.data.phases.flatMap((ph) => ph.todos) : []));
@@ -2451,7 +2445,7 @@ const Plans = {
       const when = p.status === "done" ? "ended" : p.status === "abandoned" ? "stopped" : "drafted";
       return [`plan ${p.n}`, p.from_doc ? `from doc ${p.from_doc}` : "", `${when} ${p.age || "just now"}`].filter(Boolean).join(" · ");
     });
-    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, planTabs, todoState, TODO_WORD, meta, PLAN_STATUS };
+    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, todoState, TODO_WORD, meta, PLAN_STATUS };
   },
   template: `
     <template v-if="onPage">
@@ -2459,11 +2453,6 @@ const Plans = {
       <div class=body><div class=page><div class=plan-screen>
         <FetchState :state="item"/>
         <template v-if="item.data">
-          <div class=plan-switch>
-            <a v-for="p in planTabs" :key="p.n" :class="['plan-tab', {on: p.on, finished: p.finished}]" :href="p.href" :title="p.title">
-              <span class=plan-tab-dot :style="{ background: p.dot }"></span>Plan {{ p.n }}<span class=plan-tab-note>{{ p.note }}</span></a>
-            <span class=plan-switch-note>one plan at a time</span>
-          </div>
           <div class=plan-top>
             <div class=plan-top-meta>
               <span :class="['plan-assigned', {quiet: item.data.status !== 'active'}]">{{ item.data.status === 'active' ? 'Assigned to the agent' : PLAN_STATUS[item.data.status] }}</span>
