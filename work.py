@@ -354,15 +354,38 @@ def resumed(root: Path, owners: set) -> str | None:
     return None
 
 
-def record_files(root: Path, owners: set, changes: list[dict], at: str) -> int:
+def _receiving(items: list[dict], owners: set, on: str = "") -> dict | None:
+    """The row a tool call's files and commits go on — one rule for both.
+
+    A CALL CAN END THE WORK IT WAS DOING. `git commit … && journal work end "…"` is one tool
+    call: the hook only looks afterwards, when the work it belongs to is already closed, so
+    everything that call did was recorded against nothing. `on` is the subject the row had at
+    the START of the call, remembered before it ran, and it is used only when nothing is open
+    to take the work — so an ordinary call still lands on the open piece.
+    """
+    standing = [w for w in items if not w.get("ended")]
+    mine = [w for w in standing if w.get("session") in owners] or (standing if len(standing) == 1 else [])
+    if mine:
+        return mine[-1]
+    key = " ".join((on or "").split()).lower()
+    named = [w for w in items if key and w.get("subject", "").lower() == key]
+    return named[-1] if named else None
+
+
+def owned_subject(root: Path, owners: set) -> str:
+    """The subject of the work a tool call would be recorded against right now, or ""."""
+    target = _receiving(_all(root), owners)
+    return target["subject"] if target else ""
+
+
+def record_files(root: Path, owners: set, changes: list[dict], at: str, on: str = "") -> int:
     """Add each changed file to the open work this session answers for; lines sum per path."""
     with state.locked(root):
         items = _all(root)
-        standing = [w for w in items if not w.get("ended")]
-        mine = [w for w in standing if w.get("session") in owners] or (standing if len(standing) == 1 else [])
-        if not mine or not changes:
+        target = _receiving(items, owners, on)
+        if target is None or not changes:
             return 0
-        files = mine[-1].setdefault("files", [])
+        files = target.setdefault("files", [])
         by_path = {f["path"]: f for f in files}
         for c in changes:
             f = by_path.get(c["path"])
@@ -376,15 +399,14 @@ def record_files(root: Path, owners: set, changes: list[dict], at: str) -> int:
         return len(changes)
 
 
-def record_commits(root: Path, owners: set, commits: list[dict], at: str) -> int:
+def record_commits(root: Path, owners: set, commits: list[dict], at: str, on: str = "") -> int:
     """Add each commit made during a tool call to the open work this session answers for, once per sha."""
     with state.locked(root):
         items = _all(root)
-        standing = [w for w in items if not w.get("ended")]
-        mine = [w for w in standing if w.get("session") in owners] or (standing if len(standing) == 1 else [])
-        if not mine or not commits:
+        target = _receiving(items, owners, on)
+        if target is None or not commits:
             return 0
-        kept = mine[-1].setdefault("commits", [])
+        kept = target.setdefault("commits", [])
         known = {c["sha"] for c in kept}
         added = [{"sha": c["sha"], "subject": c.get("subject", ""), "at": at} for c in commits if c["sha"] not in known]
         kept.extend(added)

@@ -2173,12 +2173,14 @@ def _snapshot_files(payload: dict, ctx: Ctx) -> None:
     if payload.get("tool_name") != "Bash":
         return
     if _may_change_files(payload) and _owns_open_work(ctx):
-        state.put(ROOT, "files_before", _git_snapshot(ROOT.parent), stem=ctx.stem)
+        # the work this call belongs to, named BEFORE it runs: the call may end it before the hook looks
+        state.put_many(ROOT, {"files_before": _git_snapshot(ROOT.parent),
+                              "work_before": work.owned_subject(ROOT, _owners(ctx))}, stem=ctx.stem)
     elif state.get(ROOT, "files_before", None, stem=ctx.stem):
         state.put(ROOT, "files_before", None, stem=ctx.stem)
 
 
-def _record_commits(before: dict | None, after: dict | None, ctx: Ctx) -> None:
+def _record_commits(before: dict | None, after: dict | None, ctx: Ctx, on: str = "") -> None:
     """A shell command that moved HEAD made commits; each goes on the open work with its subject."""
     from datetime import datetime, timezone
     import commandlog
@@ -2188,7 +2190,7 @@ def _record_commits(before: dict | None, after: dict | None, ctx: Ctx) -> None:
     commits = [{"sha": sha, "subject": subject} for sha, _, subject in
                (line.partition("\t") for line in (got or "").splitlines()) if sha]
     at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    work.record_commits(ROOT, _owners(ctx), list(reversed(commits)), at)
+    work.record_commits(ROOT, _owners(ctx), list(reversed(commits)), at, on=on)
     # EACH COMMIT IS AN ACTIVITY LINE OF ITS OWN: work landing is the news the user watches for
     for c in reversed(commits):
         commandlog.record_commit(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, c["sha"], c["subject"], at)
@@ -2198,18 +2200,20 @@ def _record_files(payload: dict, ctx: Ctx) -> None:
     """The files this tool call changed go on the open work, with lines added and removed."""
     from datetime import datetime, timezone
     changes = _tool_file_changes(payload)
+    was = ""   # only a shell call can end the work it was doing mid-call; an Edit or a Write cannot
     if payload.get("tool_name") == "Bash":
         before = state.get(ROOT, "files_before", None, stem=ctx.stem)
         if not before:
             return
-        state.put(ROOT, "files_before", None, stem=ctx.stem)
+        was = state.get(ROOT, "work_before", "", stem=ctx.stem) or ""
+        state.put_many(ROOT, {"files_before": None, "work_before": ""}, stem=ctx.stem)
         after = _git_snapshot(ROOT.parent)
-        _record_commits(before, after, ctx)
+        _record_commits(before, after, ctx, was)
         if after and after["head"] != before["head"]:
             after = _git_snapshot(ROOT.parent, before["head"])
         changes = _bash_file_changes(before, after, ROOT.parent)
     if changes:
-        work.record_files(ROOT, _owners(ctx), changes, datetime.now(timezone.utc).isoformat(timespec="seconds"))
+        work.record_files(ROOT, _owners(ctx), changes, datetime.now(timezone.utc).isoformat(timespec="seconds"), on=was)
 
 
 def _queue_tool(payload: dict, ctx: Ctx) -> None:
