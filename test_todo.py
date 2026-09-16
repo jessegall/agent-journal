@@ -339,5 +339,47 @@ _wn = [i for i, w in enumerate(__import__("work")._all(root, "default"), 1) if w
 check("each log entry carries the number of the work item it belongs to, so the viewer can open it",
       {e["work"] for e in todo.detail(root, "default", todo.item(root, "default", int(_ln))[0])["log"]}, {_wn})
 
+# ─────────────────── a row can wait for a whole plan, not only for other rows ──────────────
+import plans as _plans  # noqa: E402
+PLAN_AT = "2026-09-16T12:00:00+00:00"
+code, out = j("todos", "add", "the row that waits for a plan")
+waiter = re.search(r"to-do (\d+)", out).group(1)
+code, out = j("todos", "add", "the only step of that plan")
+step = re.search(r"to-do (\d+)", out).group(1)
+j("plans", "add", "the plan it waits for", "--goal=it finishes")
+_pn = str(len(_plans._all(root, "default")))
+j("plans", "phase", _pn, "the only phase")
+j("plans", "todos", _pn, "1", step)
+code, out = j("todos", "after", waiter, "plan", "9999")
+check("a plan that does not exist is refused", (code, "no plan 9999" in out), (1, True))
+code, out = j("todos", "after", waiter, "plan", _pn)
+check("a row can wait for a plan, and is told what releases it",
+      (code, f"waits on plan {_pn}" in out, "not finished yet" in out), (0, True, True))
+_row = [t for t in _todo._all(root, "default") if t["n"] == int(waiter)][0]
+check("the plan it waits for is readable from the row",
+      (_todo.after_plan(_row), _todo.waiting_on_plan(root, "default", _row)), (int(_pn), int(_pn)))
+check("and it is not offered while that plan is unfinished",
+      waiter in [str(x["n"]) for x in _todo.ready(root, "default")], False)
+_plans.activate(root, int(_pn), PLAN_AT, source="web", track="default")
+j("todos", "done", step, "landed")
+_row = [t for t in _todo._all(root, "default") if t["n"] == int(waiter)][0]
+check("once the plan is done nothing holds it, and nobody had to release it",
+      (_todo.waiting_on_plan(root, "default", _row),
+       waiter in [str(x["n"]) for x in _todo.ready(root, "default")]), (None, True))
+
+# ─────────── a dependency written in prose is nudged, never refused ───────────
+code, out = j("todos", "add", "a row whose brief names another row", "--brief",
+              stdin=f"this one only makes sense after to-do {first} lands, and after plan {_pn}.")
+check("a brief that names a to-do and a plan says so, and names the command",
+      (code, "records no dependency" in out, f"to-do {first}" in out, f"plan {_pn}" in out,
+       "journal todos after" in out), (0, True, True, True, True))
+_mentioner = re.search(r"to-do (\d+)", out).group(1)
+code, out = j("todos", "add", "a row that already records what it follows", f"--after={first}",
+              "--brief", stdin=f"this follows to-do {first}, and it is written down.")
+check("a row that already records a dependency is not nudged about it",
+      (code, "records no dependency" in out), (0, False))
+code, out = j("todos", "add", "a row whose brief names only itself")
+check("a brief that names nothing is left alone", (code, "records no dependency" in out), (0, False))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -104,6 +104,11 @@ MESSAGES = {
     "after_self": "to-do {n} cannot wait on itself",
     "after_cycle": "that is a cycle: {path: → } — a list where each waits on the next can never be worked",
     "after_set": "to-do {n} waits on {nums:, }{tail}",
+    "after_plan": "plan {p}",
+    "after_plan_missing": "there is no plan {p} on `{track}`",
+    "after_plan_left": "; plan {p} is not finished yet, and it becomes ready when that plan is done",
+    "mentions": "\n  the brief mentions {refs:, } and this row records no dependency. If it must wait for "
+                "{them}, say so:\n    journal todos after {n} {args}",
     "after_left": "; {left} still open, and it becomes ready when the last one closes",
     "after_ready": " — all of them are done, so it is ready now",
     "not_aside": "to-do {n} is not set aside",
@@ -497,7 +502,8 @@ def ready(root: Path, track: str) -> list[dict]:
              if (not t.get("asks") or t.get("answer")) and not t.get("blocked")
              and not t.get("reported")
              and not (t.get("assigned") and ag.active(root, track, t["assigned"], 30))
-             and not waiting_on(root, track, t)]
+             and not waiting_on(root, track, t)
+             and not waiting_on_plan(root, track, t)]
     # ANSWERED STILL OUTRANKS PRIORITY. The user replying to a question is their own
     # word to do it now — that is a stronger signal than a number nobody has looked at
     # since it was set, so it stays the first sort key. Priority decides the rest: the
@@ -638,6 +644,37 @@ def after_of(t: dict) -> list[int]:
     return [int(x) for x in raw if x.isdigit()]
 
 
+def after_plan(t: dict) -> int | None:
+    """The plan this to-do waits for, if it waits for one.
+
+    A PLAN IS A PREREQUISITE LIKE ANY OTHER, and it lives in the same field: a row that only
+    makes sense once a whole plan has landed was written as prose before this, and prose is
+    not something `ready` can read.
+    """
+    for token in (t.get("after") or "").replace(",", " ").split():
+        if token.startswith("plan:") and token[5:].isdigit():
+            return int(token[5:])
+    return None
+
+
+def waiting_on_plan(root: Path, track: str, t: dict) -> int | None:
+    """The plan this row waits for while that plan is unfinished — None when nothing holds it.
+
+    AN ABANDONED PLAN IS NOT A FINISHED ONE, the same way a struck to-do is not a done one:
+    the row stays waiting and says which plan it waits on, rather than quietly becoming
+    ready because what it depended on was dropped.
+    """
+    p = after_plan(t)
+    if p is None:
+        return None
+    import plans
+    items = plans._all(root, track)
+    if not 1 <= p <= len(items):
+        return p
+    plan = items[p - 1]
+    return None if plans.status(plan, plans.phases(root, plan, track)) == plans.DONE else p
+
+
 def waiting_on(root: Path, track: str, t: dict, by_n: dict | None = None) -> list[int]:
     """Which of this to-do's prerequisites are not done yet — [] when it is free to start.
 
@@ -767,17 +804,20 @@ def after(root: Path, track: str, n: int, names: str) -> tuple[bool, str]:
     nothing forever. All three are caught here, when they are written, because that is the
     only moment somebody is looking.
     """
-    names = " ".join((names or "").replace(",", " ").split())
+    # `plan 4` and `plan:4` are the same thing said two ways; the rest are to-do numbers
+    names = re.sub(r"(?i)\bplan[ :]+(\d+)", r"plan:\1", " ".join((names or "").replace(",", " ").split()))
     t, err = _get(root, track, n)
     if t is None:
         return False, err
     if names in ("--none", "none", ""):
         _update(root, track, n, after="")
         return True, say("after_none", n=n)
-    want = [x for x in names.split()]
-    if any(not x.isdigit() for x in want):
+    want = names.split()
+    plan = next((int(x[5:]) for x in want if x.startswith("plan:") and x[5:].isdigit()), None)
+    rest = [x for x in want if not x.startswith("plan:")]
+    if any(not x.isdigit() for x in rest):
         return False, say("after_number", n=n)
-    nums = [int(x) for x in want]
+    nums = [int(x) for x in rest]
     by_n = {x["n"]: x for x in _all(root, track)}
     missing = [x for x in nums if x not in by_n]
     if missing:
@@ -787,10 +827,19 @@ def after(root: Path, track: str, n: int, names: str) -> tuple[bool, str]:
     cycle = _cycle(by_n, n, nums)
     if cycle:
         return False, say("after_cycle", path=cycle)
-    _update(root, track, n, after=",".join(map(str, nums)))
-    left = waiting_on(root, track, {**t, "after": ",".join(map(str, nums))})
-    tail = say("after_left", left=len(left)) if left else say("after_ready")
-    return True, say("after_set", n=n, nums=nums, tail=tail)
+    if plan is not None:
+        import plans
+        if not 1 <= plan <= len(plans._all(root, track)):
+            return False, say("after_plan_missing", p=plan, track=track)
+    stored = ",".join([*map(str, nums), *([f"plan:{plan}"] if plan is not None else [])])
+    _update(root, track, n, after=stored)
+    row = {**t, "after": stored}
+    left = waiting_on(root, track, row)
+    held = waiting_on_plan(root, track, row)
+    tail = (say("after_left", left=len(left)) if left
+            else say("after_plan_left", p=held) if held else say("after_ready"))
+    labels = [*map(str, nums), *([say("after_plan", p=plan)] if plan is not None else [])]
+    return True, say("after_set", n=n, nums=labels, tail=tail)
 
 
 def _cycle(by_n: dict, start: int, nums: list[int]) -> list[int] | None:
@@ -851,6 +900,37 @@ def _cites_hint(root: Path, track: str, n: int, meta: dict) -> str:
     others = [t["n"] for t in open_items(root, track)
               if t["n"] != n and str(t.get("doc") or "").split(".")[0] == doc and t["n"] not in member]
     return say("cites_plan_hint", others=", ".join(map(str, others)), doc=doc) if len(others) >= 2 else ""
+
+
+#: a to-do or a plan named in running text — "to-do 12", "todo 12", "plan 4"
+_MENTION = re.compile(r"(?i)\b(to-?do|plan)\s*#?\s*(\d{1,5})\b")
+
+
+def mentions_hint(root: Path, track: str, n: int, body: str, t: dict | None = None) -> str:
+    """A NUDGE, NEVER A GATE. A brief that says "after the migration lands" or names another
+    row is stating a dependency in prose, and prose is not something `ready` can read — the
+    row is offered anyway and the constraint is discovered by a reader, or not at all. So
+    when a brief names a to-do or a plan and the row records no dependency, the write says
+    so and names the command. It does not refuse, and it does not repeat once one is
+    recorded: the agent is told once, at the moment it wrote the thing.
+    """
+    t = t if t is not None else (_get(root, track, n)[0] or {})
+    if (t.get("after") or "").strip():
+        return ""
+    seen, args = [], []
+    for kind, num in _MENTION.findall(body or ""):
+        num = int(num)
+        plan = kind.lower() == "plan"
+        if not plan and num == n:
+            continue
+        ref = say("after_plan", p=num) if plan else f"to-do {num}"
+        if ref in seen:
+            continue
+        seen.append(ref)
+        args.append(f"plan {num}" if plan else str(num))
+    if not seen:
+        return ""
+    return say("mentions", refs=seen, them="it" if len(seen) == 1 else "them", n=n, args=" ".join(args))
 
 
 def add(root: Path, track: str, title: str, body: str, at: str, where: dict | None = None) -> tuple[bool, str]:
@@ -1561,7 +1641,9 @@ def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
         "age": _age(t.get("at", "")),
         "blocked": t.get("blocked") or "",
         "after": after_of(t),
+        "after_plan": after_plan(t),
         "waiting_on": waiting_on(root, track, t, by_n=by_n),
+        "waiting_on_plan": waiting_on_plan(root, track, t),
         "asks": t.get("asks") or "",
         "answer": t.get("answer") or "",
         "doc": str(t["doc"]) if t.get("doc") else "",
