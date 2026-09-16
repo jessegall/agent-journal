@@ -3112,7 +3112,9 @@ const EnvHome = {
     const work = useFetch(url("/work?all=1"));
     const questions = useFetch(url("/questions"));
     const suggestions = useFetch(url("/suggestions"));
-    const plans = useFetch(url("/plans"));
+    // ?all=1 so a FINISHED plan is here too: its card stays until the user acknowledges it, and the
+    // plain list hides done ones, which is why the card used to vanish the moment the last phase closed
+    const plans = useFetch(url("/plans?all=1"));
     const messages = useFetch(url("/messages?all=1"));
     const notes = useFetch(url("/notifications"));
     const view = reactive({ kind: "", n: 0 });
@@ -3152,7 +3154,19 @@ const EnvHome = {
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
         .map((r) => ({ ...r, open: () => peek(r.kind, r.n) }));
     });
-    const plan = computed(() => (plans.data || []).find((p) => p.status === "active") || null);
+    // A FINISHED PLAN DOES NOT VANISH: the card followed the active plan, so the moment the last phase
+    // completed the plan derived as done and the card disappeared with nothing saying it had finished.
+    // It stays until the user acknowledges it, which is their act, written from here.
+    const plan = computed(() => (plans.data || []).find((p) => p.status === "active")
+      || (plans.data || []).find((p) => p.status === "done" && !p.acknowledged) || null);
+    const finishedPlan = computed(() => !!(plan.value && plan.value.status === "done"));
+    const ackError = ref("");
+    const acknowledgePlan = () => {
+      ackError.value = "";
+      send("POST", `/api/env/${props.env}/plans/${plan.value.n}/acknowledge`)
+        .then(() => { plans.reload(); planDetail.reload(); changed(); })
+        .catch((e) => { ackError.value = e.message; });
+    };
     // with nothing assigned, a drafted plan is READY: the card is where you see it and where you start it
     const ready = computed(() => (plan.value ? null : (plans.data || []).find((p) => p.status === "draft") || null));
     const shown = computed(() => plan.value || ready.value);
@@ -3204,7 +3218,8 @@ const EnvHome = {
       }
       // the bar measures TO-DOS rather than phases: it is the finer reading, and it moves as each row lands
       const done = todos.filter((t) => t.done).length;
-      return { title: p.title, ready: false, ref: `plan ${p.n} · ${p.held ? "held" : "working"}`,
+      return { title: p.title, ready: false, finished: finishedPlan.value,
+               ref: `plan ${p.n} · ${finishedPlan.value ? "finished" : p.held ? "held" : "working"}`,
                width: todos.length ? `${(100 * done) / todos.length}%` : "0%",
                progress: `${p.phases_done} of ${p.phases_total} phases${todos.length ? ` · ${done} of ${todos.length} to-dos` : ""}` };
     });
@@ -3274,7 +3289,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, startError, goPlan, queueMeta, currentWork, planRows, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, startError, goPlan, queueMeta, currentWork, planRows, finishedPlan, acknowledgePlan, ackError, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3316,14 +3331,15 @@ const EnvHome = {
       <section class=home-section>
         <div class=home-head><h2>Working on</h2></div>
         <Transition name=card appear>
-        <div v-if="currentWork" :class="['work-now', {ready: currentWork.ready}]" @click="goPlan">
+        <div v-if="currentWork" :class="['work-now', {ready: currentWork.ready, finished: currentWork.finished}]" @click="goPlan">
           <div class=work-now-top><span class=work-now-title>{{ currentWork.title }}</span><span class=work-now-ref>{{ currentWork.ref }}</span></div>
           <div class=work-now-bar>
             <ProgressBar v-if="!currentWork.ready" :rows="planRows"/>
             <span class=work-now-ref>{{ currentWork.progress }}</span>
             <button v-if="currentWork.ready" type=button class=work-now-start title="Start this plan and assign it to the agent" @click.stop="startPlan">Start<Icon name="arrow"/></button>
+            <button v-else-if="currentWork.finished" type=button class=work-now-ack title="You have seen that this plan finished; clear it from here" @click.stop="acknowledgePlan">Acknowledge<Icon name="arrow"/></button>
           </div>
-          <p v-if="startError" class="error work-now-error" @click.stop>{{ startError }}</p>
+          <p v-if="startError || ackError" class="error work-now-error" @click.stop>{{ startError || ackError }}</p>
         </div>
         </Transition>
         <TransitionGroup name=wrow>

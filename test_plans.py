@@ -240,5 +240,33 @@ _data["plans"][_wn - 1]["phases"][0]["checkpoint"] = True
 check("a checkpoint phase still gates what comes after it, stuck or not",
       [t["n"] for t in _todo.ready(root, "default") if t["n"] in (_stuck, _next_row)], [])
 
+# ─────────────── a finished plan waits to be acknowledged, and only the user does it ───────────────
+_ad = project() if False else None  # the suite's own project is reused; plans live on `default`
+j("todos", "add", "the only row of the plan to finish")
+_fin_row = [t["n"] for t in _todo._all(root, "default") if t["title"] == "the only row of the plan to finish"][0]
+j("plans", "add", "a plan that finishes", "--goal=it ends")
+_fn = len(plans._all(root, "default"))
+j("plans", "phase", str(_fn), "the only phase")
+j("plans", "todos", str(_fn), "1", str(_fin_row))
+_live = plans.active(root, "default")
+if _live:
+    j("plans", "abandon", str(_live[0]), "finished with it in this suite")
+plans.activate(root, _fn, AT, source="web", track="default")
+took = plans.acknowledge(root, _fn, AT, source="web", track="default")
+check("a plan that is not finished cannot be acknowledged",
+      (took[0], "not finished" in took[1]), (False, True))
+j("todos", "done", str(_fin_row), "landed")
+took = plans.acknowledge(root, _fn, AT, source="cli", track="default")
+check("and the agent does not acknowledge one either — it is the user's word",
+      (took[0], "only the user acknowledges" in took[1]), (False, True))
+took = plans.acknowledge(root, _fn, AT, source="web", track="default")
+check("the user acknowledges it in the viewer, and it says so",
+      (took[0], "is acknowledged" in took[1]), (True, True))
+check("the row carries it, so the home can stop showing the card",
+      [(p["status"], p["acknowledged"]) for p in [plans.row_response(root, _fn, plans._all(root, "default")[_fn - 1], "default")]],
+      [("done", True)])
+took = plans.acknowledge(root, _fn, AT, source="web", track="default")
+check("acknowledging twice is refused", (took[0], "already acknowledged" in took[1]), (False, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
