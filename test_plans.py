@@ -316,6 +316,13 @@ _wr = [t["n"] for t in _todo._all(root, "default") if t["title"] == "the row of 
 took = plans.activate(root, _wn, AT, source="web", track="default")
 check("it cannot be approved while it is still being written",
       (took[0], "is being written" in took[1]), (False, True))
+# BOTH GATES (question 41): the agent cannot declare a plan finished while a phase is still empty,
+# so a plan being filled in never reaches the draft state the Start button belongs to.
+took = plans.ready(root, _wn, AT, track="default")
+check("it cannot be declared ready while a phase has no to-dos, and the refusal names the phase",
+      (took[0], "not finished being written" in took[1], "the only phase" in took[1]), (False, True, True))
+j("todos", "add", "the row that fills the only phase")
+j("plans", "todos", str(_wn), "1", str(len(_todo._all(root, "default"))))
 took = plans.ready(root, _wn, AT, track="default")
 check("the agent says when it is finished, and then it is a draft",
       (took[0], "ready for the user to approve" in took[1],

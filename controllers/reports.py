@@ -13,8 +13,8 @@ from payloads.common import ListingPayload, WhyPayload
 class ReportsController(Controller):
     resource = "reports"
     noun = "report"
-    actions = ("index", "show", "store", "destroy", "keep", "todoc")
-    numbered = ("show", "destroy", "todoc")
+    actions = ("index", "show", "store", "destroy", "keep", "todoc", "seen")
+    numbered = ("show", "destroy", "todoc", "seen")
     payloads = {"index": ListingPayload, "store": report_payloads.StorePayload, "destroy": WhyPayload,
                 "keep": report_payloads.KeepPayload}
 
@@ -22,10 +22,20 @@ class ReportsController(Controller):
         from resources import Reports
         return Reports(root, p.env)
 
+    def _row(self, root: Path, p: Payload, n: int) -> dict:
+        days = reports.archive_days(root, p.env or state.current_track(root))
+        return reports.row_response(n, self.repository(root, p).find(n).raw, body=True, days=days)
+
     def guard(self, root: Path, action: str, p: Payload) -> Result | None:
         if action == "destroy" and self.repository(root, p).find(p.id).archived:
             return Result("refused", reports.say("already_archived", n=p.id))
         return None
+
+    def seen(self, root: Path, p: Payload) -> Result:
+        # the user opened it in the viewer: the home stops asking them to read it
+        from datetime import datetime, timezone
+        at = p.at or datetime.now(timezone.utc).isoformat(timespec="seconds")
+        return Result.of(reports.seen(root, p.id, at, p.env or None), self._row(root, p, p.id))
 
     def index(self, root: Path, p: ListingPayload) -> Result:
         reports.prune(root, p.env or None)

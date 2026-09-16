@@ -397,17 +397,32 @@ const StatusBar = {
       return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
     });
     const inspectWork = computed(() => (work.data ? work.data[0] : (AGENT_STATE[env.value] || {}).work) || null);
+    // WHAT IS BEING WORKED, AND WHERE: the branch this project is on, and the to-do the open work
+    // serves. Both are already in hand — the branch rides in the activity payload, the number is on
+    // the work row — and the bar is the one thing visible on every page.
+    const facts = computed(() => {
+      const b = SHELL.activity && SHELL.activity.branch;
+      const w = inspectWork.value;
+      return {
+        branch: b ? (b.detached ? `detached at ${b.name}` : b.name) : "",
+        hint: b && b.detached ? `Not on a branch: HEAD is at commit ${b.name}` : "The git branch checked out in this project",
+        todo: w && w.todo ? w.todo : 0,
+      };
+    });
     // the sentence is the control: it opens the current work over the page, or the plan when no work is open
     const openCurrent = () => {
       if (inspectWork.value) { OVERLAY.kind = "work"; OVERLAY.n = inspectWork.value.n; } else if (view.value.href) location.hash = view.value.href;
     };
-    return { env, view, SHELL, openCurrent };
+    return { env, view, SHELL, openCurrent, facts };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
       <button type=button class=statusbar-text title="Open what it is on" @click="openCurrent"><b>{{ view.state }}</b><span>{{ view.what }}</span></button>
       <span class=statusbar-tools>
+        <span v-if="facts.branch && SHELL.wide" class=statusbar-facts :title="facts.hint"><Icon name="style"/><span>{{ facts.branch }}</span></span>
+        <a v-if="facts.todo" class=statusbar-todo :href="'#/env/' + env + '/todos/' + facts.todo"
+          title="Open the to-do this work serves">to-do {{ facts.todo }}</a>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
@@ -1776,16 +1791,21 @@ const MessagePanel = {
       }
     };
     const answered = computed(() => messageAnswers(item.data));
+    // THE BOX IS FOR ANSWERING THE AGENT, so it appears only once the agent has said something here.
+    // On a message nobody has replied to it invited the user to answer themselves, which is what looked
+    // like a bug; adding to your own message is what the comment thread below is for.
+    const asked = computed(() => ((item.data && item.data.replies) || []).some((r) => r.who === "the agent"));
     // answering where you are reading: it posts a reply on the message, then opens the next item like the primary action does
     const answerMessage = (text) => postJSON(`${api.value}/${item.data.n}/reply`, { text })
       .then(() => { item.reload(); changed(); advanceInspector(props); });
-    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered, answerMessage };
+    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered, answerMessage, asked };
   },
   template: `
     <Panel :label=\"'Message ' + n" :close="close" :onClose="onClose" :link="link">
       <FetchState :state="item"/>
       <template v-if="item.data">
-        <h2 class=panel-title>{{ item.data.gist || item.data.text }}</h2>
+        <!-- the heading is the message's NUMBER: the text is read once, under it, where UserMessage renders it -->
+        <h2 class=panel-title>Message {{ item.data.n }}</h2>
         <UserMessage :text="item.data.text"/>
         <dl class=props>
           <dt>Status</dt><dd :title="item.data.status === 'waiting' && item.data.read ? 'The agent read it ' + item.data.read_age : null"><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled' : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
@@ -1793,7 +1813,7 @@ const MessagePanel = {
           <dt>From</dt><dd>{{ item.data.source === 'web' ? 'The browser' : 'The terminal' }}</dd>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'message' + item.data.n + item.data.status"/>
-        <div class=answer-here>
+        <div v-if="asked" class=answer-here>
           <p class=section-label>Your answer</p>
           <Compose placeholder="Answer the agent…" submit="Send" hint="Enter sends · Shift+Enter for a new line" :send="answerMessage"/>
         </div>
@@ -1869,7 +1889,7 @@ const ReplyPanel = {
     <Panel :label="'Reply to message ' + n" :close="close" :onClose="onClose" :link="link">
       <FetchState :state="item"/>
       <template v-if="item.data">
-        <h2 class=panel-title>{{ item.data.gist || item.data.text }}</h2>
+        <h2 class=panel-title>Message {{ item.data.n }}</h2>
         <UserMessage :text="item.data.text"/>
         <PointByPoint v-if="answered.rows.length" :rows="answered.rows" :env="env"/>
         <p v-else class="prose muted">The agent has not answered any part of this message yet.</p>
@@ -2299,20 +2319,52 @@ function planRefHref(ref, env) { return refHref(String(ref).replace(" ", ":"), e
 
 function planStepState(ph) { return ph.complete ? "Complete" : ph.current ? "Current" : "Not started"; }
 
+// ONE PLACE DECIDES WHAT A PLAN IS WAITING FOR. The page's band, the peek panel and the home card each
+// asked that question and answered it in a different vocabulary — the page said "Approve the plan" where
+// the card said "Start", and the panel had never heard of a paused or finished plan at all.
+// `label` is the sentence a page or panel shows; `short` is the one word a card has room for.
+function planPrimary(p) {
+  if (!p) return null;
+  if (p.held) {
+    return { label: "Continue past the checkpoint", short: "Continue", verb: "proceed",
+             note: "The phase before this one is complete and the plan stopped for you to look. The agent starts the next phase.",
+             hint: "The plan is waiting at a checkpoint for you" };
+  }
+  if (p.status === "draft") {
+    return { label: "Approve the plan", short: "Start", verb: "activate",
+             note: "The agent is assigned this plan and starts its first phase. One plan at a time.",
+             hint: "Start this plan and assign it to the agent" };
+  }
+  if (p.status === "parked") {
+    return { label: "Pick this plan up again", short: "Resume", verb: "activate",
+             note: "The plan becomes the one the agent is working, and its to-dos are on the list again.",
+             hint: "Pick this plan up again" };
+  }
+  if (p.status === "done" && !p.acknowledged) {
+    return { label: "Acknowledge", short: "Acknowledge", verb: "acknowledge",
+             note: "You have seen that this plan finished; its card leaves the home page.",
+             hint: "You have seen that this plan finished; clear it from here" };
+  }
+  return null;
+}
+
 const PlanPanel = {
   props: PANEL_PROPS,
-  components: { Panel, ActionBar, FromMessages },
+  components: { Panel, ActionBar, FromMessages, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const actions = computed(() => {
       const p = item.data;
-      if (!p || p.status === "done" || p.status === "abandoned") return [];
+      if (!p || p.status === "abandoned") return [];
       const url = `${api.value}/${p.n}`;
+      const act = planPrimary(p);
       return [
-        ...(p.status === "draft" ? [{ label: "Approve the plan", primary: true, advance: true, method: "POST", url: `${url}/activate`, submit: "Approve the plan",
-                                      note: "The agent is assigned this plan and starts its first phase. One plan at a time." }] : []),
-        { label: "Abandon", method: "DELETE", url, danger: true, submit: "Abandon", fields: [{ name: "why", label: "Why the plan is stopped" }] },
+        ...(act ? [{ label: act.label, primary: true, advance: true, method: "POST", url: `${url}/${act.verb}`,
+                     submit: act.label, note: act.note }] : []),
+        // a finished plan is the record of what was done: it is acknowledged, never abandoned
+        ...(p.status === "done" ? [] : [{ label: "Abandon", method: "DELETE", url, danger: true, submit: "Abandon",
+                                         fields: [{ name: "why", label: "Why the plan is stopped" }] }]),
       ];
     });
     const done = panelDone(props, item);
@@ -2341,13 +2393,14 @@ const PlanPanel = {
           </div>
         </div>
         <div v-if="item.data.body"><p class=section-label>Approach</p><div class="md prose" v-html="$md(item.data.body)"></div></div>
+        <Comments :about="'plan ' + item.data.n" :env="env" :key="'c-plan' + item.data.n"/>
       </template>
     </Panel>`,
 };
 
 const Plans = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, TodoPanel, PlanPanel, Icon, ProgressBar, FromMessages },
+  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, TodoPanel, PlanPanel, Icon, ProgressBar, FromMessages, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const home = computed(() => `#/env/${props.env}/plans`);
@@ -2445,29 +2498,15 @@ const Plans = {
       const finished = planTodos.value.filter((t) => t.done).length;
       return { phases: `${p.phases_done} of ${p.phases_total} phases complete`, todos: `${finished} of ${planTodos.value.length} to-dos done` };
     });
-    // THE BAND CARRIES THE ONE ACT THE PLAN IS WAITING FOR. A draft's "Approve the plan" action existed
-    // but was only ever rendered for an ACTIVE plan, so the page that shows you the plan had no way to
-    // start it — the only Start was on the home card.
+    // THE BAND CARRIES THE ONE ACT THE PLAN IS WAITING FOR, and `planPrimary` is what decides it here,
+    // in the peek panel and on the home card alike.
     const primary = computed(() => {
       const p = item.data;
-      if (!p) return null;
-      if (p.held) {
-        return { label: "Continue past the checkpoint",
-                 go: () => send("POST", `${api.value}/${p.n}/proceed`).then(() => { item.reload(); changed(); }) };
-      }
-      if (p.status === "draft") {
-        return { label: "Approve the plan",
-                 go: () => send("POST", `${api.value}/${p.n}/activate`).then(() => { item.reload(); list.reload(); changed(); }) };
-      }
-      if (p.status === "parked") {
-        return { label: "Pick this plan up again",
-                 go: () => send("POST", `${api.value}/${p.n}/activate`).then(() => { item.reload(); list.reload(); changed(); }) };
-      }
-      if (p.status === "done" && !p.acknowledged) {
-        return { label: "Acknowledge",
-                 go: () => send("POST", `${api.value}/${p.n}/acknowledge`).then(() => { item.reload(); list.reload(); changed(); }) };
-      }
-      return null;
+      const act = planPrimary(p);
+      if (!act) return null;
+      return { label: act.label, hint: act.hint,
+               go: () => send("POST", `${api.value}/${p.n}/${act.verb}`)
+                 .then(() => { item.reload(); list.reload(); changed(); }) };
     });
     const quiet = computed(() => (item.data && item.data.current ? `Working phase ${item.data.current}` : ""));
     const citedDocs = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/docs?archived=1`);
@@ -2513,9 +2552,10 @@ const Plans = {
             <div class=plan-progress-text>
               <div class=plan-progress-line><b>{{ progress.phases }}</b><span class=muted>· {{ progress.todos }}</span></div>
               <ProgressBar :rows="planTodos"/>
+              <p v-if="item.data.status === 'parked' && item.data.parked_why" class=plan-paused-why>Paused: {{ item.data.parked_why }}</p>
             </div>
             <div class=plan-progress-actions>
-              <button v-if="primary" type=button class=band-primary @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
+              <button v-if="primary" type=button class=band-primary :title="primary.hint" @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
               <span v-else-if="quiet" class=plan-quiet>{{ quiet }}</span>
               <button v-if="item.data.status === 'active'" type=button class=btn @click="openPhase">Add phase</button>
             </div>
@@ -2561,6 +2601,7 @@ const Plans = {
             </div>
           </section>
           <div v-if="item.data.body" class=plan-approach><h2 class=col-title>Approach</h2><div class="md prose" v-html="$md(item.data.body)"></div></div>
+          <Comments :about="'plan ' + item.data.n" :env="env" :key="'c-planpage' + item.data.n"/>
         </template>
       </div></div></div>
       <TodoPanel v-if="todoView.n" :key="'todo' + todoView.n" :env="env" :n="todoView.n" :onClose="closeTodo" :link="'#/env/' + env + '/todos/' + todoView.n" :reloaded="item.reload"/>
@@ -2596,7 +2637,7 @@ const REPORT_LIST = {
 
 const ReportPanel = {
   props: PANEL_PROPS,
-  components: { Panel, ActionBar },
+  components: { Panel, ActionBar, Comments },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reports`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -2612,6 +2653,13 @@ const ReportPanel = {
       ];
     });
     const done = panelDone(props, item);
+    // opening a report is the user reading it: the home stops asking, the same way a question does
+    let marked = false;
+    watch(() => item.data, (r) => {
+      if (marked || !r || r.seen || r.archived) return;
+      marked = true;
+      postJSON(`${api.value}/${r.n}/seen`, {}).then(() => changed()).catch(() => { marked = false; });
+    }, { immediate: true });
     return { item, actions, done };
   },
   template: `
@@ -2628,6 +2676,7 @@ const ReportPanel = {
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
         <div class="md prose" v-html="$md(item.data.body)"></div>
+        <Comments :about="'report ' + item.data.n" :env="env" :key="'c-report' + item.data.n"/>
       </template>
     </Panel>`,
 };
@@ -3144,15 +3193,88 @@ const Peek = {
 };
 
 // ─────────────────────────────────────────────────────────────── an environment's home
+// only the WORD for where a plan stands; the act it offers comes from planPrimary
+const PLAN_WORD = { preparing: "being written", active: "working", parked: "paused", draft: "ready to start", done: "finished" };
+
+// ONE CARD, ONE FETCH. The home kept a hand-rolled cache of every plan's to-dos in a reactive object
+// and guarded it by READING the same object its fetch WROTE — so every response re-triggered the
+// effect that produced it. A card fetches its own plan through useFetch, which settled that question
+// for every other list in this file, and brings its own error line with it.
+const PlanCard = {
+  props: { env: String, plan: Object, blocked: Boolean, reloaded: Function },
+  components: { ProgressBar, Icon },
+  setup(props) {
+    const detail = useFetch(() => props.env && props.plan && `/api/env/${props.env}/plans/${props.plan.n}`);
+    const rows = computed(() => ((detail.data && detail.data.phases) || []).flatMap((ph) => ph.todos));
+    const error = ref("");
+    // ONE PLAN IS WORKED AT A TIME, so a card does not offer a button that must be refused: starting a
+    // draft or resuming a paused plan is withheld while another is active, and the card says why.
+    const act = computed(() => (props.blocked ? null : planPrimary(props.plan)));
+    const card = computed(() => {
+      const p = props.plan;
+      const done = rows.value.filter((t) => t.done).length;
+      const word = PLAN_WORD[p.status] || PLAN_WORD.active;
+      const phases = `${p.phases_done} of ${p.phases_total} phases`;
+      return {
+        ref: `plan ${p.n} · ${p.held && p.status === "active" ? "held" : word}`,
+        // a draft has done nothing yet, so it says what it holds rather than how far it has gone
+        progress: p.status === "draft"
+          ? `${p.phases_total} ${p.phases_total === 1 ? "phase" : "phases"}${rows.value.length ? ` · ${rows.value.length} to-dos` : ""}`
+          : `${phases}${rows.value.length ? ` · ${done} of ${rows.value.length} to-dos` : ""}`,
+        why: [p.status === "parked" ? p.parked_why : "",
+              p.status === "preparing" ? "the agent is adding its phases" : "",
+              props.blocked ? "one plan at a time" : ""].filter(Boolean).join(" · "),
+        bar: p.status !== "draft" && p.status !== "preparing",
+      };
+    });
+    const run = () => {
+      error.value = "";
+      send("POST", `/api/env/${props.env}/plans/${props.plan.n}/${act.value.verb}`)
+        .then(() => { detail.reload(); if (props.reloaded) props.reloaded(); })
+        // a refusal has a reason — it belongs on the card, not thrown into the console where a button just looks dead
+        .catch((e) => { error.value = e.message; });
+    };
+    const open = () => { location.hash = `#/env/${props.env}/plans/${props.plan.n}`; };
+    return { detail, rows, error, act, card, run, open };
+  },
+  template: `
+    <div :class="['work-now', {ready: plan.status === 'draft', finished: plan.status === 'done', parked: plan.status === 'parked'}]" @click="open">
+      <div class=work-now-top><span class=work-now-title>{{ plan.title }}</span><span class=work-now-ref>{{ card.ref }}</span></div>
+      <div class=work-now-bar>
+        <ProgressBar v-if="card.bar" :rows="rows"/>
+        <span class=work-now-ref>{{ card.progress }}</span>
+        <button v-if="act" type=button :class="plan.status === 'done' ? 'work-now-ack' : 'work-now-start'"
+          :title="act.hint" @click.stop="run">{{ act.short }}<Icon name="arrow"/></button>
+      </div>
+      <p v-if="card.why" class=work-now-why @click.stop>{{ card.why }}</p>
+      <p v-if="error" class="error work-now-error" @click.stop>{{ error }}</p>
+    </div>`,
+};
+
+const PlanCards = {
+  props: { env: String, plans: { type: Array, default: () => [] }, reloaded: Function },
+  components: { PlanCard },
+  setup(props) {
+    const active = computed(() => props.plans.find((p) => p.status === "active") || null);
+    const blocked = (p) => !!active.value && (p.status === "draft" || p.status === "parked");
+    return { blocked };
+  },
+  template: `
+    <TransitionGroup name=card appear>
+      <PlanCard v-for="p in plans" :key="'plan' + p.n" :env="env" :plan="p" :blocked="blocked(p)" :reloaded="reloaded"/>
+    </TransitionGroup>`,
+};
+
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, Peek, ProgressBar },
+  components: { TopBar, Icon, Peek, ProgressBar, PlanCards },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
     const work = useFetch(url("/work?all=1"));
     const questions = useFetch(url("/questions"));
     const suggestions = useFetch(url("/suggestions"));
+    const reports = useFetch(url("/reports"));
     // ?all=1 so a FINISHED plan is here too: its card stays until the user acknowledges it, and the
     // plain list hides done ones, which is why the card used to vanish the moment the last phase closed
     const plans = useFetch(url("/plans?all=1"));
@@ -3186,11 +3308,14 @@ const EnvHome = {
     // Over to you: what waits on the user, questions first, in one list
     const QUEUE_TYPES = { question: { label: "Question", tint: "#c9955e", action: "Answer" },
                           reply: { label: "Message", tint: "#6fae7d", action: "Read" },
+                          report: { label: "Report", tint: "#d9a441", action: "Read" },
                           suggestion: { label: "Suggestion", tint: "#a3a8f0", action: "Accept" } };
     const queue = computed(() => {
       const rows = [
         ...(questions.data || []).filter((q) => q.status === "open").map((q) => ({ kind: "question", n: q.n, title: q.text, age: q.age })),
         ...(suggestions.data || []).filter((s) => s.status === "open").map((s) => ({ kind: "suggestion", n: s.n, title: s.title, age: s.age })),
+        // a report is written FOR the user: it waits here until they have opened it
+        ...(reports.data || []).filter((r) => !r.seen && !r.archived).map((r) => ({ kind: "report", n: r.n, title: r.title, age: r.age })),
       ];
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
         .map((r) => ({ ...r, open: () => peek(r.kind, r.n) }));
@@ -3203,41 +3328,11 @@ const EnvHome = {
       .filter((p) => p.status === "active" || p.status === "parked" || p.status === "draft"
                      || p.status === "preparing" || (p.status === "done" && !p.acknowledged))
       .sort((a, b) => (LIVE_PLAN[a.status] - LIVE_PLAN[b.status]) || a.n - b.n));
-    // each plan's own to-dos, so every bar measures the same thing the plan page does
-    const planDetails = reactive({});
-    watchEffect(() => {
-      for (const p of livePlans.value) {
-        if (planDetails[p.n]) continue;
-        planDetails[p.n] = { rows: [] };
-        fetch(`/api/env/${props.env}/plans/${p.n}`).then((r) => r.json())
-          .then((d) => { planDetails[p.n] = { rows: (d.phases || []).flatMap((ph) => ph.todos) }; })
-          .catch(() => { planDetails[p.n] = { rows: [] }; });
-      }
-    });
-    const reloadPlans = () => { for (const k of Object.keys(planDetails)) delete planDetails[k]; plans.reload(); changed(); };
-    const planError = reactive({});
-    const planAct = (p, verb) => {
-      planError[p.n] = "";
-      send("POST", `/api/env/${props.env}/plans/${p.n}/${verb}`)
-        .then(reloadPlans)
-        .catch((e) => { planError[p.n] = e.message; });
-    };
+    const reloadPlans = () => { plans.reload(); changed(); };
     const plan = computed(() => livePlans.value.find((p) => p.status === "active") || null);
-    const shown = computed(() => livePlans.value[0] || null);
-    const planRows = computed(() => (shown.value && planDetails[shown.value.n] ? planDetails[shown.value.n].rows : []));
     const held = computed(() => !!(plan.value && plan.value.held));
     const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(reloadPlans);
-    // the same funnel the plan's own inspector approves through, so a plan starts one way wherever you start it
-    const startError = ref("");
-    const startPlan = () => {
-      startError.value = "";
-      send("POST", `/api/env/${props.env}/plans/${shown.value.n}/activate`)
-        .then(reloadPlans)
-        // a refusal has a reason — it belongs on the card, not thrown into the console where a button just looks dead
-        .catch((e) => { startError.value = e.message; });
-    };
-    const goPlan = () => { if (shown.value) location.hash = `#/env/${props.env}/plans/${shown.value.n}`; };
-    const goCard = (c) => { location.hash = `#/env/${props.env}/plans/${c.n}`; };
+    const goPlan = () => { if (plan.value) location.hash = `#/env/${props.env}/plans/${plan.value.n}`; };
     const crew = useFetch(url("/agents"));
     // the answer, in words: how many things need the user, what that means, and the facts about the agent in one muted line
     // who is working here, in one muted line: the page leads with it and goes straight into what needs the user
@@ -3253,46 +3348,15 @@ const EnvHome = {
         agent && agent.started ? `${spanText(Date.now() - Date.parse(agent.started))} in` : "",
         agent && agent.context ? `${agent.context.share}% context` : "",
       ].filter(Boolean);
-      return { facts };
+      // the session is an agent with a page of its own, the same page a subagent's line opens —
+      // it was the one name here you could not click
+      return { facts, href: agent ? `#/env/${props.env}/agents/session/${agent.session}` : "" };
     });
     const SLOTS = 5;
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
     const clear = computed(() => !queue.value.length && !held.value);
     // the kind reads as part of the sentence here, not as a label: "question 12 · 6m"
     const queueMeta = (it) => (SHELL.wide ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
-    // one card per live plan: what it is, how far it has gone, and the single act it offers
-    const PLAN_CARD = {
-      // a plan the agent is still writing: it is visible at once, and there is nothing to press yet
-      preparing: { ref: "being written", act: "" },
-      active: { ref: "working", act: "" },
-      parked: { ref: "paused", act: "Resume" },
-      draft: { ref: "ready to start", act: "Start" },
-      done: { ref: "finished", act: "Acknowledge" },
-    };
-    const PLAN_VERB = { parked: "activate", draft: "activate", done: "acknowledge" };
-    const planCards = computed(() => livePlans.value.map((p) => {
-      const rows = (planDetails[p.n] || {}).rows || [];
-      const done = rows.filter((t) => t.done).length;
-      const shape = PLAN_CARD[p.status] || PLAN_CARD.active;
-      const phases = `${p.phases_done} of ${p.phases_total} phases`;
-      // ONE PLAN IS WORKED AT A TIME, so a card does not offer a button that must be refused: starting a
-      // draft or resuming a parked plan is withheld while another is active, and the card says why.
-      const waiting = !!plan.value && (p.status === "draft" || p.status === "parked");
-      return {
-        n: p.n, title: p.title, status: p.status, rows,
-        ref: `plan ${p.n} · ${p.held && p.status === "active" ? "held" : shape.ref}`,
-        // a draft has done nothing yet, so it says what it holds rather than how far it has gone
-        progress: p.status === "draft"
-          ? `${p.phases_total} ${p.phases_total === 1 ? "phase" : "phases"}${rows.length ? ` · ${rows.length} to-dos` : ""}`
-          : `${phases}${rows.length ? ` · ${done} of ${rows.length} to-dos` : ""}`,
-        why: [p.status === "parked" ? p.parked_why : "",
-              p.status === "preparing" ? "the agent is adding its phases" : "",
-              waiting ? "one plan at a time" : ""].filter(Boolean).join(" · "),
-        act: waiting ? "" : shape.act,
-        run: () => planAct(p, PLAN_VERB[p.status]),
-        bar: p.status !== "draft" && p.status !== "preparing",
-      };
-    }));
     // the second line: when it was, and the to-do it serves — the Finished heading says it is finished, so the line does not
     const workSub = (w, finished) => [(finished ? w.ended_age : w.age) || "just now",
                                       w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ");
@@ -3314,11 +3378,15 @@ const EnvHome = {
     // THE REAL REMAINDER, not "total minus three": the section shows three pieces from the last week,
     // so everything older is invisible too. The work list is fetched whole, so the honest count is here.
     const finishedMore = computed(() => (work.data || []).filter((w) => w.ended).length - finishedLines.value.length);
-    // Subagents belong to the agent, so the live ones hang under its facts line: one line each, and nothing at all when none are running
-    const liveCrew = computed(() => (crew.data || []).filter((a) => a.kind === "subagent" && a.state === "active")
+    // Subagents belong to the agent, so they hang under its facts line: one line each, and nothing at all
+    // when none are there. A FINISHED ONE STAYS, for as long as the API keeps sending it — a subagent used
+    // to disappear the instant it stopped, which is the moment its line is most worth clicking.
+    const liveCrew = computed(() => (crew.data || []).filter((a) => a.kind === "subagent")
       .map((a, i) => ({ key: `subagent:${a.id}`, name: a.name || `Subagent ${a.id}`,
-                        title: `Subagent ${a.id} · ${a.model || "model not recorded"} · from session ${a.parent}`,
-                        tail: [a.model, a.age_text].filter(Boolean).join(" · "),
+                        done: a.state === "finished", quiet: a.state === "quiet",
+                        title: `Subagent ${a.id} · ${a.model || "model not recorded"} · from session ${a.parent}`
+                             + (a.state === "quiet" ? " · no tool call in a while, and it has not said it finished" : ""),
+                        tail: [a.model, a.state === "finished" ? a.ended_age : a.age_text].filter(Boolean).join(" · "),
                         delay: `${i * 60}ms`, open: () => peek("subagent", a.id) })));
 
     // a subagent's panel steps through the other subagents, never sideways into the queue behind it
@@ -3359,15 +3427,20 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, startError, goPlan, queueMeta, planCards, planError, goCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
     <div class=body><div class=page><div class=home>
       <div class=home-lead>
-        <div class=home-facts><span v-for="(f, i) in lead.facts" :key="i" :class="{first: i === 0}">{{ f }}</span></div>
+        <div class=home-facts>
+          <template v-for="(f, i) in lead.facts" :key="i">
+            <a v-if="i === 0 && lead.href" class=first :href="lead.href" title="Open this agent's page">{{ f }}</a>
+            <span v-else :class="{first: i === 0}">{{ f }}</span>
+          </template>
+        </div>
         <div v-if="liveCrew.length" class=crew-strip>
-          <button v-for="a in liveCrew" :key="a.key" type=button class=crew-line :title="a.title" :style="{ animationDelay: a.delay }" @click="a.open">
+          <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" :style="{ animationDelay: a.delay }" @click="a.open">
             <span class=crew-rule></span><span class=crew-dot></span>
             <span class=crew-name>{{ a.name }}</span><span class=crew-tail>{{ a.tail }}</span>
           </button>
@@ -3400,30 +3473,14 @@ const EnvHome = {
       </section>
       <section class=home-section>
         <div class=home-head><h2>Working on</h2></div>
-        <TransitionGroup name=card appear>
-        <div v-for="c in planCards" :key="'plan' + c.n"
-          :class="['work-now', {ready: c.status === 'draft', finished: c.status === 'done', parked: c.status === 'parked'}]"
-          @click="goCard(c)">
-          <div class=work-now-top><span class=work-now-title>{{ c.title }}</span><span class=work-now-ref>{{ c.ref }}</span></div>
-          <div class=work-now-bar>
-            <ProgressBar v-if="c.bar" :rows="c.rows"/>
-            <span class=work-now-ref>{{ c.progress }}</span>
-            <button v-if="c.act" type=button :class="c.status === 'done' ? 'work-now-ack' : 'work-now-start'"
-              :title="c.status === 'draft' ? 'Start this plan and assign it to the agent'
-                    : c.status === 'parked' ? 'Pick this plan up again' : 'You have seen that this plan finished; clear it from here'"
-              @click.stop="c.run()">{{ c.act }}<Icon name="arrow"/></button>
-          </div>
-          <p v-if="c.why" class=work-now-why @click.stop>{{ c.why }}</p>
-          <p v-if="planError[c.n] || (c.status === 'draft' && startError)" class="error work-now-error" @click.stop>{{ planError[c.n] || startError }}</p>
-        </div>
-        </TransitionGroup>
+        <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans"/>
         <TransitionGroup name=wrow>
           <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
             <span :class="['needs-dot', {live: w.live}]"></span>
             <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
           </a>
         </TransitionGroup>
-        <p v-if="!planCards.length && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
+        <p v-if="!livePlans.length && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
       </section>
       <section v-if="parkedLines.length" class=home-section>
         <div class=home-head><h2>Parked</h2></div>
@@ -4107,7 +4164,10 @@ const ActivityPanel = {
     const working = computed(() => (agentsList.data || []).filter((a) => a.working).length);
     const crewGroups = computed(() => [
       { key: "active", label: "Active", rows: (agentsList.data || []).filter((a) => a.working) },
-      { key: "idle", label: "Idle", rows: (agentsList.data || []).filter((a) => !a.working) },
+      // quiet: no tool call in a while, and no stop either — it may still be running, and it may have died
+      { key: "quiet", label: "Quiet", rows: (agentsList.data || []).filter((a) => !a.working && a.state === "quiet") },
+      { key: "done", label: "Finished", rows: (agentsList.data || []).filter((a) => a.state === "finished") },
+      { key: "idle", label: "Idle", rows: (agentsList.data || []).filter((a) => !a.working && a.state === "idle") },
     ].filter((g) => g.rows.length));
     const outsideCrew = (e) => { if (!e.target.closest(".drop-wrap.crew")) crew.open = false; };
     watchEffect((onCleanup) => {
@@ -4190,7 +4250,7 @@ const ActivityPanel = {
               <p class=drop-sub>{{ g.label }} <span class=muted>{{ g.rows.length }}</span></p>
               <a v-for="a in g.rows" :key="a.kind + a.id" :class="['drop-row', {idle: !a.working}]" :href="'#/env/' + env + '/agents/' + a.kind + '/' + a.id"
                 :title="'Open ' + (a.name || (a.kind === 'subagent' ? 'subagent ' : 'session ') + a.id)" @click="crew.open = false; onCrewRow($event, a)">
-                <span class=drop-kind>{{ a.kind === 'subagent' ? 'Subagent' : 'Session' }} · {{ a.working ? 'Working' : a.state === 'finished' ? 'Finished' : 'Idle' }}{{ a.kind === 'subagent' && a.model ? ' · ' + a.model : '' }}{{ a.kind === 'subagent' && !a.working && a.age_text ? ' · ' + a.age_text : '' }}</span>
+                <span class=drop-kind>{{ a.kind === 'subagent' ? 'Subagent' : 'Session' }} · {{ a.working ? 'Working' : a.state === 'finished' ? 'Finished' : a.state === 'quiet' ? 'Quiet' : 'Idle' }}{{ a.kind === 'subagent' && a.model ? ' · ' + a.model : '' }}{{ a.kind === 'subagent' && !a.working && a.age_text ? ' · ' + a.age_text : '' }}</span>
                 <span class=drop-text>{{ a.name || (a.kind === 'subagent' ? 'Subagent ' + a.id : 'Session ' + a.id) }}<span v-if="a.parent" class=muted> · from session {{ a.parent }}</span></span>
               </a>
               </template>

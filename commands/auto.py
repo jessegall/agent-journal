@@ -3,12 +3,12 @@ from __future__ import annotations
 import fmt
 from command import Parsed
 from commands.resource import Resource
-from controllers.environments import EnvironmentController
+from controllers.journal import JournalController
 from templates import render
 
 NOUNS = (("auto-mode", "auto"),)
 
-CONTROLLER = EnvironmentController()
+CONTROLLER = JournalController()
 
 TEXT = {
     "state": "auto mode is {state} for this journal. `journal auto-mode enable|disable` sets it.",
@@ -22,7 +22,7 @@ TEXT = {
 
 
 class AutoMode(Resource):
-    """Auto mode for this session's environment: shown bare, switched by its verb."""
+    """Auto mode for the whole journal: shown bare, switched by its verb."""
     controller = CONTROLLER
     action = "auto"
     state = ""
@@ -35,7 +35,7 @@ class AutoMode(Resource):
             return super().render(p, result)
         m = result.meta
         if "set" not in m:
-            fmt.say(render(TEXT["state"], state="ON" if m["on"] else "OFF", env=m["env"]))
+            fmt.say(render(TEXT["state"], state="ON" if m["on"] else "OFF"))
             return 0
         fmt.say(result.message)
         if not m["on"]:

@@ -214,9 +214,11 @@ def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
 def refused(text: str, limit: int) -> str | None:
     """Why a title this long is refused, or None. The same words wherever the cap is checked."""
     text = " ".join((text or "").split())
-    if not limit or len(text) <= limit:
+    over = entries.capped(text, limit)
+    if not over:
         return None
-    return say("too_long", length=len(text), limit=limit, keep=text[:limit - 20], cut=text[limit - 20:][:120])
+    length, keep, cut = over
+    return say("too_long", length=length, limit=limit, keep=keep, cut=cut)
 
 
 _MARKER = re.compile(r"(?:^|[\s(\[])([A-Za-z]|\d{1,2})[).:](?=\s)")

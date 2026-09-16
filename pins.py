@@ -358,9 +358,11 @@ def refused(fact: str, limit: int) -> str | None:
     hit = next((v for v in VOLATILE if v in low), None)
     if hit:
         return say("volatile", hit=repr(hit))
-    if not limit or len(fact) <= limit:
+    over = entries.capped(fact, limit)
+    if not over:
         return None
-    return say("too_long", length=len(fact), limit=limit, keep=fact[:limit - 20], cut=fact[limit - 20:][:120])
+    length, keep, cut = over
+    return say("too_long", length=length, limit=limit, keep=keep, cut=cut)
 
 
 def strike(root: Path, n: int, why: str, key: str = KEY, at: str = "") -> tuple[bool, str]:

@@ -135,7 +135,8 @@ MESSAGES = {
     "auto_inherited_do": "it is not yours to end: leave it to that session; the list starts once it is closed",
     "auto_inherited_gone_do": "that session is gone, so nothing will end it: if it is finished close it with "
                               "`journal work end --force \"<note>\"`, or ask the user; the list waits until it is closed",
-    "note_auto_unbound": "auto is on for `{env}`; it applies once this session is on that environment",
+    "note_auto_unbound": "AUTO IS ON for this journal, and it applies to every environment — but this session is on "
+                         "none yet, so pick one first and then work the list without asking",
     "auto_open_do": "`work end` each if it is done, `work await` it if it is in flight on something you cannot hurry, "
                     "or park what is left as a to-do and end it{tail}",
     "auto_open_listed": "; then the list starts",
@@ -326,7 +327,7 @@ MESSAGES = {
                "what survived: `journal search <term>`, `journal conversation --back=1`, `journal user`.\n\n"
                "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in this session, and again "
                "whenever a hook holds or denies you. Its focused skills — `journal-todos`, `journal-questions`, "
-               "`journal-messages`, `journal-memory`, `journal-docs`, `journal-agents`, `journal-plans` — load when their "
+               "`journal-messages`, `journal-memory`, `journal-docs`, `journal-agents`, `journal-plans`, `journal-reports` — load when their "
                "part comes up; "
                "load one yourself if it has not.",
     "docs_cite": "{catalogue}\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.",
@@ -335,6 +336,11 @@ MESSAGES = {
                     "  .journal/journal.py user        the user's own words, in full\n"
                     "  .journal/journal.py open        work you declared and never closed\n"
                     "The transcript lost nothing. Read it rather than half-remembering it.",
+    # WHAT SURVIVES A COMPACTION IS A SUMMARY OF A SKILL, NOT THE SKILL. The same instruction an
+    # upgrade already gives, for the same reason: what you remember of it is stale.
+    "compact_skills": "RELOAD YOUR JOURNAL SKILLS NOW — invoke the `journal` skill again, and every `journal-*` skill "
+                      "you had loaded, even if you believe they are still loaded. What crossed the compaction is a "
+                      "summary of them, and a summary of a rule is not the rule.",
     "nothing_open": 'NOTHING IS OPEN — declare what you pick up: `journal work start "<the work>"`.',
     "still_open": "STILL OPEN, from this or an earlier session:\n{rows:\n}\n`journal open` shows where each got to.",
     "note_auto": "AUTO IS ON — work the list without asking: `todos start <n>`, solve it, `work end`, repeat. "
@@ -3160,6 +3166,7 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
     if depth == BRIEF:
         parts.append(_counts(here, unbound))
     if source == "compact":
+        parts.append(say("compact_skills"))
         parts.append(say("compact_tail"))
     return "\n\n".join(parts)
 
@@ -3209,7 +3216,7 @@ def _todo_note(here: str, unbound: bool = False) -> str:
         # NOT AN ORDER TO A SESSION ON NO ENVIRONMENT. The same block tells it to ask the user
         # which environment, and "work the list without asking" beside that started work on an
         # environment it never chose.
-        said.append(say("note_auto_unbound", env=here) if unbound else say("note_auto"))
+        said.append(say("note_auto_unbound") if unbound else say("note_auto"))
     if answered_n:
         said.append(say("note_answered", n=answered_n))
     elif asks_n:
