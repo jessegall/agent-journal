@@ -3014,8 +3014,11 @@ const EnvHome = {
                width: p.phases_total ? `${(100 * p.phases_done) / p.phases_total}%` : "0%",
                progress: `${p.phases_done} of ${p.phases_total} phases${todos.length ? ` · ${todos.filter((t) => t.done).length} of ${todos.length} to-dos` : ""}` };
     });
+    // the second line: the number on its own, when it was, and the to-do it serves — they have the width to read in full there
+    const workSub = (w, finished) => [String(w.n), `${finished ? "finished " : ""}${(finished ? w.ended_age : w.age) || "just now"}`,
+                                      w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ");
     const workLines = computed(() => (work.data || []).filter((w) => !w.ended)
-      .map((w, i) => ({ n: w.n, title: w.subject, meta: `work ${w.n} · ${w.age || "just now"}`, live: i === 0 })));
+      .map((w, i) => ({ n: w.n, title: w.subject, sub: workSub(w, false), live: i === 0 })));
     // what the agent has just finished reads under the open work, quieter: it is context, not something to act on
     const FINISHED_SHOWN = 3;
     const FINISHED_DAYS = 7;
@@ -3024,7 +3027,7 @@ const EnvHome = {
       return (work.data || []).filter((w) => w.ended && Date.parse(w.ended) >= since)
         .sort((a, b) => (b.ended > a.ended ? 1 : b.ended < a.ended ? -1 : 0))
         .slice(0, FINISHED_SHOWN)
-        .map((w) => ({ n: w.n, title: w.subject, meta: `work ${w.n} · finished ${w.ended_age || "just now"}` }));
+        .map((w) => ({ n: w.n, title: w.subject, sub: workSub(w, true) }));
     });
     // Subagents belong to the agent, so the live ones hang under its facts line: one line each, and nothing at all when none are running
     const liveCrew = computed(() => (crew.data || []).filter((a) => a.kind === "subagent" && a.state === "active")
@@ -3115,10 +3118,12 @@ const EnvHome = {
           <div class=work-now-bar><span class=work-now-track><span :style="{ width: currentWork.width }"></span></span><span class=work-now-ref>{{ currentWork.progress }}</span></div>
         </div>
         <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
-          <span :class="['needs-dot', {live: w.live}]"></span><span class=home-line-title>{{ w.title }}</span><span class=needs-meta>{{ w.meta }}</span>
+          <span :class="['needs-dot', {live: w.live}]"></span>
+          <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
         </a>
         <a v-for="w in finishedLines" :key="'done' + w.n" class="home-line quiet" :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
-          <span class=needs-dot></span><span class=home-line-title>{{ w.title }}</span><span class=needs-meta>{{ w.meta }}</span>
+          <span class=needs-dot></span>
+          <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
         </a>
         <p v-if="!currentWork && !workLines.length && !finishedLines.length" class=home-empty>No work is open.</p>
       </section>

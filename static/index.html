@@ -497,13 +497,16 @@
   .work-now-bar { display: flex; align-items: center; gap: 10px; }
   .work-now-track { flex: 1; min-width: 60px; height: 3px; border-radius: 2px; background: var(--border); overflow: hidden; }
   .work-now-track > span { display: block; height: 100%; background: var(--accent); }
-  .home-line { display: flex; align-items: center; gap: 11px; height: 34px; padding: 0 2px; border-radius: 6px; color: inherit; text-decoration: none; cursor: pointer; }
+  .home-line { display: flex; align-items: center; gap: 11px; min-height: 42px; padding: 5px 2px; border-radius: 6px; color: inherit; text-decoration: none; cursor: pointer; }
   .home-line:hover { background: #17181b; }
-  .home-line-title { flex: 1 1 auto; min-width: 110px; font-size: 12.5px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .home-line-text { flex: 1 1 auto; min-width: 110px; display: flex; flex-direction: column; gap: 2px; }
+  /* the number, when it was, and the to-do it serves sit under the title, where they have the width to read in full */
+  .home-line-sub { flex: none; min-width: 0; font-size: 11px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .home-line-title { flex: none; min-width: 0; font-size: 12.5px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .home-line-title.strong { color: var(--text); }
   /* work the agent has just finished: the same row, quieter, so the open work still leads the section */
-  .home-line.quiet { height: 30px; }
-  .home-line.quiet .home-line-title, .home-line.quiet .needs-meta { font-size: 11.5px; color: var(--text-3); }
+  .home-line.quiet { min-height: 38px; }
+  .home-line.quiet .home-line-title { font-size: 11.5px; color: var(--text-3); }
   .home-line.quiet .needs-dot { background: #33363c; }
   .home-empty { margin: 0; padding: 6px 2px; font-size: 12.5px; color: var(--text-3); }
   .reply-line { display: flex; flex-direction: column; gap: 3px; padding: 9px 2px; border-bottom: 1px solid #1f2125; cursor: pointer; }
