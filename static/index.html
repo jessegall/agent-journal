@@ -396,8 +396,9 @@
   .list > .viewbar { position: sticky; top: 0; z-index: 2; background: var(--bg); }
   .list .ghead { top: 40px; }
   .ghead .sort { margin-left: auto; margin-right: 2px; display: inline-flex; align-items: center; gap: 0; opacity: 0; transition: opacity .12s; }
-  /* the sort controls show only while the group's header is hovered or holds focus */
-  .ghead:hover .sort, .ghead:focus-within .sort { opacity: 1; }
+  /* hovering a header no longer fades the sort controls in — moving the pointer down a list made every header flicker.
+     They still appear for the keyboard, and on a touch device below, so sorting stays reachable. */
+  .ghead:focus-within .sort { opacity: 1; }
   @media (hover: none) { .ghead .sort { opacity: 1; } }
   .sort-field { height: 22px; padding: 0 6px; border: none; border-radius: 5px; background: none; color: var(--text-3);
     font: inherit; font-size: 12px; line-height: 22px; }
