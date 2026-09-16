@@ -35,6 +35,10 @@ MESSAGES = {
     "choices_in_text": "the question lists its choices in its text ({found}), so the user cannot click one. Ask it in one line and give "
                        'each choice as its own option: journal questions add "<the question>" --description="<the context>" '
                        '--option="<a choice>" [--option-description="<why>"] --option="<another choice>"',
+    "too_long": "{length} characters, and a question's title has {limit}. The title is the QUESTION, in one line — it is "
+                "what the user reads in the list and at the top of the card:\n  keep  …{keep}\n  cut   …{cut}\n"
+                "The context is not cut, it is MOVED: `--description=\"<the context>\"` takes it, and each choice the user "
+                "can pick is its own `--option=\"<a choice>\"` [--option-description=\"<why>\"].",
     "added": "question {n}[, about {links}] ({open} open)",
     "edited": "question {n} now reads: {text}",
     "reopened": "question {n} now reads: {text}\n  it was answered, so it is open again and the user is asked again; the old answer is kept",
@@ -183,12 +187,14 @@ def _refs(root: Path, raw: list[str], track: str | None = None) -> tuple[list[st
 
 def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
         source: str = "cli", track: str | None = None, description: str = "",
-        options: list[str] | None = None, pick: int | None = None) -> tuple[bool, str]:
+        options: list[str] | None = None, pick: int | None = None, limit: int = 0) -> tuple[bool, str]:
     text = (text or "").strip()
     if not text:
         return False, say("needs_text")
     if found := listed_choices(text):
         return False, say("choices_in_text", found=found)
+    if over := refused(text, limit):
+        return False, over
     links, why = _refs(root, about_refs or [], track)
     if why:
         return False, why
@@ -203,6 +209,14 @@ def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
         _put(root, items, track)
         n = len(items)
     return True, say("added", n=n, links=labels(links), open=len(open_items(root, track)))
+
+
+def refused(text: str, limit: int) -> str | None:
+    """Why a title this long is refused, or None. The same words wherever the cap is checked."""
+    text = " ".join((text or "").split())
+    if not limit or len(text) <= limit:
+        return None
+    return say("too_long", length=len(text), limit=limit, keep=text[:limit - 20], cut=text[limit - 20:][:120])
 
 
 _MARKER = re.compile(r"(?:^|[\s(\[])([A-Za-z]|\d{1,2})[).:](?=\s)")
@@ -268,12 +282,14 @@ def answer(root: Path, n: int, text: str, at: str, track: str | None = None) -> 
 
 
 def edit(root: Path, n: int, text: str | None, track: str | None = None, description: str | None = None,
-         options: list[str] | None = None, pick: int | None = None) -> tuple[bool, str]:
+         options: list[str] | None = None, pick: int | None = None, limit: int = 0) -> tuple[bool, str]:
     """Reword a question, and/or change its description, options or pick; what is not given stays."""
     if text is not None and not text.strip():
         return False, say("needs_text")
     if text is not None and (found := listed_choices(text)):
         return False, say("choices_in_text", found=found)
+    if text is not None and (over := refused(text, limit)):
+        return False, over
     with state.locked(root):
         items = _all(root, track)
         q, why = _find(items, n)
