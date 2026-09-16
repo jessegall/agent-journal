@@ -371,6 +371,10 @@
   .ghead { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 20px;
     background: var(--raised); border-bottom: 1px solid var(--border); font-size: 12.5px; font-weight: 500; color: var(--text-2); }
   .ghead .n { color: var(--text-3); font-weight: 400; }
+  /* the header row folds its group, so it reads as something you can click; its sort controls do not */
+  .ghead { cursor: pointer; }
+  .ghead:hover { color: var(--text); }
+  .ghead .sort, .ghead .sort * { cursor: default; }
 
   /* rows: fixed columns, so status and priority never push a title out of line */
   .row { display: grid; align-items: center; column-gap: 8px; min-height: 40px; padding: 0 20px;
