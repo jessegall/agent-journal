@@ -19,6 +19,7 @@ MESSAGES = {
     "guessed": "  (guessed: newest transcript, {name} — {env} is not set)",
     "stdin_open": "journal: stdin never closed — took the {n} character(s) that arrived in {seconds}s",
     "doc_refused": "--doc: {why}",
+    "transcript_refused": "--transcript: {ref} is not a message carrying a transcript",
 }
 
 _PACKAGE = Path(__file__).resolve().parent
@@ -117,6 +118,26 @@ def where() -> dict:
     out = {"line": lines[-1].n if lines else 0, "session": path.name}
     if guessed:
         out["guessed"] = True
+    return out
+
+
+def transcript_where(doc_ref: str, transcript_ref: str) -> dict | None:
+    """Where this row came from: the same dict `doc_where` builds, plus the transcript that made it.
+
+    A row filed while reading a transcript says so on the row itself -- "whenever it is from a
+    transcript, it should get the tag transcript" -- and the number is checked against a message
+    that actually carries one, so the tag can never point at nothing.
+    """
+    out = doc_where(doc_ref)
+    if out is None or not transcript_ref:
+        return out
+    import inbox
+    import state
+    n = str(transcript_ref).strip().lstrip("#")
+    if not n.isdigit() or inbox.transcript(root(), state.current_track(root()), int(n)) is None:
+        fmt.say(render(MESSAGES["transcript_refused"], ref=repr(transcript_ref)), error=True)
+        return None
+    out["transcript"] = int(n)
     return out
 
 
