@@ -356,7 +356,14 @@ const WIDE_AT = 782;
 // how long each resource keeps a closed item listed, from the environment's settings
 const RETENTION = reactive({ table: null });
 // one overlay the shell hosts for any page: what the status bar inspects opens here, over whatever is showing
-const OVERLAY = reactive({ kind: "", n: 0 });
+const OVERLAY = reactive({ kind: "", n: 0, quote: "" });
+
+// what the agent said, quoted, so a comment back to it starts from its own words
+// comments render through linkify rather than markdown, so the "> " reads as itself and is never swallowed
+function quoted(said) {
+  const text = String(said || "").trim();
+  return text ? `${text.split("\n").map((line) => `> ${line}`).join("\n")}\n\n` : "";
+}
 
 //: environment -> the work and plan the bar last knew, so it says the same thing on the next page
 // it mounts afresh on every page, and without these it would have nothing to say until its fetches land
@@ -736,10 +743,11 @@ const Panel = {
 };
 
 const Compose = {
-  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus"],
+  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial"],
   components: { Icon },
   setup(props) {
-    const draft = reactive({ text: "", sending: false, error: null, files: [] });
+    // `initial` seeds the box — quoting what the agent said, so the comment starts from its own words
+    const draft = reactive({ text: props.initial || "", sending: false, error: null, files: [] });
     const area = ref(null);
     onMounted(() => { if (props.autofocus && area.value) area.value.focus(); });
     const picked = (e) => { draft.files.push(...Array.from(e.target.files || [])); e.target.value = ""; };
@@ -865,7 +873,7 @@ const LinkedQuestions = {
 };
 
 const Comments = {
-  props: { about: { type: String, default: "" }, env: { type: String, default: "" } },
+  props: { about: { type: String, default: "" }, env: { type: String, default: "" }, quote: { type: String, default: "" } },
   components: { Compose },
   setup(props) {
     const list = useFetch(() => props.env && props.about &&
@@ -888,7 +896,8 @@ const Comments = {
           </div>
         </template>
       </div>
-      <Compose placeholder="Comment for the agent" submit="Comment" hint="The agent is told at its next stop" :send="post"/>
+      <Compose placeholder="Comment for the agent" submit="Comment" hint="The agent is told at its next stop" :send="post"
+        :initial="quote" :key="'c-draft-' + quote"/>
     </div>`,
 };
 
@@ -1754,7 +1763,7 @@ const WorkPanel = {
       ];
     });
     const done = panelDone(props, item);
-    return { item, actions, done };
+    return { item, actions, done, OVERLAY };
   },
   template: `
     <Panel :label=\"'Work ' + n" :close="close" :onClose="onClose" :link="link">
@@ -1791,7 +1800,8 @@ const WorkPanel = {
           <p class=section-label data-shut>Work log <span class=muted>{{ item.data.notes.length }}</span></p>
           <div class=linked><div v-for="(note, i) in item.data.notes" :key="i" class=sub v-html="$linkify(note.text)"></div></div>
         </div>
-        <Comments :about="'work ' + item.data.n" :env="env" :key="'c-work' + item.data.n"/>
+        <Comments :about="'work ' + item.data.n" :env="env" :key="'c-work' + item.data.n"
+          :quote="OVERLAY.n === item.data.n ? OVERLAY.quote : ''"/>
       </template>
     </Panel>`,
 };
@@ -3920,7 +3930,17 @@ const ActivityPanel = {
       OVERLAY.kind = "subagent";
       OVERLAY.n = a.id;
     };
-    return { accept, crew, agentsList, working, crewGroups, keyed, list, hovered, onRow, onCrewRow };
+    // what the agent said belongs to the work it is doing, so commenting on it opens that work with the words quoted
+    const commentOnSaid = () => {
+      const said = props.data && props.data.agent && props.data.agent.said;
+      const work = (AGENT_STATE[props.env] || {}).work;
+      if (!said || !work) return;
+      OVERLAY.kind = "work";
+      OVERLAY.n = work.n;
+      OVERLAY.quote = quoted(said);
+    };
+    const canComment = computed(() => !!(AGENT_STATE[props.env] || {}).work);
+    return { accept, crew, agentsList, working, crewGroups, keyed, list, hovered, onRow, onCrewRow, commentOnSaid, canComment };
   },
   template: `
     <div class=activity-panel>
@@ -3947,7 +3967,10 @@ const ActivityPanel = {
         </span>
       </div>
       <template v-if="data">
-        <div v-if="data.agent && data.agent.said" class=activity-said>
+        <div v-if="data.agent && data.agent.said" :class="['activity-said', {sayable: canComment}]"
+          :role="canComment ? 'button' : null" :tabindex="canComment ? 0 : null"
+          :title="canComment ? 'Comment on this, with it quoted' : null"
+          @click="commentOnSaid" @keydown.enter.prevent="commentOnSaid" @keydown.space.prevent="commentOnSaid">
           <span class=activity-said-head>Agent said</span>
           <div class=activity-said-text>{{ data.agent.said }}</div>
         </div>
@@ -4206,7 +4229,7 @@ const App = {
       if (main && window.ResizeObserver) { widthWatch = new ResizeObserver(measureWidth); widthWatch.observe(main); }
     });
     onUnmounted(() => { if (widthWatch) widthWatch.disconnect(); });
-    const closeOverlay = () => { OVERLAY.kind = ""; OVERLAY.n = 0; };
+    const closeOverlay = () => { OVERLAY.kind = ""; OVERLAY.n = 0; OVERLAY.quote = ""; };
     const onHash = () => { Object.assign(route, parseHash()); closeOverlay(); loadOverview(); };
     window.addEventListener("hashchange", onHash);
     window.addEventListener("journal:changed", loadOverview);
