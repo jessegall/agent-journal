@@ -2934,7 +2934,8 @@ const EnvHome = {
   components: { TopBar, Icon, Peek },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
-    const work = useFetch(url("/work"));
+    // everything, not just what is open: Current work reads the finished ones under the open ones
+    const work = useFetch(url("/work?all=1"));
     const questions = useFetch(url("/questions"));
     const suggestions = useFetch(url("/suggestions"));
     const plans = useFetch(url("/plans"));
@@ -3011,7 +3012,18 @@ const EnvHome = {
                width: p.phases_total ? `${(100 * p.phases_done) / p.phases_total}%` : "0%",
                progress: `${p.phases_done} of ${p.phases_total} phases${todos.length ? ` · ${todos.filter((t) => t.done).length} of ${todos.length} to-dos` : ""}` };
     });
-    const workLines = computed(() => (work.data || []).map((w, i) => ({ n: w.n, title: w.subject, meta: `work ${w.n} · ${w.age || "just now"}`, live: i === 0 })));
+    const workLines = computed(() => (work.data || []).filter((w) => !w.ended)
+      .map((w, i) => ({ n: w.n, title: w.subject, meta: `work ${w.n} · ${w.age || "just now"}`, live: i === 0 })));
+    // what the agent has just finished reads under the open work, quieter: it is context, not something to act on
+    const FINISHED_SHOWN = 3;
+    const FINISHED_DAYS = 7;
+    const finishedLines = computed(() => {
+      const since = Date.now() - FINISHED_DAYS * 86400000;
+      return (work.data || []).filter((w) => w.ended && Date.parse(w.ended) >= since)
+        .sort((a, b) => (b.ended > a.ended ? 1 : b.ended < a.ended ? -1 : 0))
+        .slice(0, FINISHED_SHOWN)
+        .map((w) => ({ n: w.n, title: w.subject, meta: `work ${w.n} · finished ${w.ended_age || "just now"}` }));
+    });
     // Subagents belong to the agent, so the live ones hang under its facts line: one line each, and nothing at all when none are running
     const liveCrew = computed(() => (crew.data || []).filter((a) => a.kind === "subagent" && a.state === "active")
       .map((a, i) => ({ key: `subagent:${a.id}`, name: a.name || `Subagent ${a.id}`,
@@ -3057,7 +3069,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, plan, continuePlan, goPlan, queueMeta, currentWork, workLines, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, plan, continuePlan, goPlan, queueMeta, currentWork, workLines, finishedLines, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3099,7 +3111,10 @@ const EnvHome = {
         <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
           <span :class="['needs-dot', {live: w.live}]"></span><span class=home-line-title>{{ w.title }}</span><span class=needs-meta>{{ w.meta }}</span>
         </a>
-        <p v-if="!currentWork && !workLines.length" class=home-empty>No work is open.</p>
+        <a v-for="w in finishedLines" :key="'done' + w.n" class="home-line quiet" :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
+          <span class=needs-dot></span><span class=home-line-title>{{ w.title }}</span><span class=needs-meta>{{ w.meta }}</span>
+        </a>
+        <p v-if="!currentWork && !workLines.length && !finishedLines.length" class=home-empty>No work is open.</p>
       </section>
       <section class=home-section>
         <div class=home-head><h2>Replies to you</h2><span>{{ repliesNote }}</span></div>
