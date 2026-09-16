@@ -3392,12 +3392,19 @@ const EnvHome = {
     // Subagents belong to the agent, so they hang under its facts line: one line each, and nothing at all
     // when none are there. A FINISHED ONE STAYS, for as long as the API keeps sending it — a subagent used
     // to disappear the instant it stopped, which is the moment its line is most worth clicking.
+    // THE STRIP IS FOR WHAT IS HAPPENING NOW. A subagent that has not called a tool for an hour is kept
+    // by the API for a day — so it cannot vanish while it is merely thinking — but the home says its
+    // piece and lets go; the Activity crew list keeps the longer patience. And the line SAYS "quiet":
+    // a name sitting under the agent with only an age beside it reads as still running.
+    const CREW_QUIET_SECS = 3600;
     const liveCrew = computed(() => (crew.data || []).filter((a) => a.kind === "subagent")
+      .filter((a) => a.state !== "quiet" || (a.quiet_secs || 0) <= CREW_QUIET_SECS)
       .map((a, i) => ({ key: `subagent:${a.id}`, name: a.name || `Subagent ${a.id}`,
                         done: a.state === "finished", quiet: a.state === "quiet",
                         title: `Subagent ${a.id} · ${a.model || "model not recorded"} · from session ${a.parent}`
                              + (a.state === "quiet" ? " · no tool call in a while, and it has not said it finished" : ""),
-                        tail: [a.model, a.state === "finished" ? a.ended_age : a.age_text].filter(Boolean).join(" · "),
+                        tail: [a.model, a.state === "quiet" ? `quiet · ${a.age_text}` : a.state === "finished" ? a.ended_age : a.age_text]
+                          .filter(Boolean).join(" · "),
                         delay: `${i * 60}ms`, open: () => peek("subagent", a.id) })));
 
     // a subagent's panel steps through the other subagents, never sideways into the queue behind it
