@@ -892,6 +892,9 @@ const Comments = {
           </div>
           <div v-if="c.done" class="comment-card comment-reply">
             <div v-html="$linkify(c.done)"></div>
+            <div v-if="c.became && c.became.length" class=comment-made>
+              <RefChip v-for="b in c.became" :key="b.ref" :to="$refHref(b.ref, env)" :label="b.label"/>
+            </div>
             <div class=comment-meta>The agent · handled it</div>
           </div>
         </template>

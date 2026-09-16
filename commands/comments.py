@@ -18,7 +18,7 @@ PAGE = {
     "empty": "Nobody has commented on anything.",
     "lead": "What the user said about a to-do, doc, pin, rule or reminder. Act on what each asks — amend it, "
             "drop it, answer it — then say what was done.",
-    "commands": (('journal comments done <n> "<what was done>"', "it is handled"),
+    "commands": (('journal comments done <n> "<what was done>" [--became="todo 22"]', "it is handled, and what it made"),
                  ('journal comments add "todo 22" "<the comment>"', "comment on something"),
                  ("journal comments show <n>", "read one in full")),
     "show": "COMMENT {n}\n\n{text}\n\n  {meta}",
@@ -66,7 +66,8 @@ class Add(Resource):
 
 
 class Done(Resource):
-    signature = "comments:done {n : a comment number} {how* : what was done about it}"
+    signature = ("comments:done {n : a comment number} {how* : what was done about it} "
+                 "{--became=* : what it produced, like `todo 22` or `doc 4`}")
     casts = COMMENT
     writes = True
     controller = CONTROLLER
