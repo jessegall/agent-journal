@@ -600,7 +600,8 @@ def row_response(n: int, m: dict) -> dict:
                     for r in m.get("replies") or []],
         "moved_to": m.get("moved_to") or "",
         "read": m.get("read") or "", "read_age": age(m["read"]) if m.get("read") else "",
-        "age": age(m.get("at", "")), "processed_age": age(m.get("processed") or ""),
+        # the timestamp travels beside the age: a list sorts on `at`, and without it every message sorted as ""
+        "at": m.get("at", ""), "age": age(m.get("at", "")), "processed_age": age(m.get("processed") or ""),
         "source": m.get("source") or "",
         "files": [{"name": f["name"], "size": f.get("size", 0), "filed": f.get("filed") or "", "filed_label": _filed_label(f),
                    "removed": f.get("removed") or ""}
