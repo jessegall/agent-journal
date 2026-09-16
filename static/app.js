@@ -12,6 +12,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/pins(\/archive)?(?:\/(\d+|new))?$/, view: "Pins", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/(?:messages|inbox)(\/archive)?(?:\/((?:[qsr]\/)?\d+))?$/, view: "Inbox", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/questions(\/archive)?(?:\/(\d+))?$/, view: "Questions", params: ["env", "archive", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/reports\/(\d+)\/page$/, view: "ReportDetail", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reports(\/archive)?(?:\/(\d+|new))?$/, view: "Reports", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/plans(\/archive)?(?:\/(\d+|new))?$/, view: "Plans", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/suggestions(\/archive)?(?:\/(\d+|ask))?$/, view: "Suggestions", params: ["env", "archive", "n"] },
@@ -2681,6 +2682,54 @@ const ReportPanel = {
     </Panel>`,
 };
 
+// a report read full width, the way a doc is: the panel stays for a quick look from the home queue
+const ReportDetail = {
+  props: ["env", "n"],
+  components: { TopBar, ActionBar, Comments, RefChip },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/reports`);
+    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
+    const actions = computed(() => {
+      const r = item.data;
+      if (!r || r.archived) return [];
+      return [
+        { label: "Turn into a doc", primary: true, method: "POST", url: `${api.value}/${r.n}/todoc`, submit: "Turn into a doc",
+          note: "A document is made from this report and kept for good; the report is archived.",
+          follow: (body) => (body.data && body.data.doc ? `#/docs/${body.data.doc}` : null) },
+        { label: "Archive", method: "DELETE", url: `${api.value}/${r.n}`, danger: true, submit: "Archive",
+          fields: [{ name: "why", label: "Why it is taken off the list" }] },
+      ];
+    });
+    const done = (body, a) => { changed(); if (a.label === "Archive") location.hash = `#/env/${props.env}/reports`; };
+    // reading it here counts as reading it, exactly as it does in the panel
+    let marked = false;
+    watch(() => item.data, (r) => {
+      if (marked || !r || r.seen || r.archived) return;
+      marked = true;
+      postJSON(`${api.value}/${r.n}/seen`, {}).then(() => changed()).catch(() => { marked = false; });
+    }, { immediate: true });
+    return { item, actions, done, env: props.env };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Reports', '#' + n]"/>
+    <div class=body><div class=page>
+      <FetchState :state="item"/>
+      <div v-if="item.data" class=page-inner>
+        <h1 class=p-title>{{ item.data.title }}</h1>
+        <dl class=props>
+          <dt>Type</dt><dd>Report — ages out<template v-if="!item.data.archived && item.data.ages_out_in !== null && item.data.ages_out_in !== undefined"> in {{ item.data.ages_out_in }} {{ item.data.ages_out_in === 1 ? 'day' : 'days' }}</template></dd>
+          <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
+          <dt>For</dt><dd><RefChip v-if="item.data.about && $refHref(item.data.about, env)" :to="$refHref(item.data.about, env)" :label="item.data.about_label"/><span v-else class=muted>—</span></dd>
+          <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
+          <template v-if="item.data.doc"><dt>Document</dt><dd><RefChip :to="'#/docs/' + item.data.doc" :label="'Doc ' + item.data.doc"/></dd></template>
+        </dl>
+        <ActionBar :actions="actions" :done="done" :key="'reportpage' + item.data.n + (item.data.archived ? 'x' : '')"/>
+        <div class="md prose" v-html="$md(item.data.body)"></div>
+        <Comments :about="'report ' + item.data.n" :env="env" :key="'c-reportpage' + item.data.n"/>
+      </div>
+    </div></div>`,
+};
+
 const Reports = {
   props: ["env", "archive", "n"],
   components: { TopBar, Panel, ActionBar, ResourceList, ReportPanel },
@@ -4169,7 +4218,7 @@ const SkillView = {
     </div></div></div>`,
 };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Style, Reports, Plans, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, SkillView, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Style, Reports, ReportDetail, Plans, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, SkillView, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -4179,7 +4228,7 @@ const NAV = [
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "docs", label: "Documents", views: ["EnvDocs", "Files"], path: "docs", count: "docs" },
   // a report is not a doc: it is written for the user, it ages out, and it is never handed to a session
-  { key: "reports", label: "Reports", views: ["Reports"], path: "reports", count: "reports" },
+  { key: "reports", label: "Reports", views: ["Reports", "ReportDetail"], path: "reports", count: "reports" },
   // a plan is a document, kind of, but it is a big feature of its own: the user asked for it out of Documents
   { key: "plans", label: "Plans", icon: "plan", views: ["Plans"], path: "plans", count: "plans" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
