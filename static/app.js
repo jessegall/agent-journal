@@ -2329,7 +2329,9 @@ const Plans = {
     const list = useFetch(() => props.env && `${api.value}?all=1`);
     const item = useFetch(() => props.env && reading.value && `${api.value}/${props.n}`);
     // the assigned plan has a page, and so does a draft: a plan you are being asked to approve is the one you most need to read in full
-    const onPage = computed(() => reading.value && (!item.data || item.data.status === "active" || item.data.status === "draft"));
+    // EVERY plan opens on its own page, finished ones included: a plan that is done is the record of
+    // what was done, and excluding it sent its own link to the list instead (and the switcher offers it).
+    const onPage = computed(() => reading.value);
     const todos = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/todos?all=1`);
     // the viewer cannot start an agent, so planning together is a message: the agent asks back with questions to click
     const creating = computed(() => [{
@@ -2390,7 +2392,9 @@ const Plans = {
     // the switcher: every plan the agent could hold, the assigned one first
     const PLAN_DOT = { active: "#5b8def", draft: "#83868e", done: "#3ecf74" };
     const planTabs = computed(() => ["active", "draft", "done"].flatMap((status) => (list.data || []).filter((p) => p.status === status))
-      .map((p) => ({ n: p.n, title: p.title, note: p.status, on: String(p.n) === String(props.n), dot: PLAN_DOT[p.status], href: `${home.value}/${p.n}` })));
+      .map((p) => ({ n: p.n, title: p.title, note: p.status, on: String(p.n) === String(props.n), dot: PLAN_DOT[p.status],
+                     // a finished plan is still reachable, but it is not a choice: it reads as the record it is
+                     finished: p.status === "done", href: `${home.value}/${p.n}` })));
     // a to-do row on the plan opens in the inspector over the plan, stepping through the plan's to-dos
     const todoView = reactive({ n: 0 });
     const planTodos = computed(() => (item.data && item.data.phases ? item.data.phases.flatMap((ph) => ph.todos) : []));
@@ -2437,9 +2441,11 @@ const Plans = {
     };
     const meta = computed(() => {
       const p = item.data;
-      return p ? [`plan ${p.n}`, p.from_doc ? `from doc ${p.from_doc}` : "", `drafted ${p.age || "just now"}`].filter(Boolean).join(" · ") : "";
+      if (!p) return "";
+      const when = p.status === "done" ? "ended" : p.status === "abandoned" ? "stopped" : "drafted";
+      return [`plan ${p.n}`, p.from_doc ? `from doc ${p.from_doc}` : "", `${when} ${p.age || "just now"}`].filter(Boolean).join(" · ");
     });
-    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, planTabs, todoState, TODO_WORD, meta };
+    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, planTabs, todoState, TODO_WORD, meta, PLAN_STATUS };
   },
   template: `
     <template v-if="onPage">
@@ -2448,13 +2454,13 @@ const Plans = {
         <FetchState :state="item"/>
         <template v-if="item.data">
           <div class=plan-switch>
-            <a v-for="p in planTabs" :key="p.n" :class="['plan-tab', {on: p.on}]" :href="p.href" :title="p.title">
+            <a v-for="p in planTabs" :key="p.n" :class="['plan-tab', {on: p.on, finished: p.finished}]" :href="p.href" :title="p.title">
               <span class=plan-tab-dot :style="{ background: p.dot }"></span>Plan {{ p.n }}<span class=plan-tab-note>{{ p.note }}</span></a>
             <span class=plan-switch-note>one plan at a time</span>
           </div>
           <div class=plan-top>
             <div class=plan-top-meta>
-              <span class=plan-assigned>Assigned to the agent</span>
+              <span :class="['plan-assigned', {quiet: item.data.status !== 'active'}]">{{ item.data.status === 'active' ? 'Assigned to the agent' : PLAN_STATUS[item.data.status] }}</span>
               <span class=muted>{{ meta }}</span>
             </div>
             <h1 class=plan-title>{{ item.data.title }}</h1>
