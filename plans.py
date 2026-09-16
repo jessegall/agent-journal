@@ -10,7 +10,7 @@ from pins import age
 from templates import render
 
 KEY = "plans"
-DRAFT, ACTIVE, PARKED, DONE, ABANDONED = "draft", "active", "parked", "done", "abandoned"
+PREPARING, DRAFT, ACTIVE, PARKED, DONE, ABANDONED = "preparing", "draft", "active", "parked", "done", "abandoned"
 #: project-wide: "user" (default) lets only the viewer activate a plan, "agent" lets the CLI do it too
 APPROVAL = "plans_approval"
 
@@ -42,6 +42,9 @@ MESSAGES = {
     "first_empty": "plan {n} cannot start: its first phase has no to-dos",
     "one_active": "plan {other} is already active on this environment, and one plan is active at a time",
     "not_draft": "plan {n} is {status}, not a draft",
+    "preparing": "plan {n} is being written: its phases are still being added",
+    "not_preparing": "plan {n} is {status}, not one being written",
+    "ready": "plan {n} is ready for the user to approve: {title}",
     "park_why": 'say why it is set aside: journal plans park {n} "<why>"',
     "park_not_active": "plan {n} is {status}; only the plan being worked can be parked",
     "parked": "plan {n} is parked: {why}\n  its to-dos stop being offered and another plan can run; `journal plans activate {n}` picks it up again",
@@ -200,7 +203,7 @@ def _open_for_changes(root: Path, plan: dict, n: int, track: str) -> str:
 
 
 def add(root: Path, title: str, goal: str, body: str, at: str, source: str = "cli",
-        track: str | None = None) -> tuple[bool, str]:
+        preparing: bool = False, track: str | None = None) -> tuple[bool, str]:
     title, goal = " ".join((title or "").split()), " ".join((goal or "").split())
     if not title:
         return False, say("needs_title")
@@ -209,7 +212,8 @@ def add(root: Path, title: str, goal: str, body: str, at: str, source: str = "cl
     here = _here(root, track)
     with state.locked(root):
         items = _all(root, here)
-        items.append({"title": title, "goal": goal, "body": (body or "").strip(), "status": DRAFT, "at": at,
+        items.append({"title": title, "goal": goal, "body": (body or "").strip(),
+                      "status": PREPARING if preparing else DRAFT, "at": at,
                       "source": source, "phases": [], "refs": []})
         _put(root, items, here)
         n = len(items)
@@ -300,6 +304,28 @@ def put_todos(root: Path, n: int, p: int, numbers, at: str, off: bool = False, r
     return True, say("put", n=n, p=p, todos=", ".join(map(str, wanted)))
 
 
+def ready(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, str]:
+    """The agent says the plan it was writing is finished and the user may approve it.
+
+    A PLAN BEING WRITTEN IS NOT A PLAN WAITING. Between `plans add` and the last phase landing, a plan
+    had one state with a plan that was finished and waiting — so the card said "ready to start" and the
+    user could start something with no phases in it. The agent states when it is done rather than the
+    code guessing from the phase count, because a plan abandoned half-written looks exactly the same
+    from outside.
+    """
+    here = _here(root, track)
+    with state.locked(root):
+        items = _all(root, here)
+        plan = _get(items, n)
+        if plan is None:
+            return False, say("no_plan", n=n)
+        if (plan.get("status") or DRAFT) != PREPARING:
+            return False, say("not_preparing", n=n, status=status(plan, phases(root, plan, here)))
+        plan.update(status=DRAFT, ready_at=at)
+        _put(root, items, here)
+    return True, say("ready", n=n, title=plan.get("title", ""))
+
+
 def approval(root: Path) -> str:
     return "agent" if state.get(root, APPROVAL, "user") == "agent" else "user"
 
@@ -316,6 +342,8 @@ def activate(root: Path, n: int, at: str, source: str = "cli", track: str | None
         known = _todos(root, here)
         rows = phases(root, plan, here, known)
         was = plan.get("status") or DRAFT
+        if was == PREPARING:
+            return False, say("preparing", n=n)
         if was not in (DRAFT, PARKED):
             return False, say("not_draft", n=n, status=status(plan, rows))
         if not rows:

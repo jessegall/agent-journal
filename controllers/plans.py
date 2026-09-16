@@ -12,8 +12,8 @@ from payloads.common import ListingPayload, WhyPayload
 class PlansController(Controller):
     resource = "plans"
     noun = "plan"
-    actions = ("index", "show", "store", "fromdoc", "phase", "todos", "activate", "proceed", "acknowledge", "park", "destroy", "link")
-    numbered = ("show", "phase", "todos", "activate", "proceed", "acknowledge", "park", "destroy", "link")
+    actions = ("index", "show", "store", "fromdoc", "phase", "todos", "activate", "proceed", "acknowledge", "park", "ready", "destroy", "link")
+    numbered = ("show", "phase", "todos", "activate", "proceed", "acknowledge", "park", "ready", "destroy", "link")
     payloads = {"index": ListingPayload, "store": plan_payloads.StorePayload, "phase": plan_payloads.PhasePayload,
                 "todos": plan_payloads.TodosPayload, "destroy": WhyPayload, "link": plan_payloads.LinkPayload,
                 "fromdoc": plan_payloads.FromDocPayload, "park": WhyPayload}
@@ -45,7 +45,8 @@ class PlansController(Controller):
         return Result("ok", "", plans.row_response(root, p.id, self.repository(root, p).find(p.id).raw, self._env(root, p), full=True))
 
     def store(self, root: Path, p: plan_payloads.StorePayload) -> Result:
-        outcome = plans.add(root, p.title, p.goal, p.body, p.at, source=p.source, track=p.env or None)
+        outcome = plans.add(root, p.title, p.goal, p.body, p.at, source=p.source,
+                            preparing=p.preparing, track=p.env or None)
         repo = self.repository(root, p)
         data = plans.row_response(root, repo.count(), repo.all()[-1].raw, self._env(root, p)) if outcome[0] else None
         return Result.of(outcome, data, created=True)
@@ -68,6 +69,9 @@ class PlansController(Controller):
 
     def proceed(self, root: Path, p: Payload) -> Result:
         return Result.of(plans.proceed(root, p.id, p.at, source=p.source, track=p.env or None))
+
+    def ready(self, root: Path, p: Payload) -> Result:
+        return Result.of(plans.ready(root, p.id, p.at, track=p.env or None))
 
     def park(self, root: Path, p: WhyPayload) -> Result:
         return Result.of(plans.park(root, p.id, p.why, p.at, source=p.source, track=p.env or None))

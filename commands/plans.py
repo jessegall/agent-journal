@@ -63,7 +63,7 @@ class Show(Resource):
 
 
 class Add(Resource):
-    signature = "plans:add {title* : the plan's title} {--goal=} {--brief}"
+    signature = "plans:add {title* : the plan's title} {--goal=} {--brief} {--preparing}"
     writes = True
     controller = CONTROLLER
     action = "store"
@@ -114,6 +114,14 @@ class Continue(Resource):
     action = "proceed"
 
 
+class Ready(Resource):
+    signature = "plans:ready {n : a plan number}"
+    casts = PLAN
+    writes = True
+    controller = CONTROLLER
+    action = "ready"
+
+
 class Park(Resource):
     signature = "plans:park {n : a plan number} {why* : why it is set aside}"
     casts = PLAN
@@ -146,4 +154,4 @@ class Link(Resource):
     action = "link"
 
 
-COMMANDS = (List, Show, Add, FromDoc, Phase, Todos, Activate, Continue, Park, Acknowledge, Abandon, Link)
+COMMANDS = (List, Show, Add, FromDoc, Phase, Todos, Activate, Continue, Ready, Park, Acknowledge, Abandon, Link)
