@@ -43,4 +43,4 @@ class CommentsController(Controller):
         return Result.of(comments.add(root, p.about, p.text, p.at, source=p.source, track=p.env or None), created=True)
 
     def done(self, root: Path, p: comment_payloads.DonePayload) -> Result:
-        return Result.of(comments.done(root, p.id, p.how, p.at, track=p.env or None))
+        return Result.of(comments.done(root, p.id, p.how, p.at, became=p.became, track=p.env or None))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """comments.py: comment on a resource, the stop nudge, and closing one."""
-import json, os, sys, tempfile
+import json, os, re, sys, tempfile
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
@@ -117,6 +117,27 @@ code, out = j("comments", "add", "work 1", "why this way?")
 check("a piece of work takes a comment", (code, "comment" in out and "work 1" in out), (0, True))
 code, out = j("comments", "add", "work 9", "nothing there")
 check("a comment on work that does not exist is refused", code, 1)
+
+# ─────────── a comment records what it produced, not only that it was handled ───────────
+code, out = j("todos", "add", "the row a comment asked for")
+_made = re.search(r"to-do (\d+)", out).group(1)
+code, out = j("comments", "add", "todo 1", "please file a row for this")
+_c = re.search(r"comment (\d+)", out).group(1)
+code, out = j("comments", "done", _c, "filed it", f"--became=todo {_made}")
+check("handling a comment records what it made, and says so",
+      (code, "is handled" in out, f"it made to-do {_made}" in out), (0, True, True))
+_row = [c for c in stored() if c.get("became")]
+check("the comment carries the reference, in the same shape a message part uses",
+      [c["became"] for c in _row], [[f"todo:{_made}"]])
+import comments as _comments  # noqa: E402
+check("and the row the viewer reads carries it with its label",
+      _comments.row_response(int(_c), _row[0])["became"],
+      [{"ref": f"todo:{_made}", "label": f"to-do {_made}"}])
+code, out = j("comments", "add", "todo 1", "another one to handle")
+_c2 = re.search(r"comment (\d+)", out).group(1)
+code, out = j("comments", "done", _c2, "handled", "--became=todo 9999")
+check("a reference to something that does not exist is refused, and nothing is handled",
+      (code, "9999" in out, [c.get("done") for c in stored()][int(_c2) - 1]), (1, True, None))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

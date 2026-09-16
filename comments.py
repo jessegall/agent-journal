@@ -26,6 +26,8 @@ MESSAGES = {
     "needs_how": 'say what was done about it: journal comments done {n} "<what was done>"',
     "already_done": "comment {n} was already handled: {how}",
     "done": "comment {n} on {label} is handled: {how}",
+    "done_made": "\n  it made {made:, }",
+    "fact_made": "made {made:, }",
     "fact_done": "handled: {how}",
     "fact_told": "seen by the agent",
     "fact_new": "not seen yet",
@@ -111,10 +113,29 @@ def mark_told(root: Path, track: str | None, ns: list[int], at: str) -> None:
         _put(root, items, track)
 
 
-def done(root: Path, n: int, how: str, at: str, track: str | None = None) -> tuple[bool, str]:
+def done(root: Path, n: int, how: str, at: str, became: list[str] | None = None,
+         track: str | None = None) -> tuple[bool, str]:
+    """Handle a comment, and record what it PRODUCED.
+
+    A COMMENT THAT ASKS FOR SOMETHING MAKES SOMETHING, and saying so only in the prose of
+    `how` leaves the two unlinked: the reader sees "filed it as a to-do" and has to go
+    looking. A message part already records what it became; a comment records it the same
+    way, through the same refs (`todo 22`, `doc 4`, `work 7`), so the viewer can offer them
+    as places to go rather than as words.
+    """
     how = " ".join((how or "").split())
     if not how:
         return False, say("needs_how", n=n)
+    refs = []
+    for raw in became or []:
+        ref, why = parse_ref(raw)
+        if ref is None:
+            return False, why
+        why = check_ref(root, ref, track)
+        if why:
+            return False, why
+        if ref not in refs:
+            refs.append(ref)
     with state.locked(root):
         items = _all(root, track)
         if not 1 <= n <= len(items):
@@ -123,14 +144,19 @@ def done(root: Path, n: int, how: str, at: str, track: str | None = None) -> tup
         if c.get("done"):
             return False, say("already_done", n=n, how=c["done"])
         c["done"], c["done_at"] = how, at
+        if refs:
+            c["became"] = refs
         c.setdefault("told_at", at)
         _put(root, items, track)
-    return True, say("done", n=n, label=label(c["about"]), how=how)
+    made = say("done_made", made=[label(r) for r in refs]) if refs else ""
+    return True, say("done", n=n, label=label(c["about"]), how=how) + made
 
 
 def facts(c: dict) -> str:
     out = [say("fact_about", label=label(c["about"]))]
     out.append(say("fact_done", how=c["done"]) if c.get("done") else say("fact_told") if c.get("told_at") else say("fact_new"))
+    if c.get("became"):
+        out.append(say("fact_made", made=[label(r) for r in c["became"]]))
     if age(c.get("at", "")):
         out.append(age(c.get("at", "")))
     return " · ".join(out)
@@ -139,4 +165,5 @@ def facts(c: dict) -> str:
 def row_response(n: int, c: dict) -> dict:
     return {"n": n, "text": c.get("text", ""), "about": c.get("about", ""), "label": label(c.get("about", "")),
             "at": c.get("at", ""), "age": age(c.get("at", "")) if c.get("at") else "", "source": c.get("source", ""),
-            "told": bool(c.get("told_at")), "done": c.get("done") or "", "closed_at": c.get("done") or "", "meta": facts(c)}
+            "told": bool(c.get("told_at")), "done": c.get("done") or "", "closed_at": c.get("done") or "",
+            "became": [{"ref": r, "label": label(r)} for r in c.get("became") or []], "meta": facts(c)}

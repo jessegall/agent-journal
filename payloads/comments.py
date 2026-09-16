@@ -15,3 +15,4 @@ class StorePayload(Payload):
 
 class DonePayload(Payload):
     how = Field(str)
+    became = Field(list)
