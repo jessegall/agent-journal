@@ -3164,9 +3164,81 @@ const Peek = {
 };
 
 // ─────────────────────────────────────────────────────────────── an environment's home
+// only the WORD for where a plan stands; the act it offers comes from planPrimary
+const PLAN_WORD = { preparing: "being written", active: "working", parked: "paused", draft: "ready to start", done: "finished" };
+
+// ONE CARD, ONE FETCH. The home kept a hand-rolled cache of every plan's to-dos in a reactive object
+// and guarded it by READING the same object its fetch WROTE — so every response re-triggered the
+// effect that produced it. A card fetches its own plan through useFetch, which settled that question
+// for every other list in this file, and brings its own error line with it.
+const PlanCard = {
+  props: { env: String, plan: Object, blocked: Boolean, reloaded: Function },
+  components: { ProgressBar, Icon },
+  setup(props) {
+    const detail = useFetch(() => props.env && props.plan && `/api/env/${props.env}/plans/${props.plan.n}`);
+    const rows = computed(() => ((detail.data && detail.data.phases) || []).flatMap((ph) => ph.todos));
+    const error = ref("");
+    // ONE PLAN IS WORKED AT A TIME, so a card does not offer a button that must be refused: starting a
+    // draft or resuming a paused plan is withheld while another is active, and the card says why.
+    const act = computed(() => (props.blocked ? null : planPrimary(props.plan)));
+    const card = computed(() => {
+      const p = props.plan;
+      const done = rows.value.filter((t) => t.done).length;
+      const word = PLAN_WORD[p.status] || PLAN_WORD.active;
+      const phases = `${p.phases_done} of ${p.phases_total} phases`;
+      return {
+        ref: `plan ${p.n} · ${p.held && p.status === "active" ? "held" : word}`,
+        // a draft has done nothing yet, so it says what it holds rather than how far it has gone
+        progress: p.status === "draft"
+          ? `${p.phases_total} ${p.phases_total === 1 ? "phase" : "phases"}${rows.value.length ? ` · ${rows.value.length} to-dos` : ""}`
+          : `${phases}${rows.value.length ? ` · ${done} of ${rows.value.length} to-dos` : ""}`,
+        why: [p.status === "parked" ? p.parked_why : "",
+              p.status === "preparing" ? "the agent is adding its phases" : "",
+              props.blocked ? "one plan at a time" : ""].filter(Boolean).join(" · "),
+        bar: p.status !== "draft" && p.status !== "preparing",
+      };
+    });
+    const run = () => {
+      error.value = "";
+      send("POST", `/api/env/${props.env}/plans/${props.plan.n}/${act.value.verb}`)
+        .then(() => { detail.reload(); if (props.reloaded) props.reloaded(); })
+        // a refusal has a reason — it belongs on the card, not thrown into the console where a button just looks dead
+        .catch((e) => { error.value = e.message; });
+    };
+    const open = () => { location.hash = `#/env/${props.env}/plans/${props.plan.n}`; };
+    return { detail, rows, error, act, card, run, open };
+  },
+  template: `
+    <div :class="['work-now', {ready: plan.status === 'draft', finished: plan.status === 'done', parked: plan.status === 'parked'}]" @click="open">
+      <div class=work-now-top><span class=work-now-title>{{ plan.title }}</span><span class=work-now-ref>{{ card.ref }}</span></div>
+      <div class=work-now-bar>
+        <ProgressBar v-if="card.bar" :rows="rows"/>
+        <span class=work-now-ref>{{ card.progress }}</span>
+        <button v-if="act" type=button :class="plan.status === 'done' ? 'work-now-ack' : 'work-now-start'"
+          :title="act.hint" @click.stop="run">{{ act.short }}<Icon name="arrow"/></button>
+      </div>
+      <p v-if="card.why" class=work-now-why @click.stop>{{ card.why }}</p>
+      <p v-if="error" class="error work-now-error" @click.stop>{{ error }}</p>
+    </div>`,
+};
+
+const PlanCards = {
+  props: { env: String, plans: { type: Array, default: () => [] }, reloaded: Function },
+  components: { PlanCard },
+  setup(props) {
+    const active = computed(() => props.plans.find((p) => p.status === "active") || null);
+    const blocked = (p) => !!active.value && (p.status === "draft" || p.status === "parked");
+    return { blocked };
+  },
+  template: `
+    <TransitionGroup name=card appear>
+      <PlanCard v-for="p in plans" :key="'plan' + p.n" :env="env" :plan="p" :blocked="blocked(p)" :reloaded="reloaded"/>
+    </TransitionGroup>`,
+};
+
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, Peek, ProgressBar },
+  components: { TopBar, Icon, Peek, ProgressBar, PlanCards },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
@@ -3223,41 +3295,11 @@ const EnvHome = {
       .filter((p) => p.status === "active" || p.status === "parked" || p.status === "draft"
                      || p.status === "preparing" || (p.status === "done" && !p.acknowledged))
       .sort((a, b) => (LIVE_PLAN[a.status] - LIVE_PLAN[b.status]) || a.n - b.n));
-    // each plan's own to-dos, so every bar measures the same thing the plan page does
-    const planDetails = reactive({});
-    watchEffect(() => {
-      for (const p of livePlans.value) {
-        if (planDetails[p.n]) continue;
-        planDetails[p.n] = { rows: [] };
-        fetch(`/api/env/${props.env}/plans/${p.n}`).then((r) => r.json())
-          .then((d) => { planDetails[p.n] = { rows: (d.phases || []).flatMap((ph) => ph.todos) }; })
-          .catch(() => { planDetails[p.n] = { rows: [] }; });
-      }
-    });
-    const reloadPlans = () => { for (const k of Object.keys(planDetails)) delete planDetails[k]; plans.reload(); changed(); };
-    const planError = reactive({});
-    const planAct = (p, verb) => {
-      planError[p.n] = "";
-      send("POST", `/api/env/${props.env}/plans/${p.n}/${verb}`)
-        .then(reloadPlans)
-        .catch((e) => { planError[p.n] = e.message; });
-    };
+    const reloadPlans = () => { plans.reload(); changed(); };
     const plan = computed(() => livePlans.value.find((p) => p.status === "active") || null);
-    const shown = computed(() => livePlans.value[0] || null);
-    const planRows = computed(() => (shown.value && planDetails[shown.value.n] ? planDetails[shown.value.n].rows : []));
     const held = computed(() => !!(plan.value && plan.value.held));
     const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(reloadPlans);
-    // the same funnel the plan's own inspector approves through, so a plan starts one way wherever you start it
-    const startError = ref("");
-    const startPlan = () => {
-      startError.value = "";
-      send("POST", `/api/env/${props.env}/plans/${shown.value.n}/activate`)
-        .then(reloadPlans)
-        // a refusal has a reason — it belongs on the card, not thrown into the console where a button just looks dead
-        .catch((e) => { startError.value = e.message; });
-    };
-    const goPlan = () => { if (shown.value) location.hash = `#/env/${props.env}/plans/${shown.value.n}`; };
-    const goCard = (c) => { location.hash = `#/env/${props.env}/plans/${c.n}`; };
+    const goPlan = () => { if (plan.value) location.hash = `#/env/${props.env}/plans/${plan.value.n}`; };
     const crew = useFetch(url("/agents"));
     // the answer, in words: how many things need the user, what that means, and the facts about the agent in one muted line
     // who is working here, in one muted line: the page leads with it and goes straight into what needs the user
@@ -3280,41 +3322,6 @@ const EnvHome = {
     const clear = computed(() => !queue.value.length && !held.value);
     // the kind reads as part of the sentence here, not as a label: "question 12 · 6m"
     const queueMeta = (it) => (SHELL.wide ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
-    // one card per live plan: what it is, how far it has gone, and the single act it offers
-    // only the WORD for where the plan stands lives here; the act it offers comes from planPrimary
-    const PLAN_CARD = {
-      // a plan the agent is still writing: it is visible at once, and there is nothing to press yet
-      preparing: "being written",
-      active: "working",
-      parked: "paused",
-      draft: "ready to start",
-      done: "finished",
-    };
-    const planCards = computed(() => livePlans.value.map((p) => {
-      const rows = (planDetails[p.n] || {}).rows || [];
-      const done = rows.filter((t) => t.done).length;
-      const word = PLAN_CARD[p.status] || PLAN_CARD.active;
-      const act = planPrimary(p);
-      const phases = `${p.phases_done} of ${p.phases_total} phases`;
-      // ONE PLAN IS WORKED AT A TIME, so a card does not offer a button that must be refused: starting a
-      // draft or resuming a parked plan is withheld while another is active, and the card says why.
-      const waiting = !!plan.value && (p.status === "draft" || p.status === "parked");
-      return {
-        n: p.n, title: p.title, status: p.status, rows,
-        ref: `plan ${p.n} · ${p.held && p.status === "active" ? "held" : word}`,
-        // a draft has done nothing yet, so it says what it holds rather than how far it has gone
-        progress: p.status === "draft"
-          ? `${p.phases_total} ${p.phases_total === 1 ? "phase" : "phases"}${rows.length ? ` · ${rows.length} to-dos` : ""}`
-          : `${phases}${rows.length ? ` · ${done} of ${rows.length} to-dos` : ""}`,
-        why: [p.status === "parked" ? p.parked_why : "",
-              p.status === "preparing" ? "the agent is adding its phases" : "",
-              waiting ? "one plan at a time" : ""].filter(Boolean).join(" · "),
-        act: waiting || !act ? "" : act.short,
-        hint: act ? act.hint : "",
-        run: () => planAct(p, act.verb),
-        bar: p.status !== "draft" && p.status !== "preparing",
-      };
-    }));
     // the second line: when it was, and the to-do it serves — the Finished heading says it is finished, so the line does not
     const workSub = (w, finished) => [(finished ? w.ended_age : w.age) || "just now",
                                       w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ");
@@ -3381,7 +3388,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, startError, goPlan, queueMeta, planCards, planError, goCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3422,28 +3429,14 @@ const EnvHome = {
       </section>
       <section class=home-section>
         <div class=home-head><h2>Working on</h2></div>
-        <TransitionGroup name=card appear>
-        <div v-for="c in planCards" :key="'plan' + c.n"
-          :class="['work-now', {ready: c.status === 'draft', finished: c.status === 'done', parked: c.status === 'parked'}]"
-          @click="goCard(c)">
-          <div class=work-now-top><span class=work-now-title>{{ c.title }}</span><span class=work-now-ref>{{ c.ref }}</span></div>
-          <div class=work-now-bar>
-            <ProgressBar v-if="c.bar" :rows="c.rows"/>
-            <span class=work-now-ref>{{ c.progress }}</span>
-            <button v-if="c.act" type=button :class="c.status === 'done' ? 'work-now-ack' : 'work-now-start'"
-              :title="c.hint" @click.stop="c.run()">{{ c.act }}<Icon name="arrow"/></button>
-          </div>
-          <p v-if="c.why" class=work-now-why @click.stop>{{ c.why }}</p>
-          <p v-if="planError[c.n] || (c.status === 'draft' && startError)" class="error work-now-error" @click.stop>{{ planError[c.n] || startError }}</p>
-        </div>
-        </TransitionGroup>
+        <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans"/>
         <TransitionGroup name=wrow>
           <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
             <span :class="['needs-dot', {live: w.live}]"></span>
             <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
           </a>
         </TransitionGroup>
-        <p v-if="!planCards.length && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
+        <p v-if="!livePlans.length && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
       </section>
       <section v-if="parkedLines.length" class=home-section>
         <div class=home-head><h2>Parked</h2></div>
