@@ -732,6 +732,12 @@
   .part { padding: 10px 0; border-bottom: 1px solid var(--border); }
   .part:last-child { border-bottom: none; }
   .excerpt { color: var(--text-2); margin-bottom: 6px; }
+  /* a work log reads as separate entries, each saying when it was written, rather than one unbroken block */
+  .work-log { display: flex; flex-direction: column; }
+  .work-log-note { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .work-log-note:last-child { border-bottom: none; padding-bottom: 0; }
+  .work-log-when { flex: none; width: 74px; font-size: 11.5px; line-height: 1.5; color: var(--text-3); }
+  .work-log-text { flex: 1 1 auto; min-width: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-2); overflow-wrap: anywhere; }
   .linked { display: flex; flex-direction: column; }
   .style-questions { padding: 12px 16px 4px; border-bottom: 1px solid var(--border); }
   /* a resource's comments: each comment its own card, space between them, and room above the comment box */
