@@ -1877,25 +1877,32 @@ def show_text(t: dict, width: int | None = None) -> str:
 AUTO = "auto"
 
 
-def auto(root: Path, track: str) -> bool:
-    """May the agent work through this environment's list without asking?
+def auto(root: Path, track: str | None = None) -> bool:
+    """May the agent work through the list without asking? ONE SWITCH FOR THE WHOLE JOURNAL.
 
     OFF BY DEFAULT, AND THE DEFAULT IS THE POINT. A to-do is work the user put off, and
-    whether it gets picked up is their call — unless they have said, for this environment, that
-    the agent should work through the list on its own. The flag is that saying, on the
-    record, per environment: an environment of chores can drain while an environment of design questions waits.
+    whether it gets picked up is their call — unless they have said that the agent should
+    work through the list on its own.
+
+    IT WAS A MAP KEYED BY ENVIRONMENT, and the user ended that for a reason they watched
+    happen: an agent that switches environments came to a halt the moment it moved to one
+    where the flag was off. `track` is still accepted, and ignored, while the callers are
+    moved. A journal that still holds the old map reads as ON if any environment had it on,
+    until the migration rewrites it.
     """
-    got = state.get(root, AUTO, {})
-    return bool(isinstance(got, dict) and got.get(track))
+    got = state.get(root, AUTO, False)
+    if isinstance(got, dict):
+        return any(bool(v) for v in got.values())
+    return bool(got)
 
 
-def set_auto(root: Path, track: str, on: bool) -> str:
+def set_auto(root: Path, track: str | None, on: bool | None = None) -> str:
+    """Turn it on or off for the project. Called `set_auto(root, on)` too, while the callers move."""
+    if on is None:
+        track, on = None, track
     with state.locked(root):
-        got = state.get(root, AUTO, {})
-        got = got if isinstance(got, dict) else {}
-        got[track] = bool(on)
-        state.put(root, AUTO, got)
-    return say("auto_on" if on else "auto_off", track=track)
+        state.put(root, AUTO, bool(on))
+    return say("auto_on" if on else "auto_off", track=track or "the journal")
 
 
 def _loop_line(root: Path) -> str:
