@@ -93,8 +93,15 @@ check("processed, naming what it became", (code, "to-do 1, pin 1, noted" in out,
       (0, True, True))
 code, out = j("inbox", "done", "1")
 check("done twice is refused", code, 1)
+# A LATE PART IS STILL THE TRUTH ABOUT WHAT THE USER SAID: a plan asked for in a message that was
+# already closed had nothing to link back to, and an answer that came an hour later had nowhere to go.
 code, out = j("inbox", "process", "1", "--part=rename", "--became=noted")
-check("a processed message takes no more parts", code, 1)
+check("a processed message still takes a late part, and says it was already processed",
+      (code, "was already processed" in out, "became noted" in out), (0, True, True))
+code, out = j("inbox", "reply", "1", "it is done now", "--part=rename the parser module")
+check("and a late answer to one of its parts", (code, "answered part of message 1" in out), (0, True))
+code, out = j("inbox", "done", "1")
+check("but it is not processed a second time", code, 1)
 code, out = j("inbox")
 check("waiting messages list before processed ones",
       out.index("also check the flaky test") < out.index("rename the parser"), True)
@@ -124,7 +131,8 @@ root = d / ".journal"
 rows = inbox_mod.rows_response(root, "default")
 check("rows carry status and labelled parts",
       [(r["n"], r["status"], [b["label"] for p in r["parts"] for b in p["became"]]) for r in rows],
-      [(2, "waiting", ["question 1"]), (1, "processed", ["to-do 1", "pin 1", "noted", "plan 1"])])
+      [(2, "waiting", ["question 1"]),
+       (1, "processed", ["to-do 1", "pin 1", "noted", "plan 1", "noted", "answered"])])
 check("unprocessed reads what waits", [n for n, _ in inbox_mod.unprocessed(root, "default")], [2])
 
 # ------------------------------------------------------------------ writes are writes to the hook
