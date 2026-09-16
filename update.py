@@ -106,6 +106,24 @@ def _fetch(url: str, timeout: float = 3.0) -> str | None:
 CACHE_SECONDS = 900
 
 
+def cached(root: Path) -> dict:
+    """The upstream answer already on disk, and NEVER a network call.
+
+    WHAT A PAGE MAY ASK. `check` refreshes a stale cache, which means a request that happens to
+    land after fifteen minutes pays a network round trip inside its own response — and on a
+    machine that cannot reach the repository quickly, that is a page sitting there loading.
+    A viewer reads what the hooks and the CLI have already learned, or nothing at all.
+    """
+    f = root / CACHE
+    if not f.is_file():
+        return {}
+    try:
+        got = json.loads(f.read_text())
+    except ValueError:
+        return {}
+    return got if isinstance(got, dict) else {}
+
+
 def check(root: Path, force: bool = False) -> dict:
     """{'version': latest upstream, 'headline': …} — cached for CACHE_SECONDS; `force` asks now."""
     f = root / CACHE

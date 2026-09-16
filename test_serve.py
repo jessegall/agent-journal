@@ -122,6 +122,18 @@ check("and the version being served, so an open page can reload when it changes"
 check("environments come newest activity first", [e["last_active"] for e in data["environments"]],
       sorted((e["last_active"] for e in data["environments"]), reverse=True))
 check("a project that is current says nothing about an update", data["update"], None)
+# THE PAGE MUST NEVER WAIT ON THE NETWORK. This was reported from the field: /api/overview called the
+# refresh, so one poll in every fifteen minutes paid a round trip inside its own response, and on a
+# machine that cannot reach the repository quickly the home just sat there loading.
+import update as _update  # noqa: E402
+_fetched = []
+_real_fetch = _update._fetch
+_update._fetch = lambda url, timeout=3.0: _fetched.append(url)
+try:
+    get("/api/overview")
+    check("the overview reads the cached answer and makes no request of its own", _fetched, [])
+finally:
+    _update._fetch = _real_fetch
 # the upstream answer is cached on disk and the suites never reach the network: a cache naming a
 # newer version is exactly what a real project that has fallen behind looks like
 (root / "runtime").mkdir(parents=True, exist_ok=True)

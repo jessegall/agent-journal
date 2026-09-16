@@ -117,13 +117,13 @@ def overview(root: Path) -> dict:
 def upstream(root: Path) -> dict | None:
     """The newer version waiting upstream, or None when this project is current.
 
-    IT READS THE SAME ANSWER THE HOOK'S NOTICE DOES, and that answer is cached for fifteen
-    minutes: most polls cost nothing, and the one that lands after the cache goes stale pays
-    a bounded fetch (two seconds at most, and the changelog only when a newer version is
-    actually there) inside its own response. An offline check returns whatever the cache
-    holds and never raises — so the page says nothing rather than something wrong.
+    NEVER A NETWORK CALL. This is read by `overview`, which the viewer polls every few seconds,
+    so it reads only what the hooks and the CLI have already written to the cache. It used to
+    call `check`, which refreshes a stale answer — meaning one poll in every fifteen minutes
+    paid a network round trip inside its own response, and on a machine that cannot reach the
+    repository quickly that is a page that sits there loading. Reported by a user's colleagues.
     """
-    got = update.check(root)
+    got = update.cached(root)
     have = update.current(root)
     version = got.get("version") or ""
     if not version or not update.newer(version, have):
