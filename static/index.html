@@ -192,7 +192,12 @@
   .activity-said.sayable { cursor: pointer; }
   .activity-said.sayable:hover, .activity-said.sayable:focus-visible { border-color: var(--border-2); outline: none; }
   .activity-said-head { display: block; margin-bottom: 4px; font-size: 11px; color: var(--text-3); }
-  .activity-said-text { font-size: 12px; line-height: 1.5; color: var(--text-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+  /* the reply renders its own formatting now, so the blocks carry the spacing rather than pre-wrap */
+  .activity-said-text { font-size: 12px; line-height: 1.5; color: var(--text-2); overflow-wrap: anywhere; }
+  .activity-said-text :is(p, ul, ol, pre) { margin: .35em 0; }
+  .activity-said-text > :first-child { margin-top: 0; }
+  .activity-said-text > :last-child { margin-bottom: 0; }
+  .activity-said-text :is(h1, h2, h3, h4, h5, h6) { font-size: 12px; margin: .5em 0 .25em; }
   /* the quick menu: a command box over the whole app that sends what is typed to the agent unless a command is picked */
   .quick-scrim { position: fixed; inset: 0; z-index: 50; background: rgba(4, 5, 6, .62); }
   .quick-menu { position: fixed; z-index: 51; top: 92px; left: 50%; transform: translateX(-50%); width: min(580px, calc(100% - 56px));
