@@ -3121,18 +3121,22 @@ const EnvHome = {
           <div class=work-now-top><span class=work-now-title>{{ currentWork.title }}</span><span class=work-now-ref>{{ currentWork.ref }}</span></div>
           <div class=work-now-bar><span class=work-now-track><span :style="{ width: currentWork.width }"></span></span><span class=work-now-ref>{{ currentWork.progress }}</span></div>
         </div>
-        <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
-          <span :class="['needs-dot', {live: w.live}]"></span>
-          <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
-        </a>
+        <TransitionGroup name=wrow>
+          <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
+            <span :class="['needs-dot', {live: w.live}]"></span>
+            <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
+          </a>
+        </TransitionGroup>
         <p v-if="!currentWork && !workLines.length" class=home-empty>No work is open.</p>
       </section>
       <section v-if="finishedLines.length" class=home-section>
         <div class=home-head><h2>Finished</h2></div>
-        <a v-for="w in finishedLines" :key="'done' + w.n" class="home-line quiet" :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
-          <span class=needs-dot></span>
-          <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
-        </a>
+        <TransitionGroup name=wrow>
+          <a v-for="w in finishedLines" :key="'done' + w.n" class="home-line quiet" :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
+            <span class=needs-dot></span>
+            <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
+          </a>
+        </TransitionGroup>
       </section>
       <section v-if="replies.length" class=home-section>
         <div class=home-head><h2>Replies to you</h2><span>{{ repliesNote }}</span></div>
