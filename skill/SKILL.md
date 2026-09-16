@@ -175,6 +175,7 @@ before you act:
 | `journal-agents` | before every subagent dispatch; a subagent must write; a subagent's journal command is refused |
 | `journal-plans` | the user asks for a plan, a roadmap or phases; you are about to draft one; a plan is active, refuses to start or stalls; a plan should be stopped |
 | `journal-reports` | the user asks you to check, research, compare or review something; a dispatch comes back with findings; a report should be archived or become a doc |
+| `journal-transcripts` | a message arrives declared as a transcript; a long paste reads like one; you are about to file to-dos or a plan out of either |
 
 **One rule from `journal-agents` belongs here, because a dispatch does not wait for a skill to load:
 name the model on every subagent you dispatch** — `haiku` for mechanical work with a known answer,
@@ -306,4 +307,4 @@ thing to do now.
 | *… is a script you wrote / has now run twice / scratch script*  | a hint: `tools add` if the job comes back; otherwise ignore |
 | *… has been read N times … not a source file*                  | a hint: `docs attach <doc> <path> "<what it is>"` if it is reference material; otherwise ignore |
 
-Each row's detail lives in a focused skill: messages and comments in `journal-messages`; answered questions, decided suggestions and the refused question tool in `journal-questions`; to-dos, auto and the loop in `journal-todos`; the context decision, pins and cleanup in `journal-memory`; subagent refusals in `journal-agents`; the markdown, script and attachment hints in `journal-docs`.
+Each row's detail lives in a focused skill: messages and comments in `journal-messages`; answered questions, decided suggestions and the refused question tool in `journal-questions`; to-dos, auto and the loop in `journal-todos`; the context decision, pins and cleanup in `journal-memory`; subagent refusals in `journal-agents`; the markdown, script and attachment hints in `journal-docs`; a transcript and what it becomes in `journal-transcripts`.
