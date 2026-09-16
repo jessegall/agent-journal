@@ -731,7 +731,7 @@ for _body, _want in (({"auto": True}, "Turned auto mode on for the journal"),
                      ({"auto": False}, "Turned auto mode off for the journal")):
     commandlog.record_web(root, "alpha", "journal", "settings", None, _body, "2099-01-05T00:00:00+00:00")
     check(f"the journal's settings name what changed: {_want}", commandlog.entries(root, "alpha")[-1]["text"], _want)
-commandlog.record_web(root, "alpha", "environment", "auto", None, {"state": "disable"}, "2099-01-05T00:00:01+00:00")
+commandlog.record_web(root, "alpha", "journal", "auto", None, {"state": "disable"}, "2099-01-05T00:00:01+00:00")
 check("switching auto mode from the viewer says which way", commandlog.entries(root, "alpha")[-1]["text"], "Turned auto mode off")
 _tool_stem = "toolqueue-session"
 for _tool in ("Bash", "Bash", "Edit", "Bash", "Write"):

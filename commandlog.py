@@ -320,7 +320,7 @@ WEB = {
     "docs:adopt": "Added an existing document",
     "docs:archive": "Archived document {n}",
     "environment:settings": "Changed the settings",
-    "environment:auto": "Changed auto mode",
+    "journal:auto": "Changed auto mode",
     "environment:remove": "Removed an environment",
     "messages:update": "Edited message {n}",
     "messages:process": "Filed message {n}",
@@ -400,7 +400,7 @@ def _settings_said(key: str, body: dict) -> str:
     def on(value) -> bool:
         return str(value).lower() in ("true", "1", "yes", "on", "enable")
     said = []
-    if key == "environment:auto" and body.get("state") not in (None, ""):
+    if key == "journal:auto" and body.get("state") not in (None, ""):
         said.append("Turned auto mode on" if on(body["state"]) else "Turned auto mode off")
     if key == "journal:settings" and "auto" in body:
         said.append("Turned auto mode on for the journal" if on(body["auto"]) else "Turned auto mode off for the journal")

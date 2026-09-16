@@ -135,7 +135,8 @@ MESSAGES = {
     "auto_inherited_do": "it is not yours to end: leave it to that session; the list starts once it is closed",
     "auto_inherited_gone_do": "that session is gone, so nothing will end it: if it is finished close it with "
                               "`journal work end --force \"<note>\"`, or ask the user; the list waits until it is closed",
-    "note_auto_unbound": "auto is on for `{env}`; it applies once this session is on that environment",
+    "note_auto_unbound": "AUTO IS ON for this journal, and it applies to every environment — but this session is on "
+                         "none yet, so pick one first and then work the list without asking",
     "auto_open_do": "`work end` each if it is done, `work await` it if it is in flight on something you cannot hurry, "
                     "or park what is left as a to-do and end it{tail}",
     "auto_open_listed": "; then the list starts",
@@ -3209,7 +3210,7 @@ def _todo_note(here: str, unbound: bool = False) -> str:
         # NOT AN ORDER TO A SESSION ON NO ENVIRONMENT. The same block tells it to ask the user
         # which environment, and "work the list without asking" beside that started work on an
         # environment it never chose.
-        said.append(say("note_auto_unbound", env=here) if unbound else say("note_auto"))
+        said.append(say("note_auto_unbound") if unbound else say("note_auto"))
     if answered_n:
         said.append(say("note_answered", n=answered_n))
     elif asks_n:
