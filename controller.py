@@ -20,7 +20,7 @@ MESSAGES = {
 }
 
 # resource -> the fields `search` reads, first one names the item
-SEARCHABLE = {"todos": ("title", "body"), "inbox": ("text",), "questions": ("text", "answer"),
+SEARCHABLE = {"todos": ("title", "body"), "messages": ("text",), "questions": ("text", "answer"),
               "reports": ("title", "body"), "suggestions": ("title", "body"), "reminders": ("text",),
               "pins": ("fact",), "rules": ("fact",), "work": ("subject", "notes"), "comments": ("text",)}
 

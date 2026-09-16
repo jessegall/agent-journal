@@ -427,10 +427,14 @@ for args in (["--env=scout", "work", "start", "digging"], ["--env=scout", "pins"
              ["--env=scout", "todos", "add", "later"], ["--env=scout", "reminders", "add", "keep at it"]):
     gP.cli(*args, session="gs1")
 _touched = sorted(k for k in set(_before) | set(_snap()) if _before.get(k) != _snap().get(k))
-check("a granted write touches only its own environment's files",
-      [k for k in _touched if not k.startswith("environments/scout/")], [])
+# The rule is about the RECORD: not another environment, not the bindings, not what every session
+# reads. A derived per-environment ledger under runtime/ is none of those -- it is rebuilt from the
+# rows themselves and never travels (test_todo pins it to runtime/ deliberately), so it is allowed.
+_derived = f"runtime/todo-scout.index.json"
+check("a granted write touches only its own environment's files, and what is derived from them",
+      [k for k in _touched if not k.startswith("environments/scout/") and k != _derived], [])
 check("and it touches all four of them, and the activity it logged",
-      sorted({k.split("/")[2] for k in _touched}),
+      sorted({k.split("/")[2] for k in _touched if k.startswith("environments/scout/")}),
       ["activity.json", "pins.json", "reminders.json", "todo", "work.json"])
 for v in ('docs add "r" --abstract=x', 'tools add t "T" --summary=s --usage=u --entry=x'):
     _why = testkit.denied(sub(f'{J2} --env="scout" {v}'))
