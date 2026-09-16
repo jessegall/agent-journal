@@ -393,7 +393,8 @@ def row_response(n: int, q: dict) -> dict:
     return {
         "n": n, "text": q["text"], "status": ("withdrawn" if q.get("withdrawn")
                                              else "answered" if q.get("answer") else "open"),
-        "answer": q.get("answer") or "", "age": age(q.get("at", "")), "seen": bool(q.get("seen_at")),
+        # the timestamp travels beside the age, so a question sorts by date like a suggestion already does
+        "answer": q.get("answer") or "", "at": q.get("at", ""), "age": age(q.get("at", "")), "seen": bool(q.get("seen_at")),
         "answered_age": age(q.get("answered_at") or ""), "source": q.get("source") or "",
         "withdrawn": q.get("withdrawn") or "",
         "closed_at": (q.get("withdrawn_at") or "") if q.get("withdrawn") else (q.get("answered_at") or "") if q.get("answer") else "",
