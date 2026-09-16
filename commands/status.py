@@ -13,6 +13,7 @@ from templates import render
 NOUNS = (("status",),)
 
 TEXT = {
+    "plan_active": "plan {n}: {done} of {total} phase(s) complete[ · phase {p} current: {phase}]",
     "title": "JOURNAL",
     "sub": "environment {env}",
     "none": "none",
@@ -44,6 +45,20 @@ STATUS_COMMANDS = (
 )
 
 
+def _plan_line(root, env: str) -> str:
+    """The plan being worked here, and which phase is current — or what it waits on."""
+    import plans as plans_mod
+    got = plans_mod.active(root, env)
+    if got is not None:
+        n, plan, rows = got
+        now = plans_mod.current(plan, rows)
+        done = sum(1 for r in rows if r["complete"])
+        return render(TEXT["plan_active"], n=n, done=done, total=len(rows),
+                      p=now["p"] if now else None, phase=now["title"] if now else None)
+    stalled = plans_mod.stall(root, env)
+    return stalled or TEXT["none"]
+
+
 def _count(template: str, n: int) -> str:
     return render(template, n=n) if n else TEXT["none"]
 
@@ -57,6 +72,7 @@ class Status(Command):
         import pins
         import reminders
         import state
+        import plans as plans_mod
         import todo
         import tools
         import update
@@ -81,6 +97,7 @@ class Status(Command):
             ("docs", render(TEXT["docs"], n=len(catalogued), drafts=len(drafts) or None)
              if catalogued else TEXT["none"], "journal docs"),
             ("tools", _count(TEXT["tools"], len(tools._all(root()))), "journal tools"),
+            ("plan", _plan_line(root(), env), "journal plans"),
             ("to-do", render(TEXT["todos"], waiting=_count(TEXT["waiting"], len(todo.open_items(root(), env))),
                              on_user=len(on_user) or None, answered=len(todo.answered(root(), env)) or None,
                              auto=TEXT["auto_on"] if todo.auto(root()) else None), "journal todo"),

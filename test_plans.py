@@ -331,5 +331,29 @@ check("the agent says when it is finished, and then it is a draft",
 took = plans.ready(root, _wn, AT, track="default")
 check("saying it twice is refused", (took[0], "not one being written" in took[1]), (False, True))
 
+# ─────────── a plan whose current phase is all held says so, instead of "nothing to pick up" ───────────
+# Reported from another project against 1.141.0: `journal next` folded the plan's only row into a generic
+# tally and never named the plan, so an agent read "nothing to pick up" as settled and stopped.
+_sn = len(plans._all(root, "default")) + 1
+j("todos", "add", "the row that holds the stalled plan")
+_srow = len(_todo._all(root, "default"))
+took = plans.add(root, "A plan that stalls", "its phase is all held", "", AT, track="default")
+j("plans", "phase", str(_sn), "The held phase")
+j("plans", "todos", str(_sn), "1", str(_srow))
+# one plan runs at a time: whichever plan this suite left active steps aside so this one can be it
+_was_active = plans.active(root, "default")
+if _was_active:
+    plans.park(root, _was_active[0], "making room for the stall check", AT, source="web", track="default")
+check("the stalling plan is the active one", plans.activate(root, _sn, AT, source="web", track="default")[0], True)
+check("the plan is not stalled while its row can be started", plans.stall(root, "default"), "")
+j("todos", "block", str(_srow), "the rig batch has to run first")
+_said = plans.stall(root, "default")
+check("with every row held, the stall names the plan, the phase, the count, the row and its condition",
+      (f"plan {_sn} cannot advance" in _said, "its one to-do" in _said, "The held phase" in _said,
+       f"to-do {_srow} is set aside" in _said, "the rig batch has to run first" in _said),
+      (True, True, True, True, True))
+j("todos", "unblock", str(_srow))
+check("and it stops saying so the moment something can be started", plans.stall(root, "default"), "")
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
