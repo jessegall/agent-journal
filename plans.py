@@ -63,6 +63,19 @@ MESSAGES = {
     "stall_empty": "plan {n} phase {p}, {title}, is current and has no to-dos: break it down with `journal todos add` "
                    "and `journal plans todos {n} {p} <numbers>`",
     "stall_draft": "plan {n} is a draft: its to-dos wait until the user approves it in the viewer",
+    # THE ONE REASON THAT MATTERS WAS THE ONE NOT NAMED. A current phase whose rows all exist but are
+    # every one of them held fell through to the generic "nothing to pick up" tally, where the plan was
+    # invisible — reported from another project against 1.141.0.
+    "stall_held": "plan {n} cannot advance: {count} in phase {p}, {title}, {verb} held — {rows:; }[; {more}]",
+    "stall_count_one": "its one to-do",
+    "stall_count_many": "all {n} to-dos",
+    "stall_more": "`journal todo` shows the rest",
+    "stall_row_blocked": "to-do {n} is set aside ({why})",
+    "stall_row_asking": "to-do {n} waits on your answer",
+    "stall_row_after": "to-do {n} waits on to-do {nums:, }",
+    "stall_row_assigned": "to-do {n} is held by an agent still working",
+    "stall_row_reported": "to-do {n} is reported finished, yours to close with `journal todos done {n}`",
+    "stall_row_other": "to-do {n} cannot be started",
     "stall_parked": "plan {n} is parked: {why}. Its to-dos wait until it is picked up again — `journal plans activate {n}`",
     "continue_user": "only the user continues a plan past a checkpoint: they do it in the viewer",
     "no_checkpoint": "plan {n} is not stopped at a checkpoint",
@@ -447,6 +460,10 @@ def order(root: Path, track: str, items: list[dict]) -> list[tuple[int, dict]]:
     return out
 
 
+#: how many held rows a stalled plan names before it points at the list instead
+STALL_ROWS = 3
+
+
 def stall(root: Path, track: str) -> str:
     """Why the active plan gives auto nothing to pick up: a checkpoint, or a current phase with no to-dos; else ""."""
     got = active(root, track)
@@ -464,7 +481,42 @@ def stall(root: Path, track: str) -> str:
     if held:
         return say("stall_checkpoint", n=n, p=held["p"], title=held["title"])
     now = current(plan, rows)
-    return say("stall_empty", n=n, p=now["p"], title=now["title"]) if not now["todos"] else ""
+    if not now["todos"]:
+        return say("stall_empty", n=n, p=now["p"], title=now["title"])
+    # THE PLAN GIVES AUTO NOTHING WHEN NO REACHABLE PHASE HAS A READY ROW. `order` is the wrong question
+    # to ask here: it decides what auto may take by phase and priority, and a blocked row is still in it.
+    # Readiness is what decides whether anything can actually start.
+    open_rows = todo.open_items(root, track)
+    can_start = {t["n"] for t in todo.ready(root, track)}
+    if any(rank == 0 and t["n"] in can_start for rank, t in order(root, track, open_rows)):
+        return ""
+    member = membership(root, track)
+    held = [t for t in open_rows if member.get(t["n"]) == (n, now["p"])]
+    if not held:
+        return ""
+    # a long phase would run the line away: name the first few and point at the list for the rest
+    shown = held[:STALL_ROWS]
+    return say("stall_held", n=n, p=now["p"], title=now["title"],
+               count=say("stall_count_one") if len(held) == 1 else say("stall_count_many", n=len(held)),
+               verb="is" if len(held) == 1 else "are",
+               rows=[_why_held(root, track, t) for t in shown],
+               more=say("stall_more") if len(held) > len(shown) else None)
+
+
+def _why_held(root: Path, track: str, t: dict) -> str:
+    """Why this one row cannot be started, in the order that decides what happens to it next."""
+    n = t["n"]
+    if t.get("asks") and not t.get("answer"):
+        return say("stall_row_asking", n=n)
+    if t.get("reported"):
+        return say("stall_row_reported", n=n)
+    if t.get("assigned"):
+        return say("stall_row_assigned", n=n)
+    if t.get("blocked"):
+        return say("stall_row_blocked", n=n, why=t["blocked"])
+    if nums := todo.waiting_on(root, track, t):
+        return say("stall_row_after", n=n, nums=nums)
+    return say("stall_row_other", n=n)
 
 
 def proceed(root: Path, n: int, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:

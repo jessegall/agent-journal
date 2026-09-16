@@ -122,6 +122,18 @@ check("and the version being served, so an open page can reload when it changes"
 check("environments come newest activity first", [e["last_active"] for e in data["environments"]],
       sorted((e["last_active"] for e in data["environments"]), reverse=True))
 check("a project that is current says nothing about an update", data["update"], None)
+# THE PAGE MUST NEVER WAIT ON THE NETWORK. This was reported from the field: /api/overview called the
+# refresh, so one poll in every fifteen minutes paid a round trip inside its own response, and on a
+# machine that cannot reach the repository quickly the home just sat there loading.
+import update as _update  # noqa: E402
+_fetched = []
+_real_fetch = _update._fetch
+_update._fetch = lambda url, timeout=3.0: _fetched.append(url)
+try:
+    get("/api/overview")
+    check("the overview reads the cached answer and makes no request of its own", _fetched, [])
+finally:
+    _update._fetch = _real_fetch
 # the upstream answer is cached on disk and the suites never reach the network: a cache naming a
 # newer version is exactly what a real project that has fallen behind looks like
 (root / "runtime").mkdir(parents=True, exist_ok=True)
@@ -942,6 +954,9 @@ state.put(root, _agents.SEEN, {"alpha": {"abc123def": int(time.time()) - 47 * 60
 _quiet = [a for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"]
 check("one that never finished is still listed after the old 30-minute window, marked quiet",
       [(a["state"], a["working"], a["quiet"]) for a in _quiet], [("quiet", False, True)])
+# the viewer cuts the home strip at an hour, so it needs the quiet age as a number, not as words
+check("and it says how long it has been quiet, in seconds, so a page can cut on it",
+      [a["quiet_secs"] > 45 * 60 for a in _quiet], [True])
 state.put(root, _agents.SEEN, {"alpha": {"abc123def": int(time.time())}})
 import install as _install  # noqa: E402
 check("SubagentStop is wired, so a finished subagent is known the moment it stops", "SubagentStop" in _install.EVENTS, True)

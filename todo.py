@@ -105,6 +105,7 @@ MESSAGES = {
     "after_cycle": "that is a cycle: {path: → } — a list where each waits on the next can never be worked",
     "after_set": "to-do {n} waits on {nums:, }{tail}",
     "after_plan": "plan {p}",
+    "fact_plan": "plan {n}, phase {p}",
     "after_plan_missing": "there is no plan {p} on `{track}`",
     "after_plan_left": "; plan {p} is not finished yet, and it becomes ready when that plan is done",
     "mentions": "\n  the brief mentions {refs:, } and this row records no dependency. If it must wait for "
@@ -1774,6 +1775,8 @@ def facts_text(root: Path, track: str, t: dict, short_refs: bool = False, by_n: 
     if t.get("doc"):
         import docs as docs_mod
         out.append(say("fact_doc", label=docs_mod.ref_label(root, str(t["doc"]), short=short_refs)))
+    if where := _plan_of(root, track, t["n"]):
+        out.append(say("fact_plan", n=where["n"], p=where["phase"]))
     return " · ".join(out)
 
 

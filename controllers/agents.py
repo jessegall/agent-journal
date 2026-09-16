@@ -55,6 +55,7 @@ class AgentsController(Controller):
                         "working": working, "state": "active" if working else "finished" if done else "quiet",
                         "quiet": quiet,
                         "age_text": agents.age(root, env, agent), "parent": parent[:8],
+                        "quiet_secs": int(time.time() - float((agents.seen(root).get(env) or {}).get(agent, 0) or 0)) if quiet else None,
                         "ended_age": agents.done_age(root, env, agent) if done else "",
                         "ended_secs": int(since_done) if done else None,
                         "model": transcript.last_model(transcript.find(root.parent, f"agent-{agent}"))})
