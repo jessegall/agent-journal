@@ -362,10 +362,22 @@ def create(root: Path, *names: str, at: str = "") -> None:
     if not isinstance(held, dict):
         held = data["tracks"] = {}
     before = len(held)
+    fresh = []
     for name in names:
+        if name and name not in held:
+            fresh.append(name)
         if name:
             held.setdefault(name, {"at": at})
     if len(held) != before:
+        # A NEW ENVIRONMENT IS WORKED FROM THE VIEWER. The user asked for this on by default; the
+        # default lives HERE, where an environment starts, rather than in `viewer_first`'s fallback —
+        # flipping that would turn it on for every environment in every project that has one already,
+        # including terminal-only ones, which is not what "by default" was asked for.
+        got = data.get(VIEWER_FIRST)
+        got = got if isinstance(got, dict) else {}
+        for name in fresh:
+            got.setdefault(name, True)
+        data[VIEWER_FIRST] = got
         state._write(state.record_file(root), data)
 
 
