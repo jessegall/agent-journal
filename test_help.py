@@ -467,7 +467,7 @@ _core = _skill_files[0].read_text()
 _focused = sorted(f.parent.name for f in _skill_files[1:])
 check("there is a focused skill per part, beside the core one", _focused,
       ["journal-agents", "journal-docs", "journal-memory", "journal-messages", "journal-plans", "journal-questions",
-       "journal-todos"])
+       "journal-reports", "journal-todos"])
 check("the core skill names every focused skill, so an agent knows when to load each",
       [n for n in _focused if f"`{n}`" not in _core], [])
 import re as _re  # noqa: E402

@@ -128,7 +128,7 @@ def _executable(root: Path) -> set[str]:
 #: first written is one that silently goes missing on the next clone, and nothing about a
 #: missing skill looks broken: the agent simply never learns why any of this is here.
 #: THE SKILLS SHIP WITH THE PACKAGE: the core `journal` skill every session loads, and a focused
-#: skill per part (to-dos, questions, messages, pins and reminders, docs, subagents, plans) that loads
+#: skill per part (to-dos, questions, messages, pins and reminders, docs, subagents, plans, reports) that loads
 #: when its part comes up. (An older second skill, `journal-handoff`, went with its machinery.)
 SKILLS = (("skill", ".claude/skills/journal"),
           ("skills/journal-todos", ".claude/skills/journal-todos"),
@@ -137,7 +137,8 @@ SKILLS = (("skill", ".claude/skills/journal"),
           ("skills/journal-memory", ".claude/skills/journal-memory"),
           ("skills/journal-docs", ".claude/skills/journal-docs"),
           ("skills/journal-agents", ".claude/skills/journal-agents"),
-          ("skills/journal-plans", ".claude/skills/journal-plans"))
+          ("skills/journal-plans", ".claude/skills/journal-plans"),
+          ("skills/journal-reports", ".claude/skills/journal-reports"))
 
 #: WHERE THE PACKAGE'S OWN RULES ARE WRITTEN, besides the block the hook injects. The hook
 #: reaches Claude Code and nothing else; these rules bind every agent, and an agent that
