@@ -52,6 +52,7 @@ def sweep(root: Path, track: str, now: datetime | None = None) -> dict[str, int]
                     continue
                 if key == "inbox":
                     shutil.rmtree(inbox.files_dir(root, track, n), ignore_errors=True)
+                    inbox.transcript_path(root, track, n).unlink(missing_ok=True)
                 item.update({k: (type(v)(v) if isinstance(v, list) else v) for k, v in fields.items()})
                 item["removed"] = stamp
                 gone += 1

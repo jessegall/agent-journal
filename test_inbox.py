@@ -422,5 +422,28 @@ check("an unknown kind is refused, naming what there is",
       (code, "no message kind called" in out, "transcript" in out), (1, True, True))
 check("and the refused one wrote nothing", len(stored()), len(_rows))
 
+# ------------------------------------------------- a transcript is its own file, and not a doc
+# "It's not a document; it's its own thing... It's an MD file, but it says transcript." The doc
+# catalogue scans `root.parent / docs_dir`; a transcript lives under the environment, so it is
+# invisible to it structurally rather than by a filter anyone has to keep in step.
+import docs as _docs  # noqa: E402
+
+j("switch", "default")
+j("messages", "add", "Jesse: the loader double-fetches on every open. Sam: fix it this week.", "--kind=transcript")
+_tn = len(stored())
+_tpath = _inbox.transcript_path(d / ".journal", "default", _tn)
+check("a declared transcript is written as its own .md", _tpath.is_file(), True)
+_head, _, _body = _tpath.read_text().partition("---\n")[2].partition("\n---\n")
+check("its frontmatter says what it is, and which message carried it",
+      ("kind: transcript" in _head, f"message: {_tn}" in _head), (True, True))
+check("and the transcript itself is the body", "the loader double-fetches" in _body, True)
+check("the document catalogue does not list it",
+      [x for x in _docs.all_docs(d / ".journal") if "loader double-fetches" in str(x)], [])
+check("and it is not inside the catalogue's tree at all",
+      str(_tpath).startswith(str(_docs.folder(d / ".journal"))), False)
+j("messages", "add", "an ordinary message writes no transcript")
+check("an ordinary message writes none",
+      _inbox.transcript_path(d / ".journal", "default", len(stored())).exists(), False)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

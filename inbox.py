@@ -211,6 +211,7 @@ def _became(m: dict) -> list[str]:
 
 
 FILES = "message-files"
+TRANSCRIPTS = "transcripts"
 FILES_LIMIT = 20 * 1024 * 1024
 #: A message may declare WHAT IT IS when it is sent, and that word is the instruction: the agent
 #: infers nothing from size or extension. An ordinary message declares nothing and carries no kind.
@@ -219,6 +220,29 @@ MESSAGE_KINDS = ("transcript",)
 
 def files_dir(root: Path, track: str | None, n: int) -> Path:
     return state.env_dir(root, track or state.current_track(root)) / FILES / str(n)
+
+
+def transcripts_dir(root: Path, track: str | None = None) -> Path:
+    return state.env_dir(root, track or state.current_track(root)) / TRANSCRIPTS
+
+
+def transcript_path(root: Path, track: str | None, n: int) -> Path:
+    return transcripts_dir(root, track) / f"{n}.md"
+
+
+def _write_transcript(root: Path, track: str | None, n: int, at: str, body: str) -> None:
+    """A transcript is its own FILE KIND: an .md that says so in its frontmatter.
+
+    It is not a doc. `docs.folder()` is `root.parent / docs_dir` — a tree outside the record
+    entirely — so a file under `environments/<env>/transcripts/` is invisible to the catalogue
+    structurally, not by a filter somebody has to keep in step. Nothing lists it; it is reached
+    from the message that carried it.
+    """
+    path = transcript_path(root, track, n)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    meta = {"kind": "transcript", "message": n, "at": at}
+    head = ["---"] + [f"{k}: {v}" for k, v in meta.items()] + ["---", ""]
+    path.write_text("\n".join(head) + body.strip() + "\n")
 
 
 def _file_name(name: str, taken: set) -> str:
@@ -277,6 +301,16 @@ def add(root: Path, text: str, at: str, source: str = "cli", track: str | None =
             held.mkdir(parents=True, exist_ok=True)
             for name, data in got:
                 (held / name).write_bytes(data)
+        if kind == "transcript":
+            # pasted or attached, the transcript itself is what goes in the file
+            carried = ""
+            for _, data in got:
+                try:
+                    carried = data.decode("utf-8")
+                    break
+                except UnicodeDecodeError:
+                    continue
+            _write_transcript(root, track, n, at, carried or text)
     return True, say("added", n=n, waiting=len(unprocessed(root, track)))
 
 

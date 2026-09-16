@@ -1261,6 +1261,19 @@ check("a pruned message takes its files with it, and leaves every other message'
 check("and the record keeps its place, marked removed",
       (bool(_inbox._all(root, "beta")[_pruned_n - 1].get("removed")), "files" in _inbox._all(root, "beta")[_pruned_n - 1]),
       (True, False))
+# A PASTED TRANSCRIPT CARRIES NO ATTACHMENT, so its file used to sit behind a guard that only fired
+# when `files` was set -- which would have orphaned exactly the transcripts nobody attached.
+_inbox.add(root, "Jesse: pasted, with nothing attached to it.", "2020-01-01T00:00:00+00:00",
+           track="beta", kind="transcript")
+_tr_n = len(_inbox._all(root, "beta"))
+_tr_path = _inbox.transcript_path(root, "beta", _tr_n)
+_msgs = _inbox._all(root, "beta")
+_msgs[_tr_n - 1]["processed"] = "2020-01-01T00:00:00+00:00"
+_inbox._put(root, _msgs, "beta")
+check("a pasted transcript is on disk, though it has no attachment",
+      (_tr_path.is_file(), bool(_msgs[_tr_n - 1].get("files"))), (True, False))
+_retention.prune(root, "beta")
+check("and pruning the message takes the transcript with it", _tr_path.exists(), False)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
