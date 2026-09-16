@@ -355,5 +355,14 @@ check("with every row held, the stall names the plan, the phase, the count, the 
 j("todos", "unblock", str(_srow))
 check("and it stops saying so the moment something can be started", plans.stall(root, "default"), "")
 
+# ─────────── the confirmation says the state it stored ───────────
+# `plans add --preparing` announced "(draft)" while storing `preparing` — wrong at the one moment the
+# writer reads it. At the tail, where one more plan shifts no other check's numbering.
+code, out = j("plans", "add", "a plan being shaped", "--goal=to be decided with the user", "--preparing")
+check("a plan being written says so, and says what makes it approvable",
+      (code, "(preparing)" in out, "plans ready" in out, "(draft)" in out), (0, True, True, False))
+code, out = j("plans", "add", "an ordinary draft", "--goal=it is ready to be approved")
+check("and an ordinary one still reads as a draft", (code, "(draft)" in out, "plans ready" in out), (0, True, False))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
