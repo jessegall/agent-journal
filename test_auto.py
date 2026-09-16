@@ -319,6 +319,11 @@ s.journal("todo", "ask", "3", "keep or drop the abstract Wizard factory?")
 label, text = s.stop()
 check("every remaining to-do waits on the user, and nothing is asked of the agent",
       ("nothing on the list can be picked up" in label, "what each waits on" in text), (True, True))
+# ASKING IS NOT WAITING. The user, after I idled on an open question: "auto mode must tell the agent
+# that it must continue when it waits for a question" — the hold listed the question as a reason
+# nothing could be started, which reads as permission to stop.
+check("and the hold says a question is not a stop",
+      ("NOT A STOP" in text, "asking is not waiting" in text), (True, True))
 label, text = s.stop()
 check("and not repeated for the same state", (label, text), ("", ""))
 s.say("None. And drop the factory.", "user")

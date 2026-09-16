@@ -94,6 +94,12 @@ options. Make it under the rules and pins that stand, write it in `journal work 
 can be reviewed and reversed, and carry on. "I would have asked with auto off" is not a
 reason to ask; it is the case auto exists for.
 
+**A QUESTION YOU ASKED IS NOT A REASON TO STOP.** `journal next` and the auto hold list an open
+question among the reasons nothing on the LIST can be started — that is about rows, never about
+you. A plan being shaped, a doc, anything already open: carry on with whatever does not depend
+on the answer, and the next stop tells you when it lands. Auto exists precisely so the user can
+be away; idling until they return is the one thing it was turned on to prevent.
+
 **Stop on a to-do in two cases, and no others.** These are about when to STOP working a
 row, not about whether a question may be filed: filing one is always allowed, auto or not
 (the `journal-questions` skill).
