@@ -3072,7 +3072,7 @@ const EnvHome = {
         </div>
       </div>
       <section class=home-section>
-        <div class=home-head><h2>Needs you</h2><span>{{ queue.length + (held ? 1 : 0) ? (queue.length + (held ? 1 : 0)) + ' waiting' : 'clear' }}</span>
+        <div class=home-head><h2>Waiting on you</h2><span>{{ queue.length + (held ? 1 : 0) ? (queue.length + (held ? 1 : 0)) + ' waiting' : 'clear' }}</span>
           <span v-if="queue.length + (held ? 1 : 0) > SLOTS" class=home-hint>{{ queue.length + (held ? 1 : 0) - SLOTS }} more — scroll the list</span></div>
         <div class=needs-slot>
           <div v-if="held" class=needs-row @click="goPlan">
@@ -3087,7 +3087,7 @@ const EnvHome = {
             <span class=needs-meta>{{ queueMeta(it) }}</span>
             <button type=button class=needs-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(it)"><Icon name="close"/></button>
           </div>
-          <div v-if="!queue.length && !held" class=needs-empty>Nothing needs you.</div>
+          <div v-if="!queue.length && !held" class=needs-empty>Nothing is waiting on you.</div>
         </div>
       </section>
       <section class=home-section>
