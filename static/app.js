@@ -955,6 +955,7 @@ const ActionBar = {
       const a = current.value;
       if (!a || s.sending) return;
       let payload = { ...s.values };
+      const typed = { ...s.values };
       if (a.only) {
         payload = Object.fromEntries(Object.entries(payload).filter(([k, v]) => v !== initial(a, k)));
         if (!Object.keys(payload).length) { s.error = "Nothing was changed."; return; }
@@ -963,6 +964,12 @@ const ActionBar = {
       s.sending = true;
       s.error = null;
       try {
+        // `also` is a request that goes FIRST and is described by the action: the plan-with-me action
+        // uses it to create the placeholder plan before the message that asks for it is sent
+        if (a.also) {
+          const extra = a.also(typed);
+          if (extra) await send(extra.method || "POST", extra.url, extra.body);
+        }
         const body = await send(a.method, a.url, payload);
         if (!props.open) s.open = "";
         if (props.done) props.done(body, a);
@@ -2275,7 +2282,7 @@ const DocTabs = {
     </div>`,
 };
 
-const PLAN_STATUS = { draft: "Draft", active: "Active", parked: "Parked", done: "Done", abandoned: "Abandoned" };
+const PLAN_STATUS = { preparing: "Being written", draft: "Draft", active: "Active", parked: "Parked", done: "Done", abandoned: "Abandoned" };
 
 const PLAN_LIST = {
   groups: [{ key: "active", label: "Active", kind: "progress", match: (p) => p.status === "active" },
@@ -2361,6 +2368,9 @@ const Plans = {
       fields: [{ name: "wish", label: "What do you want to achieve?", kind: "area",
                  placeholder: "In your own words, as rough as you like. The agent asks back until the goal is clear." }],
       note: "The agent asks you questions, each with answers to pick or your own words, then drafts the plan for you to approve.",
+      // the plan appears the instant you ask: a placeholder the agent then writes into, so the request
+      // is visibly in flight rather than nothing until the questions are done
+      also: ({ wish }) => ({ url: api.value, body: { title: "To be determined", goal: (wish || "").trim() || "to be shaped with the agent", preparing: true } }),
       shape: ({ wish }) => ({ files: [], text: `Plan with me: I want to start a new plan on this environment. What I want to achieve, roughly: ${(wish || "").trim() || "(not sure yet, help me find it)"}\n\nShape the goal with me first. Ask me one question at a time with \`journal questions add "<question>" --option="<answer>" --option="<answer>"\`, so I can pick an answer or write my own, and keep going until the goal is clear. Then draft the plan with \`journal plans add\`, its phases and their to-dos, and tell me it is ready to approve.` }),
     }, {
       label: "Write it myself", method: "POST", url: api.value, submit: "Save draft", leave: true,
@@ -2477,7 +2487,8 @@ const Plans = {
             <h1 class=plan-title>{{ item.data.title }}</h1>
             <p class=plan-goal><span class=muted>Goal — </span>{{ item.data.goal }}</p>
           </div>
-          <div class=plan-progress>
+          <!-- a plan being written has no phases yet, so a 0 of 0 band measures nothing and says nothing -->
+          <div v-if="item.data.status !== 'preparing'" class=plan-progress>
             <div class=plan-progress-text>
               <div class=plan-progress-line><b>{{ progress.phases }}</b><span class=muted>· {{ progress.todos }}</span></div>
               <ProgressBar :rows="planTodos"/>
@@ -2515,7 +2526,7 @@ const Plans = {
             </div>
             <p v-if="!ph.todos.length" class="muted phase-empty">No to-dos yet</p>
           </section>
-          <p v-if="!item.data.phases.length" class=muted>No phases yet.</p>
+          <p v-if="!item.data.phases.length" class=muted>{{ item.data.status === 'preparing' ? 'The agent is writing this plan; its phases are being added.' : 'No phases yet.' }}</p>
           <section v-if="cites.length" class=plan-cites>
             <h2 class=col-title>What this plan cites</h2>
             <div class=cites-list>
@@ -3165,10 +3176,10 @@ const EnvHome = {
     // EVERY LIVE PLAN IS SHOWN, not only the one in progress. One plan is worked at a time, but a
     // parked one, a draft waiting to be approved and a finished one waiting to be acknowledged are all
     // still live — and each used to be invisible here the moment another took the single slot.
-    const LIVE_PLAN = { active: 0, parked: 1, draft: 2, done: 3 };
+    const LIVE_PLAN = { active: 0, parked: 1, preparing: 2, draft: 3, done: 4 };
     const livePlans = computed(() => (plans.data || [])
       .filter((p) => p.status === "active" || p.status === "parked" || p.status === "draft"
-                     || (p.status === "done" && !p.acknowledged))
+                     || p.status === "preparing" || (p.status === "done" && !p.acknowledged))
       .sort((a, b) => (LIVE_PLAN[a.status] - LIVE_PLAN[b.status]) || a.n - b.n));
     // each plan's own to-dos, so every bar measures the same thing the plan page does
     const planDetails = reactive({});
@@ -3229,6 +3240,8 @@ const EnvHome = {
     const queueMeta = (it) => (SHELL.wide ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
     // one card per live plan: what it is, how far it has gone, and the single act it offers
     const PLAN_CARD = {
+      // a plan the agent is still writing: it is visible at once, and there is nothing to press yet
+      preparing: { ref: "being written", act: "" },
       active: { ref: "working", act: "" },
       parked: { ref: "parked", act: "Resume" },
       draft: { ref: "ready to start", act: "Start" },
@@ -3250,10 +3263,12 @@ const EnvHome = {
         progress: p.status === "draft"
           ? `${p.phases_total} ${p.phases_total === 1 ? "phase" : "phases"}${rows.length ? ` · ${rows.length} to-dos` : ""}`
           : `${phases}${rows.length ? ` · ${done} of ${rows.length} to-dos` : ""}`,
-        why: [p.status === "parked" ? p.parked_why : "", waiting ? "one plan at a time" : ""].filter(Boolean).join(" · "),
+        why: [p.status === "parked" ? p.parked_why : "",
+              p.status === "preparing" ? "the agent is adding its phases" : "",
+              waiting ? "one plan at a time" : ""].filter(Boolean).join(" · "),
         act: waiting ? "" : shape.act,
         run: () => planAct(p, PLAN_VERB[p.status]),
-        bar: p.status !== "draft",
+        bar: p.status !== "draft" && p.status !== "preparing",
       };
     }));
     // the second line: when it was, and the to-do it serves — the Finished heading says it is finished, so the line does not
