@@ -129,6 +129,27 @@ function refHref(ref, env) {
   return null;
 }
 
+//: the route segment each peekable resource lives under, so a reference can be read back into a panel
+const REF_ROUTES = { todos: "todo", messages: "message", questions: "question", suggestions: "suggestion",
+                     work: "work", plans: "plan", reports: "report", docs: "doc" };
+
+// A reference inside a panel opens that resource OVER the page, never navigating away from what you are reading.
+// One funnel for every chip: it reads the href the chip already carries, so nothing needs a second source of truth.
+// A reference whose kind has no panel — a skill, a session, a commit — is left alone and still navigates.
+function openRef(event, href) {
+  if (!href || event.metaKey || event.ctrlKey || event.shiftKey || event.button) return;
+  const parts = String(href).replace(/^#\//, "").split("/");
+  // #/docs/3 reads as ["docs", "3"]; #/env/<env>/todos/5 carries the environment first
+  const tail = parts[0] === "env" ? parts.slice(2) : parts;
+  const subagent = tail[0] === "agents" && tail[1] === "subagent";
+  const kind = subagent ? "subagent" : REF_ROUTES[tail[0]];
+  const n = subagent ? tail[2] : tail[1];
+  if (!kind || !n || !PEEK[kind]) return;
+  event.preventDefault();
+  OVERLAY.kind = kind;
+  OVERLAY.n = subagent ? n : Number(n);
+}
+
 // a pin's or rule's meta is the CLI's own " · " line; its age and doc citation are read back out of it
 // the short age a fixed 52px column holds: "27 minutes ago" is 27m, "3h ago" 3h, "16d ago" 2w
 function shortAge(age) {
@@ -872,7 +893,7 @@ const FromMessages = {
   template: `
     <div v-if="rows && rows.length" class=from-messages>
       <p class=section-label>From your message</p>
-      <a v-for="m in rows" :key="m.n" class=chip :href="'#/env/' + env + '/messages/' + m.n" :title="m.excerpt">Message #{{ m.n }}</a>
+      <a v-for="m in rows" :key="m.n" class=chip :href="'#/env/' + env + '/messages/' + m.n" @click="$openRef($event, '#/env/' + env + '/messages/' + m.n)" :title="m.excerpt">Message #{{ m.n }}</a>
     </div>`,
 };
 
@@ -1466,7 +1487,7 @@ const QuestionPanel = {
           <dt>Status</dt><dd><StatusIcon :kind="questionKind(item.data)"/>{{ item.data.status === 'open' ? 'Open' : item.data.status === 'answered' ? 'Answered' : 'Withdrawn' }}</dd>
           <dt>About</dt><dd>
             <template v-for="l in item.data.links" :key="l.ref">
-              <a v-if="$refHref(l.ref, env)" :href="$refHref(l.ref, env)" class=chip>{{ l.label }}</a>
+              <a v-if="$refHref(l.ref, env)" :href="$refHref(l.ref, env)" class=chip @click="$openRef($event, $refHref(l.ref, env))">{{ l.label }}</a>
               <span v-else class=chip>{{ l.label }}</span>
             </template>
             <span v-if="!item.data.links.length" class=muted>—</span>
@@ -1732,8 +1753,8 @@ const WorkPanel = {
           <dt>Started</dt><dd>{{ item.data.age || '—' }}</dd>
           <dt v-if="item.data.ended">Ended</dt><dd v-if="item.data.ended">{{ item.data.ended_age || 'just now' }}</dd>
           <dt>Status</dt><dd>{{ item.data.ended ? 'Ended' : item.data.awaiting ? 'Waiting on ' + item.data.awaiting : 'Open' }}</dd>
-          <template v-if="item.data.todo"><dt>To-do</dt><dd><a class=chip :href="'#/env/' + env + '/todos/' + item.data.todo">To-do {{ item.data.todo }}</a></dd></template>
-          <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a></dd></template>
+          <template v-if="item.data.todo"><dt>To-do</dt><dd><a class=chip :href="'#/env/' + env + '/todos/' + item.data.todo" @click="$openRef($event, '#/env/' + env + '/todos/' + item.data.todo)">To-do {{ item.data.todo }}</a></dd></template>
+          <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc" @click="$openRef($event, '#/docs/' + item.data.doc)">Doc {{ item.data.doc }}</a></dd></template>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'work' + item.data.n + (item.data.ended || '')"/>
         <div v-if="item.data.files && item.data.files.length">
@@ -1813,12 +1834,12 @@ const SuggestionPanel = {
           <dt>Suggested</dt><dd>{{ item.data.age || 'just now' }}</dd>
           <dt>About</dt><dd>
             <template v-for="l in item.data.links" :key="l.ref">
-              <a v-if="$refHref(l.ref, env)" :href="$refHref(l.ref, env)" class=chip>{{ l.label }}</a>
+              <a v-if="$refHref(l.ref, env)" :href="$refHref(l.ref, env)" class=chip @click="$openRef($event, $refHref(l.ref, env))">{{ l.label }}</a>
               <span v-else class=chip>{{ l.label }}</span>
             </template>
             <span v-if="!item.data.links.length" class=muted>—</span>
           </dd>
-          <template v-if="item.data.became"><dt>Became</dt><dd><a class=chip :href="$refHref(item.data.became, env)">{{ item.data.became.replace('todo:', 'To-do ') }}</a></dd></template>
+          <template v-if="item.data.became"><dt>Became</dt><dd><a class=chip :href="$refHref(item.data.became, env)" @click="$openRef($event, $refHref(item.data.became, env))">{{ item.data.became.replace('todo:', 'To-do ') }}</a></dd></template>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'suggestion' + item.data.n + item.data.status"/>
         <div v-if="item.data.declined" class=note>Declined: {{ item.data.declined }}</div>
@@ -2157,7 +2178,7 @@ const PlanPanel = {
           <dt>Type</dt><dd>Plan — ends with the work</dd>
           <dt>Status</dt><dd>{{ PLAN_STATUS[item.data.status] }}, {{ item.data.phases_done }} of {{ item.data.phases_total }} phases</dd>
           <dt>Goal</dt><dd>{{ item.data.goal || '—' }}</dd>
-          <template v-if="item.data.from_doc"><dt>From</dt><dd><a class=chip :href="'#/docs/' + item.data.from_doc">Doc {{ item.data.from_doc }}</a></dd></template>
+          <template v-if="item.data.from_doc"><dt>From</dt><dd><a class=chip :href="'#/docs/' + item.data.from_doc" @click="$openRef($event, '#/docs/' + item.data.from_doc)">Doc {{ item.data.from_doc }}</a></dd></template>
           <dt>{{ item.data.status === 'done' ? 'Ended' : 'Drafted' }}</dt><dd>{{ item.data.age || 'just now' }}</dd>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'plan' + item.data.n + item.data.status"/>
@@ -2406,9 +2427,9 @@ const ReportPanel = {
         <dl class=props>
           <dt>Type</dt><dd>Report — ages out<template v-if="!item.data.archived && item.data.ages_out_in !== null && item.data.ages_out_in !== undefined"> in {{ item.data.ages_out_in }} {{ item.data.ages_out_in === 1 ? 'day' : 'days' }}</template></dd>
           <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
-          <dt>For</dt><dd><a v-if="item.data.about && $refHref(item.data.about, env)" :href="$refHref(item.data.about, env)" class=chip>{{ item.data.about_label }}</a><span v-else class=muted>—</span></dd>
+          <dt>For</dt><dd><a v-if="item.data.about && $refHref(item.data.about, env)" :href="$refHref(item.data.about, env)" class=chip @click="$openRef($event, $refHref(item.data.about, env))">{{ item.data.about_label }}</a><span v-else class=muted>—</span></dd>
           <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
-          <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a></dd></template>
+          <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc" @click="$openRef($event, '#/docs/' + item.data.doc)">Doc {{ item.data.doc }}</a></dd></template>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
         <div class="md prose" v-html="$md(item.data.body)"></div>
@@ -4409,5 +4430,6 @@ const app = createApp(App);
 app.config.globalProperties.$md = renderMarkdown;
 app.config.globalProperties.$human = humanSize;
 app.config.globalProperties.$refHref = refHref;
+app.config.globalProperties.$openRef = openRef;
 app.config.globalProperties.$linkify = linkify;
 app.mount("#app");
