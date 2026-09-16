@@ -3865,7 +3865,8 @@ const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "" },
   { key: "inbox", label: "Messages", views: ["Inbox", "Questions", "Suggestions"], path: "messages", count: ["questions", "suggestions"] },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
-  { key: "docs", label: "Documents", views: ["EnvDocs", "Files", "Reports", "Plans"], path: "docs", count: "docs" },
+  // documents are docs AND reports, each counted only while it is still live
+  { key: "docs", label: "Documents", views: ["EnvDocs", "Files", "Reports", "Plans"], path: "docs", count: ["docs", "reports"] },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 
