@@ -58,7 +58,8 @@ class WorkController(Controller):
                 "parked": (w.parked or {}).get("why") or "",
                 "parked_at": (w.parked or {}).get("at") or "",
                 "parked_age": pins.age((w.parked or {}).get("at") or "") if (w.parked or {}).get("at") else "",
-                "todo": t["n"] if t else None, "doc": (t.get("doc") or None) if t else None,
+                "todo": t["n"] if t else None, "todo_title": (t.get("title") or "") if t else "",
+                "doc": (t.get("doc") or None) if t else None,
                 # each note carries when it was written, through the same age() every other row uses
                 "notes": [{"at": x.get("at", ""), "age": pins.age(x.get("at", "")) if x.get("at") else "",
                            "text": x.get("text", "")} for x in w.notes],
