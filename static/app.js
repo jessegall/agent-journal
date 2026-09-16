@@ -3122,13 +3122,12 @@ const EnvHome = {
         </a>
         <p v-if="!currentWork && !workLines.length && !finishedLines.length" class=home-empty>No work is open.</p>
       </section>
-      <section class=home-section>
+      <section v-if="replies.length" class=home-section>
         <div class=home-head><h2>Replies to you</h2><span>{{ repliesNote }}</span></div>
         <div v-for="r in replies" :key="r.key" class=reply-line @click="r.open">
           <span class=reply-line-ask>{{ r.ask }}</span>
           <div class=reply-line-row><span :class="['reply-line-answer', {pending: !r.done}]">{{ r.done ? r.answer : (r.waitingOn ? 'Working on it — ' + r.waitingOn : 'Working on it') }}</span><span class=needs-meta>{{ r.ref }}</span></div>
         </div>
-        <p v-if="!replies.length" class=home-empty>Nothing unread from the agent.</p>
       </section>
     </div></div></div>
     <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>`,
