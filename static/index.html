@@ -650,6 +650,14 @@
   .quick-toast { animation: toast-in .2s cubic-bezier(.22, .7, .2, 1) both; }
   @keyframes panel-in { from { transform: translateX(16px); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes panel-out { from { transform: none; opacity: 1; } to { transform: translateX(22px); opacity: 0; } }
+  /* one element around the routed page, because a page component's own root is a fragment and a fragment cannot be animated */
+  .page-shell { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  /* a page settles in rather than snapping: keyed by route, so a page that renders at once never flashes twice */
+  .page-enter-active { transition: opacity .2s ease-out, transform .2s cubic-bezier(.2, .8, .2, 1); }
+  .page-enter-from { opacity: 0; transform: translateY(4px); }
+  .page-leave-active { transition: opacity .1s ease-in; }
+  .page-leave-to { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { .page-enter-active, .page-leave-active { transition: none; } }
   @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
   @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
   @keyframes quick-in { from { transform: translate(-50%, -8px) scale(.985); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }

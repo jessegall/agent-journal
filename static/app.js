@@ -4482,7 +4482,9 @@ const App = {
         </div>
       </aside>
       <main class=main>
-        <component :is="route.view" v-bind="route.params" :key="key"/>
+        <Transition name=page mode=out-in>
+          <div class=page-shell :key="key"><component :is="route.view" v-bind="route.params"/></div>
+        </Transition>
       </main>
       <Peek v-if="OVERLAY.kind && envName" :key="'overlay' + OVERLAY.kind + OVERLAY.n" :env="envName" :kind="OVERLAY.kind" :n="OVERLAY.n"
         :close="closeOverlay" :reloaded="reloadActivity"/>
