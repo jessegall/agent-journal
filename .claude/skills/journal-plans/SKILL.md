@@ -66,6 +66,14 @@ done, the agent does not start the next phase — the user looks, and continues 
 the viewer. Put one where the work would be expensive to undo, or where the next phase
 depends on something only the user can judge. Nothing else stops a plan.
 
+**A plan can arrive from a paste.** When the user pastes a transcript or a summary, anything
+in it that reads as a plan is DRAFTED, never activated: `plans add` leaves a draft, its
+to-dos wait, and the user approves it in the viewer — the same rule as any other plan, and
+the reason a paste may file to-dos on its own but not start a plan. Record which message it
+came from (`journal messages process <n> --part="<their words>" --became="plan <p>"`), so the
+plan page shows the words behind the proposal before the user approves it. The
+`journal-messages` skill says how a long paste is read.
+
 ## Who does what
 
 **Only the user activates a plan.** `journal plans activate` refuses from an agent, saying
