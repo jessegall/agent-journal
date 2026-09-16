@@ -114,6 +114,14 @@ class Continue(Resource):
     action = "proceed"
 
 
+class Park(Resource):
+    signature = "plans:park {n : a plan number} {why* : why it is set aside}"
+    casts = PLAN
+    writes = True
+    controller = CONTROLLER
+    action = "park"
+
+
 class Acknowledge(Resource):
     signature = "plans:acknowledge {n : a plan number}"
     casts = PLAN
@@ -138,4 +146,4 @@ class Link(Resource):
     action = "link"
 
 
-COMMANDS = (List, Show, Add, FromDoc, Phase, Todos, Activate, Continue, Acknowledge, Abandon, Link)
+COMMANDS = (List, Show, Add, FromDoc, Phase, Todos, Activate, Continue, Park, Acknowledge, Abandon, Link)

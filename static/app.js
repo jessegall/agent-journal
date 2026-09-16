@@ -2269,7 +2269,7 @@ const DocTabs = {
     </div>`,
 };
 
-const PLAN_STATUS = { draft: "Draft", active: "Active", done: "Done", abandoned: "Abandoned" };
+const PLAN_STATUS = { draft: "Draft", active: "Active", parked: "Parked", done: "Done", abandoned: "Abandoned" };
 
 const PLAN_LIST = {
   groups: [{ key: "active", label: "Active", kind: "progress", match: (p) => p.status === "active" },
