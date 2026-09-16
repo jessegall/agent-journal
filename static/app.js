@@ -3972,7 +3972,7 @@ const ActivityPanel = {
           :title="canComment ? 'Comment on this, with it quoted' : null"
           @click="commentOnSaid" @keydown.enter.prevent="commentOnSaid" @keydown.space.prevent="commentOnSaid">
           <span class=activity-said-head>Agent said</span>
-          <div class=activity-said-text>{{ data.agent.said }}</div>
+          <div class="activity-said-text md" v-html="$md(data.agent.said)"></div>
         </div>
         <div class=activity-list ref=list @mouseenter="hovered = true" @mouseleave="hovered = false">
           <TransitionGroup name=act>
