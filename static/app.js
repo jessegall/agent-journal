@@ -1402,8 +1402,8 @@ const TodoPanel = {
   },
   template: `
     <Panel :label=\"'To-do ' + n" :close="close" :onClose="onClose" :link="link">
-      <p v-if="item.error" class=error>{{ item.error }}</p>
-      <template v-else-if="item.data">
+      <FetchState :state="item"/>
+      <template v-if="item.data">
         <h2 class=p-title>{{ item.data.title }}</h2>
         <dl class=props>
           <dt>Status</dt><dd><StatusIcon :kind="todoStatus(item.data)"/>{{ STATUS_LABEL[todoStatus(item.data)] }}</dd>
@@ -1448,7 +1448,7 @@ const TodoPanel = {
             <component :is="e.work && e.kind !== 'commit' ? 'a' : 'div'" v-for="(e, i) in item.data.log" :key="i" class="sub log-row"
               :href="e.work && e.kind !== 'commit' ? '#/env/' + env + '/work/' + e.work : null" :title="e.work && e.kind !== 'commit' ? 'Open work ' + e.work : null">
               <span class=log-text><span class=muted>{{ LOG_KIND[e.kind] }} · {{ e.age || 'just now' }}</span>
-                <a v-if="e.kind === 'commit'" class="chip sha" :href="'#/env/' + env + '/commits/' + e.sha" :title="'What commit ' + e.sha.slice(0, 7) + ' covered'">{{ e.sha.slice(0, 7) }}</a><span v-if="e.text && e.kind !== 'started'" :class="{'sha-subject': e.kind === 'commit'}"> — <span v-html="$linkify(e.text)"></span></span></span>
+                <CommitChip v-if="e.kind === 'commit'" :env="env" :sha="e.sha"/><span v-if="e.text && e.kind !== 'started'" :class="{'sha-subject': e.kind === 'commit'}"> — <span v-html="$linkify(e.text)"></span></span></span>
               <a v-if="e.work && e.kind === 'commit'" class=log-work :href="'#/env/' + env + '/work/' + e.work">Work {{ e.work }}</a>
               <span v-else-if="e.work" class=log-work>Work {{ e.work }}</span>
             </component>
@@ -1495,16 +1495,13 @@ const QuestionPanel = {
   },
   template: `
     <Panel :label=\"'Question ' + n" :close="close" :onClose="onClose" :link="link">
-      <p v-if="item.error" class=error>{{ item.error }}</p>
-      <template v-else-if="item.data">
+      <FetchState :state="item"/>
+      <template v-if="item.data">
         <div class="md p-title" v-html="$md(item.data.text)"></div>
         <dl class=props>
           <dt>Status</dt><dd><StatusIcon :kind="questionKind(item.data)"/>{{ item.data.status === 'open' ? 'Open' : item.data.status === 'answered' ? 'Answered' : 'Withdrawn' }}</dd>
           <dt>About</dt><dd>
-            <template v-for="l in item.data.links" :key="l.ref">
-              <a v-if="$refHref(l.ref, env)" :href="$refHref(l.ref, env)" class=chip @click="$openRef($event, $refHref(l.ref, env))">{{ l.label }}</a>
-              <span v-else class=chip>{{ l.label }}</span>
-            </template>
+            <RefChip v-for="l in item.data.links" :key="l.ref" :to="$refHref(l.ref, env)" :label="l.label"/>
             <span v-if="!item.data.links.length" class=muted>—</span>
           </dd>
           <dt>Asked</dt><dd>{{ item.data.age || '—' }}</dd>
@@ -1568,6 +1565,78 @@ const ProgressBar = {
     </span>`,
 };
 
+// One funnel for what a fetch is DOING. Every panel repeated the same error paragraph and every
+// page the same Loading… line — 25 copies of two lines. It renders nothing once the data is there,
+// so a caller shows its own content under `v-if="<state>.data"` as before.
+const FetchState = {
+  props: { state: { type: Object, required: true }, loading: { type: String, default: "" } },
+  template: `
+    <p v-if="state.error" class=error>{{ state.error }}</p>
+    <p v-else-if="loading && state.loading && !state.data" class=empty>{{ loading }}</p>`,
+};
+
+// One chip for a reference the reader can open — the anchor, the openRef click, and the plain
+// chip when nothing links it. Written out by hand at eight call sites before this.
+const RefChip = {
+  props: { to: { type: String, default: "" }, label: { type: String, default: "" } },
+  template: `
+    <a v-if="to" class=chip :href="to" @click="$openRef($event, to)">{{ label }}</a>
+    <span v-else class=chip>{{ label }}</span>`,
+};
+
+// A commit, as the short sha that opens what it covered.
+const CommitChip = {
+  props: { env: String, sha: String },
+  computed: { short() { return String(this.sha || "").slice(0, 7); } },
+  template: `
+    <a class="chip sha" :href="'#/env/' + env + '/commits/' + sha" :title="'What commit ' + short + ' covered'">{{ short }}</a>`,
+};
+
+// A session, as the chip that opens it.
+const SessionChip = {
+  props: { env: String, id: String },
+  template: `<a class=chip :href="'#/env/' + env + '/agents/session/' + id">Session {{ id }}</a>`,
+};
+
+// What the user wrote, under its heading: the message panel and the reply panel show the same block.
+const UserMessage = {
+  props: { text: String },
+  template: `<div><p class=section-label>Your message</p><div class="prose message" v-html="$linkify(text)"></div></div>`,
+};
+
+// The files a piece of work or a commit changed, with what each gained and lost.
+const WorkFilesSection = {
+  props: { files: { type: Array, default: () => [] }, isNew: { type: Boolean, default: false } },
+  template: `
+    <div v-if="files.length">
+      <p class=section-label>Files changed <span class=muted>{{ files.length }}</span></p>
+      <div class=work-files>
+        <div v-for="f in files" :key="f.path" class=work-file :title="f.path">
+          <span class=work-file-path>{{ f.path }}</span>
+          <span v-if="isNew && f.created" class=work-file-new>new</span>
+          <span class=work-file-add>+{{ f.added }}</span><span class=work-file-del>−{{ f.removed }}</span>
+        </div>
+      </div>
+    </div>`,
+};
+
+// Every journal running on this machine: the project strip and the sidebar switcher show the same list.
+const JournalsDropdown = {
+  props: { rows: { type: Array, default: () => [] }, colorOf: Function, pick: Function },
+  template: `
+    <div class=drop-head><span>Journals running on this machine</span></div>
+    <template v-for="j in rows" :key="j.port">
+      <div v-if="j.current" class="drop-row current">
+        <span class=drop-kind>This journal · port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
+        <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
+      </div>
+      <a v-else class=drop-row :href="j.url" @click="pick()">
+        <span class=drop-kind>Port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
+        <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
+      </a>
+    </template>`,
+};
+
 // Point by point: a card per part, what it asked, what the agent answered or is doing, and what it made
 const PointByPoint = {
   props: { rows: Array, env: String },
@@ -1615,7 +1684,7 @@ const PointByPoint = {
 
 const MessagePanel = {
   props: PANEL_PROPS,
-  components: { Panel, StatusIcon, ActionBar, Comments, Icon, PointByPoint, Compose },
+  components: { Panel, StatusIcon, ActionBar, Comments, Icon, PointByPoint, Compose, UserMessage },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/messages`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -1683,10 +1752,10 @@ const MessagePanel = {
   },
   template: `
     <Panel :label=\"'Message ' + n" :close="close" :onClose="onClose" :link="link">
-      <p v-if="item.error" class=error>{{ item.error }}</p>
-      <template v-else-if="item.data">
+      <FetchState :state="item"/>
+      <template v-if="item.data">
         <h2 class=panel-title>{{ answered.heading || item.data.gist || item.data.text }}</h2>
-        <div><p class=section-label>Your message</p><div class="prose message" v-html="$linkify(item.data.text)"></div></div>
+        <UserMessage :text="item.data.text"/>
         <dl class=props>
           <dt>Status</dt><dd :title="item.data.status === 'waiting' && item.data.read ? 'The agent read it ' + item.data.read_age : null"><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled' : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
           <dt>Left</dt><dd>{{ item.data.age || '—' }}</dd>
@@ -1754,7 +1823,7 @@ const MessagePanel = {
 // a reply on its own: your message and what the agent answered, with one step to the full message
 const ReplyPanel = {
   props: PANEL_PROPS,
-  components: { Panel, PointByPoint, Icon, Comments },
+  components: { Panel, PointByPoint, Icon, Comments, UserMessage },
   setup(props) {
     const item = useFetch(() => props.env && props.n && `/api/env/${props.env}/messages/${props.n}`);
     const answered = computed(() => messageAnswers(item.data));
@@ -1767,10 +1836,10 @@ const ReplyPanel = {
   },
   template: `
     <Panel :label="'Reply to message ' + n" :close="close" :onClose="onClose" :link="link">
-      <p v-if="item.error" class=error>{{ item.error }}</p>
-      <template v-else-if="item.data">
+      <FetchState :state="item"/>
+      <template v-if="item.data">
         <h2 class=panel-title>{{ answered.heading || item.data.gist || item.data.text }}</h2>
-        <div><p class=section-label>Your message</p><div class="prose message" v-html="$linkify(item.data.text)"></div></div>
+        <UserMessage :text="item.data.text"/>
         <PointByPoint v-if="answered.rows.length" :rows="answered.rows" :env="env"/>
         <p v-else class="prose muted">The agent has not answered any part of this message yet.</p>
         <div class=actions><div class=action-buttons>
@@ -1783,7 +1852,7 @@ const ReplyPanel = {
 
 const WorkPanel = {
   props: PANEL_PROPS,
-  components: { Panel, ActionBar, Comments },
+  components: { Panel, ActionBar, Comments, WorkFilesSection },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/work`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -1801,32 +1870,23 @@ const WorkPanel = {
   },
   template: `
     <Panel :label=\"'Work ' + n" :close="close" :onClose="onClose" :link="link">
-      <p v-if="item.error" class=error>{{ item.error }}</p>
-      <template v-else-if="item.data">
+      <FetchState :state="item"/>
+      <template v-if="item.data">
         <h2 class=p-title>{{ item.data.subject }}</h2>
         <dl class=props>
           <dt>Started</dt><dd>{{ item.data.age || '—' }}</dd>
           <dt v-if="item.data.ended">Ended</dt><dd v-if="item.data.ended">{{ item.data.ended_age || 'just now' }}</dd>
           <dt>Status</dt><dd>{{ item.data.ended ? 'Ended' : item.data.awaiting ? 'Waiting on ' + item.data.awaiting : 'Open' }}</dd>
-          <template v-if="item.data.todo"><dt>To-do</dt><dd><a class=chip :href="'#/env/' + env + '/todos/' + item.data.todo" @click="$openRef($event, '#/env/' + env + '/todos/' + item.data.todo)">To-do {{ item.data.todo }}</a></dd></template>
-          <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc" @click="$openRef($event, '#/docs/' + item.data.doc)">Doc {{ item.data.doc }}</a></dd></template>
+          <template v-if="item.data.todo"><dt>To-do</dt><dd><RefChip :to="'#/env/' + env + '/todos/' + item.data.todo" :label="'To-do ' + item.data.todo"/></dd></template>
+          <template v-if="item.data.doc"><dt>Document</dt><dd><RefChip :to="'#/docs/' + item.data.doc" :label="'Doc ' + item.data.doc"/></dd></template>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'work' + item.data.n + (item.data.ended || '')"/>
-        <div v-if="item.data.files && item.data.files.length">
-          <p class=section-label>Files changed <span class=muted>{{ item.data.files.length }}</span></p>
-          <div class=work-files>
-            <div v-for="f in item.data.files" :key="f.path" class=work-file :title="f.path">
-              <span class=work-file-path>{{ f.path }}</span>
-              <span v-if="f.created" class=work-file-new>new</span>
-              <span class=work-file-add>+{{ f.added }}</span><span class=work-file-del>−{{ f.removed }}</span>
-            </div>
-          </div>
-        </div>
+        <WorkFilesSection :files="item.data.files || []" is-new/>
         <div v-if="item.data.commits && item.data.commits.length">
           <p class=section-label>Commits <span class=muted>{{ item.data.commits.length }}</span></p>
           <div class=linked>
             <div v-for="c in item.data.commits" :key="c.sha" class="sub log-row">
-              <span class=log-text><a class="chip sha" :href="'#/env/' + env + '/commits/' + c.sha" :title="'What commit ' + c.sha.slice(0, 7) + ' covered'">{{ c.sha.slice(0, 7) }}</a> <span class=sha-subject>{{ c.subject }}</span></span>
+              <span class=log-text><CommitChip :env="env" :sha="c.sha"/> <span class=sha-subject>{{ c.subject }}</span></span>
             </div>
           </div>
         </div>
@@ -1887,20 +1947,17 @@ const SuggestionPanel = {
   },
   template: `
     <Panel :label=\"'Suggestion ' + n" :close="close" :onClose="onClose" :link="link">
-      <p v-if="item.error" class=error>{{ item.error }}</p>
-      <template v-else-if="item.data">
+      <FetchState :state="item"/>
+      <template v-if="item.data">
         <h2 class=p-title>{{ item.data.title }}</h2>
         <dl class=props>
           <dt>Status</dt><dd>{{ SUGGESTION_STATUS[item.data.status] }}</dd>
           <dt>Suggested</dt><dd>{{ item.data.age || 'just now' }}</dd>
           <dt>About</dt><dd>
-            <template v-for="l in item.data.links" :key="l.ref">
-              <a v-if="$refHref(l.ref, env)" :href="$refHref(l.ref, env)" class=chip @click="$openRef($event, $refHref(l.ref, env))">{{ l.label }}</a>
-              <span v-else class=chip>{{ l.label }}</span>
-            </template>
+            <RefChip v-for="l in item.data.links" :key="l.ref" :to="$refHref(l.ref, env)" :label="l.label"/>
             <span v-if="!item.data.links.length" class=muted>—</span>
           </dd>
-          <template v-if="item.data.became"><dt>Became</dt><dd><a class=chip :href="$refHref(item.data.became, env)" @click="$openRef($event, $refHref(item.data.became, env))">{{ item.data.became.replace('todo:', 'To-do ') }}</a></dd></template>
+          <template v-if="item.data.became"><dt>Became</dt><dd><RefChip :to="$refHref(item.data.became, env)" :label="item.data.became.replace('todo:', 'To-do ')"/></dd></template>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'suggestion' + item.data.n + item.data.status"/>
         <div v-if="item.data.declined" class=note>Declined: {{ item.data.declined }}</div>
@@ -2046,8 +2103,8 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
           <ActionBar :actions="creating" :open="'New ' + word" :done="done"/>
         </Panel>
         <Panel v-else-if="n" :label="noun + ' ' + n" :close="base">
-          <p v-if="item.error" class=error>{{ item.error }}</p>
-          <template v-else-if="item.data">
+          <FetchState :state="item"/>
+          <template v-if="item.data">
             <h2 class=p-title>{{ item.data.fact }}</h2>
             <dl class=props>
               <dt>Scope</dt><dd>{{ scope }}</dd>
@@ -2233,14 +2290,14 @@ const PlanPanel = {
   },
   template: `
     <Panel :label="'Plan ' + n" :close="close" :onClose="onClose" :link="link">
-      <p v-if="item.error" class=error>{{ item.error }}</p>
-      <template v-else-if="item.data">
+      <FetchState :state="item"/>
+      <template v-if="item.data">
         <h2 class=panel-title>{{ item.data.title }}</h2>
         <dl class=props>
           <dt>Type</dt><dd>Plan — ends with the work</dd>
           <dt>Status</dt><dd>{{ PLAN_STATUS[item.data.status] }}, {{ item.data.phases_done }} of {{ item.data.phases_total }} phases</dd>
           <dt>Goal</dt><dd>{{ item.data.goal || '—' }}</dd>
-          <template v-if="item.data.from_doc"><dt>From</dt><dd><a class=chip :href="'#/docs/' + item.data.from_doc" @click="$openRef($event, '#/docs/' + item.data.from_doc)">Doc {{ item.data.from_doc }}</a></dd></template>
+          <template v-if="item.data.from_doc"><dt>From</dt><dd><RefChip :to="'#/docs/' + item.data.from_doc" :label="'Doc ' + item.data.from_doc"/></dd></template>
           <dt>{{ item.data.status === 'done' ? 'Ended' : 'Drafted' }}</dt><dd>{{ item.data.age || 'just now' }}</dd>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'plan' + item.data.n + item.data.status"/>
@@ -2385,8 +2442,8 @@ const Plans = {
     <template v-if="onPage">
       <TopBar :crumbs="[env, 'Documents', 'Plans', '#' + n]"><a class=btn :href="base">All plans</a></TopBar>
       <div class=body><div class=page><div class=plan-screen>
-        <p v-if="item.error" class=error>{{ item.error }}</p>
-        <template v-else-if="item.data">
+        <FetchState :state="item"/>
+        <template v-if="item.data">
           <div class=plan-switch>
             <a v-for="p in planTabs" :key="p.n" :class="['plan-tab', {on: p.on}]" :href="p.href" :title="p.title">
               <span class=plan-tab-dot :style="{ background: p.dot }"></span>Plan {{ p.n }}<span class=plan-tab-note>{{ p.note }}</span></a>
@@ -2507,15 +2564,15 @@ const ReportPanel = {
   },
   template: `
     <Panel :label="'Report ' + n" :close="close" :onClose="onClose" :link="link">
-      <p v-if="item.error" class=error>{{ item.error }}</p>
-      <template v-else-if="item.data">
+      <FetchState :state="item"/>
+      <template v-if="item.data">
         <h2 class=panel-title>{{ item.data.title }}</h2>
         <dl class=props>
           <dt>Type</dt><dd>Report — ages out<template v-if="!item.data.archived && item.data.ages_out_in !== null && item.data.ages_out_in !== undefined"> in {{ item.data.ages_out_in }} {{ item.data.ages_out_in === 1 ? 'day' : 'days' }}</template></dd>
           <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
-          <dt>For</dt><dd><a v-if="item.data.about && $refHref(item.data.about, env)" :href="$refHref(item.data.about, env)" class=chip @click="$openRef($event, $refHref(item.data.about, env))">{{ item.data.about_label }}</a><span v-else class=muted>—</span></dd>
+          <dt>For</dt><dd><RefChip v-if="item.data.about && $refHref(item.data.about, env)" :to="$refHref(item.data.about, env)" :label="item.data.about_label"/><span v-else class=muted>—</span></dd>
           <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
-          <template v-if="item.data.doc"><dt>Document</dt><dd><a class=chip :href="'#/docs/' + item.data.doc" @click="$openRef($event, '#/docs/' + item.data.doc)">Doc {{ item.data.doc }}</a></dd></template>
+          <template v-if="item.data.doc"><dt>Document</dt><dd><RefChip :to="'#/docs/' + item.data.doc" :label="'Doc ' + item.data.doc"/></dd></template>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
         <div class="md prose" v-html="$md(item.data.body)"></div>
@@ -2748,8 +2805,8 @@ const Reminders = {
         <ActionBar :actions="creating" open="New reminder" :done="done"/>
       </Panel>
       <Panel v-else-if="n" :label=\"'Reminder ' + n" :close="base">
-        <p v-if="item.error" class=error>{{ item.error }}</p>
-        <template v-else-if="item.data">
+        <FetchState :state="item"/>
+        <template v-if="item.data">
           <h2 class=p-title>{{ item.data.text }}</h2>
           <dl class=props>
             <dt>Until</dt><dd>{{ item.data.until || 'It is never retired on its own' }}</dd>
@@ -2787,8 +2844,8 @@ const DocPanel = {
   },
   template: `
     <Panel :label="'Doc ' + n" :close="close" :onClose="onClose" :link="link">
-      <p v-if="item.error" class=error>{{ item.error }}</p>
-      <template v-else-if="item.data">
+      <FetchState :state="item"/>
+      <template v-if="item.data">
         <h2 class=panel-title>{{ item.data.title }}</h2>
         <dl class=props>
           <dt>Type</dt><dd>Doc — kept for good</dd>
@@ -2915,9 +2972,8 @@ const DocDetail = {
   template: `
     <TopBar :crumbs="['Documents', s.data ? '#' + s.data.n : docref]"/>
     <div class=page>
-      <p v-if="s.loading && !s.data" class=empty>Loading…</p>
-      <p v-else-if="s.error" class=error>{{ s.error }}</p>
-      <div v-else-if="s.data" class=page-inner>
+      <FetchState :state="s" loading="Loading…"/>
+      <div v-if="s.data" class=page-inner>
         <h1 class=p-title>{{ s.data.title }}</h1>
         <dl class=props>
           <dt>Status</dt><dd>{{ s.data.status }}</dd>
@@ -2993,13 +3049,13 @@ const SubagentPanel = {
   },
   template: `
     <Panel :label="'Subagent ' + n" :close="close" :onClose="onClose" :link="link">
-      <p v-if="about.error" class=error>{{ about.error }}</p>
-      <template v-else-if="about.data">
+      <FetchState :state="about"/>
+      <template v-if="about.data">
         <h2 class=p-title>{{ about.data.name }}</h2>
         <dl class=props>
           <dt>State</dt><dd>{{ AGENT_STATUS[about.data.status] || about.data.status }}</dd>
           <dt>Model</dt><dd>{{ about.data.model || 'not recorded' }}</dd>
-          <dt>Dispatched by</dt><dd><a class=chip :href="'#/env/' + env + '/agents/session/' + about.data.parent">Session {{ about.data.parent }}</a></dd>
+          <dt>Dispatched by</dt><dd><SessionChip :env="env" :id="about.data.parent"/></dd>
           <dt>Last wrote</dt><dd>{{ about.data.seen || 'nothing yet' }}</dd>
         </dl>
         <div>
@@ -3341,8 +3397,8 @@ const Tools = {
         <ActionBar :actions="creating" open="New tool" :done="done"/>
       </Panel>
       <Panel v-else-if="n" :label="'Tool ' + (item.data ? item.data.name : '')" :close="base">
-        <p v-if="item.error" class=error>{{ item.error }}</p>
-        <template v-else-if="item.data">
+        <FetchState :state="item"/>
+        <template v-if="item.data">
           <h2 class=p-title>{{ item.data.title }}</h2>
           <p class=prose>{{ item.data.summary }}</p>
           <dl class=props>
@@ -3482,9 +3538,8 @@ const Settings = {
   template: `
     <TopBar :crumbs="[env, 'Settings']"/>
     <div class=page><div class=settings-page>
-      <p v-if="s.loading && !s.data" class=empty>Loading…</p>
-      <p v-else-if="s.error" class=error>{{ s.error }}</p>
-      <template v-else-if="s.data">
+      <FetchState :state="s" loading="Loading…"/>
+      <template v-if="s.data">
         <section class=settings-group>
           <h2>This environment</h2>
           <p class=settings-note>How long things stay listed here, and what the agent may do on its own.</p>
@@ -3615,7 +3670,7 @@ const Files = {
 // what one commit covered: the work it was made during, and that work's to-dos
 const Commit = {
   props: ["env", "sha"],
-  components: { TopBar },
+  components: { TopBar, WorkFilesSection },
   setup(props) {
     const found = useFetch(() => props.env && props.sha && `/api/env/${props.env}/commits?sha=${props.sha}`);
     return { found };
@@ -3624,9 +3679,8 @@ const Commit = {
     <TopBar :crumbs="[env, 'Commit ' + sha.slice(0, 7)]"/>
     <div class=page>
       <div class=page-inner>
-        <p v-if="found.loading && !found.data" class=empty>Loading…</p>
-        <p v-else-if="found.error" class=error>{{ found.error }}</p>
-        <template v-else-if="found.data">
+        <FetchState :state="found" loading="Loading…"/>
+        <template v-if="found.data">
           <h1 class=p-title>{{ found.data.subject || 'Commit ' + sha.slice(0, 7) }}</h1>
           <dl class=props>
             <dt>Commit</dt><dd><span class="chip sha">{{ found.data.sha.slice(0, 12) }}</span>
@@ -3658,15 +3712,7 @@ const Commit = {
               </a>
             </div>
           </div>
-          <div v-if="found.data.files && found.data.files.length">
-            <p class=section-label>Files changed <span class=muted>{{ found.data.files.length }}</span></p>
-            <div class=work-files>
-              <div v-for="f in found.data.files" :key="f.path" class=work-file :title="f.path">
-                <span class=work-file-path>{{ f.path }}</span>
-                <span class=work-file-add>+{{ f.added }}</span><span class=work-file-del>−{{ f.removed }}</span>
-              </div>
-            </div>
-          </div>
+          <WorkFilesSection :files="found.data.files || []"/>
         </template>
       </div>
     </div>`,
@@ -3710,9 +3756,8 @@ const SkillPanel = {
   },
   template: `
     <Panel label="Skill" :onClose="onClose" :link="page">
-      <p v-if="skill.error" class=error>{{ skill.error }}</p>
-      <p v-else-if="!skill.data" class=empty>Loading…</p>
-      <template v-else>
+      <FetchState :state="skill" loading="Loading…"/>
+      <template v-if="skill.data">
         <h2 class=p-title>{{ skill.data.name }}</h2>
         <dl class=props><dt>Where</dt><dd>{{ skill.data.source === 'user' ? "Your own skills" : "This project's skills" }}</dd>
           <dt>At every start</dt><dd>{{ skill.data.always ? 'Yes, every session is told to load it' : 'No' }}</dd></dl>
@@ -3751,14 +3796,13 @@ const Agent = {
   template: `
     <TopBar :crumbs="[env, 'Agents', about.data ? about.data.name : (kind === 'subagent' ? 'Subagent ' : 'Session ') + id]"/>
     <div class=body><div class=page><div class=page-inner>
-      <p v-if="about.error" class=error>{{ about.error }}</p>
-      <p v-else-if="!about.data" class=empty>Loading…</p>
-      <template v-else>
+      <FetchState :state="about" loading="Loading…"/>
+      <template v-if="about.data">
         <h1 class=p-title>{{ about.data.name }}</h1>
         <dl class=props>
           <dt>Status</dt><dd><span :class="['agent-status', about.data.status]">{{ AGENT_STATUS[about.data.status] || about.data.status }}</span><span v-if="about.data.seen" class=muted> · last seen {{ about.data.seen }}</span></dd>
           <dt>Agent</dt><dd>{{ about.data.kind === 'subagent' ? 'Subagent' : 'Session' }} {{ about.data.id }}</dd>
-          <template v-if="about.data.parent"><dt>Sent by</dt><dd><a class=chip :href="'#/env/' + env + '/agents/session/' + about.data.parent">Session {{ about.data.parent }}</a></dd></template>
+          <template v-if="about.data.parent"><dt>Sent by</dt><dd><SessionChip :env="env" :id="about.data.parent"/></dd></template>
           <dt>Environment</dt><dd>{{ about.data.env }}</dd>
           <template v-if="about.data.model"><dt>Model</dt><dd>{{ about.data.model }}</dd></template>
           <template v-if="about.data.context"><dt>Context</dt><dd>{{ about.data.context.share }}% used</dd></template>
@@ -3889,9 +3933,8 @@ const About = {
   template: `
     <TopBar :crumbs="['About']"/>
     <div class=body><div class=page><div class=page-inner>
-      <p v-if="about.error" class=error>{{ about.error }}</p>
-      <p v-else-if="!about.data" class=empty>Loading…</p>
-      <template v-else>
+      <FetchState :state="about" loading="Loading…"/>
+      <template v-if="about.data">
         <h1 class=p-title>Agent journal</h1>
         <dl class=props><dt>Version</dt><dd>{{ about.data.version }}</dd></dl>
         <div>
@@ -3914,9 +3957,8 @@ const SkillView = {
   template: `
     <TopBar :crumbs="['Skills', name]"/>
     <div class=body><div class=page><div class=page-inner>
-      <p v-if="skill.error" class=error>{{ skill.error }}</p>
-      <p v-else-if="!skill.data" class=empty>Loading…</p>
-      <template v-else>
+      <FetchState :state="skill" loading="Loading…"/>
+      <template v-if="skill.data">
         <h1 class=p-title>{{ skill.data.name }}</h1>
         <dl class=props><dt>Where</dt><dd>{{ skill.data.source === 'user' ? "Your own skills" : "This project's skills" }}</dd>
           <dt>Loads when</dt><dd>{{ skill.data.description }}</dd>
@@ -4287,7 +4329,7 @@ const QuickMenu = {
 };
 
 const App = {
-  components: { ...VIEWS, Icon, ActivityPanel, Peek, QuickMenu },
+  components: { ...VIEWS, Icon, ActivityPanel, Peek, QuickMenu, JournalsDropdown },
   setup() {
     const route = reactive(parseHash());
     const ov = OVERVIEW;
@@ -4493,17 +4535,7 @@ const App = {
           @click="stripMenu.open = !stripMenu.open; loadJournals()">{{ strip.name }}</button>
       </div>
       <div v-if="strip && stripMenu.open" class="drop strip-drop">
-        <div class=drop-head><span>Journals running on this machine</span></div>
-        <template v-for="j in journalsOrdered" :key="j.port">
-          <div v-if="j.current" class="drop-row current">
-            <span class=drop-kind>This journal · port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
-            <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
-          </div>
-          <a v-else class=drop-row :href="j.url" @click="stripMenu.open = false">
-            <span class=drop-kind>Port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
-            <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
-          </a>
-        </template>
+        <JournalsDropdown :rows="journalsOrdered" :color-of="colorOf" :pick="() => { stripMenu.open = false; }"/>
       </div>
       <aside class=side>
         <div v-if="journals.list.length > 1" class="drop-wrap journal-switch">
@@ -4513,17 +4545,7 @@ const App = {
             <span :class="['fold', {shut: !journals.open}]"></span>
           </button>
           <div v-if="journals.open" class=drop>
-            <div class=drop-head><span>Journals running on this machine</span></div>
-            <template v-for="j in journalsOrdered" :key="j.port">
-              <div v-if="j.current" class="drop-row current">
-                <span class=drop-kind>This journal · port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
-                <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
-              </div>
-              <a v-else class=drop-row :href="j.url" @click="journals.open = false">
-                <span class=drop-kind>Port {{ j.port }}{{ j.version ? ' · ' + j.version : '' }}</span>
-                <span class=drop-text><span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</span>
-              </a>
-            </template>
+            <JournalsDropdown :rows="journalsOrdered" :color-of="colorOf" :pick="() => { journals.open = false; }"/>
           </div>
         </div>
         <a v-else class=project :href="envName ? '#/env/' + envName : '#/'" :title="ov.data ? ov.data.project : ''">
@@ -4587,6 +4609,8 @@ const App = {
 };
 
 const app = createApp(App);
+// a primitive nearly every panel and page renders, so it is registered once rather than imported 25 times
+for (const [name, part] of Object.entries({ FetchState, RefChip, CommitChip, SessionChip })) app.component(name, part);
 app.config.globalProperties.$md = renderMarkdown;
 app.config.globalProperties.$human = humanSize;
 app.config.globalProperties.$refHref = refHref;
