@@ -1072,7 +1072,6 @@ const TYPES = {
   suggestion: { label: "Suggestion", tint: "#a3a8f0" }, doc: { label: "Doc", tint: "#6fae7d" },
   report: { label: "Report", tint: "#d9a441" }, plan: { label: "Plan", tint: "#5b8def" },
   todo: { label: "To-do", tint: "#5b8def" }, work: { label: "Work", tint: "#5b8def" },
-  todo: { label: "To-do", tint: "#5b8def" }, work: { label: "Work", tint: "#5b8def" },
 };
 
 const ResourceList = {
