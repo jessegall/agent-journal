@@ -3375,7 +3375,9 @@ const EnvHome = {
     const workCard = computed(() => {
       const w = open_.value[0];
       if (!w) return null;
-      return { n: w.n, lead: w.todo_title || w.subject, sub: w.todo_title ? w.subject : "",
+      const lead = w.todo_title || w.subject;
+      const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
+      return { n: w.n, lead, sub: same(lead, w.subject || "") ? "" : w.subject,
                ref: [w.todo ? `to-do ${w.todo}` : "", w.age || "just now"].filter(Boolean).join(" · "),
                awaiting: w.awaiting || "" };
     });
