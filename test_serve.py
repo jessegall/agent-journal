@@ -921,6 +921,20 @@ check("a listed subagent carries its model, empty when its transcript has none",
       [("model" in a) for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"], [True])
 check("a subagent that stopped is listed as finished, not working",
       [(a["working"], a["state"]) for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"], [(False, "finished")])
+# A FINISHED SUBAGENT STAYS FOR A WHILE: it used to leave the list the instant it stopped, which is
+# the moment the user turns to look at what it just did.
+_done_row = [a for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"][0]
+check("and it carries how long ago it finished, in words and in seconds",
+      (_done_row["ended_age"].startswith("finished"), isinstance(_done_row["ended_secs"], int)), (True, True))
+# an agent counts as finished only while its done stamp is at or after its last heartbeat, so an old
+# finish means moving both: the heartbeat to 21 minutes ago, the finish to 20
+state.put(root, _agents.SEEN, {"alpha": {"abc123def": int(time.time()) - 21 * 60}})
+state.put(root, _agents.DONE, {"alpha": {"abc123def": int(time.time()) - 20 * 60}})
+check("one that finished longer ago than crew_finished_minutes is gone",
+      [a for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"], [])
+state.put(root, _agents.DONE, {"alpha": {"abc123def": int(time.time())}})
+check("and it is back while it is inside the window",
+      [a["state"] for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"], ["finished"])
 import install as _install  # noqa: E402
 check("SubagentStop is wired, so a finished subagent is known the moment it stops", "SubagentStop" in _install.EVENTS, True)
 import controllers.activity as _activity  # noqa: E402

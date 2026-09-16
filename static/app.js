@@ -3343,11 +3343,13 @@ const EnvHome = {
     // THE REAL REMAINDER, not "total minus three": the section shows three pieces from the last week,
     // so everything older is invisible too. The work list is fetched whole, so the honest count is here.
     const finishedMore = computed(() => (work.data || []).filter((w) => w.ended).length - finishedLines.value.length);
-    // Subagents belong to the agent, so the live ones hang under its facts line: one line each, and nothing at all when none are running
-    const liveCrew = computed(() => (crew.data || []).filter((a) => a.kind === "subagent" && a.state === "active")
-      .map((a, i) => ({ key: `subagent:${a.id}`, name: a.name || `Subagent ${a.id}`,
+    // Subagents belong to the agent, so they hang under its facts line: one line each, and nothing at all
+    // when none are there. A FINISHED ONE STAYS, for as long as the API keeps sending it — a subagent used
+    // to disappear the instant it stopped, which is the moment its line is most worth clicking.
+    const liveCrew = computed(() => (crew.data || []).filter((a) => a.kind === "subagent" && (a.state === "active" || a.state === "finished"))
+      .map((a, i) => ({ key: `subagent:${a.id}`, name: a.name || `Subagent ${a.id}`, done: a.state === "finished",
                         title: `Subagent ${a.id} · ${a.model || "model not recorded"} · from session ${a.parent}`,
-                        tail: [a.model, a.age_text].filter(Boolean).join(" · "),
+                        tail: [a.model, a.state === "finished" ? a.ended_age : a.age_text].filter(Boolean).join(" · "),
                         delay: `${i * 60}ms`, open: () => peek("subagent", a.id) })));
 
     // a subagent's panel steps through the other subagents, never sideways into the queue behind it
@@ -3396,7 +3398,7 @@ const EnvHome = {
       <div class=home-lead>
         <div class=home-facts><span v-for="(f, i) in lead.facts" :key="i" :class="{first: i === 0}">{{ f }}</span></div>
         <div v-if="liveCrew.length" class=crew-strip>
-          <button v-for="a in liveCrew" :key="a.key" type=button class=crew-line :title="a.title" :style="{ animationDelay: a.delay }" @click="a.open">
+          <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done}]" :title="a.title" :style="{ animationDelay: a.delay }" @click="a.open">
             <span class=crew-rule></span><span class=crew-dot></span>
             <span class=crew-name>{{ a.name }}</span><span class=crew-tail>{{ a.tail }}</span>
           </button>

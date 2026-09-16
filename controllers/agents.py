@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
 import agents
+import settings as settings_mod
 import state
 import tracks
 import transcript
@@ -31,11 +33,21 @@ class AgentsController(Controller):
                 continue
             out.append({"kind": "session", "id": stem[:8], "name": "", "working": working,
                         "state": "active" if working else "idle", "age": int(got["age"])})
+        # A FINISHED SUBAGENT STAYS FOR A WHILE. It used to leave the moment it stopped, which is the
+        # moment the user turns to look at what it just did; `crew_finished_minutes` is how long its
+        # line is still there to click.
+        keep = settings_mod.load(root)[0]["crew_finished_minutes"] * 60
         for agent in agents.live(root, env, SUBAGENT_MINUTES):
             parent = agents.parent_of(root, env, agent)
             working = agents.working(root, env, agent)
+            done = agents.finished(root, env, agent)
+            since_done = time.time() - agents.done_at(root, env, agent) if done else 0.0
+            if done and since_done > keep:
+                continue
             out.append({"kind": "subagent", "id": agent[:8], "name": agents.described(root.parent, parent, agent),
-                        "working": working, "state": "active" if working else "finished" if agents.finished(root, env, agent) else "idle",
+                        "working": working, "state": "active" if working else "finished" if done else "idle",
                         "age_text": agents.age(root, env, agent), "parent": parent[:8],
+                        "ended_age": agents.done_age(root, env, agent) if done else "",
+                        "ended_secs": int(since_done) if done else None,
                         "model": transcript.last_model(transcript.find(root.parent, f"agent-{agent}"))})
         return Result("ok", "", out)

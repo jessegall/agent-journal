@@ -108,6 +108,12 @@ DEFAULTS = {
     # its own `--option`. Same shape as a pin's claim and its reasoning. 0 removes it.
     "question_max_chars": 200,
 
+    # HOW LONG A FINISHED SUBAGENT STAYS ON THE HOME, in minutes. A subagent used to leave the
+    # list the instant it stopped — exactly when the user turns to look at what it just did, and
+    # the one moment its line is worth clicking. It stays, marked finished and with its age, and
+    # then goes. 0 drops it the moment it ends.
+    "crew_finished_minutes": 15,
+
     # THE RUNGS AT WHICH THE CONTEXT NUDGE FIRES, each one once. A single warning could not
     # be both early enough to think in and late enough to feel urgent, so it is a ladder:
     # 50% is the cheap moment to decide what must outlive the window, 95% is the last word.
