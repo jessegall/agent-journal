@@ -2300,6 +2300,35 @@ function planRefHref(ref, env) { return refHref(String(ref).replace(" ", ":"), e
 
 function planStepState(ph) { return ph.complete ? "Complete" : ph.current ? "Current" : "Not started"; }
 
+// ONE PLACE DECIDES WHAT A PLAN IS WAITING FOR. The page's band, the peek panel and the home card each
+// asked that question and answered it in a different vocabulary — the page said "Approve the plan" where
+// the card said "Start", and the panel had never heard of a paused or finished plan at all.
+// `label` is the sentence a page or panel shows; `short` is the one word a card has room for.
+function planPrimary(p) {
+  if (!p) return null;
+  if (p.held) {
+    return { label: "Continue past the checkpoint", short: "Continue", verb: "proceed",
+             note: "The phase before this one is complete and the plan stopped for you to look. The agent starts the next phase.",
+             hint: "The plan is waiting at a checkpoint for you" };
+  }
+  if (p.status === "draft") {
+    return { label: "Approve the plan", short: "Start", verb: "activate",
+             note: "The agent is assigned this plan and starts its first phase. One plan at a time.",
+             hint: "Start this plan and assign it to the agent" };
+  }
+  if (p.status === "parked") {
+    return { label: "Pick this plan up again", short: "Resume", verb: "activate",
+             note: "The plan becomes the one the agent is working, and its to-dos are on the list again.",
+             hint: "Pick this plan up again" };
+  }
+  if (p.status === "done" && !p.acknowledged) {
+    return { label: "Acknowledge", short: "Acknowledge", verb: "acknowledge",
+             note: "You have seen that this plan finished; its card leaves the home page.",
+             hint: "You have seen that this plan finished; clear it from here" };
+  }
+  return null;
+}
+
 const PlanPanel = {
   props: PANEL_PROPS,
   components: { Panel, ActionBar, FromMessages },
@@ -2308,12 +2337,15 @@ const PlanPanel = {
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const actions = computed(() => {
       const p = item.data;
-      if (!p || p.status === "done" || p.status === "abandoned") return [];
+      if (!p || p.status === "abandoned") return [];
       const url = `${api.value}/${p.n}`;
+      const act = planPrimary(p);
       return [
-        ...(p.status === "draft" ? [{ label: "Approve the plan", primary: true, advance: true, method: "POST", url: `${url}/activate`, submit: "Approve the plan",
-                                      note: "The agent is assigned this plan and starts its first phase. One plan at a time." }] : []),
-        { label: "Abandon", method: "DELETE", url, danger: true, submit: "Abandon", fields: [{ name: "why", label: "Why the plan is stopped" }] },
+        ...(act ? [{ label: act.label, primary: true, advance: true, method: "POST", url: `${url}/${act.verb}`,
+                     submit: act.label, note: act.note }] : []),
+        // a finished plan is the record of what was done: it is acknowledged, never abandoned
+        ...(p.status === "done" ? [] : [{ label: "Abandon", method: "DELETE", url, danger: true, submit: "Abandon",
+                                         fields: [{ name: "why", label: "Why the plan is stopped" }] }]),
       ];
     });
     const done = panelDone(props, item);
@@ -2446,29 +2478,15 @@ const Plans = {
       const finished = planTodos.value.filter((t) => t.done).length;
       return { phases: `${p.phases_done} of ${p.phases_total} phases complete`, todos: `${finished} of ${planTodos.value.length} to-dos done` };
     });
-    // THE BAND CARRIES THE ONE ACT THE PLAN IS WAITING FOR. A draft's "Approve the plan" action existed
-    // but was only ever rendered for an ACTIVE plan, so the page that shows you the plan had no way to
-    // start it — the only Start was on the home card.
+    // THE BAND CARRIES THE ONE ACT THE PLAN IS WAITING FOR, and `planPrimary` is what decides it here,
+    // in the peek panel and on the home card alike.
     const primary = computed(() => {
       const p = item.data;
-      if (!p) return null;
-      if (p.held) {
-        return { label: "Continue past the checkpoint",
-                 go: () => send("POST", `${api.value}/${p.n}/proceed`).then(() => { item.reload(); changed(); }) };
-      }
-      if (p.status === "draft") {
-        return { label: "Approve the plan",
-                 go: () => send("POST", `${api.value}/${p.n}/activate`).then(() => { item.reload(); list.reload(); changed(); }) };
-      }
-      if (p.status === "parked") {
-        return { label: "Pick this plan up again",
-                 go: () => send("POST", `${api.value}/${p.n}/activate`).then(() => { item.reload(); list.reload(); changed(); }) };
-      }
-      if (p.status === "done" && !p.acknowledged) {
-        return { label: "Acknowledge",
-                 go: () => send("POST", `${api.value}/${p.n}/acknowledge`).then(() => { item.reload(); list.reload(); changed(); }) };
-      }
-      return null;
+      const act = planPrimary(p);
+      if (!act) return null;
+      return { label: act.label, hint: act.hint,
+               go: () => send("POST", `${api.value}/${p.n}/${act.verb}`)
+                 .then(() => { item.reload(); list.reload(); changed(); }) };
     });
     const quiet = computed(() => (item.data && item.data.current ? `Working phase ${item.data.current}` : ""));
     const citedDocs = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/docs?archived=1`);
@@ -2514,9 +2532,10 @@ const Plans = {
             <div class=plan-progress-text>
               <div class=plan-progress-line><b>{{ progress.phases }}</b><span class=muted>· {{ progress.todos }}</span></div>
               <ProgressBar :rows="planTodos"/>
+              <p v-if="item.data.status === 'parked' && item.data.parked_why" class=plan-paused-why>Paused: {{ item.data.parked_why }}</p>
             </div>
             <div class=plan-progress-actions>
-              <button v-if="primary" type=button class=band-primary @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
+              <button v-if="primary" type=button class=band-primary :title="primary.hint" @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
               <span v-else-if="quiet" class=plan-quiet>{{ quiet }}</span>
               <button v-if="item.data.status === 'active'" type=button class=btn @click="openPhase">Add phase</button>
             </div>
@@ -3262,26 +3281,27 @@ const EnvHome = {
     // the kind reads as part of the sentence here, not as a label: "question 12 · 6m"
     const queueMeta = (it) => (SHELL.wide ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
     // one card per live plan: what it is, how far it has gone, and the single act it offers
+    // only the WORD for where the plan stands lives here; the act it offers comes from planPrimary
     const PLAN_CARD = {
       // a plan the agent is still writing: it is visible at once, and there is nothing to press yet
-      preparing: { ref: "being written", act: "" },
-      active: { ref: "working", act: "" },
-      parked: { ref: "paused", act: "Resume" },
-      draft: { ref: "ready to start", act: "Start" },
-      done: { ref: "finished", act: "Acknowledge" },
+      preparing: "being written",
+      active: "working",
+      parked: "paused",
+      draft: "ready to start",
+      done: "finished",
     };
-    const PLAN_VERB = { parked: "activate", draft: "activate", done: "acknowledge" };
     const planCards = computed(() => livePlans.value.map((p) => {
       const rows = (planDetails[p.n] || {}).rows || [];
       const done = rows.filter((t) => t.done).length;
-      const shape = PLAN_CARD[p.status] || PLAN_CARD.active;
+      const word = PLAN_CARD[p.status] || PLAN_CARD.active;
+      const act = planPrimary(p);
       const phases = `${p.phases_done} of ${p.phases_total} phases`;
       // ONE PLAN IS WORKED AT A TIME, so a card does not offer a button that must be refused: starting a
       // draft or resuming a parked plan is withheld while another is active, and the card says why.
       const waiting = !!plan.value && (p.status === "draft" || p.status === "parked");
       return {
         n: p.n, title: p.title, status: p.status, rows,
-        ref: `plan ${p.n} · ${p.held && p.status === "active" ? "held" : shape.ref}`,
+        ref: `plan ${p.n} · ${p.held && p.status === "active" ? "held" : word}`,
         // a draft has done nothing yet, so it says what it holds rather than how far it has gone
         progress: p.status === "draft"
           ? `${p.phases_total} ${p.phases_total === 1 ? "phase" : "phases"}${rows.length ? ` · ${rows.length} to-dos` : ""}`
@@ -3289,8 +3309,9 @@ const EnvHome = {
         why: [p.status === "parked" ? p.parked_why : "",
               p.status === "preparing" ? "the agent is adding its phases" : "",
               waiting ? "one plan at a time" : ""].filter(Boolean).join(" · "),
-        act: waiting ? "" : shape.act,
-        run: () => planAct(p, PLAN_VERB[p.status]),
+        act: waiting || !act ? "" : act.short,
+        hint: act ? act.hint : "",
+        run: () => planAct(p, act.verb),
         bar: p.status !== "draft" && p.status !== "preparing",
       };
     }));
@@ -3410,9 +3431,7 @@ const EnvHome = {
             <ProgressBar v-if="c.bar" :rows="c.rows"/>
             <span class=work-now-ref>{{ c.progress }}</span>
             <button v-if="c.act" type=button :class="c.status === 'done' ? 'work-now-ack' : 'work-now-start'"
-              :title="c.status === 'draft' ? 'Start this plan and assign it to the agent'
-                    : c.status === 'parked' ? 'Pick this plan up again' : 'You have seen that this plan finished; clear it from here'"
-              @click.stop="c.run()">{{ c.act }}<Icon name="arrow"/></button>
+              :title="c.hint" @click.stop="c.run()">{{ c.act }}<Icon name="arrow"/></button>
           </div>
           <p v-if="c.why" class=work-now-why @click.stop>{{ c.why }}</p>
           <p v-if="planError[c.n] || (c.status === 'draft' && startError)" class="error work-now-error" @click.stop>{{ planError[c.n] || startError }}</p>
