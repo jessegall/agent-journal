@@ -1711,7 +1711,7 @@ const MessagePanel = {
 // a reply on its own: your message and what the agent answered, with one step to the full message
 const ReplyPanel = {
   props: PANEL_PROPS,
-  components: { Panel, PointByPoint, Icon },
+  components: { Panel, PointByPoint, Icon, Comments },
   setup(props) {
     const item = useFetch(() => props.env && props.n && `/api/env/${props.env}/messages/${props.n}`);
     const answered = computed(() => messageAnswers(item.data));
@@ -1733,6 +1733,7 @@ const ReplyPanel = {
         <div class=actions><div class=action-buttons>
           <button type=button class=primary-act @click="openMessage">Open the full message<Icon name="arrow"/></button>
         </div></div>
+        <Comments :about="'message ' + n" :env="env" :key="'c-message' + n"/>
       </template>
     </Panel>`,
 };
