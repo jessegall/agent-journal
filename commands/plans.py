@@ -91,7 +91,7 @@ class Phase(Resource):
 
 
 class Todos(Resource):
-    signature = "plans:todos {n : a plan number} {phase : a phase number} {todos* : to-do numbers} {--off} {--reopen=}"
+    signature = "plans:todos {n : a plan number} {phase : a phase number} {todos* : to-do numbers} {--off} {--move} {--reopen=}"
     casts = {**PLAN, "phase": number("a phase number")}
     writes = True
     controller = CONTROLLER

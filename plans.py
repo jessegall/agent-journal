@@ -30,7 +30,9 @@ MESSAGES = {
     "todos_usage": "name the to-dos by number: journal plans todos {n} {p} 4 5 6",
     "no_todo": "there is no to-do {t} on this environment",
     "in_phase": "to-do {t} is already in plan {plan} phase {p}, and a to-do sits in one phase. "
-                "Take it out first: journal plans todos {plan} {p} {t} --off",
+                "Move it here in one command: journal plans todos {n} {here} {t} --move",
+    "in_other_plan": "to-do {t} is in plan {plan}, not plan {n}; --move moves a to-do between the phases of its own plan",
+    "moved": "plan {n} phase {p}: to-do(s) {todos} moved here from phase {was}",
     "phase_done": 'plan {n} phase {p} is complete; adding a to-do reopens it, so say why: --reopen="<why>"',
     "put": "plan {n} phase {p}: to-do(s) {todos} added",
     "taken": "plan {n} phase {p}: to-do(s) {todos} taken out",
@@ -198,8 +200,13 @@ def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bo
 
 
 def put_todos(root: Path, n: int, p: int, numbers, at: str, off: bool = False, reopen: str = "",
-              track: str | None = None) -> tuple[bool, str]:
-    """Put to-dos in a phase, or take them out with `off`. A to-do sits in one phase of one plan."""
+              move: bool = False, track: str | None = None) -> tuple[bool, str]:
+    """Put to-dos in a phase, or take them out with `off`. A to-do sits in one phase of one plan.
+
+    `move` IS THE ONE-COMMAND CORRECTION. A row in the wrong phase is the ordinary case — the
+    plan was written before the work was understood — and taking it out of one phase and
+    putting it in another was two commands, which is two chances to leave it in neither.
+    """
     wanted = _numbers(numbers)
     if not wanted:
         return False, say("todos_usage", n=n, p=p)
@@ -228,9 +235,18 @@ def put_todos(root: Path, n: int, p: int, numbers, at: str, off: bool = False, r
             if t not in known:
                 return False, say("no_todo", t=t)
         member = {t: where for t, where in membership(root, here).items()}
+        came_from = []
         for t in wanted:
-            if t in member and member[t] != (n, p):
-                return False, say("in_phase", t=t, plan=member[t][0], p=member[t][1])
+            if t not in member or member[t] == (n, p):
+                continue
+            if not move:
+                return False, say("in_phase", t=t, plan=member[t][0], p=member[t][1], n=n, here=p)
+            if member[t][0] != n:
+                return False, say("in_other_plan", t=t, plan=member[t][0], n=n)
+            was = member[t][1]
+            before = plan["phases"][was - 1]
+            before["todos"] = [x for x in before.get("todos") or [] if x != t]
+            came_from.append((t, was))
         fresh = [t for t in wanted if t not in held]
         if phases(root, plan, here, known)[p - 1]["complete"] and fresh:
             why = " ".join((reopen or "").split())
@@ -240,6 +256,9 @@ def put_todos(root: Path, n: int, p: int, numbers, at: str, off: bool = False, r
             phase.pop("announced_at", None)
         held.extend(fresh)
         _put(root, items, here)
+    if came_from:
+        return True, say("moved", n=n, p=p, todos=", ".join(str(t) for t, _ in came_from),
+                         was=", ".join(str(w) for _, w in came_from))
     return True, say("put", n=n, p=p, todos=", ".join(map(str, wanted)))
 
 
@@ -301,23 +320,50 @@ def checkpoint(plan: dict, rows: list[dict], auto: bool = False) -> dict | None:
     return None
 
 
+def reachable(plan: dict, rows: list[dict], now: dict, auto: bool) -> list[int]:
+    """The phases auto may take from, in order: the current one, then each later one a checkpoint does not gate.
+
+    A PHASE MUST NEVER WEDGE THE LIST. Every row in the current phase can be waiting on the
+    user, blocked, or held by an agent, and then a plan that offered only that phase would
+    leave auto with nothing to do while the list below it was full of work. So the later
+    phases stay reachable — they are simply never picked while the current phase has
+    something ready — and the only thing that really stops the run is a checkpoint the user
+    has not continued past, which is what a checkpoint is for.
+    """
+    out = [now["p"]]
+    for row, ph in zip(rows, plan.get("phases") or []):
+        if row["p"] < now["p"]:
+            continue
+        if row["checkpoint"] and not (auto or ph.get("continued_at")):
+            break
+        if row["p"] > now["p"]:
+            out.append(row["p"])
+    return out
+
+
 def order(root: Path, track: str, items: list[dict]) -> list[tuple[int, dict]]:
-    """(rank, to-do) for what auto may pick: the current phase (0), then to-dos in no plan above default priority (1)."""
+    """(rank, to-do) for what auto may pick: the earliest reachable phase with something ready (0),
+    then to-dos in no plan above default priority (1)."""
     got = active(root, track)
     member = membership(root, track)
     if got is None:
         # a draft's to-dos wait for the user to approve the plan
         return [(0, t) for t in items if t["n"] not in member]
     n, plan, rows = got
-    now, held = current(plan, rows), checkpoint(plan, rows, todo.auto(root, track))
-    out = []
+    auto = todo.auto(root, track)
+    now, held = current(plan, rows), checkpoint(plan, rows, auto)
+    allowed = [] if held or now is None else reachable(plan, rows, now, auto)
+    out, by_phase = [], {}
     for t in items:
         where = member.get(t["n"])
         if where is None:
             if todo.priority_of(t) > todo.DEFAULT_PRIORITY:
                 out.append((1, t))
-        elif where == (n, now["p"]) and not held:
-            out.append((0, t))
+        elif where[0] == n and where[1] in allowed:
+            by_phase.setdefault(where[1], []).append(t)
+    # the earliest phase that has something ready: a later phase is worked only when the current one cannot be
+    if by_phase:
+        out.extend((0, t) for t in by_phase[min(by_phase)])
     return out
 
 

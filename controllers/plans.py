@@ -60,7 +60,8 @@ class PlansController(Controller):
         return Result.of(plans.add_phase(root, p.id, p.title, p.when, p.at, p.checkpoint, track=p.env or None))
 
     def todos(self, root: Path, p: plan_payloads.TodosPayload) -> Result:
-        return Result.of(plans.put_todos(root, p.id, p.phase, p.todos, p.at, off=p.off, reopen=p.reopen, track=p.env or None))
+        return Result.of(plans.put_todos(root, p.id, p.phase, p.todos, p.at, off=p.off, reopen=p.reopen,
+                                         move=p.move, track=p.env or None))
 
     def activate(self, root: Path, p: Payload) -> Result:
         return Result.of(plans.activate(root, p.id, p.at, source=p.source, track=p.env or None))

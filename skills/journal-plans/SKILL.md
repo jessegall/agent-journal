@@ -53,8 +53,9 @@ The order is **add, then phase, then todos**: a phase belongs to a plan and a to
 to a phase. To-dos are written the ordinary way (`journal todos add "<title>" --brief`) and
 then placed; a plan does not have a private kind of to-do.
 
-**A to-do sits in ONE phase.** Putting it in another is refused, naming where it already
-is — take it out of the first phase or leave it where it is.
+**A to-do sits in ONE phase**, and a row written into the wrong one is corrected in a
+single command: `journal plans todos <n> <p> 4 --move` takes it out of the phase it is in
+and puts it here. Without `--move` it is refused, naming where the row already sits.
 
 **A phase is an area of work, not a schedule.** "Everything the viewer shows about a plan"
 is a phase; "Tuesday" and "the next two hours" are not. `--when` says what is true when the
@@ -91,6 +92,11 @@ plan waits.
 **There is one auto switch, and it is the environment's.** A plan has none of its own: if
 auto is on, the list is worked AND checkpoints are passed; if it is off, the plan stops at
 them. `journal auto-mode [enable|disable]`.
+
+**A phase never wedges the list.** Auto takes rows from the current phase while it has
+any that are ready; when every row there is waiting on the user, blocked or held by an
+agent, the next phase is offered instead of nothing. The one thing that really stops the
+run is a checkpoint the user has not continued past — which is what a checkpoint is for.
 
 **The plan is handed back at every start and every compaction**, as a line saying which
 plan is active, which phase is current and what completes it. So the plan, unlike your
