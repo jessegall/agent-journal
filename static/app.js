@@ -2218,8 +2218,9 @@ const Inbox = {
     </div>`,
 };
 
-// docs, reports and plans are one Documents area: the same tabs head each of their lists
-const DOC_TABS = [{ key: "docs", label: "Docs" }, { key: "reports", label: "Reports" }, { key: "plans", label: "Plans" }];
+// docs and reports are one Documents area: the same tabs head each of their lists. Plans left it for
+// a nav entry of their own, on the user's word — a plan is a document, kind of, but it is its own feature.
+const DOC_TABS = [{ key: "docs", label: "Docs" }, { key: "reports", label: "Reports" }];
 
 // the switch's last known counts per environment: each tab is its own page, so the switch mounts afresh on every
 // change, and without these it would show no numbers until its fetches land and jump in width
@@ -2230,15 +2231,13 @@ const DocTabs = {
   setup(props) {
     const docs = useFetch(() => props.env && `/api/env/${props.env}/docs?archived=1`);
     const reports = useFetch(() => props.env && `/api/env/${props.env}/reports`);
-    const plans = useFetch(() => props.env && `/api/env/${props.env}/plans`);
     watchEffect(() => {
       if (!props.env) return;
-      const kept = DOC_COUNTS[props.env] || (DOC_COUNTS[props.env] = { docs: "", reports: "", plans: "" });
+      const kept = DOC_COUNTS[props.env] || (DOC_COUNTS[props.env] = { docs: "", reports: "" });
       if (docs.data) kept.docs = docs.data.filter((d) => !d.archived).length;
       if (reports.data) kept.reports = reports.data.length;
-      if (plans.data) kept.plans = plans.data.length;
     });
-    const counts = computed(() => DOC_COUNTS[props.env] || { docs: "", reports: "", plans: "" });
+    const counts = computed(() => DOC_COUNTS[props.env] || { docs: "", reports: "" });
     return { DOC_TABS, counts };
   },
   // the head of the Documents area: the type switch with its counts, then the page's quiet links, then its New button
@@ -2320,7 +2319,7 @@ const PlanPanel = {
 
 const Plans = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, DocTabs, TodoPanel, PlanPanel, Icon, ProgressBar },
+  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, TodoPanel, PlanPanel, Icon, ProgressBar },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const home = computed(() => `#/env/${props.env}/plans`);
@@ -2449,7 +2448,7 @@ const Plans = {
   },
   template: `
     <template v-if="onPage">
-      <TopBar :crumbs="[env, 'Documents', 'Plans', '#' + n]"><a class=btn :href="base">All plans</a></TopBar>
+      <TopBar :crumbs="[env, 'Plans', '#' + n]"><a class=btn :href="base">All plans</a></TopBar>
       <div class=body><div class=page><div class=plan-screen>
         <FetchState :state="item"/>
         <template v-if="item.data">
@@ -2522,14 +2521,13 @@ const Plans = {
       <TodoPanel v-if="todoView.n" :key="'todo' + todoView.n" :env="env" :n="todoView.n" :onClose="closeTodo" :link="'#/env/' + env + '/todos/' + todoView.n" :reloaded="item.reload"/>
     </template>
     <template v-else>
-      <TopBar :crumbs="archive ? [env, 'Documents', 'Plans', 'Archive'] : [env, 'Documents', 'Plans']"/>
+      <TopBar :crumbs="archive ? [env, 'Plans', 'Archive'] : [env, 'Plans']"/>
       <div class=body>
         <div class=list>
-          <DocTabs :env="env" current="plans">
-            <template #new><a class="btn new" :href="home + '/new'">New plan</a></template>
-          </DocTabs>
-          <ResourceList v-bind="PLAN_LIST" :bar="false" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
-            :href="(p) => base + '/' + p.n" :selected="(p) => String(p.n) === String(n)"/>
+          <ResourceList v-bind="PLAN_LIST" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
+            :href="(p) => base + '/' + p.n" :selected="(p) => String(p.n) === String(n)">
+            <template #tools><a class="btn new" :href="home + '/new'">New plan</a></template>
+          </ResourceList>
         </div>
         <Panel v-if="n === 'new'" label="New plan" :close="base">
           <ActionBar :actions="creating" :done="(body, a) => (a.url === api ? done(body, a) : leaveNew())"/>
@@ -3995,7 +3993,9 @@ const NAV = [
   { key: "inbox", label: "Messages", views: ["Inbox", "Questions", "Suggestions"], path: "messages", count: ["questions", "suggestions"] },
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   // documents are docs AND reports, each counted only while it is still live
-  { key: "docs", label: "Documents", views: ["EnvDocs", "Files", "Reports", "Plans"], path: "docs", count: ["docs", "reports"] },
+  { key: "docs", label: "Documents", views: ["EnvDocs", "Files", "Reports"], path: "docs", count: ["docs", "reports"] },
+  // a plan is a document, kind of, but it is a big feature of its own: the user asked for it out of Documents
+  { key: "plans", label: "Plans", icon: "plan", views: ["Plans"], path: "plans", count: "plans" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 
@@ -4566,7 +4566,7 @@ const App = {
             Environment<span :class="['fold', {shut: folded.environment}]"></span></button>
           <a v-if="!folded.environment" v-for="item in NAV" :key="item.key" :class="['item', {on: item.views.includes(route.view)}]"
             :href="'#/env/' + envName + (item.path ? '/' + item.path : '')">
-            <Icon :name="item.key"/>{{ item.label }}
+            <Icon :name="item.icon || item.key"/>{{ item.label }}
             <span v-if="item.count" :class="['count', {hot: (item.key === 'inbox' || item.key === 'home') && navCount(item)}]">{{ navCount(item) || '' }}</span>
           </a>
         </div>
