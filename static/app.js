@@ -2280,7 +2280,7 @@ const DocTabs = {
     </div>`,
 };
 
-const PLAN_STATUS = { preparing: "Being written", draft: "Draft", active: "Active", parked: "Parked", done: "Done", abandoned: "Abandoned" };
+const PLAN_STATUS = { preparing: "Being written", draft: "Draft", active: "Active", parked: "Paused", done: "Done", abandoned: "Abandoned" };
 
 const PLAN_LIST = {
   groups: [{ key: "active", label: "Active", kind: "progress", match: (p) => p.status === "active" },
@@ -2388,6 +2388,10 @@ const Plans = {
                    { name: "reopen", label: "Why, if the phase is already complete (optional)" }] },
         { label: "Link", method: "POST", url: `${url}/link`, submit: "Link",
           fields: [{ name: "ref", label: "Document or report", placeholder: "doc 4.2 or report 1" }] },
+        // pausing is parking: the plan stays where it is, its to-dos are held, and the slot is free
+        { label: "Pause this plan", method: "POST", url: `${url}/park`, submit: "Pause the plan",
+          note: "The agent stops picking up this plan's to-dos. The plan keeps its phases and what is done; you start it again from here.",
+          fields: [{ name: "why", label: "Why it is paused" }] },
         { label: "Abandon", method: "DELETE", url, danger: true, submit: "Abandon",
           fields: [{ name: "why", label: "Why the plan is stopped" }] },
       ];
@@ -3261,7 +3265,7 @@ const EnvHome = {
       // a plan the agent is still writing: it is visible at once, and there is nothing to press yet
       preparing: { ref: "being written", act: "" },
       active: { ref: "working", act: "" },
-      parked: { ref: "parked", act: "Resume" },
+      parked: { ref: "paused", act: "Resume" },
       draft: { ref: "ready to start", act: "Start" },
       done: { ref: "finished", act: "Acknowledge" },
     };
