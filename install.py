@@ -138,7 +138,8 @@ SKILLS = (("skill", ".claude/skills/journal"),
           ("skills/journal-docs", ".claude/skills/journal-docs"),
           ("skills/journal-agents", ".claude/skills/journal-agents"),
           ("skills/journal-plans", ".claude/skills/journal-plans"),
-          ("skills/journal-reports", ".claude/skills/journal-reports"))
+          ("skills/journal-reports", ".claude/skills/journal-reports"),
+          ("skills/journal-transcripts", ".claude/skills/journal-transcripts"))
 
 #: WHERE THE PACKAGE'S OWN RULES ARE WRITTEN, besides the block the hook injects. The hook
 #: reaches Claude Code and nothing else; these rules bind every agent, and an agent that
