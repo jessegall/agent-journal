@@ -1126,7 +1126,14 @@ const ResourceList = {
       folds[list] = { ...(folds[list] || {}), [g.key]: !folded(g) };
       saveListFolds(folds);
     };
-    return { state, sections, closable, archived, sortOf, setSort, more, open, moving, fresh, folded, fold, TYPES };
+    // THE WHOLE HEADER IS THE TARGET, not just the chevron: a 20px hit area for something the eye
+    // reads as one row. The chevron keeps its own click (so it stays the keyboard control and is not
+    // toggled twice), and a click that lands in the sort controls is a sort, never a fold.
+    const foldFromHead = (e, g) => {
+      if (e.target.closest(".sort, .ghead-fold")) return;
+      fold(g);
+    };
+    return { state, sections, closable, archived, sortOf, setSort, more, open, moving, fresh, folded, fold, foldFromHead, TYPES };
   },
   template: `
     <div v-if="bar" class=viewbar>
@@ -1146,7 +1153,7 @@ const ResourceList = {
     <template v-else-if="rows">
       <TransitionGroup tag="div" class=groups name="group" appear>
       <div v-for="g in sections" :key="g.key" class=lgroup>
-        <div v-if="g.label" class=ghead>
+        <div v-if="g.label" class=ghead @click="foldFromHead($event, g)">
           <StatusIcon v-if="g.kind" :kind="g.kind"/>{{ g.label }}<span class=n>{{ g.total }}</span>
           <span class=sort>
             <select v-if="sorts.length > 1" class=sort-select :value="sortOf(g.key).by" aria-label="Sort by"
