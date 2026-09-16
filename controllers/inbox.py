@@ -6,17 +6,18 @@ import fmt
 import inbox
 from controller import Controller, Payload, Result
 from payloads.common import ListingPayload, MovePayload, TextPayload, WhyPayload
-from payloads.inbox import AttachPayload, DetachPayload, FilePayload, ProcessPayload, StorePayload, ReplyPayload
+from payloads.inbox import (AttachPayload, DeclarePayload, DetachPayload, FilePayload, ProcessPayload,
+                            StorePayload, ReplyPayload)
 
 
 class InboxController(Controller):
     resource = "messages"
     noun = "message"
-    actions = ("index", "show", "store", "update", "process", "file", "detach", "attach", "done", "move", "destroy", "reply", "waiting")
-    numbered = ("show", "update", "process", "file", "detach", "attach", "done", "move", "destroy", "reply")
+    actions = ("index", "show", "store", "update", "process", "declare", "file", "detach", "attach", "done", "move", "destroy", "reply", "waiting")
+    numbered = ("show", "update", "process", "declare", "file", "detach", "attach", "done", "move", "destroy", "reply")
     payloads = {"index": ListingPayload, "store": StorePayload, "update": TextPayload, "process": ProcessPayload,
                 "file": FilePayload, "detach": DetachPayload, "attach": AttachPayload, "move": MovePayload,
-                "destroy": WhyPayload, "reply": ReplyPayload}
+                "destroy": WhyPayload, "reply": ReplyPayload, "declare": DeclarePayload}
     # a processed or moved message is the record of what it became: it is not reworded, refiled,
     # processed a second time or carried elsewhere — but a LATE part is still the truth about what
     # the user said, so `process` is not in here
@@ -28,7 +29,7 @@ class InboxController(Controller):
 
     def guard(self, root: Path, action: str, p: Payload) -> Result | None:
         # the row is only looked up for the actions that name one: index and store carry no id
-        if action in self.EDITS | {"destroy", "process"} and self.repository(root, p).find(p.id).archived:
+        if action in self.EDITS | {"destroy", "process", "declare"} and self.repository(root, p).find(p.id).archived:
             return Result("refused", inbox.say("already_archived", n=p.id))
         if action in self.EDITS and not self.repository(root, p).find(p.id).waiting:
             return Result("refused", inbox.say("already_processed", n=p.id))
@@ -76,6 +77,9 @@ class InboxController(Controller):
         outcome = inbox.add(root, p.text, p.at, source=p.source, track=p.env or None, files=files, kind=p.kind)
         data = self._row(root, p, self.repository(root, p).count()) if outcome[0] else None
         return Result.of(outcome, data, created=True)
+
+    def declare(self, root: Path, p: DeclarePayload) -> Result:
+        return Result.of(inbox.declare(root, p.id, p.kind, p.at, p.env or None), self._row(root, p, p.id))
 
     def update(self, root: Path, p: TextPayload) -> Result:
         return Result.of(inbox.update(root, p.id, p.text, p.env or None), self._row(root, p, p.id))

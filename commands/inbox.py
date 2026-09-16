@@ -139,6 +139,14 @@ class Process(Resource):
     action = "process"
 
 
+class Declare(Resource):
+    signature = "messages:declare {n : a message number} {kind* : what it is, when it arrived without saying: transcript}"
+    casts = MESSAGE
+    writes = True
+    controller = CONTROLLER
+    action = "declare"
+
+
 class Done(Resource):
     signature = "messages:done {n : a message number}"
     casts = MESSAGE
@@ -180,4 +188,4 @@ class Move(Resource):
     action = "move"
 
 
-COMMANDS = (List, Show, Waiting, Add, Edit, Process, File, Detach, Attach, Done, Reply, Archive, Move)
+COMMANDS = (List, Show, Waiting, Add, Edit, Process, Declare, File, Detach, Attach, Done, Reply, Archive, Move)

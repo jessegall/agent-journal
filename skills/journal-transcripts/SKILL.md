@@ -24,6 +24,28 @@ transcript is a transcript at forty words or forty thousand.
 The kind rides on the message, the viewer shows it as a **Transcript** rather than a
 message, and the wake line that reaches an idle agent says what arrived.
 
+## When it was not declared
+
+Declaring is exact, and it is the path to prefer. Recognition is the safety net for the
+time the user forgets — and it is deliberately NARROW, because the two ways of being
+wrong do not cost the same. Filing work out of an ordinary message is work they never
+asked for; missing a transcript only leaves them doing what they do today.
+
+**Recognise only what is unmistakable**: a message carrying an attached `.txt` or `.md`
+whose text is a conversation — repeated speaker turns, `Name:` at the start of lines, or
+timestamps down the left. `journal messages show <n>` prints each attachment's path;
+read the file before deciding. A long paste with no attachment is NOT enough, however
+much it reads like one.
+
+**Say that you recognised it. Never file silently.**
+
+    journal messages declare <n> transcript
+
+That makes it a transcript in fact: the file is written, the row says it has one, and
+every rule below applies to it. Then say so in a reply — "this looks like a transcript,
+so I have treated it as one; tell me if it is not" — and carry on. The user can see what
+you did and undo it with one word, which is what makes acting rather than asking safe.
+
 ## What you do with one
 
 Reading it is not filing it. A transcript is worked in this order, and the order matters

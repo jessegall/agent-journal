@@ -445,5 +445,32 @@ j("messages", "add", "an ordinary message writes no transcript")
 check("an ordinary message writes none",
       _inbox.transcript_path(d / ".journal", "default", len(stored())).exists(), False)
 
+# ------------------------------------------------- a message already here can be told what it is
+# Recognition is worth nothing if a recognised transcript cannot BECOME a declared one: it would have
+# no file, no flag, and neither the chip nor the link. Declaring late is the same act, applied late --
+# and a PROCESSED message may still be declared, because recognition happens while filing.
+j("switch", "default")
+j("messages", "add", "Jesse: the loader double-fetches. Sam: fix it this week.")
+_und = len(stored())
+check("it arrives as an ordinary message", stored()[-1].get("kind", ""), "")
+code, out = j("messages", "declare", str(_und), "transcript")
+check("it can be told what it is", (code, "is a transcript now" in out), (0, True))
+check("and that writes the file and records it, exactly as sending one declared does",
+      (stored()[-1].get("kind"), bool(stored()[-1].get("transcript")),
+       _inbox.transcript_path(d / ".journal", "default", _und).is_file()),
+      ("transcript", True, True))
+code, out = j("messages", "declare", str(_und), "transcript")
+check("saying it twice is refused", (code, "already a transcript" in out), (1, True))
+code, out = j("messages", "declare", str(_und), "banana")
+check("and a kind that does not exist is refused, naming what there is",
+      (code, "no message kind called" in out), (1, True))
+j("messages", "add", "Sam: a second conversation.")
+_proc = len(stored())
+j("messages", "process", str(_proc), "--part=a second conversation", "--became=noted")
+j("messages", "done", str(_proc))
+code, out = j("messages", "declare", str(_proc), "transcript")
+check("a message already processed can still be declared — recognition happens while filing",
+      (code, "is a transcript now" in out), (0, True))
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
