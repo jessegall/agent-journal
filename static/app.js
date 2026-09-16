@@ -3370,8 +3370,18 @@ const EnvHome = {
     // the second line: when it was, and the to-do it serves — the Finished heading says it is finished, so the line does not
     const workSub = (w, finished) => [(finished ? w.ended_age : w.age) || "just now",
                                       w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ");
-    const workLines = computed(() => (work.data || []).filter((w) => !w.ended && !w.parked)
-      .map((w, i) => ({ n: w.n, title: w.subject, sub: workSub(w, false), live: i === 0 })));
+    const open_ = computed(() => (work.data || []).filter((w) => !w.ended && !w.parked));
+    // the row being worked right now: a card in the plan card's family, lighter — no bar, no action
+    const workCard = computed(() => {
+      const w = open_.value[0];
+      if (!w) return null;
+      return { n: w.n, lead: w.todo_title || w.subject, sub: w.todo_title ? w.subject : "",
+               ref: [w.todo ? `to-do ${w.todo}` : "", w.age || "just now"].filter(Boolean).join(" · "),
+               awaiting: w.awaiting || "" };
+    });
+    // everything else open stays the plain line it has always been
+    const workLines = computed(() => open_.value.slice(1)
+      .map((w) => ({ n: w.n, title: w.subject, sub: workSub(w, false), live: false })));
     // parked work is neither working nor finished: it stopped on purpose and says what it waits on
     const parkedLines = computed(() => (work.data || []).filter((w) => !w.ended && w.parked)
       .map((w) => ({ n: w.n, title: w.subject, why: w.parked, sub: [w.parked_age || w.age, w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ") })));
@@ -3445,7 +3455,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote, waitingCount };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, livePlans, reloadPlans, workCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote, waitingCount };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3492,13 +3502,18 @@ const EnvHome = {
       <section class=home-section>
         <div class=home-head><h2>Working on</h2></div>
         <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans"/>
+        <div v-if="workCard" class=work-card @click="peek('work', workCard.n)">
+          <div class=work-card-top><span class=work-card-lead>{{ workCard.lead }}</span><span class=work-now-ref>{{ workCard.ref }}</span></div>
+          <p v-if="workCard.sub" class=work-card-sub>{{ workCard.sub }}</p>
+          <p v-if="workCard.awaiting" class=work-now-why>waiting on {{ workCard.awaiting }}</p>
+        </div>
         <TransitionGroup name=wrow>
           <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
             <span :class="['needs-dot', {live: w.live}]"></span>
             <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
           </a>
         </TransitionGroup>
-        <p v-if="!livePlans.length && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
+        <p v-if="!livePlans.length && !workCard && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
       </section>
       <section v-if="parkedLines.length" class=home-section>
         <div class=home-head><h2>Parked</h2></div>
