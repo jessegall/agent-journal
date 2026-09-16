@@ -392,7 +392,8 @@ const StatusBar = {
       const workHref = w ? `${base}/work/${w.n}` : planHref;
       if (plan && plan.held) return { state: "Stopped", held: true, what: `plan ${plan.n} · phase ${plan.held} is a checkpoint — waiting for you to continue`, href: planHref };
       if (!agent) return { state: "Stopped", what: "no agent is on this environment", href: planHref };
-      const onIt = w ? w.subject : plan ? `plan ${plan.n} · phase ${plan.current}: ${plan.current_title}` : "";
+      const onIt = w ? (w.todo ? `to-do ${w.todo} · ${w.subject}` : w.subject)
+        : plan ? `plan ${plan.n} · phase ${plan.current}: ${plan.current_title}` : "";
       if (agent.compacting) return { state: "Working", live: true, what: "compacting its context", href: workHref };
       if (agent.working) return { state: "Working", live: true, what: onIt || "on its own", href: workHref };
       return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
@@ -410,20 +411,22 @@ const StatusBar = {
         todo: w && w.todo ? w.todo : 0,
       };
     });
-    // the sentence is the control: it opens the current work over the page, or the plan when no work is open
+    // the sentence is the control: it opens the to-do it names, the work when the work serves none,
+    // or the plan when nothing is open — the chip that used to carry the link is gone from the bar
     const openCurrent = () => {
-      if (inspectWork.value) { OVERLAY.kind = "work"; OVERLAY.n = inspectWork.value.n; } else if (view.value.href) location.hash = view.value.href;
+      const w = inspectWork.value;
+      if (w && w.todo) { OVERLAY.kind = "todo"; OVERLAY.n = w.todo; }
+      else if (w) { OVERLAY.kind = "work"; OVERLAY.n = w.n; }
+      else if (view.value.href) location.hash = view.value.href;
     };
     return { env, view, SHELL, openCurrent, facts };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
-      <button type=button class=statusbar-text title="Open what it is on" @click="openCurrent"><b>{{ view.state }}</b><span>{{ view.what }}</span></button>
+      <button type=button class=statusbar-text :title="facts.todo ? 'Open the to-do it is on' : 'Open what it is on'" @click="openCurrent"><b>{{ view.state }}</b><span>{{ view.what }}</span></button>
       <span class=statusbar-tools>
         <span v-if="facts.branch && SHELL.wide" class=statusbar-facts :title="facts.hint"><Icon name="style"/><span>{{ facts.branch }}</span></span>
-        <a v-if="facts.todo" class=statusbar-todo :href="'#/env/' + env + '/todos/' + facts.todo"
-          title="Open the to-do this work serves">to-do {{ facts.todo }}</a>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
