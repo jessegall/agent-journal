@@ -28,6 +28,15 @@ easy to conflate and they are unrelated.
 **Most subagents need no grant at all.** They report what they found and this conversation
 files it — that is the normal case, and the section below is for the exception.
 
+**RESEARCH ENDS IN A REPORT, and you write it.** Any dispatch whose product is findings
+rather than a change — a review, an audit, an investigation, "go and see whether…" — ends
+with `journal reports add "<what was asked>" --brief`, compiled by you from what came back:
+what was asked, what was found, what was found to be FINE, and where it stands. A subagent
+cannot write it (it has no ledger), and its transcript is not something the user can read;
+you are the only one holding every answer. Filing the findings as to-dos is not a
+substitute — a to-do says what to do next, never what was checked. It is a rule
+(`journal rules`), because it binds every environment.
+
 ## A subagent that must write: lend it an environment
 
     journal grant "<environment>"        lend it to this session's subagents
