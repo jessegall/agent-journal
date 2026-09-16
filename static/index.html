@@ -589,20 +589,9 @@
   .part-chip.done { background: rgba(111, 174, 125, .14); color: #8fc79d; }
   .plan-screen { padding: 26px 28px 56px; display: flex; flex-direction: column; gap: 22px; max-width: 960px; }
   .plan-top { display: flex; flex-direction: column; gap: 10px; }
-  .plan-switch { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-  .plan-tab { display: inline-flex; align-items: center; white-space: nowrap; gap: 7px; height: 28px; padding: 0 11px; border-radius: 7px; font-size: 12.5px;
-    border: 1px solid var(--border); background: transparent; color: var(--text-3); text-decoration: none; }
-  .plan-tab:hover { border-color: var(--border-2); color: var(--text-2); }
-  .plan-tab.on { border-color: rgba(91, 141, 239, .45); background: rgba(91, 141, 239, .14); color: #cfd7f8; }
-  .plan-tab-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; }
-  .plan-tab-note { font-size: 11px; color: var(--text-3); }
-  .plan-tab.on .plan-tab-note { color: #9fc0f7; }
   /* a finished plan stays reachable and stops looking like a choice */
   /* a plan nobody is working: the badge states what it is rather than claiming an owner */
   .plan-assigned.quiet { background: transparent; border: 1px solid var(--border-2); color: var(--text-3); }
-  .plan-tab.finished { opacity: .6; border-style: dashed; }
-  .plan-tab.finished.on { opacity: 1; border-style: solid; }
-  .plan-switch-note { flex: none; font-size: 11px; color: var(--text-3); white-space: nowrap; }
   .plan-assigned { display: inline-flex; align-items: center; white-space: nowrap; height: 20px; padding: 0 8px; border-radius: 5px;
     background: rgba(91, 141, 239, .16); border: 1px solid rgba(91, 141, 239, .45); color: #9fc0f7; font-size: 11px; font-weight: 500; }
   .plan-panel-phases { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
