@@ -1785,7 +1785,8 @@ const MessagePanel = {
     <Panel :label=\"'Message ' + n" :close="close" :onClose="onClose" :link="link">
       <FetchState :state="item"/>
       <template v-if="item.data">
-        <h2 class=panel-title>{{ item.data.gist || item.data.text }}</h2>
+        <!-- the heading is the message's NUMBER: the text is read once, under it, where UserMessage renders it -->
+        <h2 class=panel-title>Message {{ item.data.n }}</h2>
         <UserMessage :text="item.data.text"/>
         <dl class=props>
           <dt>Status</dt><dd :title="item.data.status === 'waiting' && item.data.read ? 'The agent read it ' + item.data.read_age : null"><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled' : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
@@ -1869,7 +1870,7 @@ const ReplyPanel = {
     <Panel :label="'Reply to message ' + n" :close="close" :onClose="onClose" :link="link">
       <FetchState :state="item"/>
       <template v-if="item.data">
-        <h2 class=panel-title>{{ item.data.gist || item.data.text }}</h2>
+        <h2 class=panel-title>Message {{ item.data.n }}</h2>
         <UserMessage :text="item.data.text"/>
         <PointByPoint v-if="answered.rows.length" :rows="answered.rows" :env="env"/>
         <p v-else class="prose muted">The agent has not answered any part of this message yet.</p>
