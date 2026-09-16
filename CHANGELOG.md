@@ -4,6 +4,36 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.140.0 — Auto mode is one switch for the whole journal
+
+**Auto mode stops being per environment.** The user watched it fail: an agent that switches environments
+came to a halt the moment it moved to one where the flag was off. The switch is the journal's now —
+`todo.auto(root)` takes no environment, `set_auto(root, on)` writes one value, and every reader (the
+hook's nudges and its `AskUserQuestion` refusal, `journal next`, the status line, plans, the channel and
+the controllers) reads that one. A journal that recorded it per environment is migrated on first use: on
+if it was on anywhere, because turning it off for someone who had it on somewhere is the failure this
+removes. In the viewer the Auto row moves out of an environment's Settings into **Project**, written
+through a new project-scoped route, `POST /api/journal/settings`; the environment route refuses `auto`
+and says where it lives.
+
+**A plan can be started, paused and read from its own page.** A draft's "Approve the plan" action existed
+but was only rendered for an active plan, so the page that shows you the plan had no way to start it; the
+band now carries the one act a plan is waiting for — Approve, Pick this plan up again, Acknowledge, or
+Continue past the checkpoint. An active plan can be **paused** from its page (parking, in the user's
+word), and a plan links back to the message it was built from, the way a to-do, a pin and a question do.
+
+**A question's title is one line.** A title over `question_max_chars` (200) is refused the way a pin's
+claim is: the refusal shows what fits, what overflows, and says the context is not cut but moved into
+`--description`, with each choice its own `--option`.
+
+**A message is the record of what the user said, not a closed ticket.** A processed message still takes a
+late part and a late answer — measured: a plan asked for in a closed message had nothing to link back to,
+and an answer that arrived an hour later had nowhere to go. `done` still refuses twice, and an archived
+message still refuses everything.
+
+**In the viewer:** the foot of the right sidebar says when a newer journal is waiting, with no way to
+click it away until the upgrade; the top status bar no longer repeats the git branch.
+
 ## 1.139.0 — A finished plan waits for you, and the viewer says what it means
 
 Everything in this release came from working beside the user in the viewer, one message at a time.
