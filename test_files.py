@@ -129,5 +129,22 @@ _summed = [e["text"] for e in commandlog.entries(d / ".journal", "w")
 check("the tool uses between two journal commands become one summed line each time",
       _summed, ["Edited 1 file", "Ran 1 command, edited 5 files", "Ran 2 commands", "Ran 1 command"])
 
+# ─────────── a call that commits AND ends the work still records the commit ───────────
+# ONE TOOL CALL CAN CLOSE THE WORK IT WAS DOING: `git commit … && journal work end "…"`. The hook
+# only looks after the call, when nothing is open any more, so the commit used to land nowhere.
+j("work", "start", "the last piece")
+_both = 'git commit -qam z && .journal/journal.py work end "the last piece"'
+fire("PreToolUse", tool_name="Bash", tool_input={"command": _both})
+with (d / "a.txt").open("a") as fh:
+    fh.write("seven\n")
+git(d, "add", "-A")
+git(d, "commit", "-q", "-m", "z")
+j("work", "end", "the last piece")
+fire("PostToolUse", tool_name="Bash", tool_input={"command": _both}, tool_response={"stdout": ""})
+_z = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(d), capture_output=True, text=True).stdout.strip()
+_last = [w for w in state.tracked(d / ".journal", "work", "w", []) if w["subject"] == "the last piece"]
+check("a commit made by the call that ended the work still lands on that work",
+      [(c["sha"], c["subject"]) for w in _last for c in w.get("commits") or []], [(_z, "z")])
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
