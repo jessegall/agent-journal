@@ -327,7 +327,7 @@ MESSAGES = {
                "what survived: `journal search <term>`, `journal conversation --back=1`, `journal user`.\n\n"
                "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in this session, and again "
                "whenever a hook holds or denies you. Its focused skills — `journal-todos`, `journal-questions`, "
-               "`journal-messages`, `journal-memory`, `journal-docs`, `journal-agents`, `journal-plans` — load when their "
+               "`journal-messages`, `journal-memory`, `journal-docs`, `journal-agents`, `journal-plans`, `journal-reports` — load when their "
                "part comes up; "
                "load one yourself if it has not.",
     "docs_cite": "{catalogue}\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.",
@@ -336,6 +336,11 @@ MESSAGES = {
                     "  .journal/journal.py user        the user's own words, in full\n"
                     "  .journal/journal.py open        work you declared and never closed\n"
                     "The transcript lost nothing. Read it rather than half-remembering it.",
+    # WHAT SURVIVES A COMPACTION IS A SUMMARY OF A SKILL, NOT THE SKILL. The same instruction an
+    # upgrade already gives, for the same reason: what you remember of it is stale.
+    "compact_skills": "RELOAD YOUR JOURNAL SKILLS NOW — invoke the `journal` skill again, and every `journal-*` skill "
+                      "you had loaded, even if you believe they are still loaded. What crossed the compaction is a "
+                      "summary of them, and a summary of a rule is not the rule.",
     "nothing_open": 'NOTHING IS OPEN — declare what you pick up: `journal work start "<the work>"`.',
     "still_open": "STILL OPEN, from this or an earlier session:\n{rows:\n}\n`journal open` shows where each got to.",
     "note_auto": "AUTO IS ON — work the list without asking: `todos start <n>`, solve it, `work end`, repeat. "
@@ -3161,6 +3166,7 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
     if depth == BRIEF:
         parts.append(_counts(here, unbound))
     if source == "compact":
+        parts.append(say("compact_skills"))
         parts.append(say("compact_tail"))
     return "\n\n".join(parts)
 
