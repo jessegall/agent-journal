@@ -39,7 +39,7 @@ class EnvironmentController(Controller):
             return Result("missing", tracks.say("remove_none", name=repr(p.env)))
         import commandlog
         import reports
-        return Result("ok", "", {**row, "auto": todo.auto(root, p.env), "start": row["current"],
+        return Result("ok", "", {**row, "auto": todo.auto(root), "start": row["current"],
                                  "todos_archive_days": todo.archive_days(root, p.env),
                                  "reports_archive_days": reports.archive_days(root, p.env),
                                  "activity_show": commandlog.setting(root, p.env, commandlog.SHOW),
@@ -52,7 +52,7 @@ class EnvironmentController(Controller):
         import reports
         said = []
         if p.has("auto"):
-            said.append(todo.set_auto(root, p.env, p.auto))
+            said.append(todo.set_auto(root, p.auto))
         if p.has("retention"):
             import retention
             wanted = p.retention
@@ -94,12 +94,12 @@ class EnvironmentController(Controller):
     def auto(self, root: Path, p: AutoPayload) -> Result:
         want = p.state.lower()
         if not want:
-            return Result("ok", "", None, {"env": p.env, "on": todo.auto(root, p.env)})
+            return Result("ok", "", None, {"env": p.env, "on": todo.auto(root)})
         if want not in ("enable", "disable", "on", "off", "true", "false", "yes", "no"):
             return Result("refused", say("auto_wants", got=repr(p.state)))
         on = want in ("enable", "on", "true", "yes")
         meta = {"env": p.env, "on": on, "set": True}
-        message = todo.set_auto(root, p.env, on)
+        message = todo.set_auto(root, on)
         if on:
             ready = todo.ready(root, p.env)
             meta.update(working=[w["subject"] for w in work.open_work(root)], waiting=len(todo.open_items(root, p.env)),

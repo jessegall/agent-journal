@@ -422,7 +422,7 @@ def order(root: Path, track: str, items: list[dict]) -> list[tuple[int, dict]]:
         # a draft's to-dos wait for the user to approve the plan
         return [(0, t) for t in items if t["n"] not in member]
     n, plan, rows = got
-    auto = todo.auto(root, track)
+    auto = todo.auto(root)
     now, held = current(plan, rows), checkpoint(plan, rows, auto)
     allowed = [] if held or now is None else reachable(plan, rows, now, auto)
     out, by_phase = [], {}
@@ -452,7 +452,7 @@ def stall(root: Path, track: str) -> str:
                   if (plan.get("status") or DRAFT) == DRAFT and any(ph.get("todos") for ph in plan.get("phases") or [])]
         return say("stall_draft", n=drafts[0]) if drafts else ""
     n, plan, rows = got
-    held = checkpoint(plan, rows, todo.auto(root, track))
+    held = checkpoint(plan, rows, todo.auto(root))
     if held:
         return say("stall_checkpoint", n=n, p=held["p"], title=held["title"])
     now = current(plan, rows)
@@ -469,7 +469,7 @@ def proceed(root: Path, n: int, at: str, source: str = "cli", track: str | None 
         plan = _get(items, n)
         if plan is None:
             return False, say("no_plan", n=n)
-        held = checkpoint(plan, phases(root, plan, here), todo.auto(root, here))
+        held = checkpoint(plan, phases(root, plan, here), todo.auto(root))
         if held is None:
             return False, say("no_checkpoint", n=n)
         plan["phases"][held["p"] - 1]["continued_at"] = at
@@ -540,7 +540,7 @@ def carry_line(root: Path, track: str) -> str:
     if got is None:
         return ""
     n, plan, rows = got
-    held = checkpoint(plan, rows, todo.auto(root, track))
+    held = checkpoint(plan, rows, todo.auto(root))
     if held:
         return say("carry_held", n=n, title=plan.get("title", ""), p=held["p"], phase=held["title"])
     now = current(plan, rows)
@@ -661,7 +661,7 @@ def linked_reports(root: Path, track: str) -> set[int]:
 
 def row_response(root: Path, n: int, plan: dict, track: str, full: bool = False) -> dict:
     rows = phases(root, plan, track)
-    now, held = current(plan, rows), checkpoint(plan, rows, todo.auto(root, track))
+    now, held = current(plan, rows), checkpoint(plan, rows, todo.auto(root))
     row = {"n": n, "title": plan.get("title", ""), "goal": plan.get("goal", ""), "status": status(plan, rows),
            "at": plan.get("at", ""), "age": age(plan.get("at", "")) if plan.get("at") else "",
            "refs": list(plan.get("refs") or []), "why": plan.get("why") or "",
@@ -669,7 +669,7 @@ def row_response(root: Path, n: int, plan: dict, track: str, full: bool = False)
            "current": now["p"] if now else None, "current_title": now["title"] if now else "",
            "held": held["p"] if held else None, "held_since": (held or {}).get("completed_at", ""),
            "held_age": age(held["completed_at"]) if held and held.get("completed_at") else "",
-           "auto": todo.auto(root, track), "from_doc": plan.get("from_doc") or None,
+           "auto": todo.auto(root), "from_doc": plan.get("from_doc") or None,
            # a finished plan the user has not seen yet still belongs on the home card
            "acknowledged": acknowledged(plan), "acknowledged_at": plan.get("acknowledged_at") or "",
            "parked_why": plan.get("parked_why") or "", "parked_at": plan.get("parked_at") or "",

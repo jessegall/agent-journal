@@ -197,7 +197,7 @@ class Next(Command):
             fmt.say(TEXT["next_carry_on"])
             return 0
         waiting = todo.open_items(root(), here)
-        if not todo.auto(root(), here):
+        if not todo.auto(root()):
             fmt.say(render(TEXT["next_waiting_off"], n=len(waiting)) if waiting else TEXT["next_nothing"])
             return 0
         ready = todo.ready(root(), here)
