@@ -11,7 +11,7 @@ import transcript
 import work
 from pins import age
 from controller import Controller, Result
-from controllers.activity import context_use
+from controllers.activity import context_use, last_said
 from payloads import agent as agent_payloads
 from templates import render as fill
 
@@ -79,7 +79,9 @@ class AgentController(Controller):
             working = agents.working(root, env, full)
             out.update(name=agents.described(root.parent, parent, full) or f"Subagent {full[:8]}",
                        status="working" if working else "finished" if agents.finished(root, env, full) else "idle", seen=agents.age(root, env, full),
-                       parent=parent[:8], context=None, work=[], dispatched=[])
+                       parent=parent[:8], context=None, work=[], dispatched=[],
+                       # what it has reported: its latest reply, the same text the Activity column shows for a session
+                       said=last_said(path))
             out["skills"] = skills.rows(root.parent, path, skills.always(root))
             return out
         live = tracks.live(root).get(full)

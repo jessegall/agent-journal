@@ -600,12 +600,19 @@ const Panel = {
     const onHash = () => { hash.value = location.hash; };
     const at = computed(() => trailIndex(hash.value));
     const place = computed(() => (at.value >= 0 && INSPECTOR_TRAIL.items.length ? `${at.value + 1} of ${INSPECTOR_TRAIL.items.length}` : ""));
-    const KIND_OF = { "to-do": "todo", message: "message", reply: "message", question: "question", suggestion: "suggestion", work: "work", plan: "plan", report: "report", doc: "doc" };
+    const KIND_OF = { "to-do": "todo", message: "message", reply: "message", question: "question", suggestion: "suggestion", work: "work", plan: "plan", report: "report", doc: "doc", subagent: "subagent" };
     // the page each kind belongs to, named the way the nav names it
-    const PAGE_OF = { todo: "to-dos", message: "messages", question: "messages", suggestion: "messages", work: "work", plan: "plans", report: "reports", doc: "documents" };
+    const PAGE_OF = { todo: "to-dos", message: "messages", question: "messages", suggestion: "messages", work: "work", plan: "plans", report: "reports", doc: "documents", subagent: "the agent page" };
     const kindOf = computed(() => KIND_OF[String(props.label || "").split(" ")[0].toLowerCase()] || "");
     const chipTint = computed(() => (kindOf.value && TYPES[kindOf.value] ? TYPES[kindOf.value].tint : null));
     const pageWords = computed(() => `Go to ${PAGE_OF[kindOf.value] || "the page"}`);
+    const ROUTE_OF = { todo: "todos", message: "messages", question: "messages", suggestion: "messages", work: "work", plan: "plans", report: "reports", doc: "docs" };
+    // a link to the page you are already on is not a way out, so it is not offered
+    const onItsPage = computed(() => {
+      const env = (hash.value.match(/^#\/env\/([a-z0-9-]+)/) || [])[1];
+      const list = env && ROUTE_OF[kindOf.value] ? `#/env/${env}/${ROUTE_OF[kindOf.value]}` : "";
+      return hash.value === props.link || (!!list && hash.value === list);
+    });
     // the link leaves the inspector for the page behind it, so the panel goes with it
     const leaveForPage = (e) => { if (props.onClose) { e.preventDefault(); props.onClose(); location.hash = props.link; } };
     const step = (by) => {
@@ -684,7 +691,7 @@ const Panel = {
     let watcher = null;
     onMounted(() => { decorate(); watcher = new MutationObserver(decorate); watcher.observe(body.value, { childList: true, subtree: true }); });
     onUnmounted(() => { if (watcher) watcher.disconnect(); });
-    return { stepped, body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, pageWords, leaveForPage, INSPECTOR_TRAIL };
+    return { stepped, body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, pageWords, onItsPage, leaveForPage, INSPECTOR_TRAIL };
   },
   template: `
     <div :class="['panel-scrim', {closing, stepped}]" @click="dismiss"></div>
@@ -692,7 +699,7 @@ const Panel = {
       <div class=panel-grip title="Drag to resize" @pointerdown="drag"></div>
       <div class=panel-top>
         <span class=panel-ref><span class=panel-chip :style="chipTint ? { color: chipTint } : null">{{ label }}</span>
-          <a v-if="link" class=panel-open :href="link" :title="pageWords + ', leaving this panel'" @click="leaveForPage">{{ pageWords }}<Icon name="arrow"/></a></span>
+          <a v-if="link && !onItsPage" class=panel-open :href="link" :title="pageWords + ', leaving this panel'" @click="leaveForPage">{{ pageWords }}<Icon name="arrow"/></a></span>
         <span class=panel-tools>
           <span v-if="place" class=panel-place>{{ place }}</span>
           <button v-if="place" type=button class=icon-btn title="Previous (↑)" aria-label="Previous" :disabled="INSPECTOR_TRAIL.items.length < 2" @click="step(-1)"><Icon name="up"/></button>
@@ -2874,6 +2881,34 @@ const DocDetail = {
 
 // ─────────────────────────────────────────────────────────────── a resource, opened beside the page
 // what a click on a row opens without leaving the page, with a link to the resource's own page
+// a subagent belongs to the agent, not to a section of its own: this is the panel its line under the facts opens
+const SubagentPanel = {
+  props: ["env", "n", "close", "onClose", "link"],
+  components: { Panel },
+  setup(props) {
+    const about = useFetch(() => props.env && props.n && `/api/env/${props.env}/agent?kind=subagent&agent=${props.n}`);
+    return { about, AGENT_STATUS };
+  },
+  template: `
+    <Panel :label="'Subagent ' + n" :close="close" :onClose="onClose" :link="link">
+      <p v-if="about.error" class=error>{{ about.error }}</p>
+      <template v-else-if="about.data">
+        <h2 class=p-title>{{ about.data.name }}</h2>
+        <dl class=props>
+          <dt>State</dt><dd>{{ AGENT_STATUS[about.data.status] || about.data.status }}</dd>
+          <dt>Model</dt><dd>{{ about.data.model || 'not recorded' }}</dd>
+          <dt>Dispatched by</dt><dd><a class=chip :href="'#/env/' + env + '/agents/session/' + about.data.parent">Session {{ about.data.parent }}</a></dd>
+          <dt>Last wrote</dt><dd>{{ about.data.seen || 'nothing yet' }}</dd>
+        </dl>
+        <div>
+          <p class=section-label>{{ about.data.status === 'working' ? 'What it has reported so far' : 'What it reported' }}</p>
+          <p v-if="about.data.said" class=prose>{{ about.data.said }}</p>
+          <p v-else class="prose muted">It has not written anything yet.</p>
+        </div>
+      </template>
+    </Panel>`,
+};
+
 const PEEK = {
   todo: { panel: "TodoPanel", page: (env, n) => `#/env/${env}/todos/${n}` },
   message: { panel: "MessagePanel", page: (env, n) => `#/env/${env}/messages/${n}` },
@@ -2881,12 +2916,13 @@ const PEEK = {
   question: { panel: "QuestionPanel", page: (env, n) => `#/env/${env}/messages/q/${n}` },
   suggestion: { panel: "SuggestionPanel", page: (env, n) => `#/env/${env}/messages/s/${n}` },
   work: { panel: "WorkPanel", page: (env, n) => `#/env/${env}/work/${n}` },
+  subagent: { panel: "SubagentPanel", page: (env, n) => `#/env/${env}/agents/subagent/${n}` },
 };
 
 // Home's side panel: the resource's own panel, with its header linking to the page
 const Peek = {
   props: ["env", "kind", "n", "close", "reloaded"],
-  components: { TodoPanel, MessagePanel, ReplyPanel, QuestionPanel, WorkPanel, SuggestionPanel },
+  components: { TodoPanel, MessagePanel, ReplyPanel, QuestionPanel, WorkPanel, SuggestionPanel, SubagentPanel },
   setup() { return { PEEK }; },
   template: `
     <component :is="PEEK[kind].panel" :env="env" :n="n" :onClose="close" :link="PEEK[kind].page(env, n)" :reloaded="reloaded"/>`,
@@ -2941,14 +2977,6 @@ const EnvHome = {
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
         .map((r) => ({ ...r, open: () => peek(r.kind, r.n) }));
     });
-    const trailOwner = {};
-    watchEffect(() => {
-      INSPECTOR_TRAIL.owner = trailOwner;
-      INSPECTOR_TRAIL.items = queue.value.map((r) => ({ key: r.key, go: r.open }));
-      INSPECTOR_TRAIL.current = view.kind ? `${view.kind}:${view.n}` : null;
-    });
-    onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
-
     const plan = computed(() => (plans.data || []).find((p) => p.status === "active") || null);
     const planDetail = useFetch(() => props.env && plan.value && `/api/env/${props.env}/plans/${plan.value.n}`);
     const held = computed(() => !!(plan.value && plan.value.held));
@@ -2984,12 +3012,21 @@ const EnvHome = {
                progress: `${p.phases_done} of ${p.phases_total} phases${todos.length ? ` · ${todos.filter((t) => t.done).length} of ${todos.length} to-dos` : ""}` };
     });
     const workLines = computed(() => (work.data || []).map((w, i) => ({ n: w.n, title: w.subject, meta: `work ${w.n} · ${w.age || "just now"}`, live: i === 0 })));
-    // Subagents: the ones the agents list still carries, working first
-    const subagents = computed(() => (crew.data || []).filter((a) => a.kind === "subagent")
-      .sort((x, y) => Number(y.working) - Number(x.working))
-      .map((a) => ({ key: a.id, name: a.name || `Subagent ${a.id}`, live: a.working, href: `#/env/${props.env}/agents/subagent/${a.id}`,
-                     meta: [a.state, a.model, a.age_text ? `wrote ${a.age_text}` : ""].filter(Boolean).join(" · ") })));
-    const crewNote = computed(() => `${subagents.value.filter((a) => a.live).length} working · ${subagents.value.length} in the last 30 minutes`);
+    // Subagents belong to the agent, so the live ones hang under its facts line: one line each, and nothing at all when none are running
+    const liveCrew = computed(() => (crew.data || []).filter((a) => a.kind === "subagent" && a.state === "active")
+      .map((a, i) => ({ key: `subagent:${a.id}`, name: a.name || `Subagent ${a.id}`,
+                        title: `Subagent ${a.id} · ${a.model || "model not recorded"} · from session ${a.parent}`,
+                        tail: [a.model, a.age_text].filter(Boolean).join(" · "),
+                        delay: `${i * 60}ms`, open: () => peek("subagent", a.id) })));
+
+    // a subagent's panel steps through the other subagents, never sideways into the queue behind it
+    const trailOwner = {};
+    watchEffect(() => {
+      INSPECTOR_TRAIL.owner = trailOwner;
+      INSPECTOR_TRAIL.items = (view.kind === "subagent" ? liveCrew.value : queue.value).map((r) => ({ key: r.key, go: r.open }));
+      INSPECTOR_TRAIL.current = view.kind ? `${view.kind}:${view.n}` : null;
+    });
+    onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
     // Replies to you: each part of a message the agent answered, so a reply is not buried in the message
     const replies = computed(() => {
@@ -3020,12 +3057,20 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, plan, continuePlan, goPlan, queueMeta, currentWork, workLines, subagents, crewNote, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, plan, continuePlan, goPlan, queueMeta, currentWork, workLines, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
     <div class=body><div class=page><div class=home>
-      <div class=home-facts><span v-for="(f, i) in lead.facts" :key="i" :class="{first: i === 0}">{{ f }}</span></div>
+      <div class=home-lead>
+        <div class=home-facts><span v-for="(f, i) in lead.facts" :key="i" :class="{first: i === 0}">{{ f }}</span></div>
+        <div v-if="liveCrew.length" class=crew-strip>
+          <button v-for="a in liveCrew" :key="a.key" type=button class=crew-line :title="a.title" :style="{ animationDelay: a.delay }" @click="a.open">
+            <span class=crew-rule></span><span class=crew-dot></span>
+            <span class=crew-name>{{ a.name }}</span><span class=crew-tail>{{ a.tail }}</span>
+          </button>
+        </div>
+      </div>
       <section class=home-section>
         <div class=home-head><h2>Needs you</h2><span>{{ queue.length + (held ? 1 : 0) ? (queue.length + (held ? 1 : 0)) + ' waiting' : 'clear' }}</span>
           <span v-if="queue.length + (held ? 1 : 0) > SLOTS" class=home-hint>{{ queue.length + (held ? 1 : 0) - SLOTS }} more — scroll the list</span></div>
@@ -3063,13 +3108,6 @@ const EnvHome = {
           <div class=reply-line-row><span :class="['reply-line-answer', {pending: !r.done}]">{{ r.done ? r.answer : (r.waitingOn ? 'Working on it — ' + r.waitingOn : 'Working on it') }}</span><span class=needs-meta>{{ r.ref }}</span></div>
         </div>
         <p v-if="!replies.length" class=home-empty>Nothing unread from the agent.</p>
-      </section>
-      <section class=home-section>
-        <div class=home-head><h2>Subagents</h2><span>{{ crewNote }}</span></div>
-        <a v-for="a in subagents" :key="a.key" class=home-line :href="a.href">
-          <span :class="['needs-dot', 'crew', {live: a.live}]"></span><span class="home-line-title strong">{{ a.name }}</span><span class=needs-meta>{{ a.meta }}</span>
-        </a>
-        <p v-if="!subagents.length" class=home-empty>No subagents have run in the last 30 minutes.</p>
       </section>
     </div></div></div>
     <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>`,
