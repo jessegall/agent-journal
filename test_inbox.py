@@ -385,5 +385,23 @@ check("the to-do's page finds the message, though it sits elsewhere",
 check("and the same bare ref here keeps its OWN message, never the other environment's",
       [(r["n"], r["env"]) for r in _inbox.sources(_root, "todo:1", "default")], [(1, "default")])
 
+# ------------------------------------------------------- a reply with no part is still told to the user
+# A plain reply answers the whole message rather than one quoted line of it. It used to return before
+# the notification was written, so the user was never shown it and the home could not list it.
+import notifications as _notif  # noqa: E402
+
+j("switch", "default")
+j("messages", "add", "did the loader ever get swapped?")
+_pr = len(stored())
+_had = len(_notif._all(d / ".journal", "default"))
+code, out = j("messages", "reply", str(_pr), "Swapped it this morning.")
+check("a plain reply is taken", (code, "replied to message" in out), (0, True))
+_notes = _notif._all(d / ".journal", "default")
+check("and the user is notified about it, the way a part-answering reply is",
+      (len(_notes) - _had, _notes[-1]["about"], "Replied to your message" in _notes[-1]["text"]),
+      (1, f"inbox:{_pr}", True))
+check("the notification is unread, which is what puts it in front of them",
+      _notes[-1].get("read_at"), None)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
