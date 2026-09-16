@@ -1892,10 +1892,23 @@ const ReplyPanel = {
     <Panel :label="'Reply to message ' + n" :close="close" :onClose="onClose" :link="link">
       <FetchState :state="item"/>
       <template v-if="item.data">
-        <h2 class=panel-title>Message {{ item.data.n }}</h2>
-        <UserMessage :text="item.data.text"/>
+        <h2 class=panel-title>The reply to message {{ item.data.n }}</h2>
+        <!-- THE REPLY LEADS. This panel is opened to read an answer: the message it answers is context
+             underneath it, not the first thing. A plain reply quotes no part of the message, so it used
+             to fall into the others bucket and be dropped here entirely, by the one panel meant for it. -->
+        <div v-if="answered.others.length" class=linked>
+          <div v-for="(r, i) in answered.others" :key="i" :class="['sub', 'reply', {'from-agent': r.who === 'the agent'}]">
+            <div class=muted>{{ r.who === 'the agent' ? 'The agent' : 'You' }}{{ r.part ? ' answered' : '' }} · {{ r.age || 'just now' }}</div>
+            <blockquote v-if="r.part" class=reply-part>{{ r.part }}</blockquote>
+            <div class="md prose" v-html="$md(r.text)"></div>
+          </div>
+        </div>
         <PointByPoint v-if="answered.rows.length" :rows="answered.rows" :env="env"/>
-        <p v-else class="prose muted">The agent has not answered any part of this message yet.</p>
+        <p v-else-if="!answered.others.length" class="prose muted">The agent has not answered any part of this message yet.</p>
+        <details class=reply-source>
+          <summary>The message it answers</summary>
+          <UserMessage :text="item.data.text"/>
+        </details>
         <div class=actions><div class=action-buttons>
           <button type=button class=primary-act @click="openMessage">Open the full message<Icon name="arrow"/></button>
         </div></div>
