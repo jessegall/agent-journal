@@ -56,7 +56,9 @@ class WorkController(Controller):
                 "ended": w.ended, "ended_age": pins.age(w.ended) if w.ended else "", "closed_at": w.ended or "",
                 "awaiting": (w.awaiting or {}).get("what") or "",
                 "todo": t["n"] if t else None, "doc": (t.get("doc") or None) if t else None,
-                "notes": [{"at": x.get("at", ""), "text": x.get("text", "")} for x in w.notes],
+                # each note carries when it was written, through the same age() every other row uses
+                "notes": [{"at": x.get("at", ""), "age": pins.age(x.get("at", "")) if x.get("at") else "",
+                           "text": x.get("text", "")} for x in w.notes],
                 "files": [{"path": f.get("path", ""), "created": bool(f.get("created")), "added": f.get("added", 0),
                            "removed": f.get("removed", 0)} for f in w.files],
                 "commits": [{"sha": c.get("sha", ""), "subject": c.get("subject", ""), "at": c.get("at", "")} for c in w.commits]}

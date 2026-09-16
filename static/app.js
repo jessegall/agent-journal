@@ -1798,7 +1798,12 @@ const WorkPanel = {
         </div>
         <div v-if="item.data.notes.length">
           <p class=section-label data-shut>Work log <span class=muted>{{ item.data.notes.length }}</span></p>
-          <div class=linked><div v-for="(note, i) in item.data.notes" :key="i" class=sub v-html="$linkify(note.text)"></div></div>
+          <div class=work-log>
+            <div v-for="(note, i) in item.data.notes" :key="i" class=work-log-note>
+              <span class=work-log-when>{{ note.age || 'just now' }}</span>
+              <div class=work-log-text v-html="$linkify(note.text)"></div>
+            </div>
+          </div>
         </div>
         <Comments :about="'work ' + item.data.n" :env="env" :key="'c-work' + item.data.n"
           :quote="OVERLAY.n === item.data.n ? OVERLAY.quote : ''"/>
