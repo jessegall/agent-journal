@@ -115,8 +115,12 @@ def phases(root: Path, plan: dict, track: str, known: dict[int, dict] | None = N
             got = known.get(t)
             rows.append({"n": t, "title": (got or {}).get("title", ""), "done": not got or bool(got.get("done")),
                          "gone": got is None})
+        # a phase became complete when its LAST to-do closed, which is the moment a checkpoint began to hold;
+        # derived rather than stored, so it is right for plans written before anyone thought to record it
+        closed = [(known.get(t) or {}).get("done") or "" for t in ph.get("todos") or []]
         out.append({"p": p, "title": ph.get("title", ""), "when": ph.get("when", ""), "checkpoint": bool(ph.get("checkpoint")),
-                    "todos": rows, "complete": bool(rows) and all(r["done"] for r in rows), "current": False})
+                    "todos": rows, "complete": bool(rows) and all(r["done"] for r in rows), "current": False,
+                    "completed_at": max(closed) if closed and all(closed) else ""})
     return out
 
 
@@ -510,7 +514,9 @@ def row_response(root: Path, n: int, plan: dict, track: str, full: bool = False)
            "refs": list(plan.get("refs") or []), "why": plan.get("why") or "",
            "phases_total": len(rows), "phases_done": sum(1 for r in rows if r["complete"]),
            "current": now["p"] if now else None, "current_title": now["title"] if now else "",
-           "held": held["p"] if held else None, "auto": todo.auto(root, track), "from_doc": plan.get("from_doc") or None,
+           "held": held["p"] if held else None, "held_since": (held or {}).get("completed_at", ""),
+           "held_age": age(held["completed_at"]) if held and held.get("completed_at") else "",
+           "auto": todo.auto(root, track), "from_doc": plan.get("from_doc") or None,
            "closed_at": plan.get("done_at") or plan.get("closed_at") or "", "gist": fmt.gist(plan.get("goal", ""))}
     row["meta"] = " · ".join(x for x in (row["age"], say("progress", done=row["phases_done"], total=row["phases_total"]),
                                          say("current", p=now["p"], title=now["title"]) if now else "",

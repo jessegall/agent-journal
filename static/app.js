@@ -3166,7 +3166,7 @@ const EnvHome = {
           <div v-if="held" key=held class=needs-row @click="goPlan">
             <span class="needs-dot held"></span>
             <span class=needs-title>Continue past the checkpoint</span>
-            <span class=needs-meta>plan {{ plan.n }} · phase {{ plan.held }}</span>
+            <span class=needs-meta>{{ plan.held_age ? 'held ' + plan.held_age : 'plan ' + plan.n + ' · phase ' + plan.held }}</span>
             <button type=button class=needs-continue @click.stop="continuePlan">Continue</button>
           </div>
           <div v-for="it in queue" :key="it.key" :class="['needs-row', {sel: view.kind + ':' + view.n === it.key}]" @click="it.open">
