@@ -2301,7 +2301,7 @@ function planStepState(ph) { return ph.complete ? "Complete" : ph.current ? "Cur
 
 const PlanPanel = {
   props: PANEL_PROPS,
-  components: { Panel, ActionBar },
+  components: { Panel, ActionBar, FromMessages },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -2347,7 +2347,7 @@ const PlanPanel = {
 
 const Plans = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, TodoPanel, PlanPanel, Icon, ProgressBar },
+  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, TodoPanel, PlanPanel, Icon, ProgressBar, FromMessages },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const home = computed(() => `#/env/${props.env}/plans`);
@@ -2544,6 +2544,7 @@ const Plans = {
             <p v-if="!ph.todos.length" class="muted phase-empty">No to-dos yet</p>
           </section>
           <p v-if="!item.data.phases.length" class=muted>{{ item.data.status === 'preparing' ? 'The agent is writing this plan; its phases are being added.' : 'No phases yet.' }}</p>
+          <FromMessages :rows="item.data.from_messages" :env="env"/>
           <section v-if="cites.length" class=plan-cites>
             <h2 class=col-title>What this plan cites</h2>
             <div class=cites-list>

@@ -42,7 +42,9 @@ class PlansController(Controller):
         return Result("ok", "", rows, {"left": page.left, "abandoned": abandoned, "approval": plans.approval(root)})
 
     def show(self, root: Path, p: Payload) -> Result:
-        return Result("ok", "", plans.row_response(root, p.id, self.repository(root, p).find(p.id).raw, self._env(root, p), full=True))
+        import inbox
+        return Result("ok", "", {**plans.row_response(root, p.id, self.repository(root, p).find(p.id).raw, self._env(root, p), full=True),
+                                 "from_messages": inbox.sources(root, f"plan:{p.id}", p.env or None)})
 
     def store(self, root: Path, p: plan_payloads.StorePayload) -> Result:
         outcome = plans.add(root, p.title, p.goal, p.body, p.at, source=p.source,
