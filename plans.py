@@ -57,6 +57,10 @@ MESSAGES = {
     "continue_user": "only the user continues a plan past a checkpoint: they do it in the viewer",
     "no_checkpoint": "plan {n} is not stopped at a checkpoint",
     "continued": "plan {n} continues past phase {p}, {title}",
+    "ack_user": "only the user acknowledges a finished plan: they do it in the viewer",
+    "not_finished": "plan {n} is not finished yet",
+    "already_ack": "plan {n} was already acknowledged",
+    "acknowledged": "plan {n} is acknowledged: {title}",
     "phase_note": "Plan {n}, phase {p} is complete: {title}",
     "carry": "PLAN {n} IS ACTIVE here: {title}\n  phase {p} of {total} is current: {phase}[ — complete when {when}]\n"
              "  auto mode picks to-dos from this phase only; `journal plans show {n}` reads the plan",
@@ -400,6 +404,36 @@ def proceed(root: Path, n: int, at: str, source: str = "cli", track: str | None 
     return True, say("continued", n=n, p=held["p"], title=held["title"])
 
 
+def acknowledged(plan: dict) -> bool:
+    """Has the user seen that this plan finished? A plan that never finished needs no answer."""
+    return bool(plan.get("acknowledged_at"))
+
+
+def acknowledge(root: Path, n: int, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
+    """The user's word that they have seen a finished plan — what takes its card off the home.
+
+    A PLAN THAT FINISHES SHOULD NOT VANISH. The home card followed the ACTIVE plan, so the moment the
+    last phase completed the plan derived as done and the card disappeared with nothing saying it had
+    finished. The card stays until the user says they have seen it; this is that word, and like
+    approving a plan or continuing past a checkpoint it is theirs, not the agent's.
+    """
+    if source != "web" and approval(root) != "agent":
+        return False, say("ack_user")
+    here = _here(root, track)
+    with state.locked(root):
+        items = _all(root, here)
+        plan = _get(items, n)
+        if plan is None:
+            return False, say("no_plan", n=n)
+        if status(plan, phases(root, plan, here)) != DONE:
+            return False, say("not_finished", n=n)
+        if acknowledged(plan):
+            return False, say("already_ack", n=n)
+        plan["acknowledged_at"] = at
+        _put(root, items, here)
+    return True, say("acknowledged", n=n, title=plan.get("title", ""))
+
+
 def announce(root: Path, track: str, at: str) -> None:
     """Tell the user once when a phase of an active plan completes."""
     import notifications
@@ -563,6 +597,8 @@ def row_response(root: Path, n: int, plan: dict, track: str, full: bool = False)
            "held": held["p"] if held else None, "held_since": (held or {}).get("completed_at", ""),
            "held_age": age(held["completed_at"]) if held and held.get("completed_at") else "",
            "auto": todo.auto(root, track), "from_doc": plan.get("from_doc") or None,
+           # a finished plan the user has not seen yet still belongs on the home card
+           "acknowledged": acknowledged(plan), "acknowledged_at": plan.get("acknowledged_at") or "",
            "closed_at": plan.get("done_at") or plan.get("closed_at") or "", "gist": fmt.gist(plan.get("goal", ""))}
     row["meta"] = " · ".join(x for x in (row["age"], say("progress", done=row["phases_done"], total=row["phases_total"]),
                                          say("current", p=now["p"], title=now["title"]) if now else "",

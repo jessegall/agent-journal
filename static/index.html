@@ -545,6 +545,13 @@
   .work-now-bar { display: flex; align-items: center; gap: 10px; }
   /* a plan nobody has started yet: amber like the checkpoint, because it is waiting on the user */
   .work-now.ready::before { background: #d9a441; opacity: .9; }
+  /* a plan that finished: the card says so and waits for the user to clear it */
+  .work-now.finished { border-color: rgba(62, 207, 116, .4); }
+  .work-now-ack { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px;
+    border: 1px solid rgba(62, 207, 116, .45); border-radius: 7px; background: rgba(62, 207, 116, .14);
+    color: #8fe0ab; font: inherit; font-size: 12px; cursor: pointer; }
+  .work-now-ack:hover { filter: brightness(1.1); }
+  .work-now-ack .ico { width: 12px; height: 12px; }
   .work-now-start { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 11px;
     border: none; border-radius: 7px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 500; white-space: nowrap; }
   .work-now-start .ico { width: 12px; height: 12px; }
