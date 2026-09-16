@@ -3271,19 +3271,21 @@ const EnvHome = {
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
-    const work = useFetch(url("/work?all=1"));
+    const work = useFetch(url("/work"));
+    // the finished lines are the newest few; the COUNT behind "N more" rides in the environment row
+    const recentWork = useFetch(url("/work?all=1&cap=6"));
     const questions = useFetch(url("/questions"));
     const suggestions = useFetch(url("/suggestions"));
     const reports = useFetch(url("/reports"));
     // ?all=1 so a FINISHED plan is here too: its card stays until the user acknowledges it, and the
     // plain list hides done ones, which is why the card used to vanish the moment the last phase closed
     const plans = useFetch(url("/plans?all=1"));
-    const messages = useFetch(url("/messages?all=1"));
+    const messages = useFetch(url("/messages?cap=30"));
     const notes = useFetch(url("/notifications"));
     const view = reactive({ kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
     const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
-    const reloadAll = () => [work, questions, suggestions, plans, messages, notes].forEach((f) => f.reload());
+    const reloadAll = () => [work, recentWork, questions, suggestions, plans, messages, notes].forEach((f) => f.reload());
     // the agent's reply raises a notification about that message: while it is unread, so is the reply
     const unreadReplies = computed(() => new Set((notes.data || [])
       .filter((x) => !x.read && String(x.about).startsWith("inbox:"))
@@ -3368,16 +3370,18 @@ const EnvHome = {
     // what the agent has just finished reads under the open work, quieter: it is context, not something to act on
     const FINISHED_SHOWN = 3;
     const FINISHED_DAYS = 7;
+    const envRow = computed(() => (OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null));
     const finishedLines = computed(() => {
       const since = Date.now() - FINISHED_DAYS * 86400000;
-      return (work.data || []).filter((w) => w.ended && Date.parse(w.ended) >= since)
+      return (recentWork.data || []).filter((w) => w.ended && Date.parse(w.ended) >= since)
         .sort((a, b) => (b.ended > a.ended ? 1 : b.ended < a.ended ? -1 : 0))
         .slice(0, FINISHED_SHOWN)
         .map((w) => ({ n: w.n, title: w.subject, sub: workSub(w, true) }));
     });
-    // THE REAL REMAINDER, not "total minus three": the section shows three pieces from the last week,
-    // so everything older is invisible too. The work list is fetched whole, so the honest count is here.
-    const finishedMore = computed(() => (work.data || []).filter((w) => w.ended).length - finishedLines.value.length);
+    // THE REAL REMAINDER, not "total minus three": the section shows three pieces from the last week, so
+    // everything older is invisible too. The count comes from the environment row — the page used to pull
+    // every row ever written, every five seconds, to work it out in the browser.
+    const finishedMore = computed(() => Math.max(0, ((envRow.value || {}).work_done || 0) - finishedLines.value.length));
     // Subagents belong to the agent, so they hang under its facts line: one line each, and nothing at all
     // when none are there. A FINISHED ONE STAYS, for as long as the API keeps sending it — a subagent used
     // to disappear the instant it stopped, which is the moment its line is most worth clicking.
