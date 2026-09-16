@@ -82,6 +82,9 @@ def environments(root: Path) -> list[dict]:
             "todos": len(todo.open_items(root, name)),
             "pins": len(pins.live(root, track=name)),
             "work": len(work.open_work(root, track=name)),
+            # the home shows a few finished pieces and "N more": the count comes from here, so the page
+            # never pulls every row ever written to count them in the browser
+            "work_done": len([w for w in work._all(root, name) if w.get("ended")]),
             "reminders": len(reminders.live(root, track=name)),
             # what is still live: an archived doc is off the catalogue, so it is not something this environment holds
             "docs": len([d for d in docs_on(root, name) if not d.get("archived")]),
