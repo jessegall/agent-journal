@@ -318,6 +318,14 @@
   .help-body > h1:first-child { display: none; }
   .help-body > h1:first-child + * { margin-top: 14px; }
   @media (prefers-reduced-motion: reduce) { dialog.help[open] { animation: none; } }
+  /* a sheet: the help dialog's shell, for a form rather than a page of prose */
+  dialog.sheet { width: min(520px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--border-2); border-radius: 12px;
+    background: var(--raised); color: var(--text); box-shadow: 0 24px 64px rgba(0, 0, 0, .5); }
+  dialog.sheet::backdrop { background: rgba(0, 0, 0, .5); }
+  dialog.sheet[open] { animation: help-in .18s ease-out; }
+  .sheet-body { padding: 14px 20px 18px; }
+  .sheet-body .actions { margin-top: 10px; }
+  @media (prefers-reduced-motion: reduce) { dialog.sheet[open] { animation: none; } }
   .viewbar { height: 40px; flex: none; display: flex; align-items: center; gap: 14px; padding: 0 20px;
     border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--text-3); }
   .viewbar b { color: var(--text-2); font-weight: 500; }

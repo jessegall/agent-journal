@@ -2270,8 +2270,30 @@ const Plans = {
     });
     const done = (body, a) => settle(body, a, onPage.value ? "" : base.value, list, item);
     // the card carries adding a phase, beside the primary action; the row below carries the rest
-    const addPhase = computed(() => actions.value.filter((a) => a.label === "Add phase"));
     const rest = computed(() => actions.value.filter((a) => a.label !== "Add phase"));
+    // adding a phase opens a sheet with both routes: write it here, or hand the agent a sentence and let it draft one.
+    // the viewer cannot draft anything itself, so the second route is a message, the same funnel as Ask for suggestions.
+    const phaseSheet = ref(null);
+    const openPhase = () => { if (phaseSheet.value) phaseSheet.value.showModal(); };
+    const closePhase = () => { if (phaseSheet.value) phaseSheet.value.close(); };
+    const phaseRoutes = computed(() => {
+      const p = item.data;
+      if (!p) return [];
+      return [
+        { label: "Write it", primary: true, method: "POST", url: `${api.value}/${p.n}/phase`, submit: "Add phase",
+          fields: [{ name: "title", label: "Title" }, { name: "when", label: "Complete when (optional)" },
+                   { name: "checkpoint", label: "Stop here for you to look", kind: "select",
+                     value: "no", options: [{ value: "no", label: "No" }, { value: "yes", label: "Yes, a checkpoint" }] }],
+          shape: (v) => ({ title: v.title, when: v.when, checkpoint: v.checkpoint === "yes" }) },
+        { label: "Ask the agent to draft it", method: "POST", url: `/api/env/${props.env}/messages`, submit: "Send to the agent",
+          fields: [{ name: "text", label: "What the phase is for", kind: "area",
+                     placeholder: "Say what this phase should cover. The agent writes the phase and puts to-dos in it." }],
+          note: "The agent gets this as a message and adds the phase itself.",
+          shape: ({ text }) => ({ files: [], text: `Please add a phase to plan ${p.n} (${p.title}): ${(text || "").trim()}`
+            + "\n\nWrite the phase with `journal plans phase`, and put the to-dos it needs in it." }) },
+      ];
+    });
+    const phaseDone = (body, a) => { closePhase(); done(body, a); };
     const leaveNew = () => { changed(); location.hash = base.value; };
     // the switcher: every plan the agent could hold, the assigned one first
     const PLAN_DOT = { active: "#5b8def", draft: "#83868e", done: "#3ecf74" };
@@ -2326,7 +2348,7 @@ const Plans = {
       const p = item.data;
       return p ? [`plan ${p.n}`, p.from_doc ? `from doc ${p.from_doc}` : "", `drafted ${p.age || "just now"}`].filter(Boolean).join(" · ") : "";
     });
-    return { list, item, reading, onPage, creating, actions, addPhase, rest, done, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, planTabs, todoState, TODO_WORD, meta };
+    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, planTabs, todoState, TODO_WORD, meta };
   },
   template: `
     <template v-if="onPage">
@@ -2355,10 +2377,18 @@ const Plans = {
             <div class=plan-progress-actions>
               <button v-if="primary" type=button class=band-primary @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
               <span v-else-if="quiet" class=plan-quiet>{{ quiet }}</span>
-              <ActionBar v-if="addPhase.length" :actions="addPhase" :done="done" :key="'addphase' + item.data.n"/>
+              <button v-if="item.data.status === 'active'" type=button class=btn @click="openPhase">Add phase</button>
             </div>
           </div>
           <ActionBar :actions="rest" :done="done" :key="'plan' + item.data.n + item.data.status + (item.data.held || '') + item.data.auto"/>
+          <dialog ref=phaseSheet class=sheet @click.self="closePhase">
+            <div class=help-head><span>Add a phase to plan {{ item.data.n }}</span>
+              <button type=button class=icon-btn title="Close" aria-label="Close" @click="closePhase"><Icon name="close"/></button></div>
+            <div class=sheet-body>
+              <p class="prose muted">Write the phase yourself, or say what it is for and let the agent draft it.</p>
+              <ActionBar :actions="phaseRoutes" :done="phaseDone" :key="'phase' + item.data.n"/>
+            </div>
+          </dialog>
           <section v-for="ph in item.data.phases" :key="ph.p" :class="['phase-card', {current: ph.current, complete: ph.complete}]">
             <div class=phase-head>
               <span class=phase-num>{{ ph.p }}</span>
