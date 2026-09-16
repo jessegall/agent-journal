@@ -114,17 +114,6 @@ class Continue(Resource):
     action = "proceed"
 
 
-class Auto(Resource):
-    signature = "plans:auto {n : a plan number} {state : on or off}"
-    casts = PLAN
-    writes = True
-    controller = CONTROLLER
-    action = "auto"
-
-    def extra(self, p: Parsed):
-        return {"on": str(p.arg("state")).lower() in ("on", "yes", "true", "1")}
-
-
 class Abandon(Resource):
     signature = "plans:abandon {n : a plan number} {why* : why it is stopped}"
     casts = PLAN
@@ -141,4 +130,4 @@ class Link(Resource):
     action = "link"
 
 
-COMMANDS = (List, Show, Add, FromDoc, Phase, Todos, Activate, Continue, Auto, Abandon, Link)
+COMMANDS = (List, Show, Add, FromDoc, Phase, Todos, Activate, Continue, Abandon, Link)

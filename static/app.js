@@ -2231,11 +2231,6 @@ const Plans = {
       if (!p || p.status !== "active") return [];
       const url = `${api.value}/${p.n}`;
       return [
-        p.auto
-          ? { label: "Stop at checkpoints", method: "POST", url: `${url}/auto`, submit: "Stop at checkpoints", shape: () => ({ on: false }),
-              note: "The agent waits at each checkpoint again until you continue." }
-          : { label: "Auto mode", method: "POST", url: `${url}/auto`, submit: "Continue past checkpoints on its own", shape: () => ({ on: true }),
-              note: "The agent works the whole plan without stopping at checkpoints. They still mark their phase, and you are still notified as each completes." },
         { label: "Add phase", method: "POST", url: `${url}/phase`, submit: "Add phase",
           fields: [{ name: "title", label: "Title" }, { name: "when", label: "Complete when (optional)" }] },
         { label: "Add to-dos", method: "POST", url: `${url}/todos`, submit: "Add",
