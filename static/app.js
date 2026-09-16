@@ -1376,7 +1376,7 @@ function priorityName(value) {
 // ─────────────────────────────────────────────────────────────── one detail panel per resource, used on its page and on Home
 // props: env, n; close (a link) or onClose (a function); base: where a write lands on the page; link: the header's page link;
 // reloaded: called after a write, so the page's list refreshes
-const PANEL_PROPS = ["env", "n", "close", "onClose", "base", "link", "reloaded"];
+const PANEL_PROPS = ["env", "n", "close", "onClose", "base", "link", "reloaded", "swap"];
 
 function panelDone(props, item) {
   return (body, a) => {
@@ -1881,10 +1881,14 @@ const ReplyPanel = {
   setup(props) {
     const item = useFetch(() => props.env && props.n && `/api/env/${props.env}/messages/${props.n}`);
     const answered = computed(() => messageAnswers(item.data));
-    // it swaps what the inspector shows, and never leaves it: the overlay changes kind, a route changes r/N to N
+    // IT SWAPS WHAT THE INSPECTOR SHOWS AND NEVER LEAVES THE PAGE. It used to swap only when the panel
+    // WAS the overlay, and navigate otherwise -- but the home mounts its panels through its own view,
+    // so from there the test was false and this threw the reader onto the messages INDEX. Nothing in an
+    // inspector navigates to a list: the overlay opens over whatever page you are on.
     const openMessage = () => {
-      if (OVERLAY.kind === "reply") { OVERLAY.kind = "message"; return; }
-      location.hash = `#/env/${props.env}/messages/${props.n}`;
+      if (props.swap) { props.swap("message", props.n); return; }
+      OVERLAY.kind = "message";
+      OVERLAY.n = props.n;
     };
     return { item, answered, openMessage };
   },
@@ -3246,12 +3250,12 @@ const PEEK = {
 
 // Home's side panel: the resource's own panel, with its header linking to the page
 const Peek = {
-  props: ["env", "kind", "n", "close", "reloaded"],
+  props: ["env", "kind", "n", "close", "reloaded", "swap"],
   components: { TodoPanel, MessagePanel, ReplyPanel, QuestionPanel, WorkPanel, SuggestionPanel, SubagentPanel, PlanPanel, ReportPanel, DocPanel },
   // this subtree IS the overlay, so the Panel inside it stays while any panel the route mounted stands down
   setup() { provide("overlayPanel", true); return { PEEK }; },
   template: `
-    <component :is="PEEK[kind].panel" :env="env" :n="n" :onClose="close" :link="PEEK[kind].page(env, n)" :reloaded="reloaded"/>`,
+    <component :is="PEEK[kind].panel" :env="env" :n="n" :onClose="close" :link="PEEK[kind].page(env, n)" :reloaded="reloaded" :swap="swap"/>`,
 };
 
 // ─────────────────────────────────────────────────────────────── an environment's home
@@ -3627,7 +3631,7 @@ const EnvHome = {
         </div>
       </section>
     </div></div></div>
-    <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll"/>`,
+    <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll" :swap="peek"/>`,
 };
 
 // ─────────────────────────────────────────────────────────────── tools
