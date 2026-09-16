@@ -3018,8 +3018,8 @@ const EnvHome = {
                width: p.phases_total ? `${(100 * p.phases_done) / p.phases_total}%` : "0%",
                progress: `${p.phases_done} of ${p.phases_total} phases${todos.length ? ` · ${todos.filter((t) => t.done).length} of ${todos.length} to-dos` : ""}` };
     });
-    // the second line: the number on its own, when it was, and the to-do it serves — they have the width to read in full there
-    const workSub = (w, finished) => [String(w.n), `${finished ? "finished " : ""}${(finished ? w.ended_age : w.age) || "just now"}`,
+    // the second line: when it was, and the to-do it serves — they have the width to read in full there
+    const workSub = (w, finished) => [`${finished ? "finished " : ""}${(finished ? w.ended_age : w.age) || "just now"}`,
                                       w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ");
     const workLines = computed(() => (work.data || []).filter((w) => !w.ended)
       .map((w, i) => ({ n: w.n, title: w.subject, sub: workSub(w, false), live: i === 0 })));
