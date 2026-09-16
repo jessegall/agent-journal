@@ -65,6 +65,23 @@ class Store(NamedTuple):
         return self.key
 
 
+def capped(text: str, limit: int) -> tuple[int, str, str] | None:
+    """(length, what fits, what overflows) when `text` is over `limit`, else None.
+
+    FOUR STORES CAP A LINE and each sliced it out by hand — a pin's claim, a question's
+    title, a reminder's instruction twice over — with the same `limit - 20` and the same
+    120-character tail copied four times. What differs between them is the SENTENCE, and
+    each still writes its own; the arithmetic is one place, so a change to how a cut is
+    shown cannot land in three of the four.
+
+    The refusal SHOWS THE OVERFLOW rather than truncating: a claim silently cut in half is
+    a fact that reads as complete and is not.
+    """
+    if not limit or len(text) <= limit:
+        return None
+    return len(text), text[:limit - 20], text[limit - 20:][:120]
+
+
 def all_of(root: Path, store: Store, *, track: str | None = None) -> list[dict]:
     """Every entry in the store — the CURRENT environment, or a named one.
 
