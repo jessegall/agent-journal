@@ -39,7 +39,7 @@ class FilesController(Controller):
                 at = _stamp(inbox.files_dir(root, env, n) / f["name"], m.get("at", ""))
                 out.append({"name": f["name"], "size": int(f.get("size") or 0), "at": at, "age": age(at) if at else "",
                             "source": "message", "n": n, "folder": False, "count": 0,
-                            "url": f"/inbox-files/{env}/{n}/{quote(f['name'])}",
+                            "url": f"/message-files/{env}/{n}/{quote(f['name'])}",
                             "image": f["name"].lower().endswith(IMAGES)})
         for d in docs._load(root):
             if not docs.here(d, env):

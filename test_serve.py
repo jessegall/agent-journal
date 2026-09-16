@@ -530,9 +530,9 @@ _held_n = (got.get("data") or {}).get("n")
 check("a message is posted with a file, its name made safe", (status, [f["name"] for f in (got.get("data") or {}).get("files", [])]),
       (201, ["a.txt"]))
 status, _, body = get(f"/api/env/alpha/messages")
-status, headers, body = get(f"/inbox-files/alpha/{_held_n}/a.txt")
+status, headers, body = get(f"/message-files/alpha/{_held_n}/a.txt")
 check("the held file is served by name", (status, body), (200, b"hello"))
-status, _, _ = get(f"/inbox-files/alpha/{_held_n}/other.txt")
+status, _, _ = get(f"/message-files/alpha/{_held_n}/other.txt")
 check("a name the message does not hold is 404", status, 404)
 status, got = post("/api/env/alpha/messages", {"text": "big", "files": [{"name": "b.bin", "data": base64.b64encode(b"x" * 100_000).decode()}]})
 check("a message may carry more than the ordinary body limit", status, 201)
@@ -914,7 +914,7 @@ status, got = post("/api/env/alpha/messages", {"text": "a message carrying a pic
 _files = json.loads(get("/api/env/alpha/files")[2])
 _shot = [f for f in _files if f["name"] == "shot.png"]
 check("the Files page lists a message's file with where it came from, its link and that it is an image",
-      [(f["source"], f["url"].startswith("/inbox-files/alpha/"), f["image"], f["size"] > 0) for f in _shot], [("message", True, True, True)])
+      [(f["source"], f["url"].startswith("/message-files/alpha/"), f["image"], f["size"] > 0) for f in _shot], [("message", True, True, True)])
 check("and the attachments of the environment's documents",
       any(f["source"] == "doc" and f["n"] == 1 and f["url"].startswith("/docs/1/files/") for f in _files), True)
 check("a listed message file opens", get(_shot[0]["url"])[0], 200)

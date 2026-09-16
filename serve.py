@@ -250,7 +250,7 @@ def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str,
 
 
 # ────────────────────────────────────────────────────────── binary: doc attachments
-@route(r"^/inbox-files/(?P<env>[a-z0-9-]+)/(?P<n>\d+)/(?P<name>[^/]+)$")
+@route(r"^/message-files/(?P<env>[a-z0-9-]+)/(?P<n>\d+)/(?P<name>[^/]+)$")
 def _message_file(root: Path, project: Path, m: re.Match):
     """A file held on a message, by NAME matched against the message's own record."""
     import inbox
