@@ -31,6 +31,10 @@ class ReplyPayload(Payload):
     pick = Field(int)
 
 
+class DeclarePayload(Payload):
+    kind = Field(str)
+
+
 class ProcessPayload(Payload):
     part = Field(str)
     became = Field(list)

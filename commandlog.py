@@ -91,6 +91,7 @@ DESCRIBE = {
     "messages:waiting": "Checking for new messages",
     "messages:show": "Reading message {n}",
     "messages:process": "Filing message {n}",
+    "messages:declare": "Saying what message {n} is",
     "messages:done": "Marking message {n} processed",
     "messages:reply": "Replying to message {n}",
     "questions:list": "Reading questions",
@@ -288,6 +289,7 @@ WEB_FIELD = {"todos:update": ("priority", "Changed to-do priority")}
 # resource:action -> the line shown in Activity for a write made in the viewer; {n} is the id in the path
 WEB = {
     "journal:settings": "Changed the journal's settings",
+    "messages:declare": "Said what message {n} is",
     "plans:update": "Edited plan {n}",
     "style:store": "Added a coding style rule",
     "style:update": "Changed coding style rule {n}",

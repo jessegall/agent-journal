@@ -34,6 +34,8 @@ MESSAGES = {
     "answered_part": "answered part of message {n} ({excerpt}); the user is notified and reads it under the message",
     "answer_note": "Answered your question in message {n}",
     "reply_note": "Replied to your message {n}",
+    "already_kind": "message {n} is already a {kind}",
+    "declared": "message {n} is a {kind} now; its transcript is written and the rows you file from it can name it",
     "bad_kind": "there is no message kind called {kind}; there is only: {kinds:, }",
     "needs_text": 'a message needs its text: journal messages add "<message>"',
     "added": "message {n} is left for the agent ({waiting} waiting to be processed)",
@@ -500,6 +502,43 @@ def done(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, s
         m["processed"] = at
         _put(root, items, track)
     return True, say("done", n=n, became=_became(m), waiting=len(unprocessed(root, track)))
+
+
+def declare(root: Path, n: int, kind: str, at: str, track: str | None = None) -> tuple[bool, str]:
+    """Say what a message ALREADY HERE is, when it arrived without saying.
+
+    Recognition is worth nothing if a recognised transcript cannot become a declared one: it would
+    have no file, no flag, and neither the chip nor the link that phases 2 and 3 built. So this is
+    the same act as sending one declared, applied late -- and it goes through the one writer `add`
+    uses rather than a second one beside it. A PROCESSED message may still be declared: recognition
+    usually happens while the message is being filed, not before.
+    """
+    kind = (kind or "").strip().lower()
+    if kind not in MESSAGE_KINDS:
+        return False, say("bad_kind", kind=repr(kind), kinds=list(MESSAGE_KINDS))
+    with state.locked(root):
+        items = _all(root, track)
+        m, why = _find(items, n)
+        if m is None:
+            return False, why
+        if m.get("kind") == kind:
+            return False, say("already_kind", n=n, kind=kind)
+        m["kind"] = kind
+        if kind == "transcript":
+            carried = ""
+            held = files_dir(root, track, n)
+            for f in m.get("files") or []:
+                if f.get("removed"):
+                    continue
+                try:
+                    carried = (held / f["name"]).read_text()
+                    break
+                except (OSError, UnicodeDecodeError):
+                    continue
+            _write_transcript(root, track, n, m.get("at") or at, carried or m.get("text", ""))
+            m["transcript"] = True
+        _put(root, items, track)
+    return True, say("declared", n=n, kind=kind)
 
 
 def update(root: Path, n: int, text: str, track: str | None = None) -> tuple[bool, str]:

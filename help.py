@@ -42,6 +42,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal messages [--page=N] [--order=asc|desc]   messages waiting to be processed first, then processed ones",
         "journal messages show N           the message, the parts it was split into and what each became, and the questions about it",
         'journal messages process N --part="<words>" --became=<ref>...   record one part: todo 22, pin 3, rule 2, reminder 1, question 4, work or noted',
+        "journal messages declare N transcript   say what a message already here IS, when it arrived without saying: its transcript is written and rows can name it",
         'journal messages add "<message>" --file=<path>...   leave one with files; each is copied into the environment at once',
         'journal messages file N <name> "doc <doc>"|keep   file an attached file into a doc, or keep it where it is held',
         "journal messages done N           mark it processed, once its parts say what they became and every file is filed",
