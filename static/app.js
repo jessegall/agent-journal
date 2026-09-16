@@ -3607,9 +3607,10 @@ const EnvHome = {
         <div class=home-head><h2>Replies to you</h2><span>{{ repliesNote }}</span></div>
         <div v-for="r in replies" :key="r.key" :class="['reply-card', {pending: !r.done}]" @click="r.open">
           <p class=reply-card-ask>{{ r.part }}</p>
-          <p v-if="r.done" class="reply-card-answer clamp">{{ r.answer }}</p>
-          <p v-else class=reply-card-answer><span class=reply-card-dot></span>Working on it<template v-if="r.waitingOn"> — {{ r.waitingOn }}</template></p>
-          <div class=reply-card-foot><span class=reply-card-ref>{{ r.ref }}</span><span class=reply-card-age>{{ r.age }}</span></div>
+          <div class=reply-card-row>
+            <span class=reply-card-answer><span v-if="!r.done" class=reply-card-dot></span>{{ r.done ? r.answer : (r.waitingOn ? 'Working on it — ' + r.waitingOn : 'Working on it') }}</span>
+            <span class=reply-card-age>{{ r.age }}</span>
+          </div>
         </div>
       </section>
     </div></div></div>
