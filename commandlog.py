@@ -199,6 +199,7 @@ DESCRIBE = {
     "plans:todos": "Putting to-dos in a phase of plan {n}",
     "plans:activate": "Activating plan {n}",
     "plans:acknowledge": "Acknowledging plan {n}",
+    "plans:edit": "Edited a plan",
     "plans:park": "Parking plan {n}",
     "plans:ready": "Finished writing plan {n}",
     "plans:continue": "Continuing plan {n} past a checkpoint",
@@ -287,6 +288,7 @@ WEB_FIELD = {"todos:update": ("priority", "Changed to-do priority")}
 # resource:action -> the line shown in Activity for a write made in the viewer; {n} is the id in the path
 WEB = {
     "journal:settings": "Changed the journal's settings",
+    "plans:update": "Edited plan {n}",
     "style:store": "Added a coding style rule",
     "style:update": "Changed coding style rule {n}",
     "style:destroy": "Retired coding style rule {n}",

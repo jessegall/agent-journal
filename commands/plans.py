@@ -75,6 +75,23 @@ class Add(Resource):
         return {"body": body}
 
 
+class Edit(Resource):
+    """Correct a plan's title, goal or approach — what is not given stays."""
+    signature = "plans:edit {n : a plan number} {title?* : the plan's title, reworded} {--goal=} {--brief}"
+    casts = PLAN
+    writes = True
+    controller = CONTROLLER
+    action = "update"
+
+    def extra(self, p: Parsed):
+        if not p.option("brief"):
+            return {}
+        body = brief(True)
+        if body is None:
+            return refuse(BRIEF_REFUSED)
+        return {"body": body}
+
+
 class FromDoc(Resource):
     signature = "plans:from-doc {doc : a doc number or name}"
     writes = True
@@ -154,4 +171,4 @@ class Link(Resource):
     action = "link"
 
 
-COMMANDS = (List, Show, Add, FromDoc, Phase, Todos, Activate, Continue, Ready, Park, Acknowledge, Abandon, Link)
+COMMANDS = (Edit, List, Show, Add, FromDoc, Phase, Todos, Activate, Continue, Ready, Park, Acknowledge, Abandon, Link)

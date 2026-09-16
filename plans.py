@@ -48,6 +48,11 @@ MESSAGES = {
     "preparing": "plan {n} is being written: its phases are still being added",
     "not_preparing": "plan {n} is {status}, not one being written",
     "ready": "plan {n} is ready for the user to approve: {title}",
+    "edited": "plan {n}: {said:; }",
+    "edited_title": "titled {title}",
+    "edited_goal": "goal — {goal}",
+    "edited_body": "the approach is rewritten",
+    "edit_nothing": 'nothing to change on plan {n}: pass a title, --goal="<what is true when it is done>" or --brief',
     "park_why": 'say why it is set aside: journal plans park {n} "<why>"',
     "park_not_active": "plan {n} is {status}; only the plan being worked can be parked",
     "parked": "plan {n} is parked: {why}\n  its to-dos stop being offered and another plan can run; `journal plans activate {n}` picks it up again",
@@ -235,6 +240,48 @@ def add(root: Path, title: str, goal: str, body: str, at: str, source: str = "cl
         n = len(items)
     return True, say("added", n=n, title=title, state=PREPARING if preparing else DRAFT,
                      tail=say("added_preparing", n=n) if preparing else None)
+
+
+def edit(root: Path, n: int, title: str | None = None, goal: str | None = None, body: str | None = None,
+         track: str | None = None) -> tuple[bool, str]:
+    """Correct a plan's title, goal or approach. What is not given stays.
+
+    THE GOAL IS THE ONE LINE THE PLAN IS JUDGED AGAINST, and until now it was frozen at creation —
+    while the way a plan is meant to be written makes it provisional on purpose: the skill says shape
+    the goal WITH the user, and the viewer opens a plan as `preparing` with a placeholder so it is
+    visible while being shaped. Both routes produced a goal that had to be corrected and could not be.
+
+    A DONE OR ABANDONED PLAN IS THE RECORD OF WHAT WAS DONE, so it refuses, exactly as a phase does.
+    """
+    here = _here(root, track)
+    said = []
+    with state.locked(root):
+        items = _all(root, here)
+        plan = _get(items, n)
+        if plan is None:
+            return False, say("no_plan", n=n)
+        closed = _open_for_changes(root, plan, n, here)
+        if closed:
+            return False, closed
+        if title is not None:
+            title = " ".join(title.split())
+            if not title:
+                return False, say("needs_title")
+            plan["title"] = title
+            said.append(say("edited_title", title=title))
+        if goal is not None:
+            goal = " ".join(goal.split())
+            if not goal:
+                return False, say("needs_goal")
+            plan["goal"] = goal
+            said.append(say("edited_goal", goal=goal))
+        if body is not None:
+            plan["body"] = body.strip()
+            said.append(say("edited_body"))
+        if not said:
+            return False, say("edit_nothing", n=n)
+        _put(root, items, here)
+    return True, say("edited", n=n, said=said)
 
 
 def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bool = False,

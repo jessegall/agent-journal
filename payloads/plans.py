@@ -10,6 +10,12 @@ class StorePayload(Payload):
     preparing = Field(bool)
 
 
+class UpdatePayload(Payload):
+    title = Field(str)
+    goal = Field(str)
+    body = Field(str, verbatim=True)
+
+
 class PhasePayload(Payload):
     title = Field(str)
     when = Field(str)
