@@ -810,6 +810,9 @@ const QuestionAnswer = {
     const state = reactive({ answering: false, picked: "", changing: false, custom: "" });
     // an answered question stays read-only until Change answer is pressed
     const locked = computed(() => !!props.q.answer && !state.changing);
+    // AN ANSWER IN THEIR OWN WORDS IS STILL AN ANSWER. `chosen` only ever matched an option whose label
+    // equalled the answer, so a written one highlighted nothing and the question read as unanswered.
+    const wrote = computed(() => !!props.q.answer && !(props.q.options || []).some((o) => o.label === props.q.answer));
     const cancel = () => { state.changing = false; state.picked = ""; state.custom = ""; };
     const answer = (text) => postJSON(`/api/env/${props.env}/questions/${props.q.n}/answer`, { answer: text })
       .then((body) => { state.changing = false; emit("answered", body.data); changed(); });
@@ -822,7 +825,7 @@ const QuestionAnswer = {
       state.answering = true;
       answer(chosen.value).then(() => { state.picked = ""; state.custom = ""; }).finally(() => { state.answering = false; });
     };
-    return { state, answer, pick, save, locked, cancel, CUSTOM, chosen };
+    return { state, answer, pick, save, locked, cancel, CUSTOM, chosen, wrote };
   },
   template: `
     <div :class="['question-answer', {compact}]">
@@ -834,6 +837,9 @@ const QuestionAnswer = {
           <span v-if="q.pick === i + 1 && !locked" class=option-pick>Agent's pick</span>{{ o.label }}
           <span v-if="o.description" class=option-description>{{ o.description }}</span>
           <code v-if="o.code" class=option-code>{{ o.code }}</code></button>
+        <div v-if="locked && wrote" class="option option-custom chosen">
+          <span class=option-pick>Your answer</span>{{ q.answer }}
+        </div>
         <div v-if="!locked" role=button :tabindex="state.answering ? -1 : 0" :aria-pressed="state.picked === CUSTOM"
           :class="['option', 'option-custom', {picked: state.picked === CUSTOM}]"
           @click="pick(CUSTOM)" @keydown.enter.self.prevent="pick(CUSTOM)" @keydown.space.self.prevent="pick(CUSTOM)">
