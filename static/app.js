@@ -401,15 +401,13 @@ const StatusBar = {
     const openCurrent = () => {
       if (inspectWork.value) { OVERLAY.kind = "work"; OVERLAY.n = inspectWork.value.n; } else if (view.value.href) location.hash = view.value.href;
     };
-    const branch = computed(() => (SHELL.activity && SHELL.activity.branch) || null);
-    return { env, view, SHELL, openCurrent, branch };
+    return { env, view, SHELL, openCurrent };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
       <button type=button class=statusbar-text title="Open what it is on" @click="openCurrent"><b>{{ view.state }}</b><span>{{ view.what }}</span></button>
       <span class=statusbar-tools>
-        <span v-if="branch && SHELL.wide" class=statusbar-branch :title="branch.detached ? 'Not on a branch: HEAD is at commit ' + branch.name : 'The git branch checked out in this project'"><Icon name="style"/><span>{{ branch.detached ? 'detached at ' + branch.name : branch.name }}</span></span>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
