@@ -209,14 +209,14 @@ MESSAGES = {
     "cmd_block_what": "you cannot do it yet, and it is not a question for them",
     "cmd_after": "journal todos after {n} 12,14",
     "cmd_after_what": "it must follow those; it goes ready when the last one closes",
-    "auto_on": "auto ON for `{track}`: whenever no work is open, the agent picks up the next to-do on its own and "
+    "auto_on": "auto ON for this journal — every environment, not just this one: whenever no work is open, the agent picks up the next to-do on its own and "
                "keeps going until the list is empty.\n"
                "  START A LOOP NOW, or nothing will wake this session at its next idle stop and the list will sit "
                "where it is:\n"
                "    the `loop` skill with `15m journal next`\n"
                "  Until one is running (or `journal loop set` says one is), the next write is refused — auto "
                "without a loop is a promise nothing keeps.",
-    "auto_off": "auto OFF for `{track}`: to-dos are listed and never started without the user's word.",
+    "auto_off": "auto OFF for this journal: to-dos are listed and never started without the user's word.",
     "loop_line": "Keep a loop running while auto is on, if none is: the `loop` skill with `{m}m journal next`, so an "
                  "idle session comes back every {m} minutes and carries on until nothing is left it can do.",
     "carry_line": "  {n}  {title}",
@@ -1902,7 +1902,7 @@ def set_auto(root: Path, track: str | None, on: bool | None = None) -> str:
         track, on = None, track
     with state.locked(root):
         state.put(root, AUTO, bool(on))
-    return say("auto_on" if on else "auto_off", track=track or "the journal")
+    return say("auto_on" if on else "auto_off")
 
 
 def _loop_line(root: Path) -> str:
