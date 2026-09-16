@@ -42,6 +42,13 @@ def _age(at: str) -> str:
     return age(at) if at else ""
 
 
+def _live_plans(root: Path, env: str) -> list[dict]:
+    """The plans still being worked here: drafts and the active one, through `plans.status`."""
+    import plans as plans_mod
+    return [p for p in plans_mod._all(root, env)
+            if plans_mod.status(p, plans_mod.phases(root, p, env)) in (plans_mod.DRAFT, plans_mod.ACTIVE)]
+
+
 # ────────────────────────────────────────────────────────────── environments
 def environments(root: Path) -> list[dict]:
     """Every environment: its name, whether it is the project's current one, whether
@@ -80,6 +87,10 @@ def environments(root: Path) -> list[dict]:
             "inbox": len(inbox.unprocessed(root, name)),
             "questions": len(questions.open_items(root, name)),
             "reports": len([r for r in __import__("reports")._all(root, name) if not r.get("archived")]),
+            # plans are their own nav entry, counted while they are still live: a done or abandoned plan is the
+            # record, not work. THE STATUS IS DERIVED, never the stored field — a plan whose phases are all
+            # complete still stores "active", and reading the field counted two finished plans as live.
+            "plans": len(_live_plans(root, name)),
             "notifications": len(__import__("notifications").unread(root, name)),
             "suggestions": len(__import__("suggestions").open_items(root, name)),
             # the newest thing that happened there: a journal event, or a live session's last hook event
