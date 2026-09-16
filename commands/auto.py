@@ -11,7 +11,7 @@ NOUNS = (("auto-mode", "auto"),)
 CONTROLLER = EnvironmentController()
 
 TEXT = {
-    "state": "auto mode is {state} for `{env}`. `journal auto-mode enable|disable` sets it.",
+    "state": "auto mode is {state} for this journal. `journal auto-mode enable|disable` sets it.",
     "working": "  Agent currently working on: {subjects:; }",
     "after_work": "  {n} to-do(s) waiting; the first ready one is picked up when that work ends.",
     "next": "  Nothing is open, {n} to-do(s) waiting: the next idle stop starts to-do {next}, {title}.",

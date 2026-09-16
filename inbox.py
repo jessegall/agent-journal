@@ -10,10 +10,10 @@ from templates import render
 
 KEY = "inbox"
 
-KINDS = {"todo": "to-do", "pin": "pin", "rule": "rule", "reminder": "reminder", "question": "question"}
+KINDS = {"todo": "to-do", "pin": "pin", "rule": "rule", "reminder": "reminder", "question": "question", "plan": "plan"}
 PLAIN = ("work", "noted", "answered")
 
-_REF = re.compile(r"^\s*(to-?dos?|pins?|rules?|reminders?|questions?)\s*[:#\s]\s*(\d+)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|pins?|rules?|reminders?|questions?|plans?)\s*[:#\s]\s*(\d+)\s*$", re.I)
 
 MESSAGES = {
     "edited": "message {n} is updated",
@@ -23,7 +23,7 @@ MESSAGES = {
     "moved": "message {n} moved to {env}, where it is message {there}",
     "fact_moved": "moved to {to}",
     "not_a_ref": "{text} is not something a part becomes; write `todo 22`, `pin 3`, `rule 2`, `reminder 1`, "
-                 "`question 4`, `work` or `noted`",
+                 "`question 4`, `plan 5`, `work` or `noted`",
     "no_entry": "there is no {kind} {n} for a part to have become",
     "label": "{kind} {n}",
     "plain_work": "a work update",
@@ -35,10 +35,12 @@ MESSAGES = {
     "added": "message {n} is left for the agent ({waiting} waiting to be processed)",
     "no_such": "there is no message {n}. `journal messages` numbers them.",
     "needs_part": 'say which part: journal messages process {n} --part="<the words it is about>" --became=<what it became>',
-    "needs_became": 'say what the part became: --became="todo 22", "pin 3", "question 4", work or noted',
+    "needs_became": 'say what the part became: --became="todo 22", "pin 3", "question 4", "plan 5", work or noted',
     "not_in_message": "that part is not in message {n}; quote the words it is about",
     "already_processed": "message {n} is already processed",
     "part_recorded": "message {n}: «{excerpt}» became {became:, } ({parts} part(s) recorded)",
+    "part_recorded_late": "message {n} was already processed; «{excerpt}» became {became:, } anyway ({parts} part(s) recorded). "
+                          "A message is the record of what the user said, not a closed ticket.",
     "no_parts": "message {n} has no parts yet; record what each part became first: "
                 'journal messages process {n} --part="<words>" --became=noted',
     "done": "message {n} is processed: it became {became:, } ({waiting} waiting)",
@@ -148,6 +150,9 @@ def check_became(root: Path, ref: str, track: str | None = None) -> str | None:
     elif kind == "reminder":
         import reminders
         count = len(reminders._all(root, track))
+    elif kind == "plan":
+        import plans
+        count = len(plans._all(root, track))
     else:
         import questions
         count = len(questions._all(root, track))
@@ -370,8 +375,7 @@ def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
         m, why = _find(items, n)
         if m is None:
             return False, why
-        if m.get("processed"):
-            return False, say("already_processed", n=n)
+        late = bool(m.get("processed"))
         if _flat(excerpt) not in _flat(m["text"]):
             return False, say("not_in_message", n=n)
         refs: list[str] = []
@@ -387,8 +391,8 @@ def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
         m.setdefault("parts", []).append({"excerpt": excerpt, "became": refs, "at": at})
         _put(root, items, track)
         parts = len(m["parts"])
-    return True, say("part_recorded", n=n, excerpt=fmt.gist(excerpt, 60), became=[label(r) for r in refs],
-                     parts=parts)
+    return True, say("part_recorded_late" if late else "part_recorded", n=n, excerpt=fmt.gist(excerpt, 60),
+                     became=[label(r) for r in refs], parts=parts)
 
 
 def done(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, str]:
@@ -470,8 +474,6 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
             return False, err
         if part and _flat(part) not in _flat(m["text"]):
             return False, say("not_in_message", n=n)
-        if part and m.get("processed"):
-            return False, say("already_processed", n=n)
         m.setdefault("replies", []).append({"text": text, "at": at, "source": source, **({"part": part} if part else {})})
         if part:
             m.setdefault("parts", []).append({"excerpt": part, "became": ["answered"], "at": at})

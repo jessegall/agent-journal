@@ -14,7 +14,8 @@ MESSAGES = {
     "no_such_skill": "there is no skill {name} on disk here; a skill is added in the project's .claude/skills folder",
     "skill_always_on": "every session is told to load the {name} skill at its start",
     "skill_always_off": "sessions are no longer told to load the {name} skill at their start",
-    "nothing_to_change": "send a setting to change: auto, viewer_first, todos_archive_days, reports_archive_days, activity_show, activity_keep",
+    "nothing_to_change": "send a setting to change: viewer_first, todos_archive_days, reports_archive_days, activity_show, activity_keep. "
+                         "Auto mode is the journal's, not this environment's: POST /api/journal/settings",
     "viewer_first_on": "`{env}` is worked from the viewer: the agent keeps terminal messages to a tagged line and answers where the user reads",
     "viewer_first_off": "`{env}` is worked from the terminal again",
     "auto_wants": "auto mode is enabled or disabled, got {got}",
@@ -39,7 +40,7 @@ class EnvironmentController(Controller):
             return Result("missing", tracks.say("remove_none", name=repr(p.env)))
         import commandlog
         import reports
-        return Result("ok", "", {**row, "auto": todo.auto(root, p.env), "start": row["current"],
+        return Result("ok", "", {**row, "auto": todo.auto(root), "start": row["current"],
                                  "todos_archive_days": todo.archive_days(root, p.env),
                                  "reports_archive_days": reports.archive_days(root, p.env),
                                  "activity_show": commandlog.setting(root, p.env, commandlog.SHOW),
@@ -51,8 +52,6 @@ class EnvironmentController(Controller):
         import commandlog
         import reports
         said = []
-        if p.has("auto"):
-            said.append(todo.set_auto(root, p.env, p.auto))
         if p.has("retention"):
             import retention
             wanted = p.retention
@@ -94,12 +93,12 @@ class EnvironmentController(Controller):
     def auto(self, root: Path, p: AutoPayload) -> Result:
         want = p.state.lower()
         if not want:
-            return Result("ok", "", None, {"env": p.env, "on": todo.auto(root, p.env)})
+            return Result("ok", "", None, {"env": p.env, "on": todo.auto(root)})
         if want not in ("enable", "disable", "on", "off", "true", "false", "yes", "no"):
             return Result("refused", say("auto_wants", got=repr(p.state)))
         on = want in ("enable", "on", "true", "yes")
         meta = {"env": p.env, "on": on, "set": True}
-        message = todo.set_auto(root, p.env, on)
+        message = todo.set_auto(root, on)
         if on:
             ready = todo.ready(root, p.env)
             meta.update(working=[w["subject"] for w in work.open_work(root)], waiting=len(todo.open_items(root, p.env)),

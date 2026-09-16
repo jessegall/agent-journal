@@ -286,5 +286,19 @@ check("about() finds each by its reference", ([len(q_mod.about(root, "style", "d
 check("the row carries the reference the viewer links by",
       [l["ref"] for l in q_mod.row_response(1, q_mod.about(root, "style:naming", "default")[0][1])["links"]], ["style:naming"])
 
+# ------------------------------------------------------------------ the title is one line
+long_title = ("Auto mode is per environment today, and that was deliberate: one environment of chores can drain itself "
+              "while another full of design questions waits for you. Making it global removes that. Which do you want?")
+code, out = j("questions", "add", long_title)
+check("a title that reads as a brief is refused, naming the cap and where the context goes",
+      (code, f"{len(long_title)} characters" in out, "200" in out, "--description=" in out), (1, True, True, True))
+check("and nothing was stored", [q["text"] for q in stored() if q["text"] == long_title], [])
+code, out = j("questions", "add", "Should auto mode be one switch for the whole journal?", f"--description={long_title}")
+check("the same words fit once they are the description, not the title", (code, "question" in out), (0, True))
+code, out = j("questions", "edit", "1", long_title)
+check("rewording a question into a brief is refused too", (code, "characters" in out), (1, True))
+code, out = j("questions", "add", "x" * 200)
+check("exactly the cap is allowed", code, 0)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

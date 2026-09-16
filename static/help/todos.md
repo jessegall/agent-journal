@@ -18,7 +18,7 @@ Mostly the agent. When you ask for something while it is busy with something els
 - Change its priority, so the agent picks it up sooner or later.
 - Close or reopen it, or comment on it.
 
-With **auto mode** on, the agent works through the open to-dos by itself, one after another, without asking first.
+With **auto mode** on, the agent works through the open to-dos by itself, one after another, without asking first. It is one switch for the whole journal: every environment reads the same one, so an agent that moves between them keeps working.
 
 ## How the agent uses to-dos
 

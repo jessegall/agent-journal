@@ -401,15 +401,13 @@ const StatusBar = {
     const openCurrent = () => {
       if (inspectWork.value) { OVERLAY.kind = "work"; OVERLAY.n = inspectWork.value.n; } else if (view.value.href) location.hash = view.value.href;
     };
-    const branch = computed(() => (SHELL.activity && SHELL.activity.branch) || null);
-    return { env, view, SHELL, openCurrent, branch };
+    return { env, view, SHELL, openCurrent };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
       <button type=button class=statusbar-text title="Open what it is on" @click="openCurrent"><b>{{ view.state }}</b><span>{{ view.what }}</span></button>
       <span class=statusbar-tools>
-        <span v-if="branch && SHELL.wide" class=statusbar-branch :title="branch.detached ? 'Not on a branch: HEAD is at commit ' + branch.name : 'The git branch checked out in this project'"><Icon name="style"/><span>{{ branch.detached ? 'detached at ' + branch.name : branch.name }}</span></span>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
@@ -810,6 +808,9 @@ const QuestionAnswer = {
     const state = reactive({ answering: false, picked: "", changing: false, custom: "" });
     // an answered question stays read-only until Change answer is pressed
     const locked = computed(() => !!props.q.answer && !state.changing);
+    // AN ANSWER IN THEIR OWN WORDS IS STILL AN ANSWER. `chosen` only ever matched an option whose label
+    // equalled the answer, so a written one highlighted nothing and the question read as unanswered.
+    const wrote = computed(() => !!props.q.answer && !(props.q.options || []).some((o) => o.label === props.q.answer));
     const cancel = () => { state.changing = false; state.picked = ""; state.custom = ""; };
     const answer = (text) => postJSON(`/api/env/${props.env}/questions/${props.q.n}/answer`, { answer: text })
       .then((body) => { state.changing = false; emit("answered", body.data); changed(); });
@@ -822,7 +823,7 @@ const QuestionAnswer = {
       state.answering = true;
       answer(chosen.value).then(() => { state.picked = ""; state.custom = ""; }).finally(() => { state.answering = false; });
     };
-    return { state, answer, pick, save, locked, cancel, CUSTOM, chosen };
+    return { state, answer, pick, save, locked, cancel, CUSTOM, chosen, wrote };
   },
   template: `
     <div :class="['question-answer', {compact}]">
@@ -834,6 +835,9 @@ const QuestionAnswer = {
           <span v-if="q.pick === i + 1 && !locked" class=option-pick>Agent's pick</span>{{ o.label }}
           <span v-if="o.description" class=option-description>{{ o.description }}</span>
           <code v-if="o.code" class=option-code>{{ o.code }}</code></button>
+        <div v-if="locked && wrote" class="option option-custom chosen">
+          <span class=option-pick>Your answer</span>{{ q.answer }}
+        </div>
         <div v-if="!locked" role=button :tabindex="state.answering ? -1 : 0" :aria-pressed="state.picked === CUSTOM"
           :class="['option', 'option-custom', {picked: state.picked === CUSTOM}]"
           @click="pick(CUSTOM)" @keydown.enter.self.prevent="pick(CUSTOM)" @keydown.space.self.prevent="pick(CUSTOM)">
@@ -949,6 +953,7 @@ const ActionBar = {
       const a = current.value;
       if (!a || s.sending) return;
       let payload = { ...s.values };
+      const typed = { ...s.values };
       if (a.only) {
         payload = Object.fromEntries(Object.entries(payload).filter(([k, v]) => v !== initial(a, k)));
         if (!Object.keys(payload).length) { s.error = "Nothing was changed."; return; }
@@ -957,6 +962,12 @@ const ActionBar = {
       s.sending = true;
       s.error = null;
       try {
+        // `also` is a request that goes FIRST and is described by the action: the plan-with-me action
+        // uses it to create the placeholder plan before the message that asks for it is sent
+        if (a.also) {
+          const extra = a.also(typed);
+          if (extra) await send(extra.method || "POST", extra.url, extra.body);
+        }
         const body = await send(a.method, a.url, payload);
         if (!props.open) s.open = "";
         if (props.done) props.done(body, a);
@@ -2269,7 +2280,7 @@ const DocTabs = {
     </div>`,
 };
 
-const PLAN_STATUS = { draft: "Draft", active: "Active", done: "Done", abandoned: "Abandoned" };
+const PLAN_STATUS = { preparing: "Being written", draft: "Draft", active: "Active", parked: "Paused", done: "Done", abandoned: "Abandoned" };
 
 const PLAN_LIST = {
   groups: [{ key: "active", label: "Active", kind: "progress", match: (p) => p.status === "active" },
@@ -2290,7 +2301,7 @@ function planStepState(ph) { return ph.complete ? "Complete" : ph.current ? "Cur
 
 const PlanPanel = {
   props: PANEL_PROPS,
-  components: { Panel, ActionBar },
+  components: { Panel, ActionBar, FromMessages },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -2336,7 +2347,7 @@ const PlanPanel = {
 
 const Plans = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, TodoPanel, PlanPanel, Icon, ProgressBar },
+  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, TodoPanel, PlanPanel, Icon, ProgressBar, FromMessages },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const home = computed(() => `#/env/${props.env}/plans`);
@@ -2355,6 +2366,9 @@ const Plans = {
       fields: [{ name: "wish", label: "What do you want to achieve?", kind: "area",
                  placeholder: "In your own words, as rough as you like. The agent asks back until the goal is clear." }],
       note: "The agent asks you questions, each with answers to pick or your own words, then drafts the plan for you to approve.",
+      // the plan appears the instant you ask: a placeholder the agent then writes into, so the request
+      // is visibly in flight rather than nothing until the questions are done
+      also: ({ wish }) => ({ url: api.value, body: { title: "To be determined", goal: (wish || "").trim() || "to be shaped with the agent", preparing: true } }),
       shape: ({ wish }) => ({ files: [], text: `Plan with me: I want to start a new plan on this environment. What I want to achieve, roughly: ${(wish || "").trim() || "(not sure yet, help me find it)"}\n\nShape the goal with me first. Ask me one question at a time with \`journal questions add "<question>" --option="<answer>" --option="<answer>"\`, so I can pick an answer or write my own, and keep going until the goal is clear. Then draft the plan with \`journal plans add\`, its phases and their to-dos, and tell me it is ready to approve.` }),
     }, {
       label: "Write it myself", method: "POST", url: api.value, submit: "Save draft", leave: true,
@@ -2374,6 +2388,10 @@ const Plans = {
                    { name: "reopen", label: "Why, if the phase is already complete (optional)" }] },
         { label: "Link", method: "POST", url: `${url}/link`, submit: "Link",
           fields: [{ name: "ref", label: "Document or report", placeholder: "doc 4.2 or report 1" }] },
+        // pausing is parking: the plan stays where it is, its to-dos are held, and the slot is free
+        { label: "Pause this plan", method: "POST", url: `${url}/park`, submit: "Pause the plan",
+          note: "The agent stops picking up this plan's to-dos. The plan keeps its phases and what is done; you start it again from here.",
+          fields: [{ name: "why", label: "Why it is paused" }] },
         { label: "Abandon", method: "DELETE", url, danger: true, submit: "Abandon",
           fields: [{ name: "why", label: "Why the plan is stopped" }] },
       ];
@@ -2427,10 +2445,29 @@ const Plans = {
       const finished = planTodos.value.filter((t) => t.done).length;
       return { phases: `${p.phases_done} of ${p.phases_total} phases complete`, todos: `${finished} of ${planTodos.value.length} to-dos done` };
     });
+    // THE BAND CARRIES THE ONE ACT THE PLAN IS WAITING FOR. A draft's "Approve the plan" action existed
+    // but was only ever rendered for an ACTIVE plan, so the page that shows you the plan had no way to
+    // start it — the only Start was on the home card.
     const primary = computed(() => {
       const p = item.data;
-      if (!p || !p.held) return null;
-      return { label: "Continue past the checkpoint", go: () => send("POST", `${api.value}/${p.n}/proceed`).then(() => { item.reload(); changed(); }) };
+      if (!p) return null;
+      if (p.held) {
+        return { label: "Continue past the checkpoint",
+                 go: () => send("POST", `${api.value}/${p.n}/proceed`).then(() => { item.reload(); changed(); }) };
+      }
+      if (p.status === "draft") {
+        return { label: "Approve the plan",
+                 go: () => send("POST", `${api.value}/${p.n}/activate`).then(() => { item.reload(); list.reload(); changed(); }) };
+      }
+      if (p.status === "parked") {
+        return { label: "Pick this plan up again",
+                 go: () => send("POST", `${api.value}/${p.n}/activate`).then(() => { item.reload(); list.reload(); changed(); }) };
+      }
+      if (p.status === "done" && !p.acknowledged) {
+        return { label: "Acknowledge",
+                 go: () => send("POST", `${api.value}/${p.n}/acknowledge`).then(() => { item.reload(); list.reload(); changed(); }) };
+      }
+      return null;
     });
     const quiet = computed(() => (item.data && item.data.current ? `Working phase ${item.data.current}` : ""));
     const citedDocs = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/docs?archived=1`);
@@ -2471,7 +2508,8 @@ const Plans = {
             <h1 class=plan-title>{{ item.data.title }}</h1>
             <p class=plan-goal><span class=muted>Goal — </span>{{ item.data.goal }}</p>
           </div>
-          <div class=plan-progress>
+          <!-- a plan being written has no phases yet, so a 0 of 0 band measures nothing and says nothing -->
+          <div v-if="item.data.status !== 'preparing'" class=plan-progress>
             <div class=plan-progress-text>
               <div class=plan-progress-line><b>{{ progress.phases }}</b><span class=muted>· {{ progress.todos }}</span></div>
               <ProgressBar :rows="planTodos"/>
@@ -2509,7 +2547,8 @@ const Plans = {
             </div>
             <p v-if="!ph.todos.length" class="muted phase-empty">No to-dos yet</p>
           </section>
-          <p v-if="!item.data.phases.length" class=muted>No phases yet.</p>
+          <p v-if="!item.data.phases.length" class=muted>{{ item.data.status === 'preparing' ? 'The agent is writing this plan; its phases are being added.' : 'No phases yet.' }}</p>
+          <FromMessages :rows="item.data.from_messages" :env="env"/>
           <section v-if="cites.length" class=plan-cites>
             <h2 class=col-title>What this plan cites</h2>
             <div class=cites-list>
@@ -3156,36 +3195,49 @@ const EnvHome = {
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
         .map((r) => ({ ...r, open: () => peek(r.kind, r.n) }));
     });
-    // A FINISHED PLAN DOES NOT VANISH: the card followed the active plan, so the moment the last phase
-    // completed the plan derived as done and the card disappeared with nothing saying it had finished.
-    // It stays until the user acknowledges it, which is their act, written from here.
-    const plan = computed(() => (plans.data || []).find((p) => p.status === "active")
-      || (plans.data || []).find((p) => p.status === "done" && !p.acknowledged) || null);
-    const finishedPlan = computed(() => !!(plan.value && plan.value.status === "done"));
-    const ackError = ref("");
-    const acknowledgePlan = () => {
-      ackError.value = "";
-      send("POST", `/api/env/${props.env}/plans/${plan.value.n}/acknowledge`)
-        .then(() => { plans.reload(); planDetail.reload(); changed(); })
-        .catch((e) => { ackError.value = e.message; });
+    // EVERY LIVE PLAN IS SHOWN, not only the one in progress. One plan is worked at a time, but a
+    // parked one, a draft waiting to be approved and a finished one waiting to be acknowledged are all
+    // still live — and each used to be invisible here the moment another took the single slot.
+    const LIVE_PLAN = { active: 0, parked: 1, preparing: 2, draft: 3, done: 4 };
+    const livePlans = computed(() => (plans.data || [])
+      .filter((p) => p.status === "active" || p.status === "parked" || p.status === "draft"
+                     || p.status === "preparing" || (p.status === "done" && !p.acknowledged))
+      .sort((a, b) => (LIVE_PLAN[a.status] - LIVE_PLAN[b.status]) || a.n - b.n));
+    // each plan's own to-dos, so every bar measures the same thing the plan page does
+    const planDetails = reactive({});
+    watchEffect(() => {
+      for (const p of livePlans.value) {
+        if (planDetails[p.n]) continue;
+        planDetails[p.n] = { rows: [] };
+        fetch(`/api/env/${props.env}/plans/${p.n}`).then((r) => r.json())
+          .then((d) => { planDetails[p.n] = { rows: (d.phases || []).flatMap((ph) => ph.todos) }; })
+          .catch(() => { planDetails[p.n] = { rows: [] }; });
+      }
+    });
+    const reloadPlans = () => { for (const k of Object.keys(planDetails)) delete planDetails[k]; plans.reload(); changed(); };
+    const planError = reactive({});
+    const planAct = (p, verb) => {
+      planError[p.n] = "";
+      send("POST", `/api/env/${props.env}/plans/${p.n}/${verb}`)
+        .then(reloadPlans)
+        .catch((e) => { planError[p.n] = e.message; });
     };
-    // with nothing assigned, a drafted plan is READY: the card is where you see it and where you start it
-    const ready = computed(() => (plan.value ? null : (plans.data || []).find((p) => p.status === "draft") || null));
-    const shown = computed(() => plan.value || ready.value);
-    const planDetail = useFetch(() => props.env && shown.value && `/api/env/${props.env}/plans/${shown.value.n}`);
-    const planRows = computed(() => (planDetail.data && planDetail.data.phases ? planDetail.data.phases.flatMap((ph) => ph.todos) : []));
+    const plan = computed(() => livePlans.value.find((p) => p.status === "active") || null);
+    const shown = computed(() => livePlans.value[0] || null);
+    const planRows = computed(() => (shown.value && planDetails[shown.value.n] ? planDetails[shown.value.n].rows : []));
     const held = computed(() => !!(plan.value && plan.value.held));
-    const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(() => { plans.reload(); planDetail.reload(); changed(); });
+    const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(reloadPlans);
     // the same funnel the plan's own inspector approves through, so a plan starts one way wherever you start it
     const startError = ref("");
     const startPlan = () => {
       startError.value = "";
-      send("POST", `/api/env/${props.env}/plans/${ready.value.n}/activate`)
-        .then(() => { plans.reload(); planDetail.reload(); changed(); })
+      send("POST", `/api/env/${props.env}/plans/${shown.value.n}/activate`)
+        .then(reloadPlans)
         // a refusal has a reason — it belongs on the card, not thrown into the console where a button just looks dead
         .catch((e) => { startError.value = e.message; });
     };
     const goPlan = () => { if (shown.value) location.hash = `#/env/${props.env}/plans/${shown.value.n}`; };
+    const goCard = (c) => { location.hash = `#/env/${props.env}/plans/${c.n}`; };
     const crew = useFetch(url("/agents"));
     // the answer, in words: how many things need the user, what that means, and the facts about the agent in one muted line
     // who is working here, in one muted line: the page leads with it and goes straight into what needs the user
@@ -3208,23 +3260,39 @@ const EnvHome = {
     const clear = computed(() => !queue.value.length && !held.value);
     // the kind reads as part of the sentence here, not as a label: "question 12 · 6m"
     const queueMeta = (it) => (SHELL.wide ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
-    // Current work: the assigned plan with its progress, then the open work as one-line rows
-    const currentWork = computed(() => {
-      const p = shown.value;
-      if (!p) return null;
-      const todos = planDetail.data && planDetail.data.phases ? planDetail.data.phases.flatMap((ph) => ph.todos) : [];
-      // a ready plan has done nothing yet, so it says what it holds rather than how far it has gone
-      if (ready.value) {
-        return { title: p.title, ready: true, ref: `plan ${p.n} · ready to start`, width: "0%",
-                 progress: `${p.phases_total} ${p.phases_total === 1 ? "phase" : "phases"}${todos.length ? ` · ${todos.length} to-dos` : ""}` };
-      }
-      // the bar measures TO-DOS rather than phases: it is the finer reading, and it moves as each row lands
-      const done = todos.filter((t) => t.done).length;
-      return { title: p.title, ready: false, finished: finishedPlan.value,
-               ref: `plan ${p.n} · ${finishedPlan.value ? "finished" : p.held ? "held" : "working"}`,
-               width: todos.length ? `${(100 * done) / todos.length}%` : "0%",
-               progress: `${p.phases_done} of ${p.phases_total} phases${todos.length ? ` · ${done} of ${todos.length} to-dos` : ""}` };
-    });
+    // one card per live plan: what it is, how far it has gone, and the single act it offers
+    const PLAN_CARD = {
+      // a plan the agent is still writing: it is visible at once, and there is nothing to press yet
+      preparing: { ref: "being written", act: "" },
+      active: { ref: "working", act: "" },
+      parked: { ref: "paused", act: "Resume" },
+      draft: { ref: "ready to start", act: "Start" },
+      done: { ref: "finished", act: "Acknowledge" },
+    };
+    const PLAN_VERB = { parked: "activate", draft: "activate", done: "acknowledge" };
+    const planCards = computed(() => livePlans.value.map((p) => {
+      const rows = (planDetails[p.n] || {}).rows || [];
+      const done = rows.filter((t) => t.done).length;
+      const shape = PLAN_CARD[p.status] || PLAN_CARD.active;
+      const phases = `${p.phases_done} of ${p.phases_total} phases`;
+      // ONE PLAN IS WORKED AT A TIME, so a card does not offer a button that must be refused: starting a
+      // draft or resuming a parked plan is withheld while another is active, and the card says why.
+      const waiting = !!plan.value && (p.status === "draft" || p.status === "parked");
+      return {
+        n: p.n, title: p.title, status: p.status, rows,
+        ref: `plan ${p.n} · ${p.held && p.status === "active" ? "held" : shape.ref}`,
+        // a draft has done nothing yet, so it says what it holds rather than how far it has gone
+        progress: p.status === "draft"
+          ? `${p.phases_total} ${p.phases_total === 1 ? "phase" : "phases"}${rows.length ? ` · ${rows.length} to-dos` : ""}`
+          : `${phases}${rows.length ? ` · ${done} of ${rows.length} to-dos` : ""}`,
+        why: [p.status === "parked" ? p.parked_why : "",
+              p.status === "preparing" ? "the agent is adding its phases" : "",
+              waiting ? "one plan at a time" : ""].filter(Boolean).join(" · "),
+        act: waiting ? "" : shape.act,
+        run: () => planAct(p, PLAN_VERB[p.status]),
+        bar: p.status !== "draft" && p.status !== "preparing",
+      };
+    }));
     // the second line: when it was, and the to-do it serves — the Finished heading says it is finished, so the line does not
     const workSub = (w, finished) => [(finished ? w.ended_age : w.age) || "just now",
                                       w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ");
@@ -3291,7 +3359,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, startError, goPlan, queueMeta, currentWork, planRows, finishedPlan, acknowledgePlan, ackError, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, startError, goPlan, queueMeta, planCards, planError, goCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3332,25 +3400,30 @@ const EnvHome = {
       </section>
       <section class=home-section>
         <div class=home-head><h2>Working on</h2></div>
-        <Transition name=card appear>
-        <div v-if="currentWork" :class="['work-now', {ready: currentWork.ready, finished: currentWork.finished}]" @click="goPlan">
-          <div class=work-now-top><span class=work-now-title>{{ currentWork.title }}</span><span class=work-now-ref>{{ currentWork.ref }}</span></div>
+        <TransitionGroup name=card appear>
+        <div v-for="c in planCards" :key="'plan' + c.n"
+          :class="['work-now', {ready: c.status === 'draft', finished: c.status === 'done', parked: c.status === 'parked'}]"
+          @click="goCard(c)">
+          <div class=work-now-top><span class=work-now-title>{{ c.title }}</span><span class=work-now-ref>{{ c.ref }}</span></div>
           <div class=work-now-bar>
-            <ProgressBar v-if="!currentWork.ready" :rows="planRows"/>
-            <span class=work-now-ref>{{ currentWork.progress }}</span>
-            <button v-if="currentWork.ready" type=button class=work-now-start title="Start this plan and assign it to the agent" @click.stop="startPlan">Start<Icon name="arrow"/></button>
-            <button v-else-if="currentWork.finished" type=button class=work-now-ack title="You have seen that this plan finished; clear it from here" @click.stop="acknowledgePlan">Acknowledge<Icon name="arrow"/></button>
+            <ProgressBar v-if="c.bar" :rows="c.rows"/>
+            <span class=work-now-ref>{{ c.progress }}</span>
+            <button v-if="c.act" type=button :class="c.status === 'done' ? 'work-now-ack' : 'work-now-start'"
+              :title="c.status === 'draft' ? 'Start this plan and assign it to the agent'
+                    : c.status === 'parked' ? 'Pick this plan up again' : 'You have seen that this plan finished; clear it from here'"
+              @click.stop="c.run()">{{ c.act }}<Icon name="arrow"/></button>
           </div>
-          <p v-if="startError || ackError" class="error work-now-error" @click.stop>{{ startError || ackError }}</p>
+          <p v-if="c.why" class=work-now-why @click.stop>{{ c.why }}</p>
+          <p v-if="planError[c.n] || (c.status === 'draft' && startError)" class="error work-now-error" @click.stop>{{ planError[c.n] || startError }}</p>
         </div>
-        </Transition>
+        </TransitionGroup>
         <TransitionGroup name=wrow>
           <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
             <span :class="['needs-dot', {live: w.live}]"></span>
             <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
           </a>
         </TransitionGroup>
-        <p v-if="!currentWork && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
+        <p v-if="!planCards.length && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
       </section>
       <section v-if="parkedLines.length" class=home-section>
         <div class=home-head><h2>Parked</h2></div>
@@ -3527,7 +3600,7 @@ const Settings = {
       auto.saving = true;
       auto.error = null;
       try {
-        await postJSON(`${api.value}/settings`, { auto: on });
+        await postJSON("/api/journal/settings", { auto: on });
         s.reload();
         changed();
       } catch (e) {
@@ -3571,14 +3644,8 @@ const Settings = {
       <template v-if="s.data">
         <section class=settings-group>
           <h2>This environment</h2>
-          <p class=settings-note>How long things stay listed here, and what the agent may do on its own.</p>
+          <p class=settings-note>What this one environment does differently.</p>
           <div class=settings-card>
-            <div class=settings-row>
-              <span class=settings-label>Auto mode</span>
-              <span class=settings-value>{{ s.data.auto ? 'On: it works through to-dos without asking' : 'Off' }}</span>
-              <button type=button class=btn :disabled="auto.saving" @click="setAuto(!s.data.auto)">{{ s.data.auto ? 'Turn off' : 'Turn on' }}</button>
-              <p v-if="auto.error" class="error settings-wide">{{ auto.error }}</p>
-            </div>
             <div class=settings-row>
               <span class=settings-label>Work from the viewer</span>
               <span class=settings-value>{{ s.data.viewer_first ? 'On: the agent answers here, one line in the terminal' : 'Off' }}</span>
@@ -3617,6 +3684,12 @@ const Settings = {
           <h2>Project</h2>
           <p class=settings-note>What is kept on this environment, and what the whole project shares.</p>
           <div class=settings-card>
+            <div class=settings-row>
+              <span class=settings-label>Auto mode</span>
+              <span class=settings-value>{{ s.data.auto ? 'On: the agent works through to-dos without asking, on every environment' : 'Off: nothing starts without your word' }}</span>
+              <button type=button class=btn :disabled="auto.saving" @click="setAuto(!s.data.auto)">{{ s.data.auto ? 'Turn off' : 'Turn on' }}</button>
+              <p v-if="auto.error" class="error settings-wide">{{ auto.error }}</p>
+            </div>
             <div class=settings-row><span class=settings-label>Pins</span><span class=settings-value>{{ s.data.pins }} standing</span><a class=btn :href="'#/env/' + env + '/pins'">Open</a></div>
             <div class=settings-row><span class=settings-label>Reminders</span><span class=settings-value>{{ counted(s.data.reminders, 'reminder', 'reminders') }}</span><a class=btn :href="'#/env/' + env + '/reminders'">Open</a></div>
             <div class=settings-row><span class=settings-label>Coding style rules</span><span class=settings-value>{{ styleRules.data ? counted(styleRules.data.length, 'rule', 'rules') : '' }}</span><a class=btn :href="'#/env/' + env + '/style'">Open</a></div>
@@ -4474,7 +4547,7 @@ const App = {
     };
     const setAuto = (on) => {
       activity.data.auto = on;
-      postJSON(`/api/env/${envName.value}/environment/settings`, { auto: on })
+      postJSON("/api/journal/settings", { auto: on })
         .then(() => { activity.reload(); changed(); }, () => activity.reload());
     };
     // other projects' journals running on this machine, each at its own port
@@ -4635,8 +4708,14 @@ const App = {
         :close="closeOverlay" :reloaded="reloadActivity"/>
       <QuickMenu v-if="QUICK.open && envName" :env="envName"/>
       <div v-if="TOAST.text" class=quick-toast role=status>{{ TOAST.text }}</div>
-      <aside v-if="activity.data && ACTIVITY.shown" class=activity-dock>
-        <ActivityPanel :data="activity.data" :href="activityHref" :env="envName"/>
+      <aside v-if="(activity.data && ACTIVITY.shown) || (ov.data && ov.data.update)" class=activity-dock>
+        <ActivityPanel v-if="activity.data && ACTIVITY.shown" :data="activity.data" :href="activityHref" :env="envName"/>
+        <!-- it does not close: the journal serving this page is out of date, and nothing but the upgrade makes that untrue -->
+        <div v-if="ov.data && ov.data.update" class=update-bar>
+          <p class=update-bar-head>Agent journal {{ ov.data.update.version }} is available</p>
+          <p class=update-bar-note>This project has {{ ov.data.update.have }}<template v-if="ov.data.update.headline"> — {{ ov.data.update.headline }}</template></p>
+          <p class=update-bar-how>Upgrade it from the terminal: <code>journal upgrade</code></p>
+        </div>
       </aside>
       <div v-if="AWAY.open && envName" class=away-card role=status>
         <div class=away-head>

@@ -70,13 +70,20 @@ code, out = j("inbox", "process", "1", "--part=something never said", "--became=
 check("a part that is not in the message is refused", (code, "not in message 1" in out), (1, True))
 code, out = j("inbox", "process", "1", "--part=rename", "--became=todo 99")
 check("a part cannot become a to-do that does not exist", code, 1)
+# a plan is written FROM a message often enough that the plan page links back to it: the part has to be able to say so
+j("plans", "add", "One switch for auto mode", "--goal=auto is one project-wide setting")
+code, out = j("inbox", "process", "1", "--part=the parser", "--became=plan 1")
+check("a part can become a plan, which is what the plan page links back by",
+      (code, "became plan 1" in out, stored()[0]["parts"][-1]["became"]), (0, True, ["plan:1"]))
+code, out = j("inbox", "process", "1", "--part=the parser", "--became=plan 9")
+check("a part cannot become a plan that does not exist", (code, "no plan 9" in out), (1, True))
 code, out = j("inbox", "process", "1", "--part=rename", "--became=banana")
 check("what a part became must be a reference", (code, "noted" in out), (1, True))
 code, out = j("inbox", "process", "1", "--part=rename")
 check("a part must say what it became", code, 1)
 code, out = j("inbox", "process", "9", "--part=x", "--became=noted")
 check("there is no message 9", code, 1)
-check("refused parts wrote nothing", len(stored()[0]["parts"]), 2)
+check("refused parts wrote nothing", len(stored()[0]["parts"]), 3)
 
 # ------------------------------------------------------------------ done
 code, out = j("inbox", "done", "2")
@@ -86,8 +93,15 @@ check("processed, naming what it became", (code, "to-do 1, pin 1, noted" in out,
       (0, True, True))
 code, out = j("inbox", "done", "1")
 check("done twice is refused", code, 1)
+# A LATE PART IS STILL THE TRUTH ABOUT WHAT THE USER SAID: a plan asked for in a message that was
+# already closed had nothing to link back to, and an answer that came an hour later had nowhere to go.
 code, out = j("inbox", "process", "1", "--part=rename", "--became=noted")
-check("a processed message takes no more parts", code, 1)
+check("a processed message still takes a late part, and says it was already processed",
+      (code, "was already processed" in out, "became noted" in out), (0, True, True))
+code, out = j("inbox", "reply", "1", "it is done now", "--part=rename the parser module")
+check("and a late answer to one of its parts", (code, "answered part of message 1" in out), (0, True))
+code, out = j("inbox", "done", "1")
+check("but it is not processed a second time", code, 1)
 code, out = j("inbox")
 check("waiting messages list before processed ones",
       out.index("also check the flaky test") < out.index("rename the parser"), True)
@@ -117,7 +131,8 @@ root = d / ".journal"
 rows = inbox_mod.rows_response(root, "default")
 check("rows carry status and labelled parts",
       [(r["n"], r["status"], [b["label"] for p in r["parts"] for b in p["became"]]) for r in rows],
-      [(2, "waiting", ["question 1"]), (1, "processed", ["to-do 1", "pin 1", "noted"])])
+      [(2, "waiting", ["question 1"]),
+       (1, "processed", ["to-do 1", "pin 1", "noted", "plan 1", "noted", "answered"])])
 check("unprocessed reads what waits", [n for n, _ in inbox_mod.unprocessed(root, "default")], [2])
 
 # ------------------------------------------------------------------ writes are writes to the hook

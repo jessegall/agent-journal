@@ -33,7 +33,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal next                  what to do now: the details of the last hold, or the next to-do",
     ),
     "auto-mode": (
-        "journal auto-mode             whether the agent works through this environment's to-do list on its own",
+        "journal auto-mode             whether the agent works through the to-do list on its own; one switch for the journal",
         "journal auto-mode enable      work through the list without asking: start the next ready to-do whenever nothing is open",
         "journal auto-mode disable     wait for the user's word before starting a to-do",
     ),
@@ -157,7 +157,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal todos answer N "<answer>"   answers its one open question (`questions answer` when there are several); the agent is told at its next stop and picks it up first',
         'journal todos amend N "<section title>" --brief     append a new section to a brief, from stdin',
         'journal todos replace N ["<section title>"] --brief   swap one named section, or the whole brief with none; old text kept under struck/',
-        "journal todo auto [on|off]    work through this environment's list without asking, or wait for the user's word",
+        "journal todo auto [on|off]    work through the list without asking, or wait for the user's word; the switch is the journal's",
         "journal todos prune --older-than=<30d|2h|6w>|--before=<date> [--force]   done/dropped to-dos older than that, ARCHIVED under todo/<env>/archived/ (or actually deleted with --force) — an open to-do is never touched; no silent default age",
     ),
     "migrate": (

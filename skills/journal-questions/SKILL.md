@@ -30,7 +30,10 @@ question waits on the user, and `todos ask <n>` is the same as `questions add --
 <n>"`.
 
 **Write a question the user can answer at a glance.** The question itself is one short
-line. What they need to decide well goes in `--description` — the situation, what each way
+line, and it is CAPPED: a title over `question_max_chars` (200 by default) is refused,
+because the title is what the user reads in the list and at the top of the card, and a
+title that runs four lines is a brief with a question bolted on the end. The context is
+not cut, it is moved. What they need to decide well goes in `--description` — the situation, what each way
 costs — and when the answer is one of a few choices, give each as an `--option`: in the viewer
 the user clicks one, or writes their own. When you recommend one, say which with `--pick=<its
 number>`: the viewer marks it as the agent's pick, so never write "(my pick)" into the option's
