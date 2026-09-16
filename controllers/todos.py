@@ -121,6 +121,9 @@ class TodosController(Controller):
         if added and p.priority and p.priority.lower() != "default":
             set_ok, said = todo.priority(root, env, int(added.group(1)), p.priority)
             message += "\n" + said
+        # after the dependency is stored, never before it: --after arrives here, not in `todo.add`
+        if added:
+            message += todo.mentions_hint(root, env, int(added.group(1)), p.body or "")
         return Result("created" if ok else "refused", message, {"n": int(added.group(1))} if added else None)
 
     def update(self, root: Path, p: todo_payloads.UpdatePayload) -> Result:
@@ -200,10 +203,16 @@ class TodosController(Controller):
         return Result.of(todo.priority(root, self.env(root), p.id, p.value))
 
     def amend(self, root: Path, p: SectionPayload) -> Result:
-        return Result.of(todo.amend(root, self.env(root), p.id, p.title, p.body))
+        return self._said(root, p, todo.amend(root, self.env(root), p.id, p.title, p.body))
+
+    def _said(self, root: Path, p, got: tuple[bool, str]) -> Result:
+        """A brief that was written or rewritten is read for dependencies it only states in prose."""
+        if got[0]:
+            got = (True, got[1] + todo.mentions_hint(root, self.env(root), p.id, p.body or ""))
+        return Result.of(got)
 
     def replace(self, root: Path, p: SectionPayload) -> Result:
-        return Result.of(todo.replace_section(root, self.env(root), p.id, p.title, p.body))
+        return self._said(root, p, todo.replace_section(root, self.env(root), p.id, p.title, p.body))
 
     def keep(self, root: Path, p: todo_payloads.KeepPayload) -> Result:
         return Result.of(todo.set_archive_days(root, self.env(root), p.days))

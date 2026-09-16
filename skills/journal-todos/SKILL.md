@@ -14,6 +14,7 @@ Every command runs through `.journal/journal.py`; `journal` is an alias for it.
     journal todos add "<title>" [--brief]   add one; --brief reads a longer brief from stdin (also: `journal todo "<title>"`)
     journal todos add "<title>" --after=12,14   add one that waits on to-dos 12 and 14
     journal todos after <n> 12,14       to-do n waits on 12 and 14; `--none` clears it
+    journal todos after <n> plan 4      it waits for plan 4 to finish; it goes ready when that plan is done
     journal todos                      the titles, HIGHEST PRIORITY FIRST (--order-by-id for plain number order)
     journal todos show <n>             the brief (also: `journal todo <n>`)
     journal todos priority <n> <value>  bigger is more important; a number or a name (low/default/high/critical); 100 unless set
@@ -28,6 +29,15 @@ Every command runs through `.journal/journal.py`; `journal` is an alias for it.
     journal auto-mode [enable|disable]  work through the list without asking, or wait for the word
     journal todos prune --older-than=<30d|2h|6w>|--before=<date> [--force]   done/dropped to-dos older than that, ARCHIVED (or actually deleted with --force); an open to-do is never touched, and there is no silent default age
     journal todos keep <days>   done to-dos older than that are archived on their own, 7 days by default; 0 leaves them listed
+
+**A DEPENDENCY IS RECORDED, NEVER WRITTEN IN PROSE.** "after the migration lands", "at the
+end of the plan", "once 12 is in" — written in a brief, none of those can be read by
+anything: the row is offered the moment it is next in line, and the constraint is found by
+a reader, or not at all. Say it with `todos after` instead, which is checked when it is
+written and releases the row on its own when the last prerequisite closes. A whole plan
+counts: `journal todos after 44 plan 4`. When a brief you write names a to-do or a plan and
+the row records no dependency, the journal says so and names the command — a nudge, not a
+refusal, because plenty of mentions are just context.
 
 A to-do is work that was **put off**: the user said later, or you found something and
 were told not to touch it yet. It is a titled file under `todo/<environment>/`, and the brief is

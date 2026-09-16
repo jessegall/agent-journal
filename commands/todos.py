@@ -158,7 +158,7 @@ Ask = _action("Ask", "todos:ask " + N + " {question*? : what the user must decid
 Answer = _action("Answer", "todos:answer " + N + " {answer*? : the answer}")
 Block = _action("Block", "todos:block " + N + " {why*? : what has to be true first}", ("skip",))
 Unblock = _action("Unblock", "todos:unblock " + N)
-After = _action("After", "todos:after " + N + " {names*? : the to-do numbers it waits on} {--none}", ("needs",))
+After = _action("After", "todos:after " + N + " {names*? : the to-do numbers, or `plan <n>`, it waits on} {--none}", ("needs",))
 Priority = _action("Priority", "todos:priority " + N + " {value*? : a number or low, default, high, critical}")
 
 
