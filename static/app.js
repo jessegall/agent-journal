@@ -3120,7 +3120,8 @@ const EnvHome = {
         <div class=home-head><h2>Waiting on you</h2><span>{{ queue.length + (held ? 1 : 0) }} waiting</span>
           <span v-if="queue.length + (held ? 1 : 0) > SLOTS" class=home-hint>{{ queue.length + (held ? 1 : 0) - SLOTS }} more — scroll the list</span></div>
         <div class=needs-slot>
-          <div v-if="held" class=needs-row @click="goPlan">
+          <TransitionGroup name=qrow>
+          <div v-if="held" key=held class=needs-row @click="goPlan">
             <span class="needs-dot held"></span>
             <span class=needs-title>Continue past the checkpoint</span>
             <span class=needs-meta>plan {{ plan.n }} · phase {{ plan.held }}</span>
@@ -3132,6 +3133,7 @@ const EnvHome = {
             <span class=needs-meta>{{ queueMeta(it) }}</span>
             <button type=button class=needs-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(it)"><Icon name="close"/></button>
           </div>
+          </TransitionGroup>
         </div>
         </div>
         </Transition>
