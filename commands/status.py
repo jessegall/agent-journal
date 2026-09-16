@@ -14,6 +14,8 @@ NOUNS = (("status",),)
 
 TEXT = {
     "plan_active": "plan {n}: {done} of {total} phase(s) complete[ · phase {p} current: {phase}]",
+    "plan_preparing": "plan {n} is being written: {title}",
+    "plan_draft": "plan {n} waits for you to approve it: {title}",
     "title": "JOURNAL",
     "sub": "environment {env}",
     "none": "none",
@@ -56,7 +58,18 @@ def _plan_line(root, env: str) -> str:
         return render(TEXT["plan_active"], n=n, done=done, total=len(rows),
                       p=now["p"] if now else None, phase=now["title"] if now else None)
     stalled = plans_mod.stall(root, env)
-    return stalled or TEXT["none"]
+    if stalled:
+        return stalled
+    # no active plan and nothing stalled: a plan may still be here, being written or waiting for you
+    live = [(n, p, p.get("status") or plans_mod.DRAFT) for n, p in enumerate(plans_mod._all(root, env), 1)
+            if (p.get("status") or plans_mod.DRAFT) in (plans_mod.PREPARING, plans_mod.DRAFT)]
+    # a draft waits on the USER; a preparing plan waits on the agent, so the draft is named first
+    waiting = [row for row in live if row[2] == plans_mod.DRAFT] or live
+    if waiting:
+        n, plan, status = waiting[0]
+        key = "plan_preparing" if status == plans_mod.PREPARING else "plan_draft"
+        return render(TEXT[key], n=n, title=plan.get("title", ""))
+    return TEXT["none"]
 
 
 def _count(template: str, n: int) -> str:
