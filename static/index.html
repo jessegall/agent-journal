@@ -635,26 +635,25 @@
   .home-line.quiet .home-line-title { font-size: 11.5px; color: var(--text-3); }
   .home-line.quiet .needs-dot { background: #33363c; }
   .home-empty { margin: 0; padding: 6px 2px; font-size: 12.5px; color: var(--text-3); }
-  /* A REPLY IS AN EXCHANGE, not a list row: the user's words lead, quoted and quiet, and the answer
-     reads underneath in full weight. The answer used to be ellipsised to one line — the payload cut
-     hardest — so it wraps to three now, and the green edge is the same one messages carry elsewhere. */
-  .reply-card { position: relative; display: flex; flex-direction: column; gap: 5px; margin-bottom: 7px;
-    padding: 9px 12px 9px 14px; border: 1px solid #232529; border-radius: 9px; background: #161719;
-    cursor: pointer; overflow: hidden; }
-  .reply-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #6fae7d; opacity: .55; }
-  .reply-card:hover { border-color: var(--border-2); background: #191a1e; }
-  .reply-card:hover::before { opacity: 1; }
-  /* the user's own words, set as a quotation: smaller, quieter, and never competing with the answer */
-  .reply-card-ask { margin: 0; font-size: 11.5px; line-height: 1.45; color: var(--text-3); font-style: italic;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* A REPLY IS AN EXCHANGE, but a QUIET one: the user's words lead, quoted, and the answer sits under
+     them on one line. It is opened to be read, so the card shows enough to recognise it and no more --
+     several replies must not crowd out the sections above. No box: a hairline edge and a hover. */
+  .reply-card { position: relative; display: flex; flex-direction: column; gap: 1px; padding: 6px 2px 6px 11px;
+    border-radius: 6px; cursor: pointer; }
+  .reply-card::before { content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: 2px;
+    border-radius: 1px; background: #6fae7d; opacity: .35; }
+  .reply-card:hover { background: #17181b; }
+  .reply-card:hover::before { opacity: .8; }
+  .reply-card-ask { margin: 0; font-size: 11px; line-height: 1.4; color: var(--text-3); font-style: italic;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .reply-card-ask::before { content: "\201C"; margin-right: 1px; opacity: .7; }
   .reply-card-ask::after { content: "\201D"; margin-left: 1px; opacity: .7; }
-  .reply-card-answer { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text); text-wrap: pretty; }
-  .reply-card-foot { display: flex; align-items: baseline; gap: 8px; font-size: 11px; color: var(--text-3); }
-  .reply-card-age { margin-left: auto; white-space: nowrap; }
-  /* still being worked: the answer is not there yet, so the card says so at a lower weight, with a live dot */
+  .reply-card-row { display: flex; align-items: baseline; gap: 9px; }
+  .reply-card-answer { flex: 1 1 auto; min-width: 120px; font-size: 12.5px; color: var(--text-2);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .reply-card-age { flex: none; font-size: 11px; color: var(--text-3); white-space: nowrap; }
   .reply-card.pending .reply-card-answer { color: var(--text-3); }
-  .reply-card.pending::before { opacity: .3; }
+  .reply-card.pending::before { opacity: .2; }
   .reply-card-dot { display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%;
     background: #6fae7d; animation: crew-pulse 1.8s ease-in-out infinite; vertical-align: middle; }
   .col-title { margin: 0; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
