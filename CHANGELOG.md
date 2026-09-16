@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.138.1 — A call through an MCP server is its own line in Activity
+
+A tool call through an MCP server was counted into the summed line — "used 3 tools" — where nobody could
+see which server was used or what was done with it. Each server now gets a line of its own, "Used
+Playwright", and the calls made through it are appended to that same line rather than piling up new ones.
+Clicking the line opens it and lists the calls, one chip each. A line in between ends the run, so the
+next call starts a line in its real place, and a project with no MCP servers sees no change.
+
 ## 1.138.0 — Work can be parked, plans are their own thing, and the viewer says what it means
 
 A minor release that gathers everything since 1.137.0.
