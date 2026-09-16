@@ -2443,10 +2443,29 @@ const Plans = {
       const finished = planTodos.value.filter((t) => t.done).length;
       return { phases: `${p.phases_done} of ${p.phases_total} phases complete`, todos: `${finished} of ${planTodos.value.length} to-dos done` };
     });
+    // THE BAND CARRIES THE ONE ACT THE PLAN IS WAITING FOR. A draft's "Approve the plan" action existed
+    // but was only ever rendered for an ACTIVE plan, so the page that shows you the plan had no way to
+    // start it — the only Start was on the home card.
     const primary = computed(() => {
       const p = item.data;
-      if (!p || !p.held) return null;
-      return { label: "Continue past the checkpoint", go: () => send("POST", `${api.value}/${p.n}/proceed`).then(() => { item.reload(); changed(); }) };
+      if (!p) return null;
+      if (p.held) {
+        return { label: "Continue past the checkpoint",
+                 go: () => send("POST", `${api.value}/${p.n}/proceed`).then(() => { item.reload(); changed(); }) };
+      }
+      if (p.status === "draft") {
+        return { label: "Approve the plan",
+                 go: () => send("POST", `${api.value}/${p.n}/activate`).then(() => { item.reload(); list.reload(); changed(); }) };
+      }
+      if (p.status === "parked") {
+        return { label: "Pick this plan up again",
+                 go: () => send("POST", `${api.value}/${p.n}/activate`).then(() => { item.reload(); list.reload(); changed(); }) };
+      }
+      if (p.status === "done" && !p.acknowledged) {
+        return { label: "Acknowledge",
+                 go: () => send("POST", `${api.value}/${p.n}/acknowledge`).then(() => { item.reload(); list.reload(); changed(); }) };
+      }
+      return null;
     });
     const quiet = computed(() => (item.data && item.data.current ? `Working phase ${item.data.current}` : ""));
     const citedDocs = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/docs?archived=1`);
