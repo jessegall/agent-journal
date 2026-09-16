@@ -196,7 +196,9 @@ MESSAGES = {
     "reason_reported": "reported finished by an agent, yours to close with `journal todos done <n>`",
     "reason": "{n} {what}",
     "stuck_fact": "auto is on for `{env}`, but nothing on the list can be picked up",
-    "stuck_do": "[{why:, }; ]`journal todo` shows what each waits on",
+    "stuck_do": "[{why:, }; ]`journal todo` shows what each waits on[. {asked}]",
+    "stuck_asked": "A QUESTION WAITING ON THE USER IS NOT A STOP — a plan being shaped, a doc, anything already open: "
+                   "asking is not waiting, and auto exists so you carry on while they are away",
     "user_answered_fact": "the user answered to-do {n}",
     "user_answered_do": "({title}) — that is their word to do it: `.journal/journal.py todos start {n}`",
     "answered_block": "To-do {n}: {title}\n  asked:    {asks}\n  answered: {answer}",
@@ -1286,7 +1288,8 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
                 ([t for t in todo.open_items(ROOT, here) if t.get("assigned") and not t.get("reported")], say("reason_held")),
             )
             why = [say("reason", n=len(rows), what=what) for rows, what in reasons if rows]
-            return _said(say("stuck_fact", env=here), say("stuck_do", why=why))
+            return _said(say("stuck_fact", env=here),
+                         say("stuck_do", why=why, asked=say("stuck_asked") if todo.asking(ROOT, here) else None))
         return None
     if not auto:
         if not unstuck:

@@ -68,7 +68,9 @@ TEXT = {
     "next_brief": "  journal todos {n}          the brief",
     "next_pick": "  journal todos start {n}    pick it up",
     "next_empty": "The list is empty. Stop the loop if one is running.",
-    "next_blocked": "Nothing to pick up: {why}. `journal todo` shows what each waits on.",
+    "next_blocked": "Nothing to pick up: {why}. `journal todo` shows what each waits on.[\n  {asked}]",
+    "next_asked": "A question waiting on you does not stop the work: a plan being shaped, a doc, anything already "
+                  "open — asking is not waiting. `journal questions` reads what was asked.",
     "next_reason": "{n} {what}",
     "next_waiting_off": "Nothing is open. {n} to-do(s) waiting; auto is off, so none starts without the user's word.",
     "next_nothing": "Nothing is open and nothing is waiting.",
@@ -222,7 +224,8 @@ class Next(Command):
             ([t for t in waiting if t.get("assigned") and not t.get("reported")], "held by an agent still working"),
         )
         why = ", ".join(render(TEXT["next_reason"], n=len(rows), what=what) for rows, what in reasons if rows)
-        fmt.say(render(TEXT["next_blocked"], why=why))
+        fmt.say(render(TEXT["next_blocked"], why=why,
+                       asked=TEXT["next_asked"] if todo.asking(root(), here) else None))
         return 0
 
 
