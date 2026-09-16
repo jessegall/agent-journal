@@ -365,5 +365,25 @@ check("a coarse excerpt spanning one speaker's words is filed", (code, "became n
 code, out = j("messages", "process", str(_tn), "--part=the team agreed to fix the loader", "--became=noted")
 check("but a summary the agent wrote is refused, however true", (code, "not in message" in out), (1, True))
 
+# ------------------------------------------------------------- a ref lives where it was MADE, not where it was said
+# `todo 1` exists on both environments here, so a bare ref cannot say which one was meant: the part
+# records the environment its ref lives on, and the message stays where the user left it.
+import inbox as _inbox  # noqa: E402
+
+j("switch", "faraway")
+j("todos", "add", "swap the loader, over on faraway")
+j("switch", "default")
+j("todos", "add", "something else entirely, here on default")
+j("messages", "add", "swap the loader while you are at it")
+_cx = len(stored())
+code, out = j("messages", "process", str(_cx), "--part=swap the loader", "--became=todo 1", "--in=faraway")
+check("a part can say its ref lives on another environment", (code, "became to-do 1" in out), (0, True))
+check("and the part records which one", stored()[-1]["parts"][-1].get("env"), "faraway")
+_root = d / ".journal"
+check("the to-do's page finds the message, though it sits elsewhere",
+      [(r["n"], r["env"]) for r in _inbox.sources(_root, "todo:1", "faraway")], [(_cx, "default")])
+check("and the same bare ref here keeps its OWN message, never the other environment's",
+      [(r["n"], r["env"]) for r in _inbox.sources(_root, "todo:1", "default")], [(1, "default")])
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

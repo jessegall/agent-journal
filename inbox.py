@@ -5,6 +5,7 @@ from pathlib import Path
 
 import fmt
 import state
+import tracks
 from pins import age
 from templates import render
 
@@ -129,12 +130,19 @@ def label(ref: str) -> str:
 
 
 def sources(root: Path, ref: str, track: str | None = None) -> list[dict]:
-    """The messages a part of which became `ref` (like `todo:44`), each with the words it quoted."""
+    """The messages a part of which became `ref` (like `todo:44`), each with the words it quoted.
+
+    A bare ref means nothing without an environment — `plan:1` exists on every environment that
+    has one — so a part records where its ref lives, and the message may sit somewhere else.
+    """
+    here = track or state.current_track(root)
     out = []
-    for n, m in enumerate(_all(root, track), 1):
-        parts = [p for p in m.get("parts") or [] if ref in p.get("became") or []]
-        if parts:
-            out.append({"n": n, "excerpt": parts[0].get("excerpt", "")})
+    for env in dict.fromkeys([here] + tracks.choices(root)):
+        for n, m in enumerate(_all(root, env), 1):
+            parts = [p for p in m.get("parts") or []
+                     if ref in (p.get("became") or []) and (p.get("env") or env) == here]
+            if parts:
+                out.append({"n": n, "excerpt": parts[0].get("excerpt", ""), "env": env})
     return out
 
 
@@ -375,7 +383,7 @@ def _filed_label(f: dict) -> str:
 
 
 def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
-            track: str | None = None) -> tuple[bool, str]:
+            track: str | None = None, in_env: str | None = None) -> tuple[bool, str]:
     excerpt = " ".join((excerpt or "").split())
     if not excerpt:
         return False, say("needs_part", n=n)
@@ -389,6 +397,7 @@ def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
         if m.get("moved_to"):
             env, _, there = str(m["moved_to"]).partition(":")
             return False, say("already_moved", n=n, env=env, there=there)
+        target = in_env or track or state.current_track(root)
         late = bool(m.get("processed"))
         if _flat(excerpt) not in _flat(m["text"]):
             return False, say("not_in_message", n=n)
@@ -397,12 +406,12 @@ def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
             ref, why = parse_became(raw)
             if ref is None:
                 return False, why
-            why = check_became(root, ref, track)
+            why = check_became(root, ref, target)
             if why:
                 return False, why
             if ref not in refs:
                 refs.append(ref)
-        m.setdefault("parts", []).append({"excerpt": excerpt, "became": refs, "at": at})
+        m.setdefault("parts", []).append({"excerpt": excerpt, "became": refs, "at": at, "env": target})
         _put(root, items, track)
         parts = len(m["parts"])
     return True, say("part_recorded_late" if late else "part_recorded", n=n, excerpt=fmt.gist(excerpt, 60),

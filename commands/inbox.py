@@ -131,7 +131,8 @@ class Edit(Resource):
 
 
 class Process(Resource):
-    signature = "messages:process {n : a message number} {--part=} {--became=*}"
+    signature = ("messages:process {n : a message number} {--part=} {--became=*}"
+                 " {--in= : the environment what it became lives on, when that is not this one}")
     casts = MESSAGE
     writes = True
     controller = CONTROLLER
