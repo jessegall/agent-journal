@@ -4,6 +4,46 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.138.0 — Work can be parked, plans are their own thing, and the viewer says what it means
+
+A minor release that gathers everything since 1.137.0.
+
+**Work can be parked, not only ended.** `journal work park "<why>"` sets a piece of work aside without
+finishing it: it stays open, says what it waits on, and the stop stops nudging it until the first
+`work update` picks it up again. `todos ask` and `todos block` park the work of that title instead of
+ending it, so nothing reads as Finished that nobody finished, and Home has a Parked section between
+Working on and Finished.
+
+**A to-do can wait for a plan.** `journal todos after <n> plan 4` holds a row until that plan finishes,
+beside the to-do numbers it already took. When a brief you write names another to-do or a plan and the
+row records no dependency, the journal says so and names the command — a nudge, never a refusal, because
+a constraint written in prose is one nothing can act on. Auto mode now works an active plan in phase
+order, and a phase whose rows are all stuck no longer wedges the list: the next phase is offered instead,
+unless a checkpoint the user has not continued past stands in between. A row in the wrong phase moves in
+one command with `--move`.
+
+**Everything you do in the viewer reaches an idle agent.** The channel used to wake an agent for a
+message, an answered question, a comment, a decided suggestion and a plan approval. It now also announces
+every other write the viewer makes, read from the one record each of them already leaves — so a new verb
+in the viewer needs no new case to be announced.
+
+**Plans are their own navigation entry**, out of Documents, with their own count of live plans; a finished
+plan opens as a plan rather than falling back to the list, and reads as finished rather than as something
+to switch to. The journal also ships a `journal-plans` skill: when a plan is worth drafting, shaping its
+goal with you first, what a phase and a checkpoint are, and who approves what.
+
+**A message's attachments moved from `inbox-files/` to `message-files/`**, files and all — a migration
+runs on the next command. The commit page now reads a commit from the repository when the journal never
+recorded it, instead of refusing a link the Activity column itself offered. A commit made by the same
+shell call that ended its work is recorded against that work again.
+
+**In the viewer:** pages fade in when they load; a message's parts read as what they became instead of
+all reporting as unanswered questions; an inspector's actions sit under the title rather than below the
+brief, the log and the comments; Home's Finished section ends with how much more work there is; Add phase
+opens a sheet where you write the phase or ask the agent to draft it; a comment records what it produced
+and offers it as a button. Eight shared components now carry markup that was written out by hand — among
+them one progress bar, so the plan page and Home measure the same thing.
+
 ## 1.137.7 — The bell keeps your recent notifications after you read them
 
 The notifications pop-up showed only unread notifications, so a notification cleared by a stray
