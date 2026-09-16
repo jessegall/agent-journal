@@ -189,6 +189,8 @@
     font-size: 11.5px; color: var(--text-2); cursor: pointer; }
   /* the agent's latest reply, at the top of the Activity column, so what it wrote in the terminal is readable here */
   .activity-said { flex: none; max-height: 160px; overflow-y: auto; margin: 8px 0 4px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--raised); }
+  .activity-said.sayable { cursor: pointer; }
+  .activity-said.sayable:hover, .activity-said.sayable:focus-visible { border-color: var(--border-2); outline: none; }
   .activity-said-head { display: block; margin-bottom: 4px; font-size: 11px; color: var(--text-3); }
   .activity-said-text { font-size: 12px; line-height: 1.5; color: var(--text-2); white-space: pre-wrap; overflow-wrap: anywhere; }
   /* the quick menu: a command box over the whole app that sends what is typed to the agent unless a command is picked */
