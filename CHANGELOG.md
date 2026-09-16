@@ -4,6 +4,32 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.141.1 — The viewer stops waiting, and a stalled plan says so
+
+A user reported that the viewer "just keeps loading" for their colleagues, and another project reported a
+plan that stalled in silence. Both are fixed here.
+
+**The page never waits on the network.** `/api/overview` asked whether a newer journal was upstream, and
+that check refreshes a cache older than fifteen minutes — inside the page's own request. Where the
+repository answers in 88ms nobody notices; where the network drops packets rather than refusing them, the
+home sits there with nothing to render. `update.cached` reads what the hooks and the CLI have already
+learned and never fetches.
+
+**The home asks for what it shows.** It was pulling every work row and every message ever written, in
+full, every five seconds — 986KB per cycle on a real journal — to render a handful of lines and two
+counts. Open work now comes from its own small listing, the finished lines and the queue rows from capped
+pages, and the counts ride in a row the page already fetches. **986KB to 65KB.**
+
+**A stalled plan names itself.** With an active plan whose current phase holds only rows nobody can start,
+`journal next` printed a generic tally and never mentioned the plan — and "nothing to pick up" reads as
+settled, so an agent stops while a plan sits stalled on one row. It now says which plan cannot advance,
+which phase, how many of its to-dos are held and each one's reason, with the condition quoted. A to-do
+also says which plan and phase it belongs to wherever it is listed, and bare `journal` has a plan line.
+
+**A quiet subagent says so.** A subagent that has not called a tool in a while is kept for a day so a long
+dispatch cannot vanish mid-thought, but the home strip now says "quiet" in words and lets go after an
+hour.
+
 ## 1.141.0 — What four reviewers found, and what the viewer owed the user
 
 Four subagents reviewed the previous release — two on the viewer, two on the Python — and this release is
