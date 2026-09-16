@@ -1,7 +1,7 @@
 // The journal's browser renderer. Vue does the layout; the server only ever answers with
 // JSON (see serve.py) — this file is the second renderer of that response, fmt.py the first.
 "use strict";
-const { createApp, reactive, computed, watch, watchEffect, onUnmounted, onMounted, ref, nextTick } = Vue;
+const { createApp, reactive, computed, watch, watchEffect, onUnmounted, onMounted, ref, nextTick, provide, inject } = Vue;
 
 // ─────────────────────────────────────────────────────────────── a hash router
 // A detail route renders the same view as its list, with the item open in the side panel.
@@ -601,6 +601,10 @@ const Panel = {
   props: ["label", "close", "onClose", "link"],
   components: { Icon },
   setup(props) {
+    // ONE inspector is open at a time. Every route's panel comes through here, so the rule lives here rather than
+    // in twenty views: when the overlay opens a resource, the panel the page mounted steps aside until it closes.
+    const isOverlay = inject("overlayPanel", false);
+    const standDown = computed(() => !isOverlay && !!OVERLAY.kind);
     const body = ref(null);
     // a panel lies over the whole app: the scrim, Esc and the close button all leave it the same way
     // it slides out before it goes, so it leaves a beat after the click
@@ -712,11 +716,11 @@ const Panel = {
     let watcher = null;
     onMounted(() => { decorate(); watcher = new MutationObserver(decorate); watcher.observe(body.value, { childList: true, subtree: true }); });
     onUnmounted(() => { if (watcher) watcher.disconnect(); });
-    return { stepped, body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, pageWords, onItsPage, leaveForPage, INSPECTOR_TRAIL };
+    return { stepped, standDown, body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, pageWords, onItsPage, leaveForPage, INSPECTOR_TRAIL };
   },
   template: `
-    <div :class="['panel-scrim', {closing, stepped}]" @click="dismiss"></div>
-    <aside :class="['panel', {closing, stepped}]" :style="{ width: inspector.width + 'px' }">
+    <div v-if="!standDown" :class="['panel-scrim', {closing, stepped}]" @click="dismiss"></div>
+    <aside v-if="!standDown" :class="['panel', {closing, stepped}]" :style="{ width: inspector.width + 'px' }">
       <div class=panel-grip title="Drag to resize" @pointerdown="drag"></div>
       <div class=panel-top>
         <span class=panel-ref><span class=panel-chip :style="chipTint ? { color: chipTint } : null">{{ label }}</span>
@@ -1554,7 +1558,7 @@ const PointByPoint = {
             <div class=reply-ask><span class=reply-bar></span><span class=part-ask>{{ p.ask }}</span></div>
             <div v-if="p.answer" class="md prose part-answer" v-html="$md(p.answer)"></div>
             <p v-else-if="p.pending" class=part-working>Still working on this one.</p>
-            <a v-for="b in p.became" :key="b.ref" class=part-made :href="$refHref(b.ref, env) || null">
+            <a v-for="b in p.became" :key="b.ref" class=part-made :href="$refHref(b.ref, env) || null" @click="$openRef($event, $refHref(b.ref, env))">
               <span class=part-made-label>{{ p.pending ? 'it is making' : 'it made' }}</span>
               <span class=part-made-dot :style="{ background: (TYPES[String(b.ref).split(':')[0]] || {}).tint || '#83868e' }"></span>
               <span class=part-made-ref>{{ b.label }}</span>
@@ -2948,7 +2952,8 @@ const PEEK = {
 const Peek = {
   props: ["env", "kind", "n", "close", "reloaded"],
   components: { TodoPanel, MessagePanel, ReplyPanel, QuestionPanel, WorkPanel, SuggestionPanel, SubagentPanel, PlanPanel, ReportPanel, DocPanel },
-  setup() { return { PEEK }; },
+  // this subtree IS the overlay, so the Panel inside it stays while any panel the route mounted stands down
+  setup() { provide("overlayPanel", true); return { PEEK }; },
   template: `
     <component :is="PEEK[kind].panel" :env="env" :n="n" :onClose="close" :link="PEEK[kind].page(env, n)" :reloaded="reloaded"/>`,
 };
