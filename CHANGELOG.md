@@ -4,6 +4,30 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.139.0 — A finished plan waits for you, and the viewer says what it means
+
+Everything in this release came from working beside the user in the viewer, one message at a time.
+
+**A finished plan no longer vanishes.** Its card stayed on Home only while the plan was active, so the
+moment the last phase closed the plan derived as done and the card disappeared with nothing saying it had
+finished. The card now stays under Working on, reading "finished" in the done green — edge, bar and
+border — with an Acknowledge button. Acknowledging is the user's act, like approving a plan: the agent is
+refused, and `journal plans acknowledge <n>` says so.
+
+**The plan page opens on the plan.** The switcher row above it is gone on the user's word; every plan is
+still reachable from the Plans entry in the sidebar.
+
+**In the viewer:** a list group folds when you click its header row, not only its chevron; what a comment
+quotes sits above the box as a fixed block instead of being typed into it, so the box is yours; a message
+panel is titled with the message rather than with a fraction that counted filed parts as unanswered;
+"Nothing is waiting on you" reads at normal weight with a live tick instead of looking disabled.
+
+**Two things that were quietly broken.** The shared progress bar collapsed to nothing in the plan band —
+`flex: 1` means remaining width in the home card's row and remaining height in the band's column — so the
+bar had no height at all; it keeps its own height now and only grows sideways where that is wanted. And a
+new environment starts worked-from-the-viewer, which is where that default belongs: flipping the global
+fallback would have turned it on for every environment in every project, including terminal-only ones.
+
 ## 1.138.1 — A call through an MCP server is its own line in Activity
 
 A tool call through an MCP server was counted into the summed line — "used 3 tools" — where nobody could
