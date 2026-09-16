@@ -85,6 +85,8 @@ MESSAGES = {
     "no_doc": "  no doc carries a track from before scope meant scope",
     "question_moved": "  {env}: to-do {n}'s question is question {q}",
     "no_question": "  no to-do carried a question in its own file",
+    "files_moved": "  {env}: a message's attachments are under message-files now ({n} message(s))",
+    "no_files_moved": "  no attachments were filed under the old name",
     "ran": "{version}: {what}",
     "report_head": "MIGRATIONS  the record is at {done}; the package is at {package}",
     "report_row": "{mark} {version}  {what}",
@@ -195,6 +197,27 @@ def _pin_bodies_home(root: Path) -> list[str]:
     return said or [say("no_pin_body")]
 
 
+def _message_files(root: Path) -> list[str]:
+    """1.138.0 — a message's attachments move from `inbox-files/` to `message-files/`.
+
+    THE DIRECTORY HELD REAL FILES, so the rename could not be a constant change alone: the URL
+    moved first (`/message-files/<env>/<n>/<name>`) and this brings the bytes with it. An
+    environment that somehow holds both shapes is left alone rather than merged blindly — a
+    migration that loses an attachment is worse than one that skips a case nobody has.
+    """
+    import inbox
+    envs = root / state.ENVS
+    folders = sorted(p for p in envs.iterdir() if p.is_dir()) if envs.is_dir() else []
+    said = []
+    for env in folders:
+        was, now = env / "inbox-files", env / inbox.FILES
+        if not was.is_dir() or now.exists():
+            continue
+        shutil.move(str(was), str(now))
+        said.append(say("files_moved", env=env.name, n=len([x for x in now.iterdir() if x.is_dir()])))
+    return said or [say("no_files_moved")]
+
+
 #: (the version it belongs to, what it does, the function). Ordered oldest first.
 MIGRATIONS: list[tuple[str, str, object]] = [
     ("1.34.0", "pins, work and to-dos move into each environment's own folder",
@@ -204,6 +227,7 @@ MIGRATIONS: list[tuple[str, str, object]] = [
     ("1.62.0", "a to-do's question and answer move out of its file into questions",
      _todo_questions),
     ("1.64.1", "a pin's reasoning file moves to the environment its pin is on", _pin_bodies_home),
+    ("1.138.0", "a message's attachments move from inbox-files to message-files", _message_files),
 ]
 
 
