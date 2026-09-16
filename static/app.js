@@ -3697,7 +3697,8 @@ const Commit = {
           </div>
           <div>
             <p class=section-label>Work <span class=muted>{{ found.data.work.length }}</span></p>
-            <div class=linked>
+            <p v-if="!found.data.work.length" class="prose muted">No work on this environment recorded this commit; it is read from the repository itself.</p>
+            <div v-else class=linked>
               <a v-for="w in found.data.work" :key="w.n" class="sub log-row" :href="'#/env/' + env + '/work/' + w.n">
                 <span class=log-text>{{ w.subject }}</span><span class=log-work>{{ w.ended ? 'Ended' : 'Open' }} · Work {{ w.n }}</span>
               </a>
