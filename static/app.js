@@ -1075,6 +1075,7 @@ const TYPES = {
   suggestion: { label: "Suggestion", tint: "#a3a8f0" }, doc: { label: "Doc", tint: "#6fae7d" },
   report: { label: "Report", tint: "#d9a441" }, plan: { label: "Plan", tint: "#5b8def" },
   todo: { label: "To-do", tint: "#5b8def" }, work: { label: "Work", tint: "#5b8def" },
+  transcript: { label: "Transcript", tint: "#6fb3c9" },
 };
 
 const ResourceList = {
@@ -1801,14 +1802,16 @@ const MessagePanel = {
     // answering where you are reading: it posts a reply on the message, then opens the next item like the primary action does
     const answerMessage = (text) => postJSON(`${api.value}/${item.data.n}/reply`, { text })
       .then(() => { item.reload(); changed(); advanceInspector(props); });
-    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered, answerMessage, asked };
+    // a message that declared what it is says so where its number is read, rather than reading as an ordinary one
+    const noun = computed(() => (item.data && item.data.kind === "transcript" ? "Transcript" : "Message"));
+    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered, answerMessage, asked, noun };
   },
   template: `
-    <Panel :label=\"'Message ' + n" :close="close" :onClose="onClose" :link="link">
+    <Panel :label=\"noun + ' ' + n" :close="close" :onClose="onClose" :link="link">
       <FetchState :state="item"/>
       <template v-if="item.data">
         <!-- the heading is the message's NUMBER: the text is read once, under it, where UserMessage renders it -->
-        <h2 class=panel-title>Message {{ item.data.n }}</h2>
+        <h2 class=panel-title>{{ noun }} {{ item.data.n }}</h2>
         <UserMessage :text="item.data.text"/>
         <dl class=props>
           <dt>Status</dt><dd :title="item.data.status === 'waiting' && item.data.read ? 'The agent read it ' + item.data.read_age : null"><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled' : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
@@ -2216,13 +2219,16 @@ const Rules = claimsView({
 // the Inbox: messages, questions and suggestions in one list; a question or suggestion opens as q/3 or s/7
 function inboxRef(r) { return r.type === "message" ? String(r.num) : `${r.type[0]}/${r.num}`; }
 
+// what the row is CALLED, which a declared kind overrides: one funnel, read by the type column and its tint
+function inboxType(r) { return r.kind || r.type; }
+
 function suggestionKind(s) { return s.status === "open" ? "waiting" : s.status === "accepted" || s.status === "adjusted" ? "done" : "withdrawn"; }
 
 const INBOX_LIST = {
   groups: [{ key: "you", label: "Waiting on you", kind: "waiting", match: (r) => r.group === "you" },
            { key: "agent", label: "Waiting on the agent", kind: "progress", match: (r) => r.group === "agent" },
            { key: "handled", label: "Handled", kind: "done", closed: true, folded: true, match: (r) => r.group === "handled" }],
-  columns: { status: (r) => r.status, tint: (r) => (r.group === "you" ? (TYPES[r.type] || {}).tint || null : null), type: (r) => r.type, num: (r) => `#${r.num}`, numWidth: "34px", title: (r) => r.title, age: (r) => shortAge(r.age), ageWidth: "52px", struck: (r) => r.struck },
+  columns: { status: (r) => r.status, tint: (r) => (r.group === "you" ? (TYPES[inboxType(r)] || {}).tint || null : null), type: (r) => inboxType(r), num: (r) => `#${r.num}`, numWidth: "34px", title: (r) => r.title, age: (r) => shortAge(r.age), ageWidth: "52px", struck: (r) => r.struck },
   sorts: [{ key: "at", label: "Newest", value: (r) => r.at || "" }],
   count: (rows) => `${rows.filter((r) => r.group === "you").length} waiting · ${rows.filter((r) => r.at && Date.now() - Date.parse(r.at) < 7 * 86400000).length} this week`,
   empty: "Nothing has arrived here yet.", name: "inbox",
@@ -2242,7 +2248,7 @@ const Inbox = {
     const rows = computed(() => {
       if (!messages.data || !questions.data || !suggestions.data) return null;
       return [
-        ...messages.data.map((m) => ({ name: `m${m.n}`, type: "message", num: m.n, title: m.text, age: m.age, at: m.at, closed_at: m.closed_at,
+        ...messages.data.map((m) => ({ name: `m${m.n}`, type: "message", kind: m.kind || "", num: m.n, title: m.text, age: m.age, at: m.at, closed_at: m.closed_at,
                                        group: m.status === "waiting" ? "agent" : "handled", live: m.status === "waiting", status: MESSAGE_LIST.columns.status(m), struck: m.status === "archived" })),
         ...questions.data.map((q) => ({ name: `q${q.n}`, type: "question", num: q.n, title: q.text, age: q.age, at: q.at, closed_at: q.closed_at,
                                         group: q.status === "open" ? "you" : "handled", status: questionKind(q), struck: q.status === "withdrawn" })),
