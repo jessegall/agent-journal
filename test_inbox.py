@@ -205,6 +205,14 @@ check("the files are copied into the environment at once", (code, (_held / "shot
 code, out = j("messages", "show", str(_mn))
 check("show lists each file, where it is held, and that it is not filed", ("shot.png" in out, "message-files" in out, "not filed yet" in out),
       (True, True, True))
+# WHERE A TRANSCRIPT LIVES, decided by the user: it stays a message attachment. What that has to mean is
+# that it is outside the catalogue and never handed to a session — the reason no "hidden doc" flag was
+# built. Asserted against the real functions rather than described in a reply.
+import docs as _docs  # noqa: E402
+check("a held attachment is in no doc: the catalogue does not contain it",
+      [x for x in _docs.all_docs(root) if "shot.png" in json.dumps(x)], [])
+check("and a session start is never handed it",
+      "message-files" in _docs.carry(root, track="default") or "shot.png" in _docs.carry(root, track="default"), False)
 j("messages", "process", str(_mn), "--part=see the screenshot", "--became=noted")
 code, out = j("messages", "done", str(_mn))
 check("done is refused while a file is not filed, naming it", (code, "shot.png" in out, "notes.txt" in out), (1, True, True))
