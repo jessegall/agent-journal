@@ -6,6 +6,7 @@ from payloads.base import Field, Payload
 class StorePayload(Payload):
     text = Field(str, verbatim=True)
     files = Field(object)
+    kind = Field(str)
 
 
 class FilePayload(Payload):

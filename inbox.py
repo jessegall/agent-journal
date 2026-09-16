@@ -34,6 +34,7 @@ MESSAGES = {
     "answered_part": "answered part of message {n} ({excerpt}); the user is notified and reads it under the message",
     "answer_note": "Answered your question in message {n}",
     "reply_note": "Replied to your message {n}",
+    "bad_kind": "there is no message kind called {kind}; there is only: {kinds:, }",
     "needs_text": 'a message needs its text: journal messages add "<message>"',
     "added": "message {n} is left for the agent ({waiting} waiting to be processed)",
     "no_such": "there is no message {n}. `journal messages` numbers them.",
@@ -211,6 +212,9 @@ def _became(m: dict) -> list[str]:
 
 FILES = "message-files"
 FILES_LIMIT = 20 * 1024 * 1024
+#: A message may declare WHAT IT IS when it is sent, and that word is the instruction: the agent
+#: infers nothing from size or extension. An ordinary message declares nothing and carries no kind.
+MESSAGE_KINDS = ("transcript",)
 
 
 def files_dir(root: Path, track: str | None, n: int) -> Path:
@@ -251,16 +255,20 @@ def _read_files(files: list | None) -> tuple[list[tuple[str, bytes]], str]:
 
 
 def add(root: Path, text: str, at: str, source: str = "cli", track: str | None = None,
-        files: list | None = None) -> tuple[bool, str]:
+        files: list | None = None, kind: str = "") -> tuple[bool, str]:
     text = (text or "").strip()
     if not text:
         return False, say("needs_text")
+    kind = (kind or "").strip().lower()
+    if kind and kind not in MESSAGE_KINDS:
+        return False, say("bad_kind", kind=repr(kind), kinds=list(MESSAGE_KINDS))
     got, why = _read_files(files)
     if why:
         return False, why
     with state.locked(root):
         items = _all(root, track)
         items.append({"text": text, "at": at, "source": source, "parts": [], "processed": None,
+                      **({"kind": kind} if kind else {}),
                       **({"files": [{"name": name, "size": len(data), "filed": None} for name, data in got]} if got else {})})
         _put(root, items, track)
         n = len(items)
@@ -619,6 +627,7 @@ def show_text(d: dict) -> str:
 def row_response(n: int, m: dict) -> dict:
     return {
         "n": n, "text": m["text"], "gist": fmt.gist(m["text"]), "facts": " · ".join(_facts(m)),
+        "kind": m.get("kind") or "",
         "status": "archived" if m.get("archived") else "moved" if m.get("moved_to") else "processed" if m.get("processed") else "waiting",
         "archived": m.get("archived") or "",
         "closed_at": m.get("archived_at") or m.get("processed") or "",

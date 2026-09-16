@@ -185,6 +185,7 @@ class Question(Model):
 class Message(Model):
     text: str = ""
     source: str = ""
+    kind: str = ""
     parts: list[dict] = field(default_factory=list)
     processed: str = ""
     moved_to: str = ""

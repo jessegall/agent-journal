@@ -84,7 +84,7 @@ class Waiting(Resource):
 
 
 class Add(Resource):
-    signature = "messages:add {text* : the message} {--file=*}"
+    signature = "messages:add {text* : the message} {--file=*} {--kind= : what this message IS, when it is not an ordinary one: transcript}"
     casts = {"text": words("a message")}
     default = True
     writes = True
