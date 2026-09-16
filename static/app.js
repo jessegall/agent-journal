@@ -3159,6 +3159,9 @@ const EnvHome = {
         .slice(0, FINISHED_SHOWN)
         .map((w) => ({ n: w.n, title: w.subject, sub: workSub(w, true) }));
     });
+    // THE REAL REMAINDER, not "total minus three": the section shows three pieces from the last week,
+    // so everything older is invisible too. The work list is fetched whole, so the honest count is here.
+    const finishedMore = computed(() => (work.data || []).filter((w) => w.ended).length - finishedLines.value.length);
     // Subagents belong to the agent, so the live ones hang under its facts line: one line each, and nothing at all when none are running
     const liveCrew = computed(() => (crew.data || []).filter((a) => a.kind === "subagent" && a.state === "active")
       .map((a, i) => ({ key: `subagent:${a.id}`, name: a.name || `Subagent ${a.id}`,
@@ -3204,7 +3207,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, goPlan, queueMeta, currentWork, planRows, workLines, parkedLines, finishedLines, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, goPlan, queueMeta, currentWork, planRows, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3282,6 +3285,7 @@ const EnvHome = {
             <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
           </a>
         </TransitionGroup>
+        <a v-if="finishedMore > 0" class=home-more :href="'#/env/' + env + '/work'">{{ finishedMore }} more<Icon name="arrow"/></a>
       </section>
       <section v-if="replies.length" class=home-section>
         <div class=home-head><h2>Replies to you</h2><span>{{ repliesNote }}</span></div>
