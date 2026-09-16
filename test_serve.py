@@ -1220,5 +1220,27 @@ check("the deleted question loses its text but stays answered and closed",
       ("text" in _old, bool(_old.get("removed")), _old.get("answer"), _q.is_open(_old)), (False, True, "yes", False))
 check("an open question is never deleted", (_open.get("text"), bool(_open.get("removed"))), ("an open question to keep", False))
 
+# THE BYTES GO WITH THE REFERENCE. Pruning a message dropped its `files` list and left the files on
+# disk with nothing pointing at them — found while designing a feature whose attachments are large.
+import inbox as _inbox  # noqa: E402
+_inbox.add(root, "pruned, with a file", "2020-01-01T00:00:00+00:00", track="beta",
+           files=[{"name": "gone.txt", "data": base64.b64encode(b"bytes that should go").decode()}])
+_pruned_n = len(_inbox._all(root, "beta"))
+_inbox.add(root, "kept, with a file", "2020-01-01T00:00:00+00:00", track="beta",
+           files=[{"name": "stays.txt", "data": base64.b64encode(b"bytes that should stay").decode()}])
+_kept_n = len(_inbox._all(root, "beta"))
+_msgs = _inbox._all(root, "beta")
+_msgs[_pruned_n - 1]["processed"] = "2020-01-01T00:00:00+00:00"
+_inbox._put(root, _msgs, "beta")
+check("both messages have their files on disk to begin with",
+      (_inbox.files_dir(root, "beta", _pruned_n).is_dir(), _inbox.files_dir(root, "beta", _kept_n).is_dir()), (True, True))
+_retention.set_days(root, "beta", "inbox", 1, 1)
+_retention.prune(root, "beta")
+check("a pruned message takes its files with it, and leaves every other message's alone",
+      (_inbox.files_dir(root, "beta", _pruned_n).exists(), _inbox.files_dir(root, "beta", _kept_n).is_dir()), (False, True))
+check("and the record keeps its place, marked removed",
+      (bool(_inbox._all(root, "beta")[_pruned_n - 1].get("removed")), "files" in _inbox._all(root, "beta")[_pruned_n - 1]),
+      (True, False))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

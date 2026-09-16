@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
+import inbox
 import state
 from templates import render
 
@@ -78,12 +80,15 @@ def prune(root: Path, track: str) -> int:
         with state.locked(root):
             items = module._all(root, track)
             changed = False
-            for item in items:
+            for n, item in enumerate(items, 1):
                 if not isinstance(item, dict) or item.get("removed"):
                     continue
                 closed = next((_when(item.get(f)) for f in fields if item.get(f)), None)
                 if closed is None or time.time() - closed <= limit:
                     continue
+                if resource == "inbox" and item.get("files"):
+                    # the bytes go with the reference: one deletion, through the module that owns the path
+                    shutil.rmtree(inbox.files_dir(root, track, n), ignore_errors=True)
                 for key in CONTENT[resource]:
                     item.pop(key, None)
                 item["removed"] = time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime())

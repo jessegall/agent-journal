@@ -21,7 +21,8 @@ _REF = re.compile(r"^\s*(docs?|reports?)\s*[:#\s]?\s*(\d+(?:\.\d+)?)\s*$", re.I)
 MESSAGES = {
     "needs_title": 'a plan needs a title: journal plans add "<title>" --goal="<what is true when it is done>" --brief',
     "needs_goal": 'a plan needs its goal, one line saying what is true when it is done: --goal="<goal>"',
-    "added": 'plan {n}: {title} (draft)\n  add its phases: journal plans phase {n} "<title>" --when="<what is true when it is complete>"',
+    "added": 'plan {n}: {title} ({state})\n  add its phases: journal plans phase {n} "<title>" --when="<what is true when it is complete>"[\n  {tail}]',
+    "added_preparing": 'it is being written: nobody can approve it until `journal plans ready {n}`, which refuses while a phase has no to-dos',
     "no_plan": "there is no plan {n}. `journal plans` numbers them.",
     "phase_title": 'a phase needs a title: journal plans phase {n} "<title>" --when="<what is true when it is complete>"',
     "closed": "plan {n} is {status} and takes no more changes",
@@ -232,7 +233,8 @@ def add(root: Path, title: str, goal: str, body: str, at: str, source: str = "cl
                       "source": source, "phases": [], "refs": []})
         _put(root, items, here)
         n = len(items)
-    return True, say("added", n=n, title=title)
+    return True, say("added", n=n, title=title, state=PREPARING if preparing else DRAFT,
+                     tail=say("added_preparing", n=n) if preparing else None)
 
 
 def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bool = False,
