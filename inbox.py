@@ -10,10 +10,11 @@ from templates import render
 
 KEY = "inbox"
 
-KINDS = {"todo": "to-do", "pin": "pin", "rule": "rule", "reminder": "reminder", "question": "question", "plan": "plan"}
+KINDS = {"todo": "to-do", "pin": "pin", "rule": "rule", "reminder": "reminder", "question": "question", "plan": "plan",
+         "report": "report", "doc": "doc"}
 PLAIN = ("work", "noted", "answered")
 
-_REF = re.compile(r"^\s*(to-?dos?|pins?|rules?|reminders?|questions?|plans?)\s*[:#\s]\s*(\d+)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|pins?|rules?|reminders?|questions?|plans?|reports?|docs?)\s*[:#\s]\s*(\d+)\s*$", re.I)
 
 MESSAGES = {
     "edited": "message {n} is updated",
@@ -23,7 +24,7 @@ MESSAGES = {
     "moved": "message {n} moved to {env}, where it is message {there}",
     "fact_moved": "moved to {to}",
     "not_a_ref": "{text} is not something a part becomes; write `todo 22`, `pin 3`, `rule 2`, `reminder 1`, "
-                 "`question 4`, `plan 5`, `work` or `noted`",
+                 "`question 4`, `plan 5`, `report 3`, `doc 4`, `work` or `noted`",
     "no_entry": "there is no {kind} {n} for a part to have become",
     "label": "{kind} {n}",
     "plain_work": "a work update",
@@ -35,9 +36,11 @@ MESSAGES = {
     "added": "message {n} is left for the agent ({waiting} waiting to be processed)",
     "no_such": "there is no message {n}. `journal messages` numbers them.",
     "needs_part": 'say which part: journal messages process {n} --part="<the words it is about>" --became=<what it became>',
-    "needs_became": 'say what the part became: --became="todo 22", "pin 3", "question 4", "plan 5", work or noted',
+    "needs_became": 'say what the part became: --became="todo 22", "pin 3", "question 4", "plan 5", "report 3", "doc 4", work or noted',
     "not_in_message": "that part is not in message {n}; quote the words it is about",
     "already_processed": "message {n} is already processed",
+    "already_moved": "message {n} was moved to `{env}`, where it is message {there} — record the part there, "
+                     "on the record the user is actually reading",
     "part_recorded": "message {n}: «{excerpt}» became {became:, } ({parts} part(s) recorded)",
     "part_recorded_late": "message {n} was already processed; «{excerpt}» became {became:, } anyway ({parts} part(s) recorded). "
                           "A message is the record of what the user said, not a closed ticket.",
@@ -153,9 +156,17 @@ def check_became(root: Path, ref: str, track: str | None = None) -> str | None:
     elif kind == "plan":
         import plans
         count = len(plans._all(root, track))
-    else:
+    elif kind == "report":
+        import reports
+        count = len(reports._all(root, track))
+    elif kind == "doc":
+        import docs
+        count = len(docs.all_docs(root))
+    elif kind == "question":
         import questions
         count = len(questions._all(root, track))
+    else:
+        return say("not_a_ref", text=repr(ref))
     return None if 1 <= n <= count else say("no_entry", kind=KINDS[kind], n=n)
 
 
@@ -375,6 +386,9 @@ def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
         m, why = _find(items, n)
         if m is None:
             return False, why
+        if m.get("moved_to"):
+            env, _, there = str(m["moved_to"]).partition(":")
+            return False, say("already_moved", n=n, env=env, there=there)
         late = bool(m.get("processed"))
         if _flat(excerpt) not in _flat(m["text"]):
             return False, say("not_in_message", n=n)

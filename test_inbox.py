@@ -77,6 +77,11 @@ check("a part can become a plan, which is what the plan page links back by",
       (code, "became plan 1" in out, stored()[0]["parts"][-1]["became"]), (0, True, ["plan:1"]))
 code, out = j("inbox", "process", "1", "--part=the parser", "--became=plan 9")
 check("a part cannot become a plan that does not exist", (code, "no plan 9" in out), (1, True))
+# research the user asked for ends in a report (rule 9), so a part has to be able to say it became one
+code, out = j("inbox", "process", "1", "--part=the parser", "--became=report 9")
+check("a part cannot become a report that does not exist", (code, "no report 9" in out), (1, True))
+code, out = j("inbox", "process", "1", "--part=the parser", "--became=doc 9")
+check("nor a doc that does not exist", (code, "no doc 9" in out), (1, True))
 code, out = j("inbox", "process", "1", "--part=rename", "--became=banana")
 check("what a part became must be a reference", (code, "noted" in out), (1, True))
 code, out = j("inbox", "process", "1", "--part=rename")
@@ -330,6 +335,17 @@ code, out = j("messages", "reply", str(_g), "Either works.", "--part=and what ab
               "--follow-up=Which? A) blue B) green")
 check("a follow-up that lists its choices in its text is refused, and the reply is not written either",
       (code, "--option=" in out, stored()[-1].get("replies")), (1, True, None))
+
+# ------------------------------------------------------------------ a moved message is read where it went
+j("prepare", "faraway")
+j("switch", "default")
+j("messages", "look at the loader while you are in there")
+_mv = len(stored())
+code, out = j("messages", "move", str(_mv), "faraway")
+check("a waiting message can be carried to another environment", (code, "moved to faraway" in out), (0, True))
+code, out = j("messages", "process", str(_mv), "--part=the loader", "--became=noted")
+check("and a late part is refused here, naming where it went and which message it is there",
+      (code, "was moved to `faraway`" in out, "message 1" in out), (1, True, True))
 
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

@@ -71,6 +71,10 @@ MESSAGES = {
     "age_minute": "last wrote 1 minute ago",
     "age_minutes": "last wrote {n} minutes ago",
     "age_hours": "last wrote {n} h ago",
+    "done_now": "finished just now",
+    "done_minute": "finished 1 minute ago",
+    "done_minutes": "finished {n} minutes ago",
+    "done_hours": "finished {n} h ago",
     "called": ' — "{called}"',
     "env_one": '--env="{env}"',
     "env_unknown": '--env="<the environment your dispatch named>"',
@@ -172,6 +176,26 @@ def age(root: Path, track: str, agent: str) -> str:
     if secs < 3600:
         return say("age_minute") if secs < 120 else say("age_minutes", n=int(secs // 60))
     return say("age_hours", n=f"{secs / 3600:.1f}")
+
+
+def done_at(root: Path, track: str, agent: str) -> float:
+    """When this agent's SubagentStop came, in unix seconds — 0.0 if it never did."""
+    got = state.get(root, DONE, {})
+    when = ((got if isinstance(got, dict) else {}).get(track) or {}).get(state.slug(agent))
+    return float(when) if when else 0.0
+
+
+def done_age(root: Path, track: str, agent: str) -> str:
+    """How long since this agent finished, in words; "" while it is still running."""
+    when = done_at(root, track, agent)
+    if not when:
+        return ""
+    secs = time.time() - when
+    if secs < 60:
+        return say("done_now")
+    if secs < 3600:
+        return say("done_minute") if secs < 120 else say("done_minutes", n=int(secs // 60))
+    return say("done_hours", n=f"{secs / 3600:.1f}")
 
 
 def described(project: Path, parent: str, agent: str) -> str:

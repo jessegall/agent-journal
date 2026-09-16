@@ -78,6 +78,11 @@ that wait is correct, not something to work around by starting the rows by hand.
 **One plan is active at a time on an environment.** Activating another is refused while one
 is running. Drafts are free: write as many as the work needs.
 
+**A plan being written cannot be declared ready while a phase is empty.** `journal plans
+ready <n>` refuses and names the phase: until every phase has its to-dos the plan stays
+*being written*, so the user never sees a Start button on something the agent is still
+filling in. Write the phases AND their rows, then say it is ready.
+
 **A plan cannot start with an empty first phase** — "plan N cannot start: its first phase
 has no to-dos". A phase with no to-dos in the middle of a run stalls it the same way, and
 says the same thing: break it down with `journal todos add` and `journal plans todos`.

@@ -833,7 +833,7 @@ check("a skill set to load at every start is named in the start block", ("LOAD T
 _skills_mod.set_always(d / ".journal", "journal-memory", False)
 check("and every focused skill beside it",
       [n for n in ("journal-todos", "journal-questions", "journal-messages", "journal-memory", "journal-docs",
-                  "journal-agents", "journal-plans")
+                  "journal-agents", "journal-plans", "journal-reports")
        if not (d / ".claude" / "skills" / n / "SKILL.md").is_file()], [])
 (installed / "references" / "stale.md").write_text("old")
 p = subprocess.run([I], capture_output=True, text=True, timeout=180)
@@ -1035,7 +1035,15 @@ code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("the next session start is handed the changelog", "THE JOURNAL WAS UPGRADED" in ctx and "the test release" in ctx, True)
 code, out, err = fire(d, "SessionStart", path, source="compact")
-check("and not again in the same transcript", "THE JOURNAL WAS UPGRADED" in json.loads(out)["hookSpecificOutput"]["additionalContext"], False)
+_compact_ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
+check("and not again in the same transcript", "THE JOURNAL WAS UPGRADED" in _compact_ctx, False)
+# what crosses a compaction is a SUMMARY of a skill, so the agent is told to load them again
+check("a compaction tells the agent to reload its journal skills",
+      ("RELOAD YOUR JOURNAL SKILLS NOW" in _compact_ctx, "even if you believe they are still loaded" in _compact_ctx),
+      (True, True))
+code, out, err = fire(d, "SessionStart", path, source="startup")
+check("a plain start does not, because nothing was summarised away",
+      "RELOAD YOUR JOURNAL SKILLS NOW" in json.loads(out)["hookSpecificOutput"]["additionalContext"], False)
 p = subprocess.run([J, "upgrade", f"--from={src}"], env=env, capture_output=True, text=True, timeout=180)
 check("upgrading again is a no-op that says so", "Already at 9.0.0" in p.stdout, True)
 
