@@ -286,6 +286,7 @@ WEB_FIELD = {"todos:update": ("priority", "Changed to-do priority")}
 
 # resource:action -> the line shown in Activity for a write made in the viewer; {n} is the id in the path
 WEB = {
+    "journal:settings": "Changed the journal's settings",
     "style:store": "Added a coding style rule",
     "style:update": "Changed coding style rule {n}",
     "style:destroy": "Retired coding style rule {n}",
@@ -401,9 +402,9 @@ def _settings_said(key: str, body: dict) -> str:
     said = []
     if key == "environment:auto" and body.get("state") not in (None, ""):
         said.append("Turned auto mode on" if on(body["state"]) else "Turned auto mode off")
+    if key == "journal:settings" and "auto" in body:
+        said.append("Turned auto mode on for the journal" if on(body["auto"]) else "Turned auto mode off for the journal")
     if key == "environment:settings":
-        if "auto" in body:
-            said.append("Turned auto mode on" if on(body["auto"]) else "Turned auto mode off")
         if "reports_archive_days" in body:
             days = str(body["reports_archive_days"])
             said.append("Reports stay listed until archived by hand" if days in ("0", "") else f"Reports stay listed for {days} day(s)")
