@@ -1588,7 +1588,7 @@ const MessagePanel = {
     const api = computed(() => `/api/env/${props.env}/messages`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const envs = useEnvironments(() => props.env);
-    const heldUrl = (m, f) => `/inbox-files/${props.env}/${m.n}/${encodeURIComponent(f.name)}`;
+    const heldUrl = (m, f) => `/message-files/${props.env}/${m.n}/${encodeURIComponent(f.name)}`;
     const isImage = (name) => /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(name);
     const actions = computed(() => {
       const m = item.data;
