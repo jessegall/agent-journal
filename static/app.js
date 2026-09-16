@@ -1740,6 +1740,8 @@ const MessagePanel = {
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const envs = useEnvironments(() => props.env);
     const heldUrl = (m, f) => `/message-files/${props.env}/${m.n}/${encodeURIComponent(f.name)}`;
+    // nothing lists a transcript: the message that carried it is the only way in
+    const transcriptUrl = computed(() => (item.data && item.data.transcript ? `/transcripts/${props.env}/${item.data.n}` : ""));
     const isImage = (name) => /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(name);
     const actions = computed(() => {
       const m = item.data;
@@ -1804,7 +1806,7 @@ const MessagePanel = {
       .then(() => { item.reload(); changed(); advanceInspector(props); });
     // a message that declared what it is says so where its number is read, rather than reading as an ordinary one
     const noun = computed(() => (item.data && item.data.kind === "transcript" ? "Transcript" : "Message"));
-    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered, answerMessage, asked, noun };
+    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered, answerMessage, asked, noun, transcriptUrl };
   },
   template: `
     <Panel :label=\"noun + ' ' + n" :close="close" :onClose="onClose" :link="link">
@@ -1813,6 +1815,9 @@ const MessagePanel = {
         <!-- the heading is the message's NUMBER: the text is read once, under it, where UserMessage renders it -->
         <h2 class=panel-title>{{ noun }} {{ item.data.n }}</h2>
         <UserMessage :text="item.data.text"/>
+        <a v-if="transcriptUrl" class=file-row :href="transcriptUrl" target=_blank rel=noopener>
+          <span class=file-name>Open the transcript</span><span class=file-meta>its own file, listed nowhere</span>
+        </a>
         <dl class=props>
           <dt>Status</dt><dd :title="item.data.status === 'waiting' && item.data.read ? 'The agent read it ' + item.data.read_age : null"><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled' : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
           <dt>Left</dt><dd>{{ item.data.age || '—' }}</dd>

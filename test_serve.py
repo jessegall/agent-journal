@@ -583,6 +583,16 @@ status, headers, body = get(f"/message-files/alpha/{_held_n}/a.txt")
 check("the held file is served by name", (status, body), (200, b"hello"))
 status, _, _ = get(f"/message-files/alpha/{_held_n}/other.txt")
 check("a name the message does not hold is 404", status, 404)
+# A TRANSCRIPT IS REACHED FROM ITS MESSAGE, never from a list: nothing catalogues it, so the route
+# is the only way in, and a message that carries none says so rather than serving an empty file.
+status, got = post("/api/env/alpha/messages", {"text": "Jesse: the loader double-fetches. Sam: fix it.", "kind": "transcript"})
+_tr_msg = len(inbox._all(root, "alpha"))
+check("a transcript sent from the viewer says it has one on its row", (status, got["data"]["transcript"]), (201, True))
+status, headers, body = get(f"/transcripts/alpha/{_tr_msg}")
+check("and it is served as markdown, the transcript itself",
+      (status, b"the loader double-fetches" in body), (200, True))
+status, _, _ = get(f"/transcripts/alpha/{_held_n}")
+check("a message carrying no transcript is 404", status, 404)
 status, got = post("/api/env/alpha/messages", {"text": "big", "files": [{"name": "b.bin", "data": base64.b64encode(b"x" * 100_000).decode()}]})
 check("a message may carry more than the ordinary body limit", status, 201)
 
