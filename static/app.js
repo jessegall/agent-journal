@@ -126,6 +126,8 @@ function refHref(ref, env) {
   if (kind === "reminder") return `#/env/${env}/reminders`;
   if (kind === "inbox") return `#/env/${env}/messages/${num}`;
   if (kind === "work") return `#/env/${env}/work/${num}`;
+  // a transcript is a FILE, not a page: nothing lists it, and this is the only way to it
+  if (kind === "transcript") return `/transcripts/${env}/${num}`;
   if (kind === "style") return num ? `#/env/${env}/style/${num}` : `#/env/${env}/style`;
   return null;
 }
@@ -1470,7 +1472,10 @@ const TodoPanel = {
               </button>
             </div>
           </dd>
-          <dt>Cites</dt><dd><a v-if="item.data.doc" :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a><span v-else class=muted>—</span></dd>
+          <dt>Cites</dt><dd>
+            <a v-if="item.data.doc" :href="'#/docs/' + item.data.doc">Doc {{ item.data.doc }}</a>
+            <a v-if="item.data.transcript" class=chip :href="'/transcripts/' + env + '/' + item.data.transcript" target=_blank rel=noopener>Transcript {{ item.data.transcript }}</a>
+            <span v-if="!item.data.doc && !item.data.transcript" class=muted>—</span></dd>
           <template v-if="item.data.plan"><dt>Plan</dt><dd><a :href="'#/env/' + env + '/plans/' + item.data.plan.n">Plan {{ item.data.plan.n }} · phase {{ item.data.plan.phase }}</a></dd></template>
           <dt>Added</dt><dd>{{ item.data.age || '—' }}</dd>
           <template v-if="item.data.after.length">
@@ -2545,7 +2550,8 @@ const Plans = {
     const citedReports = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/reports?all=1`);
     const cites = computed(() => ((item.data && item.data.refs) || []).map((ref) => {
       const [kind, num] = ref.split(" ");
-      const pool = kind === "doc" ? citedDocs.data : citedReports.data;
+      // a transcript is in neither pool: nothing catalogues one, so its ref is its own title
+      const pool = kind === "doc" ? citedDocs.data : kind === "report" ? citedReports.data : null;
       const got = (pool || []).find((x) => x.n === Number(String(num).split(".")[0]));
       return { ref, label: `${TYPES[kind].label} ${num}`, title: got ? got.title : ref, tint: TYPES[kind].tint, href: planRefHref(ref, props.env) };
     }));

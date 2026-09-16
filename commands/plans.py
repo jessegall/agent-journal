@@ -164,7 +164,7 @@ class Abandon(Resource):
 
 
 class Link(Resource):
-    signature = "plans:link {n : a plan number} {ref* : doc 4, doc 4.2 or report 1}"
+    signature = "plans:link {n : a plan number} {ref* : doc 4, doc 4.2, report 1 or transcript 25}"
     casts = PLAN
     writes = True
     controller = CONTROLLER

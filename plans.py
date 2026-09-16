@@ -16,7 +16,7 @@ APPROVAL = "plans_approval"
 
 _PHASE_PART = re.compile(r"^\s*phase\s*\d*\s*[:.\-–—]?\s*(.*)$", re.I)
 
-_REF = re.compile(r"^\s*(docs?|reports?)\s*[:#\s]?\s*(\d+(?:\.\d+)?)\s*$", re.I)
+_REF = re.compile(r"^\s*(docs?|reports?|transcripts?)\s*[:#\s]?\s*(\d+(?:\.\d+)?)\s*$", re.I)
 
 MESSAGES = {
     "needs_title": 'a plan needs a title: journal plans add "<title>" --goal="<what is true when it is done>" --brief',
@@ -62,6 +62,7 @@ MESSAGES = {
     "already_abandoned": "plan {n} is already abandoned",
     "abandoned": "plan {n} is abandoned: {why}",
     "not_a_ref": "{text} is not something a plan links; write `doc 4`, `doc 4.2` or `report 1`",
+    "no_transcript": "message {n} carries no transcript",
     "no_report": "there is no report {n} on this environment",
     "linked": "plan {n} links {ref}",
     "already_linked": "plan {n} already links {ref}",
@@ -677,8 +678,10 @@ def parse_ref(text: str) -> tuple[str | None, str]:
     m = _REF.match(text or "")
     if not m:
         return None, say("not_a_ref", text=repr(text))
-    kind = "doc" if m.group(1).lower().startswith("doc") else "report"
-    if kind == "report" and "." in m.group(2):
+    word = m.group(1).lower()
+    kind = "doc" if word.startswith("doc") else "transcript" if word.startswith("transcript") else "report"
+    # only a doc has parts, so only a doc has a dotted number
+    if kind != "doc" and "." in m.group(2):
         return None, say("not_a_ref", text=repr(text))
     return f"{kind} {m.group(2)}", ""
 
@@ -694,6 +697,10 @@ def link(root: Path, n: int, ref: str, track: str | None = None) -> tuple[bool, 
         _, _, err = docs.get(root, num)
         if err:
             return False, err
+    elif kind == "transcript":
+        import inbox
+        if inbox.transcript(root, here, int(num)) is None:
+            return False, say("no_transcript", n=num)
     else:
         import reports
         if not 1 <= int(num) <= len(reports._all(root, here)) or reports._all(root, here)[int(num) - 1].get("removed"):
