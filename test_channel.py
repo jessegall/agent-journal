@@ -145,13 +145,6 @@ check("a plan the user approves in the viewer is pushed to an idle session, nami
       (params.get("meta", {}).get("plan"), "approved plan 1" in params.get("content", ""), "the first phase, is current" in params.get("content", "")),
       ("1", True, True))
 check("and only once", read_line(7), None)
-_plans.set_auto(root, 1, True, _dt.now(_tz.utc).isoformat(timespec="seconds"), source="web", track="default")
-push = read_line(12)
-params = (push or {}).get("params") or {}
-check("switching a plan to auto mode in the viewer is pushed to an idle session",
-      (params.get("meta", {}).get("plan"), "to auto mode" in params.get("content", "")), ("1", True))
-check("and that push comes once", read_line(7), None)
-
 j("auto-mode", "enable")
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("messages", "add", "another one while working")
@@ -184,6 +177,16 @@ while not (any("sent while it works, auto off" in c for c in _pushed) and any("n
     _pushed.append(((_line.get("params") or {}).get("content", "")))
 check("once it stops, the message and the changed answer are both pushed",
       (any("sent while it works, auto off" in c for c in _pushed), any("no, Wednesday" in c for c in _pushed)), (True, True))
+
+import commandlog as _commandlog  # noqa: E402
+from datetime import datetime as _dt2, timezone as _tz2  # noqa: E402
+_commandlog.record_web(root, "default", "reminders", "store", None, {}, _dt2.now(_tz2.utc).isoformat(timespec="seconds"))
+push = read_line(12)
+params = (push or {}).get("params") or {}
+check("anything else the user does in the viewer is pushed too, in the words Activity shows it",
+      ("Wrote a reminder" in params.get("content", ""), params.get("meta", {}).get("did")),
+      (True, "Wrote a reminder"))
+check("and not pushed twice", read_line(7), None)
 
 tracks.unbind(root, STEM)
 j("messages", "add", "while on no environment")

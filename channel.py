@@ -26,7 +26,7 @@ INSTRUCTIONS = ("What the user does in the journal viewer while you are idle arr
                 "A comment (comment=\"N\"): `.journal/journal.py comments show N` and handle it. A decided suggestion "
                 "(suggestion=\"N\"): `.journal/journal.py suggestions show N` and act on the decision. A newer journal "
                 "(update=\"X\"): run `.journal/journal.py update` once nothing is mid-flight. A plan approved or continued "
-                "(plan=\"N\"): `.journal/journal.py next` and start the current phase. They arrive only while you are idle, "
+                "(plan=\"N\"): `.journal/journal.py next` and start the current phase. Anything else the user did in the viewer (did=\"<what>\"): the line says what they did and to what — read that thing and act on it. They arrive only while you are idle, "
                 "whatever auto mode is; with auto mode off handle that one item and do not start on the to-do list.")
 
 #: runtime key shared with the hook: the newest version this session's agent was told about
@@ -175,12 +175,43 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
         else:
             content = f"The user decided suggestion {n} on {env}: {title}"
         got.append((f"{env}:suggestion:{n}:{decided or ''}", {"content": content, "meta": {"env": env, "suggestion": str(n)}}))
+    got.extend(_did(env, since))
     for n, c in comments.untold(ROOT, env):
         if _epoch(c.get("at")) < since:
             continue
         got.append((f"{env}:comment:{n}",
                     {"content": f"The user commented on {comments.label(c.get('about', ''))} on {env}: {_gist(c.get('text', ''))}",
                      "meta": {"env": env, "comment": str(n)}}))
+    return got
+
+
+#: kinds with a handler of their own above: they say more than a log line can, and mark themselves told
+_OWN_HANDLER = {"message", "question", "suggestion", "comment", "plan"}
+
+
+def _did(env: str, since: float) -> list[tuple[str, dict]]:
+    """Everything ELSE the user did in the viewer, from the one record every web write already leaves.
+
+    ONE FUNNEL, SO A NEW VERB NEEDS NO NEW CASE HERE. `commandlog.record_web` is called for every write
+    the viewer makes, from one place in `serve.py`, and stamps it `by: "You"` — so the list of things
+    the user can do is already written down, in the same words Activity shows them. Reading that is
+    what makes editing a to-do, changing a setting, accepting something, and whatever verb is added
+    next all reach an idle agent, instead of each one being remembered here one at a time.
+    """
+    import commandlog
+    got = []
+    for e in commandlog.entries(ROOT, env):
+        if not isinstance(e, dict) or e.get("by") != "You" or _epoch(e.get("at")) < since:
+            continue
+        if e.get("kind") in _OWN_HANDLER:
+            continue
+        what = " ".join(str(e.get("text") or "").split())
+        if not what:
+            continue
+        detail = f" ({e['detail']})" if e.get("detail") else ""
+        got.append((f"{env}:did:{e.get('at')}:{what}:{e.get('n') or ''}",
+                    {"content": f"The user did this on {env}: {what}{detail}. Read what it changed and act on it.",
+                     "meta": {"env": env, "did": what}}))
     return got
 
 
@@ -197,11 +228,6 @@ def _plan_events(env: str, since: float) -> list[tuple[str, dict]]:
         if at and plan.get("activated_by") == "web" and _epoch(at) >= since:
             got.append((f"{env}:plan:{n}:approved:{at}",
                         {"content": f"The user approved plan {n} on {env}: {title}.{ahead}", "meta": {"env": env, "plan": str(n)}}))
-        at = plan.get("auto_at") or ""
-        if at and plan.get("auto") and _epoch(at) >= since:
-            got.append((f"{env}:plan:{n}:auto:{at}",
-                        {"content": f"The user switched plan {n} on {env} to auto mode: it continues past its checkpoints on its own.{ahead}",
-                         "meta": {"env": env, "plan": str(n)}}))
         for p, ph in enumerate(plan.get("phases") or [], 1):
             at = ph.get("continued_at") or ""
             if at and _epoch(at) >= since:
