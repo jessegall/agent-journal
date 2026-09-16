@@ -3247,6 +3247,26 @@ const PLAN_WORD = { preparing: "being written", active: "working", parked: "paus
 // and guarded it by READING the same object its fetch WROTE — so every response re-triggered the
 // effect that produced it. A card fetches its own plan through useFetch, which settled that question
 // for every other list in this file, and brings its own error line with it.
+// WHAT IS WAITING READS AS A CARD, one per kind, not a uniform row: the kind's tint lights the edge,
+// a question carries more weight than the rest, and the card names the one thing to do with it.
+const NeedsCard = {
+  props: { item: Object, selected: Boolean, dismiss: Function },
+  components: { Icon },
+  template: `
+    <div :class="['needs-card', item.kind, {sel: selected}]" :style="{ '--tint': item.tint }" @click="item.open">
+      <div class=needs-card-top>
+        <span class=needs-card-kind>{{ item.label }}</span>
+        <span class=needs-card-meta>{{ item.meta }}</span>
+        <button type=button class=needs-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(item)"><Icon name="close"/></button>
+      </div>
+      <p class=needs-card-title>{{ item.title }}</p>
+      <div class=needs-card-foot>
+        <button v-if="item.act" type=button class=needs-card-go @click.stop="item.act">{{ item.action }}</button>
+        <span v-else class=needs-card-act>{{ item.action }}</span>
+      </div>
+    </div>`,
+};
+
 const PlanCard = {
   props: { env: String, plan: Object, blocked: Boolean, reloaded: Function },
   components: { ProgressBar, Icon },
@@ -3314,7 +3334,7 @@ const PlanCards = {
 
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, Peek, ProgressBar, PlanCards },
+  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
@@ -3367,7 +3387,7 @@ const EnvHome = {
         ...(reports.data || []).filter((r) => !r.seen && !r.archived).map((r) => ({ kind: "report", n: r.n, title: r.title, age: r.age })),
       ];
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
-        .map((r) => ({ ...r, open: () => peek(r.kind, r.n) }));
+        .map((r) => ({ ...r, meta: `${r.label.toLowerCase()} ${r.n} · ${r.age}`, open: () => peek(r.kind, r.n) }));
     });
     // EVERY LIVE PLAN IS SHOWN, not only the one in progress. One plan is worked at a time, but a
     // parked one, a draft waiting to be approved and a finished one waiting to be acknowledged are all
@@ -3402,7 +3422,7 @@ const EnvHome = {
       return { facts, href: agent ? `#/env/${props.env}/agents/session/${agent.session}` : "" };
     });
     const envRow = computed(() => (OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null));
-    const SLOTS = 5;
+    const SLOTS = 3;
     // the rows are a capped page; the COUNT is the environment's own, so a cap can never make it lie.
     // Unseen reports are not in that row (it counts unarchived ones), so they are counted from theirs.
     const waitingCount = computed(() => {
@@ -3412,8 +3432,13 @@ const EnvHome = {
     });
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
     const clear = computed(() => !queue.value.length && !held.value);
-    // the kind reads as part of the sentence here, not as a label: "question 12 · 6m"
-    const queueMeta = (it) => (SHELL.wide ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
+    // the checkpoint waits on the user like anything else here, so it reads as a card with its own verb
+    const heldCard = computed(() => (held.value ? {
+      key: "held", kind: "held", label: "Checkpoint", tint: "#d9a441", action: "Continue",
+      title: "Continue past the checkpoint",
+      meta: plan.value && plan.value.held_age ? `held ${plan.value.held_age}` : `plan ${plan.value.n} · phase ${plan.value.held}`,
+      open: goPlan, act: continuePlan,
+    } : null));
     // the second line: when it was, and the to-do it serves — the Finished heading says it is finished, so the line does not
     const workSub = (w, finished) => [(finished ? w.ended_age : w.age) || "just now",
                                       w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ");
@@ -3504,7 +3529,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, livePlans, reloadPlans, workCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote, waitingCount };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote, waitingCount };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3531,18 +3556,8 @@ const EnvHome = {
           <span v-if="waitingCount > SLOTS" class=home-hint>{{ waitingCount - SLOTS }} more — scroll the list</span></div>
         <div class=needs-slot>
           <TransitionGroup name=qrow>
-          <div v-if="held" key=held class=needs-row @click="goPlan">
-            <span class="needs-dot held"></span>
-            <span class=needs-title>Continue past the checkpoint</span>
-            <span class=needs-meta>{{ plan.held_age ? 'held ' + plan.held_age : 'plan ' + plan.n + ' · phase ' + plan.held }}</span>
-            <button type=button class=needs-continue @click.stop="continuePlan">Continue</button>
-          </div>
-          <div v-for="it in queue" :key="it.key" :class="['needs-row', {sel: view.kind + ':' + view.n === it.key}]" @click="it.open">
-            <span class=needs-dot></span>
-            <span class=needs-title>{{ it.title }}</span>
-            <span class=needs-meta>{{ queueMeta(it) }}</span>
-            <button type=button class=needs-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(it)"><Icon name="close"/></button>
-          </div>
+          <NeedsCard v-if="heldCard" key=held :item="heldCard" :dismiss="dismiss"/>
+          <NeedsCard v-for="it in queue" :key="it.key" :item="it" :selected="view.kind + ':' + view.n === it.key" :dismiss="dismiss"/>
           </TransitionGroup>
         </div>
         </div>

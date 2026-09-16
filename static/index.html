@@ -517,25 +517,19 @@
   .home-head .home-hint { margin-left: auto; white-space: nowrap; }
   /* the height of what is waiting, capped at five rows: a short queue takes only the room it needs,
      a long one scrolls rather than pushing the sections below it down the page */
-  .needs-slot { box-sizing: border-box; max-height: 200px; overflow-y: auto; overflow-x: hidden; border-top: 1px solid #1f2125; }
+  .needs-slot { box-sizing: border-box; max-height: 268px; overflow-y: auto; overflow-x: hidden; padding-top: 8px; }
   .qrow-enter-active { transition: opacity .24s ease-out, transform .24s cubic-bezier(.2, .8, .2, 1); }
   .qrow-enter-from { opacity: 0; transform: translateY(-8px); }
   .qrow-leave-active { position: absolute; left: 0; right: 0; transition: opacity .16s ease-in, transform .16s ease-in; }
   .qrow-leave-to { opacity: 0; transform: translateY(8px); }
   .qrow-move { transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
   @media (prefers-reduced-motion: reduce) { .qrow-enter-active, .qrow-leave-active, .qrow-move { transition: none; } }
-  .needs-row { box-sizing: border-box; display: flex; align-items: center; gap: 11px; height: 40px; padding: 0 2px; border-bottom: 1px solid #1f2125; cursor: pointer; }
-  .needs-row:hover, .needs-row.sel { background: #17181b; }
   .needs-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #4a4d54; }
   .needs-dot.held { background: #d9a441; }
   .needs-dot.live { background: #6fae7d; }
   .needs-dot.crew { width: 7px; height: 7px; }
-  .needs-title { flex: 1 1 auto; min-width: 0; font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* the age says when, so it never shrinks to a stub: the title is the one that yields, and it can afford to */
   .needs-meta { flex: none; font-size: 11.5px; color: var(--text-3); white-space: nowrap; }
-  .needs-continue { flex: none; display: inline-flex; align-items: center; white-space: nowrap; height: 24px; padding: 0 9px; border: none; border-radius: 6px;
-    background: transparent; color: var(--accent-text); font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
-  .needs-continue:hover { background: rgba(94, 100, 201, .16); }
   .needs-dismiss { flex: none; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; border-radius: 6px;
     background: transparent; color: var(--text-3); cursor: pointer; }
   .needs-dismiss:hover { background: #212329; color: var(--text-2); }
@@ -598,6 +592,28 @@
   /* the dot marks the title, so it sits against that line rather than centred between the two */
   /* the row being worked: the plan card's family at a lighter weight — no bar, no action, and the
      to-do's own title leading, because that is what the work is called */
+  /* WHAT IS WAITING, one card per kind: the work card's skeleton with the kind's own tint on the edge,
+     so a question, a report and a message read as different things rather than four identical rows. */
+  .needs-card { position: relative; display: flex; flex-direction: column; gap: 5px; margin-bottom: 7px;
+    padding: 9px 12px 9px 14px; border: 1px solid #232529; border-radius: 9px; background: #161719;
+    cursor: pointer; overflow: hidden; }
+  .needs-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--tint); opacity: .7; }
+  .needs-card:hover, .needs-card.sel { border-color: var(--border-2); background: #191a1e; }
+  .needs-card:hover::before, .needs-card.sel::before { opacity: 1; }
+  /* a question is the one that wants an answer, so it carries more weight than the rest: a wider lit edge and a firmer ground */
+  .needs-card.question { background: #17181c; }
+  .needs-card.question::before { width: 3px; opacity: .9; }
+  .needs-card.question .needs-card-title { color: var(--text); font-weight: 500; }
+  .needs-card-top { display: flex; align-items: baseline; gap: 9px; }
+  .needs-card-kind { flex: none; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--tint); }
+  .needs-card-meta { flex: 1 1 auto; min-width: 0; font-size: 11px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .needs-card-top .needs-dismiss { flex: none; margin: -4px -6px -4px 0; }
+  .needs-card-title { margin: 0; font-size: 13px; line-height: 1.45; color: var(--text-2); text-wrap: pretty; }
+  .needs-card-foot { display: flex; align-items: center; }
+  .needs-card-act { font-size: 12px; font-weight: 500; color: var(--tint); opacity: .85; }
+  .needs-card-go { height: 24px; padding: 0 10px; border: none; border-radius: 6px; background: color-mix(in srgb, var(--tint) 16%, transparent);
+    color: var(--tint); font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
+  .needs-card-go:hover { background: color-mix(in srgb, var(--tint) 26%, transparent); }
   .work-card { position: relative; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;
     padding: 10px 12px 10px 14px; border: 1px solid #232529; border-radius: 9px; background: #161719;
     cursor: pointer; overflow: hidden; }
