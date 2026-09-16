@@ -115,6 +115,10 @@ function changed() { window.dispatchEvent(new Event("journal:changed")); }
 // store. `noted` links nowhere.
 function refHref(ref, env) {
   const [kind, num] = String(ref).split(":");
+  // A PART CAN BECOME A PLAIN REF -- "work", "noted", "answered" -- which names no row and has no
+  // number. Those are not pages: without this, `work` alone built /work/undefined and the view
+  // parsed it into NaN. Reminders and coding style are the two kinds that legitimately have none.
+  if (!num && kind !== "reminder" && kind !== "style") return null;
   if (kind === "todo") return `#/env/${env}/todos/${num}`;
   if (kind === "pin") return `#/env/${env}/pins/${num}`;
   if (kind === "rule") return `#/rules/${num}`;
