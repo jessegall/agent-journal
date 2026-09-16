@@ -44,6 +44,27 @@ stop says the user left messages, process them before anything else — one at a
 4. **Record each part, then close the message:** one `messages process` per part, several
    `--became` if a part became several things, then `messages done <n>`.
 
+### A transcript, or any very long paste
+
+A meeting transcript pasted into the journal is a message like any other — the same parts,
+the same routing — and three things change at that length:
+
+- **The transcript itself belongs in a FILE, not in the message's text.** A message's text is
+  returned in full to every listing the viewer polls; a file's row carries only its name and
+  size. The quick menu (space, space) attaches one, and the wake line names what came with it.
+- **An excerpt must be the user's own words.** `messages process --part=` is refused unless
+  the words appear in the message — "that part is not in message N; quote the words it is
+  about" — so a summary you wrote cannot be filed as something they said. The corollary is
+  that irrelevant chat is simply never quoted: noise needs no handling, it is left unfiled and
+  the message still closes.
+- **Prefer few coarse rows over one per sentence.** A transcript will yield forty candidates
+  and the user wants the handful that are work. What reads as a PLAN is proposed and waits —
+  `plans add` leaves a draft, and only the user activates it — while to-dos are filed outright,
+  because being wrong about a to-do costs one correction and being wrong about a plan costs
+  their approval.
+
+Say in a reply what you filed and what you left, and let the parts carry the detail.
+
 **You may reply to a message**, and it is never required: `journal messages reply <n> "<text>"`
 puts a short note under it in the viewer. Use it when the user would want to know how their
 words landed beyond what the parts record: you did it differently than they wrote, you had to
