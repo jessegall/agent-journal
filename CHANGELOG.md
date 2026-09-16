@@ -4,6 +4,44 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.141.0 — What four reviewers found, and what the viewer owed the user
+
+Four subagents reviewed the previous release — two on the viewer, two on the Python — and this release is
+their findings, plus a run of things the user asked for while reading along.
+
+**A self-triggering effect on the home is gone.** The home kept a hand-rolled cache of every plan's
+to-dos and guarded it by READING the same reactive key its own fetch WROTE, so every response
+re-triggered the effect that produced it. A plan card is now its own component and fetches its own plan
+through `useFetch`; the dead Start path it had outgrown went with it.
+
+**One helper decides what a plan is waiting for.** The plan page, the peek panel and the home card each
+answered that question in a different vocabulary, and the panel had never heard of a paused or finished
+plan. `planPrimary` answers it once — a sentence for the page, one word for the card — and a finished
+plan is acknowledged, never abandoned.
+
+**A plan being filled in cannot be declared ready.** `plans ready` refuses while any phase has no
+to-dos, naming the phase, so a plan the agent is still hydrating never reaches the state the Start button
+belongs to.
+
+**Research ends in a report.** Rule 9, after the user asked twice: work dispatched to subagents comes
+back to them as a report the dispatcher writes, because a subagent has no ledger and its transcript is
+not something anyone can read. The new `journal-reports` skill says what belongs in one — including what
+was found to be FINE, which is most of what a review is worth. A new report waits under "Waiting on you"
+until it is opened, and reports and plans now take comments like everything else.
+
+**A subagent that goes quiet stays visible.** Measured: the heartbeat fires on every tool call, so a
+working subagent is never mistaken for idle — but the listing dropped anything quieter than thirty
+minutes, finished or not, which is why subagents seemed to vanish. An unfinished one now stays for a day
+in a state of its own, *quiet*, and a finished one lingers fifteen minutes so its line is there to click.
+
+**A compaction says to reload the journal skills**, in as many words, because what crosses it is a
+summary of a skill and a summary of a rule is not the rule.
+
+**Also:** a message is the record of what the user said, so a processed one takes a late part and a late
+reply — and a MOVED one refuses both, naming where it went; a part can become a report, a doc or a plan;
+the status bar carries the branch and the to-do being worked; the message inspector's title is the
+message's number, and its answer box appears only once the agent has said something there.
+
 ## 1.140.0 — Auto mode is one switch for the whole journal
 
 **Auto mode stops being per environment.** The user watched it fail: an agent that switches environments
