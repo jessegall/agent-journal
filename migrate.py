@@ -87,6 +87,8 @@ MESSAGES = {
     "no_question": "  no to-do carried a question in its own file",
     "files_moved": "  {env}: a message's attachments are under message-files now ({n} message(s))",
     "no_files_moved": "  no attachments were filed under the old name",
+    "auto_one": "  auto mode is one switch for the journal now: {state}, from {n} environment(s) of which {on} had it on",
+    "no_auto_map": "  auto mode is already one switch for the journal",
     "ran": "{version}: {what}",
     "report_head": "MIGRATIONS  the record is at {done}; the package is at {package}",
     "report_row": "{mark} {version}  {what}",
@@ -218,6 +220,23 @@ def _message_files(root: Path) -> list[str]:
     return said or [say("no_files_moved")]
 
 
+def _one_auto_switch(root: Path) -> list[str]:
+    """1.140.0 — auto mode was a map keyed by environment; it becomes one value for the project.
+
+    ON IF IT WAS ON ANYWHERE. Turning it off for a project that had it on somewhere would stop
+    that agent silently — which is the failure this change exists to remove: an agent that
+    switched environments came to a halt on the one where the flag was off.
+    """
+    import todo
+    got = state.get(root, todo.AUTO, None)
+    if not isinstance(got, dict):
+        return [say("no_auto_map")]
+    on = [name for name, value in got.items() if value]
+    with state.locked(root):
+        state.put(root, todo.AUTO, bool(on))
+    return [say("auto_one", state="on" if on else "off", n=len(got), on=len(on))]
+
+
 #: (the version it belongs to, what it does, the function). Ordered oldest first.
 MIGRATIONS: list[tuple[str, str, object]] = [
     ("1.34.0", "pins, work and to-dos move into each environment's own folder",
@@ -228,6 +247,7 @@ MIGRATIONS: list[tuple[str, str, object]] = [
      _todo_questions),
     ("1.64.1", "a pin's reasoning file moves to the environment its pin is on", _pin_bodies_home),
     ("1.138.0", "a message's attachments move from inbox-files to message-files", _message_files),
+    ("1.140.0", "auto mode stops being per environment and becomes the journal's one switch", _one_auto_switch),
 ]
 
 

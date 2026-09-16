@@ -4,6 +4,7 @@ from pathlib import Path
 
 import fmt
 import questions
+import settings
 from controller import Controller, Payload, Result
 from payloads import questions as question_payloads
 from payloads.common import AnswerPayload, ListingPayload, TextPayload, WhyPayload
@@ -49,16 +50,18 @@ class QuestionsController(Controller):
                                  "from_messages": inbox.sources(root, f"question:{p.id}", p.env or None)})
 
     def store(self, root: Path, p: question_payloads.StorePayload) -> Result:
+        conf, _ = settings.load(root)
         outcome = questions.add(root, p.text, p.at, p.about, source=p.source, description=p.description, options=p.options,
-                                 pick=p.pick)
+                                 pick=p.pick, limit=conf["question_max_chars"])
         data = self._row(root, p, self.repository(root, p).count()) if outcome[0] else None
         return Result.of(outcome, data, created=True)
 
     def update(self, root: Path, p: question_payloads.UpdatePayload) -> Result:
+        conf, _ = settings.load(root)
         outcome = questions.edit(root, p.id, p.text if p.has("text") else None,
                                  description=p.description if p.has("description") else None,
                                  options=p.options if p.has("options") else None,
-                                 pick=p.pick if p.has("pick") else None)
+                                 pick=p.pick if p.has("pick") else None, limit=conf["question_max_chars"])
         return Result.of(outcome, self._row(root, p, p.id))
 
     def seen(self, root: Path, p: Payload) -> Result:

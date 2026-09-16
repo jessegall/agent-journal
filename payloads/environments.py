@@ -4,7 +4,7 @@ from payloads.base import Field, Payload
 
 
 class SettingsPayload(Payload):
-    auto = Field(bool)
+    # auto is NOT here: the switch belongs to the journal, not to one environment (/api/journal/settings)
     reports_archive_days = Field(int)
     todos_archive_days = Field(int)
     activity_show = Field(int)

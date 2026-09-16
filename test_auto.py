@@ -204,7 +204,9 @@ s.journal("todo", "auto", "on")
 label, _ = s.stop()
 check("on again: held again", label, AUTO_NEXT + "1 to-do(s) waiting")
 
-# ---------------------------------------------------------------- per environment
+# ---------------------------------------------------------------- one switch for the whole journal
+# IT WAS PER ENVIRONMENT, and the user ended that: an agent that switches environments came to a
+# halt the moment it moved to one where the flag was off (plan 5, phase 1).
 d = project(); s = Session(d, "s1")
 s.journal("todo", "default chore"); s.journal("todo", "auto", "on")
 s.journal("switch", "default")   # it chooses one: `--back` returns to what was chosen, not to a fallback
@@ -212,11 +214,11 @@ s.journal("switch", "other")
 s.journal("todo", "other chore")
 s.start()
 label, text = s.stop()
-check("on an environment with auto off, its own list is a reminder only",
-      (label.endswith("waiting on `other`"), "not an instruction" in text), (True, True))
+check("switching environments does not turn auto off: the new one's list is held too",
+      (label, "other chore" in text), (AUTO_NEXT + "1 to-do(s) waiting", True))
 s.journal("switch", "--back")
 label, text = s.stop()
-check("back on the auto environment: held for its list", (label, "default chore" in text), (AUTO_NEXT + "1 to-do(s) waiting", True))
+check("and back again, held for that environment's list", (label, "default chore" in text), (AUTO_NEXT + "1 to-do(s) waiting", True))
 
 # ---------------------------------------------------------------- other holds come first
 d = project(); s = Session(d, "s1")

@@ -9,6 +9,7 @@ from controllers.docs import DocsController
 from controllers.environments import EnvironmentController
 from controllers.files import FilesController
 from controllers.inbox import InboxController
+from controllers.journal import JournalController
 from controllers.notifications import NotificationsController
 from controllers.pins import PinsController, RulesController
 from controllers.plans import PlansController
@@ -27,4 +28,4 @@ CONTROLLERS = {c.resource: c for c in (RemindersController(), QuestionsControlle
                                           WorkController(), DocsController(),
                                           EnvironmentController(), SearchController(), ToolsController(),
                                           ActivityController(), CommentsController(), ReportsController(), PlansController(), NotificationsController(), SuggestionsController(),
-                                          FilesController(), CommitsController(), AgentsController(), AgentController(), StyleController())}
+                                          FilesController(), CommitsController(), AgentsController(), AgentController(), StyleController(), JournalController())}

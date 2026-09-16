@@ -101,6 +101,13 @@ DEFAULTS = {
     # session. What does not fit in a line is a briefing, not an instruction. 0 removes it.
     "reminder_max_chars": 200,
 
+    # THE CAP ON A QUESTION'S TITLE, in characters. A question's title is the question, in
+    # one line: it is what the user reads in the viewer's list and at the top of the card,
+    # and a title that runs four lines is a brief with a question bolted on the end. The
+    # context is not refused, it is MOVED — `--description` takes it, and each choice is
+    # its own `--option`. Same shape as a pin's claim and its reasoning. 0 removes it.
+    "question_max_chars": 200,
+
     # THE RUNGS AT WHICH THE CONTEXT NUDGE FIRES, each one once. A single warning could not
     # be both early enough to think in and late enough to feel urgent, so it is a ladder:
     # 50% is the cheap moment to decide what must outlive the window, 95% is the last word.

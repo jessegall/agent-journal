@@ -109,7 +109,23 @@ def overview(root: Path) -> dict:
         "docs": len(docs(root)),
         "project": root.resolve().parent.name,
         "version": __import__("update").current(root),
+        "update": upstream(root),
     }
+
+
+def upstream(root: Path) -> dict | None:
+    """The newer version waiting upstream, or None when this project is current.
+
+    It reads the same cached answer the hook's notice does — fifteen minutes old at most,
+    and nothing at all when the check is offline — so polling this costs no network.
+    """
+    update = __import__("update")
+    got = update.check(root)
+    have = update.current(root)
+    version = got.get("version") or ""
+    if not version or not update.newer(version, have):
+        return None
+    return {"version": version, "have": have, "headline": got.get("headline") or ""}
 
 
 # ────────────────────────────────────────────────────────────────── docs

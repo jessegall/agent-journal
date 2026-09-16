@@ -221,5 +221,19 @@ check("an environment holding both shapes is left alone rather than merged blind
       ((_both / "inbox-files" / "1" / "old.txt").is_file(), (_both / "message-files" / "1" / "old.txt").exists()),
       (True, False))
 
+# ─────────────── auto mode stops being per environment ───────────────
+import state as _st  # noqa: E402
+_ad = project(with_record=False); _ar = _ad / ".journal"
+_st.put(_ar, "auto", {"alpha": False, "beta": True})
+_said = _mg._one_auto_switch(_ar)
+check("a journal that had auto on anywhere keeps it on, as one switch, and says how many had it",
+      (_st.get(_ar, "auto"), "of which 1 had it on" in _said[0], "on, from 2 environment(s)" in _said[0]),
+      (True, True, True))
+check("running it again changes nothing", "already one switch" in _mg._one_auto_switch(_ar)[0], True)
+_bd = project(with_record=False); _br = _bd / ".journal"
+_st.put(_br, "auto", {"alpha": False, "beta": False})
+_mg._one_auto_switch(_br)
+check("a journal with it off everywhere stays off", _st.get(_br, "auto"), False)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

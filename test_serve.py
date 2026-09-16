@@ -121,6 +121,16 @@ check("overview names the project the viewer's sidebar shows", data["project"], 
 check("and the version being served, so an open page can reload when it changes", "version" in data, True)
 check("environments come newest activity first", [e["last_active"] for e in data["environments"]],
       sorted((e["last_active"] for e in data["environments"]), reverse=True))
+check("a project that is current says nothing about an update", data["update"], None)
+# the upstream answer is cached on disk and the suites never reach the network: a cache naming a
+# newer version is exactly what a real project that has fallen behind looks like
+(root / "runtime").mkdir(parents=True, exist_ok=True)
+(root / "runtime" / "upstream.cache").write_text(json.dumps(
+    {"version": "999.0.0", "headline": "Everything is different now", "at": time.time()}))
+data = json.loads(get("/api/overview")[2])
+check("a project that has fallen behind carries the version, what it has, and the headline",
+      data["update"], {"version": "999.0.0", "have": data["version"], "headline": "Everything is different now"})
+(root / "runtime" / "upstream.cache").unlink()
 
 status, _, body = get("/api/env/alpha/todos")
 data = json.loads(body)
@@ -430,8 +440,15 @@ check("a search without a term is refused", status, 400)
 tracks.create(root, "gamma", at=AT)
 status, _, body = get("/api/env/gamma/environment")
 check("an environment's settings: auto is off by default", (status, json.loads(body)["auto"]), (200, False))
+# ONE SWITCH, AND IT IS THE JOURNAL'S: the environment route no longer takes it (plan 5, phase 3)
 status, got = post("/api/env/gamma/environment/settings", {"auto": True})
-check("auto mode is switched on from the browser", (status, todo.auto(root, "gamma")), (200, True))
+check("an environment's settings refuse auto, naming where it lives",
+      (status, "journal" in got.get("error", "")), (400, True))
+status, got = post("/api/journal/settings", {"auto": True})
+check("auto mode is switched on from the browser, for the whole journal",
+      (status, todo.auto(root), json.loads(get("/api/journal")[2])["auto"]), (200, True, True))
+status, got = post("/api/journal/settings", {})
+check("with nothing to change it says so", status, 400)
 status, got = post("/api/env/gamma/environment/remove", {"confirm": "not-gamma"})
 check("removing wants the environment's name typed", (status, "gamma" in tracks._all(root)), (400, True))
 status, got = post("/api/env/gamma/environment/remove", {"confirm": "gamma"})
@@ -704,12 +721,16 @@ check("a change made in the viewer is an Activity line by you, naming what chang
       (("Changed to-do priority", _urgent, "low", "You") in _mine, ("Edited to-do", _urgent, "", "You") in _mine), (True, True))
 for _i, _value in enumerate(("150", "100", "120")):
     commandlog.record_web(root, "alpha", "todos", "update", "900", {"priority": _value}, f"2099-01-04T00:00:0{_i}+00:00")
-for _body, _want in (({"auto": True}, "Turned auto mode on"), ({"auto": False}, "Turned auto mode off"),
-                     ({"activity_show": 80}, "Activity shows the last 80 line(s)"),
+for _body, _want in (({"activity_show": 80}, "Activity shows the last 80 line(s)"),
                      ({"reports_archive_days": 0}, "Reports stay listed until archived by hand"),
                      ({"todos_archive_days": 5}, "Done to-dos stay listed for 5 day(s)")):
     commandlog.record_web(root, "alpha", "environment", "settings", None, _body, "2099-01-05T00:00:00+00:00")
     check(f"a settings change in the viewer names what changed: {_want}", commandlog.entries(root, "alpha")[-1]["text"], _want)
+# auto is the journal's switch, so its line comes from the journal's own settings, not an environment's
+for _body, _want in (({"auto": True}, "Turned auto mode on for the journal"),
+                     ({"auto": False}, "Turned auto mode off for the journal")):
+    commandlog.record_web(root, "alpha", "journal", "settings", None, _body, "2099-01-05T00:00:00+00:00")
+    check(f"the journal's settings name what changed: {_want}", commandlog.entries(root, "alpha")[-1]["text"], _want)
 commandlog.record_web(root, "alpha", "environment", "auto", None, {"state": "disable"}, "2099-01-05T00:00:01+00:00")
 check("switching auto mode from the viewer says which way", commandlog.entries(root, "alpha")[-1]["text"], "Turned auto mode off")
 _tool_stem = "toolqueue-session"

@@ -7,6 +7,7 @@ class StorePayload(Payload):
     title = Field(str)
     goal = Field(str)
     body = Field(str, verbatim=True)
+    preparing = Field(bool)
 
 
 class PhasePayload(Payload):

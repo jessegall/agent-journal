@@ -101,7 +101,7 @@ class TodosController(Controller):
         by_n = {x["n"]: x for x in todo._all(root, env)}
         return Result("ok", "", [todo.row_response(root, env, t.raw, counts=counts, by_n=by_n) for t in page.rows],
                       {"env": env, "waiting": waiting, "done": len(every) - waiting, "left": page.left,
-                       "auto": todo.auto(root, env)})
+                       "auto": todo.auto(root)})
 
     def show(self, root: Path, p: Payload) -> Result:
         env, t = self.env(root), self.repository(root, p).find(p.id)

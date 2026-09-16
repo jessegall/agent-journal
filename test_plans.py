@@ -268,5 +268,61 @@ check("the row carries it, so the home can stop showing the card",
 took = plans.acknowledge(root, _fn, AT, source="web", track="default")
 check("acknowledging twice is refused", (took[0], "already acknowledged" in took[1]), (False, True))
 
+# ─────────────── a plan can be parked: it waits, and the slot it held is free ───────────────
+j("todos", "add", "the row of the plan that gets parked")
+_pk_row = [t["n"] for t in _todo._all(root, "default") if t["title"] == "the row of the plan that gets parked"][0]
+j("plans", "add", "a plan to park", "--goal=it waits")
+_pk = len(plans._all(root, "default"))
+j("plans", "phase", str(_pk), "the only phase")
+j("plans", "todos", str(_pk), "1", str(_pk_row))
+_live = plans.active(root, "default")
+if _live:
+    j("plans", "abandon", str(_live[0]), "finished with it in this suite")
+code, out = j("plans", "park", str(_pk), "not yet")
+check("a plan that is not being worked cannot be parked",
+      (code, "only the plan being worked can be parked" in out), (1, True))
+plans.activate(root, _pk, AT, source="web", track="default")
+check("the parked plan's row is offered while it is active",
+      str(_pk_row) in [str(t["n"]) for t in _todo.ready(root, "default")], True)
+code, out = j("plans", "park", str(_pk))
+check("parking says why, or it is refused", (code, "wants why it is set aside" in out), (1, True))
+code, out = j("plans", "park", str(_pk), "waiting on the design review")
+check("a plan is parked with its reason, and says what picks it up again",
+      (code, "is parked: waiting on the design review" in out, "activate" in out), (0, True, True))
+check("it is no longer the active plan, so the slot is free",
+      (plans.active(root, "default"), plans.row_response(root, _pk, plans._all(root, "default")[_pk - 1], "default")["status"]),
+      (None, "parked"))
+check("and its to-dos stop being offered, with nothing to remember",
+      str(_pk_row) in [str(t["n"]) for t in _todo.ready(root, "default")], False)
+check("and the quiet list says which parked plan is the reason",
+      ("plan " + str(_pk) + " is parked" in plans.stall(root, "default"),
+       "waiting on the design review" in plans.stall(root, "default")), (True, True))
+check("the row carries why it waits", 
+      plans.row_response(root, _pk, plans._all(root, "default")[_pk - 1], "default")["parked_why"],
+      "waiting on the design review")
+took = plans.activate(root, _pk, AT, source="web", track="default")
+check("activating a parked plan resumes it where it was, and clears the reason",
+      (took[0], "active again" in took[1],
+       plans.row_response(root, _pk, plans._all(root, "default")[_pk - 1], "default")["parked_why"]),
+      (True, True, ""))
+
+# ─────────── a plan the agent is writing says so, and cannot be approved yet ───────────
+took = plans.add(root, "a plan being written", "it is not finished", "", AT, preparing=True, track="default")
+_wn = len(plans._all(root, "default"))
+check("a plan created while shaping it starts as being written, not as a draft",
+      plans.row_response(root, _wn, plans._all(root, "default")[_wn - 1], "default")["status"], "preparing")
+j("plans", "phase", str(_wn), "the only phase")
+_wr = [t["n"] for t in _todo._all(root, "default") if t["title"] == "the row of the plan that gets parked"][0]
+took = plans.activate(root, _wn, AT, source="web", track="default")
+check("it cannot be approved while it is still being written",
+      (took[0], "is being written" in took[1]), (False, True))
+took = plans.ready(root, _wn, AT, track="default")
+check("the agent says when it is finished, and then it is a draft",
+      (took[0], "ready for the user to approve" in took[1],
+       plans.row_response(root, _wn, plans._all(root, "default")[_wn - 1], "default")["status"]),
+      (True, True, "draft"))
+took = plans.ready(root, _wn, AT, track="default")
+check("saying it twice is refused", (took[0], "not one being written" in took[1]), (False, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

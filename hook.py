@@ -764,7 +764,7 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
                     state.put(ROOT, UPDATE_TOLD, latest, stem=ctx.stem)
                     _for_next_prompt(ctx, say("update_run", note=note))
                 return _tell_user(_remembering(say("update_run", note=note)))
-    if not work.open_work(ROOT) and not todo.auto(ROOT, here):
+    if not work.open_work(ROOT) and not todo.auto(ROOT):
         ids = sorted(t["n"] for t in todo.open_items(ROOT, here))
         if ids and ids != state.get(ROOT, "todos_said", [], stem=ctx.stem):
             state.put(ROOT, "todos_said", ids, stem=ctx.stem)
@@ -905,7 +905,7 @@ def _p_loop(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # THE LOOP COMES FIRST. With auto on, everything the queue asks after this depends on
     # a session that wakes up by itself; without a loop an idle stop is the end of the list.
     m = conf.get("auto_loop_minutes", 0)
-    if not m or not todo.auto(ROOT, here):
+    if not m or not todo.auto(ROOT):
         return None
     # THE SAME CONDITION AS THE WRITE GATE: a loop is owed only when the list has something
     # ready for it to pick up. Open work alone is being worked; a loop would wake to nothing.
@@ -1016,7 +1016,7 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     standing = [w for w in standing if not work.parked(w)]
     if not standing:
         return None
-    if todo.auto(ROOT, here):
+    if todo.auto(ROOT):
         # AUTO IS ON AND WORK IS OPEN AT A STOP: every turn, once. End it, or park what
         # is left as a to-do and end it; open work is never left standing.
         # BUT ONLY THIS SESSION'S. Told to `work end` work another session opened, an agent
@@ -1170,7 +1170,7 @@ def _p_questions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
         # when it will: auto off, or auto on with an answered to-do next in line. An answered to-do
         # that is not ready (it waits on another) was skipped here and never named there.
         ready = todo.ready(ROOT, here)
-        if not todo.auto(ROOT, here) or (ready and todo.answered_one(ready[0])):
+        if not todo.auto(ROOT) or (ready and todo.answered_one(ready[0])):
             left = {f"todo:{t['n']}" for t in todo.answered(ROOT, here)}
             fresh = [(n, q) for n, q in fresh if not left & set(q.get("links") or [])]
     if not fresh:
@@ -1246,7 +1246,7 @@ def _p_auto(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     ids = sorted(t["n"] for t in waiting)
     if not ids:
         return None
-    auto = todo.auto(ROOT, here)
+    auto = todo.auto(ROOT)
     ready = todo.ready(ROOT, here)
     unstuck = todo.answered(ROOT, here)
     if auto and not ready:
@@ -1337,7 +1337,7 @@ def _loop_owed(conf: dict, ctx: Ctx, here: str) -> str:
     is noise, so the demand starts when there is something for it to pick up.
     """
     m = conf.get("auto_loop_minutes", 0)
-    if not m or "loop" in conf["silenced"] or not todo.auto(ROOT, here):
+    if not m or "loop" in conf["silenced"] or not todo.auto(ROOT):
         return ""
     if not todo.ready(ROOT, here):
         return ""
@@ -1911,7 +1911,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     # file the choice, or `todos ask` so the list moves on to the next row — so those are
     # the two ways out, and this is a denial rather than a hold because a hold arrives
     # after the question is already on screen.
-    if payload.get("tool_name") == "AskUserQuestion" and todo.auto(ROOT, tracks.current(ROOT, ctx.stem)):
+    if payload.get("tool_name") == "AskUserQuestion" and todo.auto(ROOT):
         return _deny(say("ask_denied"))
     # A DECISION ON A SUGGESTION IS THE USER'S: the agent that proposed a change cannot also approve it.
     mine = _user_only(payload)
@@ -3205,7 +3205,7 @@ def _todo_note(here: str, unbound: bool = False) -> str:
     answered_n = len(todo.answered(ROOT, here))
     asks_n = len(todo.asking(ROOT, here))
     said = []
-    if todo.auto(ROOT, here):
+    if todo.auto(ROOT):
         # NOT AN ORDER TO A SESSION ON NO ENVIRONMENT. The same block tells it to ask the user
         # which environment, and "work the list without asking" beside that started work on an
         # environment it never chose.

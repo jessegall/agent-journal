@@ -83,7 +83,7 @@ class Status(Command):
             ("tools", _count(TEXT["tools"], len(tools._all(root()))), "journal tools"),
             ("to-do", render(TEXT["todos"], waiting=_count(TEXT["waiting"], len(todo.open_items(root(), env))),
                              on_user=len(on_user) or None, answered=len(todo.answered(root(), env)) or None,
-                             auto=TEXT["auto_on"] if todo.auto(root(), env) else None), "journal todo"),
+                             auto=TEXT["auto_on"] if todo.auto(root()) else None), "journal todo"),
         ]
         got = transcript.session_transcript(project())
         if got:
