@@ -1550,6 +1550,24 @@ function messageAnswers(m) {
            heading: count ? `Replied to your message — ${count} of ${shaped.length} ${shaped.length === 1 ? "part" : "parts"} answered` : "" };
 }
 
+// One progress bar, wherever progress is shown. THE MEASUREMENT IS INSIDE IT: the home card and the
+// plan page used to compute their own widths, and drifted — the home measured to-dos while the plan
+// page measured phases, so the same plan read two different progresses depending on where you looked.
+const ProgressBar = {
+  props: { rows: { type: Array, default: () => [] }, word: { type: String, default: "to-dos" } },
+  setup(props) {
+    const done = computed(() => (props.rows || []).filter((r) => r.done).length);
+    const total = computed(() => (props.rows || []).length);
+    const width = computed(() => (total.value ? `${(100 * done.value) / total.value}%` : "0%"));
+    const text = computed(() => `${done.value} of ${total.value} ${props.word} done`);
+    return { done, total, width, text };
+  },
+  template: `
+    <span class=progress-track :role="'progressbar'" :aria-valuenow="done" :aria-valuemax="total" :aria-label="text">
+      <span :style="{ width }"></span>
+    </span>`,
+};
+
 // Point by point: a card per part, what it asked, what the agent answered or is doing, and what it made
 const PointByPoint = {
   props: { rows: Array, env: String },
@@ -2242,7 +2260,7 @@ const PlanPanel = {
 
 const Plans = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, DocTabs, TodoPanel, PlanPanel, Icon },
+  components: { TopBar, Panel, ActionBar, ResourceList, StatusIcon, DocTabs, TodoPanel, PlanPanel, Icon, ProgressBar },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/plans`);
     const home = computed(() => `#/env/${props.env}/plans`);
@@ -2333,8 +2351,7 @@ const Plans = {
       const p = item.data;
       if (!p) return null;
       const finished = planTodos.value.filter((t) => t.done).length;
-      return { phases: `${p.phases_done} of ${p.phases_total} phases complete`, todos: `${finished} of ${planTodos.value.length} to-dos done`,
-               width: p.phases_total ? `${(100 * p.phases_done) / p.phases_total}%` : "0%" };
+      return { phases: `${p.phases_done} of ${p.phases_total} phases complete`, todos: `${finished} of ${planTodos.value.length} to-dos done` };
     });
     const primary = computed(() => {
       const p = item.data;
@@ -2362,7 +2379,7 @@ const Plans = {
       const p = item.data;
       return p ? [`plan ${p.n}`, p.from_doc ? `from doc ${p.from_doc}` : "", `drafted ${p.age || "just now"}`].filter(Boolean).join(" · ") : "";
     });
-    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, planTabs, todoState, TODO_WORD, meta };
+    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, planTabs, todoState, TODO_WORD, meta };
   },
   template: `
     <template v-if="onPage">
@@ -2386,7 +2403,7 @@ const Plans = {
           <div class=plan-progress>
             <div class=plan-progress-text>
               <div class=plan-progress-line><b>{{ progress.phases }}</b><span class=muted>· {{ progress.todos }}</span></div>
-              <span class=plan-bar><span :style="{ width: progress.width }"></span></span>
+              <ProgressBar :rows="planTodos"/>
             </div>
             <div class=plan-progress-actions>
               <button v-if="primary" type=button class=band-primary @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
@@ -3021,7 +3038,7 @@ const Peek = {
 // ─────────────────────────────────────────────────────────────── an environment's home
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, Peek },
+  components: { TopBar, Icon, Peek, ProgressBar },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
@@ -3073,6 +3090,7 @@ const EnvHome = {
     const ready = computed(() => (plan.value ? null : (plans.data || []).find((p) => p.status === "draft") || null));
     const shown = computed(() => plan.value || ready.value);
     const planDetail = useFetch(() => props.env && shown.value && `/api/env/${props.env}/plans/${shown.value.n}`);
+    const planRows = computed(() => (planDetail.data && planDetail.data.phases ? planDetail.data.phases.flatMap((ph) => ph.todos) : []));
     const held = computed(() => !!(plan.value && plan.value.held));
     const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(() => { plans.reload(); planDetail.reload(); changed(); });
     // the same funnel the plan's own inspector approves through, so a plan starts one way wherever you start it
@@ -3186,7 +3204,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, goPlan, queueMeta, currentWork, workLines, parkedLines, finishedLines, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, goPlan, queueMeta, currentWork, planRows, workLines, parkedLines, finishedLines, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3231,7 +3249,7 @@ const EnvHome = {
         <div v-if="currentWork" :class="['work-now', {ready: currentWork.ready}]" @click="goPlan">
           <div class=work-now-top><span class=work-now-title>{{ currentWork.title }}</span><span class=work-now-ref>{{ currentWork.ref }}</span></div>
           <div class=work-now-bar>
-            <span v-if="!currentWork.ready" class=work-now-track><span :style="{ width: currentWork.width }"></span></span>
+            <ProgressBar v-if="!currentWork.ready" :rows="planRows"/>
             <span class=work-now-ref>{{ currentWork.progress }}</span>
             <button v-if="currentWork.ready" type=button class=work-now-start title="Start this plan and assign it to the agent" @click.stop="startPlan">Start<Icon name="arrow"/></button>
           </div>
