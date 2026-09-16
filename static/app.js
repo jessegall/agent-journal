@@ -1539,7 +1539,7 @@ const QuestionPanel = {
 
 // each part of a message beside the agent's answer to it, so a reply reads where the question was asked
 function messageAnswers(m) {
-  if (!m) return { rows: [], others: [], heading: "" };
+  if (!m) return { rows: [], others: [] };
   const agentReplies = (m.replies || []).filter((r) => r.who === "the agent" && r.part);
   const used = new Set();
   const matches = (p, r) => p.excerpt && r.part && (p.excerpt.includes(r.part) || r.part.includes(p.excerpt));
@@ -1560,9 +1560,11 @@ function messageAnswers(m) {
   const waiting = m.status === "waiting";
   const shaped = rows.map((r) => ({ ...r, done: !!r.answer || !waiting, pending: !r.answer && waiting,
                                     chip: r.answer ? "answered" : waiting ? "still working" : r.became.length ? "filed" : "noted" }));
-  const count = shaped.filter((r) => r.answer).length;
-  return { rows: shaped, others: (m.replies || []).filter((r) => !used.has(r)),
-           heading: count ? `Replied to your message — ${count} of ${shaped.length} ${shaped.length === 1 ? "part" : "parts"} answered` : "" };
+  // NO FRACTION IN THE TITLE. It counted only parts carrying a written reply, against every part
+  // recorded — so a part that became a to-do read as unanswered when it had been handled, and the
+  // panel announced unfinished work that did not exist. The parts below say what each became, each
+  // with its own chip, so the title is the message itself.
+  return { rows: shaped, others: (m.replies || []).filter((r) => !used.has(r)) };
 }
 
 // One progress bar, wherever progress is shown. THE MEASUREMENT IS INSIDE IT: the home card and the
@@ -1772,7 +1774,7 @@ const MessagePanel = {
     <Panel :label=\"'Message ' + n" :close="close" :onClose="onClose" :link="link">
       <FetchState :state="item"/>
       <template v-if="item.data">
-        <h2 class=panel-title>{{ answered.heading || item.data.gist || item.data.text }}</h2>
+        <h2 class=panel-title>{{ item.data.gist || item.data.text }}</h2>
         <UserMessage :text="item.data.text"/>
         <dl class=props>
           <dt>Status</dt><dd :title="item.data.status === 'waiting' && item.data.read ? 'The agent read it ' + item.data.read_age : null"><StatusIcon :kind="item.data.status !== 'waiting' ? 'done' : item.data.read ? 'progress' : 'waiting'"/>{{ item.data.status === 'waiting' ? (item.data.read ? 'Being handled' : 'Waiting to be processed') : item.data.status === 'moved' ? 'Moved to ' + item.data.moved_to : item.data.status === 'archived' ? 'Archived: ' + item.data.archived : 'Processed' }}</dd>
@@ -1856,7 +1858,7 @@ const ReplyPanel = {
     <Panel :label="'Reply to message ' + n" :close="close" :onClose="onClose" :link="link">
       <FetchState :state="item"/>
       <template v-if="item.data">
-        <h2 class=panel-title>{{ answered.heading || item.data.gist || item.data.text }}</h2>
+        <h2 class=panel-title>{{ item.data.gist || item.data.text }}</h2>
         <UserMessage :text="item.data.text"/>
         <PointByPoint v-if="answered.rows.length" :rows="answered.rows" :env="env"/>
         <p v-else class="prose muted">The agent has not answered any part of this message yet.</p>
