@@ -187,6 +187,7 @@ MESSAGES = {
     "log_started": "started",
     "log_update": "update",
     "log_waiting": "waiting on",
+    "log_commit": "commit",
     "log_ended": "ended",
     "log_row": "  {age:>9}  {kind:<10}  {text}",
     "section_doc_files": "files of doc {n}",
@@ -1765,7 +1766,9 @@ def show_text(t: dict, width: int | None = None) -> str:
     if t.get("log"):
         out.append(fmt.section(say("section_log")))
         for e in t["log"]:
-            out.append(fmt.gist(say("log_row", age=e["age"], kind=say("log_" + e["kind"]), text=e["text"]), width))
+            # a kind with no word of its own reads as the kind itself: a new log kind must never take the command down
+            kind = MESSAGES.get(f"log_{e['kind']}", e["kind"])
+            out.append(fmt.gist(say("log_row", age=e["age"], kind=kind, text=e["text"]), width))
     if t.get("doc_files"):
         out.append(fmt.section(say("section_doc_files", n=t["doc_n"])))
         out.extend("  " + f for f in t["doc_files"][:20])
