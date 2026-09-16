@@ -545,8 +545,11 @@
   .work-now-bar { display: flex; align-items: center; gap: 10px; }
   /* a plan nobody has started yet: amber like the checkpoint, because it is waiting on the user */
   .work-now.ready::before { background: #d9a441; opacity: .9; }
-  /* a plan that finished: the card says so and waits for the user to clear it */
+  /* a plan that finished: the card says so and waits for the user to clear it — and it says it in
+     the done green throughout, edge and bar included, rather than in the accent that means working */
   .work-now.finished { border-color: rgba(62, 207, 116, .4); }
+  .work-now.finished::before { background: #3ecf74; }
+  .work-now.finished .progress-track > span { background: #3ecf74; }
   .work-now-ack { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px;
     border: 1px solid rgba(62, 207, 116, .45); border-radius: 7px; background: rgba(62, 207, 116, .14);
     color: #8fe0ab; font: inherit; font-size: 12px; cursor: pointer; }

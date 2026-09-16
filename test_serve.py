@@ -1105,7 +1105,22 @@ check("the Activity payload carries the branch field",
 
 # ---------------------------------------------------------------- working an environment from the viewer
 import tracks as _tracks  # noqa: E402
+# a NEW environment starts worked-from-the-viewer; the ones already in the record are left as they were
+_tracks.set_viewer_first(root, "alpha", False)
+_before = {n: _tracks.viewer_first(root, n) for n in ("alpha", "beta")}
+_tracks.create(root, "brand-new", at="2026-09-16T09:00:00+00:00")
+check("a new environment is worked from the viewer without being told to",
+      _tracks.viewer_first(root, "brand-new"), True)
+check("and the environments already there keep whatever they had",
+      {n: _tracks.viewer_first(root, n) for n in ("alpha", "beta")}, _before)
+_tracks.create(root, "brand-new", at="2026-09-16T09:00:00+00:00")
+_tracks.set_viewer_first(root, "brand-new", False)
+_tracks.create(root, "brand-new", at="2026-09-16T09:00:00+00:00")
+check("creating one that exists again does not turn it back on",
+      _tracks.viewer_first(root, "brand-new"), False)
+
 _tracks.set_viewer_first(root, "alpha", True)
+_tracks.set_viewer_first(root, "beta", False)
 check("the viewer-first switch is kept per environment", (_tracks.viewer_first(root, "alpha"), _tracks.viewer_first(root, "beta")), (True, False))
 _tracks.set_viewer_first(root, "alpha", False)
 check("and switches off again", _tracks.viewer_first(root, "alpha"), False)
