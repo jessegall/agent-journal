@@ -2225,8 +2225,12 @@ def _queue_tool(payload: dict, ctx: Ctx) -> None:
     if not name or name == "Agent" or (name == "Bash" and any(_is_journal_verb(w[0]) for w in
                                            _pieces(str((payload.get("tool_input") or {}).get("command", ""))) if w)):
         return
-    commandlog.queue_tool(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, name,
-                          datetime.now(timezone.utc).isoformat(timespec="seconds"))
+    at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    # a call through an MCP server is its own line, naming the server: never bunched into "used 3 tools"
+    if name.startswith(commandlog.MCP_PREFIX):
+        commandlog.record_mcp(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, name, at)
+        return
+    commandlog.queue_tool(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, name, at)
 
 
 def _note_dispatch(payload: dict, ctx: Ctx) -> None:

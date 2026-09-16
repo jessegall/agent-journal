@@ -4029,6 +4029,8 @@ const ActivityPanel = {
         return { e, key: `${k}#${seen[k]}` };
       });
     });
+    // which MCP lines the reader has opened, by row key: the calls a server made are shown under it
+    const opened = reactive({});
     // a new line brings the list back to the top, unless the pointer is over it
     const list = ref(null);
     const hovered = ref(false);
@@ -4075,7 +4077,7 @@ const ActivityPanel = {
       OVERLAY.quote = quoted(said);
     };
     const canComment = computed(() => !!(AGENT_STATE[props.env] || {}).work);
-    return { accept, crew, agentsList, working, crewGroups, keyed, list, hovered, onRow, onCrewRow, commentOnSaid, canComment };
+    return { accept, crew, agentsList, working, crewGroups, keyed, list, hovered, opened, onRow, onCrewRow, commentOnSaid, canComment };
   },
   template: `
     <div class=activity-panel>
@@ -4126,6 +4128,16 @@ const ActivityPanel = {
                   <a class=btn :href="href(e)" @click="onRow($event, e)">Review</a>
                 </template>
               </span>
+            </div>
+            <div v-else-if="e.kind === 'mcp'" :class="['activity-row', 'activity-mcp', {open: opened[key]}]">
+              <button type=button class=activity-mcp-head :aria-expanded="!!opened[key]"
+                :title="(e.calls || []).length + ' call(s) through this server'" @click="opened[key] = !opened[key]">
+                <span class=activity-text>{{ e.text }}<span v-if="e.detail" class=activity-d>{{ e.detail }}</span></span>
+                <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
+              </button>
+              <div v-if="opened[key]" class=activity-mcp-calls>
+                <span v-for="(c, i) in e.calls || []" :key="i" class=activity-mcp-call>{{ c }}</span>
+              </div>
             </div>
             <a v-else-if="href(e)" :class="['activity-row', 'activity-link', {'activity-soft': e.needs === 'answered', 'activity-commit': e.kind === 'commit'}]" :href="href(e)" @click="onRow($event, e)">
               <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span><span v-if="e.detail" class=activity-d>{{ e.detail }}</span></span>

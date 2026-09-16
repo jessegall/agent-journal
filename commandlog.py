@@ -17,6 +17,8 @@ MESSAGES = {
     "set_show": "{env}: Activity shows the last {n} line(s)",
     "set_keep": "{env}: the activity log keeps the last {n} line(s)",
     "dispatched": "Dispatched a subagent",
+    "mcp_used": "Used {server}",
+    "mcp_calls": "{n} calls",
     "committed": "Committed",
 }
 
@@ -494,6 +496,49 @@ def flush_stale(root: Path, env: str, now: datetime | None = None) -> None:
         last = last if last.tzinfo else last.replace(tzinfo=timezone.utc)
         if (now - last).total_seconds() >= QUIET_SECONDS:
             flush_tools(root, env, stem, marks[QUEUE_AT])
+
+
+#: an MCP tool arrives as `mcp__<server>__<tool>`: the server is what the reader recognises
+MCP_PREFIX = "mcp__"
+
+
+def mcp_parts(name: str) -> tuple[str, str]:
+    """(server, tool) for an MCP tool call, or ("", "") for anything else."""
+    if not str(name or "").startswith(MCP_PREFIX):
+        return "", ""
+    server, _, tool = str(name)[len(MCP_PREFIX):].partition("__")
+    return server, tool or server
+
+
+def mcp_label(server: str) -> str:
+    """`playwright` reads as Playwright; `claude_ai_Gmail` as Claude ai Gmail."""
+    words = str(server or "").replace("-", " ").replace("_", " ").split()
+    return " ".join([w[:1].upper() + w[1:] for w in words[:1]] + words[1:]) or server
+
+
+def record_mcp(root: Path, track: str, stem: str, name: str, at: str) -> None:
+    """An MCP tool call: its own Activity line, naming the server, holding every call made through it.
+
+    NOT BUNCHED INTO "used 3 tools". A call through an MCP server is a different kind of act from a
+    shell command — the user asked to see which server was used and what was done with it — so it gets
+    a line of its own, and the calls that follow it are appended to that same line rather than piling
+    up new ones. A line in between ends the run: the next call starts a new line, in its real place.
+    """
+    server, tool = mcp_parts(name)
+    if not server:
+        return
+    flush_tools(root, track, stem, at)
+    with state.locked(root):
+        items = state.tracked(root, KEY, track, [])
+        items = items if isinstance(items, list) else []
+        last = items[-1] if items else None
+        if isinstance(last, dict) and last.get("kind") == "mcp" and last.get("server") == server:
+            calls = list(last.get("calls") or []) + [tool]
+            items[-1] = {**last, "calls": calls, "at": at, "detail": say("mcp_calls", n=len(calls)) if len(calls) > 1 else ""}
+        else:
+            items = items + [{"at": at, "text": say("mcp_used", server=mcp_label(server)), "kind": "mcp", "n": None,
+                              "titled": False, "detail": "", "server": server, "calls": [tool], "by": "Agent"}]
+        state.put_tracked(root, KEY, track, items[-setting(root, track, KEEP):])
 
 
 def record_commit(root: Path, track: str, stem: str, sha: str, subject: str, at: str) -> None:
