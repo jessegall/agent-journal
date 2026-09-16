@@ -1539,12 +1539,12 @@ function messageAnswers(m) {
   const rows = [...byAsk.values()].map((p) => {
     const reply = agentReplies.find((r) => matches(p, r));
     if (reply) used.add(reply);
-    return { ask: p.excerpt, answer: reply ? reply.text : "", became: p.became, age: reply ? reply.age || "just now" : "" };
+    return { part: p.excerpt, answer: reply ? reply.text : "", became: p.became, age: reply ? reply.age || "just now" : "" };
   });
-  agentReplies.filter((r) => !used.has(r)).forEach((r) => { used.add(r); rows.push({ ask: r.part, answer: r.text, became: [], age: r.age || "just now" }); });
+  agentReplies.filter((r) => !used.has(r)).forEach((r) => { used.add(r); rows.push({ part: r.part, answer: r.text, became: [], age: r.age || "just now" }); });
   const waiting = m.status === "waiting";
   const shaped = rows.map((r) => ({ ...r, done: !!r.answer || !waiting, pending: !r.answer && waiting,
-                                    chip: r.answer ? "answered" : waiting ? "still working" : "filed" }));
+                                    chip: r.answer ? "answered" : waiting ? "still working" : r.became.length ? "filed" : "noted" }));
   const count = shaped.filter((r) => r.answer).length;
   return { rows: shaped, others: (m.replies || []).filter((r) => !used.has(r)),
            heading: count ? `Replied to your message — ${count} of ${shaped.length} ${shaped.length === 1 ? "part" : "parts"} answered` : "" };
@@ -1554,10 +1554,24 @@ function messageAnswers(m) {
 const PointByPoint = {
   props: { rows: Array, env: String },
   components: { Icon },
-  setup() { return { TYPES }; },
+  setup(props) {
+    // A PART IS NOT A QUESTION. The agent splits a message into the pieces it acted on: one becomes a
+    // to-do, one a doc, one gets answered. Saying "you asked N things · M answered" of all of them
+    // reported a statement the user made as an unanswered question of theirs — so the line counts
+    // what actually happened to each piece instead.
+    const note = computed(() => {
+      const rows = props.rows || [];
+      const answered = rows.filter((r) => r.answer).length;
+      const filed = rows.filter((r) => !r.answer && r.became.length).length;
+      const working = rows.filter((r) => r.pending).length;
+      return [`${rows.length} ${rows.length === 1 ? "part" : "parts"}`, answered ? `${answered} answered` : "",
+              filed ? `${filed} filed` : "", working ? `${working} still working` : ""].filter(Boolean).join(" · ");
+    });
+    return { TYPES, note };
+  },
   template: `
     <div v-if="rows.length">
-      <div class=files-head><p class=section-label>Point by point</p><span class=muted>you asked {{ rows.length }} {{ rows.length === 1 ? 'thing' : 'things' }} · {{ rows.filter((r) => r.answer).length }} answered</span></div>
+      <div class=files-head><p class=section-label>Point by point</p><span class=muted>{{ note }}</span></div>
       <div class=part-cards>
         <div v-for="(p, i) in rows" :key="i" :class="['part-card', {pending: p.pending}]">
           <div class=part-strip>
@@ -1566,7 +1580,7 @@ const PointByPoint = {
             <span class=part-age>{{ p.age }}</span>
           </div>
           <div class=part-main>
-            <div class=reply-ask><span class=reply-bar></span><span class=part-ask>{{ p.ask }}</span></div>
+            <div class=reply-ask><span class=reply-bar></span><span class=part-ask>{{ p.part }}</span></div>
             <div v-if="p.answer" class="md prose part-answer" v-html="$md(p.answer)"></div>
             <p v-else-if="p.pending" class=part-working>Still working on this one.</p>
             <a v-for="b in p.became" :key="b.ref" class=part-made :href="$refHref(b.ref, env) || null" @click="$openRef($event, $refHref(b.ref, env))">
@@ -3153,11 +3167,11 @@ const EnvHome = {
         for (const r of answered) {
           const part = (m.parts || []).find((x) => x.excerpt && (x.excerpt.includes(r.part) || r.part.includes(x.excerpt)));
           const ref = part && part.became.length ? part.became.map((b) => b.label).join(", ") : `message ${m.n}`;
-          rows.push({ key: `${m.n}:${r.at}:${r.part}`, at: r.at || "", ask: r.part, answer: r.text, ref, age: r.age || "just now", done: true, n: m.n });
+          rows.push({ key: `${m.n}:${r.at}:${r.part}`, at: r.at || "", part: r.part, answer: r.text, ref, age: r.age || "just now", done: true, n: m.n });
         }
         if (m.status === "waiting" && m.read) {
           const made = (m.parts || []).flatMap((p) => p.became.map((b) => b.label)).filter((label) => label !== "answered");
-          rows.push({ key: `${m.n}:working`, at: m.read, ask: m.gist || m.text, answer: "",
+          rows.push({ key: `${m.n}:working`, at: m.read, part: m.gist || m.text, answer: "",
                       waitingOn: made.length ? made.join(", ") : "", ref: made.length ? made.join(", ") : `message ${m.n}`,
                       age: m.read_age || "just now", done: false, n: m.n });
         }
@@ -3254,7 +3268,7 @@ const EnvHome = {
       <section v-if="replies.length" class=home-section>
         <div class=home-head><h2>Replies to you</h2><span>{{ repliesNote }}</span></div>
         <div v-for="r in replies" :key="r.key" class=reply-line @click="r.open">
-          <span class=reply-line-ask>{{ r.ask }}</span>
+          <span class=reply-line-ask>{{ r.part }}</span>
           <div class=reply-line-row><span :class="['reply-line-answer', {pending: !r.done}]">{{ r.done ? r.answer : (r.waitingOn ? 'Working on it — ' + r.waitingOn : 'Working on it') }}</span><span class=needs-meta>{{ r.ref }}</span></div>
         </div>
       </section>
