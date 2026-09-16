@@ -12,6 +12,11 @@ from controller import Controller, Payload, Result
 
 #: a subagent that has made no tool call for this long is no longer counted as working
 SUBAGENT_MINUTES = 30
+#: AN UNFINISHED SUBAGENT IS NOT DROPPED FOR BEING QUIET. Nothing can tell us a subagent died, so a
+#: dispatch that goes quiet for an hour and one that crashed look identical — and dropping both is how
+#: a subagent "vanishes" exactly when the user goes looking for it. It stays, marked quiet, until its
+#: SubagentStop arrives or a day has passed.
+QUIET_HOURS = 24
 
 
 class AgentsController(Controller):
@@ -37,15 +42,18 @@ class AgentsController(Controller):
         # moment the user turns to look at what it just did; `crew_finished_minutes` is how long its
         # line is still there to click.
         keep = settings_mod.load(root)[0]["crew_finished_minutes"] * 60
-        for agent in agents.live(root, env, SUBAGENT_MINUTES):
+        for agent in agents.live(root, env, QUIET_HOURS * 60):
             parent = agents.parent_of(root, env, agent)
             working = agents.working(root, env, agent)
             done = agents.finished(root, env, agent)
             since_done = time.time() - agents.done_at(root, env, agent) if done else 0.0
             if done and since_done > keep:
                 continue
+            # quiet is not gone: it has not called a tool in a while and has not said it finished
+            quiet = not working and not done
             out.append({"kind": "subagent", "id": agent[:8], "name": agents.described(root.parent, parent, agent),
-                        "working": working, "state": "active" if working else "finished" if done else "idle",
+                        "working": working, "state": "active" if working else "finished" if done else "quiet",
+                        "quiet": quiet,
                         "age_text": agents.age(root, env, agent), "parent": parent[:8],
                         "ended_age": agents.done_age(root, env, agent) if done else "",
                         "ended_secs": int(since_done) if done else None,

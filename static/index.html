@@ -493,6 +493,8 @@
   .crew-line:hover { background: #17181b; }
   .crew-rule { flex: none; width: 9px; height: 1px; background: #3a3d44; }
   .crew-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #6fae7d; animation: crew-pulse 1.8s ease-in-out infinite; }
+  /* quiet: no tool call in a while and no stop either — dimmer than working, not greyed out like finished */
+  .crew-line.quiet .crew-dot { background: #c9955e; animation: none; }
   /* a finished subagent is still here to click, and says so by not pulsing */
   .crew-line.done .crew-dot { background: #4a4d55; animation: none; }
   .crew-line.done .crew-name { color: var(--text-3); }
