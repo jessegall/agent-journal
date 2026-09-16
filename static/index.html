@@ -515,6 +515,19 @@
   .work-now-title { flex: 1 1 auto; min-width: 120px; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--text); text-wrap: pretty; }
   .work-now-ref { flex: none; font-size: 11.5px; color: var(--text-3); white-space: nowrap; }
   .work-now-bar { display: flex; align-items: center; gap: 10px; }
+  /* a plan nobody has started yet: amber like the checkpoint, because it is waiting on the user */
+  .work-now.ready::before { background: #d9a441; opacity: .9; }
+  .work-now-start { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 11px;
+    border: none; border-radius: 7px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .work-now-start .ico { width: 12px; height: 12px; }
+  .work-now-start:hover { filter: brightness(1.1); }
+  .work-now-error { margin: 0; font-size: 11.5px; }
+  /* the card arrives rather than appearing: a plan becoming ready is worth noticing */
+  .card-enter-active { transition: opacity .3s ease-out, transform .3s cubic-bezier(.2, .8, .2, 1); }
+  .card-enter-from { opacity: 0; transform: translateY(-6px); }
+  .card-leave-active { transition: opacity .18s ease-in; }
+  .card-leave-to { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { .card-enter-active, .card-leave-active { transition: none; } }
   .work-now-track { flex: 1; min-width: 60px; height: 3px; border-radius: 2px; background: var(--border); overflow: hidden; }
   .work-now-track > span { display: block; height: 100%; background: var(--accent); }
   /* the dot marks the title, so it sits against that line rather than centred between the two */

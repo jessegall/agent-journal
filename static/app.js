@@ -2206,8 +2206,8 @@ const Plans = {
     const reading = computed(() => props.n && props.n !== "new");
     const list = useFetch(() => props.env && `${api.value}?all=1`);
     const item = useFetch(() => props.env && reading.value && `${api.value}/${props.n}`);
-    // only the plan assigned to the agent has a page; a draft or a finished plan opens in the inspector over the list
-    const onPage = computed(() => reading.value && (!item.data || item.data.status === "active"));
+    // the assigned plan has a page, and so does a draft: a plan you are being asked to approve is the one you most need to read in full
+    const onPage = computed(() => reading.value && (!item.data || item.data.status === "active" || item.data.status === "draft"));
     const todos = useFetch(() => props.env && onPage.value && `/api/env/${props.env}/todos?all=1`);
     // the viewer cannot start an agent, so planning together is a message: the agent asks back with questions to click
     const creating = computed(() => [{
@@ -3004,10 +3004,22 @@ const EnvHome = {
         .map((r) => ({ ...r, open: () => peek(r.kind, r.n) }));
     });
     const plan = computed(() => (plans.data || []).find((p) => p.status === "active") || null);
-    const planDetail = useFetch(() => props.env && plan.value && `/api/env/${props.env}/plans/${plan.value.n}`);
+    // with nothing assigned, a drafted plan is READY: the card is where you see it and where you start it
+    const ready = computed(() => (plan.value ? null : (plans.data || []).find((p) => p.status === "draft") || null));
+    const shown = computed(() => plan.value || ready.value);
+    const planDetail = useFetch(() => props.env && shown.value && `/api/env/${props.env}/plans/${shown.value.n}`);
     const held = computed(() => !!(plan.value && plan.value.held));
     const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(() => { plans.reload(); planDetail.reload(); changed(); });
-    const goPlan = () => { if (plan.value) location.hash = `#/env/${props.env}/plans/${plan.value.n}`; };
+    // the same funnel the plan's own inspector approves through, so a plan starts one way wherever you start it
+    const startError = ref("");
+    const startPlan = () => {
+      startError.value = "";
+      send("POST", `/api/env/${props.env}/plans/${ready.value.n}/activate`)
+        .then(() => { plans.reload(); planDetail.reload(); changed(); })
+        // a refusal has a reason — it belongs on the card, not thrown into the console where a button just looks dead
+        .catch((e) => { startError.value = e.message; });
+    };
+    const goPlan = () => { if (shown.value) location.hash = `#/env/${props.env}/plans/${shown.value.n}`; };
     const crew = useFetch(url("/agents"));
     // the answer, in words: how many things need the user, what that means, and the facts about the agent in one muted line
     // who is working here, in one muted line: the page leads with it and goes straight into what needs the user
@@ -3032,12 +3044,19 @@ const EnvHome = {
     const queueMeta = (it) => (SHELL.wide ? `${it.label.toLowerCase()} ${it.n} · ${it.age}` : it.age);
     // Current work: the assigned plan with its progress, then the open work as one-line rows
     const currentWork = computed(() => {
-      const p = plan.value;
+      const p = shown.value;
       if (!p) return null;
       const todos = planDetail.data && planDetail.data.phases ? planDetail.data.phases.flatMap((ph) => ph.todos) : [];
-      return { title: p.title, ref: `plan ${p.n} · ${p.held ? "held" : "working"}`,
-               width: p.phases_total ? `${(100 * p.phases_done) / p.phases_total}%` : "0%",
-               progress: `${p.phases_done} of ${p.phases_total} phases${todos.length ? ` · ${todos.filter((t) => t.done).length} of ${todos.length} to-dos` : ""}` };
+      // a ready plan has done nothing yet, so it says what it holds rather than how far it has gone
+      if (ready.value) {
+        return { title: p.title, ready: true, ref: `plan ${p.n} · ready to start`, width: "0%",
+                 progress: `${p.phases_total} ${p.phases_total === 1 ? "phase" : "phases"}${todos.length ? ` · ${todos.length} to-dos` : ""}` };
+      }
+      // the bar measures TO-DOS rather than phases: it is the finer reading, and it moves as each row lands
+      const done = todos.filter((t) => t.done).length;
+      return { title: p.title, ready: false, ref: `plan ${p.n} · ${p.held ? "held" : "working"}`,
+               width: todos.length ? `${(100 * done) / todos.length}%` : "0%",
+               progress: `${p.phases_done} of ${p.phases_total} phases${todos.length ? ` · ${done} of ${todos.length} to-dos` : ""}` };
     });
     // the second line: when it was, and the to-do it serves — the Finished heading says it is finished, so the line does not
     const workSub = (w, finished) => [(finished ? w.ended_age : w.age) || "just now",
@@ -3099,7 +3118,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, currentWork, workLines, finishedLines, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, goPlan, queueMeta, currentWork, workLines, finishedLines, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3140,10 +3159,17 @@ const EnvHome = {
       </section>
       <section class=home-section>
         <div class=home-head><h2>Working on</h2></div>
-        <div v-if="currentWork" class=work-now @click="goPlan">
+        <Transition name=card appear>
+        <div v-if="currentWork" :class="['work-now', {ready: currentWork.ready}]" @click="goPlan">
           <div class=work-now-top><span class=work-now-title>{{ currentWork.title }}</span><span class=work-now-ref>{{ currentWork.ref }}</span></div>
-          <div class=work-now-bar><span class=work-now-track><span :style="{ width: currentWork.width }"></span></span><span class=work-now-ref>{{ currentWork.progress }}</span></div>
+          <div class=work-now-bar>
+            <span v-if="!currentWork.ready" class=work-now-track><span :style="{ width: currentWork.width }"></span></span>
+            <span class=work-now-ref>{{ currentWork.progress }}</span>
+            <button v-if="currentWork.ready" type=button class=work-now-start title="Start this plan and assign it to the agent" @click.stop="startPlan">Start<Icon name="arrow"/></button>
+          </div>
+          <p v-if="startError" class="error work-now-error" @click.stop>{{ startError }}</p>
         </div>
+        </Transition>
         <TransitionGroup name=wrow>
           <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
             <span :class="['needs-dot', {live: w.live}]"></span>
