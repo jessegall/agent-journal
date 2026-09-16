@@ -950,9 +950,9 @@ p2 = subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, tex
 check("with work open it says what the agent is working on",
       "Agent currently working on: some work" in p2.stdout, True)
 subprocess.run([J, "end", "some work"], env=env, capture_output=True, timeout=180)
-check("auto on is set on the record, per environment",
+check("auto on is set on the record, once for the whole journal",
       (p.returncode, "auto ON" in p.stdout, json.loads((d / ".journal" / "record.json").read_text()).get("auto")),
-      (0, True, {"default": True}))
+      (0, True, True))
 code, out, err = fire(d, "SessionStart", path, source="startup")
 ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
 check("the start block says auto is on and to pick up the next one",
@@ -987,7 +987,11 @@ check("auto refuses anything but on or off", p.returncode, 1)
 subprocess.run([J, "switch", "chores"], env=env, capture_output=True, timeout=180)
 subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, timeout=180)
 subprocess.run([J, "switch", "--back"], env=env, capture_output=True, timeout=180)
-check("auto is per environment", (todo.auto(d / ".journal", "chores"), todo.auto(d / ".journal", "default")), (True, False))
+# ONE SWITCH FOR THE JOURNAL: it was per environment, and an agent that switched came to a halt
+# on the one where the flag was off (plan 5).
+check("auto is the journal's, so every environment reads the same switch",
+      (todo.auto(d / ".journal", "chores"), todo.auto(d / ".journal", "default"), todo.auto(d / ".journal")),
+      (True, True, True))
 
 # versions: the changelog since, the notice, the upgrade
 import update
