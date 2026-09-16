@@ -336,5 +336,16 @@ code, out = j("messages", "reply", str(_g), "Either works.", "--part=and what ab
 check("a follow-up that lists its choices in its text is refused, and the reply is not written either",
       (code, "--option=" in out, stored()[-1].get("replies")), (1, True, None))
 
+# ------------------------------------------------------------------ a moved message is read where it went
+j("prepare", "faraway")
+j("switch", "default")
+j("messages", "look at the loader while you are in there")
+_mv = len(stored())
+code, out = j("messages", "move", str(_mv), "faraway")
+check("a waiting message can be carried to another environment", (code, "moved to faraway" in out), (0, True))
+code, out = j("messages", "process", str(_mv), "--part=the loader", "--became=noted")
+check("and a late part is refused here, naming where it went and which message it is there",
+      (code, "was moved to `faraway`" in out, "message 1" in out), (1, True, True))
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

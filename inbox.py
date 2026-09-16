@@ -39,6 +39,8 @@ MESSAGES = {
     "needs_became": 'say what the part became: --became="todo 22", "pin 3", "question 4", "plan 5", "report 3", "doc 4", work or noted',
     "not_in_message": "that part is not in message {n}; quote the words it is about",
     "already_processed": "message {n} is already processed",
+    "already_moved": "message {n} was moved to `{env}`, where it is message {there} — record the part there, "
+                     "on the record the user is actually reading",
     "part_recorded": "message {n}: «{excerpt}» became {became:, } ({parts} part(s) recorded)",
     "part_recorded_late": "message {n} was already processed; «{excerpt}» became {became:, } anyway ({parts} part(s) recorded). "
                           "A message is the record of what the user said, not a closed ticket.",
@@ -384,6 +386,9 @@ def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
         m, why = _find(items, n)
         if m is None:
             return False, why
+        if m.get("moved_to"):
+            env, _, there = str(m["moved_to"]).partition(":")
+            return False, say("already_moved", n=n, env=env, there=there)
         late = bool(m.get("processed"))
         if _flat(excerpt) not in _flat(m["text"]):
             return False, say("not_in_message", n=n)
