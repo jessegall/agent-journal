@@ -795,6 +795,21 @@ check("bare journal is the status page",
       (p.returncode, "JOURNAL  environment default" in p.stdout, "1 in force" in p.stdout,
        "1 waiting" in p.stdout, "since the last compaction" in p.stdout and "line 1" not in p.stdout),
       (0, True, True, True, True))
+# THE STATUS LINE DENIED A PLAN THAT WAS BEING WRITTEN: `active()` answers only for an ACTIVE plan and
+# the stall fallback covers a parked one and a draft whose phases hold rows, so both a preparing plan and
+# an empty-phased draft read as "none" — on the one page that says where things stand.
+check("with no plan at all, the line says none", "plan          none" in p.stdout, True)
+subprocess.run([J, "plans", "add", "a plan being shaped", "--goal=to be decided", "--preparing"],
+               env=env, capture_output=True, timeout=180)
+p = subprocess.run([J], env=env, capture_output=True, text=True, timeout=180)
+check("a plan being written is named, not denied",
+      ("is being written" in p.stdout, "plan          none" in p.stdout), (True, False))
+subprocess.run([J, "plans", "add", "an ordinary draft", "--goal=it waits for approval"],
+               env=env, capture_output=True, timeout=180)
+p = subprocess.run([J], env=env, capture_output=True, text=True, timeout=180)
+check("a draft waiting on the user outranks a plan still being written, and says what it needs",
+      ("waits for you to approve it" in p.stdout, "is being written" in p.stdout), (True, False))
+
 p = subprocess.run([J, "conversation"], env=env, capture_output=True, text=True, timeout=180)
 check("journal conversation is the digest", "CONVERSATION  since the last compaction" in p.stdout, True)
 p = subprocess.run([J, "--back=1"], env=env, capture_output=True, text=True, timeout=180)

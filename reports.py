@@ -11,17 +11,19 @@ from templates import render
 
 KEY = "reports"
 
-KINDS = {"todo": "to-do", "question": "question"}
+KINDS = {"todo": "to-do", "question": "question", "plan": "plan", "doc": "doc"}
 
-_REF = re.compile(r"^\s*(to-?dos?|questions?)\s*[:#\s]\s*(\d+)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|questions?|plans?|docs?)\s*[:#\s]\s*(\d+)\s*$", re.I)
 
 MESSAGES = {
     "ready_note": "Your report is ready: {title}",
     "needs_title": 'a report needs a title: journal reports add "<title>" --brief',
     "needs_body": "a report needs its text — pass it on stdin with --brief",
-    "not_a_ref": "{text} is not something a report answers; write `todo 22` or `question 4`",
+    "not_a_ref": "{text} is not something a report answers; write `todo 22`, `question 4`, `plan 5` or `doc 3`",
     "no_todo": "there is no to-do {n} on this environment",
     "no_question": "there is no question {n} on this environment",
+    "no_plan": "there is no plan {n} on this environment",
+    "no_doc": "there is no doc {n} in this project",
     "added": "report {n}: {title}[ — for {about}]\n  the user reads it in the viewer; it is not a doc and is never handed to a session",
     "no_report": "there is no report {n}. `journal reports` numbers them.",
     "seen": "report {n} is marked seen",
@@ -60,7 +62,8 @@ def parse_ref(text: str) -> tuple[str | None, str]:
     m = _REF.match(text or "")
     if not m:
         return None, say("not_a_ref", text=repr(text))
-    kind = "todo" if m.group(1).lower().startswith("to") else "question"
+    word = m.group(1).lower()
+    kind = "todo" if word.startswith("to") else word.rstrip("s")
     return f"{kind}:{m.group(2)}", ""
 
 
@@ -72,6 +75,12 @@ def label(ref: str) -> str:
 def _check(root: Path, ref: str, track: str | None) -> str | None:
     kind, _, num = ref.partition(":")
     n = int(num)
+    if kind == "plan":
+        import plans
+        return None if 1 <= n <= len(plans._all(root, track)) else say("no_plan", n=n)
+    if kind == "doc":
+        import docs
+        return None if 1 <= n <= len(docs.all_docs(root)) else say("no_doc", n=n)
     if kind == "todo":
         import todo
         t, _ = todo.item(root, track or state.current_track(root), n)

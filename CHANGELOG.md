@@ -4,6 +4,27 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.141.2 — Four fixes found by using it
+
+Every one of these turned up while shaping a plan with the user rather than by looking for them.
+
+**A pruned message takes its files with it.** Dropping a message's content popped `text` and `files` from
+the record and stamped it removed, but nothing unlinked the bytes — every attachment ever pruned stayed
+on disk with nothing pointing at it. The deletion is targeted: the suite proves a pruned message's folder
+is gone while a neighbouring message's is untouched.
+
+**`plans add --preparing` says what it stored.** It announced "(draft)" while storing `preparing`, wrong
+at the one moment the writer reads it — and it made a plan being shaped look approvable. A preparing plan
+now gets the sentence that matters with it: nobody can approve it until `plans ready`, which refuses while
+a phase has no to-dos.
+
+**A report can answer a plan or a doc.** Rule 9 sends dispatched research back as a report, and the
+commonest thing research is for here is a plan being shaped — which `--about` could not name.
+
+**Bare `journal` names a plan being written.** It said "plan: none" while a plan sat there being written,
+on the one page that says where things stand. A draft waiting on the user outranks a plan still being
+written, because the draft is the one that needs a decision.
+
 ## 1.141.1 — The viewer stops waiting, and a stalled plan says so
 
 A user reported that the viewer "just keeps loading" for their colleagues, and another project reported a
