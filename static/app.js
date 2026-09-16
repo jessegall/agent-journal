@@ -1572,7 +1572,7 @@ const PointByPoint = {
 
 const MessagePanel = {
   props: PANEL_PROPS,
-  components: { Panel, StatusIcon, ActionBar, Comments, Icon, PointByPoint },
+  components: { Panel, StatusIcon, ActionBar, Comments, Icon, PointByPoint, Compose },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/messages`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -1633,7 +1633,10 @@ const MessagePanel = {
       }
     };
     const answered = computed(() => messageAnswers(item.data));
-    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered };
+    // answering where you are reading: it posts a reply on the message, then opens the next item like the primary action does
+    const answerMessage = (text) => postJSON(`${api.value}/${item.data.n}/reply`, { text })
+      .then(() => { item.reload(); changed(); advanceInspector(props); });
+    return { item, actions, done, heldUrl, isImage, removing, startRemove, cancelRemove, confirmRemove, attaching, attachFiles, answered, answerMessage };
   },
   template: `
     <Panel :label=\"'Message ' + n" :close="close" :onClose="onClose" :link="link">
@@ -1647,6 +1650,10 @@ const MessagePanel = {
           <dt>From</dt><dd>{{ item.data.source === 'web' ? 'The browser' : 'The terminal' }}</dd>
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'message' + item.data.n + item.data.status"/>
+        <div class=answer-here>
+          <p class=section-label>Your answer</p>
+          <Compose placeholder="Answer the agent…" submit="Send" hint="Enter sends · Shift+Enter for a new line" :send="answerMessage"/>
+        </div>
         <div>
           <div class=files-head>
             <p class=section-label>Files</p>
