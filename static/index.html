@@ -801,6 +801,13 @@
   /* answering where you are reading: the design's taller box, so a real answer has room */
   .answer-here .box-area { min-height: 86px; }
   .box-area::placeholder { color: var(--text-3); }
+  /* what a comment is ABOUT: shown above the field, never typed into — the box is for your own words */
+  .compose-quote { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; padding: 8px 10px;
+    border: 1px solid var(--border); border-left: 2px solid var(--accent); border-radius: 8px; background: var(--raised); }
+  .compose-quote-label { font-size: 11px; color: var(--text-3); }
+  .compose-quote-text { font-size: 12.5px; line-height: 1.5; color: var(--text-2); max-height: 120px; overflow-y: auto; }
+  .compose-quote-text p { margin: 0; }
+  .compose-quote-text p + p { margin-top: 4px; }
   .compose-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .hint { color: var(--text-3); font-size: 12px; }
   .primary { display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 12px; border-radius: 6px; border: none;
