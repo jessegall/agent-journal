@@ -3274,13 +3274,13 @@ const EnvHome = {
     const work = useFetch(url("/work"));
     // the finished lines are the newest few; the COUNT behind "N more" rides in the environment row
     const recentWork = useFetch(url("/work?all=1&cap=6"));
-    const questions = useFetch(url("/questions"));
+    const questions = useFetch(url("/questions?cap=8"));
     const suggestions = useFetch(url("/suggestions"));
     const reports = useFetch(url("/reports"));
     // ?all=1 so a FINISHED plan is here too: its card stays until the user acknowledges it, and the
     // plain list hides done ones, which is why the card used to vanish the moment the last phase closed
     const plans = useFetch(url("/plans?all=1"));
-    const messages = useFetch(url("/messages?cap=30"));
+    const messages = useFetch(url("/messages?cap=10"));
     const notes = useFetch(url("/notifications"));
     const view = reactive({ kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
@@ -3354,7 +3354,15 @@ const EnvHome = {
       // it was the one name here you could not click
       return { facts, href: agent ? `#/env/${props.env}/agents/session/${agent.session}` : "" };
     });
+    const envRow = computed(() => (OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null));
     const SLOTS = 5;
+    // the rows are a capped page; the COUNT is the environment's own, so a cap can never make it lie.
+    // Unseen reports are not in that row (it counts unarchived ones), so they are counted from theirs.
+    const waitingCount = computed(() => {
+      const row = envRow.value || {};
+      const unseen = (reports.data || []).filter((r) => !r.seen && !r.archived).length;
+      return (row.questions || 0) + (row.suggestions || 0) + unseen + (held.value ? 1 : 0);
+    });
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
     const clear = computed(() => !queue.value.length && !held.value);
     // the kind reads as part of the sentence here, not as a label: "question 12 · 6m"
@@ -3370,7 +3378,6 @@ const EnvHome = {
     // what the agent has just finished reads under the open work, quieter: it is context, not something to act on
     const FINISHED_SHOWN = 3;
     const FINISHED_DAYS = 7;
-    const envRow = computed(() => (OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null));
     const finishedLines = computed(() => {
       const since = Date.now() - FINISHED_DAYS * 86400000;
       return (recentWork.data || []).filter((w) => w.ended && Date.parse(w.ended) >= since)
@@ -3431,7 +3438,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote, waitingCount };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3454,8 +3461,8 @@ const EnvHome = {
         <Transition name=needs mode=out-in>
         <div v-if="clear" key=clear class=needs-clear><Icon name="todos"/><span>Nothing is waiting on you.</span></div>
         <div v-else key=queue>
-        <div class=home-head><h2>Waiting on you</h2><span>{{ queue.length + (held ? 1 : 0) }} waiting</span>
-          <span v-if="queue.length + (held ? 1 : 0) > SLOTS" class=home-hint>{{ queue.length + (held ? 1 : 0) - SLOTS }} more — scroll the list</span></div>
+        <div class=home-head><h2>Waiting on you</h2><span>{{ waitingCount }} waiting</span>
+          <span v-if="waitingCount > SLOTS" class=home-hint>{{ waitingCount - SLOTS }} more — scroll the list</span></div>
         <div class=needs-slot>
           <TransitionGroup name=qrow>
           <div v-if="held" key=held class=needs-row @click="goPlan">
