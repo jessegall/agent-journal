@@ -411,6 +411,16 @@ n_msg = got["data"]["n"]
 post(f"/api/env/alpha/messages/{n_msg}/process", {"part": "finish it properly", "became": ["todo 1"]})
 status, _, body = get("/api/env/alpha/todos/1")
 check("a to-do's detail names the message it came from", [m["n"] for m in json.loads(body)["from_messages"]], [n_msg])
+# a plan proposed from a transcript must say which message produced it — the common case is a message
+# and a plan on the same environment, which is what a paste creates
+post("/api/env/alpha/plans", {"title": "from a pasted transcript", "goal": "the loader stops double-fetching"})
+_pn = len(__import__("plans")._all(root, "alpha"))
+status, got = post("/api/env/alpha/messages", {"text": "Sam: it double-fetches on every open. Jesse: plan that."})
+_pmsg = got["data"]["n"]
+post(f"/api/env/alpha/messages/{_pmsg}/process", {"part": "it double-fetches on every open", "became": [f"plan {_pn}"]})
+status, _, body = get(f"/api/env/alpha/plans/{_pn}")
+check("a plan's detail names the message it came from",
+      [m["n"] for m in json.loads(body)["from_messages"]], [_pmsg])
 
 # ─────────────────────────────────────────────────────────────── what is happening on an environment
 status, _, body = get("/api/env/alpha/activity")
