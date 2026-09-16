@@ -293,6 +293,16 @@ status, got = post("/api/env/alpha/messages/2/done", {})
 check("and the message is marked processed", (status, bool(inbox._all(root, "alpha")[1]["processed"])), (200, True))
 status, got = post("/api/env/alpha/messages/1", {"text": "x"}, method="DELETE")
 check("a DELETE archives, never deletes, and wants a reason", (status, len(inbox._all(root, "alpha")) >= 2), (400, True))
+# A MESSAGE MAY DECLARE WHAT IT IS. The viewer is where a transcript is sent from, so the kind has to
+# survive the HTTP write, not only the module — and an ordinary message declares nothing.
+status, got = post("/api/env/beta/messages", {"text": "here is the meeting transcript", "kind": "transcript"})
+check("POST a transcript: 201, and the kind comes back on the created row",
+      (status, got["data"]["kind"], got["data"]["source"]), (201, "transcript", "web"))
+status, got = post("/api/env/beta/messages", {"text": "an ordinary message from the browser"})
+check("an ordinary message carries no kind", (status, got["data"]["kind"]), (201, ""))
+status, got = post("/api/env/beta/messages", {"text": "what is this", "kind": "banana"})
+check("an unknown kind is refused: 400, naming what there is",
+      (status, "no message kind called" in got["error"], "transcript" in got["error"]), (400, True, True))
 
 # ─────────────────────────────────────────────────────────────── questions
 status, _, body = get("/api/env/alpha/questions")

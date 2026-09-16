@@ -403,5 +403,24 @@ check("and the user is notified about it, the way a part-answering reply is",
 check("the notification is unread, which is what puts it in front of them",
       _notes[-1].get("read_at"), None)
 
+# ------------------------------------------------- a message can say WHAT IT IS when it is sent
+# Sending a transcript DECLARES what it is, and that word is the instruction: nothing downstream
+# has to infer it from size or extension. An ordinary message declares nothing and carries no kind.
+import inbox as _inbox  # noqa: E402
+
+j("switch", "default")
+code, out = j("messages", "add", "here is the meeting transcript", "--kind=transcript")
+check("a message can be sent as a transcript", code, 0)
+_rows = stored()
+check("the kind is stored on the row, and an ordinary message carries none",
+      (_rows[-1].get("kind"), _rows[0].get("kind", "")), ("transcript", ""))
+check("and it comes back on the row the viewer and the agent read",
+      (_inbox.row_response(len(_rows), _rows[-1])["kind"], _inbox.row_response(1, _rows[0])["kind"]),
+      ("transcript", ""))
+code, out = j("messages", "add", "what is this", "--kind=banana")
+check("an unknown kind is refused, naming what there is",
+      (code, "no message kind called" in out, "transcript" in out), (1, True, True))
+check("and the refused one wrote nothing", len(stored()), len(_rows))
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

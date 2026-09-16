@@ -73,7 +73,7 @@ class InboxController(Controller):
 
     def store(self, root: Path, p: StorePayload) -> Result:
         files = p.files if isinstance(p.files, list) else []
-        outcome = inbox.add(root, p.text, p.at, source=p.source, track=p.env or None, files=files)
+        outcome = inbox.add(root, p.text, p.at, source=p.source, track=p.env or None, files=files, kind=p.kind)
         data = self._row(root, p, self.repository(root, p).count()) if outcome[0] else None
         return Result.of(outcome, data, created=True)
 
