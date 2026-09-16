@@ -89,6 +89,14 @@
   @media (prefers-reduced-motion: reduce) { .act-enter-active, .act-leave-active, .act-move { transition: none; } }
   .activity-row .activity-text { overflow-wrap: anywhere; }
   .activity-title { font-size: 11.5px; color: var(--text-3); line-height: 1.4; overflow-wrap: anywhere; }
+  /* a call through an MCP server: its own line, opening to the calls it holds */
+  .activity-mcp { flex-direction: column; align-items: stretch; gap: 4px; }
+  .activity-mcp-head { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;
+    padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+  .activity-mcp-head:hover .activity-text { color: var(--text); }
+  .activity-mcp-calls { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 0 2px 2px; }
+  .activity-mcp-call { padding: 1px 6px; border: 1px solid var(--border); border-radius: 5px;
+    background: var(--raised); color: var(--text-3); font-size: 11px; }
   .activity-age { font-size: 11px; color: var(--text-3); white-space: nowrap; opacity: .8; }
   .activity-n { margin-left: .35em; font-size: 10.5px; color: var(--text-3); opacity: .65; font-variant-numeric: tabular-nums; }
   .activity-n::before { content: "·"; margin-right: .35em; }

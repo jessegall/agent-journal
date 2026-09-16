@@ -146,5 +146,25 @@ _last = [w for w in state.tracked(d / ".journal", "work", "w", []) if w["subject
 check("a commit made by the call that ended the work still lands on that work",
       [(c["sha"], c["subject"]) for w in _last for c in w.get("commits") or []], [(_z, "z")])
 
+# ─────────── a call through an MCP server is its own line, holding what it called ───────────
+import commandlog as _cl  # noqa: E402
+fire("PostToolUse", tool_name="mcp__playwright__browser_navigate", tool_input={}, tool_response={})
+fire("PostToolUse", tool_name="mcp__playwright__browser_take_screenshot", tool_input={}, tool_response={})
+_rows = [e for e in _cl.entries(d / ".journal", "w") if e.get("kind") == "mcp"]
+check("two calls through one server are one line, naming the server and holding both calls",
+      [(e["text"], e["detail"], e["calls"]) for e in _rows],
+      [("Used Playwright", "2 calls", ["browser_navigate", "browser_take_screenshot"])])
+fire("PostToolUse", tool_name="Bash", tool_input={"command": "echo between"}, tool_response={"stdout": ""})
+fire("PostToolUse", tool_name="mcp__playwright__browser_click", tool_input={}, tool_response={})
+_rows = [e for e in _cl.entries(d / ".journal", "w") if e.get("kind") == "mcp"]
+check("a line in between ends the run, so the next call starts a line of its own",
+      [(e["text"], e["calls"]) for e in _rows],
+      [("Used Playwright", ["browser_navigate", "browser_take_screenshot"]), ("Used Playwright", ["browser_click"])])
+fire("PostToolUse", tool_name="mcp__claude_ai_Gmail__search", tool_input={}, tool_response={})
+check("another server is another line, named after it",
+      [e["text"] for e in _cl.entries(d / ".journal", "w") if e.get("kind") == "mcp"][-1], "Used Claude ai Gmail")
+check("and an MCP call is not counted into the summed tool line",
+      "used 1 tool" in " ".join(e["text"] for e in _cl.entries(d / ".journal", "w")).lower(), False)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
