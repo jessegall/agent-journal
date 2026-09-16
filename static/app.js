@@ -1254,7 +1254,9 @@ function closedLabel() {
 }
 const TODO_LIST = {
   groups: GROUPS.map((g) => {
-    const group = { ...g, kind: g.key, closed: g.key === "done", match: (t) => todoStatus(t) === g.key };
+    // closed to-dos arrive collapsed like every other closed section; this group is built here rather than
+    // written as a literal, which is why the pass over `closed: true` lines did not reach it
+    const group = { ...g, kind: g.key, closed: g.key === "done", folded: g.key === "done", match: (t) => todoStatus(t) === g.key };
     // an accessor, not a copied value, so the label follows the setting when it loads
     if (g.key === "done") Object.defineProperty(group, "label", { get: closedLabel, enumerable: true });
     return group;
@@ -1267,14 +1269,14 @@ const TODO_LIST = {
 };
 const CLAIM_LIST = {
   groups: [{ key: "standing", label: "Standing", kind: "open", match: (c) => !c.struck },
-           { key: "struck", label: "Struck", kind: "withdrawn", closed: true, match: (c) => c.struck }],
+           { key: "struck", label: "Struck", kind: "withdrawn", closed: true, folded: true, match: (c) => c.struck }],
   columns: { num: (c) => `#${c.n}`, title: (c) => c.fact, cite: (c) => (docOf(c.meta) ? `Doc ${docOf(c.meta)}` : ""),
              age: (c) => ageOf(c.meta), struck: (c) => c.struck },
   count: (rows) => `${rows.filter((c) => !c.struck).length} standing`,};
 const MESSAGE_LIST = {
   groups: [{ key: "waiting", label: "Waiting", kind: "waiting", match: (m) => m.status === "waiting" },
-           { key: "processed", label: "Processed", kind: "done", closed: true, match: (m) => m.status === "processed" || m.status === "moved" },
-           { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (m) => m.status === "archived" }],
+           { key: "processed", label: "Processed", kind: "done", closed: true, folded: true, match: (m) => m.status === "processed" || m.status === "moved" },
+           { key: "archived", label: "Archived", kind: "withdrawn", closed: true, folded: true, match: (m) => m.status === "archived" }],
   columns: { status: (m) => (m.status !== "waiting" ? "done" : m.read ? "progress" : "waiting"), num: (m) => `#${m.n}`, title: (m) => m.text,
              cite: messageBecame, age: (m) => m.age },
   count: (rows) => `${rows.filter((m) => m.status === "waiting").length} waiting`,
@@ -1282,8 +1284,8 @@ const MESSAGE_LIST = {
 };
 const QUESTION_LIST = {
   groups: [{ key: "open", label: "Open", kind: "waiting", match: (q) => q.status === "open" },
-           { key: "answered", label: "Answered", kind: "done", closed: true, match: (q) => q.status === "answered" },
-           { key: "withdrawn", label: "Withdrawn", kind: "withdrawn", closed: true, match: (q) => q.status === "withdrawn" }],
+           { key: "answered", label: "Answered", kind: "done", closed: true, folded: true, match: (q) => q.status === "answered" },
+           { key: "withdrawn", label: "Withdrawn", kind: "withdrawn", closed: true, folded: true, match: (q) => q.status === "withdrawn" }],
   columns: { status: (q) => questionKind(q), num: (q) => `#${q.n}`, title: (q) => q.text,
              cite: (q) => q.links.map((l) => l.label).join(", "), age: (q) => q.age },
   count: (rows) => `${rows.filter((q) => q.status === "open").length} open`,  empty: "Nothing has been asked on this environment.", name: "questions",
@@ -1291,14 +1293,14 @@ const QUESTION_LIST = {
 const LOG_KIND = { started: "Started", update: "Update", waiting: "Waiting on", commit: "Committed", ended: "Ended" };
 const WORK_LIST = {
   groups: [{ key: "open", label: "Open", kind: "progress", match: (w) => !w.ended },
-           { key: "ended", label: "Ended", kind: "done", closed: true, match: (w) => w.ended }],
+           { key: "ended", label: "Ended", kind: "done", closed: true, folded: true, match: (w) => w.ended }],
   columns: { title: (w) => w.subject, sub: (w) => (w.notes.length ? w.notes[w.notes.length - 1].text : ""),
              cite: (w) => [w.todo && `To-do ${w.todo}`, w.doc && `Doc ${w.doc}`].filter(Boolean).join(", "), age: (w) => w.age },
   count: (rows) => `${rows.filter((w) => !w.ended).length} open`, empty: "Nothing is open.", name: "work",
 };
 const REMINDER_LIST = {
   groups: [{ key: "standing", label: "Standing", kind: "open", match: (r) => !r.struck },
-           { key: "retired", label: "Retired", kind: "withdrawn", closed: true, match: (r) => r.struck }],
+           { key: "retired", label: "Retired", kind: "withdrawn", closed: true, folded: true, match: (r) => r.struck }],
   columns: { num: (r) => `#${r.n}`, title: (r) => r.text, cite: (r) => r.until || "", struck: (r) => r.struck },
   count: (rows) => `${rows.filter((r) => !r.struck).length} standing`,  empty: "Nothing is being repeated.", name: "reminders",
 };
@@ -1813,9 +1815,9 @@ const WorkPanel = {
 
 const SUGGESTION_LIST = {
   groups: [{ key: "open", label: "Waiting on you", kind: "waiting", match: (s) => s.status === "open" },
-           { key: "accepted", label: "Accepted", kind: "done", closed: true, match: (s) => s.status === "accepted" || s.status === "adjusted" },
-           { key: "declined", label: "Declined", kind: "withdrawn", closed: true, match: (s) => s.status === "declined" },
-           { key: "withdrawn", label: "Withdrawn", kind: "withdrawn", closed: true, match: (s) => s.status === "withdrawn" }],
+           { key: "accepted", label: "Accepted", kind: "done", closed: true, folded: true, match: (s) => s.status === "accepted" || s.status === "adjusted" },
+           { key: "declined", label: "Declined", kind: "withdrawn", closed: true, folded: true, match: (s) => s.status === "declined" },
+           { key: "withdrawn", label: "Withdrawn", kind: "withdrawn", closed: true, folded: true, match: (s) => s.status === "withdrawn" }],
   columns: { num: (s) => `#${s.n}`, title: (s) => s.title, sub: (s) => s.gist, age: (s) => s.age,
              struck: (s) => s.status === "declined" || s.status === "withdrawn" },
   count: (rows) => `${rows.filter((s) => s.status === "open").length} waiting on you`,  name: "suggestions", empty: "No suggestions on this environment.",
