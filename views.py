@@ -75,7 +75,8 @@ def environments(root: Path) -> list[dict]:
             "pins": len(pins.live(root, track=name)),
             "work": len(work.open_work(root, track=name)),
             "reminders": len(reminders.live(root, track=name)),
-            "docs": len(docs_on(root, name)),
+            # what is still live: an archived doc is off the catalogue, so it is not something this environment holds
+            "docs": len([d for d in docs_on(root, name) if not d.get("archived")]),
             "inbox": len(inbox.unprocessed(root, name)),
             "questions": len(questions.open_items(root, name)),
             "reports": len([r for r in __import__("reports")._all(root, name) if not r.get("archived")]),
