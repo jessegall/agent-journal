@@ -81,7 +81,8 @@ class InboxController(Controller):
         return Result.of(inbox.update(root, p.id, p.text, p.env or None), self._row(root, p, p.id))
 
     def process(self, root: Path, p: ProcessPayload) -> Result:
-        return Result.of(inbox.process(root, p.id, p.part, p.became, p.at, p.env or None), self._row(root, p, p.id))
+        return Result.of(inbox.process(root, p.id, p.part, p.became, p.at, p.env or None, p.in_env or None),
+                         self._row(root, p, p.id))
 
     def file(self, root: Path, p: FilePayload) -> Result:
         return Result.of(inbox.file_into(root, p.id, p.name, p.into, p.at, p.env or None), self._row(root, p, p.id))

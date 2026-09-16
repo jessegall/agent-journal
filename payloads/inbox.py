@@ -33,3 +33,4 @@ class ReplyPayload(Payload):
 class ProcessPayload(Payload):
     part = Field(str)
     became = Field(list)
+    in_env = Field(str, key="in")

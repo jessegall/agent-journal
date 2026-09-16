@@ -937,7 +937,7 @@ const FromMessages = {
   template: `
     <div v-if="rows && rows.length" class=from-messages>
       <p class=section-label>From your message</p>
-      <a v-for="m in rows" :key="m.n" class=chip :href="'#/env/' + env + '/messages/' + m.n" @click="$openRef($event, '#/env/' + env + '/messages/' + m.n)" :title="m.excerpt">Message #{{ m.n }}</a>
+      <a v-for="m in rows" :key="m.n" class=chip :href="'#/env/' + (m.env || env) + '/messages/' + m.n" @click="$openRef($event, '#/env/' + (m.env || env) + '/messages/' + m.n)" :title="m.excerpt">Message #{{ m.n }}</a>
     </div>`,
 };
 
