@@ -34,6 +34,7 @@ import reminders
 import todo
 import tools
 import tracks
+import update
 import work
 
 
@@ -108,7 +109,7 @@ def overview(root: Path) -> dict:
         "rules": len(pins.live(root, pins.RULES)),
         "docs": len(docs(root)),
         "project": root.resolve().parent.name,
-        "version": __import__("update").current(root),
+        "version": update.current(root),
         "update": upstream(root),
     }
 
@@ -116,10 +117,12 @@ def overview(root: Path) -> dict:
 def upstream(root: Path) -> dict | None:
     """The newer version waiting upstream, or None when this project is current.
 
-    It reads the same cached answer the hook's notice does — fifteen minutes old at most,
-    and nothing at all when the check is offline — so polling this costs no network.
+    IT READS THE SAME ANSWER THE HOOK'S NOTICE DOES, and that answer is cached for fifteen
+    minutes: most polls cost nothing, and the one that lands after the cache goes stale pays
+    a bounded fetch (two seconds at most, and the changelog only when a newer version is
+    actually there) inside its own response. An offline check returns whatever the cache
+    holds and never raises — so the page says nothing rather than something wrong.
     """
-    update = __import__("update")
     got = update.check(root)
     have = update.current(root)
     version = got.get("version") or ""
