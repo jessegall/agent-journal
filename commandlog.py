@@ -52,7 +52,7 @@ NUMBER_ARG = {"docs:files": "doc", "docs:part": "doc", "docs:final": "doc", "doc
               "docs:title": "doc", "docs:paths": "doc", "docs:archive": "doc", "docs:move": "doc", "docs:attach": "doc",
               "docs:detach": "doc", "rules:strike": "id", "rules:inject": "id", "rules:uninject": "id"}
 # the argument whose value Activity shows after the number, like "high" for a priority
-DETAIL = {"todos:priority": "value", "reports:keep": "days", "todos:keep": "days", "switch:": "name", "environments:switch": "name", "work:await": "what",
+DETAIL = {"todos:priority": "value", "reports:keep": "days", "todos:keep": "days", "switch:": "name", "environments:switch": "name", "work:await": "what", "work:park": "why",
           "environments:": "name", "environments:show": "name", "environments:remove": "name",
           "environments:prepare": "name", "environments:claim": "name", "prepare:": "name", "claim:": "name",
           "grant:": "name", "tools:run": "name", "tools:show": "name", "tools:add": "name", "tools:set": "name",
@@ -99,6 +99,7 @@ DESCRIBE = {
     "work:start": "Starting work",
     "work:update": "Noting progress",
     "work:await": "Waiting on",
+    "work:park": "Parking work",
     "work:end": "Ending work",
     "pins:list": "Reading pins",
     "pins:show": "Reading pin {n}",
@@ -375,6 +376,7 @@ WEB = {
     "work:update": "Edited work {n}",
     "work:destroy": "Removed work {n}",
     "work:wait": "Waiting on",
+    "work:park": "Parked work {n}",
     "comments:done": "Closed comment {n}",
 }
 

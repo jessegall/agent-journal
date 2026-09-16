@@ -1010,6 +1010,9 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
             note=say("waited_note", subject=w["subject"], what=got["what"], who=who,
                      how=say("waited_exited") if dead else say("waited_for", mins=mins)))
     standing = [w for w in standing if not work.awaiting(w, now) or work.gone(w)]
+    # PARKED IS NOT IDLE EITHER, and unlike a wait it has no clock to bring it back: work
+    # parked on a question stays open, says why, and is picked up by the first update on it.
+    standing = [w for w in standing if not work.parked(w)]
     if not standing:
         return None
     if todo.auto(ROOT, here):

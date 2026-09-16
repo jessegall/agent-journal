@@ -27,3 +27,8 @@ class WaitPayload(Payload):
     minutes = Field(float, key="for")
     agent = Field(str)
     pid = Field(int)
+
+
+class ParkPayload(Payload):
+    why = Field(str)
+    on = Field(str)

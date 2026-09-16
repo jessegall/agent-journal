@@ -27,11 +27,11 @@ def say(message: str, /, **values) -> str:
 class WorkController(Controller):
     resource = "work"
     noun = "work"
-    actions = ("index", "show", "store", "update", "destroy", "note", "end", "wait")
+    actions = ("index", "show", "store", "update", "destroy", "note", "end", "wait", "park")
     numbered = ("show", "update", "destroy")
     payloads = {"index": ListingPayload, "store": work_payloads.StartPayload, "update": work_payloads.NotePayload,
                 "destroy": work_payloads.EndPayload, "note": work_payloads.NotePayload, "end": work_payloads.EndPayload,
-                "wait": work_payloads.WaitPayload}
+                "wait": work_payloads.WaitPayload, "park": work_payloads.ParkPayload}
     default_direction = fmt.ASC
     EDITS = frozenset({"update", "destroy"})
 
@@ -55,6 +55,9 @@ class WorkController(Controller):
         return {"n": w.n, "subject": w.subject, "at": w.at, "age": pins.age(w.at) if w.at else "",
                 "ended": w.ended, "ended_age": pins.age(w.ended) if w.ended else "", "closed_at": w.ended or "",
                 "awaiting": (w.awaiting or {}).get("what") or "",
+                "parked": (w.parked or {}).get("why") or "",
+                "parked_at": (w.parked or {}).get("at") or "",
+                "parked_age": pins.age((w.parked or {}).get("at") or "") if (w.parked or {}).get("at") else "",
                 "todo": t["n"] if t else None, "doc": (t.get("doc") or None) if t else None,
                 # each note carries when it was written, through the same age() every other row uses
                 "notes": [{"at": x.get("at", ""), "age": pins.age(x.get("at", "")) if x.get("at") else "",
@@ -110,6 +113,9 @@ class WorkController(Controller):
         elif row:
             meta["todo_open"] = row["n"]
         return Result("ok", message, None, meta)
+
+    def park(self, root: Path, p: work_payloads.ParkPayload) -> Result:
+        return Result.of(work.park(root, p.why, p.at, p.on or None))
 
     def wait(self, root: Path, p: work_payloads.WaitPayload) -> Result:
         conf, _ = settings_mod.load(root)
