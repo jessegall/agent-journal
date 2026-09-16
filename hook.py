@@ -326,7 +326,8 @@ MESSAGES = {
                "what survived: `journal search <term>`, `journal conversation --back=1`, `journal user`.\n\n"
                "LOAD THE `journal` SKILL before your first pin, rule, declaration or search in this session, and again "
                "whenever a hook holds or denies you. Its focused skills — `journal-todos`, `journal-questions`, "
-               "`journal-messages`, `journal-memory`, `journal-docs`, `journal-agents` — load when their part comes up; "
+               "`journal-messages`, `journal-memory`, `journal-docs`, `journal-agents`, `journal-plans` — load when their "
+               "part comes up; "
                "load one yourself if it has not.",
     "docs_cite": "{catalogue}\n  A pin, rule or to-do that rests on a doc cites it: --doc=N, or --doc=N.P for one part.",
     "compact_tail": "THE SUMMARY YOU ARE HOLDING DROPPED WHAT WAS DECIDED. Before you touch anything:\n"
