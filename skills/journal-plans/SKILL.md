@@ -89,7 +89,8 @@ and auto mode works them the way it works any list. When a phase's rows are all 
 phase is complete and the next becomes current — unless it was a checkpoint, and then the
 plan waits.
 
-**There is one auto switch, and it is the environment's.** A plan has none of its own: if
+**There is one auto switch, and it is the JOURNAL's.** A plan has none of its own, and
+neither does an environment — switching environments never turns it off: if
 auto is on, the list is worked AND checkpoints are passed; if it is off, the plan stops at
 them. `journal auto-mode [enable|disable]`.
 
