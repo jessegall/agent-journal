@@ -754,6 +754,8 @@
     background: var(--raised); border: 1px solid var(--border-2); border-radius: 8px;
     color: var(--text); font: inherit; font-size: 13px; line-height: 1.55; }
   .box-area:focus { border-color: var(--accent); }
+  /* answering where you are reading: the design's taller box, so a real answer has room */
+  .answer-here .box-area { min-height: 86px; }
   .box-area::placeholder { color: var(--text-3); }
   .compose-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .hint { color: var(--text-3); font-size: 12px; }
