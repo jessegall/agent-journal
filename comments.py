@@ -10,16 +10,18 @@ from templates import render
 KEY = "comments"
 
 KINDS = {"todo": "to-do", "doc": "doc", "pin": "pin", "rule": "rule", "reminder": "reminder", "suggestion": "suggestion",
-         "inbox": "message", "work": "work"}
+         "inbox": "message", "work": "work", "report": "report", "plan": "plan"}
 
-_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|reminders?|suggestions?|messages?|inbox|works?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
+_REF = re.compile(r"^\s*(to-?dos?|docs?|pins?|rules?|reminders?|suggestions?|messages?|inbox|works?|reports?|plans?)\s*[:#\s]\s*(\d+(?:\.\d+)?)\s*$", re.I)
 
 MESSAGES = {
     "label": "{kind} {num}",
     "not_a_ref": "{text} is not something a comment can be about; write it as `todo 22`, `doc 4`, `pin 3`, "
-                 "`rule 2`, `reminder 1`, `message 5` or `work 7`",
+                 "`rule 2`, `reminder 1`, `message 5`, `work 7`, `report 3` or `plan 5`",
     "no_reminder": "there is no reminder {n} on this environment",
     "no_work": "there is no work {n} on this environment. `journal work` numbers it.",
+    "no_report": "there is no report {n} on this environment. `journal reports` numbers them.",
+    "no_plan": "there is no plan {n} on this environment. `journal plans` numbers them.",
     "needs_text": 'a comment needs its text: journal comments add "todo 22" "<the comment>"',
     "added": "comment {n} on {label}; the agent is told at its next stop",
     "no_comment": "there is no comment {n}. `journal comments` numbers them.",
@@ -65,6 +67,14 @@ def check_ref(root: Path, ref: str, track: str | None = None) -> str | None:
         import work
         n = int(num)
         return None if 1 <= n <= len(work._all(root, track)) else say("no_work", n=n)
+    if kind == "report":
+        import reports
+        n = int(num)
+        return None if 1 <= n <= len(reports._all(root, track)) else say("no_report", n=n)
+    if kind == "plan":
+        import plans
+        n = int(num)
+        return None if 1 <= n <= len(plans._all(root, track)) else say("no_plan", n=n)
     import questions
     return questions.check_ref(root, ref, track)
 

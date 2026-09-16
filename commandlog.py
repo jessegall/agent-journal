@@ -275,7 +275,7 @@ def describe(noun: str, verb: str) -> str:
 READS = {"index", "show", "files", "paths", "search", "waiting"}
 # viewer writes that Activity already shows from the stores they change
 # viewer bookkeeping, not something the user did: opening a question marks it seen and writes no Activity line
-WEB_QUIET = {"questions:seen"}
+WEB_QUIET = {"questions:seen", "reports:seen"}
 WEB_SHOWN = {"todos:store", "todos:done", "messages:store", "questions:answer", "comments:store", "work:store",
              "work:note", "work:end"}
 WEB_KINDS = {**KINDS, "messages": "message", "notifications": None}
