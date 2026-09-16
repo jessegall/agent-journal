@@ -1896,10 +1896,8 @@ def auto(root: Path, track: str | None = None) -> bool:
     return bool(got)
 
 
-def set_auto(root: Path, track: str | None, on: bool | None = None) -> str:
-    """Turn it on or off for the project. Called `set_auto(root, on)` too, while the callers move."""
-    if on is None:
-        track, on = None, track
+def set_auto(root: Path, on: bool) -> str:
+    """Turn it on or off for the whole journal."""
     with state.locked(root):
         state.put(root, AUTO, bool(on))
     return say("auto_on" if on else "auto_off")

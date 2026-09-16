@@ -85,7 +85,7 @@ def pending(stem: str) -> list[tuple[str, dict]]:
             continue
         if not idle:
             continue
-        auto = todo.auto(ROOT, env)
+        auto = todo.auto(ROOT)
         for key, params in _waiting(env, STARTED[0], answers=bool(bound)):
             quiet = auto or "message" in params["meta"]
             got.append((key, params if quiet else {**params, "content": params["content"] + AUTO_OFF_NOTE}))
