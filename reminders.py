@@ -115,9 +115,8 @@ def add(root: Path, text: str, at: str, limit: int, until: str = "") -> tuple[bo
     until = " ".join((until or "").split())
     if not text:
         return False, say("needs_text")
-    if limit and len(text) > limit:
-        return False, say("too_long", length=len(text), limit=limit,
-                          keep=text[:limit - 20], cut=text[limit - 20:][:120])
+    if over := entries.capped(text, limit):
+        return False, say("too_long", length=over[0], limit=limit, keep=over[1], cut=over[2])
     made = {"text": text, "at": at, "until": until, "done": None}
     # THE RECORD IS SHARED: load and save under one lock, or two sessions adding at once
     # each write the other's away — the silent loss `pins.add` learned the hard way.
@@ -147,9 +146,8 @@ def update(root: Path, n: int, text: str, until: str, limit: int) -> tuple[bool,
     until = " ".join((until or "").split())
     if not text:
         return False, say("needs_text")
-    if limit and len(text) > limit:
-        return False, say("too_long", length=len(text), limit=limit,
-                          keep=text[:limit - 20], cut=text[limit - 20:][:120])
+    if over := entries.capped(text, limit):
+        return False, say("too_long", length=over[0], limit=limit, keep=over[1], cut=over[2])
     with state.locked(root):
         items = _all(root)
         r, why = entries._find(items, n, _STORE)
