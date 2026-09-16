@@ -121,8 +121,13 @@ j("work", "end", "change some files")
 ended = [e for e in activity.ActivityController._events(d / ".journal", "w") if e["text"] == "Ended work"]
 check("the Ended work line in Activity says how many files changed", [e["detail"] for e in ended], ["4 files changed"])
 import commandlog  # noqa: E402
-check("the tool uses since the last journal command become one line when a journal command runs",
-      "Ran 4 commands, edited 5 files" in [e["text"] for e in commandlog.entries(d / ".journal", "w")], True)
+# THE QUEUE IS WRITTEN OUT BY WHATEVER COMES NEXT: a journal command, a commit being recorded, or the
+# tenth tool use. So a run like this one leaves several summed lines, not one — each holding the uses
+# since the last thing that flushed. Asserted as the lines themselves, so a drift prints what it said.
+_summed = [e["text"] for e in commandlog.entries(d / ".journal", "w")
+           if e.get("by") == "Agent" and not e.get("kind") and not e.get("sha")]
+check("the tool uses between two journal commands become one summed line each time",
+      _summed, ["Edited 1 file", "Ran 1 command, edited 5 files", "Ran 2 commands", "Ran 1 command"])
 
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
