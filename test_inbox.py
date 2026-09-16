@@ -347,5 +347,15 @@ code, out = j("messages", "process", str(_mv), "--part=the loader", "--became=no
 check("and a late part is refused here, naming where it went and which message it is there",
       (code, "was moved to `faraway`" in out, "message 1" in out), (1, True, True))
 
+# A TRANSCRIPT IS FILED BY QUOTING IT. What makes a long paste safe is that an excerpt must be the
+# user's own words: a summary the agent wrote cannot be filed as something they said, and the chat
+# around the decisions is simply never quoted.
+j("messages", "add", "Jesse: right, so the loader.\nSam: it double-fetches on every open.\nJesse: fix that this week.\nSam: also the coffee machine is broken.")
+_tn = len(stored())
+code, out = j("messages", "process", str(_tn), "--part=it double-fetches on every open", "--became=noted")
+check("a coarse excerpt spanning one speaker's words is filed", (code, "became noted" in out), (0, True))
+code, out = j("messages", "process", str(_tn), "--part=the team agreed to fix the loader", "--became=noted")
+check("but a summary the agent wrote is refused, however true", (code, "not in message" in out), (1, True))
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
