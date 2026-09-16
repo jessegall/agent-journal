@@ -121,6 +121,16 @@ check("overview names the project the viewer's sidebar shows", data["project"], 
 check("and the version being served, so an open page can reload when it changes", "version" in data, True)
 check("environments come newest activity first", [e["last_active"] for e in data["environments"]],
       sorted((e["last_active"] for e in data["environments"]), reverse=True))
+check("a project that is current says nothing about an update", data["update"], None)
+# the upstream answer is cached on disk and the suites never reach the network: a cache naming a
+# newer version is exactly what a real project that has fallen behind looks like
+(root / "runtime").mkdir(parents=True, exist_ok=True)
+(root / "runtime" / "upstream.cache").write_text(json.dumps(
+    {"version": "999.0.0", "headline": "Everything is different now", "at": time.time()}))
+data = json.loads(get("/api/overview")[2])
+check("a project that has fallen behind carries the version, what it has, and the headline",
+      data["update"], {"version": "999.0.0", "have": data["version"], "headline": "Everything is different now"})
+(root / "runtime" / "upstream.cache").unlink()
 
 status, _, body = get("/api/env/alpha/todos")
 data = json.loads(body)
