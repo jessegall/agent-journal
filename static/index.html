@@ -471,7 +471,15 @@
   .home-head h2 { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--text-3); }
   .home-head > span { font-size: 11px; color: var(--text-3); }
   .home-head .home-hint { margin-left: auto; white-space: nowrap; }
-  .needs-slot { box-sizing: border-box; height: 200px; overflow-y: auto; overflow-x: hidden; border-top: 1px solid #1f2125; }
+  /* the height of what is waiting, capped at five rows: a short queue takes only the room it needs,
+     a long one scrolls rather than pushing the sections below it down the page */
+  .needs-slot { box-sizing: border-box; max-height: 200px; overflow-y: auto; overflow-x: hidden; border-top: 1px solid #1f2125; }
+  .qrow-enter-active { transition: opacity .24s ease-out, transform .24s cubic-bezier(.2, .8, .2, 1); }
+  .qrow-enter-from { opacity: 0; transform: translateY(-8px); }
+  .qrow-leave-active { position: absolute; left: 0; right: 0; transition: opacity .16s ease-in, transform .16s ease-in; }
+  .qrow-leave-to { opacity: 0; transform: translateY(8px); }
+  .qrow-move { transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
+  @media (prefers-reduced-motion: reduce) { .qrow-enter-active, .qrow-leave-active, .qrow-move { transition: none; } }
   .needs-row { box-sizing: border-box; display: flex; align-items: center; gap: 11px; height: 40px; padding: 0 2px; border-bottom: 1px solid #1f2125; cursor: pointer; }
   .needs-row:hover, .needs-row.sel { background: #17181b; }
   .needs-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #4a4d54; }
