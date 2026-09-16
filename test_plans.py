@@ -193,5 +193,52 @@ check("a report an unfinished plan links is not removed, however old", (reports.
 j("plans", "abandon", str(_n_made), "trying the cleanup")
 check("once the plan is abandoned, the old report is removed as usual", reports.prune(root, "default"), 1)
 
+# ---------------------------------------------------------------- a row moves between phases in one command
+j("todos", "add", "a row written into the wrong phase")
+_wrong = [t["n"] for t in __import__("todo")._all(root, "default") if t["title"] == "a row written into the wrong phase"][0]
+j("plans", "add", "a plan to reorder", "--goal=the rows sit where they belong", "--brief", stdin="phases")
+_pn = len(plans._all(root, "default"))
+j("plans", "phase", str(_pn), "first")
+j("plans", "phase", str(_pn), "second")
+j("plans", "todos", str(_pn), "2", str(_wrong))
+code, out = j("plans", "todos", str(_pn), "1", str(_wrong))
+check("a to-do already in another phase is refused, and the refusal names the one command that moves it",
+      (code, "already in plan" in out, f"todos {_pn} 1 {_wrong} --move" in out), (1, True, True))
+code, out = j("plans", "todos", str(_pn), "1", str(_wrong), "--move")
+check("--move takes it out of the phase it was in and puts it here, in one command",
+      (code, "moved here from phase 2" in out), (0, True))
+check("and it sits in exactly one phase",
+      [ph["todos"] for ph in plans._all(root, "default")[_pn - 1]["phases"]], [[_wrong], []])
+
+# ---------------------------------------------------------------- a phase that cannot be worked does not wedge the list
+import todo as _todo  # noqa: E402
+j("todos", "add", "the stuck row")
+j("todos", "add", "the row in the next phase")
+_stuck = [t["n"] for t in _todo._all(root, "default") if t["title"] == "the stuck row"][0]
+_next_row = [t["n"] for t in _todo._all(root, "default") if t["title"] == "the row in the next phase"][0]
+j("plans", "add", "a plan that must not wedge", "--goal=auto always has something to pick", "--brief", stdin="phases")
+_wn = len(plans._all(root, "default"))
+j("plans", "phase", str(_wn), "the phase that gets stuck")
+j("plans", "phase", str(_wn), "the phase after it")
+j("plans", "todos", str(_wn), "1", str(_stuck))
+j("plans", "todos", str(_wn), "2", str(_next_row))
+_live = plans.active(root, "default")
+if _live:
+    j("plans", "abandon", str(_live[0]), "finished with it in this suite")
+plans.activate(root, _wn, AT, source="web", track="default")
+check("with the current phase workable, auto picks from it and not from the phase after",
+      [t["n"] for t in _todo.ready(root, "default")][:1], [_stuck])
+j("todos", "ask", str(_stuck), "which way round should this go?")
+check("when every row in the current phase waits on the user, the next phase is offered rather than nothing",
+      [t["n"] for t in _todo.ready(root, "default")][:1], [_next_row])
+
+# ---------------------------------------------------------------- unless a checkpoint gates it
+j("auto-mode", "disable")
+_data = json.loads((root / "environments" / "default" / "plans.json").read_text())
+_data["plans"][_wn - 1]["phases"][0]["checkpoint"] = True
+(root / "environments" / "default" / "plans.json").write_text(json.dumps(_data))
+check("a checkpoint phase still gates what comes after it, stuck or not",
+      [t["n"] for t in _todo.ready(root, "default") if t["n"] in (_stuck, _next_row)], [])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

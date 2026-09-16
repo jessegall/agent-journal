@@ -19,6 +19,7 @@ class TodosPayload(Payload):
     phase = Field(int)
     todos = Field(list)
     off = Field(bool)
+    move = Field(bool)
     reopen = Field(str)
 
 
