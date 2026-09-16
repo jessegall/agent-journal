@@ -4239,10 +4239,24 @@ const App = {
     window.addEventListener("journal:changed", loadOverview);
     // space opens the quick menu, unless it is typing into something or pressing a focused control
     const openQuick = () => Object.assign(QUICK, { open: true, q: "", i: 0 });
+    // HOW THE FOCUS WAS REACHED, TRACKED RATHER THAN ASKED FOR. :focus-visible cannot answer this:
+    // measured inside a live keydown it reads TRUE even for a button focused by a mouse click, because the
+    // browser counts the key itself as keyboard interaction. So the last input that moved focus is recorded here.
+    let focusFromPointer = false;
+    const sawPointer = () => { focusFromPointer = true; };
+    const sawKeyMove = (e) => { if (e.key === "Tab" || e.key.startsWith("Arrow")) focusFromPointer = false; };
+    window.addEventListener("pointerdown", sawPointer, true);
+    window.addEventListener("keydown", sawKeyMove, true);
     const onSpace = (e) => {
       if (e.key !== " " || QUICK.open || e.defaultPrevented) return;
       const el = document.activeElement;
-      if (el && el !== document.body && (el.isContentEditable || el.matches("input,textarea,select,button,a[href],[role=button],[tabindex]"))) return;
+      if (el && el !== document.body) {
+        // typing always keeps space, wherever the focus came from
+        if (el.isContentEditable || el.matches("input,textarea,select")) return;
+        // a control reached with the keyboard keeps space, so Tab-and-space still presses it; one left
+        // focused by a click does not, which is why space used to press the button you had just clicked
+        if (el.matches("button,a[href],[role=button],[tabindex]") && !focusFromPointer) return;
+      }
       e.preventDefault();
       openQuick();
     };
@@ -4251,6 +4265,8 @@ const App = {
       window.removeEventListener("hashchange", onHash);
       window.removeEventListener("journal:changed", loadOverview);
       window.removeEventListener("keydown", onSpace);
+      window.removeEventListener("pointerdown", sawPointer, true);
+      window.removeEventListener("keydown", sawKeyMove, true);
       clearInterval(overviewTimer);
     });
     loadOverview();
