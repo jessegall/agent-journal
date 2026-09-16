@@ -3271,19 +3271,21 @@ const EnvHome = {
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
-    const work = useFetch(url("/work?all=1"));
-    const questions = useFetch(url("/questions"));
+    const work = useFetch(url("/work"));
+    // the finished lines are the newest few; the COUNT behind "N more" rides in the environment row
+    const recentWork = useFetch(url("/work?all=1&cap=6"));
+    const questions = useFetch(url("/questions?cap=8"));
     const suggestions = useFetch(url("/suggestions"));
     const reports = useFetch(url("/reports"));
     // ?all=1 so a FINISHED plan is here too: its card stays until the user acknowledges it, and the
     // plain list hides done ones, which is why the card used to vanish the moment the last phase closed
     const plans = useFetch(url("/plans?all=1"));
-    const messages = useFetch(url("/messages?all=1"));
+    const messages = useFetch(url("/messages?cap=10"));
     const notes = useFetch(url("/notifications"));
     const view = reactive({ kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
     const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
-    const reloadAll = () => [work, questions, suggestions, plans, messages, notes].forEach((f) => f.reload());
+    const reloadAll = () => [work, recentWork, questions, suggestions, plans, messages, notes].forEach((f) => f.reload());
     // the agent's reply raises a notification about that message: while it is unread, so is the reply
     const unreadReplies = computed(() => new Set((notes.data || [])
       .filter((x) => !x.read && String(x.about).startsWith("inbox:"))
@@ -3352,7 +3354,15 @@ const EnvHome = {
       // it was the one name here you could not click
       return { facts, href: agent ? `#/env/${props.env}/agents/session/${agent.session}` : "" };
     });
+    const envRow = computed(() => (OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null));
     const SLOTS = 5;
+    // the rows are a capped page; the COUNT is the environment's own, so a cap can never make it lie.
+    // Unseen reports are not in that row (it counts unarchived ones), so they are counted from theirs.
+    const waitingCount = computed(() => {
+      const row = envRow.value || {};
+      const unseen = (reports.data || []).filter((r) => !r.seen && !r.archived).length;
+      return (row.questions || 0) + (row.suggestions || 0) + unseen + (held.value ? 1 : 0);
+    });
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
     const clear = computed(() => !queue.value.length && !held.value);
     // the kind reads as part of the sentence here, not as a label: "question 12 · 6m"
@@ -3370,23 +3380,31 @@ const EnvHome = {
     const FINISHED_DAYS = 7;
     const finishedLines = computed(() => {
       const since = Date.now() - FINISHED_DAYS * 86400000;
-      return (work.data || []).filter((w) => w.ended && Date.parse(w.ended) >= since)
+      return (recentWork.data || []).filter((w) => w.ended && Date.parse(w.ended) >= since)
         .sort((a, b) => (b.ended > a.ended ? 1 : b.ended < a.ended ? -1 : 0))
         .slice(0, FINISHED_SHOWN)
         .map((w) => ({ n: w.n, title: w.subject, sub: workSub(w, true) }));
     });
-    // THE REAL REMAINDER, not "total minus three": the section shows three pieces from the last week,
-    // so everything older is invisible too. The work list is fetched whole, so the honest count is here.
-    const finishedMore = computed(() => (work.data || []).filter((w) => w.ended).length - finishedLines.value.length);
+    // THE REAL REMAINDER, not "total minus three": the section shows three pieces from the last week, so
+    // everything older is invisible too. The count comes from the environment row — the page used to pull
+    // every row ever written, every five seconds, to work it out in the browser.
+    const finishedMore = computed(() => Math.max(0, ((envRow.value || {}).work_done || 0) - finishedLines.value.length));
     // Subagents belong to the agent, so they hang under its facts line: one line each, and nothing at all
     // when none are there. A FINISHED ONE STAYS, for as long as the API keeps sending it — a subagent used
     // to disappear the instant it stopped, which is the moment its line is most worth clicking.
+    // THE STRIP IS FOR WHAT IS HAPPENING NOW. A subagent that has not called a tool for an hour is kept
+    // by the API for a day — so it cannot vanish while it is merely thinking — but the home says its
+    // piece and lets go; the Activity crew list keeps the longer patience. And the line SAYS "quiet":
+    // a name sitting under the agent with only an age beside it reads as still running.
+    const CREW_QUIET_SECS = 3600;
     const liveCrew = computed(() => (crew.data || []).filter((a) => a.kind === "subagent")
+      .filter((a) => a.state !== "quiet" || (a.quiet_secs || 0) <= CREW_QUIET_SECS)
       .map((a, i) => ({ key: `subagent:${a.id}`, name: a.name || `Subagent ${a.id}`,
                         done: a.state === "finished", quiet: a.state === "quiet",
                         title: `Subagent ${a.id} · ${a.model || "model not recorded"} · from session ${a.parent}`
                              + (a.state === "quiet" ? " · no tool call in a while, and it has not said it finished" : ""),
-                        tail: [a.model, a.state === "finished" ? a.ended_age : a.age_text].filter(Boolean).join(" · "),
+                        tail: [a.model, a.state === "quiet" ? `quiet · ${a.age_text}` : a.state === "finished" ? a.ended_age : a.age_text]
+                          .filter(Boolean).join(" · "),
                         delay: `${i * 60}ms`, open: () => peek("subagent", a.id) })));
 
     // a subagent's panel steps through the other subagents, never sideways into the queue behind it
@@ -3427,7 +3445,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, goPlan, queueMeta, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote, waitingCount };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3450,8 +3468,8 @@ const EnvHome = {
         <Transition name=needs mode=out-in>
         <div v-if="clear" key=clear class=needs-clear><Icon name="todos"/><span>Nothing is waiting on you.</span></div>
         <div v-else key=queue>
-        <div class=home-head><h2>Waiting on you</h2><span>{{ queue.length + (held ? 1 : 0) }} waiting</span>
-          <span v-if="queue.length + (held ? 1 : 0) > SLOTS" class=home-hint>{{ queue.length + (held ? 1 : 0) - SLOTS }} more — scroll the list</span></div>
+        <div class=home-head><h2>Waiting on you</h2><span>{{ waitingCount }} waiting</span>
+          <span v-if="waitingCount > SLOTS" class=home-hint>{{ waitingCount - SLOTS }} more — scroll the list</span></div>
         <div class=needs-slot>
           <TransitionGroup name=qrow>
           <div v-if="held" key=held class=needs-row @click="goPlan">
