@@ -198,5 +198,28 @@ check("a file two environments name stays where it is",
 check("running it again moves nothing",
       "already in its own environment" in _migrate._pin_bodies_home(_r)[0], True)
 
+# ─────────────── a message's attachments come with the directory when it is renamed ───────────────
+import migrate as _mg  # noqa: E402
+_fd = project(with_record=False)
+_fr = _fd / ".journal"
+_old_dir = _fr / "environments" / "alpha" / "inbox-files" / "3"
+_old_dir.mkdir(parents=True)
+(_old_dir / "shot.png").write_bytes(b"not really a png")
+_said = _mg._message_files(_fr)
+_now = _fr / "environments" / "alpha" / "message-files" / "3" / "shot.png"
+check("an attachment filed under the old name is moved, with its bytes, and says so",
+      (_now.is_file(), _now.read_bytes(), (_fr / "environments" / "alpha" / "inbox-files").exists(),
+       "message-files now (1 message(s))" in _said[0]),
+      (True, b"not really a png", False, True))
+check("running it again moves nothing", "no attachments were filed under the old name" in _mg._message_files(_fr)[0], True)
+_both = _fr / "environments" / "beta"
+(_both / "inbox-files" / "1").mkdir(parents=True)
+(_both / "message-files" / "1").mkdir(parents=True)
+(_both / "inbox-files" / "1" / "old.txt").write_text("x")
+_mg._message_files(_fr)
+check("an environment holding both shapes is left alone rather than merged blindly",
+      ((_both / "inbox-files" / "1" / "old.txt").is_file(), (_both / "message-files" / "1" / "old.txt").exists()),
+      (True, False))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

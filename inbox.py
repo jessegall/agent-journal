@@ -184,7 +184,7 @@ def _became(m: dict) -> list[str]:
     return list(dict.fromkeys(label(r) for p in m.get("parts") or [] for r in p["became"]))
 
 
-FILES = "inbox-files"
+FILES = "message-files"
 FILES_LIMIT = 20 * 1024 * 1024
 
 
