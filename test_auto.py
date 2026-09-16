@@ -766,8 +766,10 @@ _P = testkit.Project(d)
 _P.cli("auto", "enable"); _P.cli("todos", "add", "a queued task")
 code, out = _P.hook("SessionStart", source="startup", session_id="newsession", transcript_path=str(d / "t2.jsonl"), cwd=str(d))
 _ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-check("a session on no environment is told auto is on there, not ordered to work the list",
-      ("NO ENVIRONMENT" in _ctx, "AUTO IS ON" in _ctx, "auto is on for" in _ctx), (True, False, True))
+# the switch is the journal's, so an unbound session IS under it — what it is not told is to start
+# working a list on an environment it never chose
+check("a session on no environment is told auto is on for the journal, not ordered to work the list",
+      ("NO ENVIRONMENT" in _ctx, "todos start <n>" in _ctx, "pick one first" in _ctx), (True, False, True))
 
 d = project(); s = Session(d, "s1")
 _skill = d / ".claude" / "skills" / "real-one"
