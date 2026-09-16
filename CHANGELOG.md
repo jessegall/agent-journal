@@ -4,6 +4,42 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.142.0 — Pasting a transcript, and what is waiting on you
+
+**Paste a transcript and the journal files it.** A pasted meeting transcript or summary arrives as a
+message with the transcript attached as a file; the agent splits it into verbatim parts, files the
+to-dos it finds, and DRAFTS anything that reads as a plan rather than starting it — a to-do is a
+correction away from right, a plan is a commitment. The transcript stays a message attachment,
+outside the document catalogue and never handed to a session, and becomes citable only by being
+promoted into a doc. An excerpt must be the user's own words, so a summary the agent wrote cannot be
+filed as something they said.
+
+**Each kind waiting on you reads as its own card.** The home queue was a uniform row per item: a dot,
+a title, an age. Now every waiting kind is a card carrying the kind's own colour on its left edge,
+with the one thing to do with it named underneath. A question is weighted heavier than the rest, a
+report reads as something to open, and a plan waiting at a checkpoint is a card among them rather
+than the one odd row out. The card always names the item — "report 2 · 2d ago" — because the number
+is the handle on it.
+
+**A report has a page of its own.** Reports moved out of Documents into their own entry, and a report
+can now be read full width at its own URL the way a document can, not only in the inspector.
+
+**A part records which environment its ref lives on.** A message part stored a bare reference to what
+it became, and `plan:1` exists on every environment that has one — so the link from a message to the
+plan it produced was invisible whenever the two sat on different environments, and searching every
+inbox for the bare reference would have found the WRONG plan rather than merely been slow. The
+environment is stamped on the part when it is processed (`--in=`), and the link points at the
+message's own environment.
+
+**A plan's title, goal and approach can be corrected.** `journal plans edit` reworks a plan that is
+still being written, so a goal opened as a placeholder does not have to be lived with or rebuilt. A
+plan cannot be declared ready while a phase is empty, so the user never sees a Start button on
+something the agent is still filling in.
+
+**A question waiting on you is not a reason to stop.** With auto mode on, an open question parks the
+row it belongs to and the agent carries on with the rest of the list instead of idling until the
+question is answered.
+
 ## 1.141.2 — Four fixes found by using it
 
 Every one of these turned up while shaping a plan with the user rather than by looking for them.
