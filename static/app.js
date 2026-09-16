@@ -1306,7 +1306,7 @@ const DOC_LIST = {
   groups: [{ key: "final", label: "Final", kind: "done", match: (d) => !d.archived && !d.superseded_by && d.status === "final" },
            { key: "draft", label: "Draft", kind: "open", match: (d) => !d.archived && !d.superseded_by && d.status !== "final" },
            { key: "superseded", label: "Superseded", kind: "withdrawn", match: (d) => !d.archived && d.superseded_by },
-           { key: "archived", label: "Archived", kind: "withdrawn", match: (d) => d.archived && !d.superseded_by }],
+           { key: "archived", label: "Archived", kind: "withdrawn", folded: true, match: (d) => d.archived && !d.superseded_by }],
   columns: { status: (d) => (d.archived || d.superseded_by ? "withdrawn" : d.status === "final" ? "done" : "open"),
              library: true, num: (d) => `#${d.n}`, numWidth: "34px", title: (d) => d.title, sub: (d) => d.abstract, age: (d) => shortAge(d.age), ageWidth: "52px", struck: (d) => d.superseded_by,
              cite: (d) => (d.attachments ? (d.attachments === 1 ? "1 file" : `${d.attachments} files`) : "") },
@@ -2164,8 +2164,9 @@ const PLAN_STATUS = { draft: "Draft", active: "Active", done: "Done", abandoned:
 const PLAN_LIST = {
   groups: [{ key: "active", label: "Active", kind: "progress", match: (p) => p.status === "active" },
            { key: "draft", label: "Drafts", kind: "open", match: (p) => p.status === "draft" },
-           { key: "done", label: "Done", kind: "done", closed: true, match: (p) => p.status === "done" },
-           { key: "abandoned", label: "Abandoned", kind: "withdrawn", closed: true, match: (p) => p.status === "abandoned" }],
+           // finished plans read as sections too, so nothing sits behind a separate archive view
+           { key: "done", label: "Done", kind: "done", folded: true, match: (p) => p.status === "done" },
+           { key: "abandoned", label: "Abandoned", kind: "withdrawn", folded: true, match: (p) => p.status === "abandoned" }],
   columns: { status: (p) => ({ active: "progress", draft: "open", done: "done", abandoned: "withdrawn" })[p.status] || "open", library: true, num: (p) => `#${p.n}`, numWidth: "34px", title: (p) => p.title, sub: (p) => p.goal, cite: (p) => `${p.phases_done} of ${p.phases_total} phases`,
              age: (p) => shortAge(p.age), ageWidth: "52px", struck: (p) => p.status === "abandoned" },
   count: (rows) => `${rows.filter((p) => p.status === "active" || p.status === "draft").length} plans`, name: "plans",
@@ -2396,7 +2397,6 @@ const Plans = {
       <div class=body>
         <div class=list>
           <DocTabs :env="env" current="plans">
-            <a :class="['viewbar-archive', {on: archive}]" :href="archive ? home : home + '/archive'">{{ archive ? 'Close archive' : 'Archive' }}</a>
             <template #new><a class="btn new" :href="home + '/new'">New plan</a></template>
           </DocTabs>
           <ResourceList v-bind="PLAN_LIST" :bar="false" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
@@ -2412,7 +2412,8 @@ const Plans = {
 
 const REPORT_LIST = {
   groups: [{ key: "reports", label: "Listed", kind: "open", match: (r) => !r.archived },
-           { key: "archived", label: "Archived", kind: "withdrawn", closed: true, match: (r) => r.archived }],
+           // archived reports read as a section, like a doc's do: not `closed`, which would hide the older ones behind an archive view
+           { key: "archived", label: "Archived", kind: "withdrawn", folded: true, match: (r) => r.archived }],
   // a report within two days of aging off the list shows its age in amber
   columns: { status: (r) => (r.archived ? "withdrawn" : "open"), library: true, num: (r) => `#${r.n}`, numWidth: "34px", title: (r) => r.title, sub: (r) => r.gist, cite: (r) => r.about_label, age: (r) => shortAge(r.age), ageWidth: "52px",
              ageWarn: (r) => r.ages_out_in !== null && r.ages_out_in !== undefined && r.ages_out_in <= 2,
@@ -2481,7 +2482,6 @@ const Reports = {
     <div class=body>
       <div class=list>
         <DocTabs :env="env" current="reports">
-          <a :class="['viewbar-archive', {on: archive}]" :href="archive ? home : home + '/archive'">{{ archive ? 'Close archive' : 'Archive' }}</a>
           <template #new><a class="btn new" :href="home + '/new'">New report</a></template>
         </DocTabs>
         <ResourceList v-bind="REPORT_LIST" :bar="false" :archive="!!archive" :home="home" :rows="list.data" :loading="list.loading" :error="list.error"
@@ -2752,12 +2752,12 @@ const DocPanel = {
 function docList({ crumbs, url, base, empty }) {
   return {
     props: ["env", "n"],
-    components: { TopBar, ActionBar, ResourceList, RadioGroup, DocTabs, DocPanel },
+    components: { TopBar, ActionBar, ResourceList, DocTabs, DocPanel },
     setup(props) {
       const s = useFetch(() => url(props));
-      // open and archived documents are shown apart, one or the other
-      const shown = reactive({ archived: false });
-      const rows = computed(() => (s.data ? s.data.filter((d) => !!d.archived === shown.archived) : null));
+      // every document at once: DOC_LIST puts the archived ones in their own folded section, so nothing
+      // needs a second view to reach — and two controls no longer drive one hidden flag
+      const rows = computed(() => s.data);
       const creating = computed(() => [{
         label: "New doc", method: "POST", url: url(props), submit: "Add doc", leave: true,
         follow: (body) => { const m = /doc (\d+)/.exec(body.message || ""); return m ? `#/docs/${m[1]}` : null; },
@@ -2765,23 +2765,19 @@ function docList({ crumbs, url, base, empty }) {
                  { name: "body", label: "Text", kind: "area" }],
       }]);
       const done = (body, a) => settle(body, a, base(props), s);
-      return { s, rows, shown, creating, done, crumbs: computed(() => crumbs(props)), base: computed(() => base(props)), empty, DOC_LIST };
+      return { s, rows, creating, done, crumbs: computed(() => crumbs(props)), base: computed(() => base(props)), empty, DOC_LIST };
     },
     template: `
       <TopBar :crumbs="crumbs"/>
       <div class=body><div class=list>
         <div v-if="n === 'new'" class=compose-wrap><ActionBar :actions="creating" open="New doc" :done="done"/></div>
         <DocTabs v-if="env" :env="env" current="docs">
-          <button type=button :class="['viewbar-archive', {on: shown.archived}]" @click="shown.archived = !shown.archived">{{ shown.archived ? 'Close archive' : 'Archive' }}</button>
           <a class=viewbar-archive :href="base.slice(0, -4) + 'files'">Files</a>
           <template #new><a class="btn new" :href="base + '/new'">New document</a></template>
         </DocTabs>
-        <ResourceList v-bind="DOC_LIST" :bar="!env" :key="shown.archived ? 'archived' : 'open'"
-          :empty="shown.archived ? 'No documents here are archived.' : empty" :rows="rows"
+        <ResourceList v-bind="DOC_LIST" :bar="!env" :empty="empty" :rows="rows"
           :loading="s.loading" :error="s.error" :href="(d) => (env ? base + '/' + d.n : '#/docs/' + d.n)" :selected="(d) => String(d.n) === String(n)">
           <template #tools>
-            <RadioGroup label="Which documents" :options="[{ value: 'open', label: 'Open' }, { value: 'archived', label: 'Archived' }]"
-              :modelValue="shown.archived ? 'archived' : 'open'" @update:modelValue="(v) => (shown.archived = v === 'archived')"/>
             <a v-if="base.startsWith('#/env/')" class=btn :href="base.slice(0, -4) + 'files'">Files</a>
             <a class="btn new" :href="base + '/new'">New doc</a>
           </template>
