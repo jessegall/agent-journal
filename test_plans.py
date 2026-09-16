@@ -364,5 +364,27 @@ check("a plan being written says so, and says what makes it approvable",
 code, out = j("plans", "add", "an ordinary draft", "--goal=it is ready to be approved")
 check("and an ordinary one still reads as a draft", (code, "(draft)" in out, "plans ready" in out), (0, True, False))
 
+# ─────────── a plan's title, goal and approach can be corrected ───────────
+# The goal is the one line a plan is judged against, and it was frozen at creation — while the way a plan
+# is written makes it provisional on purpose: shape it WITH the user, and the viewer opens one as
+# `preparing` with a placeholder. The user asked for the verb before rebuilding a plan to fix its goal.
+code, out = j("plans", "add", "a plan to correct", "--goal=the first goal")
+_en = len(plans._all(root, "default"))
+code, out = j("plans", "edit", str(_en), "--goal=the corrected goal")
+check("a plan's goal can be corrected", (code, "goal — the corrected goal" in out), (0, True))
+check("and it is what the plan now carries",
+      plans.row_response(root, _en, plans._all(root, "default")[_en - 1], "default")["goal"], "the corrected goal")
+code, out = j("plans", "edit", str(_en), "renamed in place")
+check("its title too", (code, "titled renamed in place" in out), (0, True))
+code, out = j("plans", "edit", str(_en))
+check("nothing to change is refused, naming what it takes", (code, "nothing to change" in out, "--goal=" in out), (1, True, True))
+code, out = j("plans", "edit", str(_en), "--goal=   ")
+check("an empty goal is refused", (code, "needs its goal" in out), (1, True))
+code, out = j("plans", "edit", "99", "--goal=x")
+check("a plan that does not exist is refused", (code, "no plan 99" in out), (1, True))
+j("plans", "abandon", str(_en), "done with the check")
+code, out = j("plans", "edit", str(_en), "--goal=too late")
+check("and a closed plan takes no more changes", (code, "takes no more changes" in out), (1, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
