@@ -2917,12 +2917,16 @@ const PEEK = {
   suggestion: { panel: "SuggestionPanel", page: (env, n) => `#/env/${env}/messages/s/${n}` },
   work: { panel: "WorkPanel", page: (env, n) => `#/env/${env}/work/${n}` },
   subagent: { panel: "SubagentPanel", page: (env, n) => `#/env/${env}/agents/subagent/${n}` },
+  plan: { panel: "PlanPanel", page: (env, n) => `#/env/${env}/plans/${n}` },
+  report: { panel: "ReportPanel", page: (env, n) => `#/env/${env}/reports/${n}` },
+  // a doc belongs to the project rather than an environment, so its page carries no env
+  doc: { panel: "DocPanel", page: (env, n) => `#/docs/${n}` },
 };
 
 // Home's side panel: the resource's own panel, with its header linking to the page
 const Peek = {
   props: ["env", "kind", "n", "close", "reloaded"],
-  components: { TodoPanel, MessagePanel, ReplyPanel, QuestionPanel, WorkPanel, SuggestionPanel, SubagentPanel },
+  components: { TodoPanel, MessagePanel, ReplyPanel, QuestionPanel, WorkPanel, SuggestionPanel, SubagentPanel, PlanPanel, ReportPanel, DocPanel },
   setup() { return { PEEK }; },
   template: `
     <component :is="PEEK[kind].panel" :env="env" :n="n" :onClose="close" :link="PEEK[kind].page(env, n)" :reloaded="reloaded"/>`,
@@ -3823,7 +3827,36 @@ const ActivityPanel = {
       if (!now || !was || now === was || hovered.value || !list.value) return;
       list.value.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     });
-    return { accept, crew, agentsList, working, crewGroups, keyed, list, hovered };
+    // a line opens its resource over the page: only a kind with no panel of its own is still a link out
+    const PEEK_KIND = { todo: "todo", question: "question", suggestion: "suggestion", work: "work",
+                        plan: "plan", report: "report", doc: "doc", message: "message" };
+    const peekOf = (e) => {
+      if (e.kind === "message" && e.text === "Answered your question") return e.n ? { kind: "reply", n: Number(e.n) } : null;
+      if (e.kind === "comment") {
+        // a comment has nothing of its own to open, so its line opens what the comment is about
+        const [about, n] = String(e.about || "").split(":");
+        const kind = about === "inbox" ? "message" : PEEK_KIND[about];
+        return kind && n ? { kind, n: Number(n) } : null;
+      }
+      const kind = PEEK_KIND[e.kind];
+      return kind && e.n ? { kind, n: Number(e.n) } : null;
+    };
+    const onRow = (event, e) => {
+      const it = peekOf(e);
+      // a modified click is the reader asking for a tab of their own, so it is left alone
+      if (!it || event.metaKey || event.ctrlKey || event.shiftKey || event.button) return;
+      event.preventDefault();
+      OVERLAY.kind = it.kind;
+      OVERLAY.n = it.n;
+    };
+    // a subagent in this dropdown opens its panel as well; a session has only a page of its own
+    const onCrewRow = (event, a) => {
+      if (a.kind !== "subagent" || event.metaKey || event.ctrlKey || event.shiftKey || event.button) return;
+      event.preventDefault();
+      OVERLAY.kind = "subagent";
+      OVERLAY.n = a.id;
+    };
+    return { accept, crew, agentsList, working, crewGroups, keyed, list, hovered, onRow, onCrewRow };
   },
   template: `
     <div class=activity-panel>
@@ -3840,7 +3873,7 @@ const ActivityPanel = {
               <template v-for="g in crewGroups" :key="g.key">
               <p class=drop-sub>{{ g.label }} <span class=muted>{{ g.rows.length }}</span></p>
               <a v-for="a in g.rows" :key="a.kind + a.id" :class="['drop-row', {idle: !a.working}]" :href="'#/env/' + env + '/agents/' + a.kind + '/' + a.id"
-                :title="'Open ' + (a.name || (a.kind === 'subagent' ? 'subagent ' : 'session ') + a.id)" @click="crew.open = false">
+                :title="'Open ' + (a.name || (a.kind === 'subagent' ? 'subagent ' : 'session ') + a.id)" @click="crew.open = false; onCrewRow($event, a)">
                 <span class=drop-kind>{{ a.kind === 'subagent' ? 'Subagent' : 'Session' }} · {{ a.working ? 'Working' : a.state === 'finished' ? 'Finished' : 'Idle' }}{{ a.kind === 'subagent' && a.model ? ' · ' + a.model : '' }}{{ a.kind === 'subagent' && !a.working && a.age_text ? ' · ' + a.age_text : '' }}</span>
                 <span class=drop-text>{{ a.name || (a.kind === 'subagent' ? 'Subagent ' + a.id : 'Session ' + a.id) }}<span v-if="a.parent" class=muted> · from session {{ a.parent }}</span></span>
               </a>
@@ -3858,21 +3891,21 @@ const ActivityPanel = {
           <TransitionGroup name=act>
           <template v-for="{ e, key } in keyed" :key="key">
             <div v-if="e.needs === 'open' && href(e)" class="activity-row activity-alert">
-              <a class=activity-alert-body :href="href(e)">
+              <a class=activity-alert-body :href="href(e)" @click="onRow($event, e)">
                 <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span><span v-if="e.detail" class=activity-d>{{ e.detail }}</span></span>
                 <span v-if="e.title" class=activity-title>{{ e.title }}</span>
                 <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
               </a>
               <span class=activity-actions>
-                <a v-if="e.kind === 'question'" class="btn warn" :href="href(e)">Answer</a>
-                <a v-else-if="e.kind === 'message'" class="btn warn" :href="href(e)">Open</a>
+                <a v-if="e.kind === 'question'" class="btn warn" :href="href(e)" @click="onRow($event, e)">Answer</a>
+                <a v-else-if="e.kind === 'message'" class="btn warn" :href="href(e)" @click="onRow($event, e)">Open</a>
                 <template v-else-if="e.kind === 'suggestion'">
                   <button type=button class="btn warn" @click="accept(e)">Accept</button>
-                  <a class=btn :href="href(e)">Review</a>
+                  <a class=btn :href="href(e)" @click="onRow($event, e)">Review</a>
                 </template>
               </span>
             </div>
-            <a v-else-if="href(e)" :class="['activity-row', 'activity-link', {'activity-soft': e.needs === 'answered', 'activity-commit': e.kind === 'commit'}]" :href="href(e)">
+            <a v-else-if="href(e)" :class="['activity-row', 'activity-link', {'activity-soft': e.needs === 'answered', 'activity-commit': e.kind === 'commit'}]" :href="href(e)" @click="onRow($event, e)">
               <span class=activity-text>{{ e.text }}<span v-if="e.n" class=activity-n> {{ e.n }}</span><span v-if="e.detail" class=activity-d>{{ e.detail }}</span></span>
               <span v-if="e.title" class=activity-title>{{ e.title }}</span>
               <span class=activity-age>{{ e.by }} · {{ e.age || 'just now' }}</span>
