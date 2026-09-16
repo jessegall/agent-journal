@@ -1,6 +1,6 @@
 ---
 name: journal
-description: "The project's journal, core skill: the first decision on every request (the current work, a to-do, or work to do now), the tag on each message, declaring work, choosing the environment, looking before you answer, and what to do at a start, after a compaction or when a hook holds you. Use it whenever the user asks for a feature, a fix or any piece of work, even a small one; whenever a hook holds your stop or refuses a tool call; when the user says later, not yet, also or by the way; when you are about to say 'I think we decided'; and at every start and after every compaction. The detail lives in six focused skills that load beside it: journal-todos, journal-questions, journal-messages, journal-memory, journal-docs and journal-agents. It also carries the one rule for every dispatch: name the model. Not for subagents: a subagent reports what it found and the main conversation files it."
+description: "The project's journal, core skill: the first decision on every request (the current work, a to-do, or work to do now), the tag on each message, declaring work, choosing the environment, looking before you answer, and what to do at a start, after a compaction or when a hook holds you. Use it whenever the user asks for a feature, a fix or any piece of work, even a small one; whenever a hook holds your stop or refuses a tool call; when the user says later, not yet, also or by the way; when you are about to say 'I think we decided'; and at every start and after every compaction. The detail lives in seven focused skills that load beside it: journal-todos, journal-questions, journal-messages, journal-memory, journal-docs, journal-agents and journal-plans. It also carries the one rule for every dispatch: name the model. Not for subagents: a subagent reports what it found and the main conversation files it."
 ---
 
 # The journal
@@ -101,7 +101,6 @@ decision. The session start says when it is on. The tag still opens the line.
     journal work start "<the work, in your own words>"
     journal work update "<what moved>" [--on="<work>"]
     journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>] [--on="<work>"]
-    journal work park "<why it is set aside>" [--on="<work>"]   it stops without being finished
     journal work end "<the same words>"
     journal work end "<the same words>" --todo   and close the to-do of that title; without it the row stays open, because ending work is not finishing a row
     journal work end --force ["<note>"]      close work whose declarer is GONE: a deleted worktree, a crashed session — its subject is unguessable, so the note replaces the match
@@ -112,12 +111,6 @@ what the work is. A good subject is a sentence you will say again. `update` is f
 it got to, not every step: a decision inside the work, a dead end, a change of approach.
 `work end` asks whether the work taught anything a later reader would get wrong without;
 "nothing" is the usual answer and a fine one.
-
-**`work park` when the work stops and nobody finished it** — a question went to the user, a
-condition has to come true first, you were told to do something else. The row stays open and
-says why, the stop stops nudging it, and the first `work update` on it picks it up again.
-Ending it instead is a lie the record keeps: an ended piece reads exactly like a finished
-one. `todos ask` and `todos block` park the work of that title for you.
 
 **`work await` when the work is in flight on something you cannot hurry** — a subagent
 running, a build, a review, a person. The stop stops nudging that piece, because a hold
@@ -178,8 +171,9 @@ before you act:
 | `journal-questions` | you are about to ask the user anything; the question tool is refused; a question was answered; you would propose a change |
 | `journal-messages` | the user left a message or a comment; you are about to notify them; the viewer or its channel comes up |
 | `journal-memory` | you are about to pin, rule or remind; a context warning asks for a decision; a cleanup report is ready |
-| `journal-docs` | the user asks for something checked or researched; something was ruled and should be written down; you are about to write a plan; you would write a reusable script |
+| `journal-docs` | the user asks for something checked or researched; something was ruled and should be written down; you would write a reusable script |
 | `journal-agents` | before every subagent dispatch; a subagent must write; a subagent's journal command is refused |
+| `journal-plans` | the user asks for a plan, a roadmap or phases; you are about to draft one; a plan is active, refuses to start or stalls; a plan should be stopped |
 
 **One rule from `journal-agents` belongs here, because a dispatch does not wait for a skill to load:
 name the model on every subagent you dispatch** — `haiku` for mechanical work with a known answer,

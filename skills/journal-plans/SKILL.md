@@ -1,0 +1,101 @@
+---
+name: journal-plans
+description: "Journal plans: when a piece of work is a plan rather than a list, shaping the goal with the user before drafting, writing it (plans add, plans phase, plans todos, plans from-doc), what a phase and a checkpoint are, who approves it and who continues it past a checkpoint, how auto mode works a plan, and abandoning one. Use it when the user asks for a plan, a roadmap or a phased approach, before you draft one, when a plan is active and you are picking up its to-dos, when a plan refuses to start or stalls, when the user approves or continues a plan in the viewer, and when a plan should be stopped. Not for subagents."
+---
+
+# Journal plans
+
+**Not for subagents.** A subagent reports what it found; the main conversation files it.
+It is one of the journal's skills; the core `journal` skill says when each applies.
+Every command runs through `.journal/journal.py`; `journal` is an alias for it.
+
+## Is it a plan?
+
+    a handful of things to do, in any order                a to-do list
+    one thing, now                                          work
+    work with a SHAPE — areas that must land in order,
+    somewhere the user wants to look before it goes on      a plan
+
+A plan is the to-do list **with an order and a goal on it**. Everything in it is still
+to-dos, worked the ordinary way; what the plan adds is which of them come first, what each
+group is for, and where the agent stops to let the user look. If nothing in the work has to
+wait for anything else, it is a list, and calling it a plan buys the user a document to
+approve and nothing else.
+
+**The user asking to "plan" something is asking for a plan.** So is a request phrased as
+phases, a roadmap, a redesign, or "first … then …". Do not park such a request as a to-do
+and carry on: it is the work being asked for.
+
+## Shape the goal with the user BEFORE drafting
+
+**A plan is drafted WITH the user, not handed to them.** Ask what is true when it is done,
+in their words — that sentence is the plan's `--goal`, and it is the one thing the whole
+plan is judged against. Say back what you understood, name what you would put in the first
+phase and what you would leave out, and let them correct it. Then draft.
+
+Drafting first and asking after wastes the part they most wanted to steer: a plan that is
+already written reads as a decision, and correcting it costs them a paragraph instead of a
+word. Measured here: a plan drafted without that conversation had to be rewritten.
+
+## Writing one
+
+    journal plans add "<title>" --goal="<what is true when it is done>" [--brief]   the brief on stdin
+    journal plans phase <n> "<title>" [--when="<what is true when the phase is complete>"] [--checkpoint]
+    journal plans todos <n> <p> 4 5 6          put existing to-dos in phase p
+    journal plans todos <n> <p> 4 --off        take one out
+    journal plans from-doc <doc>               a draft from a document's "Phase …" parts
+    journal plans                              every plan here, with its status
+    journal plans show <n>                     the plan, its phases and their to-dos
+    journal plans link <n> "doc 4"|"doc 4.2"|"report 1"   what it rests on
+    journal plans abandon <n> "<why>"          it is stopped, and why
+
+The order is **add, then phase, then todos**: a phase belongs to a plan and a to-do belongs
+to a phase. To-dos are written the ordinary way (`journal todos add "<title>" --brief`) and
+then placed; a plan does not have a private kind of to-do.
+
+**A to-do sits in ONE phase.** Putting it in another is refused, naming where it already
+is — take it out of the first phase or leave it where it is.
+
+**A phase is an area of work, not a schedule.** "Everything the viewer shows about a plan"
+is a phase; "Tuesday" and "the next two hours" are not. `--when` says what is true when the
+phase is complete, which is what makes "is this phase done?" a question with an answer.
+
+**A checkpoint is where you STOP.** `--checkpoint` on a phase means: when its to-dos are
+done, the agent does not start the next phase — the user looks, and continues the plan in
+the viewer. Put one where the work would be expensive to undo, or where the next phase
+depends on something only the user can judge. Nothing else stops a plan.
+
+## Who does what
+
+**Only the user activates a plan.** `journal plans activate` refuses from an agent, saying
+so: they approve it in the viewer. A plan that is still a draft holds its to-dos — `next`
+says "plan N is a draft: its to-dos wait until the user approves it in the viewer" — and
+that wait is correct, not something to work around by starting the rows by hand.
+
+**Only the user continues a plan past a checkpoint**, in the viewer, for the same reason.
+
+**One plan is active at a time on an environment.** Activating another is refused while one
+is running. Drafts are free: write as many as the work needs.
+
+**A plan cannot start with an empty first phase** — "plan N cannot start: its first phase
+has no to-dos". A phase with no to-dos in the middle of a run stalls it the same way, and
+says the same thing: break it down with `journal todos add` and `journal plans todos`.
+
+## Running one
+
+With a plan active, `journal next` picks to-dos **from the current phase only**, in order,
+and auto mode works them the way it works any list. When a phase's rows are all closed the
+phase is complete and the next becomes current — unless it was a checkpoint, and then the
+plan waits.
+
+**There is one auto switch, and it is the environment's.** A plan has none of its own: if
+auto is on, the list is worked AND checkpoints are passed; if it is off, the plan stops at
+them. `journal auto-mode [enable|disable]`.
+
+**The plan is handed back at every start and every compaction**, as a line saying which
+plan is active, which phase is current and what completes it. So the plan, unlike your
+memory of it, survives; read `journal plans show <n>` rather than reconstructing it.
+
+**Abandoning is a close, with a reason.** `journal plans abandon <n> "<why>"` — its to-dos
+stay on the list, because stopping a plan is not finishing its rows, the same way ending
+work is not finishing a to-do.

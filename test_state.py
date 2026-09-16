@@ -832,7 +832,8 @@ code, out, err = fire(d, "SessionStart", path, source="startup")
 check("a skill set to load at every start is named in the start block", ("LOAD THESE SKILLS NOW" in out, "journal-memory" in out), (True, True))
 _skills_mod.set_always(d / ".journal", "journal-memory", False)
 check("and every focused skill beside it",
-      [n for n in ("journal-todos", "journal-questions", "journal-messages", "journal-memory", "journal-docs", "journal-agents")
+      [n for n in ("journal-todos", "journal-questions", "journal-messages", "journal-memory", "journal-docs",
+                  "journal-agents", "journal-plans")
        if not (d / ".claude" / "skills" / n / "SKILL.md").is_file()], [])
 (installed / "references" / "stale.md").write_text("old")
 p = subprocess.run([I], capture_output=True, text=True, timeout=180)
