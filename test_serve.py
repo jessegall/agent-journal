@@ -954,6 +954,9 @@ state.put(root, _agents.SEEN, {"alpha": {"abc123def": int(time.time()) - 47 * 60
 _quiet = [a for a in json.loads(get("/api/env/alpha/agents")[2]) if a["kind"] == "subagent"]
 check("one that never finished is still listed after the old 30-minute window, marked quiet",
       [(a["state"], a["working"], a["quiet"]) for a in _quiet], [("quiet", False, True)])
+# the viewer cuts the home strip at an hour, so it needs the quiet age as a number, not as words
+check("and it says how long it has been quiet, in seconds, so a page can cut on it",
+      [a["quiet_secs"] > 45 * 60 for a in _quiet], [True])
 state.put(root, _agents.SEEN, {"alpha": {"abc123def": int(time.time())}})
 import install as _install  # noqa: E402
 check("SubagentStop is wired, so a finished subagent is known the moment it stops", "SubagentStop" in _install.EVENTS, True)
