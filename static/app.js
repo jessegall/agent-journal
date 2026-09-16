@@ -3596,7 +3596,7 @@ const Settings = {
       auto.saving = true;
       auto.error = null;
       try {
-        await postJSON(`${api.value}/settings`, { auto: on });
+        await postJSON("/api/journal/settings", { auto: on });
         s.reload();
         changed();
       } catch (e) {
@@ -3640,14 +3640,8 @@ const Settings = {
       <template v-if="s.data">
         <section class=settings-group>
           <h2>This environment</h2>
-          <p class=settings-note>How long things stay listed here, and what the agent may do on its own.</p>
+          <p class=settings-note>What this one environment does differently.</p>
           <div class=settings-card>
-            <div class=settings-row>
-              <span class=settings-label>Auto mode</span>
-              <span class=settings-value>{{ s.data.auto ? 'On: it works through to-dos without asking' : 'Off' }}</span>
-              <button type=button class=btn :disabled="auto.saving" @click="setAuto(!s.data.auto)">{{ s.data.auto ? 'Turn off' : 'Turn on' }}</button>
-              <p v-if="auto.error" class="error settings-wide">{{ auto.error }}</p>
-            </div>
             <div class=settings-row>
               <span class=settings-label>Work from the viewer</span>
               <span class=settings-value>{{ s.data.viewer_first ? 'On: the agent answers here, one line in the terminal' : 'Off' }}</span>
@@ -3686,6 +3680,12 @@ const Settings = {
           <h2>Project</h2>
           <p class=settings-note>What is kept on this environment, and what the whole project shares.</p>
           <div class=settings-card>
+            <div class=settings-row>
+              <span class=settings-label>Auto mode</span>
+              <span class=settings-value>{{ s.data.auto ? 'On: the agent works through to-dos without asking, on every environment' : 'Off: nothing starts without your word' }}</span>
+              <button type=button class=btn :disabled="auto.saving" @click="setAuto(!s.data.auto)">{{ s.data.auto ? 'Turn off' : 'Turn on' }}</button>
+              <p v-if="auto.error" class="error settings-wide">{{ auto.error }}</p>
+            </div>
             <div class=settings-row><span class=settings-label>Pins</span><span class=settings-value>{{ s.data.pins }} standing</span><a class=btn :href="'#/env/' + env + '/pins'">Open</a></div>
             <div class=settings-row><span class=settings-label>Reminders</span><span class=settings-value>{{ counted(s.data.reminders, 'reminder', 'reminders') }}</span><a class=btn :href="'#/env/' + env + '/reminders'">Open</a></div>
             <div class=settings-row><span class=settings-label>Coding style rules</span><span class=settings-value>{{ styleRules.data ? counted(styleRules.data.length, 'rule', 'rules') : '' }}</span><a class=btn :href="'#/env/' + env + '/style'">Open</a></div>
@@ -4543,7 +4543,7 @@ const App = {
     };
     const setAuto = (on) => {
       activity.data.auto = on;
-      postJSON(`/api/env/${envName.value}/environment/settings`, { auto: on })
+      postJSON("/api/journal/settings", { auto: on })
         .then(() => { activity.reload(); changed(); }, () => activity.reload());
     };
     // other projects' journals running on this machine, each at its own port
