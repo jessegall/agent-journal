@@ -743,11 +743,14 @@ const Panel = {
 };
 
 const Compose = {
-  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial"],
+  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial", "quote"],
   components: { Icon },
   setup(props) {
-    // `initial` seeds the box — quoting what the agent said, so the comment starts from its own words
+    // `initial` seeds the box. `quote` does NOT: what is being commented ON is shown above the field and
+    // cannot be edited — it is the thing quoted, not the reply — and it is put back in front of the text
+    // when the comment is sent, so the agent still receives what it was about.
     const draft = reactive({ text: props.initial || "", sending: false, error: null, files: [] });
+    const quoteLines = computed(() => String(props.quote || "").trim().split("\n").map((l) => l.replace(/^>\s?/, "")));
     const area = ref(null);
     onMounted(() => { if (props.autofocus && area.value) area.value.focus(); });
     const picked = (e) => { draft.files.push(...Array.from(e.target.files || [])); e.target.value = ""; };
@@ -756,9 +759,10 @@ const Compose = {
       if (!draft.text.trim() || draft.sending) return;
       draft.sending = true;
       draft.error = null;
+      const said = String(props.quote || "");
       try {
         const files = props.attach ? await Promise.all(draft.files.map(readFileAsData)) : [];
-        await props.send(draft.text, files);
+        await props.send(said ? said + draft.text : draft.text, files);
         draft.text = "";
         draft.files = [];
       } catch (e) {
@@ -767,10 +771,14 @@ const Compose = {
         draft.sending = false;
       }
     }
-    return { draft, go, picked, unpick, area };
+    return { draft, go, picked, unpick, area, quoteLines };
   },
   template: `
     <form class=compose @submit.prevent="go">
+      <div v-if="quote" class=compose-quote>
+        <span class=compose-quote-label>Commenting on</span>
+        <div class=compose-quote-text><p v-for="(l, i) in quoteLines" :key="i">{{ l }}</p></div>
+      </div>
       <div :class="['compose-box', {attachable: attach}]">
         <textarea ref=area class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
           @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), go())"
@@ -900,7 +908,7 @@ const Comments = {
         </template>
       </div>
       <Compose placeholder="Comment for the agent" submit="Comment" hint="The agent is told at its next stop" :send="post"
-        :initial="quote" :key="'c-draft-' + quote"/>
+        :quote="quote" :key="'c-draft-' + quote"/>
     </div>`,
 };
 
