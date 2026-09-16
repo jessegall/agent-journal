@@ -3315,7 +3315,9 @@ const EnvHome = {
         agent && agent.started ? `${spanText(Date.now() - Date.parse(agent.started))} in` : "",
         agent && agent.context ? `${agent.context.share}% context` : "",
       ].filter(Boolean);
-      return { facts };
+      // the session is an agent with a page of its own, the same page a subagent's line opens —
+      // it was the one name here you could not click
+      return { facts, href: agent ? `#/env/${props.env}/agents/session/${agent.session}` : "" };
     });
     const SLOTS = 5;
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
@@ -3396,7 +3398,12 @@ const EnvHome = {
     <TopBar :crumbs="[env, 'Home']"/>
     <div class=body><div class=page><div class=home>
       <div class=home-lead>
-        <div class=home-facts><span v-for="(f, i) in lead.facts" :key="i" :class="{first: i === 0}">{{ f }}</span></div>
+        <div class=home-facts>
+          <template v-for="(f, i) in lead.facts" :key="i">
+            <a v-if="i === 0 && lead.href" class=first :href="lead.href" title="Open this agent's page">{{ f }}</a>
+            <span v-else :class="{first: i === 0}">{{ f }}</span>
+          </template>
+        </div>
         <div v-if="liveCrew.length" class=crew-strip>
           <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done}]" :title="a.title" :style="{ animationDelay: a.delay }" @click="a.open">
             <span class=crew-rule></span><span class=crew-dot></span>
