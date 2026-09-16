@@ -18,8 +18,8 @@ MESSAGES = {
     "say_why": "say why it is abandoned",
     "dropped": "dropped: {why}",
     "nothing_to_change": "send a title, a body or a priority to change",
-    "closed_waiting": "\n  closed the work `{title}` — it waits on the answer",
-    "closed_aside": "\n  closed the work `{title}` — it is set aside",
+    "parked_waiting": "\n  parked the work `{title}` — it waits on the answer, and is not finished",
+    "parked_aside": "\n  parked the work `{title}` — it is set aside, and is not finished",
     "closed_note": "\n  {note}",
     "closed_done": "\n  ended the work `{title}` with it",
     "after_note": "\n  {note}",
@@ -67,6 +67,14 @@ class TodosController(Controller):
         if t.closed:
             return Result("refused", say("closed", n=p.id, how=t.how or "done"))
         return None
+
+    def _park_work(self, root: Path, n: int, at: str, key: str, why: str) -> str:
+        """Asking and blocking STOP work without finishing it, so they park it rather than end it."""
+        t = self.repository(root).find(n)
+        if not t or not any(w["subject"] == t.title for w in work.open_work(root)):
+            return ""
+        parked, note = work.park(root, why, at, on=t.title)
+        return say(key, title=t.title) if parked else say("closed_note", note=note)
 
     def _close_work(self, root: Path, n: int, at: str, key: str) -> str:
         t = self.repository(root).find(n)
@@ -169,14 +177,15 @@ class TodosController(Controller):
 
     def ask(self, root: Path, p: todo_payloads.AskPayload) -> Result:
         ok, message = todo.ask(root, self.env(root), p.id, p.question)
-        return Result.of((ok, message + self._close_work(root, p.id, p.at, "closed_waiting") if ok else message))
+        return Result.of((ok, message + self._park_work(root, p.id, p.at, "parked_waiting",
+                                                        f"waiting on the user: {p.question}") if ok else message))
 
     def answer(self, root: Path, p: AnswerPayload) -> Result:
         return Result.of(todo.answer(root, self.env(root), p.id, p.answer))
 
     def block(self, root: Path, p: WhyPayload) -> Result:
         ok, message = todo.block(root, self.env(root), p.id, p.why)
-        return Result.of((ok, message + self._close_work(root, p.id, p.at, "closed_aside") if ok else message))
+        return Result.of((ok, message + self._park_work(root, p.id, p.at, "parked_aside", p.why) if ok else message))
 
     def unblock(self, root: Path, p: Payload) -> Result:
         return Result.of(todo.unblock(root, self.env(root), p.id))

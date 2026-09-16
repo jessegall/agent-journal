@@ -3082,8 +3082,11 @@ const EnvHome = {
     // the second line: when it was, and the to-do it serves — the Finished heading says it is finished, so the line does not
     const workSub = (w, finished) => [(finished ? w.ended_age : w.age) || "just now",
                                       w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ");
-    const workLines = computed(() => (work.data || []).filter((w) => !w.ended)
+    const workLines = computed(() => (work.data || []).filter((w) => !w.ended && !w.parked)
       .map((w, i) => ({ n: w.n, title: w.subject, sub: workSub(w, false), live: i === 0 })));
+    // parked work is neither working nor finished: it stopped on purpose and says what it waits on
+    const parkedLines = computed(() => (work.data || []).filter((w) => !w.ended && w.parked)
+      .map((w) => ({ n: w.n, title: w.subject, why: w.parked, sub: [w.parked_age || w.age, w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ") })));
     // what the agent has just finished reads under the open work, quieter: it is context, not something to act on
     const FINISHED_SHOWN = 3;
     const FINISHED_DAYS = 7;
@@ -3139,7 +3142,7 @@ const EnvHome = {
       const working = replies.value.length - done;
       return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
     });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, goPlan, queueMeta, currentWork, workLines, finishedLines, liveCrew, replies, repliesNote };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, clear, plan, continuePlan, startPlan, goPlan, queueMeta, currentWork, workLines, parkedLines, finishedLines, liveCrew, replies, repliesNote };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3197,7 +3200,17 @@ const EnvHome = {
             <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
           </a>
         </TransitionGroup>
-        <p v-if="!currentWork && !workLines.length" class=home-empty>No work is open.</p>
+        <p v-if="!currentWork && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
+      </section>
+      <section v-if="parkedLines.length" class=home-section>
+        <div class=home-head><h2>Parked</h2></div>
+        <TransitionGroup name=wrow>
+          <a v-for="w in parkedLines" :key="'parked' + w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
+            <span class="needs-dot parked"></span>
+            <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.why }}</span></span>
+            <span class=home-line-when>{{ w.sub }}</span>
+          </a>
+        </TransitionGroup>
       </section>
       <section v-if="finishedLines.length" class=home-section>
         <div class=home-head><h2>Finished</h2></div>

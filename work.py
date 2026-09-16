@@ -33,6 +33,14 @@ MESSAGES = {
     "closed": "closed: {subject}",
     "closes_nothing": "that closes nothing. Open:\n  {subjects:\n  }",
     "await_what": 'await what? `journal work await "<what you are waiting for>"`',
+    "park_why": 'park what? `journal work park "<why it is set aside>"`',
+    "nothing_to_park": "nothing is open to park — `journal work start` first",
+    "park_guess": "several pieces of work are open, so this would have to guess which one is parked. Name it:\n"
+                  "{names:\n}",
+    "park_name": '  journal work park "..." --on="{subject}"',
+    "parked": "parked: `{subject}` — {why}.\n"
+              "  it stays open and off the stop's nudging. The first `work update` on it picks it up again;\n"
+              "  `work end` still closes it.",
     "no_timeout": "a wait needs a timeout in minutes: nothing may wait forever",
     "nothing_to_wait": "nothing is open to wait on — `journal work start` first",
     "names_no_work": "that names no open work. Open:\n  {subjects:\n  }",
@@ -74,6 +82,7 @@ def _all(root: Path, track: str | None = None) -> list[dict]:
 
 
 AWAIT = "awaiting"
+PARK = "parked"
 
 
 def open_work(root: Path, track: str | None = None) -> list[dict]:
@@ -147,6 +156,46 @@ def end(root: Path, subject: str, at: str, force: bool = False) -> tuple[bool, s
     if not still:
         return False, say("nothing_open")
     return False, say("closes_nothing", subjects=_subjects(still))
+
+
+def parked(w: dict) -> dict | None:
+    """The reason this work is set aside, or None. Unlike a wait, it has no clock."""
+    got = w.get(PARK)
+    return got if isinstance(got, dict) else None
+
+
+def park(root: Path, why: str, at: str, on: str | None = None) -> tuple[bool, str]:
+    """Set open work aside without ending it: it waits on somebody else, not on a clock.
+
+    ENDING IS NOT THE ONLY WAY TO STOP. Work that stops because a question went to the user
+    used to be ENDED, and an ended row reads exactly like a finished one — the home said
+    "Finished" for work nobody had finished. `await` is the neighbouring verb and does not
+    fit: it always expires, because the thing it waits on is in flight and a wait with no
+    end is how work is abandoned quietly. A question to the user has no such deadline; it
+    is answered or it is not. So parking has no clock, and what clears it is the same thing
+    that clears a wait — the first `work update` on that piece, which is progress arriving.
+    """
+    why = " ".join((why or "").split())
+    if not why:
+        return False, say("park_why")
+    with state.locked(root):
+        items = _all(root)
+        standing = [w for w in items if not w.get("ended")]
+        if not standing:
+            return False, say("nothing_to_park")
+        if on:
+            key = " ".join(on.split()).lower()
+            picked = [w for w in standing if w["subject"].lower() == key]
+            if not picked:
+                return False, say("names_no_work", subjects=_subjects(standing))
+        elif len(standing) > 1:
+            return False, say("park_guess", names=[say("park_name", subject=s) for s in _subjects(standing)])
+        else:
+            picked = standing
+        picked[0][PARK] = {"why": why, "at": at}
+        picked[0].pop(AWAIT, None)   # parked work is not also waiting on a clock
+        state.put(root, KEY, items)
+    return True, say("parked", subject=picked[0]["subject"], why=why)
 
 
 def awaiting(w: dict, now: float) -> dict | None:
@@ -388,6 +437,7 @@ def _note(root: Path, text: str, at: str, on: str | None) -> tuple[bool, str]:
         if w is target or (not w.get("ended") and w["subject"] == target["subject"]):
             w.setdefault("notes", []).append({"at": at, "text": text})
             w.pop(AWAIT, None)   # progress arrived: whatever was awaited is no longer awaited
+            w.pop(PARK, None)     # and work being written about is not set aside any more
             state.put(root, KEY, items)
             return True, say("filed", subject=target["subject"], n=len(w["notes"]))
     return False, say("vanished")

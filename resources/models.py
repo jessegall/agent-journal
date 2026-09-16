@@ -208,6 +208,7 @@ class Work(Model):
     ended: str = ""
     session: str = ""
     awaiting: dict = field(default_factory=dict)
+    parked: dict = field(default_factory=dict)
     notes: list[dict] = field(default_factory=list)
     files: list[dict] = field(default_factory=list)
     commits: list[dict] = field(default_factory=list)

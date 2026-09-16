@@ -40,6 +40,7 @@ payload, not a description of it.
     journal work await "<what you wait on>"   the stop stops nudging this piece until it expires
                                      --agent=<id> or --pid=<n> names it; a pid is watched and ends the wait when it exits
                                      --for=<minutes> (default 20, cap 120); any update or end ends it
+    journal work park "<why it is set aside>" [--on="<work>"]   it stops without being finished: stays open, says why, off the stop's nudging until the next update
     journal work end "<the same words>"   close it; the to-do of the same title closes with it
     journal open                     work declared and never closed, with its notes
 

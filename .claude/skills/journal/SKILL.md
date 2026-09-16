@@ -101,6 +101,7 @@ decision. The session start says when it is on. The tag still opens the line.
     journal work start "<the work, in your own words>"
     journal work update "<what moved>" [--on="<work>"]
     journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>] [--on="<work>"]
+    journal work park "<why it is set aside>" [--on="<work>"]   it stops without being finished
     journal work end "<the same words>"
     journal work end "<the same words>" --todo   and close the to-do of that title; without it the row stays open, because ending work is not finishing a row
     journal work end --force ["<note>"]      close work whose declarer is GONE: a deleted worktree, a crashed session — its subject is unguessable, so the note replaces the match
@@ -111,6 +112,12 @@ what the work is. A good subject is a sentence you will say again. `update` is f
 it got to, not every step: a decision inside the work, a dead end, a change of approach.
 `work end` asks whether the work taught anything a later reader would get wrong without;
 "nothing" is the usual answer and a fine one.
+
+**`work park` when the work stops and nobody finished it** — a question went to the user, a
+condition has to come true first, you were told to do something else. The row stays open and
+says why, the stop stops nudging it, and the first `work update` on it picks it up again.
+Ending it instead is a lie the record keeps: an ended piece reads exactly like a finished
+one. `todos ask` and `todos block` park the work of that title for you.
 
 **`work await` when the work is in flight on something you cannot hurry** — a subagent
 running, a build, a review, a person. The stop stops nudging that piece, because a hold

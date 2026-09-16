@@ -133,6 +133,13 @@ class Await(Resource):
         return super().render(p, result)
 
 
+class Park(Resource):
+    signature = "work:park {why* : why it is set aside} {--on=}"
+    writes = True
+    controller = CONTROLLER
+    action = "park"
+
+
 class BareStart(Start):
     signature = "start {subject* : the words that name the work}"
 
@@ -219,4 +226,4 @@ class Next(Command):
         return 0
 
 
-COMMANDS = (Start, End, Update, Await, BareStart, BareEnd, Open, Next)
+COMMANDS = (Start, End, Update, Await, Park, BareStart, BareEnd, Open, Next)
