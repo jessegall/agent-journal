@@ -55,6 +55,7 @@ MESSAGES = {
     "no_help": "no help page called {topic}",
     "no_doc": "no doc {ref}",
     "no_attachment": "no attachment {name} on doc {n}",
+    "no_transcript": "message {n} carries no transcript",
     "no_question": "no question {n} on environment {env}",
     "method": "{method} {path} is not something this resource does",
     "not_json": "send the body as JSON: Content-Type: application/json",
@@ -262,6 +263,18 @@ def _message_file(root: Path, project: Path, m: re.Match):
     if path is None or not path.is_file():
         return _not_found(say("no_attachment", name=repr(name), n=n))
     return 200, mimetypes.guess_type(name)[0] or "application/octet-stream", path.read_bytes()
+
+
+@route(r"^/transcripts/(?P<env>[a-z0-9-]+)/(?P<n>\d+)$")
+def _transcript(root: Path, project: Path, m: re.Match):
+    """The transcript a message carried. Nothing lists these: it is reached from the message itself."""
+    import inbox
+    env, n = m.group("env"), int(m.group("n"))
+    got = inbox.transcript(root, env, n) if _known_env(root, env) else None
+    if got is None:
+        return _not_found(say("no_transcript", n=n))
+    _meta, body = got
+    return 200, "text/markdown; charset=utf-8", body.encode("utf-8")
 
 
 @route(r"^/docs/(?P<n>\d+)/files/(?P<name>[^/]+)$")

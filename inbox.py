@@ -230,6 +230,28 @@ def transcript_path(root: Path, track: str | None, n: int) -> Path:
     return transcripts_dir(root, track) / f"{n}.md"
 
 
+def transcript(root: Path, track: str | None, n: int) -> tuple[dict, str] | None:
+    """The transcript a message carried: its frontmatter and its text, or None when there is none.
+
+    The frontmatter is read here rather than through `docs`, which owns a catalogue this file is
+    deliberately outside of — and whose reader clears that catalogue's cache as a side effect.
+    """
+    path = transcript_path(root, track, n)
+    if not path.is_file():
+        return None
+    text = path.read_text()
+    meta: dict = {}
+    if text.startswith("---\n"):
+        end = text.find("\n---", 4)
+        if end != -1:
+            for line in text[4:end].splitlines():
+                if ":" in line:
+                    k, v = line.split(":", 1)
+                    meta[k.strip()] = v.strip()
+            text = text[end + 4:].lstrip("\n")
+    return meta, text
+
+
 def _write_transcript(root: Path, track: str | None, n: int, at: str, body: str) -> None:
     """A transcript is its own FILE KIND: an .md that says so in its frontmatter.
 
@@ -311,6 +333,8 @@ def add(root: Path, text: str, at: str, source: str = "cli", track: str | None =
                 except UnicodeDecodeError:
                     continue
             _write_transcript(root, track, n, at, carried or text)
+            items[n - 1]["transcript"] = True
+            _put(root, items, track)
     return True, say("added", n=n, waiting=len(unprocessed(root, track)))
 
 
@@ -662,6 +686,7 @@ def row_response(n: int, m: dict) -> dict:
     return {
         "n": n, "text": m["text"], "gist": fmt.gist(m["text"]), "facts": " · ".join(_facts(m)),
         "kind": m.get("kind") or "",
+        "transcript": bool(m.get("transcript")),
         "status": "archived" if m.get("archived") else "moved" if m.get("moved_to") else "processed" if m.get("processed") else "waiting",
         "archived": m.get("archived") or "",
         "closed_at": m.get("archived_at") or m.get("processed") or "",
