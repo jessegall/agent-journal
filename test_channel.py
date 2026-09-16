@@ -86,6 +86,17 @@ check("a waiting message is pushed to an idle session, naming it",
        ((push or {}).get("params") or {}).get("meta", {}).get("message")),
       ("notifications/claude/channel", True, "1"))
 check("and not pushed twice", read_line(7), None)
+# A TRANSCRIPT ARRIVES AS A FILE, and the wake line quoted only the message's text — so the thing the
+# paste was for was invisible to an idle agent. Found while building the transcription feature.
+import base64 as _b64  # noqa: E402
+_inbox_mod = __import__("inbox")
+_inbox_mod.add(root, "here is the meeting", "2026-09-14T10:00:00+00:00", track="default",
+               files=[{"name": "transcript.txt", "data": _b64.b64encode(b"a long transcript").decode()}])
+import channel as _channel  # noqa: E402
+_carried = [c for _, c in _channel._waiting("default", 0.0) if "here is the meeting" in c.get("content", "")]
+check("a message carrying a file says so when it wakes an agent",
+      (len(_carried), "transcript.txt" in (_carried[0]["content"] if _carried else "")), (1, True))
+
 
 j("auto-mode", "enable")
 import questions  # noqa: E402

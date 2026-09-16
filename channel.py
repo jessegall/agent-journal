@@ -147,7 +147,9 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
     for n, m in inbox.unprocessed(ROOT, env):
         if _epoch(m.get("at")) < since:
             continue
-        got.append((f"{env}:{n}", {"content": f"The user left message {n} on {env}: {_gist(m.get('text', ''))}",
+        files = [f.get("name", "") for f in (m.get("files") or []) if not f.get("removed")]
+        carried = f" (with {', '.join(files)})" if files else ""
+        got.append((f"{env}:{n}", {"content": f"The user left message {n} on {env}: {_gist(m.get('text', ''))}{carried}",
                                     "meta": {"env": env, "message": str(n)}}))
     if not answers:
         return got
