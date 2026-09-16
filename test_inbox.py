@@ -77,6 +77,11 @@ check("a part can become a plan, which is what the plan page links back by",
       (code, "became plan 1" in out, stored()[0]["parts"][-1]["became"]), (0, True, ["plan:1"]))
 code, out = j("inbox", "process", "1", "--part=the parser", "--became=plan 9")
 check("a part cannot become a plan that does not exist", (code, "no plan 9" in out), (1, True))
+# research the user asked for ends in a report (rule 9), so a part has to be able to say it became one
+code, out = j("inbox", "process", "1", "--part=the parser", "--became=report 9")
+check("a part cannot become a report that does not exist", (code, "no report 9" in out), (1, True))
+code, out = j("inbox", "process", "1", "--part=the parser", "--became=doc 9")
+check("nor a doc that does not exist", (code, "no doc 9" in out), (1, True))
 code, out = j("inbox", "process", "1", "--part=rename", "--became=banana")
 check("what a part became must be a reference", (code, "noted" in out), (1, True))
 code, out = j("inbox", "process", "1", "--part=rename")
