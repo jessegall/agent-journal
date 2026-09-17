@@ -542,10 +542,16 @@
     color: var(--text-3); font-size: 12.5px; }
   .thread-turn.ask { max-width: 88%; }
   .thread-turn.ask .thread-bubble { border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+  /* .question-answer is indented 24px for the lists it usually sits in; in a bubble that indent is
+     what made the options start to the right of the question's own words */
+  .thread-bubble .question-answer.compact { padding: 0; gap: 0; }
+  .thread-bubble .question-answer .options { margin-top: 9px; }
+  .thread-bubble .option-save { margin-top: 10px; }
+  .thread-ask-label { margin: 0 0 4px; font-size: 10.5px; font-weight: 600; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--warn); }
   .thread-empty { padding: 18px 2px; color: var(--text-3); }
   .thread-write { position: sticky; bottom: 0; display: flex; flex-direction: column; gap: 6px;
     padding: 10px 0 2px; background: linear-gradient(to bottom, transparent, var(--bg) 22%); }
-  .thread-note { padding: 0 3px; font-size: 11px; color: var(--text-3); }
   /* positioned so a leaving row can be taken out of the flow: work moving from Working on to Finished must not jostle either list */
   .home-section { position: relative; display: flex; flex-direction: column; gap: 2px; }
   .wrow-enter-active { transition: opacity .24s ease-out, transform .24s cubic-bezier(.2, .8, .2, 1); }
