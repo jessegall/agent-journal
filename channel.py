@@ -66,9 +66,12 @@ def _session() -> str | None:
     return stem if seen >= STARTED[0] - TRUST_SECONDS else None
 
 
-def _gist(text: str) -> str:
-    gist = " ".join((text or "").split())
-    return gist if len(gist) <= 200 else gist[:199] + "…"
+#: WHAT ARRIVED AND ITS NUMBER, NEVER HALF OF WHAT IT SAYS. Every line here used to carry the
+#: first two hundred characters of the thing it announced, and the agent's very next act is to
+#: open that thing and read all of it — so the quotation was a partial copy of something about
+#: to be read in full, and a partial copy is worse than none, because it can be acted on as
+#: though it were the whole. What stays is what the line is FOR: which kind, which number, and
+#: for a decision the user made, what that decision obliges.
 
 
 def pending(stem: str) -> list[tuple[str, dict]]:
@@ -211,14 +214,12 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
         # anything already filed from the old words may need correcting.
         if edited and _epoch(edited) >= since:
             got.append((f"{env}:{n}:edited:{edited}",
-                        {"content": inbox.say("edit_note", n=n, env=env, gist=_gist(m.get("text", ""))),
+                        {"content": inbox.say("edit_note", n=n, env=env),
                          "meta": {"env": env, "message": str(n)}}))
             continue
         if _epoch(m.get("at")) < since:
             continue
-        files = [f.get("name", "") for f in (m.get("files") or []) if not f.get("removed")]
-        carried = f" (with {', '.join(files)})" if files else ""
-        got.append((f"{env}:{n}", {"content": f"The user left message {n} on {env}: {_gist(m.get('text', ''))}{carried}",
+        got.append((f"{env}:{n}", {"content": f"The user left message {n} on {env}.",
                                     "meta": {"env": env, "message": str(n)}}))
     if not answers:
         return got
@@ -226,7 +227,7 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
     # started is still owed to somebody rather than lost with the process that missed it
     for n, i, r in inbox.untold_replies(ROOT, env):
         got.append((f"{env}:reply:{n}:{i}",
-                    {"content": f"The user answered under message {n} on {env}: {_gist(r.get('text', ''))}",
+                    {"content": f"The user answered under message {n} on {env}.",
                      "meta": {"env": env, "message": str(n)}}))
     got.extend(_plan_events(env, since))
     # keyed by when it was answered, so a changed answer wakes the session again
@@ -234,30 +235,29 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
         if _epoch(q.get("answered_at")) < since:
             continue
         got.append((f"{env}:question:{n}:{q.get('answered_at') or ''}",
-                    {"content": f"The user answered question {n} on {env}: {_gist(q.get('answer', ''))}",
+                    {"content": f"The user answered question {n} on {env}.",
                      "meta": {"env": env, "question": str(n)}}))
     # keyed by when it was decided, so a changed decision wakes the session again
     for n, s in suggestions.untold(ROOT, env):
         decided = s.get("decided_at") or s.get("declined_at")
         if _epoch(decided) < since:
             continue
-        status, title, todo_n = suggestions.status(s), _gist(s.get("title", "")), (s.get("became") or "").partition(":")[2]
+        status, todo_n = suggestions.status(s), (s.get("became") or "").partition(":")[2]
         if status in ("accepted", "adjusted") and todo_n:
             change = " with a change of their own, which the to-do carries" if status == "adjusted" else ""
-            content = (f"The user accepted suggestion {n} on {env}{change}: {title}. It is filed as to-do {todo_n}: "
+            content = (f"The user accepted suggestion {n} on {env}{change}. It is filed as to-do {todo_n}: "
                        f"pick it up with `.journal/journal.py todos start {todo_n}`, or leave it on the list if other work comes first.")
         elif status == "declined":
-            why = f" Why: {_gist(s['declined'])}" if s.get("declined") and s["declined"] is not True else ""
-            content = f"The user declined suggestion {n} on {env}: {title}. Do not suggest it again.{why}"
+            content = f"The user declined suggestion {n} on {env}. Do not suggest it again; read why before you do anything near it."
         else:
-            content = f"The user decided suggestion {n} on {env}: {title}"
+            content = f"The user decided suggestion {n} on {env}."
         got.append((f"{env}:suggestion:{n}:{decided or ''}", {"content": content, "meta": {"env": env, "suggestion": str(n)}}))
     got.extend(_did(env, since))
     for n, c in comments.untold(ROOT, env):
         if _epoch(c.get("at")) < since:
             continue
         got.append((f"{env}:comment:{n}",
-                    {"content": f"The user commented on {comments.label(c.get('about', ''))} on {env}: {_gist(c.get('text', ''))}",
+                    {"content": f"The user commented on {comments.label(c.get('about', ''))} on {env}.",
                      "meta": {"env": env, "comment": str(n)}}))
     return got
 
@@ -311,19 +311,18 @@ def _plan_events(env: str, since: float) -> list[tuple[str, dict]]:
     for n, plan in enumerate(plans._all(ROOT, env), 1):
         rows = plans.phases(ROOT, plan, env)
         now = plans.current(plan, rows)
-        ahead = f" Phase {now['p']}, {now['title']}, is current: start its to-dos with `.journal/journal.py next`." if now else ""
-        title = _gist(plan.get("title", ""))
+        ahead = f" Phase {now['p']} is current: start its to-dos with `.journal/journal.py next`." if now else ""
         events = []
         at = plan.get("activated_at") or ""
         if at and plan.get("activated_by") == "web":
             events.append((at, f"{env}:plan:{n}:approved:{at}",
-                           {"content": f"The user approved plan {n} on {env}: {title}.{ahead}",
+                           {"content": f"The user approved plan {n} on {env}.{ahead}",
                             "meta": {"env": env, "plan": str(n)}}))
         for p, ph in enumerate(plan.get("phases") or [], 1):
             at = ph.get("continued_at") or ""
             if at:
                 events.append((at, f"{env}:plan:{n}:continued:{p}:{at}",
-                               {"content": f"The user continued plan {n} on {env} past phase {p}, {_gist(ph.get('title', ''))}.{ahead}",
+                               {"content": f"The user continued plan {n} on {env} past phase {p}.{ahead}",
                                 "meta": {"env": env, "plan": str(n)}}))
         # the whole plan is waiting on the agent when its current phase has rows and none has been picked up
         waiting = bool(now and now["todos"] and not plans.checkpoint(plan, rows, auto)
