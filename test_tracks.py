@@ -449,5 +449,43 @@ check("a mark with no line number records the session without a position",
       (tracks.carried(rM, "two", "stem-b", 0), tracks.marks(rM).get("stem-b")), (None, None))
 
 
+# --------------------------------- a name used again inherits nothing from the one before it
+# The user, having reused a name and found the old environment's conversation under it: "it
+# should not load all those files... it wants the environment to be deleted." Half of it was a
+# leftover keyed by the name; the other half cannot be deleted at all, because it lives in the
+# transcripts, which this package does not own.
+_rr = Path(tempfile.mkdtemp()) / ".journal"
+(_rr / "environments" / "default").mkdir(parents=True)
+_A = "2026-01-01T00:00:00+00:00"
+state.put(_rr, "current", "default")
+tracks.create(_rr, "feature", at=_A)
+_was_track = list(state._TRACK)
+state.use_track("feature")
+import todo as _todo_r  # noqa: E402
+import inbox as _inbox_r  # noqa: E402
+_todo_r.add(_rr, "feature", "something from the first life", "", _A)
+_inbox_r.add(_rr, "a message from the first life", _A, track="feature")
+state.put(_rr, tracks.VIEWER_FIRST, {"feature": False})
+tracks.remove(_rr, "feature", _A, stem=None, yes=True)
+check("its folder, its to-do ledger and everything keyed by its name go with it",
+      (sorted(str(x.relative_to(_rr)) for x in _rr.rglob("*feature*")),
+       "feature" in (state.get(_rr, tracks.VIEWER_FIRST, {}) or {})),
+      ([], False))
+check("and the record keeps one line saying it existed",
+      [r["track"] for r in (state.get(_rr, tracks.REMOVED, []) or [])], ["feature"])
+tracks.create(_rr, "feature", at="2026-06-01T00:00:00+00:00")
+check("a new one of the same name starts with nothing",
+      (len(_todo_r.all_items(_rr, "feature")), len(_inbox_r._all(_rr, "feature"))), (0, 0))
+
+# THE HALF THAT CANNOT BE DELETED. The chat reads the marks in the TRANSCRIPTS, so a name used
+# again finds every stretch any session ever spent on a name like it. The boundary is when the
+# environment was made, which holds by construction rather than by cleaning anything up.
+import controllers.chat as _chat_r  # noqa: E402
+check("the chat's boundary for an environment is when it was created",
+      _chat_r._began(_rr, "feature") > 0, True)
+check("and an environment the registry has no time for keeps all of its history",
+      _chat_r._began(_rr, "never-made"), 0.0)
+state._TRACK[:] = _was_track
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -38,10 +38,30 @@ def said(root: Path, env: str) -> list[dict]:
     which environment each stretch of it belonged to, so that is what is read.
     """
     import transcript
+    # NOTHING SAID BEFORE THIS ENVIRONMENT EXISTED. The marks live in the transcripts, which this
+    # package does not own and must never rewrite, so a NAME used again finds every stretch any
+    # session ever spent on a name like it — the old environment's conversation, under a new one
+    # that inherited nothing else. An environment knows when it was made; that is the boundary,
+    # and it holds by construction rather than by remembering to clean something up. An
+    # environment from before the registry recorded a time keeps all of its history, as it should.
+    began = _began(root, env)
     out = []
     for path in transcript.sessions(root.parent):
-        out.extend(_scan(path, env))
+        out.extend(t for t in _scan(path, env) if not began or _at(t["at"]) >= began)
     return out
+
+
+def _at(stamp: str) -> float:
+    from datetime import datetime
+    try:
+        return datetime.fromisoformat(str(stamp).replace("Z", "+00:00")).timestamp()
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _began(root: Path, env: str) -> float:
+    import tracks
+    return _at((tracks._all(root).get(env) or {}).get("at") or "")
 
 
 #: path -> {"size": bytes already read, "turns": every turn found in them, "here": the environment
