@@ -21,5 +21,11 @@ class RemovePayload(Payload):
     session = Field(str)
 
 
+class MakePayload(Payload):
+    #: the NAME IS IN THE BODY, not in the path: a path is routed against the environments that
+    #: exist, so a new one could never be named there without special-casing the router.
+    name = Field(str)
+
+
 class AutoPayload(Payload):
     state = Field(str)

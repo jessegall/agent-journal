@@ -334,6 +334,7 @@ WEB = {
     "docs:archive": "Archived document {n}",
     "environment:settings": "Changed the settings",
     "journal:auto": "Changed auto mode",
+    "environment:make": "Made an environment",
     "environment:remove": "Removed an environment",
     "messages:update": "Edited message {n}",
     "messages:process": "Filed message {n}",

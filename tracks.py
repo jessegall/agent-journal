@@ -83,6 +83,7 @@ MESSAGES = {
     "switched_project": "the project starts on {name} now — {kept}{too}{lost}{note}",
     "session_too": "; this session too",
     "back_none": "no environment to go back to — nothing has been switched away from yet",
+    "prepared_here": "{name} exists — open it from the list to work there",
     "remove_what": 'remove what? `journal environments remove "<name>"`',
     "remove_none": "no environment is called {name}; `journal environments` lists them",
     "remove_start": "{name} is where new sessions start, so it cannot be removed — point the project somewhere else "
