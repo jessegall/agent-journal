@@ -4172,6 +4172,7 @@ const EnvHome = {
                                  { key: "todos", label: "To-dos", n: openTodos.value.length },
                                  { key: "notifications", label: "Notifications", n: unread.value.length }]);
     const readNote = (n) => send("POST", `/api/env/${props.env}/notifications/${n.n}/read`).then(() => notes.reload());
+    const readAll = () => send("POST", `/api/env/${props.env}/notifications/readall`).then(() => notes.reload());
     const openNote = (event, n) => {
       readNote(n);
       const href = noteHref(n, props.env);
@@ -4240,7 +4241,7 @@ const EnvHome = {
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
-             tab, TABS, openTodos, todoGroups, unread, todoStatus, openNote, readNote, noteHref, noteTint, goto };
+             tab, TABS, openTodos, todoGroups, unread, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4333,6 +4334,12 @@ const EnvHome = {
             <span class=rail-row-state>{{ n.age || 'just now' }}</span>
           </button>
         </div>
+        </div>
+        <!-- THE CONTROLS FOR THE WHOLE LIST SIT UNDER IT, not on every row: clearing fifty rows one
+             at a time is the thing this bar exists to save. It is stuck to the foot of the column,
+             so it is where the hand already is after reading to the bottom. -->
+        <div class=rail-foot>
+          <button type=button class=rail-foot-act :disabled="!unread.length" @click="readAll">Mark all as read</button>
         </div>
       </template>
       </div>
