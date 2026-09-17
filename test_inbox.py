@@ -299,12 +299,25 @@ check("a reply may quote words really said in the thread", (code, "replied to me
 code, out = j("messages", "reply", str(_rn), "Then leave it.", "--quoting=a thing nobody said here")
 check("and a quote nobody said is refused, the same guarantee --part carries",
       (code, "quote words that were really said" in out), (1, True))
-code, out = j("messages", "reply", str(_rn), "Not this either.", "--quoting=rename the flag to --json")
-check("the MESSAGE's own words are not the thread's: --part checks those, --quoting checks what was said back",
-      (code, "quote words that were really said" in out), (1, True))
+# THE MESSAGE IS PART OF ITS OWN THREAD: answering the first thing said in one is the commonest
+# reply there is, and the check used to read only the replies, so that was the one it refused.
+code, out = j("messages", "reply", str(_rn), "Answering the message itself.", "--quoting=rename the flag to --json")
+check("a reply may quote the message it sits under, which is the first thing said in the thread",
+      (code, "replied to message" in out), (0, True))
 _reps = [r for r in stored()[_rn - 1]["replies"] if r.get("quoting")]
 check("the quote is stored on the reply, beside part and never merged into it",
-      [(r["quoting"], r.get("part", "")) for r in _reps], [("already taken by export", "")])
+      [(r["quoting"], r.get("part", "")) for r in _reps],
+      [("already taken by export", ""), ("rename the flag to --json", "")])
+
+# A REPLY KEEPS WHAT WAS ATTACHED TO IT. The viewer sent a reply's files nowhere: the record had no
+# field for them, so a screenshot answering a question was dropped between the box and the journal.
+(d / "shot.png").write_bytes(b"\x89PNG\r\n")
+code, out = j("messages", "reply", str(_rn), "And here is the screenshot.", "--file=" + str(d / "shot.png"))
+check("a reply can carry a file", (code, "replied to message" in out), (0, True))
+check("and the reply records the name, with the file in the message's own folder",
+      ([r.get("files") for r in stored()[_rn - 1]["replies"] if r.get("files")],
+       (d / ".journal" / "environments" / "default" / "message-files" / str(_rn) / "shot.png").exists()),
+      ([["shot.png"]], True))
 
 j("messages", "add", "the lantern relay clicks at night")
 code, out = j("messages", "waiting")

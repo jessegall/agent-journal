@@ -81,7 +81,7 @@ MESSAGES = {
     "reply_what": 'say the reply: journal messages reply {n} "<what you did, or what you decided>"',
     "replied": "replied to message {n}; the user reads it under the message in the viewer",
     "show_replies": "replies",
-    "show_reply": "  {who} · {age}\n    {text}",
+    "show_reply": "  {who} · {age}[ · {files:, }]\n    {text}",
     "reply_agent": "the agent",
     "reply_user": "you",
     "archive_why": 'say why: journal messages archive {n} "<why it needs nothing more>"',
@@ -609,7 +609,7 @@ def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tup
 
 
 def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: str | None = None,
-          part: str = "", quoting: str = "", notify: bool = True) -> tuple[bool, str]:
+          part: str = "", quoting: str = "", notify: bool = True, files: list | None = None) -> tuple[bool, str]:
     """A short answer under a message: what was done, a clarification, a call the agent made. Any status.
     With `part`, it answers the question those words ask: the part is recorded as answered and the user is notified.
 
@@ -624,21 +624,43 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
     quoting = " ".join((quoting or "").split())
     if not text:
         return False, say("reply_what", n=n)
+    got, why = _read_files(files) if files else ([], "")
+    if why:
+        return False, why
+    here = track or state.current_track(root)
     with state.locked(root):
-        items = _all(root, track)
+        items = _all(root, here)
         m, err = _find(items, n)
         if m is None:
             return False, err
         if part and _flat(part) not in _flat(m["text"]):
             return False, say("not_in_message", n=n)
-        if quoting and not any(_flat(quoting) in _flat(r.get("text") or "") for r in m.get("replies") or []):
+        # THE MESSAGE COUNTS AS THE THREAD. A reply written under the message itself quotes the
+        # message, and the check read only the replies — so answering the first thing said in a
+        # thread was the one answer the thread refused.
+        said = [m.get("text") or "", *(r.get("text") or "" for r in m.get("replies") or [])]
+        if quoting and not any(_flat(quoting) in _flat(t) for t in said):
             return False, say("not_in_thread", n=n)
+        # A REPLY KEEPS WHAT WAS ATTACHED TO IT. The files live in the message's own folder, where
+        # every name is already unique, and the reply records the names it added.
+        names = []
+        if got:
+            taken = {f["name"] for f in (m.get("files") or [])} | {
+                name for r in m.get("replies") or [] for name in (r.get("files") or [])}
+            held = files_dir(root, here, n)
+            held.mkdir(parents=True, exist_ok=True)
+            for name, data in got:
+                name = _file_name(name, taken)
+                taken.add(name)
+                (held / name).write_bytes(data)
+                names.append(name)
         m.setdefault("replies", []).append({"text": text, "at": at, "source": source,
                                             **({"part": part} if part else {}),
-                                            **({"quoting": quoting} if quoting else {})})
+                                            **({"quoting": quoting} if quoting else {}),
+                                            **({"files": names} if names else {})})
         if part:
             m.setdefault("parts", []).append({"excerpt": part, "became": ["answered"], "at": at})
-        _put(root, items, track)
+        _put(root, items, here)
     # A PLAIN REPLY IS NOT NEWS ANY MORE. This was written when a reply under a message was invisible
     # unless you went looking for it; the thread shows it in place now, so a notification for one is a
     # second telling of something already on the screen — and it was most of what the list held.
@@ -775,7 +797,8 @@ def show_text(d: dict) -> str:
         out += [say("show_file", name=f["name"], status=f["filed_label"], path=f["path"]) for f in d["files"]]
     if d.get("replies"):
         out.append(fmt.section(say("show_replies")))
-        out += [say("show_reply", who=r["who"], age=r["age"] or "just now", text=r["text"]) for r in d["replies"]]
+        out += [say("show_reply", who=r["who"], age=r["age"] or "just now", text=r["text"],
+                    files=r.get("files") or None) for r in d["replies"]]
     if d["questions"]:
         out.append(fmt.section(say("show_questions")))
         out += [say("show_question", n=q["n"], text=q["text"], answer=q["answer"] or None) for q in d["questions"]]
@@ -797,7 +820,8 @@ def row_response(n: int, m: dict) -> dict:
         "archived": m.get("archived") or "",
         "closed_at": m.get("archived_at") or m.get("processed") or "",
         "replies": [{"text": r["text"], "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "", "part": r.get("part") or "", "quoting": r.get("quoting") or "",
-                     "who": say("reply_user") if r.get("source") == "web" else say("reply_agent")}
+                     "who": say("reply_user") if r.get("source") == "web" else say("reply_agent"),
+                     "files": list(r.get("files") or [])}
                     for r in m.get("replies") or []],
         "edited": m.get("edited_at") or "",
         "earlier": [{"text": e.get("text", ""), "at": e.get("at", "")} for e in m.get("earlier") or []],

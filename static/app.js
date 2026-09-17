@@ -3894,25 +3894,29 @@ const Thread = {
           .catch((e) => flash(e.message));
         return;
       }
+      // A REPLY GOES UNDER THE TURN IT ANSWERS whenever that turn belongs to a message — the user's
+      // own message, the agent's reply to it, the journal's note. Only a turn with no message behind
+      // it (a question, held work) has nowhere to go, and becomes a new message carrying the quote.
       const to = answering.value;
-      const said = to && !(to.who === "agent" && to.kind === "reply" && to.n)
-        ? quoted(excerpt(quoteOf.value)) + text : text;
+      const under = !!(to && to.n && ["message", "reply", "receipt"].includes(to.kind));
+      const said = to && !under ? quoted(excerpt(quoteOf.value)) + text : text;
       const mine = { key: `pending:${sent += 1}`, at: new Date().toISOString(), who: "you", pending: true,
                      becameRefs: [], became: "", files: [],
-                     kind: to && to.who === "agent" && to.kind === "reply" && to.n ? "reply" : "message",
+                     kind: under ? "reply" : "message",
                      // THE OPTIMISTIC TURN CARRIES WHAT WAS SENT, not what was typed. They differ
                      // whenever the reply quotes what it answers, and the two are matched BY TEXT to
                      // keep one key across the swap — so a quoted reply never matched, the pending
                      // turn left while the real one entered, and the same words animated twice.
-                     n: to && to.kind === "reply" ? to.n : null, text: said, state: "sending",
-                     ref: to && to.who === "agent" && to.kind === "reply" ? excerpt(quoteOf.value) : "" };
+                     n: under ? to.n : null, text: said, state: "sending",
+                     ref: under ? excerpt(quoteOf.value) : "" };
       pending.value = [...pending.value, mine];
       answering.value = null;
       // the watcher scrolls when the turn lands; a second smooth scroll started here fights it
       nextTick(() => bottom("auto"));
       try {
-        if (to && to.who === "agent" && to.kind === "reply" && to.n) {
-          await postJSON(`/api/env/${props.env}/messages/${to.n}/reply`, { text, quoting: excerpt(quoteOf.value) });
+        if (under) {
+          await postJSON(`/api/env/${props.env}/messages/${to.n}/reply`,
+                         { text, quoting: excerpt(quoteOf.value), files });
         } else {
           await postJSON(`/api/env/${props.env}/messages`, { text: said, files });
         }

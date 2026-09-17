@@ -220,6 +220,9 @@ def wrote(root: Path, env: str) -> list[dict]:
                         "tag": "", "text": trim(r.get("text") or ""),
                         "full": (r.get("text") or "").strip() if len((r.get("text") or "").strip()) > TEXT_MAX else "",
                         "n": n,
+                        # what was attached TO THE REPLY, which lives in the message's own folder
+                        "files": [{"name": name, "picture": name.lower().endswith(PICTURES)}
+                                  for name in (r.get("files") or [])],
                         # the two point opposite ways and never both appear: part is the user's words the
                         # agent answered, quoting is the thread's words the user answered. A reply that
                         # named neither quoted nothing at all, so in the thread it read as a turn the
