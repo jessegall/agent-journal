@@ -81,21 +81,29 @@ ask({"jsonrpc": "2.0", "method": "notifications/initialized"})
 
 j("messages", "add", "please check the build")
 push = read_line(12)
-check("a waiting message is pushed to an idle session, naming it",
-      ((push or {}).get("method"), "please check the build" in ((push or {}).get("params") or {}).get("content", ""),
-       ((push or {}).get("params") or {}).get("meta", {}).get("message")),
-      ("notifications/claude/channel", True, "1"))
+# WHAT ARRIVED AND ITS NUMBER, NOT HALF OF WHAT IT SAYS. The line used to carry the first two
+# hundred characters of the message, and the agent's very next act is to open it and read all of
+# it — so the quote was a partial copy of something about to be read in full, which can be acted
+# on as though it were the whole.
+check("a waiting message is pushed to an idle session, naming which one",
+      ((push or {}).get("method"), ((push or {}).get("params") or {}).get("meta", {}).get("message"),
+       "message 1" in ((push or {}).get("params") or {}).get("content", "")),
+      ("notifications/claude/channel", "1", True))
+check("and it does not quote the message the agent is about to read",
+      "please check the build" in ((push or {}).get("params") or {}).get("content", ""), False)
 check("and not pushed twice", read_line(7), None)
-# A TRANSCRIPT ARRIVES AS A FILE, and the wake line quoted only the message's text — so the thing the
-# paste was for was invisible to an idle agent. Found while building the transcription feature.
+# A MESSAGE WITH A FILE IS STILL JUST A MESSAGE HERE. The line once carried the file's name too,
+# which was one more thing quoted out of something the agent opens in full a moment later.
 import base64 as _b64  # noqa: E402
 _inbox_mod = __import__("inbox")
 _inbox_mod.add(root, "here is the meeting", "2026-09-14T10:00:00+00:00", track="default",
                files=[{"name": "transcript.txt", "data": _b64.b64encode(b"a long transcript").decode()}])
 import channel as _channel  # noqa: E402
-_carried = [c for _, c in _channel._waiting("default", 0.0) if "here is the meeting" in c.get("content", "")]
-check("a message carrying a file says so when it wakes an agent",
-      (len(_carried), "transcript.txt" in (_carried[0]["content"] if _carried else "")), (1, True))
+_lines = [c["content"] for _, c in _channel._waiting("default", 0.0) if c.get("meta", {}).get("message")]
+check("every message line names its number and quotes nothing",
+      (all("message " in c for c in _lines),
+       any("here is the meeting" in c or "transcript.txt" in c for c in _lines)),
+      (True, False))
 
 
 j("auto-mode", "enable")
@@ -104,20 +112,24 @@ questions.add(root, "ship it on Friday?", "2026-09-14T10:00:00+00:00", track="de
 j("questions", "answer", "1", "yes, Friday")
 push = read_line(12)
 params = (push or {}).get("params") or {}
-check("an answered question is pushed to an idle session, naming it",
-      ("yes, Friday" in params.get("content", ""), params.get("meta", {}).get("question")), (True, "1"))
+check("an answered question is pushed to an idle session, naming which one",
+      ("question 1" in params.get("content", ""), "yes, Friday" in params.get("content", ""),
+       params.get("meta", {}).get("question")), (True, False, "1"))
 check("and not pushed twice", read_line(7), None)
 check("a pushed answer is told, so the next stop does not deliver it again", questions.untold(root, "default"), [])
 j("questions", "answer", "1", "no, Monday")
 push = read_line(12)
-check("a changed answer is pushed again", "no, Monday" in (((push or {}).get("params") or {}).get("content", "")), True)
+check("a changed answer is pushed again, still without quoting it",
+      (((push or {}).get("params") or {}).get("meta", {}).get("question"),
+       "no, Monday" in (((push or {}).get("params") or {}).get("content", ""))), ("1", False))
 
 j("todos", "add", "a to-do to comment on")
 j("comments", "add", "todo 1", "use the other colour")
 push = read_line(12)
 params = (push or {}).get("params") or {}
-check("a new comment is pushed to an idle session, naming it",
-      ("use the other colour" in params.get("content", ""), params.get("meta", {}).get("comment")), (True, "1"))
+check("a new comment is pushed to an idle session, naming what it is on",
+      ("to-do 1" in params.get("content", ""), "use the other colour" in params.get("content", ""),
+       params.get("meta", {}).get("comment")), (True, False, "1"))
 check("and not pushed twice", read_line(7), None)
 import comments as _comments  # noqa: E402
 check("a pushed comment is told, so the next stop does not deliver it again", _comments.untold(root, "default"), [])
@@ -153,7 +165,7 @@ _plans.activate(root, 1, _dt.now(_tz.utc).isoformat(timespec="seconds"), source=
 push = read_line(12)
 params = (push or {}).get("params") or {}
 check("a plan the user approves in the viewer is pushed to an idle session, naming the phase to start",
-      (params.get("meta", {}).get("plan"), "approved plan 1" in params.get("content", ""), "the first phase, is current" in params.get("content", "")),
+      (params.get("meta", {}).get("plan"), "approved plan 1" in params.get("content", ""), "Phase 1 is current" in params.get("content", "")),
       ("1", True, True))
 check("and only once", read_line(7), None)
 j("auto-mode", "enable")
@@ -163,7 +175,8 @@ state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("messages", "add", "another one while working")
 push = read_line(12)
 check("a message reaches a session that is mid-turn",
-      "another one while working" in (((push or {}).get("params") or {}).get("content", "")), True)
+      (bool(((push or {}).get("params") or {}).get("meta", {}).get("message")),
+       "another one while working" in (((push or {}).get("params") or {}).get("content", ""))), (True, False))
 
 j("auto-mode", "disable")
 j("questions", "answer", "1", "no, Tuesday")
@@ -171,21 +184,21 @@ push = read_line(12)
 params = (push or {}).get("params") or {}
 check("with auto mode off an answered question still reaches it, saying not to start the to-do list",
       (params.get("meta", {}).get("question"), "no, Tuesday" in params.get("content", ""), "do not start on the to-do list" in params.get("content", "")),
-      ("1", True, True))
+      ("1", False, True))
 j("messages", "add", "a message with auto off")
 push = read_line(12)
-check("while a message still does", "a message with auto off" in (((push or {}).get("params") or {}).get("content", "")), True)
+check("while a message still does", bool(((push or {}).get("params") or {}).get("meta", {}).get("message")), True)
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("questions", "answer", "1", "no, Wednesday")
 j("messages", "add", "sent while it works, auto off")
-_pushed = []
-while not (any("sent while it works, auto off" in c for c in _pushed) and any("no, Wednesday" in c for c in _pushed)):
+_kinds = set()
+while not {"message", "question"} <= _kinds:
     _line = read_line(12)
     if _line is None:
         break
-    _pushed.append(((_line.get("params") or {}).get("content", "")))
-check("with auto off the message and the changed answer still reach it mid-turn: both are the user speaking",
-      (any("sent while it works, auto off" in c for c in _pushed), any("no, Wednesday" in c for c in _pushed)), (True, True))
+    _kinds |= set((_line.get("params") or {}).get("meta", {}))
+check("with auto off a message and a changed answer still reach it mid-turn: both are the user speaking",
+      {"message", "question"} <= _kinds, True)
 
 import commandlog as _commandlog  # noqa: E402
 from datetime import datetime as _dt2, timezone as _tz2  # noqa: E402
@@ -207,7 +220,7 @@ j("messages", "add", "while on no environment")
 push = read_line(12)
 params = (push or {}).get("params") or {}
 check("a session on no environment yet is still woken, told which environment it is for",
-      ("while on no environment" in params.get("content", ""), params.get("meta", {}).get("env")), (True, "default"))
+      (params.get("meta", {}).get("message") is not None, params.get("meta", {}).get("env")), (True, "default"))
 
 import channel  # noqa: E402
 _old = channel._waiting("default", time.time() + 60)
@@ -226,7 +239,7 @@ _inbox.reply(root, _mn, "and one more thing about it", _dt.now(_tz.utc).isoforma
 _turn = [(k, p) for k, p in channel._waiting("default", time.time() + 60) if ":reply:" in k]
 check("the user's reply under a message the agent already PROCESSED still wakes it: a message is told once, a conversation is not",
       ([k for k, _ in _turn], "and one more thing" in (_turn[0][1]["content"] if _turn else "")),
-      ([f"default:reply:{_mn}:0"], True))
+      ([f"default:reply:{_mn}:0"], False))
 channel._told([f"default:reply:{_mn}:0"])
 check("and it is told once, per turn rather than per message",
       [k for k, _ in channel._waiting("default", time.time() + 60) if ":reply:" in k], [])
@@ -297,20 +310,24 @@ tracks.create(root, "spare", at="2026-09-14T10:00:00+00:00")
 chan_mod.STARTED[0] = 0.0
 _inbox.add(root, "a message for whoever works default", "2099-01-01T00:00:00+00:00", track="default")
 _inbox.add(root, "a message on an environment nobody holds", "2099-01-01T00:00:00+00:00", track="spare")
+#: BY ENVIRONMENT AND NUMBER, NOT BY WORDS. The push line names what arrived and where; it does
+#: not quote the message, so what a session heard is read off the meta rather than the prose.
+_ON_DEFAULT = str(len(_inbox._all(root, "default")))
+_ON_SPARE = str(len(_inbox._all(root, "spare")))
 
 
 def _heard(stem):
-    return sorted(p["content"].split(": ", 1)[1] for _, p in chan_mod.pending(stem) if p["meta"].get("message"))
+    return {(p["meta"].get("env"), p["meta"]["message"]) for _, p in chan_mod.pending(stem) if p["meta"].get("message")}
 
 
 check("the session on the environment is woken for its message",
-      "a message for whoever works default" in _heard("holder-a"), True)
+      ("default", _ON_DEFAULT) in _heard("holder-a"), True)
 check("a session on no environment is not woken for another live session's environment",
-      "a message for whoever works default" in _heard("free-b"), False)
+      ("default", _ON_DEFAULT) in _heard("free-b"), False)
 check("an environment no live session holds wakes one session on no environment, the one seen most recently",
-      ("a message on an environment nobody holds" in _heard("free-b"), "a message on an environment nobody holds" in _heard("free-c")), (True, False))
+      (("spare", _ON_SPARE) in _heard("free-b"), ("spare", _ON_SPARE) in _heard("free-c")), (True, False))
 check("of two sessions bound to one environment, only the one seen most recently is woken",
-      ("a message for whoever works default" in _heard("holder-a"), "a message for whoever works default" in _heard("stale-d")), (True, False))
+      (("default", _ON_DEFAULT) in _heard("holder-a"), ("default", _ON_DEFAULT) in _heard("stale-d")), (True, False))
 
 _real_ppid = chan_mod.os.getppid
 try:

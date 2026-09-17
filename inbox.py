@@ -45,7 +45,7 @@ MESSAGES = {
     "not_in_message": "that part is not in message {n}; quote the words it is about",
     "not_in_thread": "nothing under message {n} says that; quote words that were really said in the thread",
     "edit_same": "message {n} already says that",
-    "edit_note": "The user CHANGED message {n} on {env}: {gist}. Read it again — what it said before is kept under it, "
+    "edit_note": "The user CHANGED message {n} on {env}. Read it again — what it said before is kept under it, "
                  "and anything you already filed from the old words may need correcting.",
     "already_processed": "message {n} is already processed",
     "already_moved": "message {n} was moved to `{env}`, where it is message {there} — record the part there, "
