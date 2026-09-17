@@ -65,7 +65,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.journal/hook.py"
+            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; n=0; while [ -n \"$d\" ] && [ \"$d\" != \"/\" ] && [ \"$n\" -lt 40 ]; do if [ -x \"$d/.journal/hook.py\" ]; then exec \"$d/.journal/hook.py\"; fi; d=$(dirname \"$d\"); n=$((n+1)); done; exit 0"
           }
         ]
       }

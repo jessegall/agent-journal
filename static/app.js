@@ -795,7 +795,12 @@ const Compose = {
     const quoteLines = computed(() => String(props.quote || "").trim().split("\n").map((l) => l.replace(/^>\s?/, "")));
     const area = ref(null);
     onMounted(() => { if (props.autofocus && area.value) area.value.focus(); });
-    const picked = (e) => { draft.files.push(...Array.from(e.target.files || [])); e.target.value = ""; };
+    const picked = (e) => {
+      draft.files.push(...Array.from(e.target.files || []));
+      e.target.value = "";
+      // the picker took the focus and does not give it back, so the next keystroke goes nowhere
+      nextTick(() => { if (area.value) area.value.focus(); });
+    };
     const unpick = (i) => draft.files.splice(i, 1);
     async function go() {
       if (!draft.text.trim() || draft.sending) return;
@@ -3489,7 +3494,9 @@ const Thread = {
       const mine = new Map(pending.value.filter((t) => t.state !== "failed").map((t) => [(t.text || "").trim(), t.key]));
       const real = ((chat.data && chat.data.turns) || []).map((t) => {
         const held = t.who === "you" ? mine.get((t.text || "").trim()) : null;
-        return { ...t, key: held || `${t.kind}:${t.n || 0}:${t.at}` };
+        const refs = (t.became_refs || []).map((r) => ({ ...r, key: String(r.ref), href: refHref(r.ref, props.env) }))
+          .filter((r) => r.href);
+        return { ...t, key: held || `${t.kind}:${t.n || 0}:${t.at}`, becameRefs: refs };
       });
       const landed = new Set(real.map((t) => t.key));
       const waiting = pending.value.filter((t) => t.state === "failed" || !landed.has(t.key));
@@ -3632,9 +3639,13 @@ const Thread = {
         .then(() => { chat.reload(); changed(); })
         .catch(() => {});
     };
-    const becameNote = (t) => {
-      if (!t.became) return "Being read";
-      return t.working ? `Working on ${t.became}` : `Became ${t.became}`;
+    // the thread moves to it when the thread holds it; otherwise the inspector opens in place. Never
+    // a navigation away — the same rule the rail cards follow.
+    const goRef = (event, r) => {
+      event.preventDefault();
+      THREAD_GOTO.key = r.key;
+      THREAD_GOTO.at = Date.now();
+      nextTick(() => { if (THREAD_GOTO.key) openRef(event, r.href); });
     };
     // what the ticks mean, said in words for whoever hovers one
     const landed = (t) => (t.state === "filed"
@@ -3643,7 +3654,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, becameNote, fileUrl, clock, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
   },
   template: `
     <div class=thread>
@@ -3660,8 +3671,11 @@ const Thread = {
         :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', sending: t.state === 'sending', failed: t.state === 'failed', lit: lit === t.kind + ':' + t.n}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
-          <p v-if="t.kind === 'message' && (t.became || t.state === 'read')" :class="['thread-became', {live: t.working}]">
-            <span v-if="t.working" class=thread-became-dot></span>{{ becameNote(t) }}</p>
+          <p v-if="t.kind === 'message' && t.becameRefs.length" :class="['thread-became', {live: t.working}]">
+            <span v-if="t.working" class=thread-became-dot></span>
+            <span v-if="t.working" class=thread-became-word>Working on</span>
+            <a v-for="r in t.becameRefs" :key="r.label" class=thread-pill :href="r.href"
+              :title="'Open ' + r.label" @click.stop="goRef($event, r)">{{ r.label }}</a></p>
           <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
           <div v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
           <p v-if="t.state === 'failed'" class=thread-failed>Not sent — {{ t.error }}

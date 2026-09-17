@@ -172,7 +172,13 @@ def wrote(root: Path, env: str) -> list[dict]:
                     # delivered, read, filed: three states the record already keeps, so the ticks are a
                     # reading of what is there rather than a fourth thing to keep level with it
                     "state": "filed" if m.get("processed") else "read" if m.get("read") else "sent",
-                    "became": ", ".join(became), "working": working})
+                    "became": ", ".join(became),
+                    # the refs themselves, not only their words: the viewer makes each one a link, and
+                    # a label joined into a sentence cannot be followed
+                    "became_refs": [{"ref": ref, "label": inbox.label(ref)}
+                                    for p in m.get("parts") or [] for ref in p.get("became") or []
+                                    if ":" in str(ref)],
+                    "working": working})
         for r in m.get("replies") or []:
             out.append({"at": r.get("at") or "", "who": "you" if r.get("source") == "web" else "agent",
                         "kind": "reply", "tag": "", "text": trim(r.get("text") or ""),
