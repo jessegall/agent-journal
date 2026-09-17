@@ -3620,9 +3620,17 @@ const Thread = {
     const chat = useFetch(() => props.env && `/api/env/${props.env}/chat`);
     // the shell is known before any turn is: the thread draws its own shape while /chat is in flight,
     // so the page does not snap into place and the writing box is there to type into from the first paint
-    const SKELETON = [{ k: 1, mine: false, rows: ["92%", "74%"] }, { k: 2, mine: true, rows: ["68%"] },
-                      { k: 3, mine: false, rows: ["88%", "96%", "52%"] }, { k: 4, mine: true, rows: ["46%"] },
-                      { k: 5, mine: false, rows: ["90%", "61%"] }];
+    // THE WIDTH IS ON THE TURN, NOT ON THE LINES INSIDE IT. It was the other way round, and a
+    // percentage inside a shrink-to-fit bubble is circular: the user's own turns collapsed to two
+    // small grey squares with nothing legible in them — "the weird text box things". A turn gets a
+    // width and its lines fill it, which is what a turn actually looks like.
+    const SKELETON = [{ k: 1, mine: false, w: "76%", rows: 2 }, { k: 2, mine: true, w: "54%", rows: 1 },
+                      { k: 3, mine: false, w: "88%", rows: 3 }, { k: 4, mine: true, w: "40%", rows: 1 },
+                      { k: 5, mine: false, w: "70%", rows: 2 }, { k: 6, mine: true, w: "62%", rows: 2 },
+                      { k: 7, mine: false, w: "82%", rows: 3 }, { k: 8, mine: true, w: "48%", rows: 1 },
+                      { k: 9, mine: false, w: "72%", rows: 2 }, { k: 10, mine: true, w: "58%", rows: 2 },
+                      { k: 11, mine: false, w: "86%", rows: 3 }, { k: 12, mine: true, w: "44%", rows: 1 },
+                      { k: 13, mine: false, w: "78%", rows: 2 }];
     const root = ref(null);
     // the key is what a turn IS, never where it sits: the thread is capped, so an index shifts for
     // every turn when one arrives, and Vue would rebuild each of them and lose what is typed in one
@@ -3884,8 +3892,8 @@ const Thread = {
       </div>
       <div ref=root class=thread-scroll @scroll.passive="watchScroll">
       <template v-if="!chat.data">
-        <div v-for="s in SKELETON" :key="s.k" :class="['thread-turn', 'waiting', {mine: s.mine}]">
-          <div class=thread-bubble><span v-for="w in s.rows" :key="w" class=thread-blank :style="{ width: w }"></span></div>
+        <div v-for="s in SKELETON" :key="s.k" :class="['thread-turn', 'waiting', {mine: s.mine}]" :style="{ width: s.w }">
+          <div class=thread-bubble><span v-for="i in s.rows" :key="i" class=thread-blank></span></div>
         </div>
       </template>
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
@@ -3916,7 +3924,9 @@ const Thread = {
             </a>
           </div>
         </div>
-        <div class=thread-tools>
+        <!-- A RECEIPT IS NOT A TURN AND NOTHING IS DONE TO IT. It is the record saying what a
+             message became; replying to it, or deleting it, is answering a filing cabinet. -->
+        <div v-if="t.kind !== 'receipt'" class=thread-tools>
           <button type=button class=thread-tool title="Reply to this, quoting it" @click.stop="replyTo(t)">Reply</button>
           <button v-if="t.kind === 'message' && t.state !== 'filed'" type=button class=thread-tool
             title="Change what it says — the old words are kept and the agent is told" @click.stop="startEdit(t)">Edit</button>

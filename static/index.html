@@ -634,8 +634,11 @@
   .thread-scroll { order: 1; }
   .thread-down { order: 2; }
   .thread-write { order: 3; }
-  .thread-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none;
-    display: flex; flex-direction: column; gap: 7px; padding: 14px 2px 12px 0; }
+  /* THE REPLY CHIP OVERHANGS ITS TURN ON PURPOSE, and on a turn of the user's own — flush to the
+     right edge — that overhang left the column and made the thread four pixels scrollable
+     sideways. The gutter is the chip's room, so it can sit over the bubble without leaving. */
+  .thread-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: none;
+    display: flex; flex-direction: column; gap: 7px; padding: 14px 8px 12px 0; }
   .thread-scroll::-webkit-scrollbar { width: 0; height: 0; }
   .thread-more { align-self: center; padding: 2px 8px; border: 0; border-radius: 6px; background: none;
     color: var(--text-3); font: inherit; font-size: 11px; }
@@ -684,7 +687,10 @@
   .thread-turn.receipt { max-width: 100%; }
   .thread-turn.receipt .thread-bubble { padding: 0 2px; border: 0; background: none; font-size: 12px;
     color: var(--text-3); }
+  /* the meta line is what gives every other turn its space below, and a receipt hides it — so a
+     run of them sat on each other and on the message under them. The gap comes back as padding. */
   .thread-turn.receipt .thread-meta { display: none; }
+  .thread-turn.receipt .thread-bubble { padding-bottom: 8px; }
   /* a row named in ordinary prose: the same thing as a became-pill, at the size of the words
      around it, so a sentence still reads as a sentence */
   .row-pill { padding: 0 4px; border: 1px solid var(--border-2); border-radius: 5px;
@@ -742,12 +748,19 @@
   .thread-full:hover { text-decoration: underline; text-underline-offset: 3px; }
   /* A PLACEHOLDER IS A TURN'S SILHOUETTE, not a box with lines ruled in it. The border and the raised
      fill are what made it read as an empty card; without them the shape alone says a turn is coming. */
-  .thread-turn.waiting .thread-bubble { display: flex; flex-direction: column; gap: 7px;
+  .thread-turn.waiting { max-width: 88%; }
+  /* AND THE BUBBLE FILLS THE TURN. The width moved onto the turn and the bubble went on shrinking
+     to fit its lines, so the circle closed one level further out and the user's own placeholders
+     were still little squares. Every box in this chain has to be told its width. */
+  .thread-turn.waiting .thread-bubble { width: 100%; display: flex; flex-direction: column; gap: 8px;
     border-color: transparent; background: color-mix(in srgb, var(--raised) 55%, transparent); }
-  .thread-blank { display: block; height: 8px; border-radius: 99px;
+  /* THE LINE FILLS THE TURN. Sizing each line as a percentage of a bubble that shrinks to fit its
+     lines is circular, and it collapsed the short ones into little grey squares. */
+  .thread-blank { display: block; width: 100%; height: 9px; border-radius: 99px;
     background: color-mix(in srgb, var(--text-3) 22%, transparent);
     animation: thread-wait 1.6s ease-in-out infinite; }
-  .thread-turn.waiting .thread-bubble .thread-blank:last-child { opacity: .6; }
+  /* a last line that stops short is what a paragraph does; it is the one thing here that mimes text */
+  .thread-turn.waiting .thread-bubble .thread-blank:not(:only-child):last-child { width: 62%; opacity: .6; }
   @keyframes thread-wait { 0%, 100% { opacity: .45; } 50% { opacity: .8; } }
   @media (prefers-reduced-motion: reduce) { .thread-blank { animation: none; } }
   /* a turn arrives; it does not appear. The same vocabulary the home's rows already use. */

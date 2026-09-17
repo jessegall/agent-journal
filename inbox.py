@@ -58,7 +58,6 @@ MESSAGES = {
     "done": "message {n} is processed: it became {became:, } ({waiting} waiting)",
     # what the USER reads under their own message, written by the journal itself
     "receipt": "Noted — created {became:, }.",
-    "receipt_noted": "Noted. Nothing was filed from this one; it is read and handled.",
     "fact_waiting": "waiting",
     "fact_reading": "being handled",
     "fact_processed": "processed[ {age}]",
@@ -528,9 +527,13 @@ def _receipt(root: Path, n: int, m: dict, at: str, track: str | None, answered: 
     """
     if answered:
         return
+    # ONLY WHEN SOMETHING WAS MADE. A message that produced no row needs no line under it saying
+    # so — the ticks already say it was read and filed, and a receipt that reports nothing is a
+    # receipt for nothing. The user, twice: just say noted, and only when you created something.
     became = [b for b in _became(m) if b and b != "noted"]
-    text = say("receipt", became=became) if became else say("receipt_noted")
-    reply(root, n, text, at, source="journal", track=track, notify=False)
+    if not became:
+        return
+    reply(root, n, say("receipt", became=became), at, source="journal", track=track, notify=False)
 
 
 def declare(root: Path, n: int, kind: str, at: str, track: str | None = None) -> tuple[bool, str]:

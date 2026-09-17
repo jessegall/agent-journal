@@ -552,8 +552,8 @@ check("a message the agent already answered gets no receipt: one under a real an
 _inbox.add(_rd, "cool, thanks", _AT, track="r")
 _inbox.process(_rd, 3, "cool, thanks", ["noted"], _AT, track="r")
 _inbox.done(_rd, 3, _AT, track="r")
-check("and one that became nothing still says it was read, rather than nothing at all",
-      [s for s, _ in _replies(3)], ["journal"])
+check("and one that produced no row gets no line at all: a receipt for nothing is noise",
+      _replies(3), [])
 
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)
