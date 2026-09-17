@@ -615,6 +615,12 @@ status, headers, body = get(f"/message-files/alpha/{_held_n}/a.txt")
 check("the held file is served by name", (status, body), (200, b"hello"))
 status, _, _ = get(f"/message-files/alpha/{_held_n}/other.txt")
 check("a name the message does not hold is 404", status, 404)
+# A REPLY'S FILE IS THE MESSAGE'S FILE: same folder, and the reply records only the names it added.
+status, got = post(f"/api/env/alpha/messages/{_held_n}/reply",
+                   {"text": "and the screenshot", "files": [{"name": "shot.txt", "data": base64.b64encode(b"look").decode()}]})
+check("a reply is posted with a file", status, 200)
+status, _, body = get(f"/message-files/alpha/{_held_n}/shot.txt")
+check("and that file is served from the message it was replied under", (status, body), (200, b"look"))
 # A TRANSCRIPT IS REACHED FROM ITS MESSAGE, never from a list: nothing catalogues it, so the route
 # is the only way in, and a message that carries none says so rather than serving an empty file.
 status, got = post("/api/env/alpha/messages", {"text": "Jesse: the loader double-fetches. Sam: fix it.", "kind": "transcript"})
