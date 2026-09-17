@@ -18,6 +18,7 @@ MESSAGES = {
     "set_keep": "{env}: the activity log keeps the last {n} line(s)",
     "dispatched": "Dispatched a subagent",
     "mcp_used": "Used {server}",
+    "ran_long": "Ran {what}",
     "mcp_calls": "{n} calls",
     "committed": "Committed",
 }
@@ -564,6 +565,26 @@ def record_mcp(root: Path, track: str, stem: str, name: str, at: str) -> None:
             items = items + [{"at": at, "text": say("mcp_used", server=mcp_label(server)), "kind": "mcp", "n": None,
                               "titled": False, "detail": "", "server": server, "calls": [tool], "by": "Agent"}]
         state.put_tracked(root, KEY, track, items[-setting(root, track, KEEP):])
+
+
+#: a command that has run this long is worth a line of its own rather than a tally mark
+LONG_SECONDS = 30
+
+
+def record_long(root: Path, track: str, stem: str, what: str, took: float, at: str) -> None:
+    """A shell command that took a long time: its own Activity line, with what it was and how long.
+
+    A TALLY MARK SAYS NOTHING ABOUT WAITING. "Ran 3 commands" is the same line whether they took a
+    second or four minutes, and the four minutes is the part the user is looking at the screen for.
+    """
+    flush_tools(root, track, stem, at)
+    _append(root, track, {"at": at, "text": say("ran_long", what=" ".join(str(what).split())[:80]),
+                          "kind": "ran", "n": None, "detail": _span(took), "by": "Agent"})
+
+
+def _span(seconds: float) -> str:
+    seconds = int(seconds)
+    return f"{seconds}s" if seconds < 60 else f"{seconds // 60}m {seconds % 60}s"
 
 
 def record_commit(root: Path, track: str, stem: str, sha: str, subject: str, at: str) -> None:

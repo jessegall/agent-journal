@@ -113,6 +113,21 @@ def last_said(path, cap: int = 600) -> str:
     return text
 
 
+def running_now(root: Path, stem: str) -> dict | None:
+    """The shell command this session is in the middle of, and for how long — or None.
+
+    WAITING IS NOT WORKING, and from the outside they look identical: the bar says Working while the
+    agent sits on a four-minute test run with nothing on the screen to say so. The hook records the
+    command when it starts it and clears it when it ends.
+    """
+    import state
+    import time
+    got = state.get(root, "running_command", None, stem=stem)
+    if not isinstance(got, dict) or not got.get("what") or not got.get("at"):
+        return None
+    return {"what": got["what"], "seconds": int(max(0, time.time() - float(got["at"])))}
+
+
 class ActivityController(Controller):
     """What is happening on an environment: the working agent's latest message, and the latest journal events."""
     resource = "activity"
@@ -145,7 +160,7 @@ class ActivityController(Controller):
                 return {"session": stem[:8], "seen": tracks.age_text(info["age"]), "working": agent_working(root, stem),
                         "compacting": agent_compacting(root, stem),
                         "context": context_use(path, window), "said": last_said(path), "started": session_started(path),
-                        "model": transcript.last_model(path)}
+                        "model": transcript.last_model(path), "running": running_now(root, stem)}
         return None
 
     @staticmethod

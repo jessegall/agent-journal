@@ -2051,6 +2051,8 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
             return _deny(owed)
     try:
         _snapshot_files(payload, ctx)
+        # WHAT IS RUNNING RIGHT NOW, so a long command can say so rather than looking like a hang
+        _running_start(payload, ctx)
     except Exception as e:  # counting files must never stop a tool call
         print(f"journal files: {e}", file=sys.stderr)
     if not conf["gate_writes_on_start"] or "gate" in conf["silenced"]:
@@ -2317,6 +2319,36 @@ def _record_files(payload: dict, ctx: Ctx) -> None:
         changes = _bash_file_changes(before, after, ROOT.parent)
     if changes:
         work.record_files(ROOT, _owners(ctx), changes, datetime.now(timezone.utc).isoformat(timespec="seconds"), on=was)
+
+
+RUNNING = "running_command"
+
+
+def _running_start(payload: dict, ctx: Ctx) -> None:
+    """Record the shell command this call is about to run, so the viewer can say what is taking so long."""
+    if payload.get("tool_name") != "Bash":
+        return
+    what = " ".join(str((payload.get("tool_input") or {}).get("command", "")).split())
+    if not what or any(_is_journal_verb(w[0]) for w in _pieces(what) if w):
+        return
+    state.put(ROOT, RUNNING, {"what": what[:120], "at": time.time()}, stem=ctx.stem)
+
+
+def _running_end(payload: dict, ctx: Ctx) -> None:
+    """The call is over: clear it, and if it took a while, give it an Activity line of its own."""
+    if payload.get("tool_name") != "Bash":
+        return
+    got = state.get(ROOT, RUNNING, None, stem=ctx.stem)
+    state.put(ROOT, RUNNING, None, stem=ctx.stem)
+    if not isinstance(got, dict) or not got.get("at"):
+        return
+    took = time.time() - float(got["at"])
+    import commandlog
+    if took < commandlog.LONG_SECONDS:
+        return
+    from datetime import datetime, timezone
+    at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    commandlog.record_long(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, got.get("what") or "", took, at)
 
 
 def _queue_tool(payload: dict, ctx: Ctx) -> None:
@@ -2780,6 +2812,7 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     _floor(ctx)
     try:
         _record_files(payload, ctx)
+        _running_end(payload, ctx)
         _queue_tool(payload, ctx)
     except Exception as e:  # counting files and tool uses must never stop a tool call
         print(f"journal files: {e}", file=sys.stderr)
