@@ -54,7 +54,10 @@
   button.project:hover { background: var(--hover); }
   button.project .fold { margin-left: auto; }
   /* the sidebar clips what sticks out, so the list keeps to its width */
-  .journal-switch .drop { left: 0; right: 0; top: 36px; width: auto; }
+  /* A DROPDOWN MAY BE WIDER THAN THE THING IT HANGS FROM. Pinned to both edges of the sidebar it
+     was 215px, and its own heading — "Journals running on this machine" — wrapped to two lines. */
+  .journal-switch .drop { left: 0; right: auto; top: 36px; width: max-content;
+    min-width: 100%; max-width: 320px; }
   /* this journal, in both pickers: selected, and still answering the pointer without looking like a link */
   .journal-switch .drop-row.current, .strip-drop .drop-row.current { background: var(--sel); cursor: default; }
   .journal-switch .drop-row.current:hover, .strip-drop .drop-row.current:hover { background: color-mix(in srgb, var(--sel) 88%, var(--text) 12%); }
