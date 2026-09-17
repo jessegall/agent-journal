@@ -344,7 +344,7 @@ const Icon = {
       <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
       <!-- auto: a play mark, the user's own call. The loop said refresh and the play-against-rows
            version was three glyphs' worth of detail in twelve pixels. -->
-      <path v-else-if="name === 'auto'" d="M5 3.4 12.4 8 5 12.6z"/>
+      <path v-else-if="name === 'auto'" d="M5 3.4 12.4 8 5 12.6z" fill="currentColor" stroke-width="1"/>
       <!-- a branch: the line this checkout is on, and the one it came off. A graph, not the angle
            brackets of the code glyph, which is what was standing in for it. -->
       <template v-else-if="name === 'branch'"><circle cx="5" cy="3.6" r="1.6"/><circle cx="5" cy="12.4" r="1.6"/>
@@ -4414,8 +4414,9 @@ const EnvHome = {
         </button>
       </div>
       <template v-if="tab === 'waiting'">
+        <!-- a check mark, not a question mark: an empty Waiting on you is the good news on this page -->
         <div v-if="clear" class=home-rail-empty>
-          <Icon name="questions"/>
+          <Icon name="todos"/>
           <p>Nothing is waiting on you.</p>
         </div>
         <section v-else class=home-section>
@@ -4429,7 +4430,7 @@ const EnvHome = {
       </template>
       <template v-else-if="tab === 'todos'">
         <div v-if="!openTodos.length" class=home-rail-empty>
-          <Icon name="todos"/>
+          <Icon name="work"/>
           <p>Nothing is on the list.</p>
         </div>
         <!-- GROUPED, THE WAY THE TO-DO PAGE GROUPS THEM. The state was a word on the end of every
