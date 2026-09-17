@@ -3473,6 +3473,14 @@ const Thread = {
     // ARRIVAL, NEVER FIRST PAINT. The group mounts empty and the first answer inserts a hundred and
     // twenty turns at once, which is an insert as far as Vue is concerned — so the name is empty until
     // that batch has landed, and only what comes after it animates.
+    const bottom = (behavior) => {
+      if (root.value) root.value.scrollTo({ top: root.value.scrollHeight, behavior });
+    };
+    // AN IMAGE HAS NO HEIGHT UNTIL IT LOADS, so the box is measured short and the scroll lands above
+    // the bottom. The one that grew says so, and the thread finishes the journey — but only if the
+    // reader is still down there, so a picture loading far above never yanks them away from what
+    // they are reading.
+    const grew = () => { if (near()) bottom("auto"); };
     const settled = ref(false);
     let last = "";
     watch(turns, (rows) => {
@@ -3484,13 +3492,7 @@ const Thread = {
       if (first) nextTick(() => { settled.value = true; });
       if (!arrived || !follow) return;
       // twice, because a turn of rendered markdown finishes laying out after the tick that added it
-      nextTick(() => {
-        const go = () => {
-          if (root.value) root.value.scrollTo({ top: root.value.scrollHeight, behavior: first ? "auto" : "smooth" });
-        };
-        go();
-        requestAnimationFrame(go);
-      });
+      nextTick(() => { bottom(first ? "auto" : "smooth"); requestAnimationFrame(() => bottom("auto")); });
     });
     const send = (text, files) => postJSON(`/api/env/${props.env}/messages`, { text, files })
       .then(() => { chat.reload(); changed(); });
@@ -3521,7 +3523,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, send, root, answered, landed, fileUrl, lit, whole, showAll, chat, SKELETON, settled, THREAD_GOTO };
+    return { turns, more, send, root, answered, landed, fileUrl, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
   },
   template: `
     <div class=thread>
@@ -3545,7 +3547,7 @@ const Thread = {
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
           <div v-if="t.files && t.files.length" class=thread-files>
             <a v-for="f in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name">
-              <img v-if="f.picture" class=thread-image :src="fileUrl(t.n, f.name)" :alt="f.name" loading=lazy>
+              <img v-if="f.picture" class=thread-image :src="fileUrl(t.n, f.name)" :alt="f.name" loading=lazy @load="grew">
               <span v-else class=thread-file-name><Icon name="paperclip"/>{{ f.name }}</span>
             </a>
           </div>
