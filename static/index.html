@@ -23,6 +23,10 @@
     margin: 0; overflow: hidden; background: var(--bg); color: var(--text);
     font-family: "Geist", -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 13px; line-height: 1.45;
     -webkit-font-smoothing: antialiased;
+    /* NO LIGATURES ANYWHERE. This viewer prints commands — `--continue`, `--resume=<id>`, `!=` — in
+       ordinary text as well as in code, and a font that joins `--` into one long dash makes the flag
+       unreadable and uncopyable to the eye. Nothing here is prose that wants them. */
+    font-variant-ligatures: none; font-feature-settings: "liga" 0, "clig" 0, "calt" 0;
   }
   a { color: var(--accent-text); text-decoration: none; }
   a:hover { color: var(--text); }
