@@ -164,7 +164,7 @@ function openRef(event, href) {
 }
 
 // a pin's or rule's meta is the CLI's own " · " line; its age and doc citation are read back out of it
-// the short age a fixed 52px column holds: "27 minutes ago" is 27m, "3h ago" 3h, "16d ago" 2w
+// the short age a fixed 52px column holds: "27m ago" is 27m, "3h ago" 3h, "16d ago" 2w
 function shortAge(age) {
   const text = String(age || "");
   if (text === "just now") return "now";

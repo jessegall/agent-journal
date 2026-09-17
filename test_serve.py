@@ -1135,9 +1135,9 @@ check("the status line names the environment, the open work and the viewer",
 
 from datetime import datetime, timedelta, timezone  # noqa: E402
 _now = datetime(2026, 9, 14, 12, 0, tzinfo=timezone.utc)
-check("an age says just now for a minute, then minutes, hours and days",
+check("an age says just now for a minute, then abbreviates: m, h, d",
       [pins.age((_now - timedelta(seconds=s)).isoformat(), _now) for s in (30, 59, 60, 119, 300, 59 * 60, 3600, 86400 * 2)],
-      ["just now", "just now", "1 minute ago", "1 minute ago", "5 minutes ago", "59 minutes ago", "1h ago", "2d ago"])
+      ["just now", "just now", "1m ago", "1m ago", "5m ago", "59m ago", "1h ago", "2d ago"])
 
 _about = json.loads(get("/api/about")[2])
 check("the About endpoint says the running version and carries the changelog",
