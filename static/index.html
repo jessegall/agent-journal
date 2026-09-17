@@ -508,13 +508,20 @@
     .home-rail { order: -1; width: auto; max-height: 34%; padding: 0 0 18px; border-left: 0;
       border-bottom: 1px solid var(--border); }
   }
-  .home-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; font-size: 11.5px; color: var(--text-3); }
+  /* label and value on a row each: six facts on one line ellipse the end of themselves in a 288px rail */
+  .home-facts { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: var(--text-3); }
+  .home-fact { display: flex; align-items: baseline; gap: 8px; }
+  .home-fact-label { flex: none; width: 52px; color: var(--text-3); }
+  .home-fact-value { flex: 1 1 auto; min-width: 0; color: var(--text-2);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  a.home-fact-value:hover { color: var(--text); text-decoration: underline; text-decoration-color: #3a3d44;
+    text-underline-offset: 3px; }
   .home-facts .first { color: var(--text-2); }
   .home-facts a.first { text-decoration: none; }
   .home-facts a.first:hover { color: var(--text); text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   /* the live subagents hang under the facts line, indented past it: part of the page's opening block, not a bar */
   .home-lead { flex: none; display: flex; flex-direction: column; gap: 4px; }
-  .crew-strip { display: flex; flex-direction: column; padding: 2px 0 0 13px; }
+  .crew-strip { display: flex; flex-direction: column; padding: 6px 0 0 0; }
   .crew-line { display: flex; align-items: center; gap: 8px; height: 24px; margin: 0 -7px; padding: 0 7px; border: none; border-radius: 6px;
     background: transparent; text-align: left; cursor: pointer; animation: crew-in .28s ease-out both; }
   .crew-line:hover { background: #17181b; }
