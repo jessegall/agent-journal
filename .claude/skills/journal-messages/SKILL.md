@@ -55,6 +55,10 @@ words landed beyond what the parts record: you did it differently than they wrot
 make a call on something they left open, or a part needs a word of explanation. Not for
 "done" — the parts already say that.
 
+A reply may CARRY A FILE: `journal messages reply <n> "<text>" --file=<path>`. The file is kept
+in the message's own folder and the reply says which names it added, so a screenshot answering a
+question is under the question rather than in a message of its own.
+
 A message is never deleted. Its record — each part beside what it became — is how the user
 sees their words landed where they meant. Between stops, the first tool call after a new
 message mentions it once; that never blocks, so finish the step you are on first.

@@ -100,17 +100,19 @@
   .activity-n::before { content: "·"; margin-right: .35em; }
   .activity-d { margin-left: .35em; font-size: 10.5px; color: var(--text-3); opacity: .65; }
   .activity-d::before { content: "·"; margin-right: .35em; }
-  .activity-alert { margin: 4px 0; padding: 8px; gap: 8px; border-radius: 8px;
-    border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); background: color-mix(in srgb, var(--warn) 10%, transparent); }
+  /* PLAIN TEXT, LIKE EVERY OTHER LINE. The boxes were drawn when this column was the only place
+     anything was said; what needs the user is in the rail now, and a second highlight beside it is
+     the same news twice. An alert keeps its colour — on the words, not around them. */
+  .activity-alert { margin: 4px 0; padding: 5px 8px; gap: 8px; }
+  .activity-alert .activity-title { color: color-mix(in srgb, var(--warn) 80%, var(--text-3)); }
   .activity-alert-body { display: flex; flex-direction: column; gap: 1px; color: inherit; }
   .activity-alert .activity-text { color: var(--text); }
   .activity-actions { display: flex; gap: 6px; }
   .btn.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 55%, transparent); }
-  .activity-soft { background: color-mix(in srgb, var(--warn) 5%, transparent); }
-  /* work landing: a commit stands out in its own outline, the short sha set like the commit chips */
-  .activity-commit { margin: 4px 0; padding: 7px 8px; border-radius: 8px;
-    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
-  .activity-commit .activity-text { color: var(--text); }
+  .activity-soft { background: none; }
+  /* a commit is a line like the others; only its sha is set apart, because a sha is read character
+     by character and everything else here is read as a sentence */
+  .activity-commit { margin: 0; padding: 5px 8px; }
   .activity-commit .activity-d { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: var(--accent-text); opacity: 1; }
   .activity-link { color: inherit; border-radius: 7px; }
   .activity-head { height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 -10px; padding: 0 10px;
@@ -494,14 +496,16 @@
   /* THE SWITCH SAYS WHICH WAY IT IS. A toggle beside the word "Auto" says what it is called, never
      what it is doing; the word inside says the state, and the opposite of auto is manual. */
   /* ONE WIDTH FOR BOTH WORDS: it changes state, it does not change size, or the bar shifts under the
-     hand that pressed it. The dot slides between the two ends rather than appearing at the other. */
-  .switch.worded { width: 64px; height: 18px; border-radius: 9px; display: inline-flex; align-items: center;
+     hand that pressed it. The dot slides between the two ends rather than appearing at the other.
+     ONE WORD, BOTH WAYS: the toggle says which way it is set, so the word only has to say what it
+     is — "manual" was the switch saying its own state twice. */
+  .switch.worded { width: 52px; height: 18px; border-radius: 9px; display: inline-flex; align-items: center;
     transition: background .15s; }
   .switch.worded .switch-word { flex: 1 1 auto; padding: 0 6px 0 18px; font-size: 10px; letter-spacing: .04em;
     line-height: 18px; text-align: center; color: var(--text-2); }
   .switch.worded .knob { top: 3px; left: 3px; transition: transform .18s cubic-bezier(.2, .8, .2, 1), background .15s; }
   .switch.worded.on .switch-word { padding: 0 18px 0 6px; color: #fff; }
-  .switch.worded.on .knob { transform: translateX(46px); }
+  .switch.worded.on .knob { transform: translateX(34px); }
   @media (prefers-reduced-motion: reduce) { .switch.worded .knob { transition: none; } }
   .row .num { color: var(--text-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
   /* after the number: a question marker, warm while a linked question waits on you, faint once answered */
