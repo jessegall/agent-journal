@@ -4582,17 +4582,7 @@ const ActivityPanel = {
       OVERLAY.kind = "subagent";
       OVERLAY.n = a.id;
     };
-    // what the agent said belongs to the work it is doing, so commenting on it opens that work with the words quoted
-    const commentOnSaid = () => {
-      const said = props.data && props.data.agent && props.data.agent.said;
-      const work = (AGENT_STATE[props.env] || {}).work;
-      if (!said || !work) return;
-      OVERLAY.kind = "work";
-      OVERLAY.n = work.n;
-      OVERLAY.quote = quoted(said);
-    };
-    const canComment = computed(() => !!(AGENT_STATE[props.env] || {}).work);
-    return { accept, crew, agentsList, working, crewGroups, keyed, list, hovered, opened, onRow, onCrewRow, commentOnSaid, canComment };
+    return { accept, crew, agentsList, working, crewGroups, keyed, list, hovered, opened, onRow, onCrewRow };
   },
   template: `
     <div class=activity-panel>
@@ -4619,13 +4609,6 @@ const ActivityPanel = {
         </span>
       </div>
       <template v-if="data">
-        <div v-if="data.agent && data.agent.said" :class="['activity-said', {sayable: canComment}]"
-          :role="canComment ? 'button' : null" :tabindex="canComment ? 0 : null"
-          :title="canComment ? 'Comment on this, with it quoted' : null"
-          @click="commentOnSaid" @keydown.enter.prevent="commentOnSaid" @keydown.space.prevent="commentOnSaid">
-          <span class=activity-said-head>Latest from the agent</span>
-          <div class="activity-said-text md" v-html="$md(data.agent.said)"></div>
-        </div>
         <div class=activity-list ref=list @mouseenter="hovered = true" @mouseleave="hovered = false">
           <TransitionGroup name=act>
           <template v-for="{ e, key } in keyed" :key="key">
