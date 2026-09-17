@@ -205,11 +205,15 @@ def wrote(root: Path, env: str) -> list[dict]:
             out.append({"at": r.get("at") or "", "who": "you" if r.get("source") == "web" else "agent",
                         "kind": "receipt" if r.get("source") == "journal" else "reply",
                         "tag": "", "text": trim(r.get("text") or ""),
+                        # A RECEIPT SAYS WHICH MESSAGE IT IS FOR, the way a reply says what it
+                        # answers. Several in a row are otherwise a column of "Noted" with nothing
+                        # tying any of them to the thing that produced it.
                         "full": (r.get("text") or "").strip() if len((r.get("text") or "").strip()) > TEXT_MAX else "",
                         "n": n,
                         # the two point opposite ways and never both appear: part is the user's words the
                         # agent answered, quoting is the thread's words the user answered
-                        "ref": r.get("quoting") or r.get("part") or ""})
+                        "ref": (r.get("quoting") or r.get("part")
+                                or (trim(whole, 90) if r.get("source") == "journal" else ""))})
     return out
 
 
