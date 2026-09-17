@@ -583,6 +583,15 @@
   .thread-ticks svg { width: 16px; height: 10px; }
   .thread-ticks.read { opacity: .8; }
   .thread-ticks.filed { opacity: 1; color: var(--accent-text); }
+  /* what the message BECAME, and whether that row is moving. A pointer, never a report: what is being
+     done is the Activity column's, and this says only which row to look at. */
+  .thread-became { display: flex; align-items: center; gap: 5px; margin: 0 0 5px; padding-bottom: 5px;
+    border-bottom: 1px solid var(--border-2); font-size: 10.5px; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--text-3); }
+  .thread-became.live { color: var(--accent-text); }
+  .thread-became-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor;
+    animation: crew-pulse 1.8s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .thread-became-dot { animation: none; } }
   .thread-quote { margin: 0 0 5px; padding: 1px 0 1px 8px; border-left: 2px solid var(--border-2);
     color: var(--text-3); font-size: 12.5px; }
   /* the turn a rail card just moved the thread to: lit for a moment, so the eye lands on it */

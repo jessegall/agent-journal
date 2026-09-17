@@ -150,11 +150,19 @@ def wrote(root: Path, env: str) -> list[dict]:
     that has to be kept level with it.
     """
     import inbox
+    import todo
+    # WHAT A MESSAGE BECAME IS ALREADY WRITTEN DOWN, and so is whether that row is being worked: a part
+    # records its ref, a to-do carries `started` until it is `done`. So the header is three reads of
+    # what is there — it POINTS at the work, it does not report it, which is the Activity column's job.
+    rows = {t["n"]: t for t in todo._all(root, env)}
     out = []
     for n, m in enumerate(inbox._all(root, env), 1):
         if m.get("archived"):
             continue
         became = inbox._became(m)
+        made = [int(ref.partition(":")[2]) for p in m.get("parts") or [] for ref in p.get("became") or []
+                if str(ref).startswith("todo:") and ref.partition(":")[2].isdigit()]
+        working = any((rows.get(k) or {}).get("started") and not (rows.get(k) or {}).get("done") for k in made)
         whole = (m.get("text") or "").strip()
         out.append({"at": m.get("at") or "", "who": "you", "kind": "message", "tag": "",
                     "text": trim(whole), "full": whole if len(whole) > TEXT_MAX else "", "n": n,
@@ -164,7 +172,7 @@ def wrote(root: Path, env: str) -> list[dict]:
                     # delivered, read, filed: three states the record already keeps, so the ticks are a
                     # reading of what is there rather than a fourth thing to keep level with it
                     "state": "filed" if m.get("processed") else "read" if m.get("read") else "sent",
-                    "became": ", ".join(became)})
+                    "became": ", ".join(became), "working": working})
         for r in m.get("replies") or []:
             out.append({"at": r.get("at") or "", "who": "you" if r.get("source") == "web" else "agent",
                         "kind": "reply", "tag": "", "text": trim(r.get("text") or ""),

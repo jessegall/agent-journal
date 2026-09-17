@@ -3528,6 +3528,11 @@ const Thread = {
       lit.value = want;
       setTimeout(() => { if (lit.value === want) lit.value = ""; }, 2200);
     });
+    // the header POINTS at what the message became; what is being DONE stays in the Activity column
+    const becameNote = (t) => {
+      if (!t.became) return "Being read";
+      return t.working ? `Working on ${t.became}` : `Became ${t.became}`;
+    };
     // what the ticks mean, said in words for whoever hovers one
     const landed = (t) => (t.state === "filed"
       ? `Filed${t.became ? `: it became ${t.became}` : ""}`
@@ -3535,7 +3540,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, send, root, answered, landed, fileUrl, clock, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
+    return { turns, more, send, root, answered, landed, becameNote, fileUrl, clock, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
   },
   template: `
     <div class=thread>
@@ -3552,6 +3557,8 @@ const Thread = {
         :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', lit: lit === t.kind + ':' + t.n}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
+          <p v-if="t.kind === 'message' && (t.became || t.state === 'read')" :class="['thread-became', {live: t.working}]">
+            <span v-if="t.working" class=thread-became-dot></span>{{ becameNote(t) }}</p>
           <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
           <div v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
           <button v-if="t.full" type=button class=thread-full @click.stop="showAll(t)">
