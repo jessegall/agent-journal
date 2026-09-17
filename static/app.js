@@ -3862,6 +3862,22 @@ const Settings = {
     // the Project rows say how much each holds: coding style rules and tools belong to the project, not the environment
     const styleRules = useFetch(() => "/api/style?all=1");
     const tools = useFetch(() => "/api/tools");
+    // stopping is not undoable from here: once it goes, this page has nothing to ask
+    const viewerSaid = ref("");
+    const viewerBusy = ref(false);
+    const viewerAct = async (verb) => {
+      if (viewerBusy.value) return;
+      if (verb === "stop" && !window.confirm("Stop the viewer? This page stops working until it is started again from the terminal.")) return;
+      viewerBusy.value = true;
+      try {
+        const got = await send("POST", `/api/viewer/${verb}`);
+        viewerSaid.value = (got && got.message) || (verb === "stop" ? "stopping" : "restarting");
+      } catch (e) {
+        viewerSaid.value = e.message;
+      } finally {
+        viewerBusy.value = false;
+      }
+    };
     const counted = (n, one, many) => (typeof n === "number" ? `${n} ${n === 1 ? one : many}` : "");
     const auto = reactive({ saving: false, error: null });
     async function setAuto(on) {
@@ -3903,7 +3919,8 @@ const Settings = {
     }] : []));
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
     const saveSetting = (body) => postJSON(`${api.value}/settings`, body).then(() => { s.reload(); changed(); });
-    return { s, auto, setAuto, saveSetting, removing, done, keepingRows, kept, showing, ACTIVITY, toggleActivity, styleRules, tools, counted };
+    return { s, auto, setAuto, saveSetting, removing, done, keepingRows, kept, showing, ACTIVITY, toggleActivity, styleRules, tools, counted,
+             viewerSaid, viewerBusy, viewerAct };
   },
   template: `
     <TopBar :crumbs="[env, 'Settings']"/>
@@ -3958,6 +3975,11 @@ const Settings = {
               <button type=button class=btn :disabled="auto.saving" @click="setAuto(!s.data.auto)">{{ s.data.auto ? 'Turn off' : 'Turn on' }}</button>
               <p v-if="auto.error" class="error settings-wide">{{ auto.error }}</p>
             </div>
+            <!-- the one control that ends the thing serving the page: it says so rather than reading like a logout -->
+            <div class=settings-row><span class=settings-label>This viewer</span>
+              <span class=settings-value>{{ viewerSaid || 'runs until it is stopped' }}</span>
+              <button type=button class=btn :disabled="viewerBusy" @click="viewerAct('restart')">Restart</button>
+              <button type=button class="btn danger" :disabled="viewerBusy" @click="viewerAct('stop')">Stop</button></div>
             <div class=settings-row><span class=settings-label>Pins</span><span class=settings-value>{{ s.data.pins }} standing</span><a class=btn :href="'#/env/' + env + '/pins'">Open</a></div>
             <div class=settings-row><span class=settings-label>Reminders</span><span class=settings-value>{{ counted(s.data.reminders, 'reminder', 'reminders') }}</span><a class=btn :href="'#/env/' + env + '/reminders'">Open</a></div>
             <div class=settings-row><span class=settings-label>Coding style rules</span><span class=settings-value>{{ styleRules.data ? counted(styleRules.data.length, 'rule', 'rules') : '' }}</span><a class=btn :href="'#/env/' + env + '/style'">Open</a></div>

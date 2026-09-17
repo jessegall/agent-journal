@@ -317,6 +317,13 @@ check("an ordinary message carries no kind", (status, got["data"]["kind"]), (201
 status, got = post("/api/env/beta/messages", {"text": "what is this", "kind": "banana"})
 check("an unknown kind is refused: 400, naming what there is",
       (status, "no message kind called" in got["error"], "transcript" in got["error"]), (400, True, True))
+# THE PAGE CAN END THE THING SERVING IT, and only from the page: it goes through the write path, so
+# the same-origin guard that protects every other write protects this one. Stopping is not exercised
+# here -- this suite's server has to survive the rest of the file -- but the refusal is.
+_st, _got = post("/api/viewer/stop", {}, headers={"Origin": "http://elsewhere.example"})
+check("a stop from another origin is refused", (_st, "another origin" in json.dumps(_got)), (403, True))
+_st, _got = post("/api/viewer/stop", b"not json", headers={"Content-Type": "text/plain"})
+check("and a stop that is not JSON is refused too", _st, 415)
 # beta's inbox, not alpha's to-dos: a later check pins the NEXT to-do number on alpha, and adding
 # one here to move the fingerprint would take it -- the mid-fixture trap this file is full of.
 _st, _hd, _ = get("/api/env/beta/messages")
