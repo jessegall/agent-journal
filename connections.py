@@ -187,7 +187,9 @@ def remove(root: Path, name: str, why: str, at: str) -> tuple[bool, str]:
             return False, say("no_such", name=name)
         gone = got.pop(name)
         state.put(root, KEY, got)
-    _log_removal(root, name, gone, why, at)
+        # INSIDE THE TAKE. Removing it and recording that it went are one act; split across two,
+        # a second remover can land between them and the log loses an entry.
+        _log_removal(root, name, gone, why, at)
     return True, say("removed", name=name, why=why)
 
 

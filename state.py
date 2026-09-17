@@ -22,6 +22,7 @@ import contextlib
 import json
 import re
 import os
+import threading
 import tempfile
 import time
 from pathlib import Path
@@ -117,8 +118,15 @@ def _read(f: Path) -> dict:
     return data
 
 
-def _write(f: Path, data: dict) -> None:
-    """Atomic, and SAFE UNDER CONCURRENT WRITERS.
+def write_json(f: Path, data) -> None:
+    """THE ONE ATOMIC JSON WRITE. Every module that keeps a file of JSON writes it through here.
+
+    PUBLIC, BECAUSE FIVE MODULES NEED IT. It was `_write` and reached anyway — from `migrate`,
+    from `tracks` — while `docs`, `update` and `tracks`'s own bindings file each kept their own
+    `write_text(json.dumps(...))`, which is the truncate-then-write a reader can land inside.
+    A private name that four callers already use is not a boundary, it is a warning nobody read.
+
+    Atomic, and SAFE UNDER CONCURRENT WRITERS.
 
     The first version wrote `<name>.tmp` and replaced it. Two hooks writing at once — and
     parallel tool calls fire PostToolUse at once — shared that path, and one of them died
@@ -264,7 +272,7 @@ def _record(root: Path) -> dict:
                 data[key] = slug(data[key]) or "default"
         changed = True
     if changed:
-        _write(record_file(root), data)
+        write_json(record_file(root), data)
     return data
 
 
@@ -326,7 +334,7 @@ def put(root: Path, key: str, value, *, stem: str | None = None) -> None:
         f = runtime_file(root, stem)
     data = _read(f)
     data[key] = value
-    _write(f, data)
+    write_json(f, data)
 
 
 def tracked(root: Path, key: str, track: str, default=None):
@@ -351,7 +359,7 @@ def put_many(root: Path, values: dict, *, stem: str) -> None:
     f = runtime_file(root, stem)
     data = _read(f)
     data.update(values)
-    _write(f, data)
+    write_json(f, data)
 
 
 def put_tracked(root: Path, key: str, track: str, value) -> None:
@@ -366,7 +374,7 @@ def put_tracked(root: Path, key: str, track: str, value) -> None:
     with locked(root):
         f = _tracked_file(root, track, key)
         f.parent.mkdir(parents=True, exist_ok=True)
-        _write(f, {key: value})
+        write_json(f, {key: value})
 
 
 def retire_old(root: Path) -> bool:
@@ -381,12 +389,19 @@ def retire_old(root: Path) -> bool:
         return False  # another process got there first; nothing to do
 
 
-#: REENTRANT, by a depth counter. `tracks.switch` moves the record under the lock, and it
-#: is written in terms of the same helpers a caller might already be holding the lock
-#: through. A second `flock` on the same file in the same process blocks forever, verified;
-#: a CLI that hangs until the tool timeout is worse than any lost pin.
-_depth = 0
-_held = None
+#: REENTRANT PER THREAD, by a depth counter. `tracks.switch` moves the record under the lock,
+#: and it is written in terms of the same helpers a caller might already be holding the lock
+#: through, so a nested take must not wait on the take that is already standing.
+#:
+#: PER THREAD IS THE WHOLE POINT, and for a while this was one counter for the process. A
+#: second THREAD then saw a non-zero depth, took the "already held" branch and walked into the
+#: critical section without ever touching the lock — measured: one thread held it for a second
+#: and another entered 0.21s later. The one process where that matters is the one built for
+#: concurrency: `serve.py` is a threading server, and every write endpoint it answers goes
+#: through here. A thread-local counter makes only THIS thread's nested takes free; another
+#: thread contends for the real lock, which `flock` grants per open file description and so
+#: excludes two threads of one process as readily as two processes.
+_local = threading.local()
 
 
 @contextlib.contextmanager
@@ -411,13 +426,12 @@ def locked(root: Path, wait: float = 3.0):
     process, not for contention. A per-environment lock would buy nothing measurable and
     would need its own answer for `record.json`, which every environment shares.
     """
-    global _depth, _held
-    if _depth:
-        _depth += 1
+    if getattr(_local, "depth", 0):
+        _local.depth += 1
         try:
             yield
         finally:
-            _depth -= 1
+            _local.depth -= 1
         return
     try:
         import fcntl
@@ -438,11 +452,11 @@ def locked(root: Path, wait: float = 3.0):
                 fmt.notice(render(NOTICES["locked"], seconds=round(wait)))
                 break
             time.sleep(0.02)
-    _depth, _held = 1, fh
+    _local.depth = 1
     try:
         yield
     finally:
-        _depth, _held = 0, None
+        _local.depth = 0
         if got:
             with contextlib.suppress(OSError):
                 fcntl.flock(fh, fcntl.LOCK_UN)

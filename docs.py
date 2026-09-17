@@ -432,7 +432,7 @@ def _manifest(doc: dict) -> list[dict]:
 
 def _save_manifest(doc: dict, items: list[dict]) -> None:
     (doc["dir"] / FILES).mkdir(exist_ok=True)
-    (doc["dir"] / FILES / MANIFEST).write_text(json.dumps(items, indent=2) + "\n")
+    state.write_json(doc["dir"] / FILES / MANIFEST, items)
 
 
 def attachments(doc: dict) -> list[dict]:
@@ -522,7 +522,7 @@ def _strike_attachment(doc: dict, name: str, why: str, items: list[dict]) -> Pat
         except ValueError:
             kept = []
     kept.append({**entry, "kept_as": dst.name, "struck": f"{_now()} — {why}"})
-    log.write_text(json.dumps(kept, indent=2) + "\n")
+    state.write_json(log, kept)
     return dst
 
 
