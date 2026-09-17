@@ -3785,7 +3785,11 @@ const Thread = {
       const mine = { key: `pending:${sent += 1}`, at: new Date().toISOString(), who: "you", pending: true,
                      becameRefs: [], became: "", files: [],
                      kind: to && to.who === "agent" && to.kind === "reply" && to.n ? "reply" : "message",
-                     n: to && to.kind === "reply" ? to.n : null, text, state: "sending",
+                     // THE OPTIMISTIC TURN CARRIES WHAT WAS SENT, not what was typed. They differ
+                     // whenever the reply quotes what it answers, and the two are matched BY TEXT to
+                     // keep one key across the swap — so a quoted reply never matched, the pending
+                     // turn left while the real one entered, and the same words animated twice.
+                     n: to && to.kind === "reply" ? to.n : null, text: said, state: "sending",
                      ref: to && to.who === "agent" && to.kind === "reply" ? excerpt(quoteOf.value) : "" };
       pending.value = [...pending.value, mine];
       answering.value = null;
@@ -3807,6 +3811,7 @@ const Thread = {
     };
     const retry = (t) => {
       pending.value = pending.value.filter((x) => x.key !== t.key);
+      // the quote is put back in the box with the words, since that is what would be sent again
       THREAD_BOX.focus && THREAD_BOX.focus(t.text);
     };
     const fileUrl = (n, name) => `/message-files/${props.env}/${n}/${encodeURIComponent(name)}`;
