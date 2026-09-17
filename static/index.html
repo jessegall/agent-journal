@@ -201,7 +201,9 @@
   .statusbar-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--text-3); }
   .statusbar-dot.live { background: var(--accent); }
   .statusbar-dot.held { background: #d9a441; }
-  .statusbar-text { flex: 1 1 0%; min-width: 0; display: flex; align-items: baseline; gap: 8px; overflow: hidden; margin: 0 -7px; padding: 3px 7px; border: none; border-radius: 7px;
+  /* CENTRED, NOT ON A BASELINE. The sentence rolls inside a box of its own height now, so there is
+     no shared baseline to sit on: the state sat low and the sentence high. */
+  .statusbar-text { flex: 1 1 0%; min-width: 0; display: flex; align-items: center; gap: 8px; overflow: hidden; margin: 0 -7px; padding: 3px 7px; border: none; border-radius: 7px;
     background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
   .statusbar-text:hover { background: rgba(255, 255, 255, .04); }
   .statusbar-text b { flex: none; font-weight: 500; font-size: 13.5px; white-space: nowrap; }
@@ -209,7 +211,7 @@
     text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   /* the roller: one line's height, and the two lines pass through it without moving anything else */
   .statusbar-roll { position: relative; display: block; height: 19px; text-decoration: none; }
-  .statusbar-line { position: absolute; inset: 0; min-width: 0; display: block; overflow: hidden; text-overflow: ellipsis;
+  .statusbar-line { position: absolute; inset: 0; min-width: 0; display: flex; align-items: center; overflow: hidden; text-overflow: ellipsis;
     text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   .roll-enter-active, .roll-leave-active { transition: opacity 75ms ease, transform 75ms ease; }
   .roll-enter-from { opacity: 0; transform: translateY(9px); }
