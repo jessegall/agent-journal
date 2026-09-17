@@ -4,6 +4,30 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.146.0 — Connections have a page, and a reference opens where you are reading
+
+**The connections page.** 1.145.0 gave the project a list of the services it can reach; this
+is the page for it, under Environment, because what it shows is THIS environment's reading of
+that list with its own changes applied and each one marked beside the project's value. It is
+read-only on purpose: a connection is written from the terminal, where whoever types a variable
+name can see which shell they are in. What crosses the wire is the variable's NAME and whether
+the SERVER has it set — never what is in it, because the viewer is the one place a secret could
+be shown to somebody who is not at the terminal.
+
+**A reference to a pin, a rule or a reminder opens in place.** Three kinds were navigating to
+an index page, for two reasons stacked on each other: a reminder's link was built as the LIST,
+throwing away the number the reference already carried, and none of the three had a panel
+registered to open into. Both are fixed at the source, which covers every chip in the viewer at
+once — the thread's became-pills, a comment's, a question's links, a part's.
+
+**A rule has a panel, and so does a pin and a reminder.** A pin and a rule are one shape with
+two scopes, so they are one factory and two names; the Pins and Rules pages now render the same
+component the inspector does rather than a second copy of it. The same for reminders.
+
+Also: what a message became is deduplicated — two parts that became the same row drew the same
+pill twice. And `for` became `purpose` on a connection, because `for` is a keyword everywhere a
+field becomes a name; the CLI still answers to `for`.
+
 ## 1.145.0 — There is no default environment
 
 **READ THIS ONE BEFORE UPGRADING.** `tracks.current` used to fall back to the project's
