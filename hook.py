@@ -356,6 +356,7 @@ MESSAGES = {
     "note_delayed": "delayed work, not an instruction to start any of it",
     "count_reminders": "said again at every stop; not repeated here",
     "count_tools": "scripts this project keeps; run them, do not rewrite them",
+    "count_connections": "services this project can reach, and which variable holds each token",
     "count_row": "{n}  {cmd}",
     "count_carry": "      journal carry",
     "count_carry_what": "all of it, in full, in one read",
@@ -3249,6 +3250,7 @@ def _counts(here: str, unbound: bool = False) -> str:
         (len(rem.live(ROOT)), "journal reminders", say("count_reminders")),
         (len(todo.open_items(ROOT, here)), "journal todos", _todo_note(here, unbound)),
         (len(tools._all(ROOT)), "journal tools", say("count_tools")),
+        (len(__import__("connections").all_of(ROOT, here)), "journal connections", say("count_connections")),
         (len(__import__("suggestions").open_items(ROOT, here)), "journal suggestions", say("count_suggestions")),
     ]
     have = [(say("count_row", n=str(n).rjust(4), cmd=cmd), what) for n, cmd, what in rows if n]

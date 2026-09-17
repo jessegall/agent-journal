@@ -51,7 +51,11 @@ IN_RECORD = {"activity_show", "activity_keep", "viewer_first", "retention", "pin
              # write printed "no transcript to file it under" and every read returned the default. The
              # mechanism was dead and nothing said so, because `transcript.segments` falls back to parsing
              # the transcript's own text and that works. It is keyed by stem, so it is project-wide by shape.
-             "session_marks"}
+             "session_marks",
+             # the project's connections: services it can reach, and the NAME of the variable
+             # holding each one's token. An environment's disagreement with the list is a
+             # separate, tracked key — one name cannot be both.
+             "connections", "connections_removed"}
 
 
 def is_record(key: str) -> bool:
@@ -159,7 +163,7 @@ def runtime_files(root: Path) -> list[tuple[str, dict]]:
 #: Before this, the current environment's data sat in top-level keys and a switch SWAPPED it
 #: with a parked copy — which meant one current environment for the whole project, and two
 #: sessions could not be on two environments. A record in the old shape is moved on first read.
-TRACKED = ("pins", "work", "reminders", "questions", "inbox", "comments", "reports", "notifications", "suggestions", "activity", "plans")
+TRACKED = ("pins", "work", "reminders", "questions", "inbox", "comments", "reports", "notifications", "suggestions", "activity", "plans", "connection_overrides")
 _TRACK: list = []
 
 #: WHAT BELONGS TO AN ENVIRONMENT LIVES IN THE ENVIRONMENT'S FOLDER. Pins and work sat in
