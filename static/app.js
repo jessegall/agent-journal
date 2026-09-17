@@ -785,7 +785,7 @@ const Panel = {
 };
 
 const Compose = {
-  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial", "quote"],
+  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial", "quote", "bare"],
   components: { Icon },
   setup(props) {
     // `initial` seeds the box. `quote` does NOT: what is being commented ON is shown above the field and
@@ -832,7 +832,7 @@ const Compose = {
           <span v-for="(f, i) in draft.files" :key="i" class=chip>{{ f.name }} <button type=button class=chip-x title="Remove" @click="unpick(i)">×</button></span>
         </div>
       </div>
-      <div class=compose-bar>
+      <div v-if="!bare" class=compose-bar>
         <span class=hint>{{ hint }}</span>
         <button type=submit class=primary :disabled="draft.sending || !draft.text.trim()">{{ submit }}</button>
       </div>
@@ -3564,7 +3564,7 @@ const Thread = {
       </TransitionGroup>
       </div>
       <div class=thread-write>
-        <Compose placeholder="Write to the agent…" submit="Send" hint="↵ sends · ⇧↵ new line" :send="send" :attach="true"/>
+        <Compose placeholder="Write to the agent…" submit="Send" :send="send" :attach="true" :bare="true"/>
       </div>
     </div>`,
 };
@@ -3645,17 +3645,21 @@ const EnvHome = {
       const agent = SHELL.activity && SHELL.activity.agent;
       const session = (crew.data || []).find((a) => a.kind === "session" && agent && a.id === agent.session);
       const branch = SHELL.activity && SHELL.activity.branch;
-      const facts = [
-        session && session.name ? session.name : agent ? "Claude Code" : "No agent",
-        agent && agent.model ? agent.model : "",
-        branch ? branch.name : "",
-        agent ? `session ${agent.session}` : "",
-        agent && agent.started ? `${spanText(Date.now() - Date.parse(agent.started))} in` : "",
-        agent && agent.context ? `${agent.context.share}% context` : "",
-      ].filter(Boolean);
+      // SIX FACTS DO NOT FIT ON ONE LINE OF A 288px RAIL, and a line that does not fit ellipses the
+      // end of itself. They are separate facts, so they are separate rows: what is being read is the
+      // value, and the label is only there to say which fact it is.
+      const rows = [
+        { label: "agent", value: session && session.name ? session.name : agent ? "Claude Code" : "No agent" },
+        { label: "model", value: agent && agent.model ? agent.model : "" },
+        { label: "branch", value: branch ? branch.name : "" },
+        { label: "session", value: agent ? agent.session : "" },
+        { label: "running", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
+        { label: "context", value: agent && agent.context ? `${agent.context.share}%` : "" },
+      ].filter((r) => r.value);
       // the session is an agent with a page of its own, the same page a subagent's line opens —
       // it was the one name here you could not click
-      return { facts, href: agent ? `#/env/${props.env}/agents/session/${agent.session}` : "" };
+      return { rows, share: agent && agent.context ? agent.context.share : 0,
+               href: agent ? `#/env/${props.env}/agents/session/${agent.session}` : "" };
     });
     const envRow = computed(() => (OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null));
     const SLOTS = 3;
@@ -3748,15 +3752,16 @@ const EnvHome = {
       <div class=home-rail>
       <div class=home-lead>
         <div class=home-facts>
-          <template v-for="(f, i) in lead.facts" :key="i">
-            <a v-if="i === 0 && lead.href" class=first :href="lead.href" title="Open this agent's page">{{ f }}</a>
-            <span v-else :class="{first: i === 0}">{{ f }}</span>
-          </template>
+          <div v-for="(r, i) in lead.rows" :key="r.label" class=home-fact>
+            <span class=home-fact-label>{{ r.label }}</span>
+            <a v-if="i === 0 && lead.href" class=home-fact-value :href="lead.href" title="Open this agent's page">{{ r.value }}</a>
+            <span v-else class=home-fact-value :title="r.value">{{ r.value }}</span>
+          </div>
         </div>
         <div v-if="liveCrew.length" class=crew-strip>
           <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" :style="{ animationDelay: a.delay }" @click="a.open">
             <span class=crew-rule></span><span class=crew-dot></span>
-            <span class=crew-name>{{ a.name }}</span><span class=crew-tail>{{ a.tail }}</span>
+            <span class=crew-name :title="a.title">{{ a.name }}</span>
           </button>
         </div>
       </div>
