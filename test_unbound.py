@@ -48,7 +48,8 @@ _PROJECTS: dict = {}
 
 def _project(d):
     if str(d) not in _PROJECTS:
-        _PROJECTS[str(d)] = testkit.Project(d)
+        # bind=False: this suite IS the refusal, so the harness must not choose for it
+        _PROJECTS[str(d)] = testkit.Project(d, bind=False)
     return _PROJECTS[str(d)]
 
 

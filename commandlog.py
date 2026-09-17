@@ -58,7 +58,9 @@ DETAIL = {"todos:priority": "value", "reports:keep": "days", "todos:keep": "days
           "environments:": "name", "environments:show": "name", "environments:remove": "name",
           "environments:prepare": "name", "environments:claim": "name", "prepare:": "name", "claim:": "name",
           "grant:": "name", "tools:run": "name", "tools:show": "name", "tools:add": "name", "tools:set": "name",
-          "tools:remove": "name", "style:show": "subject", "style:add": "subject", "style:set": "subject",
+          "tools:remove": "name", "connections:show": "name", "connections:add": "name",
+          "connections:set": "name", "connections:here": "name", "connections:remove": "name",
+          "style:show": "subject", "style:add": "subject", "style:set": "subject",
           "style:remove": "subject"}
 # run by git hooks, not by the agent
 HOOKS = {"todos:from-commit"}
@@ -242,6 +244,12 @@ DESCRIBE = {
     "tools:set": "Changing a tool",
     "tools:remove": "Retiring a tool",
     "tools:index": "Rebuilding the tools index",
+    "connections:list": "Reading the connections",
+    "connections:show": "Reading a connection",
+    "connections:add": "Keeping a connection",
+    "connections:set": "Changing a connection",
+    "connections:here": "Changing a connection on this environment",
+    "connections:remove": "Dropping a connection",
     "style:list": "Reading the coding style",
     "style:show": "Reading a coding style rule",
     "style:add": "Adding a coding style rule",
