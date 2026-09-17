@@ -39,13 +39,13 @@ TEXT = {
     "commands": (
         ('journal connections add <name> "<what it is for>" --url= --secret=<ENV_VAR>', "keep one"),
         ("journal connections show <name>", "read one"),
-        ('journal connections set <name> <field> "<value>"', "change it for the project"),
-        ('journal connections here <name> <field> "<value>"', "change it on this environment only"),
+        ('journal connections set <name> purpose|kind|url|secret "<value>"', "change it for the project"),
+        ('journal connections here <name> purpose|kind|url|secret "<value>"', "change it on this environment only"),
         ('journal connections remove <name> "<why>"', "stop keeping it"),
     ),
 }
 
-FIELD_LABELS = (("for", "show_what"), ("kind", "show_kind"), ("url", "show_url"))
+FIELD_LABELS = (("purpose", "show_what"), ("kind", "show_kind"), ("url", "show_url"))
 
 
 class List(Command):
@@ -60,7 +60,7 @@ class List(Command):
         if not rows:
             fmt.say(TEXT["empty"])
         for row in rows.values():
-            fmt.say(render(TEXT["row"], name=row["name"], what=row.get("for") or ""))
+            fmt.say(render(TEXT["row"], name=row["name"], what=row.get("purpose") or ""))
             facts = [f for f in (row.get("kind"), row.get("url"), conn.secret_state(row)) if f]
             if row["overridden"]:
                 facts.append(render(TEXT["row_here"], fields=row["overridden"], env=_track()))
@@ -109,7 +109,7 @@ class Add(Command):
 
 
 class Set(Command):
-    signature = "connections:set {name : the connection} {field : kind, url, secret or for} {value*? : the new value}"
+    signature = "connections:set {name : the connection} {field : kind, url, secret or purpose} {value*? : the new value}"
     writes = True
 
     def run(self, p: Parsed) -> int:
@@ -119,7 +119,7 @@ class Set(Command):
 
 
 class Here(Command):
-    signature = ("connections:here {name : the connection} {field : kind, url, secret or for} "
+    signature = ("connections:here {name : the connection} {field : kind, url, secret or purpose} "
                  "{value*? : the value on this environment} {--off}")
     writes = True
 
