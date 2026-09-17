@@ -940,7 +940,9 @@
     background: var(--text); color: var(--bg); font: inherit; font-size: 11.5px; cursor: pointer;
     box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
   .thread-down:hover { background: #fff; border-color: #fff; color: #000; }
-  .thread-down .ico { width: 13px; height: 13px; }
+  /* on a light pill the hairline stroke and the mid-grey word both read as faint: both get weight */
+  .thread-down { font-weight: 500; color: #0d0e10; }
+  .thread-down .ico { width: 13px; height: 13px; stroke-width: 2.1; }
   /* THE RULE RUNS THE WHOLE COLUMN. The thread sits inside the home's 24px side padding, so a
      border drawn on this block stopped 24px short of each edge — a hairline with a gap at both
      ends, which reads as a mistake rather than a division. It is pulled out to the edges and the
