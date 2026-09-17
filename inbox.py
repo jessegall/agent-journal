@@ -506,33 +506,7 @@ def done(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, s
             return False, say("unfiled", n=n, names=unfiled(m))
         m["processed"] = at
         _put(root, items, track)
-        answered = any((r.get("source") or "") not in ("web", "journal") for r in m.get("replies") or [])
-    _receipt(root, n, m, at, track, answered)
     return True, say("done", n=n, became=_became(m), waiting=len(unprocessed(root, track)))
-
-
-def _receipt(root: Path, n: int, m: dict, at: str, track: str | None, answered: bool) -> None:
-    """Say under the message what it became — in the JOURNAL's voice, not the agent's.
-
-    A BECAME-PILL IS A POINTER, AND A POINTER IS NOT AN ANSWER. The user watched eight messages
-    get filed with nothing said back and could not tell reading from ignoring; from where they
-    sit those are the same thing. The record already knows what each part became — that IS the
-    sentence — so nothing here depends on an agent remembering to write it.
-
-    IT STAYS OUT OF THE WAY OF A REAL ANSWER. If the agent has already replied, the message has
-    been answered by someone who read it, and a receipt under that is clutter. One line per
-    MESSAGE, when it is marked processed, and never one per part: a thread of receipts is the
-    same noise in a different shape.
-    """
-    if answered:
-        return
-    # ONLY WHEN SOMETHING WAS MADE. A message that produced no row needs no line under it saying
-    # so — the ticks already say it was read and filed, and a receipt that reports nothing is a
-    # receipt for nothing. The user, twice: just say noted, and only when you created something.
-    became = [b for b in _became(m) if b and b != "noted"]
-    if not became:
-        return
-    reply(root, n, say("receipt", became=became), at, source="journal", track=track, notify=False)
 
 
 def declare(root: Path, n: int, kind: str, at: str, track: str | None = None) -> tuple[bool, str]:

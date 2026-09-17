@@ -198,22 +198,31 @@ def wrote(root: Path, env: str) -> list[dict]:
                     "became_refs": [{"ref": ref, "label": inbox.label(ref)} for ref in dict.fromkeys(
                         ref for p in m.get("parts") or [] for ref in p.get("became") or [] if ":" in str(ref))],
                     "working": working})
+        # EITHER A NOTE OR AN ANSWER, NEVER BOTH. A message that produced rows and no reply gets the
+        # journal's own acknowledgement — a line, not a bubble. The moment the agent says something
+        # about it in its own words, that IS the acknowledgement and the note is gone. It is read
+        # off the record here rather than written into it, so the order the two arrive in cannot
+        # leave one of each standing.
+        # A NOTE SAYS WHICH MESSAGE IT IS FOR, so a run of them is not a column of "Noted" with
+        # nothing tying any of them to what produced it. A message that made no row gets none: an
+        # acknowledgement that reports nothing acknowledges nothing.
+        made = [b for b in became if b and b != "noted"]
+        if m.get("processed") and made and not any(
+                (r.get("source") or "") not in ("web", "journal") for r in m.get("replies") or []):
+            out.append({"at": m.get("processed") or m.get("at") or "", "who": "agent", "kind": "receipt",
+                        "tag": "", "text": inbox.say("receipt", became=made), "n": n,
+                        "ref": trim(whole, 90)})
         for r in m.get("replies") or []:
-            # THE JOURNAL'S OWN RECEIPT IS NOT THE AGENT SPEAKING. It is the record saying what the
-            # message became, written by the machine that knows; it reads as a note beside the turn
-            # rather than as a turn of its own, or a thread of them drowns the conversation.
+            if (r.get("source") or "") == "journal":
+                continue
             out.append({"at": r.get("at") or "", "who": "you" if r.get("source") == "web" else "agent",
-                        "kind": "receipt" if r.get("source") == "journal" else "reply",
+                        "kind": "reply",
                         "tag": "", "text": trim(r.get("text") or ""),
-                        # A RECEIPT SAYS WHICH MESSAGE IT IS FOR, the way a reply says what it
-                        # answers. Several in a row are otherwise a column of "Noted" with nothing
-                        # tying any of them to the thing that produced it.
                         "full": (r.get("text") or "").strip() if len((r.get("text") or "").strip()) > TEXT_MAX else "",
                         "n": n,
                         # the two point opposite ways and never both appear: part is the user's words the
                         # agent answered, quoting is the thread's words the user answered
-                        "ref": (r.get("quoting") or r.get("part")
-                                or (trim(whole, 90) if r.get("source") == "journal" else ""))})
+                        "ref": r.get("quoting") or r.get("part") or ""})
     return out
 
 
