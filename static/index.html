@@ -754,7 +754,7 @@
      and models happen to be. What does not fit is cut, because a fact that pushes the next one
      along is the thing being fixed. */
   .crew-fact { flex: none; width: 170px; display: inline-flex; align-items: center; gap: 4px;
-    min-width: 0; color: var(--text-3); white-space: nowrap; overflow: hidden; }
+    min-width: 0; font-size: 10.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; }
   .crew-fact span { overflow: hidden; text-overflow: ellipsis; }
   .crew-fact .ico { width: 11px; height: 11px; opacity: .6; }
   .crew-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #6fae7d; animation: crew-pulse 1.8s ease-in-out infinite; }
@@ -763,7 +763,7 @@
   /* a finished subagent is still here to click, and says so by not pulsing */
   .crew-line.done .crew-dot { background: #4a4d55; animation: none; }
   .crew-line.done .crew-name { color: var(--text-3); }
-  .crew-name { flex: none; width: 150px; min-width: 0; font-size: 11.5px; color: #a9acb3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .crew-name { flex: none; width: 150px; min-width: 0; font-size: 11px; color: #a9acb3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   @keyframes crew-in { from { transform: translateY(-4px); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes crew-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
   @media (prefers-reduced-motion: reduce) { .crew-line, .crew-dot { animation-duration: .01ms; animation-iteration-count: 1; } }
