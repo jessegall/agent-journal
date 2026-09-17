@@ -118,8 +118,15 @@ def _read(f: Path) -> dict:
     return data
 
 
-def _write(f: Path, data: dict) -> None:
-    """Atomic, and SAFE UNDER CONCURRENT WRITERS.
+def write_json(f: Path, data) -> None:
+    """THE ONE ATOMIC JSON WRITE. Every module that keeps a file of JSON writes it through here.
+
+    PUBLIC, BECAUSE FIVE MODULES NEED IT. It was `_write` and reached anyway — from `migrate`,
+    from `tracks` — while `docs`, `update` and `tracks`'s own bindings file each kept their own
+    `write_text(json.dumps(...))`, which is the truncate-then-write a reader can land inside.
+    A private name that four callers already use is not a boundary, it is a warning nobody read.
+
+    Atomic, and SAFE UNDER CONCURRENT WRITERS.
 
     The first version wrote `<name>.tmp` and replaced it. Two hooks writing at once — and
     parallel tool calls fire PostToolUse at once — shared that path, and one of them died
@@ -265,7 +272,7 @@ def _record(root: Path) -> dict:
                 data[key] = slug(data[key]) or "default"
         changed = True
     if changed:
-        _write(record_file(root), data)
+        write_json(record_file(root), data)
     return data
 
 
@@ -327,7 +334,7 @@ def put(root: Path, key: str, value, *, stem: str | None = None) -> None:
         f = runtime_file(root, stem)
     data = _read(f)
     data[key] = value
-    _write(f, data)
+    write_json(f, data)
 
 
 def tracked(root: Path, key: str, track: str, default=None):
@@ -352,7 +359,7 @@ def put_many(root: Path, values: dict, *, stem: str) -> None:
     f = runtime_file(root, stem)
     data = _read(f)
     data.update(values)
-    _write(f, data)
+    write_json(f, data)
 
 
 def put_tracked(root: Path, key: str, track: str, value) -> None:
@@ -367,7 +374,7 @@ def put_tracked(root: Path, key: str, track: str, value) -> None:
     with locked(root):
         f = _tracked_file(root, track, key)
         f.parent.mkdir(parents=True, exist_ok=True)
-        _write(f, {key: value})
+        write_json(f, {key: value})
 
 
 def retire_old(root: Path) -> bool:
