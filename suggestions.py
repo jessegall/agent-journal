@@ -12,6 +12,10 @@ KEY = "suggestions"
 MAX_OPEN = 5
 
 MESSAGES = {
+    "a_question": ('{title} is a question, not a proposal: what you are asking for is an ANSWER, and a '
+                   'suggestion offers accept, adjust or decline instead of one.\n'
+                   '  journal questions add "<the question>" --option="<one way>" --option="<the other>"\n'
+                   'If it is a proposal after all, say it as one: what you would do, not whether to.'),
     "needs_title": 'a suggestion needs the change, in one line: journal suggest "<the change>" --brief',
     "needs_body": "a suggestion needs its reasoning — what you saw, what it costs now and later — on stdin with --brief",
     "too_many": "the user already has {n} suggestions to decide on this environment ({open:, }); withdraw one, or wait for a decision",
@@ -91,6 +95,10 @@ def add(root: Path, title: str, body: str, at: str, about: list[str] | None = No
         return False, say("needs_title")
     if not (body or "").strip():
         return False, say("needs_body")
+    # A QUESTION WEARING A SUGGESTION lands in the wrong list with the wrong verbs: accept, adjust and
+    # decline instead of an answer. The tell is the shape of the title.
+    if title.endswith("?"):
+        return False, say("a_question", title=fmt.gist(title, 60))
     links, why = questions._refs(root, about or [], track)
     if why:
         return False, why

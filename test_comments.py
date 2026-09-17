@@ -150,5 +150,14 @@ code, out = j("comments", "done", _c2, "handled", "--became=todo 9999")
 check("a reference to something that does not exist is refused, and nothing is handled",
       (code, "9999" in out, [c.get("done") for c in stored()][int(_c2) - 1]), (1, True, None))
 
+# --------------------------------------------- a comment on something retracted goes nowhere
+# A struck pin is hidden from every list, so a comment on it sits where nobody will pass again.
+# DONE IS NOT RETRACTED: a comment on a closed to-do ("this came back") is worth saying.
+j("pins", "add", "a claim that will be struck")
+check("a comment on a pin that stands is taken", j("comments", "add", "pin 1", "while it stands")[0], 0)
+j("pins", "strike", "1", "it stopped being true")
+_code, _out = j("comments", "add", "pin 1", "after it was struck")
+check("and one on a struck pin is refused, saying so", (_code, "is struck" in _out), (1, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

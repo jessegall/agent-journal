@@ -964,7 +964,7 @@ subprocess.run([J, "start", "some work on the loader"], env=env, capture_output=
 p2 = subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, text=True, timeout=180)
 check("with work open it says what the agent is working on",
       "Agent currently working on: some work" in p2.stdout, True)
-subprocess.run([J, "end", "some work"], env=env, capture_output=True, timeout=180)
+subprocess.run([J, "end", "some work on the loader"], env=env, capture_output=True, timeout=180)
 check("auto on is set on the record, once for the whole journal",
       (p.returncode, "auto ON" in p.stdout, json.loads((d / ".journal" / "record.json").read_text()).get("auto")),
       (0, True, True))

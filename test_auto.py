@@ -189,7 +189,7 @@ label, text = s.stop(after_hold=True)
 check("the stop after the hold passes", label, "")
 label, text = s.stop()
 check("and the next turn is held again", label, AUTO_OPEN)
-s.journal("end", "some work")
+s.journal("end", "some work on the loader")
 label, text = s.stop()
 check("nothing open, nothing waiting: silent", label, "")
 
@@ -364,9 +364,9 @@ label, text = s.stop()
 # ONE PER LINE, NOT JOINED INTO A SENTENCE. They used to arrive as "w; second piece" inside
 # the instruction; nine of them was a paragraph the user sent a screenshot of.
 check("two pieces open: held, naming both, one per line",
-      (label, "\n  - w\n" in text + "\n", "\n  - second piece\n" in text + "\n"),
+      (label, "\n  - work on the widget list\n" in text + "\n", "\n  - second piece\n" in text + "\n"),
       (AUTO_OPEN, True, True))
-s.journal("end", "w")
+s.journal("end", "work on the widget list")
 check("one ended, one still open: held", s.stop()[0], AUTO_OPEN)
 s.journal("end", "second piece")
 check("both ended, nothing waiting: silent", s.stop()[0], "")
@@ -672,6 +672,14 @@ check("a to-do added with no brief is refused, and the refusal says what to writ
 check("with a brief it goes through",
       bash_call(s9, '.journal/journal.py todos add "fix the loader" --brief <<\'MSG\'\nwhere to start\nMSG'), "")
 check("and every other todos verb is untouched", bash_call(s9, ".journal/journal.py todos done 1"), "")
+
+# A SUBJECT IS A SENTENCE YOU WILL SAY AGAIN: "Bash" is what you are working WITH, not what you are
+# doing. Also the hook's, not the command's — `todos start <n>` opens work named by the row's title.
+_bare_work = bash_call(s9, '.journal/journal.py work start "Bash"')
+check("work started with a tool for a subject is refused",
+      (bool(_bare_work), "is not the work" in _bare_work), (True, True))
+check("and one that names the change goes through",
+      bash_call(s9, '.journal/journal.py work start "fix the Dropdown recompose 500"'), "")
 import tempfile as _tf  # noqa: E402
 import agents as _agents_mod  # noqa: E402
 _home = Path(_tf.mkdtemp())

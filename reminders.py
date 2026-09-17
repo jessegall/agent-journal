@@ -57,6 +57,10 @@ MESSAGES = {
     "fact_moved": "moved from {n}",
     "until": "until: {until}",
     "needs_text": 'remind you of what? one line: journal reminders add "<the instruction>"',
+    "until_too_long": ("{length} characters, and a condition has {limit}. It is said back to you beside "
+                       "the instruction at every stop, so it has to be the CONDITION and nothing else — "
+                       "something you can judge true or false:\n  keep  …{keep}\n  cut   …{cut}\n"
+                       "The reasoning behind it belongs in a pin or a doc."),
     "too_long": "{length} characters, and a reminder has {limit}. This is said again at every stop and "
                 "every few tool calls, so it has to be the INSTRUCTION and nothing else:\n  keep  {keep}…\n"
                 "  cut   {cut}\nThe reasoning behind it is a pin, or a doc. What repeats is the one line.",
@@ -117,6 +121,10 @@ def add(root: Path, text: str, at: str, limit: int, until: str = "") -> tuple[bo
         return False, say("needs_text")
     if over := entries.capped(text, limit):
         return False, say("too_long", length=over[0], limit=limit, keep=over[1], cut=over[2])
+    # THE CONDITION IS REPEATED TOO, beside the text, at every stop. It was the one half of the line
+    # with no cap on it, which is the same wall of text moved to the other side of the sentence.
+    if over := entries.capped(until, limit):
+        return False, say("until_too_long", length=over[0], limit=limit, keep=over[1], cut=over[2])
     made = {"text": text, "at": at, "until": until, "done": None}
     # THE RECORD IS SHARED: load and save under one lock, or two sessions adding at once
     # each write the other's away — the silent loss `pins.add` learned the hard way.
@@ -148,6 +156,8 @@ def update(root: Path, n: int, text: str, until: str, limit: int) -> tuple[bool,
         return False, say("needs_text")
     if over := entries.capped(text, limit):
         return False, say("too_long", length=over[0], limit=limit, keep=over[1], cut=over[2])
+    if over := entries.capped(until, limit):
+        return False, say("until_too_long", length=over[0], limit=limit, keep=over[1], cut=over[2])
     with state.locked(root):
         items = _all(root)
         r, why = entries._find(items, n, _STORE)
