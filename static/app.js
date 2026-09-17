@@ -4337,9 +4337,11 @@ const EnvHome = {
         </div>
         <!-- GROUPED, THE WAY THE TO-DO PAGE GROUPS THEM. The state was a word on the end of every
              row, which says the same thing as many times as there are rows; a heading says it once. -->
-        <div class=rail-list>
-          <template v-for="g in todoGroups" :key="g.key">
-            <div class=rail-group>{{ g.label }}<span class=rail-group-n>{{ g.rows.length }}</span></div>
+        <!-- the rows arrive the way the cards in Waiting on you do, and the way the Activity column
+             does: a list that changes while you are looking at it should show what changed. -->
+        <TransitionGroup name=qrow tag=div class=rail-list>
+          <template v-for="g in todoGroups" :key="'g:' + g.key">
+            <div :key="'h:' + g.key" class=rail-group>{{ g.label }}<span class=rail-group-n>{{ g.rows.length }}</span></div>
             <button v-for="t in g.rows" :key="t.n" type=button
               :class="['rail-row', {sel: view.kind === 'todo' && view.n === t.n}]" @click="goto('todo', t.n)">
               <StatusIcon :kind="g.key"/>
@@ -4347,7 +4349,7 @@ const EnvHome = {
               <span class=rail-row-title>{{ t.title }}</span>
             </button>
           </template>
-        </div>
+        </TransitionGroup>
       </template>
       <template v-else>
         <div v-if="!unread.length" class=home-rail-empty>
@@ -4356,7 +4358,7 @@ const EnvHome = {
         </div>
         <!-- a notification is read by opening it, and cleared where it is if it opens nothing -->
         <!-- no dismiss control: opening one marks it read, which is the only thing to do with it -->
-        <div class=rail-list>
+        <TransitionGroup name=qrow tag=div class=rail-list>
         <div v-for="n in unread" :key="n.n" class=rail-note>
           <!-- the class name "note" is taken: it already carries a card's border and radius, so the
                row picked up a box nobody gave it. A name in a shared stylesheet belongs to somebody. -->
@@ -4366,7 +4368,7 @@ const EnvHome = {
             <span class=rail-row-state>{{ n.age || 'just now' }}</span>
           </button>
         </div>
-        </div>
+        </TransitionGroup>
         <!-- THE CONTROLS FOR THE WHOLE LIST SIT UNDER IT, not on every row: clearing fifty rows one
              at a time is the thing this bar exists to save. It is stuck to the foot of the column,
              so it is where the hand already is after reading to the bottom. -->
