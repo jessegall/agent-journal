@@ -4750,6 +4750,27 @@ const App = {
     });
     onUnmounted(() => { if (widthWatch) widthWatch.disconnect(); });
     const closeOverlay = () => { OVERLAY.kind = ""; OVERLAY.n = 0; OVERLAY.quote = ""; OVERLAY.file = null; };
+    // THE USER ASKS, THE AGENT UPGRADES. An upgrade runs the suites and replaces the package, which is
+    // the agent's job, not a button's -- so this says so in the one way the viewer already reaches it:
+    // an ordinary message. Rule 8 -- a new viewer verb needs no new case to be announced.
+    const upgrade = reactive({ busy: false, said: "", error: "" });
+    const askUpgrade = async (version) => {
+      if (upgrade.busy || !envName.value) return;
+      Object.assign(upgrade, { busy: true, said: "", error: "" });
+      try {
+        await postJSON(`/api/env/${envName.value}/messages`, {
+          text: `Upgrade the journal to ${version} now: run \`journal upgrade\` from the project root, `
+              + "then tell me what changed and whether anything needs my attention.",
+          files: [],
+        });
+        changed();
+        upgrade.said = "The agent is asked to upgrade. It gets this at its next stop, or at once if it is idle.";
+      } catch (e) {
+        upgrade.error = e.message;
+      } finally {
+        upgrade.busy = false;
+      }
+    };
     const onHash = () => { Object.assign(route, parseHash()); closeOverlay(); loadOverview(); };
     window.addEventListener("hashchange", onHash);
     window.addEventListener("journal:changed", loadOverview);
@@ -4921,7 +4942,7 @@ const App = {
     SHELL.setAuto = setAuto;
     const envSettings = useFetch(() => envName.value && `/api/env/${envName.value}/environment`);
     watchEffect(() => { RETENTION.table = envSettings.data ? envSettings.data.retention || null : null; });
-    return { QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered };
+    return { QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade };
   },
   template: `
     <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
@@ -4993,7 +5014,12 @@ const App = {
         <div v-if="ov.data && ov.data.update" class=update-bar>
           <p class=update-bar-head>Agent journal {{ ov.data.update.version }} is available</p>
           <p class=update-bar-note>This project has {{ ov.data.update.have }}<template v-if="ov.data.update.headline"> — {{ ov.data.update.headline }}</template></p>
-          <p class=update-bar-how>Upgrade it from the terminal: <code>journal upgrade</code></p>
+          <p v-if="upgrade.said" class=update-bar-how>{{ upgrade.said }}</p>
+          <p v-else-if="upgrade.error" class=error>{{ upgrade.error }}</p>
+          <template v-else>
+            <button type=button class=update-bar-go :disabled="upgrade.busy" @click="askUpgrade(ov.data.update.version)">Upgrade now</button>
+            <p class=update-bar-how>or from the terminal: <code>journal upgrade</code></p>
+          </template>
         </div>
       </aside>
       <div v-if="AWAY.open && envName" class=away-card role=status>
