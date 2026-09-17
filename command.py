@@ -115,6 +115,7 @@ class Parsed:
     def payload(self, kind, extra: dict | None = None):
         import state
         fields = {**self._opts, **self._args, **(extra or {})}
+        fields.pop("stdin", None)
         ident = fields.pop(getattr(self.command, "id_arg", "n"), None)
         env_arg = getattr(self.command, "env_arg", "")
         env = fields.pop(env_arg, None) if env_arg else None
@@ -129,6 +130,13 @@ class Command:
     needs: tuple = ()             # options that must be present for this command to be chosen
     writes: bool = False
     passthrough: bool = False     # keeps undeclared options instead of refusing them
+
+    #: THE FIELD `--stdin` FILLS, when this command takes prose. A shell eats a backtick span out of
+    #: an argument and hands the command text with a hole in it, silently — measured here more than
+    #: once, in a reply and in a commit message. Nothing can detect the hole afterwards, because what
+    #: was removed leaves no trace, so the answer is a path the shell never touches: the same one
+    #: `--brief` has always used. A command naming its prose field gets `--stdin` for free.
+    prose: str = ""
 
     noun: str = ""
     verb: str = ""

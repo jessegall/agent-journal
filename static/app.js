@@ -1345,7 +1345,10 @@ const TODO_LIST = {
     return group;
   }),
   columns: { priority: (t) => t.priority, status: (t) => todoStatus(t), num: (t) => `#${t.n}`, question: todoQuestionMark,
-             numWidth: "34px", ageWidth: "52px", title: (t) => t.title, age: (t) => shortAge(t.age) },
+             numWidth: "34px", ageWidth: "52px", title: (t) => t.title, age: (t) => shortAge(t.age),
+             // the row already carried its plan and nobody drew it: a row in a plan reads differently
+             // from one on the open list, and which PHASE is the part you cannot work out from the list
+             cite: (t) => (t.plan ? `Plan ${t.plan.n} · phase ${t.plan.phase}` : "") },
   sorts: [{ key: "n", label: "ID" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
   count: (rows) => `${rows.length} to-dos, ${rows.filter((t) => todoStatus(t) !== "done").length} open`,
   empty: "Nothing is waiting on this environment.", name: "todos",
