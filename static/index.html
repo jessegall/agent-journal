@@ -56,6 +56,9 @@
   /* the sidebar clips what sticks out, so the list keeps to its width */
   /* A DROPDOWN MAY BE WIDER THAN THE THING IT HANGS FROM. Pinned to both edges of the sidebar it
      was 215px, and its own heading — "Journals running on this machine" — wrapped to two lines. */
+  /* IT SCROLLS RATHER THAN RUNNING OFF THE SCREEN. One machine had twenty viewers up at once —
+     test journals, since fixed — and the list went past the bottom of the window with no way down. */
+  .journal-switch .drop, .strip-drop { max-height: min(60vh, 420px); overflow-y: auto; }
   .journal-switch .drop { left: 0; right: auto; top: 36px; width: max-content;
     min-width: 100%; max-width: 320px; }
   /* this journal, in both pickers: selected, and still answering the pointer without looking like a link */
@@ -335,8 +338,8 @@
     background: var(--side); border: 1px solid var(--border-2); border-radius: 10px; box-shadow: 0 16px 40px rgba(0, 0, 0, .45); }
   /* THE NOTIFICATIONS DROPDOWN IS A COLUMN, not a padded card: the head and the tabs hold their
      place and the rows run to its own edges, the way the rail's do. */
-  .drop-wrap .drop { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
-  .drop-tabs { --rail-gutter: 12px; border-radius: 0; }
+  .top-tools .drop-wrap .drop { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+  .top-tools .drop-tabs { --rail-gutter: 12px; border-radius: 0; }
   .drop-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
   .drop-list::-webkit-scrollbar { width: 0; }
   .drop-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; color: var(--text-2); }
@@ -744,6 +747,9 @@
   .crew-line { display: flex; align-items: center; gap: 7px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;
     background: transparent; text-align: left; cursor: pointer; animation: crew-in .28s ease-out both; }
   .crew-line:hover { background: #17181b; }
+  /* a fact and its mark, the agent bar's vocabulary at the size the strip uses */
+  .crew-fact { display: inline-flex; align-items: center; gap: 4px; color: var(--text-3); white-space: nowrap; }
+  .crew-fact .ico { width: 11px; height: 11px; opacity: .6; }
   .crew-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #6fae7d; animation: crew-pulse 1.8s ease-in-out infinite; }
   /* quiet: no tool call in a while and no stop either — dimmer than working, not greyed out like finished */
   .crew-line.quiet .crew-dot { background: #c9955e; animation: none; }
