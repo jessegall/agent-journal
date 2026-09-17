@@ -255,6 +255,12 @@ MESSAGES = {
                     '  .journal/journal.py nothing "<why nothing here needs pinning>"\nNothing is the right answer more '
                     "often than not — say so and carry on. `journal search`, `journal conversation --back=1` and "
                     "`journal pins` still run, to decide with.",
+    "skills_fact": "this session has not opened a journal skill, and the skills are where the mechanisms "
+                   "are written down — what a pin is for against a reminder, how a message is filed, what a "
+                   "subagent may write.",
+    "skills_do": "load the `journal` skill now, and the focused one for what you are doing: `journal-todos`, "
+                 "`journal-messages`, `journal-questions`, `journal-plans`, `journal-reports`, `journal-docs`, "
+                 "`journal-agents`, `journal-memory`, `journal-transcripts`.",
     "always_skills": "LOAD THESE SKILLS NOW — the user asked for them at every start: {names}.",
     "work_too_bare": ('{subject} is not the work, it is what you are working WITH. Say what you are '
                       'changing, in a sentence you will say again when you close it:\n'
@@ -914,6 +920,10 @@ def _said(fact: str, *do: str) -> tuple:
     return ("context-only", _say(fact, *do)[1])
 
 
+#: how many tool calls a session may make before being asked to open a skill: enough that a session
+#: which has only read a file or two is not nudged for it
+SKILLS_AFTER = 12
+
 #: THE SUBJECTS OF THE STOP QUEUE. Each returns None when nothing is pending, a
 #: `(label, one-line brief[, details])` tuple for a hold, or `("context-only", text)` for a
 #: line said rather than held. The number is the priority: lower runs first, and
@@ -1114,6 +1124,34 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     # that, twice in one session. A vocabulary taught only in a file nobody is required to
     # open is a vocabulary that does not exist.
     return _say(say("open_fact"), say("open_do", subjects=[w["subject"] for w in fresh]))
+
+
+@nudges.subject("skills", 60)
+def _p_skills(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
+    """Say to load the journal's skills while this session has loaded none.
+
+    THE SKILLS ARE THE ONLY PLACE THE MECHANISMS ARE TAUGHT, and a session that never opens one works
+    from whatever it half-remembers of them — which is how a verb that does not exist gets typed and
+    a rule that was decided last week gets broken. The user's instruction: if we detect it has not
+    loaded its skills, keep nudging. So this repeats, and it stops the moment one is loaded.
+
+    ONLY AFTER IT HAS DONE SOMETHING. A session that has just started and read two files is not
+    ignoring anything yet.
+    """
+    if "skills" in conf["silenced"]:
+        return None
+    if state.get(ROOT, "skills_loaded", False, stem=ctx.stem):
+        return None
+    calls = 0
+    for l in lines:
+        for t in l.tools:
+            if str(t).startswith("Skill:journal"):
+                state.put(ROOT, "skills_loaded", True, stem=ctx.stem)
+                return None
+            calls += 1
+    if calls < SKILLS_AFTER:
+        return None
+    return _say(say("skills_fact"), say("skills_do"))
 
 
 @nudges.subject("recall", 65)

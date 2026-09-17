@@ -477,7 +477,7 @@ const StatusBar = {
     // to say "nothing declared yet", which is a complaint about the agent printed in the one place
     // the user looks to see it working. The Activity column already knows the last thing it did.
     // what the agent is running RIGHT NOW: shown once it has been going long enough to be worth saying
-    const RUNNING_AFTER = 5;
+    const RUNNING_AFTER = 3;
     // THE CLOCK RUNS BETWEEN POLLS. The payload says how long it had been going when it was read, so
     // a number that only moved every few seconds looked stuck — which is the opposite of what a
     // running command is for. It ticks here, from the moment the answer landed.
@@ -574,12 +574,12 @@ const StatusBar = {
         <!-- ONLY WHAT CHANGED MOVES. "reading message 302" becoming "reading message 303" is one
              digit; rolling the whole sentence for it says more happened than did. The shared start
              stays put and the tail that differs rolls on its own. -->
-        <!-- WAITING IS NOT WORKING, and from the outside they look the same. What the agent is in the
-             middle of running sits beside the state word, quieter and smaller than the work itself. -->
-        <span v-if="running" class=statusbar-running :title="running.what">
-          <Icon name="activity"/>{{ running.gist }}<span class=statusbar-running-for>{{ running.forText }}</span></span>
         <span class=statusbar-roll><span v-if="said.head" class=statusbar-head>{{ said.head }}</span
           ><Transition name=roll><span :key="said.tail" class=statusbar-line>{{ said.tail }}</span></Transition></span>
+        <!-- WAITING IS NOT WORKING, and from the outside they look the same. What the agent is in the
+             middle of running follows the work, quieter and smaller than it. -->
+        <span v-if="running" class=statusbar-running :title="running.what">
+          <Icon name="activity"/>{{ running.gist }}<span class=statusbar-running-for>{{ running.forText }}</span></span>
       </button>
       <span class=statusbar-tools>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"

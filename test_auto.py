@@ -680,6 +680,29 @@ check("work started with a tool for a subject is refused",
       (bool(_bare_work), "is not the work" in _bare_work), (True, True))
 check("and one that names the change goes through",
       bash_call(s9, '.journal/journal.py work start "fix the Dropdown recompose 500"'), "")
+
+# ------------------------------------------ a session that has opened no skill is told to, and again
+# The skills are where the mechanisms are written down; a session working from memory of them is how a
+# verb that does not exist gets typed. It stops the moment one is loaded.
+import hook as _hook_mod  # noqa: E402
+_sk = Session(project(), "sk1")
+_sk.journal("switch", "default")
+_sk.start()
+check("a session that has just started is not nudged about skills", "journal skill" in _sk.stop()[1], False)
+# the transcript is what the nudge reads, so the tool calls go in it the way a real session's do
+with _sk.path.open("a") as _fh:
+    for _i in range(_hook_mod.SKILLS_AFTER + 2):
+        _fh.write(json.dumps({"type": "assistant", "uuid": f"sk{_i}", "message": {
+            "role": "assistant", "content": [{"type": "tool_use", "id": f"t{_i}", "name": "Read",
+                                              "input": {"file_path": "x.py"}}],
+            "usage": {"input_tokens": 1000}}}) + "\n")
+# one subject speaks per stop, so this reads a few of them rather than assuming it wins the first
+_said = ""
+for _ in range(4):
+    _said += _sk.stop(after_hold=bool(_said))[1] or ""
+# the block is filled to the terminal's width, so the assertions read words that survive wrapping
+check("after a stretch of work with no skill opened, the stop says to load them",
+      ("load the `journal` skill now" in _said, "journal-messages" in _said), (True, True))
 import tempfile as _tf  # noqa: E402
 import agents as _agents_mod  # noqa: E402
 _home = Path(_tf.mkdtemp())

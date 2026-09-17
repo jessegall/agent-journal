@@ -144,6 +144,12 @@ tried while working on it is progress, and progress is `journal work update` on 
 which files it in the to-do's work log. A progress note amended into the brief buries the task
 under a diary, and Activity shows it as a change to the to-do.
 
+**A to-do without a brief is refused.** `journal todos add "<title>"` with no `--brief` is denied
+before it runs: the row is read again in a week by a session that remembers nothing of this one, so a
+title alone is a note to somebody who already knows. Write what exactly, why it matters, and where to
+start. If there is nothing to say beyond the title, it is probably not a to-do — say it in a message,
+or pin what is true.
+
 **A to-do already on the list is never added again.** `journal todos add` refuses a title that
 matches an open to-do, whatever its case or punctuation. More to say about that task is an
 amend. Only genuinely separate work is a new to-do, and when it rests on the first, add
