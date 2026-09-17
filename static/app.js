@@ -390,7 +390,20 @@ const WIDE_AT = 782;
 // how long each resource keeps a closed item listed, from the environment's settings
 const RETENTION = reactive({ table: null });
 // one overlay the shell hosts for any page: what the status bar inspects opens here, over whatever is showing
-const OVERLAY = reactive({ kind: "", n: 0, quote: "", file: null });
+const OVERLAY = reactive({ kind: "", n: 0, quote: "", file: null, images: [], at: 0 });
+
+// AN IMAGE IS LOOKED AT, NOT DOWNLOADED. A picture in the thread was an <a target=_blank>, so
+// clicking it threw the raw file into a browser tab and took the reader out of the conversation to
+// do it. It opens over the page instead, and it opens with the OTHER pictures of that message
+// beside it, because a message with five screenshots is one thing to look through rather than five
+// things to open — which is what the arrow keys are for.
+function openImages(event, files, i, at) {
+  if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.button)) return;
+  if (event) event.preventDefault();
+  OVERLAY.kind = "image";
+  OVERLAY.images = files;
+  OVERLAY.at = i;
+}
 
 // A FILE IS READ WHERE YOU FOUND IT. A doc's attachment used to be an <a target=_blank>: clicking a
 // 50KB markdown file threw the raw text into a browser tab. This opens it over the page instead —
@@ -3437,6 +3450,37 @@ const PEEK = {
 };
 
 // Home's side panel: the resource's own panel, with its header linking to the page
+// the picture over the page: its own ground, blurred, and the message's other pictures one key away
+const Lightbox = {
+  props: { images: Array, at: Number, close: Function },
+  components: { Icon },
+  setup(props) {
+    const i = ref(props.at || 0);
+    const shown = computed(() => props.images[i.value] || null);
+    const step = (by) => { i.value = (i.value + by + props.images.length) % props.images.length; };
+    const onKey = (e) => {
+      if (e.key === "Escape") return props.close();
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); step(1); }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); step(-1); }
+    };
+    onMounted(() => window.addEventListener("keydown", onKey));
+    onUnmounted(() => window.removeEventListener("keydown", onKey));
+    return { i, shown, step };
+  },
+  template: `
+    <div class=lightbox @click.self="close">
+      <div class=lightbox-bar>
+        <span class=lightbox-name>{{ shown ? shown.name : "" }}</span>
+        <span v-if="images.length > 1" class=lightbox-of>{{ i + 1 }} of {{ images.length }}</span>
+        <a class=lightbox-raw :href="shown ? shown.url : ''" target=_blank rel=noopener title="Open the file itself">Open</a>
+        <button type=button class=lightbox-x title="Close" aria-label="Close" @click="close"><Icon name="close"/></button>
+      </div>
+      <button v-if="images.length > 1" type=button class="lightbox-step back" aria-label="Previous" @click.stop="step(-1)"><Icon name="up"/></button>
+      <img v-if="shown" class=lightbox-img :src="shown.url" :alt="shown.name" @click.stop>
+      <button v-if="images.length > 1" type=button class="lightbox-step on" aria-label="Next" @click.stop="step(1)"><Icon name="down"/></button>
+    </div>`,
+};
+
 const FileReader_ = {
   props: { file: Object, close: Function },
   components: { Panel, FetchState },
@@ -3822,6 +3866,8 @@ const Thread = {
       THREAD_BOX.focus && THREAD_BOX.focus(t.text);
     };
     const fileUrl = (n, name) => `/message-files/${props.env}/${n}/${encodeURIComponent(name)}`;
+    // the PICTURES of one turn, in the order they were sent: what the arrow keys walk
+    const pictures = (t) => (t.files || []).filter((f) => f.picture).map((f) => ({ name: f.name, url: fileUrl(t.n, f.name) }));
     // the stored time is UTC; slicing the characters out of it showed the reader somebody else's clock
     const clock = (at) => {
       const when = new Date(at);
@@ -3882,7 +3928,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor };
   },
   template: `
     <div class=thread>
@@ -3930,7 +3976,8 @@ const Thread = {
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
           <button v-if="t.kind === 'parked'" type=button class=thread-answer @click.stop="replyTo(t)">Answer the agent</button>
           <div v-if="t.files && t.files.length" :class="['thread-files', {alone: !t.text}]">
-            <a v-for="f in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name">
+            <a v-for="(f, i) in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name"
+              @click="f.picture ? $openImages($event, pictures(t), pictures(t).findIndex((p) => p.name === f.name)) : null">
               <img v-if="f.picture" class=thread-image :src="fileUrl(t.n, f.name)" :alt="f.name" loading=lazy @load="grew">
               <span v-else class=thread-file-name><Icon name="paperclip"/>{{ f.name }}</span>
             </a>
@@ -5349,7 +5396,7 @@ const QuickMenu = {
 };
 
 const App = {
-  components: { ...VIEWS, Icon, ActivityPanel, Peek, QuickMenu, JournalsDropdown, FileReader_ },
+  components: { ...VIEWS, Icon, ActivityPanel, Peek, QuickMenu, JournalsDropdown, FileReader_, Lightbox },
   setup() {
     const route = reactive(parseHash());
     const ov = OVERVIEW;
@@ -5656,6 +5703,7 @@ const App = {
       <Peek v-if="OVERLAY.kind && OVERLAY.kind !== 'file' && envName" :key="'overlay' + OVERLAY.kind + OVERLAY.n" :env="envName" :kind="OVERLAY.kind" :n="OVERLAY.n"
         :close="closeOverlay" :reloaded="reloadActivity"/>
       <FileReader_ v-if="OVERLAY.kind === 'file' && OVERLAY.file" :key="OVERLAY.file.url" :file="OVERLAY.file" :close="closeOverlay"/>
+      <Lightbox v-if="OVERLAY.kind === 'image' && OVERLAY.images.length" :images="OVERLAY.images" :at="OVERLAY.at" :close="closeOverlay"/>
       <QuickMenu v-if="QUICK.open && envName" :env="envName"/>
       <div v-if="TOAST.text" class=quick-toast role=status>{{ TOAST.text }}</div>
       <aside v-if="(activity.data && ACTIVITY.shown) || (ov.data && ov.data.update)" class=activity-dock>
@@ -5693,6 +5741,7 @@ app.config.globalProperties.$md = renderMarkdown;
 app.config.globalProperties.$human = humanSize;
 app.config.globalProperties.$refHref = refHref;
 app.config.globalProperties.$openRef = openRef;
+app.config.globalProperties.$openImages = openImages;
 // the row pills are built as HTML inside rendered markdown, so their click has no component to
 // reach — one global is how a string in `v-html` gets back to the overlay every other chip uses
 window.__openRef = (event, href) => { openRef(event, href); return !event.defaultPrevented; };
