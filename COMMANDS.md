@@ -25,6 +25,10 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal work end "<the same words>" --todo   and close the to-do of that title; without
                                          it the row stays open — closing a to-do is always
                                          explicit, never a side effect of ending work
+    journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>]
+                                         the work is in flight on something that cannot be
+                                         hurried; the nudging stops until it lands (agent)
+    journal work park "<what you need>"  it cannot go on without you, and says so (agent)
 
 ### To-dos
 
@@ -91,6 +95,10 @@ from your terminal. Commands that only make sense for the agent are marked (agen
     journal docs supersede <doc> by <doc>   point readers of an old doc at the new one
     journal docs index                   catalogue what is already in .journal/docs/
     journal docs search <term>           search every line of every doc, and attachments by name
+    journal docs paths <doc>             the full path of every attachment, to open or pass on
+    journal docs draft <doc> | journal docs archive <doc> "<why>"
+    journal docs title <doc> "<title>" | journal docs abstract <doc> "<one line>"
+    journal docs replace <doc>.<p> --brief   swap a part; the old text goes to struck/
 
 ### Tools
 
@@ -116,6 +124,8 @@ being complete. You approve it before the agent starts, and again at a checkpoin
     journal plans rephrase <n> <p> ["<title>"] [--when=] [--checkpoint]
                                          correct a phase that was written wrong
     journal plans todos <n> <p> <to-dos> put to-dos in a phase, e.g. 12,14,15
+    journal plans edit <n> …             correct a plan's title, goal or approach (agent)
+    journal plans ready <n>              the agent saying a draft is ready for you (agent)
     journal plans activate <n>           approve it; the agent starts phase 1
     journal plans continue <n>           past a checkpoint
     journal plans park <n> "<why>" | journal plans abandon <n> "<why>"
@@ -129,12 +139,28 @@ idle agent through the web interface's channel, and are told at its next stop ot
     journal messages                     what is waiting, then what has been handled
     journal messages show <n>            one, with the parts it was split into and what each became
     journal messages reply <n> "<text>"  the agent's note back to you, under the message (agent)
+    journal messages process <n> --part="<words>" --became=<ref>
+                                         the agent recording what one part of a message became (agent)
+    journal messages file <n> <name> "doc <d>"|keep   file an attachment, or leave it where it is (agent)
+    journal messages waiting             only the ones not handled yet
+    journal messages archive <n> "<why>" take one out of the conversation
     journal reports                      what the agent was asked to check or research, newest first
     journal reports show <n>             one in full
+    journal reports add "<title>" --brief [--about=<ref>]
+                                         the agent filing what it was asked to find out (agent)
+    journal reports doc <n>              it turned out to be a document; move it (agent)
+    journal reports archive <n> ["<why>"] | journal reports keep <n>
     journal suggest "<the change>" --brief   the agent proposing something nobody asked for (agent)
+    journal suggestions                  what the agent has proposed
+    journal suggestions show <n>         one in full
     journal suggestions accept <n> | adjust <n> "<change>" | decline <n> ["<why>"]
+    journal suggestions withdraw <n> "<why>"   the agent taking one back (agent)
     journal comments add "<ref>" "<text>"    say something about a to-do, doc, pin, rule or reminder
-    journal notifications                what the journal has told you it did
+    journal comments [<ref>]             what has been said, everywhere or about one thing
+    journal comments show <n> | journal comments done <n>   read one; mark one handled
+    journal notifications [--all]        what the journal has told you it did; --all adds read ones
+    journal notify "<what finished>" [--about=<ref>]   the agent telling you something (agent)
+    journal notifications read <n>       mark one read
 
 ### Connections
 
@@ -164,6 +190,7 @@ agent writes code the rule covers.
     journal conversation                 what was said since the last compaction
     journal conversation --back=1        the stretch the last summary replaced
     journal user                         the user's own words, in full
+    journal carry                        everything a new session is handed, in one read
     journal search <term>                every mention on this environment, every session
 
 ### Environments and maintenance
@@ -285,6 +312,11 @@ it decides. `journal assign <n> --to="<agent>"` hands it one to-do; a held row l
 everyone else's list while that agent is alive, and it may report the row finished but
 never close it. Two subagents on one environment keep separate ledgers, so neither can
 close the other's work.
+
+    journal grant "<name>"               lend an environment to this session's subagents
+    journal lent                         what a dispatched agent runs to learn its own name (agent)
+    journal assign <n> --to="<agent>"    hand one row to one subagent
+    journal todos report <n> "<how>" --as="<agent>"   a subagent saying a row is finished (agent)
 
 ### Reminders
 

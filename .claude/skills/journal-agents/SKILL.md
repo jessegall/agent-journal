@@ -85,7 +85,7 @@ write what it inherits, so there is only ever one answer to which pin applies.
 died, so `active` is observed — every write it makes stamps it — and a dispatch that
 crashes releases its row on its own.
 
-**It may REPORT a row finished; only you close it.** `journal todos report <n> "<how>"`
+**It may REPORT a row finished; only you close it.** `journal todos report <n> "<how>" --as="<its agent name>"`
 marks it done-pending and tells you; `journal todos done <n>` is yours. A runner marking
 its own homework is a failure this project has already watched happen.
 

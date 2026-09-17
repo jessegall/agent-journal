@@ -129,6 +129,10 @@ class Command:
     default: bool = False         # also answers the bare noun
     needs: tuple = ()             # options that must be present for this command to be chosen
     writes: bool = False
+    #: the BARE verb only looks, though the command writes with an argument: `journal settings` lists
+    #: the settings, `journal settings <key> <value>` changes one. Without this the gate refuses the
+    #: listing while no work is open, which is a read being refused.
+    reads_bare: bool = False
     passthrough: bool = False     # keeps undeclared options instead of refusing them
 
     #: THE FIELD `--stdin` FILLS, when this command takes prose. A shell eats a backtick span out of
