@@ -221,8 +221,12 @@ def wrote(root: Path, env: str) -> list[dict]:
                         "full": (r.get("text") or "").strip() if len((r.get("text") or "").strip()) > TEXT_MAX else "",
                         "n": n,
                         # the two point opposite ways and never both appear: part is the user's words the
-                        # agent answered, quoting is the thread's words the user answered
-                        "ref": r.get("quoting") or r.get("part") or ""})
+                        # agent answered, quoting is the thread's words the user answered. A reply that
+                        # named neither quoted nothing at all, so in the thread it read as a turn the
+                        # agent happened to take — the one thing it is not. It answers the message, so
+                        # it says the message.
+                        "ref": (r.get("quoting") or r.get("part")
+                                or (trim(whole, 90) if r.get("source") != "web" else ""))})
     return out
 
 
