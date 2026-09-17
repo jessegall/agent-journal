@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.147.1 — The rail's section heading is a bar
+
+1.147.0 fixed the rail's gutter and left the vertical alone, so a section heading was still a
+line of text with six pixels under it and nothing above — a section opening with a word rather
+than with a division. It is the same bar every list page uses now: a fixed height with its text
+centred in it, a raised ground, and one rule along the bottom that does the separating. The
+sections gave up their own top border and margin with it, which were doing that job twice.
+
 ## 1.147.0 — What the audit found, fixed
 
 Two agents read the code and reported; every finding below was reproduced or measured before
