@@ -4286,7 +4286,7 @@ const EnvHome = {
       </div>
       <template v-if="tab === 'waiting'">
         <div v-if="clear" class=home-rail-empty>
-          <Icon name="todos"/>
+          <Icon name="questions"/>
           <p>Nothing is waiting on you.</p>
         </div>
         <section v-else class=home-section>
