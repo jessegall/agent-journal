@@ -3497,6 +3497,11 @@ const Thread = {
     const send = (text, files) => postJSON(`/api/env/${props.env}/messages`, { text, files })
       .then(() => { chat.reload(); changed(); });
     const fileUrl = (n, name) => `/message-files/${props.env}/${n}/${encodeURIComponent(name)}`;
+    // the stored time is UTC; slicing the characters out of it showed the reader somebody else's clock
+    const clock = (at) => {
+      const when = new Date(at);
+      return isNaN(when) ? "" : when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    };
     // a turn is cut to keep the bubble a bubble; the rest is one click away, never gone
     const whole = ref(new Set());
     const showAll = (t) => {
@@ -3523,7 +3528,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, send, root, answered, landed, fileUrl, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
+    return { turns, more, send, root, answered, landed, fileUrl, clock, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
   },
   template: `
     <div class=thread>
@@ -3553,7 +3558,8 @@ const Thread = {
           </div>
         </div>
         <div class=thread-meta>
-          <span>{{ t.at.slice(11, 16) }}</span>
+          <span v-if="t.n">{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
+          <span>{{ clock(t.at) }}</span>
           <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)">
             <svg viewBox="0 0 19 12" fill=none stroke=currentColor stroke-width="1.6" stroke-linecap=round stroke-linejoin=round>
               <path d="M1.5 6.6 4.4 9.5 10 2.8"/>
