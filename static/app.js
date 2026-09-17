@@ -4410,15 +4410,17 @@ const EnvHome = {
                         done: a.state === "finished", quiet: a.state === "quiet",
                         title: `Subagent ${a.id} · ${a.model || "model not recorded"} · from session ${a.parent}`
                              + (a.state === "quiet" ? " · no tool call in a while, and it has not said it finished" : ""),
-                        // RUNNING WAS SAID BY A PULSING GREEN DOT AND NOTHING ELSE, so with motion off it
-                        // was said by a green dot alone — and quiet and finished both had a word already
-                        // THE MODEL IS ALWAYS SAID, including when nobody recorded one: which model a
-                        // subagent got is the thing the user checks first, and a line that simply
-                        // omitted it read as though the question had not been asked.
-                        tail: [a.model || "model not recorded", a.branch ? a.branch.name : "",
-                               a.state === "quiet" ? `quiet · ${a.age_text}`
-                               : a.state === "finished" ? `finished · ${a.ended_age}` : `running · ${a.age_text}`]
-                          .filter(Boolean).join(" · "),
+                        // THE SAME FACTS THE AGENT BAR SHOWS, marked the same way: one run-on line of
+                        // text made the model — the thing the user checks first — no easier to find
+                        // than anything else on it. The model is always said, including when nobody
+                        // recorded one, because that is the case worth catching.
+                        facts: [{ icon: "style", value: a.model || "model not recorded" },
+                                { icon: "activity", value: a.id },
+                                ...(a.branch ? [{ icon: "branch", value: a.branch.name }] : []),
+                                { icon: "reminders",
+                                  value: a.state === "quiet" ? `quiet · ${a.age_text}`
+                                         : a.state === "finished" ? `finished · ${a.ended_age}`
+                                         : `running · ${a.age_text}` }],
                         delay: `${i * 60}ms`, open: () => peek("subagent", a.id) })));
 
     // a subagent's panel steps through the other subagents, never sideways into the queue behind it
@@ -4459,7 +4461,7 @@ const EnvHome = {
       <div v-if="crewOpen && liveCrew.length" class=crew-strip>
         <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" @click="a.open">
           <span class=crew-dot></span><span class=crew-name>{{ a.name }}</span>
-          <span class=crew-tail>{{ a.tail }}</span>
+          <span v-for="f in a.facts" :key="f.icon" class=crew-fact><Icon :name="f.icon"/>{{ f.value }}</span>
         </button>
       </div>
         <Thread :env="env"/>
