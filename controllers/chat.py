@@ -29,43 +29,114 @@ def said(root: Path, env: str) -> list[dict]:
     A reply is a turn when it opens with a tag, and the tag is a field the agent already writes, so
     nothing has to be classified and a message that merely MENTIONS a tag is not one (`tags.found`
     matches the start of the message, never the start of a line).
+
+    EVERY TRANSCRIPT, NOT THE LIVE ONE. This used to walk `tracks.live()`, which drops a session that
+    has ended, one idle past a day, and one whose binding has moved — so the thread kept every message
+    the user wrote and silently lost everything the agent said, because the user's half is JSON and the
+    agent's was read live. A transcript does not stop existing when its session does, and it records
+    which environment each stretch of it belonged to, so that is what is read.
     """
-    import tracks
     import transcript
     out = []
-    for stem, info in tracks.live(root).items():
-        if info["track"] != env:
-            continue
-        path = transcript.find(root.parent, stem)
-        if path is None:
-            continue
-        out.extend(_turns(path, env, tracks.marks(root).get(stem)))
+    for path in transcript.sessions(root.parent):
+        out.extend(_scan(path, env))
     return out
 
 
-#: path -> (file size, the turns read out of it): the thread polls every few seconds and a
-#: transcript only grows, so re-reading megabytes to find the same tagged replies costs ~0.9s a poll
+#: path -> {"size": bytes already read, "turns": every turn found in them, "here": the environment
+#: those bytes ended on}. Kept per FILE, so a transcript whose session has ended is read once and never
+#: again, and a live one is read only from where the last read stopped.
 _READ: dict = {}
 
 
-def _turns(path, env: str, marks) -> list[dict]:
+def _text_of(rec: dict) -> str:
+    """Whatever text a record carries, for matching the marks that say which environment it is on.
+
+    The start block is not in the message at all: a SessionStart hook's output arrives under
+    `attachment.stdout`, and a switch's under `toolUseResult`. Reading only `message.content` found
+    neither, and every turn in every transcript filed itself under the environment that comes before
+    any mark.
+    """
+    parts = []
+    content = (rec.get("message") or {}).get("content")
+    if isinstance(content, str):
+        parts.append(content)
+    elif isinstance(content, list):
+        parts.extend(str(b.get("text") or b.get("content") or "") for b in content if isinstance(b, dict))
+    for key in ("toolUseResult", "attachment"):
+        got = rec.get(key)
+        if isinstance(got, dict):
+            parts.extend(str(got.get(f) or "") for f in ("stdout", "content", "text"))
+        elif isinstance(got, str):
+            parts.append(got)
+    return " ".join(p for p in parts if p)
+
+
+def _spoken(rec: dict) -> str:
+    """The assistant's own words in this record, and nothing it called."""
+    content = (rec.get("message") or {}).get("content")
+    if isinstance(content, str):
+        return content
+    if not isinstance(content, list):
+        return ""
+    return "".join(b.get("text") or "" for b in content
+                   if isinstance(b, dict) and b.get("type") == "text")
+
+
+def _scan(path, env: str) -> list[dict]:
+    """This transcript's tagged turns for `env`, parsing only the bytes appended since the last read.
+
+    The whole file is parsed the first time and never again: a record is small, and reading 317MB of
+    them across sixteen transcripts measured 0.87s, which is a price worth paying once per file rather
+    than a prefilter that is fast and sometimes wrong about where an environment began.
+    """
     import transcript
-    size = path.stat().st_size
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return []
     held = _READ.get(str(path))
-    if held and held[0] == size:
-        return held[1]
-    out = []
-    lines, _ = transcript.read(path)
-    for line in transcript.on_track(lines, env, marks):
-        if line.role != "assistant" or line.kind != "text":
-            continue
-        got = tags.found(line.text)
-        if not got:
-            continue
-        out.append({"at": line.ts or "", "who": "agent", "kind": "said", "tag": got[0],
-                    "text": trim(tags.strip(line.text)), "n": None, "ref": ""})
-    _READ[str(path)] = (size, out)
-    return out
+    # a transcript that SHRANK was replaced, not appended to: read it again from the start
+    if held is None or held["size"] > size:
+        held = {"size": 0, "turns": [], "here": transcript._BEFORE_TRACKS}
+    if held["size"] < size:
+        with path.open("rb") as fh:
+            fh.seek(held["size"])
+            data = fh.read(size - held["size"])
+        # stop at the last complete record: the one still being written is parsed on the next read
+        cut = data.rfind(b"\n") + 1
+        for raw in data[:cut].splitlines():
+            _take(raw, held)
+        held["size"] += cut
+        _READ[str(path)] = held
+    return [t for t in held["turns"] if t["env"] == env]
+
+
+def _take(raw: bytes, held: dict) -> None:
+    import json
+    import transcript
+    raw = raw.strip()
+    if not raw:
+        return
+    try:
+        rec = json.loads(raw)
+    except ValueError:
+        return
+    if not isinstance(rec, dict):
+        return
+    if rec.get("type") == "assistant":
+        text = _spoken(rec)
+        got = tags.found(text)
+        if got:
+            held["turns"].append({"at": rec.get("timestamp") or "", "who": "agent", "kind": "said",
+                                  "tag": got[0], "text": trim(tags.strip(text)), "n": None, "ref": "",
+                                  "env": held["here"]})
+        # an assistant message is never a mark: it can only ever be QUOTING one
+        return
+    said = _text_of(rec)
+    m = transcript._START_MARK.search(said) or transcript._SWITCH_MARK.search(said)
+    if m:
+        held["here"] = m.group(1)
 
 
 def wrote(root: Path, env: str) -> list[dict]:

@@ -140,5 +140,27 @@ chat.said(root, "w")
 check("but a transcript that has grown is read again",
       [t["text"] for t in chat.said(root, "w") if t["kind"] == "said"][-1], "and now it has grown")
 
+# ------------------------------------------- history outlives the session that said it
+# the one the old code got wrong: it read only LIVE sessions, so ending one, switching it away
+# or letting it go stale took every agent turn with it while the user's half stayed
+mark("elsewhere")
+say("[!info] said while the session was on another environment")
+mark("w")
+say("[!discovery] and back again")
+chat._READ.clear()
+check("a turn is filed under the environment that was current when it was said",
+      ([t["text"] for t in chat.said(root, "elsewhere")],
+       [t["text"] for t in chat.said(root, "w")][-1]),
+      (["said while the session was on another environment"], "and back again"))
+
+import state as _state, tracks as _tracks  # noqa: E402
+_state.put(root, "ended", now(), stem=STEM)
+chat._READ.clear()
+check("the session is over as far as the record is concerned", _tracks.live(root), {})
+check("and the thread still has every turn it said, on each environment",
+      (len([t for t in turns() if t["kind"] == "said"]) > 0,
+       [t["text"] for t in chat.said(root, "elsewhere")]),
+      (True, ["said while the session was on another environment"]))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
