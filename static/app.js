@@ -20,6 +20,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/work(\/archive)?(?:\/(\d+|new))?$/, view: "Work", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/reminders(\/archive)?(?:\/(\d+|new))?$/, view: "Reminders", params: ["env", "archive", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/docs(?:\/(new|\d+))?$/, view: "EnvDocs", params: ["env", "n"] },
+  { re: /^\/env\/([a-z0-9-]+)\/connections(?:\/(\d+))?$/, view: "Connections", params: ["env", "n"] },
   { re: /^\/env\/([a-z0-9-]+)\/settings$/, view: "Settings", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/files$/, view: "Files", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/agents\/(session|subagent)\/([0-9a-f-]{6,40})$/, view: "Agent", params: ["env", "kind", "id"] },
@@ -277,7 +278,7 @@ function renderMarkdown(src) {
 
 // page view -> its help file under static/help/
 const HELP_TOPICS = { Todos: "todos", Messages: "messages", Questions: "questions", Suggestions: "suggestions", Reports: "reports", Plans: "plans",
-  Pins: "pins", Reminders: "reminders", Work: "work", EnvDocs: "docs", Docs: "docs", DocDetail: "docs", Rules: "rules", Tools: "tools",
+  Pins: "pins", Reminders: "reminders", Work: "work", EnvDocs: "docs", Docs: "docs", DocDetail: "docs", Rules: "rules", Tools: "tools", Connections: "connections",
   Files: "files", Style: "style" };
 const HELP_CACHE = {};
 
@@ -316,6 +317,7 @@ const Icon = {
       <template v-else-if="name === 'questions'"><circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.3a1.7 1.7 0 0 1 3.2.7c0 1.2-1.6 1.4-1.6 2.5"/><circle cx="8" cy="11.4" r=".6" fill="currentColor" stroke="none"/></template>
       <path v-else-if="name === 'home'" d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>
       <path v-else-if="name === 'close'" d="M4 4l8 8M12 4l-8 8"/>
+      <template v-else-if="name === 'plug'"><path d="M5.2 2.2v3.2M8.8 2.2v3.2M3.4 5.4h7.2v2.1a3.6 3.6 0 0 1-3.6 3.6 3.6 3.6 0 0 1-3.6-3.6Z"/><path d="M7 11.3v2.5"/></template>
       <template v-else-if="name === 'tools'"><path d="M9.8 2.3a3 3 0 0 0-3.6 3.9L2.5 9.9a1.2 1.2 0 0 0 1.7 1.7l3.7-3.7a3 3 0 0 0 3.9-3.6L10 6 8.6 5.4 8 4l1.8-1.7Z"/></template>
       <path v-else-if="name === 'plan'" d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/>
       <template v-else-if="name === 'search'"><circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/></template>
@@ -4145,6 +4147,63 @@ const Tools = {
     </div>`,
 };
 
+const CONNECTION_LIST = {
+  groups: [{ key: "connections", label: "Kept", match: () => true }],
+  columns: { num: (c) => c.name, numWidth: "120px", title: (c) => c.purpose, sub: (c) => c.url || c.kind,
+             cite: (c) => (c.overridden.length ? `${c.overridden.join(", ")} here` : "") },
+  sorts: [{ key: "n", label: "ID" }, { key: "name", label: "Name" }],
+  count: (rows) => `${rows.length} kept`, empty: "Nothing is connected.",
+};
+
+const Connections = {
+  props: ["env", "n"],
+  components: { TopBar, Panel, ResourceList, FetchState },
+  setup(props) {
+    const base = computed(() => `#/env/${props.env}/connections`);
+    const list = useFetch(() => `/api/env/${props.env}/connections`);
+    const item = useFetch(() => props.n && `/api/env/${props.env}/connections/${props.n}`);
+    // READ-ONLY, DELIBERATELY. A connection is written from the terminal, where whoever types a
+    // variable name can see which shell they are in; the page says what is kept and what this
+    // environment changed, and the commands to change it.
+    // JOINED HERE, NOT IN THE TEMPLATE. A template is a backtick string, so a "\n" written in
+    // an expression inside one is a REAL newline by the time Vue compiles it — which is a
+    // syntax error in the compiled render function and a blank page with it.
+    const HOW = ['journal connections set <name> purpose|kind|url|secret "<value>"',
+                 'journal connections here <name> purpose|kind|url|secret "<value>"'].join("\n");
+    return { list, item, base, CONNECTION_LIST, HOW };
+  },
+  template: `
+    <TopBar :crumbs="['Environment', 'Connections']"/>
+    <div class=body>
+      <div class=list>
+        <ResourceList v-bind="CONNECTION_LIST" :rows="list.data" :loading="list.loading" :error="list.error"
+          :href="(c) => base + '/' + c.n" :selected="(c) => String(c.n) === n"/>
+      </div>
+      <Panel v-if="n" :label="'Connection ' + (item.data ? item.data.name : '')" :close="base">
+        <FetchState :state="item"/>
+        <template v-if="item.data">
+          <h2 class=p-title>{{ item.data.purpose }}</h2>
+          <dl class=props>
+            <dt>Name</dt><dd><code>{{ item.data.name }}</code></dd>
+            <dt>Kind</dt><dd>{{ item.data.kind || '—' }}</dd>
+            <dt>URL</dt><dd>
+              {{ item.data.url || '—' }}
+              <span v-if="item.data.overridden.includes('url')" class=dim>
+                — the project's own: {{ item.data.project.url || 'not set' }}</span></dd>
+            <dt>Secret</dt><dd>
+              <code v-if="item.data.secret">{{ item.data.secret }}</code><span v-else>—</span>
+              <span class=dim>{{ item.data.secret ? (item.data.secret_set ? " is set on the server" : " is NOT set on the server") : "" }}</span></dd>
+            <dt>Kept</dt><dd>{{ item.data.at ? item.data.at.slice(0, 16).replace("T", " ") : '—' }}</dd>
+          </dl>
+          <p class=prose>The secret is the NAME of an environment variable, never the token: this record is
+            read back verbatim into every session, so nothing here ever carries a value.</p>
+          <p class=prose>Change it from the terminal:</p>
+          <pre class=how><code>{{ HOW }}</code></pre>
+        </template>
+      </Panel>
+    </div>`,
+};
+
 // ─────────────────────────────────────────────────────────────── search
 const SEARCH_KINDS = {
   todo: { label: "To-do", href: (env, n) => `#/env/${env}/todos/${n}` },
@@ -4731,7 +4790,7 @@ const SkillView = {
     </div></div></div>`,
 };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Inbox, Questions, Suggestions, Style, Reports, ReportDetail, Plans, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, SkillView, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Connections, Inbox, Questions, Suggestions, Style, Reports, ReportDetail, Plans, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, SkillView, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
@@ -4748,6 +4807,9 @@ const NAV = [
   // rules and tools below them — and both had a page and a route but no way in from the nav at all.
   { key: "pins", label: "Pins", views: ["Pins"], path: "pins", count: "pins" },
   { key: "reminders", label: "Reminders", views: ["Reminders"], path: "reminders", count: "reminders" },
+  // the list is the project's; what is SHOWN is this environment's reading of it, overrides applied,
+  // which is why it sits here rather than under Project beside the rules
+  { key: "connections", label: "Connections", icon: "plug", views: ["Connections"], path: "connections" },
   { key: "settings", label: "Settings", views: ["Settings"], path: "settings" },
 ];
 
