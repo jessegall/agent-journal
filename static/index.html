@@ -666,6 +666,12 @@
   .thread-became.live { color: var(--accent-text); }
   .thread-became-word { flex: none; }
   /* what it became is a NAME, and the one thing you want to do with a name is follow it */
+  /* THE JOURNAL'S OWN RECEIPT, not the agent speaking: what the message became, said by the record
+     that knows it. Quieter than a turn and without a bubble, so a run of them reads as marginalia. */
+  .thread-turn.receipt { max-width: 100%; }
+  .thread-turn.receipt .thread-bubble { padding: 0 2px; border: 0; background: none; font-size: 12px;
+    color: var(--text-3); }
+  .thread-turn.receipt .thread-meta { display: none; }
   /* a row named in ordinary prose: the same thing as a became-pill, at the size of the words
      around it, so a sentence still reads as a sentence */
   .row-pill { padding: 0 4px; border: 1px solid var(--border-2); border-radius: 5px;

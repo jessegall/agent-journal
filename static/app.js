@@ -3887,7 +3887,7 @@ const Thread = {
       <p v-if="chat.data && !turns.length" class=thread-empty>Nothing has been said here yet.</p>
       <TransitionGroup :name="settled ? 'turn' : ''">
       <div v-for="t in turns" :key="t.key" :data-turn="anchor(t) || null"
-        :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question' || t.kind === 'parked', sending: t.state === 'sending', failed: t.state === 'failed', lit: !!anchor(t) && lit === anchor(t)}]">
+        :class="['thread-turn', {mine: t.who === 'you', receipt: t.kind === 'receipt', ask: t.kind === 'question' || t.kind === 'parked', sending: t.state === 'sending', failed: t.state === 'failed', lit: !!anchor(t) && lit === anchor(t)}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
           <p v-if="t.kind === 'parked'" class=thread-ask-label>Waiting on you</p>
