@@ -208,43 +208,34 @@
   .statusbar-dot.held { background: #d9a441; }
   /* CENTRED, NOT ON A BASELINE. The sentence rolls inside a box of its own height now, so there is
      no shared baseline to sit on: the state sat low and the sentence high. */
-  .statusbar-text { flex: 1 1 0%; min-width: 0; display: flex; align-items: center; gap: 8px; overflow: hidden; margin: 0 -7px; padding: 3px 7px; border: none; border-radius: 7px;
+  /* ONE LINE OF TEXT, NOT A ROW OF BOXES. Every element added here fought `.statusbar-text span`
+     for the width and lost — three rounds of the command being flung to the right edge. It is a
+     sentence now: the state, the work, a middot, the command, all inline, cut as one. */
+  .statusbar-text { flex: 1 1 0%; min-width: 0; display: flex; align-items: center; overflow: hidden; white-space: nowrap;
+    text-overflow: ellipsis; margin: 0 -7px; padding: 3px 7px; border: none; border-radius: 7px;
     background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
   .statusbar-text:hover { background: rgba(255, 255, 255, .04); }
-  .statusbar-text b { flex: none; font-weight: 500; font-size: 13.5px; white-space: nowrap; }
-  .statusbar-text span { flex: 1 1 auto; min-width: 180px; font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  .statusbar-text b { flex: none; font-weight: 500; font-size: 13.5px; margin-right: 8px; }
+  .statusbar-text .statusbar-roll { flex: 0 1 auto; min-width: 0; position: relative; display: flex;
+    align-items: baseline; font-size: 13px; color: var(--text-2);
     text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
-  /* the roller: one line's height, and the two lines pass through it without moving anything else */
-  /* SIZED TO ITS WORDS, not to the bar. `.statusbar-text span` gives every span flex-grow and a
-     180px floor, which is why the roll swallowed the free space and pushed what follows it to the
-     far right of the bar — the user watched the running command sit over there for three rounds. */
-  .statusbar-text .statusbar-roll { position: relative; flex: 0 1 auto; display: flex; align-items: center;
-    min-width: 0; height: 19px; text-decoration: none; }
-  /* the part of the sentence that did not change: written once, and it does not move */
-  /* what it is running, at the end of the line: smaller and quieter than the work it belongs to */
-  /* right beside the work, with no gap of its own: the bar's own 8px is the only space between them */
-  .statusbar-text .statusbar-running { position: relative; flex: none; display: inline-flex;
-    align-items: center; gap: 4px; margin-left: 0; max-width: 34%; font-size: 10px; color: var(--text-4, #6b6e76); white-space: nowrap;
-    overflow: hidden; text-decoration: none; }
-  /* .statusbar-text span beats a lone class here, so the ticker's size has to be said from the bar */
-  .statusbar-running-dot { opacity: .5; }
-  /* ONE LEVEL, NOT TWO. A roll wrapper inside the running span was a second flex box to fight — it
-     collapsed to nothing once its child stopped growing — so the line rolls in place instead. */
-  .statusbar-text .statusbar-run-line { position: relative; flex: none; min-width: 0; max-width: 34ch;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .statusbar-running .roll-leave-active { position: absolute; left: 12px; right: 0; }
-  .statusbar-text .statusbar-running-for { font-size: 9.5px; }
-  .statusbar-running .ico { width: 11px; height: 11px; opacity: .6; }
-  .statusbar-text .statusbar-running-for { font-variant-numeric: tabular-nums; opacity: .8; }
-  .statusbar-head { flex: none; white-space: pre; text-decoration: underline; text-decoration-color: #3a3d44;
-    text-underline-offset: 3px; }
-  .statusbar-line { position: relative; flex: 0 1 auto; min-width: 0; display: block; line-height: 19px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
-  .roll-enter-active, .roll-leave-active { transition: opacity 75ms ease, transform 75ms ease; }
-  /* the leaving half is taken out of the flow, or the two sit side by side for 75ms and the line jumps */
-  .roll-leave-active { position: absolute; left: 0; right: 0; }
-  .roll-enter-from { opacity: 0; transform: translateY(9px); }
-  .roll-leave-to { opacity: 0; transform: translateY(-9px); }
+  .statusbar-text .statusbar-head { flex: none; white-space: pre; }
+  /* the work gives way before the command does: it is the longer of the two and the one already read */
+  .statusbar-text .statusbar-line { flex: 0 1 auto; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* the command: right after the work, small and quiet, and it rolls when one follows another */
+  .statusbar-text .statusbar-running { flex: none; display: inline-flex; align-items: center;
+    position: relative; margin-left: 7px; font-size: 10px; color: var(--text-4, #6b6e76); text-decoration: none; }
+  .statusbar-text .statusbar-running-dot { margin-right: 4px; opacity: .5; }
+  .statusbar-text .statusbar-run-line { display: inline-flex; align-items: center; max-width: 40ch; }
+  .statusbar-text .statusbar-run-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .statusbar-text .statusbar-running-for { flex: 0 0 auto; margin-left: 5px; font-size: 9.5px;
+    font-variant-numeric: tabular-nums; opacity: .8; }
+  .roll-enter-active { transition: opacity 180ms ease, transform 180ms cubic-bezier(.22,.7,.3,1); }
+  .roll-leave-active { transition: opacity 140ms ease, transform 140ms cubic-bezier(.22,.7,.3,1); }
+  .roll-enter-from { opacity: 0; transform: translateY(5px); }
+  .roll-leave-to { opacity: 0; transform: translateY(-5px); }
+  .roll-leave-active { position: absolute; }
   @media (prefers-reduced-motion: reduce) { .roll-enter-active, .roll-leave-active { transition: none; } }
   /* the branch this project is on, left of the Auto switch; the to-do is named in the sentence itself */
   .statusbar-facts { flex: 0 1 auto; min-width: 0; display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; }
@@ -253,6 +244,8 @@
   .statusbar-facts .ico { flex: none; width: 12px; height: 12px; }
   .statusbar-facts > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .statusbar-tools { margin-left: auto; flex: 0 1 auto; min-width: 0; display: flex; align-items: center; gap: 14px; }
+  .statusbar-tools::before { content: ""; align-self: stretch; width: 1px; margin: 3px 0;
+    background: var(--line, rgba(255,255,255,.14)); }
   .statusbar-auto { flex: none; display: inline-flex; align-items: center; gap: 7px; border: none; background: transparent; padding: 0;
     font-size: 11.5px; color: var(--text-2); cursor: pointer; }
   .statusbar-auto .ico { width: 12px; height: 12px; opacity: .65; }

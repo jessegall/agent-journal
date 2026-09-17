@@ -486,9 +486,24 @@ const StatusBar = {
     const ticks = ref(0);
     const timer = setInterval(() => { ticks.value += 1; }, 1000);
     onUnmounted(() => clearInterval(timer));
+    //: THE AGE OF THIS COMMAND, not of the work: it starts again with each one, and says nothing for
+    //: the first few seconds — a line reading "0s" on every command is noise pretending to be data
+    const forText = (secs) => (secs < 5 ? "" : secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s`);
     const readAt = { at: 0, seconds: 0 };
+    // A STANDING FAKE, for looking at the layout. A real command is over in under a second, so the
+    // line it draws can only be judged by luck; `?fakerun` on the URL rotates one every twelve seconds.
+    const FAKE = new URLSearchParams(location.search).has("fakerun");
+    const FAKES = ["npm run build", "python3 test_serve.py", "git commit -m 'the message'",
+                   "perl -e 'alarm 500; exec @ARGV' python3 .journal/tools/suite/run.py ."];
     const running = computed(() => {
       ticks.value;                                        // read, so the clock re-runs this
+      if (FAKE) {
+        const secs = ticks.value;
+        const flat = FAKES[Math.floor(secs / 12) % FAKES.length];
+        const own = secs % 12;
+        return { what: flat, seconds: own, gist: flat.length > 42 ? `${flat.slice(0, 42)}…` : flat,
+                 forText: forText(own) };
+      }
       const agent = SHELL.activity && SHELL.activity.agent;
       const got = agent && agent.running;
       if (!got) return null;
@@ -499,7 +514,7 @@ const StatusBar = {
       const secs = got.seconds + Math.floor((Date.now() - readAt.at) / 1000);
       const flat = String(got.what || "").trim();
       return { what: flat, seconds: secs, gist: flat.length > 42 ? `${flat.slice(0, 42)}…` : flat,
-               forText: secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s` };
+               forText: forText(secs) };
     });
     const doing = computed(() => {
       const events = (SHELL.activity && SHELL.activity.events) || [];
@@ -591,8 +606,9 @@ const StatusBar = {
           <!-- IT ROLLS TOO. One command follows another while a long piece of work runs, and a line
                that swapped outright read as a flicker; keyed on the command, it leaves upward as the
                next arrives from below, the way the work's own sentence does. -->
-          <Transition name=roll><span :key="running.gist" class=statusbar-run-line>{{ running.gist }}</span></Transition>
-          <span class=statusbar-running-for>{{ running.forText }}</span></span>
+          <Transition name=roll><span :key="running.gist" class=statusbar-run-line>
+            <span class=statusbar-run-text>{{ running.gist }}</span>
+            <span v-if="running.forText" class=statusbar-running-for>{{ running.forText }}</span></span></Transition></span>
       </button>
       <span class=statusbar-tools>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
