@@ -3687,6 +3687,11 @@ const EnvHome = {
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
     <div class=body><div class=page><div class=home>
+      <div class=home-main>
+      <section class="home-section home-thread">
+        <Thread :env="env"/>
+      </section>
+      <div class=home-rail>
       <div class=home-lead>
         <div class=home-facts>
           <template v-for="(f, i) in lead.facts" :key="i">
@@ -3701,11 +3706,6 @@ const EnvHome = {
           </button>
         </div>
       </div>
-      <div class=home-main>
-      <section class="home-section home-thread">
-        <Thread :env="env"/>
-      </section>
-      <div class=home-rail>
       <section class=home-section>
         <Transition name=needs mode=out-in>
         <div v-if="clear" key=clear class=needs-clear><Icon name="todos"/><span>Nothing is waiting on you.</span></div>
