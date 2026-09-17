@@ -3381,7 +3381,10 @@ const EnvHome = {
     // everything, not just what is open: Current work reads the finished ones under the open ones
     const work = useFetch(url("/work"));
     // the finished lines are the newest few; the COUNT behind "N more" rides in the environment row
-    const recentWork = useFetch(url("/work?all=1&cap=6"));
+    // NEWEST FIRST, or the cap takes the wrong six: the work list is ordered oldest-first for its own
+    // page, where what you started first leads -- so a plain cap handed this section the oldest work
+    // ever written and it showed nothing finished for hours.
+    const recentWork = useFetch(url("/work?all=1&cap=6&order=desc"));
     const questions = useFetch(url("/questions?cap=8"));
     const suggestions = useFetch(url("/suggestions"));
     const reports = useFetch(url("/reports"));
