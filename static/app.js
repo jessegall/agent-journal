@@ -1562,7 +1562,10 @@ const TodoPanel = {
       <template v-if="item.data">
         <h2 class=p-title>{{ item.data.title }}</h2>
         <dl class=props>
-          <dt>Status</dt><dd><StatusIcon :kind="todoStatus(item.data)"/>{{ STATUS_LABEL[todoStatus(item.data)] }}</dd>
+          <!-- A BLOCKED ROW SAYS WHAT IT IS BLOCKED ON, beside the word Blocked rather than in a note
+               under the buttons. The word alone tells a reader the one thing they already know. -->
+          <dt>Status</dt><dd><StatusIcon :kind="todoStatus(item.data)"/>{{ STATUS_LABEL[todoStatus(item.data)] }}
+            <span v-if="!item.data.done && (item.data.blocked || item.data.asks)" class=status-why>— {{ item.data.blocked || item.data.asks }}</span></dd>
           <dt>Priority</dt>
           <dd v-if="item.data.done"><PriorityIcon :value="item.data.priority"/>{{ priorityName(item.data.priority) }}</dd>
           <dd v-else class=prio-wrap>
@@ -1590,7 +1593,7 @@ const TodoPanel = {
         </dl>
         <ActionBar :actions="actions" :done="done" :key="'todo' + item.data.n + (item.data.done || '')"/>
         <div v-if="item.data.done" class=note>Closed: {{ item.data.how || 'done' }}</div>
-        <div v-if="item.data.blocked" class=note>Set aside until {{ item.data.blocked }}</div>
+        <div v-if="item.data.blocked" class=note>Set aside: {{ item.data.blocked }}</div>
         <div v-if="item.data.asks" class=note>
           <p class=section-label>{{ item.data.answer ? 'The user answered' : 'Waiting on the user' }}</p>
           <div>{{ item.data.asks }}</div>
