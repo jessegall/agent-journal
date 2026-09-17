@@ -293,6 +293,19 @@ j("messages", "done", str(_rn))
 check("a processed message can still be replied to", j("messages", "reply", str(_rn), "One more thing: the old flag still works.")[0], 0)
 check("a message that is not there is refused", j("messages", "reply", "999", "x")[0], 1)
 
+# ------------------------------------------------- quoting the thread, the other direction from --part
+code, out = j("messages", "reply", str(_rn), "Then leave it.", "--quoting=already taken by export")
+check("a reply may quote words really said in the thread", (code, "replied to message" in out), (0, True))
+code, out = j("messages", "reply", str(_rn), "Then leave it.", "--quoting=a thing nobody said here")
+check("and a quote nobody said is refused, the same guarantee --part carries",
+      (code, "quote words that were really said" in out), (1, True))
+code, out = j("messages", "reply", str(_rn), "Not this either.", "--quoting=rename the flag to --json")
+check("the MESSAGE's own words are not the thread's: --part checks those, --quoting checks what was said back",
+      (code, "quote words that were really said" in out), (1, True))
+_reps = [r for r in stored()[_rn - 1]["replies"] if r.get("quoting")]
+check("the quote is stored on the reply, beside part and never merged into it",
+      [(r["quoting"], r.get("part", "")) for r in _reps], [("already taken by export", "")])
+
 j("messages", "add", "the lantern relay clicks at night")
 code, out = j("messages", "waiting")
 check("messages waiting prints a waiting message in full", (code, "the lantern relay clicks at night" in out), (0, True))
