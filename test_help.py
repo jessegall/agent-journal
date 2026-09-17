@@ -33,7 +33,9 @@ def fresh():
     d = Path(tempfile.mkdtemp()) / "proj"
     (d / ".claude").mkdir(parents=True)
     testkit.make(d, SRC)
-    (d / ".journal" / "settings.json").write_text("{}")
+    # THE SESSION HAS TO HAVE CHOSEN: there is no default environment, and an unbound session's
+    # journal commands are refused (test_unbound covers that). This suite is about spellings.
+    (d / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True}))
     tdir = transcript.project_dir(d); tdir.mkdir(parents=True, exist_ok=True)
     (tdir / "s1.jsonl").write_text("")
     return d

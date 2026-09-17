@@ -19,6 +19,7 @@ Every group below prints its own commands, and so does every spelling of them:
     todos          delayed work, parked with the brief you will need in a week
     docs           what was settled: findings, reports, the reasoning a pin cites
     tools          scripts kept for repeated work
+    connections    services the project can reach, overridable per environment
     environments   where work lives: switch, prepare, claim, worktree
     cleanup        what has evidence against it: stale rules, pins, docs, empty environments
     transcript     read it back: conversation, user, search, carry
