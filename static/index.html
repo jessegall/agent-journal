@@ -495,14 +495,13 @@
      run past its own end, put the rail's edge wherever the rail's content happened to stop, and grow
      the page instead of keeping the conversation on screen. The shell is fixed, the turns scroll, the
      rail scrolls, and the writing box is simply the last row of its column. */
-  .home { height: 100%; max-width: 1180px; padding: 26px 30px 0; display: flex; flex-direction: column;
-    gap: 18px; min-height: 0; }
-  .home-lead { flex: none; }
+  .home { height: 100%; max-width: 1180px; padding: 22px 30px 0; display: flex; flex-direction: column; min-height: 0; }
   .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 26px; }
   .home-thread { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-  .home-rail { flex: none; width: 300px; min-height: 0; overflow-y: auto; scrollbar-width: thin;
+  .home-rail { flex: none; width: 300px; min-height: 0; overflow-y: auto; scrollbar-width: none;
     display: flex; flex-direction: column; gap: 22px;
     padding: 0 0 26px 26px; border-left: 1px solid var(--border); }
+  .home-rail::-webkit-scrollbar { width: 0; }
   /* too narrow for two columns: the rail becomes a short strip above the thread, and its edge with it */
   @media (max-width: 820px) {
     .home-main { flex-direction: column; }
@@ -514,7 +513,7 @@
   .home-facts a.first { text-decoration: none; }
   .home-facts a.first:hover { color: var(--text); text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   /* the live subagents hang under the facts line, indented past it: part of the page's opening block, not a bar */
-  .home-lead { display: flex; flex-direction: column; gap: 4px; }
+  .home-lead { flex: none; display: flex; flex-direction: column; gap: 4px; }
   .crew-strip { display: flex; flex-direction: column; padding: 2px 0 0 13px; }
   .crew-line { display: flex; align-items: center; gap: 8px; height: 24px; margin: 0 -7px; padding: 0 7px; border: none; border-radius: 6px;
     background: transparent; text-align: left; cursor: pointer; animation: crew-in .28s ease-out both; }
@@ -533,8 +532,9 @@
   @media (prefers-reduced-motion: reduce) { .crew-line, .crew-dot { animation-duration: .01ms; animation-iteration-count: 1; } }
   /* the thread: what was said, read downwards, with the writing box under it */
   .thread { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-  .thread-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin;
+  .thread-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none;
     display: flex; flex-direction: column; gap: 10px; padding: 2px 2px 0 0; }
+  .thread-scroll::-webkit-scrollbar { width: 0; height: 0; }
   .thread-more { align-self: center; padding: 2px 8px; border: 0; border-radius: 6px; background: none;
     color: var(--text-3); font: inherit; font-size: 11px; }
   .thread-turn { display: flex; flex-direction: column; gap: 3px; max-width: 78%; }
