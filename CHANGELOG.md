@@ -4,6 +4,36 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.151.0 — A reply keeps its file, and the viewer stops flinching
+
+**A reply carries what was attached to it.** The viewer's reply path sent only the text, and the
+record had no field for a reply's files at all, so a screenshot answering a question was dropped
+between the box and the journal. It is kept in the message's own folder now, the reply records the
+names it added, and `journal messages reply <n> "…" --file=<path>` takes them at the terminal too.
+A reply written on a message also lands UNDER that message rather than becoming a new one: the
+quote is checked against the message as well as its replies, because the message is the first
+thing said in its own thread.
+
+**The thread stops flinching.** A sent turn is one element rather than two fading over each other
+— measured frame by frame, the optimistic turn was still fading in at 0.62 opacity when the
+server's copy entered beside it and the first was told to leave. Your own send always lands at the
+bottom, whatever you were reading and however tall the picture in it turns out to be. Up in an
+empty box brings the last message back to edit, down backs out of it, and a reply quotes what it
+answers on both sides of the conversation.
+
+**The bars stay put.** The crumbs, the search, the bell and the status bar were rendered by every
+page, so they faded in and out with it; the shell owns them now and only the page's content
+transitions. The status line rolls rather than swapping, and when only a number changes, only the
+number rolls. The branch moved to the agent bar, where the model and the window live — and a
+subagent dispatched into a worktree shows its own branch, read from the directory it calls tools
+from.
+
+**Smaller.** The bell's dropdown shows the rail's own rows, with Unread and Read as tabs and a
+sticky head. A text or markdown attachment opens in the reader rather than a browser tab, with Raw
+one click away. An inspector full of prose opens wider. Auto is a switch that says which way it is
+set. While one turn is lit, the rest go quiet. `journal settings` with nothing to set is a read
+again.
+
 ## 1.150.0 — One acknowledgement per message, and a rail you can read
 
 **Either a note or an answer, never both.** The journal wrote "Noted — created to-do 4." under a
