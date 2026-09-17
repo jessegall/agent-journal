@@ -12,6 +12,8 @@ NOUNS = (("cleanup", "tidy"), ("migrate", "migrations"), ("loop",), ("update",),
 
 TEXT = {
     "serve_already": "a viewer for this project is already up: {url}",
+    "claude_viewer_up": "the viewer is up at {url} — the messages, the to-dos and the conversation are there",
+    "claude_viewer_already": "the viewer is already up at {url}",
     "serve_detached": "the viewer is up at {url}, in a session of its own — it outlives this one, "
                       "and whatever started it. Its output goes to {log}; stop it with "
                       "`kill $(lsof -t -iTCP:$(echo {url} | sed 's|.*:||') -sTCP:LISTEN)`",
@@ -258,39 +260,52 @@ class Serve(Command):
 
     @staticmethod
     def detach(p: Parsed) -> int:
-        """Start it in a session of its own, so it outlives whatever started it.
-
-        A VIEWER THAT VANISHES WAS REAPED, NOT CLOSED. `serve` runs in the foreground, so an agent
-        that wants one backgrounds it — and then it belongs to that task's process group. A harness
-        killing the tree when memory runs short takes the viewer with it, and the user sees a window
-        that shut itself for no reason. Reported by a user's colleagues, twice in one session.
-        """
-        import subprocess
-        import sys
-        import time
-        import serve
-
-        already = serve.running(root())
+        already, url, log = start_viewer(p.option("port"))
         if already:
-            fmt.say(render(TEXT["serve_already"], url=already))
+            fmt.say(render(TEXT["serve_already"], url=url))
             return 0
-        log = root() / "runtime" / "viewer.log"
-        log.parent.mkdir(parents=True, exist_ok=True)
-        # where the PACKAGE is, not how it was invoked: argv[0] is "-c" when the CLI runs in-process
-        args = [sys.executable, str(package() / "journal.py"), "serve"]
-        if p.option("port"):
-            args.append(f"--port={p.option('port')}")
-        with log.open("a") as fh:
-            # its own session: the launcher's process group is not its own, so killing that tree leaves it
-            subprocess.Popen(args, stdout=fh, stderr=fh, stdin=subprocess.DEVNULL,
-                             start_new_session=True, cwd=str(project()))
-        for _ in range(60):
-            time.sleep(0.25)
-            url = serve.running(root())
-            if url:
-                fmt.say(render(TEXT["serve_detached"], url=url, log=log.relative_to(root().parent)))
-                return 0
-        return refuse(render(TEXT["serve_no_answer"], log=log.relative_to(root().parent)))
+        if not url:
+            return refuse(render(TEXT["serve_no_answer"], log=log))
+        fmt.say(render(TEXT["serve_detached"], url=url, log=log))
+        return 0
+
+
+def start_viewer(port=None) -> tuple[bool, str, str]:
+    """Put a viewer up for this journal if none is: (was one already, its url, where its output goes).
+
+    IN A SESSION OF ITS OWN, so it outlives whatever started it. A VIEWER THAT VANISHES WAS REAPED,
+    NOT CLOSED: `serve` runs in the foreground, so an agent that wants one backgrounds it — and then
+    it belongs to that task's process group. A harness killing the tree when memory runs short takes
+    the viewer with it, and the user sees a window that shut itself for no reason. Reported by a
+    user's colleagues, twice in one session. It matters twice over for `journal claude`, which EXECS
+    into Claude Code: a child of this process would not survive the call that replaces it.
+
+    ONE FUNNEL, because two things now want a viewer — `serve --detach` and the start of a session.
+    """
+    import subprocess
+    import sys
+    import time
+    import serve
+
+    log = root() / "runtime" / "viewer.log"
+    already = serve.running(root())
+    if already:
+        return True, already, str(log.relative_to(root().parent))
+    log.parent.mkdir(parents=True, exist_ok=True)
+    # where the PACKAGE is, not how it was invoked: argv[0] is "-c" when the CLI runs in-process
+    args = [sys.executable, str(package() / "journal.py"), "serve"]
+    if port:
+        args.append(f"--port={port}")
+    with log.open("a") as fh:
+        # its own session: the launcher's process group is not its own, so killing that tree leaves it
+        subprocess.Popen(args, stdout=fh, stderr=fh, stdin=subprocess.DEVNULL,
+                         start_new_session=True, cwd=str(project()))
+    for _ in range(60):
+        time.sleep(0.25)
+        url = serve.running(root())
+        if url:
+            return False, url, str(log.relative_to(root().parent))
+    return False, "", str(log.relative_to(root().parent))
 
 
 class Statusline(Command):
@@ -364,6 +379,7 @@ class Claude(Command):
         import os
         import shlex
         import shutil
+        import sys
         added, shown = install_channel()
         if added:
             fmt.say(render(TEXT["claude_added"], path=shown))
@@ -383,7 +399,19 @@ class Claude(Command):
         if not shutil.which("claude"):
             fmt.say(TEXT["claude_missing"])
             return 1
+        # THE VIEWER COMES UP WITH THE SESSION. It is where the user works — the messages, the
+        # to-dos, the thread — and it was a second command they had to know about and remember.
+        # Started before the exec and in a session of its own, so it survives being replaced.
+        already, url, _ = start_viewer()
+        if url:
+            fmt.say(render(TEXT["claude_viewer_already"] if already else TEXT["claude_viewer_up"], url=url))
         os.chdir(project())
+        # FLUSH BEFORE THE EXEC. `execvp` replaces the process image without running any of
+        # Python's teardown, so anything still sitting in the stdout buffer is simply gone —
+        # which is why the line saying the channel was installed has never reached a user who
+        # was not on a tty, and why the viewer's url would not have either.
+        sys.stdout.flush()
+        sys.stderr.flush()
         os.execvp("claude", command)
 
 
