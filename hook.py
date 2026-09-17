@@ -51,7 +51,6 @@ import agents  # noqa: E402
 import grants  # noqa: E402
 import nudges  # noqa: E402
 import builtin  # noqa: E402
-import commands  # noqa: E402
 import pins  # noqa: E402
 import reminders  # noqa: E402
 import work  # noqa: E402
@@ -1804,6 +1803,12 @@ def _journal_cmds(payload: dict) -> list[tuple[str, object, list[str]]] | None:
     """(verb, command, its words) for each journal command a Bash line runs; None when a journal line cannot be read."""
     if (payload.get("tool_name") or "") != "Bash":
         return []
+    # NOT AT THE TOP, AND THIS IS THE CASE THE RULE NAMES. `commands` pulls in every command
+    # module and its controllers, and this hook is a fresh interpreter on EVERY tool call. The
+    # two places that read the registry are both behind this Bash check, so a Read, an Edit or a
+    # Grep paid for it and used none of it. Measured end to end on a Read: 72.6ms before, 58.9ms
+    # after — 14ms back on every non-Bash call, which is most of them.
+    import commands
     import shlex
     found = []
     for text in _journal_lines(str((payload.get("tool_input") or {}).get("command", ""))):
@@ -1853,6 +1858,7 @@ def _user_only(payload: dict) -> str | None:
     line = _HEREDOC_BODY.sub(r"\1", str((payload.get("tool_input") or {}).get("command", "")))
     if "journal" not in line:
         return None
+    import commands   # see `_journal_cmds`: only a Bash line ever needs the registry
     import shlex
     try:
         toks = shlex.split(line)
