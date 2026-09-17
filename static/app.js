@@ -4233,7 +4233,9 @@ const EnvHome = {
     // plain list hides done ones, which is why the card used to vanish the moment the last phase closed
     const plans = useFetch(url("/plans?all=1"));
     const messages = useFetch(url("/messages?cap=10"));
-    const notes = useFetch(url("/notifications"));
+    // BOTH HALVES, because the tab under this one shows what has been read: the list is filtered
+    // here rather than fetched twice.
+    const notes = useFetch(url("/notifications?all=1&cap=50"));
     const todos = useFetch(url("/todos"));
     // THE RAIL IS THREE LISTS, NOT ONE. What waits on the user is what it has always held; the
     // to-dos and the notifications were each a page away, which is a page too far for the thing you
@@ -4354,6 +4356,11 @@ const EnvHome = {
       .map((g) => ({ key: g.key, label: g.label, rows: openTodos.value.filter((t) => todoStatus(t) === g.key) }))
       .filter((g) => g.rows.length));
     const unread = computed(() => (notes.data || []).filter((n) => !n.read));
+    const read = computed(() => (notes.data || []).filter((n) => n.read));
+    const noteTab = ref("unread");
+    const NOTE_TABS = computed(() => [{ key: "unread", label: "Unread", n: unread.value.length },
+                                      { key: "read", label: "Read", n: read.value.length }]);
+    const shownNotes = computed(() => (noteTab.value === "unread" ? unread.value : read.value));
     const TABS = computed(() => [{ key: "waiting", label: "Waiting on you", n: waitingCount.value },
                                  { key: "todos", label: "To-dos", n: openTodos.value.length },
                                  { key: "notifications", label: "Notifications", n: unread.value.length }]);
@@ -4433,7 +4440,7 @@ const EnvHome = {
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
-             tab, TABS, openTodos, todoGroups, unread, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto };
+             tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4515,16 +4522,24 @@ const EnvHome = {
         </TransitionGroup>
       </template>
       <template v-else>
-        <div v-if="!unread.length" class=home-rail-empty>
+        <!-- UNREAD AND READ, the same two the bell's dropdown has: what has been read is history and
+             does not belong in the same list as what has not, but it must still be reachable. -->
+        <div class="rail-tabs rail-subtabs" role=tablist>
+          <button v-for="t in NOTE_TABS" :key="t.key" type=button role=tab :aria-selected="noteTab === t.key"
+            :class="['rail-tab', {on: noteTab === t.key}]" @click="noteTab = t.key">
+            {{ t.label }}<span :class="['rail-tab-n', {hot: t.n && t.key === 'unread'}]">{{ t.n }}</span>
+          </button>
+        </div>
+        <div v-if="!shownNotes.length" class=home-rail-empty>
           <Icon name="bell"/>
-          <p>Nothing new.</p>
+          <p>{{ noteTab === "unread" ? "Nothing new." : "Nothing has been read yet." }}</p>
         </div>
         <!-- a notification is read by opening it, and cleared where it is if it opens nothing -->
         <!-- no dismiss control: opening one marks it read, which is the only thing to do with it -->
         <TransitionGroup name=qrow tag=div class=rail-list>
         <!-- the class name "note" is taken: it already carries a card's border and radius, so the
              row picked up a box nobody gave it. A name in a shared stylesheet belongs to somebody. -->
-        <div v-for="n in unread" :key="n.n" class=rail-note>
+        <div v-for="n in shownNotes" :key="n.n" class=rail-note>
           <NoteRow :note="n" :env="env" :open="openNote"/>
         </div>
         </TransitionGroup>
