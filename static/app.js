@@ -3587,7 +3587,8 @@ const Thread = {
                      ref: to && to.who === "agent" && to.kind === "reply" ? excerpt(quoteOf.value) : "" };
       pending.value = [...pending.value, mine];
       answering.value = null;
-      nextTick(() => bottom("smooth"));
+      // the watcher scrolls when the turn lands; a second smooth scroll started here fights it
+      nextTick(() => bottom("auto"));
       try {
         if (to && to.who === "agent" && to.kind === "reply" && to.n) {
           await postJSON(`/api/env/${props.env}/messages/${to.n}/reply`, { text, quoting: excerpt(quoteOf.value) });
