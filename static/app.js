@@ -4317,7 +4317,7 @@ const EnvHome = {
         <div v-for="n in unread" :key="n.n" class=rail-note>
           <!-- the class name "note" is taken: it already carries a card's border and radius, so the
                row picked up a box nobody gave it. A name in a shared stylesheet belongs to somebody. -->
-          <button type=button class=rail-row :disabled="!noteHref(n, env)" @click="openNote($event, n)">
+          <button type=button class="rail-row wrap" :disabled="!noteHref(n, env)" @click="openNote($event, n)">
             <span class=rail-row-title>{{ n.text }}</span>
             <span class=rail-row-state>{{ n.age || 'just now' }}</span>
           </button>

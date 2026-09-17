@@ -602,6 +602,12 @@
   .rail-row-title { flex: 1 1 auto; min-width: 0; font-size: 12.5px; white-space: nowrap;
     overflow: hidden; text-overflow: ellipsis; }
   .rail-row-state { flex: none; font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  /* A NOTIFICATION IS A SENTENCE, NOT A TITLE. Clamped to one line it ended in an ellipsis before
+     it said what happened, so it wraps — and the age holds the top-right corner rather than riding
+     the last line it happens to end on. */
+  .rail-row.wrap { align-items: flex-start; padding-block: 9px; }
+  .rail-row.wrap .rail-row-title { white-space: normal; overflow: visible; line-height: 1.45; }
+  .rail-row.wrap .rail-row-state { padding-top: 1px; }
   /* A HEADING IN THE RAIL IS THE LIST PAGE'S GROUP HEADING, at the width this column has: the state
      is said once, over the rows that are in it, rather than repeated on the end of every row. */
   .rail-group { display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 var(--rail-gutter);
