@@ -398,9 +398,10 @@ check("the to-do's page finds the message, though it sits elsewhere",
 check("and the same bare ref here keeps its OWN message, never the other environment's",
       [(r["n"], r["env"]) for r in _inbox.sources(_root, "todo:1", "default")], [(1, "default")])
 
-# ------------------------------------------------------- a reply with no part is still told to the user
-# A plain reply answers the whole message rather than one quoted line of it. It used to return before
-# the notification was written, so the user was never shown it and the home could not list it.
+# ------------------------------------------------ a plain reply is not news; an answer to a part is
+# The thread shows a reply under the message it answers, so a notification for one is a second
+# telling of what is already on the screen. A reply that answers a PART is different: it closes a
+# question the user asked, and the row it answers is somewhere else on the page.
 import notifications as _notif  # noqa: E402
 
 j("switch", "default")
@@ -409,9 +410,14 @@ _pr = len(stored())
 _had = len(_notif._all(d / ".journal", "default"))
 code, out = j("messages", "reply", str(_pr), "Swapped it this morning.")
 check("a plain reply is taken", (code, "replied to message" in out), (0, True))
+check("and it raises no notification, because the chat already shows it",
+      len(_notif._all(d / ".journal", "default")) - _had, 0)
+
+code, out = j("messages", "reply", str(_pr), "Yes, this morning.", "--part=did the loader ever get swapped?")
+check("a reply that answers a part is taken", code, 0)
 _notes = _notif._all(d / ".journal", "default")
-check("and the user is notified about it, the way a part-answering reply is",
-      (len(_notes) - _had, _notes[-1]["about"], "Replied to your message" in _notes[-1]["text"]),
+check("and that one IS told to the user, because the row it answers is elsewhere",
+      (len(_notes) - _had, _notes[-1]["about"], "Answered your question" in _notes[-1]["text"]),
       (1, f"inbox:{_pr}", True))
 check("the notification is unread, which is what puts it in front of them",
       _notes[-1].get("read_at"), None)

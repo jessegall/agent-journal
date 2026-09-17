@@ -33,7 +33,6 @@ MESSAGES = {
     "plain_answered": "answered",
     "answered_part": "answered part of message {n} ({excerpt}); the user is notified and reads it under the message",
     "answer_note": "Answered your question in message {n}",
-    "reply_note": "Replied to your message {n}",
     "already_kind": "message {n} is already a {kind}",
     "declared": "message {n} is a {kind} now; its transcript is written and the rows you file from it can name it",
     "bad_kind": "there is no message kind called {kind}; there is only: {kinds:, }",
@@ -666,10 +665,14 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
         if part:
             m.setdefault("parts", []).append({"excerpt": part, "became": ["answered"], "at": at})
         _put(root, items, track)
-    # the user is told either way: a reply they are never shown is a reply that did not land
-    if source != "web" and notify:
+    # A PLAIN REPLY IS NOT NEWS ANY MORE. This was written when a reply under a message was invisible
+    # unless you went looking for it; the thread shows it in place now, so a notification for one is a
+    # second telling of something already on the screen — and it was most of what the list held.
+    # A reply that ANSWERS A PART is different: it closes a question the user asked, and the row it
+    # answers is somewhere else on the page, so that one is still worth saying.
+    if source != "web" and notify and part:
         import notifications
-        notifications.add(root, say("answer_note" if part else "reply_note", n=n), at, f"message {n}", source, track)
+        notifications.add(root, say("answer_note", n=n), at, f"message {n}", source, track)
     if not part:
         return True, say("replied", n=n)
     return True, say("answered_part", n=n, excerpt=fmt.gist(part, 60))
