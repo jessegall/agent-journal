@@ -64,7 +64,7 @@ function cameBack() {
 const LAST_WRITE = { at: 0 };
 const QUIET_MS = 4000;
 
-function useFetch(urlFn, { poll = true } = {}) {
+function useFetch(urlFn, { poll = true, every = null } = {}) {
   const state = reactive({ data: null, loading: true, error: null, tick: 0 });
   state.reload = () => { state.tick += 1; };
   let busy = false;
@@ -86,12 +86,23 @@ function useFetch(urlFn, { poll = true } = {}) {
       .finally(() => { state.loading = false; busy = false; });
   });
   // self-healing: a poll that throws or fails is simply tried again on the next tick
-  const timer = poll ? setInterval(() => {
+  //: THE GAP IS ASKED FOR EACH TIME. A fixed interval cannot follow the agent — while it works, a
+  //: command starts and ends between two five-second polls and is never seen — so `every` is read
+  //: again on every tick and the next one is set from what it says now.
+  let timer = null;
+  const tick = () => {
     try {
       if (!busy && document.visibilityState === "visible") state.reload();
     } catch (e) { /* the next tick tries again */ }
-  }, POLL_MS) : null;
-  onUnmounted(() => { stop(); if (timer) clearInterval(timer); });
+    timer = setTimeout(tick, gap());
+  };
+  // `every` is only ever CALLED from a tick: it closes over state declared after this call, so asking
+  // it during setup reads a binding that does not exist yet
+  const gap = () => {
+    try { return (every && every()) || POLL_MS; } catch (e) { return POLL_MS; }
+  };
+  if (poll) timer = setTimeout(tick, POLL_MS);
+  onUnmounted(() => { stop(); if (timer) clearTimeout(timer); });
   return state;
 }
 
@@ -4253,7 +4264,7 @@ const Thread = {
         <div class=thread-meta>
           <span v-if="t.n && t.who === 'you'" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
           <span>{{ clock(t.at) }}</span>
-          <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)"
+          <span v-if="t.state && (t.kind === 'message' || t.kind === 'reply')" :class="['thread-ticks', t.state]" :title="landed(t)"
             role=img :aria-label="landed(t)">
             <svg viewBox="0 0 19 12" fill=none stroke=currentColor stroke-width="1.6" stroke-linecap=round stroke-linejoin=round>
               <path d="M1.5 6.6 4.4 9.5 10 2.8"/>
@@ -5820,7 +5831,14 @@ const App = {
       }
       if (link.href !== FAVICON) link.href = FAVICON;
     });
-    const activity = useFetch(() => envName.value && `/api/env/${envName.value}/activity`);
+    // while the agent is working it is read every second, so a command that is over in under five
+    // is still seen; idle, it is the ordinary five
+    const activity = useFetch(() => envName.value && `/api/env/${envName.value}/activity`, {
+      every: () => {
+        const agent = activity.data && activity.data.agent;
+        return agent && (agent.working || agent.running) ? 1000 : POLL_MS;
+      },
+    });
     // a message just sent, or anything else just written, shows in Activity now rather than at the next poll
     const reloadActivity = () => activity.reload();
     window.addEventListener("journal:changed", reloadActivity);

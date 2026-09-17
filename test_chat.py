@@ -113,6 +113,15 @@ check("a message and both sides' replies are turns, each attributed to whoever w
        ("agent", "reply", "the agent answering it"),
        ("you", "reply", "and the user again")])
 
+# THE USER'S REPLY IS TICKED LIKE THEIR MESSAGE. It is a turn they sent and waited on, and the
+# record already says whether the agent was told of it.
+_reply = [t for t in turns() if t["kind"] == "reply"]
+check("the user's reply carries ticks and the agent's carries none",
+      [(t["who"], t.get("state")) for t in _reply], [("agent", None), ("you", "sent")])
+inbox.mark_replies_told(root, "w", [(1, 1)], now())
+check("and the ticks fill in once the agent has been told of it",
+      [t.get("state") for t in turns() if t["kind"] == "reply" and t["who"] == "you"], ["read"])
+
 inbox.add(root, "an archived one", now(), track="w")
 inbox.archive(root, 2, "not part of the conversation", now(), track="w")
 check("an archived message is not a turn",
