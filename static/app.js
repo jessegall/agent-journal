@@ -459,8 +459,13 @@ const StatusBar = {
       if (!agent) return { state: "Stopped", what: "no agent is on this environment", href: planHref };
       const onIt = w ? (w.todo ? `to-do ${w.todo} · ${w.subject}` : w.subject)
         : plan ? `plan ${plan.n} · phase ${plan.current}: ${plan.current_title}` : "";
-      if (agent.compacting) return { state: "Working", live: true, what: "compacting its context", href: workHref };
-      if (agent.working) return { state: "Working", live: true, what: onIt || "on its own", href: workHref };
+      // WORKING IS WHAT THE JOURNAL MEANS BY IT: work that was declared. The bar said Working while
+      // the agent was reading a message or filing a row with nothing open — the one state the journal
+      // itself refuses to call work — so the word that was meant to say a to-do is moving said
+      // nothing at all. Busy is the honest word for here, doing something undeclared.
+      if (agent.compacting) return { state: "Busy", live: true, what: "compacting its context", href: workHref };
+      if (agent.working && !onIt) return { state: "Busy", live: true, what: "nothing declared yet", href: workHref };
+      if (agent.working) return { state: "Working", live: true, what: onIt, href: workHref };
       return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
     });
     const inspectWork = computed(() => (work.data ? work.data[0] : (AGENT_STATE[env.value] || {}).work) || null);

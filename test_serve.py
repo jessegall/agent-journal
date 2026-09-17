@@ -1216,9 +1216,10 @@ _bsp.run(["git", "init", "-q", "-b", "feature/x", str(_repo)], capture_output=Tr
 (_repo / "sub").mkdir()
 check("outside git there is no branch", _wt.branch(_bare), None)
 check("a repository names its branch, from any folder inside it",
-      (_wt.branch(_repo), _wt.branch(_repo / "sub")), ({"name": "feature/x", "detached": False},) * 2)
+      (_wt.branch(_repo), _wt.branch(_repo / "sub")), ({"name": "feature/x", "detached": False, "url": ""},) * 2)
 (_repo / ".git" / "HEAD").write_text("0123456789abcdef0123456789abcdef01234567\n")
-check("a detached HEAD shows its short sha", _wt.branch(_repo), {"name": "0123456", "detached": True})
+check("a detached HEAD shows its short sha", _wt.branch(_repo),
+      {"name": "0123456", "detached": True, "url": ""})
 import types as _types  # noqa: E402
 check("the Activity payload carries the branch field",
       "branch" in _activity.ActivityController().index(root, _types.SimpleNamespace(env="alpha")).data, True)
