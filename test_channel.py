@@ -157,41 +157,44 @@ check("a plan the user approves in the viewer is pushed to an idle session, nami
       ("1", True, True))
 check("and only once", read_line(7), None)
 j("auto-mode", "enable")
+# THE USER SPEAKING DOES NOT WAIT FOR A STOP; a plan approved in the viewer does. The kind is
+# already in every event's meta, and `channel_reach_now` is the list of kinds that interrupt.
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("messages", "add", "another one while working")
-check("with auto on and the session working, nothing is pushed", read_line(8), None)
-state.put(root, "last_event", "Stop", stem=STEM)
 push = read_line(12)
-check("once the session stops, it is pushed", "another one while working" in (((push or {}).get("params") or {}).get("content", "")), True)
+check("a message reaches a session that is mid-turn",
+      "another one while working" in (((push or {}).get("params") or {}).get("content", "")), True)
 
 j("auto-mode", "disable")
 j("questions", "answer", "1", "no, Tuesday")
 push = read_line(12)
 params = (push or {}).get("params") or {}
-check("with auto mode off an answered question still wakes an idle session, saying not to start the to-do list",
+check("with auto mode off an answered question still reaches it, saying not to start the to-do list",
       (params.get("meta", {}).get("question"), "no, Tuesday" in params.get("content", ""), "do not start on the to-do list" in params.get("content", "")),
       ("1", True, True))
 j("messages", "add", "a message with auto off")
 push = read_line(12)
 check("while a message still does", "a message with auto off" in (((push or {}).get("params") or {}).get("content", "")), True)
-j("questions", "answer", "1", "no, Wednesday")
 state.put(root, "last_event", "PreToolUse", stem=STEM)
+j("questions", "answer", "1", "no, Wednesday")
 j("messages", "add", "sent while it works, auto off")
-push = read_line(12)
-check("with auto off a working session is not pushed anything either: its hooks tell it", push, None)
-state.put(root, "last_event", "Stop", stem=STEM)
 _pushed = []
 while not (any("sent while it works, auto off" in c for c in _pushed) and any("no, Wednesday" in c for c in _pushed)):
     _line = read_line(12)
     if _line is None:
         break
     _pushed.append(((_line.get("params") or {}).get("content", "")))
-check("once it stops, the message and the changed answer are both pushed",
+check("with auto off the message and the changed answer still reach it mid-turn: both are the user speaking",
       (any("sent while it works, auto off" in c for c in _pushed), any("no, Wednesday" in c for c in _pushed)), (True, True))
 
 import commandlog as _commandlog  # noqa: E402
 from datetime import datetime as _dt2, timezone as _tz2  # noqa: E402
+# A QUIET KIND WAITS. Writing a reminder in the viewer is a `did` event, which is not in
+# `channel_reach_now`: it is there when the turn ends, and reading it a minute later costs
+# nothing. The session is still mid-turn from the checks above.
 _commandlog.record_web(root, "default", "reminders", "store", None, {}, _dt2.now(_tz2.utc).isoformat(timespec="seconds"))
+check("a quiet kind does not reach a session mid-turn", read_line(8), None)
+state.put(root, "last_event", "Stop", stem=STEM)
 push = read_line(12)
 params = (push or {}).get("params") or {}
 check("anything else the user does in the viewer is pushed too, in the words Activity shows it",

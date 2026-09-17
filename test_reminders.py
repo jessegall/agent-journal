@@ -35,7 +35,9 @@ class S:
         self.d = Path(tempfile.mkdtemp()) / "proj"
         (self.d / ".claude").mkdir(parents=True)
         testkit.make(self.d, SRC)
-        (self.d / ".journal" / "settings.json").write_text(json.dumps(conf))
+        # bind_on_start: there is no default environment, and an unbound session's journal
+        # commands are refused (test_unbound covers that). This suite is about reminders.
+        (self.d / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True, **conf}))
         tdir = transcript.project_dir(self.d); tdir.mkdir(parents=True, exist_ok=True)
         self.path = tdir / "s1.jsonl"; self.path.write_text("")
         self.J = str(self.d / ".journal" / "journal.py")

@@ -28,6 +28,9 @@ def check(label, got, want):
 d = Path(tempfile.mkdtemp()) / "proj"
 (d / ".claude").mkdir(parents=True)
 testkit.make(d, SRC)
+# bind_on_start: there is no default environment, and an unbound session's journal commands
+# are refused (test_unbound covers that). This suite is about the kill switch.
+(d / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True}))
 stem = "s1"
 path = transcript.project_dir(d) / f"{stem}.jsonl"
 path.parent.mkdir(parents=True, exist_ok=True)

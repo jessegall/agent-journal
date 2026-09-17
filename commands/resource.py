@@ -36,7 +36,26 @@ class Resource(Command):
         extra = self.extra(p)
         if isinstance(extra, int):
             return extra
-        return self.render(p, dispatch(root(), self.controller, self.action, p, extra))
+        said = self.said(p)
+        if isinstance(said, int):
+            return said
+        return self.render(p, dispatch(root(), self.controller, self.action, p, {**extra, **said}))
+
+    def said(self, p: Parsed) -> dict | int:
+        """`--stdin` puts this command's prose where the shell cannot reach it.
+
+        ONE FUNNEL FOR EVERY COMMAND THAT TAKES PROSE. A shell eats a backtick span out of an argument
+        and the command receives the sentence with a hole in it, with nothing to detect afterwards —
+        what was removed leaves no trace. So the fix is not a check, it is a path: the same one
+        `--brief` has always used. A command declares which field it fills and gets the option.
+        """
+        if not self.prose or not p.option("stdin"):
+            return {}
+        from app import STDIN_REFUSED, brief, refuse
+        text = brief(True)
+        if not (text or "").strip():
+            return refuse(STDIN_REFUSED)
+        return {self.prose: text.strip()}
 
     def render(self, p: Parsed, result: Result) -> int:
         if result.message:

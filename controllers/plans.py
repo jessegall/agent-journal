@@ -12,9 +12,10 @@ from payloads.common import ListingPayload, WhyPayload
 class PlansController(Controller):
     resource = "plans"
     noun = "plan"
-    actions = ("index", "show", "store", "update", "fromdoc", "phase", "todos", "activate", "proceed", "acknowledge", "park", "ready", "destroy", "link")
-    numbered = ("show", "update", "phase", "todos", "activate", "proceed", "acknowledge", "park", "ready", "destroy", "link")
+    actions = ("index", "show", "store", "update", "fromdoc", "phase", "rephrase", "todos", "activate", "proceed", "acknowledge", "park", "ready", "destroy", "link")
+    numbered = ("show", "update", "phase", "rephrase", "todos", "activate", "proceed", "acknowledge", "park", "ready", "destroy", "link")
     payloads = {"index": ListingPayload, "store": plan_payloads.StorePayload, "phase": plan_payloads.PhasePayload,
+                "rephrase": plan_payloads.RephrasePayload,
                 "todos": plan_payloads.TodosPayload, "destroy": WhyPayload, "link": plan_payloads.LinkPayload,
                 "fromdoc": plan_payloads.FromDocPayload, "park": WhyPayload,
                 "update": plan_payloads.UpdatePayload}
@@ -73,6 +74,13 @@ class PlansController(Controller):
     def phase(self, root: Path, p: plan_payloads.PhasePayload) -> Result:
         return Result.of(plans.add_phase(root, p.id, p.title, p.when, p.at, p.checkpoint, track=p.env or None,
                                          before=p.before if p.has("before") else 0))
+
+    def rephrase(self, root: Path, p: plan_payloads.RephrasePayload) -> Result:
+        # --checkpoint and --no-checkpoint are one question with three answers: on, off, and not asked
+        mark = True if p.has("checkpoint") and p.checkpoint else False if p.has("no_checkpoint") and p.no_checkpoint else None
+        return Result.of(plans.rephrase(root, p.id, p.phase, p.at, title=p.title if p.has("title") else "",
+                                        when=p.when if p.has("when") else "", checkpoint=mark,
+                                        track=p.env or None))
 
     def todos(self, root: Path, p: plan_payloads.TodosPayload) -> Result:
         return Result.of(plans.put_todos(root, p.id, p.phase, p.todos, p.at, off=p.off, reopen=p.reopen,

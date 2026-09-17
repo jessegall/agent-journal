@@ -34,7 +34,9 @@ def check(label, got, want):
 d = Path(tempfile.mkdtemp()) / "proj"
 (d / ".claude").mkdir(parents=True)
 testkit.make(d, SRC)
-(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 1000000}))
+# bind_on_start: there is no default environment, and an unbound session's journal commands
+# are refused (test_unbound covers that). This suite is about docs.
+(d / ".journal" / "settings.json").write_text(json.dumps({"context_window": 1000000, "bind_on_start": True}))
 tdir = transcript.project_dir(d); tdir.mkdir(parents=True, exist_ok=True)
 path = tdir / "s1.jsonl"; path.write_text("")
 J = str(d / ".journal" / "journal.py")
@@ -335,11 +337,11 @@ check("a bash cat counts as a read", "docs attach" in read(None, cmd=f"cat {outs
 (outside / "notes.txt").write_text("n")
 read(None, cmd=f"cat {outside / 'notes.txt'} | grep x"); read(None, cmd=f"cat {outside / 'notes.txt'} | grep x")
 check("a piped line is not a plain read", read(None, cmd=f"cat {outside / 'notes.txt'} | grep x"), "")
-(root / "settings.json").write_text(json.dumps({"context_window": 1000000, "silenced": ["attach_hint"]}))
+(root / "settings.json").write_text(json.dumps({"context_window": 1000000, "silenced": ["attach_hint"], "bind_on_start": True}))
 (outside / "other.csv").write_text("a,b")
 read(outside / "other.csv"); read(outside / "other.csv")
 check("silenced: nothing", read(outside / "other.csv"), "")
-(root / "settings.json").write_text(json.dumps({"context_window": 1000000}))
+(root / "settings.json").write_text(json.dumps({"context_window": 1000000, "bind_on_start": True}))
 
 # ---------------------------------------------------------------- an attached file is hard to miss
 def searched(tool, inp):
