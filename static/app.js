@@ -341,6 +341,7 @@ const Icon = {
       <template v-else-if="name === 'questions'"><circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.3a1.7 1.7 0 0 1 3.2.7c0 1.2-1.6 1.4-1.6 2.5"/><circle cx="8" cy="11.4" r=".6" fill="currentColor" stroke="none"/></template>
       <path v-else-if="name === 'home'" d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>
       <path v-else-if="name === 'close'" d="M4 4l8 8M12 4l-8 8"/>
+      <template v-else-if="name === 'plus'"><path d="M8 3.5v9M3.5 8h9"/></template>
       <template v-else-if="name === 'plug'"><path d="M5.2 2.2v3.2M8.8 2.2v3.2M3.4 5.4h7.2v2.1a3.6 3.6 0 0 1-3.6 3.6 3.6 3.6 0 0 1-3.6-3.6Z"/><path d="M7 11.3v2.5"/></template>
       <template v-else-if="name === 'tools'"><path d="M9.8 2.3a3 3 0 0 0-3.6 3.9L2.5 9.9a1.2 1.2 0 0 0 1.7 1.7l3.7-3.7a3 3 0 0 0 3.9-3.6L10 6 8.6 5.4 8 4l1.8-1.7Z"/></template>
       <path v-else-if="name === 'plan'" d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/>
@@ -5311,6 +5312,22 @@ const App = {
     window.addEventListener("journal:changed", loadOverview);
     // space opens the quick menu, unless it is typing into something or pressing a focused control
     const openQuick = () => Object.assign(QUICK, { open: true, q: "", i: 0 });
+    const making = reactive({ open: false, name: "", error: "" });
+    const makeEnv = async () => {
+      const name = making.name.trim();
+      if (!name) return;
+      making.error = "";
+      try {
+        // the env in the PATH is only where the request came from; the new name is the body
+        const body = await postJSON(`/api/env/${envName.value || "default"}/environment/make`, { name });
+        Object.assign(making, { open: false, name: "" });
+        changed();
+        loadOverview();
+        location.hash = `#/env/${(body.data && body.data.name) || name}`;
+      } catch (e) {
+        making.error = e.message;
+      }
+    };
     // HOW THE FOCUS WAS REACHED, TRACKED RATHER THAN ASKED FOR. :focus-visible cannot answer this:
     // measured inside a live keydown it reads TRUE even for a button focused by a mouse click, because the
     // browser counts the key itself as keyboard interaction. So the last input that moved focus is recorded here.
@@ -5477,7 +5494,7 @@ const App = {
     SHELL.setAuto = setAuto;
     const envSettings = useFetch(() => envName.value && `/api/env/${envName.value}/environment`);
     watchEffect(() => { RETENTION.table = envSettings.data ? envSettings.data.retention || null : null; });
-    return { QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade };
+    return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade };
   },
   template: `
     <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
@@ -5527,6 +5544,15 @@ const App = {
             :href="'#/env/' + e.name" :title="e.active ? 'an agent is working here' : ''">
             <span :class="['env-dot', {live: e.active}]"></span>{{ e.name }}
           </a>
+          <!-- MAKING ONE IS A LINE OF WORK BEGINNING, and it belonged next to the list of them.
+               It creates and moves nobody: no session in a browser is anyone's to move. -->
+          <button v-if="!folded.environments" type=button class="item item-new" @click="making.open = true">
+            <Icon name="plus"/>New environment</button>
+          <form v-if="!folded.environments && making.open" class=env-new @submit.prevent="makeEnv">
+            <input ref=envName v-model="making.name" class=field placeholder="a short name" autofocus
+              @keydown.escape="making.open = false">
+            <p v-if="making.error" class=error>{{ making.error }}</p>
+          </form>
         </div>
         <div class="side-foot side-foot-row">
           <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}</a>

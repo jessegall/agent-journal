@@ -7,7 +7,7 @@ import todo
 import tracks
 from controller import Controller, Payload, Result
 import work
-from payloads.environments import RemovePayload, SettingsPayload
+from payloads.environments import MakePayload, RemovePayload, SettingsPayload
 from templates import render
 
 MESSAGES = {
@@ -28,9 +28,9 @@ def say(message: str, /, **values) -> str:
 class EnvironmentController(Controller):
     resource = "environment"
     noun = "environment"
-    actions = ("index", "settings", "remove")
+    actions = ("index", "settings", "remove", "make")
     numbered = ()
-    payloads = {"settings": SettingsPayload, "remove": RemovePayload}
+    payloads = {"settings": SettingsPayload, "remove": RemovePayload, "make": MakePayload}
 
     def index(self, root: Path, p: Payload) -> Result:
         import views
@@ -88,6 +88,23 @@ class EnvironmentController(Controller):
         if not said:
             return Result("refused", say("nothing_to_change"))
         return Result("ok", "\n".join(said))
+
+    def make(self, root: Path, p: MakePayload) -> Result:
+        """Bring an environment into existence from the viewer. It creates; it moves nobody.
+
+        `journal prepare` creates AND switches, because a person at a terminal who names a new
+        environment is about to work in it. A person in a browser is not: no session is theirs to
+        move, and moving one behind an agent's back is the thing binding was made explicit to stop.
+        """
+        import state as state_mod
+        name = state_mod.slug(p.name or "")
+        if not name:
+            return Result("refused", tracks.say("remove_what"))
+        if name in tracks._all(root):
+            return Result("refused", tracks.say("already_on", name=name))
+        with state_mod.locked(root):
+            tracks.create(root, name, at=p.at)
+        return Result("created", tracks.say("prepared_here", name=name), {"name": name})
 
     def remove(self, root: Path, p: RemovePayload) -> Result:
         conf, _ = settings_mod.load(root)
