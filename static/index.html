@@ -656,20 +656,25 @@
      row is what holds the text, the block around it is what holds the rule */
   /* .md p carries a margin and one more class than .thread-became, so it won and the header sat
      inside the bubble's padding with the rule stopping 13px short of each edge */
-  .thread-bubble .thread-became { margin: -1px -12px 6px; padding: 0 12px 5px;
+  /* IT IS A HEADER, NOT A ROW OF ITS OWN. The bubble's 9px of top padding sat above it whole,
+     so a one-line pill cost three lines of height; the negative top margin eats most of it.
+     .md > :first-child ZEROES A TOP MARGIN, comes later in this sheet and matches just as
+     hard, so a rule spelled `.thread-bubble .thread-became` had its margin quietly dropped —
+     which is what made this header too tall twice. The bubble's own class outranks it. */
+  .thread-bubble.md > .thread-became { margin: -5px -12px 6px; padding: 0 12px 4px;
     border-bottom: 1px solid var(--border-2); font-size: 10.5px; letter-spacing: .04em;
     text-transform: uppercase; color: var(--text-3); display: flex; align-items: center; gap: 5px; }
   .thread-became.live { color: var(--accent-text); }
   .thread-became-word { flex: none; }
   /* what it became is a NAME, and the one thing you want to do with a name is follow it */
-  .thread-pill { padding: 1px 7px; border: 1px solid var(--border-2); border-radius: 99px;
-    color: inherit; font-size: 11px; letter-spacing: .03em; white-space: nowrap; }
+  .thread-pill { padding: 0 6px; border: 1px solid var(--border-2); border-radius: 99px;
+    color: inherit; font-size: 10px; line-height: 1.6; letter-spacing: .03em; white-space: nowrap; }
   .thread-pill:hover { border-color: var(--accent); color: var(--accent-text); }
   /* the header grows in rather than appearing: it arrives on a turn that is already on screen */
   /* NOTHING THAT MOVES LAYOUT. An animation on max-height changes the height of every header it runs
      on, so any broad re-render collapses the thread and grows it again — which is a scroll thrown to
      the top and dragged back. Opacity and transform move no one else. */
-  .thread-bubble .thread-became { animation: thread-header .22s ease-out both; }
+  .thread-bubble.md > .thread-became { animation: thread-header .22s ease-out both; }
   @keyframes thread-header { from { opacity: 0; transform: translateY(-3px); }
                              to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .thread-became { animation: none; } }
@@ -726,16 +731,18 @@
   /* the turn's own two things to do, settled in to-do 90: reply, and take it off the list.
      Hidden until the turn is hovered, because a menu on every turn is read a hundred times a day. */
   .thread-turn { position: relative; }
-  .thread-tools { position: absolute; top: -15px; right: -10px; display: flex; gap: 2px; padding: 2px;
-    border: 1px solid var(--border-2); border-radius: 7px; background: var(--raised);
+  /* SMALL. It sits on top of the bubble it belongs to, so every pixel it gains is a pixel of
+     the message it covers — and it grew twice. One px of padding, the header's own type size. */
+  .thread-tools { position: absolute; top: -11px; right: -6px; display: flex; gap: 1px; padding: 1px;
+    border: 1px solid var(--border-2); border-radius: 99px; background: var(--raised);
     opacity: 0; transform: translateY(3px); pointer-events: none;
     transition: opacity .16s ease-out, transform .16s ease-out; }
   .thread-turn:hover .thread-tools, .thread-tools:focus-within {
     opacity: 1; transform: none; pointer-events: auto; }
   @media (prefers-reduced-motion: reduce) { .thread-tools { transition: none; } }
-  .thread-turn.mine .thread-tools { right: auto; left: -10px; }
-  .thread-tool { padding: 2px 7px; border: 0; border-radius: 5px; background: none; color: var(--text-3);
-    font: inherit; font-size: 11.5px; cursor: pointer; white-space: nowrap; }
+  .thread-turn.mine .thread-tools { right: auto; left: -6px; }
+  .thread-tool { padding: 1px 7px; border: 0; border-radius: 99px; background: none; color: var(--text-3);
+    font: inherit; font-size: 10.5px; line-height: 1.5; cursor: pointer; white-space: nowrap; }
   .thread-tool:hover { background: var(--hover); color: var(--text); }
   /* what the next thing sent is answering, above the box it is typed in */
   .thread-answering { display: flex; align-items: baseline; gap: 7px; padding: 5px 10px;
