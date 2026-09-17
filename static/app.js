@@ -473,6 +473,14 @@ const StatusBar = {
       if (work.data) kept.work = work.data[0] || null;
       if (plans.data) kept.plan = plans.data.find((p) => p.status === "active") || null;
     });
+    // WHAT IT IS ACTUALLY DOING, rather than what it has not done. With nothing declared the bar used
+    // to say "nothing declared yet", which is a complaint about the agent printed in the one place
+    // the user looks to see it working. The Activity column already knows the last thing it did.
+    const doing = computed(() => {
+      const events = (SHELL.activity && SHELL.activity.events) || [];
+      const last = events.find((e) => e.by && e.by !== "You");
+      return last && last.text ? `${last.text.toLowerCase()}${last.n ? ` ${last.n}` : ""}` : "working";
+    });
     const view = computed(() => {
       const agent = SHELL.activity && SHELL.activity.agent;
       const kept = AGENT_STATE[env.value] || { work: null, plan: null };
@@ -490,7 +498,7 @@ const StatusBar = {
       // itself refuses to call work — so the word that was meant to say a to-do is moving said
       // nothing at all. Busy is the honest word for here, doing something undeclared.
       if (agent.compacting) return { state: "Busy", live: true, what: "compacting its context", href: workHref };
-      if (agent.working && !onIt) return { state: "Busy", live: true, what: "nothing declared yet", href: workHref };
+      if (agent.working && !onIt) return { state: "Busy", live: true, what: doing.value, href: workHref };
       if (agent.working) return { state: "Working", live: true, what: onIt, href: workHref };
       return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
     });
@@ -4098,8 +4106,10 @@ const Thread = {
       </div>
       <div ref=root class=thread-scroll @scroll.passive="watchScroll">
       <template v-if="!chat.data">
+        <!-- EMPTY BUBBLES, NOT FAKE WRITING. The lines inside mimed text nobody had written yet,
+             which is the distracting part: the shape of the conversation is enough to hold the page. -->
         <div v-for="s in SKELETON" :key="s.k" :class="['thread-turn', 'waiting', {mine: s.mine}]" :style="{ width: s.w }">
-          <div class=thread-bubble><span v-for="i in s.rows" :key="i" class=thread-blank></span></div>
+          <div class=thread-bubble :style="{ height: 22 + s.rows * 18 + 'px' }"></div>
         </div>
       </template>
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
