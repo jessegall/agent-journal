@@ -90,6 +90,9 @@ def pending(stem: str) -> list[tuple[str, dict]]:
     for env in [bound] if bound else tracks.choices(ROOT):
         if not _recipient(stem, env, live, loose):
             continue
+        if not bound:
+            got.extend(_somewhere_waits(env, idle))
+            continue
         auto = todo.auto(ROOT)
         for key, params in _waiting(env, STARTED[0], answers=bool(bound)):
             if not idle and not (set(params["meta"]) & now):
@@ -102,6 +105,34 @@ def pending(stem: str) -> list[tuple[str, dict]]:
             got.extend(_idle_nudge(stem, bound))
     pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
     return [(key, params) for key, params in got if key not in pushed]
+
+
+def _somewhere_waits(env: str, idle: bool) -> list[tuple[str, dict]]:
+    """A session on NO environment is told that one has something waiting — never what.
+
+    AN EVENT BELONGS TO AN ENVIRONMENT AND GOES TO WHOEVER WORKS IT. A session that has chosen
+    nothing used to be handed every environment's traffic, which was written when being unbound
+    was a rarity — a session started on the project's environment and stayed there. Since there
+    is no default environment, EVERY new session begins unbound, so the rare leaky case became
+    the ordinary one: a message left on one environment woke an agent that had nothing to do
+    with it, and it read and acted on somebody else's instruction.
+
+    It is still woken, because a message left on a fresh project must not sit unheard. But what
+    it is told is that something waits THERE and that it is on no environment — one line, no
+    event, and the event itself is not marked told, so whoever picks that environment up is
+    handed it in full.
+    """
+    if not idle:
+        return []
+    waiting = _waiting(env, STARTED[0], answers=False)
+    if not waiting:
+        return []
+    # the count is in the key, so another arrival says so again rather than being deduped away
+    return [(f"{env}:waiting:{len(waiting)}",
+             {"content": f"{len(waiting)} thing(s) are waiting on {env}, and this session is on no "
+                         f"environment. Pick one — `.journal/journal.py switch \"{env}\"` — and what is "
+                         f"waiting there is handed to you in full. Nothing here is yours until you have chosen.",
+              "meta": {"env": env, "did": "waiting"}})]
 
 
 def _reach_now() -> set:

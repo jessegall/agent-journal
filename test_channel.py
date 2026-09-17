@@ -219,8 +219,19 @@ tracks.unbind(root, STEM)
 j("messages", "add", "while on no environment")
 push = read_line(12)
 params = (push or {}).get("params") or {}
-check("a session on no environment yet is still woken, told which environment it is for",
-      (params.get("meta", {}).get("message") is not None, params.get("meta", {}).get("env")), (True, "default"))
+# AN EVENT BELONGS TO AN ENVIRONMENT AND GOES TO WHOEVER WORKS IT. A session that has chosen
+# nothing used to be handed every environment's traffic — written when being unbound was rare,
+# and left in place when it became the state EVERY new session starts in. So a message on one
+# environment woke an agent with nothing to do with it, and it read somebody else's instruction.
+# It is still woken, because a message on a fresh project must not sit unheard; it is told that
+# something waits THERE and that it is on no environment, and the event stays untold for whoever
+# picks that environment up.
+check("a session on no environment is told that something waits, not what it is",
+      (params.get("meta", {}).get("env"), params.get("meta", {}).get("did"),
+       params.get("meta", {}).get("message"), "no environment" in params.get("content", "")),
+      ("default", "waiting", None, True))
+check("and it does not carry the message the agent has no business reading",
+      "while on no environment" in params.get("content", ""), False)
 
 import channel  # noqa: E402
 _old = channel._waiting("default", time.time() + 60)
@@ -320,12 +331,20 @@ def _heard(stem):
     return {(p["meta"].get("env"), p["meta"]["message"]) for _, p in chan_mod.pending(stem) if p["meta"].get("message")}
 
 
+def _told_something_waits(stem):
+    return {p["meta"]["env"] for _, p in chan_mod.pending(stem) if p["meta"].get("did") == "waiting"}
+
+
 check("the session on the environment is woken for its message",
       ("default", _ON_DEFAULT) in _heard("holder-a"), True)
 check("a session on no environment is not woken for another live session's environment",
       ("default", _ON_DEFAULT) in _heard("free-b"), False)
-check("an environment no live session holds wakes one session on no environment, the one seen most recently",
-      (("spare", _ON_SPARE) in _heard("free-b"), ("spare", _ON_SPARE) in _heard("free-c")), (True, False))
+# an environment nobody holds still has to reach somebody, and the one session on no environment
+# that is seen most recently is who it reaches — told that something waits there, never what
+check("an environment no live session holds tells one session on no environment that something waits",
+      ("spare" in _told_something_waits("free-b"), "spare" in _told_something_waits("free-c")), (True, False))
+check("and never the event itself: a session on no environment is handed nobody's messages",
+      (_heard("free-b"), _heard("free-c")), (set(), set()))
 check("of two sessions bound to one environment, only the one seen most recently is woken",
       (("default", _ON_DEFAULT) in _heard("holder-a"), ("default", _ON_DEFAULT) in _heard("stale-d")), (True, False))
 
