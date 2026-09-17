@@ -891,7 +891,9 @@
   .thread-scroll.focusing .thread-turn { opacity: .38; transition: opacity .18s ease; }
   .thread-scroll.focusing .thread-turn.lit { opacity: 1; }
   @media (prefers-reduced-motion: reduce) { .thread-scroll.focusing .thread-turn { transition: none; } }
-  .thread-turn .thread-bubble { transition: border-color .4s ease, box-shadow .4s ease; }
+  .thread-turn .thread-bubble { transition: border-color .4s ease, box-shadow .4s ease, opacity .12s ease; }
+  /* hovering one turn quiets the rest, just enough to say which one you are on */
+  .thread-scroll:has(.thread-turn:hover) .thread-turn:not(:hover) .thread-bubble { opacity: .82; }
   @media (prefers-reduced-motion: reduce) { .thread-turn .thread-bubble { transition: none; } }
   .thread-turn.ask { max-width: 88%; }
   .thread-turn.ask .thread-bubble { border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
