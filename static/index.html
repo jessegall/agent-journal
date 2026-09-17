@@ -496,6 +496,19 @@
   .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; }
   .home-thread { padding: 0 24px; }
   .home-rail .home-section { padding: 0 16px 0 18px; }
+  /* the plan leads the rail and is flush to it: no inset, no rounding, its own rule underneath */
+  .home-rail .home-section:first-child { padding: 0; }
+  .home-rail .home-section:first-child + .home-section { margin-top: 0; padding-top: 16px; }
+  .home-rail .work-now { padding: 14px 16px 14px 18px; }
+  /* A COLUMN THIS NARROW HAS NO ROOM FOR A BUTTON BESIDE TEXT: it takes the width the text needed.
+     Every action inside a rail card goes on its own line at the bottom, full width. */
+  .home-rail .work-now-bar { flex-wrap: wrap; gap: 8px; }
+  .home-rail .work-now-bar .progress-track { flex: 1 0 100%; }
+  .home-rail .work-now-start, .home-rail .work-now-ack,
+  .home-rail .needs-card-go { flex: 1 0 100%; justify-content: center; margin-top: 2px; padding: 6px 10px; }
+  .home-rail .needs-card-foot { display: flex; }
+  .home-rail .needs-card-act { flex: 1 0 100%; }
+  .home-rail-empty { padding-top: 34px; }
   /* the column keeps its place when there is nothing in it, and says what is empty: the list of
      things waiting on YOU, which is not the same claim as nothing happening */
   .home-rail-empty { display: flex; flex-direction: column; align-items: center; gap: 7px;
@@ -507,13 +520,14 @@
      fixed rail left all of it to the thread while its own cards stayed as cramped as before */
   .home-rail { flex: none; width: clamp(288px, 27%, 400px); min-height: 0; overflow-y: auto; scrollbar-width: none;
     display: flex; flex-direction: column; gap: 22px;
-    padding: 14px 0 18px; border-left: 1px solid var(--border); }
+    padding: 0 0 18px; border-left: 1px solid var(--border); }
   .home-rail::-webkit-scrollbar { width: 0; }
   /* ONE FLUSH FEED, NOT A STACK OF CARDS. In a column this narrow a card is a border, a background, a
      radius and an inset tint all fighting over the same forty characters — four kinds of chrome doing
      what one hairline does. So the cards keep their component and lose their box here: each entry is
      its text with the kind's own tint on the left, sections divided by a rule, content flush right. */
   .home-rail .home-section + .home-section { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .home-rail .home-section:first-child { border-bottom: 1px solid var(--border); }
   .home-rail .home-head { padding: 0 0 6px; }
   .home-rail .needs-card, .home-rail .work-now, .home-rail .work-card {
     margin: 0; padding: 6px 0 6px 11px; border: 0; border-radius: 0; background: none; }
