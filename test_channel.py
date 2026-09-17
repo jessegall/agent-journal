@@ -213,6 +213,29 @@ check("a plan approved before the channel started is pushed anyway: an approval 
 P.cli("todos", "start", _step)
 check("and once its first row is picked up, nothing from before the channel started is pushed",
       channel._waiting("default", time.time() + 60), [])
+import inbox as _inbox  # noqa: E402
+_mn = len(_inbox._all(root, "default"))
+_inbox.add(root, "a message the agent finishes with", _dt.now(_tz.utc).isoformat(timespec="seconds"), track="default")
+_mn += 1
+_inbox.done(root, _mn, _dt.now(_tz.utc).isoformat(timespec="seconds"), track="default")
+_inbox.reply(root, _mn, "and one more thing about it", _dt.now(_tz.utc).isoformat(timespec="seconds"),
+             source="web", track="default")
+_turn = [(k, p) for k, p in channel._waiting("default", time.time() + 60) if ":reply:" in k]
+check("the user's reply under a message the agent already PROCESSED still wakes it: a message is told once, a conversation is not",
+      ([k for k, _ in _turn], "and one more thing" in (_turn[0][1]["content"] if _turn else "")),
+      ([f"default:reply:{_mn}:0"], True))
+channel._told([f"default:reply:{_mn}:0"])
+check("and it is told once, per turn rather than per message",
+      [k for k, _ in channel._waiting("default", time.time() + 60) if ":reply:" in k], [])
+_inbox.reply(root, _mn, "a second turn, after that one was told", _dt.now(_tz.utc).isoformat(timespec="seconds"),
+             source="web", track="default")
+check("a second turn is its own event, so a back-and-forth does not die after the first",
+      [k for k, _ in channel._waiting("default", time.time() + 60) if ":reply:" in k], [f"default:reply:{_mn}:1"])
+_inbox.reply(root, _mn, "the agent's own answer", _dt.now(_tz.utc).isoformat(timespec="seconds"),
+             source="cli", track="default")
+check("the agent's own reply is not pushed back to it",
+      [k for k, _ in channel._waiting("default", time.time() + 60) if ":reply:" in k], [f"default:reply:{_mn}:1"])
+
 check("a session on no environment yet is woken for new messages only, not for another environment's answers or comments",
       sorted({next(k for k in ("message", "question", "comment") if k in params["meta"]) for _, params in channel._waiting("default", 0, answers=False)}),
       ["message"])
