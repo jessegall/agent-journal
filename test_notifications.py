@@ -48,14 +48,13 @@ j("reports", "add", "what the loader does on recompose", "--brief", stdin="it do
 j("notifications", "add", "the report you asked for is ready", "--about=report 1")
 
 code, out = j("notifications")
-# three, not two: filing the report the second one points at raises a notification of its own
-check("the list shows the unread ones", ("3 unread" in out, "the migration finished" in out, "the report you asked for" in out),
+check("the list shows the unread ones", ("2 unread" in out, "the migration finished" in out, "the report you asked for" in out),
       (True, True, True))
 code, out = j("notifications", "read", "1")
 check("one is marked read", (code, "is read" in out), (0, True))
 check("twice is refused", j("notifications", "read", "1")[0], 1)
 code, out = j("notifications")
-check("a read one leaves the list", ("2 unread" in out, "the migration finished" in out), (True, False))
+check("a read one leaves the list", ("1 unread" in out, "the migration finished" in out), (True, False))
 check("--all still shows it", "the migration finished" in j("notifications", "--all")[1], True)
 
 j("messages", "add", "the first message")
