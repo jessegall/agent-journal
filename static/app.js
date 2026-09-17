@@ -3450,6 +3450,11 @@ const Thread = {
   components: { Compose, QuestionAnswer, Icon },
   setup(props) {
     const chat = useFetch(() => props.env && `/api/env/${props.env}/chat`);
+    // the shell is known before any turn is: the thread draws its own shape while /chat is in flight,
+    // so the page does not snap into place and the writing box is there to type into from the first paint
+    const SKELETON = [{ k: 1, mine: false, rows: ["92%", "74%"] }, { k: 2, mine: true, rows: ["68%"] },
+                      { k: 3, mine: false, rows: ["88%", "96%", "52%"] }, { k: 4, mine: true, rows: ["46%"] },
+                      { k: 5, mine: false, rows: ["90%", "61%"] }];
     const root = ref(null);
     // the key is what a turn IS, never where it sits: the thread is capped, so an index shifts for
     // every turn when one arrives, and Vue would rebuild each of them and lose what is typed in one
@@ -3511,13 +3516,18 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, send, root, answered, landed, fileUrl, lit, whole, showAll, THREAD_GOTO };
+    return { turns, more, send, root, answered, landed, fileUrl, lit, whole, showAll, chat, SKELETON, THREAD_GOTO };
   },
   template: `
     <div class=thread>
       <div ref=root class=thread-scroll>
+      <template v-if="!chat.data">
+        <div v-for="s in SKELETON" :key="s.k" :class="['thread-turn', 'waiting', {mine: s.mine}]">
+          <div class=thread-bubble><span v-for="w in s.rows" :key="w" class=thread-blank :style="{ width: w }"></span></div>
+        </div>
+      </template>
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
-      <p v-if="!turns.length" class=thread-empty>Nothing has been said here yet.</p>
+      <p v-if="chat.data && !turns.length" class=thread-empty>Nothing has been said here yet.</p>
       <div v-for="t in turns" :key="t.key" :data-turn="t.n ? t.kind + ':' + t.n : null"
         :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', lit: lit === t.kind + ':' + t.n}]">
         <div class="thread-bubble md">
