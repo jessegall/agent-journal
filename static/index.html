@@ -511,10 +511,10 @@
   /* the band belongs to the information, so it is drawn on the information and ends where it does */
   .home-rail .work-now::before { display: none; }
   .home-rail .work-now-body { position: relative; display: flex; flex-direction: column; gap: 5px;
-    padding: 11px 14px 11px 16px; }
+    padding: 10px 12px 10px 14px; }
   .home-rail .work-now-body::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0;
     width: 2px; background: var(--band); opacity: .8; }
-  .home-rail .work-now-foot { padding: 8px 14px 8px 16px; border-top: 1px solid var(--border); }
+  .home-rail .work-now-foot { padding: 7px 12px 7px 14px; border-top: 1px solid var(--border); }
   .home-rail .work-now-foot button { width: 100%; justify-content: center; margin: 0; padding: 6px 10px; }
   /* A COLUMN THIS NARROW HAS NO ROOM FOR A BUTTON BESIDE TEXT: it takes the width the text needed.
      Every action inside a rail card goes on its own line at the bottom, full width. */
@@ -544,8 +544,11 @@
   .home-rail .home-section + .home-section { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
   .home-rail .home-section:first-child { border-bottom: 1px solid var(--border); }
   .home-rail .home-head { padding: 0 0 6px; }
-  .home-rail .needs-card, .home-rail .work-now, .home-rail .work-card {
+  .home-rail .needs-card, .home-rail .work-card {
     margin: 0; padding: 6px 0 6px 11px; border: 0; border-radius: 0; background: none; }
+  /* the plan card carries its own band on its BODY, so it takes no inset here: an 11px one would
+     push the band that far off the rail's edge */
+  .home-rail .work-now { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; }
   .home-rail .needs-card:hover, .home-rail .work-now:hover, .home-rail .work-card:hover { background: #17181b; }
   .home-rail .needs-card::before, .home-rail .work-now::before, .home-rail .work-card::before {
     top: 5px; bottom: 5px; }
