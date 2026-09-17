@@ -529,7 +529,13 @@ const StatusBar = {
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
-      <button type=button class=statusbar-text :title="facts.todo ? 'Open the to-do it is on' : 'Open what it is on'" @click="openCurrent"><b>{{ view.state }}</b><span>{{ view.what }}</span></button>
+      <!-- THE SENTENCE ROLLS. What the agent is on changes while the user is looking at it, and a
+           line that simply swapped read as a glitch; keyed on its own words, the old one leaves
+           upward as the next arrives from below. -->
+      <button type=button class=statusbar-text :title="facts.todo ? 'Open the to-do it is on' : 'Open what it is on'" @click="openCurrent">
+        <b>{{ view.state }}</b>
+        <span class=statusbar-roll><Transition name=roll><span :key="view.what" class=statusbar-line>{{ view.what }}</span></Transition></span>
+      </button>
       <span class=statusbar-tools>
         <!-- the branch opens the repository when the remote is one with a web face; a remote that is
              not recognised is left as plain text rather than linked somewhere that does not exist -->
