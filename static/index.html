@@ -508,14 +508,19 @@
   .home-rail .work-now.ready { --band: #d9a441; }
   .home-rail .work-now.parked { --band: var(--text-3); }
   .home-rail .work-now.finished { --band: #3ecf74; }
-  /* the band belongs to the information, so it is drawn on the information and ends where it does */
-  .home-rail .work-now::before { display: none; }
-  .home-rail .work-now-body { position: relative; display: flex; flex-direction: column; gap: 5px;
-    padding: 10px 12px 10px 14px; }
-  .home-rail .work-now-body::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0;
-    width: 2px; background: var(--band); opacity: .8; }
-  .home-rail .work-now-foot { padding: 7px 12px 7px 14px; border-top: 1px solid var(--border); }
-  .home-rail .work-now-foot button { width: 100%; justify-content: center; margin: 0; padding: 6px 10px; }
+  /* THE BAND RUNS THE WHOLE CARD AND THE ACTION IS ITS BOTTOM EDGE. Separating the band from the
+     button stopped the button reading as part of the tinted thing, but the fault was the button being
+     a rounded pill inset in a padded box: a card flush to its column cannot hold one without it
+     looking dropped in. So the band goes back to full height, and the footer IS the button — full
+     bleed and square, with the rule above it doing the separating the padding was doing. */
+  .home-rail .work-now::before { background: var(--band); opacity: .8; }
+  .home-rail .work-now-body { display: flex; flex-direction: column; gap: 5px; padding: 10px 12px 10px 14px; }
+  .home-rail .work-now-foot { padding: 0; border-top: 1px solid var(--border); }
+  .home-rail .work-now-foot button { display: flex; width: 100%; justify-content: center; gap: 5px;
+    margin: 0; padding: 9px 12px 9px 14px; border: 0; border-radius: 0; background: transparent;
+    color: var(--accent-text); font-size: 12px; font-weight: 500; }
+  .home-rail .work-now-foot button:hover { background: color-mix(in srgb, var(--band) 16%, transparent);
+    color: var(--text); }
   /* A COLUMN THIS NARROW HAS NO ROOM FOR A BUTTON BESIDE TEXT: it takes the width the text needed.
      Every action inside a rail card goes on its own line at the bottom, full width. */
   .home-rail .work-now-bar { flex-wrap: wrap; gap: 5px 10px; }
