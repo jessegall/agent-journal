@@ -226,6 +226,25 @@ function linkify(text) {
   return _linkUrls(_escapeHtml(String(text ?? "")));
 }
 
+//: the kinds a row can be named by in ordinary prose, and the ref `refHref` wants for each.
+//: `to-do 183` is what the journal itself prints, so it is what a reader types.
+const NAMED_ROW = { "to-do": "todo", "todo": "todo", "pin": "pin", "rule": "rule", "doc": "doc",
+                    "report": "report", "reminder": "reminder", "message": "inbox",
+                    "question": "question", "plan": "plan", "suggestion": "suggestion" };
+const ROW_IN_TEXT = new RegExp(`\\b(${Object.keys(NAMED_ROW).join("|")})\\s+(\\d+(?:\\.\\d+)?)\\b`, "gi");
+
+// A ROW NAMED IN A SENTENCE IS A REFERENCE. "to-dos 183, 184 and 185" is how the journal writes
+// them and so how a reader writes them back, and each one is a thing with a page — so it opens,
+// over what you are reading, the same way a became-pill does. Applied AFTER code spans and links
+// so a number already inside one is left as it was.
+function _rowPills(escaped) {
+  const env = parseHash().params.env || "";
+  return escaped.replace(ROW_IN_TEXT, (whole, word, num) => {
+    const href = refHref(`${NAMED_ROW[word.toLowerCase()]}:${num}`, env);
+    return href ? `<a class="row-pill" href="${href}" onclick="return window.__openRef(event, '${href}')">${whole}</a>` : whole;
+  });
+}
+
 function _mdInline(text) {
   text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
   text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
@@ -236,6 +255,7 @@ function _mdInline(text) {
       ? `<a href="${href}" target="_blank" rel="noopener">${t}</a>` : t));
   // a bare address becomes a link too; one already inside a link's href or text is left alone
   text = text.split(/(<a [^>]*>.*?<\/a>|<code>.*?<\/code>)/).map((part, i) => (i % 2 ? part : _linkUrls(part))).join("");
+  text = text.split(/(<a [^>]*>.*?<\/a>|<code>.*?<\/code>)/).map((part, i) => (i % 2 ? part : _rowPills(part))).join("");
   return text;
 }
 
@@ -5554,5 +5574,8 @@ app.config.globalProperties.$md = renderMarkdown;
 app.config.globalProperties.$human = humanSize;
 app.config.globalProperties.$refHref = refHref;
 app.config.globalProperties.$openRef = openRef;
+// the row pills are built as HTML inside rendered markdown, so their click has no component to
+// reach — one global is how a string in `v-html` gets back to the overlay every other chip uses
+window.__openRef = (event, href) => { openRef(event, href); return !event.defaultPrevented; };
 app.config.globalProperties.$linkify = linkify;
 app.mount("#app");

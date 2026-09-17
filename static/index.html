@@ -666,6 +666,11 @@
   .thread-became.live { color: var(--accent-text); }
   .thread-became-word { flex: none; }
   /* what it became is a NAME, and the one thing you want to do with a name is follow it */
+  /* a row named in ordinary prose: the same thing as a became-pill, at the size of the words
+     around it, so a sentence still reads as a sentence */
+  .row-pill { padding: 0 4px; border: 1px solid var(--border-2); border-radius: 5px;
+    color: var(--text-2); text-decoration: none; white-space: nowrap; }
+  .row-pill:hover { border-color: var(--accent); color: var(--accent-text); }
   .thread-pill { padding: 0 6px; border: 1px solid var(--border-2); border-radius: 99px;
     color: inherit; font-size: 10px; line-height: 1.6; letter-spacing: .03em; white-space: nowrap; }
   .thread-pill:hover { border-color: var(--accent); color: var(--accent-text); }
