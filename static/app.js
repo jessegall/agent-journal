@@ -2433,8 +2433,16 @@ function planPrimary(p) {
 
 const PlanPanel = {
   props: PANEL_PROPS,
-  components: { Panel, ActionBar, FromMessages, Comments },
+  components: { Panel, ActionBar, FromMessages, Comments, Icon },
   setup(props) {
+    // folded by default, because the panel is a QUICK look at where the plan stands; the phase you
+    // open is the one you are asking about
+    const shown = ref(new Set());
+    const fold = (p) => {
+      const next = new Set(shown.value);
+      next.has(p) ? next.delete(p) : next.add(p);
+      shown.value = next;
+    };
     const api = computed(() => `/api/env/${props.env}/plans`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const actions = computed(() => {
@@ -2451,7 +2459,7 @@ const PlanPanel = {
       ];
     });
     const done = panelDone(props, item);
-    return { item, actions, done, PLAN_STATUS };
+    return { item, actions, done, shown, fold, PLAN_STATUS };
   },
   template: `
     <Panel :label="'Plan ' + n" :close="close" :onClose="onClose" :link="link">
@@ -2469,10 +2477,24 @@ const PlanPanel = {
         <div v-if="item.data.phases && item.data.phases.length">
           <p class=section-label>Phases</p>
           <div class=plan-panel-phases>
-            <div v-for="ph in item.data.phases" :key="ph.p" class=plan-panel-phase>
-              <span class=phase-num>{{ ph.p }}</span><span class=plan-panel-phase-title>{{ ph.title }}</span>
-              <span class=muted>{{ ph.todos.filter((t) => t.done).length }} of {{ ph.todos.length }} done</span>
-            </div>
+            <template v-for="ph in item.data.phases" :key="ph.p">
+              <button type=button class="plan-panel-phase open" :aria-expanded="shown.has(ph.p) ? 'true' : 'false'"
+                :title="shown.has(ph.p) ? 'Hide its to-dos' : 'Show its to-dos'" @click="fold(ph.p)">
+                <Icon :name="shown.has(ph.p) ? 'down' : 'arrow'"/>
+                <span class=phase-num>{{ ph.p }}</span><span class=plan-panel-phase-title>{{ ph.title }}</span>
+                <span class=muted>{{ ph.todos.filter((t) => t.done).length }} of {{ ph.todos.length }} done</span>
+              </button>
+              <div v-if="shown.has(ph.p)" class=plan-panel-rows>
+                <p v-if="ph.when" class=plan-panel-when>complete when {{ ph.when }}</p>
+                <a v-for="t in ph.todos" :key="t.n" class=plan-panel-row
+                  :href="'#/env/' + env + '/todos/' + t.n" @click="$openRef($event, '#/env/' + env + '/todos/' + t.n)">
+                  <span :class="['needs-dot', {live: !t.done}]"></span>
+                  <span :class="['plan-panel-row-title', {done: t.done}]">{{ t.title || ('to-do ' + t.n) }}</span>
+                  <span class=muted>#{{ t.n }}</span>
+                </a>
+                <p v-if="!ph.todos.length" class=plan-panel-when>no to-dos yet</p>
+              </div>
+            </template>
           </div>
         </div>
         <div v-if="item.data.body"><p class=section-label>Approach</p><div class="md prose" v-html="$md(item.data.body)"></div></div>

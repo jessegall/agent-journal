@@ -944,6 +944,19 @@
     background: rgba(91, 141, 239, .16); border: 1px solid rgba(91, 141, 239, .45); color: #9fc0f7; font-size: 11px; font-weight: 500; }
   .plan-panel-phases { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
   .plan-panel-phase { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  /* a phase opens to what is inside it: the panel is a quick look, so they start folded */
+  button.plan-panel-phase { width: 100%; padding: 4px 0; border: 0; background: none; color: var(--text);
+    font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+  button.plan-panel-phase:hover { color: var(--text); }
+  button.plan-panel-phase:hover .plan-panel-phase-title { text-decoration: underline;
+    text-decoration-color: #3a3d44; text-underline-offset: 3px; }
+  button.plan-panel-phase .ico { width: 12px; height: 12px; color: var(--text-3); }
+  .plan-panel-rows { display: flex; flex-direction: column; gap: 3px; margin: 0 0 6px; padding: 2px 0 6px 22px; }
+  .plan-panel-when { margin: 0 0 4px; font-size: 11.5px; color: var(--text-3); }
+  .plan-panel-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-2); }
+  .plan-panel-row:hover { color: var(--text); }
+  .plan-panel-row-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plan-panel-row-title.done { color: var(--text-3); }
   a.plan-panel-phase { color: var(--text); text-decoration: none; padding: 3px 0; }
   a.plan-panel-phase:hover .plan-panel-phase-title { color: var(--accent-text); }
   .plan-panel-phase-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
