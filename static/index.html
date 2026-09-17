@@ -783,6 +783,9 @@
   .thread-became-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor;
     animation: crew-pulse 1.8s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce) { .thread-became-dot { animation: none; } }
+  button.thread-quote { display: block; width: 100%; border-top: 0; border-right: 0; border-bottom: 0;
+    background: none; font: inherit; text-align: left; cursor: pointer; }
+  button.thread-quote:hover { border-left-color: var(--accent); color: var(--text-2); }
   .thread-quote { margin: 0 0 5px; padding: 1px 0 1px 8px; border-left: 2px solid var(--border-2);
     color: var(--text-3); font-size: 12.5px; display: -webkit-box; -webkit-line-clamp: 2;
     -webkit-box-orient: vertical; overflow: hidden; }

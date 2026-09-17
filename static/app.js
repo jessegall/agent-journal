@@ -3563,6 +3563,16 @@ const PLAN_WORD = { preparing: "being written", active: "working", parked: "paus
 // the home — the Messages page, a list — there is no thread to move, and the inspector opens as before.
 const THREAD_GOTO = reactive({ key: "", at: 0 });
 
+// WHAT A QUOTE POINTS AT. A reply quotes the message it answers and an answer quotes the question
+// it answers, and both of those are turns already in the thread — so the quote is a way back to
+// them rather than a decoration.
+function quoteAnchor(t) {
+  if (!t || !t.n) return "";
+  if (t.kind === "reply" || t.kind === "receipt") return `message:${t.n}`;
+  if (t.kind === "answer") return `question:${t.n}`;
+  return "";
+}
+
 // What a rail card scrolls to. A question or a message is its number; held work has no number,
 // so it is named by the work it holds — the one thing about it that does not change.
 function turnAnchor(t) {
@@ -3948,6 +3958,14 @@ const Thread = {
       THREAD_GOTO.at = Date.now();
       nextTick(() => { if (THREAD_GOTO.key) openRef(event, r.href); });
     };
+    // the quote is the way back to what it quotes: the same move a rail card makes, and nothing
+    // opens over the thread, because what it points at is in the thread
+    const goQuote = (t) => {
+      const want = quoteAnchor(t);
+      if (!want) return;
+      THREAD_GOTO.key = want;
+      THREAD_GOTO.at = Date.now();
+    };
     // what the ticks mean, said in words for whoever hovers one
     const landed = (t) => (t.state === "filed"
       ? `Filed${t.became ? `: it became ${t.became}` : ""}`
@@ -3955,7 +3973,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote };
   },
   template: `
     <div class=thread>
@@ -3994,7 +4012,9 @@ const Thread = {
             <span v-if="t.working" class=thread-became-word>Working on</span>
             <a v-for="r in t.becameRefs" :key="r.label" class=thread-pill :href="r.href"
               :title="'Open ' + r.label" @click.stop="goRef($event, r)">{{ r.label }}</a></p>
-          <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
+          <button v-if="t.ref && t.kind !== 'message' && quoteAnchor(t)" type=button class="thread-quote go"
+            :title="'Go to the turn this answers'" @click="goQuote(t)">{{ t.ref }}</button>
+          <p v-else-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
           <div v-if="t.text" v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
           <p v-if="t.state === 'failed'" class=thread-failed>Not sent — {{ t.error }}
             <button type=button class=thread-tool @click.stop="retry(t)">Put it back in the box</button></p>
