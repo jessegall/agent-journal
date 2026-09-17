@@ -99,6 +99,36 @@ def _git(cwd: Path, *args: str) -> str | None:
 _MAIN: dict = {}
 
 
+#: the hosts whose web address can be worked out from a remote. A remote that is not one of these is
+#: NOT GUESSED AT: the branch stays plain text rather than linking somewhere that does not exist.
+WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
+
+
+def web_remote(gitdir: Path) -> str:
+    """The origin remote as a web address, or "" — read from .git/config, no subprocess."""
+    try:
+        text = (gitdir / "config").read_text(errors="replace")
+    except OSError:
+        return ""
+    url, inside = "", False
+    for line in text.splitlines():
+        line = line.strip()
+        if line.startswith("["):
+            inside = line.replace(" ", "").startswith('[remote"origin"]')
+        elif inside and line.startswith("url"):
+            url = line.split("=", 1)[-1].strip()
+            break
+    if not url:
+        return ""
+    # an ssh remote is not a URL: git@github.com:user/repo.git has a colon where a slash belongs
+    if url.startswith("git@") or (url.startswith("ssh://") and "@" in url):
+        url = url.removeprefix("ssh://").split("@", 1)[-1].replace(":", "/", 1)
+        url = f"https://{url}"
+    url = url.removesuffix(".git").rstrip("/")
+    host = url.split("://", 1)[-1].split("/", 1)[0]
+    return url if url.startswith("https://") and host in WEB_HOSTS else ""
+
+
 def branch(project: Path) -> dict | None:
     """The checked-out branch, or the short sha of a detached HEAD; None outside git. Read from HEAD, no subprocess."""
     for folder in (project, *project.parents):
@@ -117,9 +147,13 @@ def branch(project: Path) -> dict | None:
             text = head.read_text(errors="replace").strip()
         except OSError:
             return None
+        web = web_remote(head.parent)
         if text.startswith("ref:"):
-            return {"name": text[len("ref:"):].strip().removeprefix("refs/heads/"), "detached": False}
-        return {"name": text[:7], "detached": True} if text else None
+            name = text[len("ref:"):].strip().removeprefix("refs/heads/")
+            return {"name": name, "detached": False, "url": f"{web}/tree/{name}" if web else ""}
+        if not text:
+            return None
+        return {"name": text[:7], "detached": True, "url": f"{web}/commit/{text}" if web else ""}
     return None
 
 
