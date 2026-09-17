@@ -584,14 +584,14 @@ const StatusBar = {
           ><Transition name=roll><span :key="said.tail" class=statusbar-line>{{ said.tail }}</span></Transition></span>
         <!-- WAITING IS NOT WORKING, and from the outside they look the same. What the agent is in the
              middle of running follows the work, quieter and smaller than it. -->
-        <span v-if="running" class=statusbar-running :title="running.what">
+        <span v-if="running" class=statusbar-running :title="running.gist === running.what ? null : running.what">
           <!-- a middot rather than a mark: it is a continuation of the sentence before it, not a
                second fact standing beside it -->
           <span class=statusbar-running-dot>·</span>
           <!-- IT ROLLS TOO. One command follows another while a long piece of work runs, and a line
                that swapped outright read as a flicker; keyed on the command, it leaves upward as the
                next arrives from below, the way the work's own sentence does. -->
-          <span class=statusbar-run-roll><Transition name=roll><span :key="running.gist" class=statusbar-run-line>{{ running.gist }}</span></Transition></span>
+          <Transition name=roll><span :key="running.gist" class=statusbar-run-line>{{ running.gist }}</span></Transition>
           <span class=statusbar-running-for>{{ running.forText }}</span></span>
       </button>
       <span class=statusbar-tools>
