@@ -101,6 +101,7 @@ decision. The session start says when it is on. The tag still opens the line.
     journal work start "<the work, in your own words>"
     journal work update "<what moved>" [--on="<work>"]
     journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>] [--on="<work>"]
+    journal work park "<why it is set aside>" [--on="<work>"]   it stays open, off the nudging, until the first update
     journal work end "<the same words>"
     journal work end "<the same words>" --todo   and close the to-do of that title; without it the row stays open, because ending work is not finishing a row
     journal work end --force ["<note>"]      close work whose declarer is GONE: a deleted worktree, a crashed session — its subject is unguessable, so the note replaces the match
@@ -131,6 +132,14 @@ only question worth asking is whether it is still coming: `work update` what you
 abandoned quietly — the awaited thing dies, nothing nudges, and the journal reads as busy
 forever. If you are waiting on a loop or a cron to wake you, set `--for=` past its next
 cycle, so the wake-up arrives before the hold does.
+
+**`work park` is for being STUCK, or for doing something else in the meantime.** Those are
+the two things it means, and it means nothing else. It is not a way to wait for an answer
+that the work itself could have asked by producing something: a draft asks a better question
+than a question does, because the user corrects a sentence instead of answering three. Before
+parking, ask whether there is anything you could still be DOING — if there is, do it, and let
+what you make carry the question. Under auto mode a wrong park is worse than idle, because
+the list stops with it.
 
 **The wait ends by itself when the work resumes.** The first write — an edit, a `rm`, a
 command that changes something — cancels it, because nothing that is still blocked edits a
@@ -175,6 +184,7 @@ before you act:
 | `journal-agents` | before every subagent dispatch; a subagent must write; a subagent's journal command is refused |
 | `journal-plans` | the user asks for a plan, a roadmap or phases; you are about to draft one; a plan is active, refuses to start or stalls; a plan should be stopped |
 | `journal-reports` | the user asks you to check, research, compare or review something; a dispatch comes back with findings; a report should be archived or become a doc |
+| `journal-transcripts` | a message arrives declared as a transcript; a long paste reads like one; you are about to file to-dos or a plan out of either |
 
 **One rule from `journal-agents` belongs here, because a dispatch does not wait for a skill to load:
 name the model on every subagent you dispatch** — `haiku` for mechanical work with a known answer,
@@ -306,4 +316,4 @@ thing to do now.
 | *… is a script you wrote / has now run twice / scratch script*  | a hint: `tools add` if the job comes back; otherwise ignore |
 | *… has been read N times … not a source file*                  | a hint: `docs attach <doc> <path> "<what it is>"` if it is reference material; otherwise ignore |
 
-Each row's detail lives in a focused skill: messages and comments in `journal-messages`; answered questions, decided suggestions and the refused question tool in `journal-questions`; to-dos, auto and the loop in `journal-todos`; the context decision, pins and cleanup in `journal-memory`; subagent refusals in `journal-agents`; the markdown, script and attachment hints in `journal-docs`.
+Each row's detail lives in a focused skill: messages and comments in `journal-messages`; answered questions, decided suggestions and the refused question tool in `journal-questions`; to-dos, auto and the loop in `journal-todos`; the context decision, pins and cleanup in `journal-memory`; subagent refusals in `journal-agents`; the markdown, script and attachment hints in `journal-docs`; a transcript and what it becomes in `journal-transcripts`.

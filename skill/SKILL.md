@@ -101,6 +101,7 @@ decision. The session start says when it is on. The tag still opens the line.
     journal work start "<the work, in your own words>"
     journal work update "<what moved>" [--on="<work>"]
     journal work await "<what you wait on>" [--agent=<id>|--pid=<n>] [--for=<minutes>] [--on="<work>"]
+    journal work park "<why it is set aside>" [--on="<work>"]   it stays open, off the nudging, until the first update
     journal work end "<the same words>"
     journal work end "<the same words>" --todo   and close the to-do of that title; without it the row stays open, because ending work is not finishing a row
     journal work end --force ["<note>"]      close work whose declarer is GONE: a deleted worktree, a crashed session — its subject is unguessable, so the note replaces the match
@@ -131,6 +132,14 @@ only question worth asking is whether it is still coming: `work update` what you
 abandoned quietly — the awaited thing dies, nothing nudges, and the journal reads as busy
 forever. If you are waiting on a loop or a cron to wake you, set `--for=` past its next
 cycle, so the wake-up arrives before the hold does.
+
+**`work park` is for being STUCK, or for doing something else in the meantime.** Those are
+the two things it means, and it means nothing else. It is not a way to wait for an answer
+that the work itself could have asked by producing something: a draft asks a better question
+than a question does, because the user corrects a sentence instead of answering three. Before
+parking, ask whether there is anything you could still be DOING — if there is, do it, and let
+what you make carry the question. Under auto mode a wrong park is worse than idle, because
+the list stops with it.
 
 **The wait ends by itself when the work resumes.** The first write — an edit, a `rm`, a
 command that changes something — cancels it, because nothing that is still blocked edits a
