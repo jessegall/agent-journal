@@ -495,10 +495,12 @@
      run past its own end, put the rail's edge wherever the rail's content happened to stop, and grow
      the page instead of keeping the conversation on screen. The shell is fixed, the turns scroll, the
      rail scrolls, and the writing box is simply the last row of its column. */
-  .home { height: 100%; max-width: 1180px; padding: 0 24px; display: flex; flex-direction: column; min-height: 0; }
+  .home { height: 100%; max-width: 1440px; padding: 0 24px; display: flex; flex-direction: column; min-height: 0; }
   .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 20px; }
   .home-thread { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-  .home-rail { flex: none; width: 288px; min-height: 0; overflow-y: auto; scrollbar-width: none;
+  /* a RANGE, not a number: with the Activity column hidden the page gains its whole width, and a
+     fixed rail left all of it to the thread while its own cards stayed as cramped as before */
+  .home-rail { flex: none; width: clamp(288px, 27%, 400px); min-height: 0; overflow-y: auto; scrollbar-width: none;
     display: flex; flex-direction: column; gap: 22px;
     padding: 14px 0 18px 20px; border-left: 1px solid var(--border); }
   .home-rail::-webkit-scrollbar { width: 0; }
@@ -696,6 +698,11 @@
      to-do's own title leading, because that is what the work is called */
   /* WHAT IS WAITING, one card per kind: the work card's skeleton with the kind's own tint on the edge,
      so a question, a report and a message read as different things rather than four identical rows. */
+  /* THE TITLE LEADS. The kind and the age used to share a row above it, which in a 288px rail pushed
+     the title down and clipped it. They are what the title is, so they go under it. */
+  .needs-card-top { display: flex; align-items: flex-start; gap: 8px; }
+  .needs-card-top .needs-card-title { flex: 1 1 auto; min-width: 0; }
+  .needs-card .needs-card-meta { display: flex; flex-wrap: wrap; gap: 6px; }
   .needs-card { position: relative; display: flex; flex-direction: column; gap: 5px; margin-bottom: 7px;
     padding: 9px 12px 9px 14px; border: 1px solid #232529; border-radius: 9px; background: #161719;
     cursor: pointer; overflow: hidden; }
