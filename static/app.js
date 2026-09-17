@@ -562,12 +562,30 @@ const StatusBar = {
     </div>`,
 };
 
+// THE BARS DO NOT BELONG TO THE PAGE. Every view rendered its own TopBar, so the crumbs, the search
+// button, the bell and the status bar were inside the routed subtree and faded in and out with it on
+// every navigation. The shell owns the bar now; a page declares what its crumbs say, and that is all.
+const CRUMBS = ref([]);
+const TOP_ACTION = ref(null);
+//: the bar outlives every page now, so which page is showing has to be read reactively rather than
+//: once at setup — otherwise its help button answers for whatever page happened to mount it first
+const ROUTE = reactive(parseHash());
 const TopBar = {
-  props: { crumbs: { type: Array, default: () => [] } },
-  components: { Icon, StatusBar, NoteRow },
+  props: { crumbs: { type: Array, default: () => [] }, action: { type: Object, default: null } },
   setup(props) {
-    const hashEnv = parseHash().params.env || "";
+    watchEffect(() => { CRUMBS.value = props.crumbs; TOP_ACTION.value = props.action; });
+    onUnmounted(() => { TOP_ACTION.value = null; });
+    return () => null;
+  },
+};
+
+const TopBarView = {
+  components: { Icon, StatusBar, NoteRow },
+  setup() {
+    const crumbs = computed(() => CRUMBS.value || []);
+    const action = computed(() => TOP_ACTION.value);
     const env = computed(() => {
+      const hashEnv = ROUTE.params.env || "";
       if (hashEnv) return hashEnv;
       const envs = OVERVIEW.data ? OVERVIEW.data.environments : [];
       return (envs.find((e) => e.active) || envs.find((e) => e.current) || envs[0] || {}).name || "";
@@ -620,9 +638,8 @@ const TopBar = {
     });
     const activity = ACTIVITY;
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
-    const view = parseHash().view || "";
     // each resource page explains itself from static/help/<topic>.md
-    const helpTopic = HELP_TOPICS[view] || "";
+    const helpTopic = computed(() => HELP_TOPICS[ROUTE.view || ""] || "");
     const help = reactive({ html: "", open: false });
     const helpDialog = ref(null);
     const openHelp = async () => {
@@ -630,22 +647,23 @@ const TopBar = {
       helpDialog.value.showModal();
       help.open = true;
       if (help.html) return;
-      if (!(helpTopic in HELP_CACHE)) {
-        const res = await fetch(`/help/${helpTopic}.md`);
-        HELP_CACHE[helpTopic] = res.ok ? await res.text() : "";
+      const topic = helpTopic.value;
+      if (!(topic in HELP_CACHE)) {
+        const res = await fetch(`/help/${topic}.md`);
+        HELP_CACHE[topic] = res.ok ? await res.text() : "";
       }
-      help.html = renderMarkdown(HELP_CACHE[helpTopic]) || "<p>No help written for this page yet.</p>";
+      help.html = renderMarkdown(HELP_CACHE[helpTopic.value]) || "<p>No help written for this page yet.</p>";
     };
     const closeHelp = () => { if (helpDialog.value) helpDialog.value.close(); };
     // a crumb before the last opens its page: the environment's home, or the area it names
     const CRUMB_PATHS = { Home: "", Messages: "messages", "To-dos": "todos", Documents: "docs", Docs: "docs", Reports: "reports", Plans: "plans", Settings: "settings" };
     const crumbHref = (i) => {
-      const c = props.crumbs[i];
+      const c = crumbs.value[i];
       if (!env.value) return null;
       if (i === 0 && c === env.value) return `#/env/${env.value}`;
       return c in CRUMB_PATHS ? `#/env/${env.value}${CRUMB_PATHS[c] ? `/${CRUMB_PATHS[c]}` : ""}` : null;
     };
-    return { env, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, openNote, dropTab, DROP_TABS, activity, toggleActivity, view,
+    return { env, crumbs, action, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, openNote, dropTab, DROP_TABS, activity, toggleActivity,
              helpTopic, help, helpDialog, openHelp, closeHelp, crumbHref, noteHref };
   },
   template: `
@@ -663,7 +681,7 @@ const TopBar = {
         <div class="help-body md" v-html="help.html"></div>
       </dialog>
       <div class=top-tools>
-        <slot/>
+        <a v-if="action" class=btn :href="action.href">{{ action.label }}</a>
         <template v-if="env">
           <a class=icon-btn :href="'#/env/' + env + '/search'" title="Search" aria-label="Search"><Icon name="search"/></a>
           <div class=drop-wrap>
@@ -2839,7 +2857,7 @@ const Plans = {
   },
   template: `
     <template v-if="onPage">
-      <TopBar :crumbs="[env, 'Plans', '#' + n]"><a class=btn :href="base">All plans</a></TopBar>
+      <TopBar :crumbs="[env, 'Plans', '#' + n]" :action="{ label: 'All plans', href: base }"/>
       <div class=body><div class=page><div class=plan-screen>
         <FetchState :state="item"/>
         <template v-if="item.data">
@@ -5600,7 +5618,7 @@ const QuickMenu = {
 };
 
 const App = {
-  components: { ...VIEWS, Icon, ActivityPanel, Peek, QuickMenu, JournalsDropdown, FileReader_, Lightbox },
+  components: { ...VIEWS, Icon, TopBarView, ActivityPanel, Peek, QuickMenu, JournalsDropdown, FileReader_, Lightbox },
   setup() {
     const route = reactive(parseHash());
     const ov = OVERVIEW;
@@ -5647,7 +5665,7 @@ const App = {
         upgrade.busy = false;
       }
     };
-    const onHash = () => { Object.assign(route, parseHash()); closeOverlay(); loadOverview(); };
+    const onHash = () => { Object.assign(route, parseHash()); Object.assign(ROUTE, parseHash()); closeOverlay(); loadOverview(); };
     window.addEventListener("hashchange", onHash);
     window.addEventListener("journal:changed", loadOverview);
     // space opens the quick menu, unless it is typing into something or pressing a focused control
@@ -5922,6 +5940,7 @@ const App = {
         </div>
       </aside>
       <main class=main>
+        <TopBarView v-if="route.view !== 'not-found'"/>
         <Transition name=page mode=out-in>
           <div class=page-shell :key="key"><component :is="route.view" v-bind="route.params"/></div>
         </Transition>
