@@ -3,7 +3,7 @@ from __future__ import annotations
 import fmt
 import settings as settings_mod
 import tracks
-from app import answer, now, project, refuse, root, stem
+from app import answer, now, package, project, refuse, root, stem
 from command import Command, Parsed, number
 from templates import render
 
@@ -11,6 +11,11 @@ NOUNS = (("cleanup", "tidy"), ("migrate", "migrations"), ("loop",), ("update",),
          ("verify",), ("settings",), ("serve",), ("statusline", "status-line"), ("channel",), ("enable",), ("disable",), ("version",))
 
 TEXT = {
+    "serve_already": "a viewer for this project is already up: {url}",
+    "serve_detached": "the viewer is up at {url}, in a session of its own — it outlives this one, "
+                      "and whatever started it. Its output goes to {log}; stop it with "
+                      "`kill $(lsof -t -iTCP:$(echo {url} | sed 's|.*:||') -sTCP:LISTEN)`",
+    "serve_no_answer": "the viewer was started but never answered; what it said is in {log}",
     "cleanup_extra": "cleanup takes no argument (got {word}) — `journal cleanup` for what a check can see, "
                      "`journal cleanup read` for the half only reading finds, "
                      "`journal cleanup keep <finding>` to mark a countable one read",
@@ -237,17 +242,55 @@ class Settings(Command):
 
 
 class Serve(Command):
-    signature = "serve {--port=} {--open}"
+    signature = "serve {--port=} {--open} {--detach}"
     casts = {"port": number("--port")}
 
     def run(self, p: Parsed) -> int:
         import serve
+        if p.option("detach"):
+            return self.detach(p)
         try:
             serve.run(root(), project(), port=p.option("port"),
                       open_browser=bool(p.option("open")))
         except SystemExit as e:
             return e.code if isinstance(e.code, int) else 1
         return 0
+
+    @staticmethod
+    def detach(p: Parsed) -> int:
+        """Start it in a session of its own, so it outlives whatever started it.
+
+        A VIEWER THAT VANISHES WAS REAPED, NOT CLOSED. `serve` runs in the foreground, so an agent
+        that wants one backgrounds it — and then it belongs to that task's process group. A harness
+        killing the tree when memory runs short takes the viewer with it, and the user sees a window
+        that shut itself for no reason. Reported by a user's colleagues, twice in one session.
+        """
+        import subprocess
+        import sys
+        import time
+        import serve
+
+        already = serve.running(root())
+        if already:
+            fmt.say(render(TEXT["serve_already"], url=already))
+            return 0
+        log = root() / "runtime" / "viewer.log"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        # where the PACKAGE is, not how it was invoked: argv[0] is "-c" when the CLI runs in-process
+        args = [sys.executable, str(package() / "journal.py"), "serve"]
+        if p.option("port"):
+            args.append(f"--port={p.option('port')}")
+        with log.open("a") as fh:
+            # its own session: the launcher's process group is not its own, so killing that tree leaves it
+            subprocess.Popen(args, stdout=fh, stderr=fh, stdin=subprocess.DEVNULL,
+                             start_new_session=True, cwd=str(project()))
+        for _ in range(60):
+            time.sleep(0.25)
+            url = serve.running(root())
+            if url:
+                fmt.say(render(TEXT["serve_detached"], url=url, log=log.relative_to(root().parent)))
+                return 0
+        return refuse(render(TEXT["serve_no_answer"], log=log.relative_to(root().parent)))
 
 
 class Statusline(Command):
