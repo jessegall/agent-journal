@@ -3566,6 +3566,14 @@ const Thread = {
       if (was && !away.value) missed.value = 0;
     };
     const backDown = () => { missed.value = 0; bottom("auto"); };
+    // WHAT IS KNOWN IS THAT IT IS WORKING, not that it is typing. A typing indicator in a chat app
+    // means a person has a box open with characters in it; nothing here knows that, and claiming it
+    // would be the first thing in this thread that is not true. The agent's own state is known and
+    // already fetched, so that is what is shown.
+    const busy = computed(() => {
+      const agent = SHELL.activity && SHELL.activity.agent;
+      return !!(agent && agent.working);
+    });
     const settled = ref(false);
     let last = "";
     watch(turns, (rows) => {
@@ -3705,7 +3713,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, away, missed, watchScroll, backDown, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
   },
   template: `
     <div class=thread>
@@ -3777,6 +3785,10 @@ const Thread = {
         </div>
       </div>
       </TransitionGroup>
+      <div v-if="busy" class="thread-turn busy" aria-label="The agent is working">
+        <div class=thread-bubble><span class=thread-dot></span><span class=thread-dot></span><span class=thread-dot></span></div>
+        <div class=thread-meta><span>working</span></div>
+      </div>
       </div>
     </div>`,
 };

@@ -732,6 +732,16 @@
   .thread-turn.failed .thread-bubble { border-color: color-mix(in srgb, var(--danger) 55%, transparent); }
   .thread-failed { display: flex; align-items: center; gap: 6px; margin: 6px 0 0; padding-top: 6px;
     border-top: 1px solid var(--border-2); font-size: 11px; color: var(--danger); }
+  /* working, not typing: three dots in the shape of a turn about to arrive, with the word beside them
+     so it is not said in motion alone */
+  .thread-turn.busy { max-width: max-content; }
+  .thread-turn.busy .thread-bubble { display: flex; align-items: center; gap: 4px; padding: 10px 12px; }
+  .thread-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3);
+    animation: thread-dot 1.3s ease-in-out infinite; }
+  .thread-dot:nth-child(2) { animation-delay: .18s; }
+  .thread-dot:nth-child(3) { animation-delay: .36s; }
+  @keyframes thread-dot { 0%, 60%, 100% { opacity: .35; transform: none; } 30% { opacity: 1; transform: translateY(-2px); } }
+  @media (prefers-reduced-motion: reduce) { .thread-dot { animation: none; opacity: .7; } }
   .thread-empty { padding: 18px 2px; color: var(--text-3); }
   /* the way back down, just above the box: it sits in the thread's flow rather than over a turn, so
      it never covers the words someone scrolled up to read */
