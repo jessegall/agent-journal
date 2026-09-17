@@ -225,18 +225,97 @@ MESSAGES = {
     "kind_number": "a number",
     "kind_list": "a list",
     "kind_object": "an object",
+    "project_only": "{key} belongs to the project, not to one environment — it describes where things "
+                    "live or how environments themselves behave, so one environment cannot answer it "
+                    "differently from another",
+    "not_overridden": "{key} is not set on {env}; it is the project's already",
+    "overridden": "{key} is {value} on {env}, {was} for the project",
+    "gave_back": "{key} on {env} is back to the project's {was}",
 }
 
 def say(message: str, /, **values) -> str:
     return fill(MESSAGES[message], **values)
 
 
-def load(root: Path) -> tuple[dict, list[str]]:
+#: what this journal answers to per ENVIRONMENT, and what it can only answer to once.
+#: A SETTING IS OVERRIDABLE UNLESS IT DESCRIBES THE PROJECT OR THE MACHINE. Where the docs live
+#: is one folder for everyone; whether a session starts bound, and whether two may share an
+#: environment, are rules ABOUT environments and cannot be decided inside one; how long a session
+#: counts as alive is a fact about this machine's clock. Everything else — how loud the nudges
+#: are, what is silenced, how a to-do list behaves — is a property of a line of work.
+PROJECT_ONLY = frozenset(("docs_dir", "bind_on_start", "one_session_per_environment",
+                          "session_stale_hours", "context_window", "channel_reach_now"))
+
+#: the environment's disagreement with the project's settings, as a patch of keys
+OVERRIDES = "setting_overrides"
+
+
+def overridable(key: str) -> bool:
+    return key in DEFAULTS and key not in PROJECT_ONLY
+
+
+def load(root: Path, env: str | None = None) -> tuple[dict, list[str]]:
     """Settings, and every complaint about the file. Never raises.
 
     A broken settings file must not stop the journal: the record is what a session falls
     back on when everything else is gone, so it degrades to defaults and SAYS SO.
+
+    THREE LAYERS, RESOLVED IN ONE PLACE: the defaults above, then the project's settings.json,
+    then what `env` disagrees with — and the third is a patch of KEYS, never a second settings
+    file, so nothing can exist only on one environment and what it changed is always readable
+    beside what it changed it from. The same shape `connections` uses, deliberately.
     """
+    out, problems = _project(root)
+    if env:
+        for key, value in _here(root, env).items():
+            if overridable(key):
+                out[key] = value
+    return out, problems
+
+
+def overrides(root: Path, env: str) -> dict:
+    """What this environment changes, and nothing it merely inherits."""
+    return {k: v for k, v in _here(root, env).items() if overridable(k)}
+
+
+def override(root: Path, env: str, key: str, value, off: bool = False) -> tuple[bool, str]:
+    """Change one setting on one environment, or give it back to the project."""
+    import state
+    key = ALIASES.get(key, key)
+    if key not in DEFAULTS:
+        return False, say("unknown", path=PATH, key=repr(key))
+    if key in PROJECT_ONLY:
+        return False, say("project_only", key=key)
+    with state.locked(root):
+        got = _here(root, env)
+        if off:
+            if key not in got:
+                return False, say("not_overridden", key=key, env=env)
+            got.pop(key)
+        else:
+            if not isinstance(value, type(DEFAULTS[key])) or (isinstance(DEFAULTS[key], bool) and not isinstance(value, bool)):
+                if not (isinstance(DEFAULTS[key], float) and isinstance(value, (int, float))):
+                    return False, say("wants", path=env, key=key, kind=_kind_of(key), value=repr(value))
+            got[key] = value
+        state.put_tracked(root, OVERRIDES, env, got)
+    was = _project(root)[0][key]
+    return True, (say("gave_back", key=key, env=env, was=was) if off
+                  else say("overridden", key=key, env=env, value=value, was=was))
+
+
+def _kind_of(key: str) -> str:
+    want = type(DEFAULTS[key])
+    return say({bool: "kind_bool", int: "kind_number", float: "kind_number",
+                list: "kind_list", dict: "kind_object"}.get(want, "kind_object"))
+
+
+def _here(root: Path, env: str) -> dict:
+    import state
+    got = state.tracked(root, OVERRIDES, env, {})
+    return dict(got) if isinstance(got, dict) else {}
+
+
+def _project(root: Path) -> tuple[dict, list[str]]:
     out = dict(DEFAULTS)
     problems: list[str] = []
     f = root / PATH
