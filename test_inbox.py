@@ -175,8 +175,8 @@ def turn(user_text, reply):
 fire("SessionStart", source="startup")
 turn("how is it going", "[!reply] fine")
 label, _ = testkit.hold(fire("Stop", stop_hook_active=False))
-check("the stop holds while a message waits, ahead of the rest of the queue", label,
-      "the user left 1 message(s) for you")
+check("the stop holds while a message waits, ahead of the rest of the queue, and NAMES THE OLDEST",
+      label, "the user left 1 message(s) for you, the oldest being message 2")
 
 # ------------------------------------------------------------------ a tool call mentions a new message once
 read = {"tool_name": "Read", "tool_input": {"file_path": "x"}, "tool_response": "ok"}

@@ -65,13 +65,17 @@ import inbox  # noqa: E402
 from templates import render as fill  # noqa: E402
 
 MESSAGES = {
-    "inbox_fact": "the user left {n} message(s) for you",
-    "inbox_do": "process them before anything else: `.journal/journal.py messages` lists them; split each into parts with "
-                "`messages process`, a question for any part you do not understand, then `messages done`",
+    "inbox_fact": "the user left {n} message(s) for you, the oldest being message {first}",
+    # POINTS AT `waiting`, NOT `messages`. `messages waiting` hands them back OLDEST FIRST and marks
+    # every one of them read; the plain list does neither — so an agent that followed this nudge read
+    # one message, acted on it, and left the user looking at ticks that said exactly that.
+    "inbox_do": "read them all and handle them oldest first: `.journal/journal.py messages waiting` shows every one "
+                "in full and marks them read; split each into parts with `messages process`, a question for any part "
+                "you do not understand, then `messages done`",
     "viewer_first_note": "THE USER WORKS FROM THE VIEWER on this environment: keep each terminal message to its one tagged line, and put the "
                          "answer where they read it: a reply on their message (journal messages reply), a report for research, a question for a decision.",
-    "inbox_mention": "the user left {n} new message(s) for you — `journal messages waiting` reads them when you reach a "
-                     "pause; nothing is blocked",
+    "inbox_mention": "the user left {n} new message(s) for you — `journal messages waiting` reads them all, oldest "
+                     "first, when you reach a pause; nothing is blocked",
     "comments_mention": "the user left {n} new comment(s) for you — `journal comments` reads them when you reach a "
                         "pause; nothing is blocked",
     "deferral_do": "park it as a to-do before going on, or run this call again if nothing is deferred",
@@ -905,7 +909,7 @@ def _p_inbox(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     waiting = inbox.unprocessed(ROOT, here)
     if not waiting:
         return None
-    return _say(say("inbox_fact", n=len(waiting)), say("inbox_do"))
+    return _say(say("inbox_fact", n=len(waiting), first=waiting[0][0]), say("inbox_do"))
 
 
 @nudges.subject("loop", 10)
