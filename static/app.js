@@ -3442,7 +3442,7 @@ const PlanCards = {
 // The turns come from /chat, which reads the transcript and the inbox; the Activity column keeps the doing.
 const Thread = {
   props: { env: String },
-  components: { Compose, QuestionAnswer },
+  components: { Compose, QuestionAnswer, Icon },
   setup(props) {
     const chat = useFetch(() => props.env && `/api/env/${props.env}/chat`);
     const root = ref(null);
@@ -3476,6 +3476,7 @@ const Thread = {
     });
     const send = (text, files) => postJSON(`/api/env/${props.env}/messages`, { text, files })
       .then(() => { chat.reload(); changed(); });
+    const fileUrl = (n, name) => `/message-files/${props.env}/${n}/${encodeURIComponent(name)}`;
     // what the ticks mean, said in words for whoever hovers one
     const landed = (t) => (t.state === "filed"
       ? `Filed${t.became ? `: it became ${t.became}` : ""}`
@@ -3483,7 +3484,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, send, root, answered, landed };
+    return { turns, more, send, root, answered, landed, fileUrl };
   },
   template: `
     <div class=thread>
@@ -3496,9 +3497,14 @@ const Thread = {
           <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
           <div v-html="$md(t.text)"></div>
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
+          <div v-if="t.files && t.files.length" class=thread-files>
+            <a v-for="f in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name">
+              <img v-if="f.picture" class=thread-image :src="fileUrl(t.n, f.name)" :alt="f.name" loading=lazy>
+              <span v-else class=thread-file-name><Icon name="paperclip"/>{{ f.name }}</span>
+            </a>
+          </div>
         </div>
         <div class=thread-meta>
-          <span v-if="t.ref && t.kind === 'message'">{{ t.ref }}</span>
           <span>{{ t.at.slice(11, 16) }}</span>
           <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)">
             <svg viewBox="0 0 19 12" fill=none stroke=currentColor stroke-width="1.6" stroke-linecap=round stroke-linejoin=round>

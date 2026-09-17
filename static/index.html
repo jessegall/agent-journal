@@ -563,6 +563,15 @@
   .thread-bubble .option-save { margin-top: 10px; }
   .thread-ask-label { margin: 0 0 4px; font-size: 10.5px; font-weight: 600; letter-spacing: .07em;
     text-transform: uppercase; color: var(--warn); }
+  /* attachments are part of the message, under a rule of their own: a picture is shown, anything else
+     is named and opens */
+  .thread-files { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--border-2); }
+  .thread-file { display: block; border-radius: 8px; color: var(--text-2); }
+  .thread-file:hover { color: var(--text); }
+  .thread-image { display: block; max-width: 100%; max-height: 260px; border-radius: 8px; border: 1px solid var(--border); }
+  .thread-file-name { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+  .thread-file-name .ico { width: 14px; height: 14px; }
   .thread-empty { padding: 18px 2px; color: var(--text-3); }
   .thread-write { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 12px 0 22px; }
   /* positioned so a leaving row can be taken out of the flow: work moving from Working on to Finished must not jostle either list */
@@ -616,6 +625,10 @@
   .work-now-title { flex: 1 1 auto; min-width: 120px; font-size: 13.5px; font-weight: 500; line-height: 1.4; color: var(--text); text-wrap: pretty; }
   .work-now-ref { flex: none; font-size: 11.5px; color: var(--text-3); white-space: nowrap; }
   .work-now-bar { display: flex; align-items: center; gap: 10px; }
+  /* in the rail the row is 300px wide, so a caption beside the bar leaves the bar a stub: the track
+     takes a line of its own and what it says sits under it */
+  .home-rail .work-now-bar { flex-wrap: wrap; gap: 7px 10px; }
+  .home-rail .work-now-bar .progress-track { flex: 1 0 100%; }
   /* a plan nobody has started yet: amber like the checkpoint, because it is waiting on the user */
   .work-now.ready::before { background: #d9a441; opacity: .9; }
   /* a plan set aside: it is live but nobody is working it, so it reads quieter than the one in progress */

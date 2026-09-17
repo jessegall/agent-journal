@@ -11,6 +11,9 @@ TURNS = 120
 #: a turn's text is a bubble, not a document: longer than this and the thread reads as a wall
 TEXT_MAX = 1200
 
+#: what a chat shows rather than names: the viewer serves these from /message-files and draws them
+PICTURES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".svg")
+
 
 def trim(text: str, limit: int = TEXT_MAX) -> str:
     text = (text or "").strip()
@@ -80,7 +83,9 @@ def wrote(root: Path, env: str) -> list[dict]:
         became = inbox._became(m)
         out.append({"at": m.get("at") or "", "who": "you", "kind": "message", "tag": "",
                     "text": trim(m.get("text") or ""), "n": n,
-                    "ref": ", ".join(f["name"] for f in (m.get("files") or []) if not f.get("removed")),
+                    "ref": "",
+                    "files": [{"name": f["name"], "picture": f["name"].lower().endswith(PICTURES)}
+                              for f in (m.get("files") or []) if not f.get("removed")],
                     # delivered, read, filed: three states the record already keeps, so the ticks are a
                     # reading of what is there rather than a fourth thing to keep level with it
                     "state": "filed" if m.get("processed") else "read" if m.get("read") else "sent",
