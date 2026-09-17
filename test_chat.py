@@ -139,6 +139,9 @@ check("and the agent's own words replace it, rather than standing beside it",
       ([t["kind"] for t in turns() if t["kind"] == "receipt"],
        [t["text"] for t in turns() if t["kind"] == "reply"][-1]),
       ([], "Done — it was the bar, not the bubble."))
+inbox.reply(root, _n, "And thanks.", now(), source="web", track="w")
+check("and the user's own reply quotes it too — a reply is not the message",
+      [t["ref"] for t in turns() if t["kind"] == "reply"][-1], "please look at the padding")
 
 # ---------------------------------------------------------------- the cap, and the read behind it
 chat.TURNS = 3
