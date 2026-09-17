@@ -3842,7 +3842,15 @@ const Thread = {
     // the bottom. The one that grew says so, and the thread finishes the journey — but only if the
     // reader is still down there, so a picture loading far above never yanks them away from what
     // they are reading.
-    const grew = () => { if (near()) bottom("auto"); };
+    // THE READER'S OWN SEND ALWAYS LANDS AT THE BOTTOM. Following an arriving turn is a question of
+    // where the reader is — nobody wants to be yanked off what they are reading — but their own
+    // message is not something that arrived: they wrote it, and they are looking for it. The window
+    // covers what happens after the send too: a picture has no height until it loads, so the turn
+    // grows a beat later and the scroll has to finish the journey.
+    const MINE_MS = 6000;
+    const sentAt = ref(0);
+    const justSent = () => Date.now() - sentAt.value < MINE_MS;
+    const grew = () => { if (justSent() || near()) bottom("auto"); };
     // A WAY BACK DOWN, and it says why it is worth pressing: `near` already decides whether an arriving
     // turn follows the reader, so the same test decides when the button belongs, and what arrived while
     // they were up there is counted rather than merely hinted at.
@@ -3868,7 +3876,7 @@ const Thread = {
       const key = newest(rows);
       const first = !last;
       const arrived = key && key !== last;
-      const follow = first || near();
+      const follow = first || justSent() || near();
       if (arrived && !follow) missed.value += 1;
       last = key;
       if (first) nextTick(() => { settled.value = true; });
@@ -3938,6 +3946,7 @@ const Thread = {
                      ref: under ? excerpt(quoteOf.value) : "" };
       pending.value = [...pending.value, mine];
       answering.value = null;
+      sentAt.value = Date.now();
       // the watcher scrolls when the turn lands; a second smooth scroll started here fights it
       nextTick(() => bottom("auto"));
       try {
