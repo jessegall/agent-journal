@@ -650,7 +650,12 @@
   .thread-ticks.filed { opacity: 1; color: var(--accent-text); }
   /* what the message BECAME, and whether that row is moving. A pointer, never a report: what is being
      done is the Activity column's, and this says only which row to look at. */
-  .thread-turn.mine .thread-became { justify-content: flex-end; }
+  /* TWO ENDS OF ONE LINE. "Working on" says what is happening to this message; the pills say what
+     it became. Different kinds of thing, so they sit at opposite ends rather than running together
+     from the same one. The pills hold the right edge and the word pushes itself off the left; the
+     dot travels with the word, since both appear only while the row is being worked. */
+  .thread-bubble.md > .thread-became { justify-content: flex-end; }
+  .thread-became-word { margin-right: auto; }
   /* the rule crosses the whole bubble, so it reads as a header and not as an underlined phrase: the
      row is what holds the text, the block around it is what holds the rule */
   /* .md p carries a margin and one more class than .thread-became, so it won and the header sat
