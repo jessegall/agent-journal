@@ -1359,11 +1359,14 @@ const PRIORITIES = [{ value: "low", label: "Low" }, { value: "default", label: "
                     { value: "high", label: "High" }, { value: "critical", label: "Critical" }];
 
 // ─────────────────────────────────────────────────────────────── to-dos
+// THE ORDER IS HOW CLOSE A ROW IS TO MOVING: what is being worked, what is on the user, what is
+// stuck, what is merely waiting its turn, what is finished. One list, read by the page and by the
+// rail's tab alike, so the two can never disagree about where Blocked sits.
 const GROUPS = [
   { key: "progress", label: "In progress" },
   { key: "waiting", label: "Waiting on you" },
-  { key: "open", label: "Open" },
   { key: "blocked", label: "Blocked" },
+  { key: "open", label: "Open" },
   { key: "done", label: "Done" },
 ];
 const STATUS_LABEL = Object.fromEntries(GROUPS.map((g) => [g.key, g.label]));
@@ -4161,9 +4164,8 @@ const EnvHome = {
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
     const clear = computed(() => !queue.value.length && !held.value);
     const openTodos = computed(() => (todos.data || []).filter((t) => todoStatus(t) !== "done"));
-    const todoGroups = computed(() => [["progress", "In progress"], ["waiting", "Waiting on you"],
-                                       ["open", "Open"], ["blocked", "Blocked"]]
-      .map(([key, label]) => ({ key, label, rows: openTodos.value.filter((t) => todoStatus(t) === key) }))
+    const todoGroups = computed(() => GROUPS.filter((g) => g.key !== "done")
+      .map((g) => ({ key: g.key, label: g.label, rows: openTodos.value.filter((t) => todoStatus(t) === g.key) }))
       .filter((g) => g.rows.length));
     const unread = computed(() => (notes.data || []).filter((n) => !n.read));
     const TABS = computed(() => [{ key: "waiting", label: "Waiting on you", n: waitingCount.value },
