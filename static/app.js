@@ -3454,16 +3454,24 @@ const Thread = {
       const page = root.value && root.value.closest(".page");
       return !page || page.scrollHeight - page.scrollTop - page.clientHeight < 160;
     };
-    let last = 0;
+    // THE LAST TURN, NEVER THE COUNT. The thread is capped, so once it is full a new turn drops the
+    // oldest and the length does not move — a count would have said "nothing arrived" from then on.
+    const newest = (rows) => { const t = rows[rows.length - 1]; return t ? `${t.at}:${t.kind}:${t.n}:${t.text.length}` : ""; };
+    let last = "";
     watch(turns, (rows) => {
-      const grew = rows.length > last;
-      const first = last === 0;
-      last = rows.length;
-      if (!grew || !(first || near())) return;
+      const key = newest(rows);
+      const first = !last;
+      const arrived = key && key !== last;
+      const follow = first || near();
+      last = key;
+      if (!arrived || !follow) return;
       // the THREAD's end, not the page's: the writing box is sticky, so anchoring above it hides the
-      // newest turn behind it, and anchoring on the page scrolls past the sections under the thread
+      // newest turn behind it, and anchoring on the page scrolls past the sections under the thread.
+      // Twice, because a turn of rendered markdown finishes laying out after the tick that added it.
       nextTick(() => {
-        if (root.value) root.value.scrollIntoView({ block: "end", behavior: first ? "auto" : "smooth" });
+        const go = () => { if (root.value) root.value.scrollIntoView({ block: "end", behavior: first ? "auto" : "smooth" }); };
+        go();
+        requestAnimationFrame(go);
       });
     });
     const send = (text, files) => postJSON(`/api/env/${props.env}/messages`, { text, files })
