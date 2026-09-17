@@ -560,19 +560,24 @@ const TopBar = {
               <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
                 <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
               </a>
-              <div v-for="x in unreadNotes" :key="'n' + x.n" class=drop-row>
+              <div v-for="x in unreadNotes" :key="'n' + x.n" :class="['drop-row', {open: !!noteHref(x, env)}]"
+                :role="noteHref(x, env) ? 'button' : null" :tabindex="noteHref(x, env) ? 0 : null"
+                :title="noteHref(x, env) ? 'Open ' + x.about_label : null"
+                @click="noteHref(x, env) && (readOne(x), openFromBell($event, x), drop.open = false)"
+                @keydown.enter.self.prevent="noteHref(x, env) && (readOne(x), openFromBell($event, x), drop.open = false)">
                 <span class=drop-text>{{ x.text }}</span>
                 <span class=drop-meta>{{ x.age || 'just now' }}
-                  <a v-if="x.about && noteHref(x, env)" class="btn more" :href="noteHref(x, env)" :title="'Open ' + x.about_label" @click="readOne(x); openFromBell($event, x); drop.open = false">Open</a>
-                  <button type=button class="btn more" @click="readOne(x)">Mark read</button>
+                  <button type=button class="btn more" @click.stop="readOne(x)">Mark read</button>
                 </span>
               </div>
               <div v-if="readNotes.length" class=drop-sub>Read</div>
-              <div v-for="x in readNotes" :key="'r' + x.n" class="drop-row read">
+              <div v-for="x in readNotes" :key="'r' + x.n" :class="['drop-row', 'read', {open: !!noteHref(x, env)}]"
+                :role="noteHref(x, env) ? 'button' : null" :tabindex="noteHref(x, env) ? 0 : null"
+                :title="noteHref(x, env) ? 'Open ' + x.about_label : null"
+                @click="noteHref(x, env) && (openFromBell($event, x), drop.open = false)"
+                @keydown.enter.self.prevent="noteHref(x, env) && (openFromBell($event, x), drop.open = false)">
                 <span class=drop-text>{{ x.text }}</span>
-                <span class=drop-meta>{{ x.age || 'just now' }}
-                  <a v-if="x.about && noteHref(x, env)" class="btn more" :href="noteHref(x, env)" :title="'Open ' + x.about_label" @click="openFromBell($event, x); drop.open = false">Open</a>
-                </span>
+                <span class=drop-meta>{{ x.age || 'just now' }}</span>
               </div>
             </div>
           </div>
