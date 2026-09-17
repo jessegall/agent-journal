@@ -502,6 +502,19 @@ const StatusBar = {
       if (agent.working) return { state: "Working", live: true, what: onIt, href: workHref };
       return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
     });
+    // the sentence split at the point where it stopped matching the one before it: what is the same
+    // is written once and stays, what differs is what rolls
+    const was = ref("");
+    const said = computed(() => {
+      const now = view.value.what || "";
+      const before = was.value;
+      let i = 0;
+      while (i < now.length && i < before.length && now[i] === before[i]) i += 1;
+      // a whole-sentence change rolls whole; a shared start only holds if there is a real sentence of it
+      const cut = i >= 6 && i < now.length ? now.lastIndexOf(" ", i) + 1 : 0;
+      return { head: now.slice(0, cut), tail: now.slice(cut) };
+    });
+    watch(() => view.value.what, (now, before) => { was.value = before || ""; });
     const inspectWork = computed(() => (work.data ? work.data[0] : (AGENT_STATE[env.value] || {}).work) || null);
     // WHAT IS BEING WORKED, AND WHERE: the branch this project is on, and the to-do the open work
     // serves. Both are already in hand — the branch rides in the activity payload, the number is on
@@ -524,7 +537,7 @@ const StatusBar = {
       else if (w) { OVERLAY.kind = "work"; OVERLAY.n = w.n; }
       else if (view.value.href) location.hash = view.value.href;
     };
-    return { env, view, SHELL, openCurrent, facts };
+    return { env, view, said, SHELL, openCurrent, facts };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
@@ -534,7 +547,11 @@ const StatusBar = {
            upward as the next arrives from below. -->
       <button type=button class=statusbar-text :title="facts.todo ? 'Open the to-do it is on' : 'Open what it is on'" @click="openCurrent">
         <b>{{ view.state }}</b>
-        <span class=statusbar-roll><Transition name=roll><span :key="view.what" class=statusbar-line>{{ view.what }}</span></Transition></span>
+        <!-- ONLY WHAT CHANGED MOVES. "reading message 302" becoming "reading message 303" is one
+             digit; rolling the whole sentence for it says more happened than did. The shared start
+             stays put and the tail that differs rolls on its own. -->
+        <span class=statusbar-roll><span v-if="said.head" class=statusbar-head>{{ said.head }}</span
+          ><Transition name=roll><span :key="said.tail" class=statusbar-line>{{ said.tail }}</span></Transition></span>
       </button>
       <span class=statusbar-tools>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"

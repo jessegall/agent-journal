@@ -210,10 +210,15 @@
   .statusbar-text span { flex: 1 1 auto; min-width: 180px; font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   /* the roller: one line's height, and the two lines pass through it without moving anything else */
-  .statusbar-roll { position: relative; display: block; height: 19px; text-decoration: none; }
-  .statusbar-line { position: absolute; inset: 0; min-width: 0; display: flex; align-items: center; overflow: hidden; text-overflow: ellipsis;
+  .statusbar-roll { position: relative; display: flex; align-items: center; min-width: 0; height: 19px; text-decoration: none; }
+  /* the part of the sentence that did not change: written once, and it does not move */
+  .statusbar-head { flex: none; white-space: pre; text-decoration: underline; text-decoration-color: #3a3d44;
+    text-underline-offset: 3px; }
+  .statusbar-line { position: relative; flex: 1 1 auto; min-width: 0; display: block; line-height: 19px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   .roll-enter-active, .roll-leave-active { transition: opacity 75ms ease, transform 75ms ease; }
+  /* the leaving half is taken out of the flow, or the two sit side by side for 75ms and the line jumps */
+  .roll-leave-active { position: absolute; left: 0; right: 0; }
   .roll-enter-from { opacity: 0; transform: translateY(9px); }
   .roll-leave-to { opacity: 0; transform: translateY(-9px); }
   @media (prefers-reduced-motion: reduce) { .roll-enter-active, .roll-leave-active { transition: none; } }
