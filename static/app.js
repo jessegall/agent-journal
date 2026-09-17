@@ -845,7 +845,7 @@ const Panel = {
 };
 
 const Compose = {
-  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial", "quote", "bare"],
+  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial", "quote", "bare", "onUp"],
   components: { Icon },
   setup(props) {
     // `initial` seeds the box. `quote` does NOT: what is being commented ON is shown above the field and
@@ -887,8 +887,11 @@ const Compose = {
         <div class=compose-quote-text><p v-for="(l, i) in quoteLines" :key="i">{{ l }}</p></div>
       </div>
       <div :class="['compose-box', {attachable: attach}]">
+        <!-- UP IN AN EMPTY BOX GOES BACK TO THE LAST THING SAID, the way a shell goes back through
+             its history. With anything typed the arrow moves the caret, which is what it is for. -->
         <textarea ref=area class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
           @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), go())"
+          @keydown.up="onUp && !draft.text.trim() && ($event.preventDefault(), onUp())"
           @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go"></textarea>
         <label v-if="attach" class=compose-attach title="Attach files" aria-label="Attach files">
           <Icon name="paperclip"/><input type=file multiple hidden @change="picked">
@@ -3944,6 +3947,12 @@ const Thread = {
       THREAD_BOX.focus && THREAD_BOX.focus(t.full || t.text || "");
     };
     const unedit = () => { editing.value = null; THREAD_BOX.focus && THREAD_BOX.focus(""); };
+    // the last thing the user said, which is the one they want back when they press up on an empty box
+    const editLast = () => {
+      const mine = turns.value.filter((t) => t.who === "you" && t.kind === "message" && t.n && !t.pending);
+      const last = mine[mine.length - 1];
+      if (last) startEdit(last);
+    };
     const drop = (t) => {
       if (!t.n) return;
       send("DELETE", `/api/env/${props.env}/messages/${t.n}`, { why: "deleted from the chat" })
@@ -3973,7 +3982,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote, editLast };
   },
   template: `
     <div class=thread>
@@ -3991,7 +4000,7 @@ const Thread = {
           <span class=thread-answering-text>{{ answering.text }}</span>
           <button type=button class=thread-answering-x title="Not replying to it after all" @click="unreply">×</button>
         </div>
-        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true"/>
+        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true" :onUp="editLast"/>
       </div>
       <div ref=root class=thread-scroll @scroll.passive="watchScroll">
       <template v-if="!chat.data">
