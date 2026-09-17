@@ -16,6 +16,7 @@ PICTURES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".svg")
 
 
 def trim(text: str, limit: int = TEXT_MAX) -> str:
+    """The bubble's share of a turn. A cut one says so, and `full` carries the rest."""
     text = (text or "").strip()
     return text if len(text) <= limit else text[:limit].rstrip() + "…"
 
@@ -128,8 +129,10 @@ def _take(raw: bytes, held: dict) -> None:
         text = _spoken(rec)
         got = tags.found(text)
         if got:
+            whole = tags.strip(text)
             held["turns"].append({"at": rec.get("timestamp") or "", "who": "agent", "kind": "said",
-                                  "tag": got[0], "text": trim(tags.strip(text)), "n": None, "ref": "",
+                                  "tag": got[0], "text": trim(whole), "n": None, "ref": "",
+                                  "full": whole if len(whole.strip()) > TEXT_MAX else "",
                                   "env": held["here"]})
         # an assistant message is never a mark: it can only ever be QUOTING one
         return
@@ -152,8 +155,9 @@ def wrote(root: Path, env: str) -> list[dict]:
         if m.get("archived"):
             continue
         became = inbox._became(m)
+        whole = (m.get("text") or "").strip()
         out.append({"at": m.get("at") or "", "who": "you", "kind": "message", "tag": "",
-                    "text": trim(m.get("text") or ""), "n": n,
+                    "text": trim(whole), "full": whole if len(whole) > TEXT_MAX else "", "n": n,
                     "ref": "",
                     "files": [{"name": f["name"], "picture": f["name"].lower().endswith(PICTURES)}
                               for f in (m.get("files") or []) if not f.get("removed")],
@@ -163,7 +167,9 @@ def wrote(root: Path, env: str) -> list[dict]:
                     "became": ", ".join(became)})
         for r in m.get("replies") or []:
             out.append({"at": r.get("at") or "", "who": "you" if r.get("source") == "web" else "agent",
-                        "kind": "reply", "tag": "", "text": trim(r.get("text") or ""), "n": n,
+                        "kind": "reply", "tag": "", "text": trim(r.get("text") or ""),
+                        "full": (r.get("text") or "").strip() if len((r.get("text") or "").strip()) > TEXT_MAX else "",
+                        "n": n,
                         # the two point opposite ways and never both appear: part is the user's words the
                         # agent answered, quoting is the thread's words the user answered
                         "ref": r.get("quoting") or r.get("part") or ""})
