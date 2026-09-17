@@ -4679,7 +4679,8 @@ const QuickMenu = {
         QUICK.files = [];
         close();
         changed();
-        flash(count ? `Sent to the agent with ${count} ${count === 1 ? "file" : "files"}` : "Sent to the agent");
+        const carried = count ? ` with ${count} ${count === 1 ? "file" : "files"}` : "";
+        flash(`Sent${carried} — ${landsWhen.value}`);
       } catch (err) {
         flash(err.message);
       } finally {
@@ -4691,6 +4692,14 @@ const QuickMenu = {
       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); sendDraft(); }
       else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); back(); }
     };
+    // what "sent" actually means right now: nothing interrupts a working agent, so saying only "Sent"
+    // reads as delivered and a message that sits for ten minutes reads as lost
+    const landsWhen = computed(() => {
+      const agent = SHELL.activity && SHELL.activity.agent;
+      if (!agent) return "no agent is here, so it will be read when the next session starts";
+      if (agent.working) return "the agent is working, so it will read this when it stops";
+      return "the agent is idle, so it will read this in a few seconds";
+    });
     const agentNote = computed(() => {
       const agent = SHELL.activity && SHELL.activity.agent;
       if (plan.value && plan.value.held) return "it is stopped at a checkpoint";
