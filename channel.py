@@ -13,7 +13,9 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 NAME = "journal"
-POLL_SECONDS = 3.0
+#: how often the watcher looks for something to push. A suite that waits on real pushes waits this
+#: long for each one — thirteen waits was most of test_channel's minute and a half — so it is settable.
+POLL_SECONDS = float(os.environ.get("AGENT_JOURNAL_CHANNEL_POLL") or 3.0)
 PIDS = "session_pids"
 PUSHED = "channel_pushed"
 #: when this server started; nothing that happened before it is pushed

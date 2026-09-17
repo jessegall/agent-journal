@@ -31,6 +31,8 @@ testkit.make(d, SRC)
 root = d / ".journal"
 tdir = transcript.project_dir(d); tdir.mkdir(parents=True, exist_ok=True)
 J = str(root / "journal.py")
+#: one interpreter for this project, for every hook fire and every command below
+P = testkit.Project(d, bind=False)
 
 
 class S:
@@ -41,16 +43,17 @@ class S:
         self.start()
 
     def start(self):
-        out = subprocess.run([str(root / "hook.py")], input=json.dumps({"hook_event_name": "SessionStart", "source": "startup",
-                             "session_id": self.stem, "transcript_path": str(self.path)}), capture_output=True, text=True, timeout=180).stdout
+        # THROUGH THE ONE INTERPRETER THIS PROJECT ALREADY HOLDS OPEN. Every hook fire and every
+        # command used to start Python again, which was most of this suite's runtime.
+        _, out = P.hook("SessionStart", source="startup", session_id=self.stem, transcript_path=str(self.path))
         return json.loads(out)["hookSpecificOutput"]["additionalContext"]
 
     def j(self, *a):
-        p = subprocess.run([J, *a], env=self.env, capture_output=True, text=True, timeout=180)
-        return p.returncode, p.stdout + p.stderr
+        return P.cli(*a, session=self.stem)
 
 
 def terminal(*a):
+    """A shell with NO session id in it: this is about what a person at a terminal sees."""
     env = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}
     p = subprocess.run([J, *a], env=env, capture_output=True, text=True, timeout=180)
     return p.returncode, p.stdout + p.stderr
@@ -148,6 +151,8 @@ e = Path(tempfile.mkdtemp()) / "proj"
 testkit.make(e, SRC)
 (e / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True}))
 root2 = e / ".journal"
+#: the second project's own interpreter, held open the same way
+P2 = testkit.Project(e, bind=False)
 tdir2 = transcript.project_dir(e); tdir2.mkdir(parents=True, exist_ok=True)
 J2 = str(root2 / "journal.py")
 
@@ -160,8 +165,7 @@ class T:
         self.ctx = self.fire("SessionStart", source="startup")
 
     def fire(self, event, **extra):
-        out = subprocess.run([str(root2 / "hook.py")], input=json.dumps({"hook_event_name": event, "session_id": self.stem,
-                             "transcript_path": str(self.path), **extra}), capture_output=True, text=True, timeout=180).stdout
+        _, out = P2.hook(event, session_id=self.stem, transcript_path=str(self.path), **extra)
         if not out.strip():
             return ""
         got = json.loads(out)
@@ -169,8 +173,7 @@ class T:
             (got.get("hookSpecificOutput") or {}).get("permissionDecisionReason") or ""
 
     def j(self, *a):
-        p = subprocess.run([J2, *a], env=self.env, capture_output=True, text=True, timeout=180)
-        return p.returncode, p.stdout + p.stderr
+        return P2.cli(*a, session=self.stem)
 
     def write(self):
         return self.fire("PreToolUse", tool_name="Write", tool_input={"file_path": str(e / "f.txt"), "content": "x"})
@@ -426,7 +429,10 @@ _before = _snap()
 for args in (["--env=scout", "work", "start", "digging"], ["--env=scout", "pins", "add", "a finding"],
              ["--env=scout", "todos", "add", "later"], ["--env=scout", "reminders", "add", "keep at it"]):
     gP.cli(*args, session="gs1")
-_touched = sorted(k for k in set(_before) | set(_snap()) if _before.get(k) != _snap().get(k))
+# ONE SNAPSHOT, NOT ONE PER KEY. `_snap()` inside the comprehension ran the whole tree again for
+# every filename in it — a thousand walks, a million md5s, and about a hundred seconds of this suite.
+_after = _snap()
+_touched = sorted(k for k in set(_before) | set(_after) if _before.get(k) != _after.get(k))
 # The rule is about the RECORD: not another environment, not the bindings, not what every session
 # reads. A derived per-environment ledger under runtime/ is none of those -- it is rebuilt from the
 # rows themselves and never travels (test_todo pins it to runtime/ deliberately), so it is allowed.

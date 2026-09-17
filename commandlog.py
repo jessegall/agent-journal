@@ -466,8 +466,11 @@ def record(root: Path, track: str, parsed, at: str) -> None:
 QUEUE = "tool_queue"
 QUEUE_AT = "tool_queue_at"
 QUEUE_ENV = "tool_queue_env"
-QUEUE_SIZE = 10
-QUIET_SECONDS = 60
+#: SOONER RATHER THAN TIDIER. Ten tool uses is a long time to watch a column say nothing, and the
+#: line it eventually writes is no more useful for having waited: three is enough to be a batch.
+QUEUE_SIZE = 3
+#: and a quiet stretch flushes what is queued, so a pause never leaves one or two uses unsaid
+QUIET_SECONDS = 20
 # tool name -> the bucket a summed line counts it in
 BUCKETS = {"Bash": "ran", "Edit": "edited", "Write": "edited", "MultiEdit": "edited", "NotebookEdit": "edited",
            "Read": "read", "Grep": "searched", "Glob": "searched"}
