@@ -514,6 +514,26 @@
   @keyframes crew-in { from { transform: translateY(-4px); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes crew-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
   @media (prefers-reduced-motion: reduce) { .crew-line, .crew-dot { animation-duration: .01ms; animation-iteration-count: 1; } }
+  /* the thread: what was said, read downwards, with the writing box under it */
+  .thread { display: flex; flex-direction: column; gap: 10px; padding: 2px 0 0; }
+  .thread-more { align-self: center; padding: 2px 8px; border: 0; border-radius: 6px; background: none;
+    color: var(--text-3); font: inherit; font-size: 11px; }
+  .thread-turn { display: flex; flex-direction: column; gap: 3px; max-width: 78%; }
+  .thread-turn.mine { align-self: flex-end; align-items: flex-end; }
+  .thread-bubble { padding: 7px 11px; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--raised); overflow-wrap: anywhere; }
+  .thread-bubble > div > :first-child { margin-top: 0; }
+  .thread-bubble > div > :last-child { margin-bottom: 0; }
+  .thread-turn.mine .thread-bubble { border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .thread-meta { display: flex; align-items: baseline; gap: 6px; padding: 0 3px; font-size: 11px; color: var(--text-3); }
+  .thread-tag { color: var(--accent-text); }
+  .thread-quote { margin: 0 0 5px; padding: 1px 0 1px 8px; border-left: 2px solid var(--border-2);
+    color: var(--text-3); font-size: 12.5px; }
+  .thread-empty { padding: 18px 2px; color: var(--text-3); }
+  .thread-write { position: sticky; bottom: 0; display: flex; flex-direction: column; gap: 6px;
+    padding: 10px 0 2px; background: linear-gradient(to bottom, transparent, var(--bg) 22%); }
+  .thread-note { padding: 0 3px; font-size: 11px; color: var(--text-3); }
   /* positioned so a leaving row can be taken out of the flow: work moving from Working on to Finished must not jostle either list */
   .home-section { position: relative; display: flex; flex-direction: column; gap: 2px; }
   .wrow-enter-active { transition: opacity .24s ease-out, transform .24s cubic-bezier(.2, .8, .2, 1); }
