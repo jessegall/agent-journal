@@ -176,6 +176,14 @@ function shortAge(age) {
   if (d) return Number(d[1]) < 14 ? `${d[1]}d` : `${Math.floor(Number(d[1]) / 7)}w`;
   return text;
 }
+// SOME NOTIFICATIONS ARE NOT NEWS, THEY ARE A DEMAND. A question is waiting on an answer, a plan on
+// a decision, a report on being read — and in a list of fifty they looked exactly like the rest. The
+// kinds that need the user get their kind's colour on the left edge; everything else stays plain,
+// or the colour says nothing.
+const NOTE_TINT = { question: "#c9955e", plan: "#5b8def", report: "#d9a441" };
+function noteTint(note) {
+  return NOTE_TINT[String((note && note.about) || "").split(":")[0]] || "";
+}
 // a notification about a message is the agent replying to it, so it opens that reply; anything else opens its own page
 function noteHref(note, env) {
   const [kind, n] = String((note && note.about) || "").split(":");
@@ -4230,7 +4238,7 @@ const EnvHome = {
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
-             tab, TABS, openTodos, todoGroups, unread, todoStatus, openNote, readNote, noteHref, goto };
+             tab, TABS, openTodos, todoGroups, unread, todoStatus, openNote, readNote, noteHref, noteTint, goto };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4317,7 +4325,8 @@ const EnvHome = {
         <div v-for="n in unread" :key="n.n" class=rail-note>
           <!-- the class name "note" is taken: it already carries a card's border and radius, so the
                row picked up a box nobody gave it. A name in a shared stylesheet belongs to somebody. -->
-          <button type=button class="rail-row wrap" :disabled="!noteHref(n, env)" @click="openNote($event, n)">
+          <button type=button :class="['rail-row', 'wrap', {tinted: noteTint(n)}]" :style="{ '--tint': noteTint(n) || null }"
+            :disabled="!noteHref(n, env)" @click="openNote($event, n)">
             <span class=rail-row-title>{{ n.text }}</span>
             <span class=rail-row-state>{{ n.age || 'just now' }}</span>
           </button>

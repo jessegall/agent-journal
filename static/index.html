@@ -608,6 +608,8 @@
   .rail-row.wrap { align-items: flex-start; padding-block: 9px; }
   .rail-row.wrap .rail-row-title { white-space: normal; overflow: visible; line-height: 1.45; }
   .rail-row.wrap .rail-row-state { padding-top: 1px; }
+  /* the edge, not a border: a border would move the text of a tinted row 2px off every other one */
+  .rail-row.tinted { box-shadow: inset 2px 0 0 var(--tint); }
   /* A HEADING IN THE RAIL IS THE LIST PAGE'S GROUP HEADING, at the width this column has: the state
      is said once, over the rows that are in it, rather than repeated on the end of every row. */
   .rail-group { display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 var(--rail-gutter);
