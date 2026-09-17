@@ -621,6 +621,8 @@
      section heading are the same object at the top of the column rather than two competing ones. */
   /* THE STRIP DOES NOT COMPRESS AND DOES NOT SCROLL AWAY. Without `flex: none` a long list under it
      squeezed it, and the tabs' own height was decided by how many notifications there were. */
+  /* the tabs INSIDE a tab: they scroll with the list rather than sticking under the bar above them */
+  .rail-subtabs { position: static; height: 30px; background: none; }
   .rail-tabs { position: sticky; top: 0; z-index: 2; flex: none; display: flex; align-items: stretch;
     height: 34px; padding: 0 var(--rail-gutter); gap: 14px;
     border-bottom: 1px solid var(--border); background: var(--raised); }
@@ -765,7 +767,7 @@
   /* a finished subagent is still here to click, and says so by not pulsing */
   .crew-line.done .crew-dot { background: #4a4d55; animation: none; }
   .crew-line.done .crew-name { color: var(--text-3); }
-  .crew-name { flex: none; min-width: 124px; font-size: 11px; color: #a9acb3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .crew-name { flex: none; font-size: 11px; color: #a9acb3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   @keyframes crew-in { from { transform: translateY(-4px); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes crew-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
   @media (prefers-reduced-motion: reduce) { .crew-line, .crew-dot { animation-duration: .01ms; animation-iteration-count: 1; } }
