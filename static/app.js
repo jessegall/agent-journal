@@ -3441,16 +3441,20 @@ const PlanCard = {
   },
   template: `
     <div :class="['work-now', {ready: plan.status === 'draft', finished: plan.status === 'done', parked: plan.status === 'parked'}]" @click="open">
-      <div class=work-now-top><span class=work-now-title>{{ plan.title }}</span></div>
-      <span class=work-now-ref>{{ card.ref }}</span>
-      <div class=work-now-bar>
-        <ProgressBar v-if="card.bar" :rows="rows"/>
-        <span class=work-now-ref>{{ card.progress }}</span>
-        <button v-if="act" type=button :class="plan.status === 'done' ? 'work-now-ack' : 'work-now-start'"
+      <div class=work-now-body>
+        <div class=work-now-top><span class=work-now-title>{{ plan.title }}</span></div>
+        <span class=work-now-ref>{{ card.ref }}</span>
+        <div class=work-now-bar>
+          <ProgressBar v-if="card.bar" :rows="rows"/>
+          <span class=work-now-ref>{{ card.progress }}</span>
+        </div>
+        <p v-if="card.why" class=work-now-why @click.stop>{{ card.why }}</p>
+        <p v-if="error" class="error work-now-error" @click.stop>{{ error }}</p>
+      </div>
+      <div v-if="act" class=work-now-foot>
+        <button type=button :class="plan.status === 'done' ? 'work-now-ack' : 'work-now-start'"
           :title="act.hint" @click.stop="run">{{ act.short }}<Icon name="arrow"/></button>
       </div>
-      <p v-if="card.why" class=work-now-why @click.stop>{{ card.why }}</p>
-      <p v-if="error" class="error work-now-error" @click.stop>{{ error }}</p>
     </div>`,
 };
 
