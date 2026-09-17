@@ -22,6 +22,7 @@ import contextlib
 import json
 import re
 import os
+import threading
 import tempfile
 import time
 from pathlib import Path
@@ -381,12 +382,19 @@ def retire_old(root: Path) -> bool:
         return False  # another process got there first; nothing to do
 
 
-#: REENTRANT, by a depth counter. `tracks.switch` moves the record under the lock, and it
-#: is written in terms of the same helpers a caller might already be holding the lock
-#: through. A second `flock` on the same file in the same process blocks forever, verified;
-#: a CLI that hangs until the tool timeout is worse than any lost pin.
-_depth = 0
-_held = None
+#: REENTRANT PER THREAD, by a depth counter. `tracks.switch` moves the record under the lock,
+#: and it is written in terms of the same helpers a caller might already be holding the lock
+#: through, so a nested take must not wait on the take that is already standing.
+#:
+#: PER THREAD IS THE WHOLE POINT, and for a while this was one counter for the process. A
+#: second THREAD then saw a non-zero depth, took the "already held" branch and walked into the
+#: critical section without ever touching the lock — measured: one thread held it for a second
+#: and another entered 0.21s later. The one process where that matters is the one built for
+#: concurrency: `serve.py` is a threading server, and every write endpoint it answers goes
+#: through here. A thread-local counter makes only THIS thread's nested takes free; another
+#: thread contends for the real lock, which `flock` grants per open file description and so
+#: excludes two threads of one process as readily as two processes.
+_local = threading.local()
 
 
 @contextlib.contextmanager
@@ -411,13 +419,12 @@ def locked(root: Path, wait: float = 3.0):
     process, not for contention. A per-environment lock would buy nothing measurable and
     would need its own answer for `record.json`, which every environment shares.
     """
-    global _depth, _held
-    if _depth:
-        _depth += 1
+    if getattr(_local, "depth", 0):
+        _local.depth += 1
         try:
             yield
         finally:
-            _depth -= 1
+            _local.depth -= 1
         return
     try:
         import fcntl
@@ -438,11 +445,11 @@ def locked(root: Path, wait: float = 3.0):
                 fmt.notice(render(NOTICES["locked"], seconds=round(wait)))
                 break
             time.sleep(0.02)
-    _depth, _held = 1, fh
+    _local.depth = 1
     try:
         yield
     finally:
-        _depth, _held = 0, None
+        _local.depth = 0
         if got:
             with contextlib.suppress(OSError):
                 fcntl.flock(fh, fcntl.LOCK_UN)
