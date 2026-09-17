@@ -628,10 +628,10 @@
   /* the turn's own two things to do, settled in to-do 90: reply, and take it off the list.
      Hidden until the turn is hovered, because a menu on every turn is read a hundred times a day. */
   .thread-turn { position: relative; }
-  .thread-tools { position: absolute; top: -9px; right: 0; display: none; gap: 2px; padding: 2px;
+  .thread-tools { position: absolute; top: -9px; right: -10px; display: none; gap: 2px; padding: 2px;
     border: 1px solid var(--border-2); border-radius: 7px; background: var(--raised); }
   .thread-turn:hover .thread-tools, .thread-tools:focus-within { display: flex; }
-  .thread-turn.mine .thread-tools { right: auto; left: 0; }
+  .thread-turn.mine .thread-tools { right: auto; left: -10px; }
   .thread-tool { padding: 2px 7px; border: 0; border-radius: 5px; background: none; color: var(--text-3);
     font: inherit; font-size: 11px; cursor: pointer; white-space: nowrap; }
   .thread-tool:hover { background: var(--hover); color: var(--text); }
