@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import os
 import re
 import sys
 import time
@@ -720,6 +721,11 @@ def _keep_viewer(conf: dict, ctx: Ctx) -> None:
     it resurrected on a loop, so `silenced: ["viewer"]` switches this off like any other nudge.
     And a session on no environment is not working anywhere yet, so it starts nothing.
     """
+    # NOT IN A TEST, AND NOT OFFLINE. A suite fires hundreds of stops against throwaway journals; each
+    # one started a viewer for a temp directory and then WAITED up to fifteen seconds for it to answer.
+    # The user watched a row of "proj" viewers appear on ports of their own, and two suites timed out.
+    if os.environ.get("AGENT_JOURNAL_IN_TESTS") or os.environ.get("AGENT_JOURNAL_OFFLINE"):
+        return
     if "viewer" in conf["silenced"] or not tracks.bound(ROOT, ctx.stem):
         return
     import serve
