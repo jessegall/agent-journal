@@ -522,7 +522,8 @@ const StatusBar = {
         readAt.seconds = got.seconds;
         readAt.at = Date.now();
       }
-      const secs = got.seconds + Math.floor((Date.now() - readAt.at) / 1000);
+      // a command that has finished keeps its line, and its clock stops where it stopped
+      const secs = got.done ? got.seconds : got.seconds + Math.floor((Date.now() - readAt.at) / 1000);
       const flat = String(got.what || "").trim();
       return { what: flat, seconds: secs, gist: flat.length > 42 ? `${flat.slice(0, 42)}…` : flat,
                forText: forText(secs) };
@@ -610,14 +611,16 @@ const StatusBar = {
           ><Transition name=roll><span :key="said.tail" class=statusbar-line>{{ said.tail }}</span></Transition></span>
         <!-- WAITING IS NOT WORKING, and from the outside they look the same. What the agent is in the
              middle of running follows the work, quieter and smaller than it. -->
-        <span v-if="running" class=statusbar-running :title="running.gist === running.what ? null : running.what">
-          <!-- a middot rather than a mark: it is a continuation of the sentence before it, not a
-               second fact standing beside it -->
-          <span class=statusbar-running-dot>·</span>
-          <!-- IT ROLLS TOO. One command follows another while a long piece of work runs, and a line
-               that swapped outright read as a flicker; keyed on the command, it leaves upward as the
-               next arrives from below, the way the work's own sentence does. -->
-          <Transition name=roll><span :key="running.gist" class=statusbar-run-line>
+        <span class=statusbar-running :title="running && running.gist !== running.what ? running.what : null">
+          <!-- IT ROLLS TOO, INCLUDING AWAY. One command follows another while a long piece of work
+               runs, and a line that swapped outright read as a flicker; keyed on the command, it
+               leaves upward as the next arrives from below, the way the work's own sentence does.
+               The v-if is INSIDE the transition, so the last command of a piece of work rolls up and
+               nothing rolls in behind it, rather than being cut out of the bar. -->
+          <Transition name=roll><span v-if="running" :key="running.gist" class=statusbar-run-line>
+            <!-- a middot rather than a mark: it is a continuation of the sentence before it, not a
+                 second fact standing beside it -->
+            <span class=statusbar-running-dot>·</span>
             <span class=statusbar-run-text>{{ running.gist }}</span>
             <span v-if="running.forText" class=statusbar-running-for>{{ running.forText }}</span></span></Transition></span>
       </button>

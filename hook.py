@@ -2381,14 +2381,21 @@ def _running_start(payload: dict, ctx: Ctx) -> None:
 
 
 def _running_end(payload: dict, ctx: Ctx) -> None:
-    """The call is over: clear it, and if it took a while, give it an Activity line of its own."""
+    """The call is over: freeze it, and if it took a while, give it an Activity line of its own.
+
+    THE LAST COMMAND STAYS UP. Clearing it left the line empty between calls — which is most of the
+    time — so the bar flickered a command in and out instead of saying what the agent last ran. It is
+    marked finished with what it took, so the clock stops; the work it belongs to is what retires it.
+    """
     if payload.get("tool_name") != "Bash":
         return
     got = state.get(ROOT, RUNNING, None, stem=ctx.stem)
-    state.put(ROOT, RUNNING, None, stem=ctx.stem)
     if not isinstance(got, dict) or not got.get("at"):
+        state.put(ROOT, RUNNING, None, stem=ctx.stem)
         return
     took = time.time() - float(got["at"])
+    state.put(ROOT, RUNNING, {"what": got.get("what") or "", "at": got["at"], "took": round(took, 1)},
+              stem=ctx.stem)
     import commandlog
     if took < commandlog.LONG_SECONDS:
         return

@@ -225,9 +225,10 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* the command: right after the work, small and quiet, and it rolls when one follows another */
   .statusbar-text .statusbar-running { flex: none; display: inline-flex; align-items: center;
-    position: relative; margin-left: 7px; font-size: 10px; color: var(--text-4, #6b6e76); text-decoration: none; }
+    position: relative; font-size: 10px; color: var(--text-4, #6b6e76); text-decoration: none; }
   .statusbar-text .statusbar-running-dot { margin-right: 4px; opacity: .5; }
-  .statusbar-text .statusbar-run-line { display: inline-flex; align-items: center; max-width: 40ch; }
+  .statusbar-text .statusbar-run-line { display: inline-flex; align-items: center; max-width: 40ch;
+    margin-left: 7px; }
   .statusbar-text .statusbar-run-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .statusbar-text .statusbar-running-for { flex: 0 0 auto; margin-left: 5px; font-size: 9.5px;
     font-variant-numeric: tabular-nums; opacity: .8; }
