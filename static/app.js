@@ -3682,9 +3682,11 @@ const EnvHome = {
           </button>
         </div>
       </div>
-      <section class=home-section>
+      <div class=home-main>
+      <section class="home-section home-thread">
         <Thread :env="env"/>
       </section>
+      <div class=home-rail>
       <section class=home-section>
         <Transition name=needs mode=out-in>
         <div v-if="clear" key=clear class=needs-clear><Icon name="todos"/><span>Nothing is waiting on you.</span></div>
@@ -3736,6 +3738,8 @@ const EnvHome = {
         </TransitionGroup>
         <a v-if="finishedMore > 0" class=home-more :href="'#/env/' + env + '/work'">{{ finishedMore }} more<Icon name="arrow"/></a>
       </section>
+      </div>
+      </div>
     </div></div></div>
     <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll" :swap="peek"/>`,
 };
