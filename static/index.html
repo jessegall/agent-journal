@@ -832,6 +832,12 @@
     -webkit-box-orient: vertical; overflow: hidden; }
   /* the turn a rail card just moved the thread to: lit for a moment, so the eye lands on it */
   .thread-turn.lit .thread-bubble { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+  /* WHILE ONE TURN IS LIT, IT IS THE ONLY ONE IN FOCUS. Landing on a turn in a thread of a hundred
+     is the moment the rest are in the way: they go quiet for the couple of seconds the light lasts.
+     Dimmed, not blurred — blurred text at this size reads as a rendering fault. */
+  .thread-scroll.focusing .thread-turn { opacity: .38; transition: opacity .18s ease; }
+  .thread-scroll.focusing .thread-turn.lit { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .thread-scroll.focusing .thread-turn { transition: none; } }
   .thread-turn .thread-bubble { transition: border-color .4s ease, box-shadow .4s ease; }
   @media (prefers-reduced-motion: reduce) { .thread-turn .thread-bubble { transition: none; } }
   .thread-turn.ask { max-width: 88%; }
