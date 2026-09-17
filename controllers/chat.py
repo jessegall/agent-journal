@@ -87,6 +87,28 @@ def wrote(root: Path, env: str) -> list[dict]:
     return out
 
 
+def asked(root: Path, env: str) -> list[dict]:
+    """The questions the agent asked, and the answers given: a question is a turn like any other.
+
+    A QUESTION IS THE ONE THING THE USER MUST ANSWER, and it used to live only on a card away from
+    the conversation that raised it. It travels with the whole question on it, not just its words, so
+    the thread can offer the same answering the question's own page does rather than a second one
+    that drifts from it.
+    """
+    import questions
+    out = []
+    for n, q in enumerate(questions._all(root, env), 1):
+        if q.get("withdrawn"):
+            continue
+        row = questions.row_response(n, q)
+        out.append({"at": q.get("at") or "", "who": "agent", "kind": "question", "tag": "",
+                    "text": trim(q.get("text") or ""), "n": n, "ref": "", "question": row})
+        if q.get("answer"):
+            out.append({"at": q.get("answered_at") or q.get("at") or "", "who": "you", "kind": "answer",
+                        "tag": "", "text": trim(q.get("answer")), "n": n, "ref": trim(q.get("text") or "", 120)})
+    return out
+
+
 class ChatController(Controller):
     """The conversation on an environment: what the agent said and what the user said back, and nothing else."""
     resource = "chat"
@@ -95,7 +117,7 @@ class ChatController(Controller):
     numbered = ()
 
     def index(self, root: Path, p: Payload) -> Result:
-        turns = said(root, p.env) + wrote(root, p.env)
+        turns = said(root, p.env) + wrote(root, p.env) + asked(root, p.env)
         turns.sort(key=lambda t: t["at"])
         left = max(0, len(turns) - TURNS)
         return Result("ok", "", {"turns": turns[left:], "more": left})
