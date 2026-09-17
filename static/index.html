@@ -558,6 +558,9 @@
   .home-rail .needs-card::before, .home-rail .work-now::before, .home-rail .work-card::before {
     top: 5px; bottom: 5px; }
   .home-rail .work-now.sel, .home-rail .needs-card.sel { background: var(--sel); }
+  /* a card is reachable, so it says where the focus IS: nothing in the viewer relies on a hover to
+     tell you what you are on */
+  .needs-card:focus-visible, .work-now:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   .home-rail .home-line { padding-left: 11px; }
   .home-rail .home-more { padding-left: 11px; }
   /* too narrow for two columns: the rail becomes a short strip above the thread, and its edge with it */
@@ -603,7 +606,13 @@
   @keyframes crew-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
   @media (prefers-reduced-motion: reduce) { .crew-line, .crew-dot { animation-duration: .01ms; animation-iteration-count: 1; } }
   /* the thread: what was said, read downwards, with the writing box under it */
+  /* THE WRITING BOX IS FIRST IN THE DOCUMENT AND LAST ON THE PAGE. Each turn carries two or three
+     buttons, so a box written after them sat behind dozens of tab stops; ordering it here costs
+     nothing visually and puts it one Tab from the page. */
   .thread { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .thread-scroll { order: 1; }
+  .thread-down { order: 2; }
+  .thread-write { order: 3; }
   .thread-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none;
     display: flex; flex-direction: column; gap: 7px; padding: 14px 2px 12px 0; }
   .thread-scroll::-webkit-scrollbar { width: 0; height: 0; }
