@@ -723,10 +723,9 @@
   /* THE WRITING BOX IS FIRST IN THE DOCUMENT AND LAST ON THE PAGE. Each turn carries two or three
      buttons, so a box written after them sat behind dozens of tab stops; ordering it here costs
      nothing visually and puts it one Tab from the page. */
-  .thread { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .thread { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .thread-scroll { order: 1; }
-  .thread-down { order: 2; }
-  .thread-write { order: 3; }
+  .thread-write { order: 2; position: relative; }
   /* THE REPLY CHIP OVERHANGS ITS TURN ON PURPOSE, and on a turn of the user's own — flush to the
      right edge — that overhang left the column and made the thread four pixels scrollable
      sideways. The gutter is the chip's room, so it can sit over the bubble without leaving. */
@@ -910,9 +909,18 @@
   .thread-empty { padding: 18px 2px; color: var(--text-3); }
   /* the way back down, just above the box: it sits in the thread's flow rather than over a turn, so
      it never covers the words someone scrolled up to read */
-  .thread-down { align-self: center; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 6px;
-    padding: 4px 11px; border: 1px solid var(--border-2); border-radius: 99px; background: var(--raised);
+  /* IT FLOATS OVER THE THREAD RATHER THAN TAKING A ROW FROM IT. In flow it was a band across the
+     column with nothing readable in it; the fade under the pill is what keeps the pill legible over
+     whatever text it happens to land on. */
+  .thread-down { position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+    z-index: 3; display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 11px; border: 1px solid var(--border-2); border-radius: 99px;
+    background: color-mix(in srgb, var(--raised) 82%, transparent); backdrop-filter: blur(7px);
     color: var(--text-2); font: inherit; font-size: 11.5px; cursor: pointer; }
+  /* the fade is the pill's own, so it travels with it and spans no more of the column than it needs */
+  .thread-down::before { content: ""; position: absolute; z-index: -1; pointer-events: none; left: -60px; right: -60px;
+    top: -14px; bottom: -14px; border-radius: 99px;
+    background: radial-gradient(closest-side, var(--bg) 40%, transparent 100%); }
   .thread-down:hover { border-color: var(--accent); color: var(--text); }
   .thread-down .ico { width: 13px; height: 13px; }
   /* THE RULE RUNS THE WHOLE COLUMN. The thread sits inside the home's 24px side padding, so a

@@ -4088,10 +4088,10 @@ const Thread = {
   },
   template: `
     <div class=thread>
-      <button v-if="away" type=button class=thread-down :title="missed ? missed + ' arrived while you were reading' : 'Back to the newest'" @click="backDown">
-        <Icon name="down"/>{{ missed ? missed + " new" : "Newest" }}
-      </button>
       <div class=thread-write>
+        <button v-if="away" type=button class=thread-down :title="missed ? missed + ' arrived while you were reading' : 'Back to the newest'" @click="backDown">
+          <Icon name="down"/>{{ missed ? missed + " new" : "Newest" }}
+        </button>
         <div v-if="editing" class=thread-answering>
           <span class=thread-answering-label>Editing</span>
           <span class=thread-answering-text>{{ editing.text }}</span>
