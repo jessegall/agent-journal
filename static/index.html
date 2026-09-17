@@ -495,8 +495,16 @@
      the inset off the divider so the rule is the only thing between the two columns */
   .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; }
   .home-thread { padding: 0 24px; }
-  .home-rail .home-section { padding: 0 16px 0 18px; }
-  /* the plan leads the rail and is flush to it: no inset, no rounding, its own rule underneath */
+  /* EVERY CARD IS FLUSH, not the plan alone: the section carried the inset, so the cards inside it sat
+     off the divider while the plan card ran to both edges. The section gives its padding to its
+     heading, and each card carries its own. */
+  .home-rail .home-section { padding: 0; }
+  .home-rail .home-head { padding: 12px 16px 6px 18px; }
+  /* divided by a rule and nothing else, the way the list pages divide their rows: a gap between cards
+     makes a border read as an outline around each rather than one line between two */
+  .home-rail .needs-slot { display: flex; flex-direction: column; gap: 0; }
+  .home-rail .needs-card { padding: 11px 14px 11px 16px; margin: 0; border-bottom: 1px solid var(--border); }
+  .home-rail .home-line, .home-rail .home-more { padding-left: 18px; padding-right: 16px; }
   .home-rail .home-section:first-child { padding: 0; }
   .home-rail .home-section:first-child + .home-section { margin-top: 0; padding-top: 16px; }
   /* THE CARD IS INFORMATION, THEN AN ACTION ON IT. The tint marks what the plan IS and stops at the
@@ -550,6 +558,7 @@
   .home-rail .home-head { padding: 0 0 6px; }
   .home-rail .needs-card, .home-rail .work-card {
     margin: 0; padding: 6px 0 6px 11px; border: 0; border-radius: 0; background: none; }
+  .home-rail .needs-card { padding: 10px 14px 10px 16px; }
   /* the plan card carries its own band on its BODY, so it takes no inset here: an 11px one would
      push the band that far off the rail's edge */
   .home-rail .work-now { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; }
