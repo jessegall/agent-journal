@@ -3425,7 +3425,7 @@ const NeedsCard = {
       @click="item.open" @keydown.enter.self.prevent="item.open" @keydown.space.self.prevent="item.open">
       <div class=needs-card-top>
         <p class=needs-card-title>{{ item.title }}</p>
-        <button type=button class=needs-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(item)"><Icon name="close"/></button>
+        <button v-if="!item.sticky" type=button class=needs-dismiss title="Dismiss" aria-label="Dismiss" @click.stop="dismiss(item)"><Icon name="close"/></button>
       </div>
       <div class=needs-card-meta><span class=needs-card-kind>{{ item.label }}</span>{{ item.meta }}</div>
       <div class=needs-card-foot>
@@ -3880,7 +3880,10 @@ const EnvHome = {
     };
 
     // Over to you: what waits on the user, questions first, in one list
-    const QUEUE_TYPES = { question: { label: "Question", tint: "#c9955e", action: "Answer" },
+    // A QUESTION CANNOT BE DISMISSED. Everything else here is read or decided somewhere else too,
+    // so clearing its card loses nothing; a question is the one row that goes nowhere until the
+    // user answers it, and dismissing it hid it in this browser with nothing to bring it back.
+    const QUEUE_TYPES = { question: { label: "Question", tint: "#c9955e", action: "Answer", sticky: true },
                           reply: { label: "Message", tint: "#6fae7d", action: "Read" },
                           report: { label: "Report", tint: "#d9a441", action: "Read" },
                           suggestion: { label: "Suggestion", tint: "#a3a8f0", action: "Accept" } };
@@ -3893,7 +3896,7 @@ const EnvHome = {
         // the one thing here written FOR them. Archiving it, or dismissing the card, is what clears it.
         ...(reports.data || []).filter((r) => !r.archived).map((r) => ({ kind: "report", n: r.n, title: r.title, age: r.age })),
       ];
-      return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
+      return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => r.sticky || !dismissed.value.has(r.key))
         .map((r) => ({ ...r, meta: `${r.label.toLowerCase()} ${r.n} · ${r.age}`, open: () => goto(r.kind, r.n) }));
     });
     // EVERY LIVE PLAN IS SHOWN, not only the one in progress. One plan is worked at a time, but a
