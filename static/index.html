@@ -1080,6 +1080,29 @@
 
   /* detail panel */
   /* the inspector lies over the whole app, sidebar and activity column included, so nothing under it is squeezed */
+  /* A PICTURE OVER THE PAGE, with the page blurred behind it rather than merely dimmed: what is
+     underneath stops competing for the eye without going away, so the reader keeps their place. */
+  .lightbox { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+    gap: 12px; padding: 56px 64px; background: rgba(4, 5, 6, .72); backdrop-filter: blur(14px);
+    animation: fade-in .16s ease-out both; }
+  .lightbox-img { max-width: 100%; max-height: 100%; border-radius: 8px; object-fit: contain;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, .55); }
+  .lightbox-bar { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 12px;
+    height: 44px; padding: 0 12px 0 18px; font-size: 12px; color: var(--text-2); }
+  .lightbox-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lightbox-of { flex: none; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .lightbox-raw { flex: none; color: var(--text-3); text-decoration: none; }
+  .lightbox-raw:hover { color: var(--text); }
+  .lightbox-x { flex: none; display: inline-flex; padding: 5px; border: 0; border-radius: 6px;
+    background: none; color: var(--text-3); }
+  .lightbox-x:hover { background: var(--hover); color: var(--text); }
+  /* the arrows point the way they move, which is why the up/down glyphs are turned rather than replaced */
+  .lightbox-step { flex: none; display: inline-flex; padding: 9px; border: 1px solid var(--border-2);
+    border-radius: 99px; background: var(--raised); color: var(--text-2); }
+  .lightbox-step:hover { border-color: var(--accent); color: var(--text); }
+  .lightbox-step.back .ico { transform: rotate(-90deg); }
+  .lightbox-step.on .ico { transform: rotate(-90deg); }
+  @media (prefers-reduced-motion: reduce) { .lightbox { animation: none; } }
   .panel-scrim { position: fixed; inset: 0; z-index: 40; background: rgba(4, 5, 6, .55); }
   .panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 41; max-width: 100vw; min-height: 0; display: flex; flex-direction: column;
     border-left: 1px solid var(--border-2); background: var(--bg); box-shadow: -40px 0 90px rgba(0, 0, 0, .6); }
