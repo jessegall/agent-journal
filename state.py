@@ -46,7 +46,7 @@ RETIRED = "state.json"
 IN_RECORD = {"activity_show", "activity_keep", "viewer_first", "retention", "pins", "work", "rules", "tracks", "current", "previous", "sessions", "auto",
              "docs_next", "upgraded", "window", "claims", "removals", "cleanup_read",
              "cleanup_kept", "ideas",
-             "agent_seen", "agent_parent", "agents_done", "always_load_skills", "schema", "hooks_enabled", "viewer_port", "reports_archive_days", "todos_archive_days", "todos_last_n", "session_pids",
+             "agent_seen", "agent_parent", "agent_cwd", "agents_done", "always_load_skills", "schema", "hooks_enabled", "viewer_port", "reports_archive_days", "todos_archive_days", "todos_last_n", "session_pids",
              # WHICH STRETCH OF WHICH TRANSCRIPT BELONGED TO WHICH ENVIRONMENT. `tracks.carried` has always
              # called itself "a record write" and `tracks.marks` has always read it with no stem — so every
              # write printed "no transcript to file it under" and every read returned the default. The

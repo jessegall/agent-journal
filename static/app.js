@@ -537,11 +537,6 @@ const StatusBar = {
         <span class=statusbar-roll><Transition name=roll><span :key="view.what" class=statusbar-line>{{ view.what }}</span></Transition></span>
       </button>
       <span class=statusbar-tools>
-        <!-- the branch opens the repository when the remote is one with a web face; a remote that is
-             not recognised is left as plain text rather than linked somewhere that does not exist -->
-        <a v-if="facts.branch && facts.branchUrl && SHELL.wide" class=statusbar-facts :href="facts.branchUrl"
-          target=_blank rel=noopener :title="facts.hint + ' — open it'"><Icon name="branch"/><span>{{ facts.branch }}</span></a>
-        <span v-else-if="facts.branch && SHELL.wide" class=statusbar-facts :title="facts.hint"><Icon name="branch"/><span>{{ facts.branch }}</span></span>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)"><span :class="['switch', 'worded', {on: SHELL.activity.auto}]">
@@ -4290,6 +4285,10 @@ const EnvHome = {
         { label: "session", icon: "activity", value: agent ? agent.session : "" },
         { label: "running", icon: "reminders", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
         { label: "context", icon: "files", value: agent && agent.context ? `${agent.context.share}%` : "" },
+        // THE BRANCH IS THE AGENT'S FACT, not the page's: which checkout this session is working in,
+        // beside which model it is and how full its window is. A subagent in a worktree is on another
+        // branch entirely, and its own line says so.
+        { label: "branch", icon: "branch", value: branch ? branch.name : "", href: (branch && branch.url) || "" },
       ].filter((r) => r.value);
       // the session is an agent with a page of its own, the same page a subagent's line opens —
       // it was the one name here you could not click
@@ -4381,7 +4380,8 @@ const EnvHome = {
                         // THE MODEL IS ALWAYS SAID, including when nobody recorded one: which model a
                         // subagent got is the thing the user checks first, and a line that simply
                         // omitted it read as though the question had not been asked.
-                        tail: [a.model || "model not recorded", a.state === "quiet" ? `quiet · ${a.age_text}`
+                        tail: [a.model || "model not recorded", a.branch ? a.branch.name : "",
+                               a.state === "quiet" ? `quiet · ${a.age_text}`
                                : a.state === "finished" ? `finished · ${a.ended_age}` : `running · ${a.age_text}`]
                           .filter(Boolean).join(" · "),
                         delay: `${i * 60}ms`, open: () => peek("subagent", a.id) })));
@@ -4411,6 +4411,8 @@ const EnvHome = {
           <template v-for="(r, i) in lead.rows" :key="r.label">
             <a v-if="i === 0 && lead.href" class=agent-fact-lead :href="lead.href" :title="'Open the agent page — ' + r.label">
               <Icon :name="r.icon"/>{{ r.value }}</a>
+            <a v-else-if="r.href" class=agent-fact :href="r.href" target=_blank rel=noopener
+              :title="r.label + ' — open it'"><Icon :name="r.icon"/>{{ r.value }}</a>
             <span v-else class=agent-fact :title="r.label"><Icon :name="r.icon"/>{{ r.value }}</span>
           </template>
         </div>
