@@ -228,8 +228,11 @@ def wrote(root: Path, env: str) -> list[dict]:
                         # named neither quoted nothing at all, so in the thread it read as a turn the
                         # agent happened to take — the one thing it is not. It answers the message, so
                         # it says the message.
-                        "ref": (r.get("quoting") or r.get("part")
-                                or (trim(whole, 90) if r.get("source") != "web" else ""))})
+                        # EITHER SIDE'S REPLY QUOTES THE MESSAGE IT SITS UNDER. This once excluded
+                        # the user's own replies, on the thought that a turn of theirs should not
+                        # quote them — but a REPLY is not the message, and without the quote their
+                        # half of the thread read as loose turns while the agent's half did not.
+                        "ref": r.get("quoting") or r.get("part") or trim(whole, 90)})
     return out
 
 
