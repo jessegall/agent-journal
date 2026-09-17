@@ -544,7 +544,7 @@ const StatusBar = {
         <span v-else-if="facts.branch && SHELL.wide" class=statusbar-facts :title="facts.hint"><Icon name="branch"/><span>{{ facts.branch }}</span></span>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
-          @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)"><Icon name="auto"/><span :class="['switch', 'worded', {on: SHELL.activity.auto}]">
+          @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)"><span :class="['switch', 'worded', {on: SHELL.activity.auto}]">
             <span class=switch-word>{{ SHELL.activity.auto ? "auto" : "manual" }}</span><span class=knob></span></span></button>
       </span>
     </div>`,
