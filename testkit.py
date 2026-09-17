@@ -72,11 +72,16 @@ for line in sys.stdin:
 class Project:
     """One test project, and the one interpreter that answers for it."""
 
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, bind: bool = True):
         self.err = ""            # the last call's stderr, for the tests that read it
         self.root = Path(root)
         self.journal = self.root / ".journal"
         self._p = None
+        # A SESSION THAT HAS NOT CHOSEN AN ENVIRONMENT IS REFUSED, reads included — there is no
+        # default one. A real session chooses with `switch`; a suite that is not ABOUT choosing
+        # would otherwise have to say so in every fixture, so the harness stands in for it. The
+        # suites that test the refusal itself pass bind=False.
+        self._bind = bind
 
     def _server(self):
         if self._p is None or self._p.poll() is not None:
@@ -109,8 +114,16 @@ class Project:
         streams are still captured apart — `.err` has the last call's stderr alone, which
         is what `test_state` needs to tell a handler's crash from its output.
         """
+        if session and self._bind:
+            self._choose(session)
         code, out = self._ask({"kind": "cli", "argv": list(argv), "session": session, "stdin": stdin})
         return code, out + self.err
+
+    def _choose(self, session: str) -> None:
+        """Put this session on the project's start environment, once, if nothing has yet."""
+        import tracks
+        if not tracks.bound(self.journal, session):
+            tracks.bind(self.journal, session, tracks.start(self.journal))
 
     def hook(self, event: str, **payload) -> tuple[int, str]:
         """One hook event, its JSON on stdin."""
