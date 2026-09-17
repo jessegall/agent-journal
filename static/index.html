@@ -744,11 +744,18 @@
      always wants to see. The top padding is gone with the rule that used to sit above it. */
   .crew-strip { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
     padding: 0 24px 6px; border-bottom: 1px solid var(--border); }
+  /* A COLUMN, NOT A RUN-ON LINE: names and models differ in length, so each fact used to start
+     wherever the last one ended and nothing lined up down the strip. */
   .crew-line { display: flex; align-items: center; gap: 7px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;
     background: transparent; text-align: left; cursor: pointer; animation: crew-in .28s ease-out both; }
   .crew-line:hover { background: #17181b; }
   /* a fact and its mark, the agent bar's vocabulary at the size the strip uses */
-  .crew-fact { display: inline-flex; align-items: center; gap: 4px; color: var(--text-3); white-space: nowrap; }
+  /* EVERY FACT THE SAME WIDTH, so the marks make a column down the strip however long the names
+     and models happen to be. What does not fit is cut, because a fact that pushes the next one
+     along is the thing being fixed. */
+  .crew-fact { flex: none; width: 170px; display: inline-flex; align-items: center; gap: 4px;
+    min-width: 0; color: var(--text-3); white-space: nowrap; overflow: hidden; }
+  .crew-fact span { overflow: hidden; text-overflow: ellipsis; }
   .crew-fact .ico { width: 11px; height: 11px; opacity: .6; }
   .crew-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #6fae7d; animation: crew-pulse 1.8s ease-in-out infinite; }
   /* quiet: no tool call in a while and no stop either — dimmer than working, not greyed out like finished */
@@ -756,8 +763,7 @@
   /* a finished subagent is still here to click, and says so by not pulsing */
   .crew-line.done .crew-dot { background: #4a4d55; animation: none; }
   .crew-line.done .crew-name { color: var(--text-3); }
-  .crew-name { flex: 1 1 auto; min-width: 0; font-size: 11.5px; color: #a9acb3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .crew-tail { flex: none; font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .crew-name { flex: none; width: 150px; min-width: 0; font-size: 11.5px; color: #a9acb3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   @keyframes crew-in { from { transform: translateY(-4px); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes crew-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
   @media (prefers-reduced-motion: reduce) { .crew-line, .crew-dot { animation-duration: .01ms; animation-iteration-count: 1; } }

@@ -16,7 +16,6 @@ KINDS = {"todo": "to-do", "question": "question", "plan": "plan", "doc": "doc"}
 _REF = re.compile(r"^\s*(to-?dos?|questions?|plans?|docs?)\s*[:#\s]\s*(\d+)\s*$", re.I)
 
 MESSAGES = {
-    "ready_note": "Your report is ready: {title}",
     "needs_title": 'a report needs a title: journal reports add "<title>" --brief',
     "just_a_list": ("this reads as a list of things to do, not what you found. A report is the situation "
                     "as you found it — what was asked, what is true, what it means — and the work that "
@@ -169,11 +168,9 @@ def add(root: Path, title: str, body: str, at: str, about: str = "", source: str
                       "archived": None, "archived_at": None})
         _put(root, items, track)
         n = len(items)
-    # A REPORT IS SOMETHING THE USER ASKED FOR, so its arrival is news: a notice on Home and in the bell,
-    # opening the report. Filed from the viewer, it is the user's own and needs no notice.
-    if source != "web":
-        import notifications
-        notifications.add(root, say("ready_note", title=title), at, f"report {n}", source, track)
+    # A REPORT IS ALREADY WAITING ON THE USER: it is a card in the rail's Waiting on you until it is
+    # archived, which is a stronger telling than a line in the notifications list. Raising both meant
+    # reading the same arrival twice — the user's own words, and the reason this notice is gone.
     return True, say("added", n=n, title=title, about=label(ref) or None)
 
 

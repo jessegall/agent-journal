@@ -301,7 +301,8 @@ def edit(root: Path, n: int, title: str | None = None, goal: str | None = None, 
 #: a title that names WHEN rather than WHAT: a weekday, a date, or a stretch of time
 _DATE_TITLE = re.compile(
     r"^(?:(?:mon|tues|wednes|thurs|fri|satur|sun)day|today|tomorrow|tonight|this (?:morning|afternoon|evening|week)"
-    r"|next (?:week|month|day)|day \d+|week \d+|phase \d+|the (?:next|first|last) [\w\s]{1,20}"
+    r"|next (?:week|month|day)|day \d+|week \d+|phase \d+"
+    r"|the (?:next|first|last) (?:\w+ )?(?:minutes?|hours?|days?|weeks?|months?|mornings?|afternoons?|evenings?)"
     r"|\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?)$", re.I)
 
 

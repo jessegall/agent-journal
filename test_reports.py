@@ -124,14 +124,14 @@ import reports as _reports  # noqa: E402
 _root = d / ".journal"
 code, out = j("reports", "add", "what the flaky test turned out to be", "--brief", stdin="the retry hides a race")
 _n = len(stored())
+# A REPORT IS ALREADY WAITING ON THE USER: it is a card in the rail until it is archived, which says
+# more than a line in the notifications list. Both was reading the same arrival twice.
 _mine = [x for x in _notif._all(_root, "default") if x.get("about") == f"report:{_n}"]
-check("filing a report tells the user it is ready, with the report to open",
-      (code, len(_mine), bool(_mine) and "Your report is ready: what the flaky test turned out to be" in _mine[0]["text"],
-       bool(_mine) and _mine[0].get("read_at")), (0, 1, True, None))
+check("filing a report raises no notification: it is a card in Waiting on you", (code, _mine), (0, []))
 _before = len(_notif._all(_root, "default"))
 _reports.add(_root, "a report the user wrote in the viewer", "their own words", "2026-09-15T10:00:00+00:00",
              source="web", track="default")
-check("a report filed from the viewer does not notify the user who wrote it", len(_notif._all(_root, "default")), _before)
+check("and one filed from the viewer raises none either", len(_notif._all(_root, "default")), _before)
 
 # ---------------------------------------------------------------- how long a report has before it ages off the list
 import reports as _reports  # noqa: E402

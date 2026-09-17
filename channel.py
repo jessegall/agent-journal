@@ -135,6 +135,16 @@ def _somewhere_waits(env: str, idle: bool) -> list[tuple[str, dict]]:
               "meta": {"env": env, "did": "waiting"}})]
 
 
+def _read_it(said: str, command: str) -> str:
+    """The line the agent is woken with: what arrived, and the command that reads it.
+
+    NOTHING TO ACT ON BUT THE NUMBER. A push that carried the first line of a message was acted on
+    as though it were the message — twice in one evening, by the agent that wrote this. What the
+    user said is in the record; the only thing this line is allowed to do is send the agent there.
+    """
+    return f"{said} Read it before you act on it: `.journal/journal.py {command}`."
+
+
 def _reach_now() -> set:
     """The event kinds that reach a session mid-turn; everything else waits for its next stop.
 
@@ -250,7 +260,8 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
             continue
         if _epoch(m.get("at")) < since:
             continue
-        got.append((f"{env}:{n}", {"content": f"The user left message {n} on {env}.",
+        got.append((f"{env}:{n}", {"content": _read_it(f"The user left message {n} on {env}.",
+                                                       f"messages show {n}"),
                                     "meta": {"env": env, "message": str(n)}}))
     if not answers:
         return got
@@ -258,7 +269,8 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
     # started is still owed to somebody rather than lost with the process that missed it
     for n, i, r in inbox.untold_replies(ROOT, env):
         got.append((f"{env}:reply:{n}:{i}",
-                    {"content": f"The user answered under message {n} on {env}.",
+                    {"content": _read_it(f"The user answered under message {n} on {env}.",
+                                         f"messages show {n}"),
                      "meta": {"env": env, "message": str(n)}}))
     got.extend(_plan_events(env, since))
     # keyed by when it was answered, so a changed answer wakes the session again
@@ -266,7 +278,8 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
         if _epoch(q.get("answered_at")) < since:
             continue
         got.append((f"{env}:question:{n}:{q.get('answered_at') or ''}",
-                    {"content": f"The user answered question {n} on {env}.",
+                    {"content": _read_it(f"The user answered question {n} on {env}.",
+                                         f"questions show {n}"),
                      "meta": {"env": env, "question": str(n)}}))
     # keyed by when it was decided, so a changed decision wakes the session again
     for n, s in suggestions.untold(ROOT, env):
@@ -288,7 +301,8 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
         if _epoch(c.get("at")) < since:
             continue
         got.append((f"{env}:comment:{n}",
-                    {"content": f"The user commented on {comments.label(c.get('about', ''))} on {env}.",
+                    {"content": _read_it(f"The user commented on {comments.label(c.get('about', ''))} on {env}.",
+                                         f"comments show {n}"),
                      "meta": {"env": env, "comment": str(n)}}))
     return got
 

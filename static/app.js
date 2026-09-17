@@ -4461,7 +4461,7 @@ const EnvHome = {
       <div v-if="crewOpen && liveCrew.length" class=crew-strip>
         <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" @click="a.open">
           <span class=crew-dot></span><span class=crew-name>{{ a.name }}</span>
-          <span v-for="f in a.facts" :key="f.icon" class=crew-fact><Icon :name="f.icon"/>{{ f.value }}</span>
+          <span v-for="f in a.facts" :key="f.icon" class=crew-fact><Icon :name="f.icon"/><span>{{ f.value }}</span></span>
         </button>
       </div>
         <Thread :env="env"/>
