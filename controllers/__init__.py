@@ -3,6 +3,7 @@ from __future__ import annotations
 from controllers.activity import ActivityController
 from controllers.agents import AgentsController
 from controllers.agent import AgentController
+from controllers.chat import ChatController
 from controllers.comments import CommentsController
 from controllers.commits import CommitsController
 from controllers.docs import DocsController
@@ -27,5 +28,5 @@ CONTROLLERS = {c.resource: c for c in (RemindersController(), QuestionsControlle
                                           PinsController(), RulesController(), InboxController(),
                                           WorkController(), DocsController(),
                                           EnvironmentController(), SearchController(), ToolsController(),
-                                          ActivityController(), CommentsController(), ReportsController(), PlansController(), NotificationsController(), SuggestionsController(),
+                                          ActivityController(), ChatController(), CommentsController(), ReportsController(), PlansController(), NotificationsController(), SuggestionsController(),
                                           FilesController(), CommitsController(), AgentsController(), AgentController(), StyleController(), JournalController())}
