@@ -42,7 +42,7 @@ payload, not a description of it.
                                      --for=<minutes> (default 20, cap 120); any update or end ends it
     journal work park "<why it is set aside>" [--on="<work>"]   it stops without being finished: stays open, says why, off the stop's nudging until the next update
     ... --stdin on `work update`, `messages reply` and `comments done`   the text on stdin, where a shell cannot eat a `backtick span` out of it
-    journal work end "<the same words>"   close it; the to-do of the same title closes with it
+    journal work end "<the same words>"   close it; the to-do of that title STAYS OPEN unless --todo is passed
     journal open                     work declared and never closed, with its notes
 
 `update` refuses when nothing is open and refuses to guess between several; name one with
@@ -51,7 +51,7 @@ payload, not a description of it.
 **Pins, for this environment**
 
     journal pins add "<claim>" [--supersedes=N] [--doc=<doc>[.<p>]]   a fact that must survive a compaction; --doc: the doc or part it rests on
-    journal pin "<claim>"            the same command, spelled the way it always was — a permanent alias, not deprecated; `remember` too
+    journal pin "<claim>"            the same command, spelled the way it always was — a permanent alias, not deprecated
     journal pins [--all] [--order=asc|desc]   every pin, numbered and NEWEST FIRST; --all includes struck ones, --order=asc reads oldest first. Every paginated list takes it: pins, rules, todos, docs, tools
     journal pins N --full            the conversation around where pin N was written
     journal pins strike N "<why>"    retire a pin that stopped being true, no replacement needed (also: bare `journal strike N "<why>"`)
@@ -85,7 +85,7 @@ the claim rather than erasing it, so being wrong about one is cheap.
     journal todos [--all]            the titles, numbered — `journal todos list` is the same
     journal todos show N             the whole brief — bare `journal todo N` is the same
     journal todos search <term> [--all] [--page=N]   every line of the open to-dos that mentions it, grouped by to-do; --all adds closed ones. Messages, questions, reports, suggestions, reminders, pins, rules, work and comments have the same `search`
-    journal todos start N             open work with that title; `work end` closes both
+    journal todos start N             open work with that title; `work end "<title>" --todo` closes both
     journal todos done N "<how>"      resolved without starting it
     journal todos reopen N "<why>"    undo a close; the reason and the close it undoes are kept
     journal todos from-commit [<ref>]   act on a commit's trailer by hand — what the git post-commit hook runs
@@ -204,7 +204,10 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal reports keep <days>      a report older than this is archived (7 by default, 0 never); also on the environment's Settings page
     journal plans [--all]            what will be done here and in what order: phases, each made of to-dos
     journal plans add "<title>" --goal="<one line>" --brief   a draft; the user approves it in the viewer
-    journal plans phase <n> "<title>" [--when="<complete when>"] [--checkpoint]   add a phase
+    journal plans phase <n> "<title>" [--when="<complete when>"] [--checkpoint] [--before=<p>]
+                                     add a phase, or INSERT one before phase <p> — the phases after it move
+                                     along with their to-dos and their checkpoints
+    journal plans rephrase <n> <p> ["<title>"] [--when=] [--checkpoint]   correct a phase written wrong
     journal plans todos <n> <phase> <to-do numbers> [--off] [--reopen="<why>"]   put to-dos in a phase, or take them out
     journal plans show <n>           the plan, its phases and their to-dos
     journal plans link <n> "doc 4.2"   a doc or report it rests on; a report it links is kept while it runs
@@ -212,10 +215,21 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal plans abandon <n> "<why>"   stop it
     journal comments [--all]         what the user said about a to-do, doc, pin, rule or reminder
     journal comments done <n> "<what was done>"   a comment is handled
-    journal serve [--port=<n>]       the web viewer on 127.0.0.1, at 8420 or the next free port (read the URL it prints): every resource, with the same actions the commands have, and Search and Settings per environment
+    journal serve [--port=<n>] [--detach]   the web interface on 127.0.0.1, at 8420 or the next free port (read
+                                     the URL it prints). Its home is the conversation with the user; every
+                                     resource has a page, with the same actions these commands have. `journal
+                                     claude` brings one up on its own if none is running here
+    journal connections              services this project can reach — a Sentry, a GitHub org, an internal API
+    journal connections show <name>  one, and what this environment changed about it
+    journal connections add <name> "<what it is for>" [--kind=] [--url=] [--secret=<ENV_VAR>]
+                                     --secret NAMES THE VARIABLE, NEVER THE TOKEN: this record is read back
+                                     verbatim into every session and every subagent, so a token written here
+                                     is a token that has leaked. A value shaped like one is refused where it
+                                     is typed, and the only thing read back is whether that variable is set
+    journal connections here <name> purpose|kind|url|secret "<value>" [--off]   change it on this environment only
     journal statusline [--install]   the status bar line: environment, open work, viewer; --install adds it to .claude/settings.json, never over one that exists
     journal channel --install        add the channel server to .mcp.json; with claude --dangerously-load-development-channels server:journal, a message left in the viewer wakes an idle session
-    journal claude [prompt]          start Claude with the channel (added to .mcp.json first if missing); --continue, --resume=<id>, --dry-run shows the command; any other flag is passed through to claude
+    journal claude [prompt]          start Claude with the channel (added to .mcp.json first if missing) AND the web viewer, if this journal has none running — it says where. --continue, --resume=<id>, --dry-run shows the command; any other flag is passed through to claude
 
 Everything the viewer changes goes through the same controllers as these commands, marked as
 coming from the web where a record keeps a source. The API is `/api/env/<env>/<resource>[/<n>][/<action>]`
@@ -224,7 +238,7 @@ coming from the web where a record keeps a source. The API is `/api/env/<env>/<r
 
 **Chains.** A journal command in a chain exempts only itself from the write gate. A line
 whose first non-trivial piece is `journal work start` may write after it; a line that decides
-first (`remember`, `rule`, `nothing`) passes the context gate for what follows. `cd` and
+first (`pin`, `rule`, `nothing`) passes the context gate for what follows. `cd` and
 `export` before either do not count against it.
 
 ## Environments
@@ -327,7 +341,7 @@ explicit verb — `add`, `strike`, `list`, `show`, and each noun's own lifecycle
 (`start`/`done`/`ask`/`answer` for a to-do, `part`/`attach`/`final` for a doc). `strike`
 is the one verb for retiring anything, everywhere — a struck pin, a repealed rule, a
 dropped to-do, a removed tool are the same idea and now the same word. Every spelling
-that predates this — `pin`, `remember`, `rule`, bare `strike`, bare `promote`, `todo
+that predates this — `pin`, `rule`, bare `strike`, bare `promote`, `todo
 drop`, `tools remove` — still runs, forever, calling the exact same function its new
 alias calls; none of them is printed as deprecated.
 

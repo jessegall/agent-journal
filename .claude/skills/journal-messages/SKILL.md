@@ -85,7 +85,8 @@ saying what is now true, pointing at the to-do, report, doc or message it is abo
 ## The viewer: what the user does in the browser
 
     journal serve [--port=<n>]      the web viewer, on this machine only: 8420, or the next free port
-    journal claude [flags] ["<prompt>"]   start Claude with the journal's channel; other flags pass through to claude
+    journal claude [flags] ["<prompt>"]   start Claude with the journal's channel, and the web
+                                          viewer if none is running here; other flags pass through to claude
     journal statusline --install    show environment, open work and viewer in the status bar — only if the user wants it
 
 The user reads and changes the journal in a browser while you work: they leave messages,

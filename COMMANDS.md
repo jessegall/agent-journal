@@ -191,7 +191,7 @@ agent writes code the rule covers.
     journal loop set                     this session has a loop running the hook cannot see (agent)
     journal enable | journal disable     the kill switch — disable makes every hook inert until enable; the user's call, never the agent's own idea
     journal settings                     every setting and where it came from
-    journal serve [--port=<n>] [--open]  a local, read-only web viewer over this journal
+    journal serve [--port=<n>] [--open] [--detach]   the web interface over this journal
     journal version                      the installed version; is a newer one out?
     journal update                       pull the latest journal and print what changed
     journal cleanup                      what in the record has evidence against it; `cleanup read` is the half no check can do
@@ -257,8 +257,9 @@ of writing it again.
 Separate lines of work, each with its own pins, reminders and to-dos. Rules are shared
 across all of them; a DOC has a scope — it belongs to the environment it was written on,
 or to the project with `--global` — and either way stays readable by number from
-everywhere, so a citation never goes dark. Every session is bound to an environment, so two sessions can work two
-environments of one project at the same time. A switch from inside a session moves only that
+everywhere, so a citation never goes dark. A session starts on NO environment — there is no default one, and the journal
+refuses to read or write one until the session has picked. Once it has, that binding is its
+own, so two sessions can work two environments of one project at the same time. A switch from inside a session moves only that
 session; a switch from a terminal moves where new sessions start, and says which running
 sessions stayed where they were and how to move one along. One running session works a
 environment: a second session that lands on a taken environment is told, and switches.
@@ -331,9 +332,9 @@ before it does anything else.
 - **A reference file read twice**: a rendered design, an export, a PDF, a log, anything
   that is not a source file of the project: a one-time hint to attach it to a doc.
 
-At a stop these form a queue: one subject per stop, each once per turn, in priority
-order (environment, loop, context, deferral, untagged, work, auto), until nothing is pending.
-Every hold names its way out.
+At a stop these form a queue: one subject per stop, each once per turn, in priority order,
+until nothing is pending. Every hold names its way out. The order is declared in one place in
+`hook.py` and the agent's own skill lists it in full; a copy here would be a copy that drifts.
 
 A subagent is never held and never nudged — a hold on an actor with no conversation to
 return to is a hold nobody reads. It writes nothing at all unless the session that
@@ -387,15 +388,16 @@ adds only the small record of what must survive.
   anyone filing them, and skip the routine ones.
 - **Line numbers.** Every message has a line. Pins record the line they were written at,
   search prints the line of every hit, and a line is something you can go and check.
-- **Environments.** Each session is bound to an environment in `.journal/runtime/bindings.map`, on this
-  machine only. Session starts and environment switches leave marks in the transcript, so the
+- **Environments.** A session that has chosen one is bound to it in `.journal/runtime/bindings.map`,
+  on this machine only. Session starts and environment switches leave marks in the transcript, so the
   journal knows which lines belong to which environment and can search one environment across every
   session.
 - **Compaction.** A summary keeps what was done and drops what was decided; the transcript
   keeps everything. After a compaction the agent gets the record back and is pointed at
   the exact stretch the summary replaced.
-- **Hooks.** Seven Claude Code hooks do the enforcing: at session start and end, at each
-  prompt, before and after each tool call, at each stop, and when a worktree is created.
+- **Hooks.** Eight Claude Code hooks do the enforcing: at session start and end, at each
+  prompt, before and after each tool call, at each stop, at a subagent's stop, and before
+  a compaction.
 - **Files.** Pins, rules, work and environments in `.journal/record.json`, a file per to-do, a
   folder per doc. Committed, so the team and every later session read the same journal.
 
@@ -403,7 +405,13 @@ adds only the small record of what must survive.
 ## Settings
 
 `.journal/settings.json` holds only what you change; everything else is at its default.
-`journal settings` lists them all. The ones worth knowing:
+
+**`journal settings` prints every one of them, live, with its current value and where that
+value came from.** Read it there rather than here — a list in a file cannot track a setting
+that is added, and a setting that is REMOVED goes on being documented long after the CLI has
+started rejecting it, which is exactly what happened to this section.
+
+A few worth knowing about:
 
     context_window       the context window the warnings are measured against;
                          learned automatically at the first compaction, set this to override
@@ -417,7 +425,6 @@ adds only the small record of what must survive.
                          false means it starts on none and chooses from the first prompt
     one_session_per_environment  a second session on a taken environment is told to switch, default true
     reminder_every       tool calls between reminder firings, default 50
-    builtin_rules        the rules the journal itself ships, default true
     session_stale_hours  hours without a hook event before a session counts as gone, default 24
     stop_priority        the order of the stop queue by subject, e.g. {"work": 1}; lower first
     docs_dir             where docs live, default .journal/docs
