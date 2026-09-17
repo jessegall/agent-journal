@@ -3508,7 +3508,7 @@ const Thread = {
       <div ref=root class=thread-scroll>
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
       <p v-if="!turns.length" class=thread-empty>Nothing has been said here yet.</p>
-      <div v-for="(t, i) in turns" :key="t.at + ':' + t.kind + ':' + i" :data-turn="t.n ? t.kind + ':' + t.n : null"
+      <div v-for="t in turns" :key="t.kind + ':' + (t.n || 0) + ':' + t.at" :data-turn="t.n ? t.kind + ':' + t.n : null"
         :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', lit: lit === t.kind + ':' + t.n}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
