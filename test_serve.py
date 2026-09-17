@@ -270,6 +270,20 @@ check("and it landed on beta, not wherever this process is tracked",
       (["hello from the cli"], 1))
 status, got = post("/api/env/beta/messages", {"text": "  "})
 check("an empty message is refused: 400 with the reason", (status, "needs its text" in got["error"]), (400, True))
+# NOTHING CHANGED, SO NOTHING IS SENT. The viewer polls every five seconds and most polls bring back
+# what it already holds -- a listing carries every row in full, measured at half a megabyte on a real
+# project. A fingerprint costs a millisecond; sending it again costs all of the rest. This is
+# invisible in the page, so only a check keeps it: `fetch` revalidates and hands JS the body it had.
+def _conditional(path: str, tag: str) -> tuple[int, bytes]:
+    """GET with If-None-Match. urlopen raises on 304, so the answer comes back through the error."""
+    req = urllib.request.Request(BASE + path, headers={"If-None-Match": tag})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return r.status, r.read()
+    except urllib.error.HTTPError as e:
+        return e.code, e.read()
+
+
 status, got = post("/api/env/nope/messages", {"text": "x"})
 check("POST to an unknown environment is 404", status, 404)
 status, got = post("/api/env/beta/messages", b"text=x", headers={"Content-Type": "application/x-www-form-urlencoded"})
@@ -303,6 +317,17 @@ check("an ordinary message carries no kind", (status, got["data"]["kind"]), (201
 status, got = post("/api/env/beta/messages", {"text": "what is this", "kind": "banana"})
 check("an unknown kind is refused: 400, naming what there is",
       (status, "no message kind called" in got["error"], "transcript" in got["error"]), (400, True, True))
+# beta's inbox, not alpha's to-dos: a later check pins the NEXT to-do number on alpha, and adding
+# one here to move the fingerprint would take it -- the mid-fixture trap this file is full of.
+_st, _hd, _ = get("/api/env/beta/messages")
+_tag = next((v for k, v in _hd.items() if k.lower() == "etag"), "")
+check("a listing is sent with a fingerprint", (_st, bool(_tag)), (200, True))
+check("and asking again with it is answered 304, with nothing sent",
+      _conditional("/api/env/beta/messages", _tag), (304, b""))
+post("/api/env/beta/messages", {"text": "a message that moves the fingerprint"})
+check("a change moves the fingerprint, so an update is never missed",
+      _conditional("/api/env/beta/messages", _tag)[0], 200)
+
 
 # ─────────────────────────────────────────────────────────────── questions
 status, _, body = get("/api/env/alpha/questions")

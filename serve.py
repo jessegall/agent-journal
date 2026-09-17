@@ -83,6 +83,21 @@ def say(message: str, /, **values) -> str:
 BODY_LIMIT = 64_000
 #: the static shell: sent with a fingerprint, so an unchanged file is answered 304 instead of re-sent
 _FINGERPRINTED = frozenset({"/", "/app.js"})
+
+
+def _fingerprints(path: str) -> bool:
+    """Is this worth answering "nothing changed" for?
+
+    THE VIEWER POLLS EVERY FIVE SECONDS AND MOST POLLS BRING BACK WHAT IT ALREADY HAS. A listing
+    carries every row in full -- measured at 499 KB over 414 messages on a real project -- so the
+    cost is not the reading, it is sending a half-megabyte the browser must then parse into fresh
+    objects, sixty times a minute if two lists are open. Hashing that body costs about a
+    millisecond; sending it again costs all of the rest.
+
+    Nothing about the viewer changes for this. `fetch` revalidates under `Cache-Control: no-cache`
+    on its own and hands JavaScript the body it already had, so a 304 is invisible to the page.
+    """
+    return path in _FINGERPRINTED or path.startswith("/api/")
 UPLOAD_LIMIT = 28_000_000   # a message with attached files, base64 in JSON
 _UPLOAD = re.compile(r"^/api/env/[a-z0-9-]+/messages(/\d+/attach)?$")
 
@@ -405,7 +420,7 @@ class _Handler(BaseHTTPRequestHandler):
         path = url.path
         answered = _answered(self.server.root, "GET", path, dict(parse_qsl(url.query))) if _served(path) else None
         if answered is not None:
-            self._send(*answered, head)
+            self._tagged(path, *answered, head)
             return
         for pattern, fn in ROUTES:
             m = pattern.match(path)
@@ -415,17 +430,26 @@ class _Handler(BaseHTTPRequestHandler):
                 status, ctype, body = fn(self.server.root, self.server.project, m)
             except Exception as e:   # a bad route must answer 500, never crash the server
                 status, ctype, body = _json({"error": say("internal", error=e)}, 500)
-            if status == 200 and path in _FINGERPRINTED:
-                import hashlib
-                etag = '"' + hashlib.sha1(body).hexdigest()[:20] + '"'
-                if self.headers.get("If-None-Match") == etag:
-                    self._send(304, ctype, b"", True, etag)
-                    return
-                self._send(status, ctype, body, head, etag)
-                return
-            self._send(status, ctype, body, head)
+            self._tagged(path, status, ctype, body, head)
             return
         self._send(*_not_found(say("nothing_at", path=path)), head)
+
+    def _tagged(self, path: str, status: int, ctype: str, body: bytes, head: bool) -> None:
+        """Send it, or answer 304 when the client already holds exactly this.
+
+        ONE FUNNEL: a resource answers through `_answered` and everything else through ROUTES, and
+        both used to send for themselves -- which is why the API, the thing polled every five
+        seconds, was the one path that never got a fingerprint.
+        """
+        if status == 200 and _fingerprints(path):
+            import hashlib
+            etag = '"' + hashlib.sha1(body).hexdigest()[:20] + '"'
+            if self.headers.get("If-None-Match") == etag:
+                self._send(304, ctype, b"", True, etag)
+                return
+            self._send(status, ctype, body, head, etag)
+            return
+        self._send(status, ctype, body, head)
 
     def _send(self, status: int, ctype: str, body: bytes, head: bool, etag: str = "") -> None:
         self.send_response(status)
