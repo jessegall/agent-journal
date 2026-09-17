@@ -2302,7 +2302,10 @@ const Inbox = {
     const hint = computed(() => (live.value ? "The agent is told at its next stop"
       : "No agent is working on this environment right now; the message waits until a session picks it up"));
     const readAll = () => send("POST", `/api/env/${props.env}/notifications/readall`).then(changed);
-    const writeMessage = () => Object.assign(QUICK, { open: true, q: "", i: 0, writing: true });
+    const writeMessage = () => {
+      if (THREAD_BOX.focus && THREAD_BOX.focus("")) return;
+      Object.assign(QUICK, { open: true, q: "", i: 0, writing: true });
+    };
     return { rows, messages, reloadAll, opened, home, base, INBOX_LIST, hint, inboxRef, readAll, writeMessage };
   },
   template: `
@@ -3360,6 +3363,12 @@ const PLAN_WORD = { preparing: "being written", active: "working", parked: "paus
 // the home — the Messages page, a list — there is no thread to move, and the inspector opens as before.
 const THREAD_GOTO = reactive({ key: "", at: 0 });
 
+// THE THREAD IS THE WRITING BOX WHILE IT IS ON SCREEN. Space-space and "Message the agent" used to
+// open the quick menu's own pane, which sent and closed with no visible history — the void the whole
+// chat was built to end. While a thread is mounted it lends its box, and everywhere else the pane is
+// still the only place to write.
+const THREAD_BOX = { focus: null };
+
 const NeedsCard = {
   props: { item: Object, selected: Boolean, dismiss: Function },
   components: { Icon },
@@ -3479,6 +3488,20 @@ const Thread = {
     // ARRIVAL, NEVER FIRST PAINT. The group mounts empty and the first answer inserts a hundred and
     // twenty turns at once, which is an insert as far as Vue is concerned — so the name is empty until
     // that batch has landed, and only what comes after it animates.
+    onMounted(() => {
+      THREAD_BOX.focus = (draft) => {
+        const area = root.value && root.value.closest(".thread") && root.value.closest(".thread").querySelector("textarea");
+        if (!area) return false;
+        if (draft) {
+          area.value = draft;
+          area.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+        area.focus();
+        area.setSelectionRange(area.value.length, area.value.length);
+        return true;
+      };
+    });
+    onUnmounted(() => { THREAD_BOX.focus = null; });
     const bottom = (behavior) => {
       if (root.value) root.value.scrollTo({ top: root.value.scrollHeight, behavior });
     };
@@ -3621,7 +3644,6 @@ const Thread = {
             </svg>
           </span>
         </div>
-      </div>
       </div>
       </TransitionGroup>
       </div>
@@ -4739,6 +4761,11 @@ const QuickMenu = {
     const close = () => Object.assign(QUICK, { open: false, q: "", i: 0, writing: false });
     const goTo = (hash) => () => { close(); location.hash = hash; };
     const write = (draft) => {
+      // the thread is on screen: write there, where what is sent stays visible
+      if (THREAD_BOX.focus && THREAD_BOX.focus(draft === undefined ? QUICK.draft : draft)) {
+        close();
+        return;
+      }
       Object.assign(QUICK, { writing: true, draft: draft === undefined ? QUICK.draft : draft });
       nextTick(() => { const el = area.value; if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
     };
