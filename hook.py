@@ -226,6 +226,7 @@ MESSAGES = {
     "choice_line": "journal: this session has no environment yet — {names:, }. It will take one from your first "
                    "message, or ask.",
     "backticked": "`{name}`",
+    "viewer_back": "the viewer had stopped and is up again at {url} — it is where the user reads this.",
     "viewer_up": "journal: the web viewer is running at {url}",
     "viewer_down": "journal: browse and edit the journal in your browser: run `.journal/journal.py serve` "
                    "(or ask Claude to start it), then open http://127.0.0.1:8420",
@@ -708,6 +709,29 @@ def _still_raised(conf: dict, ctx: Ctx, lines, active: bool) -> dict:
     return {s: at for s, at in got.items() if now - int(at or 0) < after}
 
 
+def _keep_viewer(conf: dict, ctx: Ctx) -> None:
+    """The viewer comes back if it stopped while somebody is still working here.
+
+    AT A STOP, NOT ON EVERY TOOL CALL. Asking whether it is up opens a socket with a timeout,
+    and this hook is a fresh process on every single call — paying that on each one is the
+    mistake. A stop is an idle moment and the moment the user is most likely to look at it.
+
+    IT RESPECTS A DELIBERATE SILENCE. Somebody who stopped the viewer on purpose must not have
+    it resurrected on a loop, so `silenced: ["viewer"]` switches this off like any other nudge.
+    And a session on no environment is not working anywhere yet, so it starts nothing.
+    """
+    if "viewer" in conf["silenced"] or not tracks.bound(ROOT, ctx.stem):
+        return
+    import serve
+    if serve.running(ROOT):
+        return
+    import commands.system as system
+    with contextlib.suppress(Exception):   # a viewer that will not start must never fail a stop
+        _, url, _ = system.start_viewer()
+        if url:
+            _for_next_prompt(ctx, say("viewer_back", url=url))
+
+
 def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     # REMINDERS COME FIRST AND SPEND NOTHING. The queue below raises ONE subject per stop
     # on purpose, and a reminder must not be able to lose that race: the whole point of it
@@ -738,6 +762,7 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     # the untagged subject reads it, and nowhere else.
     if ctx.path is None:
         return _remind_only()
+    _keep_viewer(conf, ctx)
     _HOLD_CTX[:] = [ctx.stem]
     active = bool(payload.get("stop_hook_active"))
     lines, boundaries = transcript.read(ctx.path, _caches(ctx.stem)[0])

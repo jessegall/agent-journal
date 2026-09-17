@@ -207,7 +207,9 @@ DEFAULTS = {
     "context_window": 1_000_000,
 
 
-    # Reminders to silence, by name, e.g. ["quiet"].
+    # Reminders to silence, by name, e.g. ["quiet"]. "viewer" is in here too: it stops the
+    # journal putting the web viewer back up at a stop when it has gone away, for somebody who
+    # closed it on purpose and does not want it resurrected.
     "silenced": [],
 }
 

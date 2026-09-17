@@ -540,7 +540,7 @@ _todo_mod.add(_rd, "r", "fix the padding", "", _AT)
 _inbox.process(_rd, 1, "look at the padding", ["todo:1"], _AT, track="r")
 _inbox.done(_rd, 1, _AT, track="r")
 check("a message nobody answered gets the journal's own note, naming what it became",
-      _replies(1), [("journal", "Noted — this became to-do 1.")])
+      _replies(1), [("journal", "Noted — created to-do 1.")])
 
 _inbox.add(_rd, "and the colour of the bar", _AT, track="r")
 _inbox.reply(_rd, 2, "Changed it to the accent.", _AT, source="cli", track="r")
