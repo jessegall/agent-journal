@@ -491,7 +491,8 @@
   .muted { color: var(--text-3); }
   /* Home, the cockpit: a state band, then what waits on you beside what the agent is doing */
   /* Home: one column that answers whether anything needs the user; flat lists on hairlines, one accent */
-  .home { max-width: 1180px; padding: 26px 30px 28px; display: flex; flex-direction: column; gap: 22px; }
+  /* no bottom padding: the slack under the writing box is what let the thread scroll past its own end */
+  .home { max-width: 1180px; padding: 26px 30px 0; display: flex; flex-direction: column; gap: 22px; }
   /* the thread is the main column and what is not a turn sits beside it: under the thread it is past the
      end of the conversation, where a reader who scrolls to the bottom of a chat never looks. It wraps
      below only when there is genuinely no room for two columns. */
@@ -501,7 +502,10 @@
      that started at the top of the conversation was beside it and never once on the screen */
   .home-rail { flex: 1 1 250px; max-width: 320px; display: flex; flex-direction: column; gap: 22px;
     position: sticky; top: 4px; align-self: flex-start; max-height: calc(100vh - 120px); overflow-y: auto;
-    scrollbar-width: thin; }
+    scrollbar-width: thin; padding-left: 26px; margin-bottom: 26px; border-left: 1px solid var(--border); }
+  /* the rail wraps under the thread when there is no room for two columns: a left edge there would be a
+     line across nothing, so it becomes a top edge */
+  @media (max-width: 760px) { .home-rail { padding: 22px 0 0; border-left: 0; border-top: 1px solid var(--border); } }
   .home-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; font-size: 11.5px; color: var(--text-3); }
   .home-facts .first { color: var(--text-2); }
   .home-facts a.first { text-decoration: none; }
@@ -538,6 +542,12 @@
     background: color-mix(in srgb, var(--accent) 14%, transparent); }
   .thread-meta { display: flex; align-items: baseline; gap: 6px; padding: 0 3px; font-size: 11px; color: var(--text-3); }
   .thread-tag { color: var(--accent-text); }
+  /* delivered, read, filed — the third has no equivalent in a chat app and is the one worth having:
+     it means the message became something, and the title says what */
+  .thread-ticks { display: inline-flex; margin-left: 1px; opacity: .45; }
+  .thread-ticks svg { width: 16px; height: 10px; }
+  .thread-ticks.read { opacity: .8; }
+  .thread-ticks.filed { opacity: 1; color: var(--accent-text); }
   .thread-quote { margin: 0 0 5px; padding: 1px 0 1px 8px; border-left: 2px solid var(--border-2);
     color: var(--text-3); font-size: 12.5px; }
   .thread-turn.ask { max-width: 88%; }
@@ -551,7 +561,7 @@
     text-transform: uppercase; color: var(--warn); }
   .thread-empty { padding: 18px 2px; color: var(--text-3); }
   .thread-write { position: sticky; bottom: 0; display: flex; flex-direction: column; gap: 6px;
-    padding: 10px 0 2px; background: linear-gradient(to bottom, transparent, var(--bg) 22%); }
+    padding: 10px 0 14px; background: linear-gradient(to bottom, transparent, var(--bg) 22%); }
   /* positioned so a leaving row can be taken out of the flow: work moving from Working on to Finished must not jostle either list */
   .home-section { position: relative; display: flex; flex-direction: column; gap: 2px; }
   .wrow-enter-active { transition: opacity .24s ease-out, transform .24s cubic-bezier(.2, .8, .2, 1); }

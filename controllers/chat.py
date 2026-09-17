@@ -77,9 +77,14 @@ def wrote(root: Path, env: str) -> list[dict]:
     for n, m in enumerate(inbox._all(root, env), 1):
         if m.get("archived"):
             continue
+        became = inbox._became(m)
         out.append({"at": m.get("at") or "", "who": "you", "kind": "message", "tag": "",
                     "text": trim(m.get("text") or ""), "n": n,
-                    "ref": ", ".join(f["name"] for f in (m.get("files") or []) if not f.get("removed"))})
+                    "ref": ", ".join(f["name"] for f in (m.get("files") or []) if not f.get("removed")),
+                    # delivered, read, filed: three states the record already keeps, so the ticks are a
+                    # reading of what is there rather than a fourth thing to keep level with it
+                    "state": "filed" if m.get("processed") else "read" if m.get("read") else "sent",
+                    "became": ", ".join(became)})
         for r in m.get("replies") or []:
             out.append({"at": r.get("at") or "", "who": "you" if r.get("source") == "web" else "agent",
                         "kind": "reply", "tag": "", "text": trim(r.get("text") or ""), "n": n,
