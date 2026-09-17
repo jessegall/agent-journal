@@ -59,6 +59,10 @@ class Session:
         self.env = {**os.environ, transcript.SESSION_ENV: stem}
         self.P = testkit.Project(d)
         self.n = 0
+        # A SESSION HAS TO HAVE CHOSEN. There is no default environment, so an unbound
+        # session's journal commands are refused (test_unbound covers that); this suite is
+        # about auto mode, so every session here picks `default` the way a real one would.
+        self.P.cli("switch", "default", session=stem)
 
     def fire(self, event, **extra):
         return self.P.hook(event, session_id=self.stem,

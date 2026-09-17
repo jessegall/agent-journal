@@ -1223,6 +1223,9 @@ d, path = project_with(4)
 other = path.with_name("zz-newer.jsonl"); shutil.copy(path, other)
 os.utime(other, None)
 J = str(d / ".journal" / "journal.py")
+# THE SESSION HAS TO HAVE CHOSEN: there is no default environment, so an unbound session's
+# `pin` is refused rather than written to the start environment (test_unbound covers that).
+tracks.bind(d / ".journal", "s1", tracks.start(d / ".journal"))
 p = subprocess.run([J, "pin", "cited"], env={**os.environ, transcript.SESSION_ENV: "s1"},
                    capture_output=True, text=True, timeout=180)
 def _pins(rec):

@@ -1370,9 +1370,9 @@ def _unbound(conf: dict, ctx: Ctx) -> bool:
     A SESSION IS UNBOUND UNTIL SOMEBODY CHOOSES. Not a subagent — a delegated one is put on
     its environment by the session that dispatched it, and an undelegated one is outside all
     of this — and not a session that has switched, delegated, or run under
-    `bind_on_start`. `tracks.current` still answers for reads, falling back to the start
-    environment, because a question about the record must not need a decision first; this
-    is what the writes are held on.
+    `bind_on_start`. Unbound, `tracks.current` answers "" — there is no default environment —
+    so the CLI refuses a read as well as a write until one is picked; this is what both are
+    held on.
     """
     if conf["bind_on_start"]:
         return False
@@ -3345,7 +3345,7 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     # asked about; `bind_on_start` restores that. Unbound, the choice is made on the first
     # prompt, by the agent, out loud. A switch from inside the session rebinds it alone.
     if conf["bind_on_start"] and not tracks.bound(ROOT, ctx.stem):
-        tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+        tracks.bind(ROOT, ctx.stem, tracks.start(ROOT))
     state.use_track(tracks.current(ROOT, ctx.stem))
     if source == "compact" and ctx.path is not None and not conf["context_window"]:
         peak = context.peak_before_compaction(ctx.path)
@@ -3416,17 +3416,20 @@ def _register(payload: dict, ctx: Ctx) -> str | None:
     if tracks.bound(ROOT, ctx.stem):
         return tracks.current(ROOT, ctx.stem)
     # a continued or resumed session goes back on the environment it ended on, if that still exists and is free
+    # A SESSION RETURNS TO THE ENVIRONMENT IT WAS IN. Only its own: a `--continue` or
+    # `--resume` carries the same session id, and a brand-new one has never been anywhere,
+    # so it starts on nothing rather than on somebody else's choice.
     ended_on = state.get(ROOT, "ended_on", "", stem=ctx.stem) if payload.get("source") == "resume" else ""
     if ended_on in tracks.choices(ROOT) and not tracks.occupants(ROOT, ended_on, ctx.stem):
         tracks.bind(ROOT, ctx.stem, ended_on)
         return tracks.current(ROOT, ctx.stem)
     if _track_due(conf_of(payload), ctx):
         return None
-    # Registered on the start environment for READS, and bound to it only if the project
-    # still binds at the start: `tracks.current` already falls back there, so an unbound
-    # session is answered without a binding being written behind its back.
+    # Bound only if the project still binds at the start. Otherwise this session is
+    # registered NOWHERE and `current` says so: no binding is written behind its back, and
+    # no environment is read as if it had been chosen.
     if conf_of(payload)["bind_on_start"]:
-        tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+        tracks.bind(ROOT, ctx.stem, tracks.start(ROOT))
     return tracks.current(ROOT, ctx.stem)
 
 
@@ -3680,6 +3683,12 @@ def main(raw: str | None = None) -> int:
         # ALIVE, AS OF NOW. What `tracks.occupants` reads to tell a running session from a
         # terminal that was closed without a SessionEnd.
         state.put(ROOT, "seen_at", int(time.time()), stem=ctx.stem)
+        # WHERE IT WAS, STAMPED AS IT GOES. SessionEnd records this too, but a session that
+        # is killed never fires one — and with no default environment to fall back to, a
+        # resume that has forgotten where it was starts nowhere. Written on every event, so
+        # the answer survives a crash.
+        if env:
+            state.put(ROOT, "ended_on", env, stem=ctx.stem)
         # which event came last tells an idle session (Stop) from a working one, for the channel server
         state.put(ROOT, "last_event", event, stem=ctx.stem)
         _remember_pid(ctx.stem)

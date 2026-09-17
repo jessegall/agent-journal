@@ -53,8 +53,9 @@ DEFAULTS = {
     # could not see — and its pins, to-dos and work landed there because nothing had asked.
     # So a session starts unbound: the user is shown one line saying so, the agent is told
     # to infer the environment from the first prompt and say which it took, or to ask when
-    # the prompt names nothing, and writes are refused until one is chosen. True restores
-    # the old binding at start.
+    # the prompt names nothing, and the journal refuses until one is chosen — READS as well
+    # as writes, because there is no default environment to read. True restores the old
+    # binding at start, and is the one way a project says every session belongs on it.
     "bind_on_start": False,
 
     # A tool result bigger than this, and bigger than anything before it this session, is
