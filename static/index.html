@@ -645,7 +645,9 @@
   /* a slim bar under the status bar: ONE ROW THAT STAYS ONE ROW. The facts sit across the full width
      where they fit, and the subagents fold into a count — a list that grows must never push the
      conversation down, which is why these left the space above the thread to begin with. */
-  .agent-bar { flex: none; display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 16px;
+  /* THE SAME HEIGHT AS THE RAIL'S TABS, because they sit side by side across one line: the agent's
+     state on the left of it and the rail's tabs on the right. Four pixels apart reads as a mistake. */
+  .agent-bar { flex: none; display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 16px;
     font-size: 11.5px; color: var(--text-3); border-bottom: 1px solid var(--border); }
   .agent-facts { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 12px; overflow: hidden; }
   .agent-fact, .agent-fact-lead { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
