@@ -3676,6 +3676,9 @@ const EnvHome = {
       return { rows, share: agent && agent.context ? agent.context.share : 0,
                href: agent ? `#/env/${props.env}/agents/session/${agent.session}` : "" };
     });
+    // folded by default: a list that GROWS must never push the conversation down, which is the whole
+    // reason these facts left the space above the thread in the first place
+    const crewOpen = ref(false);
     const envRow = computed(() => (OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null));
     const SLOTS = 3;
     // the rows are a capped page; the COUNT is the environment's own, so a cap can never make it lie.
@@ -3755,31 +3758,33 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, waitingCount };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
     <div class=body><div class=page><div class=home>
+      <div class=agent-bar>
+        <div class=agent-facts>
+          <template v-for="(r, i) in lead.rows" :key="r.label">
+            <a v-if="i === 0 && lead.href" class=agent-fact-lead :href="lead.href" title="Open this agent's page">{{ r.value }}</a>
+            <span v-else class=agent-fact :title="r.label">{{ r.value }}</span>
+          </template>
+        </div>
+        <button v-if="liveCrew.length" type=button class=agent-crew-toggle :aria-expanded="crewOpen ? 'true' : 'false'"
+          :title="crewOpen ? 'Hide the subagents' : 'Show the subagents'" @click="crewOpen = !crewOpen">
+          {{ liveCrew.length }} {{ liveCrew.length === 1 ? "subagent" : "subagents" }}<Icon :name="crewOpen ? 'up' : 'down'"/>
+        </button>
+      </div>
+      <div v-if="crewOpen && liveCrew.length" class=crew-strip>
+        <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" @click="a.open">
+          <span class=crew-dot></span><span class=crew-name>{{ a.name }}</span><span class=crew-tail>{{ a.tail }}</span>
+        </button>
+      </div>
       <div class=home-main>
       <section class="home-section home-thread">
         <Thread :env="env"/>
       </section>
       <div class=home-rail>
-      <div class=home-lead>
-        <div class=home-facts>
-          <div v-for="(r, i) in lead.rows" :key="r.label" class=home-fact>
-            <span class=home-fact-label>{{ r.label }}</span>
-            <a v-if="i === 0 && lead.href" class=home-fact-value :href="lead.href" title="Open this agent's page">{{ r.value }}</a>
-            <span v-else class=home-fact-value :title="r.value">{{ r.value }}</span>
-          </div>
-        </div>
-        <div v-if="liveCrew.length" class=crew-strip>
-          <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" :style="{ animationDelay: a.delay }" @click="a.open">
-            <span class=crew-rule></span><span class=crew-dot></span>
-            <span class=crew-name :title="a.title">{{ a.name }}</span>
-          </button>
-        </div>
-      </div>
       <section class=home-section>
         <Transition name=needs mode=out-in>
         <div v-if="clear" key=clear class=needs-clear><Icon name="todos"/><span>Nothing is waiting on you.</span></div>
