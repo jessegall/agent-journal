@@ -3542,6 +3542,17 @@ const Thread = {
     // reader is still down there, so a picture loading far above never yanks them away from what
     // they are reading.
     const grew = () => { if (near()) bottom("auto"); };
+    // A WAY BACK DOWN, and it says why it is worth pressing: `near` already decides whether an arriving
+    // turn follows the reader, so the same test decides when the button belongs, and what arrived while
+    // they were up there is counted rather than merely hinted at.
+    const away = ref(false);
+    const missed = ref(0);
+    const watchScroll = () => {
+      const was = away.value;
+      away.value = !near();
+      if (was && !away.value) missed.value = 0;
+    };
+    const backDown = () => { missed.value = 0; bottom("auto"); };
     const settled = ref(false);
     let last = "";
     watch(turns, (rows) => {
@@ -3549,6 +3560,7 @@ const Thread = {
       const first = !last;
       const arrived = key && key !== last;
       const follow = first || near();
+      if (arrived && !follow) missed.value += 1;
       last = key;
       if (first) nextTick(() => { settled.value = true; });
       if (!arrived || !follow) return;
@@ -3633,7 +3645,11 @@ const Thread = {
       if (!el) return;
       // claimed: the card moved the thread, so nothing opens an inspector over it
       THREAD_GOTO.key = "";
-      el.scrollIntoView({ block: "center", behavior: "smooth" });
+      // NOT SMOOTH. The browser paces a smooth scroll over the whole distance, and the distance here is
+      // often thousands of pixels — so the further back the turn is, the longer it crawls, which is
+      // backwards: the further it is, the less anyone wants to watch the journey. The lit turn is what
+      // says where you landed.
+      el.scrollIntoView({ block: "center" });
       lit.value = want;
       setTimeout(() => { if (lit.value === want) lit.value = ""; }, 2200);
     });
@@ -3659,11 +3675,11 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, away, missed, watchScroll, backDown, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
   },
   template: `
     <div class=thread>
-      <div ref=root class=thread-scroll>
+      <div ref=root class=thread-scroll @scroll.passive="watchScroll">
       <template v-if="!chat.data">
         <div v-for="s in SKELETON" :key="s.k" :class="['thread-turn', 'waiting', {mine: s.mine}]">
           <div class=thread-bubble><span v-for="w in s.rows" :key="w" class=thread-blank :style="{ width: w }"></span></div>
@@ -3713,6 +3729,9 @@ const Thread = {
       </div>
       </TransitionGroup>
       </div>
+      <button v-if="away" type=button class=thread-down :title="missed ? missed + ' arrived while you were reading' : 'Back to the newest'" @click="backDown">
+        <Icon name="down"/>{{ missed ? missed + " new" : "Newest" }}
+      </button>
       <div class=thread-write>
         <div v-if="answering" class=thread-answering>
           <span class=thread-answering-label>Replying to</span>

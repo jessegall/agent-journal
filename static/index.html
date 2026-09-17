@@ -722,6 +722,13 @@
   .thread-failed { display: flex; align-items: center; gap: 6px; margin: 6px 0 0; padding-top: 6px;
     border-top: 1px solid var(--border-2); font-size: 11px; color: var(--danger); }
   .thread-empty { padding: 18px 2px; color: var(--text-3); }
+  /* the way back down, just above the box: it sits in the thread's flow rather than over a turn, so
+     it never covers the words someone scrolled up to read */
+  .thread-down { align-self: center; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 6px;
+    padding: 4px 11px; border: 1px solid var(--border-2); border-radius: 99px; background: var(--raised);
+    color: var(--text-2); font: inherit; font-size: 11.5px; cursor: pointer; }
+  .thread-down:hover { border-color: var(--accent); color: var(--text); }
+  .thread-down .ico { width: 13px; height: 13px; }
   .thread-write { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 12px 0 16px;
     border-top: 1px solid var(--border); }
   /* the box lines up with the turns above it: the rule spans the column, so the box must too */
