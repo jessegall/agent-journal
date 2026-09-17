@@ -13,7 +13,10 @@ KEY = "connections"
 OVERRIDES = "connection_overrides"
 GONE = "connections_removed"
 
-FIELDS = ("kind", "url", "secret", "for")
+FIELDS = ("kind", "url", "secret", "purpose")
+#: `for` is a keyword everywhere a field becomes a name, so the field is `purpose` and `for`
+#: is the word the CLI also answers to, because it is what the sentence wants.
+ALIASES = {"for": "purpose"}
 SETTABLE = FIELDS
 
 MESSAGES = {
@@ -22,7 +25,7 @@ MESSAGES = {
                  '  journal connections add {name} "<what it is for>" --url="<base url>" --secret=<ENV_VAR>',
     "exists": "a connection named {name} is already kept. `journal connections {name}` reads it.",
     "no_such": "there is no connection named {name}. `journal connections` lists them.",
-    "not_a_field": "a connection has kind, url, secret and for; not {field}",
+    "not_a_field": "a connection has kind, url, secret and purpose; not {field}",
     "looks_secret": "--secret names the ENVIRONMENT VARIABLE that holds the token, not the token. {why}\n"
                     "  The journal is read back verbatim into every session and subagent, so a token written "
                     "here is a token that has leaked. Put it in the environment and name the variable:\n"
@@ -120,13 +123,18 @@ def add(root: Path, name: str, what: str, at: str, kind: str = "", url: str = ""
         if name in got:
             return False, say("exists", name=name)
         got[name] = {"kind": " ".join((kind or "").split()), "url": (url or "").strip(),
-                     "secret": (secret or "").strip(), "for": what, "at": at, "source": source}
+                     "secret": (secret or "").strip(), "purpose": what, "at": at, "source": source}
         state.put(root, KEY, got)
     return True, say("added", name=name, what=what)
 
 
+def _field(name: str) -> str:
+    got = (name or "").strip().lower()
+    return ALIASES.get(got, got)
+
+
 def set_field(root: Path, name: str, field: str, value: str) -> tuple[bool, str]:
-    name, field = state.slug(name), (field or "").strip().lower()
+    name, field = state.slug(name), _field(field)
     if field not in SETTABLE:
         return False, say("not_a_field", field=repr(field))
     if field == "secret" and (why := secretish(value)):
@@ -144,7 +152,7 @@ def set_field(root: Path, name: str, field: str, value: str) -> tuple[bool, str]
 def override(root: Path, track: str, name: str, field: str, value: str,
              off: bool = False) -> tuple[bool, str]:
     """Change one field of one connection on this environment only."""
-    name, field = state.slug(name), (field or "").strip().lower()
+    name, field = state.slug(name), _field(field)
     if field not in SETTABLE:
         return False, say("not_a_field", field=repr(field))
     if field == "secret" and not off and (why := secretish(value)):

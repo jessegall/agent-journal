@@ -94,7 +94,10 @@ took, why = connections.override(root, "staging", "gone", "url", "x")
 check("an override of a connection the project does not keep is refused",
       (took, "no connection named" in why), (False, True))
 took, why = connections.set_field(root, "sentry", "colour", "blue")
-check("a field a connection does not have is refused", (took, "not {'colour'}" not in why), (False, True))
+check("a field a connection does not have is refused", (took, "not 'colour'" in why), (False, True))
+took, why = connections.set_field(root, "sentry", "for", "errors, and releases")
+check("`for` is the word the sentence wants, and it reaches `purpose`",
+      (took, connections.one(root, "sentry", "default")["purpose"]), (True, "errors, and releases"))
 
 # ------------------------------------------------------------------ nothing goes without a note
 took, why = connections.remove(root, "sentry", "", now())

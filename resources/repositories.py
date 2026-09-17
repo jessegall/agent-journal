@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable
 
 import comments
+import connections
 import docs
 import inbox
 import notifications
@@ -18,7 +19,7 @@ import todo
 import tools
 import work
 from resources.base import Query, Repository
-from resources.models import Attachment, Claim, Comment, Doc, Notification, Report, Suggestion, Message, Part, Plan, Question, Reminder, Rule, StyleItem, Todo, Tool, Work
+from resources.models import Attachment, Claim, Comment, Connection, Doc, Notification, Report, Suggestion, Message, Part, Plan, Question, Reminder, Rule, StyleItem, Todo, Tool, Work
 
 
 class Todos(Repository[Todo]):
@@ -125,6 +126,14 @@ class ToolCatalogue(Repository[Tool]):
 
     def rows(self) -> list[dict]:
         return tools.all_tools(self.root)
+
+
+class Connections(Repository[Connection]):
+    """The project's connections, as this environment reads them: its overrides already applied."""
+    model = Connection
+
+    def rows(self) -> list[dict]:
+        return list(connections.all_of(self.root, self.env or None).values())
 
 
 class Docs(Repository[Doc]):
