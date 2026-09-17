@@ -109,5 +109,23 @@ check("and the record says what went and why, in a log of its own",
       (len(gone), gone[0]["name"], gone[0]["why"], gone[0]["was"]["url"]),
       (1, "sentry", "the account is gone", "https://sentry.io/api/0/"))
 
+# ------------------------------------------------ a token in ANY field is a token that has leaked
+# The secret field was the only one checked, and the record does not care which field it is in: every
+# one of them is read back verbatim into every session and subagent.
+took, why = connections.add(root, "sentry-two", "error reports", now(),
+                            url="https://sentry.io/api?key=sk-live-9a8b7c6d5e4f", secret="SENTRY_TOKEN")
+check("a token inside the url is refused, naming the field",
+      (took, "url of sentry-two appears to carry a token" in why), (False, True))
+connections.add(root, "leaky", "the one this block writes to", now(), url="https://api.example.com")
+took, why = connections.set_field(root, "leaky", "purpose", "error reports, auth ghp_AbCdEf123456")
+check("and one inside the purpose is refused too",
+      (took, "purpose of leaky appears to carry a token" in why), (False, True))
+check("an ordinary url is untouched",
+      connections.set_field(root, "leaky", "url", "https://sentry.io/organizations/acme")[0], True)
+check("and a word that merely starts like one is not a token",
+      connections.set_field(root, "leaky", "purpose", "error reports, risk-averse by default")[0], True)
+check("an environment's own override is checked the same way",
+      connections.override(root, "default", "leaky", "url", "https://sentry.io/api?key=sk-live-9a8b")[0], False)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
