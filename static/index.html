@@ -567,7 +567,7 @@
   /* the thread: what was said, read downwards, with the writing box under it */
   .thread { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .thread-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none;
-    display: flex; flex-direction: column; gap: 7px; padding: 14px 2px 0 0; }
+    display: flex; flex-direction: column; gap: 7px; padding: 14px 2px 12px 0; }
   .thread-scroll::-webkit-scrollbar { width: 0; height: 0; }
   .thread-more { align-self: center; padding: 2px 8px; border: 0; border-radius: 6px; background: none;
     color: var(--text-3); font: inherit; font-size: 11px; }
@@ -593,7 +593,9 @@
   .thread-turn.mine .thread-became { justify-content: flex-end; }
   /* the rule crosses the whole bubble, so it reads as a header and not as an underlined phrase: the
      row is what holds the text, the block around it is what holds the rule */
-  .thread-became { margin: -1px -12px 6px; padding: 0 12px 5px;
+  /* .md p carries a margin and one more class than .thread-became, so it won and the header sat
+     inside the bubble's padding with the rule stopping 13px short of each edge */
+  .thread-bubble .thread-became { margin: -1px -12px 6px; padding: 0 12px 5px;
     border-bottom: 1px solid var(--border-2); font-size: 10.5px; letter-spacing: .04em;
     text-transform: uppercase; color: var(--text-3); display: flex; align-items: center; gap: 5px; }
   .thread-became.live { color: var(--accent-text); }
@@ -603,9 +605,12 @@
     color: inherit; font-size: 10px; letter-spacing: .03em; white-space: nowrap; }
   .thread-pill:hover { border-color: var(--accent); color: var(--accent-text); }
   /* the header grows in rather than appearing: it arrives on a turn that is already on screen */
-  .thread-became { overflow: hidden; animation: thread-header .22s ease-out both; }
-  @keyframes thread-header { from { max-height: 0; opacity: 0; padding-bottom: 0; margin-bottom: 0; }
-                             to { max-height: 40px; opacity: 1; } }
+  /* NOTHING THAT MOVES LAYOUT. An animation on max-height changes the height of every header it runs
+     on, so any broad re-render collapses the thread and grows it again — which is a scroll thrown to
+     the top and dragged back. Opacity and transform move no one else. */
+  .thread-bubble .thread-became { animation: thread-header .22s ease-out both; }
+  @keyframes thread-header { from { opacity: 0; transform: translateY(-3px); }
+                             to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .thread-became { animation: none; } }
   .thread-became-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor;
     animation: crew-pulse 1.8s ease-in-out infinite; }
@@ -680,7 +685,10 @@
   .thread-failed { display: flex; align-items: center; gap: 6px; margin: 6px 0 0; padding-top: 6px;
     border-top: 1px solid var(--border-2); font-size: 11px; color: var(--danger); }
   .thread-empty { padding: 18px 2px; color: var(--text-3); }
-  .thread-write { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 10px 0 16px; }
+  .thread-write { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 12px 0 16px;
+    border-top: 1px solid var(--border); }
+  /* the box lines up with the turns above it: the rule spans the column, so the box must too */
+  .thread-write .compose-box { margin-right: 2px; }
   /* positioned so a leaving row can be taken out of the flow: work moving from Working on to Finished must not jostle either list */
   .home-section { position: relative; display: flex; flex-direction: column; gap: 2px; }
   .wrow-enter-active { transition: opacity .24s ease-out, transform .24s cubic-bezier(.2, .8, .2, 1); }
