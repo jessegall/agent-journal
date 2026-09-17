@@ -175,9 +175,8 @@ def wrote(root: Path, env: str) -> list[dict]:
                     "became": ", ".join(became),
                     # the refs themselves, not only their words: the viewer makes each one a link, and
                     # a label joined into a sentence cannot be followed
-                    "became_refs": [{"ref": ref, "label": inbox.label(ref)}
-                                    for p in m.get("parts") or [] for ref in p.get("became") or []
-                                    if ":" in str(ref)],
+                    "became_refs": [{"ref": ref, "label": inbox.label(ref)} for ref in dict.fromkeys(
+                        ref for p in m.get("parts") or [] for ref in p.get("became") or [] if ":" in str(ref))],
                     "working": working})
         for r in m.get("replies") or []:
             out.append({"at": r.get("at") or "", "who": "you" if r.get("source") == "web" else "agent",
