@@ -4111,7 +4111,7 @@ const Thread = {
         </div>
         <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true" :onUp="editLast" :onDown="dropEdit"/>
       </div>
-      <div ref=root class=thread-scroll @scroll.passive="watchScroll">
+      <div ref=root :class="['thread-scroll', {focusing: !!lit}]" @scroll.passive="watchScroll">
       <template v-if="!chat.data">
         <!-- EMPTY BUBBLES, NOT FAKE WRITING. The lines inside mimed text nobody had written yet,
              which is the distracting part: the shape of the conversation is enough to hold the page. -->
