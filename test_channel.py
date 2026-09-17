@@ -292,5 +292,37 @@ try:
 finally:
     chan_mod.os.getppid = _real_ppid
 
+# ---------------------------------------------------------- an idle agent with ready work is sent back to it
+# Nothing else notices this one: a session's own hooks fire when it ACTS, and the channel otherwise
+# speaks only when the user does. It must stay silent when auto is off, when nothing is ready, and
+# before the interval — a nudge that fires when there is nothing to do is one nobody reads.
+import settings as _settings  # noqa: E402
+import todo as _todo_mod  # noqa: E402
+
+_stem = "idle0000-0000-4000-8000-000000000001"
+P.cli("switch", "default")
+P.cli("todos", "add", "a row the agent could pick up")
+state.put(root, "seen_at", int(time.time() - 1800), stem=_stem)
+
+_todo_mod.set_auto(root, False)
+check("with auto off, an idle agent is left alone", channel._idle_nudge(_stem, "default"), [])
+
+_todo_mod.set_auto(root, True)
+_got = channel._idle_nudge(_stem, "default")
+check("with auto on and work ready, it is sent back to the list",
+      (len(_got), "auto mode is on" in _got[0][1]["content"] if _got else ""), (1, True))
+_key = _got[0][0]
+state.put(root, "seen_at", int(time.time() - 120), stem=_stem)
+check("but not before the interval has passed", channel._idle_nudge(_stem, "default"), [])
+state.put(root, "seen_at", int(time.time() - 3600), stem=_stem)
+check("and an hour in it is a NEW key, so the dedupe does not swallow the next one",
+      channel._idle_nudge(_stem, "default")[0][0] != _key, True)
+
+# every ready row, not just the one added here: this environment collected others earlier
+for _r in _todo_mod.ready(root, "default"):
+    P.cli("todos", "block", str(_r["n"]), "waiting on the rig")
+state.put(root, "seen_at", int(time.time() - 1800), stem=_stem)
+check("a list with nothing ready is never nagged", channel._idle_nudge(_stem, "default"), [])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

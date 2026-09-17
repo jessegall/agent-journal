@@ -91,8 +91,45 @@ def pending(stem: str) -> list[tuple[str, dict]]:
             got.append((key, params if quiet else {**params, "content": params["content"] + AUTO_OFF_NOTE}))
     if idle:
         got.extend(_update(stem))
+        if bound:
+            got.extend(_idle_nudge(stem, bound))
     pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
     return [(key, params) for key, params in got if key not in pushed]
+
+
+def _idle_nudge(stem: str, env: str) -> list[tuple[str, dict]]:
+    """Auto is on, the agent has stopped, and work is ready: send it back to the list.
+
+    This is the one thing nothing else notices. A session's own hooks fire when it ACTS, so a
+    session that stopped hears nothing from them; and the channel otherwise speaks only when the
+    user does. A loop or a cron usually covers it, and when one was never set, nothing did.
+
+    It fires only while `todo.ready` has something — not merely rows on the list — so an empty
+    or wholly blocked list is never nagged, and never while auto is off, because handing work out
+    is the user's call then. The key carries the interval it fired in: PUSHED dedupes by key, and
+    a fixed one would be sent once and never again.
+    """
+    import settings
+    import state
+    import todo
+    if not todo.auto(ROOT):
+        return []
+    minutes = settings.load(ROOT)[0].get("idle_nudge_minutes", 0) or 0
+    if minutes <= 0:
+        return []
+    seen = state.get(ROOT, "seen_at", 0, stem=stem) or 0
+    idle_for = time.time() - seen
+    if not seen or idle_for < minutes * 60:
+        return []
+    rows = todo.ready(ROOT, env)
+    if not rows:
+        return []
+    row = rows[0]
+    return [(f"{env}:idle:{int(idle_for // (minutes * 60))}",
+             {"content": f"Nothing has moved on {env} for {int(idle_for // 60)} minutes and auto mode is on. "
+                         f"{len(rows)} to-do(s) are ready — the next is {row['n']}, {row.get('title', '')}. "
+                         f"`.journal/journal.py next`, then pick it up and carry on.",
+              "meta": {"env": env, "did": "idle"}})]
 
 
 def _unbound_live(live: dict) -> dict[str, float]:
