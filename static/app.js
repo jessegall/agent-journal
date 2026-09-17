@@ -3438,9 +3438,69 @@ const PlanCards = {
     </TransitionGroup>`,
 };
 
+// The conversation on an environment: what the agent said, what you said back, and nothing either of you DID.
+// The turns come from /chat, which reads the transcript and the inbox; the Activity column keeps the doing.
+const Thread = {
+  props: { env: String },
+  components: { Compose },
+  setup(props) {
+    const chat = useFetch(() => props.env && `/api/env/${props.env}/chat`);
+    const root = ref(null);
+    const turns = computed(() => (chat.data && chat.data.turns) || []);
+    const more = computed(() => (chat.data && chat.data.more) || 0);
+    // a new turn lands in view, but never while the reader is scrolled up reading back: a thread
+    // that yanks the page away mid-sentence is the one thing a long conversation must not do
+    const near = () => {
+      const page = root.value && root.value.closest(".page");
+      return !page || page.scrollHeight - page.scrollTop - page.clientHeight < 160;
+    };
+    let last = 0;
+    watch(turns, (rows) => {
+      const grew = rows.length > last;
+      const first = last === 0;
+      last = rows.length;
+      if (!grew || !(first || near())) return;
+      // the THREAD's end, not the page's: the writing box is sticky, so anchoring above it hides the
+      // newest turn behind it, and anchoring on the page scrolls past the sections under the thread
+      nextTick(() => {
+        if (root.value) root.value.scrollIntoView({ block: "end", behavior: first ? "auto" : "smooth" });
+      });
+    });
+    const send = (text, files) => postJSON(`/api/env/${props.env}/messages`, { text, files })
+      .then(() => { chat.reload(); changed(); });
+    const agent = computed(() => SHELL.activity && SHELL.activity.agent);
+    const note = computed(() => {
+      if (!agent.value) return "No agent is here. What you write is read when the next session starts.";
+      return agent.value.working ? "The agent is working. It reads this when it stops."
+        : "The agent is idle. It reads this within a few seconds.";
+    });
+    return { turns, more, send, root, note };
+  },
+  template: `
+    <div ref=root class=thread>
+      <p v-if="more" class=thread-more>{{ more }} earlier</p>
+      <p v-if="!turns.length" class=thread-empty>Nothing has been said here yet.</p>
+      <div v-for="(t, i) in turns" :key="t.at + ':' + t.kind + ':' + i" :class="['thread-turn', {mine: t.who === 'you'}]">
+        <div class="thread-bubble md">
+          <p v-if="t.ref && t.kind === 'reply'" class=thread-quote>{{ t.ref }}</p>
+          <div v-html="$md(t.text)"></div>
+        </div>
+        <div class=thread-meta>
+          <span v-if="t.tag" class=thread-tag>{{ t.tag }}</span>
+          <span v-if="t.ref && t.kind === 'message'">{{ t.ref }}</span>
+          <span>{{ t.at.slice(11, 16) }}</span>
+        </div>
+      </div>
+      <div class=thread-write>
+        <Compose placeholder="Write to the agent…" submit="Send" hint="↵ sends · ⇧↵ new line" :send="send" :attach="true"/>
+        <p class=thread-note>{{ note }}</p>
+      </div>
+    </div>`,
+};
+
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard },
+  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
@@ -3462,16 +3522,6 @@ const EnvHome = {
     const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
     const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
     const reloadAll = () => [work, recentWork, questions, suggestions, plans, messages, notes].forEach((f) => f.reload());
-    // the agent's reply raises a notification about that message: while it is unread, so is the reply
-    const unreadReplies = computed(() => new Set((notes.data || [])
-      .filter((x) => !x.read && String(x.about).startsWith("inbox:"))
-      .map((x) => Number(String(x.about).split(":")[1]))));
-    const markRead = (n) => {
-      const unread = (notes.data || []).filter((x) => !x.read && String(x.about) === `inbox:${n}`);
-      if (!unread.length) return;
-      Promise.all(unread.map((x) => send("POST", `/api/env/${props.env}/notifications/${x.n}/read`))).then(() => notes.reload());
-    };
-
     // Dismiss takes a row off this list without acting on it, remembered in this browser
     const dismissKey = computed(() => `journal.dismissed.${props.env}`);
     const dismissed = ref(new Set());
@@ -3609,38 +3659,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    // Replies to you: each part of a message the agent answered, so a reply is not buried in the message
-    const replies = computed(() => {
-      const weekAgo = Date.now() - 7 * 86400000;
-      const rows = [];
-      for (const m of messages.data || []) {
-        if (m.status === "archived" || !unreadReplies.value.has(m.n)) continue;
-        const answered = (m.replies || []).filter((r) => r.who !== "you" && r.who !== "You" && (!r.at || Date.parse(r.at) >= weekAgo));
-        for (const r of answered) {
-          const part = r.part && (m.parts || []).find((x) => x.excerpt && (x.excerpt.includes(r.part) || r.part.includes(x.excerpt)));
-          const ref = part && part.became.length ? part.became.map((b) => b.label).join(", ") : `message ${m.n}`;
-          // a partless reply answers the whole message, so the message's own words are what it is under
-          rows.push({ key: `${m.n}:${r.at}:${r.part || "all"}`, at: r.at || "", part: r.part || m.gist || m.text || `message ${m.n}`,
-                      answer: r.text, ref, age: r.age || "just now", done: true, n: m.n });
-        }
-        if (m.status === "waiting" && m.read) {
-          const made = (m.parts || []).flatMap((p) => p.became.map((b) => b.label)).filter((label) => label !== "answered");
-          rows.push({ key: `${m.n}:working`, at: m.read, part: m.gist || m.text, answer: "",
-                      waitingOn: made.length ? made.join(", ") : "", ref: made.length ? made.join(", ") : `message ${m.n}`,
-                      age: m.read_age || "just now", done: false, n: m.n });
-        }
-      }
-      // what the agent answered leads; what it is still working on follows, so a reply is never crowded out
-      const newest = (a, b) => (b.at > a.at ? 1 : b.at < a.at ? -1 : 0);
-      return [...rows.filter((r) => r.done).sort(newest), ...rows.filter((r) => !r.done).sort(newest)].slice(0, 4)
-        .map((r) => ({ ...r, open: () => { markRead(r.n); peek("reply", r.n); } }));
-    });
-    const repliesNote = computed(() => {
-      const done = replies.value.filter((r) => r.done).length;
-      const working = replies.value.length - done;
-      return [done ? `${done} answered` : "", working ? `${working} ${working === 1 ? "part" : "parts"} still working` : ""].filter(Boolean).join(" · ");
-    });
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, replies, repliesNote, waitingCount };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, waitingCount };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3659,6 +3678,9 @@ const EnvHome = {
           </button>
         </div>
       </div>
+      <section class=home-section>
+        <Thread :env="env"/>
+      </section>
       <section class=home-section>
         <Transition name=needs mode=out-in>
         <div v-if="clear" key=clear class=needs-clear><Icon name="todos"/><span>Nothing is waiting on you.</span></div>
@@ -3709,16 +3731,6 @@ const EnvHome = {
           </a>
         </TransitionGroup>
         <a v-if="finishedMore > 0" class=home-more :href="'#/env/' + env + '/work'">{{ finishedMore }} more<Icon name="arrow"/></a>
-      </section>
-      <section v-if="replies.length" class=home-section>
-        <div class=home-head><h2>Replies to you</h2><span>{{ repliesNote }}</span></div>
-        <div v-for="r in replies" :key="r.key" :class="['reply-card', {pending: !r.done}]" @click="r.open">
-          <p class=reply-card-ask>{{ r.part }}</p>
-          <div class=reply-card-row>
-            <span class=reply-card-answer><span v-if="!r.done" class=reply-card-dot></span>{{ r.done ? r.answer : (r.waitingOn ? 'Working on it — ' + r.waitingOn : 'Working on it') }}</span>
-            <span class=reply-card-age>{{ r.age }}</span>
-          </div>
-        </div>
       </section>
     </div></div></div>
     <Peek v-if="view.kind" :key="view.kind + view.n" :env="env" :kind="view.kind" :n="view.n" :close="unpeek" :reloaded="reloadAll" :swap="peek"/>`,
