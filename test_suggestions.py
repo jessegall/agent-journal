@@ -127,5 +127,14 @@ check("and decline", "deny" in out, True)
 out = fire("PreToolUse", tool_name="Bash", tool_input={"command": ".journal/journal.py suggestions withdraw 4 no"})
 check("withdrawing its own is the agent's to do", "the user's to make" in out, False)
 
+# ------------------------------------------------- a question wearing a suggestion is refused
+# It would land in the wrong list with the wrong verbs: accept, adjust and decline instead of an
+# answer to what was asked.
+_code, _out = j("suggest", "Should I switch the loader to fetch-on-idle?", "--brief", stdin="it double-fetches\n")
+check("a suggestion titled as a question is refused, and names the right command",
+      (_code, "is a question, not a proposal" in _out, "questions add" in _out), (1, True, True))
+check("and the same thing said as a proposal is taken",
+      j("suggest", "Switch the loader to fetch-on-idle", "--brief", stdin="it double-fetches\n")[0], 0)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

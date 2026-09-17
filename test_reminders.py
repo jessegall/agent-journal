@@ -214,5 +214,16 @@ check("a reminder is bound to its environment, like a pin, and a rule is not",
       ("reminders" in _s.TRACKED, "pins" in _s.TRACKED, "rules" in _s.TRACKED, "rules" in _s.IN_RECORD),
       (True, True, False, True))
 
+# ------------------------------------------------- the condition is capped like the instruction
+# It is printed beside the text at every stop, so an uncapped condition is the same wall of text the
+# text's cap exists to prevent, moved to the other half of the line.
+_s = S(hold_stop_on_untagged=False)
+_ran = _s.j("reminders", "add", "run the suites first", "--until=" + ("padding " * 40))
+check("a condition longer than the cap is refused, and says what to cut",
+      (_ran.returncode, "a condition has" in _ran.stdout + _ran.stderr), (1, True))
+_ran = _s.j("reminders", "add", "run the suites before saying a change works",
+            "--until=the migration tests pass on CI")
+check("and one you could judge true or false is taken", _ran.returncode, 0)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

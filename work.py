@@ -26,10 +26,6 @@ KEY = "work"
 MESSAGES = {
     "named_agent": "agent {agent}",
     "named_pid": "pid {pid}",
-    "start_bare": ('{subject} is not the work, it is what you are working WITH. Say what you are '
-                   'changing, in a sentence you will say again when you close it:\n'
-                   '  journal work start "fix the Dropdown recompose 500"\n'
-                   '  journal work start "add a --json flag to export"'),
     "start_what": "start what? give it a name you will say again to close it",
     "already_open": "already open since {since} — nothing to do",
     "opened": "open: {subject}",
@@ -134,8 +130,6 @@ def start(root: Path, subject: str, at: str, where: dict | None = None) -> tuple
     subject = " ".join(subject.split())
     if not subject:
         return False, say("start_what")
-    if too_bare(subject):
-        return False, say("start_bare", subject=subject)
     with state.locked(root):
         for w in open_work(root):
             if w["subject"].lower() == subject.lower():

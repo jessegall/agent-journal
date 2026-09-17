@@ -18,6 +18,7 @@ MESSAGES = {
     "label": "{kind} {num}",
     "not_a_ref": "{text} is not something a comment can be about; write it as `todo 22`, `doc 4`, `pin 3`, "
                  "`rule 2`, `reminder 1`, `message 5`, `work 7`, `report 3` or `plan 5`",
+    "retired": "{kind} {n} is {state} — comment on what replaced it, or on the row it produced",
     "no_reminder": "there is no reminder {n} on this environment",
     "no_work": "there is no work {n} on this environment. `journal work` numbers it.",
     "no_report": "there is no report {n} on this environment. `journal reports` numbers them.",
@@ -57,6 +58,34 @@ def label(ref: str) -> str:
     return say("label", kind=KINDS.get(kind, kind), num=num)
 
 
+def retired(root: Path, ref: str, track: str | None = None) -> str | None:
+    """Why the row this points at has been retracted, or None.
+
+    A COMMENT ON SOMETHING RETRACTED GOES NOWHERE. A struck pin is hidden from every list, an
+    archived report has left the rail, a withdrawn suggestion is off the page — and the comment
+    sits on it where nobody will pass again. DONE IS NOT RETRACTED: a comment on a closed to-do
+    ("this came back") is exactly the kind of thing worth saying, so it is not refused.
+    """
+    kind, _, num = ref.partition(":")
+    n = int(num) if num.isdigit() else 0
+    if kind in ("pin", "rule"):
+        import pins
+        items = pins._all(root, pins.RULES if kind == "rule" else pins.KEY, track)
+        got = items[n - 1] if 1 <= n <= len(items) else None
+        return say("retired", kind=kind, n=n, state="struck") if got and got.get("struck") else None
+    if kind == "report":
+        import reports
+        items = reports._all(root, track)
+        got = items[n - 1] if 1 <= n <= len(items) else None
+        return say("retired", kind=kind, n=n, state="archived") if got and got.get("archived") else None
+    if kind == "suggestion":
+        import suggestions
+        items = suggestions._all(root, track)
+        got = items[n - 1] if 1 <= n <= len(items) else None
+        return say("retired", kind=kind, n=n, state="withdrawn") if got and got.get("withdrawn") else None
+    return None
+
+
 def check_ref(root: Path, ref: str, track: str | None = None) -> str | None:
     kind, _, num = ref.partition(":")
     if kind == "reminder":
@@ -70,13 +99,15 @@ def check_ref(root: Path, ref: str, track: str | None = None) -> str | None:
     if kind == "report":
         import reports
         n = int(num)
-        return None if 1 <= n <= len(reports._all(root, track)) else say("no_report", n=n)
+        if not 1 <= n <= len(reports._all(root, track)):
+            return say("no_report", n=n)
+        return retired(root, ref, track)
     if kind == "plan":
         import plans
         n = int(num)
         return None if 1 <= n <= len(plans._all(root, track)) else say("no_plan", n=n)
     import questions
-    return questions.check_ref(root, ref, track)
+    return questions.check_ref(root, ref, track) or retired(root, ref, track)
 
 
 def _all(root: Path, track: str | None = None) -> list[dict]:

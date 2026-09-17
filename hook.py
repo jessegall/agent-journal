@@ -256,6 +256,10 @@ MESSAGES = {
                     "often than not — say so and carry on. `journal search`, `journal conversation --back=1` and "
                     "`journal pins` still run, to decide with.",
     "always_skills": "LOAD THESE SKILLS NOW — the user asked for them at every start: {names}.",
+    "work_too_bare": ('{subject} is not the work, it is what you are working WITH. Say what you are '
+                      'changing, in a sentence you will say again when you close it:\n'
+                      '  .journal/journal.py work start "fix the Dropdown recompose 500"\n'
+                      '  .journal/journal.py work start "add a --json flag to export"'),
     "todo_needs_brief": ('a to-do needs its brief: the row is read again in a week by a session that '
                         'remembers nothing of this one, and a title alone is a note to somebody who '
                         'already knows.\n'
@@ -1896,6 +1900,27 @@ def _todo_without_brief(payload: dict) -> bool:
     return False
 
 
+def _work_too_bare(payload: dict) -> str:
+    """The subject of a `work start` on this line that names a tool or one bare word, or "".
+
+    A GOOD SUBJECT IS A SENTENCE YOU WILL SAY AGAIN — the skill's own rule, and the subject is what
+    the next session is handed at its first stop. `work start "Bash"` says nothing at all. Like the
+    brief check above this is the AGENT's rule, so it lives here: `todos start <n>` opens work named
+    by the row's title, and a row the user wrote in the viewer is theirs to title as they like.
+    """
+    import work
+    for verb, cmd, words in _journal_cmds(payload) or ():
+        sig = str(getattr(cmd, "signature", ""))
+        # `work start "…"` and its twin `start "…"`: the noun is there in one and not the other
+        if not (sig.startswith("work:start") or sig.startswith("start ")):
+            continue
+        rest = words[2:] if len(words) > 1 and words[1] == "start" else words[1:]
+        subject = " ".join(w for w in rest if not w.startswith("-")).strip()
+        if subject and work.too_bare(subject):
+            return subject
+    return ""
+
+
 def _journal_write(payload: dict) -> str | None:
     """The journal write verb on this command line, if it is one, anywhere in a chain."""
     for verb, cmd, words in _journal_cmds(payload) or ():
@@ -1973,6 +1998,9 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
         return _deny(say("context_deny", pct=round(pct)))
     if _todo_without_brief(payload):
         return _deny(say("todo_needs_brief"))
+    bare = _work_too_bare(payload)
+    if bare:
+        return _deny(say("work_too_bare", subject=bare))
     # A DISPATCH NAMES ITS MODEL (rule B1). Unset hands out this session's own model, the most expensive in the room.
     # A fork cannot take one, and a custom agent whose definition sets one has already decided.
     if payload.get("tool_name") == "Agent":
