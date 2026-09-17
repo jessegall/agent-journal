@@ -365,6 +365,19 @@ check("every `journal <verb>` the README prints is one the CLI answers",
 check("and no retired command is presented as a live one",
       [v for v in _h.RETIRED if v in _named], [])
 
+# THE REFERENCE MOVED OUT OF THE README and the check has to follow it, or the file that holds
+# every command is the one file nothing checks. The README is short on purpose now; COMMANDS.md
+# is where a reader goes for the detail, which makes a wrong line there worse, not better.
+_ref = (SRC / "COMMANDS.md")
+check("the README's reference page exists to be linked to", _ref.is_file(), True)
+check("and the README links to it", "COMMANDS.md" in _readme, True)
+_in_ref = sorted({m.group(1) for m in __import__("re").finditer(r"^\s*journal (?:--env=<name> )?([a-z][a-z-]*)",
+                                                              _ref.read_text(), __import__("re").M)})
+check("every `journal <verb>` the reference prints is one the CLI answers",
+      [v for v in _in_ref if not _h.lines(v) and v not in ("is", "knows", "help")], [])
+check("and no retired command is presented as a live one there either",
+      [v for v in _h.RETIRED if v in _in_ref], [])
+
 # ─────────── one object, one renderer ──────────────────────────────────────────────────────
 # The house style used to live in 546 decisions: `say` was the one exit, but every caller
 # assembled its own string first, so the blank lines, the order and the indent were
