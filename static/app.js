@@ -3355,6 +3355,11 @@ const PLAN_WORD = { preparing: "being written", active: "working", parked: "paus
 // for every other list in this file, and brings its own error line with it.
 // WHAT IS WAITING READS AS A CARD, one per kind, not a uniform row: the kind's tint lights the edge,
 // a question carries more weight than the rest, and the card names the one thing to do with it.
+// A CARD IN THE RAIL IS AN INDEX ENTRY, NOT A SECOND PLACE TO ACT. Clicking one moves the thread to
+// the turn that raised it, so the question is answered in line with the conversation around it. Off
+// the home — the Messages page, a list — there is no thread to move, and the inspector opens as before.
+const THREAD_GOTO = reactive({ key: "", at: 0 });
+
 const NeedsCard = {
   props: { item: Object, selected: Boolean, dismiss: Function },
   components: { Icon },
@@ -3477,6 +3482,18 @@ const Thread = {
     const send = (text, files) => postJSON(`/api/env/${props.env}/messages`, { text, files })
       .then(() => { chat.reload(); changed(); });
     const fileUrl = (n, name) => `/message-files/${props.env}/${n}/${encodeURIComponent(name)}`;
+    const lit = ref("");
+    watch(() => THREAD_GOTO.at, () => {
+      const want = THREAD_GOTO.key;
+      if (!want || !root.value) return;
+      const el = root.value.querySelector(`[data-turn="${want}"]`);
+      if (!el) return;
+      // claimed: the card moved the thread, so nothing opens an inspector over it
+      THREAD_GOTO.key = "";
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+      lit.value = want;
+      setTimeout(() => { if (lit.value === want) lit.value = ""; }, 2200);
+    });
     // what the ticks mean, said in words for whoever hovers one
     const landed = (t) => (t.state === "filed"
       ? `Filed${t.became ? `: it became ${t.became}` : ""}`
@@ -3484,14 +3501,15 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, send, root, answered, landed, fileUrl };
+    return { turns, more, send, root, answered, landed, fileUrl, lit, THREAD_GOTO };
   },
   template: `
     <div class=thread>
       <div ref=root class=thread-scroll>
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
       <p v-if="!turns.length" class=thread-empty>Nothing has been said here yet.</p>
-      <div v-for="(t, i) in turns" :key="t.at + ':' + t.kind + ':' + i" :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question'}]">
+      <div v-for="(t, i) in turns" :key="t.at + ':' + t.kind + ':' + i" :data-turn="t.n ? t.kind + ':' + t.n : null"
+        :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', lit: lit === t.kind + ':' + t.n}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
           <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
@@ -3543,6 +3561,12 @@ const EnvHome = {
     const notes = useFetch(url("/notifications"));
     const view = reactive({ kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
+    // the thread answers if it holds that turn; it says so by moving, and peek is the fallback
+    const goto = (kind, n) => {
+      THREAD_GOTO.key = `${kind}:${n}`;
+      THREAD_GOTO.at = Date.now();
+      nextTick(() => { if (THREAD_GOTO.key) peek(kind, n); });
+    };
     const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
     const reloadAll = () => [work, recentWork, questions, suggestions, plans, messages, notes].forEach((f) => f.reload());
     // Dismiss takes a row off this list without acting on it, remembered in this browser
@@ -3569,7 +3593,7 @@ const EnvHome = {
         ...(reports.data || []).filter((r) => !r.seen && !r.archived).map((r) => ({ kind: "report", n: r.n, title: r.title, age: r.age })),
       ];
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
-        .map((r) => ({ ...r, meta: `${r.label.toLowerCase()} ${r.n} · ${r.age}`, open: () => peek(r.kind, r.n) }));
+        .map((r) => ({ ...r, meta: `${r.label.toLowerCase()} ${r.n} · ${r.age}`, open: () => goto(r.kind, r.n) }));
     });
     // EVERY LIVE PLAN IS SHOWN, not only the one in progress. One plan is worked at a time, but a
     // parked one, a draft waiting to be approved and a finished one waiting to be acknowledged are all
