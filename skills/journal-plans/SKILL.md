@@ -41,6 +41,7 @@ word. Measured here: a plan drafted without that conversation had to be rewritte
 
     journal plans add "<title>" --goal="<what is true when it is done>" [--brief]   the brief on stdin
     journal plans phase <n> "<title>" [--when="<what is true when the phase is complete>"] [--checkpoint]
+    journal plans phase <n> "<title>" --before=<p>       put it BEFORE phase p, not at the end
     journal plans todos <n> <p> 4 5 6          put existing to-dos in phase p
     journal plans todos <n> <p> 4 --off        take one out
     journal plans from-doc <doc>               a draft from a document's "Phase …" parts
@@ -52,6 +53,12 @@ word. Measured here: a plan drafted without that conversation had to be rewritte
 The order is **add, then phase, then todos**: a phase belongs to a plan and a to-do belongs
 to a phase. To-dos are written the ordinary way (`journal todos add "<title>" --brief`) and
 then placed; a plan does not have a private kind of to-do.
+
+**A phase that belongs in the middle goes in the middle.** `--before=<p>` inserts it there and the
+phases after it move along, carrying their to-dos and their checkpoints — nothing is renumbered by
+hand, because a phase's number is its position and every reader derives it. Write the plan you can
+see and correct it when the work teaches you more; a plan abandoned and rewritten because a phase
+could only be appended is a plan the user has to approve twice.
 
 **A to-do sits in ONE phase**, and a row written into the wrong one is corrected in a
 single command: `journal plans todos <n> <p> 4 --move` takes it out of the phase it is in
