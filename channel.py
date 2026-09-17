@@ -255,24 +255,44 @@ def _did(env: str, since: float) -> list[tuple[str, dict]]:
 
 
 def _plan_events(env: str, since: float) -> list[tuple[str, dict]]:
-    """A plan the user approved, or continued past a checkpoint, in the viewer: the agent has work to start."""
+    """A plan the user approved, or continued past a checkpoint, in the viewer: the agent has work to start.
+
+    AN APPROVAL IS NOT OLD NEWS UNTIL SOMEBODY ACTS ON IT. Every other source here has a record of
+    what it has already told, and `since` only keeps a fresh channel process from replaying history.
+    A plan has no such record, so an approval stamped before this process started was dropped and
+    never reached anyone — and a channel restarts far more often than a plan is approved. What makes
+    one of these events stale is the work STARTING, not the clock: so the latest of them also fires
+    while the current phase is sitting there with nothing picked up, and PUSHED keeps it to once a
+    session.
+    """
     import plans
+    import todo
+    auto = todo.auto(ROOT)
+    open_rows = {t["n"]: t for t in todo.open_items(ROOT, env)}
     got = []
     for n, plan in enumerate(plans._all(ROOT, env), 1):
         rows = plans.phases(ROOT, plan, env)
         now = plans.current(plan, rows)
         ahead = f" Phase {now['p']}, {now['title']}, is current: start its to-dos with `.journal/journal.py next`." if now else ""
         title = _gist(plan.get("title", ""))
+        events = []
         at = plan.get("activated_at") or ""
-        if at and plan.get("activated_by") == "web" and _epoch(at) >= since:
-            got.append((f"{env}:plan:{n}:approved:{at}",
-                        {"content": f"The user approved plan {n} on {env}: {title}.{ahead}", "meta": {"env": env, "plan": str(n)}}))
+        if at and plan.get("activated_by") == "web":
+            events.append((at, f"{env}:plan:{n}:approved:{at}",
+                           {"content": f"The user approved plan {n} on {env}: {title}.{ahead}",
+                            "meta": {"env": env, "plan": str(n)}}))
         for p, ph in enumerate(plan.get("phases") or [], 1):
             at = ph.get("continued_at") or ""
-            if at and _epoch(at) >= since:
-                got.append((f"{env}:plan:{n}:continued:{p}:{at}",
-                            {"content": f"The user continued plan {n} on {env} past phase {p}, {_gist(ph.get('title', ''))}.{ahead}",
-                             "meta": {"env": env, "plan": str(n)}}))
+            if at:
+                events.append((at, f"{env}:plan:{n}:continued:{p}:{at}",
+                               {"content": f"The user continued plan {n} on {env} past phase {p}, {_gist(ph.get('title', ''))}.{ahead}",
+                                "meta": {"env": env, "plan": str(n)}}))
+        # the whole plan is waiting on the agent when its current phase has rows and none has been picked up
+        waiting = bool(now and now["todos"] and not plans.checkpoint(plan, rows, auto)
+                       and not any((open_rows.get(r["n"]) or {}).get("started") for r in now["todos"]))
+        # only the LATEST event stands in for that wait: a plan past three checkpoints would else announce all four
+        latest = max(events)[1] if waiting and events else ""
+        got.extend((key, payload) for at, key, payload in events if _epoch(at) >= since or key == latest)
     return got
 
 

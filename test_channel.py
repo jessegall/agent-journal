@@ -207,7 +207,12 @@ check("a session on no environment yet is still woken, told which environment it
       ("while on no environment" in params.get("content", ""), params.get("meta", {}).get("env")), (True, "default"))
 
 import channel  # noqa: E402
-check("nothing that happened before the channel started is pushed", channel._waiting("default", time.time() + 60), [])
+_old = channel._waiting("default", time.time() + 60)
+check("a plan approved before the channel started is pushed anyway: an approval goes stale when the work STARTS, not when the clock passes it",
+      [k.split(":")[2:4] for k, _ in _old], [["1", "approved"]])
+P.cli("todos", "start", _step)
+check("and once its first row is picked up, nothing from before the channel started is pushed",
+      channel._waiting("default", time.time() + 60), [])
 check("a session on no environment yet is woken for new messages only, not for another environment's answers or comments",
       sorted({next(k for k in ("message", "question", "comment") if k in params["meta"]) for _, params in channel._waiting("default", 0, answers=False)}),
       ["message"])
