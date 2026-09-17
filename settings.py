@@ -58,6 +58,14 @@ DEFAULTS = {
     # binding at start, and is the one way a project says every session belongs on it.
     "bind_on_start": False,
 
+    # WHICH EVENTS INTERRUPT. Everything the user does in the viewer reaches an idle session
+    # through the channel; these kinds reach one that is mid-turn as well, because the user
+    # speaking is the one thing that cannot wait. The rest — a plan approved, a suggestion
+    # decided, a to-do edited, a newer version upstream — is there when the turn ends.
+    # The names are the event's own kind: message, question, comment, suggestion, plan, did,
+    # update. An empty list means nothing interrupts; every kind listed means everything does.
+    "channel_reach_now": ["message", "question", "comment"],
+
     # A tool result bigger than this, and bigger than anything before it this session, is
     # reported once. Characters, not tokens: it is the transcript's own unit and roughly
     # four to one. 0 turns it off.

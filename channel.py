@@ -34,6 +34,9 @@ UPDATE_TOLD = "update_told"
 
 AUTO_OFF_NOTE = " Auto mode is off: handle this only, and do not start on the to-do list."
 
+#: the event kinds that reach a session mid-turn: the user speaking, and nothing else
+REACH_NOW = ("message", "question", "comment")
+
 _OUT = threading.Lock()
 
 
@@ -80,13 +83,14 @@ def pending(stem: str) -> list[tuple[str, dict]]:
     # the channel is the fallback for an idle session: a working one hears everything from its own hooks
     live = tracks.live(ROOT)
     loose = _unbound_live(live)
+    now = _reach_now()
     for env in [bound] if bound else tracks.choices(ROOT):
         if not _recipient(stem, env, live, loose):
             continue
-        if not idle:
-            continue
         auto = todo.auto(ROOT)
         for key, params in _waiting(env, STARTED[0], answers=bool(bound)):
+            if not idle and not (set(params["meta"]) & now):
+                continue
             quiet = auto or "message" in params["meta"]
             got.append((key, params if quiet else {**params, "content": params["content"] + AUTO_OFF_NOTE}))
     if idle:
@@ -95,6 +99,25 @@ def pending(stem: str) -> list[tuple[str, dict]]:
             got.extend(_idle_nudge(stem, bound))
     pushed = set(state.get(ROOT, PUSHED, [], stem=stem) or [])
     return [(key, params) for key, params in got if key not in pushed]
+
+
+def _reach_now() -> set:
+    """The event kinds that reach a session mid-turn; everything else waits for its next stop.
+
+    NOT EVERY EVENT IS WORTH INTERRUPTING FOR, and until this one gate decided all of them: an
+    idle session heard everything and a working one heard nothing, so the user speaking and a
+    setting being changed were the same urgency. The kind is already in every event's `meta` —
+    `message`, `question`, `comment`, `suggestion`, `plan`, `did`, `update` — so the gate is a
+    set membership, not a new field on each source.
+
+    The user speaking is the one thing that cannot wait: a message, an answer to a question the
+    agent asked, a comment on what it wrote. The rest — a plan approved, a suggestion decided, a
+    to-do edited, a newer version upstream — is there when the turn ends, and reading it a minute
+    later costs nothing. `channel_reach_now` in settings moves the line.
+    """
+    import settings
+    got = settings.load(ROOT)[0].get("channel_reach_now")
+    return set(got if isinstance(got, (list, tuple, set)) else REACH_NOW)
 
 
 def _idle_nudge(stem: str, env: str) -> list[tuple[str, dict]]:
