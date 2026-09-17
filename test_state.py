@@ -960,7 +960,7 @@ check("auto reports off by default", "auto mode is OFF" in p.stdout, True)
 p = subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, text=True, timeout=180)
 check("auto on says the state now: nothing open, which to-do starts next",
       "Nothing is open, 2 to-do(s) waiting: the next idle stop starts to-do 1" in p.stdout, True)
-subprocess.run([J, "start", "some work"], env=env, capture_output=True, timeout=180)
+subprocess.run([J, "start", "some work on the loader"], env=env, capture_output=True, timeout=180)
 p2 = subprocess.run([J, "todo", "auto", "on"], env=env, capture_output=True, text=True, timeout=180)
 check("with work open it says what the agent is working on",
       "Agent currently working on: some work" in p2.stdout, True)

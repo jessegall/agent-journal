@@ -15,6 +15,7 @@ state, it is small, and it is written down.
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 import state
@@ -25,6 +26,10 @@ KEY = "work"
 MESSAGES = {
     "named_agent": "agent {agent}",
     "named_pid": "pid {pid}",
+    "start_bare": ('{subject} is not the work, it is what you are working WITH. Say what you are '
+                   'changing, in a sentence you will say again when you close it:\n'
+                   '  journal work start "fix the Dropdown recompose 500"\n'
+                   '  journal work start "add a --json flag to export"'),
     "start_what": "start what? give it a name you will say again to close it",
     "already_open": "already open since {since} — nothing to do",
     "opened": "open: {subject}",
@@ -89,6 +94,35 @@ def open_work(root: Path, track: str | None = None) -> list[dict]:
     return [w for w in _all(root, track) if not w.get("ended")]
 
 
+#: the tools an agent reaches for, which are what it reaches for INSTEAD of naming the change
+_TOOL_WORDS = frozenset(("bash", "read", "edit", "write", "grep", "glob", "task", "agent", "todowrite",
+                         "notebookedit", "webfetch", "websearch", "python", "python3", "node", "npm",
+                         "git", "ls", "cat", "sed", "awk", "stuff", "things"))
+#: what the second word of a two-word subject must not be: it names nothing on its own
+_VAGUE = frozenset(("it", "this", "that", "them", "these", "those", "stuff", "things", "everything",
+                    "something", "some", "more"))
+
+
+def too_bare(subject: str) -> bool:
+    """True when the subject names a tool or is one bare word.
+
+    A GOOD SUBJECT IS A SENTENCE YOU WILL SAY AGAIN — the skill's own words, and every example in it
+    is a clause: "fix the Dropdown recompose 500", "add a --json flag to export". `work start "Bash"`
+    passes every other check and produces an open-work row that says nothing, which is what the next
+    session is handed at its first stop.
+    """
+    words = [w for w in re.split(r"[\s/]+", (subject or "").strip().lower()) if w]
+    if not words:
+        return False
+    if len(words) == 1:
+        return True
+    if len(words) > 2:
+        return False
+    # two words, and one of them says nothing: "Edit app.py" names the tool, "fix it" names nothing at
+    # all — "it" is clear to whoever is holding the thought, which is nobody by the next session
+    return words[0].strip(":") in _TOOL_WORDS or words[1].strip(".,:") in _VAGUE
+
+
 def start(root: Path, subject: str, at: str, where: dict | None = None) -> tuple[bool, str]:
     """Declare work. Refuses a duplicate rather than opening a second of the same thing.
 
@@ -100,6 +134,8 @@ def start(root: Path, subject: str, at: str, where: dict | None = None) -> tuple
     subject = " ".join(subject.split())
     if not subject:
         return False, say("start_what")
+    if too_bare(subject):
+        return False, say("start_bare", subject=subject)
     with state.locked(root):
         for w in open_work(root):
             if w["subject"].lower() == subject.lower():

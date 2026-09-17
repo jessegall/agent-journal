@@ -181,7 +181,7 @@ check("once that ends, the list starts", label, AUTO_NEXT + "1 to-do(s) waiting"
 
 # ---------------------------------------------------------------- open work, no to-dos
 d = project(); s = Session(d, "s1")
-s.journal("todo", "auto", "on"); s.journal("start", "some work"); s.start()
+s.journal("todo", "auto", "on"); s.journal("start", "some work on the loader"); s.start()
 label, text = s.stop()
 check("auto on, work open, nothing waiting: still held — open work is never a way to go quiet",
       (label, "never left standing" in text), (AUTO_OPEN, True))
@@ -287,7 +287,7 @@ code, out = s.journal("auto-mode", "disable")
 check("auto-mode disable switches it off", (code, "auto mode is OFF" in s.journal("auto-mode")[1]), (0, True))
 code, out = s.journal("auto-mode", "enable")
 check("auto-mode enable switches it back on", (code, "auto mode is ON" in s.journal("auto-mode")[1]), (0, True))
-s.journal("start", "w")
+s.journal("start", "work on the widget list")
 code, out = s.journal("todo", "auto", "on")
 check("auto on with work open says what the agent is working on", "Agent currently working on: w" in out, True)
 
@@ -351,7 +351,7 @@ check("but not asked once done", code, 1)
 # Every way a piece of work can be open at a stop while auto is on, and every one is held
 # at every turn. The only stop that passes is the one that follows a hold.
 d = project(); s = Session(d, "s1")
-s.journal("todo", "auto", "on"); s.journal("start", "w"); s.start()
+s.journal("todo", "auto", "on"); s.journal("start", "work on the widget list"); s.start()
 labels = [s.stop()[0] for _ in range(5)]
 check("five turns in a row with work open: held five times", labels, [AUTO_OPEN] * 5)
 s.journal("work", "update", "halfway; waiting on nothing")
@@ -395,7 +395,7 @@ s3 = Session(d, "s3"); s3.start()
 check("a fresh session with another live session's work open: told at its first stop", s3.stop()[0], "journal reminded Claude: auto is on, but the open work was opened by another session")
 
 d = project(); s = Session(d, "s1")
-s.journal("todo", "auto", "on"); s.journal("start", "w"); s.start()
+s.journal("todo", "auto", "on"); s.journal("start", "work on the widget list"); s.start()
 s.say("go", "user"); s.say("no tag")
 check("an untagged message comes first", s.stop()[0], "journal reminded Claude: 1 untagged message(s)")
 s.say("[!reply] tagged")
@@ -409,7 +409,7 @@ s.journal("switch", "--back")
 check("back on default: held", s.stop()[0], AUTO_OPEN)
 
 d = project(); s = Session(d, "s1")
-s.journal("todo", "auto", "on"); s.journal("start", "w")
+s.journal("todo", "auto", "on"); s.journal("start", "work on the widget list")
 check("a subagent's stop with work open: nothing", s.fire("Stop", agent_id="x").strip(), "")
 check("and the stop right after a hold passes, but only that one",
       (s.stop()[0], s.stop(after_hold=True)[0], s.stop()[0]), (AUTO_OPEN, "", AUTO_OPEN))
