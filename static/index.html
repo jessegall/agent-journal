@@ -646,6 +646,11 @@
   /* A REPLY IS AN EXCHANGE, but a QUIET one: the user's words lead, quoted, and the answer sits under
      them on one line. It is opened to be read, so the card shows enough to recognise it and no more --
      several replies must not crowd out the sections above. No box: a hairline edge and a hover. */
+  /* a file read in the inspector: an image fits the width, text keeps its own shape */
+  .file-full { display: block; max-width: 100%; height: auto; margin: 8px 0 4px; border-radius: 8px; border: 1px solid var(--border); }
+  .file-raw { margin: 8px 0 4px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--raised);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; line-height: 1.55; color: var(--text-2);
+    white-space: pre-wrap; overflow-wrap: anywhere; }
   .reply-card { position: relative; display: flex; flex-direction: column; gap: 1px; padding: 6px 2px 6px 11px;
     border-radius: 6px; cursor: pointer; }
   .reply-card::before { content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: 2px;

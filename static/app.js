@@ -363,7 +363,18 @@ const WIDE_AT = 782;
 // how long each resource keeps a closed item listed, from the environment's settings
 const RETENTION = reactive({ table: null });
 // one overlay the shell hosts for any page: what the status bar inspects opens here, over whatever is showing
-const OVERLAY = reactive({ kind: "", n: 0, quote: "" });
+const OVERLAY = reactive({ kind: "", n: 0, quote: "", file: null });
+
+// A FILE IS READ WHERE YOU FOUND IT. A doc's attachment used to be an <a target=_blank>: clicking a
+// 50KB markdown file threw the raw text into a browser tab. This opens it over the page instead —
+// markdown rendered, images shown, anything else as plain text — and the raw file is still one click
+// away for the cases a browser does better.
+function openFile(event, file) {
+  if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.button)) return;
+  if (event) event.preventDefault();
+  OVERLAY.kind = "file";
+  OVERLAY.file = file;
+}
 
 // what the agent said, quoted, so a comment back to it starts from its own words
 // comments render through linkify rather than markdown, so the "> " reads as itself and is never swallowed
@@ -595,7 +606,10 @@ function saveOpened(names) {
 }
 
 // the inspector's width, dragged by its left edge and remembered per browser
-const INSPECTOR_WIDTH = { key: "journal.inspector.width", min: 420, max: 560, fallback: 500 };
+// 560px was fine for a to-do and hopeless for a 50KB markdown file, and the cap meant half a screen
+// was not something you could drag to. The ceiling is the viewport now: read something long in it.
+const INSPECTOR_WIDTH = { key: "journal.inspector.width", min: 420, fallback: 500,
+                          get max() { return Math.max(560, Math.round(window.innerWidth * 0.62)); } };
 const inspector = reactive({ width: storedInspectorWidth() });
 // the rows of the list that opened the inspector, in the order shown: its position and its up and down steps read from here
 const INSPECTOR_TRAIL = reactive({ owner: null, items: [], current: null });
@@ -744,7 +758,12 @@ const Panel = {
     };
     // sections arrive after their data loads, so labels are decorated as they appear
     let watcher = null;
-    onMounted(() => { decorate(); watcher = new MutationObserver(decorate); watcher.observe(body.value, { childList: true, subtree: true }); });
+    onMounted(() => {
+      decorate();
+      if (!body.value) return;   // it stood down for an overlay: there is nothing mounted to watch
+      watcher = new MutationObserver(decorate);
+      watcher.observe(body.value, { childList: true, subtree: true });
+    });
     onUnmounted(() => { if (watcher) watcher.disconnect(); });
     return { stepped, standDown, body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, pageWords, onItsPage, leaveForPage, INSPECTOR_TRAIL };
   },
@@ -3156,7 +3175,7 @@ const DocDetail = {
         editing.saving = false;
       }
     };
-    return { s, restParts, citedHref, actions, done, fileUrl, isImage, envs, editing, startEdit, cancelEdit, saveEdit };
+    return { s, restParts, citedHref, actions, done, fileUrl, openFile, isImage, envs, editing, startEdit, cancelEdit, saveEdit };
   },
   template: `
     <TopBar :crumbs="['Documents', s.data ? '#' + s.data.n : docref]"/>
@@ -3198,12 +3217,14 @@ const DocDetail = {
           <template v-for="a in s.data.attachments" :key="a.name">
             <details v-if="a.dir" class=file-folder>
               <summary><Icon name="folder"/><span class=file-name>{{ a.name }}/</span><span class=file-meta>{{ a.files.length }} file(s) · {{ $human(a.size) }}</span></summary>
-              <a v-for="f in a.files" :key="f" class=file-row :href="fileUrl(s.data.n, a.name + '/' + f)" target=_blank rel=noopener>
+              <a v-for="f in a.files" :key="f" class=file-row :href="fileUrl(s.data.n, a.name + '/' + f)"
+                @click="openFile($event, { url: fileUrl(s.data.n, a.name + '/' + f), name: f, from: 'Doc ' + s.data.n })">
                 <Icon name="docs"/><span class=file-name>{{ f }}</span>
               </a>
             </details>
             <div v-else class=file>
-              <a class=file-row :href="fileUrl(s.data.n, a.name)" target=_blank rel=noopener>
+              <a class=file-row :href="fileUrl(s.data.n, a.name)"
+                @click="openFile($event, { url: fileUrl(s.data.n, a.name), name: a.name, from: 'Doc ' + s.data.n })">
                 <Icon name="docs"/><span class=file-name>{{ a.name }}</span>
                 <span class=file-meta>{{ a.title }}<template v-if="a.title"> · </template>{{ $human(a.size) }}</span>
               </a>
@@ -3271,6 +3292,50 @@ const PEEK = {
 };
 
 // Home's side panel: the resource's own panel, with its header linking to the page
+const FileReader_ = {
+  props: { file: Object, close: Function },
+  components: { Panel, FetchState },
+  setup(props) {
+    provide("overlayPanel", true);
+    const text = reactive({ loading: true, error: null, body: "" });
+    const name = computed(() => (props.file || {}).name || "");
+    const kind = computed(() => {
+      const n = name.value.toLowerCase();
+      if (/\.(png|jpe?g|gif|webp|svg|avif|bmp)$/.test(n)) return "image";
+      if (/\.(md|markdown)$/.test(n)) return "markdown";
+      if (/\.(pdf)$/.test(n)) return "pdf";
+      return "text";
+    });
+    watchEffect(async () => {
+      const f = props.file;
+      if (!f || kind.value === "image" || kind.value === "pdf") { text.loading = false; return; }
+      text.loading = true;
+      text.error = null;
+      try {
+        const res = await fetch(f.url);
+        if (!res.ok) throw new Error(`The file could not be read (${res.status}).`);
+        text.body = await res.text();
+      } catch (e) {
+        text.error = e.message;
+      } finally {
+        text.loading = false;
+      }
+    });
+    return { text, name, kind };
+  },
+  template: `
+    <Panel :label="file.from || 'File'" :close="close" :onClose="close" :link="file.url">
+      <h2 class=panel-title>{{ name }}</h2>
+      <img v-if="kind === 'image'" class=file-full :src="file.url" :alt="name">
+      <p v-else-if="kind === 'pdf'" class="prose muted">A PDF opens best in its own tab —
+        <a :href="file.url" target=_blank rel=noopener>open {{ name }}</a>.</p>
+      <p v-else-if="text.loading" class=empty>Loading…</p>
+      <p v-else-if="text.error" class=error>{{ text.error }}</p>
+      <div v-else-if="kind === 'markdown'" class="md prose" v-html="$md(text.body)"></div>
+      <pre v-else class=file-raw>{{ text.body }}</pre>
+    </Panel>`,
+};
+
 const Peek = {
   props: ["env", "kind", "n", "close", "reloaded", "swap"],
   components: { TodoPanel, MessagePanel, ReplyPanel, QuestionPanel, WorkPanel, SuggestionPanel, SubagentPanel, PlanPanel, ReportPanel, DocPanel },
@@ -3929,7 +3994,9 @@ const Files = {
     const sourceLabel = (f) => (f.source === "message" ? `Message ${f.n}` : `Document ${f.n}`);
     const images = computed(() => (list.data || []).filter((f) => f.image));
     const others = computed(() => (list.data || []).filter((f) => !f.image));
-    return { list, sourceHref, sourceLabel, images, others };
+    // the reader names where the file came from, the way the doc page does
+    const readFile = (e, f) => openFile(e, { ...f, from: sourceLabel(f) });
+    return { list, sourceHref, sourceLabel, images, others, openFile: readFile };
   },
   template: `
     <TopBar :crumbs="[env, 'Documents', 'Files']"/>
@@ -3943,7 +4010,7 @@ const Files = {
           <p class=section-label>Images <span class=muted>{{ images.length }}</span></p>
           <div class=files-gallery>
             <figure v-for="f in images" :key="f.url" class=files-tile>
-              <a class=files-tile-img :href="f.url" target=_blank rel=noopener :title="'Open ' + f.name"><img :src="f.url" :alt="f.name" loading=lazy></a>
+              <a class=files-tile-img :href="f.url" :title="'Open ' + f.name" @click="openFile($event, f)"><img :src="f.url" :alt="f.name" loading=lazy></a>
               <figcaption><span class=files-tile-name :title="f.name">{{ f.name }}</span><a :href="sourceHref(f)">{{ sourceLabel(f) }}</a></figcaption>
             </figure>
           </div>
@@ -3952,12 +4019,12 @@ const Files = {
         <p v-if="images.length" class=section-label>Other files <span class=muted>{{ others.length }}</span></p>
         <div class=files-page>
           <div v-for="f in others" :key="f.url" class=files-row>
-            <a class=files-thumb :href="f.url" target=_blank rel=noopener :title="'Open ' + f.name">
+            <a class=files-thumb :href="f.url" :title="'Open ' + f.name" @click="openFile($event, f)">
               <img v-if="f.image" :src="f.url" :alt="f.name" loading=lazy>
               <Icon v-else :name="f.folder ? 'folder' : 'docs'"/>
             </a>
             <div class=files-main>
-              <a class=files-name :href="f.url" target=_blank rel=noopener>{{ f.name }}<span v-if="f.folder">/</span></a>
+              <a class=files-name :href="f.url" @click="openFile($event, f)">{{ f.name }}<span v-if="f.folder">/</span></a>
               <span class=files-meta>
                 <a :href="sourceHref(f)">{{ sourceLabel(f) }}</a>
                 <span> · {{ f.folder ? f.count + ' file(s) · ' : '' }}{{ $human(f.size) }}</span>
@@ -4657,7 +4724,7 @@ const QuickMenu = {
 };
 
 const App = {
-  components: { ...VIEWS, Icon, ActivityPanel, Peek, QuickMenu, JournalsDropdown },
+  components: { ...VIEWS, Icon, ActivityPanel, Peek, QuickMenu, JournalsDropdown, FileReader_ },
   setup() {
     const route = reactive(parseHash());
     const ov = OVERVIEW;
@@ -4682,7 +4749,7 @@ const App = {
       if (main && window.ResizeObserver) { widthWatch = new ResizeObserver(measureWidth); widthWatch.observe(main); }
     });
     onUnmounted(() => { if (widthWatch) widthWatch.disconnect(); });
-    const closeOverlay = () => { OVERLAY.kind = ""; OVERLAY.n = 0; OVERLAY.quote = ""; };
+    const closeOverlay = () => { OVERLAY.kind = ""; OVERLAY.n = 0; OVERLAY.quote = ""; OVERLAY.file = null; };
     const onHash = () => { Object.assign(route, parseHash()); closeOverlay(); loadOverview(); };
     window.addEventListener("hashchange", onHash);
     window.addEventListener("journal:changed", loadOverview);
@@ -4915,8 +4982,9 @@ const App = {
           <div class=page-shell :key="key"><component :is="route.view" v-bind="route.params"/></div>
         </Transition>
       </main>
-      <Peek v-if="OVERLAY.kind && envName" :key="'overlay' + OVERLAY.kind + OVERLAY.n" :env="envName" :kind="OVERLAY.kind" :n="OVERLAY.n"
+      <Peek v-if="OVERLAY.kind && OVERLAY.kind !== 'file' && envName" :key="'overlay' + OVERLAY.kind + OVERLAY.n" :env="envName" :kind="OVERLAY.kind" :n="OVERLAY.n"
         :close="closeOverlay" :reloaded="reloadActivity"/>
+      <FileReader_ v-if="OVERLAY.kind === 'file' && OVERLAY.file" :key="OVERLAY.file.url" :file="OVERLAY.file" :close="closeOverlay"/>
       <QuickMenu v-if="QUICK.open && envName" :env="envName"/>
       <div v-if="TOAST.text" class=quick-toast role=status>{{ TOAST.text }}</div>
       <aside v-if="(activity.data && ACTIVITY.shown) || (ov.data && ov.data.update)" class=activity-dock>
