@@ -3483,10 +3483,16 @@ const Thread = {
     const pending = ref([]);
     let sent = 0;
     const turns = computed(() => {
-      const real = ((chat.data && chat.data.turns) || []).map((t) => ({ ...t, key: `${t.kind}:${t.n || 0}:${t.at}` }));
-      const landed = new Set(real.map((t) => (t.text || "").trim()));
-      // a pending turn leaves the moment the server's own version of it arrives
-      const waiting = pending.value.filter((t) => t.state === "failed" || !landed.has((t.text || "").trim()));
+      // THE SERVER'S VERSION OF A PENDING TURN KEEPS THE PENDING TURN'S KEY. Otherwise the optimistic
+      // one leaves and the real one enters in the same render — two animations over the same words,
+      // which is the stutter — where they are the same turn and should simply be updated in place.
+      const mine = new Map(pending.value.filter((t) => t.state !== "failed").map((t) => [(t.text || "").trim(), t.key]));
+      const real = ((chat.data && chat.data.turns) || []).map((t) => {
+        const held = t.who === "you" ? mine.get((t.text || "").trim()) : null;
+        return { ...t, key: held || `${t.kind}:${t.n || 0}:${t.at}` };
+      });
+      const landed = new Set(real.map((t) => t.key));
+      const waiting = pending.value.filter((t) => t.state === "failed" || !landed.has(t.key));
       if (waiting.length !== pending.value.length) nextTick(() => { pending.value = waiting; });
       return [...real, ...waiting];
     });
@@ -3536,7 +3542,9 @@ const Thread = {
       if (first) nextTick(() => { settled.value = true; });
       if (!arrived || !follow) return;
       // twice, because a turn of rendered markdown finishes laying out after the tick that added it
-      nextTick(() => { bottom(first ? "auto" : "smooth"); requestAnimationFrame(() => bottom("auto")); });
+      // one pass: a second a frame later restarts the smooth scroll from wherever the first had got to,
+      // which reads as the stutter it is. The image handler covers what lays out late.
+      nextTick(() => bottom(first ? "auto" : "smooth"));
     });
     // REPLYING TO A TURN, and where it goes depends on what the turn IS. An agent reply already lives
     // under a message, so the answer goes there with `quoting` — which the server checks against what
@@ -3888,7 +3896,11 @@ const EnvHome = {
       <section class="home-section home-thread">
         <Thread :env="env"/>
       </section>
-      <div v-if="livePlans.length || !clear" class=home-rail>
+      <div class=home-rail>
+      <div v-if="!livePlans.length && clear" class=home-rail-empty>
+        <Icon name="todos"/>
+        <p>Nothing is waiting on you.</p>
+      </div>
       <section v-if="livePlans.length" class=home-section>
         <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans" :peek="peek"/>
       </section>
