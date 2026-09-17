@@ -342,6 +342,10 @@ const Icon = {
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
+      <!-- a branch: the line this checkout is on, and the one it came off. A graph, not the angle
+           brackets of the code glyph, which is what was standing in for it. -->
+      <template v-else-if="name === 'branch'"><circle cx="5" cy="3.6" r="1.6"/><circle cx="5" cy="12.4" r="1.6"/>
+        <circle cx="11.6" cy="5.4" r="1.6"/><path d="M5 5.2v5.6M11.6 7v.6a3.6 3.6 0 0 1-3.6 3.6H6.6"/></template>
       <template v-else-if="name === 'suggestions'"><path d="M8 2.5a4 4 0 0 0-2.3 7.3V11.5h4.6V9.8A4 4 0 0 0 8 2.5z"/><path d="M6.3 13.5h3.4"/></template>
       <path v-else-if="name === 'up'" d="M8 12.5V4M4.5 7.5L8 4l3.5 3.5"/>
       <path v-else-if="name === 'down'" d="M8 3.5V12M4.5 8.5L8 12l3.5-3.5"/>
@@ -519,8 +523,8 @@ const StatusBar = {
         <!-- the branch opens the repository when the remote is one with a web face; a remote that is
              not recognised is left as plain text rather than linked somewhere that does not exist -->
         <a v-if="facts.branch && facts.branchUrl && SHELL.wide" class=statusbar-facts :href="facts.branchUrl"
-          target=_blank rel=noopener :title="facts.hint + ' — open it'"><Icon name="style"/><span>{{ facts.branch }}</span></a>
-        <span v-else-if="facts.branch && SHELL.wide" class=statusbar-facts :title="facts.hint"><Icon name="style"/><span>{{ facts.branch }}</span></span>
+          target=_blank rel=noopener :title="facts.hint + ' — open it'"><Icon name="branch"/><span>{{ facts.branch }}</span></a>
+        <span v-else-if="facts.branch && SHELL.wide" class=statusbar-facts :title="facts.hint"><Icon name="branch"/><span>{{ facts.branch }}</span></span>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>
