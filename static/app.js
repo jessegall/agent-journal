@@ -3366,11 +3366,10 @@ const NeedsCard = {
   template: `
     <div :class="['needs-card', item.kind, {sel: selected}]" :style="{ '--tint': item.tint }" @click="item.open">
       <div class=needs-card-top>
-        <span class=needs-card-kind>{{ item.label }}</span>
-        <span class=needs-card-meta>{{ item.meta }}</span>
+        <p class=needs-card-title>{{ item.title }}</p>
         <button type=button class=needs-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(item)"><Icon name="close"/></button>
       </div>
-      <p class=needs-card-title>{{ item.title }}</p>
+      <div class=needs-card-meta><span class=needs-card-kind>{{ item.label }}</span>{{ item.meta }}</div>
       <div class=needs-card-foot>
         <button v-if="item.act" type=button class=needs-card-go @click.stop="item.act">{{ item.action }}</button>
         <span v-else class=needs-card-act>{{ item.action }}</span>
@@ -3417,7 +3416,8 @@ const PlanCard = {
   },
   template: `
     <div :class="['work-now', {ready: plan.status === 'draft', finished: plan.status === 'done', parked: plan.status === 'parked'}]" @click="open">
-      <div class=work-now-top><span class=work-now-title>{{ plan.title }}</span><span class=work-now-ref>{{ card.ref }}</span></div>
+      <div class=work-now-top><span class=work-now-title>{{ plan.title }}</span></div>
+      <span class=work-now-ref>{{ card.ref }}</span>
       <div class=work-now-bar>
         <ProgressBar v-if="card.bar" :rows="rows"/>
         <span class=work-now-ref>{{ card.progress }}</span>
@@ -3786,7 +3786,8 @@ const EnvHome = {
         <div class=home-head><h2>Working on</h2></div>
         <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans"/>
         <div v-if="workCard" class=work-card @click="peek('work', workCard.n)">
-          <div class=work-card-top><span class=work-card-lead>{{ workCard.lead }}</span><span class=work-now-ref>{{ workCard.ref }}</span></div>
+          <div class=work-card-top><span class=work-card-lead>{{ workCard.lead }}</span></div>
+          <span class=work-now-ref>{{ workCard.ref }}</span>
           <p v-if="workCard.sub" class=work-card-sub>{{ workCard.sub }}</p>
           <p v-if="workCard.awaiting" class=work-now-why>waiting on {{ workCard.awaiting }}</p>
         </div>
