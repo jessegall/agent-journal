@@ -3378,7 +3378,7 @@ const NeedsCard = {
 };
 
 const PlanCard = {
-  props: { env: String, plan: Object, blocked: Boolean, reloaded: Function },
+  props: { env: String, plan: Object, blocked: Boolean, reloaded: Function, peek: Function },
   components: { ProgressBar, Icon },
   setup(props) {
     const detail = useFetch(() => props.env && props.plan && `/api/env/${props.env}/plans/${props.plan.n}`);
@@ -3411,7 +3411,13 @@ const PlanCard = {
         // a refusal has a reason — it belongs on the card, not thrown into the console where a button just looks dead
         .catch((e) => { error.value = e.message; });
     };
-    const open = () => { location.hash = `#/env/${props.env}/plans/${props.plan.n}`; };
+    // the card SHOWS the plan rather than leaving for it: the panel already carries the link to the
+    // page, which is the "and from there you can go to the plan" half. Where there is no panel to open
+    // — a page that does not host one — the link is still the right answer.
+    const open = () => {
+      if (props.peek) return props.peek("plan", props.plan.n);
+      location.hash = `#/env/${props.env}/plans/${props.plan.n}`;
+    };
     return { detail, rows, error, act, card, run, open };
   },
   template: `
@@ -3430,7 +3436,7 @@ const PlanCard = {
 };
 
 const PlanCards = {
-  props: { env: String, plans: { type: Array, default: () => [] }, reloaded: Function },
+  props: { env: String, plans: { type: Array, default: () => [] }, reloaded: Function, peek: Function },
   components: { PlanCard },
   setup(props) {
     const active = computed(() => props.plans.find((p) => p.status === "active") || null);
@@ -3439,7 +3445,7 @@ const PlanCards = {
   },
   template: `
     <TransitionGroup name=card appear>
-      <PlanCard v-for="p in plans" :key="'plan' + p.n" :env="env" :plan="p" :blocked="blocked(p)" :reloaded="reloaded"/>
+      <PlanCard v-for="p in plans" :key="'plan' + p.n" :env="env" :plan="p" :blocked="blocked(p)" :reloaded="reloaded" :peek="peek"/>
     </TransitionGroup>`,
 };
 
@@ -3500,7 +3506,8 @@ const Thread = {
     // the stored time is UTC; slicing the characters out of it showed the reader somebody else's clock
     const clock = (at) => {
       const when = new Date(at);
-      return isNaN(when) ? "" : when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      // the ZONE is the reader's; the format is asked for, so it is set rather than inherited
+      return isNaN(when) ? "" : when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
     };
     // a turn is cut to keep the bubble a bubble; the rest is one click away, never gone
     const whole = ref(new Set());
@@ -3558,7 +3565,7 @@ const Thread = {
           </div>
         </div>
         <div class=thread-meta>
-          <span v-if="t.n">{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
+          <span v-if="t.n" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
           <span>{{ clock(t.at) }}</span>
           <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)">
             <svg viewBox="0 0 19 12" fill=none stroke=currentColor stroke-width="1.6" stroke-linecap=round stroke-linejoin=round>
@@ -3790,7 +3797,7 @@ const EnvHome = {
       </section>
       <section class=home-section>
         <div class=home-head><h2>Working on</h2></div>
-        <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans"/>
+        <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans" :peek="peek"/>
         <div v-if="workCard" class=work-card @click="peek('work', workCard.n)">
           <div class=work-card-top><span class=work-card-lead>{{ workCard.lead }}</span></div>
           <span class=work-now-ref>{{ workCard.ref }}</span>
