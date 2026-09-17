@@ -209,16 +209,6 @@
   .statusbar-auto { flex: none; display: inline-flex; align-items: center; gap: 7px; border: none; background: transparent; padding: 0;
     font-size: 11.5px; color: var(--text-2); cursor: pointer; }
   /* the agent's latest reply, at the top of the Activity column, so what it wrote in the terminal is readable here */
-  .activity-said { flex: none; max-height: 160px; overflow-y: auto; margin: 8px 0 4px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--raised); }
-  .activity-said.sayable { cursor: pointer; }
-  .activity-said.sayable:hover, .activity-said.sayable:focus-visible { border-color: var(--border-2); outline: none; }
-  .activity-said-head { display: block; margin-bottom: 4px; font-size: 11px; color: var(--text-3); }
-  /* the reply renders its own formatting now, so the blocks carry the spacing rather than pre-wrap */
-  .activity-said-text { font-size: 12px; line-height: 1.5; color: var(--text-2); overflow-wrap: anywhere; }
-  .activity-said-text :is(p, ul, ol, pre) { margin: .35em 0; }
-  .activity-said-text > :first-child { margin-top: 0; }
-  .activity-said-text > :last-child { margin-bottom: 0; }
-  .activity-said-text :is(h1, h2, h3, h4, h5, h6) { font-size: 12px; margin: .5em 0 .25em; }
   /* the quick menu: a command box over the whole app that sends what is typed to the agent unless a command is picked */
   .quick-scrim { position: fixed; inset: 0; z-index: 50; background: rgba(4, 5, 6, .62); }
   .quick-menu { position: fixed; z-index: 51; top: 92px; left: 50%; transform: translateX(-50%); width: min(580px, calc(100% - 56px));
@@ -495,8 +485,10 @@
      run past its own end, put the rail's edge wherever the rail's content happened to stop, and grow
      the page instead of keeping the conversation on screen. The shell is fixed, the turns scroll, the
      rail scrolls, and the writing box is simply the last row of its column. */
-  .home { height: 100%; max-width: 1440px; padding: 0 24px; display: flex; flex-direction: column; min-height: 0; }
-  .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 20px; }
+  /* the side padding is on what needs it, not on the home: a bar whose rule stops short of both edges
+     reads as a box, and the status bar directly above it runs the full width */
+  .home { height: 100%; max-width: 1440px; display: flex; flex-direction: column; min-height: 0; }
+  .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 20px; padding: 0 24px; }
   .home-thread { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
   /* a RANGE, not a number: with the Activity column hidden the page gains its whole width, and a
      fixed rail left all of it to the thread while its own cards stayed as cramped as before */
@@ -527,7 +519,7 @@
   /* a slim bar under the status bar: ONE ROW THAT STAYS ONE ROW. The facts sit across the full width
      where they fit, and the subagents fold into a count — a list that grows must never push the
      conversation down, which is why these left the space above the thread to begin with. */
-  .agent-bar { flex: none; display: flex; align-items: center; gap: 10px; height: 30px;
+  .agent-bar { flex: none; display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 24px;
     font-size: 11.5px; color: var(--text-3); border-bottom: 1px solid var(--border); }
   .agent-facts { flex: 1 1 auto; min-width: 0; display: flex; align-items: baseline; gap: 10px; overflow: hidden; }
   .agent-fact, .agent-fact-lead { white-space: nowrap; }
@@ -543,7 +535,7 @@
   .home-facts a.first:hover { color: var(--text); text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   /* the live subagents hang under the facts line, indented past it: part of the page's opening block, not a bar */
   .home-lead { flex: none; display: flex; flex-direction: column; gap: 4px; }
-  .crew-strip { flex: none; display: flex; flex-wrap: wrap; gap: 2px 14px; padding: 6px 0 4px; border-bottom: 1px solid var(--border); }
+  .crew-strip { flex: none; display: flex; flex-wrap: wrap; gap: 2px 14px; padding: 6px 24px 4px; border-bottom: 1px solid var(--border); }
   .crew-line { display: flex; align-items: center; gap: 7px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;
     background: transparent; text-align: left; cursor: pointer; animation: crew-in .28s ease-out both; }
   .crew-line:hover { background: #17181b; }
