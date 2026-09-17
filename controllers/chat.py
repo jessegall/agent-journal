@@ -235,6 +235,11 @@ def wrote(root: Path, env: str) -> list[dict]:
                         # the user's own replies, on the thought that a turn of theirs should not
                         # quote them — but a REPLY is not the message, and without the quote their
                         # half of the thread read as loose turns while the agent's half did not.
+                        # THE USER'S REPLY GETS TICKS TOO. A reply of theirs is a turn they sent and
+                        # waited on like the message above it; the record already keeps whether the
+                        # agent was told of it, so the ticks read that rather than adding a state.
+                        **({"state": "read" if r.get("told_at") else "sent"}
+                           if r.get("source") == "web" else {}),
                         "ref": r.get("quoting") or r.get("part") or trim(whole, 90)})
     return out
 
