@@ -954,7 +954,7 @@
      ends, which reads as a mistake rather than a division. It is pulled out to the edges and the
      padding put back on the inside, so only the LINE is flush and the box still lines up. */
   .thread-write { flex: none; display: flex; flex-direction: column; gap: 6px;
-    margin: 0 calc(-1 * var(--home-gutter)); padding: 12px var(--home-gutter) 16px;
+    margin: 0 calc(-1 * var(--home-gutter)); padding: 12px var(--home-gutter);
     border-top: 1px solid var(--border); }
   /* the box lines up with the turns above it: the rule spans the column, so the box must too */
   .thread-write .compose-box { margin-right: 2px; }
@@ -1334,7 +1334,9 @@
   .compose { display: flex; flex-direction: column; gap: 8px; }
   /* the BOX is the bordered surface, not the textarea: attachments belong inside it, the way the
      quick menu already shows them, rather than hanging underneath as a separate row */
-  .box-area { width: 100%; min-height: 72px; resize: vertical; outline: none; padding: 9px 11px;
+  /* NOT RESIZED BY HAND: it grows with what is typed, and a corner grip that fights that is one
+     control too many in the corner of a chat box. */
+  .box-area { width: 100%; min-height: 72px; resize: none; outline: none; padding: 9px 11px;
     background: transparent; border: 0; border-radius: 8px;
     color: var(--text); font: inherit; font-size: 13px; line-height: 1.55; }
   /* answering where you are reading: the design's taller box, so a real answer has room */
