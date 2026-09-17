@@ -3769,6 +3769,12 @@ const Thread = {
     // declared further down is not merely undefined there — it throws
     const pending = ref([]);
     let sent = 0;
+    // WHICH PENDING TURN BECAME WHICH MESSAGE, remembered for the life of the thread. Adoption used
+    // to depend on the pending turn still being in the list when the computed next ran, and the
+    // watcher that prunes pending runs BEFORE the render — measured: the optimistic turn was still
+    // fading IN at 0.62 opacity when the server's copy entered from 0 beside it and the optimistic
+    // one was told to leave. A plain Map, not reactive: writing to it must not re-run the computed.
+    const adopted = new Map();
     const turns = computed(() => {
       // THE SERVER'S VERSION OF A PENDING TURN KEEPS THE PENDING TURN'S KEY. Otherwise the optimistic
       // one leaves and the real one enters in the same render — two animations over the same words,
@@ -3781,7 +3787,11 @@ const Thread = {
       // carry the same key and are patched in place. They never both exist, so nothing collides.
       const answered = new Set();
       const real = ((chat.data && chat.data.turns) || []).map((t) => {
-        const held = t.who === "you" ? mine.get((t.text || "").trim()) : null;
+        let held = t.who === "you" ? adopted.get(`${t.kind}:${t.n}`) : null;
+        if (!held && t.who === "you") {
+          held = mine.get((t.text || "").trim());
+          if (held && t.n) adopted.set(`${t.kind}:${t.n}`, held);
+        }
         const refs = (t.became_refs || []).map((r) => ({ ...r, key: String(r.ref), href: refHref(r.ref, props.env) }))
           .filter((r) => r.href);
         let slot = "";
@@ -3834,12 +3844,14 @@ const Thread = {
       };
     });
     onUnmounted(() => { THREAD_BOX.focus = null; });
+    // AFTER THE RENDER, never before it: this is what decides whether the arriving turn can still
+    // find the pending one it replaces, and a pre-flush watcher took it away first.
     watch(() => (chat.data && chat.data.turns) || [], (rows) => {
       if (!pending.value.length) return;
       const said = new Set(rows.filter((t) => t.who === "you").map((t) => (t.text || "").trim()));
       const left = pending.value.filter((t) => t.state === "failed" || !said.has((t.text || "").trim()));
       if (left.length !== pending.value.length) pending.value = left;
-    });
+    }, { flush: "post" });
     const bottom = (behavior) => {
       if (root.value) root.value.scrollTo({ top: root.value.scrollHeight, behavior });
     };
