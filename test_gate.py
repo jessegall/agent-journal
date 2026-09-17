@@ -343,6 +343,11 @@ check("the system verbs that change the record are writes under every spelling",
 check("the system verbs that only look are not writes",
       [_classified(c) for c in ("status", "verify", "version", "settings", "serve --port=1", "enable", "disable")],
       [None, None, None, None, None, None, None])
+# `settings` both looks and changes, and the bare form is the looking: refusing a listing because
+# nothing is declared is refusing a read, which this gate never does.
+check("but settings with something to set is a write",
+      [_classified(c) for c in ("settings", "settings context_window 200000", "settings docs_dir --off")],
+      [None, "settings", "settings"])
 check("every tools spelling is classified the same way",
       [_classified(c) for c in ("tools", "tools mover", "tools show add", 'tools add m "t" --summary=s',
                                 "tools set m entry run.py", 'tools remove m "why"', "tools index", "tools run m x")],

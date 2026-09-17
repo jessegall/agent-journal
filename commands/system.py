@@ -225,6 +225,7 @@ class Settings(Command):
     signature = ('settings {key? : a setting to change here} {value*? : its value on this environment} '
                  '{--off : give it back to the project}')
     writes = True
+    reads_bare = True
 
     def run(self, p: Parsed) -> int:
         import tracks

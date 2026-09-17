@@ -4,6 +4,34 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.150.0 — One acknowledgement per message, and a rail you can read
+
+**Either a note or an answer, never both.** The journal wrote "Noted — created to-do 4." under a
+message when it was filed, and then the agent replied in its own words: one filing, told twice,
+which is what the user saw all evening. The note is no longer written into the record at all — it
+is read off it when the chat is built, so a reply that lands after the filing simply replaces it.
+The two share one key, so the swap patches the same element in place instead of animating one out
+and another in.
+
+**A reply says what it is replying to.** A reply with nothing quoted read as a turn the agent
+happened to take; it quotes the message it answers now, and clicking that quote moves the thread
+to it. And a plain reply no longer raises a notification — the thread shows it in place, so the
+notification was a second telling of what was already on the screen. A reply that answers a
+`--part` still raises one: it closes a question, and the row it answers is somewhere else.
+
+**The rail is readable.** A notification wraps instead of ending in an ellipsis before it says
+what happened, with its age pinned to the top right; the kinds that want something from you — a
+question, a plan, a report — carry their colour on the left edge and the rest stay plain. Blocked
+sits under In progress and over Open, on the page and in the tab alike, off one list. The rows
+arrive and move the way the cards in Waiting on you do. A bar at the foot of the notifications tab
+marks them all read.
+
+**Smaller.** Every age is abbreviated — `1m ago`, `2h ago`, `3d ago`. The branch in the status bar
+opens the repository when the remote has a web face, and stays plain text when it does not. Up
+arrow in an empty chat box brings back the last message to edit. A blocked to-do says on its status
+line what it is waiting on. `journal settings` with nothing to set is a read again, so the gate no
+longer refuses the listing while no work is declared.
+
 ## 1.149.0 — An event belongs to an environment, and a message gets an answer
 
 **An event goes to whoever works the environment it belongs to.** A session that had chosen no

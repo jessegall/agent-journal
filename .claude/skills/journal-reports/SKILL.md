@@ -27,7 +27,7 @@ which must still be true next month) nor a to-do (which is an instruction to you
     journal reports                                         what has been written here
     journal reports show <n>                                one in full
     journal reports archive <n> "<why>"                     take it off the list
-    journal reports todoc <n>                               it turned out to be a doc after all
+    journal reports doc <n>                                 it turned out to be a doc after all
 
 **The title says what was ASKED, not what you concluded.** "Four agents reviewed the Vue
 and Python: what they found" is a title; "the code is fine" is a conclusion, and a title
@@ -67,7 +67,7 @@ A report **ages out** — `journal reports keep <days>` per environment — beca
 report of a situation that has moved on is worse than none. Archiving is the same act done
 by hand, with a reason (`reports archive <n> "<why>"`).
 
-**If it turns out to be a doc, say so with `reports todoc <n>`** rather than writing the
+**If it turns out to be a doc, say so with `reports doc <n>`** rather than writing the
 same thing twice: what stays true belongs where sessions are handed it.
 
 **The user reads it in the viewer**, where a new report waits under "Waiting on you" until

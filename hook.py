@@ -1870,8 +1870,8 @@ def _closes_row(cmd, words: list[str]) -> bool:
 
 def _journal_write(payload: dict) -> str | None:
     """The journal write verb on this command line, if it is one, anywhere in a chain."""
-    for verb, cmd, _ in _journal_cmds(payload) or ():
-        if cmd.writes:
+    for verb, cmd, words in _journal_cmds(payload) or ():
+        if cmd.writes and not (cmd.reads_bare and len(words) == 1):
             return verb
     return None
 
