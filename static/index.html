@@ -495,12 +495,12 @@
      run past its own end, put the rail's edge wherever the rail's content happened to stop, and grow
      the page instead of keeping the conversation on screen. The shell is fixed, the turns scroll, the
      rail scrolls, and the writing box is simply the last row of its column. */
-  .home { height: 100%; max-width: 1180px; padding: 22px 30px 0; display: flex; flex-direction: column; min-height: 0; }
-  .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 26px; }
+  .home { height: 100%; max-width: 1180px; padding: 0 24px; display: flex; flex-direction: column; min-height: 0; }
+  .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 20px; }
   .home-thread { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-  .home-rail { flex: none; width: 300px; min-height: 0; overflow-y: auto; scrollbar-width: none;
+  .home-rail { flex: none; width: 288px; min-height: 0; overflow-y: auto; scrollbar-width: none;
     display: flex; flex-direction: column; gap: 22px;
-    padding: 0 0 26px 26px; border-left: 1px solid var(--border); }
+    padding: 14px 0 18px 20px; border-left: 1px solid var(--border); }
   .home-rail::-webkit-scrollbar { width: 0; }
   /* too narrow for two columns: the rail becomes a short strip above the thread, and its edge with it */
   @media (max-width: 820px) {
@@ -533,14 +533,14 @@
   /* the thread: what was said, read downwards, with the writing box under it */
   .thread { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .thread-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none;
-    display: flex; flex-direction: column; gap: 10px; padding: 2px 2px 0 0; }
+    display: flex; flex-direction: column; gap: 7px; padding: 14px 2px 0 0; }
   .thread-scroll::-webkit-scrollbar { width: 0; height: 0; }
   .thread-more { align-self: center; padding: 2px 8px; border: 0; border-radius: 6px; background: none;
     color: var(--text-3); font: inherit; font-size: 11px; }
   .thread-turn { display: flex; flex-direction: column; gap: 3px; max-width: 78%; }
   .thread-turn.mine { align-self: flex-end; align-items: flex-end; }
-  .thread-bubble { padding: 7px 11px; border: 1px solid var(--border); border-radius: 12px;
-    background: var(--raised); overflow-wrap: anywhere; }
+  .thread-bubble { padding: 7px 12px; border: 1px solid #232529; border-radius: 9px;
+    background: #161719; overflow-wrap: anywhere; }
   .thread-bubble > div > :first-child { margin-top: 0; }
   .thread-bubble > div > :last-child { margin-bottom: 0; }
   .thread-turn.mine .thread-bubble { border-color: color-mix(in srgb, var(--accent) 45%, transparent);
@@ -586,7 +586,7 @@
   @keyframes thread-wait { 0%, 100% { opacity: .5; } 50% { opacity: .85; } }
   @media (prefers-reduced-motion: reduce) { .thread-blank { animation: none; } }
   .thread-empty { padding: 18px 2px; color: var(--text-3); }
-  .thread-write { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 12px 0 22px; }
+  .thread-write { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 10px 0 16px; }
   /* positioned so a leaving row can be taken out of the flow: work moving from Working on to Finished must not jostle either list */
   .home-section { position: relative; display: flex; flex-direction: column; gap: 2px; }
   .wrow-enter-active { transition: opacity .24s ease-out, transform .24s cubic-bezier(.2, .8, .2, 1); }
