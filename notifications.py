@@ -15,6 +15,7 @@ _REF = re.compile(r"^\s*(to-?dos?|questions?|reports?|docs?|plans?|messages?|inb
 
 MESSAGES = {
     "needs_text": 'a notification needs its text: journal notify "<what finished>"',
+    "no_row": "there is no {kind} {n} for this to point at",
     "not_a_ref": "{text} is not something a notification can point at; write `todo 22`, `question 4`, `report 1`, `doc 3` or `plan 2`",
     "sent": "notification {n} is on the user's Home[, pointing at {about}] — keep these for what the user wants to hear about",
     "no_notification": "there is no notification {n}. `journal notifications` numbers them.",
@@ -62,6 +63,23 @@ def unread(root: Path, track: str | None = None) -> list[tuple[int, dict]]:
     return [(n, x) for n, x in enumerate(_all(root, track), 1) if not x.get("read_at")]
 
 
+def _exists(root: Path, ref: str, track: str | None) -> str | None:
+    """The row this points at, or why it is not there. One funnel: questions.check_ref knows them all."""
+    kind, _, num = ref.partition(":")
+    if kind == "report":
+        return None if 1 <= int(num) <= len(_reports(root, track)) else say("no_row", kind=KINDS[kind], n=num)
+    if kind == "plan":
+        import plans
+        return None if 1 <= int(num) <= len(plans._all(root, track)) else say("no_row", kind=KINDS[kind], n=num)
+    import questions
+    return questions.check_ref(root, ref, track)
+
+
+def _reports(root: Path, track: str | None):
+    import reports
+    return reports._all(root, track)
+
+
 def add(root: Path, text: str, at: str, about: str = "", source: str = "cli",
         track: str | None = None) -> tuple[bool, str]:
     text = " ".join((text or "").split())
@@ -72,6 +90,12 @@ def add(root: Path, text: str, at: str, about: str = "", source: str = "cli",
         ref, why = parse_ref(about)
         if ref is None:
             return False, why
+        # AND IT HAS TO BE THERE. `parse_ref` only checks the SHAPE, so `--about="todo 999"` put a dead
+        # link on the user's Home — the most visible place the journal has. Reports and comments both
+        # check the row exists before writing; this is the same check, in the same order.
+        missing = _exists(root, ref, track)
+        if missing:
+            return False, missing
     with state.locked(root):
         items = _all(root, track)
         items.append({"text": text, "at": at, "source": source, "about": ref, "read_at": None})
