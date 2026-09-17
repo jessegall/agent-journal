@@ -3410,6 +3410,13 @@ const PLAN_WORD = { preparing: "being written", active: "working", parked: "paus
 // the home — the Messages page, a list — there is no thread to move, and the inspector opens as before.
 const THREAD_GOTO = reactive({ key: "", at: 0 });
 
+// What a rail card scrolls to. A question or a message is its number; held work has no number,
+// so it is named by the work it holds — the one thing about it that does not change.
+function turnAnchor(t) {
+  if (t.kind === "parked") return `parked:${t.ref}`;
+  return t.n ? `${t.kind}:${t.n}` : "";
+}
+
 // THE THREAD IS THE WRITING BOX WHILE IT IS ON SCREEN. Space-space and "Message the agent" used to
 // open the quick menu's own pane, which sent and closed with no visible history — the void the whole
 // chat was built to end. While a thread is mounted it lends its box, and everywhere else the pane is
@@ -3758,7 +3765,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor };
   },
   template: `
     <div class=thread>
@@ -3787,10 +3794,11 @@ const Thread = {
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
       <p v-if="chat.data && !turns.length" class=thread-empty>Nothing has been said here yet.</p>
       <TransitionGroup :name="settled ? 'turn' : ''">
-      <div v-for="t in turns" :key="t.key" :data-turn="t.n ? t.kind + ':' + t.n : null"
-        :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', sending: t.state === 'sending', failed: t.state === 'failed', lit: lit === t.kind + ':' + t.n}]">
+      <div v-for="t in turns" :key="t.key" :data-turn="anchor(t) || null"
+        :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question' || t.kind === 'parked', sending: t.state === 'sending', failed: t.state === 'failed', lit: !!anchor(t) && lit === anchor(t)}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
+          <p v-if="t.kind === 'parked'" class=thread-ask-label>Waiting on you</p>
           <p v-if="t.kind === 'message' && (t.becameRefs || []).length" :class="['thread-became', {live: t.working}]">
             <span v-if="t.working" class=thread-became-dot></span>
             <span v-if="t.working" class=thread-became-word>Working on</span>
@@ -3803,6 +3811,7 @@ const Thread = {
           <button v-if="t.full" type=button class=thread-full @click.stop="showAll(t)">
             {{ whole.has(t.key) ? "Show less" : "Read more" }}</button>
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
+          <button v-if="t.kind === 'parked'" type=button class=thread-answer @click.stop="replyTo(t)">Answer the agent</button>
           <div v-if="t.files && t.files.length" :class="['thread-files', {alone: !t.text}]">
             <a v-for="f in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name">
               <img v-if="f.picture" class=thread-image :src="fileUrl(t.n, f.name)" :alt="f.name" loading=lazy @load="grew">
@@ -3864,6 +3873,8 @@ const EnvHome = {
     const goto = (kind, n) => {
       THREAD_GOTO.key = `${kind}:${n}`;
       THREAD_GOTO.at = Date.now();
+      // held work has no page of its own: the turn IS it, and answering happens on the turn
+      if (kind === "parked") return;
       nextTick(() => { if (THREAD_GOTO.key) peek(kind, n); });
     };
     const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
@@ -3883,13 +3894,18 @@ const EnvHome = {
     // A QUESTION CANNOT BE DISMISSED. Everything else here is read or decided somewhere else too,
     // so clearing its card loses nothing; a question is the one row that goes nowhere until the
     // user answers it, and dismissing it hid it in this browser with nothing to bring it back.
+    // PARKED WORK IS THE AGENT WAITING ON YOU, and it was the one thing here that said so nowhere:
+    // the open-work list filters it out, so "the PR is ready, do you want to merge it?" sat in the
+    // record while the thread carried on. It cannot be dismissed either — nothing else brings it back.
     const QUEUE_TYPES = { question: { label: "Question", tint: "#c9955e", action: "Answer", sticky: true },
+                          parked: { label: "Held", tint: "#c9955e", action: "Answer", sticky: true },
                           reply: { label: "Message", tint: "#6fae7d", action: "Read" },
                           report: { label: "Report", tint: "#d9a441", action: "Read" },
                           suggestion: { label: "Suggestion", tint: "#a3a8f0", action: "Accept" } };
     const queue = computed(() => {
       const rows = [
         ...(questions.data || []).filter((q) => q.status === "open").map((q) => ({ kind: "question", n: q.n, title: q.text, age: q.age })),
+        ...(work.data || []).filter((w) => !w.ended && w.parked).map((w) => ({ kind: "parked", n: w.subject, title: w.parked, age: w.parked_age })),
         ...(suggestions.data || []).filter((s) => s.status === "open").map((s) => ({ kind: "suggestion", n: s.n, title: s.title, age: s.age })),
         // A REPORT WAITS UNTIL IT IS ARCHIVED, not until it is glanced at. `seen` is stamped the moment
         // the panel opens, so a report the user scrolled past left the rail for good — and a report is
@@ -3897,7 +3913,8 @@ const EnvHome = {
         ...(reports.data || []).filter((r) => !r.archived).map((r) => ({ kind: "report", n: r.n, title: r.title, age: r.age })),
       ];
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => r.sticky || !dismissed.value.has(r.key))
-        .map((r) => ({ ...r, meta: `${r.label.toLowerCase()} ${r.n} · ${r.age}`, open: () => goto(r.kind, r.n) }));
+        .map((r) => ({ ...r, meta: r.kind === "parked" ? `${r.n} · ${r.age}` : `${r.label.toLowerCase()} ${r.n} · ${r.age}`,
+                       open: () => goto(r.kind, r.n) }));
     });
     // EVERY LIVE PLAN IS SHOWN, not only the one in progress. One plan is worked at a time, but a
     // parked one, a draft waiting to be approved and a finished one waiting to be acknowledged are all
@@ -3948,7 +3965,9 @@ const EnvHome = {
       const row = envRow.value || {};
       // the same test the queue uses, or the count and the cards disagree
       const unseen = (reports.data || []).filter((r) => !r.archived).length;
-      return (row.questions || 0) + (row.suggestions || 0) + unseen + (held.value ? 1 : 0);
+      // held work is not in the environment row either: it is the agent waiting, counted where it waits
+      const parked = (work.data || []).filter((w) => !w.ended && w.parked).length;
+      return (row.questions || 0) + (row.suggestions || 0) + unseen + parked + (held.value ? 1 : 0);
     });
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
     const clear = computed(() => !queue.value.length && !held.value);

@@ -162,5 +162,21 @@ check("and the thread still has every turn it said, on each environment",
        [t["text"] for t in chat.said(root, "elsewhere")]),
       (True, ["said while the session was on another environment"]))
 
+# -------------------------------------- work the agent set aside is a turn, with the ask on it
+# PARKING IS THE AGENT SAYING IT CANNOT GO ON WITHOUT YOU, and it used to say it where nobody
+# looked: the home filters parked work out of its open-work list. It is a turn because it is one.
+import work as _work  # noqa: E402
+_state.use_track("w")   # work is written under the environment this process is on
+_work.start(root, "merge the branch", now())
+_work.park(root, "The PR is ready. Do you want me to merge it?", now(), on="merge the branch")
+held = [t for t in chat.waited(root, "w")]
+check("parked work is a turn from the agent, carrying the work it holds",
+      ([(t["who"], t["kind"], t["text"], t["ref"]) for t in held]),
+      [("agent", "parked", "The PR is ready. Do you want me to merge it?", "merge the branch")])
+check("and it is in the thread with everything else",
+      any(t["kind"] == "parked" for t in turns() + chat.waited(root, "w")), True)
+_work.note(root, "on it", now(), on="merge the branch")   # progress clears a park, the same as a wait
+check("work that has moved again is no longer waiting on anyone", chat.waited(root, "w"), [])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
