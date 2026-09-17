@@ -182,7 +182,7 @@ code, out = j()
 check("the status page has a docs row", "docs" in out and "catalogued" in out, True)
 
 # ---------------------------------------------------------------- the markdown hint
-j("start", "w")
+j("start", "work on the widget list")
 out = fire("PostToolUse", tool_name="Write", tool_input={"file_path": str(d / ".journal" / "docs" / "notes.md")}, tool_response="ok")
 check("a loose markdown write earns a hint naming the command", (".journal/docs/notes.md" in out, "docs add" in out, '"decision"' in out), (True, True, False))
 out = fire("PostToolUse", tool_name="Write", tool_input={"file_path": str(d / ".journal" / "docs" / "notes.md")}, tool_response="ok")

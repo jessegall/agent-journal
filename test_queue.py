@@ -121,7 +121,7 @@ check("done: list empty, silence", s3.stop(), "")
 
 # ---------------------------------------------------------------- auto off: open work once per piece, ever
 s4 = S()
-s4.j("work", "start", "w"); s4.user("go"); s4.say("[!reply] ok")
+s4.j("work", "start", "work on the widget list"); s4.user("go"); s4.say("[!reply] ok")
 check("open work raised once", s4.stop(), "work still open")
 check("not again this turn", s4.stop(True), "")
 check("nor next turn without a change: once per piece of work", s4.stop(), "")
@@ -139,7 +139,7 @@ check("and once per state", s5.stop(), "")
 
 # ---------------------------------------------------------------- the loop comes first
 s6 = S()
-s6.j("todo", "chore"); s6.j("todo", "auto", "on"); s6.j("work", "start", "w")
+s6.j("todo", "chore"); s6.j("todo", "auto", "on"); s6.j("work", "start", "work on the widget list")
 s6.user("go"); s6.say("no tag")
 check("auto on and no loop: the loop is asked for before anything else", s6.stop(), "auto is on, no loop running")
 check("then the rest of the queue, one per stop", [s6.stop(True), s6.stop(True), s6.stop(True)],

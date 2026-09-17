@@ -140,7 +140,7 @@ check("and it is said once: the wait is cleared by saying it",
 d4 = project()
 s4 = S(d4, "dddddddd-0000-4000-8000-000000000004")
 s4.j("switch", "w")
-s4.j("work", "start", "dispatched something")
+s4.j("work", "start", "dispatched an agent to read the loader")
 code, out = s4.j("work", "await", "the hand-off agent", "--agent=a46ad2e1ca911d229")
 check("an agent id is recorded and said back",
       (code, "agent a46ad2e1ca911d229" in out), (0, True))

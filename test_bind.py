@@ -200,7 +200,7 @@ check("its stop is held, first in the queue", y.fire("Stop").startswith("journal
 check("its journal writes are refused while it is registered nowhere", "registered on no environment" in y.bash('.journal/journal.py pin "x"'), True)
 check("but a switch is let through: it is what registers it", y.bash('.journal/journal.py switch "side"'), "")
 check("and reads are", y.bash('.journal/journal.py pins'), "")
-y.j("work", "start", "w")
+y.j("work", "start", "work on the widget list")
 check("open work does not lift it", "IS TAKEN" in y.write(), True)
 code, out = y.j("switch", "side")
 check("it switches to a free environment, and that registers it", (code, tracks.bound(root2, "yyyyyyyy-2")), (0, "side"))
