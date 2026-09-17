@@ -554,6 +554,10 @@
   .thread-ticks.filed { opacity: 1; color: var(--accent-text); }
   .thread-quote { margin: 0 0 5px; padding: 1px 0 1px 8px; border-left: 2px solid var(--border-2);
     color: var(--text-3); font-size: 12.5px; }
+  /* the turn a rail card just moved the thread to: lit for a moment, so the eye lands on it */
+  .thread-turn.lit .thread-bubble { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+  .thread-turn .thread-bubble { transition: border-color .4s ease, box-shadow .4s ease; }
+  @media (prefers-reduced-motion: reduce) { .thread-turn .thread-bubble { transition: none; } }
   .thread-turn.ask { max-width: 88%; }
   .thread-turn.ask .thread-bubble { border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
   /* .question-answer is indented 24px for the lists it usually sits in; in a bubble that indent is
