@@ -3478,8 +3478,18 @@ const Thread = {
     const root = ref(null);
     // the key is what a turn IS, never where it sits: the thread is capped, so an index shifts for
     // every turn when one arrives, and Vue would rebuild each of them and lose what is typed in one
-    const turns = computed(() => ((chat.data && chat.data.turns) || [])
-      .map((t) => ({ ...t, key: `${t.kind}:${t.n || 0}:${t.at}` })));
+    // declared before `turns`, which reads it: a computed runs on the first render, and a const
+    // declared further down is not merely undefined there — it throws
+    const pending = ref([]);
+    let sent = 0;
+    const turns = computed(() => {
+      const real = ((chat.data && chat.data.turns) || []).map((t) => ({ ...t, key: `${t.kind}:${t.n || 0}:${t.at}` }));
+      const landed = new Set(real.map((t) => (t.text || "").trim()));
+      // a pending turn leaves the moment the server's own version of it arrives
+      const waiting = pending.value.filter((t) => t.state === "failed" || !landed.has((t.text || "").trim()));
+      if (waiting.length !== pending.value.length) nextTick(() => { pending.value = waiting; });
+      return [...real, ...waiting];
+    });
     const more = computed(() => (chat.data && chat.data.more) || 0);
     // a new turn lands in view, but never while the reader is scrolled up reading back: a thread
     // that yanks the page away mid-sentence is the one thing a long conversation must not do
@@ -3548,16 +3558,38 @@ const Thread = {
       const word = cut.lastIndexOf(" ");
       return (word > QUOTE_MAX / 2 ? cut.slice(0, word) : cut).trim();
     };
+    // THE TURN IS IN THE THREAD BEFORE THE SERVER HAS HEARD OF IT. Pressing Enter should not wait on a
+    // round trip; the send reconciles behind it. A send that FAILS says so on its own turn and hands
+    // the words back, because a turn sitting there looking sent when it never arrived is the same lie
+    // the send confirmation was written to stop.
     const post = async (text, files) => {
       const to = answering.value;
-      if (to && to.who === "agent" && to.kind === "reply" && to.n) {
-        await postJSON(`/api/env/${props.env}/messages/${to.n}/reply`, { text, quoting: excerpt(quoteOf.value) });
-      } else {
-        await postJSON(`/api/env/${props.env}/messages`, { text: to ? quoted(excerpt(quoteOf.value)) + text : text, files });
-      }
+      const said = to && !(to.who === "agent" && to.kind === "reply" && to.n)
+        ? quoted(excerpt(quoteOf.value)) + text : text;
+      const mine = { key: `pending:${sent += 1}`, at: new Date().toISOString(), who: "you", pending: true,
+                     kind: to && to.who === "agent" && to.kind === "reply" && to.n ? "reply" : "message",
+                     n: to && to.kind === "reply" ? to.n : null, text, state: "sending",
+                     ref: to && to.who === "agent" && to.kind === "reply" ? excerpt(quoteOf.value) : "" };
+      pending.value = [...pending.value, mine];
       answering.value = null;
-      chat.reload();
-      changed();
+      nextTick(() => bottom("smooth"));
+      try {
+        if (to && to.who === "agent" && to.kind === "reply" && to.n) {
+          await postJSON(`/api/env/${props.env}/messages/${to.n}/reply`, { text, quoting: excerpt(quoteOf.value) });
+        } else {
+          await postJSON(`/api/env/${props.env}/messages`, { text: said, files });
+        }
+        chat.reload();
+        changed();
+      } catch (e) {
+        mine.state = "failed";
+        mine.error = e.message;
+        pending.value = [...pending.value];
+      }
+    };
+    const retry = (t) => {
+      pending.value = pending.value.filter((x) => x.key !== t.key);
+      THREAD_BOX.focus && THREAD_BOX.focus(t.text);
     };
     const fileUrl = (n, name) => `/message-files/${props.env}/${n}/${encodeURIComponent(name)}`;
     // the stored time is UTC; slicing the characters out of it showed the reader somebody else's clock
@@ -3588,7 +3620,7 @@ const Thread = {
     // the header POINTS at what the message became; what is being DONE stays in the Activity column
     const drop = (t) => {
       if (!t.n) return;
-      send("DELETE", `/api/env/${props.env}/messages/${t.n}`, { why: "taken off the list from the chat" })
+      send("DELETE", `/api/env/${props.env}/messages/${t.n}`, { why: "deleted from the chat" })
         .then(() => { chat.reload(); changed(); })
         .catch(() => {});
     };
@@ -3603,7 +3635,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, root, answered, landed, becameNote, fileUrl, clock, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
+    return { turns, more, post, retry, root, answered, landed, becameNote, fileUrl, clock, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
   },
   template: `
     <div class=thread>
@@ -3617,13 +3649,15 @@ const Thread = {
       <p v-if="chat.data && !turns.length" class=thread-empty>Nothing has been said here yet.</p>
       <TransitionGroup :name="settled ? 'turn' : ''">
       <div v-for="t in turns" :key="t.key" :data-turn="t.n ? t.kind + ':' + t.n : null"
-        :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', lit: lit === t.kind + ':' + t.n}]">
+        :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', sending: t.state === 'sending', failed: t.state === 'failed', lit: lit === t.kind + ':' + t.n}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
           <p v-if="t.kind === 'message' && (t.became || t.state === 'read')" :class="['thread-became', {live: t.working}]">
             <span v-if="t.working" class=thread-became-dot></span>{{ becameNote(t) }}</p>
           <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
           <div v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
+          <p v-if="t.state === 'failed'" class=thread-failed>Not sent — {{ t.error }}
+            <button type=button class=thread-tool @click.stop="retry(t)">Put it back in the box</button></p>
           <button v-if="t.full" type=button class=thread-full @click.stop="showAll(t)">
             {{ whole.has(t.key) ? "Show less" : "Read more" }}</button>
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
@@ -3637,7 +3671,7 @@ const Thread = {
         <div class=thread-tools>
           <button type=button class=thread-tool title="Reply to this, quoting it" @click.stop="replyTo(t)">Reply</button>
           <button v-if="t.kind === 'message' && !t.became" type=button class=thread-tool
-            title="Take it off the list — it stays in the record" @click.stop="drop(t)">Take off the list</button>
+            title="Delete it — it comes off the list and stays in the record" @click.stop="drop(t)">Delete</button>
         </div>
         <div class=thread-meta>
           <span v-if="t.n" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
@@ -3780,17 +3814,8 @@ const EnvHome = {
     const workSub = (w, finished) => [(finished ? w.ended_age : w.age) || "just now",
                                       w.todo ? `to-do ${w.todo}` : ""].filter(Boolean).join(" · ");
     const open_ = computed(() => (work.data || []).filter((w) => !w.ended && !w.parked));
-    // the row being worked right now: a card in the plan card's family, lighter — no bar, no action
-    const workCard = computed(() => {
-      const w = open_.value[0];
-      if (!w) return null;
-      const lead = w.todo_title || w.subject;
-      const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
-      return { n: w.n, lead, sub: same(lead, w.subject || "") ? "" : w.subject,
-               ref: [w.todo ? `to-do ${w.todo}` : "", w.age || "just now"].filter(Boolean).join(" · "),
-               awaiting: w.awaiting || "" };
-    });
-    // everything else open stays the plain line it has always been
+    // THE STATUS BAR NAMES THE ROW BEING WORKED, so the rail does not say it again: the card that
+    // repeated it is gone, and what is listed here is the OTHER open work, which the bar cannot name
     const workLines = computed(() => open_.value.slice(1)
       .map((w) => ({ n: w.n, title: w.subject, sub: workSub(w, false), live: false })));
     // parked work is neither working nor finished: it stopped on purpose and says what it waits on
@@ -3837,7 +3862,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workCard, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -3863,23 +3888,9 @@ const EnvHome = {
       <section class="home-section home-thread">
         <Thread :env="env"/>
       </section>
-      <div class=home-rail>
-      <section class=home-section>
-        <div class=home-head><h2>Working on</h2></div>
+      <div v-if="livePlans.length || !clear" class=home-rail>
+      <section v-if="livePlans.length" class=home-section>
         <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans" :peek="peek"/>
-        <div v-if="workCard" class=work-card @click="peek('work', workCard.n)">
-          <div class=work-card-top><span class=work-card-lead>{{ workCard.lead }}</span></div>
-          <span class=work-now-ref>{{ workCard.ref }}</span>
-          <p v-if="workCard.sub" class=work-card-sub>{{ workCard.sub }}</p>
-          <p v-if="workCard.awaiting" class=work-now-why>waiting on {{ workCard.awaiting }}</p>
-        </div>
-        <TransitionGroup name=wrow>
-          <a v-for="w in workLines" :key="w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
-            <span :class="['needs-dot', {live: w.live}]"></span>
-            <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
-          </a>
-        </TransitionGroup>
-        <p v-if="!livePlans.length && !workCard && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
       </section>
       <section v-if="!clear" class=home-section>
         <div class=home-head><h2>Waiting on you</h2><span>{{ waitingCount }}</span></div>
@@ -3889,26 +3900,6 @@ const EnvHome = {
           <NeedsCard v-for="it in queue" :key="it.key" :item="it" :selected="view.kind + ':' + view.n === it.key" :dismiss="dismiss"/>
           </TransitionGroup>
         </div>
-      </section>
-      <section v-if="parkedLines.length" class=home-section>
-        <div class=home-head><h2>Parked</h2></div>
-        <TransitionGroup name=wrow>
-          <a v-for="w in parkedLines" :key="'parked' + w.n" class=home-line :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
-            <span class="needs-dot parked"></span>
-            <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.why }}</span></span>
-            <span class=home-line-when>{{ w.sub }}</span>
-          </a>
-        </TransitionGroup>
-      </section>
-      <section v-if="finishedLines.length" class=home-section>
-        <div class=home-head><h2>Finished</h2></div>
-        <TransitionGroup name=wrow>
-          <a v-for="w in finishedLines" :key="'done' + w.n" class="home-line quiet" :href="'#/env/' + env + '/work/' + w.n" @click.prevent="peek('work', w.n)">
-            <span class=needs-dot></span>
-            <span class=home-line-text><span class=home-line-title>{{ w.title }}</span><span class=home-line-sub>{{ w.sub }}</span></span>
-          </a>
-        </TransitionGroup>
-        <a v-if="finishedMore > 0" class=home-more :href="'#/env/' + env + '/work'">{{ finishedMore }} more<Icon name="arrow"/></a>
       </section>
       </div>
       </div>

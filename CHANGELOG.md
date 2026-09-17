@@ -4,6 +4,43 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.144.0 — The home is a chat
+
+The viewer's home is a conversation now. Everything the agent says to you and everything you
+say back is one thread; what the agent DID stays in the Activity column, where it always was.
+
+**The thread.** Its turns come from `GET /api/env/{env}/chat`, which reads the agent's tagged
+replies out of the transcripts and your messages, replies and questions out of the journal.
+The filter is not a heuristic over the activity log — it is a different source, so nothing
+the agent did has a path into the conversation. A question is a turn you answer in place; a
+message says what it became and whether that row is being worked; attachments sit in the
+bubble with pictures shown; delivered, read and filed are three ticks, and the third names
+what the message turned into.
+
+**Replying quotes what it answers.** Tapping a turn starts a reply that carries it, and
+`journal messages reply <n> --quoting="<words>"` is the same act from the terminal. The quote
+is checked against what was really said in that thread, so it cannot be invented — the same
+guarantee `--part` already gave in the other direction, kept separate because the two check
+against different sources.
+
+**What is not a turn sits beside it.** Waiting on you, the plan and what is finished share a
+rail; clicking one moves the thread to the turn that raised it rather than opening over it.
+The agent's own facts are a slim bar with its subagents folded into a count, because a list
+that grows must never push the conversation down.
+
+**Two things it got wrong before this release, in case you saw them.** The thread read only
+LIVE sessions, so it kept every message you wrote and silently lost everything the agent said
+when a session ended, switched environment or went stale; it reads every transcript now, by
+the marks. And each poll re-parsed the whole file; it reads only what was appended.
+
+**`journal plans phase` can insert.** `--before=<p>` puts a phase where it belongs and the
+phases after it move along with their to-dos and their checkpoints. Append-only cost this
+project a plan that had to be abandoned and rewritten.
+
+**`journal work park` is documented, with what it is for.** Being stuck, or doing something
+else in the meantime — never a way to wait for an answer the work itself could have asked by
+producing a draft.
+
 ## 1.143.0 — A transcript is a thing you send, and what the viewer owed you
 
 **A transcript is its own kind of thing now.** Send one — `journal messages add "<it>"

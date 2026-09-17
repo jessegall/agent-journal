@@ -487,14 +487,21 @@
      rail scrolls, and the writing box is simply the last row of its column. */
   /* the side padding is on what needs it, not on the home: a bar whose rule stops short of both edges
      reads as a box, and the status bar directly above it runs the full width */
-  .home { height: 100%; max-width: 1440px; display: flex; flex-direction: column; min-height: 0; }
-  .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 20px; padding: 0 24px; }
-  .home-thread { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+  /* NO CAP ON THE PAGE. A max-width here left the whole home sitting left once the window was wider
+     than it, so the agent bar's rule and the rail both stopped short of the right edge. The cap belongs
+     on the reading column, which is the only part that suffers from an over-long line. */
+  .home { height: 100%; display: flex; flex-direction: column; min-height: 0; }
+  /* the thread keeps its gutters; the rail is flush to the window's edge, and its own entries carry
+     the inset off the divider so the rule is the only thing between the two columns */
+  .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; }
+  .home-thread { padding: 0 24px; }
+  .home-rail .home-section { padding: 0 16px 0 18px; }
+  .home-thread { flex: 1 1 auto; min-width: 0; min-height: 0; max-width: 1080px; display: flex; flex-direction: column; }
   /* a RANGE, not a number: with the Activity column hidden the page gains its whole width, and a
      fixed rail left all of it to the thread while its own cards stayed as cramped as before */
   .home-rail { flex: none; width: clamp(288px, 27%, 400px); min-height: 0; overflow-y: auto; scrollbar-width: none;
     display: flex; flex-direction: column; gap: 22px;
-    padding: 14px 0 18px 20px; border-left: 1px solid var(--border); }
+    padding: 14px 0 18px; border-left: 1px solid var(--border); }
   .home-rail::-webkit-scrollbar { width: 0; }
   /* ONE FLUSH FEED, NOT A STACK OF CARDS. In a column this narrow a card is a border, a background, a
      radius and an inset tint all fighting over the same forty characters — four kinds of chrome doing
@@ -577,9 +584,12 @@
   .thread-ticks.filed { opacity: 1; color: var(--accent-text); }
   /* what the message BECAME, and whether that row is moving. A pointer, never a report: what is being
      done is the Activity column's, and this says only which row to look at. */
-  .thread-became { display: flex; align-items: center; gap: 5px; margin: 0 0 5px; padding-bottom: 5px;
+  .thread-turn.mine .thread-became { justify-content: flex-end; }
+  /* the rule crosses the whole bubble, so it reads as a header and not as an underlined phrase: the
+     row is what holds the text, the block around it is what holds the rule */
+  .thread-became { margin: -1px -12px 6px; padding: 0 12px 5px;
     border-bottom: 1px solid var(--border-2); font-size: 10.5px; letter-spacing: .04em;
-    text-transform: uppercase; color: var(--text-3); }
+    text-transform: uppercase; color: var(--text-3); display: flex; align-items: center; gap: 5px; }
   .thread-became.live { color: var(--accent-text); }
   .thread-became-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor;
     animation: crew-pulse 1.8s ease-in-out infinite; }
@@ -628,12 +638,16 @@
   /* the turn's own two things to do, settled in to-do 90: reply, and take it off the list.
      Hidden until the turn is hovered, because a menu on every turn is read a hundred times a day. */
   .thread-turn { position: relative; }
-  .thread-tools { position: absolute; top: -9px; right: -10px; display: none; gap: 2px; padding: 2px;
-    border: 1px solid var(--border-2); border-radius: 7px; background: var(--raised); }
-  .thread-turn:hover .thread-tools, .thread-tools:focus-within { display: flex; }
+  .thread-tools { position: absolute; top: -15px; right: -10px; display: flex; gap: 2px; padding: 2px;
+    border: 1px solid var(--border-2); border-radius: 7px; background: var(--raised);
+    opacity: 0; transform: translateY(3px); pointer-events: none;
+    transition: opacity .16s ease-out, transform .16s ease-out; }
+  .thread-turn:hover .thread-tools, .thread-tools:focus-within {
+    opacity: 1; transform: none; pointer-events: auto; }
+  @media (prefers-reduced-motion: reduce) { .thread-tools { transition: none; } }
   .thread-turn.mine .thread-tools { right: auto; left: -10px; }
-  .thread-tool { padding: 2px 7px; border: 0; border-radius: 5px; background: none; color: var(--text-3);
-    font: inherit; font-size: 11px; cursor: pointer; white-space: nowrap; }
+  .thread-tool { padding: 1px 6px; border: 0; border-radius: 5px; background: none; color: var(--text-3);
+    font: inherit; font-size: 10px; cursor: pointer; white-space: nowrap; }
   .thread-tool:hover { background: var(--hover); color: var(--text); }
   /* what the next thing sent is answering, above the box it is typed in */
   .thread-answering { display: flex; align-items: baseline; gap: 7px; padding: 5px 10px;
@@ -644,6 +658,11 @@
   .thread-answering-x { flex: none; padding: 0 4px; border: 0; background: none; color: var(--text-3);
     font: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
   .thread-answering-x:hover { color: var(--text); }
+  /* in flight: there, but not yet acknowledged. Failed: there, and saying so. */
+  .thread-turn.sending { opacity: .62; }
+  .thread-turn.failed .thread-bubble { border-color: color-mix(in srgb, var(--danger) 55%, transparent); }
+  .thread-failed { display: flex; align-items: center; gap: 6px; margin: 6px 0 0; padding-top: 6px;
+    border-top: 1px solid var(--border-2); font-size: 11px; color: var(--danger); }
   .thread-empty { padding: 18px 2px; color: var(--text-3); }
   .thread-write { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 10px 0 16px; }
   /* positioned so a leaving row can be taken out of the flow: work moving from Working on to Finished must not jostle either list */
