@@ -182,6 +182,15 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
     since = float(int(since))
     got = []
     for n, m in inbox.unprocessed(ROOT, env):
+        edited = m.get("edited_at") or ""
+        # AN EDIT IS ITS OWN EVENT. The key carries when it was edited, so a message the agent has
+        # already been told about is told again when its words change — and said as a CHANGE, because
+        # anything already filed from the old words may need correcting.
+        if edited and _epoch(edited) >= since:
+            got.append((f"{env}:{n}:edited:{edited}",
+                        {"content": inbox.say("edit_note", n=n, env=env, gist=_gist(m.get("text", ""))),
+                         "meta": {"env": env, "message": str(n)}}))
+            continue
         if _epoch(m.get("at")) < since:
             continue
         files = [f.get("name", "") for f in (m.get("files") or []) if not f.get("removed")]
