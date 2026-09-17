@@ -28,6 +28,12 @@ number rolls. The branch moved to the agent bar, where the model and the window 
 subagent dispatched into a worktree shows its own branch, read from the directory it calls tools
 from.
 
+**A test no longer starts twenty viewers.** The stop hook restarts the viewer if it finds none
+running — and a suite fires hundreds of stops against throwaway journals, so each one started a
+viewer for a temp directory and waited fifteen seconds for it to answer. Twenty were listening on
+ports of their own before anyone noticed, and two suites timed out. Nothing starts while
+`AGENT_JOURNAL_IN_TESTS` or `AGENT_JOURNAL_OFFLINE` is set.
+
 **Smaller.** The bell's dropdown shows the rail's own rows, with Unread and Read as tabs and a
 sticky head. A text or markdown attachment opens in the reader rather than a browser tab, with Raw
 one click away. An inspector full of prose opens wider. Auto is a switch that says which way it is
