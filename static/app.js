@@ -4175,6 +4175,11 @@ const EnvHome = {
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
     <div class=body><div class=page><div class=home>
+      <div class=home-main>
+      <section class="home-section home-thread">
+      <!-- THE AGENT BAR BELONGS TO THE CHAT, NOT TO THE PAGE. It is the agent's own state — which
+           model, which session, how long, how full — and the rail beside it is not the agent's, so
+           a bar spanning both said that state was the whole page's. -->
       <div class=agent-bar>
         <div class=agent-facts>
           <template v-for="(r, i) in lead.rows" :key="r.label">
@@ -4194,8 +4199,6 @@ const EnvHome = {
           <span class=crew-tail>{{ a.tail }}</span>
         </button>
       </div>
-      <div class=home-main>
-      <section class="home-section home-thread">
         <Thread :env="env"/>
       </section>
       <div class=home-rail>
@@ -4205,7 +4208,9 @@ const EnvHome = {
       <div class=rail-tabs role=tablist>
         <button v-for="t in TABS" :key="t.key" type=button role=tab :aria-selected="tab === t.key"
           :class="['rail-tab', {on: tab === t.key}]" @click="tab = t.key">
-          {{ t.label }}<span v-if="t.n" :class="['rail-tab-n', {hot: t.key !== 'todos'}]">{{ t.n }}</span>
+          <!-- ALWAYS A NUMBER, and zero is a number: a count that disappears when it reaches nought
+               makes the tab change shape at the moment it is telling you the best news it has. -->
+          {{ t.label }}<span :class="['rail-tab-n', {hot: t.n && t.key !== 'todos'}]">{{ t.n }}</span>
         </button>
       </div>
       <template v-if="tab === 'waiting'">
@@ -4247,13 +4252,15 @@ const EnvHome = {
           <p>Nothing new.</p>
         </div>
         <!-- a notification is read by opening it, and cleared where it is if it opens nothing -->
+        <!-- no dismiss control: opening one marks it read, which is the only thing to do with it -->
         <div class=rail-list>
         <div v-for="n in unread" :key="n.n" class=rail-note>
-          <button type=button class="rail-row note" :disabled="!noteHref(n, env)" @click="openNote($event, n)">
+          <!-- the class name "note" is taken: it already carries a card's border and radius, so the
+               row picked up a box nobody gave it. A name in a shared stylesheet belongs to somebody. -->
+          <button type=button class=rail-row :disabled="!noteHref(n, env)" @click="openNote($event, n)">
             <span class=rail-row-title>{{ n.text }}</span>
             <span class=rail-row-state>{{ n.age || 'just now' }}</span>
           </button>
-          <button type=button class=rail-note-x title="Mark read" aria-label="Mark read" @click.stop="readNote(n)"><Icon name="close"/></button>
         </div>
         </div>
       </template>
