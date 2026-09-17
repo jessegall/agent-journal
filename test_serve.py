@@ -814,7 +814,8 @@ for _body, _want in (({"auto": True}, "Turned auto mode on for the journal"),
 commandlog.record_web(root, "alpha", "journal", "auto", None, {"state": "disable"}, "2099-01-05T00:00:01+00:00")
 check("switching auto mode from the viewer says which way", commandlog.entries(root, "alpha")[-1]["text"], "Turned auto mode off")
 _tool_stem = "toolqueue-session"
-for _tool in ("Bash", "Bash", "Edit", "Bash", "Write"):
+# fewer than a batch: still queued, nothing written
+for _tool in ("Bash", "Edit"):
     commandlog.queue_tool(root, "alpha", _tool_stem, _tool, "2000-01-05T00:00:00+00:00")
 check("tool uses are queued, not written one by one",
       [e for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:00+00:00"], [])
@@ -822,14 +823,15 @@ commandlog.flush_tools(root, "alpha", _tool_stem, "2000-01-05T00:00:01+00:00")
 check("a flush writes the queue as one plain line by the agent, and empties it",
       ([(e["text"], e["by"], e["n"]) for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:01+00:00"],
        state.get(root, commandlog.QUEUE, None, stem=_tool_stem)),
-      ([("Ran 3 commands, edited 2 files", "Agent", None)], {}))
+      ([("Ran 1 command, edited 1 file", "Agent", None)], {}))
 for _i in range(commandlog.QUEUE_SIZE):
     commandlog.queue_tool(root, "alpha", _tool_stem, "Read", "2000-01-05T00:00:02+00:00")
-check("the tenth tool use writes the line by itself",
-      [e["text"] for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:02+00:00"], ["Read 10 files"])
+check("the use that fills a batch writes the line by itself",
+      [e["text"] for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:02+00:00"],
+      [f"Read {commandlog.QUEUE_SIZE} files"])
 from datetime import datetime as _dt, timezone as _tz  # noqa: E402
 commandlog.queue_tool(root, "alpha", _tool_stem, "Bash", "2000-01-05T00:00:03+00:00")
-commandlog.flush_stale(root, "alpha", now=_dt(2000, 1, 5, 0, 0, 30, tzinfo=_tz.utc))
+commandlog.flush_stale(root, "alpha", now=_dt(2000, 1, 5, 0, 0, 10, tzinfo=_tz.utc))
 check("a queued tool use waits while its session may still be working",
       state.get(root, commandlog.QUEUE, None, stem=_tool_stem), {"ran": 1})
 commandlog.flush_stale(root, "beta")

@@ -476,6 +476,30 @@ const StatusBar = {
     // WHAT IT IS ACTUALLY DOING, rather than what it has not done. With nothing declared the bar used
     // to say "nothing declared yet", which is a complaint about the agent printed in the one place
     // the user looks to see it working. The Activity column already knows the last thing it did.
+    // what the agent is running RIGHT NOW: shown once it has been going long enough to be worth saying
+    const RUNNING_AFTER = 5;
+    // THE CLOCK RUNS BETWEEN POLLS. The payload says how long it had been going when it was read, so
+    // a number that only moved every few seconds looked stuck — which is the opposite of what a
+    // running command is for. It ticks here, from the moment the answer landed.
+    const ticks = ref(0);
+    const timer = setInterval(() => { ticks.value += 1; }, 1000);
+    onUnmounted(() => clearInterval(timer));
+    const readAt = { at: 0, seconds: 0 };
+    const running = computed(() => {
+      ticks.value;                                        // read, so the clock re-runs this
+      const agent = SHELL.activity && SHELL.activity.agent;
+      const got = agent && agent.running;
+      if (!got) return null;
+      if (readAt.seconds !== got.seconds) {
+        readAt.seconds = got.seconds;
+        readAt.at = Date.now();
+      }
+      const secs = got.seconds + Math.floor((Date.now() - readAt.at) / 1000);
+      if (secs < RUNNING_AFTER) return null;
+      const flat = String(got.what || "").trim();
+      return { what: flat, gist: flat.length > 42 ? `${flat.slice(0, 42)}…` : flat,
+               forText: secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s` };
+    });
     const doing = computed(() => {
       const events = (SHELL.activity && SHELL.activity.events) || [];
       const last = events.find((e) => e.by && e.by !== "You");
@@ -537,7 +561,7 @@ const StatusBar = {
       else if (w) { OVERLAY.kind = "work"; OVERLAY.n = w.n; }
       else if (view.value.href) location.hash = view.value.href;
     };
-    return { env, view, said, SHELL, openCurrent, facts };
+    return { env, view, said, running, SHELL, openCurrent, facts };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
@@ -550,6 +574,10 @@ const StatusBar = {
         <!-- ONLY WHAT CHANGED MOVES. "reading message 302" becoming "reading message 303" is one
              digit; rolling the whole sentence for it says more happened than did. The shared start
              stays put and the tail that differs rolls on its own. -->
+        <!-- WAITING IS NOT WORKING, and from the outside they look the same. What the agent is in the
+             middle of running sits beside the state word, quieter and smaller than the work itself. -->
+        <span v-if="running" class=statusbar-running :title="running.what">
+          <Icon name="activity"/>{{ running.gist }}<span class=statusbar-running-for>{{ running.forText }}</span></span>
         <span class=statusbar-roll><span v-if="said.head" class=statusbar-head>{{ said.head }}</span
           ><Transition name=roll><span :key="said.tail" class=statusbar-line>{{ said.tail }}</span></Transition></span>
       </button>
