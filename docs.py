@@ -92,6 +92,9 @@ MESSAGES = {
     "attachments_all": "{total} file(s) across {docs} doc(s)",
     "adopted_file": "  + doc {n} · {name} (say what it is: journal docs attach {n} … or edit files/{manifest})",
     "needs_title": 'a doc needs a title: journal docs add "<title>" --abstract="<one line>" --brief',
+    "abstract_restates": ("the abstract just says the title again, and it is the line every session is "
+                          "handed beside it. Say what the doc SETTLES that the title does not:\n"
+                          '  journal docs add "<title>" --abstract="<what is now decided, in one line>" --brief'),
     "needs_abstract": 'a doc needs an abstract — the one line every session is handed:\n'
                       '  journal docs add "<title>" --abstract="<what it settles, in one line>" --brief',
     "title_taken": "doc {n} already has that title",
@@ -642,6 +645,17 @@ def _plan_hint(title: str) -> str:
     return say("plan_hint") if _PLAN_WORDS.search(title or "") else ""
 
 
+def _restates(title: str, abstract: str) -> bool:
+    """True when the abstract says nothing the title has not: its own words are (almost) all the title's."""
+    import suggestions
+    mine, theirs = suggestions._words(abstract), suggestions._words(title)
+    # A SHORT ABSTRACT IS NOT A RESTATEMENT. Two or three words cannot be judged this way: they may be
+    # the whole of what the doc settles. The shape being caught is a sentence made of the title.
+    if len(mine) < 3 or not theirs:
+        return False
+    return len(mine - theirs) <= 1
+
+
 def add(root: Path, title: str, abstract: str, body: str, track: str, source: str = "") -> tuple[bool, str]:
     """A new doc: a folder with an index. The abstract is what every session is handed."""
     title = " ".join((title or "").split())
@@ -650,6 +664,10 @@ def add(root: Path, title: str, abstract: str, body: str, track: str, source: st
         return False, say("needs_title")
     if not abstract:
         return False, say("needs_abstract")
+    # THE ABSTRACT IS WHAT EVERY SESSION IS HANDED, beside the title. One that restates the title
+    # spends that space saying what was already said, and the doc reads as if it settles nothing.
+    if _restates(title, abstract):
+        return False, say("abstract_restates")
     for d in _load(root):
         if d.get("title", "").lower() == title.lower():
             return False, say("title_taken", n=d["n"])

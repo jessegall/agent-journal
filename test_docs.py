@@ -461,5 +461,16 @@ check("still readable by number", "an old investigation" in j("docs", _arch)[1],
 check("search skips it", "NO DOC MENTIONS" in j("docs", "search", "quartzite")[1], True)
 check("twice is refused", j("docs", "archive", _arch, "again")[0], 1)
 
+# --------------------------------------------- an abstract that says the title again is refused
+# It is the line every session is handed beside the title, so one that restates it spends that space
+# saying what was already said.
+_same = j("docs", "add", "How the loader fetches", "--abstract=how the loader fetches", "--brief",
+          stdin="the body\n")
+check("an abstract that restates the title is refused",
+      (_same[0], "says the title again" in _same[1]), (1, True))
+_real = j("docs", "add", "How the loader fetches",
+          "--abstract=it fetches twice per recompose, and the watcher is why", "--brief", stdin="the body\n")
+check("and one that says what the doc settles is taken", _real[0], 0)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
