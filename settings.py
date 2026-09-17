@@ -96,6 +96,14 @@ DEFAULTS = {
     # an interruption, and still several times in the kind of stretch a reminder is for.
     "reminder_every": 50,
 
+    # AUTO MODE MEANS THE LIST GETS WORKED, and an agent that stopped with work ready is the
+    # one case nothing notices: its own hooks only fire when it acts, and the channel only
+    # speaks when the user does. So the channel nudges it back after this many minutes idle.
+    # It fires only while something is READY — never on an empty or wholly blocked list — and
+    # again each interval, because the reason it stopped is usually that nothing is coming.
+    # 0 turns it off. Nothing nudges when auto is off: that is the user's list to hand out.
+    "idle_nudge_minutes": 10,
+
     # THE CAP ON ONE REMINDER, in characters — tighter than a pin's, because a pin is
     # re-read at every compaction and a reminder is re-read dozens of times in one
     # session. What does not fit in a line is a briefing, not an instruction. 0 removes it.
