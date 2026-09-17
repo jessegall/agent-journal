@@ -4,6 +4,48 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.143.0 — A transcript is a thing you send, and what the viewer owed you
+
+**A transcript is its own kind of thing now.** Send one — `journal messages add "<it>"
+--kind=transcript`, or the message box — and that word is the instruction: the agent reads it,
+separates what was decided from what was discussed, researches what it names, files the to-dos in
+your own words, and PROPOSES a plan that waits for you. The `journal-transcripts` skill says all of
+that in one place; `journal-messages` used to carry half of it.
+
+**The transcript itself is a file, not a document.** It is written to
+`environments/<env>/transcripts/<n>.md`, its front matter naming what it is and which message carried
+it. The document catalogue scans a different tree entirely, so a transcript is invisible to it
+structurally — nothing filters it out and nothing can drift. No menu lists one; it is reached from
+its message, or served at `/transcripts/<env>/<n>`. Pruning the message takes the transcript with it,
+pasted or attached alike.
+
+**What a transcript produces points back at it.** `journal todos add --transcript=<n>` marks a row
+and `journal plans link <n> "transcript 25"` links a plan, both checked — a message carrying no
+transcript is refused, so a tag can never point at nothing.
+
+**And if you forget to declare one**, the agent recognises what is unmistakable and says so rather
+than filing silently; `journal messages declare <n> transcript` then makes it real, even on a message
+already processed, because recognition happens while filing.
+
+**The viewer stops re-sending what you already have.** It polls every five seconds, and a listing
+carries every row in full — 499 KB across 414 messages on a real project. Listings are fingerprinted
+now and answered 304 when nothing changed: half a megabyte becomes nothing, sixty times a minute,
+and the page cannot tell the difference.
+
+**A file is read where you found it.** A document's attachment used to open as raw text in a browser
+tab. It opens over the page now — markdown rendered, images shown — and the inspector, capped at
+560px, can be dragged to most of the window.
+
+**Fixes for things that were plainly wrong.** A message you just sent no longer lands under
+"Handled". An inspector never navigates away to a list — it swaps in place. The home's Finished
+section shows the newest work rather than the oldest, which had it stuck for hours. A reply with no
+quoted part now reaches you at all, and the reply inspector shows the reply rather than the message.
+A part that became plain `work` no longer opens a not-a-number page. Pins and reminders are back in
+the navigation. `messages search` works again — it had quietly lost its verb since 1.126.0.
+
+**The channel nudges an idle agent back to work**, but only with auto mode on, only past
+`idle_nudge_minutes` (10 by default, 0 to turn it off), and only while something is actually ready.
+
 ## 1.142.0 — Pasting a transcript, and what is waiting on you
 
 **Paste a transcript and the journal files it.** A pasted meeting transcript or summary arrives as a
