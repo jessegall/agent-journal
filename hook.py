@@ -256,6 +256,14 @@ MESSAGES = {
                     "often than not — say so and carry on. `journal search`, `journal conversation --back=1` and "
                     "`journal pins` still run, to decide with.",
     "always_skills": "LOAD THESE SKILLS NOW — the user asked for them at every start: {names}.",
+    "todo_needs_brief": ('a to-do needs its brief: the row is read again in a week by a session that '
+                        'remembers nothing of this one, and a title alone is a note to somebody who '
+                        'already knows.\n'
+                        '  .journal/journal.py todos add "<title>" --brief <<\'MSG\'\n'
+                        '  what exactly, why it matters, and where to start\n'
+                        '  MSG\n'
+                        'If there is nothing to say beyond the title, it is probably not a to-do — say '
+                        'it in a message, or pin what is true.'),
     "model_denied": "A subagent dispatch must name its model — rule B1, the journal's own: add `model`, haiku for "
                     "mechanical work with a known answer, sonnet for care without invention, opus only where the task "
                     "turns on judgement. A fork, which cannot take a model, and an agent whose own definition sets one "
@@ -1874,6 +1882,20 @@ def _closes_row(cmd, words: list[str]) -> bool:
     return name in _CLOSES_ROW or (name in ("work:end", "end") and any(w in ("--todo", "--todos") for w in words))
 
 
+def _todo_without_brief(payload: dict) -> bool:
+    """A `todos add` on this line that carries no --brief.
+
+    A TITLE IS NOT A TO-DO. The row is read again in a week by a session that remembers nothing of
+    this one, so "fix it" is a note to somebody who already knows — which is nobody by then. This sits
+    in the hook rather than in the command because it is a rule about how the AGENT files work: the
+    CLI is still a tool a person or a script can use with a title alone.
+    """
+    for _, cmd, words in _journal_cmds(payload) or ():
+        if str(getattr(cmd, "signature", "")).startswith("todos:add") and "--brief" not in words:
+            return True
+    return False
+
+
 def _journal_write(payload: dict) -> str | None:
     """The journal write verb on this command line, if it is one, anywhere in a chain."""
     for verb, cmd, words in _journal_cmds(payload) or ():
@@ -1949,6 +1971,8 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     if due and not _is_journal(payload):
         pct = 100 * due["used"] / due["window"] if due.get("window") else 0
         return _deny(say("context_deny", pct=round(pct)))
+    if _todo_without_brief(payload):
+        return _deny(say("todo_needs_brief"))
     # A DISPATCH NAMES ITS MODEL (rule B1). Unset hands out this session's own model, the most expensive in the room.
     # A fork cannot take one, and a custom agent whose definition sets one has already decided.
     if payload.get("tool_name") == "Agent":
