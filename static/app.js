@@ -476,10 +476,8 @@ const StatusBar = {
     // WHAT IT IS ACTUALLY DOING, rather than what it has not done. With nothing declared the bar used
     // to say "nothing declared yet", which is a complaint about the agent printed in the one place
     // the user looks to see it working. The Activity column already knows the last thing it did.
-    // WHAT THE AGENT IS RUNNING RIGHT NOW. The threshold is on the WORK, not on the command: once a
-    // piece of work has been going this long the user is watching a bar that has not changed in a
-    // while, so every command appears as it runs — a one-second one included.
-    const WORK_LONG = 30;
+    // WHAT THE AGENT IS RUNNING RIGHT NOW, always — the user asked for no threshold at all: if a
+    // command is in flight, the bar says which. It rolls as one follows another.
     //: and after this long it is not working, it is waiting on something it cannot hurry
     const WAITING_AFTER = 20;
     // THE CLOCK RUNS BETWEEN POLLS. The payload says how long it had been going when it was read, so
@@ -488,20 +486,12 @@ const StatusBar = {
     const ticks = ref(0);
     const timer = setInterval(() => { ticks.value += 1; }, 1000);
     onUnmounted(() => clearInterval(timer));
-    const sinceStart = computed(() => {
-      ticks.value;
-      const w = (SHELL.activity && SHELL.activity.agent) || null;
-      const started = w && w.started ? Date.parse(w.started) : 0;
-      const open = AGENT_STATE[env.value] && AGENT_STATE[env.value].work;
-      const at = open && open.at ? Date.parse(open.at) : started;
-      return at ? Math.max(0, (Date.now() - at) / 1000) : 0;
-    });
     const readAt = { at: 0, seconds: 0 };
     const running = computed(() => {
       ticks.value;                                        // read, so the clock re-runs this
       const agent = SHELL.activity && SHELL.activity.agent;
       const got = agent && agent.running;
-      if (!got || sinceStart.value < WORK_LONG) return null;
+      if (!got) return null;
       if (readAt.seconds !== got.seconds) {
         readAt.seconds = got.seconds;
         readAt.at = Date.now();
