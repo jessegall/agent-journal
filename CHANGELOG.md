@@ -4,6 +4,21 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.148.0 — `journal claude` brings the viewer up with it
+
+The viewer is where you work — the messages, the to-dos, the conversation — and it was a
+second command you had to know about and remember. `journal claude` starts one now if this
+journal has none, and says where it is; if one is already up it says that and starts nothing.
+It is detached, so it outlives the session that started it — and it has to be here for a
+second reason, since `journal claude` execs into Claude Code and a child of that process would
+not survive the call that replaces it. `serve --detach` and this are one funnel.
+
+**A line printed just before that exec used to vanish.** `execvp` replaces the process image
+without running any of Python's teardown, so whatever was still in the stdout buffer was
+discarded — which is why the line saying the channel had been installed never reached anyone
+who was not on a tty. Reproduced with a stand-in for the `claude` binary, and fixed with a
+flush before the exec.
+
 ## 1.147.1 — The rail's section heading is a bar
 
 1.147.0 fixed the rail's gutter and left the vertical alone, so a section heading was still a
