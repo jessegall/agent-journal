@@ -5615,6 +5615,28 @@ const App = {
       return (envs.find((e) => e.active) || envs.find((e) => e.current) || envs[0] || {}).name || "";
     });
     const envRow = computed(() => (ov.data ? ov.data.environments.find((e) => e.name === envName.value) : null));
+    // THE TAB SAYS WHICH JOURNAL IT IS. Every project's viewer was called "journal", so three tabs
+    // were the same word three times. The project and the environment being read name it, and the
+    // mark is drawn here rather than fetched: a ledger's spine with two lines written on it.
+    const FAVICON = `data:image/svg+xml,${encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+      + '<rect width="32" height="32" rx="7" fill="#16171a"/>'
+      + '<rect x="7" y="6" width="4" height="20" rx="1.5" fill="#5b8def"/>'
+      + '<rect x="13" y="10" width="12" height="3" rx="1.5" fill="#e6e8ec"/>'
+      + '<rect x="13" y="16" width="12" height="3" rx="1.5" fill="#8b8e96"/>'
+      + '<rect x="13" y="22" width="7" height="3" rx="1.5" fill="#8b8e96"/></svg>')}`;
+    watchEffect(() => {
+      const project = (ov.data && ov.data.project) || "";
+      const here = envName.value;
+      document.title = [project || "journal", here].filter(Boolean).join(" · ") || "journal";
+      let link = document.querySelector("link[rel='icon']");
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
+      }
+      if (link.href !== FAVICON) link.href = FAVICON;
+    });
     const activity = useFetch(() => envName.value && `/api/env/${envName.value}/activity`);
     // a message just sent, or anything else just written, shows in Activity now rather than at the next poll
     const reloadActivity = () => activity.reload();
