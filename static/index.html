@@ -672,6 +672,8 @@
      state on the left of it and the rail's tabs on the right. Four pixels apart reads as a mistake. */
   .agent-bar { flex: none; display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 16px;
     font-size: 11.5px; color: var(--text-3); border-bottom: 1px solid var(--border); }
+  /* the strip is the bar continuing, not a second thing under it: one rule goes under both */
+  .agent-bar.open { border-bottom-color: transparent; }
   .agent-facts { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 12px; overflow: hidden; }
   .agent-fact, .agent-fact-lead { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
   .agent-fact .ico, .agent-fact-lead .ico { width: 12px; height: 12px; opacity: .65; }
