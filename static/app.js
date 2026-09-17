@@ -3786,21 +3786,6 @@ const EnvHome = {
       </section>
       <div class=home-rail>
       <section class=home-section>
-        <Transition name=needs mode=out-in>
-        <div v-if="clear" key=clear class=needs-clear><Icon name="todos"/><span>Nothing is waiting on you.</span></div>
-        <div v-else key=queue>
-        <div class=home-head><h2>Waiting on you</h2><span>{{ waitingCount }} waiting</span>
-          <span v-if="waitingCount > SLOTS" class=home-hint>{{ waitingCount - SLOTS }} more — scroll the list</span></div>
-        <div class=needs-slot>
-          <TransitionGroup name=qrow>
-          <NeedsCard v-if="heldCard" key=held :item="heldCard" :dismiss="dismiss"/>
-          <NeedsCard v-for="it in queue" :key="it.key" :item="it" :selected="view.kind + ':' + view.n === it.key" :dismiss="dismiss"/>
-          </TransitionGroup>
-        </div>
-        </div>
-        </Transition>
-      </section>
-      <section class=home-section>
         <div class=home-head><h2>Working on</h2></div>
         <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans" :peek="peek"/>
         <div v-if="workCard" class=work-card @click="peek('work', workCard.n)">
@@ -3816,6 +3801,15 @@ const EnvHome = {
           </a>
         </TransitionGroup>
         <p v-if="!livePlans.length && !workCard && !workLines.length && !parkedLines.length" class=home-empty>No work is open.</p>
+      </section>
+      <section v-if="!clear" class=home-section>
+        <div class=home-head><h2>Waiting on you</h2><span>{{ waitingCount }}</span></div>
+        <div class=needs-slot>
+          <TransitionGroup name=qrow>
+          <NeedsCard v-if="heldCard" key=held :item="heldCard" :dismiss="dismiss"/>
+          <NeedsCard v-for="it in queue" :key="it.key" :item="it" :selected="view.kind + ':' + view.n === it.key" :dismiss="dismiss"/>
+          </TransitionGroup>
+        </div>
       </section>
       <section v-if="parkedLines.length" class=home-section>
         <div class=home-head><h2>Parked</h2></div>

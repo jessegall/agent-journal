@@ -504,6 +504,20 @@
     display: flex; flex-direction: column; gap: 22px;
     padding: 14px 0 18px 20px; border-left: 1px solid var(--border); }
   .home-rail::-webkit-scrollbar { width: 0; }
+  /* ONE FLUSH FEED, NOT A STACK OF CARDS. In a column this narrow a card is a border, a background, a
+     radius and an inset tint all fighting over the same forty characters — four kinds of chrome doing
+     what one hairline does. So the cards keep their component and lose their box here: each entry is
+     its text with the kind's own tint on the left, sections divided by a rule, content flush right. */
+  .home-rail .home-section + .home-section { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .home-rail .home-head { padding: 0 0 6px; }
+  .home-rail .needs-card, .home-rail .work-now, .home-rail .work-card {
+    margin: 0; padding: 6px 0 6px 11px; border: 0; border-radius: 0; background: none; }
+  .home-rail .needs-card:hover, .home-rail .work-now:hover, .home-rail .work-card:hover { background: #17181b; }
+  .home-rail .needs-card::before, .home-rail .work-now::before, .home-rail .work-card::before {
+    top: 5px; bottom: 5px; }
+  .home-rail .work-now.sel, .home-rail .needs-card.sel { background: var(--sel); }
+  .home-rail .home-line { padding-left: 11px; }
+  .home-rail .home-more { padding-left: 11px; }
   /* too narrow for two columns: the rail becomes a short strip above the thread, and its edge with it */
   @media (max-width: 820px) {
     .home-main { flex-direction: column; }
