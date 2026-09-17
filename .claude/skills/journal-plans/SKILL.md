@@ -42,6 +42,7 @@ word. Measured here: a plan drafted without that conversation had to be rewritte
     journal plans add "<title>" --goal="<what is true when it is done>" [--brief]   the brief on stdin
     journal plans phase <n> "<title>" [--when="<what is true when the phase is complete>"] [--checkpoint]
     journal plans phase <n> "<title>" --before=<p>       put it BEFORE phase p, not at the end
+    journal plans rephrase <n> <p> ["<title>"] [--when=] [--checkpoint|--no-checkpoint]   correct one
     journal plans todos <n> <p> 4 5 6          put existing to-dos in phase p
     journal plans todos <n> <p> 4 --off        take one out
     journal plans from-doc <doc>               a draft from a document's "Phase …" parts
@@ -59,6 +60,12 @@ phases after it move along, carrying their to-dos and their checkpoints — noth
 hand, because a phase's number is its position and every reader derives it. Write the plan you can
 see and correct it when the work teaches you more; a plan abandoned and rewritten because a phase
 could only be appended is a plan the user has to approve twice.
+
+**A phase written wrong is corrected, not lived with.** `plans rephrase` changes its title, what
+completes it, or whether it is a checkpoint — for the same reason `--before` exists, that a plan is
+written before the work is understood. The checkpoint is the one that changes what is HAPPENING, so
+it says so: taking one off a phase the plan is stopped at sets the plan moving, and putting one on a
+phase already passed changes nothing that has happened. Both are allowed and both are named.
 
 **A to-do sits in ONE phase**, and a row written into the wrong one is corrected in a
 single command: `journal plans todos <n> <p> 4 --move` takes it out of the phase it is in

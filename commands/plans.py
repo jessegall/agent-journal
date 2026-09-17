@@ -107,6 +107,15 @@ class Phase(Resource):
     action = "phase"
 
 
+class Rephrase(Resource):
+    signature = ("plans:rephrase {n : a plan number} {phase : a phase number} {title*? : the phase's title, reworded} "
+                 "{--when=} {--checkpoint} {--no-checkpoint}")
+    casts = PLAN
+    writes = True
+    controller = CONTROLLER
+    action = "rephrase"
+
+
 class Todos(Resource):
     signature = "plans:todos {n : a plan number} {phase : a phase number} {todos* : to-do numbers} {--off} {--move} {--reopen=}"
     casts = {**PLAN, "phase": number("a phase number")}
@@ -171,4 +180,4 @@ class Link(Resource):
     action = "link"
 
 
-COMMANDS = (Edit, List, Show, Add, FromDoc, Phase, Todos, Activate, Continue, Ready, Park, Acknowledge, Abandon, Link)
+COMMANDS = (Edit, List, Show, Add, FromDoc, Phase, Rephrase, Todos, Activate, Continue, Ready, Park, Acknowledge, Abandon, Link)
