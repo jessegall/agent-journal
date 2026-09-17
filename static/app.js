@@ -3451,7 +3451,10 @@ const Thread = {
   setup(props) {
     const chat = useFetch(() => props.env && `/api/env/${props.env}/chat`);
     const root = ref(null);
-    const turns = computed(() => (chat.data && chat.data.turns) || []);
+    // the key is what a turn IS, never where it sits: the thread is capped, so an index shifts for
+    // every turn when one arrives, and Vue would rebuild each of them and lose what is typed in one
+    const turns = computed(() => ((chat.data && chat.data.turns) || [])
+      .map((t) => ({ ...t, key: `${t.kind}:${t.n || 0}:${t.at}` })));
     const more = computed(() => (chat.data && chat.data.more) || 0);
     // a new turn lands in view, but never while the reader is scrolled up reading back: a thread
     // that yanks the page away mid-sentence is the one thing a long conversation must not do
@@ -3482,6 +3485,13 @@ const Thread = {
     const send = (text, files) => postJSON(`/api/env/${props.env}/messages`, { text, files })
       .then(() => { chat.reload(); changed(); });
     const fileUrl = (n, name) => `/message-files/${props.env}/${n}/${encodeURIComponent(name)}`;
+    // a turn is cut to keep the bubble a bubble; the rest is one click away, never gone
+    const whole = ref(new Set());
+    const showAll = (t) => {
+      const next = new Set(whole.value);
+      next.has(t.key) ? next.delete(t.key) : next.add(t.key);
+      whole.value = next;
+    };
     const lit = ref("");
     watch(() => THREAD_GOTO.at, () => {
       const want = THREAD_GOTO.key;
@@ -3501,19 +3511,21 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, send, root, answered, landed, fileUrl, lit, THREAD_GOTO };
+    return { turns, more, send, root, answered, landed, fileUrl, lit, whole, showAll, THREAD_GOTO };
   },
   template: `
     <div class=thread>
       <div ref=root class=thread-scroll>
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
       <p v-if="!turns.length" class=thread-empty>Nothing has been said here yet.</p>
-      <div v-for="t in turns" :key="t.kind + ':' + (t.n || 0) + ':' + t.at" :data-turn="t.n ? t.kind + ':' + t.n : null"
+      <div v-for="t in turns" :key="t.key" :data-turn="t.n ? t.kind + ':' + t.n : null"
         :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', lit: lit === t.kind + ':' + t.n}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
           <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
-          <div v-html="$md(t.text)"></div>
+          <div v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
+          <button v-if="t.full" type=button class=thread-full @click.stop="showAll(t)">
+            {{ whole.has(t.key) ? "Show less" : "Show the rest" }}</button>
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
           <div v-if="t.files && t.files.length" class=thread-files>
             <a v-for="f in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name">

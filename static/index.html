@@ -576,6 +576,9 @@
   .thread-image { display: block; max-width: 100%; max-height: 260px; border-radius: 8px; border: 1px solid var(--border); }
   .thread-file-name { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
   .thread-file-name .ico { width: 14px; height: 14px; }
+  .thread-full { margin-top: 5px; padding: 0; border: 0; background: none; color: var(--accent-text);
+    font: inherit; font-size: 12px; cursor: pointer; }
+  .thread-full:hover { text-decoration: underline; text-underline-offset: 3px; }
   .thread-empty { padding: 18px 2px; color: var(--text-3); }
   .thread-write { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 12px 0 22px; }
   /* positioned so a leaving row can be taken out of the flow: work moving from Working on to Finished must not jostle either list */
