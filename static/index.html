@@ -510,21 +510,27 @@
     .home-rail { order: -1; width: auto; max-height: 34%; padding: 0 0 18px; border-left: 0;
       border-bottom: 1px solid var(--border); }
   }
-  /* label and value on a row each: six facts on one line ellipse the end of themselves in a 288px rail */
-  .home-facts { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: var(--text-3); }
-  .home-fact { display: flex; align-items: baseline; gap: 8px; }
-  .home-fact-label { flex: none; width: 52px; color: var(--text-3); }
-  .home-fact-value { flex: 1 1 auto; min-width: 0; color: var(--text-2);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  a.home-fact-value:hover { color: var(--text); text-decoration: underline; text-decoration-color: #3a3d44;
+  /* a slim bar under the status bar: ONE ROW THAT STAYS ONE ROW. The facts sit across the full width
+     where they fit, and the subagents fold into a count — a list that grows must never push the
+     conversation down, which is why these left the space above the thread to begin with. */
+  .agent-bar { flex: none; display: flex; align-items: center; gap: 10px; height: 30px;
+    font-size: 11.5px; color: var(--text-3); border-bottom: 1px solid var(--border); }
+  .agent-facts { flex: 1 1 auto; min-width: 0; display: flex; align-items: baseline; gap: 10px; overflow: hidden; }
+  .agent-fact, .agent-fact-lead { white-space: nowrap; }
+  .agent-fact-lead { color: var(--text-2); }
+  .agent-fact-lead:hover { color: var(--text); text-decoration: underline; text-decoration-color: #3a3d44;
     text-underline-offset: 3px; }
+  .agent-crew-toggle { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px;
+    border: 0; border-radius: 6px; background: none; color: var(--text-3); font: inherit; font-size: 11.5px; cursor: pointer; }
+  .agent-crew-toggle:hover { background: var(--hover); color: var(--text-2); }
+  .agent-crew-toggle .ico { width: 13px; height: 13px; }
   .home-facts .first { color: var(--text-2); }
   .home-facts a.first { text-decoration: none; }
   .home-facts a.first:hover { color: var(--text); text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   /* the live subagents hang under the facts line, indented past it: part of the page's opening block, not a bar */
   .home-lead { flex: none; display: flex; flex-direction: column; gap: 4px; }
-  .crew-strip { display: flex; flex-direction: column; padding: 6px 0 0 0; }
-  .crew-line { display: flex; align-items: center; gap: 8px; height: 24px; margin: 0 -7px; padding: 0 7px; border: none; border-radius: 6px;
+  .crew-strip { flex: none; display: flex; flex-wrap: wrap; gap: 2px 14px; padding: 6px 0 4px; border-bottom: 1px solid var(--border); }
+  .crew-line { display: flex; align-items: center; gap: 7px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;
     background: transparent; text-align: left; cursor: pointer; animation: crew-in .28s ease-out both; }
   .crew-line:hover { background: #17181b; }
   .crew-rule { flex: none; width: 9px; height: 1px; background: #3a3d44; }
