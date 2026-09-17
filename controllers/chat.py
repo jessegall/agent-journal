@@ -206,7 +206,10 @@ def wrote(root: Path, env: str) -> list[dict]:
         # A NOTE SAYS WHICH MESSAGE IT IS FOR, so a run of them is not a column of "Noted" with
         # nothing tying any of them to what produced it. A message that made no row gets none: an
         # acknowledgement that reports nothing acknowledges nothing.
-        made = [b for b in became if b and b != "noted"]
+        # ONLY WHAT WAS MADE. "noted" is nothing, and a work update is not a row anybody can open —
+        # the user, on reading "Noted — created a work update": that is not something worth noting.
+        made = [b for b in became if b and b not in (inbox.label("noted"), inbox.label("work"),
+                                                     inbox.label("answered"))]
         if m.get("processed") and made and not any(
                 (r.get("source") or "") not in ("web", "journal") for r in m.get("replies") or []):
             out.append({"at": m.get("processed") or m.get("at") or "", "who": "agent", "kind": "receipt",

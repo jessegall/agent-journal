@@ -640,7 +640,7 @@
   .file-raw-link:hover { color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
   /* A HEADING IN THE RAIL IS THE LIST PAGE'S GROUP HEADING, at the width this column has: the state
      is said once, over the rows that are in it, rather than repeated on the end of every row. */
-  .rail-group { display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 var(--rail-gutter);
+  .rail-group { display: flex; align-items: center; justify-content: space-between; gap: 7px; height: 28px; padding: 0 var(--rail-gutter);
     border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--raised) 60%, transparent);
     font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); }
   .rail-group-n { color: var(--text-3); font-variant-numeric: tabular-nums; text-transform: none; }
@@ -848,8 +848,9 @@
   /* AND THE BUBBLE FILLS THE TURN. The width moved onto the turn and the bubble went on shrinking
      to fit its lines, so the circle closed one level further out and the user's own placeholders
      were still little squares. Every box in this chain has to be told its width. */
-  .thread-turn.waiting .thread-bubble { width: 100%; display: flex; flex-direction: column; gap: 8px;
-    border-color: transparent; background: color-mix(in srgb, var(--raised) 55%, transparent); }
+  .thread-turn.waiting .thread-bubble { width: 100%; border-color: transparent;
+    background: color-mix(in srgb, var(--raised) 55%, transparent);
+    animation: thread-wait 1.6s ease-in-out infinite; }
   /* THE LINE FILLS THE TURN. Sizing each line as a percentage of a bubble that shrinks to fit its
      lines is circular, and it collapsed the short ones into little grey squares. */
   .thread-blank { display: block; width: 100%; height: 9px; border-radius: 99px;

@@ -139,6 +139,14 @@ check("and the agent's own words replace it, rather than standing beside it",
       ([t["kind"] for t in turns() if t["kind"] == "receipt"],
        [t["text"] for t in turns() if t["kind"] == "reply"][-1]),
       ([], "Done — it was the bar, not the bubble."))
+# a message that only moved the work along made nothing anybody can open, so nothing is noted
+inbox.add(root, "a note about the work", now(), track="w")
+_wn = len(inbox._all(root, "w"))
+inbox.process(root, _wn, "about the work", ["work"], now(), track="w")
+inbox.done(root, _wn, now(), track="w")
+check("a message that became only a work update carries no note",
+      [t for t in turns() if t["kind"] == "receipt" and t["n"] == _wn], [])
+
 inbox.reply(root, _n, "And thanks.", now(), source="web", track="w")
 check("and the user's own reply quotes it too — a reply is not the message",
       [t["ref"] for t in turns() if t["kind"] == "reply"][-1], "please look at the padding")
