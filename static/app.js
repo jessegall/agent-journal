@@ -342,8 +342,10 @@ const Icon = {
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
-      <!-- auto: work going round the list on its own — a loop with the arrow that keeps it going -->
-      <template v-else-if="name === 'auto'"><path d="M13 8a5 5 0 1 1-1.9-3.9"/><path d="M13.2 2.6v2.6h-2.6"/></template>
+      <!-- auto: playing THROUGH THE LIST. A loop is what every other app draws for refresh, so it
+           said reload rather than "it takes the next row itself"; a play mark against the rows does. -->
+      <template v-else-if="name === 'auto'"><path d="M3 4.2 7.4 7 3 9.8z"/>
+        <path d="M9.6 4.2h3.8M9.6 7h3.8M9.6 9.8h3.8"/></template>
       <!-- a branch: the line this checkout is on, and the one it came off. A graph, not the angle
            brackets of the code glyph, which is what was standing in for it. -->
       <template v-else-if="name === 'branch'"><circle cx="5" cy="3.6" r="1.6"/><circle cx="5" cy="12.4" r="1.6"/>
