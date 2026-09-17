@@ -3694,11 +3694,24 @@ const Thread = {
       // one leaves and the real one enters in the same render — two animations over the same words,
       // which is the stutter — where they are the same turn and should simply be updated in place.
       const mine = new Map(pending.value.filter((t) => t.state !== "failed").map((t) => [(t.text || "").trim(), t.key]));
+      // THE NOTE AND THE ANSWER ARE ONE SLOT. The journal's "Noted — created to-do 4." stands under
+      // a message until the agent says something itself, and then it is gone: two turns, but one
+      // place in the thread. Keyed apart, that swap is an exit and an enter over the same words,
+      // with the scroll moving under both — so the note and the first agent reply to a message
+      // carry the same key and are patched in place. They never both exist, so nothing collides.
+      const answered = new Set();
       const real = ((chat.data && chat.data.turns) || []).map((t) => {
         const held = t.who === "you" ? mine.get((t.text || "").trim()) : null;
         const refs = (t.became_refs || []).map((r) => ({ ...r, key: String(r.ref), href: refHref(r.ref, props.env) }))
           .filter((r) => r.href);
-        return { ...t, key: held || `${t.kind}:${t.n || 0}:${t.at}`, becameRefs: refs };
+        let slot = "";
+        if (t.kind === "receipt") {
+          slot = `answer:${t.n}`;
+        } else if (t.kind === "reply" && t.who === "agent" && t.n && !answered.has(t.n)) {
+          answered.add(t.n);
+          slot = `answer:${t.n}`;
+        }
+        return { ...t, key: held || slot || `${t.kind}:${t.n || 0}:${t.at}`, becameRefs: refs };
       });
       // PURE. It used to write back to `pending` through nextTick, which re-triggered it — and on that
       // second pass the last turn's key changed from its pending key to its real one, destroying and
