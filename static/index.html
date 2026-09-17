@@ -1302,6 +1302,9 @@
   .linked a:hover { color: var(--accent-text); }
   /* a web address inside text stays part of the sentence, not a row of a linked list */
   .linked a.autolink, a.autolink { display: inline; padding: 0; border: none; color: var(--accent-text); overflow-wrap: anywhere; }
+  /* A PILL IS NOT A ROW OF THE LIST IT SITS IN. `.linked a` makes every link a flex row with a rule
+     under it, which a to-do named inside a reply's prose is not: it is a word in a sentence. */
+  .linked a.row-pill { display: inline; padding: 0 4px; border: 1px solid var(--border-2); border-bottom-width: 1px; }
   .linked a.autolink:hover, a.autolink:hover { color: var(--text); text-decoration: underline; }
   .linked .answer { color: var(--text-3); }
 
