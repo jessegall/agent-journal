@@ -3500,8 +3500,37 @@ const Thread = {
       // twice, because a turn of rendered markdown finishes laying out after the tick that added it
       nextTick(() => { bottom(first ? "auto" : "smooth"); requestAnimationFrame(() => bottom("auto")); });
     });
-    const send = (text, files) => postJSON(`/api/env/${props.env}/messages`, { text, files })
-      .then(() => { chat.reload(); changed(); });
+    // REPLYING TO A TURN, and where it goes depends on what the turn IS. An agent reply already lives
+    // under a message, so the answer goes there with `quoting` — which the server checks against what
+    // was really said in that thread, so the quote cannot be invented. Anything else has no thread to
+    // answer under, so it becomes a new message carrying the words it answers.
+    const answering = ref(null);
+    const replyTo = (t) => { answering.value = t; };
+    const unreply = () => { answering.value = null; };
+    const quoteOf = computed(() => (answering.value ? (answering.value.full || answering.value.text || "") : ""));
+    // A QUOTE IS A REMINDER OF WHAT IS BEING ANSWERED, not a second copy of it — one line, cut on a
+    // word. NO ELLIPSIS: the server checks the quote against what was really said, so an excerpt with
+    // a character the original does not have is refused. What is stored is true; the CSS does the
+    // trailing-off, which is a rendering question and not a record one.
+    const QUOTE_MAX = 140;
+    const excerpt = (text) => {
+      const flat = String(text || "").replace(/\s+/g, " ").trim();
+      if (flat.length <= QUOTE_MAX) return flat;
+      const cut = flat.slice(0, QUOTE_MAX);
+      const word = cut.lastIndexOf(" ");
+      return (word > QUOTE_MAX / 2 ? cut.slice(0, word) : cut).trim();
+    };
+    const post = async (text, files) => {
+      const to = answering.value;
+      if (to && to.who === "agent" && to.kind === "reply" && to.n) {
+        await postJSON(`/api/env/${props.env}/messages/${to.n}/reply`, { text, quoting: excerpt(quoteOf.value) });
+      } else {
+        await postJSON(`/api/env/${props.env}/messages`, { text: to ? quoted(excerpt(quoteOf.value)) + text : text, files });
+      }
+      answering.value = null;
+      chat.reload();
+      changed();
+    };
     const fileUrl = (n, name) => `/message-files/${props.env}/${n}/${encodeURIComponent(name)}`;
     // the stored time is UTC; slicing the characters out of it showed the reader somebody else's clock
     const clock = (at) => {
@@ -3529,6 +3558,12 @@ const Thread = {
       setTimeout(() => { if (lit.value === want) lit.value = ""; }, 2200);
     });
     // the header POINTS at what the message became; what is being DONE stays in the Activity column
+    const drop = (t) => {
+      if (!t.n) return;
+      send("DELETE", `/api/env/${props.env}/messages/${t.n}`, { why: "taken off the list from the chat" })
+        .then(() => { chat.reload(); changed(); })
+        .catch(() => {});
+    };
     const becameNote = (t) => {
       if (!t.became) return "Being read";
       return t.working ? `Working on ${t.became}` : `Became ${t.became}`;
@@ -3540,7 +3575,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, send, root, answered, landed, becameNote, fileUrl, clock, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
+    return { turns, more, post, root, answered, landed, becameNote, fileUrl, clock, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
   },
   template: `
     <div class=thread>
@@ -3571,6 +3606,11 @@ const Thread = {
             </a>
           </div>
         </div>
+        <div class=thread-tools>
+          <button type=button class=thread-tool title="Reply to this, quoting it" @click.stop="replyTo(t)">Reply</button>
+          <button v-if="t.kind === 'message' && !t.became" type=button class=thread-tool
+            title="Take it off the list — it stays in the record" @click.stop="drop(t)">Take off the list</button>
+        </div>
         <div class=thread-meta>
           <span v-if="t.n" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
           <span>{{ clock(t.at) }}</span>
@@ -3586,7 +3626,12 @@ const Thread = {
       </TransitionGroup>
       </div>
       <div class=thread-write>
-        <Compose placeholder="Write to the agent…" submit="Send" :send="send" :attach="true" :bare="true"/>
+        <div v-if="answering" class=thread-answering>
+          <span class=thread-answering-label>Replying to</span>
+          <span class=thread-answering-text>{{ answering.text }}</span>
+          <button type=button class=thread-answering-x title="Not replying to it after all" @click="unreply">×</button>
+        </div>
+        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true"/>
       </div>
     </div>`,
 };
