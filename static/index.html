@@ -207,6 +207,14 @@
   .statusbar-text b { flex: none; font-weight: 500; font-size: 13.5px; white-space: nowrap; }
   .statusbar-text span { flex: 1 1 auto; min-width: 180px; font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
+  /* the roller: one line's height, and the two lines pass through it without moving anything else */
+  .statusbar-roll { position: relative; display: block; height: 19px; text-decoration: none; }
+  .statusbar-line { position: absolute; inset: 0; min-width: 0; display: block; overflow: hidden; text-overflow: ellipsis;
+    text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
+  .roll-enter-active, .roll-leave-active { transition: opacity 75ms ease, transform 75ms ease; }
+  .roll-enter-from { opacity: 0; transform: translateY(9px); }
+  .roll-leave-to { opacity: 0; transform: translateY(-9px); }
+  @media (prefers-reduced-motion: reduce) { .roll-enter-active, .roll-leave-active { transition: none; } }
   /* the branch this project is on, left of the Auto switch; the to-do is named in the sentence itself */
   .statusbar-facts { flex: 0 1 auto; min-width: 0; display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; }
   a.statusbar-facts { text-decoration: none; }
