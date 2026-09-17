@@ -3470,6 +3470,10 @@ const Thread = {
     // THE LAST TURN, NEVER THE COUNT. The thread is capped, so once it is full a new turn drops the
     // oldest and the length does not move — a count would have said "nothing arrived" from then on.
     const newest = (rows) => { const t = rows[rows.length - 1]; return t ? `${t.at}:${t.kind}:${t.n}:${t.text.length}` : ""; };
+    // ARRIVAL, NEVER FIRST PAINT. The group mounts empty and the first answer inserts a hundred and
+    // twenty turns at once, which is an insert as far as Vue is concerned — so the name is empty until
+    // that batch has landed, and only what comes after it animates.
+    const settled = ref(false);
     let last = "";
     watch(turns, (rows) => {
       const key = newest(rows);
@@ -3477,6 +3481,7 @@ const Thread = {
       const arrived = key && key !== last;
       const follow = first || near();
       last = key;
+      if (first) nextTick(() => { settled.value = true; });
       if (!arrived || !follow) return;
       // twice, because a turn of rendered markdown finishes laying out after the tick that added it
       nextTick(() => {
@@ -3516,7 +3521,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, send, root, answered, landed, fileUrl, lit, whole, showAll, chat, SKELETON, THREAD_GOTO };
+    return { turns, more, send, root, answered, landed, fileUrl, lit, whole, showAll, chat, SKELETON, settled, THREAD_GOTO };
   },
   template: `
     <div class=thread>
@@ -3528,6 +3533,7 @@ const Thread = {
       </template>
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
       <p v-if="chat.data && !turns.length" class=thread-empty>Nothing has been said here yet.</p>
+      <TransitionGroup :name="settled ? 'turn' : ''">
       <div v-for="t in turns" :key="t.key" :data-turn="t.n ? t.kind + ':' + t.n : null"
         :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', lit: lit === t.kind + ':' + t.n}]">
         <div class="thread-bubble md">
@@ -3535,7 +3541,7 @@ const Thread = {
           <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
           <div v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
           <button v-if="t.full" type=button class=thread-full @click.stop="showAll(t)">
-            {{ whole.has(t.key) ? "Show less" : "Show the rest" }}</button>
+            {{ whole.has(t.key) ? "Show less" : "Read more" }}</button>
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
           <div v-if="t.files && t.files.length" class=thread-files>
             <a v-for="f in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name">
@@ -3554,6 +3560,8 @@ const Thread = {
           </span>
         </div>
       </div>
+      </div>
+      </TransitionGroup>
       </div>
       <div class=thread-write>
         <Compose placeholder="Write to the agent…" submit="Send" hint="↵ sends · ⇧↵ new line" :send="send" :attach="true"/>
