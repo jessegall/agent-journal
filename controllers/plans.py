@@ -71,7 +71,8 @@ class PlansController(Controller):
         return Result.of(outcome, data, created=True)
 
     def phase(self, root: Path, p: plan_payloads.PhasePayload) -> Result:
-        return Result.of(plans.add_phase(root, p.id, p.title, p.when, p.at, p.checkpoint, track=p.env or None))
+        return Result.of(plans.add_phase(root, p.id, p.title, p.when, p.at, p.checkpoint, track=p.env or None,
+                                         before=p.before if p.has("before") else 0))
 
     def todos(self, root: Path, p: plan_payloads.TodosPayload) -> Result:
         return Result.of(plans.put_todos(root, p.id, p.phase, p.todos, p.at, off=p.off, reopen=p.reopen,

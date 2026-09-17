@@ -409,5 +409,27 @@ check("linking the same transcript twice is refused", (code, "already links" in 
 code, out = j("plans", "link", str(_ln), "transcript 4.2")
 check("only a doc has parts, so a dotted transcript is not a ref", code, 1)
 
+# ------------------------------------------------- a phase can go in the MIDDLE, not only at the end
+# its own plan, at the end of the file: an extra phase in a fixture above shifts every count below it
+code, out = j("plans", "add", "a plan written out of order", "--goal=its phases end up in the right order",
+              "--brief", stdin="x")
+_pn = int(re.search(r"plan (\d+)", out).group(1))
+j("plans", "phase", str(_pn), "first")
+j("plans", "phase", str(_pn), "third", "--checkpoint")
+code, out = j("todos", "add", "a row of the third phase")
+_row = int(re.search(r"to-do (\d+)", out).group(1))
+j("plans", "todos", str(_pn), "2", str(_row))
+code, out = j("plans", "phase", str(_pn), "second", "--when=it is understood", "--before=2")
+check("a phase can be inserted before another, and says the rest moved along",
+      (code, f"plan {_pn} phase 2: second" in out, "moved along" in out), (0, True, True))
+check("--before that names no phase is refused, saying how many there are",
+      j("plans", "phase", str(_pn), "nowhere", "--before=9")[1].strip().endswith("it has 3"), True)
+check("the phases read in the order they were written into",
+      [ph["title"] for ph in plans._all(root, "default")[_pn - 1]["phases"]], ["first", "second", "third"])
+check("the to-do travelled with the phase that moved, so nothing is renumbered by hand",
+      plans.membership(root, "default").get(_row), (_pn, 3))
+check("and the checkpoint travelled with it",
+      [bool(ph.get("checkpoint")) for ph in plans._all(root, "default")[_pn - 1]["phases"]], [False, False, True])
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

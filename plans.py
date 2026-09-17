@@ -27,6 +27,9 @@ MESSAGES = {
     "phase_title": 'a phase needs a title: journal plans phase {n} "<title>" --when="<what is true when it is complete>"',
     "closed": "plan {n} is {status} and takes no more changes",
     "phase_added": "plan {n} phase {p}: {title}\n  put to-dos in it: journal plans todos {n} {p} <to-do numbers>",
+    "phase_inserted": "plan {n} phase {p}: {title}\n  the phases after it moved along, with their to-dos\n"
+                      "  put to-dos in it: journal plans todos {n} {p} <to-do numbers>",
+    "no_phase_here": "plan {n} has no phase {p} to go before; it has {last}",
     "no_phase": "plan {n} has no phase {p}",
     "todos_usage": "name the to-dos by number: journal plans todos {n} {p} 4 5 6",
     "no_todo": "there is no to-do {t} on this environment",
@@ -286,7 +289,18 @@ def edit(root: Path, n: int, title: str | None = None, goal: str | None = None, 
 
 
 def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bool = False,
-              track: str | None = None) -> tuple[bool, str]:
+              track: str | None = None, before: int = 0) -> tuple[bool, str]:
+    """A phase, at the end or `before` an existing one.
+
+    APPEND-ONLY WAS A REAL COST, PAID ONCE. A plan is written before the work is understood, so the
+    phase that turns out to belong in the middle is the ordinary case, not the exception — and with
+    only an append the choice was to put its rows in a phase that does not describe them or to abandon
+    the plan and write it again. Both happened here; the second is what this ends.
+
+    Nothing has to be renumbered: a phase's number is its position, its to-dos live inside it, and
+    every reader — `current`, `checkpoint`, `membership`, `reachable` — derives that position by
+    enumerating. So an insert moves the later phases along and they carry everything with them.
+    """
     title = " ".join((title or "").split())
     if not title:
         return False, say("phase_title", n=n)
@@ -299,11 +313,15 @@ def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bo
         closed = _open_for_changes(root, plan, n, here)
         if closed:
             return False, closed
-        plan.setdefault("phases", []).append({"title": title, "when": " ".join((when or "").split()),
-                                              "checkpoint": bool(checkpoint), "todos": [], "at": at})
+        phases = plan.setdefault("phases", [])
+        if before and not 1 <= before <= len(phases):
+            return False, say("no_phase_here", n=n, p=before, last=len(phases))
+        row = {"title": title, "when": " ".join((when or "").split()),
+               "checkpoint": bool(checkpoint), "todos": [], "at": at}
+        p = before if before else len(phases) + 1
+        phases.insert(p - 1, row)
         _put(root, items, here)
-        p = len(plan["phases"])
-    return True, say("phase_added", n=n, p=p, title=title)
+    return True, say("phase_inserted" if before else "phase_added", n=n, p=p, title=title)
 
 
 def put_todos(root: Path, n: int, p: int, numbers, at: str, off: bool = False, reopen: str = "",

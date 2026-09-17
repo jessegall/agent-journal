@@ -100,7 +100,7 @@ class FromDoc(Resource):
 
 
 class Phase(Resource):
-    signature = "plans:phase {n : a plan number} {title* : the phase's title} {--when=} {--checkpoint}"
+    signature = "plans:phase {n : a plan number} {title* : the phase's title} {--when=} {--checkpoint} {--before=}"
     casts = PLAN
     writes = True
     controller = CONTROLLER

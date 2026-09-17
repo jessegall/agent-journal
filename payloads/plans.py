@@ -20,6 +20,7 @@ class PhasePayload(Payload):
     title = Field(str)
     when = Field(str)
     checkpoint = Field(bool)
+    before = Field(int)
 
 
 class TodosPayload(Payload):
