@@ -2802,9 +2802,14 @@ const REPORT_LIST = {
   empty: "No reports on this environment yet.",
 };
 
-const ReportPanel = {
-  props: PANEL_PROPS,
-  components: { Panel, ActionBar, Comments },
+// ONE REPORT, ONE COMPONENT. What it says, what can be done with it and the fact that opening
+// it counts as reading it were written twice — once for the inspector and once for the page —
+// and the two copies had already drifted into different keys for the same thing. The panel and
+// the page differ in their frame and in where an action leaves you, and in nothing else, so
+// that is all each of them holds.
+const ReportBody = {
+  props: { env: String, n: [String, Number], done: Function, title: { type: String, default: "panel-title" } },
+  components: { ActionBar, Comments, RefChip, FetchState },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reports`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -2819,7 +2824,6 @@ const ReportPanel = {
           fields: [{ name: "why", label: "Why it is taken off the list" }] },
       ];
     });
-    const done = panelDone(props, item);
     // opening a report is the user reading it: the home stops asking, the same way a question does
     let marked = false;
     watch(() => item.data, (r) => {
@@ -2827,74 +2831,51 @@ const ReportPanel = {
       marked = true;
       postJSON(`${api.value}/${r.n}/seen`, {}).then(() => changed()).catch(() => { marked = false; });
     }, { immediate: true });
-    return { item, actions, done };
+    return { item, actions, settled: (body, a) => props.done(body, a, item) };
+  },
+  template: `
+    <FetchState :state="item"/>
+    <template v-if="item.data">
+      <component :is="title === 'p-title' ? 'h1' : 'h2'" :class="title">{{ item.data.title }}</component>
+      <dl class=props>
+        <dt>Type</dt><dd>Report — ages out<template v-if="!item.data.archived && item.data.ages_out_in !== null && item.data.ages_out_in !== undefined"> in {{ item.data.ages_out_in }} {{ item.data.ages_out_in === 1 ? 'day' : 'days' }}</template></dd>
+        <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
+        <dt>For</dt><dd><RefChip v-if="item.data.about && $refHref(item.data.about, env)" :to="$refHref(item.data.about, env)" :label="item.data.about_label"/><span v-else class=muted>—</span></dd>
+        <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
+        <template v-if="item.data.doc"><dt>Document</dt><dd><RefChip :to="'#/docs/' + item.data.doc" :label="'Doc ' + item.data.doc"/></dd></template>
+      </dl>
+      <ActionBar :actions="actions" :done="settled" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
+      <div class="md prose" v-html="$md(item.data.body)"></div>
+      <Comments :about="'report ' + item.data.n" :env="env" :key="'c-report' + item.data.n"/>
+    </template>`,
+};
+
+const ReportPanel = {
+  props: PANEL_PROPS,
+  components: { Panel, ReportBody },
+  setup(props) {
+    return { done: (body, a, item) => panelDone(props, item)(body, a) };
   },
   template: `
     <Panel :label="'Report ' + n" :close="close" :onClose="onClose" :link="link">
-      <FetchState :state="item"/>
-      <template v-if="item.data">
-        <h2 class=panel-title>{{ item.data.title }}</h2>
-        <dl class=props>
-          <dt>Type</dt><dd>Report — ages out<template v-if="!item.data.archived && item.data.ages_out_in !== null && item.data.ages_out_in !== undefined"> in {{ item.data.ages_out_in }} {{ item.data.ages_out_in === 1 ? 'day' : 'days' }}</template></dd>
-          <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
-          <dt>For</dt><dd><RefChip v-if="item.data.about && $refHref(item.data.about, env)" :to="$refHref(item.data.about, env)" :label="item.data.about_label"/><span v-else class=muted>—</span></dd>
-          <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
-          <template v-if="item.data.doc"><dt>Document</dt><dd><RefChip :to="'#/docs/' + item.data.doc" :label="'Doc ' + item.data.doc"/></dd></template>
-        </dl>
-        <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
-        <div class="md prose" v-html="$md(item.data.body)"></div>
-        <Comments :about="'report ' + item.data.n" :env="env" :key="'c-report' + item.data.n"/>
-      </template>
+      <ReportBody :env="env" :n="n" :done="done"/>
     </Panel>`,
 };
 
 // a report read full width, the way a doc is: the panel stays for a quick look from the home queue
 const ReportDetail = {
   props: ["env", "n"],
-  components: { TopBar, ActionBar, Comments, RefChip },
+  components: { TopBar, ReportBody },
   setup(props) {
-    const api = computed(() => `/api/env/${props.env}/reports`);
-    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
-    const actions = computed(() => {
-      const r = item.data;
-      if (!r || r.archived) return [];
-      return [
-        { label: "Turn into a doc", primary: true, method: "POST", url: `${api.value}/${r.n}/todoc`, submit: "Turn into a doc",
-          note: "A document is made from this report and kept for good; the report is archived.",
-          follow: (body) => (body.data && body.data.doc ? `#/docs/${body.data.doc}` : null) },
-        { label: "Archive", method: "DELETE", url: `${api.value}/${r.n}`, danger: true, submit: "Archive",
-          fields: [{ name: "why", label: "Why it is taken off the list" }] },
-      ];
-    });
-    const done = (body, a) => { changed(); if (a.label === "Archive") location.hash = `#/env/${props.env}/reports`; };
-    // reading it here counts as reading it, exactly as it does in the panel
-    let marked = false;
-    watch(() => item.data, (r) => {
-      if (marked || !r || r.seen || r.archived) return;
-      marked = true;
-      postJSON(`${api.value}/${r.n}/seen`, {}).then(() => changed()).catch(() => { marked = false; });
-    }, { immediate: true });
-    return { item, actions, done, env: props.env };
+    return { done: (body, a) => { changed(); if (a.label === "Archive") location.hash = `#/env/${props.env}/reports`; } };
   },
   template: `
     <TopBar :crumbs="[env, 'Reports', '#' + n]"/>
     <div class=body><div class=page>
-      <FetchState :state="item"/>
-      <div v-if="item.data" class=page-inner>
-        <h1 class=p-title>{{ item.data.title }}</h1>
-        <dl class=props>
-          <dt>Type</dt><dd>Report — ages out<template v-if="!item.data.archived && item.data.ages_out_in !== null && item.data.ages_out_in !== undefined"> in {{ item.data.ages_out_in }} {{ item.data.ages_out_in === 1 ? 'day' : 'days' }}</template></dd>
-          <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
-          <dt>For</dt><dd><RefChip v-if="item.data.about && $refHref(item.data.about, env)" :to="$refHref(item.data.about, env)" :label="item.data.about_label"/><span v-else class=muted>—</span></dd>
-          <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
-          <template v-if="item.data.doc"><dt>Document</dt><dd><RefChip :to="'#/docs/' + item.data.doc" :label="'Doc ' + item.data.doc"/></dd></template>
-        </dl>
-        <ActionBar :actions="actions" :done="done" :key="'reportpage' + item.data.n + (item.data.archived ? 'x' : '')"/>
-        <div class="md prose" v-html="$md(item.data.body)"></div>
-        <Comments :about="'report ' + item.data.n" :env="env" :key="'c-reportpage' + item.data.n"/>
-      </div>
+      <div class=page-inner><ReportBody :env="env" :n="n" :done="done" title="p-title"/></div>
     </div></div>`,
 };
+
 
 const Reports = {
   props: ["env", "archive", "n"],
