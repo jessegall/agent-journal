@@ -713,6 +713,11 @@
   .agent-fact, .agent-fact-lead { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
   .agent-fact .ico, .agent-fact-lead .ico { width: 12px; height: 12px; opacity: .65; }
   .agent-fact-lead { color: var(--text-2); }
+  /* a fact that happens to be a link is still a fact: it reads like the ones beside it, and says it
+     can be opened by answering the pointer, not by being a different colour standing still */
+  a.agent-fact { color: inherit; text-decoration: none; }
+  a.agent-fact:hover { color: var(--text-2); text-decoration: underline; text-decoration-color: #3a3d44;
+    text-underline-offset: 3px; }
   .agent-fact-lead:hover { color: var(--text); text-decoration: underline; text-decoration-color: #3a3d44;
     text-underline-offset: 3px; }
   .agent-crew-toggle { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px;
