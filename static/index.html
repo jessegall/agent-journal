@@ -688,7 +688,10 @@
   .home-facts a.first { text-decoration: none; }
   .home-facts a.first:hover { color: var(--text); text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   /* the live subagents hang under the facts line, indented past it: part of the page's opening block, not a bar */
-  .crew-strip { flex: none; display: flex; flex-wrap: wrap; gap: 2px 14px; padding: 6px 24px 4px; border-bottom: 1px solid var(--border); }
+  /* ONE SUBAGENT TO A LINE: wrapped in a row, the model fell off the end of the one thing the user
+     always wants to see. The top padding is gone with the rule that used to sit above it. */
+  .crew-strip { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+    padding: 0 24px 6px; border-bottom: 1px solid var(--border); }
   .crew-line { display: flex; align-items: center; gap: 7px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;
     background: transparent; text-align: left; cursor: pointer; animation: crew-in .28s ease-out both; }
   .crew-line:hover { background: #17181b; }
