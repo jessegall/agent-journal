@@ -937,10 +937,11 @@
   .chat > .list { min-height: 0; }
   .compose-wrap.at-bottom { border-bottom: 0; border-top: 1px solid var(--border); }
   .compose { display: flex; flex-direction: column; gap: 8px; }
+  /* the BOX is the bordered surface, not the textarea: attachments belong inside it, the way the
+     quick menu already shows them, rather than hanging underneath as a separate row */
   .box-area { width: 100%; min-height: 72px; resize: vertical; outline: none; padding: 9px 11px;
-    background: var(--raised); border: 1px solid var(--border-2); border-radius: 8px;
+    background: transparent; border: 0; border-radius: 8px;
     color: var(--text); font: inherit; font-size: 13px; line-height: 1.55; }
-  .box-area:focus { border-color: var(--accent); }
   /* answering where you are reading: the design's taller box, so a real answer has room */
   .answer-here .box-area { min-height: 86px; }
   .box-area::placeholder { color: var(--text-3); }
@@ -989,10 +990,13 @@
   .linked-q:last-child { border-bottom: none; }
   .linked .linked-q a { border-bottom: none; }
   .question-answer.compact { display: flex; flex-direction: column; gap: 8px; padding: 2px 0 12px 24px; }
-  .compose-files { display: flex; flex-wrap: wrap; gap: 6px; }
+  .compose-files { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 10px 8px; }
+  .compose-files .chip { margin: 0; }
   .chip-x { border: 0; background: none; color: var(--text-3); cursor: pointer; padding: 0 0 0 4px; font-size: 13px; }
   /* the paperclip sits inside the message box, top right; the text keeps clear of it */
-  .compose-box { position: relative; display: flex; }
+  .compose-box { position: relative; display: flex; flex-direction: column;
+    background: var(--raised); border: 1px solid var(--border-2); border-radius: 8px; }
+  .compose-box:focus-within { border-color: var(--accent); }
   .compose-box.attachable .box-area { padding-right: 46px; }
   .compose-attach { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; display: flex; align-items: center;
     justify-content: center; border-radius: 6px; color: var(--text-2); background: transparent; cursor: pointer; }
