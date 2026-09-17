@@ -1384,6 +1384,10 @@ const TODO_LIST = {
   }),
   columns: { priority: (t) => t.priority, status: (t) => todoStatus(t), num: (t) => `#${t.n}`, question: todoQuestionMark,
              numWidth: "34px", ageWidth: "52px", title: (t) => t.title, age: (t) => shortAge(t.age),
+             // A ROW THAT IS WAITING SAYS ON WHAT. The pill told a reader that a to-do was Blocked or
+             // Waiting on you and then stopped, which is the half of the sentence they did not need —
+             // the reason is required when it is written, and it was being thrown away on the way out.
+             sub: (t) => t.asks || t.blocked || "",
              // the row already carried its plan and nobody drew it: a row in a plan reads differently
              // from one on the open list, and which PHASE is the part you cannot work out from the list
              cite: (t) => (t.plan ? `Plan ${t.plan.n} · phase ${t.plan.phase}` : "") },
