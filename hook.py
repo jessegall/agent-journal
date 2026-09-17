@@ -65,13 +65,17 @@ import inbox  # noqa: E402
 from templates import render as fill  # noqa: E402
 
 MESSAGES = {
-    "inbox_fact": "the user left {n} message(s) for you",
-    "inbox_do": "process them before anything else: `.journal/journal.py messages` lists them; split each into parts with "
-                "`messages process`, a question for any part you do not understand, then `messages done`",
+    "inbox_fact": "the user left {n} message(s) for you, the oldest being message {first}",
+    # POINTS AT `waiting`, NOT `messages`. `messages waiting` hands them back OLDEST FIRST and marks
+    # every one of them read; the plain list does neither — so an agent that followed this nudge read
+    # one message, acted on it, and left the user looking at ticks that said exactly that.
+    "inbox_do": "read them all and handle them oldest first: `.journal/journal.py messages waiting` shows every one "
+                "in full and marks them read; split each into parts with `messages process`, a question for any part "
+                "you do not understand, then `messages done`",
     "viewer_first_note": "THE USER WORKS FROM THE VIEWER on this environment: keep each terminal message to its one tagged line, and put the "
                          "answer where they read it: a reply on their message (journal messages reply), a report for research, a question for a decision.",
-    "inbox_mention": "the user left {n} new message(s) for you — `journal messages waiting` reads them when you reach a "
-                     "pause; nothing is blocked",
+    "inbox_mention": "the user left {n} new message(s) for you — `journal messages waiting` reads them all, oldest "
+                     "first, when you reach a pause; nothing is blocked",
     "comments_mention": "the user left {n} new comment(s) for you — `journal comments` reads them when you reach a "
                         "pause; nothing is blocked",
     "deferral_do": "park it as a to-do before going on, or run this call again if nothing is deferred",
@@ -352,6 +356,7 @@ MESSAGES = {
     "note_delayed": "delayed work, not an instruction to start any of it",
     "count_reminders": "said again at every stop; not repeated here",
     "count_tools": "scripts this project keeps; run them, do not rewrite them",
+    "count_connections": "services this project can reach, and which variable holds each token",
     "count_row": "{n}  {cmd}",
     "count_carry": "      journal carry",
     "count_carry_what": "all of it, in full, in one read",
@@ -905,7 +910,7 @@ def _p_inbox(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     waiting = inbox.unprocessed(ROOT, here)
     if not waiting:
         return None
-    return _say(say("inbox_fact", n=len(waiting)), say("inbox_do"))
+    return _say(say("inbox_fact", n=len(waiting), first=waiting[0][0]), say("inbox_do"))
 
 
 @nudges.subject("loop", 10)
@@ -1366,9 +1371,9 @@ def _unbound(conf: dict, ctx: Ctx) -> bool:
     A SESSION IS UNBOUND UNTIL SOMEBODY CHOOSES. Not a subagent — a delegated one is put on
     its environment by the session that dispatched it, and an undelegated one is outside all
     of this — and not a session that has switched, delegated, or run under
-    `bind_on_start`. `tracks.current` still answers for reads, falling back to the start
-    environment, because a question about the record must not need a decision first; this
-    is what the writes are held on.
+    `bind_on_start`. Unbound, `tracks.current` answers "" — there is no default environment —
+    so the CLI refuses a read as well as a write until one is picked; this is what both are
+    held on.
     """
     if conf["bind_on_start"]:
         return False
@@ -3245,6 +3250,7 @@ def _counts(here: str, unbound: bool = False) -> str:
         (len(rem.live(ROOT)), "journal reminders", say("count_reminders")),
         (len(todo.open_items(ROOT, here)), "journal todos", _todo_note(here, unbound)),
         (len(tools._all(ROOT)), "journal tools", say("count_tools")),
+        (len(__import__("connections").all_of(ROOT, here)), "journal connections", say("count_connections")),
         (len(__import__("suggestions").open_items(ROOT, here)), "journal suggestions", say("count_suggestions")),
     ]
     have = [(say("count_row", n=str(n).rjust(4), cmd=cmd), what) for n, cmd, what in rows if n]
@@ -3341,7 +3347,7 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     # asked about; `bind_on_start` restores that. Unbound, the choice is made on the first
     # prompt, by the agent, out loud. A switch from inside the session rebinds it alone.
     if conf["bind_on_start"] and not tracks.bound(ROOT, ctx.stem):
-        tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+        tracks.bind(ROOT, ctx.stem, tracks.start(ROOT))
     state.use_track(tracks.current(ROOT, ctx.stem))
     if source == "compact" and ctx.path is not None and not conf["context_window"]:
         peak = context.peak_before_compaction(ctx.path)
@@ -3412,17 +3418,20 @@ def _register(payload: dict, ctx: Ctx) -> str | None:
     if tracks.bound(ROOT, ctx.stem):
         return tracks.current(ROOT, ctx.stem)
     # a continued or resumed session goes back on the environment it ended on, if that still exists and is free
+    # A SESSION RETURNS TO THE ENVIRONMENT IT WAS IN. Only its own: a `--continue` or
+    # `--resume` carries the same session id, and a brand-new one has never been anywhere,
+    # so it starts on nothing rather than on somebody else's choice.
     ended_on = state.get(ROOT, "ended_on", "", stem=ctx.stem) if payload.get("source") == "resume" else ""
     if ended_on in tracks.choices(ROOT) and not tracks.occupants(ROOT, ended_on, ctx.stem):
         tracks.bind(ROOT, ctx.stem, ended_on)
         return tracks.current(ROOT, ctx.stem)
     if _track_due(conf_of(payload), ctx):
         return None
-    # Registered on the start environment for READS, and bound to it only if the project
-    # still binds at the start: `tracks.current` already falls back there, so an unbound
-    # session is answered without a binding being written behind its back.
+    # Bound only if the project still binds at the start. Otherwise this session is
+    # registered NOWHERE and `current` says so: no binding is written behind its back, and
+    # no environment is read as if it had been chosen.
     if conf_of(payload)["bind_on_start"]:
-        tracks.bind(ROOT, ctx.stem, tracks.current(ROOT, None))
+        tracks.bind(ROOT, ctx.stem, tracks.start(ROOT))
     return tracks.current(ROOT, ctx.stem)
 
 
@@ -3676,6 +3685,12 @@ def main(raw: str | None = None) -> int:
         # ALIVE, AS OF NOW. What `tracks.occupants` reads to tell a running session from a
         # terminal that was closed without a SessionEnd.
         state.put(ROOT, "seen_at", int(time.time()), stem=ctx.stem)
+        # WHERE IT WAS, STAMPED AS IT GOES. SessionEnd records this too, but a session that
+        # is killed never fires one — and with no default environment to fall back to, a
+        # resume that has forgotten where it was starts nowhere. Written on every event, so
+        # the answer survives a crash.
+        if env:
+            state.put(ROOT, "ended_on", env, stem=ctx.stem)
         # which event came last tells an idle session (Stop) from a working one, for the channel server
         state.put(ROOT, "last_event", event, stem=ctx.stem)
         _remember_pid(ctx.stem)

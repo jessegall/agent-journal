@@ -48,7 +48,8 @@ _PROJECTS: dict = {}
 
 def _project(d):
     if str(d) not in _PROJECTS:
-        _PROJECTS[str(d)] = testkit.Project(d)
+        # bind=False: this suite IS the refusal, so the harness must not choose for it
+        _PROJECTS[str(d)] = testkit.Project(d, bind=False)
     return _PROJECTS[str(d)]
 
 
@@ -78,7 +79,8 @@ d = project()
 root = d / ".journal"
 out = fire(d, "SessionStart", "s1", source="startup")
 check("no binding is written at the start", tracks.bound(root, "s1"), None)
-check("reads still fall back to the start environment", tracks.current(root, "s1"), "default")
+check("an unbound session is on no environment at all", tracks.current(root, "s1"), "")
+check("the project's start environment is a separate question", tracks.start(root), "default")
 
 block = context_of(out)
 check("the block tells the agent it is on no environment", "NO ENVIRONMENT yet" in block, True)
@@ -186,6 +188,42 @@ check("the file of a transcript that is gone is dropped",
       (d6 / ".journal" / "runtime" / "s-gone.json").is_file(), False)
 check("and the live session's is kept",
       (d6 / ".journal" / "runtime" / "s-here.json").is_file(), True)
+
+# ------------------------------------------------- there is no default environment to READ
+# A READ USED TO BE ANSWERED FROM THE START ENVIRONMENT so that a question about the record
+# never needed a decision first — which made the start environment a selected environment in
+# everything but name. It is refused now, and the refusal is the only place that says how to
+# choose, so it has to name every environment there is.
+d7 = project()
+journal(d7, "s7", "prepare", "second", "a second one")
+fire(d7, "SessionStart", "s7", source="startup")
+code, out = journal(d7, "s7", "todos")
+check("an unbound session's read is refused", code, 1)
+check("the refusal says there is no default one", "no default one" in flat(out), True)
+check("and names every environment it could pick", ("default" in out, "second" in out), (True, True))
+check("and the way to pick one", "journal switch" in out, True)
+check("choosing an environment is not refused", journal(d7, "s7", "environments")[0], 0)
+check("nor is a project-wide read", journal(d7, "s7", "rules")[0], 0)
+code, out = journal(d7, "s7", "switch", "second")
+check("the switch runs and ends it", (code, journal(d7, "s7", "todos")[0]), (0, 0))
+check("the session is on what it picked", tracks.current(d7 / ".journal", "s7"), "second")
+
+# ------------------------------------------------- a session returns to where it was
+# WITH NOTHING TO FALL BACK ON, REMEMBERING MATTERS MORE. `ended_on` is stamped on every
+# hook event, not only at a SessionEnd, because a session that is killed never fires one —
+# and a resume that has forgotten where it was would start nowhere.
+d8 = project()
+journal(d8, "s8", "prepare", "elsewhere", "somewhere else")
+fire(d8, "SessionStart", "s8", source="startup")
+journal(d8, "s8", "switch", "elsewhere")
+fire(d8, "UserPromptSubmit", "s8", prompt="working")      # the stamp rides on any event
+tracks.unbind(d8 / ".journal", "s8")                      # as a kill leaves it: no SessionEnd
+check("a killed session is left on nothing", tracks.current(d8 / ".journal", "s8"), "")
+fire(d8, "SessionStart", "s8", source="resume")
+check("a resume goes back to where it was", tracks.current(d8 / ".journal", "s8"), "elsewhere")
+fire(d8, "SessionStart", "s8-new", source="startup")
+check("a session that has never been anywhere starts on nothing",
+      tracks.current(d8 / ".journal", "s8-new"), "")
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

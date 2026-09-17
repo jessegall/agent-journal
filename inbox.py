@@ -18,7 +18,7 @@ PLAIN = ("work", "noted", "answered")
 _REF = re.compile(r"^\s*(to-?dos?|pins?|rules?|reminders?|questions?|plans?|reports?|docs?)\s*[:#\s]\s*(\d+)\s*$", re.I)
 
 MESSAGES = {
-    "edited": "message {n} is updated",
+    "edited": "message {n} is updated; what it said before is kept under it, and the agent is told it CHANGED",
     "move_where": 'say where: journal messages move {n} "<environment>"',
     "move_none": "there is no environment {dst}",
     "move_same": "message {n} is already on {env}",
@@ -44,6 +44,9 @@ MESSAGES = {
     "needs_became": 'say what the part became: --became="todo 22", "pin 3", "question 4", "plan 5", "report 3", "doc 4", work or noted',
     "not_in_message": "that part is not in message {n}; quote the words it is about",
     "not_in_thread": "nothing under message {n} says that; quote words that were really said in the thread",
+    "edit_same": "message {n} already says that",
+    "edit_note": "The user CHANGED message {n} on {env}: {gist}. Read it again — what it said before is kept under it, "
+                 "and anything you already filed from the old words may need correcting.",
     "already_processed": "message {n} is already processed",
     "already_moved": "message {n} was moved to `{env}`, where it is message {there} — record the part there, "
                      "on the record the user is actually reading",
@@ -542,7 +545,15 @@ def declare(root: Path, n: int, kind: str, at: str, track: str | None = None) ->
     return True, say("declared", n=n, kind=kind)
 
 
-def update(root: Path, n: int, text: str, track: str | None = None) -> tuple[bool, str]:
+def update(root: Path, n: int, text: str, at: str = "", track: str | None = None) -> tuple[bool, str]:
+    """Change what a message says, keeping what it said before.
+
+    AN EDIT IS NOT AN OVERWRITE HERE. The agent may already have READ these words — and a to-do, a
+    pin or a plan may cite them — so replacing them silently would leave every one of those quoting
+    something nobody ever wrote. What was there is kept, the way `pins --supersedes` and `rules
+    replace` keep theirs, and the message is stamped so the channel can tell the agent it CHANGED
+    rather than that a new one arrived.
+    """
     text = (text or "").strip()
     if not text:
         return False, say("needs_text")
@@ -553,7 +564,14 @@ def update(root: Path, n: int, text: str, track: str | None = None) -> tuple[boo
             return False, why
         if m.get("processed"):
             return False, say("already_processed", n=n)
+        was = m.get("text") or ""
+        if " ".join(was.split()) == " ".join(text.split()):
+            return False, say("edit_same", n=n)
+        m.setdefault("earlier", []).append({"text": was, "at": m.get("edited_at") or m.get("at") or ""})
         m["text"] = text
+        m["edited_at"] = at
+        # it has changed since it was read, so it is worth reading again
+        m.pop("read", None)
         _put(root, items, track)
     return True, say("edited", n=n)
 
@@ -776,6 +794,8 @@ def row_response(n: int, m: dict) -> dict:
         "replies": [{"text": r["text"], "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "", "part": r.get("part") or "", "quoting": r.get("quoting") or "",
                      "who": say("reply_user") if r.get("source") == "web" else say("reply_agent")}
                     for r in m.get("replies") or []],
+        "edited": m.get("edited_at") or "",
+        "earlier": [{"text": e.get("text", ""), "at": e.get("at", "")} for e in m.get("earlier") or []],
         "moved_to": m.get("moved_to") or "",
         "read": m.get("read") or "", "read_age": age(m["read"]) if m.get("read") else "",
         # the timestamp travels beside the age: a list sorts on `at`, and without it every message sorted as ""

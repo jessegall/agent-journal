@@ -258,6 +258,7 @@ def safe_path(root: Path, project: Path, requested: str) -> Path | None:
 STATUS = {
     "line": "journal · {env} · {doing} · {viewer}",
     "nothing_open": "nothing open",
+    "no_env": "no environment",
     "viewer_up": "viewer {url}",
     "viewer_down": "viewer off: journal serve",
 }
@@ -270,8 +271,8 @@ def status_line(root: Path, stem: str | None) -> str:
     import work
     from templates import render
     env = tracks.current(root, stem)
-    opened = work.open_work(root, env)
+    opened = work.open_work(root, env) if env else []
     doing = fmt.gist(opened[0]["subject"], 60) if opened else STATUS["nothing_open"]
     url = serve.running(root)
     viewer = render(STATUS["viewer_up"], url=url.rstrip("/")) if url else STATUS["viewer_down"]
-    return render(STATUS["line"], env=env, doing=doing, viewer=viewer)
+    return render(STATUS["line"], env=env or STATUS["no_env"], doing=doing, viewer=viewer)

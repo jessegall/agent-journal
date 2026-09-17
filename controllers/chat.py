@@ -212,6 +212,30 @@ def asked(root: Path, env: str) -> list[dict]:
     return out
 
 
+def waited(root: Path, env: str) -> list[dict]:
+    """Work the agent set aside because it is waiting on the user: a turn, with the ask on it.
+
+    PARKING IS THE AGENT SAYING IT CANNOT GO ON WITHOUT YOU, and until now it said it where
+    nobody was looking: parked work is filtered out of the home's open-work list, so "the PR is
+    ready, do you want to merge it?" sat in the record and the thread carried on without it.
+
+    It is a turn rather than a card because it IS one — the agent said something and is waiting
+    for an answer, which is the shape of every other turn here. Answering it is a reply on the
+    turn, which is a message, which is the one kind that reaches a working session at once.
+    """
+    import work
+    out = []
+    for w in work.open_work(root, env):
+        got = work.parked(w)
+        if not got:
+            continue
+        why = (got.get("why") or "").strip()
+        out.append({"at": got.get("at") or w.get("at") or "", "who": "agent", "kind": "parked", "tag": "",
+                    "text": trim(why), "full": why if len(why) > TEXT_MAX else "", "n": None,
+                    "ref": w.get("subject") or ""})
+    return out
+
+
 class ChatController(Controller):
     """The conversation on an environment: what the agent said and what the user said back, and nothing else."""
     resource = "chat"
@@ -220,7 +244,7 @@ class ChatController(Controller):
     numbered = ()
 
     def index(self, root: Path, p: Payload) -> Result:
-        turns = said(root, p.env) + wrote(root, p.env) + asked(root, p.env)
+        turns = said(root, p.env) + wrote(root, p.env) + asked(root, p.env) + waited(root, p.env)
         turns.sort(key=lambda t: t["at"])
         left = max(0, len(turns) - TURNS)
         return Result("ok", "", {"turns": turns[left:], "more": left})

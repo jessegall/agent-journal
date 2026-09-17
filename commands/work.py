@@ -116,7 +116,8 @@ class End(Resource):
 
 
 class Update(Resource):
-    signature = "work:update {text* : the words that say what moved} {--on=}"
+    signature = "work:update {text*? : the words that say what moved} {--on=} {--stdin}"
+    prose = "text"
     writes = True
     controller = CONTROLLER
     action = "note"

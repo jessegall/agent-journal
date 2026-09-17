@@ -4,6 +4,56 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.145.0 — There is no default environment
+
+**READ THIS ONE BEFORE UPGRADING.** `tracks.current` used to fall back to the project's
+start environment whenever a session had not chosen, so that a READ never needed a decision
+first. The cost was that the start environment WAS a selected environment: a fresh session
+read its pins, its to-dos and its work as its own, and nobody had been asked.
+
+It is gone. A session that has picked nothing is on no environment, and the journal refuses
+— reads as well as writes — naming the environments there are and how to pick one. What
+still answers unbound: `environments`, `switch`, `prepare`, `claim`, `rules`, `docs`,
+`tools` and the machinery. A `--continue` or `--resume` goes back to the environment that
+session was last on, remembered on every hook event now rather than only at a clean exit, so
+a session that was killed still lands where it was. `bind_on_start: true` in settings is a
+project saying every session belongs on its start environment, and puts the old behaviour
+back in one line.
+
+Two things deliberately unchanged: a process that is not a session — the viewer's server, a
+test harness, a hook with no transcript — still reads the start environment, because nothing
+there could ever be asked to choose. And `tracks.start(root)` is that environment as its own
+named question, so the two can no longer be confused for one another.
+
+**An event has a kind, and the kind decides whether it interrupts.** The channel's gate was
+one bit: an idle session heard everything the user did in the viewer and a working one heard
+nothing, so the user speaking and a setting being changed carried the same urgency.
+`channel_reach_now` lists the kinds that reach a session mid-turn, and defaults to the user
+speaking — a message, an answer to a question the agent asked, a comment on what it wrote.
+Everything else waits for the next stop.
+
+**Work the agent set aside is a turn you can answer.** Parking is the agent saying it cannot
+go on without you, and it said so where nobody looked: the home filters parked work out of
+its open-work list, so "the PR is ready, do you want me to merge it?" sat in the record while
+the thread carried on. It is a turn now, carrying the work it holds and a button that opens
+the box with the ask attached. It is in the rail too, counted, and undismissable — as a
+question is, and for the same reason: nothing else would bring it back.
+
+**`journal connections`.** Services the project can reach, kept as a list the project owns,
+with each environment's disagreement recorded as a patch of fields rather than a fork of the
+list — so nothing exists only on one environment and what it overrode is readable beside what
+it changed it from. THE SECRET IS THE NAME OF AN ENVIRONMENT VARIABLE, NEVER THE TOKEN: this
+record is read back verbatim into every session and subagent, so a value with the shape of a
+token is refused where it is typed, and the only question the record answers about a secret is
+whether that variable is set in this shell.
+
+**In the viewer.** A question's rail card has no dismiss control — a question goes nowhere
+until it is answered, and dismissing it hid it in that browser with nothing to bring it back.
+A turn's header stopped eating the bubble: `.md > :first-child` zeroes a top margin and comes
+later in the sheet, so the negative margin that was meant to pull the header into the padding
+was silently dropped, twice. The reply chip is small again. The rule above the writing box
+runs the whole column instead of stopping short at both ends.
+
 ## 1.144.0 — The home is a chat
 
 The viewer's home is a conversation now. Everything the agent says to you and everything you

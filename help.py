@@ -189,6 +189,18 @@ GROUPS: dict[str, tuple[str, ...]] = {
         'journal docs move <doc> "<environment>"|--global   which environment lists it, or the project; the doc, its number and its parts stay put',
         "--doc=<doc> or --doc=<doc>.<p> on pins, rules and todos cites a doc (or one part) from the entry",
     ),
+    "connections": (
+        "journal connections              services this project can reach, with what each is for and whether its token is set here",
+        "journal connections show <name>  read one, and what this environment changed about it",
+        'journal connections add <name> "<what it is for>" [--kind=] [--url=] [--secret=<ENV_VAR>]',
+        'journal connections set <name> kind|url|secret|for "<value>"   change it for the project',
+        'journal connections here <name> kind|url|secret|for "<value>" [--off]   change it on this environment only',
+        'journal connections remove <name> "<why>"   stop keeping it; the record notes what went and why',
+        "",
+        "--secret NAMES THE ENVIRONMENT VARIABLE, never the token. The journal is read back verbatim into",
+        "every session and subagent, so a secret written here is a secret that has leaked. A value with the",
+        "shape of a token is refused where it is typed.",
+    ),
     "tools": (
         "journal tools [--order=asc|desc]   the tools, newest first: scripts kept for repeated work, with what each does and how to call it",
         "journal tools show <name>     read one — bare `journal tools <name>` is the same, but `show` is the way to reach a tool NAMED after a verb",

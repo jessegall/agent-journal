@@ -477,11 +477,18 @@ const TopBar = {
     const readOne = (x) => send("POST", `/api/env/${env.value}/notifications/${x.n}/read`).then(changed);
     const readAll = () => send("POST", `/api/env/${env.value}/notifications/readall`).then(changed);
     const onHome = () => /^#\/env\/[^/]+\/?$/.test(location.hash);
+    // A NOTIFICATION OPENS THE THING, IT DOES NOT TRAVEL TO IT. On the home the page's own panel takes
+    // it, because that panel carries the trail through the other waiting rows; anywhere else `openRef`
+    // swaps the overlay in place, which is the same funnel every ref in the viewer already uses. Only
+    // something neither can render — a kind with no panel — is left to the link.
     const openFromBell = (event, x) => {
       const kind = String(x.about || "").split(":")[0];
-      if (!onHome() || !["inbox", "todo", "question", "suggestion", "work"].includes(kind)) return;
-      event.preventDefault();
-      window.dispatchEvent(new CustomEvent("journal:peek", { detail: { about: x.about } }));
+      if (onHome() && ["inbox", "todo", "question", "suggestion", "work"].includes(kind)) {
+        event.preventDefault();
+        window.dispatchEvent(new CustomEvent("journal:peek", { detail: { about: x.about } }));
+        return;
+      }
+      openRef(event, noteHref(x, env.value));
     };
     const outside = (e) => { if (!e.target.closest(".drop-wrap")) drop.open = false; };
     watchEffect((onCleanup) => {
@@ -553,19 +560,24 @@ const TopBar = {
               <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
                 <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
               </a>
-              <div v-for="x in unreadNotes" :key="'n' + x.n" class=drop-row>
+              <div v-for="x in unreadNotes" :key="'n' + x.n" :class="['drop-row', {open: !!noteHref(x, env)}]"
+                :role="noteHref(x, env) ? 'button' : null" :tabindex="noteHref(x, env) ? 0 : null"
+                :title="noteHref(x, env) ? 'Open ' + x.about_label : null"
+                @click="noteHref(x, env) && (readOne(x), openFromBell($event, x), drop.open = false)"
+                @keydown.enter.self.prevent="noteHref(x, env) && (readOne(x), openFromBell($event, x), drop.open = false)">
                 <span class=drop-text>{{ x.text }}</span>
                 <span class=drop-meta>{{ x.age || 'just now' }}
-                  <a v-if="x.about && noteHref(x, env)" class="btn more" :href="noteHref(x, env)" :title="'Open ' + x.about_label" @click="readOne(x); openFromBell($event, x); drop.open = false">Open</a>
-                  <button type=button class="btn more" @click="readOne(x)">Mark read</button>
+                  <button type=button class="btn more" @click.stop="readOne(x)">Mark read</button>
                 </span>
               </div>
               <div v-if="readNotes.length" class=drop-sub>Read</div>
-              <div v-for="x in readNotes" :key="'r' + x.n" class="drop-row read">
+              <div v-for="x in readNotes" :key="'r' + x.n" :class="['drop-row', 'read', {open: !!noteHref(x, env)}]"
+                :role="noteHref(x, env) ? 'button' : null" :tabindex="noteHref(x, env) ? 0 : null"
+                :title="noteHref(x, env) ? 'Open ' + x.about_label : null"
+                @click="noteHref(x, env) && (openFromBell($event, x), drop.open = false)"
+                @keydown.enter.self.prevent="noteHref(x, env) && (openFromBell($event, x), drop.open = false)">
                 <span class=drop-text>{{ x.text }}</span>
-                <span class=drop-meta>{{ x.age || 'just now' }}
-                  <a v-if="x.about && noteHref(x, env)" class="btn more" :href="noteHref(x, env)" :title="'Open ' + x.about_label" @click="openFromBell($event, x); drop.open = false">Open</a>
-                </span>
+                <span class=drop-meta>{{ x.age || 'just now' }}</span>
               </div>
             </div>
           </div>
@@ -1345,7 +1357,10 @@ const TODO_LIST = {
     return group;
   }),
   columns: { priority: (t) => t.priority, status: (t) => todoStatus(t), num: (t) => `#${t.n}`, question: todoQuestionMark,
-             numWidth: "34px", ageWidth: "52px", title: (t) => t.title, age: (t) => shortAge(t.age) },
+             numWidth: "34px", ageWidth: "52px", title: (t) => t.title, age: (t) => shortAge(t.age),
+             // the row already carried its plan and nobody drew it: a row in a plan reads differently
+             // from one on the open list, and which PHASE is the part you cannot work out from the list
+             cite: (t) => (t.plan ? `Plan ${t.plan.n} · phase ${t.plan.phase}` : "") },
   sorts: [{ key: "n", label: "ID" }, { key: "priority", label: "Priority", value: (t) => t.priority ?? 100 }],
   count: (rows) => `${rows.length} to-dos, ${rows.filter((t) => todoStatus(t) !== "done").length} open`,
   empty: "Nothing is waiting on this environment.", name: "todos",
@@ -2423,8 +2438,16 @@ function planPrimary(p) {
 
 const PlanPanel = {
   props: PANEL_PROPS,
-  components: { Panel, ActionBar, FromMessages, Comments },
+  components: { Panel, ActionBar, FromMessages, Comments, Icon },
   setup(props) {
+    // folded by default, because the panel is a QUICK look at where the plan stands; the phase you
+    // open is the one you are asking about
+    const shown = ref(new Set());
+    const fold = (p) => {
+      const next = new Set(shown.value);
+      next.has(p) ? next.delete(p) : next.add(p);
+      shown.value = next;
+    };
     const api = computed(() => `/api/env/${props.env}/plans`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
     const actions = computed(() => {
@@ -2441,7 +2464,7 @@ const PlanPanel = {
       ];
     });
     const done = panelDone(props, item);
-    return { item, actions, done, PLAN_STATUS };
+    return { item, actions, done, shown, fold, PLAN_STATUS };
   },
   template: `
     <Panel :label="'Plan ' + n" :close="close" :onClose="onClose" :link="link">
@@ -2459,10 +2482,24 @@ const PlanPanel = {
         <div v-if="item.data.phases && item.data.phases.length">
           <p class=section-label>Phases</p>
           <div class=plan-panel-phases>
-            <div v-for="ph in item.data.phases" :key="ph.p" class=plan-panel-phase>
-              <span class=phase-num>{{ ph.p }}</span><span class=plan-panel-phase-title>{{ ph.title }}</span>
-              <span class=muted>{{ ph.todos.filter((t) => t.done).length }} of {{ ph.todos.length }} done</span>
-            </div>
+            <template v-for="ph in item.data.phases" :key="ph.p">
+              <button type=button class="plan-panel-phase open" :aria-expanded="shown.has(ph.p) ? 'true' : 'false'"
+                :title="shown.has(ph.p) ? 'Hide its to-dos' : 'Show its to-dos'" @click="fold(ph.p)">
+                <Icon :name="shown.has(ph.p) ? 'down' : 'arrow'"/>
+                <span class=phase-num>{{ ph.p }}</span><span class=plan-panel-phase-title>{{ ph.title }}</span>
+                <span class=muted>{{ ph.todos.filter((t) => t.done).length }} of {{ ph.todos.length }} done</span>
+              </button>
+              <div v-if="shown.has(ph.p)" class=plan-panel-rows>
+                <p v-if="ph.when" class=plan-panel-when>complete when {{ ph.when }}</p>
+                <a v-for="t in ph.todos" :key="t.n" class=plan-panel-row
+                  :href="'#/env/' + env + '/todos/' + t.n" @click="$openRef($event, '#/env/' + env + '/todos/' + t.n)">
+                  <span :class="['needs-dot', {live: !t.done}]"></span>
+                  <span :class="['plan-panel-row-title', {done: t.done}]">{{ t.title || ('to-do ' + t.n) }}</span>
+                  <span class=muted>#{{ t.n }}</span>
+                </a>
+                <p v-if="!ph.todos.length" class=plan-panel-when>no to-dos yet</p>
+              </div>
+            </template>
           </div>
         </div>
         <div v-if="item.data.body"><p class=section-label>Approach</p><div class="md prose" v-html="$md(item.data.body)"></div></div>
@@ -3373,6 +3410,13 @@ const PLAN_WORD = { preparing: "being written", active: "working", parked: "paus
 // the home — the Messages page, a list — there is no thread to move, and the inspector opens as before.
 const THREAD_GOTO = reactive({ key: "", at: 0 });
 
+// What a rail card scrolls to. A question or a message is its number; held work has no number,
+// so it is named by the work it holds — the one thing about it that does not change.
+function turnAnchor(t) {
+  if (t.kind === "parked") return `parked:${t.ref}`;
+  return t.n ? `${t.kind}:${t.n}` : "";
+}
+
 // THE THREAD IS THE WRITING BOX WHILE IT IS ON SCREEN. Space-space and "Message the agent" used to
 // open the quick menu's own pane, which sent and closed with no visible history — the void the whole
 // chat was built to end. While a thread is mounted it lends its box, and everywhere else the pane is
@@ -3383,15 +3427,16 @@ const NeedsCard = {
   props: { item: Object, selected: Boolean, dismiss: Function },
   components: { Icon },
   template: `
-    <div :class="['needs-card', item.kind, {sel: selected}]" :style="{ '--tint': item.tint }" @click="item.open">
+    <div :class="['needs-card', item.kind, {sel: selected}]" :style="{ '--tint': item.tint }"
+      role=button :tabindex="0" :aria-label="item.label + ': ' + item.title"
+      @click="item.open" @keydown.enter.self.prevent="item.open" @keydown.space.self.prevent="item.open">
       <div class=needs-card-top>
         <p class=needs-card-title>{{ item.title }}</p>
-        <button type=button class=needs-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(item)"><Icon name="close"/></button>
+        <button v-if="!item.sticky" type=button class=needs-dismiss title="Dismiss" aria-label="Dismiss" @click.stop="dismiss(item)"><Icon name="close"/></button>
       </div>
       <div class=needs-card-meta><span class=needs-card-kind>{{ item.label }}</span>{{ item.meta }}</div>
       <div class=needs-card-foot>
-        <button v-if="item.act" type=button class=needs-card-go @click.stop="item.act">{{ item.action }}</button>
-        <span v-else class=needs-card-act>{{ item.action }}</span>
+        <button type=button class=needs-card-go @click.stop="item.act || item.open">{{ item.action }}</button>
       </div>
     </div>`,
 };
@@ -3440,7 +3485,9 @@ const PlanCard = {
     return { detail, rows, error, act, card, run, open };
   },
   template: `
-    <div :class="['work-now', {ready: plan.status === 'draft', finished: plan.status === 'done', parked: plan.status === 'parked'}]" @click="open">
+    <div :class="['work-now', {ready: plan.status === 'draft', finished: plan.status === 'done', parked: plan.status === 'parked'}]"
+      role=button :tabindex="0" :aria-label="'Plan ' + plan.n + ': ' + plan.title"
+      @click="open" @keydown.enter.self.prevent="open" @keydown.space.self.prevent="open">
       <div class=work-now-body>
         <div class=work-now-top><span class=work-now-title>{{ plan.title }}</span></div>
         <span class=work-now-ref>{{ card.ref }}</span>
@@ -3502,10 +3549,11 @@ const Thread = {
           .filter((r) => r.href);
         return { ...t, key: held || `${t.kind}:${t.n || 0}:${t.at}`, becameRefs: refs };
       });
+      // PURE. It used to write back to `pending` through nextTick, which re-triggered it — and on that
+      // second pass the last turn's key changed from its pending key to its real one, destroying and
+      // recreating the very element the reader was looking at. What has landed is decided in a watcher.
       const landed = new Set(real.map((t) => t.key));
-      const waiting = pending.value.filter((t) => t.state === "failed" || !landed.has(t.key));
-      if (waiting.length !== pending.value.length) nextTick(() => { pending.value = waiting; });
-      return [...real, ...waiting];
+      return [...real, ...pending.value.filter((t) => t.state === "failed" || !landed.has(t.key))];
     });
     const more = computed(() => (chat.data && chat.data.more) || 0);
     // a new turn lands in view, but never while the reader is scrolled up reading back: a thread
@@ -3534,6 +3582,12 @@ const Thread = {
       };
     });
     onUnmounted(() => { THREAD_BOX.focus = null; });
+    watch(() => (chat.data && chat.data.turns) || [], (rows) => {
+      if (!pending.value.length) return;
+      const said = new Set(rows.filter((t) => t.who === "you").map((t) => (t.text || "").trim()));
+      const left = pending.value.filter((t) => t.state === "failed" || !said.has((t.text || "").trim()));
+      if (left.length !== pending.value.length) pending.value = left;
+    });
     const bottom = (behavior) => {
       if (root.value) root.value.scrollTo({ top: root.value.scrollHeight, behavior });
     };
@@ -3542,6 +3596,25 @@ const Thread = {
     // reader is still down there, so a picture loading far above never yanks them away from what
     // they are reading.
     const grew = () => { if (near()) bottom("auto"); };
+    // A WAY BACK DOWN, and it says why it is worth pressing: `near` already decides whether an arriving
+    // turn follows the reader, so the same test decides when the button belongs, and what arrived while
+    // they were up there is counted rather than merely hinted at.
+    const away = ref(false);
+    const missed = ref(0);
+    const watchScroll = () => {
+      const was = away.value;
+      away.value = !near();
+      if (was && !away.value) missed.value = 0;
+    };
+    const backDown = () => { missed.value = 0; bottom("auto"); };
+    // WHAT IS KNOWN IS THAT IT IS WORKING, not that it is typing. A typing indicator in a chat app
+    // means a person has a box open with characters in it; nothing here knows that, and claiming it
+    // would be the first thing in this thread that is not true. The agent's own state is known and
+    // already fetched, so that is what is shown.
+    const busy = computed(() => {
+      const agent = SHELL.activity && SHELL.activity.agent;
+      return !!(agent && agent.working);
+    });
     const settled = ref(false);
     let last = "";
     watch(turns, (rows) => {
@@ -3549,13 +3622,24 @@ const Thread = {
       const first = !last;
       const arrived = key && key !== last;
       const follow = first || near();
+      if (arrived && !follow) missed.value += 1;
       last = key;
       if (first) nextTick(() => { settled.value = true; });
-      if (!arrived || !follow) return;
-      // twice, because a turn of rendered markdown finishes laying out after the tick that added it
-      // one pass: a second a frame later restarts the smooth scroll from wherever the first had got to,
-      // which reads as the stutter it is. The image handler covers what lays out late.
-      nextTick(() => bottom(first ? "auto" : "smooth"));
+      if (!arrived || !root.value) return;
+      // THE POSITION IS HELD, NOT RE-DERIVED. Every earlier attempt scrolled at what it believed was
+      // the right moment and left the scroll to chance in between, which is why removing two plausible
+      // causes did not stop it jumping. The box is measured before the change and put back after it:
+      // pinned to the bottom if the reader was there, and otherwise kept exactly where it was with the
+      // height that appeared above them added back. Nothing in between can move it.
+      const wasHeight = root.value.scrollHeight;
+      const wasTop = root.value.scrollTop;
+      const settle = () => {
+        const box = root.value;
+        if (!box) return;
+        if (follow) box.scrollTo({ top: box.scrollHeight, behavior: first ? "auto" : "smooth" });
+        else box.scrollTop = wasTop + (box.scrollHeight - wasHeight);
+      };
+      nextTick(() => { settle(); requestAnimationFrame(settle); });
     });
     // REPLYING TO A TURN, and where it goes depends on what the turn IS. An agent reply already lives
     // under a message, so the answer goes there with `quoting` — which the server checks against what
@@ -3582,10 +3666,19 @@ const Thread = {
     // the words back, because a turn sitting there looking sent when it never arrived is the same lie
     // the send confirmation was written to stop.
     const post = async (text, files) => {
+      const fix = editing.value;
+      if (fix) {
+        editing.value = null;
+        await send("PATCH", `/api/env/${props.env}/messages/${fix.n}`, { text })
+          .then(() => { chat.reload(); changed(); })
+          .catch((e) => flash(e.message));
+        return;
+      }
       const to = answering.value;
       const said = to && !(to.who === "agent" && to.kind === "reply" && to.n)
         ? quoted(excerpt(quoteOf.value)) + text : text;
       const mine = { key: `pending:${sent += 1}`, at: new Date().toISOString(), who: "you", pending: true,
+                     becameRefs: [], became: "", files: [],
                      kind: to && to.who === "agent" && to.kind === "reply" && to.n ? "reply" : "message",
                      n: to && to.kind === "reply" ? to.n : null, text, state: "sending",
                      ref: to && to.who === "agent" && to.kind === "reply" ? excerpt(quoteOf.value) : "" };
@@ -3633,11 +3726,24 @@ const Thread = {
       if (!el) return;
       // claimed: the card moved the thread, so nothing opens an inspector over it
       THREAD_GOTO.key = "";
-      el.scrollIntoView({ block: "center", behavior: "smooth" });
+      // NOT SMOOTH. The browser paces a smooth scroll over the whole distance, and the distance here is
+      // often thousands of pixels — so the further back the turn is, the longer it crawls, which is
+      // backwards: the further it is, the less anyone wants to watch the journey. The lit turn is what
+      // says where you landed.
+      el.scrollIntoView({ block: "center" });
       lit.value = want;
       setTimeout(() => { if (lit.value === want) lit.value = ""; }, 2200);
     });
     // the header POINTS at what the message became; what is being DONE stays in the Activity column
+    // EDITING IS NOT A SECOND WRITING BOX. It reuses the one at the foot of the thread, with the turn
+    // named above it, the way replying does — so there is one place text is typed and one thing to learn.
+    const editing = ref(null);
+    const startEdit = (t) => {
+      editing.value = t;
+      answering.value = null;
+      THREAD_BOX.focus && THREAD_BOX.focus(t.full || t.text || "");
+    };
+    const unedit = () => { editing.value = null; THREAD_BOX.focus && THREAD_BOX.focus(""); };
     const drop = (t) => {
       if (!t.n) return;
       send("DELETE", `/api/env/${props.env}/messages/${t.n}`, { why: "deleted from the chat" })
@@ -3659,11 +3765,27 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor };
   },
   template: `
     <div class=thread>
-      <div ref=root class=thread-scroll>
+      <button v-if="away" type=button class=thread-down :title="missed ? missed + ' arrived while you were reading' : 'Back to the newest'" @click="backDown">
+        <Icon name="down"/>{{ missed ? missed + " new" : "Newest" }}
+      </button>
+      <div class=thread-write>
+        <div v-if="editing" class=thread-answering>
+          <span class=thread-answering-label>Editing</span>
+          <span class=thread-answering-text>{{ editing.text }}</span>
+          <button type=button class=thread-answering-x title="Leave it as it was" @click="unedit">×</button>
+        </div>
+        <div v-if="answering" class=thread-answering>
+          <span class=thread-answering-label>Replying to</span>
+          <span class=thread-answering-text>{{ answering.text }}</span>
+          <button type=button class=thread-answering-x title="Not replying to it after all" @click="unreply">×</button>
+        </div>
+        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true"/>
+      </div>
+      <div ref=root class=thread-scroll @scroll.passive="watchScroll">
       <template v-if="!chat.data">
         <div v-for="s in SKELETON" :key="s.k" :class="['thread-turn', 'waiting', {mine: s.mine}]">
           <div class=thread-bubble><span v-for="w in s.rows" :key="w" class=thread-blank :style="{ width: w }"></span></div>
@@ -3672,23 +3794,25 @@ const Thread = {
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
       <p v-if="chat.data && !turns.length" class=thread-empty>Nothing has been said here yet.</p>
       <TransitionGroup :name="settled ? 'turn' : ''">
-      <div v-for="t in turns" :key="t.key" :data-turn="t.n ? t.kind + ':' + t.n : null"
-        :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', sending: t.state === 'sending', failed: t.state === 'failed', lit: lit === t.kind + ':' + t.n}]">
+      <div v-for="t in turns" :key="t.key" :data-turn="anchor(t) || null"
+        :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question' || t.kind === 'parked', sending: t.state === 'sending', failed: t.state === 'failed', lit: !!anchor(t) && lit === anchor(t)}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
-          <p v-if="t.kind === 'message' && t.becameRefs.length" :class="['thread-became', {live: t.working}]">
+          <p v-if="t.kind === 'parked'" class=thread-ask-label>Waiting on you</p>
+          <p v-if="t.kind === 'message' && (t.becameRefs || []).length" :class="['thread-became', {live: t.working}]">
             <span v-if="t.working" class=thread-became-dot></span>
             <span v-if="t.working" class=thread-became-word>Working on</span>
             <a v-for="r in t.becameRefs" :key="r.label" class=thread-pill :href="r.href"
               :title="'Open ' + r.label" @click.stop="goRef($event, r)">{{ r.label }}</a></p>
           <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
-          <div v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
+          <div v-if="t.text" v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
           <p v-if="t.state === 'failed'" class=thread-failed>Not sent — {{ t.error }}
             <button type=button class=thread-tool @click.stop="retry(t)">Put it back in the box</button></p>
           <button v-if="t.full" type=button class=thread-full @click.stop="showAll(t)">
             {{ whole.has(t.key) ? "Show less" : "Read more" }}</button>
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
-          <div v-if="t.files && t.files.length" class=thread-files>
+          <button v-if="t.kind === 'parked'" type=button class=thread-answer @click.stop="replyTo(t)">Answer the agent</button>
+          <div v-if="t.files && t.files.length" :class="['thread-files', {alone: !t.text}]">
             <a v-for="f in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name">
               <img v-if="f.picture" class=thread-image :src="fileUrl(t.n, f.name)" :alt="f.name" loading=lazy @load="grew">
               <span v-else class=thread-file-name><Icon name="paperclip"/>{{ f.name }}</span>
@@ -3697,13 +3821,16 @@ const Thread = {
         </div>
         <div class=thread-tools>
           <button type=button class=thread-tool title="Reply to this, quoting it" @click.stop="replyTo(t)">Reply</button>
-          <button v-if="t.kind === 'message' && !t.became" type=button class=thread-tool
+          <button v-if="t.kind === 'message' && t.state !== 'filed'" type=button class=thread-tool
+            title="Change what it says — the old words are kept and the agent is told" @click.stop="startEdit(t)">Edit</button>
+          <button v-if="t.kind === 'message' && t.state !== 'filed'" type=button class=thread-tool
             title="Delete it — it comes off the list and stays in the record" @click.stop="drop(t)">Delete</button>
         </div>
         <div class=thread-meta>
+          <span v-if="t.n && t.who === 'you'" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
           <span>{{ clock(t.at) }}</span>
-          <span v-if="t.n" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
-          <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)">
+          <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)"
+            role=img :aria-label="landed(t)">
             <svg viewBox="0 0 19 12" fill=none stroke=currentColor stroke-width="1.6" stroke-linecap=round stroke-linejoin=round>
               <path d="M1.5 6.6 4.4 9.5 10 2.8"/>
               <path v-if="t.state !== 'sent'" d="M8 6.6 10.9 9.5 16.5 2.8"/>
@@ -3712,14 +3839,10 @@ const Thread = {
         </div>
       </div>
       </TransitionGroup>
+      <div v-if="busy" class="thread-turn busy" aria-label="The agent is working">
+        <div class=thread-bubble><span class=thread-dot></span><span class=thread-dot></span><span class=thread-dot></span></div>
+        <div class=thread-meta><span>working</span></div>
       </div>
-      <div class=thread-write>
-        <div v-if="answering" class=thread-answering>
-          <span class=thread-answering-label>Replying to</span>
-          <span class=thread-answering-text>{{ answering.text }}</span>
-          <button type=button class=thread-answering-x title="Not replying to it after all" @click="unreply">×</button>
-        </div>
-        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true"/>
       </div>
     </div>`,
 };
@@ -3750,6 +3873,8 @@ const EnvHome = {
     const goto = (kind, n) => {
       THREAD_GOTO.key = `${kind}:${n}`;
       THREAD_GOTO.at = Date.now();
+      // held work has no page of its own: the turn IS it, and answering happens on the turn
+      if (kind === "parked") return;
       nextTick(() => { if (THREAD_GOTO.key) peek(kind, n); });
     };
     const unpeek = () => { view.kind = ""; view.n = 0; INSPECTOR_TRAIL.current = null; };
@@ -3766,19 +3891,30 @@ const EnvHome = {
     };
 
     // Over to you: what waits on the user, questions first, in one list
-    const QUEUE_TYPES = { question: { label: "Question", tint: "#c9955e", action: "Answer" },
+    // A QUESTION CANNOT BE DISMISSED. Everything else here is read or decided somewhere else too,
+    // so clearing its card loses nothing; a question is the one row that goes nowhere until the
+    // user answers it, and dismissing it hid it in this browser with nothing to bring it back.
+    // PARKED WORK IS THE AGENT WAITING ON YOU, and it was the one thing here that said so nowhere:
+    // the open-work list filters it out, so "the PR is ready, do you want to merge it?" sat in the
+    // record while the thread carried on. It cannot be dismissed either — nothing else brings it back.
+    const QUEUE_TYPES = { question: { label: "Question", tint: "#c9955e", action: "Answer", sticky: true },
+                          parked: { label: "Held", tint: "#c9955e", action: "Answer", sticky: true },
                           reply: { label: "Message", tint: "#6fae7d", action: "Read" },
                           report: { label: "Report", tint: "#d9a441", action: "Read" },
                           suggestion: { label: "Suggestion", tint: "#a3a8f0", action: "Accept" } };
     const queue = computed(() => {
       const rows = [
         ...(questions.data || []).filter((q) => q.status === "open").map((q) => ({ kind: "question", n: q.n, title: q.text, age: q.age })),
+        ...(work.data || []).filter((w) => !w.ended && w.parked).map((w) => ({ kind: "parked", n: w.subject, title: w.parked, age: w.parked_age })),
         ...(suggestions.data || []).filter((s) => s.status === "open").map((s) => ({ kind: "suggestion", n: s.n, title: s.title, age: s.age })),
-        // a report is written FOR the user: it waits here until they have opened it
-        ...(reports.data || []).filter((r) => !r.seen && !r.archived).map((r) => ({ kind: "report", n: r.n, title: r.title, age: r.age })),
+        // A REPORT WAITS UNTIL IT IS ARCHIVED, not until it is glanced at. `seen` is stamped the moment
+        // the panel opens, so a report the user scrolled past left the rail for good — and a report is
+        // the one thing here written FOR them. Archiving it, or dismissing the card, is what clears it.
+        ...(reports.data || []).filter((r) => !r.archived).map((r) => ({ kind: "report", n: r.n, title: r.title, age: r.age })),
       ];
-      return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
-        .map((r) => ({ ...r, meta: `${r.label.toLowerCase()} ${r.n} · ${r.age}`, open: () => goto(r.kind, r.n) }));
+      return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => r.sticky || !dismissed.value.has(r.key))
+        .map((r) => ({ ...r, meta: r.kind === "parked" ? `${r.n} · ${r.age}` : `${r.label.toLowerCase()} ${r.n} · ${r.age}`,
+                       open: () => goto(r.kind, r.n) }));
     });
     // EVERY LIVE PLAN IS SHOWN, not only the one in progress. One plan is worked at a time, but a
     // parked one, a draft waiting to be approved and a finished one waiting to be acknowledged are all
@@ -3803,13 +3939,15 @@ const EnvHome = {
       // SIX FACTS DO NOT FIT ON ONE LINE OF A 288px RAIL, and a line that does not fit ellipses the
       // end of itself. They are separate facts, so they are separate rows: what is being read is the
       // value, and the label is only there to say which fact it is.
+      // AN ICON PER FACT, so the bar reads as five things rather than one run-on line. The icons are
+      // the set's own: whatever a fact IS elsewhere in the viewer is what marks it here.
       const rows = [
-        { label: "agent", value: session && session.name ? session.name : agent ? "Claude Code" : "No agent" },
-        { label: "model", value: agent && agent.model ? agent.model : "" },
-        { label: "branch", value: branch ? branch.name : "" },
-        { label: "session", value: agent ? agent.session : "" },
-        { label: "running", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
-        { label: "context", value: agent && agent.context ? `${agent.context.share}%` : "" },
+        { label: "agent", icon: "agents",
+          value: session && session.name ? session.name : agent ? "Claude Code" : "No agent" },
+        { label: "model", icon: "style", value: agent && agent.model ? agent.model : "" },
+        { label: "session", icon: "activity", value: agent ? agent.session : "" },
+        { label: "running", icon: "reminders", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
+        { label: "context", icon: "files", value: agent && agent.context ? `${agent.context.share}%` : "" },
       ].filter((r) => r.value);
       // the session is an agent with a page of its own, the same page a subagent's line opens —
       // it was the one name here you could not click
@@ -3825,8 +3963,11 @@ const EnvHome = {
     // Unseen reports are not in that row (it counts unarchived ones), so they are counted from theirs.
     const waitingCount = computed(() => {
       const row = envRow.value || {};
-      const unseen = (reports.data || []).filter((r) => !r.seen && !r.archived).length;
-      return (row.questions || 0) + (row.suggestions || 0) + unseen + (held.value ? 1 : 0);
+      // the same test the queue uses, or the count and the cards disagree
+      const unseen = (reports.data || []).filter((r) => !r.archived).length;
+      // held work is not in the environment row either: it is the agent waiting, counted where it waits
+      const parked = (work.data || []).filter((w) => !w.ended && w.parked).length;
+      return (row.questions || 0) + (row.suggestions || 0) + unseen + parked + (held.value ? 1 : 0);
     });
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
     const clear = computed(() => !queue.value.length && !held.value);
@@ -3876,7 +4017,10 @@ const EnvHome = {
                         done: a.state === "finished", quiet: a.state === "quiet",
                         title: `Subagent ${a.id} · ${a.model || "model not recorded"} · from session ${a.parent}`
                              + (a.state === "quiet" ? " · no tool call in a while, and it has not said it finished" : ""),
-                        tail: [a.model, a.state === "quiet" ? `quiet · ${a.age_text}` : a.state === "finished" ? a.ended_age : a.age_text]
+                        // RUNNING WAS SAID BY A PULSING GREEN DOT AND NOTHING ELSE, so with motion off it
+                        // was said by a green dot alone — and quiet and finished both had a word already
+                        tail: [a.model, a.state === "quiet" ? `quiet · ${a.age_text}`
+                               : a.state === "finished" ? `finished · ${a.ended_age}` : `running · ${a.age_text}`]
                           .filter(Boolean).join(" · "),
                         delay: `${i * 60}ms`, open: () => peek("subagent", a.id) })));
 
@@ -3897,8 +4041,9 @@ const EnvHome = {
       <div class=agent-bar>
         <div class=agent-facts>
           <template v-for="(r, i) in lead.rows" :key="r.label">
-            <a v-if="i === 0 && lead.href" class=agent-fact-lead :href="lead.href" title="Open this agent's page">{{ r.value }}</a>
-            <span v-else class=agent-fact :title="r.label">{{ r.value }}</span>
+            <a v-if="i === 0 && lead.href" class=agent-fact-lead :href="lead.href" :title="'Open the agent page — ' + r.label">
+              <Icon :name="r.icon"/>{{ r.value }}</a>
+            <span v-else class=agent-fact :title="r.label"><Icon :name="r.icon"/>{{ r.value }}</span>
           </template>
         </div>
         <button v-if="liveCrew.length" type=button class=agent-crew-toggle :aria-expanded="crewOpen ? 'true' : 'false'"
@@ -3908,7 +4053,8 @@ const EnvHome = {
       </div>
       <div v-if="crewOpen && liveCrew.length" class=crew-strip>
         <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" @click="a.open">
-          <span class=crew-dot></span><span class=crew-name>{{ a.name }}</span><span class=crew-tail>{{ a.tail }}</span>
+          <span class=crew-dot></span><span class=crew-name>{{ a.name }}</span>
+          <span class=crew-tail>{{ a.tail }}</span>
         </button>
       </div>
       <div class=home-main>
@@ -3916,14 +4062,14 @@ const EnvHome = {
         <Thread :env="env"/>
       </section>
       <div class=home-rail>
-      <div v-if="!livePlans.length && clear" class=home-rail-empty>
-        <Icon name="todos"/>
-        <p>Nothing is waiting on you.</p>
-      </div>
       <section v-if="livePlans.length" class=home-section>
         <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans" :peek="peek"/>
       </section>
-      <section v-if="!clear" class=home-section>
+      <div v-if="clear" class=home-rail-empty>
+        <Icon name="todos"/>
+        <p>Nothing is waiting on you.</p>
+      </div>
+      <section v-else class=home-section>
         <div class=home-head><h2>Waiting on you</h2><span>{{ waitingCount }}</span></div>
         <div class=needs-slot>
           <TransitionGroup name=qrow>

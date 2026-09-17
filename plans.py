@@ -31,6 +31,13 @@ MESSAGES = {
                       "  put to-dos in it: journal plans todos {n} {p} <to-do numbers>",
     "no_phase_here": "plan {n} has no phase {p} to go before; it has {last}",
     "no_phase": "plan {n} has no phase {p}",
+    "phase_nothing": 'say what to change: journal plans rephrase {n} {p} "<title>" or --when= or --checkpoint/--no-checkpoint',
+    "phase_changed": "plan {n} phase {p}: {title}{said}",
+    "phase_said_when": "\n  complete when {when}",
+    "phase_said_checkpoint": "\n  it is a checkpoint: the agent stops there and you continue the plan in the viewer",
+    "phase_said_plain": "\n  it is no longer a checkpoint",
+    "phase_held": "plan {n} is stopped at phase {p} right now — taking its checkpoint off starts the plan moving again",
+    "phase_passed": "plan {n} has already run past phase {p}, so making it a checkpoint changes nothing that has happened",
     "todos_usage": "name the to-dos by number: journal plans todos {n} {p} 4 5 6",
     "no_todo": "there is no to-do {t} on this environment",
     "in_phase": "to-do {t} is already in plan {plan} phase {p}, and a to-do sits in one phase. "
@@ -322,6 +329,69 @@ def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bo
         phases.insert(p - 1, row)
         _put(root, items, here)
     return True, say("phase_inserted" if before else "phase_added", n=n, p=p, title=title)
+
+
+def rephrase(root: Path, n: int, p: int, at: str, title: str = "", when: str = "",
+             checkpoint: bool | None = None, track: str | None = None) -> tuple[bool, str]:
+    """Correct a phase after it is written: its title, what completes it, whether it is a checkpoint.
+
+    A PLAN IS WRITTEN BEFORE THE WORK IS UNDERSTOOD, which is the same argument that put `--before` on
+    `phase`. A phase whose title turned out wrong, or whose `--when` cannot be judged true or false,
+    could only be lived with — and the way people live with it is to abandon the plan and write it
+    again, which costs the user a second approval for no new decision.
+
+    THE CHECKPOINT IS THE ONE THAT CHANGES WHAT IS HAPPENING, so it says so. Taking one off a phase the
+    plan is stopped at sets the plan moving; putting one on a phase already run past changes nothing.
+    Both are allowed and both are named, because a silent change to whether the agent stops is the
+    thing nobody would look for.
+    """
+    title = " ".join((title or "").split())
+    when = " ".join((when or "").split())
+    if not title and not when and checkpoint is None:
+        return False, say("phase_nothing", n=n, p=p)
+    here = _here(root, track)
+    with state.locked(root):
+        items = _all(root, here)
+        plan = _get(items, n)
+        if plan is None:
+            return False, say("no_plan", n=n)
+        closed = _open_for_changes(root, plan, n, here)
+        if closed:
+            return False, closed
+        steps = plan.get("phases") or []
+        if not 1 <= p <= len(steps):
+            return False, say("no_phase", n=n, p=p)
+        rows = phases(root, plan, here)
+        was_held = checkpoint is False and _is_held(root, plan, rows, p)
+        passed = checkpoint is True and rows[p - 1]["complete"]
+        phase = steps[p - 1]
+        if title:
+            phase["title"] = title
+        if when:
+            phase["when"] = when
+        if checkpoint is not None:
+            phase["checkpoint"] = bool(checkpoint)
+        phase["changed_at"] = at
+        _put(root, items, here)
+        said = phase["title"]
+    note = ""
+    if when:
+        note += say("phase_said_when", when=when)
+    if checkpoint is True:
+        note += say("phase_said_checkpoint")
+    elif checkpoint is False:
+        note += say("phase_said_plain")
+    if was_held:
+        note += "\n  " + say("phase_held", n=n, p=p)
+    if passed:
+        note += "\n  " + say("phase_passed", n=n, p=p)
+    return True, say("phase_changed", n=n, p=p, title=said, said=note)
+
+
+def _is_held(root: Path, plan: dict, rows: list[dict], p: int) -> bool:
+    """Is the plan stopped at THIS phase's checkpoint right now?"""
+    held = checkpoint(plan, rows, todo.auto(root))
+    return bool(held and held["p"] == p)
 
 
 def put_todos(root: Path, n: int, p: int, numbers, at: str, off: bool = False, reopen: str = "",

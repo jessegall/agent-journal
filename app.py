@@ -14,6 +14,9 @@ BRIEF_WAIT = 10.0
 BRIEF_REFUSED = ("--brief takes the brief on stdin and nothing arrived. Pipe it in — "
                  "journal <command> --brief <<'MSG' … MSG — or drop --brief and pass the "
                  "title alone.")
+STDIN_REFUSED = ("--stdin takes the text on stdin and nothing arrived. Pipe it in — "
+                 "journal <command> --stdin <<'MSG' … MSG — or drop --stdin and pass the "
+                 "text as an argument.")
 
 MESSAGES = {
     "guessed": "  (guessed: newest transcript, {name} — {env} is not set)",

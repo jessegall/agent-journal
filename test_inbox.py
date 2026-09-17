@@ -175,8 +175,8 @@ def turn(user_text, reply):
 fire("SessionStart", source="startup")
 turn("how is it going", "[!reply] fine")
 label, _ = testkit.hold(fire("Stop", stop_hook_active=False))
-check("the stop holds while a message waits, ahead of the rest of the queue", label,
-      "the user left 1 message(s) for you")
+check("the stop holds while a message waits, ahead of the rest of the queue, and NAMES THE OLDEST",
+      label, "the user left 1 message(s) for you, the oldest being message 2")
 
 # ------------------------------------------------------------------ a tool call mentions a new message once
 read = {"tool_name": "Read", "tool_input": {"file_path": "x"}, "tool_response": "ok"}
@@ -484,6 +484,40 @@ j("messages", "done", str(_proc))
 code, out = j("messages", "declare", str(_proc), "transcript")
 check("a message already processed can still be declared — recognition happens while filing",
       (code, "is a transcript now" in out), (0, True))
+
+# ------------------------------------------- --stdin: prose the shell cannot put a hole in
+# a shell runs a backtick span as a command and hands the argument over with the span GONE, silently,
+# which cannot be detected afterwards — so the answer is a path the shell never touches, the one
+# --brief has always used
+code, out = j("messages", "add", "a message to answer on stdin")
+_sn = int(re.search(r"message (\d+)", out).group(1))
+code, out = P.cli("messages", "reply", str(_sn), "--stdin", stdin="a reply with `backticks` kept whole")
+check("a reply takes its text on stdin", (code, "replied to message" in out), (0, True))
+check("and the backticks are still in it", "`backticks`" in j("messages", "show", str(_sn))[1], True)
+check("an empty stdin is refused rather than filing nothing",
+      P.cli("messages", "reply", str(_sn), "--stdin", stdin="")[0], 1)
+check("the argument still works when --stdin is not asked for",
+      j("messages", "reply", str(_sn), "a plain one")[0], 0)
+
+
+
+# ------------------------------------------- an edit keeps what was there, and says it CHANGED
+code, out = j("messages", "add", "the first wording")
+_en = int(re.search(r"message (\d+)", out).group(1))
+check("editing to the same words is refused",
+      ("already says that" in j("messages", "edit", str(_en), "the first wording")[1]), True)
+code, out = j("messages", "edit", str(_en), "the second wording")
+check("a message can be edited, and it says what became of the old words",
+      (code, "what it said before is kept" in out), (0, True))
+_m = stored()[_en - 1]
+check("the new words are what it says, and the old ones are kept under it",
+      (_m["text"], [e["text"] for e in _m.get("earlier") or []]),
+      ("the second wording", ["the first wording"]))
+check("and it is unread again, because it has changed since it was read", "read" in _m, False)
+j("messages", "process", str(_en), "--part=the second wording", "--became=noted")
+j("messages", "done", str(_en))
+check("a processed message refuses the edit: its words have already become something",
+      j("messages", "edit", str(_en), "a third wording")[0], 1)
 
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

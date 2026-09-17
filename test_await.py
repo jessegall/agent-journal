@@ -34,8 +34,10 @@ def project(settings=None):
     d = Path(tempfile.mkdtemp()) / "proj"
     (d / ".claude").mkdir(parents=True)
     testkit.make(d, SRC)
+    # bind_on_start: there is no default environment, and an unbound session's journal commands
+    # are refused (test_unbound covers that). This suite is about waiting, not about binding.
     (d / ".journal" / "settings.json").write_text(json.dumps(
-        settings or {"silenced": ["loop"], "one_session_per_environment": False}))
+        settings or {"silenced": ["loop"], "one_session_per_environment": False, "bind_on_start": True}))
     transcript.project_dir(d).mkdir(parents=True, exist_ok=True)
     return d
 

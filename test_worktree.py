@@ -31,7 +31,9 @@ main.mkdir()
 git(main, "init", "-q", "-b", "main")
 git(main, "config", "user.email", "t@t"); git(main, "config", "user.name", "t")
 testkit.make(main, SRC)
-(main / ".journal" / "settings.json").write_text("{}")
+# bind_on_start: there is no default environment, and an unbound session's journal commands
+# are refused (test_unbound covers that). This suite is about worktrees.
+(main / ".journal" / "settings.json").write_text(json.dumps({"bind_on_start": True}))
 (main / "README").write_text("x\n")
 git(main, "add", "-A"); git(main, "commit", "-q", "-m", "init")
 for p in (main, base / "wt"):
