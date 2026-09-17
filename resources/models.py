@@ -263,6 +263,23 @@ class Tool(Model):
 
 
 @dataclass
+class Connection(Model):
+    """A service the project can reach. `secret` is the NAME of a variable, never a value."""
+    name: str = ""
+    kind: str = ""
+    url: str = ""
+    secret: str = ""
+    purpose: str = ""
+    source: str = ""
+    #: which of its fields this environment has changed, and what the project's own say
+    overridden: list = field(default_factory=list)
+    project: dict = field(default_factory=dict)
+
+    noun: ClassVar[str] = "connection"
+    sortable: ClassVar[tuple[str, ...]] = ("n", "at", "name", "kind")
+
+
+@dataclass
 class Doc(Model):
     title: str = ""
     abstract: str = ""
