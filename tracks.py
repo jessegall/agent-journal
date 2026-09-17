@@ -692,6 +692,18 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
         sessions = data.get("sessions")
         if isinstance(sessions, dict):
             sessions.pop(name, None)
+        # EVERYTHING KEYED BY THE NAME GOES, or an environment made under that name again
+        # inherits the last one's settings. `session_marks` is which stretch of which transcript
+        # belonged to it — the thing that made a reused name come back holding somebody else's
+        # history — and `viewer_first` is a preference the new one never expressed.
+        for key in (VIEWER_FIRST, MARKS):
+            got = data.get(key)
+            if isinstance(got, dict):
+                if key == MARKS:
+                    for stem, marks in list(got.items()):
+                        got[stem] = [m for m in marks if not (isinstance(m, dict) and m.get("track") == name)]
+                else:
+                    got.pop(name, None)
         log = data.get(REMOVED) or []
         log.append({"track": name, "by": stem or "", "at": at,
                     "pins": pins, "work": work, "todos": todos})
@@ -705,6 +717,8 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
         for d in (state.env_dir(root, name), todo_mod.folder(root, name)):
             if d.is_dir():
                 shutil.rmtree(d, ignore_errors=True)
+        # and the to-do ledger under runtime/, which is a cache of a folder that no longer exists
+        todo_mod._index_file(root, name).unlink(missing_ok=True)
     # A STALE SESSION'S BINDING WOULD OUTLIVE THE ENVIRONMENT, and `current` would hand it a
     # name that is gone; unbind those, so they choose again the way a new session does.
     b = _bindings(root)
