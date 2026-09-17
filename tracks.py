@@ -204,10 +204,13 @@ def claim(root: Path, name: str, at: str, stem: str, why: str,
         # now, so that hold is about a place it has left. Left standing it fires ahead of
         # the claim's own note and the session is told the wrong thing first.
         state.put(root, "track_due", None, stem=sid)
-    claims = state.get(root, "claims", []) or []
-    claims.append({"track": name, "by": stem or "", "at": at, "why": why,
-                   "from": [sid for sid, _ in held]})
-    state.put(root, "claims", claims[-50:])
+    # UNDER THE LOCK, LIKE ITS SIBLING IN `remove`. Read, append, write is three steps, and two
+    # claims landing together lose one of them — a claim nobody can find the record of.
+    with state.locked(root):
+        claims = state.get(root, "claims", []) or []
+        claims.append({"track": name, "by": stem or "", "at": at, "why": why,
+                       "from": [sid for sid, _ in held]})
+        state.put(root, "claims", claims[-50:])
     ok, msg = switch(root, name, at, stem=stem, exclusive=False, stale_hours=stale_hours)
     if not ok:
         return False, msg
