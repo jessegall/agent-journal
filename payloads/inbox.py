@@ -25,6 +25,7 @@ class AttachPayload(Payload):
 
 class ReplyPayload(Payload):
     text = Field(str, verbatim=True)
+    files = Field(object)
     part = Field(str)
     quoting = Field(str)
     follow_up = Field(str)
