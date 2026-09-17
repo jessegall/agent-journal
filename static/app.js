@@ -476,28 +476,39 @@ const StatusBar = {
     // WHAT IT IS ACTUALLY DOING, rather than what it has not done. With nothing declared the bar used
     // to say "nothing declared yet", which is a complaint about the agent printed in the one place
     // the user looks to see it working. The Activity column already knows the last thing it did.
-    // what the agent is running RIGHT NOW: shown once it has been going long enough to be worth saying
-    const RUNNING_AFTER = 3;
+    // WHAT THE AGENT IS RUNNING RIGHT NOW. The threshold is on the WORK, not on the command: once a
+    // piece of work has been going this long the user is watching a bar that has not changed in a
+    // while, so every command appears as it runs — a one-second one included.
+    const WORK_LONG = 30;
+    //: and after this long it is not working, it is waiting on something it cannot hurry
+    const WAITING_AFTER = 20;
     // THE CLOCK RUNS BETWEEN POLLS. The payload says how long it had been going when it was read, so
     // a number that only moved every few seconds looked stuck — which is the opposite of what a
     // running command is for. It ticks here, from the moment the answer landed.
     const ticks = ref(0);
     const timer = setInterval(() => { ticks.value += 1; }, 1000);
     onUnmounted(() => clearInterval(timer));
+    const sinceStart = computed(() => {
+      ticks.value;
+      const w = (SHELL.activity && SHELL.activity.agent) || null;
+      const started = w && w.started ? Date.parse(w.started) : 0;
+      const open = AGENT_STATE[env.value] && AGENT_STATE[env.value].work;
+      const at = open && open.at ? Date.parse(open.at) : started;
+      return at ? Math.max(0, (Date.now() - at) / 1000) : 0;
+    });
     const readAt = { at: 0, seconds: 0 };
     const running = computed(() => {
       ticks.value;                                        // read, so the clock re-runs this
       const agent = SHELL.activity && SHELL.activity.agent;
       const got = agent && agent.running;
-      if (!got) return null;
+      if (!got || sinceStart.value < WORK_LONG) return null;
       if (readAt.seconds !== got.seconds) {
         readAt.seconds = got.seconds;
         readAt.at = Date.now();
       }
       const secs = got.seconds + Math.floor((Date.now() - readAt.at) / 1000);
-      if (secs < RUNNING_AFTER) return null;
       const flat = String(got.what || "").trim();
-      return { what: flat, gist: flat.length > 42 ? `${flat.slice(0, 42)}…` : flat,
+      return { what: flat, seconds: secs, gist: flat.length > 42 ? `${flat.slice(0, 42)}…` : flat,
                forText: secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s` };
     });
     const doing = computed(() => {
@@ -521,6 +532,11 @@ const StatusBar = {
       // the agent was reading a message or filing a row with nothing open — the one state the journal
       // itself refuses to call work — so the word that was meant to say a to-do is moving said
       // nothing at all. Busy is the honest word for here, doing something undeclared.
+      // WAITING IS NOT WORKING. A command that has been running this long is the agent sitting on its
+      // hands, and the word for that is not the same word as thinking about the code.
+      if (running.value && running.value.seconds >= WAITING_AFTER) {
+        return { state: "Waiting", live: true, what: onIt || doing.value, href: workHref };
+      }
       if (agent.compacting) return { state: "Busy", live: true, what: "compacting its context", href: workHref };
       if (agent.working && !onIt) return { state: "Busy", live: true, what: doing.value, href: workHref };
       if (agent.working) return { state: "Working", live: true, what: onIt, href: workHref };
@@ -579,7 +595,14 @@ const StatusBar = {
         <!-- WAITING IS NOT WORKING, and from the outside they look the same. What the agent is in the
              middle of running follows the work, quieter and smaller than it. -->
         <span v-if="running" class=statusbar-running :title="running.what">
-          <Icon name="activity"/>{{ running.gist }}<span class=statusbar-running-for>{{ running.forText }}</span></span>
+          <!-- a middot rather than a mark: it is a continuation of the sentence before it, not a
+               second fact standing beside it -->
+          <span class=statusbar-running-dot>·</span>
+          <!-- IT ROLLS TOO. One command follows another while a long piece of work runs, and a line
+               that swapped outright read as a flicker; keyed on the command, it leaves upward as the
+               next arrives from below, the way the work's own sentence does. -->
+          <span class=statusbar-run-roll><Transition name=roll><span :key="running.gist" class=statusbar-run-line>{{ running.gist }}</span></Transition></span>
+          <span class=statusbar-running-for>{{ running.forText }}</span></span>
       </button>
       <span class=statusbar-tools>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"

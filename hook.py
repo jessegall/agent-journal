@@ -255,6 +255,7 @@ MESSAGES = {
                     '  .journal/journal.py nothing "<why nothing here needs pinning>"\nNothing is the right answer more '
                     "often than not — say so and carry on. `journal search`, `journal conversation --back=1` and "
                     "`journal pins` still run, to decide with.",
+    "commit_note": "Committed: {subject} ({sha})",
     "skills_fact": "this session has not opened a journal skill, and the skills are where the mechanisms "
                    "are written down — what a pin is for against a reminder, how a message is filed, what a "
                    "subagent may write.",
@@ -2335,8 +2336,15 @@ def _record_commits(before: dict | None, after: dict | None, ctx: Ctx, on: str =
     at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     work.record_commits(ROOT, _owners(ctx), list(reversed(commits)), at, on=on)
     # EACH COMMIT IS AN ACTIVITY LINE OF ITS OWN: work landing is the news the user watches for
+    here = tracks.current(ROOT, ctx.stem)
+    import notifications
     for c in reversed(commits):
-        commandlog.record_commit(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, c["sha"], c["subject"], at)
+        commandlog.record_commit(ROOT, here, ctx.stem, c["sha"], c["subject"], at)
+        # AND IT IS WORTH BEING TOLD. A commit is the one thing in a session that is finished and
+        # cannot be taken back quietly; the Activity column scrolls, the notification does not.
+        with contextlib.suppress(Exception):
+            notifications.add(ROOT, say("commit_note", subject=fmt.gist(c["subject"], 60), sha=c["sha"][:7]),
+                              at, "", "journal", here)
 
 
 def _record_files(payload: dict, ctx: Ctx) -> None:

@@ -215,15 +215,24 @@
   .statusbar-text span { flex: 1 1 auto; min-width: 180px; font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   /* the roller: one line's height, and the two lines pass through it without moving anything else */
-  .statusbar-roll { position: relative; flex: 0 1 auto; display: flex; align-items: center; min-width: 0;
-    height: 19px; text-decoration: none; }
+  /* SIZED TO ITS WORDS, not to the bar. `.statusbar-text span` gives every span flex-grow and a
+     180px floor, which is why the roll swallowed the free space and pushed what follows it to the
+     far right of the bar — the user watched the running command sit over there for three rounds. */
+  .statusbar-text .statusbar-roll { position: relative; flex: 0 1 auto; display: flex; align-items: center;
+    min-width: 0; height: 19px; text-decoration: none; }
   /* the part of the sentence that did not change: written once, and it does not move */
   /* what it is running, at the end of the line: smaller and quieter than the work it belongs to */
   /* right beside the work, with no gap of its own: the bar's own 8px is the only space between them */
   .statusbar-text .statusbar-running { flex: none; display: inline-flex; align-items: center; gap: 4px;
-    margin-left: -2px; max-width: 34%; font-size: 10px; color: var(--text-4, #6b6e76); white-space: nowrap;
+    margin-left: 0; max-width: 34%; font-size: 10px; color: var(--text-4, #6b6e76); white-space: nowrap;
     overflow: hidden; text-decoration: none; }
   /* .statusbar-text span beats a lone class here, so the ticker's size has to be said from the bar */
+  .statusbar-running-dot { opacity: .5; }
+  .statusbar-run-roll { position: relative; display: inline-flex; align-items: center; min-width: 0;
+    height: 14px; overflow: hidden; }
+  .statusbar-run-line { position: relative; display: block; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; }
+  .statusbar-run-roll .roll-leave-active { position: absolute; left: 0; right: 0; }
   .statusbar-text .statusbar-running-for { font-size: 9.5px; }
   .statusbar-running .ico { width: 11px; height: 11px; opacity: .6; }
   .statusbar-text .statusbar-running-for { font-variant-numeric: tabular-nums; opacity: .8; }
