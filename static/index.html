@@ -793,8 +793,9 @@
      it became. Different kinds of thing, so they sit at opposite ends rather than running together
      from the same one. The pills hold the right edge and the word pushes itself off the left; the
      dot travels with the word, since both appear only while the row is being worked. */
-  .thread-bubble.md > .thread-became { justify-content: flex-end; }
-  .thread-became-word { margin-right: auto; }
+  /* the pills read as part of the message now that no rule divides them from it, so they start where
+     the words do rather than hanging off the far edge */
+  .thread-bubble.md > .thread-became { justify-content: flex-start; }
   /* the rule crosses the whole bubble, so it reads as a header and not as an underlined phrase: the
      row is what holds the text, the block around it is what holds the rule */
   /* .md p carries a margin and one more class than .thread-became, so it won and the header sat
@@ -806,7 +807,9 @@
      which is what made this header too tall twice. The bubble's own class outranks it. */
   /* NO RULE UNDER IT: the header and the message are one thing, and a line between them says they
      are two. The space below is what separates them. */
-  .thread-bubble.md > .thread-became { margin: -5px -12px 6px; padding: 0 12px 4px;
+  /* even above and below: the -5px top was there to sit the header under a rule that is gone, which
+     left it tight at the top and loose underneath */
+  .thread-bubble.md > .thread-became { margin: -2px -12px 5px; padding: 0 12px 1px;
     font-size: 10.5px; letter-spacing: .04em;
     text-transform: uppercase; color: var(--text-3); display: flex; align-items: center; gap: 5px; }
   .thread-became.live { color: var(--accent-text); }

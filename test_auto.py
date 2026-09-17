@@ -654,6 +654,24 @@ check("a subagent dispatch that names no model is refused", bool(denied), True)
 check("and the refusal names the three models", all(m in denied for m in ("haiku", "sonnet", "opus")), True)
 check("a dispatch that names its model goes through", agent_call(s9, model="sonnet"), "")
 check("a fork, which cannot take a model, goes through", agent_call(s9, subagent_type="fork"), "")
+
+# A TITLE IS NOT A TO-DO: the row is read again in a week by a session that remembers nothing of this
+# one, and "fix it" is a note to somebody who already knows. The refusal is the hook's, not the CLI's
+# — a person or a script may still add a row with a title alone.
+def bash_call(s, line):
+    out = s.fire("PreToolUse", tool_name="Bash", tool_input={"command": line})
+    if not out.strip():
+        return ""
+    got = json.loads(out).get("hookSpecificOutput", {})
+    return got.get("permissionDecisionReason", "") if got.get("permissionDecision") == "deny" else ""
+
+
+_bare = bash_call(s9, '.journal/journal.py todos add "fix it"')
+check("a to-do added with no brief is refused, and the refusal says what to write",
+      (bool(_bare), "needs its brief" in _bare), (True, True))
+check("with a brief it goes through",
+      bash_call(s9, '.journal/journal.py todos add "fix the loader" --brief <<\'MSG\'\nwhere to start\nMSG'), "")
+check("and every other todos verb is untouched", bash_call(s9, ".journal/journal.py todos done 1"), "")
 import tempfile as _tf  # noqa: E402
 import agents as _agents_mod  # noqa: E402
 _home = Path(_tf.mkdtemp())
