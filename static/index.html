@@ -554,9 +554,14 @@
   .home-thread { flex: 1 1 auto; min-width: 0; min-height: 0; max-width: 1080px; display: flex; flex-direction: column; }
   /* a RANGE, not a number: with the Activity column hidden the page gains its whole width, and a
      fixed rail left all of it to the thread while its own cards stayed as cramped as before */
+  /* NO GAP BETWEEN THE STRIP AND WHAT IT INTRODUCES. The column used to put 22px between everything
+     in it, which is right between SECTIONS and wrong under a tab strip: a bar with a rule along the
+     bottom and then a gap reads as a bar belonging to nothing. Sections that still want the air ask
+     for it themselves. */
   .home-rail { flex: none; width: clamp(288px, 27%, 400px); min-height: 0; overflow-y: auto; scrollbar-width: none;
-    display: flex; flex-direction: column; gap: 22px;
+    display: flex; flex-direction: column; gap: 0;
     padding: 0 0 18px; border-left: 1px solid var(--border); }
+  .home-rail > .home-section + .home-section { margin-top: 22px; }
   .home-rail::-webkit-scrollbar { width: 0; }
   /* ONE FLUSH FEED, NOT A STACK OF CARDS. In a column this narrow a card is a border, a background, a
      radius and an inset tint all fighting over the same forty characters — four kinds of chrome doing
@@ -564,12 +569,18 @@
      its text with the kind's own tint on the left, sections divided by a rule, content flush right. */
   /* THE RAIL IS THREE LISTS AND THE TABS SAY WHICH. Same bar the headings were, so the strip and a
      section heading are the same object at the top of the column rather than two competing ones. */
-  .rail-tabs { display: flex; align-items: stretch; height: 34px; padding: 0 var(--rail-gutter);
-    gap: 14px; border-bottom: 1px solid var(--border); background: var(--raised); }
+  /* THE STRIP DOES NOT COMPRESS AND DOES NOT SCROLL AWAY. Without `flex: none` a long list under it
+     squeezed it, and the tabs' own height was decided by how many notifications there were. */
+  .rail-tabs { position: sticky; top: 0; z-index: 2; flex: none; display: flex; align-items: stretch;
+    height: 34px; padding: 0 var(--rail-gutter); gap: 14px;
+    border-bottom: 1px solid var(--border); background: var(--raised); }
   .rail-tab { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0;
     border-bottom: 1px solid transparent; background: none; font: inherit; font-size: 11.5px;
     letter-spacing: .03em; color: var(--text-3); white-space: nowrap; cursor: pointer; }
   .rail-tab:hover { color: var(--text-2); }
+  /* the browser's own ring is a rounded box, which made a tab read as a button with a border */
+  .rail-tab:focus { outline: none; }
+  .rail-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 4px; }
   .rail-tab.on { color: var(--text); border-bottom-color: var(--accent); }
   .rail-tab-n { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
   .rail-tab.on .rail-tab-n, .rail-tab-n.hot { color: var(--accent-text); }
@@ -588,6 +599,12 @@
   .rail-row-title { flex: 1 1 auto; min-width: 0; font-size: 12.5px; white-space: nowrap;
     overflow: hidden; text-overflow: ellipsis; }
   .rail-row-state { flex: none; font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  /* A HEADING IN THE RAIL IS THE LIST PAGE'S GROUP HEADING, at the width this column has: the state
+     is said once, over the rows that are in it, rather than repeated on the end of every row. */
+  .rail-group { display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 var(--rail-gutter);
+    border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--raised) 60%, transparent);
+    font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); }
+  .rail-group-n { color: var(--text-3); font-variant-numeric: tabular-nums; text-transform: none; }
   .rail-note { position: relative; display: flex; align-items: stretch; }
   .rail-note .rail-row { padding-right: 30px; }
   .rail-note-x { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: inline-flex;

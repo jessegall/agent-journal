@@ -4085,17 +4085,18 @@ const EnvHome = {
     const SLOTS = 3;
     // the rows are a capped page; the COUNT is the environment's own, so a cap can never make it lie.
     // Unseen reports are not in that row (it counts unarchived ones), so they are counted from theirs.
-    const waitingCount = computed(() => {
-      const row = envRow.value || {};
-      // the same test the queue uses, or the count and the cards disagree
-      const unseen = (reports.data || []).filter((r) => !r.archived).length;
-      // held work is not in the environment row either: it is the agent waiting, counted where it waits
-      const parked = (work.data || []).filter((w) => !w.ended && w.parked).length;
-      return (row.questions || 0) + (row.suggestions || 0) + unseen + parked + (held.value ? 1 : 0);
-    });
+    // WHAT THE LIST HOLDS, COUNTED FROM THE LIST. It was counted from the environment row instead —
+    // every open question, every unarchived report — while the list hides the ones this browser has
+    // dismissed. So a dismissed report was counted and not shown, and the heading said five things
+    // were waiting above an empty column. The code's own comment warned about exactly this.
+    const waitingCount = computed(() => queue.value.length + (held.value ? 1 : 0));
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
     const clear = computed(() => !queue.value.length && !held.value);
     const openTodos = computed(() => (todos.data || []).filter((t) => todoStatus(t) !== "done"));
+    const todoGroups = computed(() => [["progress", "In progress"], ["waiting", "Waiting on you"],
+                                       ["open", "Open"], ["blocked", "Blocked"]]
+      .map(([key, label]) => ({ key, label, rows: openTodos.value.filter((t) => todoStatus(t) === key) }))
+      .filter((g) => g.rows.length));
     const unread = computed(() => (notes.data || []).filter((n) => !n.read));
     const TABS = computed(() => [{ key: "waiting", label: "Waiting on you", n: waitingCount.value },
                                  { key: "todos", label: "To-dos", n: openTodos.value.length },
@@ -4169,7 +4170,7 @@ const EnvHome = {
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
-             tab, TABS, openTodos, unread, todoStatus, TODO_RAIL_WORD, openNote, readNote, noteHref, goto };
+             tab, TABS, openTodos, todoGroups, unread, todoStatus, openNote, readNote, noteHref, goto };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4226,15 +4227,18 @@ const EnvHome = {
           <Icon name="todos"/>
           <p>Nothing is on the list.</p>
         </div>
-        <!-- the to-do page's row, slimmer: what it is, what state it is in, and nothing else -->
+        <!-- GROUPED, THE WAY THE TO-DO PAGE GROUPS THEM. The state was a word on the end of every
+             row, which says the same thing as many times as there are rows; a heading says it once. -->
         <div class=rail-list>
-          <button v-for="t in openTodos" :key="t.n" type=button
-            :class="['rail-row', {sel: view.kind === 'todo' && view.n === t.n}]" @click="goto('todo', t.n)">
-            <StatusIcon :kind="todoStatus(t)"/>
-            <span class=rail-row-n>#{{ t.n }}</span>
-            <span class=rail-row-title>{{ t.title }}</span>
-            <span v-if="TODO_RAIL_WORD[todoStatus(t)]" class=rail-row-state>{{ TODO_RAIL_WORD[todoStatus(t)] }}</span>
-          </button>
+          <template v-for="g in todoGroups" :key="g.key">
+            <div class=rail-group>{{ g.label }}<span class=rail-group-n>{{ g.rows.length }}</span></div>
+            <button v-for="t in g.rows" :key="t.n" type=button
+              :class="['rail-row', {sel: view.kind === 'todo' && view.n === t.n}]" @click="goto('todo', t.n)">
+              <StatusIcon :kind="g.key"/>
+              <span class=rail-row-n>#{{ t.n }}</span>
+              <span class=rail-row-title>{{ t.title }}</span>
+            </button>
+          </template>
         </div>
       </template>
       <template v-else>
