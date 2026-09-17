@@ -190,6 +190,12 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
                                     "meta": {"env": env, "message": str(n)}}))
     if not answers:
         return got
+    # no `since` here: the reply's own told_at is the gate, so a turn taken before this process
+    # started is still owed to somebody rather than lost with the process that missed it
+    for n, i, r in inbox.untold_replies(ROOT, env):
+        got.append((f"{env}:reply:{n}:{i}",
+                    {"content": f"The user answered under message {n} on {env}: {_gist(r.get('text', ''))}",
+                     "meta": {"env": env, "message": str(n)}}))
     got.extend(_plan_events(env, since))
     # keyed by when it was answered, so a changed answer wakes the session again
     for n, q in questions.untold(ROOT, env):
@@ -328,6 +334,7 @@ def _told(keys: list[str]) -> None:
     """
     from datetime import datetime, timezone
     import comments
+    import inbox
     import questions
     import suggestions
     stores = {"question": questions, "suggestion": suggestions, "comment": comments}
@@ -336,6 +343,9 @@ def _told(keys: list[str]) -> None:
         parts = key.split(":")
         if len(parts) >= 3 and parts[1] in stores and parts[2].isdigit():
             stores[parts[1]].mark_told(ROOT, parts[0], [int(parts[2])], at)
+        # a reply is told per TURN, so the mark goes on the reply itself and not on the message
+        elif len(parts) >= 4 and parts[1] == "reply" and parts[2].isdigit() and parts[3].isdigit():
+            inbox.mark_replies_told(ROOT, parts[0], [(int(parts[2]), int(parts[3]))], at)
 
 
 #: the poll code loaded from disk, and the newest modification time of the package it was loaded at

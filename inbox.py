@@ -616,6 +616,37 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
     return True, say("answered_part", n=n, excerpt=fmt.gist(part, 60))
 
 
+def untold_replies(root: Path, track: str | None = None) -> list[tuple[int, int, dict]]:
+    """(message, index, reply) for every reply the USER left under a message that nobody has been told about.
+
+    A MESSAGE IS TOLD ONCE; A CONVERSATION IS NOT. The channel reads `unprocessed`, which is keyed by
+    the message and stops the moment the agent marks it processed — so the user's answer under a
+    message the agent had already handled reached nobody, and a back-and-forth died after its first
+    turn. A reply therefore carries its own `told_at`, for the same reason a comment does: what has to
+    be told is the turn, not the thread it is in.
+    """
+    out = []
+    for n, m in enumerate(_all(root, track), 1):
+        if m.get("archived"):
+            continue
+        for i, r in enumerate(m.get("replies") or []):
+            if r.get("source") == "web" and not r.get("told_at"):
+                out.append((n, i, r))
+    return out
+
+
+def mark_replies_told(root: Path, track: str | None, refs: list[tuple[int, int]], at: str) -> None:
+    with state.locked(root):
+        items = _all(root, track)
+        for n, i in refs:
+            if not 1 <= n <= len(items):
+                continue
+            rows = items[n - 1].get("replies") or []
+            if 0 <= i < len(rows):
+                rows[i]["told_at"] = at
+        _put(root, items, track)
+
+
 def mark_read(root: Path, numbers: list[int], at: str, track: str | None = None) -> None:
     """The agent has read these waiting messages: the viewer shows them as being handled until they are processed."""
     with state.locked(root):
