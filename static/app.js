@@ -578,6 +578,10 @@ const TopBar = {
       openFromBell(event, x);
       drop.open = false;
     };
+    const dropTab = ref("unread");
+    const DROP_TABS = computed(() => [
+      { key: "unread", label: "Unread", n: unreadNotes.value.length + suggestions.value.length + openQuestions.value.length },
+      { key: "read", label: "Read", n: readNotes.value.length }]);
     const outside = (e) => { if (!e.target.closest(".drop-wrap")) drop.open = false; };
     watchEffect((onCleanup) => {
       if (!drop.open) return;
@@ -611,7 +615,7 @@ const TopBar = {
       if (i === 0 && c === env.value) return `#/env/${env.value}`;
       return c in CRUMB_PATHS ? `#/env/${env.value}${CRUMB_PATHS[c] ? `/${CRUMB_PATHS[c]}` : ""}` : null;
     };
-    return { env, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, openNote, activity, toggleActivity, view,
+    return { env, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, openNote, dropTab, DROP_TABS, activity, toggleActivity, view,
              helpTopic, help, helpDialog, openHelp, closeHelp, crumbHref, noteHref };
   },
   template: `
@@ -637,20 +641,35 @@ const TopBar = {
               :aria-expanded="drop.open" @click="drop.open = !drop.open">
               <Icon name="bell"/><span v-if="waiting" class=tool-badge>{{ waiting }}</span>
             </button>
+            <!-- THE HEAD STAYS, THE LIST SCROLLS UNDER IT, and what has been read is a tab rather
+                 than a second list under the first: fifty read rows below three unread ones made the
+                 three the hardest part of the dropdown to find. -->
             <div v-if="drop.open" class=drop>
               <div class=drop-head><span>Notifications</span>
                 <button v-if="unreadNotes.length" type=button class="btn more" @click="readAll">Mark all read</button></div>
-              <p v-if="!unreadNotes.length && !suggestions.length && !openQuestions.length" class="muted drop-empty">Nothing waiting.</p>
-              <a v-for="q in openQuestions" :key="'q' + q.n" class=drop-row @click="drop.open = false"
-                :href="(q.links && q.links.length && $refHref(q.links[0].ref, env)) || '#/env/' + env + '/questions/' + q.n">
-                <span class=drop-kind>Question {{ q.n }}</span><span class=drop-text>{{ q.text }}</span>
-              </a>
-              <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
-                <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
-              </a>
-              <NoteRow v-for="x in unreadNotes" :key="'n' + x.n" :note="x" :env="env" :open="openNote"/>
-              <div v-if="readNotes.length" class=drop-sub>Read</div>
-              <NoteRow v-for="x in readNotes" :key="'r' + x.n" :note="x" :env="env" :open="openNote"/>
+              <div class="rail-tabs drop-tabs" role=tablist>
+                <button v-for="t in DROP_TABS" :key="t.key" type=button role=tab :aria-selected="dropTab === t.key"
+                  :class="['rail-tab', {on: dropTab === t.key}]" @click="dropTab = t.key">
+                  {{ t.label }}<span :class="['rail-tab-n', {hot: t.n && t.key === 'unread'}]">{{ t.n }}</span>
+                </button>
+              </div>
+              <div class=drop-list>
+                <template v-if="dropTab === 'unread'">
+                  <p v-if="!unreadNotes.length && !suggestions.length && !openQuestions.length" class="muted drop-empty">Nothing waiting.</p>
+                  <a v-for="q in openQuestions" :key="'q' + q.n" class=drop-row @click="drop.open = false"
+                    :href="(q.links && q.links.length && $refHref(q.links[0].ref, env)) || '#/env/' + env + '/questions/' + q.n">
+                    <span class=drop-kind>Question {{ q.n }}</span><span class=drop-text>{{ q.text }}</span>
+                  </a>
+                  <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
+                    <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
+                  </a>
+                  <NoteRow v-for="x in unreadNotes" :key="'n' + x.n" :note="x" :env="env" :open="openNote"/>
+                </template>
+                <template v-else>
+                  <p v-if="!readNotes.length" class="muted drop-empty">Nothing has been read yet.</p>
+                  <NoteRow v-for="x in readNotes" :key="'r' + x.n" :note="x" :env="env" :open="openNote"/>
+                </template>
+              </div>
             </div>
           </div>
           <button type=button :class="['icon-btn', {on: activity.shown}]" :title="activity.shown ? 'Hide Activity' : 'Show Activity'"
