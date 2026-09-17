@@ -108,7 +108,8 @@ class InboxController(Controller):
         if follow_up and (found := questions.listed_choices(follow_up)):
             return Result("refused", questions.say("choices_in_text", found=found))
         ok, message = inbox.reply(root, p.id, p.text, p.at, source=p.source, track=p.env or None,
-                                  part=p.part if p.has("part") else "")
+                                  part=p.part if p.has("part") else "",
+                                  quoting=p.quoting if p.has("quoting") else "")
         if ok and follow_up:
             asked, said = questions.add(root, follow_up, p.at, [f"inbox {p.id}"], source=p.source, track=p.env or None,
                                         options=p.options if p.has("options") else None, pick=p.pick if p.has("pick") else None)

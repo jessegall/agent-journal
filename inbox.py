@@ -43,6 +43,7 @@ MESSAGES = {
     "needs_part": 'say which part: journal messages process {n} --part="<the words it is about>" --became=<what it became>',
     "needs_became": 'say what the part became: --became="todo 22", "pin 3", "question 4", "plan 5", "report 3", "doc 4", work or noted',
     "not_in_message": "that part is not in message {n}; quote the words it is about",
+    "not_in_thread": "nothing under message {n} says that; quote words that were really said in the thread",
     "already_processed": "message {n} is already processed",
     "already_moved": "message {n} was moved to `{env}`, where it is message {there} — record the part there, "
                      "on the record the user is actually reading",
@@ -589,11 +590,19 @@ def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tup
 
 
 def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: str | None = None,
-          part: str = "") -> tuple[bool, str]:
+          part: str = "", quoting: str = "") -> tuple[bool, str]:
     """A short answer under a message: what was done, a clarification, a call the agent made. Any status.
-    With `part`, it answers the question those words ask: the part is recorded as answered and the user is notified."""
+    With `part`, it answers the question those words ask: the part is recorded as answered and the user is notified.
+
+    `part` AND `quoting` POINT IN OPPOSITE DIRECTIONS, which is why they are two fields and not one.
+    `part` is the USER's words that this reply answers, checked against the message; `quoting` is words
+    said EARLIER IN THIS THREAD that this reply answers, checked against the replies already on it. Each
+    carries its own guarantee — the excerpt is real, and it was really said here — and one field holding
+    both would check against one source and quietly let the other kind of quote be invented.
+    """
     text = (text or "").strip()
     part = " ".join((part or "").split())
+    quoting = " ".join((quoting or "").split())
     if not text:
         return False, say("reply_what", n=n)
     with state.locked(root):
@@ -603,7 +612,11 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
             return False, err
         if part and _flat(part) not in _flat(m["text"]):
             return False, say("not_in_message", n=n)
-        m.setdefault("replies", []).append({"text": text, "at": at, "source": source, **({"part": part} if part else {})})
+        if quoting and not any(_flat(quoting) in _flat(r.get("text") or "") for r in m.get("replies") or []):
+            return False, say("not_in_thread", n=n)
+        m.setdefault("replies", []).append({"text": text, "at": at, "source": source,
+                                            **({"part": part} if part else {}),
+                                            **({"quoting": quoting} if quoting else {})})
         if part:
             m.setdefault("parts", []).append({"excerpt": part, "became": ["answered"], "at": at})
         _put(root, items, track)
@@ -760,7 +773,7 @@ def row_response(n: int, m: dict) -> dict:
         "status": "archived" if m.get("archived") else "moved" if m.get("moved_to") else "processed" if m.get("processed") else "waiting",
         "archived": m.get("archived") or "",
         "closed_at": m.get("archived_at") or m.get("processed") or "",
-        "replies": [{"text": r["text"], "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "", "part": r.get("part") or "",
+        "replies": [{"text": r["text"], "at": r.get("at", ""), "age": age(r.get("at", "")) if r.get("at") else "", "part": r.get("part") or "", "quoting": r.get("quoting") or "",
                      "who": say("reply_user") if r.get("source") == "web" else say("reply_agent")}
                     for r in m.get("replies") or []],
         "moved_to": m.get("moved_to") or "",

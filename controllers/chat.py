@@ -88,7 +88,9 @@ def wrote(root: Path, env: str) -> list[dict]:
         for r in m.get("replies") or []:
             out.append({"at": r.get("at") or "", "who": "you" if r.get("source") == "web" else "agent",
                         "kind": "reply", "tag": "", "text": trim(r.get("text") or ""), "n": n,
-                        "ref": r.get("part") or ""})
+                        # the two point opposite ways and never both appear: part is the user's words the
+                        # agent answered, quoting is the thread's words the user answered
+                        "ref": r.get("quoting") or r.get("part") or ""})
     return out
 
 
