@@ -18,6 +18,8 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
+
+import state
 from templates import render as fill
 
 REPO = "https://github.com/jessegall/agent-journal"
@@ -157,8 +159,7 @@ def check(root: Path, force: bool = False) -> dict:
                 got = entries(log)
                 head = got[0][1] if got and got[0][0] == version else ""
         cached = {"version": version, "headline": head, "at": time.time()}
-    f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(json.dumps(cached))
+    state.write_json(f, cached)
     return cached
 
 
@@ -226,7 +227,6 @@ def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
         if notice:
             out += "\n\n" + notice
         # every session started from now on is handed the same, once
-        import state
         with state.locked(root):
             state.put(root, "upgraded", {"from": had, "to": now})
         # AND THE RECORD IS BROUGHT WITH IT. The upgrade is the moment the code changed, so

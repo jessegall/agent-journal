@@ -31,6 +31,8 @@ __pycache__/
 # session or a probe that imported `hook.py` from a checkout leaves a file in it. They are
 # line numbers of one transcript on one machine and mean nothing anywhere else.
 /runtime/*.json
+# the upstream version check's cache, rewritten every fifteen minutes by whoever ran last
+/runtime/upstream.cache
 
 # the IDE's own folder, never this project's
 /.idea

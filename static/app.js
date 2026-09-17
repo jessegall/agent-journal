@@ -308,7 +308,6 @@ const Icon = {
       <template v-else-if="name === 'paperclip'"><path d="M10.5 5.5l-4.3 4.3a1.3 1.3 0 0 0 1.8 1.8l4.6-4.6a2.6 2.6 0 0 0-3.7-3.7L4.3 8a3.9 3.9 0 0 0 5.5 5.5l3.7-3.7"/></template>
       <template v-else-if="name === 'sort-asc'"><path d="M8 13V3M4 7l4-4 4 4"/></template>
       <template v-else-if="name === 'sort-desc'"><path d="M8 3v10M4 9l4 4 4-4"/></template>
-      <template v-else-if="name === 'open'"><path d="M9 3.5h3.5V7"/><path d="M12.5 3.5L7.5 8.5"/><path d="M11 9.5v3H3.5V5h3"/></template>
       <template v-else-if="name === 'agents'"><circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/></template>
       <template v-else-if="name === 'empty'"><path d="M2.5 9.5l1.8-5h7.4l1.8 5V13h-11z"/><path d="M2.5 9.5h3l1 1.5h3l1-1.5h3"/></template>
       <template v-else-if="name === 'reports'"><path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/></template>
@@ -2746,7 +2745,9 @@ const Plans = {
               <span class=phase-state>{{ planStepState(ph) }}</span>
               <span class=phase-count>{{ doneCount(ph) }} of {{ ph.todos.length }} done</span>
             </div>
-            <div v-for="t in ph.todos" :key="t.n" :class="['phase-todo', {sel: todoView.n === t.n}]" @click="openTodo(t)">
+            <div v-for="t in ph.todos" :key="t.n" :class="['phase-todo', {sel: todoView.n === t.n}]"
+              role=button :tabindex="0" :aria-label="'To-do ' + t.n + ': ' + (t.title || 'archived')"
+              @click="openTodo(t)" @keydown.enter.self.prevent="openTodo(t)" @keydown.space.self.prevent="openTodo(t)">
               <StatusIcon :kind="todoState(t)"/>
               <span class=phase-todo-n>#{{ t.n }}</span>
               <span :class="['phase-todo-title', {done: t.done}]">{{ t.title || 'archived' }}</span>
@@ -2802,9 +2803,14 @@ const REPORT_LIST = {
   empty: "No reports on this environment yet.",
 };
 
-const ReportPanel = {
-  props: PANEL_PROPS,
-  components: { Panel, ActionBar, Comments },
+// ONE REPORT, ONE COMPONENT. What it says, what can be done with it and the fact that opening
+// it counts as reading it were written twice — once for the inspector and once for the page —
+// and the two copies had already drifted into different keys for the same thing. The panel and
+// the page differ in their frame and in where an action leaves you, and in nothing else, so
+// that is all each of them holds.
+const ReportBody = {
+  props: { env: String, n: [String, Number], done: Function, title: { type: String, default: "panel-title" } },
+  components: { ActionBar, Comments, RefChip, FetchState },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reports`);
     const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
@@ -2819,7 +2825,6 @@ const ReportPanel = {
           fields: [{ name: "why", label: "Why it is taken off the list" }] },
       ];
     });
-    const done = panelDone(props, item);
     // opening a report is the user reading it: the home stops asking, the same way a question does
     let marked = false;
     watch(() => item.data, (r) => {
@@ -2827,74 +2832,51 @@ const ReportPanel = {
       marked = true;
       postJSON(`${api.value}/${r.n}/seen`, {}).then(() => changed()).catch(() => { marked = false; });
     }, { immediate: true });
-    return { item, actions, done };
+    return { item, actions, settled: (body, a) => props.done(body, a, item) };
+  },
+  template: `
+    <FetchState :state="item"/>
+    <template v-if="item.data">
+      <component :is="title === 'p-title' ? 'h1' : 'h2'" :class="title">{{ item.data.title }}</component>
+      <dl class=props>
+        <dt>Type</dt><dd>Report — ages out<template v-if="!item.data.archived && item.data.ages_out_in !== null && item.data.ages_out_in !== undefined"> in {{ item.data.ages_out_in }} {{ item.data.ages_out_in === 1 ? 'day' : 'days' }}</template></dd>
+        <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
+        <dt>For</dt><dd><RefChip v-if="item.data.about && $refHref(item.data.about, env)" :to="$refHref(item.data.about, env)" :label="item.data.about_label"/><span v-else class=muted>—</span></dd>
+        <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
+        <template v-if="item.data.doc"><dt>Document</dt><dd><RefChip :to="'#/docs/' + item.data.doc" :label="'Doc ' + item.data.doc"/></dd></template>
+      </dl>
+      <ActionBar :actions="actions" :done="settled" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
+      <div class="md prose" v-html="$md(item.data.body)"></div>
+      <Comments :about="'report ' + item.data.n" :env="env" :key="'c-report' + item.data.n"/>
+    </template>`,
+};
+
+const ReportPanel = {
+  props: PANEL_PROPS,
+  components: { Panel, ReportBody },
+  setup(props) {
+    return { done: (body, a, item) => panelDone(props, item)(body, a) };
   },
   template: `
     <Panel :label="'Report ' + n" :close="close" :onClose="onClose" :link="link">
-      <FetchState :state="item"/>
-      <template v-if="item.data">
-        <h2 class=panel-title>{{ item.data.title }}</h2>
-        <dl class=props>
-          <dt>Type</dt><dd>Report — ages out<template v-if="!item.data.archived && item.data.ages_out_in !== null && item.data.ages_out_in !== undefined"> in {{ item.data.ages_out_in }} {{ item.data.ages_out_in === 1 ? 'day' : 'days' }}</template></dd>
-          <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
-          <dt>For</dt><dd><RefChip v-if="item.data.about && $refHref(item.data.about, env)" :to="$refHref(item.data.about, env)" :label="item.data.about_label"/><span v-else class=muted>—</span></dd>
-          <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
-          <template v-if="item.data.doc"><dt>Document</dt><dd><RefChip :to="'#/docs/' + item.data.doc" :label="'Doc ' + item.data.doc"/></dd></template>
-        </dl>
-        <ActionBar :actions="actions" :done="done" :key="'report' + item.data.n + (item.data.archived ? 'x' : '')"/>
-        <div class="md prose" v-html="$md(item.data.body)"></div>
-        <Comments :about="'report ' + item.data.n" :env="env" :key="'c-report' + item.data.n"/>
-      </template>
+      <ReportBody :env="env" :n="n" :done="done"/>
     </Panel>`,
 };
 
 // a report read full width, the way a doc is: the panel stays for a quick look from the home queue
 const ReportDetail = {
   props: ["env", "n"],
-  components: { TopBar, ActionBar, Comments, RefChip },
+  components: { TopBar, ReportBody },
   setup(props) {
-    const api = computed(() => `/api/env/${props.env}/reports`);
-    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
-    const actions = computed(() => {
-      const r = item.data;
-      if (!r || r.archived) return [];
-      return [
-        { label: "Turn into a doc", primary: true, method: "POST", url: `${api.value}/${r.n}/todoc`, submit: "Turn into a doc",
-          note: "A document is made from this report and kept for good; the report is archived.",
-          follow: (body) => (body.data && body.data.doc ? `#/docs/${body.data.doc}` : null) },
-        { label: "Archive", method: "DELETE", url: `${api.value}/${r.n}`, danger: true, submit: "Archive",
-          fields: [{ name: "why", label: "Why it is taken off the list" }] },
-      ];
-    });
-    const done = (body, a) => { changed(); if (a.label === "Archive") location.hash = `#/env/${props.env}/reports`; };
-    // reading it here counts as reading it, exactly as it does in the panel
-    let marked = false;
-    watch(() => item.data, (r) => {
-      if (marked || !r || r.seen || r.archived) return;
-      marked = true;
-      postJSON(`${api.value}/${r.n}/seen`, {}).then(() => changed()).catch(() => { marked = false; });
-    }, { immediate: true });
-    return { item, actions, done, env: props.env };
+    return { done: (body, a) => { changed(); if (a.label === "Archive") location.hash = `#/env/${props.env}/reports`; } };
   },
   template: `
     <TopBar :crumbs="[env, 'Reports', '#' + n]"/>
     <div class=body><div class=page>
-      <FetchState :state="item"/>
-      <div v-if="item.data" class=page-inner>
-        <h1 class=p-title>{{ item.data.title }}</h1>
-        <dl class=props>
-          <dt>Type</dt><dd>Report — ages out<template v-if="!item.data.archived && item.data.ages_out_in !== null && item.data.ages_out_in !== undefined"> in {{ item.data.ages_out_in }} {{ item.data.ages_out_in === 1 ? 'day' : 'days' }}</template></dd>
-          <dt>Written</dt><dd>{{ item.data.age || 'just now' }}</dd>
-          <dt>For</dt><dd><RefChip v-if="item.data.about && $refHref(item.data.about, env)" :to="$refHref(item.data.about, env)" :label="item.data.about_label"/><span v-else class=muted>—</span></dd>
-          <template v-if="item.data.archived"><dt>Archived</dt><dd>{{ item.data.archived }}</dd></template>
-          <template v-if="item.data.doc"><dt>Document</dt><dd><RefChip :to="'#/docs/' + item.data.doc" :label="'Doc ' + item.data.doc"/></dd></template>
-        </dl>
-        <ActionBar :actions="actions" :done="done" :key="'reportpage' + item.data.n + (item.data.archived ? 'x' : '')"/>
-        <div class="md prose" v-html="$md(item.data.body)"></div>
-        <Comments :about="'report ' + item.data.n" :env="env" :key="'c-reportpage' + item.data.n"/>
-      </div>
+      <div class=page-inner><ReportBody :env="env" :n="n" :done="done" title="p-title"/></div>
     </div></div>`,
 };
+
 
 const Reports = {
   props: ["env", "archive", "n"],
@@ -3649,7 +3631,12 @@ const Thread = {
     };
     // THE LAST TURN, NEVER THE COUNT. The thread is capped, so once it is full a new turn drops the
     // oldest and the length does not move — a count would have said "nothing arrived" from then on.
-    const newest = (rows) => { const t = rows[rows.length - 1]; return t ? `${t.at}:${t.kind}:${t.n}:${t.text.length}` : ""; };
+    // GUARDED, LIKE EVERY OTHER READ OF t.text HERE. A turn with no text is a real turn — a
+    // message that is only an attachment — and the template two screens down already says so
+    // with its `alone` class. This read did not, and it throws inside the watcher that follows
+    // the thread: reproduced by stubbing the response with `text` absent, three times a poll,
+    // after which nothing scrolls to a new turn and nothing counts what was missed.
+    const newest = (rows) => { const t = rows[rows.length - 1]; return t ? `${t.at}:${t.kind}:${t.n}:${(t.text || "").length}` : ""; };
     // ARRIVAL, NEVER FIRST PAINT. The group mounts empty and the first answer inserts a hundred and
     // twenty turns at once, which is an insert as far as Vue is concerned — so the name is empty until
     // that batch has landed, and only what comes after it animates.

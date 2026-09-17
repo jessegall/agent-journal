@@ -404,5 +404,50 @@ check("a message carrying no transcript is refused too", (code, "--transcript" i
 check("and neither refusal filed a row",
       [t["title"] for t in todo._all(root, "default") if "points at" in t["title"]], [])
 
+# ------------------------------------------- a number is unique, and a hold is taken once
+# A NUMBER IS AN IDENTITY, and it was handed out by three unguarded steps: read the counter,
+# decide n, write the file. Measured before the lock went round them: twelve threads adding at
+# once produced twelve files under TWO numbers, eleven of them sharing 001 — which makes every
+# `todo:1` reference ambiguous eleven ways, with both callers told they had succeeded.
+import threading as _threading  # noqa: E402
+
+_rd = Path(tempfile.mkdtemp()) / ".journal"
+(_rd / "environments" / "race").mkdir(parents=True)
+_N = 12
+_gate = _threading.Barrier(_N)
+
+
+def _adds(i):
+    _gate.wait()
+    _todo.add(_rd, "race", f"row number {i}", "", "2026-01-01T00:00:00+00:00")
+
+
+_threads = [_threading.Thread(target=_adds, args=(i,)) for i in range(_N)]
+[t.start() for t in _threads]
+[t.join() for t in _threads]
+_files = sorted(p.name for p in (_rd / "environments" / "race" / "todo").glob("*.md"))
+_numbers = [f.split("-")[0] for f in _files]
+check("twelve at once write twelve rows", len(_files), _N)
+check("and every one of them has its own number", len(set(_numbers)), _N)
+
+# and the hold: two agents racing to claim one row, only one of them may be told it is theirs
+_todo.add(_rd, "race", "the contested row", "", "2026-01-01T00:00:00+00:00")
+_contested = max(int(p.name.split("-")[0]) for p in (_rd / "environments" / "race" / "todo").glob("*.md"))
+_won = []
+_gate2 = _threading.Barrier(4)
+
+
+def _claims(who):
+    _gate2.wait()
+    took, _ = _todo.assign(_rd, "race", _contested, f"agent-{who}")
+    if took:
+        _won.append(who)
+
+
+_racers = [_threading.Thread(target=_claims, args=(w,)) for w in range(4)]
+[t.start() for t in _racers]
+[t.join() for t in _racers]
+check("four agents race for one row and exactly one is told it holds it", len(_won), 1)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

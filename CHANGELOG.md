@@ -4,6 +4,46 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.147.0 — What the audit found, fixed
+
+Two agents read the code and reported; every finding below was reproduced or measured before
+it was touched, and one of them was worse than reported.
+
+**THE LOCK DID NOT EXCLUDE A SECOND THREAD.** `state.locked()`'s reentrancy counter — the
+thing that lets a caller who already holds the lock call a helper that takes it again — was
+one counter for the process. A second THREAD read it, saw a non-zero depth, took the "already
+held" branch and entered the critical section without ever touching the `flock`. Measured: one
+thread held it for a second, another entered 0.21s later. The one process where that matters
+is the one built for concurrency — the viewer is a threading server, and every write endpoint
+it answers goes through that lock. The counter is thread-local now.
+
+**A TO-DO'S NUMBER WAS NOT UNIQUE UNDER CONCURRENT WRITERS.** Reading the counter, deciding
+`n` and writing the file were three unguarded steps. Twelve threads adding at once produced
+twelve files under TWO numbers, eleven of them sharing 001 — both callers of every collision
+told they had succeeded, and every `todo:1` reference ambiguous eleven ways. `assign` had the
+same shape, so two agents could both be told they held one row. Both take the lock now, the
+counter is written atomically, and both are tested with real threads.
+
+**The bindings file is written atomically.** `tracks.bind`, `unbind` and `prune` truncated and
+rewrote `runtime/bindings.map` while `current()`, the channel and the viewer all read it
+without the lock. A reader landing in that window parses nothing and every session in the
+project reads as unbound for that instant. The atomic write is public now — `state.write_json`
+— and the three other hand-rolled JSON writes go through it.
+
+**The hook stopped paying for a registry it rarely uses.** `import commands` sat at the top of
+`hook.py` and pulled in every command module; the two places that read the registry both bail
+out unless the tool is Bash. Measured end to end on a Read, twenty-five runs each: 72.6ms
+before, 58.9ms after.
+
+**In the viewer.** A turn with no text — a message that is only an attachment — threw inside
+the watcher that follows the thread, three times a poll, after which nothing scrolled to a new
+turn and nothing counted what was missed. `ReportPanel` and `ReportDetail` were the same
+component written twice and had already drifted; they are one now, which was the last place
+the one-panel-per-resource rule was broken. A to-do in a plan's phase can be opened from the
+keyboard. Eighty-eight lines of dead CSS and one unreachable icon branch are gone. And the
+rail has one gutter that its heading, its cards and its rows all keep to, instead of a heading
+flush at zero above cards inset sixteen.
+
 ## 1.146.0 — Connections have a page, and a reference opens where you are reading
 
 **The connections page.** 1.145.0 gave the project a list of the services it can reach; this

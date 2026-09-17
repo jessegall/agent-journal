@@ -310,14 +310,14 @@ def _read_todo(path: Path) -> dict:
 
 
 def _write(path: Path, meta: dict, body: str) -> None:
-    """Atomic, and SAFE UNDER A CONCURRENT READER — see `state._write`, which this mirrors.
+    """Atomic, and SAFE UNDER A CONCURRENT READER — see `state.write_json`, which this mirrors.
 
     `path.write_text` opens with truncation, then writes: a reader that lands in that
     window — a background loop's `journal next`, a hook firing on a different tool call —
     sees a short or empty file. `_read_todo` treats a front matter with no closing `---`
     as NO front matter at all, so a reader catching this row mid-write reads it as if
     `started` and `done` had never been set. Each writer gets its own tmp file, exactly
-    as `state._write` does, for the same reason: two writers sharing one tmp path killed
+    as `state.write_json` does, for the same reason: two writers sharing one tmp path killed
     the loser with FileNotFoundError.
     """
     _PARSED.pop(str(path), None)
@@ -528,22 +528,27 @@ def assign(root: Path, track: str, n: int, agent: str) -> tuple[bool, str]:
     because nothing can tell us a subagent died — see `agents.touch`.
     """
     import agents as ag
-    t, err = _get(root, track, n)
-    if t is None:
-        return False, err
-    if t.get("done"):
-        return False, say("already_done", n=n, how=close_note(t))
-    if agent in ("--off", "off", ""):
-        was = t.get("assigned")
-        if not was:
-            return False, say("assigned_nobody", n=n)
-        _update(root, track, n, assigned="", reported="", by="")
-        return True, say("unassigned", n=n, was=was)
-    agent = state.slug(agent)
-    held = t.get("assigned")
-    if held and held != agent:
-        return False, say("held_by_other", n=n, held=held)
-    _update(root, track, n, assigned=agent)
+    # UNDER THE LOCK: THE CHECK AND THE WRITE ARE ONE ACT. Reading `assigned`, finding it
+    # free and then writing it were three steps with a gap, so two agents could both pass
+    # the check and both be told the row was theirs — which is the one thing a hold exists
+    # to prevent.
+    with state.locked(root):
+        t, err = _get(root, track, n)
+        if t is None:
+            return False, err
+        if t.get("done"):
+            return False, say("already_done", n=n, how=close_note(t))
+        if agent in ("--off", "off", ""):
+            was = t.get("assigned")
+            if not was:
+                return False, say("assigned_nobody", n=n)
+            _update(root, track, n, assigned="", reported="", by="")
+            return True, say("unassigned", n=n, was=was)
+        agent = state.slug(agent)
+        held = t.get("assigned")
+        if held and held != agent:
+            return False, say("held_by_other", n=n, held=held)
+        _update(root, track, n, assigned=agent)
     return True, say("assigned", n=n, agent=agent, title=t["title"])
 
 
@@ -935,18 +940,27 @@ def mentions_hint(root: Path, track: str, n: int, body: str, t: dict | None = No
 
 
 def add(root: Path, track: str, title: str, body: str, at: str, where: dict | None = None) -> tuple[bool, str]:
-    """Write one. Refuses an empty title and a duplicate open one."""
+    """Write one. Refuses an empty title and a duplicate open one.
+
+    UNDER THE LOCK, BECAUSE A NUMBER MUST BE UNIQUE. Reading the counter, deciding `n` and
+    writing the file were three unguarded steps, and this project has concurrent writers by
+    design — granted subagents, and a threading viewer. Measured before this: twelve threads
+    adding at once produced twelve files under TWO numbers, eleven of them sharing 001, which
+    makes every `todo:1` reference ambiguous eleven ways. The duplicate-title check is inside
+    the same take, or two callers both pass it and both write.
+    """
     title = " ".join((title or "").split())
     if not title:
         return False, say("add_empty")
-    for t in open_items(root, track):
-        if _same_title(t["title"], title):
-            return False, say("duplicate", n=t["n"])
-    items = _all(root, track)
-    n = _next_n(root, track, items)
-    path = folder(root, track) / f"{n:03d}-{_slug(title)}.md"
-    meta = {"title": title, "track": track, "at": at, **{k: str(v) for k, v in (where or {}).items()}}
-    _write(path, meta, body)
+    with state.locked(root):
+        for t in open_items(root, track):
+            if _same_title(t["title"], title):
+                return False, say("duplicate", n=t["n"])
+        items = _all(root, track)
+        n = _next_n(root, track, items)
+        path = folder(root, track) / f"{n:03d}-{_slug(title)}.md"
+        meta = {"title": title, "track": track, "at": at, **{k: str(v) for k, v in (where or {}).items()}}
+        _write(path, meta, body)
     return True, say("added", n=n, track=track, title=title, path=path.relative_to(root.parent)) + _cites_hint(root, track, n, meta)
 
 
@@ -1218,9 +1232,14 @@ def _next_n(root: Path, track: str, items: list[dict]) -> int:
     except (OSError, ValueError):
         pass
     n = max(highest, kept) + 1
+    # ATOMIC, LIKE EVERY OTHER WRITE HERE. `write_text` truncates and then writes; a reader
+    # landing in that window reads an empty counter and starts again from the folder alone.
     try:
         counter.parent.mkdir(parents=True, exist_ok=True)
-        counter.write_text(f"{n}\n")
+        fd, tmp = tempfile.mkstemp(dir=counter.parent, prefix=f".{counter.name}.", suffix=".tmp")
+        with os.fdopen(fd, "w") as fh:
+            fh.write(f"{n}\n")
+        os.replace(tmp, counter)
     except OSError:
         pass
     return n

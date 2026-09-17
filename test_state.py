@@ -1525,5 +1525,44 @@ fire(d, "SessionStart", path, source="compact")
 check("after a compaction the rung and its pending decision are cleared, so the new window is warned again",
       (runtime_of(d, "s1").get("warned_at"), runtime_of(d, "s1").get("pin_due")), (0.0, None))
 
+# ------------------------------------------------ the lock excludes another THREAD, not just another process
+# THE VIEWER IS A THREADING SERVER, so two of its write endpoints answering at once are two
+# threads of one process. The reentrancy counter used to be one counter for the process, so the
+# second thread read a non-zero depth, took the "already held" branch and entered the critical
+# section without ever taking the lock — measured at 0.21s into a one-second hold.
+import threading as _threading  # noqa: E402
+import time as _time  # noqa: E402
+
+_lockd = Path(tempfile.mkdtemp())
+(_lockd / "runtime").mkdir(parents=True, exist_ok=True)
+_when = []
+_t0 = _time.time()
+
+
+def _holds():
+    with state.locked(_lockd):
+        _when.append(("held", _time.time() - _t0))
+        _time.sleep(0.6)
+        _when.append(("let go", _time.time() - _t0))
+
+
+def _asks():
+    _time.sleep(0.15)
+    with state.locked(_lockd):
+        _when.append(("second in", _time.time() - _t0))
+
+
+_a, _b = _threading.Thread(target=_holds), _threading.Thread(target=_asks)
+_a.start(); _b.start(); _a.join(); _b.join()
+check("a second thread waits for the first to let go", [w for w, _ in _when], ["held", "let go", "second in"])
+
+# and the SAME thread still nests for free, which is why the counter exists at all
+_nested = []
+with state.locked(_lockd):
+    began = _time.time()
+    with state.locked(_lockd):
+        _nested.append(_time.time() - began)
+check("the same thread's nested take is free, not a three-second wait", _nested[0] < 0.1, True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
