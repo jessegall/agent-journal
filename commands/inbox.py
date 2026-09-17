@@ -156,8 +156,9 @@ class Done(Resource):
 
 
 class Reply(Resource):
-    signature = ("messages:reply {n : a message number} {text* : what you did, a clarification, or a call you made} {--part=}"
-                 " {--quoting=} {--follow-up=} {--option=*} {--option-description=*} {--option-code=*} {--pick=}")
+    signature = ("messages:reply {n : a message number} {text*? : what you did, a clarification, or a call you made} {--part=}"
+                 " {--quoting=} {--stdin} {--follow-up=} {--option=*} {--option-description=*} {--option-code=*} {--pick=}")
+    prose = "text"
     casts = MESSAGE
     writes = True
     controller = CONTROLLER

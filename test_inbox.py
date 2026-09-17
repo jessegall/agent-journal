@@ -485,5 +485,20 @@ code, out = j("messages", "declare", str(_proc), "transcript")
 check("a message already processed can still be declared — recognition happens while filing",
       (code, "is a transcript now" in out), (0, True))
 
+# ------------------------------------------- --stdin: prose the shell cannot put a hole in
+# a shell runs a backtick span as a command and hands the argument over with the span GONE, silently,
+# which cannot be detected afterwards — so the answer is a path the shell never touches, the one
+# --brief has always used
+code, out = j("messages", "add", "a message to answer on stdin")
+_sn = int(re.search(r"message (\d+)", out).group(1))
+code, out = P.cli("messages", "reply", str(_sn), "--stdin", stdin="a reply with `backticks` kept whole")
+check("a reply takes its text on stdin", (code, "replied to message" in out), (0, True))
+check("and the backticks are still in it", "`backticks`" in j("messages", "show", str(_sn))[1], True)
+check("an empty stdin is refused rather than filing nothing",
+      P.cli("messages", "reply", str(_sn), "--stdin", stdin="")[0], 1)
+check("the argument still works when --stdin is not asked for",
+      j("messages", "reply", str(_sn), "a plain one")[0], 0)
+
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

@@ -66,8 +66,9 @@ class Add(Resource):
 
 
 class Done(Resource):
-    signature = ("comments:done {n : a comment number} {how* : what was done about it} "
+    signature = ("comments:done {n : a comment number} {how*? : what was done about it} {--stdin} "
                  "{--became=* : what it produced, like `todo 22` or `doc 4`}")
+    prose = "how"
     casts = COMMENT
     writes = True
     controller = CONTROLLER
