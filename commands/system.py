@@ -11,6 +11,11 @@ NOUNS = (("cleanup", "tidy"), ("migrate", "migrations"), ("loop",), ("update",),
          ("verify",), ("settings",), ("serve",), ("statusline", "status-line"), ("channel",), ("enable",), ("disable",), ("version",))
 
 TEXT = {
+    "settings_here": "set on {env}; the project's is {was}",
+    "settings_nowhere": "this session is on no environment, so there is nowhere to set it — "
+                        "`journal switch \"<name>\"` first, or edit .journal/settings.json for the project",
+    "settings_wants_value": "say what {key} should be here: `journal settings {key} <value>`, "
+                            "or `journal settings {key} --off` to give it back to the project",
     "serve_already": "a viewer for this project is already up: {url}",
     "claude_viewer_up": "the viewer is up at {url} — the messages, the to-dos and the conversation are there",
     "claude_viewer_already": "the viewer is already up at {url}",
@@ -217,17 +222,28 @@ class Verify(Command):
 
 
 class Settings(Command):
-    signature = "settings"
+    signature = ('settings {key? : a setting to change here} {value*? : its value on this environment} '
+                 '{--off : give it back to the project}')
+    writes = True
 
     def run(self, p: Parsed) -> int:
+        import tracks
+        here = tracks.current(root(), stem())
+        if p.arg("key"):
+            return self.here(p, here)
         import hook  # noqa: F401 — its decorators fill the nudge registry
         import nudges
-        conf, problems = settings_mod.load(root())
+        conf, problems = settings_mod.load(root(), here)
+        mine = settings_mod.overrides(root(), here) if here else {}
         path = root() / settings_mod.PATH
         changed = [k for k in settings_mod.DEFAULTS if conf[k] != settings_mod.DEFAULTS[k]]
+        # A SETTING HAS A SCOPE, and the row says which: the project's value, or this environment's
+        # disagreement with it. Without that a reader cannot tell a value everyone shares from one
+        # that is theirs alone, which is the only question a scoped setting raises.
         rows = tuple(
             fmt.Item(title=("* " if k in changed else "  ") + k, text=str(conf[k]),
-                     meta=render(TEXT["settings_default"], value=d) if k in changed else "")
+                     meta=render(TEXT["settings_here"], env=here, was=settings_mod.load(root())[0][k]) if k in mine
+                     else render(TEXT["settings_default"], value=d) if k in changed else "")
             for k, d in settings_mod.DEFAULTS.items()
         )
         queue = fmt.Out(title=TEXT["settings_queue"],
@@ -241,6 +257,26 @@ class Settings(Command):
         for problem in problems:
             fmt.say(problem, error=True)
         return 1 if problems else 0
+
+    @staticmethod
+    def here(p: Parsed, env: str) -> int:
+        """`journal settings <key> <value>` changes it on THIS environment only."""
+        import json as _json
+        if not env:
+            return refuse(TEXT["settings_nowhere"])
+        key, raw = p.arg("key"), p.arg("value")
+        off = bool(p.option("off"))
+        value = None
+        if not off:
+            if raw is None or raw == "":
+                return refuse(render(TEXT["settings_wants_value"], key=key))
+            try:                       # a number, a bool or a list as the file would hold it
+                value = _json.loads(raw)
+            except ValueError:
+                value = raw
+        ok, message = settings_mod.override(root(), env, key, value, off=off)
+        fmt.say(message, error=not ok)
+        return 0 if ok else 1
 
 
 class Serve(Command):

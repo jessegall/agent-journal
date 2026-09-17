@@ -3708,6 +3708,13 @@ def main(raw: str | None = None) -> int:
     env = _register(payload, ctx)
     if env is None:
         return _unregistered(conf, payload, handler, ctx)
+    # THE SETTINGS ARE READ AGAIN ONCE THE ENVIRONMENT IS KNOWN, because a setting has a scope:
+    # the project's value, and what this environment disagrees with. The first read above has to
+    # happen before the environment is settled — it is what decides whether the hook runs at all —
+    # so this is the same load with the answer to "where" in hand.
+    if settings_mod.overrides(ROOT, env):
+        conf, _ = settings_mod.load(ROOT, env)
+        _CONF[:] = [conf]
     # A CRASH IS WORSE THAN SILENCE. A traceback here is rendered to the user as a hook
     # error, which teaches that the journal is broken where it was only surprised. Say
     # what happened on stderr and let the turn go on.
