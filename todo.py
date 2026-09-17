@@ -310,14 +310,14 @@ def _read_todo(path: Path) -> dict:
 
 
 def _write(path: Path, meta: dict, body: str) -> None:
-    """Atomic, and SAFE UNDER A CONCURRENT READER — see `state._write`, which this mirrors.
+    """Atomic, and SAFE UNDER A CONCURRENT READER — see `state.write_json`, which this mirrors.
 
     `path.write_text` opens with truncation, then writes: a reader that lands in that
     window — a background loop's `journal next`, a hook firing on a different tool call —
     sees a short or empty file. `_read_todo` treats a front matter with no closing `---`
     as NO front matter at all, so a reader catching this row mid-write reads it as if
     `started` and `done` had never been set. Each writer gets its own tmp file, exactly
-    as `state._write` does, for the same reason: two writers sharing one tmp path killed
+    as `state.write_json` does, for the same reason: two writers sharing one tmp path killed
     the loser with FileNotFoundError.
     """
     _PARSED.pop(str(path), None)

@@ -128,6 +128,11 @@ def _bindings(root: Path) -> dict:
         return {}
 
 
+#: WHO READS IT, AND WITHOUT THE LOCK. `current`, the channel's poll loop and the viewer all read
+#: the bindings constantly and none of them takes the lock, so the file must never exist in a
+#: half-written state: a reader landing in a truncate window parses nothing, `_bindings` answers
+#: with an empty map, and for that instant every session in the project reads as unbound.
+#: `state.write_json` replaces it in one step instead.
 def bound(root: Path, stem: str | None) -> str | None:
     got = _bindings(root).get(stem) if stem else None
     return (state.slug(got) or "default") if got else None
@@ -141,8 +146,7 @@ def bind(root: Path, stem: str, track: str) -> None:
     with state.locked(root):
         b = _bindings(root)
         b[stem] = track
-        (root / BINDINGS).parent.mkdir(parents=True, exist_ok=True)
-        (root / BINDINGS).write_text(json.dumps(b, indent=2) + "\n")
+        state.write_json(root / BINDINGS, b)
 
 
 def unbind(root: Path, stem: str) -> None:
@@ -152,7 +156,7 @@ def unbind(root: Path, stem: str) -> None:
         b = _bindings(root)
         if stem in b:
             del b[stem]
-            (root / BINDINGS).write_text(json.dumps(b, indent=2) + "\n")
+            state.write_json(root / BINDINGS, b)
 
 
 def claim(root: Path, name: str, at: str, stem: str, why: str,
@@ -223,7 +227,7 @@ def prune(root: Path, keep) -> None:
         b = _bindings(root)
         for sid in gone:
             b.pop(sid, None)
-        (root / BINDINGS).write_text(json.dumps(b, indent=2) + "\n")
+        state.write_json(root / BINDINGS, b)
 
 
 def live(root: Path, stale_hours: float = 24.0) -> dict[str, dict]:
@@ -404,7 +408,7 @@ def create(root: Path, *names: str, at: str = "") -> None:
         for name in fresh:
             got.setdefault(name, True)
         data[VIEWER_FIRST] = got
-        state._write(state.record_file(root), data)
+        state.write_json(state.record_file(root), data)
 
 
 def choices(root: Path) -> list[str]:
@@ -689,7 +693,7 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
         log.append({"track": name, "by": stem or "", "at": at,
                     "pins": pins, "work": work, "todos": todos})
         data[REMOVED] = log[-50:]
-        state._write(state.record_file(root), data)
+        state.write_json(state.record_file(root), data)
         # BOTH LAYOUTS, UNCONDITIONALLY. `home` is the folder an environment is today and
         # `folder` the to-dos of one from before 1.34.0. Removing both every time is what
         # makes this one path: the old code branched on which existed, and the branch was

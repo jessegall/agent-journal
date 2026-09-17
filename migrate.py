@@ -55,7 +55,7 @@ def _environment_folders(root: Path) -> list[str]:
             # either, or the two disagree forever. Append what is not already there.
             merged = (have + [x for x in entry[key] if x not in have]) if have else entry[key]
             f.parent.mkdir(parents=True, exist_ok=True)
-            state._write(f, {key: merged})
+            state.write_json(f, {key: merged})
             moved.append(say("moved_key", key=key, n=len(entry[key])))
             entry.pop(key)
         was = root / "todo" / slug
@@ -66,7 +66,7 @@ def _environment_folders(root: Path) -> list[str]:
             moved.append(say("moved_todos", n=len(list(now.glob("*.md")))))
         if moved:
             said.append(say("env_moved", env=slug, moved=moved))
-    state._write(state.record_file(root), data)
+    state.write_json(state.record_file(root), data)
     old = root / "todo"
     if old.is_dir() and not any(old.iterdir()):
         old.rmdir()
@@ -164,7 +164,7 @@ def _todo_questions(root: Path) -> list[str]:
                                   "links": [ref], "answer": answered or None, "answered_at": None,
                                   "told_at": None, "withdrawn": None})
                     f.parent.mkdir(parents=True, exist_ok=True)
-                    state._write(f, {questions.KEY: items})
+                    state.write_json(f, {questions.KEY: items})
                     said.append(say("question_moved", env=env.name, n=meta["n"], q=len(items)))
             todo._write(path, meta, meta["body"])
     return said or [say("no_question")]
