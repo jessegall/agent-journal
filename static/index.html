@@ -486,6 +486,14 @@
   .switch .knob { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--text-2); transition: transform .15s; }
   .switch.on { background: var(--accent); }
   .switch.on .knob { transform: translateX(10px); background: #fff; }
+  /* THE SWITCH SAYS WHICH WAY IT IS. A toggle beside the word "Auto" says what it is called, never
+     what it is doing; the word inside says the state, and the opposite of auto is manual. */
+  .switch.worded { width: auto; height: 18px; border-radius: 9px; display: inline-flex; align-items: center; }
+  .switch.worded .switch-word { padding: 0 8px 0 20px; font-size: 10px; letter-spacing: .04em;
+    line-height: 18px; color: var(--text-2); }
+  .switch.worded .knob { top: 3px; }
+  .switch.worded.on .switch-word { padding: 0 20px 0 8px; color: #fff; }
+  .switch.worded.on .knob { left: auto; right: 3px; transform: none; }
   .row .num { color: var(--text-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
   /* after the number: a question marker, warm while a linked question waits on you, faint once answered */
   .row .qmark { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; }
