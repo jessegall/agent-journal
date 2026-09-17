@@ -747,13 +747,19 @@ const PANELS = { open: 0, leftAt: 0 };
 const STEP_MS = 250;
 
 const Panel = {
-  props: ["label", "close", "onClose", "link"],
+  props: ["label", "close", "onClose", "link", "wide"],
   components: { Icon },
   setup(props) {
     // ONE inspector is open at a time. Every route's panel comes through here, so the rule lives here rather than
     // in twenty views: when the overlay opens a resource, the panel the page mounted steps aside until it closes.
     const isOverlay = inject("overlayPanel", false);
     const standDown = computed(() => !isOverlay && !!OVERLAY.kind);
+    // A PANEL FULL OF PROSE OPENS WIDER. One width for every kind meant a report read in the same
+    // column as a to-do, which is one line and a status. The kind asks for it; a width the reader
+    // has dragged wider than that is still theirs, because it is the larger of the two.
+    const width = computed(() => (props.wide
+      ? Math.max(inspector.width, Math.min(880, Math.round(window.innerWidth * 0.56)))
+      : inspector.width));
     const body = ref(null);
     // a panel lies over the whole app: the scrim, Esc and the close button all leave it the same way
     // it slides out before it goes, so it leaves a beat after the click
@@ -870,11 +876,11 @@ const Panel = {
       watcher.observe(body.value, { childList: true, subtree: true });
     });
     onUnmounted(() => { if (watcher) watcher.disconnect(); });
-    return { stepped, standDown, body, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, pageWords, onItsPage, leaveForPage, INSPECTOR_TRAIL };
+    return { stepped, standDown, body, width, onClick, onKey, dismiss, closing, drag, inspector, place, step, chipTint, pageWords, onItsPage, leaveForPage, INSPECTOR_TRAIL };
   },
   template: `
     <div v-if="!standDown" :class="['panel-scrim', {closing, stepped}]" @click="dismiss"></div>
-    <aside v-if="!standDown" :class="['panel', {closing, stepped}]" :style="{ width: inspector.width + 'px' }">
+    <aside v-if="!standDown" :class="['panel', {closing, stepped}]" :style="{ width: width + 'px' }">
       <div class=panel-grip title="Drag to resize" @pointerdown="drag"></div>
       <div class=panel-top>
         <span class=panel-ref><span class=panel-chip :style="chipTint ? { color: chipTint } : null">{{ label }}</span>
@@ -2625,7 +2631,7 @@ const PlanPanel = {
     return { item, actions, done, shown, fold, PLAN_STATUS };
   },
   template: `
-    <Panel :label="'Plan ' + n" :close="close" :onClose="onClose" :link="link">
+    <Panel :label="'Plan ' + n" :close="close" :onClose="onClose" :link="link" :wide="true">
       <FetchState :state="item"/>
       <template v-if="item.data">
         <h2 class=panel-title>{{ item.data.title }}</h2>
@@ -2961,7 +2967,7 @@ const ReportPanel = {
     return { done: (body, a, item) => panelDone(props, item)(body, a) };
   },
   template: `
-    <Panel :label="'Report ' + n" :close="close" :onClose="onClose" :link="link">
+    <Panel :label="'Report ' + n" :close="close" :onClose="onClose" :link="link" :wide="true">
       <ReportBody :env="env" :n="n" :done="done"/>
     </Panel>`,
 };
@@ -3267,7 +3273,7 @@ const DocPanel = {
     return { item, state, actions, done };
   },
   template: `
-    <Panel :label="'Doc ' + n" :close="close" :onClose="onClose" :link="link">
+    <Panel :label="'Doc ' + n" :close="close" :onClose="onClose" :link="link" :wide="true">
       <FetchState :state="item"/>
       <template v-if="item.data">
         <h2 class=panel-title>{{ item.data.title }}</h2>
