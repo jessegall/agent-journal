@@ -551,14 +551,19 @@
      radius and an inset tint all fighting over the same forty characters — four kinds of chrome doing
      what one hairline does. So the cards keep their component and lose their box here: each entry is
      its text with the kind's own tint on the left, sections divided by a rule, content flush right. */
-  .home-rail .home-section + .home-section { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
-  .home-rail .home-section:first-child { border-bottom: 1px solid var(--border); }
+  /* THE HEADING IS A BAR, THE SAME BAR THE LIST PAGES USE. It was a line of text with six pixels
+     under it and nothing above it, so a section began with a word rather than with a division. It
+     is `.ghead`'s shape now: a fixed height with its text centred in it and one rule along the
+     bottom, which IS the separator. The sections need no border of their own with that in place,
+     and no margin either: each one opens with its own bar. */
+  .home-rail .home-section + .home-section { margin-top: 0; padding-top: 0; border-top: 0; }
   /* ONE GUTTER, AND EVERYTHING IN THE RAIL KEEPS TO IT. The heading sat flush at zero while the
      cards under it were inset sixteen, so a section's title and the titles it introduced started at
      two different places — and the card's own left and right differed by the width of its tint band,
      which is drawn at the card's edge and should not be paid for twice. */
   .home-rail { --rail-gutter: 14px; }
-  .home-rail .home-head { padding: 0 var(--rail-gutter) 6px; }
+  .home-rail .home-head { flex-wrap: nowrap; align-items: center; height: 34px; padding: 0 var(--rail-gutter);
+    border-bottom: 1px solid var(--border); background: var(--raised); }
   .home-rail .needs-card, .home-rail .work-card {
     margin: 0; padding: 10px var(--rail-gutter); border: 0; border-radius: 0; background: none; }
   /* the plan card carries its own band on its BODY, so it takes no inset here: an 11px one would
