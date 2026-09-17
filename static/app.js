@@ -2746,7 +2746,9 @@ const Plans = {
               <span class=phase-state>{{ planStepState(ph) }}</span>
               <span class=phase-count>{{ doneCount(ph) }} of {{ ph.todos.length }} done</span>
             </div>
-            <div v-for="t in ph.todos" :key="t.n" :class="['phase-todo', {sel: todoView.n === t.n}]" @click="openTodo(t)">
+            <div v-for="t in ph.todos" :key="t.n" :class="['phase-todo', {sel: todoView.n === t.n}]"
+              role=button :tabindex="0" :aria-label="'To-do ' + t.n + ': ' + (t.title || 'archived')"
+              @click="openTodo(t)" @keydown.enter.self.prevent="openTodo(t)" @keydown.space.self.prevent="openTodo(t)">
               <StatusIcon :kind="todoState(t)"/>
               <span class=phase-todo-n>#{{ t.n }}</span>
               <span :class="['phase-todo-title', {done: t.done}]">{{ t.title || 'archived' }}</span>
