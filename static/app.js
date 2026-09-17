@@ -184,6 +184,25 @@ const NOTE_TINT = { question: "#c9955e", plan: "#5b8def", report: "#d9a441" };
 function noteTint(note) {
   return NOTE_TINT[String((note && note.about) || "").split(":")[0]] || "";
 }
+// ONE NOTIFICATION ROW, WHEREVER A NOTIFICATION IS SHOWN. The bell's dropdown had its own markup
+// and the rail had another, which is how the two drifted apart: the wrap, the age's corner and the
+// kind's colour existed in one of them and not the other.
+const NoteRow = {
+  props: ["note", "env", "open"],
+  setup(props) {
+    const tint = computed(() => noteTint(props.note));
+    const href = computed(() => noteHref(props.note, props.env));
+    return { tint, href };
+  },
+  template: `
+    <button type=button :class="['rail-row', 'wrap', {tinted: tint, read: note.read}]"
+      :style="{ '--tint': tint || null }" :disabled="!href"
+      :title="href ? 'Open ' + (note.about_label || 'it') : null" @click="open($event, note)">
+      <span class=rail-row-title>{{ note.text }}</span>
+      <span class=rail-row-state>{{ note.age || 'just now' }}</span>
+    </button>`,
+};
+
 // a notification about a message is the agent replying to it, so it opens that reply; anything else opens its own page
 function noteHref(note, env) {
   const [kind, n] = String((note && note.about) || "").split(":");
@@ -511,7 +530,7 @@ const StatusBar = {
 
 const TopBar = {
   props: { crumbs: { type: Array, default: () => [] } },
-  components: { Icon, StatusBar },
+  components: { Icon, StatusBar, NoteRow },
   setup(props) {
     const hashEnv = parseHash().params.env || "";
     const env = computed(() => {
@@ -548,6 +567,13 @@ const TopBar = {
       }
       openRef(event, noteHref(x, env.value));
     };
+    // opening one reads it, which is the only thing to do with a notification — the same rule the
+    // rail's rows follow, so the two lists behave the same as well as look the same
+    const openNote = (event, x) => {
+      if (!x.read) readOne(x);
+      openFromBell(event, x);
+      drop.open = false;
+    };
     const outside = (e) => { if (!e.target.closest(".drop-wrap")) drop.open = false; };
     watchEffect((onCleanup) => {
       if (!drop.open) return;
@@ -581,7 +607,7 @@ const TopBar = {
       if (i === 0 && c === env.value) return `#/env/${env.value}`;
       return c in CRUMB_PATHS ? `#/env/${env.value}${CRUMB_PATHS[c] ? `/${CRUMB_PATHS[c]}` : ""}` : null;
     };
-    return { env, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, activity, toggleActivity, view,
+    return { env, waiting, openCount, drop, notes, unreadNotes, readNotes, suggestions, asks, openQuestions, readOne, readAll, openFromBell, openNote, activity, toggleActivity, view,
              helpTopic, help, helpDialog, openHelp, closeHelp, crumbHref, noteHref };
   },
   template: `
@@ -618,25 +644,9 @@ const TopBar = {
               <a v-for="s in suggestions" :key="'s' + s.n" class=drop-row :href="'#/env/' + env + '/suggestions/' + s.n" @click="drop.open = false">
                 <span class=drop-kind>Suggestion {{ s.n }}</span><span class=drop-text>{{ s.title }}</span>
               </a>
-              <div v-for="x in unreadNotes" :key="'n' + x.n" :class="['drop-row', {open: !!noteHref(x, env)}]"
-                :role="noteHref(x, env) ? 'button' : null" :tabindex="noteHref(x, env) ? 0 : null"
-                :title="noteHref(x, env) ? 'Open ' + x.about_label : null"
-                @click="noteHref(x, env) && (readOne(x), openFromBell($event, x), drop.open = false)"
-                @keydown.enter.self.prevent="noteHref(x, env) && (readOne(x), openFromBell($event, x), drop.open = false)">
-                <span class=drop-text>{{ x.text }}</span>
-                <span class=drop-meta>{{ x.age || 'just now' }}
-                  <button type=button class="btn more" @click.stop="readOne(x)">Mark read</button>
-                </span>
-              </div>
+              <NoteRow v-for="x in unreadNotes" :key="'n' + x.n" :note="x" :env="env" :open="openNote"/>
               <div v-if="readNotes.length" class=drop-sub>Read</div>
-              <div v-for="x in readNotes" :key="'r' + x.n" :class="['drop-row', 'read', {open: !!noteHref(x, env)}]"
-                :role="noteHref(x, env) ? 'button' : null" :tabindex="noteHref(x, env) ? 0 : null"
-                :title="noteHref(x, env) ? 'Open ' + x.about_label : null"
-                @click="noteHref(x, env) && (openFromBell($event, x), drop.open = false)"
-                @keydown.enter.self.prevent="noteHref(x, env) && (openFromBell($event, x), drop.open = false)">
-                <span class=drop-text>{{ x.text }}</span>
-                <span class=drop-meta>{{ x.age || 'just now' }}</span>
-              </div>
+              <NoteRow v-for="x in readNotes" :key="'r' + x.n" :note="x" :env="env" :open="openNote"/>
             </div>
           </div>
           <button type=button :class="['icon-btn', {on: activity.shown}]" :title="activity.shown ? 'Hide Activity' : 'Show Activity'"
@@ -4081,7 +4091,7 @@ const Thread = {
 
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread, StatusIcon },
+  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread, StatusIcon, NoteRow },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
@@ -4372,14 +4382,10 @@ const EnvHome = {
         <!-- a notification is read by opening it, and cleared where it is if it opens nothing -->
         <!-- no dismiss control: opening one marks it read, which is the only thing to do with it -->
         <TransitionGroup name=qrow tag=div class=rail-list>
+        <!-- the class name "note" is taken: it already carries a card's border and radius, so the
+             row picked up a box nobody gave it. A name in a shared stylesheet belongs to somebody. -->
         <div v-for="n in unread" :key="n.n" class=rail-note>
-          <!-- the class name "note" is taken: it already carries a card's border and radius, so the
-               row picked up a box nobody gave it. A name in a shared stylesheet belongs to somebody. -->
-          <button type=button :class="['rail-row', 'wrap', {tinted: noteTint(n)}]" :style="{ '--tint': noteTint(n) || null }"
-            :disabled="!noteHref(n, env)" @click="openNote($event, n)">
-            <span class=rail-row-title>{{ n.text }}</span>
-            <span class=rail-row-state>{{ n.age || 'just now' }}</span>
-          </button>
+          <NoteRow :note="n" :env="env" :open="openNote"/>
         </div>
         </TransitionGroup>
         <!-- THE CONTROLS FOR THE WHOLE LIST SIT UNDER IT, not on every row: clearing fifty rows one
