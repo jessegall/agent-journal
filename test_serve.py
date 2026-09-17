@@ -840,6 +840,32 @@ get("/api/env/alpha/activity")
 check("after a minute with no tool use, opening Activity writes the line, at the time of the last tool use",
       ([e["text"] for e in commandlog.entries(root, "alpha") if e["at"] == "2000-01-05T00:00:03+00:00"],
        state.get(root, commandlog.QUEUE, None, stem=_tool_stem)), (["Ran 1 command"], {}))
+# ------------------------------------------- the command the agent is running, and the last one
+# THE LAST COMMAND STAYS UP between calls, and its clock stops when it stops: the line would
+# otherwise be empty most of the time, since a command is over long before the next poll.
+from controllers import activity as _activity  # noqa: E402
+import work as _swork  # noqa: E402
+_run_stem = "running-session"
+import tracks as _rtracks  # noqa: E402
+_run_env = _rtracks.current(root, _run_stem) or "alpha"
+state.use_track(_run_env)
+_run_began = _dt.fromtimestamp(time.time() - 600, _tz.utc).isoformat(timespec="seconds")
+_swork.start(root, "read the bar back", _run_began)
+state.put(root, "running_command", {"what": "python3 test_serve.py", "at": time.time() - 9}, stem=_run_stem)
+check("a command in flight is reported with how long it has been running",
+      (lambda got: (got["what"], got["seconds"] >= 9, got.get("done")))(_activity.running_now(root, _run_stem)),
+      ("python3 test_serve.py", True, None))
+state.put(root, "running_command", {"what": "npm run build", "at": time.time() - 40, "took": 12.4},
+          stem=_run_stem)
+check("a command that has finished keeps its line, with the time it took and not a running clock",
+      _activity.running_now(root, _run_stem), {"what": "npm run build", "seconds": 12, "done": True})
+state.put(root, "running_command", {"what": "an older command", "at": time.time() - 99999}, stem=_run_stem)
+check("a command from before this work was declared belongs to the work before it, so it is gone",
+      _activity.running_now(root, _run_stem), None)
+_swork.end(root, "read the bar back", _run_began)
+state.put(root, "running_command", None, stem=_run_stem)
+check("and nothing recorded is nothing shown", _activity.running_now(root, _run_stem), None)
+
 commandlog.queue_tool(root, "alpha", _tool_stem, "Bash", "2099-01-06T00:00:00+00:00")
 commandlog.flush_tools(root, "alpha", _tool_stem, "2099-01-06T00:00:00+00:00")
 for _argv in (["messages", "waiting"], ["comments", "list"]):

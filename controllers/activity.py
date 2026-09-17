@@ -122,10 +122,34 @@ def running_now(root: Path, stem: str) -> dict | None:
     """
     import state
     import time
+    import tracks
+    import work
     got = state.get(root, "running_command", None, stem=stem)
     if not isinstance(got, dict) or not got.get("what") or not got.get("at"):
         return None
+    # THE LAST COMMAND STANDS UNTIL THE WORK DOES NOT. Between two calls there is no command running,
+    # which is most of the time; blanking the line then would flicker it in and out. So what is shown
+    # is the last command of the work that is open — and a command from before this work was declared
+    # belongs to the work before it, so it goes.
+    open_work = work.open_work(root, tracks.current(root, stem))
+    if not open_work:
+        return None
+    started = _epoch(open_work[-1].get("at") or "")
+    if started and started > float(got["at"]):
+        return None
+    took = got.get("took")
+    if took is not None:
+        return {"what": got["what"], "seconds": int(max(0, float(took))), "done": True}
     return {"what": got["what"], "seconds": int(max(0, time.time() - float(got["at"])))}
+
+
+def _epoch(at: str) -> float:
+    """An ISO timestamp as seconds, or 0 when it is not one."""
+    from datetime import datetime
+    try:
+        return datetime.fromisoformat(at).timestamp()
+    except ValueError:
+        return 0.0
 
 
 class ActivityController(Controller):
