@@ -499,12 +499,27 @@
   /* the plan leads the rail and is flush to it: no inset, no rounding, its own rule underneath */
   .home-rail .home-section:first-child { padding: 0; }
   .home-rail .home-section:first-child + .home-section { margin-top: 0; padding-top: 16px; }
-  .home-rail .work-now { padding: 14px 16px 14px 18px; }
+  /* THE CARD IS INFORMATION, THEN AN ACTION ON IT. The tint marks what the plan IS and stops at the
+     rule; the button sits under that rule as a footer, so it reads as something you do to the card
+     rather than another part of it. */
+  /* the status colours live on the card's own band, which the body's band replaces here, so the card
+     names the colour and the body draws it — one place per status rather than four rules twice */
+  .home-rail .work-now { padding: 0; gap: 0; --band: var(--accent); }
+  .home-rail .work-now.ready { --band: #d9a441; }
+  .home-rail .work-now.parked { --band: var(--text-3); }
+  .home-rail .work-now.finished { --band: #3ecf74; }
+  /* the band belongs to the information, so it is drawn on the information and ends where it does */
+  .home-rail .work-now::before { display: none; }
+  .home-rail .work-now-body { position: relative; display: flex; flex-direction: column; gap: 5px;
+    padding: 11px 14px 11px 16px; }
+  .home-rail .work-now-body::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 2px; background: var(--band); opacity: .8; }
+  .home-rail .work-now-foot { padding: 8px 14px 8px 16px; border-top: 1px solid var(--border); }
+  .home-rail .work-now-foot button { width: 100%; justify-content: center; margin: 0; padding: 6px 10px; }
   /* A COLUMN THIS NARROW HAS NO ROOM FOR A BUTTON BESIDE TEXT: it takes the width the text needed.
      Every action inside a rail card goes on its own line at the bottom, full width. */
-  .home-rail .work-now-bar { flex-wrap: wrap; gap: 8px; }
+  .home-rail .work-now-bar { flex-wrap: wrap; gap: 5px 10px; }
   .home-rail .work-now-bar .progress-track { flex: 1 0 100%; }
-  .home-rail .work-now-start, .home-rail .work-now-ack,
   .home-rail .needs-card-go { flex: 1 0 100%; justify-content: center; margin-top: 2px; padding: 6px 10px; }
   .home-rail .needs-card-foot { display: flex; }
   .home-rail .needs-card-act { flex: 1 0 100%; }
