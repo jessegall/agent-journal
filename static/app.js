@@ -3442,7 +3442,7 @@ const PlanCards = {
 // The turns come from /chat, which reads the transcript and the inbox; the Activity column keeps the doing.
 const Thread = {
   props: { env: String },
-  components: { Compose },
+  components: { Compose, QuestionAnswer },
   setup(props) {
     const chat = useFetch(() => props.env && `/api/env/${props.env}/chat`);
     const root = ref(null);
@@ -3468,22 +3468,26 @@ const Thread = {
     });
     const send = (text, files) => postJSON(`/api/env/${props.env}/messages`, { text, files })
       .then(() => { chat.reload(); changed(); });
+    // answering inside the thread is the same act as answering on the question's own page, so the
+    // thread reloads rather than keeping a second copy of the answer
+    const answered = () => { chat.reload(); changed(); };
     const agent = computed(() => SHELL.activity && SHELL.activity.agent);
     const note = computed(() => {
       if (!agent.value) return "No agent is here. What you write is read when the next session starts.";
       return agent.value.working ? "The agent is working. It reads this when it stops."
         : "The agent is idle. It reads this within a few seconds.";
     });
-    return { turns, more, send, root, note };
+    return { turns, more, send, root, note, answered };
   },
   template: `
     <div ref=root class=thread>
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
       <p v-if="!turns.length" class=thread-empty>Nothing has been said here yet.</p>
-      <div v-for="(t, i) in turns" :key="t.at + ':' + t.kind + ':' + i" :class="['thread-turn', {mine: t.who === 'you'}]">
+      <div v-for="(t, i) in turns" :key="t.at + ':' + t.kind + ':' + i" :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question'}]">
         <div class="thread-bubble md">
-          <p v-if="t.ref && t.kind === 'reply'" class=thread-quote>{{ t.ref }}</p>
+          <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
           <div v-html="$md(t.text)"></div>
+          <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
         </div>
         <div class=thread-meta>
           <span v-if="t.tag" class=thread-tag>{{ t.tag }}</span>
