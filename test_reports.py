@@ -142,5 +142,18 @@ check("a report a day from aging off the list says how many days it has left",
 check("a report kept until archived by hand never ages out",
       _reports.row_response(1, {"title": "t", "body": "b", "at": _old}, days=0)["ages_out_in"], None)
 
+# --------------------------------------------- a report is what you found, not what to do about it
+# Rule 9: research dispatched to a subagent ends in a REPORT, and filing the findings as to-dos is not
+# a substitute. The shape that fails is a body with no prose in it at all.
+_list = _reports.add(_root, "what the agents found", "- fix the loader\n- add a retry\n- update the docs\n",
+                     "2026-09-15T10:00:00+00:00", track="default")
+check("a report whose body is only a list of things to do is refused",
+      (_list[0], "not what you found" in _list[1]), (False, True))
+_mixed = _reports.add(_root, "what the agents found, with an argument",
+                     "The loader double-fetches on every recompose, because the watcher writes the "
+                     "object it reads.\n\n- the fetch is in loader.js:44\n- the watcher is in "
+                      "state.js:12\n- both arrived in one commit\n", "2026-09-15T10:00:00+00:00", track="default")
+check("and one that says what is true and then lists is taken", _mixed[0], True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

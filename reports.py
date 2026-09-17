@@ -18,6 +18,11 @@ _REF = re.compile(r"^\s*(to-?dos?|questions?|plans?|docs?)\s*[:#\s]\s*(\d+)\s*$"
 MESSAGES = {
     "ready_note": "Your report is ready: {title}",
     "needs_title": 'a report needs a title: journal reports add "<title>" --brief',
+    "just_a_list": ("this reads as a list of things to do, not what you found. A report is the situation "
+                    "as you found it — what was asked, what is true, what it means — and the work that "
+                    "comes out of it goes on the list:\n"
+                    '  journal todos add "<title>" --brief\n'
+                    "Write the finding here and file the rows separately."),
     "needs_body": "a report needs its text — pass it on stdin with --brief",
     "not_a_ref": "{text} is not something a report answers; write `todo 22`, `question 4`, `plan 5` or `doc 3`",
     "no_todo": "there is no to-do {n} on this environment",
@@ -118,6 +123,29 @@ def _put(root: Path, items: list[dict], track: str | None = None) -> None:
         state.put(root, KEY, items)
 
 
+#: what a line of a report has to have to count as prose rather than an item on a list
+_PROSE_MIN = 40
+
+
+def only_a_list(body: str) -> bool:
+    """True when the body is a list of things to do and nothing else.
+
+    RULE 9 EXISTS BECAUSE OF THIS FAILURE: research dispatched to a subagent ends in a REPORT, and
+    filing the findings as to-dos is not a substitute. The shape that fails is a body with no prose
+    in it at all — three or more bullets and nothing that reads as a sentence about what was found.
+    A report that ARGUES and then lists is the normal case and passes: the list is not the problem,
+    the absence of everything else is.
+    """
+    import questions
+    lines = [ln.strip() for ln in (body or "").splitlines() if ln.strip()]
+    bullets = questions._BULLET.findall(body or "")
+    if len(bullets) < 3:
+        return False
+    prose = [ln for ln in lines
+             if not questions._BULLET.match(ln) and not ln.startswith("#") and len(ln) >= _PROSE_MIN]
+    return not prose
+
+
 def add(root: Path, title: str, body: str, at: str, about: str = "", source: str = "cli",
         track: str | None = None) -> tuple[bool, str]:
     title = " ".join((title or "").split())
@@ -125,6 +153,8 @@ def add(root: Path, title: str, body: str, at: str, about: str = "", source: str
         return False, say("needs_title")
     if not (body or "").strip():
         return False, say("needs_body")
+    if only_a_list(body):
+        return False, say("just_a_list")
     ref = ""
     if about:
         ref, why = parse_ref(about)
