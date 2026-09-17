@@ -4,6 +4,41 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.149.0 — An event belongs to an environment, and a message gets an answer
+
+**An event goes to whoever works the environment it belongs to.** A session that had chosen no
+environment was handed EVERY environment's traffic. That was written when being unbound was a
+rarity and left in place when 1.145.0 made it the state every new session begins in — so the
+rare leaky case quietly became the ordinary one, and a message left on one environment woke an
+agent with nothing to do with it, which then read and acted on somebody else's instruction. A
+session on no environment is now told that something waits THERE and that it has not chosen;
+the event stays untold for whoever picks that environment up.
+
+**A push says what arrived, and quotes nothing.** Every line carried the first two hundred
+characters of the thing it announced — and the agent's next act is to open that thing and read
+all of it. A partial copy of something about to be read in full is worse than none, because it
+can be acted on as though it were the whole.
+
+**The journal answers a message when it files it.** A became-pill in a message's header is a
+pointer, and a pointer is not an answer; a user watching their messages get filed with nothing
+said back cannot tell reading from ignoring. The journal now writes one line under the message
+itself, in its own voice, naming what it became — and stays silent when the agent has already
+replied properly, because a receipt under a real answer is clutter.
+
+**A row named in a sentence is a pill you can open.** `to-do 183`, `pin 4`, `rule 2`, `doc 3`,
+`report 5`, `reminder 7`, `message 12`, `question 8`, `plan 5`, `suggestion 2` — anywhere in a
+turn, a brief, a comment or a doc. They open the inspector rather than navigating.
+
+**A name used again inherits nothing.** `remove` was leaving `viewer_first`, `session_marks`
+and the to-do ledger behind. The other half could not be deleted at all: the chat reads the
+marks in the TRANSCRIPTS, which this package does not own, so a reused name always found every
+stretch any session spent on a name like it. An environment's conversation now starts when the
+environment was made — a boundary rather than a deletion.
+
+**Smaller.** A to-do that is waiting says on what, in the list. The rail's heading is a bar with
+its text centred and a rule under it. "Working on" holds the left of a turn's header and the
+pills hold the right.
+
 ## 1.148.0 — `journal claude` brings the viewer up with it
 
 The viewer is where you work — the messages, the to-dos, the conversation — and it was a
