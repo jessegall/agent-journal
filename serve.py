@@ -70,6 +70,9 @@ MESSAGES = {
     "url": "http://{host}:{port}/",
     "serving": "serving the journal at {url}  (Ctrl-C to stop)",
     "restarting": "the journal's code changed; restarting on the same port",
+    "viewer_stopping": "the viewer is stopping; this page will not answer again until it is started",
+    "viewer_restarting": "the viewer is restarting on the same port; this page comes back in a moment",
+    "stopped_by_page": "stopped from the viewer",
     "restart_viewer": "THE WEB VIEWER AT {url} RUNS OLD CODE[ ({version})] AND DOES NOT RESTART ITSELF. Restart it "
                       "yourself now, without asking the user: stop the process listening on port {port} "
                       "(`kill $(lsof -t -iTCP:{port} -sTCP:LISTEN)`), then run `.journal/journal.py serve` again "
@@ -373,6 +376,9 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _write(self, method: str) -> None:
         path = urlsplit(self.path).path
+        if method == "POST" and path in ("/api/viewer/stop", "/api/viewer/restart"):
+            self._viewer(path.rsplit("/", 1)[1])
+            return
         if _served(path) is None:
             self._method_not_allowed()
             return
@@ -385,6 +391,29 @@ class _Handler(BaseHTTPRequestHandler):
             self._method_not_allowed()
             return
         self._send(*answered, False)
+
+    def _viewer(self, verb: str) -> None:
+        """Stop or restart the server from the page it is serving.
+
+        A VIEWER THAT OUTLIVES ITS LAUNCHER IS ONE NOBODY KNOWS HOW TO STOP -- `serve --detach`
+        made that true, and finding a pid through lsof is not an answer for the person reading the
+        page. It goes through the write path, so the same-origin guard that protects every other
+        write protects this: another page on this machine cannot end your viewer.
+
+        Both verbs are the stop `_watch_code` already uses -- set the flag, shut down -- and `run`
+        decides what happens next: exec a fresh server, or fall off the end and exit.
+        """
+        _body, refusal = self._write_body(BODY_LIMIT)
+        if refusal:
+            self._send(*refusal, False)
+            return
+        restarting = verb == "restart"
+        self._send(*_json({"ok": True, "message": say("viewer_restarting" if restarting else "viewer_stopping")}), False)
+        if restarting:
+            self.server.changed.set()
+        self.server.stopping.set()
+        import threading
+        threading.Thread(target=self.server.shutdown, daemon=True).start()
 
     def _write_body(self, limit: int = BODY_LIMIT) -> tuple[dict | None, tuple | None]:
         origin = self.headers.get("Origin")
@@ -618,6 +647,8 @@ def run(root: Path, project: Path, port: int | None = None, open_browser: bool =
         import webbrowser
         webbrowser.open(url)
     changed = threading.Event()
+    server.changed = changed
+    server.stopping = threading.Event()
     threading.Thread(target=_watch_code, args=(root, server, changed), daemon=True).start()
     try:
         server.serve_forever()
@@ -625,6 +656,8 @@ def run(root: Path, project: Path, port: int | None = None, open_browser: bool =
         pass
     finally:
         server.server_close()
+    if server.stopping.is_set() and not changed.is_set():
+        print(say("stopped_by_page"), flush=True)
     if changed.is_set():
         print(say("restarting"), flush=True)
         os.execv(sys.executable, [sys.executable, str(root / "journal.py"), "serve", f"--port={server.server_port}"])
