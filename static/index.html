@@ -598,7 +598,7 @@
      row is not a section. They are divided by their own rule and nothing else, as every list page is. */
   .rail-list { display: flex; flex-direction: column; gap: 0; }
   .rail-row { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 36px;
-    padding: 0 var(--rail-gutter); border: 0; border-bottom: 1px solid var(--border);
+    padding: 0 var(--rail-gutter, 12px); border: 0; border-bottom: 1px solid var(--border);
     background: none; font: inherit; text-align: left; color: var(--text-2); cursor: pointer; }
   .rail-row:hover { background: var(--hover); }
   .rail-row.sel { background: var(--sel); }
@@ -616,6 +616,8 @@
   .rail-row.wrap .rail-row-state { padding-top: 1px; }
   /* the edge, not a border: a border would move the text of a tinted row 2px off every other one */
   .rail-row.tinted { box-shadow: inset 2px 0 0 var(--tint); }
+  /* one already read is still worth showing, quietly: it is history rather than news */
+  .rail-row.read .rail-row-title { color: var(--text-3); }
   /* stuck to the foot of the column the way the tabs are stuck to its head */
   .rail-foot { position: sticky; bottom: 0; z-index: 2; margin-top: auto; display: flex; align-items: center;
     height: 34px; padding: 0 var(--rail-gutter); border-top: 1px solid var(--border); background: var(--raised); }
