@@ -430,5 +430,24 @@ took, msg = tracks.switch(rS, "elsewhere", AT, stem="sS")
 check("and leaving says which reminders it just silenced",
       ("1 reminder(s) on `default`" in msg, "belongs to default" in msg), (True, True))
 
+# ------------------------------------------- the marks a session leaves are written and read back
+# they never were: `carried` called itself a record write and `marks` read with no stem, so every
+# write printed "no transcript to file it under" and every read returned the default
+dM = Path(tempfile.mkdtemp()) / "proj"
+(dM / ".claude").mkdir(parents=True)
+testkit.make(dM, SRC)
+rM = dM / ".journal"
+check("a project with no session has no marks", tracks.marks(rM), {})
+tracks.carried(rM, "one", "stem-a", 7)
+tracks.carried(rM, "one", "stem-a", 9)
+tracks.carried(rM, "two", "stem-a", 12)
+check("a mark is kept, per session, and only when the environment CHANGES",
+      tracks.marks(rM).get("stem-a"), [["one", 7], ["two", 12]])
+check("and it survives being read afresh, which is what makes it a record",
+      tracks.marks(rM), {"stem-a": [["one", 7], ["two", 12]]})
+check("a mark with no line number records the session without a position",
+      (tracks.carried(rM, "two", "stem-b", 0), tracks.marks(rM).get("stem-b")), (None, None))
+
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
