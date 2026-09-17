@@ -691,11 +691,15 @@
   .thread-full { margin-top: 5px; padding: 0; border: 0; background: none; color: var(--accent-text);
     font: inherit; font-size: 12px; cursor: pointer; }
   .thread-full:hover { text-decoration: underline; text-underline-offset: 3px; }
-  /* the shape before the data: bars where the words will be, quiet enough not to be read as content */
-  .thread-turn.waiting .thread-bubble { display: flex; flex-direction: column; gap: 6px; }
-  .thread-blank { display: block; height: 9px; border-radius: 4px; background: var(--border-2);
-    animation: thread-wait 1.5s ease-in-out infinite; }
-  @keyframes thread-wait { 0%, 100% { opacity: .5; } 50% { opacity: .85; } }
+  /* A PLACEHOLDER IS A TURN'S SILHOUETTE, not a box with lines ruled in it. The border and the raised
+     fill are what made it read as an empty card; without them the shape alone says a turn is coming. */
+  .thread-turn.waiting .thread-bubble { display: flex; flex-direction: column; gap: 7px;
+    border-color: transparent; background: color-mix(in srgb, var(--raised) 55%, transparent); }
+  .thread-blank { display: block; height: 8px; border-radius: 99px;
+    background: color-mix(in srgb, var(--text-3) 22%, transparent);
+    animation: thread-wait 1.6s ease-in-out infinite; }
+  .thread-turn.waiting .thread-bubble .thread-blank:last-child { opacity: .6; }
+  @keyframes thread-wait { 0%, 100% { opacity: .45; } 50% { opacity: .8; } }
   @media (prefers-reduced-motion: reduce) { .thread-blank { animation: none; } }
   /* a turn arrives; it does not appear. The same vocabulary the home's rows already use. */
   .turn-enter-active { transition: opacity .26s ease-out, transform .26s cubic-bezier(.2, .8, .2, 1); }
