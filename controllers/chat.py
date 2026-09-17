@@ -179,8 +179,12 @@ def wrote(root: Path, env: str) -> list[dict]:
                         ref for p in m.get("parts") or [] for ref in p.get("became") or [] if ":" in str(ref))],
                     "working": working})
         for r in m.get("replies") or []:
+            # THE JOURNAL'S OWN RECEIPT IS NOT THE AGENT SPEAKING. It is the record saying what the
+            # message became, written by the machine that knows; it reads as a note beside the turn
+            # rather than as a turn of its own, or a thread of them drowns the conversation.
             out.append({"at": r.get("at") or "", "who": "you" if r.get("source") == "web" else "agent",
-                        "kind": "reply", "tag": "", "text": trim(r.get("text") or ""),
+                        "kind": "receipt" if r.get("source") == "journal" else "reply",
+                        "tag": "", "text": trim(r.get("text") or ""),
                         "full": (r.get("text") or "").strip() if len((r.get("text") or "").strip()) > TEXT_MAX else "",
                         "n": n,
                         # the two point opposite ways and never both appear: part is the user's words the

@@ -519,5 +519,41 @@ j("messages", "done", str(_en))
 check("a processed message refuses the edit: its words have already become something",
       j("messages", "edit", str(_en), "a third wording")[0], 1)
 
+# ------------------------------------------ the journal says what a message became, under it
+# A BECAME-PILL IS A POINTER, AND A POINTER IS NOT AN ANSWER. The user watched eight messages get
+# filed with nothing said back and could not tell reading from ignoring — from where they sit
+# those are the same thing. The record already knows what each part became, so nothing here waits
+# on an agent remembering to write it.
+import todo as _todo_mod  # noqa: E402
+
+_rd = Path(tempfile.mkdtemp()) / ".journal"
+(_rd / "environments" / "r").mkdir(parents=True)
+_AT = "2026-01-01T00:00:00+00:00"
+
+
+def _replies(n):
+    return [(r["source"], r["text"]) for r in (_inbox._all(_rd, "r")[n - 1].get("replies") or [])]
+
+
+_inbox.add(_rd, "please look at the padding", _AT, track="r")
+_todo_mod.add(_rd, "r", "fix the padding", "", _AT)
+_inbox.process(_rd, 1, "look at the padding", ["todo:1"], _AT, track="r")
+_inbox.done(_rd, 1, _AT, track="r")
+check("a message nobody answered gets the journal's own note, naming what it became",
+      _replies(1), [("journal", "Noted — this became to-do 1.")])
+
+_inbox.add(_rd, "and the colour of the bar", _AT, track="r")
+_inbox.reply(_rd, 2, "Changed it to the accent.", _AT, source="cli", track="r")
+_inbox.process(_rd, 2, "the colour of the bar", ["noted"], _AT, track="r")
+_inbox.done(_rd, 2, _AT, track="r")
+check("a message the agent already answered gets no receipt: one under a real answer is clutter",
+      _replies(2), [("cli", "Changed it to the accent.")])
+
+_inbox.add(_rd, "cool, thanks", _AT, track="r")
+_inbox.process(_rd, 3, "cool, thanks", ["noted"], _AT, track="r")
+_inbox.done(_rd, 3, _AT, track="r")
+check("and one that became nothing still says it was read, rather than nothing at all",
+      [s for s, _ in _replies(3)], ["journal"])
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

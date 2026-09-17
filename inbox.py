@@ -56,6 +56,9 @@ MESSAGES = {
     "no_parts": "message {n} has no parts yet; record what each part became first: "
                 'journal messages process {n} --part="<words>" --became=noted',
     "done": "message {n} is processed: it became {became:, } ({waiting} waiting)",
+    # what the USER reads under their own message, written by the journal itself
+    "receipt": "Noted — this became {became:, }.",
+    "receipt_noted": "Noted. Nothing was filed from this one; it is read and handled.",
     "fact_waiting": "waiting",
     "fact_reading": "being handled",
     "fact_processed": "processed[ {age}]",
@@ -505,7 +508,29 @@ def done(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, s
             return False, say("unfiled", n=n, names=unfiled(m))
         m["processed"] = at
         _put(root, items, track)
+        answered = any((r.get("source") or "") not in ("web", "journal") for r in m.get("replies") or [])
+    _receipt(root, n, m, at, track, answered)
     return True, say("done", n=n, became=_became(m), waiting=len(unprocessed(root, track)))
+
+
+def _receipt(root: Path, n: int, m: dict, at: str, track: str | None, answered: bool) -> None:
+    """Say under the message what it became — in the JOURNAL's voice, not the agent's.
+
+    A BECAME-PILL IS A POINTER, AND A POINTER IS NOT AN ANSWER. The user watched eight messages
+    get filed with nothing said back and could not tell reading from ignoring; from where they
+    sit those are the same thing. The record already knows what each part became — that IS the
+    sentence — so nothing here depends on an agent remembering to write it.
+
+    IT STAYS OUT OF THE WAY OF A REAL ANSWER. If the agent has already replied, the message has
+    been answered by someone who read it, and a receipt under that is clutter. One line per
+    MESSAGE, when it is marked processed, and never one per part: a thread of receipts is the
+    same noise in a different shape.
+    """
+    if answered:
+        return
+    became = [b for b in _became(m) if b and b != "noted"]
+    text = say("receipt", became=became) if became else say("receipt_noted")
+    reply(root, n, text, at, source="journal", track=track, notify=False)
 
 
 def declare(root: Path, n: int, kind: str, at: str, track: str | None = None) -> tuple[bool, str]:
@@ -608,7 +633,7 @@ def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tup
 
 
 def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: str | None = None,
-          part: str = "", quoting: str = "") -> tuple[bool, str]:
+          part: str = "", quoting: str = "", notify: bool = True) -> tuple[bool, str]:
     """A short answer under a message: what was done, a clarification, a call the agent made. Any status.
     With `part`, it answers the question those words ask: the part is recorded as answered and the user is notified.
 
@@ -639,7 +664,7 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
             m.setdefault("parts", []).append({"excerpt": part, "became": ["answered"], "at": at})
         _put(root, items, track)
     # the user is told either way: a reply they are never shown is a reply that did not land
-    if source != "web":
+    if source != "web" and notify:
         import notifications
         notifications.add(root, say("answer_note" if part else "reply_note", n=n), at, f"message {n}", source, track)
     if not part:
