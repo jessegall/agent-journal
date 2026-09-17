@@ -24,6 +24,9 @@ MESSAGES = {
     "added": 'plan {n}: {title} ({state})\n  add its phases: journal plans phase {n} "<title>" --when="<what is true when it is complete>"[\n  {tail}]',
     "added_preparing": 'it is being written: nobody can approve it until `journal plans ready {n}`, which refuses while a phase has no to-dos',
     "no_plan": "there is no plan {n}. `journal plans` numbers them.",
+    "phase_is_a_date": ('{title} says WHEN, not WHAT. A phase is an area of work — name it so that '
+                        '"is this phase done?" has an answer:\n'
+                        '  journal plans phase <n> "the loader and its tests" --when="the double fetch is gone"'),
     "phase_title": 'a phase needs a title: journal plans phase {n} "<title>" --when="<what is true when it is complete>"',
     "closed": "plan {n} is {status} and takes no more changes",
     "phase_added": "plan {n} phase {p}: {title}\n  put to-dos in it: journal plans todos {n} {p} <to-do numbers>",
@@ -295,6 +298,17 @@ def edit(root: Path, n: int, title: str | None = None, goal: str | None = None, 
     return True, say("edited", n=n, said=said)
 
 
+#: a title that names WHEN rather than WHAT: a weekday, a date, or a stretch of time
+_DATE_TITLE = re.compile(
+    r"^(?:(?:mon|tues|wednes|thurs|fri|satur|sun)day|today|tomorrow|tonight|this (?:morning|afternoon|evening|week)"
+    r"|next (?:week|month|day)|day \d+|week \d+|phase \d+|the (?:next|first|last) [\w\s]{1,20}"
+    r"|\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?)$", re.I)
+
+
+def _is_a_date(title: str) -> bool:
+    return bool(_DATE_TITLE.match(title.strip().rstrip(".")))
+
+
 def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bool = False,
               track: str | None = None, before: int = 0) -> tuple[bool, str]:
     """A phase, at the end or `before` an existing one.
@@ -311,6 +325,11 @@ def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bo
     title = " ".join((title or "").split())
     if not title:
         return False, say("phase_title", n=n)
+    # A PHASE IS AN AREA OF WORK, NOT A SLOT IN THE WEEK. "Tuesday" and "the next two hours" are not
+    # phases: nothing in them says what is true when the phase is done, which is the one question a
+    # phase has to be able to answer.
+    if _is_a_date(title):
+        return False, say("phase_is_a_date", title=title)
     here = _here(root, track)
     with state.locked(root):
         items = _all(root, here)

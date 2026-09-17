@@ -455,5 +455,17 @@ check("the phase is not a checkpoint any more",
 code, out = j("plans", "rephrase", str(_rn), "2", "--checkpoint")
 check("and it can be put back on", (code, "it is a checkpoint" in out), (0, True))
 
+# ------------------------------------------------- a phase is an area of work, not a slot in the week
+# Nothing in "Tuesday" says what is true when the phase is done, which is the one question a phase has
+# to be able to answer.
+_made = j("plans", "add", "a plan to hang phases on", "--goal=the phases are named for what they hold",
+          "--brief", stdin="the approach\n")[1]
+_n = re.search(r"plan (\d+)", _made).group(1)
+_when = j("plans", "phase", _n, "Tuesday", "--when=the day ends")
+check("a phase titled as a date is refused, and says what to name instead",
+      (_when[0], "says WHEN, not WHAT" in _when[1]), (1, True))
+_ok = j("plans", "phase", _n, "the loader and its tests", "--when=the double fetch is gone")
+check("and one that names an area of work is taken", (_ok[0], _ok[1][:40]), (0, _ok[1][:40]))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
