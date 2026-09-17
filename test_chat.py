@@ -119,6 +119,25 @@ check("an archived message is not a turn",
       [t for t in turns() if "archived one" in t["text"]], [])
 check("every turn carries a time, so the thread can be ordered", all(t["at"] for t in turns()), True)
 
+# ------------------------------------------ the journal's note, and only when the agent said nothing
+# EITHER A NOTE OR AN ANSWER, NEVER BOTH. The note is read off the record rather than written into
+# it, so a reply that lands after the message was filed still replaces it.
+import todo as _todo  # noqa: E402
+
+inbox.add(root, "please look at the padding", now(), track="w")
+_n = len(inbox._all(root, "w"))
+_todo.add(root, "w", "fix the padding", "", now())
+inbox.process(root, _n, "the padding", ["todo:1"], now(), track="w")
+inbox.done(root, _n, now(), track="w")
+check("a message nobody answered carries the journal's note, naming what it became",
+      [(t["who"], t["kind"], t["text"]) for t in turns() if t["kind"] == "receipt"],
+      [("agent", "receipt", "Noted — created to-do 1.")])
+inbox.reply(root, _n, "Done — it was the bar, not the bubble.", now(), source="cli", track="w")
+check("and the agent's own words replace it, rather than standing beside it",
+      ([t["kind"] for t in turns() if t["kind"] == "receipt"],
+       [t["text"] for t in turns() if t["kind"] == "reply"][-1]),
+      ([], "Done — it was the bar, not the bubble."))
+
 # ---------------------------------------------------------------- the cap, and the read behind it
 chat.TURNS = 3
 import serve  # noqa: E402
