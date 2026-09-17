@@ -856,6 +856,9 @@ const QuestionAnswer = {
     // equalled the answer, so a written one highlighted nothing and the question read as unanswered.
     const wrote = computed(() => !!props.q.answer && !(props.q.options || []).some((o) => o.label === props.q.answer));
     const cancel = () => { state.changing = false; state.picked = ""; state.custom = ""; };
+    // `compact` is what the thread passes, and in a conversation every box sends on Enter. On the
+    // question's own page the box is one form field among many, where Enter making a line is right.
+    const sendsOnEnter = computed(() => !!props.compact);
     const answer = (text) => postJSON(`/api/env/${props.env}/questions/${props.q.n}/answer`, { answer: text })
       .then((body) => { state.changing = false; emit("answered", body.data); changed(); });
     // clicking an option only picks it; Save sends it, so a stray click never answers
@@ -867,7 +870,7 @@ const QuestionAnswer = {
       state.answering = true;
       answer(chosen.value).then(() => { state.picked = ""; state.custom = ""; }).finally(() => { state.answering = false; });
     };
-    return { state, answer, pick, save, locked, cancel, CUSTOM, chosen, wrote };
+    return { state, answer, pick, save, locked, cancel, CUSTOM, chosen, wrote, sendsOnEnter };
   },
   template: `
     <div :class="['question-answer', {compact}]">
@@ -886,7 +889,9 @@ const QuestionAnswer = {
           :class="['option', 'option-custom', {picked: state.picked === CUSTOM}]"
           @click="pick(CUSTOM)" @keydown.enter.self.prevent="pick(CUSTOM)" @keydown.space.self.prevent="pick(CUSTOM)">
           Custom answer
-          <textarea v-if="state.picked === CUSTOM" v-model="state.custom" placeholder="Write your answer" aria-label="Your custom answer" @keydown.meta.enter.prevent="save" @keydown.ctrl.enter.prevent="save"
+          <textarea v-if="state.picked === CUSTOM" v-model="state.custom" placeholder="Write your answer" aria-label="Your custom answer"
+            @keydown.enter.exact="sendsOnEnter && (!$event.isComposing) && ($event.preventDefault(), save())"
+            @keydown.meta.enter.prevent="save" @keydown.ctrl.enter.prevent="save"
             :disabled="state.answering" @click.stop @keydown.meta.enter.prevent="save" @keydown.ctrl.enter.prevent="save"
             @vue:mounted="({ el }) => el.focus()"></textarea>
         </div>
@@ -901,7 +906,7 @@ const QuestionAnswer = {
           <span v-if="state.picked" class=hint>{{ state.picked === CUSTOM && !chosen ? 'Write your answer to save it' : 'Not sent until you save' }}</span>
         </div>
         <Compose v-if="!(q.options && q.options.length)" :placeholder="q.answer ? 'Write a new answer. The old one stays in the history.' : 'Answer the agent…'"
-          :submit="q.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer"/>
+          :submit="q.answer ? 'Add new answer' : 'Answer'" hint="The agent is told at its next stop" :send="answer" :bare="compact"/>
         <div v-if="q.answer && !(q.options && q.options.length)" class=option-save>
           <button type=button class=btn @click="cancel">Cancel</button>
         </div>
