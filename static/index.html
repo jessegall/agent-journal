@@ -224,8 +224,10 @@
     align-items: baseline; font-size: 13px; color: var(--text-2);
     text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   .statusbar-text .statusbar-head { flex: none; white-space: pre; }
-  /* the work gives way before the command does: it is the longer of the two and the one already read */
-  .statusbar-text .statusbar-line { flex: 0 1 auto; min-width: 0;
+  /* THE WORK DOES NOT MOVE WHEN A COMMAND APPEARS. It used to shrink by the width of the command
+     arriving beside it, which reads as the sentence twitching every time a command starts; it keeps
+     its own width and only a very long one is cut. */
+  .statusbar-text .statusbar-line { flex: 0 0 auto; min-width: 0; max-width: 62ch;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* the command: right after the work, small and quiet, and it rolls when one follows another */
   .statusbar-text .statusbar-running { flex: none; display: inline-flex; align-items: center;
