@@ -896,7 +896,7 @@ const Panel = {
 };
 
 const Compose = {
-  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial", "quote", "bare", "onUp"],
+  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial", "quote", "bare", "onUp", "onDown"],
   components: { Icon },
   setup(props) {
     // `initial` seeds the box. `quote` does NOT: what is being commented ON is shown above the field and
@@ -943,6 +943,7 @@ const Compose = {
         <textarea ref=area class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
           @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), go())"
           @keydown.up="onUp && !draft.text.trim() && ($event.preventDefault(), onUp())"
+          @keydown.down="onDown && ($event.preventDefault(), onDown(draft.text))"
           @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go"></textarea>
         <label v-if="attach" class=compose-attach title="Attach files" aria-label="Attach files">
           <Icon name="paperclip"/><input type=file multiple hidden @change="picked">
@@ -3819,7 +3820,10 @@ const Thread = {
       THREAD_BOX.focus = (draft) => {
         const area = root.value && root.value.closest(".thread") && root.value.closest(".thread").querySelector("textarea");
         if (!area) return false;
-        if (draft) {
+        // AN EMPTY DRAFT IS STILL A DRAFT. Backing out of an edit hands the box "" — meaning empty
+        // it — and the guard read that as "nothing given", so the words being edited stayed in the
+        // box after the edit was cancelled.
+        if (draft !== undefined && draft !== null) {
           area.value = draft;
           area.dispatchEvent(new Event("input", { bubbles: true }));
         }
@@ -4011,6 +4015,14 @@ const Thread = {
       THREAD_BOX.focus && THREAD_BOX.focus(t.full || t.text || "");
     };
     const unedit = () => { editing.value = null; THREAD_BOX.focus && THREAD_BOX.focus(""); };
+    // DOWN BACKS OUT OF AN EDIT NOBODY TOUCHED. The pair of the up arrow: if the words in the box are
+    // still exactly the ones that were put there, there is nothing to lose by leaving, so the arrow
+    // leaves. Change one character and it is a caret key again, because now there is something to lose.
+    const dropEdit = (text) => {
+      const t = editing.value;
+      if (!t) return;
+      if ((text || "").trim() === (t.full || t.text || "").trim()) unedit();
+    };
     // the last thing the user said, which is the one they want back when they press up on an empty box
     const editLast = () => {
       const mine = turns.value.filter((t) => t.who === "you" && t.kind === "message" && t.n && !t.pending);
@@ -4046,7 +4058,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote, editLast };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote, editLast, dropEdit };
   },
   template: `
     <div class=thread>
@@ -4064,7 +4076,7 @@ const Thread = {
           <span class=thread-answering-text>{{ answering.text }}</span>
           <button type=button class=thread-answering-x title="Not replying to it after all" @click="unreply">×</button>
         </div>
-        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true" :onUp="editLast"/>
+        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true" :onUp="editLast" :onDown="dropEdit"/>
       </div>
       <div ref=root class=thread-scroll @scroll.passive="watchScroll">
       <template v-if="!chat.data">
