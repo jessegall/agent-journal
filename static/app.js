@@ -1347,6 +1347,9 @@ const GROUPS = [
 ];
 const STATUS_LABEL = Object.fromEntries(GROUPS.map((g) => [g.key, g.label]));
 
+//: what a to-do's state is CALLED in the rail, where there is room for a word and not a sentence
+const TODO_RAIL_WORD = { progress: "working", waiting: "waiting on you", blocked: "blocked", open: "" };
+
 function todoStatus(t) {
   const s = t.states || [];
   if (s.includes("done")) return "done";
@@ -3965,7 +3968,7 @@ const Thread = {
 
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread },
+  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread, StatusIcon },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
@@ -3983,6 +3986,11 @@ const EnvHome = {
     const plans = useFetch(url("/plans?all=1"));
     const messages = useFetch(url("/messages?cap=10"));
     const notes = useFetch(url("/notifications"));
+    const todos = useFetch(url("/todos"));
+    // THE RAIL IS THREE LISTS, NOT ONE. What waits on the user is what it has always held; the
+    // to-dos and the notifications were each a page away, which is a page too far for the thing you
+    // glance at while reading the conversation. One at a time, each saying how much it holds.
+    const tab = ref("waiting");
     const view = reactive({ kind: "", n: 0 });
     const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
     // the thread answers if it holds that turn; it says so by moving, and peek is the fallback
@@ -4087,6 +4095,17 @@ const EnvHome = {
     });
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
     const clear = computed(() => !queue.value.length && !held.value);
+    const openTodos = computed(() => (todos.data || []).filter((t) => todoStatus(t) !== "done"));
+    const unread = computed(() => (notes.data || []).filter((n) => !n.read));
+    const TABS = computed(() => [{ key: "waiting", label: "Waiting on you", n: waitingCount.value },
+                                 { key: "todos", label: "To-dos", n: openTodos.value.length },
+                                 { key: "notifications", label: "Notifications", n: unread.value.length }]);
+    const readNote = (n) => send("POST", `/api/env/${props.env}/notifications/${n.n}/read`).then(() => notes.reload());
+    const openNote = (event, n) => {
+      readNote(n);
+      const href = noteHref(n, props.env);
+      if (href) openRef(event, href);
+    };
     // the checkpoint waits on the user like anything else here, so it reads as a card with its own verb
     const heldCard = computed(() => (held.value ? {
       key: "held", kind: "held", label: "Checkpoint", tint: "#d9a441", action: "Continue",
@@ -4149,7 +4168,8 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount };
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
+             tab, TABS, openTodos, unread, todoStatus, TODO_RAIL_WORD, openNote, readNote, noteHref, goto };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4181,19 +4201,58 @@ const EnvHome = {
       <section v-if="livePlans.length" class=home-section>
         <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans" :peek="peek"/>
       </section>
-      <div v-if="clear" class=home-rail-empty>
-        <Icon name="todos"/>
-        <p>Nothing is waiting on you.</p>
+      <div class=rail-tabs role=tablist>
+        <button v-for="t in TABS" :key="t.key" type=button role=tab :aria-selected="tab === t.key"
+          :class="['rail-tab', {on: tab === t.key}]" @click="tab = t.key">
+          {{ t.label }}<span v-if="t.n" :class="['rail-tab-n', {hot: t.key !== 'todos'}]">{{ t.n }}</span>
+        </button>
       </div>
-      <section v-else class=home-section>
-        <div class=home-head><h2>Waiting on you</h2><span>{{ waitingCount }}</span></div>
-        <div class=needs-slot>
-          <TransitionGroup name=qrow>
-          <NeedsCard v-if="heldCard" key=held :item="heldCard" :dismiss="dismiss"/>
-          <NeedsCard v-for="it in queue" :key="it.key" :item="it" :selected="view.kind + ':' + view.n === it.key" :dismiss="dismiss"/>
-          </TransitionGroup>
+      <template v-if="tab === 'waiting'">
+        <div v-if="clear" class=home-rail-empty>
+          <Icon name="todos"/>
+          <p>Nothing is waiting on you.</p>
         </div>
-      </section>
+        <section v-else class=home-section>
+          <div class=needs-slot>
+            <TransitionGroup name=qrow>
+            <NeedsCard v-if="heldCard" key=held :item="heldCard" :dismiss="dismiss"/>
+            <NeedsCard v-for="it in queue" :key="it.key" :item="it" :selected="view.kind + ':' + view.n === it.key" :dismiss="dismiss"/>
+            </TransitionGroup>
+          </div>
+        </section>
+      </template>
+      <template v-else-if="tab === 'todos'">
+        <div v-if="!openTodos.length" class=home-rail-empty>
+          <Icon name="todos"/>
+          <p>Nothing is on the list.</p>
+        </div>
+        <!-- the to-do page's row, slimmer: what it is, what state it is in, and nothing else -->
+        <div class=rail-list>
+          <button v-for="t in openTodos" :key="t.n" type=button
+            :class="['rail-row', {sel: view.kind === 'todo' && view.n === t.n}]" @click="goto('todo', t.n)">
+            <StatusIcon :kind="todoStatus(t)"/>
+            <span class=rail-row-n>#{{ t.n }}</span>
+            <span class=rail-row-title>{{ t.title }}</span>
+            <span v-if="TODO_RAIL_WORD[todoStatus(t)]" class=rail-row-state>{{ TODO_RAIL_WORD[todoStatus(t)] }}</span>
+          </button>
+        </div>
+      </template>
+      <template v-else>
+        <div v-if="!unread.length" class=home-rail-empty>
+          <Icon name="bell"/>
+          <p>Nothing new.</p>
+        </div>
+        <!-- a notification is read by opening it, and cleared where it is if it opens nothing -->
+        <div class=rail-list>
+        <div v-for="n in unread" :key="n.n" class=rail-note>
+          <button type=button class="rail-row note" :disabled="!noteHref(n, env)" @click="openNote($event, n)">
+            <span class=rail-row-title>{{ n.text }}</span>
+            <span class=rail-row-state>{{ n.age || 'just now' }}</span>
+          </button>
+          <button type=button class=rail-note-x title="Mark read" aria-label="Mark read" @click.stop="readNote(n)"><Icon name="close"/></button>
+        </div>
+        </div>
+      </template>
       </div>
       </div>
     </div></div></div>

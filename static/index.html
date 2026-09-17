@@ -562,6 +562,38 @@
      radius and an inset tint all fighting over the same forty characters — four kinds of chrome doing
      what one hairline does. So the cards keep their component and lose their box here: each entry is
      its text with the kind's own tint on the left, sections divided by a rule, content flush right. */
+  /* THE RAIL IS THREE LISTS AND THE TABS SAY WHICH. Same bar the headings were, so the strip and a
+     section heading are the same object at the top of the column rather than two competing ones. */
+  .rail-tabs { display: flex; align-items: stretch; height: 34px; padding: 0 var(--rail-gutter);
+    gap: 14px; border-bottom: 1px solid var(--border); background: var(--raised); }
+  .rail-tab { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0;
+    border-bottom: 1px solid transparent; background: none; font: inherit; font-size: 11.5px;
+    letter-spacing: .03em; color: var(--text-3); white-space: nowrap; cursor: pointer; }
+  .rail-tab:hover { color: var(--text-2); }
+  .rail-tab.on { color: var(--text); border-bottom-color: var(--accent); }
+  .rail-tab-n { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .rail-tab.on .rail-tab-n, .rail-tab-n.hot { color: var(--accent-text); }
+  /* a row in the rail: the list page's row with everything the width cannot afford taken out */
+  /* THE ROWS ARE ONE LIST, not a column of sections: the rail puts 22px between its sections, and a
+     row is not a section. They are divided by their own rule and nothing else, as every list page is. */
+  .rail-list { display: flex; flex-direction: column; gap: 0; }
+  .rail-row { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 36px;
+    padding: 0 var(--rail-gutter); border: 0; border-bottom: 1px solid var(--border);
+    background: none; font: inherit; text-align: left; color: var(--text-2); cursor: pointer; }
+  .rail-row:hover { background: var(--hover); }
+  .rail-row.sel { background: var(--sel); }
+  .rail-row:disabled { cursor: default; }
+  .rail-row .ico { flex: none; width: 13px; height: 13px; }
+  .rail-row-n { flex: none; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .rail-row-title { flex: 1 1 auto; min-width: 0; font-size: 12.5px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  .rail-row-state { flex: none; font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .rail-note { position: relative; display: flex; align-items: stretch; }
+  .rail-note .rail-row { padding-right: 30px; }
+  .rail-note-x { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: inline-flex;
+    padding: 4px; border: 0; border-radius: 5px; background: none; color: var(--text-3); cursor: pointer; }
+  .rail-note-x:hover { background: var(--hover); color: var(--text); }
+  .rail-note-x .ico { width: 12px; height: 12px; }
   /* THE HEADING IS A BAR, THE SAME BAR THE LIST PAGES USE. It was a line of text with six pixels
      under it and nothing above it, so a section began with a word rather than with a division. It
      is `.ghead`'s shape now: a fixed height with its text centred in it and one rule along the
