@@ -4268,7 +4268,10 @@ const EnvHome = {
                              + (a.state === "quiet" ? " · no tool call in a while, and it has not said it finished" : ""),
                         // RUNNING WAS SAID BY A PULSING GREEN DOT AND NOTHING ELSE, so with motion off it
                         // was said by a green dot alone — and quiet and finished both had a word already
-                        tail: [a.model, a.state === "quiet" ? `quiet · ${a.age_text}`
+                        // THE MODEL IS ALWAYS SAID, including when nobody recorded one: which model a
+                        // subagent got is the thing the user checks first, and a line that simply
+                        // omitted it read as though the question had not been asked.
+                        tail: [a.model || "model not recorded", a.state === "quiet" ? `quiet · ${a.age_text}`
                                : a.state === "finished" ? `finished · ${a.ended_age}` : `running · ${a.age_text}`]
                           .filter(Boolean).join(" · "),
                         delay: `${i * 60}ms`, open: () => peek("subagent", a.id) })));
