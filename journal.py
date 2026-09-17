@@ -49,6 +49,12 @@ TEXT = {
     "no_environment": "no environment is called {name}; `journal environments` lists them, `journal switch` or "
                       "`journal prepare` creates one",
     "no_such": "No such command: {verb}\n",
+    "unbound": "`journal {verb}` reads or writes an environment, and this session is on none yet. There is no "
+               "default one: pick where this work belongs and everything below it answers.\n{have}\n"
+               "  journal switch \"<name>\"   put this session on one\n"
+               "  journal prepare \"<name>\"  make a new one and go there",
+    "unbound_row": "  {name}",
+    "unbound_none": "  (no environments yet)",
     "help_head": "journal {verb}\n",
 }
 
@@ -169,7 +175,7 @@ def _dispatch(argv: list[str]) -> int:
     parsed, why = commands.REGISTRY.parse(argv)
     if not parsed:
         return _refuse(why)
-    if _stem():
+    if _stem() and _state.current_track(_ROOT):
         try:
             import commandlog
             from app import now
@@ -181,6 +187,33 @@ def _dispatch(argv: list[str]) -> int:
             print(f"journal activity: {e}", file=sys.stderr)
     return parsed.command.run(parsed)
 
+
+
+#: the verbs that answer without an environment: they choose one, describe the project rather
+#: than a line of work, or run the machinery. EVERYTHING ELSE READS OR WRITES AN ENVIRONMENT,
+#: and there is no default one to read — so it is refused until this session has picked.
+UNBOUND_OK = frozenset((
+    "environments", "switch", "claim", "prepare", "worktree", "grant", "grants", "lent",
+    "rules", "docs", "tools", "style", "settings", "migrate", "upgrade", "version",
+    "verify", "serve", "statusline", "auto-mode", "enable", "disable", "claude",
+))
+
+
+def _unbound_refusal(verb: str) -> str:
+    """Why this command cannot run yet, or "" — a session that has chosen nothing reads nothing.
+
+    THE READ IS REFUSED, NOT ANSWERED FROM THE START ENVIRONMENT. For a long time `current`
+    fell back there so a question about the record never needed a decision first; the cost
+    was that the start environment WAS a selected environment — a fresh session read its
+    pins, its to-dos and its work as its own, and the user was never asked.
+    """
+    if verb in UNBOUND_OK or tracks._OVERRIDE or not _stem():
+        return ""
+    if tracks.current(_ROOT, _stem()):
+        return ""
+    names = tracks.choices(_ROOT)
+    have = [render(TEXT["unbound_row"], name=n) for n in names] or [render(TEXT["unbound_none"])]
+    return render(TEXT["unbound"], verb=verb, have="\n".join(have))
 
 
 def main(argv: list[str]) -> int:
@@ -211,6 +244,9 @@ def main(argv: list[str]) -> int:
     if not first and any(a.startswith("--back") for a in argv):
         argv, first = ["conversation", *argv], "conversation"
     if commands.REGISTRY.knows(first):
+        held = _unbound_refusal(first)
+        if held:
+            return _refuse(held)
         return _dispatch(argv)
     if first:
         gone = _retired(first)
@@ -219,6 +255,9 @@ def main(argv: list[str]) -> int:
         fmt.say(render(TEXT["no_such"], verb=first), error=True)
         fmt.say(__doc__, error=True)
         return 1
+    held = _unbound_refusal("status")
+    if held:
+        return _refuse(held)
     return _dispatch(["status", *argv])
 
 

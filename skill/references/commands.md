@@ -234,8 +234,16 @@ that made them; rules belong to every environment. Switch when the user says a n
 should not inherit the current environment's pins and to-dos. Nothing is ever deleted by a
 switch: every environment's pins and work stay under its name.
 
-Every session is bound to an environment: the project's start environment when it starts, whatever it
-switched to since. `journal switch` from inside a session moves that session only, so a
+A SESSION STARTS ON NO ENVIRONMENT, and there is no default one. Until it has picked, every
+journal command that reads or writes an environment is refused and says how to choose —
+reads as well as writes, because answering from the start environment would make that a
+selected environment nobody chose. What still answers unbound: `environments`, `switch`,
+`prepare`, `claim`, `rules`, `docs`, `tools` and the machinery. A `--continue` or `--resume`
+goes back to the environment that session was last on; only a session that has never been
+anywhere starts on nothing. `bind_on_start` in settings is a project saying every session
+belongs on its start environment, and puts the old behaviour back.
+
+Once it has picked, a session stays bound to that environment. `journal switch` from inside a session moves that session only, so a
 second session on another environment keeps its own pins, work and to-dos. `--project` also
 moves where new sessions start; do that when the user says the whole project is moving on.
 A switch the user runs from a terminal is always the project's, and it lists the sessions

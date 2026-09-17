@@ -276,21 +276,47 @@ def override(name: str) -> None:
     _OVERRIDE[:] = [name] if name else []
 
 
-def current(root: Path, stem: str | None = None) -> str:
-    """The environment this session is on: its binding, else the project's start environment.
+def start(root: Path) -> str:
+    """The project's start environment: where a `--project` switch points, and nothing else.
 
-    A SESSION IS BOUND TO AN ENVIRONMENT; THE PROJECT HAS A START ENVIRONMENT. At session start the
-    session is bound to the start environment. A switch from inside a session moves that
-    session only, so two sessions can work two environments of one project at once; a switch
-    from the terminal, or with --project, moves the start environment for later sessions and
-    leaves running ones where they are.
+    IT IS NOT A DEFAULT AND IT IS NOT AN ANSWER TO "WHERE AM I". It is the first name
+    `choices` offers and the one a project that binds on start binds to; a session that has
+    not chosen is on NO environment, and `current` says so.
+    """
+    return state.get(root, CURRENT, DEFAULT) or DEFAULT
+
+
+def current(root: Path, stem: str | None = None) -> str:
+    """The environment this session is on, or "" while it has not chosen one.
+
+    A SESSION IS BOUND TO AN ENVIRONMENT; THE PROJECT HAS A START ENVIRONMENT, AND THEY ARE
+    NOT THE SAME QUESTION. A switch from inside a session moves that session only, so two
+    sessions can work two environments of one project at once; a switch from the terminal,
+    or with --project, moves the start environment for later sessions and leaves running
+    ones where they are.
+
+    THERE IS NO DEFAULT ENVIRONMENT. This used to fall back to the start environment so that
+    a READ never needed a decision first — which meant a session that had chosen nothing
+    still read one environment's pins, to-dos and work as if it had, and the start
+    environment was a selected environment in everything but name. It is gone: an unbound
+    session gets "", the CLI refuses the read and says how to choose.
+
+    A PROCESS THAT IS NOT A SESSION IS NOT UNBOUND. `stem=None` is the server, a test
+    harness, a hook with no transcript — nothing that could ever bind or be asked to
+    choose — so it is answered with the project's start environment, as before.
     """
     if _OVERRIDE:
         return _OVERRIDE[0]
+    if stem is None:
+        return start(root)
     got = bound(root, stem)
     if got:
         return got
-    return state.get(root, CURRENT, DEFAULT) or DEFAULT
+    # `bind_on_start` IS THE PROJECT CHOOSING, NOT A DEFAULT: it says every session belongs
+    # on the start environment, so a session under it is answered with it whether or not the
+    # hook has written the binding yet. Without it there is nothing to answer with.
+    import settings
+    return start(root) if settings.load(root)[0]["bind_on_start"] else ""
 
 
 SESSIONS = "sessions"
@@ -388,8 +414,8 @@ def choices(root: Path) -> list[str]:
     the record, the bindings and the liveness of every session; this answers the smaller
     question a session asks once, at its start, before it has chosen anything.
     """
-    start = state.get(root, CURRENT, DEFAULT) or DEFAULT
-    return sorted(_all(root), key=lambda n: (n != start, n))
+    home = start(root)
+    return sorted(_all(root), key=lambda n: (n != home, n))
 
 
 def page(root: Path, name: str, width: int | None = None, commands: bool = True) -> tuple[bool, str]:
@@ -464,7 +490,7 @@ def page(root: Path, name: str, width: int | None = None, commands: bool = True)
 
 def listing(root: Path, stem: str | None = None, stale_hours: float = 24.0) -> list[dict]:
     """Every environment: the project's start environment first, sessions bound to each, this one marked."""
-    start = state.get(root, CURRENT, DEFAULT) or DEFAULT
+    home = start(root)
     mine = current(root, stem)
     by_track: dict[str, list[str]] = {}
     for sid, t in _bindings(root).items():
@@ -475,7 +501,7 @@ def listing(root: Path, stem: str | None = None, stale_hours: float = 24.0) -> l
         out.append({
             "name": name,
             "current": name == mine,
-            "start": name == start,
+            "start": name == home,
             "pins": len([p for p in (state.tracked(root, "pins", name, []) or []) if not p.get("struck")]),
             "open": len([w for w in (state.tracked(root, "work", name, []) or []) if not w.get("ended")]),
             "at": held.get("at", ""),
@@ -500,11 +526,11 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
     with state.locked(root):
         tracks = _all(root)
         fresh = name not in tracks
-        start = state.get(root, CURRENT, DEFAULT) or DEFAULT
-        if fresh or start not in state._record(root).get("tracks", {}):
+        home = start(root)
+        if fresh or home not in state._record(root).get("tracks", {}):
             # the environment left behind exists by name too; the registry says both do,
             # and each one's folder holds what belongs to it
-            create(root, start, name, at=at)
+            create(root, home, name, at=at)
         held = tracks.get(name, {})
         # READ THE ENVIRONMENT'S OWN FILES, not the registry. 1.34.0 moved pins and work out
         # of `tracks.<name>` into `environments/<name>/`, and updated every call site that
@@ -534,20 +560,19 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
             if was == name and bound(root, stem):
                 return False, say("already_on", name=name)
             bind(root, stem, name)
-            # WHERE IT WAS IS NOWHERE, for a session that had not chosen yet. `current`
-            # falls back to the start environment so that reads work unbound; recording
-            # that fallback as "previous" would send the session BACK to an environment it
-            # never chose — which is the whole thing an unbound start exists to prevent.
+            # WHERE IT WAS IS NOWHERE, for a session that had not chosen yet: `bound` is
+            # None and that is what is recorded, so `--back` has nothing to go back to
+            # rather than an environment the session never chose.
             state.put(root, "previous_track", bound_before, stem=stem)
             carried(root, name, stem, line)
             return True, say("switched_session", name=name, kept=kept, was=was,
-                             start=state.get(root, CURRENT, DEFAULT) or DEFAULT, lost=lost)
+                             start=start(root), lost=lost)
         if stem:
             bind(root, stem, name)
             state.put(root, "previous_track", bound_before, stem=stem)
-        if start == name and not stem:
+        if home == name and not stem:
             return False, say("already_start", name=name)
-        state.put(root, PREVIOUS, start)
+        state.put(root, PREVIOUS, home)
         state.put(root, CURRENT, name)
         carried(root, name, stem, line)
     others = {sid: t for sid, t in _bindings(root).items() if t != name and sid != stem}
@@ -637,8 +662,8 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
     tracks = _all(root)
     if name not in tracks:
         return False, say("remove_none", name=repr(name))
-    start = state.get(root, CURRENT, DEFAULT) or DEFAULT
-    if name == start:
+    home = start(root)
+    if name == home:
         return False, say("remove_start", name=name)
     if bound(root, stem) == name:
         return False, say("remove_mine", name=name)
