@@ -33,6 +33,7 @@ from templates import render as fill
 
 SEEN = "agent_seen"      # {track: {agent: unix seconds}} — the heartbeat, in the record
 PARENT = "agent_parent"  # {track: {agent: the dispatching session}} — who sent it
+CWD = "agent_cwd"        # {track: {agent: the directory it works in}} — a worktree is another branch
 DONE = "agents_done"  # {track: {agent: when its SubagentStop came}}
 #: a subagent with no tool call for this long is idle, not working
 ACTIVE_MINUTES = 2
@@ -96,8 +97,13 @@ def say(message: str, /, **values) -> str:
     return fill(MESSAGES[message], **values)
 
 
-def heartbeat(root: Path, track: str, agent: str, parent: str, every: float = 30.0) -> None:
-    """Mark a subagent alive from its tool calls, and who dispatched it; at most once per `every` seconds."""
+def heartbeat(root: Path, track: str, agent: str, parent: str, every: float = 30.0, cwd: str = "") -> None:
+    """Mark a subagent alive from its tool calls, and who dispatched it; at most once per `every` seconds.
+
+    WHERE IT IS WORKING IS RECORDED TOO. A subagent dispatched into a worktree is on another branch,
+    and nothing downstream can work that out from its id — the directory it calls tools from is the
+    only thing that says so, and it is in the payload of every call it makes.
+    """
     agent = state.slug(agent)
     if not agent:
         return
@@ -110,6 +116,17 @@ def heartbeat(root: Path, track: str, agent: str, parent: str, every: float = 30
         got = got if isinstance(got, dict) else {}
         got.setdefault(track, {})[agent] = parent
         state.put(root, PARENT, got)
+        if cwd:
+            where = state.get(root, CWD, {})
+            where = where if isinstance(where, dict) else {}
+            where.setdefault(track, {})[agent] = cwd
+            state.put(root, CWD, where)
+
+
+def working_dir(root: Path, track: str, agent: str) -> str:
+    """The directory this subagent calls tools from, or ""."""
+    got = state.get(root, CWD, {})
+    return ((got.get(track) or {}).get(state.slug(agent)) or "") if isinstance(got, dict) else ""
 
 
 def finish(root: Path, track: str, agent: str) -> None:

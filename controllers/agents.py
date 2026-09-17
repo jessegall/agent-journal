@@ -8,6 +8,7 @@ import settings as settings_mod
 import state
 import tracks
 import transcript
+import worktree
 from controller import Controller, Payload, Result
 
 #: a subagent that has made no tool call for this long is no longer counted as working
@@ -17,6 +18,16 @@ SUBAGENT_MINUTES = 30
 #: a subagent "vanishes" exactly when the user goes looking for it. It stays, marked quiet, until its
 #: SubagentStop arrives or a day has passed.
 QUIET_HOURS = 24
+
+
+def _branch_of(cwd: str) -> dict | None:
+    """The branch of the directory a subagent calls tools from, read the way the session's is read."""
+    if not cwd:
+        return None
+    try:
+        return worktree.branch(Path(cwd))
+    except OSError:
+        return None
 
 
 class AgentsController(Controller):
@@ -58,5 +69,8 @@ class AgentsController(Controller):
                         "quiet_secs": int(time.time() - float((agents.seen(root).get(env) or {}).get(agent, 0) or 0)) if quiet else None,
                         "ended_age": agents.done_age(root, env, agent) if done else "",
                         "ended_secs": int(since_done) if done else None,
-                        "model": transcript.last_model(transcript.find(root.parent, f"agent-{agent}"))})
+                        "model": transcript.last_model(transcript.find(root.parent, f"agent-{agent}")),
+                        # THE BRANCH IT IS ACTUALLY ON. A subagent dispatched into a worktree works
+                        # another checkout, so the session's branch is not its branch.
+                        "branch": _branch_of(agents.working_dir(root, env, agent))})
         return Result("ok", "", out)

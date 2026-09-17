@@ -3649,7 +3649,7 @@ def main(raw: str | None = None) -> int:
                 agents.heartbeat(ROOT, where, aid, _parent_of(payload))
                 agents.finish(ROOT, where, aid)
             return 0
-        agents.heartbeat(ROOT, where, aid, _parent_of(payload))
+        agents.heartbeat(ROOT, where, aid, _parent_of(payload), cwd=str(payload.get("cwd") or ""))
         lent = grants.granted(ROOT, _parent_of(payload))
         # ON THE TOOL'S RESULT, NOT BEFORE IT. `DELIVERS_CONTEXT` does not list PreToolUse
         # — the harness rejects `additionalContext` there, measured, and the reference
