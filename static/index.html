@@ -501,7 +501,10 @@
   /* the thread keeps its gutters; the rail is flush to the window's edge, and its own entries carry
      the inset off the divider so the rule is the only thing between the two columns */
   .home-main { flex: 1; min-height: 0; display: flex; align-items: stretch; }
-  .home-thread { --home-gutter: 24px; padding: 0 var(--home-gutter); }
+  /* the bar is the chat's now, so the chat's side padding must not indent it: it runs the column's
+     width like the writing box's rule does, and the padding lives on what is inside */
+  .home-thread { --home-gutter: 24px; padding: 0; }
+  .home-thread > .thread { padding: 0 var(--home-gutter); }
   /* EVERY CARD IS FLUSH, not the plan alone: the section carried the inset, so the cards inside it sat
      off the divider while the plan card ran to both edges. The section gives its padding to its
      heading, and each card carries its own. */
@@ -605,12 +608,7 @@
     border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--raised) 60%, transparent);
     font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); }
   .rail-group-n { color: var(--text-3); font-variant-numeric: tabular-nums; text-transform: none; }
-  .rail-note { position: relative; display: flex; align-items: stretch; }
-  .rail-note .rail-row { padding-right: 30px; }
-  .rail-note-x { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: inline-flex;
-    padding: 4px; border: 0; border-radius: 5px; background: none; color: var(--text-3); cursor: pointer; }
-  .rail-note-x:hover { background: var(--hover); color: var(--text); }
-  .rail-note-x .ico { width: 12px; height: 12px; }
+  .rail-note { display: flex; align-items: stretch; }
   /* THE HEADING IS A BAR, THE SAME BAR THE LIST PAGES USE. It was a line of text with six pixels
      under it and nothing above it, so a section began with a word rather than with a division. It
      is `.ghead`'s shape now: a fixed height with its text centred in it and one rule along the
