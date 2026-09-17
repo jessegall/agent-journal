@@ -128,7 +128,9 @@ function refHref(ref, env) {
   if (kind === "report") return `#/env/${env}/reports/${num}`;
   if (kind === "plan") return `#/env/${env}/plans/${num}`;
   if (kind === "suggestion") return `#/env/${env}/suggestions/${num}`;
-  if (kind === "reminder") return `#/env/${env}/reminders`;
+  // NAMED, WHEN THE REF NAMES ONE. `reminder:6` went to the index like a bare `reminder`, so the
+  // one pill that knew exactly which row it meant threw that away and travelled to a list.
+  if (kind === "reminder") return num ? `#/env/${env}/reminders/${num}` : `#/env/${env}/reminders`;
   if (kind === "inbox") return `#/env/${env}/messages/${num}`;
   if (kind === "work") return `#/env/${env}/work/${num}`;
   // a transcript is a FILE, not a page: nothing lists it, and this is the only way to it
@@ -139,7 +141,10 @@ function refHref(ref, env) {
 
 //: the route segment each peekable resource lives under, so a reference can be read back into a panel
 const REF_ROUTES = { todos: "todo", messages: "message", questions: "question", suggestions: "suggestion",
-                     work: "work", plans: "plan", reports: "report", docs: "doc" };
+                     work: "work", plans: "plan", reports: "report", docs: "doc",
+                     // what a message BECAME is most often one of these three, and each of them used
+                     // to travel to its index instead of opening over what you were reading
+                     pins: "pin", rules: "rule", reminders: "reminder" };
 
 // A reference inside a panel opens that resource OVER the page, never navigating away from what you are reading.
 // One funnel for every chip: it reads the href the chip already carries, so nothing needs a second source of truth.
@@ -2180,10 +2185,83 @@ const Todos = {
 };
 
 // ─────────────────────────────────────────────────────────────── pins and rules
+// ONE PANEL PER RESOURCE, rendered on its page and wherever a reference opens it. A pin and a rule
+// are the same shape with two scopes, so they are one factory and two names — the names matter
+// because the inspector looks a panel up by one.
+function claimPanel({ noun, api, page, scope, movable }) {
+  const word = noun.toLowerCase();
+  return {
+    props: PANEL_PROPS,
+    components: { Panel, ActionBar, LinkedQuestions, FromMessages, Comments, FetchState },
+    setup(props) {
+      const url = computed(() => api(props));
+      const item = useFetch(() => props.n && `${url.value}/${props.n}`);
+      const envs = useEnvironments(() => props.env);
+      const actions = computed(() => {
+        const c = item.data;
+        if (!c || c.struck) return [];
+        const one = `${url.value}/${c.n}`;
+        return [
+          { label: "Edit", method: "PATCH", url: one, only: true, submit: "Save",
+            fields: [{ name: "fact", label: noun === "Rule" ? "Ruling" : "Claim", value: c.fact },
+                     { name: "body", label: "Reasoning", kind: "area", value: c.body || "" }],
+            note: `Changing the ${noun === "Rule" ? "ruling" : "claim"} strikes this ${word} and adds the new one under a new number.` },
+          ...(movable ? [
+            { label: "Move", method: "POST", url: `${one}/move`, fields: [envField(envs.value)],
+              note: "It is struck here and added there." },
+            { label: "Promote to rule", method: "POST", url: `${one}/promote`, submit: "Promote",
+              note: "It becomes a rule on every environment, and this pin is struck." },
+          ] : []),
+          ...(noun === "Rule" ? [c.in_claude_md
+            ? { label: "Remove from CLAUDE.md", method: "POST", url: `${one}/uninject`, submit: "Remove",
+                note: "The rule stays; only its copy in CLAUDE.md is taken out." }
+            : { label: "Add to CLAUDE.md", method: "POST", url: `${one}/inject`, submit: "Add",
+                note: "Writes the ruling into the project's CLAUDE.md between journal markers, with a path to any file or doc it cites — never the file itself." }] : []),
+          { label: "Strike", method: "DELETE", url: one, danger: true, fields: [{ name: "why", label: "Why it stopped being true" }] },
+        ];
+      });
+      const done = (body, a) => { settle(body, a, props.base || props.close, item); if (props.reloaded) props.reloaded(); };
+      return { item, actions, done, ageOf, docOf, word, envs, noun,
+               scope: computed(() => scope(props)), page: computed(() => page(props)) };
+    },
+    template: `
+      <Panel :label="noun + ' ' + n" :close="close" :onClose="onClose" :link="link || page">
+        <FetchState :state="item"/>
+        <template v-if="item.data">
+          <h2 class=p-title>{{ item.data.fact }}</h2>
+          <dl class=props>
+            <dt>Scope</dt><dd>{{ scope }}</dd>
+            <template v-if="noun === 'Rule'"><dt>CLAUDE.md</dt><dd>{{ item.data.in_claude_md ? 'Written in CLAUDE.md' : 'Not in CLAUDE.md' }}</dd></template>
+            <dt>Cites</dt><dd><a v-if="docOf(item.data.meta)" :href="'#/docs/' + docOf(item.data.meta)">Doc {{ docOf(item.data.meta) }}</a><span v-else class=muted>—</span></dd>
+            <dt>Written</dt><dd>{{ ageOf(item.data.meta) || '—' }}</dd>
+          </dl>
+          <ActionBar :actions="actions" :done="done" :key="noun + item.data.n + (item.data.struck ? 'x' : '')"/>
+          <div v-if="item.data.struck_why" class=note>Struck: {{ item.data.struck_why }}</div>
+          <div v-if="item.data.meta_secondary.length" class=note>
+            <div v-for="(s, i) in item.data.meta_secondary" :key="i">{{ s }}</div>
+          </div>
+          <div>
+            <p class=section-label>Reasoning</p>
+            <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
+            <p v-else class="prose muted">No reasoning is written down; the claim is all there is.</p>
+          </div>
+          <FromMessages :rows="item.data.from_messages" :env="env || 'web-interface'"/>
+          <LinkedQuestions :rows="item.data.questions" :env="env"/>
+          <Comments :about="word + ' ' + item.data.n" :env="env || envs[0] || ''" :key="'c-' + word + item.data.n"/>
+        </template>
+      </Panel>`,
+  };
+}
+
+const PinPanel = claimPanel({ noun: "Pin", api: (p) => `/api/env/${p.env}/pins`,
+                              page: (p) => `#/env/${p.env}/pins/${p.n}`, scope: (p) => p.env, movable: true });
+const RulePanel = claimPanel({ noun: "Rule", api: () => "/api/rules",
+                               page: (p) => `#/rules/${p.n}`, scope: () => "Every environment", movable: false });
+
 function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
   return {
     props: ["env", "archive", "n"],
-    components: { TopBar, Panel, LinkedQuestions, ActionBar, ResourceList, FromMessages, Comments },
+    components: { TopBar, Panel, LinkedQuestions, ActionBar, ResourceList, FromMessages, Comments, PinPanel, RulePanel },
     setup(props) {
       const list = useFetch(() => api(props) && `${api(props)}?all=1`);
       const item = useFetch(() => props.n && props.n !== "new" && `${api(props)}/${props.n}`);
@@ -2219,7 +2297,7 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
         ];
       });
       const done = (body, a) => settle(body, a, base(props) + (props.archive || ""), list, item);
-      return { list, item, creating, actions, done, ageOf, docOf, word, envs,
+      return { list, item, creating, actions, done, ageOf, docOf, word, envs, panel: noun === "Rule" ? "RulePanel" : "PinPanel",
                crumbs: computed(() => (props.archive ? [...crumbs(props), "Archive"] : crumbs(props))),
                home: computed(() => base(props)), base: computed(() => base(props) + (props.archive || "")),
                scope: computed(() => scope(props)), noun, word, empty, CLAIM_LIST };
@@ -2236,31 +2314,7 @@ function claimsView({ crumbs, api, base, noun, scope, empty, movable }) {
         <Panel v-if="n === 'new'" :label="'New ' + word" :close="base">
           <ActionBar :actions="creating" :open="'New ' + word" :done="done"/>
         </Panel>
-        <Panel v-else-if="n" :label="noun + ' ' + n" :close="base">
-          <FetchState :state="item"/>
-          <template v-if="item.data">
-            <h2 class=p-title>{{ item.data.fact }}</h2>
-            <dl class=props>
-              <dt>Scope</dt><dd>{{ scope }}</dd>
-              <template v-if="noun === 'Rule'"><dt>CLAUDE.md</dt><dd>{{ item.data.in_claude_md ? 'Written in CLAUDE.md' : 'Not in CLAUDE.md' }}</dd></template>
-              <dt>Cites</dt><dd><a v-if="docOf(item.data.meta)" :href="'#/docs/' + docOf(item.data.meta)">Doc {{ docOf(item.data.meta) }}</a><span v-else class=muted>—</span></dd>
-              <dt>Written</dt><dd>{{ ageOf(item.data.meta) || '—' }}</dd>
-            </dl>
-            <ActionBar :actions="actions" :done="done" :key="noun + item.data.n + (item.data.struck ? 'x' : '')"/>
-            <div v-if="item.data.struck_why" class=note>Struck: {{ item.data.struck_why }}</div>
-            <div v-if="item.data.meta_secondary.length" class=note>
-              <div v-for="(s, i) in item.data.meta_secondary" :key="i">{{ s }}</div>
-            </div>
-            <div>
-              <p class=section-label>Reasoning</p>
-              <div v-if="item.data.body" class="md prose" v-html="$md(item.data.body)"></div>
-              <p v-else class="prose muted">No reasoning is written down; the claim is all there is.</p>
-            </div>
-            <FromMessages :rows="item.data.from_messages" :env="env || 'web-interface'"/>
-            <LinkedQuestions :rows="item.data.questions" :env="env"/>
-            <Comments :about="word + ' ' + item.data.n" :env="env || envs[0] || ''" :key="'c-' + word + item.data.n"/>
-          </template>
-        </Panel>
+        <component v-else-if="n" :is="panel" :key="word + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
       </div>`,
   };
 }
@@ -3023,9 +3077,46 @@ const Work = {
     </div>`,
 };
 
+const ReminderPanel = {
+  props: PANEL_PROPS,
+  components: { Panel, ActionBar, FromMessages, Comments, FetchState },
+  setup(props) {
+    const api = computed(() => `/api/env/${props.env}/reminders`);
+    const item = useFetch(() => props.env && props.n && `${api.value}/${props.n}`);
+    const envs = useEnvironments(() => props.env);
+    const actions = computed(() => {
+      const r = item.data;
+      if (!r || r.struck) return [];
+      const url = `${api.value}/${r.n}`;
+      return [
+        { label: "Edit", method: "PATCH", url, only: true, submit: "Save",
+          fields: [{ name: "text", label: "Instruction", value: r.text }, { name: "until", label: "Until", value: r.until || "" }] },
+        { label: "Move", method: "POST", url: `${url}/move`, fields: [envField(envs.value)] },
+        { label: "Retire", method: "DELETE", url, danger: true, fields: [{ name: "why", label: "What made it true" }] },
+      ];
+    });
+    const done = (body, a) => { settle(body, a, props.base || props.close, item); if (props.reloaded) props.reloaded(); };
+    return { item, actions, done, page: computed(() => `#/env/${props.env}/reminders/${props.n}`) };
+  },
+  template: `
+    <Panel :label="'Reminder ' + n" :close="close" :onClose="onClose" :link="link || page">
+      <FetchState :state="item"/>
+      <template v-if="item.data">
+        <h2 class=p-title>{{ item.data.text }}</h2>
+        <dl class=props>
+          <dt>Until</dt><dd>{{ item.data.until || 'It is never retired on its own' }}</dd>
+          <dt>Facts</dt><dd>{{ item.data.meta || '—' }}</dd>
+        </dl>
+        <ActionBar :actions="actions" :done="done" :key="'reminder' + item.data.n + (item.data.struck ? 'x' : '')"/>
+        <FromMessages :rows="item.data.from_messages" :env="env"/>
+        <Comments :about="'reminder ' + item.data.n" :env="env" :key="'c-reminder' + item.data.n"/>
+      </template>
+    </Panel>`,
+};
+
 const Reminders = {
   props: ["env", "archive", "n"],
-  components: { TopBar, Panel, ActionBar, ResourceList, FromMessages, Comments },
+  components: { TopBar, Panel, ActionBar, ResourceList, FromMessages, Comments, ReminderPanel },
   setup(props) {
     const api = computed(() => `/api/env/${props.env}/reminders`);
     const home = computed(() => `#/env/${props.env}/reminders`);
@@ -3064,19 +3155,7 @@ const Reminders = {
       <Panel v-if="n === 'new'" label="New reminder" :close="base">
         <ActionBar :actions="creating" open="New reminder" :done="done"/>
       </Panel>
-      <Panel v-else-if="n" :label=\"'Reminder ' + n" :close="base">
-        <FetchState :state="item"/>
-        <template v-if="item.data">
-          <h2 class=p-title>{{ item.data.text }}</h2>
-          <dl class=props>
-            <dt>Until</dt><dd>{{ item.data.until || 'It is never retired on its own' }}</dd>
-            <dt>Facts</dt><dd>{{ item.data.meta || '—' }}</dd>
-          </dl>
-          <ActionBar :actions="actions" :done="done" :key="'reminder' + item.data.n + (item.data.struck ? 'x' : '')"/>
-          <FromMessages :rows="item.data.from_messages" :env="env"/>
-          <Comments :about="'reminder ' + item.data.n" :env="env" :key="'c-reminder' + item.data.n"/>
-        </template>
-      </Panel>
+      <ReminderPanel v-else-if="n" :key="'reminder' + n" :env="env" :n="n" :close="base" :base="base" :reloaded="list.reload"/>
     </div>`,
 };
 
@@ -3339,8 +3418,12 @@ const PEEK = {
   subagent: { panel: "SubagentPanel", page: (env, n) => `#/env/${env}/agents/subagent/${n}` },
   plan: { panel: "PlanPanel", page: (env, n) => `#/env/${env}/plans/${n}` },
   report: { panel: "ReportPanel", page: (env, n) => `#/env/${env}/reports/${n}` },
+  pin: { panel: "PinPanel", page: (env, n) => `#/env/${env}/pins/${n}` },
+  reminder: { panel: "ReminderPanel", page: (env, n) => `#/env/${env}/reminders/${n}` },
   // a doc belongs to the project rather than an environment, so its page carries no env
   doc: { panel: "DocPanel", page: (env, n) => `#/docs/${n}` },
+  // a rule binds every environment, so its page carries none either
+  rule: { panel: "RulePanel", page: (env, n) => `#/rules/${n}` },
 };
 
 // Home's side panel: the resource's own panel, with its header linking to the page
@@ -3390,7 +3473,7 @@ const FileReader_ = {
 
 const Peek = {
   props: ["env", "kind", "n", "close", "reloaded", "swap"],
-  components: { TodoPanel, MessagePanel, ReplyPanel, QuestionPanel, WorkPanel, SuggestionPanel, SubagentPanel, PlanPanel, ReportPanel, DocPanel },
+  components: { TodoPanel, MessagePanel, ReplyPanel, QuestionPanel, WorkPanel, SuggestionPanel, SubagentPanel, PlanPanel, ReportPanel, DocPanel, PinPanel, RulePanel, ReminderPanel },
   // this subtree IS the overlay, so the Panel inside it stays while any panel the route mounted stands down
   setup() { provide("overlayPanel", true); return { PEEK }; },
   template: `
