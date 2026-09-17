@@ -828,9 +828,9 @@ const Compose = {
         <label v-if="attach" class=compose-attach title="Attach files" aria-label="Attach files">
           <Icon name="paperclip"/><input type=file multiple hidden @change="picked">
         </label>
-      </div>
-      <div v-if="draft.files.length" class=compose-files>
-        <span v-for="(f, i) in draft.files" :key="i" class=chip>{{ f.name }} <button type=button class=chip-x title="Remove" @click="unpick(i)">×</button></span>
+        <div v-if="draft.files.length" class=compose-files>
+          <span v-for="(f, i) in draft.files" :key="i" class=chip>{{ f.name }} <button type=button class=chip-x title="Remove" @click="unpick(i)">×</button></span>
+        </div>
       </div>
       <div class=compose-bar>
         <span class=hint>{{ hint }}</span>
