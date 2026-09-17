@@ -634,6 +634,10 @@
   .rail-foot-act:disabled { color: var(--text-4, var(--text-3)); opacity: .5; cursor: default; }
   /* the reason a row is not moving, on the line that says it is not moving */
   .status-why { color: var(--text-3); }
+  /* the file reader's title line: the name, and the way out to the bytes */
+  .file-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .file-raw-link { flex: none; font-size: 11.5px; color: var(--text-3); text-decoration: none; }
+  .file-raw-link:hover { color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
   /* A HEADING IN THE RAIL IS THE LIST PAGE'S GROUP HEADING, at the width this column has: the state
      is said once, over the rows that are in it, rather than repeated on the end of every row. */
   .rail-group { display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 var(--rail-gutter);

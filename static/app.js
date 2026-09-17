@@ -3584,7 +3584,12 @@ const FileReader_ = {
   },
   template: `
     <Panel :label="file.from || 'File'" :close="close" :onClose="close" :link="file.url">
-      <h2 class=panel-title>{{ name }}</h2>
+      <!-- RAW IS THE WAY OUT OF THE VIEWER: the bytes as they are, in a tab of their own, for the
+           cases a browser does better than a rendered pane. -->
+      <div class=file-head>
+        <h2 class=panel-title>{{ name }}</h2>
+        <a class=file-raw-link :href="file.url" target=_blank rel=noopener title="Open the file itself, in a new tab">Raw</a>
+      </div>
       <img v-if="kind === 'image'" class=file-full :src="file.url" :alt="name">
       <p v-else-if="kind === 'pdf'" class="prose muted">A PDF opens best in its own tab —
         <a :href="file.url" target=_blank rel=noopener>open {{ name }}</a>.</p>
@@ -4121,8 +4126,12 @@ const Thread = {
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
           <button v-if="t.kind === 'parked'" type=button class=thread-answer @click.stop="replyTo(t)">Answer the agent</button>
           <div v-if="t.files && t.files.length" :class="['thread-files', {alone: !t.text}]">
+            <!-- A FILE IN THE THREAD IS READ WHERE IT WAS SENT. A picture opens over the page with
+                 its neighbours; anything else opens in the reader, which renders markdown and shows
+                 text — and both still keep the raw file one click away. -->
             <a v-for="(f, i) in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name"
-              @click="f.picture ? $openImages($event, pictures(t), pictures(t).findIndex((p) => p.name === f.name)) : null">
+              @click="f.picture ? $openImages($event, pictures(t), pictures(t).findIndex((p) => p.name === f.name))
+                                : $openFile($event, { url: fileUrl(t.n, f.name), name: f.name, from: 'Message ' + t.n })">
               <img v-if="f.picture" class=thread-image :src="fileUrl(t.n, f.name)" :alt="f.name" loading=lazy @load="grew">
               <span v-else class=thread-file-name><Icon name="paperclip"/>{{ f.name }}</span>
             </a>
@@ -5923,6 +5932,7 @@ app.config.globalProperties.$human = humanSize;
 app.config.globalProperties.$refHref = refHref;
 app.config.globalProperties.$openRef = openRef;
 app.config.globalProperties.$openImages = openImages;
+app.config.globalProperties.$openFile = openFile;
 // the row pills are built as HTML inside rendered markdown, so their click has no component to
 // reach — one global is how a string in `v-html` gets back to the overlay every other chip uses
 window.__openRef = (event, href) => { openRef(event, href); return !event.defaultPrevented; };

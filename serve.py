@@ -276,7 +276,10 @@ def _message_file(root: Path, project: Path, m: re.Match):
     env, n, name = m.group("env"), int(m.group("n")), unquote(m.group("name"))
     items = inbox._all(root, env) if _known_env(root, env) else []
     message = items[n - 1] if 1 <= n <= len(items) else None
-    held = next((f for f in (message or {}).get("files") or [] if f["name"] == name), None)
+    # A REPLY'S FILE IS THE MESSAGE'S FILE. They live in the same folder, and a reply records only
+    # the names it added — so a name is served when the message holds it OR any reply under it does.
+    held = (any(f["name"] == name for f in (message or {}).get("files") or [])
+            or any(name in (r.get("files") or []) for r in (message or {}).get("replies") or []))
     path = inbox.files_dir(root, env, n) / name if held else None
     if path is None or not path.is_file():
         return _not_found(say("no_attachment", name=repr(name), n=n))
