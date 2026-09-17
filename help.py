@@ -201,6 +201,38 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "every session and subagent, so a secret written here is a secret that has leaked. A value with the",
         "shape of a token is refused where it is typed.",
     ),
+    "plans": (
+        "journal plans                    every plan on this environment, the live ones first",
+        "journal plans show <n>           one plan: its phases, their to-dos, and where it stands",
+        'journal plans add "<title>" --goal="<what done looks like>" [--brief] [--preparing]   draft one; the approach on stdin',
+        'journal plans edit <n> ["<title>"] [--goal=] [--brief]   reword it while it is still a draft',
+        "journal plans from-doc <doc>     draft one out of a doc that already says what will be done",
+        'journal plans phase <n> "<title>" [--when="<complete when>"] [--checkpoint] [--before=<p>]',
+        "      add a phase, or INSERT one before phase <p> — the phases after it move along with",
+        "      their to-dos and their checkpoints",
+        'journal plans rephrase <n> <p> ["<title>"] [--when=] [--checkpoint]   correct a phase written wrong',
+        "journal plans todos <n> <p> 12,14   put to-dos in a phase; --off takes them out, --move moves them",
+        "journal plans activate <n>       approve it: the agent starts phase 1",
+        "journal plans continue <n>       past a checkpoint the plan is waiting on",
+        "journal plans ready <n>          a draft is ready for the user to approve (agent)",
+        'journal plans park <n> "<why>"   set it aside, its to-dos held',
+        'journal plans abandon <n> "<why>"   stop it for good',
+        "journal plans acknowledge <n>    a finished plan is read and comes off the list",
+    ),
+    "style": (
+        "journal style                    every coding style rule this project has decided",
+        "journal style show <subject>     one, with its reasoning and its examples",
+        'journal style add <subject> "<title>" --decision="<the rule>" [--when=] [--brief]',
+        'journal style set <subject> title|decision|when "<value>"',
+        'journal style remove <subject> "<why>"   it no longer applies; its skill goes too',
+        "journal style sync               write the rules into CLAUDE.md and into one skill each",
+    ),
+    "claude": (
+        "journal claude [\"<first prompt>\"] [--continue] [--resume=<id>] [--dry-run]",
+        "      start Claude Code wired to this journal: the channel is attached, so what you do in",
+        "      the web interface reaches the agent while it works. Brings the viewer up if this",
+        "      journal has none running. Everything else is passed through to `claude`.",
+    ),
     "tools": (
         "journal tools [--order=asc|desc]   the tools, newest first: scripts kept for repeated work, with what each does and how to call it",
         "journal tools show <name>     read one — bare `journal tools <name>` is the same, but `show` is the way to reach a tool NAMED after a verb",
@@ -257,6 +289,9 @@ GROUPS: dict[str, tuple[str, ...]] = {
 #: with itself about what exists, and the reader believes the help. Only a spelling that
 #: RUNS gets an entry here; test_tracks.py holds all five to their refusal.
 ALIAS: dict[str, str] = {
+    "plan": "plans", "switch": "environments", "claim": "environments", "prepare": "environments",
+    "worktree": "environments", "assign": "environments", "lent": "environments", "grants": "grant",
+    "upgrade": "system",
     "auto": "auto-mode",
     "messages": "inbox",
     "message": "inbox",
