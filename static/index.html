@@ -315,7 +315,13 @@
   .tool-badge.count { background: var(--side); color: var(--text-2); box-shadow: inset 0 0 0 1px var(--border-2); }
   .drop { position: absolute; right: 0; top: 34px; z-index: 30; width: 340px; max-height: 60vh; overflow-y: auto; padding: 6px;
     background: var(--side); border: 1px solid var(--border-2); border-radius: 10px; box-shadow: 0 16px 40px rgba(0, 0, 0, .45); }
-  .drop-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px 8px; font-size: 12.5px; color: var(--text-2); }
+  /* THE NOTIFICATIONS DROPDOWN IS A COLUMN, not a padded card: the head and the tabs hold their
+     place and the rows run to its own edges, the way the rail's do. */
+  .drop-wrap .drop { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+  .drop-tabs { --rail-gutter: 12px; border-radius: 0; }
+  .drop-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+  .drop-list::-webkit-scrollbar { width: 0; }
+  .drop-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 12.5px; color: var(--text-2); }
   .drop-empty { padding: 10px 8px; font-size: 12.5px; }
   .drop-row.open { cursor: pointer; }
   .drop-row.open:hover { background: var(--hover); }
