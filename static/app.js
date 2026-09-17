@@ -3527,8 +3527,12 @@ const NeedsCard = {
         <button v-if="!item.sticky" type=button class=needs-dismiss title="Dismiss" aria-label="Dismiss" @click.stop="dismiss(item)"><Icon name="close"/></button>
       </div>
       <div class=needs-card-meta><span class=needs-card-kind>{{ item.label }}</span>{{ item.meta }}</div>
-      <div class=needs-card-foot>
-        <button type=button class=needs-card-go @click.stop="item.act || item.open">{{ item.action }}</button>
+      <!-- A BUTTON IS FOR AN ACT, and only a card that DOES something carries one: continuing past a
+           checkpoint, starting a plan. A report you read and a question you answer are not acts, they
+           are openings — and the whole card already opens, so the button was a second, louder way to
+           do the one thing the card was already for. -->
+      <div v-if="item.act" class=needs-card-foot>
+        <button type=button class=needs-card-go @click.stop="item.act">{{ item.action }}</button>
       </div>
     </div>`,
 };
