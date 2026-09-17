@@ -3468,10 +3468,14 @@ const Thread = {
     });
     const send = (text, files) => postJSON(`/api/env/${props.env}/messages`, { text, files })
       .then(() => { chat.reload(); changed(); });
+    // what the ticks mean, said in words for whoever hovers one
+    const landed = (t) => (t.state === "filed"
+      ? `Filed${t.became ? `: it became ${t.became}` : ""}`
+      : t.state === "read" ? "The agent has read it" : "Delivered, not read yet");
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, send, root, answered };
+    return { turns, more, send, root, answered, landed };
   },
   template: `
     <div ref=root class=thread>
@@ -3488,6 +3492,12 @@ const Thread = {
           <span v-if="t.tag" class=thread-tag>{{ t.tag }}</span>
           <span v-if="t.ref && t.kind === 'message'">{{ t.ref }}</span>
           <span>{{ t.at.slice(11, 16) }}</span>
+          <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)">
+            <svg viewBox="0 0 19 12" fill=none stroke=currentColor stroke-width="1.6" stroke-linecap=round stroke-linejoin=round>
+              <path d="M1.5 6.6 4.4 9.5 10 2.8"/>
+              <path v-if="t.state !== 'sent'" d="M8 6.6 10.9 9.5 16.5 2.8"/>
+            </svg>
+          </span>
         </div>
       </div>
       <div class=thread-write>
