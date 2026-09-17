@@ -3537,10 +3537,11 @@ const Thread = {
           .filter((r) => r.href);
         return { ...t, key: held || `${t.kind}:${t.n || 0}:${t.at}`, becameRefs: refs };
       });
+      // PURE. It used to write back to `pending` through nextTick, which re-triggered it — and on that
+      // second pass the last turn's key changed from its pending key to its real one, destroying and
+      // recreating the very element the reader was looking at. What has landed is decided in a watcher.
       const landed = new Set(real.map((t) => t.key));
-      const waiting = pending.value.filter((t) => t.state === "failed" || !landed.has(t.key));
-      if (waiting.length !== pending.value.length) nextTick(() => { pending.value = waiting; });
-      return [...real, ...waiting];
+      return [...real, ...pending.value.filter((t) => t.state === "failed" || !landed.has(t.key))];
     });
     const more = computed(() => (chat.data && chat.data.more) || 0);
     // a new turn lands in view, but never while the reader is scrolled up reading back: a thread
@@ -3569,6 +3570,12 @@ const Thread = {
       };
     });
     onUnmounted(() => { THREAD_BOX.focus = null; });
+    watch(() => (chat.data && chat.data.turns) || [], (rows) => {
+      if (!pending.value.length) return;
+      const said = new Set(rows.filter((t) => t.who === "you").map((t) => (t.text || "").trim()));
+      const left = pending.value.filter((t) => t.state === "failed" || !said.has((t.text || "").trim()));
+      if (left.length !== pending.value.length) pending.value = left;
+    });
     const bottom = (behavior) => {
       if (root.value) root.value.scrollTo({ top: root.value.scrollHeight, behavior });
     };
@@ -3606,11 +3613,21 @@ const Thread = {
       if (arrived && !follow) missed.value += 1;
       last = key;
       if (first) nextTick(() => { settled.value = true; });
-      if (!arrived || !follow) return;
-      // twice, because a turn of rendered markdown finishes laying out after the tick that added it
-      // one pass: a second a frame later restarts the smooth scroll from wherever the first had got to,
-      // which reads as the stutter it is. The image handler covers what lays out late.
-      nextTick(() => bottom(first ? "auto" : "smooth"));
+      if (!arrived || !root.value) return;
+      // THE POSITION IS HELD, NOT RE-DERIVED. Every earlier attempt scrolled at what it believed was
+      // the right moment and left the scroll to chance in between, which is why removing two plausible
+      // causes did not stop it jumping. The box is measured before the change and put back after it:
+      // pinned to the bottom if the reader was there, and otherwise kept exactly where it was with the
+      // height that appeared above them added back. Nothing in between can move it.
+      const wasHeight = root.value.scrollHeight;
+      const wasTop = root.value.scrollTop;
+      const settle = () => {
+        const box = root.value;
+        if (!box) return;
+        if (follow) box.scrollTo({ top: box.scrollHeight, behavior: first ? "auto" : "smooth" });
+        else box.scrollTop = wasTop + (box.scrollHeight - wasHeight);
+      };
+      nextTick(() => { settle(); requestAnimationFrame(settle); });
     });
     // REPLYING TO A TURN, and where it goes depends on what the turn IS. An agent reply already lives
     // under a message, so the answer goes there with `quoting` — which the server checks against what
@@ -3649,6 +3666,7 @@ const Thread = {
       const said = to && !(to.who === "agent" && to.kind === "reply" && to.n)
         ? quoted(excerpt(quoteOf.value)) + text : text;
       const mine = { key: `pending:${sent += 1}`, at: new Date().toISOString(), who: "you", pending: true,
+                     becameRefs: [], became: "", files: [],
                      kind: to && to.who === "agent" && to.kind === "reply" && to.n ? "reply" : "message",
                      n: to && to.kind === "reply" ? to.n : null, text, state: "sending",
                      ref: to && to.who === "agent" && to.kind === "reply" ? excerpt(quoteOf.value) : "" };
@@ -3768,7 +3786,7 @@ const Thread = {
         :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question', sending: t.state === 'sending', failed: t.state === 'failed', lit: lit === t.kind + ':' + t.n}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
-          <p v-if="t.kind === 'message' && t.becameRefs.length" :class="['thread-became', {live: t.working}]">
+          <p v-if="t.kind === 'message' && (t.becameRefs || []).length" :class="['thread-became', {live: t.working}]">
             <span v-if="t.working" class=thread-became-dot></span>
             <span v-if="t.working" class=thread-became-word>Working on</span>
             <a v-for="r in t.becameRefs" :key="r.label" class=thread-pill :href="r.href"
@@ -3865,8 +3883,10 @@ const EnvHome = {
       const rows = [
         ...(questions.data || []).filter((q) => q.status === "open").map((q) => ({ kind: "question", n: q.n, title: q.text, age: q.age })),
         ...(suggestions.data || []).filter((s) => s.status === "open").map((s) => ({ kind: "suggestion", n: s.n, title: s.title, age: s.age })),
-        // a report is written FOR the user: it waits here until they have opened it
-        ...(reports.data || []).filter((r) => !r.seen && !r.archived).map((r) => ({ kind: "report", n: r.n, title: r.title, age: r.age })),
+        // A REPORT WAITS UNTIL IT IS ARCHIVED, not until it is glanced at. `seen` is stamped the moment
+        // the panel opens, so a report the user scrolled past left the rail for good — and a report is
+        // the one thing here written FOR them. Archiving it, or dismissing the card, is what clears it.
+        ...(reports.data || []).filter((r) => !r.archived).map((r) => ({ kind: "report", n: r.n, title: r.title, age: r.age })),
       ];
       return rows.map((r) => ({ ...r, ...QUEUE_TYPES[r.kind], key: `${r.kind}:${r.n}` })).filter((r) => !dismissed.value.has(r.key))
         .map((r) => ({ ...r, meta: `${r.label.toLowerCase()} ${r.n} · ${r.age}`, open: () => goto(r.kind, r.n) }));
@@ -3918,7 +3938,8 @@ const EnvHome = {
     // Unseen reports are not in that row (it counts unarchived ones), so they are counted from theirs.
     const waitingCount = computed(() => {
       const row = envRow.value || {};
-      const unseen = (reports.data || []).filter((r) => !r.seen && !r.archived).length;
+      // the same test the queue uses, or the count and the cards disagree
+      const unseen = (reports.data || []).filter((r) => !r.archived).length;
       return (row.questions || 0) + (row.suggestions || 0) + unseen + (held.value ? 1 : 0);
     });
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
