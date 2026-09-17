@@ -477,11 +477,18 @@ const TopBar = {
     const readOne = (x) => send("POST", `/api/env/${env.value}/notifications/${x.n}/read`).then(changed);
     const readAll = () => send("POST", `/api/env/${env.value}/notifications/readall`).then(changed);
     const onHome = () => /^#\/env\/[^/]+\/?$/.test(location.hash);
+    // A NOTIFICATION OPENS THE THING, IT DOES NOT TRAVEL TO IT. On the home the page's own panel takes
+    // it, because that panel carries the trail through the other waiting rows; anywhere else `openRef`
+    // swaps the overlay in place, which is the same funnel every ref in the viewer already uses. Only
+    // something neither can render — a kind with no panel — is left to the link.
     const openFromBell = (event, x) => {
       const kind = String(x.about || "").split(":")[0];
-      if (!onHome() || !["inbox", "todo", "question", "suggestion", "work"].includes(kind)) return;
-      event.preventDefault();
-      window.dispatchEvent(new CustomEvent("journal:peek", { detail: { about: x.about } }));
+      if (onHome() && ["inbox", "todo", "question", "suggestion", "work"].includes(kind)) {
+        event.preventDefault();
+        window.dispatchEvent(new CustomEvent("journal:peek", { detail: { about: x.about } }));
+        return;
+      }
+      openRef(event, noteHref(x, env.value));
     };
     const outside = (e) => { if (!e.target.closest(".drop-wrap")) drop.open = false; };
     watchEffect((onCleanup) => {
@@ -3722,7 +3729,6 @@ const Thread = {
         <div class=thread-meta>
           <span v-if="t.n && t.who === 'you'" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
           <span>{{ clock(t.at) }}</span>
-          <span v-if="t.n && t.who !== 'you'" class=thread-ref>{{ t.kind === "question" ? "question" : "under message" }} {{ t.n }}</span>
           <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)">
             <svg viewBox="0 0 19 12" fill=none stroke=currentColor stroke-width="1.6" stroke-linecap=round stroke-linejoin=round>
               <path d="M1.5 6.6 4.4 9.5 10 2.8"/>
