@@ -3649,7 +3649,12 @@ const Thread = {
     };
     // THE LAST TURN, NEVER THE COUNT. The thread is capped, so once it is full a new turn drops the
     // oldest and the length does not move — a count would have said "nothing arrived" from then on.
-    const newest = (rows) => { const t = rows[rows.length - 1]; return t ? `${t.at}:${t.kind}:${t.n}:${t.text.length}` : ""; };
+    // GUARDED, LIKE EVERY OTHER READ OF t.text HERE. A turn with no text is a real turn — a
+    // message that is only an attachment — and the template two screens down already says so
+    // with its `alone` class. This read did not, and it throws inside the watcher that follows
+    // the thread: reproduced by stubbing the response with `text` absent, three times a poll,
+    // after which nothing scrolls to a new turn and nothing counts what was missed.
+    const newest = (rows) => { const t = rows[rows.length - 1]; return t ? `${t.at}:${t.kind}:${t.n}:${(t.text || "").length}` : ""; };
     // ARRIVAL, NEVER FIRST PAINT. The group mounts empty and the first answer inserts a hundred and
     // twenty turns at once, which is an insert as far as Vue is concerned — so the name is empty until
     // that batch has landed, and only what comes after it animates.
