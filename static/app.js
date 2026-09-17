@@ -3451,8 +3451,8 @@ const Thread = {
     // a new turn lands in view, but never while the reader is scrolled up reading back: a thread
     // that yanks the page away mid-sentence is the one thing a long conversation must not do
     const near = () => {
-      const page = root.value && root.value.closest(".page");
-      return !page || page.scrollHeight - page.scrollTop - page.clientHeight < 160;
+      const box = root.value;
+      return !box || box.scrollHeight - box.scrollTop - box.clientHeight < 160;
     };
     // THE LAST TURN, NEVER THE COUNT. The thread is capped, so once it is full a new turn drops the
     // oldest and the length does not move — a count would have said "nothing arrived" from then on.
@@ -3465,11 +3465,11 @@ const Thread = {
       const follow = first || near();
       last = key;
       if (!arrived || !follow) return;
-      // the THREAD's end, not the page's: the writing box is sticky, so anchoring above it hides the
-      // newest turn behind it, and anchoring on the page scrolls past the sections under the thread.
-      // Twice, because a turn of rendered markdown finishes laying out after the tick that added it.
+      // twice, because a turn of rendered markdown finishes laying out after the tick that added it
       nextTick(() => {
-        const go = () => { if (root.value) root.value.scrollIntoView({ block: "end", behavior: first ? "auto" : "smooth" }); };
+        const go = () => {
+          if (root.value) root.value.scrollTo({ top: root.value.scrollHeight, behavior: first ? "auto" : "smooth" });
+        };
         go();
         requestAnimationFrame(go);
       });
@@ -3486,7 +3486,8 @@ const Thread = {
     return { turns, more, send, root, answered, landed };
   },
   template: `
-    <div ref=root class=thread>
+    <div class=thread>
+      <div ref=root class=thread-scroll>
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
       <p v-if="!turns.length" class=thread-empty>Nothing has been said here yet.</p>
       <div v-for="(t, i) in turns" :key="t.at + ':' + t.kind + ':' + i" :class="['thread-turn', {mine: t.who === 'you', ask: t.kind === 'question'}]">
@@ -3497,7 +3498,6 @@ const Thread = {
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
         </div>
         <div class=thread-meta>
-          <span v-if="t.tag" class=thread-tag>{{ t.tag }}</span>
           <span v-if="t.ref && t.kind === 'message'">{{ t.ref }}</span>
           <span>{{ t.at.slice(11, 16) }}</span>
           <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)">
@@ -3507,6 +3507,7 @@ const Thread = {
             </svg>
           </span>
         </div>
+      </div>
       </div>
       <div class=thread-write>
         <Compose placeholder="Write to the agent…" submit="Send" hint="↵ sends · ⇧↵ new line" :send="send" :attach="true"/>
