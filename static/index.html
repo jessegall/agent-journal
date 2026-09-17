@@ -563,7 +563,11 @@
      for it themselves. */
   .home-rail { flex: none; width: clamp(288px, 27%, 400px); min-height: 0; overflow-y: auto; scrollbar-width: none;
     display: flex; flex-direction: column; gap: 0;
-    padding: 0 0 18px; border-left: 1px solid var(--border); }
+    padding: 0; border-left: 1px solid var(--border); }
+  /* the last thing in the column keeps clear of the window's edge — unless the foot bar is the last
+     thing, and then IT is the edge and padding under it is a gap the bar cannot cover */
+  .home-rail > :last-child { padding-bottom: 18px; }
+  .home-rail > .rail-foot:last-child { padding-bottom: 0; }
   .home-rail > .home-section + .home-section { margin-top: 22px; }
   .home-rail::-webkit-scrollbar { width: 0; }
   /* ONE FLUSH FEED, NOT A STACK OF CARDS. In a column this narrow a card is a border, a background, a
@@ -610,6 +614,13 @@
   .rail-row.wrap .rail-row-state { padding-top: 1px; }
   /* the edge, not a border: a border would move the text of a tinted row 2px off every other one */
   .rail-row.tinted { box-shadow: inset 2px 0 0 var(--tint); }
+  /* stuck to the foot of the column the way the tabs are stuck to its head */
+  .rail-foot { position: sticky; bottom: 0; z-index: 2; margin-top: auto; display: flex; align-items: center;
+    height: 34px; padding: 0 var(--rail-gutter); border-top: 1px solid var(--border); background: var(--raised); }
+  .rail-foot-act { padding: 0; border: 0; background: none; font: inherit; font-size: 11.5px;
+    letter-spacing: .03em; color: var(--text-3); cursor: pointer; }
+  .rail-foot-act:hover:not(:disabled) { color: var(--text); }
+  .rail-foot-act:disabled { color: var(--text-4, var(--text-3)); opacity: .5; cursor: default; }
   /* A HEADING IN THE RAIL IS THE LIST PAGE'S GROUP HEADING, at the width this column has: the state
      is said once, over the rows that are in it, rather than repeated on the end of every row. */
   .rail-group { display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 var(--rail-gutter);
