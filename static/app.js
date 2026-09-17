@@ -3744,13 +3744,13 @@ const Thread = {
             <a v-for="r in t.becameRefs" :key="r.label" class=thread-pill :href="r.href"
               :title="'Open ' + r.label" @click.stop="goRef($event, r)">{{ r.label }}</a></p>
           <p v-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
-          <div v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
+          <div v-if="t.text" v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
           <p v-if="t.state === 'failed'" class=thread-failed>Not sent — {{ t.error }}
             <button type=button class=thread-tool @click.stop="retry(t)">Put it back in the box</button></p>
           <button v-if="t.full" type=button class=thread-full @click.stop="showAll(t)">
             {{ whole.has(t.key) ? "Show less" : "Read more" }}</button>
           <QuestionAnswer v-if="t.kind === 'question'" :env="env" :q="t.question" :compact="true" @answered="answered"/>
-          <div v-if="t.files && t.files.length" class=thread-files>
+          <div v-if="t.files && t.files.length" :class="['thread-files', {alone: !t.text}]">
             <a v-for="f in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name">
               <img v-if="f.picture" class=thread-image :src="fileUrl(t.n, f.name)" :alt="f.name" loading=lazy @load="grew">
               <span v-else class=thread-file-name><Icon name="paperclip"/>{{ f.name }}</span>
@@ -3767,7 +3767,8 @@ const Thread = {
         <div class=thread-meta>
           <span v-if="t.n && t.who === 'you'" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
           <span>{{ clock(t.at) }}</span>
-          <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)">
+          <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)"
+            role=img :aria-label="landed(t)">
             <svg viewBox="0 0 19 12" fill=none stroke=currentColor stroke-width="1.6" stroke-linecap=round stroke-linejoin=round>
               <path d="M1.5 6.6 4.4 9.5 10 2.8"/>
               <path v-if="t.state !== 'sent'" d="M8 6.6 10.9 9.5 16.5 2.8"/>
@@ -3934,7 +3935,10 @@ const EnvHome = {
                         done: a.state === "finished", quiet: a.state === "quiet",
                         title: `Subagent ${a.id} · ${a.model || "model not recorded"} · from session ${a.parent}`
                              + (a.state === "quiet" ? " · no tool call in a while, and it has not said it finished" : ""),
-                        tail: [a.model, a.state === "quiet" ? `quiet · ${a.age_text}` : a.state === "finished" ? a.ended_age : a.age_text]
+                        // RUNNING WAS SAID BY A PULSING GREEN DOT AND NOTHING ELSE, so with motion off it
+                        // was said by a green dot alone — and quiet and finished both had a word already
+                        tail: [a.model, a.state === "quiet" ? `quiet · ${a.age_text}`
+                               : a.state === "finished" ? `finished · ${a.ended_age}` : `running · ${a.age_text}`]
                           .filter(Boolean).join(" · "),
                         delay: `${i * 60}ms`, open: () => peek("subagent", a.id) })));
 
@@ -3967,7 +3971,8 @@ const EnvHome = {
       </div>
       <div v-if="crewOpen && liveCrew.length" class=crew-strip>
         <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" @click="a.open">
-          <span class=crew-dot></span><span class=crew-name>{{ a.name }}</span><span class=crew-tail>{{ a.tail }}</span>
+          <span class=crew-dot></span><span class=crew-name>{{ a.name }}</span>
+          <span class=crew-tail>{{ a.tail }}</span>
         </button>
       </div>
       <div class=home-main>
@@ -3975,14 +3980,14 @@ const EnvHome = {
         <Thread :env="env"/>
       </section>
       <div class=home-rail>
-      <div v-if="!livePlans.length && clear" class=home-rail-empty>
-        <Icon name="todos"/>
-        <p>Nothing is waiting on you.</p>
-      </div>
       <section v-if="livePlans.length" class=home-section>
         <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans" :peek="peek"/>
       </section>
-      <section v-if="!clear" class=home-section>
+      <div v-if="clear" class=home-rail-empty>
+        <Icon name="todos"/>
+        <p>Nothing is waiting on you.</p>
+      </div>
+      <section v-else class=home-section>
         <div class=home-head><h2>Waiting on you</h2><span>{{ waitingCount }}</span></div>
         <div class=needs-slot>
           <TransitionGroup name=qrow>
