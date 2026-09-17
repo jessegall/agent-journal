@@ -36,3 +36,6 @@ __pycache__/
 /.idea
 # the browser tool's snapshots and screenshots
 /.playwright-mcp
+
+# screenshots taken while checking the viewer: scratch, not the project
+*.png
