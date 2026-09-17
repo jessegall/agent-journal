@@ -3393,15 +3393,16 @@ const NeedsCard = {
   props: { item: Object, selected: Boolean, dismiss: Function },
   components: { Icon },
   template: `
-    <div :class="['needs-card', item.kind, {sel: selected}]" :style="{ '--tint': item.tint }" @click="item.open">
+    <div :class="['needs-card', item.kind, {sel: selected}]" :style="{ '--tint': item.tint }"
+      role=button :tabindex="0" :aria-label="item.label + ': ' + item.title"
+      @click="item.open" @keydown.enter.self.prevent="item.open" @keydown.space.self.prevent="item.open">
       <div class=needs-card-top>
         <p class=needs-card-title>{{ item.title }}</p>
         <button type=button class=needs-dismiss title="Dismiss — take it off the list without acting" aria-label="Dismiss" @click.stop="dismiss(item)"><Icon name="close"/></button>
       </div>
       <div class=needs-card-meta><span class=needs-card-kind>{{ item.label }}</span>{{ item.meta }}</div>
       <div class=needs-card-foot>
-        <button v-if="item.act" type=button class=needs-card-go @click.stop="item.act">{{ item.action }}</button>
-        <span v-else class=needs-card-act>{{ item.action }}</span>
+        <button type=button class=needs-card-go @click.stop="item.act || item.open">{{ item.action }}</button>
       </div>
     </div>`,
 };
@@ -3450,7 +3451,9 @@ const PlanCard = {
     return { detail, rows, error, act, card, run, open };
   },
   template: `
-    <div :class="['work-now', {ready: plan.status === 'draft', finished: plan.status === 'done', parked: plan.status === 'parked'}]" @click="open">
+    <div :class="['work-now', {ready: plan.status === 'draft', finished: plan.status === 'done', parked: plan.status === 'parked'}]"
+      role=button :tabindex="0" :aria-label="'Plan ' + plan.n + ': ' + plan.title"
+      @click="open" @keydown.enter.self.prevent="open" @keydown.space.self.prevent="open">
       <div class=work-now-body>
         <div class=work-now-top><span class=work-now-title>{{ plan.title }}</span></div>
         <span class=work-now-ref>{{ card.ref }}</span>
@@ -3706,6 +3709,22 @@ const Thread = {
   },
   template: `
     <div class=thread>
+      <button v-if="away" type=button class=thread-down :title="missed ? missed + ' arrived while you were reading' : 'Back to the newest'" @click="backDown">
+        <Icon name="down"/>{{ missed ? missed + " new" : "Newest" }}
+      </button>
+      <div class=thread-write>
+        <div v-if="editing" class=thread-answering>
+          <span class=thread-answering-label>Editing</span>
+          <span class=thread-answering-text>{{ editing.text }}</span>
+          <button type=button class=thread-answering-x title="Leave it as it was" @click="unedit">×</button>
+        </div>
+        <div v-if="answering" class=thread-answering>
+          <span class=thread-answering-label>Replying to</span>
+          <span class=thread-answering-text>{{ answering.text }}</span>
+          <button type=button class=thread-answering-x title="Not replying to it after all" @click="unreply">×</button>
+        </div>
+        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true"/>
+      </div>
       <div ref=root class=thread-scroll @scroll.passive="watchScroll">
       <template v-if="!chat.data">
         <div v-for="s in SKELETON" :key="s.k" :class="['thread-turn', 'waiting', {mine: s.mine}]">
@@ -3757,22 +3776,6 @@ const Thread = {
         </div>
       </div>
       </TransitionGroup>
-      </div>
-      <button v-if="away" type=button class=thread-down :title="missed ? missed + ' arrived while you were reading' : 'Back to the newest'" @click="backDown">
-        <Icon name="down"/>{{ missed ? missed + " new" : "Newest" }}
-      </button>
-      <div class=thread-write>
-        <div v-if="editing" class=thread-answering>
-          <span class=thread-answering-label>Editing</span>
-          <span class=thread-answering-text>{{ editing.text }}</span>
-          <button type=button class=thread-answering-x title="Leave it as it was" @click="unedit">×</button>
-        </div>
-        <div v-if="answering" class=thread-answering>
-          <span class=thread-answering-label>Replying to</span>
-          <span class=thread-answering-text>{{ answering.text }}</span>
-          <button type=button class=thread-answering-x title="Not replying to it after all" @click="unreply">×</button>
-        </div>
-        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true"/>
       </div>
     </div>`,
 };
