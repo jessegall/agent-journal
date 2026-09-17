@@ -3832,12 +3832,15 @@ const EnvHome = {
       // SIX FACTS DO NOT FIT ON ONE LINE OF A 288px RAIL, and a line that does not fit ellipses the
       // end of itself. They are separate facts, so they are separate rows: what is being read is the
       // value, and the label is only there to say which fact it is.
+      // AN ICON PER FACT, so the bar reads as five things rather than one run-on line. The icons are
+      // the set's own: whatever a fact IS elsewhere in the viewer is what marks it here.
       const rows = [
-        { label: "agent", value: session && session.name ? session.name : agent ? "Claude Code" : "No agent" },
-        { label: "model", value: agent && agent.model ? agent.model : "" },
-        { label: "session", value: agent ? agent.session : "" },
-        { label: "running", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
-        { label: "context", value: agent && agent.context ? `${agent.context.share}%` : "" },
+        { label: "agent", icon: "agents",
+          value: session && session.name ? session.name : agent ? "Claude Code" : "No agent" },
+        { label: "model", icon: "style", value: agent && agent.model ? agent.model : "" },
+        { label: "session", icon: "activity", value: agent ? agent.session : "" },
+        { label: "running", icon: "reminders", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
+        { label: "context", icon: "files", value: agent && agent.context ? `${agent.context.share}%` : "" },
       ].filter((r) => r.value);
       // the session is an agent with a page of its own, the same page a subagent's line opens —
       // it was the one name here you could not click
@@ -3925,8 +3928,9 @@ const EnvHome = {
       <div class=agent-bar>
         <div class=agent-facts>
           <template v-for="(r, i) in lead.rows" :key="r.label">
-            <a v-if="i === 0 && lead.href" class=agent-fact-lead :href="lead.href" title="Open this agent's page">{{ r.value }}</a>
-            <span v-else class=agent-fact :title="r.label">{{ r.value }}</span>
+            <a v-if="i === 0 && lead.href" class=agent-fact-lead :href="lead.href" :title="'Open the agent page — ' + r.label">
+              <Icon :name="r.icon"/>{{ r.value }}</a>
+            <span v-else class=agent-fact :title="r.label"><Icon :name="r.icon"/>{{ r.value }}</span>
           </template>
         </div>
         <button v-if="liveCrew.length" type=button class=agent-crew-toggle :aria-expanded="crewOpen ? 'true' : 'false'"
