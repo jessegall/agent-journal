@@ -472,6 +472,7 @@ const StatusBar = {
       const w = inspectWork.value;
       return {
         branch: b ? (b.detached ? `detached at ${b.name}` : b.name) : "",
+        branchUrl: (b && b.url) || "",
         hint: b && b.detached ? `Not on a branch: HEAD is at commit ${b.name}` : "The git branch checked out in this project",
         todo: w && w.todo ? w.todo : 0,
       };
@@ -491,7 +492,11 @@ const StatusBar = {
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
       <button type=button class=statusbar-text :title="facts.todo ? 'Open the to-do it is on' : 'Open what it is on'" @click="openCurrent"><b>{{ view.state }}</b><span>{{ view.what }}</span></button>
       <span class=statusbar-tools>
-        <span v-if="facts.branch && SHELL.wide" class=statusbar-facts :title="facts.hint"><Icon name="style"/><span>{{ facts.branch }}</span></span>
+        <!-- the branch opens the repository when the remote is one with a web face; a remote that is
+             not recognised is left as plain text rather than linked somewhere that does not exist -->
+        <a v-if="facts.branch && facts.branchUrl && SHELL.wide" class=statusbar-facts :href="facts.branchUrl"
+          target=_blank rel=noopener :title="facts.hint + ' — open it'"><Icon name="style"/><span>{{ facts.branch }}</span></a>
+        <span v-else-if="facts.branch && SHELL.wide" class=statusbar-facts :title="facts.hint"><Icon name="style"/><span>{{ facts.branch }}</span></span>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">Auto<span :class="['switch', {on: SHELL.activity.auto}]"><span class=knob></span></span></button>

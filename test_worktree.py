@@ -250,5 +250,27 @@ try:
 finally:
     subprocess.run = _real
 
+# --------------------------------------------- the branch carries a web address, when there is one
+# A REMOTE THAT IS NOT RECOGNISED IS NOT GUESSED AT: the branch is left as plain text rather than
+# linked at an address nobody has. An ssh remote is not a URL and has to be converted first.
+_repo = Path(tempfile.mkdtemp())
+(_repo / ".git").mkdir()
+(_repo / ".git" / "HEAD").write_text("ref: refs/heads/main\n")
+
+
+def _remote(url):
+    (_repo / ".git" / "config").write_text(f'[core]\n\tbare = false\n[remote "origin"]\n\turl = {url}\n')
+    return _w.branch(_repo)
+
+
+check("an https remote becomes a link to the branch",
+      _remote("https://github.com/a/b.git")["url"], "https://github.com/a/b/tree/main")
+check("and an ssh remote is converted rather than used as it stands",
+      _remote("git@github.com:a/b.git")["url"], "https://github.com/a/b/tree/main")
+check("a host with no known web face is left alone",
+      _remote("git@git.example.com:a/b.git")["url"], "")
+check("and so is a repository with no remote at all",
+      (lambda: ((_repo / ".git" / "config").write_text("[core]\n"), _w.branch(_repo)["url"])[1])(), "")
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
