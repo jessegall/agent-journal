@@ -30,6 +30,12 @@ MESSAGES = {
                     "  The journal is read back verbatim into every session and subagent, so a token written "
                     "here is a token that has leaked. Put it in the environment and name the variable:\n"
                     '  journal connections set {name} secret SENTRY_AUTH_TOKEN',
+    "looks_secret_in": "the {field} of {name} appears to carry a token. {why}\n"
+                       "  The journal is read back verbatim into every session and subagent, so a token "
+                       "written in ANY field is a token that has leaked — the secret field is not the only "
+                       "one that is read.\n"
+                       "  Put it in the environment, name the variable with `secret`, and leave it out of "
+                       "the {field}.",
     "added": "connection {name}: {what}",
     "set": "connection {name}: {field} is now {value}",
     "cleared": "connection {name}: {field} is no longer set",
@@ -70,6 +76,38 @@ def secretish(value: str) -> str:
         return "A variable name is letters, digits and underscores."
     if len(got) > 64:
         return "It is longer than any variable name needs to be."
+    return ""
+
+
+#: the same prefixes `secretish` knows, findable inside a longer string: after anything that is not
+#: a letter or a digit, so `sk-` in "risk-averse" is not one
+_PREFIX_ANYWHERE = re.compile("(?<![A-Za-z0-9])(" + "|".join(re.escape(p) for p in _TOKEN_PREFIX) + ")")
+
+#: a run long and mixed enough to be a token rather than a word: letters and digits together, and
+#: longer than anything anybody types into a URL path or a sentence on purpose
+_TOKENISH = re.compile(r"[A-Za-z0-9_\-]{32,}")
+
+
+def leaked(value: str) -> str:
+    """Why this value appears to CONTAIN a token, or "".
+
+    THE SECRET FIELD WAS THE ONLY ONE GUARDED, and the record does not care which field it is in:
+    every one of them is read back verbatim into every session and every subagent. A token pasted
+    into the URL — `https://api.example.com?key=sk-live-…` — leaked exactly as far as one in the
+    secret field would have. This is a different question from `secretish`, which asks whether a
+    value IS a variable name; here the value is a URL or a sentence, and the question is whether
+    something token-shaped is hiding inside it.
+    """
+    got = (value or "").strip()
+    if not got:
+        return ""
+    # ANYWHERE IN THE STRING, not only at a word's start: the one that matters is a key inside a URL
+    # — `…/api?key=sk-live-…` — where the token has no space in front of it.
+    if _PREFIX_ANYWHERE.search(got):
+        return "It contains something that starts the way a token does."
+    for run in _TOKENISH.findall(got):
+        if any(c.isdigit() for c in run) and any(c.isalpha() for c in run):
+            return "It contains a long run of letters and digits, the shape of a token."
     return ""
 
 
@@ -118,6 +156,9 @@ def add(root: Path, name: str, what: str, at: str, kind: str = "", url: str = ""
         return False, say("needs_for", name=name)
     if why := secretish(secret):
         return False, say("looks_secret", name=name, why=why)
+    for field, value in (("purpose", what), ("kind", kind), ("url", url)):
+        if why := leaked(value):
+            return False, say("looks_secret_in", name=name, field=field, why=why)
     with state.locked(root):
         got = _project(root)
         if name in got:
@@ -139,6 +180,8 @@ def set_field(root: Path, name: str, field: str, value: str) -> tuple[bool, str]
         return False, say("not_a_field", field=repr(field))
     if field == "secret" and (why := secretish(value)):
         return False, say("looks_secret", name=name, why=why)
+    if field != "secret" and (why := leaked(value)):
+        return False, say("looks_secret_in", name=name, field=field, why=why)
     with state.locked(root):
         got = _project(root)
         if name not in got:
@@ -157,6 +200,8 @@ def override(root: Path, track: str, name: str, field: str, value: str,
         return False, say("not_a_field", field=repr(field))
     if field == "secret" and not off and (why := secretish(value)):
         return False, say("looks_secret", name=name, why=why)
+    if field != "secret" and not off and (why := leaked(value)):
+        return False, say("looks_secret_in", name=name, field=field, why=why)
     with state.locked(root):
         if name not in _project(root):
             return False, say("no_such", name=name)
