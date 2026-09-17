@@ -23,6 +23,14 @@ class PhasePayload(Payload):
     before = Field(int)
 
 
+class RephrasePayload(Payload):
+    phase = Field(int)
+    title = Field(str)
+    when = Field(str)
+    checkpoint = Field(bool)
+    no_checkpoint = Field(bool)
+
+
 class TodosPayload(Payload):
     phase = Field(int)
     todos = Field(list)

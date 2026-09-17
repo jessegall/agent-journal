@@ -3720,8 +3720,9 @@ const Thread = {
             title="Delete it — it comes off the list and stays in the record" @click.stop="drop(t)">Delete</button>
         </div>
         <div class=thread-meta>
+          <span v-if="t.n && t.who === 'you'" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
           <span>{{ clock(t.at) }}</span>
-          <span v-if="t.n" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
+          <span v-if="t.n && t.who !== 'you'" class=thread-ref>{{ t.kind === "question" ? "question" : "under message" }} {{ t.n }}</span>
           <span v-if="t.kind === 'message'" :class="['thread-ticks', t.state]" :title="landed(t)">
             <svg viewBox="0 0 19 12" fill=none stroke=currentColor stroke-width="1.6" stroke-linecap=round stroke-linejoin=round>
               <path d="M1.5 6.6 4.4 9.5 10 2.8"/>
@@ -3828,7 +3829,6 @@ const EnvHome = {
       const rows = [
         { label: "agent", value: session && session.name ? session.name : agent ? "Claude Code" : "No agent" },
         { label: "model", value: agent && agent.model ? agent.model : "" },
-        { label: "branch", value: branch ? branch.name : "" },
         { label: "session", value: agent ? agent.session : "" },
         { label: "running", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
         { label: "context", value: agent && agent.context ? `${agent.context.share}%` : "" },

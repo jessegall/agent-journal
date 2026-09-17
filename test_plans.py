@@ -431,5 +431,29 @@ check("the to-do travelled with the phase that moved, so nothing is renumbered b
 check("and the checkpoint travelled with it",
       [bool(ph.get("checkpoint")) for ph in plans._all(root, "default")[_pn - 1]["phases"]], [False, False, True])
 
+# ------------------------------------------- a phase can be corrected after it is written
+# its own plan at the END of the file: a phase added to a fixture above shifts every count below it
+code, out = j("plans", "add", "a plan written in a hurry", "--goal=it is corrected later", "--brief", stdin="x")
+_rn = int(re.search(r"plan (\d+)", out).group(1))
+j("plans", "phase", str(_rn), "frist")
+j("plans", "phase", str(_rn), "second", "--checkpoint")
+check("nothing to change is refused, and says what can be changed",
+      (j("plans", "rephrase", str(_rn), "1")[0], "say what to change" in j("plans", "rephrase", str(_rn), "1")[1]),
+      (1, True))
+check("a phase that is not there is refused", j("plans", "rephrase", str(_rn), "9", "x")[0], 1)
+code, out = j("plans", "rephrase", str(_rn), "1", "first", "--when=the spelling is right")
+check("a phase's title and its condition can be corrected",
+      (code, "phase 1: first" in out, "complete when the spelling is right" in out), (0, True, True))
+check("and the correction is what the plan reads back",
+      [(p["title"], p["when"]) for p in plans._all(root, "default")[_rn - 1]["phases"]][0],
+      ("first", "the spelling is right"))
+code, out = j("plans", "rephrase", str(_rn), "2", "--no-checkpoint")
+check("a checkpoint can be taken off, and it SAYS it is no longer one",
+      (code, "no longer a checkpoint" in out), (0, True))
+check("the phase is not a checkpoint any more",
+      bool(plans._all(root, "default")[_rn - 1]["phases"][1].get("checkpoint")), False)
+code, out = j("plans", "rephrase", str(_rn), "2", "--checkpoint")
+check("and it can be put back on", (code, "it is a checkpoint" in out), (0, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
