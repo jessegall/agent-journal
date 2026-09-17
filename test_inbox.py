@@ -500,5 +500,24 @@ check("the argument still works when --stdin is not asked for",
       j("messages", "reply", str(_sn), "a plain one")[0], 0)
 
 
+
+# ------------------------------------------- an edit keeps what was there, and says it CHANGED
+code, out = j("messages", "add", "the first wording")
+_en = int(re.search(r"message (\d+)", out).group(1))
+check("editing to the same words is refused",
+      ("already says that" in j("messages", "edit", str(_en), "the first wording")[1]), True)
+code, out = j("messages", "edit", str(_en), "the second wording")
+check("a message can be edited, and it says what became of the old words",
+      (code, "what it said before is kept" in out), (0, True))
+_m = stored()[_en - 1]
+check("the new words are what it says, and the old ones are kept under it",
+      (_m["text"], [e["text"] for e in _m.get("earlier") or []]),
+      ("the second wording", ["the first wording"]))
+check("and it is unread again, because it has changed since it was read", "read" in _m, False)
+j("messages", "process", str(_en), "--part=the second wording", "--became=noted")
+j("messages", "done", str(_en))
+check("a processed message refuses the edit: its words have already become something",
+      j("messages", "edit", str(_en), "a third wording")[0], 1)
+
 print(f"\n{ok} passed, {fail} failed")
 raise SystemExit(1 if fail else 0)

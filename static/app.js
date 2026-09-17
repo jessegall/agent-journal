@@ -3604,6 +3604,14 @@ const Thread = {
     // the words back, because a turn sitting there looking sent when it never arrived is the same lie
     // the send confirmation was written to stop.
     const post = async (text, files) => {
+      const fix = editing.value;
+      if (fix) {
+        editing.value = null;
+        await send("PATCH", `/api/env/${props.env}/messages/${fix.n}`, { text })
+          .then(() => { chat.reload(); changed(); })
+          .catch((e) => flash(e.message));
+        return;
+      }
       const to = answering.value;
       const said = to && !(to.who === "agent" && to.kind === "reply" && to.n)
         ? quoted(excerpt(quoteOf.value)) + text : text;
@@ -3664,6 +3672,15 @@ const Thread = {
       setTimeout(() => { if (lit.value === want) lit.value = ""; }, 2200);
     });
     // the header POINTS at what the message became; what is being DONE stays in the Activity column
+    // EDITING IS NOT A SECOND WRITING BOX. It reuses the one at the foot of the thread, with the turn
+    // named above it, the way replying does — so there is one place text is typed and one thing to learn.
+    const editing = ref(null);
+    const startEdit = (t) => {
+      editing.value = t;
+      answering.value = null;
+      THREAD_BOX.focus && THREAD_BOX.focus(t.full || t.text || "");
+    };
+    const unedit = () => { editing.value = null; THREAD_BOX.focus && THREAD_BOX.focus(""); };
     const drop = (t) => {
       if (!t.n) return;
       send("DELETE", `/api/env/${props.env}/messages/${t.n}`, { why: "deleted from the chat" })
@@ -3685,7 +3702,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, away, missed, watchScroll, backDown, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, clock, away, missed, watchScroll, backDown, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO };
   },
   template: `
     <div class=thread>
@@ -3723,7 +3740,9 @@ const Thread = {
         </div>
         <div class=thread-tools>
           <button type=button class=thread-tool title="Reply to this, quoting it" @click.stop="replyTo(t)">Reply</button>
-          <button v-if="t.kind === 'message' && !t.became" type=button class=thread-tool
+          <button v-if="t.kind === 'message' && t.state !== 'filed'" type=button class=thread-tool
+            title="Change what it says — the old words are kept and the agent is told" @click.stop="startEdit(t)">Edit</button>
+          <button v-if="t.kind === 'message' && t.state !== 'filed'" type=button class=thread-tool
             title="Delete it — it comes off the list and stays in the record" @click.stop="drop(t)">Delete</button>
         </div>
         <div class=thread-meta>
@@ -3743,6 +3762,11 @@ const Thread = {
         <Icon name="down"/>{{ missed ? missed + " new" : "Newest" }}
       </button>
       <div class=thread-write>
+        <div v-if="editing" class=thread-answering>
+          <span class=thread-answering-label>Editing</span>
+          <span class=thread-answering-text>{{ editing.text }}</span>
+          <button type=button class=thread-answering-x title="Leave it as it was" @click="unedit">×</button>
+        </div>
         <div v-if="answering" class=thread-answering>
           <span class=thread-answering-label>Replying to</span>
           <span class=thread-answering-text>{{ answering.text }}</span>

@@ -123,7 +123,8 @@ class Attach(Resource):
 
 
 class Edit(Resource):
-    signature = "messages:edit {n : a message number} {text* : the message, reworded}"
+    signature = "messages:edit {n : a message number} {text*? : the message, reworded} {--stdin}"
+    prose = "text"
     casts = MESSAGE
     writes = True
     controller = CONTROLLER
