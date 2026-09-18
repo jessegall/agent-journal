@@ -42,6 +42,9 @@ class Resource:
     nav: ClassVar[bool] = True   # whether it sits in the sidebar
     icon: ClassVar[str] = "dot"  # the viewer's glyph for it
     attention: ClassVar[bool] = False   # unread by the user, it waits on them
+    handed: ClassVar[str] = ""          # its heading in the start block, empty when it is not handed to a session
+    counted: ClassVar[bool] = False     # handed as a count, not row by row
+    lent: ClassVar[bool] = True         # a subagent lent the environment may write it
     mirror: ClassVar[bool] = False      # it exists about another resource and is shown under it, never on its own
     scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
     notify: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor

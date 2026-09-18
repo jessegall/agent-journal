@@ -14,6 +14,8 @@ class Message(Shape, Resource):
 
 class Todo(Shape, Resource):
     type = "todo"
+    handed = "TO-DOS waiting — delayed work, not an instruction to start any of it"
+    counted = True
     icon = "circle"
     names = {"complete": "done", "create": "add"}
     labels = {"outcome": "How"}
@@ -24,6 +26,7 @@ class Todo(Shape, Resource):
 
 class Work(Shape, Resource):
     type = "work"
+    handed = "STILL OPEN, from this or an earlier session"
     icon = "play"
     names = {"complete": "end", "create": "start"}
     title_ = "Work"
@@ -34,6 +37,7 @@ class Work(Shape, Resource):
 
 class Plan(Shape, Resource):
     type = "plan"
+    handed = "PLANS running"
     attention = True
     icon = "flag"
     names = {"complete": "acknowledge", "place": "todos", "resume": "continue"}
@@ -45,6 +49,8 @@ class Plan(Shape, Resource):
 
 class Doc(Shape, Resource):
     type = "doc"
+    handed = "DOCS catalogued — read one before you re-investigate what it settles"
+    lent = False
     attention = True
     icon = "file"
     names = {"complete": "final"}
@@ -68,6 +74,8 @@ class Report(Shape, Resource):
 
 class Pin(Reasoned, Resource):
     type = "pin"
+    handed = "PINS on this environment"
+    lent = False
     attention = True
     icon = "pin"
     names = {"complete": "strike"}
@@ -78,6 +86,8 @@ class Pin(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
+    handed = "RULES, in force on every environment"
+    lent = False
     attention = True
     icon = "list"
     names = {"complete": "strike"}
@@ -89,6 +99,8 @@ class Rule(Reasoned, Resource):
 
 class Reminder(Shape, Resource):
     type = "reminder"
+    handed = "REMINDERS, said again at every stop"
+    lent = False
     attention = True
     icon = "clock"
     names = {"complete": "retire"}
@@ -163,6 +175,7 @@ class Reaction(Shape, Resource):
 
 class Tool(Shape, Resource):
     type = "tool"
+    lent = False
     icon = "wrench"
     title_ = "Tool"
     abstract_ = "A script kept for a job that comes back, catalogued so the next agent runs it instead of writing it again"
@@ -174,6 +187,7 @@ class Tool(Shape, Resource):
 
 class Style(Reasoned, Resource):
     type = "style"
+    lent = False
     icon = "brush"
     names = {"complete": "strike"}
     title_ = "Coding style"
@@ -186,6 +200,7 @@ class Style(Reasoned, Resource):
 
 class Connection(Shape, Resource):
     type = "connection"
+    lent = False
     icon = "plug"
     title_ = "Connection"
     abstract_ = "A service the project can reach, and which variable holds its token"
@@ -197,6 +212,7 @@ class Connection(Shape, Resource):
 
 class Environment(Shape, Resource):
     type = "environment"
+    lent = False
     icon = "branch"
     names = {"create": "prepare", "complete": "remove"}
     title_ = "Environment"
