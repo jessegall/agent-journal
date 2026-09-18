@@ -10,7 +10,7 @@ from v2.resources.base import Event
 TICK = 1.0
 
 def render(e: Event, env: str) -> str:
-    return f"The {e.dispatcher} {e.verb} {e.type} {e.n} on {env}. Read it before you act on it: `journal {e.type} show {e.n}`."
+    return f"The {e.dispatcher} {e.action} {e.type} {e.n} on {env}. Read it before you act on it: `journal {e.type} show {e.n}`."
 
 
 class Driver:

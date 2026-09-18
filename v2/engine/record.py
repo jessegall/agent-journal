@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from dataclasses import asdict
 from pathlib import Path
 
-from v2.resources.base import DISPATCHERS, VERBS, Event
+from v2.resources.base import DISPATCHERS, ACTIONS, Event
 
 
 class Record:
@@ -39,12 +39,12 @@ class Record:
                 self._held = 0
                 fcntl.flock(fh, fcntl.LOCK_UN)
 
-    def emit(self, type: str, n: int, verb: str, dispatcher: str, **data) -> Event:
-        if verb not in VERBS or dispatcher not in DISPATCHERS:
-            raise ValueError(f"not an event: {verb} by {dispatcher}")
+    def emit(self, type: str, n: int, action: str, dispatcher: str, **data) -> Event:
+        if action not in ACTIONS or dispatcher not in DISPATCHERS:
+            raise ValueError(f"not an event: {action} by {dispatcher}")
         log = self.home / "events.jsonl"
         with self.locked():
-            e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, verb=verb, dispatcher=dispatcher, data=data)
+            e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, dispatcher=dispatcher, data=data)
             with log.open("a") as fh:
                 fh.write(json.dumps(asdict(e)) + "\n")
         return e
