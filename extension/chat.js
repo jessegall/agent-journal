@@ -113,6 +113,20 @@
   });
   const remember = () => chrome.storage.local.set({ window: box });
   minBtn.addEventListener("click", () => { setShut(!box.shut); remember(); });
+  // WHAT ANOTHER TAB DID, DONE HERE TOO. The box and the open flag live in the extension's storage;
+  // a change from any tab arrives as a change event, and this window follows it.
+  try {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== "local" || !document.getElementById(ID)) return;
+      if (changes.chatOpen && changes.chatOpen.newValue === false) { host.remove(); return; }
+      if (changes.window && changes.window.newValue) {
+        const next = changes.window.newValue;
+        box = { ...box, ...next };
+        place(box);
+        setShut(box.shut);
+      }
+    });
+  } catch (e) { /* no storage events here: this window keeps to itself */ }
 
   // THE SWITCH IS AT THE TOP: which journal, which environment, one click each. Picking one is the
   // same choice the popup makes, kept in the same place, so the two never disagree.

@@ -157,21 +157,18 @@ async function following() {
   return !!(got && got.following);
 }
 
-// THE WINDOW COMES BACK WHERE IT WAS LEFT OPEN. Opening it on a page remembers that page's origin;
-// closing it forgets. A reload of that page, or another page of the same site, gets the window
-// again — as long as the extension may touch that site: the origin's permission is asked for when
-// the window is opened by hand, and "follow me everywhere" covers every site at once.
-async function openOrigins() {
-  const got = await chrome.storage.local.get("openOn");
-  return (got && got.openOn) || {};
+// ONE WINDOW, EVERY TAB. Open is a single state: opened anywhere, it is open — a reload, a tab you
+// switch to, a page you go to next all get it; closed anywhere, it is closed everywhere, and the
+// windows already showing take themselves down. Minimized travels the same way, with the window's
+// box. The extension can only put it on a site it may touch: the site is asked for when the window
+// is opened by hand, and "follow me everywhere" covers every site at once.
+async function chatOpen() {
+  const got = await chrome.storage.local.get("chatOpen");
+  return !!(got && got.chatOpen);
 }
 
-async function rememberOpen(url, on) {
-  let origin;
-  try { origin = new URL(url).origin; } catch (e) { return; }
-  const open = await openOrigins();
-  if (on) open[origin] = true; else delete open[origin];
-  await chrome.storage.local.set({ openOn: open });
+async function rememberOpen(on) {
+  await chrome.storage.local.set({ chatOpen: !!on });
 }
 
 async function mayTouch(url) {
@@ -182,9 +179,7 @@ async function openOn(tabId, url) {
   if (!tabId || !url || !/^https?:/.test(url)) return;
   if (url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost")) return;  // the journal's own page has the chat
   const follow = (await following()) && (await everywhere());
-  let origin = "";
-  try { origin = new URL(url).origin; } catch (e) { return; }
-  const left = !!(await openOrigins())[origin] && ((await everywhere()) || (await mayTouch(url)));
+  const left = (await chatOpen()) && ((await everywhere()) || (await mayTouch(url)));
   if (!follow && !left) return;
   try {
     await chrome.scripting.executeScript({ target: { tabId }, files: ["chat.js"] });
@@ -220,8 +215,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     shot: () => inject("picker.js", "shot"),
     chat: () => inject("chat.js"),
     // chat.js says when it opened or closed on a page, so the window comes back after a reload
-    opened: () => rememberOpen(sender.tab && sender.tab.url, true).then(() => ({ ok: true })),
-    closed: () => rememberOpen(sender.tab && sender.tab.url, false).then(() => ({ ok: true })),
+    opened: () => rememberOpen(true).then(() => ({ ok: true })),
+    closed: () => rememberOpen(false).then(() => ({ ok: true })),
     // asking for the page's origin has to come from a click, which is why the popup asks and this only answers
     origin: async () => { const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }); return { origin: tab && tab.url && /^https?:/.test(tab.url) ? new URL(tab.url).origin : "" }; },
     test: () => post("[journal pointer] a test message from the extension", []),
