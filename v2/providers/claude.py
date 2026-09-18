@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 from v2.providers.base import EVENTS, Provider
@@ -5,6 +6,9 @@ from v2.providers.base import EVENTS, Provider
 
 class Claude(Provider):
     name = "claude"
+
+    def present(self, project: Path) -> bool:
+        return (project / ".claude").is_dir() or shutil.which("claude") is not None
 
     def config(self, project: Path) -> Path:
         return project / ".claude" / "settings.json"

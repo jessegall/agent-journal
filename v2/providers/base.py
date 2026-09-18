@@ -1,4 +1,5 @@
 import json
+import shutil
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -35,8 +36,20 @@ class Provider(ABC):
                       at=time.time(), provider=self.name)
         return {}
 
+    @abstractmethod
+    def present(self, project: Path) -> bool: ...
+
     def wire(self, project: Path, command: str) -> Path:
         f = self.config(project)
         f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(json.dumps(self.wiring(command), indent=2) + "\n")
+        try:
+            had = json.loads(f.read_text())
+        except (OSError, ValueError):
+            had = {}
+        hooks = had.setdefault("hooks", {})
+        for event, blocks in self.wiring(command)["hooks"].items():
+            mine = hooks.setdefault(event, [])
+            if not any(command in json.dumps(b) for b in mine):
+                mine.extend(blocks)
+        f.write_text(json.dumps(had, indent=2) + "\n")
         return f
