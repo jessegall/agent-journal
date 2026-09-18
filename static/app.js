@@ -4996,6 +4996,11 @@ const EnvHome = {
     const TABS = computed(() => [{ key: "waiting", label: "Waiting on you", n: waitingCount.value },
                                  { key: "todos", label: "To-dos", n: openTodos.value.length },
                                  { key: "notifications", label: "Notifications", n: unread.value.length }]);
+    // THE LITTLE WINDOW HAS NO ROOM FOR TWO COLUMNS, so it has one and a row of tabs: the rail's
+    // three lists and the chat, one at a time under the agent bar. Chat first — it is what the window is for.
+    const chatTab = ref("chat");
+    const CHAT_TABS = computed(() => [...TABS.value, { key: "chat", label: "Chat", n: null }]);
+    const pickChatTab = (key) => { chatTab.value = key; if (key !== "chat") swapTabs((v) => { tab.value = v; }, key); };
     const readNote = (n) => send("POST", `/api/env/${props.env}/notifications/${n.n}/read`).then(() => notes.reload());
     const readAll = () => send("POST", `/api/env/${props.env}/notifications/readall`).then(() => notes.reload());
     const openNote = (event, n) => {
@@ -5073,11 +5078,11 @@ const EnvHome = {
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
-             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice, noChannel, noAgent, assign, openAssign, closeAssign, assignTo };
+             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice, noChannel, noAgent, assign, openAssign, closeAssign, assignTo, chatTab, CHAT_TABS, pickChatTab };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
-    <div class=body><div class=page><div class=home>
+    <div class=body><div class=page><div :class="['home', {'rail-in-chat': CHAT_ONLY && chatTab !== 'chat'}]">
       <div class=home-main>
       <section class="home-section home-thread">
       <!-- THE AGENT BAR BELONGS TO THE CHAT, NOT TO THE PAGE. It is the agent's own state — which
@@ -5219,8 +5224,14 @@ const EnvHome = {
           <span v-for="f in a.facts" :key="f.icon" class=crew-fact><Icon :name="f.icon"/><span>{{ f.value }}</span></span>
         </button>
       </div>
-        <Thread v-if="(!DETACHED.on && !EXTENSION.holding) || CHAT_ONLY" :env="env"/>
-        <div v-else class=thread-gone>
+        <div v-if="CHAT_ONLY" class="rail-tabs chat-tabs" role=tablist>
+          <button v-for="t in CHAT_TABS" :key="t.key" type=button role=tab :aria-selected="chatTab === t.key"
+            :class="['rail-tab', {on: chatTab === t.key}]" @click="pickChatTab(t.key)">
+            {{ t.label }}<span v-if="t.n !== null" :class="['rail-tab-n', {hot: t.n && t.key !== 'todos'}]">{{ t.n }}</span>
+          </button>
+        </div>
+        <Thread v-if="((!DETACHED.on && !EXTENSION.holding) || CHAT_ONLY) && (!CHAT_ONLY || chatTab === 'chat')" :env="env"/>
+        <div v-else-if="!CHAT_ONLY" class=thread-gone>
           <p v-if="EXTENSION.holding">The chat is in the extension's window, and follows you across tabs.</p>
           <p v-else>The chat is in its own window.</p>
           <button type=button class=thread-gone-back @click="detach(false)">Put it back on the page</button>

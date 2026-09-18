@@ -876,6 +876,14 @@
   .app.chat-only .side, .app.chat-only .home-rail, .app.chat-only .activity-dock,
   .app.chat-only .project-strip, .app.chat-only .top { display: none; }
   .app.chat-only .home-main { flex: 1; min-width: 0; }
+  /* THE WINDOW'S TABS: the rail's lists take the chat's place under the bar, one column, no divider */
+  .app.chat-only .chat-tabs { position: static; height: 30px; border-bottom: 1px solid var(--border); }
+  .app.chat-only .home.rail-in-chat .home-main { flex-direction: column; }
+  .app.chat-only .home.rail-in-chat .home-thread { flex: none; }
+  .app.chat-only .home.rail-in-chat .home-rail { display: flex; flex: 1; order: 0; width: auto; max-height: none; min-height: 0;
+    padding: 0; border: 0; }
+  .app.chat-only .home.rail-in-chat .home-rail > .rail-tabs { display: none; }
+  .app.chat-only .home-divider { display: none; }
   /* WHAT THE AGENT PINNED OVER THE CONVERSATION, under the agent bar: one line, and only its X
      takes it down. The tone is the agent's own call — a note, something that went well, a warning. */
   /* FLUSH, LIKE THE BARS ABOVE IT. The section holding the thread is a flex column with a 2px gap,
