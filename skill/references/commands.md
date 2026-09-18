@@ -207,7 +207,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal reports keep <days>      a report older than this is archived (7 by default, 0 never); also on the environment's Settings page
     journal plans [--all]            what will be done here and in what order: phases, each made of to-dos
     journal plans add "<title>" --goal="<one line>" --brief   a draft; the user approves it in the viewer
-    journal plans phase <n> "<title>" [--when="<complete when>"] [--checkpoint] [--before=<p>]
+    journal plans phase <n> "<title>" [--when="<complete when>"] [--checkpoint] [--before=<p>] [--brief]   the brief on stdin; the title and --when are names, at most 80 characters, no colon (rule 13)
                                      add a phase, or INSERT one before phase <p> — the phases after it move
                                      along with their to-dos and their checkpoints
     journal plans rephrase <n> <p> ["<title>"] [--when=] [--checkpoint]   correct a phase written wrong

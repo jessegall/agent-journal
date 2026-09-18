@@ -168,6 +168,7 @@ def phases(root: Path, plan: dict, track: str, known: dict[int, dict] | None = N
         # derived rather than stored, so it is right for plans written before anyone thought to record it
         closed = [(known.get(t) or {}).get("done") or "" for t in ph.get("todos") or []]
         out.append({"p": p, "title": ph.get("title", ""), "when": ph.get("when", ""), "checkpoint": bool(ph.get("checkpoint")),
+                    "body": ph.get("body", ""),
                     "todos": rows, "complete": bool(rows) and all(r["done"] for r in rows), "current": False,
                     "completed_at": max(closed) if closed and all(closed) else ""})
     return out
@@ -319,7 +320,7 @@ def _is_a_date(title: str) -> bool:
 
 
 def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bool = False,
-              track: str | None = None, before: int = 0) -> tuple[bool, str]:
+              track: str | None = None, before: int = 0, body: str = "") -> tuple[bool, str]:
     """A phase, at the end or `before` an existing one.
 
     APPEND-ONLY WAS A REAL COST, PAID ONCE. A plan is written before the work is understood, so the
@@ -339,6 +340,13 @@ def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bo
     # phase has to be able to answer.
     if _is_a_date(title):
         return False, say("phase_is_a_date", title=title)
+    # A PHASE'S TITLE AND ITS `when` ARE NAMES TOO (rule 13): what it is, what is true when it is done,
+    # each in one short line; the explanation is the phase's brief.
+    import titles
+    for text, kind in ((title, "phase"), (when, "phase's --when")):
+        named, why = titles.check(text, kind)
+        if not named:
+            return False, why
     here = _here(root, track)
     with state.locked(root):
         items = _all(root, here)
@@ -353,6 +361,8 @@ def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bo
             return False, say("no_phase_here", n=n, p=before, last=len(phases))
         row = {"title": title, "when": " ".join((when or "").split()),
                "checkpoint": bool(checkpoint), "todos": [], "at": at}
+        if (body or "").strip():
+            row["body"] = body.strip()
         p = before if before else len(phases) + 1
         phases.insert(p - 1, row)
         _put(root, items, here)
@@ -360,7 +370,7 @@ def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bo
 
 
 def rephrase(root: Path, n: int, p: int, at: str, title: str = "", when: str = "",
-             checkpoint: bool | None = None, track: str | None = None) -> tuple[bool, str]:
+             checkpoint: bool | None = None, track: str | None = None, body: str | None = None) -> tuple[bool, str]:
     """Correct a phase after it is written: its title, what completes it, whether it is a checkpoint.
 
     A PLAN IS WRITTEN BEFORE THE WORK IS UNDERSTOOD, which is the same argument that put `--before` on
@@ -375,8 +385,13 @@ def rephrase(root: Path, n: int, p: int, at: str, title: str = "", when: str = "
     """
     title = " ".join((title or "").split())
     when = " ".join((when or "").split())
-    if not title and not when and checkpoint is None:
+    if not title and not when and checkpoint is None and body is None:
         return False, say("phase_nothing", n=n, p=p)
+    import titles
+    for text, kind in ((title, "phase"), (when, "phase's --when")):
+        named, why = titles.check(text, kind)
+        if not named:
+            return False, why
     here = _here(root, track)
     with state.locked(root):
         items = _all(root, here)
@@ -397,6 +412,8 @@ def rephrase(root: Path, n: int, p: int, at: str, title: str = "", when: str = "
             phase["title"] = title
         if when:
             phase["when"] = when
+        if body is not None:
+            phase["body"] = body.strip()
         if checkpoint is not None:
             phase["checkpoint"] = bool(checkpoint)
         phase["changed_at"] = at
@@ -923,6 +940,8 @@ def render_show(d: dict) -> str:
         mark = "✓" if ph["complete"] else "▸" if ph["current"] else "○"
         lines.append(say("phase_line", mark=mark, p=ph["p"], title=ph["title"], when=ph["when"] or None,
                          checkpoint=say("checkpoint_mark") if ph["checkpoint"] else ""))
+        if ph.get("body"):
+            lines.append(fmt.wrap(ph["body"], indent=7))
         lines.extend(say("todo_line", mark="[x]" if t["done"] else "[ ]", t=t["n"], title=t["title"] or "(archived)")
                      for t in ph["todos"])
         if not ph["todos"]:

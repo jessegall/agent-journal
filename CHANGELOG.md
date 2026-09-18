@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.165.0 — Phases are named and briefed; the chat box floats
+
+**A phase's title and its `--when` are names** — at most 80 characters, no colon, refused
+otherwise (rule 13) — and a phase can carry a brief: `--brief` on `plans phase` and `plans
+rephrase`, printed by `plans show` and shown on the plan page when the phase is opened.
+
+**The chat box has no rule over it**, like the footer; with the Activity column closed on a wide
+screen the chat keeps its compact width, the room becoming gutter on both sides.
+
 ## 1.164.0 — The plan page redrawn; titles are names
 
 **The plan page, after the user's mockup:** a status line over the title, the goal under it, the

@@ -3500,6 +3500,8 @@ const Plans = {
                 <span class=plan-phase-count>{{ doneCount(ph) }}/{{ ph.todos.length }}</span>
               </button>
               <div v-if="isOpen(ph)" class=plan-phase-todos>
+                <!-- the phase's brief, when it has one: read when the phase is opened, never on the row -->
+                <div v-if="ph.body" class="md prose plan-phase-brief" v-html="$md(ph.body)"></div>
                 <div v-for="t in ph.todos" :key="t.n" :class="['phase-todo', todoState(t), {sel: todoView.n === t.n}]"
                   role=button :tabindex="0" :aria-label="'To-do ' + t.n + ': ' + (t.title || 'archived')"
                   @click="openTodo(t)" @keydown.enter.self.prevent="openTodo(t)" @keydown.space.self.prevent="openTodo(t)">
@@ -7276,7 +7278,7 @@ const App = {
              SHELL_UI, shellDrag, shellFold, shellClose, shellPickJournal, shellPickEnv, shellDrive };
   },
   template: `
-    <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
+    <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY, 'activity-off': !ACTIVITY.shown}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
       <div v-if="CHAT_ONLY && SHELL_UI.hosted && SHELL_UI.driving" class=shell-driving role=status>
         <span class=shell-driving-dot></span>
         <span class=shell-driving-text>The agent is driving this tab — it can see it, click and type here.</span>
