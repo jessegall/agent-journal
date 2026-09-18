@@ -8,6 +8,9 @@
     old.remove();
     return;
   }
+  // THE JOURNAL'S OWN PAGE IS THE ONE PLACE THE CHAT ALREADY IS — unless it has just handed it over,
+  // which is exactly when the window is what was asked for. The page says which by its own state.
+
 
   const host = document.createElement("div");
   host.id = ID;

@@ -379,8 +379,9 @@ const Icon = {
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
-      <!-- skills: a book, because that is what a skill is — the thing you open rather than remember -->
-      <path v-else-if="name === 'book'" d="M3 3.5h4a2 2 0 0 1 2 2v7a1.6 1.6 0 0 0-1.6-1.4H3zM13 3.5H9a2 2 0 0 0-2 2v7a1.6 1.6 0 0 1 1.6-1.4H13z"/>
+      <!-- skills: a closed book seen from its spine side — a cover, its pages, and the band down the
+           spine. The open-book pair of curves was two shapes fighting for twelve pixels. -->
+      <path v-else-if="name === 'book'" d="M4 2.5h8.5v11H4a1.5 1.5 0 0 1 0-3h8.5M4 2.5a1.5 1.5 0 0 0 0 3h8.5"/>
       <!-- auto: a play mark, the user's own call. The loop said refresh and the play-against-rows
            version was three glyphs' worth of detail in twelve pixels. -->
       <path v-else-if="name === 'auto'" d="M5 3.4 12.4 8 5 12.6z" fill="currentColor" stroke-width="1"/>
