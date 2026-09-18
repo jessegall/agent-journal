@@ -17,6 +17,8 @@ import news
 
 #: how long the agent must print nothing before the launcher takes it to be idle
 IDLE_SECONDS = 3.0
+#: how many changes of the seat's decision the record keeps
+WHYS_KEPT = 12
 #: the pause between a typed line and its Enter, so the agent reads the Enter as a key and not as pasted text
 ENTER_AFTER = 0.3
 #: how much of what the agent printed the seat keeps, as plain text
@@ -25,7 +27,7 @@ PRINTED_KEEP = 400
 SINCE_BACK = 6 * 3600
 #: terminal control sequences: colours, cursor moves, mode switches — what the pty carries beside the words
 #: what a terminal sends on stdin besides keys: focus in/out, arrows and other CSI, SS3 keys, paste marks, OSC
-ANSI_INPUT = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1bO[A-Za-z]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
+ANSI_INPUT = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1bO[A-Za-z]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[PX^_][^\x1b]*\x1b\\")
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 
 
@@ -161,7 +163,7 @@ class Launcher:
         # Escape followed by an ordinary key is two keys, not the start of a sequence.
         cut = text.rfind(b"\x1b")
         pending = text[cut:] if cut >= 0 else b""
-        if pending and len(pending) < 8 and (len(pending) == 1 or pending[1:2] in (b"[", b"O", b"]")):
+        if pending and len(pending) < 64 and (len(pending) == 1 or pending[1:2] in (b"[", b"O", b"]", b"P", b"X", b"^", b"_")):
             self.raw, text = pending, text[:cut]
         else:
             self.raw = b""
@@ -243,6 +245,7 @@ class Nudger:
         self.reports = Reports(root)
         self.typed_at = 0.0          # when this seat last typed; nothing more until the hooks report after it
         self.why = ""                # what the last look decided, kept in the seat record
+        self.whys: list = []         # the last changes of that decision, with the clock: a missed message is read back here
         self.nudged = False          # the last line into the agent was the queue's, not the user's
         self.user_lines = 0          # the user's Enter count, as last seen
 
@@ -266,7 +269,10 @@ class Nudger:
         if getattr(seat, "user_lines", 0) != self.user_lines:
             self.user_lines = seat.user_lines
             self.nudged = False                      # the user spoke: the next queue read is a fresh one
-        self.why = self.look(seat)
+        why = self.look(seat)
+        if why != self.why:
+            self.whys = (self.whys + [f"{time.strftime('%H:%M:%S')} {why}"])[-WHYS_KEPT:]
+        self.why = why
         self.stamp(seat)
 
     def look(self, seat: Launcher) -> str:
@@ -335,7 +341,7 @@ class Nudger:
             try:
                 state.put(self.root, "seat_seen", int(time.time()), stem=stem)
                 state.put(self.root, "seat", {"working": not self.agent_idle(seat), "quiet": round(seat.idle_for(), 1),
-                                              "why": self.why, "env": self.env, "quiet_mode": self.quiet,
+                                              "why": self.why, "whys": self.whys, "env": self.env, "quiet_mode": self.quiet,
                                               "printed": " ".join(seat.printed.split())[-PRINTED_KEEP:]}, stem=stem)
             except OSError:
                 pass
