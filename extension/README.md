@@ -20,6 +20,11 @@ then the environment inside it.
   extension instead of to the viewer's own window, and the page says where it went. Press **Let the
   chat follow you on every page** in the popup once, and the window then opens by itself on every
   page you visit — that is the permission Chrome will only grant from a click inside the extension.
+The extension is a shell. Its window is a frame of the journal's own viewer, and the viewer draws
+the window's bar — the switches, the fold, the close — and tells the shell what to do; so a change
+to how the window looks or behaves is a journal upgrade, and the extension is reloaded only when
+the shell itself (the picker, the background worker, the relay between page and shell) changes.
+
 - **Alt+J**, or **Open the chat here**: the journal opens as a window over the page you are on —
   dragged by its bar, resized from its corner, remembered where you left it. The bar names the
   journal and the environment, and each is a switch: click one to pick another. Beside the clip in

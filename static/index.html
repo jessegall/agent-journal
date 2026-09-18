@@ -885,6 +885,26 @@
     padding: 0; border: 0; }
   .app.chat-only .home.rail-in-chat .home-rail > .rail-tabs { display: none; }
   .app.chat-only .home-divider { display: none; }
+  /* THE WINDOW'S BAR, drawn by the page the extension frames: dragged by its empty stretch, two
+     switches in the name, fold and close at the right. Its look is the journal's, and so is every change to it. */
+  .app.chat-only:has(.shell-bar) { flex-direction: column; }
+  .shell-bar { flex: none; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 6px 0 10px; cursor: grab;
+    border-bottom: 1px solid var(--border); background: var(--raised); user-select: none; }
+  .shell-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .shell-name { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 500; color: var(--text-2); }
+  .shell-pick-wrap { position: relative; }
+  .shell-pick { border: 0; border-radius: 6px; padding: 2px 6px; background: transparent; color: var(--text); font: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+  .shell-pick:hover { background: var(--hover); }
+  .shell-pick::after { content: " ▾"; color: var(--text-3); }
+  .shell-sep { color: var(--text-4, #6b6e76); }
+  .shell-menu { position: absolute; top: 26px; left: 0; z-index: 70; min-width: 160px; max-height: 260px; overflow-y: auto; padding: 4px;
+    border: 1px solid var(--border-2); border-radius: 9px; background: var(--raised); box-shadow: 0 14px 40px rgba(0,0,0,.5); }
+  .shell-row { display: flex; align-items: center; gap: 7px; width: 100%; padding: 6px 9px; border: 0; border-radius: 6px; background: transparent;
+    color: var(--text-2); font: inherit; font-size: 12px; text-align: left; cursor: pointer; white-space: nowrap; }
+  .shell-row:hover { background: var(--hover); color: var(--text); }
+  .shell-row.on { color: var(--accent-text); }
+  .shell-btn { border: 0; border-radius: 6px; padding: 2px 7px; background: transparent; color: var(--text-3); font: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
+  .shell-btn:hover { background: var(--hover); color: var(--text); }
   .chat-back { display: none; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-bottom: 1px solid var(--border);
     background: var(--raised); color: var(--text-2); font-size: 12px; text-decoration: none; }
   .chat-back:hover { color: var(--text); }
