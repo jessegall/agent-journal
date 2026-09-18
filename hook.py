@@ -2370,12 +2370,28 @@ def _record_files(payload: dict, ctx: Ctx) -> None:
 RUNNING = "running_command"
 
 
+def _running_what(payload: dict) -> str:
+    """What this call is, in the words the bar shows — or "" for a call not worth saying.
+
+    A SHELL COMMAND AND AN MCP TOOL ARE THE SAME FACT to whoever is watching: something is running
+    and the agent is waiting on it. The tool name is already the sentence — `mcp__playwright__
+    browser_click` is a server and a verb — so it is read back as "playwright · browser click".
+    """
+    name = payload.get("tool_name") or ""
+    if name == "Bash":
+        what = " ".join(str((payload.get("tool_input") or {}).get("command", "")).split())
+        return "" if any(_is_journal_verb(w[0]) for w in _pieces(what) if w) else what
+    if name.startswith("mcp__"):
+        _, _, rest = name.partition("mcp__")
+        server, _, tool = rest.partition("__")
+        return f"{server.replace('_', ' ')} · {tool.replace('_', ' ')}".strip(" ·")
+    return ""
+
+
 def _running_start(payload: dict, ctx: Ctx) -> None:
-    """Record the shell command this call is about to run, so the viewer can say what is taking so long."""
-    if payload.get("tool_name") != "Bash":
-        return
-    what = " ".join(str((payload.get("tool_input") or {}).get("command", "")).split())
-    if not what or any(_is_journal_verb(w[0]) for w in _pieces(what) if w):
+    """Record what this call is about to run, so the viewer can say what is taking so long."""
+    what = _running_what(payload)
+    if not what:
         return
     state.put(ROOT, RUNNING, {"what": what[:120], "at": time.time()}, stem=ctx.stem)
 
@@ -2387,7 +2403,7 @@ def _running_end(payload: dict, ctx: Ctx) -> None:
     time — so the bar flickered a command in and out instead of saying what the agent last ran. It is
     marked finished with what it took, so the clock stops; the work it belongs to is what retires it.
     """
-    if payload.get("tool_name") != "Bash":
+    if not _running_what(payload):
         return
     got = state.get(ROOT, RUNNING, None, stem=ctx.stem)
     if not isinstance(got, dict) or not got.get("at"):
