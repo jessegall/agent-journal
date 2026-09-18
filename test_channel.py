@@ -293,6 +293,12 @@ check("journal claude adds the channel if it is missing and shows the command it
        "claude --dangerously-load-development-channels server:journal --continue 'fix the build'" in out),
       (0, True, True))
 
+# UNDER THE LAUNCHER THERE IS NO CHANNEL: the seat outside the agent types what it would have pushed
+code, out = j("claude", "--dry-run", "--pty", "--continue", "fix the build")
+check("journal claude --pty runs claude under the launcher, with no channel flag",
+      (code, "development-channels" not in out, "claude --continue 'fix the build'" in out), (0, True, True))
+code, out = j("codex", "--dry-run", "look at the header")
+check("journal codex runs codex under the launcher", (code, "codex 'look at the header'" in out), (0, True))
 code, out = j("claude", "--dry-run", "--continue", "--dangerously-skip-permissions", "--model=sonnet",
              "fix", "the", "build")
 check("journal claude passes undeclared flags through to claude, in order, before the prompt",
