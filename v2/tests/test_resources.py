@@ -48,12 +48,12 @@ for type_ in TYPES:                                                 # the data p
     c.link(1, "todo:9")
     got = c.show(1)
     check(f"{type_}: a section and a link stick, and a comment is a resource of its own on it",
-          (got.sections, got.refs, note.type, note.data.get("on"), [x.title for x in c.comments(1)]),
+          (got.sections, got.refs, note.type, note.refs[0], [x.title for x in c.comments(1)]),
           ([{"title": "Why", "body": "because"}], ["todo:9"], "comment", f"{type_}:1", ["a note"]))
     if type_ == "comment":
-        check("comment: commenting on a comment is the same act", note.data.get("on"), "comment:1")
+        check("comment: commenting on a comment is the same act", note.refs[0], "comment:1")
     reply = CONTROLLERS["comment"](record).comment(note.n, "a comment on the comment")
-    check(f"{type_}: a comment can have a comment", (reply.data.get("on"), [x.title for x in CONTROLLERS["comment"](record).comments(note.n)]),
+    check(f"{type_}: a comment can have a comment", (reply.refs[0], [x.title for x in CONTROLLERS["comment"](record).comments(note.n)]),
           (f"comment:{note.n}", ["a comment on the comment"]))
     c.complete(1, "finished")
     check(f"{type_}: completed is the final phase, marked once", (c.show(1).completed > 0, refused(lambda: c.complete(1))), (True, True))

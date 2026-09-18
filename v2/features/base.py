@@ -22,6 +22,7 @@ class Feature(ABC):
     abstract_: ClassVar[str] = ""
     help_: ClassVar[str] = ""
     trigger: ClassVar[dict] = {}
+    default: ClassVar[bool] = True
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
@@ -34,10 +35,10 @@ class Feature(ABC):
 
     def register(self) -> None:
         for pattern, handler in self.listeners():
-            bus.on(pattern, handler, feature=self.name)
+            bus.on(pattern, handler, enabled=self.enabled)
 
     def enabled(self, record) -> bool:
-        return bus.enabled(self.name, record)
+        return record.setting("features", {}).get(self.name, self.default)
 
     def enable(self, record) -> None:
         record.set_setting("features", {**record.setting("features", {}), self.name: True})
@@ -55,5 +56,5 @@ class Feature(ABC):
         CONTROLLERS["nudge"](record, actor=SYSTEM).create(title, brief=brief, session=agent.title)
 
     def describe(self) -> dict:
-        return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_,
+        return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_, "default": self.default,
                 "listens": sorted({p for p, _ in self.listeners()}), "trigger": dict(self.trigger)}
