@@ -14,7 +14,7 @@ Every command runs through `.journal/journal.py`; `journal` is an alias for it.
     journal messages                                              waiting messages first, then processed ones
     journal messages show <n>                                     the message, its parts, and the questions about it
     journal messages process <n> --part="<words>" --became=<ref>  one part, and what it became
-    journal messages reply <n> "<answer>" --part="<words>"        a part that asks something: answered, and the user notified
+    journal messages reply <n> "<answer>" --part="<words>"        a part that asks something: answered in place, under it
     journal messages file <n> <name> "doc <doc>"|keep             an attached file: into the doc it belongs to, or kept
     journal messages done <n>                                     processed, once its parts say what they became and its files are filed
     journal messages move <n> "<environment>"                     left on the wrong environment: carry it there
@@ -100,7 +100,11 @@ Settings page, and remove old environments. Every one of those goes through the 
 controllers the terminal commands use, so it lands in the same record and obeys the same
 refusals (a closed to-do cannot be edited, a struck pin cannot change).
 
-**A session started with `journal claude` hears the viewer while idle.** A message the user
+**A session started with `journal claude` hears the viewer while idle.** One started as plain
+`claude` does not, and the viewer says so: a warning band above the agent bar, there until a
+session with the channel holds the environment. An environment no running session holds gets
+the same band with an **Assign agent** button: the user picks one of the running sessions and
+it is bound there — the one move of a session the agent does not make itself. A message the user
 leaves wakes it; with auto mode on, an answered question, a comment and a decided suggestion do too,
 and only while it is idle. With auto mode
 off, nothing but a message wakes it, and a wake-up is never a reason to start on the to-do list.
