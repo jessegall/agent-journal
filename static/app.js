@@ -6275,7 +6275,7 @@ const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Connections, Inbox, Questions
 // open work lives on Home, so the sidebar has no entry of its own for it
 const NAV = [
   { key: "home", label: "Home", views: ["EnvHome", "Work"], path: "" },
-  { key: "inbox", label: "Messages", views: ["Inbox", "Questions", "Suggestions"], path: "messages", count: ["questions", "suggestions"] },
+  // THE CHAT ON HOME IS THE MESSAGES PAGE NOW; the page keeps its route for links and history, but not a seat in the nav
   { key: "todos", label: "To-dos", views: ["Todos"], path: "todos", count: "todos" },
   { key: "docs", label: "Documents", views: ["EnvDocs", "Files"], path: "docs", count: "docs" },
   // a report is not a doc: it is written for the user, it ages out, and it is never handed to a session
@@ -7009,8 +7009,7 @@ const App = {
     });
     const away = computed(() => {
       const since = AWAY.since || Date.now() - 86400000;
-      const inbox = NAV.find((item) => item.key === "inbox");
-      const waiting = navCount(inbox);
+      const waiting = navCount({ count: ["questions", "suggestions"] });
       return { lines: awayLines(activity.data && activity.data.events, since),
                for: AWAY.since ? `${spanText((AWAY.back || Date.now()) - AWAY.since)} away` : "last 24 hours",
                waiting: waiting ? `${waiting} waiting on you` : "Nothing waiting on you" };
