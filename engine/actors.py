@@ -9,13 +9,25 @@ from resources.types import TYPES
 
 STOPPED, IDLE, WORKING, WAITING = "stopped", "idle", "working", "waiting"
 STATES = (STOPPED, IDLE, WORKING, WAITING)
+BATCH = {"quiet": 5.0, "size": 10}
 
 
-def render(e: Event, record: Record) -> str:
-    if TYPES[e.type].spoken:
-        r = CONTROLLERS[e.type](record, actor=AGENT).read(e.n)
-        return f"{r.title} — {r.brief}" if r.brief else r.title
-    return f"{e.type} {e.n} {e.action}"
+def spoken(e: Event, record: Record) -> str:
+    r = CONTROLLERS[e.type](record, actor=AGENT).read(e.n)
+    return f"{r.title} — {r.brief}" if r.brief else r.title
+
+
+def counted(events: list[Event]) -> list[str]:
+    groups: dict[tuple, list] = {}
+    for e in events:
+        groups.setdefault((e.type, e.action), []).append(e.n)
+    return [f"{len(ns)} new {t}{'s' if len(ns) != 1 else ''}" if a == "created" else f"{t}{'s' if len(ns) != 1 else ''} {' '.join(map(str, ns))} {a}"
+            for (t, a), ns in groups.items()]
+
+
+def render(events: list[Event], record: Record) -> str:
+    said = [spoken(e, record) for e in events if TYPES[e.type].spoken]
+    return "; ".join(list(dict.fromkeys(said)) + counted([e for e in events if not TYPES[e.type].spoken]))
 
 
 class Actor(ABC):
@@ -29,6 +41,9 @@ class Actor(ABC):
 
     def cursor(self) -> int:
         return self.record.cursor(self.name)
+
+    def heard(self) -> int:
+        return self.cursor()
 
     def notified(self, event: Event) -> None:
         self.record.set_cursor(self.name, event.id)
@@ -57,10 +72,26 @@ class Agent(Actor):
     def __init__(self, record: Record, driver):
         super().__init__(record)
         self.driver = driver
+        self.pending: list[Event] = []
+        self.pending_at = 0.0
 
     def notify(self, event: Event) -> None:
-        self.driver.send(render(event, self.record))
-        self.notified(event)
+        self.pending.append(event)
+        self.pending_at = time.time()
+
+    def heard(self) -> int:
+        return self.pending[-1].id if self.pending else self.cursor()
+
+    def flush(self) -> str:
+        batch = {**BATCH, **(self.record.setting("batch", {}) or {})}
+        if not self.pending or (time.time() - self.pending_at < batch["quiet"] and len(self.pending) < batch["size"]):
+            return ""
+        line = render(self.pending, self.record)
+        self.driver.send(line)
+        for e in self.pending:
+            self.notified(e)
+        self.pending = []
+        return line
 
     def state(self) -> str:
         if not self.driver.alive():
