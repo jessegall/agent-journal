@@ -33,14 +33,16 @@ watch(
             <div class="main">
                 <TopBar />
                 <StatusBar />
-                <div class="page">
-                    <SwitchCase :value="page">
-                        <template #home><Home /></template>
-                        <template #settings><SettingsPage /></template>
-                        <template #search><SearchPage /></template>
-                        <template #default><Index :type="route.page" /></template>
-                    </SwitchCase>
-                </div>
+                <Transition name="page" mode="out-in">
+                    <div :key="route.page || 'home'" class="page">
+                        <SwitchCase :value="page">
+                            <template #home><Home /></template>
+                            <template #settings><SettingsPage /></template>
+                            <template #search><SearchPage /></template>
+                            <template #default><Index :type="route.page" /></template>
+                        </SwitchCase>
+                    </div>
+                </Transition>
             </div>
             <template v-if="store.activity">
                 <Activity />
@@ -71,5 +73,24 @@ watch(
     flex: 1;
     min-height: 0;
     overflow: auto;
+}
+
+.page-enter-active {
+    transition:
+        opacity 0.2s ease-out,
+        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.page-enter-from {
+    opacity: 0;
+    transform: translateY(4px);
+}
+
+.page-leave-active {
+    transition: opacity 0.1s ease-in;
+}
+
+.page-leave-to {
+    opacity: 0;
 }
 </style>

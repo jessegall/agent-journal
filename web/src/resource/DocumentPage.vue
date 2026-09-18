@@ -26,6 +26,7 @@ const quote = ref("");
 .document {
     display: flex;
     height: 100%;
+    overflow: hidden;
 }
 
 .document-body {
@@ -33,6 +34,31 @@ const quote = ref("");
     min-width: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+    animation: curtain-left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes curtain-left {
+    from {
+        opacity: 0;
+        transform: translateX(-28px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes curtain-right {
+    from {
+        opacity: 0;
+        transform: translateX(28px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 .document-body :deep(.body) {
@@ -55,6 +81,7 @@ const quote = ref("");
     min-height: 0;
     border-left: 1px solid var(--border);
     background: var(--side);
+    animation: curtain-right 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) 0.08s both;
 }
 
 .document-aside > :deep(.comments) {
