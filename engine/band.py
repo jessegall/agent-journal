@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from pathlib import Path
 
@@ -17,11 +18,40 @@ STATES = {"idle": "●", "working": "◐", "waiting": "◔", "stopped": "○"}
 
 
 def region(rows: int) -> bytes:
-    return f"{ESC}[{ROWS + 1};{rows}r{ESC}[?6h{ESC}[H".encode()
+    return f"{ESC}[{ROWS + 1};{rows}r{ESC}[{ROWS + 1};1H".encode()
 
 
 def release() -> bytes:
-    return f"{ESC}[r{ESC}[?6l".encode()
+    return f"{ESC}[r".encode()
+
+
+CURSOR = re.compile(rb"\x1b\[(\d*)(?:;(\d*))?([Hfdr])")
+PARTIAL = re.compile(rb"\x1b(\[[\d;]*)?$")
+
+
+class Translator:
+    def __init__(self, rows: int):
+        self.rows = rows
+        self.held = b""
+
+    def shifted(self, m: re.Match) -> bytes:
+        kind = m.group(3)
+        first = int(m.group(1) or 1) + ROWS
+        if kind == b"d":
+            return b"\x1b[%dd" % first
+        if kind == b"r":
+            bottom = int(m.group(2)) + ROWS if m.group(2) else self.rows
+            return b"\x1b[%d;%dr" % (first, bottom)
+        return b"\x1b[%d;%s%s" % (first, m.group(2) or b"1", kind)
+
+    def feed(self, data: bytes) -> bytes:
+        data = self.held + data
+        cut = PARTIAL.search(data)
+        if cut:
+            data, self.held = data[:cut.start()], data[cut.start():]
+        else:
+            self.held = b""
+        return CURSOR.sub(self.shifted, data)
 
 
 def since(at: float) -> str:
@@ -76,7 +106,7 @@ class Band:
 
     def draw(self, cols: int, force: bool = False) -> bytes:
         body = "".join(f"{ESC}[{n + 1};1H{STYLE}{line}{RESET}" for n, line in enumerate(self.lines(cols)))
-        drawn = f"{ESC}7{ESC}[?6l{body}{ESC}[?6h{ESC}8".encode()
+        drawn = f"{ESC}7{body}{ESC}8".encode()
         if drawn == self.shown and not force:
             return b""
         self.shown = drawn
