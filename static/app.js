@@ -906,7 +906,7 @@ const StatusBar = {
         const done = p.phases_done || 0;
         const total = p.phases_total || 0;
         const act = (active && (p.status === "draft" || p.status === "parked")) ? null : planPrimary(p);
-        return { n: p.n, title: p.title, done, total, status: p.status, act,
+        return { n: p.n, title: p.title, done, total, status: p.status, act, held: !!p.held,
                  phase: p.status === "draft" ? `${total} ${total === 1 ? "phase" : "phases"}, a draft`
                    : p.status === "preparing" ? "the agent is adding its phases"
                    : p.status === "parked" ? `parked${p.parked_why ? " — " + p.parked_why : ""}`
@@ -962,6 +962,8 @@ const StatusBar = {
     </div>
     <div v-for="b in bars" :key="'planbar' + b.n" :class="['planbar', 'planbar-' + b.status]">
       <a class=planbar-link :href="b.href" :title="'Plan ' + b.n + ': ' + b.title">
+        <!-- the same dot as the status bar: lit while the plan runs, amber at a checkpoint, still otherwise -->
+        <span :class="['statusbar-dot', {live: b.status === 'active' && !b.held, held: b.held}]"></span>
         <span class=planbar-n>Plan {{ b.n }}</span>
         <span class=planbar-title>{{ b.title }}</span>
         <span v-if="b.phase" class=planbar-phase>{{ b.phase }}</span>
