@@ -10,8 +10,6 @@ TURNS = 120
 
 #: a turn's text is a bubble, not a document: longer than this and the thread reads as a wall
 TEXT_MAX = 1200
-#: whose messages are the agent's to read and nobody's to see in the thread
-PRIVATE_SOURCES = ("browser",)
 
 #: what a chat shows rather than names: the viewer serves these from /message-files and draws them
 PICTURES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".svg")
@@ -182,11 +180,6 @@ def wrote(root: Path, env: str) -> list[dict]:
     out = []
     for n, m in enumerate(inbox._all(root, env), 1):
         if m.get("archived"):
-            continue
-        # THE PAGE'S ANSWERS ARE FOR THE AGENT. A screenshot or a DOM dump the browser sends back is a
-        # message so the agent reads it like anything else — and a wall in the chat for the user, who
-        # asked for none of it. It stays in the record and off the thread.
-        if (m.get("source") or "") in PRIVATE_SOURCES:
             continue
         became = inbox._became(m)
         made = [int(ref.partition(":")[2]) for p in m.get("parts") or [] for ref in p.get("became") or []

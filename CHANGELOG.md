@@ -4,15 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
-## 1.156.0 — The agent sees and drives the page you are on, and the extension is a shell
+## 1.156.1 — The agent sees and drives the page you are on, and the extension is a shell
 
 **The agent can see and drive the tab you put at the wheel.** In the chat window's bar there is a
 wheel: click it and Chrome's own debugger is attached to that tab, a band over the bar says "the
 agent is driving this tab" with a Stop, and the agent may ask that tab: `journal browser shot`
 (a picture, attached), `text`, `dom`, `url`, `console`, `click "<selector>"`, `type "<selector>"
 --text="…"`, `goto <url>`, `eval "<js>"`, `scroll`. Each ask is queued for the extension, run with
-the DevTools protocol, and answered as a message from `browser` — **which the agent reads and the
-chat never shows**: the pictures and DOM dumps stay in the record, off the thread. An ask before
+the DevTools protocol, and the command waits for the answer and prints it — the text, the console,
+the value, a picture saved to a path the agent opens with Read. **Nothing of it goes through the
+chat or the inbox**: it is a tool's result, like a file. An ask before
 the wheel is on is refused and says so. Stop, closing the tab, or Chrome detaching ends it. The
 extension asks for the `debugger` permission once.
 

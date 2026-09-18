@@ -121,10 +121,12 @@ words for yet: look at what that reply claimed before doing more of it.
 **Only while the user has put a tab at the wheel** — the wheel button in the chat window's
 bar; a band over the bar says the tab is driven, with their Stop. An ask before that is
 refused and says so. Each ask is queued for the Chrome extension, which runs it on that tab
-and answers **as a message from `browser`** — a picture, the text, the console — which you
-read like anything the user sends; nothing else wakes you. Look before you act: `shot` or
-`text` first, then the click; and say in the chat what you are about to do to their page,
-because it is their page and they are watching it move.
+and posts the answer back; **the command waits for it and prints it** — the text, the console,
+the value — and a picture is saved to a path the command prints, so you open it with Read.
+Nothing about it goes through the chat or the inbox; it is a tool's result, like a file.
+`--wait=0` returns at once and `journal browser show <n>` reads the answer later. Look before
+you act: `shot` or `text` first, then the click; and say in the chat what you are about to do
+to their page, because it is their page and they are watching it move.
 
 ## The viewer: what the user does in the browser
 
