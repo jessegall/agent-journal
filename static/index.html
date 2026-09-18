@@ -691,6 +691,13 @@
   /* a row in the rail: the list page's row with everything the width cannot afford taken out */
   /* THE ROWS ARE ONE LIST, not a column of sections: the rail puts 22px between its sections, and a
      row is not a section. They are divided by their own rule and nothing else, as every list page is. */
+  /* a notification reads as a headline, the thing it is about, and then its words */
+  .rail-note-head { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+  .rail-note-ref { padding: 0 5px; border-radius: 4px; background: var(--raised); color: var(--text-4, #6b6e76);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 9.5px; letter-spacing: 0;
+    text-transform: none; }
+  .rail-row.read .rail-note-head { opacity: .6; }
   .rail-list { display: flex; flex-direction: column; gap: 0; }
   .rail-row { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 36px;
     padding: 0 var(--rail-gutter, 12px); border: 0; border-bottom: 1px solid var(--border);
@@ -719,10 +726,13 @@
   /* the bar is a bar, not a row that gives way: it is the last thing in a scrolling column, and a
      flex parent was taking its height back when the list above it grew */
   .rail-foot { flex: none; }
-  .rail-foot-act { flex: none; padding: 0; border: 0; background: none; font: inherit; font-size: 11.5px;
-    letter-spacing: .03em; white-space: nowrap; color: var(--text-3); cursor: pointer; }
-  .rail-foot-act:hover:not(:disabled) { color: var(--text); }
-  .rail-foot-act:disabled { color: var(--text-4, var(--text-3)); opacity: .5; cursor: default; }
+  /* A BUTTON THAT LOOKS LIKE A SENTENCE IS NOT A BUTTON. It clears every notification in the column
+     and read as a caption under the list; it has an edge now, and a ground of its own. */
+  .rail-foot-act { flex: none; padding: 3px 9px; border: 1px solid var(--border-2); border-radius: 6px;
+    background: var(--raised); font: inherit; font-size: 11px; letter-spacing: .02em;
+    white-space: nowrap; color: var(--text-2); cursor: pointer; }
+  .rail-foot-act:hover:not(:disabled) { color: var(--text); background: var(--hover); border-color: var(--text-4, #3a3d44); }
+  .rail-foot-act:disabled { color: var(--text-4, var(--text-3)); background: transparent; opacity: .5; cursor: default; }
   /* the reason a row is not moving, on the line that says it is not moving */
   .status-why { color: var(--text-3); }
   /* the file reader's title line: the name, and the way out to the bytes */
@@ -952,6 +962,11 @@
   .bar-file-shot { flex: none; width: 26px; height: 26px; border-radius: 5px; object-fit: cover; }
   .bar-file-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bar-file-from { margin-left: auto; flex: none; color: var(--text-3); font-size: 10.5px; }
+  /* the skills this session has open, under the count that says how many */
+  .agent-fact-open { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0;
+    background: none; color: inherit; font: inherit; cursor: pointer; }
+  .agent-fact-open:hover { color: var(--text); }
+  .skills-drop { width: 260px; left: 0; right: auto; }
   /* the thread: what was said, read downwards, with the writing box under it */
   /* THE WRITING BOX IS FIRST IN THE DOCUMENT AND LAST ON THE PAGE. Each turn carries two or three
      buttons, so a box written after them sat behind dozens of tab stops; ordering it here costs

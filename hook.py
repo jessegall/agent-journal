@@ -1132,6 +1132,23 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     return _say(say("open_fact"), say("open_do", subjects=[w["subject"] for w in fresh]))
 
 
+#: which skills this session has opened, for the bar to say so — the transcript already names each
+#: one (`Skill:journal-todos`), so this is a reading rather than a second record to keep level
+SKILLS_OPEN = "skills_open"
+
+
+def _note_skills(ctx: Ctx, lines) -> None:
+    """Record every skill this session has loaded, newest last."""
+    seen = []
+    for l in lines:
+        for t in l.tools:
+            name = str(t)
+            if name.startswith("Skill:") and name[6:] and name[6:] not in seen:
+                seen.append(name[6:])
+    if seen != (state.get(ROOT, SKILLS_OPEN, [], stem=ctx.stem) or []):
+        state.put(ROOT, SKILLS_OPEN, seen, stem=ctx.stem)
+
+
 @nudges.subject("skills", 60)
 def _p_skills(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     """Say to load the journal's skills while this session has loaded none.
@@ -1144,6 +1161,7 @@ def _p_skills(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
     ONLY AFTER IT HAS DONE SOMETHING. A session that has just started and read two files is not
     ignoring anything yet.
     """
+    _note_skills(ctx, lines)
     if "skills" in conf["silenced"]:
         return None
     if state.get(ROOT, "skills_loaded", False, stem=ctx.stem):

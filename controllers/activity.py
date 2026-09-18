@@ -193,7 +193,9 @@ class ActivityController(Controller):
                         "compacting": agent_compacting(root, stem),
                         "context": context_use(path, window), "said": last_said(path), "started": session_started(path),
                         "model": transcript.last_model(path), "running": running_now(root, stem),
-                        "compactions": state.get(root, "compactions", 0, stem=stem) or 0}
+                        "compactions": state.get(root, "compactions", 0, stem=stem) or 0,
+                        # which skills this session has open: the bar counts them and names them on a click
+                        "skills": state.get(root, "skills_open", [], stem=stem) or []}
         return None
 
     @staticmethod
