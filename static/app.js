@@ -6613,14 +6613,7 @@ const App = {
     return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade, updateBand, dismissUpdate, CHAT_ONLY, DETACHED };
   },
   template: `
-    <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY, 'has-update-band': updateBand}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
-      <div v-if="updateBand" class=update-band role=status>
-        <span v-if="upgrade.said" class=update-band-text>{{ upgrade.said }}</span>
-        <span v-else-if="upgrade.error" class=update-band-text>{{ upgrade.error }}</span>
-        <span v-else class=update-band-text>Agent journal {{ updateBand.version }} is available<template v-if="updateBand.headline"> — {{ updateBand.headline }}</template></span>
-        <button v-if="!upgrade.said" type=button class=update-band-go :disabled="upgrade.busy" @click="askUpgrade(updateBand.version)">Upgrade</button>
-        <button type=button class=update-band-x title="Dismiss" aria-label="Dismiss" @click="dismissUpdate"><Icon name="close"/></button>
-      </div>
+    <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
       <div v-if="strip" class=project-strip role=presentation>
         <button type=button class=project-strip-name :aria-expanded="stripMenu.open" title="Journals running on this machine"
           @click="stripMenu.open = !stripMenu.open; loadJournals()">{{ strip.name }}</button>
@@ -6677,9 +6670,26 @@ const App = {
             <p v-if="making.error" class=error>{{ making.error }}</p>
           </form>
         </div>
-        <div class="side-foot side-foot-row">
-          <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}</a>
-          <button type=button class=space-hint title="Quick menu: search actions, or press space again to message the agent" @click="openQuick">space</button>
+        <!-- THE UPDATE LIVES HERE, ABOVE THE FOOTER — one place, not the top of the page and not a
+             card buried in a column most views never open. The wrapper carries the margin that
+             pushes both to the bottom of the nav, so the notice stays flush against the footer
+             rather than floating wherever the flex auto-margin happens to land it alone. -->
+        <div class=side-bottom>
+          <div v-if="updateBand" class=side-update role=status>
+            <p v-if="upgrade.said" class=side-update-text>{{ upgrade.said }}</p>
+            <p v-else-if="upgrade.error" class=side-update-text>{{ upgrade.error }}</p>
+            <template v-else>
+              <p class=side-update-text>Agent journal {{ updateBand.version }} is available<template v-if="updateBand.headline"> — {{ updateBand.headline }}</template></p>
+              <div class=side-update-row>
+                <button type=button class=side-update-go :disabled="upgrade.busy" @click="askUpgrade(updateBand.version)">Upgrade</button>
+                <button type=button class=side-update-x title="Dismiss" aria-label="Dismiss" @click="dismissUpdate"><Icon name="close"/></button>
+              </div>
+            </template>
+          </div>
+          <div class="side-foot side-foot-row">
+            <a v-if="identity.data && identity.data.version" class=side-foot-version href="#/about" title="Version and changelog">Agent journal {{ identity.data.version }}</a>
+            <button type=button class=space-hint title="Quick menu: search actions, or press space again to message the agent" @click="openQuick">space</button>
+          </div>
         </div>
       </aside>
       <main class=main>
