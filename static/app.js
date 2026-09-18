@@ -5222,41 +5222,6 @@ const EnvHome = {
       <!-- THE AGENT BAR BELONGS TO THE CHAT, NOT TO THE PAGE. It is the agent's own state — which
            model, which session, how long, how full — and the rail beside it is not the agent's, so
            a bar spanning both said that state was the whole page's. -->
-      <!-- THE LOUD ONE. A session started as plain \`claude\` has no seat: nothing you write here
-           reaches it until its next turn, and the chat looks the same either way. -->
-      <div v-if="noChannel" class=chat-alert role=alert>
-        <Icon name="warn"/>
-        <div class=chat-alert-text>
-          <strong>This session was not started through the journal.</strong>
-          It does not hear what you write here while it is idle. Stop it and start it with <code>journal claude</code> or <code>journal codex</code>.
-        </div>
-      </div>
-      <div v-else-if="noAgent" class=chat-alert role=alert>
-        <Icon name="warn"/>
-        <div class=chat-alert-text>
-          <strong>No agent is on this environment.</strong>
-          Nothing you write here is read until a running session takes it — start one with <code>journal claude</code>, or assign one.
-        </div>
-        <button type=button class=chat-alert-go @click="openAssign">Assign agent</button>
-      </div>
-      <template v-if="assign.open">
-        <div class=quick-scrim @click="closeAssign"></div>
-        <div class=assign-dialog role=dialog aria-label="Assign an agent">
-          <div class=assign-head><Icon name="agents"/><span>Which running session takes <b>{{ env }}</b>?</span>
-            <button type=button class=quick-key @click="closeAssign">esc</button></div>
-          <p v-if="assign.error" class="assign-note error">{{ assign.error }}</p>
-          <p v-else-if="!assign.sessions" class=assign-note>Looking…</p>
-          <p v-else-if="!assign.sessions.length" class=assign-note>No other session is running. Start one with <code>journal claude</code>.</p>
-          <div v-else class=assign-rows>
-            <button v-for="x in assign.sessions" :key="x.id" type=button class=assign-row :disabled="!!assign.busy" @click="assignTo(x)">
-              <span :class="['assign-dot', {live: x.channel}]"></span>
-              <span class=assign-id>{{ x.short }}</span>
-              <span class=assign-env>{{ x.env ? 'on ' + x.env : 'on no environment' }}</span>
-              <span class=assign-seen>{{ x.seen }}</span>
-            </button>
-          </div>
-        </div>
-      </template>
       <div class=agent-bar>
         <div class=agent-facts>
           <template v-for="(r, i) in lead.rows" :key="r.label">
@@ -5335,6 +5300,41 @@ const EnvHome = {
           </BarDrop>
         </div>
       </div>
+      <!-- THE LOUD ONE. A session started as plain \`claude\` has no seat: nothing you write here
+           reaches it until its next turn, and the chat looks the same either way. -->
+      <div v-if="noChannel" class=chat-alert role=alert>
+        <Icon name="warn"/>
+        <div class=chat-alert-text>
+          <strong>This session was not started through the journal.</strong>
+          It does not hear what you write here while it is idle. Stop it and start it with <code>journal claude</code> or <code>journal codex</code>.
+        </div>
+      </div>
+      <div v-else-if="noAgent" class=chat-alert role=alert>
+        <Icon name="warn"/>
+        <div class=chat-alert-text>
+          <strong>No agent is on this environment.</strong>
+          Nothing you write here is read until a running session takes it — start one with <code>journal claude</code>, or assign one.
+        </div>
+        <button type=button class=chat-alert-go @click="openAssign">Assign agent</button>
+      </div>
+      <template v-if="assign.open">
+        <div class=quick-scrim @click="closeAssign"></div>
+        <div class=assign-dialog role=dialog aria-label="Assign an agent">
+          <div class=assign-head><Icon name="agents"/><span>Which running session takes <b>{{ env }}</b>?</span>
+            <button type=button class=quick-key @click="closeAssign">esc</button></div>
+          <p v-if="assign.error" class="assign-note error">{{ assign.error }}</p>
+          <p v-else-if="!assign.sessions" class=assign-note>Looking…</p>
+          <p v-else-if="!assign.sessions.length" class=assign-note>No other session is running. Start one with <code>journal claude</code>.</p>
+          <div v-else class=assign-rows>
+            <button v-for="x in assign.sessions" :key="x.id" type=button class=assign-row :disabled="!!assign.busy" @click="assignTo(x)">
+              <span :class="['assign-dot', {live: x.channel}]"></span>
+              <span class=assign-id>{{ x.short }}</span>
+              <span class=assign-env>{{ x.env ? 'on ' + x.env : 'on no environment' }}</span>
+              <span class=assign-seen>{{ x.seen }}</span>
+            </button>
+          </div>
+        </div>
+      </template>
       <!-- ONLY THE X TAKES IT DOWN. Clicking the line does nothing, so a notice cannot be dismissed
            by the click that was meant to read it. -->
       <TransitionGroup name=qrow>
