@@ -1,6 +1,8 @@
 import json
+import os
 import subprocess
 import time
+from pathlib import Path
 
 from controllers.types import CONTROLLERS
 import features
@@ -8,6 +10,7 @@ from engine import bus
 from engine.actors import Actor, Agent, IDLE, STOPPED, System, User, WAITING, WORKING
 from engine.record import Record
 from engine.sessions import Sessions
+from providers import PROVIDERS
 from resources.base import AGENT
 from resources.types import PRIORITY, TYPES
 
@@ -25,6 +28,9 @@ class Engine:
         self.born = time.time()
         self.branched_at = 0.0
         self.branch_name = ""
+        self.crewed_at = 0.0
+        self.crewed_size = -1
+        self.relayed = None
         self.typed_at = 0.0
         self.probed_at = 0.0
         self.why = ""
@@ -37,9 +43,19 @@ class Engine:
         self.running = False
 
     def tick(self) -> str:
+        self.relay()
         self.why = self.follow() or self.probe() or self.deliver() or self.nudge()
         self.seat()
         return self.why
+
+    def relay(self) -> None:
+        name = f"engine-{self.agent.driver.session}"
+        if self.relayed is None:
+            self.relayed = self.record.last_event()
+        for e in self.record.events(self.relayed):
+            self.relayed = e.id
+            if e.pid != os.getpid():
+                bus.emit(e, self.record)
 
     def private(self, e) -> bool:
         return TYPES[e.type].spoken and bool(CONTROLLERS[e.type](self.record, actor=AGENT).load(e.n).data.get("private"))
@@ -52,6 +68,7 @@ class Engine:
         if not bound or bound == self.record.env:
             return ""
         self.record = Record(self.record.root, bound)
+        self.relayed = None
         self.agent.driver.record = self.record
         self.agent = Agent(self.record, self.agent.driver)
         self.actors = [User(self.record), self.agent, System(self.record)]
@@ -91,7 +108,7 @@ class Engine:
                 if fresh and e.at < self.born:
                     actor.notified(e)
                     continue
-                if e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e):
+                if e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e) or "seen" in e.data:
                     actor.notified(e)
                     continue
                 actor.notify(e)
@@ -136,8 +153,26 @@ class Engine:
             self.agent.mark(last.get("status", ""), last.get("event", ""), branch=self.branch_name, at=last.get("at"))
         return self.branch_name
 
+    def crew(self) -> None:
+        last = self.agent.driver.last_report() or {}
+        path = last.get("transcript")
+        if not path or not last.get("session") or time.time() - self.crewed_at < 10:
+            return
+        self.crewed_at = time.time()
+        try:
+            size = Path(path).stat().st_size
+        except OSError:
+            return
+        if size == self.crewed_size:
+            return
+        self.crewed_size = size
+        facts = PROVIDERS[last.get("provider", "")]().crew(Path(path)) if last.get("provider") in PROVIDERS else {}
+        if facts and any(last.get(k) != v for k, v in facts.items()):
+            self.agent.mark(last.get("status", ""), last.get("event", ""), at=last.get("at"), **facts)
+
     def seat(self) -> None:
         self.branch()
+        self.crew()
         f = self.record.root / "runtime" / f"seat-{self.agent.driver.session}.json"
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(json.dumps({"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,

@@ -23,3 +23,9 @@ class Codex(Provider):
             return None
         text = str(payload.get("message") or "")
         return ("user" if payload["type"] == "user_message" else "agent", text) if text.strip() else None
+
+    def tool_uses(self, row: dict) -> list[dict]:
+        payload = row.get("payload") or {}
+        if row.get("type") != "response_item" or payload.get("type") != "function_call":
+            return []
+        return [{"name": str(payload.get("name") or ""), "input": {}}]

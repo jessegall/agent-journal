@@ -1,5 +1,6 @@
 import fcntl
 import json
+import os
 import time
 from contextlib import contextmanager
 from dataclasses import asdict
@@ -45,7 +46,7 @@ class Record:
             raise ValueError(f"not an event: {action} by {actor}")
         log = self.home / "events.jsonl"
         with self.locked():
-            e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data)
+            e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid())
             with log.open("a") as fh:
                 fh.write(json.dumps(asdict(e)) + "\n")
         bus.emit(e, self)

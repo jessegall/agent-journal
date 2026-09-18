@@ -1,66 +1,24 @@
 <script setup>
 import {computed, ref} from "vue";
-import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
-import {agent, open, span} from "../store.js";
+import {open} from "../store.js";
 import Thread from "../chat/Thread.vue";
 import Notice from "../chat/Notice.vue";
+import AgentBar from "../chat/AgentBar.vue";
 import RailWaiting from "./RailWaiting.vue";
 import RailTodos from "./RailTodos.vue";
 import RailNotes from "./RailNotes.vue";
 
 const tab = ref("waiting");
 const notices = computed(() => open("notice"));
-const agentLine = computed(() => {
-    if (!agent.value || agent.value.data.status === "stopped") return [];
-    const a = agent.value.data;
-    const family = (a.model || "").match(/opus|sonnet|haiku|gpt[-\w.]*/i);
-    const name = {claude: "Claude Code", codex: "Codex"}[a.provider] || a.provider || "agent";
-    return [
-        {
-            icon: "agents",
-            value: family ? `${name} · ${family[0].toLowerCase()}` : name,
-            lead: true,
-            title: `${a.model || ""} · session ${agent.value.title}`,
-        },
-        ...(a.branch ? [{icon: "branch", value: a.branch, title: "the branch it works on"}] : []),
-        {
-            icon: "reminders",
-            value: a.started ? span(Date.now() / 1000 - a.started) : "just started",
-            title: "how long this session has run",
-        },
-        {icon: "tools", value: String(a.uses || 0), title: "tool uses this session"},
-        {bar: Number(a.context || 0), value: `${a.context || 0}%`},
-    ];
-});
 </script>
 
 <template>
     <div class="home">
         <div class="home-main">
             <section class="home-section home-thread">
-                <div class="agent-bar">
-                    <div class="agent-facts">
-                        <template v-for="f in agentLine" :key="f.value">
-                            <template v-if="f.bar !== undefined">
-                                <span class="agent-fact agent-context" :title="`context ${f.value} full`">
-                                    <span class="agent-context-bar"><span :style="{width: `${f.bar}%`}" /></span>
-                                    {{ f.value }}
-                                </span>
-                            </template>
-                            <template v-else>
-                                <span :class="f.lead ? 'agent-fact-lead' : 'agent-fact'">
-                                    <Icon :name="f.icon" />
-                                    {{ f.value }}
-                                </span>
-                            </template>
-                        </template>
-                        <template v-if="!agentLine.length">
-                            <span class="agent-fact">No agent</span>
-                        </template>
-                    </div>
-                </div>
+                <AgentBar />
                 <template v-for="x in notices" :key="x.n">
                     <Notice :notice="x" />
                 </template>
@@ -127,72 +85,6 @@ const agentLine = computed(() => {
 
 .home-thread > :deep(.thread) {
     padding: 0 var(--home-gutter);
-}
-
-.agent-bar {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    height: 34px;
-    padding: 0 16px;
-    font-size: 11.5px;
-    color: var(--text-3);
-    border-bottom: 1px solid var(--border);
-    background: #111215;
-}
-
-.agent-facts {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    overflow-x: auto;
-}
-
-.agent-facts > * {
-    flex: none;
-}
-
-.agent-fact,
-.agent-fact-lead {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-}
-
-.agent-fact .ico,
-.agent-fact-lead .ico {
-    width: 12px;
-    height: 12px;
-    opacity: 0.65;
-}
-
-.agent-fact-lead {
-    color: var(--text-2);
-}
-
-.agent-context {
-    gap: 7px;
-    font-variant-numeric: tabular-nums;
-}
-
-.agent-context-bar {
-    display: inline-block;
-    width: 44px;
-    height: 4px;
-    border-radius: 2px;
-    overflow: hidden;
-    background: var(--line);
-}
-
-.agent-context-bar > span {
-    display: block;
-    height: 100%;
-    border-radius: 2px;
-    background: var(--text-3);
 }
 
 .home-divider {

@@ -82,7 +82,7 @@ class Band:
         mark = STATES.get(state, "○")
         first = f"{ACCENT}◆ journal{DIM}  {BRIGHT}{self.project}{DIM} · environment {BRIGHT}{seat.get('env') or self.env}"
         second = (f"{ACCENT}{mark} {BRIGHT}{state}{DIM}  {agent.get('model') or agent.get('provider') or '—'} · {agent.get('title', '')[:8]}"
-                  f" · up {since(float(agent.get('started') or 0))} · {agent.get('uses', 0)} tool uses · context {agent.get('context', 0)}%")
+                  f" · up {since(float(agent.get('started') or 0))} · context {round(float(agent.get('context') or 0))}%")
         third = f"{DIM}{seat.get('why') or 'starting'}"
         rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
         return [self.fit(line, cols) for line in (first, second, third, rule)]
