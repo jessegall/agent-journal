@@ -16,7 +16,7 @@ DIM = f"{ESC}[38;2;131;134;142m"
 RESET = f"{ESC}[0m"
 STATES = {"idle": "●", "working": "◐", "waiting": "◔", "stopped": "○"}
 BRAND = "◆ AGENT JOURNAL"
-GRADIENT = ((94, 99, 222), (62, 66, 160), (30, 32, 60))
+GRADIENT = ((36, 38, 78), (94, 99, 222), (36, 38, 78))
 
 
 def region(rows: int) -> bytes:
