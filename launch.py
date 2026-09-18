@@ -19,6 +19,8 @@ import news
 IDLE_SECONDS = 3.0
 #: how much of what the agent printed the seat keeps, as plain text
 PRINTED_KEEP = 400
+#: how far back a fresh seat looks for news never told: a restart mid-conversation loses nothing
+SINCE_BACK = 6 * 3600
 #: terminal control sequences: colours, cursor moves, mode switches — what the pty carries beside the words
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 
@@ -147,7 +149,6 @@ def run(command: list[str], cwd: Path | None = None, ticks: list | None = None, 
     seat.ticks = list(ticks or [])
     if root is not None:
         nudger = Nudger(root, env, quiet=quiet)
-        nudger.since = time.time()
         seat.ticks.append(nudger)
     seat.start()
     return seat.run()
@@ -216,7 +217,9 @@ class Nudger:
         hook (an agent the journal has no hooks in yet) the pty's own quiet has to do."""
         last = self.reports.last()
         if last is not None:
-            return last.get("event") == "Stop" and seat.idle_for() >= 1.0
+            # A SESSION JUST STARTED OR RESUMED IS IDLE TOO: it sits at its prompt with no Stop behind it.
+            # Measured: a resumed session was never typed to, because its last report was SessionStart.
+            return last.get("event") in ("Stop", "SessionStart") and seat.idle_for() >= 1.0
         return seat.idle_for() >= IDLE_SECONDS
 
     def __call__(self, seat: Launcher) -> None:
@@ -288,8 +291,11 @@ class Nudger:
 
     def pending(self) -> list:
         news.ROOT = self.root
+        # WHAT WAS LEFT BEFORE THE SEAT SAT DOWN IS STILL OWED. A message written while the agent was
+        # being restarted must be typed once it is idle; what was told already is marked told in the
+        # record and never repeats, so the look back costs nothing but the first read.
         if not self.since:
-            self.since = time.time()
+            self.since = time.time() - SINCE_BACK
         try:
             return news._waiting(self.env, self.since)
         except Exception:                            # a half-written record is next look's problem, not a crash
