@@ -44,9 +44,14 @@
         color: #c8ccd3; font: inherit; font-size: 12px; text-align: left; cursor: pointer; white-space: nowrap; }
       .menu button:hover { background: #1e222a; color: #e6e8ec; }
       .menu button.on { color: #a3a8f0; }
-      .x { border: 0; border-radius: 6px; padding: 2px 7px; background: transparent; color: #9aa0a8;
+      .x, .min { border: 0; border-radius: 6px; padding: 2px 7px; background: transparent; color: #9aa0a8;
         font: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
-      .x:hover { background: #1e222a; color: #e6e8ec; }
+      .x:hover, .min:hover { background: #1e222a; color: #e6e8ec; }
+      /* MINIMIZED: the bar and the viewer's own status line, which is the first thing in the frame.
+         The frame is cut to that line's height rather than hidden, so what the agent is doing stays in view. */
+      .win.shut { height: auto !important; min-height: 0; }
+      .win.shut .body { flex: none !important; height: 46px !important; }
+      .win.shut .grip { display: none; }
       iframe { flex: 1; width: 100%; border: 0; background: #0e1013; }
       .grip { position: absolute; right: 2px; bottom: 2px; width: 14px; height: 14px;
         cursor: nwse-resize; }
@@ -56,6 +61,7 @@
         text-align: center; color: #9aa0a8; font-size: 12px; }
     </style>
     <div class="bar"><span class="dot"></span><span class="name">journal</span>
+      <button class="min" title="Minimize">–</button>
       <button class="x" title="Close">×</button></div>
     <div class="menu" hidden></div>
     <div class="body"></div>
@@ -78,15 +84,24 @@
   };
   let box = { ...fallback };
   place(box);
+  const minBtn = shade.querySelector(".min");
+  const setShut = (on) => {
+    box.shut = !!on;
+    frame.classList.toggle("shut", box.shut);
+    minBtn.textContent = box.shut ? "▫" : "–";
+    minBtn.title = box.shut ? "Restore" : "Minimize";
+  };
   chrome.storage.local.get("window").then((got) => {
     if (got && got.window) {
       box = { ...fallback, ...got.window };
       box.x = Math.min(Math.max(0, box.x), Math.max(0, window.innerWidth - 120));
       box.y = Math.min(Math.max(0, box.y), Math.max(0, window.innerHeight - 60));
       place(box);
+      setShut(box.shut);
     }
   });
   const remember = () => chrome.storage.local.set({ window: box });
+  minBtn.addEventListener("click", () => { setShut(!box.shut); remember(); });
 
   // THE SWITCH IS AT THE TOP: which journal, which environment, one click each. Picking one is the
   // same choice the popup makes, kept in the same place, so the two never disagree.
@@ -166,7 +181,7 @@
   };
 
   bar.addEventListener("pointerdown", (e) => {
-    if (e.target.classList.contains("x") || e.target.classList.contains("pick")) return;
+    if (e.target.classList.contains("x") || e.target.classList.contains("min") || e.target.classList.contains("pick")) return;
     drag(e, (dx, dy, from) => {
       box.x = Math.min(Math.max(-from.w + 80, from.x + dx), window.innerWidth - 80);
       box.y = Math.min(Math.max(0, from.y + dy), window.innerHeight - 40);
