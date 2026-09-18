@@ -95,11 +95,6 @@ them by name. Attach rather than `cp` into docs/: the copy is listed, said what 
 and handed to the next session; a bare file is not. The hook says so when you keep
 re-reading a file that is not source — attach it, or ignore the hint if it is scratch.
 
-**And it says so the other way round too.** Grep the repo for something that is already attached to
-a doc and the hook tells you once, naming the doc and the file: *what you searched for is attached
-to a doc — read it there before searching the repo*. Somebody filed it with a sentence saying what
-it is; the repo will hand you the same bytes with nothing around them.
-
 **By name or number.** A doc is referenced either way, everywhere: `journal docs
 reactivity`, `docs attach reactivity …`, `--doc=reactivity`. The title, or a unique
 part of it.

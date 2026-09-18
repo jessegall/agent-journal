@@ -47,6 +47,29 @@
   .strip-drop { position: fixed; top: 20px; left: 50%; right: auto; transform: translateX(-50%); z-index: 61; }
   .journal-dot { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; vertical-align: 1px; }
 
+  /* A NEW VERSION OUTRANKS THE JOURNAL STRIP: it sits ABOVE it, in its own row, because the multi-
+     journal band answers "which project" and this answers "is this project current" — a more urgent
+     fact that would otherwise be buried in a card the activity dock nobody opens by default. */
+  :root { --update-band-h: 26px; }
+  .app.has-update-band { box-sizing: border-box; padding-top: var(--update-band-h); }
+  .app.has-update-band.striped { padding-top: calc(var(--update-band-h) + 3px); }
+  .app.has-update-band .project-strip,
+  .app.has-update-band .project-strip .project-strip-name { top: var(--update-band-h); }
+  .app.has-update-band .strip-drop { top: calc(var(--update-band-h) + 20px); }
+  .update-band { position: fixed; top: 0; left: 0; right: 0; height: var(--update-band-h); z-index: 62;
+    display: flex; align-items: center; gap: 10px; padding: 0 12px;
+    background: color-mix(in srgb, var(--accent) 30%, var(--bg-2, #14161a)); color: var(--text);
+    font-size: 11.5px; }
+  .update-band-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .update-band-go { flex: none; padding: 3px 10px; border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    border-radius: 6px; background: color-mix(in srgb, var(--accent) 25%, transparent); color: var(--text);
+    font: inherit; font-size: 11px; cursor: pointer; }
+  .update-band-go:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 38%, transparent); }
+  .update-band-go:disabled { opacity: .6; cursor: default; }
+  .update-band-x { flex: none; padding: 2px 5px; border: 0; border-radius: 6px; background: none; color: inherit; opacity: .75; }
+  .update-band-x:hover { opacity: 1; background: rgba(255, 255, 255, .12); }
+  .update-band-x .ico { width: 12px; height: 12px; }
+
   /* sidebar */
   .side { width: 236px; flex: none; background: var(--side); border-right: 1px solid var(--border);
     display: flex; flex-direction: column; gap: 18px; padding: 12px 0; overflow-x: hidden; overflow-y: auto; }

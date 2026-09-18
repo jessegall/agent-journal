@@ -6562,6 +6562,20 @@ const App = {
       const name = here.project || (ov.data && ov.data.project) || "";
       return name ? { name, color: colorOf(name), label: paletteOf(name)[1] } : null;
     });
+    // A BAND ABOVE THE BAND. The multi-journal strip already says which project you are in by
+    // colour, at the very top of the window; a new version is the one thing that outranks that —
+    // so it gets the row above it, not a card buried in the activity dock nobody opens by default.
+    // Dismissed PER VERSION: closing it for 1.151.0 says nothing about 1.152.0.
+    const updateDismissed = ref("");
+    try { updateDismissed.value = localStorage.getItem("journal.update.dismissed") || ""; } catch (e) { /* fine without it */ }
+    const updateBand = computed(() => {
+      const up = ov.data && ov.data.update;
+      return up && up.version !== updateDismissed.value ? up : null;
+    });
+    const dismissUpdate = () => {
+      updateDismissed.value = updateBand.value ? updateBand.value.version : "";
+      try { localStorage.setItem("journal.update.dismissed", updateDismissed.value); } catch (e) { /* per-viewer only */ }
+    };
     // the pickers list this journal first; colours still come from the whole list, so none changes
     const journalsOrdered = computed(() => [...journals.list.filter((j) => j.current), ...journals.list.filter((j) => !j.current)]);
     const loadJournals = () => fetch("/api/viewers").then((r) => r.json())
@@ -6618,10 +6632,15 @@ const App = {
     SHELL.setAuto = setAuto;
     const envSettings = useFetch(() => envName.value && `/api/env/${envName.value}/environment`);
     watchEffect(() => { RETENTION.table = envSettings.data ? envSettings.data.retention || null : null; });
-    return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade, CHAT_ONLY, DETACHED };
+    return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade, updateBand, dismissUpdate, CHAT_ONLY, DETACHED };
   },
   template: `
-    <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
+    <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY, 'has-update-band': updateBand}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
+      <div v-if="updateBand" class=update-band role=status>
+        <span class=update-band-text>Agent journal {{ updateBand.version }} is available<template v-if="updateBand.headline"> — {{ updateBand.headline }}</template></span>
+        <button type=button class=update-band-go :disabled="upgrade.busy" @click="askUpgrade(updateBand.version)">Upgrade</button>
+        <button type=button class=update-band-x title="Dismiss" aria-label="Dismiss" @click="dismissUpdate"><Icon name="close"/></button>
+      </div>
       <div v-if="strip" class=project-strip role=presentation>
         <button type=button class=project-strip-name :aria-expanded="stripMenu.open" title="Journals running on this machine"
           @click="stripMenu.open = !stripMenu.open; loadJournals()">{{ strip.name }}</button>

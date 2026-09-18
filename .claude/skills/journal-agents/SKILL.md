@@ -40,8 +40,6 @@ substitute — a to-do says what to do next, never what was checked. It is a rul
 ## A subagent that must write: lend it an environment
 
     journal grant "<environment>"        lend it to this session's subagents
-    journal grant --list                 what is lent, as a list rather than a sentence
-    journal lent                         (in a subagent) what it was lent: its environment, its name, its ledger
     journal grant                        what this session has lent
     journal grant --off "<environment>"  take it back
 

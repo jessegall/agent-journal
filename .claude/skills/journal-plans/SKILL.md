@@ -26,13 +26,6 @@ approve and nothing else.
 phases, a roadmap, a redesign, or "first … then …". Do not park such a request as a to-do
 and carry on: it is the work being asked for.
 
-
-**The user moves a plan from the viewer, and an idle session is told.** Approving a draft and
-continuing past a checkpoint both wake a session that is sitting idle — *the user approved plan 3*,
-*the user continued plan 3 past phase 2* — and the line says what is ahead. Nothing files itself
-from it: read the plan and carry on with the phase that is now open.
-
-
 ## Shape the goal with the user BEFORE drafting
 
 **A plan is drafted WITH the user, not handed to them.** Ask what is true when it is done,
@@ -56,9 +49,6 @@ word. Measured here: a plan drafted without that conversation had to be rewritte
     journal plans                              every plan here, with its status
     journal plans show <n>                     the plan, its phases and their to-dos
     journal plans link <n> "doc 4"|"doc 4.2"|"report 1"   what it rests on
-    journal plans edit <n> ["<title>"] [--goal=] [--brief]   reword the plan itself, or its goal
-    journal plans park <n> "<why>"             set it aside without abandoning it; it can be taken up again
-    journal plans acknowledge <n>              you have read a plan the USER wrote, and will work it
     journal plans abandon <n> "<why>"          it is stopped, and why
 
 The order is **add, then phase, then todos**: a phase belongs to a plan and a to-do belongs
