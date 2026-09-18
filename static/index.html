@@ -976,6 +976,13 @@
     background: none; color: inherit; font: inherit; cursor: pointer; }
   .agent-fact-open:hover { color: var(--text); }
   .skills-drop { width: 260px; }
+  /* what the menu can DO, under what it says: one rule, then the actions */
+  .bar-foot { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; padding-top: 5px;
+    border-top: 1px solid var(--border); }
+  .bar-act { padding: 6px 8px; border: 0; border-radius: 7px; background: none; color: var(--accent-text);
+    font: inherit; font-size: 12px; text-align: left; text-decoration: none; cursor: pointer; }
+  .bar-act:hover:not(:disabled) { background: rgba(255, 255, 255, .05); }
+  .bar-act:disabled { color: var(--text-3); cursor: default; }
   .agent-skills { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 2px 7px;
     border: 1px solid transparent; border-radius: 6px; background: none; color: var(--text-3);
     font: inherit; font-size: 11.5px; cursor: pointer; }

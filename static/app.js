@@ -4639,6 +4639,25 @@ const EnvHome = {
     const crewOpen = ref(false);
     const skillsOpen = ref(false);
     const skillsAt = reactive({ x: 0, y: 0 });
+    const marking = ref(false);
+    // every journal skill at once: one gesture for the set the user means when they say "the skills"
+    const alwaysJournal = async () => {
+      if (marking.value) return;
+      marking.value = true;
+      try {
+        const all = await (await fetch(`/api/env/${props.env}/agent`, { cache: "no-store" })).json();
+        const names = ((all && all.skills) || []).map((s) => s.name).filter((n) => /^journal(-|$)/.test(n));
+        for (const name of names.filter((n) => !((all.skills.find((s) => s.name === n) || {}).always))) {
+          await send("POST", `/api/env/${props.env}/environment/settings`, { always_load: name, always_on: true });
+        }
+        flash(names.length ? `${names.length} journal skill(s) load at every start` : "no journal skills on disk here");
+      } catch (e) {
+        flash(e.message);
+      } finally {
+        marking.value = false;
+        skillsOpen.value = false;
+      }
+    };
     const openSkills = (e) => {
       const box = e.currentTarget.getBoundingClientRect();
       skillsAt.x = Math.max(8, Math.min(box.left, window.innerWidth - 276));
@@ -4848,7 +4867,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, skillsAt, openSkills, skills, waitingCount,
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, skillsAt, openSkills, skills, marking, alwaysJournal, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
              barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
   },
@@ -4877,11 +4896,19 @@ const EnvHome = {
             :aria-expanded="skillsOpen ? 'true' : 'false'" @click="openSkills">
             <Icon name="book"/>{{ skills.length }}</button>
         </div>
-        <BarDrop :open="skillsOpen" :where="skillsAt" :width="260">
+        <BarDrop :open="skillsOpen" :where="skillsAt" :width="280">
           <p class=bar-none>Open in this window, newest last. A compaction empties it.</p>
           <p v-if="!skills.length" class=bar-none>None — the agent is working from memory.</p>
           <a v-for="name in skills" :key="name" class=bar-item :href="'#/skills/' + name"
             @click="skillsOpen = false"><Icon name="book"/>{{ name }}</a>
+          <!-- THE MECHANISM ALREADY EXISTS: a skill marked here is named in every session's start
+               block and after every compaction. This is the one gesture that marks all of the
+               journal's own, and the browser where each one is marked singly is the agent's page. -->
+          <div class=bar-foot>
+            <button type=button class=bar-act :disabled="marking" @click="alwaysJournal">
+              {{ marking ? 'Marking…' : 'Load the journal skills at every start' }}</button>
+            <a v-if="lead.href" class=bar-act :href="lead.href" @click="skillsOpen = false">Browse every skill</a>
+          </div>
         </BarDrop>
         <!-- OUTSIDE THE SCROLLING ROW. The facts scroll sideways, and an overflow container clips
              anything hanging out of it — which is a dropdown that opened and could not be seen. -->
