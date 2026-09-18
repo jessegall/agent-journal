@@ -185,7 +185,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal switch "<name>" --session=<id> | --all-sessions   move other sessions (a terminal's switch offers these)
     journal switch --back            the environment this session came from
     journal claim "<name>" "<why>"   take one a live session still holds: it is unbound, told at its next stop why and by whom, and can claim it back. Nothing of the environment is deleted
-    journal environments remove "<name>" [--yes]   take one off the list: bare it says what it holds, --yes deletes it and what it holds (the record keeps a one-line note); never the start environment, never one a live session is on, and docs stay
+    journal environments remove "<name>" [--yes]   take one off the list: bare it says what it holds, --yes deletes it and what it holds (the record keeps a one-line note); never the start environment, never one a live session is on, never one with open work (end it first), and docs stay
     journal environments show "<name>"   the pickup page: docs to read first, what stands, open work, to-dos, how to begin (bare `journal environments "<name>"` is the same)
     journal prepare "<name>"         create an environment for a piece of work and switch to it (see prepare.md)
   says which model, which gets a worktree, and what happens to the branch.

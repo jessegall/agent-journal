@@ -92,6 +92,8 @@ MESSAGES = {
                    '`journal environments remove "{name}"`',
     "remove_taken": "{name} is taken by session {sid} ({age}) — an environment under a running session is not removed; "
                     'wait for it, or move it with `journal switch "<other>" --session={sid}`',
+    "remove_open": "{name} has open work — {subject} — and removing it would delete that work unended; "
+                   'end it first: `journal work end "{subject}"`, or move the session that holds it',
     "held_what": "{pins} pin(s), {work} open work, {todos} open to-do(s)",
     "remove_confirm": "{name} holds {what}, and removing it DELETES them:\n"
                       '  journal environments remove "{name}" --yes\n'
@@ -660,6 +662,7 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
     WHAT IT REFUSES. The project's start environment, because a new session would land
     nowhere. An environment a live session is on, including this one, because pulling the
     ground out from under a running agent is exactly the quiet loss this guards against.
+    One with open work, whoever declared it, because deleting work is not ending it.
     Docs are never touched: they belong to the project, not to one environment.
     """
     import shutil
@@ -678,6 +681,12 @@ def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
     taken = occupants(root, name, stem, stale_hours)
     if taken:
         return False, say("remove_taken", name=name, sid=taken[0][0][:8], age=age_text(taken[0][1]))
+    # OPEN WORK IS SOMEBODY MID-SENTENCE. The count in the confirmation was meant to make the loss
+    # visible, and an agent still typed --yes past "1 open work" — its own, opened before it
+    # switched away. A removal is not how work ends; ending it is one command.
+    opened = [w for w in state.tracked(root, "work", name, []) or [] if not w.get("ended")]
+    if opened:
+        return False, say("remove_open", name=name, subject=opened[0]["subject"])
     pins, work, todos = _held_summary(root, name, tracks.get(name, {}))
     what = say("held_what", pins=pins, work=work, todos=todos)
     if not yes:
