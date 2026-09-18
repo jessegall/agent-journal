@@ -36,10 +36,16 @@ onUnmounted(() => window.removeEventListener("click", away));
                 <span class="agent-fact">No agent</span>
             </template>
             <template v-else>
-                <span class="agent-fact-lead" :title="`${data.model || ''} · session ${agent.title}`">
+                <span class="agent-fact-lead" :title="`session ${agent.title}`">
                     <Icon name="agents" />
-                    {{ family ? `${name} · ${family[0].toLowerCase()}` : name }}
+                    {{ name }}
                 </span>
+                <template v-if="family">
+                    <span class="agent-fact" :title="data.model">
+                        <Icon name="model" />
+                        {{ family[0].toLowerCase() }}
+                    </span>
+                </template>
                 <template v-if="data.branch && data.branch_url">
                     <a
                         class="agent-fact agent-link"
@@ -65,8 +71,8 @@ onUnmounted(() => window.removeEventListener("click", away));
                     <span class="agent-context-bar"><span :style="{width: `${Math.round(Number(data.context || 0))}%`}" /></span>
                     {{ Math.round(Number(data.context || 0)) }}%
                 </span>
-                <span class="agent-facts-divider" />
                 <template v-for="c in counts" :key="c.key">
+                    <span class="agent-facts-divider" />
                     <button
                         type="button"
                         :class="['agent-fact', 'agent-count', {none: !c.n, open: open === c.key}]"
