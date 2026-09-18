@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.167.1 — The launcher types after a resume, and what was left before it started
+
+Two launcher bugs, both measured on a live session. A session started or resumed under `journal
+claude` has SessionStart as its last hook report, not Stop, and the launcher never judged it idle —
+so nothing was typed until the agent had stopped once. And a message left before the launcher
+started fell outside its window and was never owed. Now a started or resumed session is idle until
+it works, and a fresh seat looks back six hours for news never told (what was told is marked in
+the record and never repeats).
+
 ## 1.167.0 — The chat after the user's pictures
 
 **The chat box floats:** a soft grey border, the paperclip at its foot on the left and Send on the
