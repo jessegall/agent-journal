@@ -1311,6 +1311,9 @@ check("the answer lands as a message from browser, and the ask is done",
       (status, len(inbox._all(root, "delta")) - _msgs_before, _last["source"], "clicked button" in _last["text"], post("/api/env/delta/browser/pending", {})[1].get("data")),
       (200, 1, "browser", True, []))
 check("answering twice is refused", post(f"/api/env/delta/browser/{_pend[0]['n']}/result", {"ok": True, "text": "again"})[0], 400)
+# the answer is the agent's to read: it is in the record and off the chat thread
+_chat_turns = json.loads(get("/api/env/delta/chat")[2]).get("turns") or []
+check("the page's answer does not show in the chat", any("clicked button" in (t.get("text") or "") for t in _chat_turns), False)
 srv.shutdown()
 srv.server_close()
 thread.join(timeout=5)
