@@ -162,8 +162,10 @@ async function go() {
 }
 
 .compose-quote-text {
-    max-height: 96px;
-    overflow: auto;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
     font-size: 12.5px;
     color: var(--text-2);
     white-space: pre-wrap;

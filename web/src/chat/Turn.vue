@@ -243,6 +243,10 @@ button.thread-pill:hover {
 }
 
 .thread-quote {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
     margin: 0 0 6px;
     padding: 2px 0 2px 9px;
     border-left: 2px solid var(--accent);
