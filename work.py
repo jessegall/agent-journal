@@ -130,6 +130,10 @@ def start(root: Path, subject: str, at: str, where: dict | None = None) -> tuple
     subject = " ".join(subject.split())
     if not subject:
         return False, say("start_what")
+    import titles
+    named, why = titles.check(subject, "work")
+    if not named:
+        return False, why
     with state.locked(root):
         for w in open_work(root):
             if w["subject"].lower() == subject.lower():

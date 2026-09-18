@@ -952,6 +952,10 @@ def add(root: Path, track: str, title: str, body: str, at: str, where: dict | No
     title = " ".join((title or "").split())
     if not title:
         return False, say("add_empty")
+    import titles
+    named, why = titles.check(title, "to-do")
+    if not named:
+        return False, why
     with state.locked(root):
         for t in open_items(root, track):
             if _same_title(t["title"], title):
@@ -968,6 +972,10 @@ def retitle(root: Path, track: str, n: int, title: str) -> tuple[bool, str]:
     title = " ".join((title or "").split())
     if not title:
         return False, say("add_empty")
+    import titles
+    named, why = titles.check(title, "to-do")
+    if not named:
+        return False, why
     # the same rule as adding: two open rows with one title make `work end "<title>" --todo` ambiguous
     for other in open_items(root, track):
         if other["n"] != n and _same_title(other["title"], title):
