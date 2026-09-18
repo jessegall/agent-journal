@@ -20,7 +20,27 @@ export const store = reactive({
     stream: null,
     activity: remembered("journal.activity", true),
     focus: "",
+    detached: false,
 });
+
+let popup = null;
+
+export function detach(on) {
+    if (on) {
+        popup = window.open(`${location.origin}/?chat${location.hash}`, "journal-chat", "popup,width=430,height=620");
+        store.detached = !!popup;
+        const watch = setInterval(() => {
+            if (!popup || popup.closed) {
+                clearInterval(watch);
+                store.detached = false;
+            }
+        }, 800);
+    } else {
+        if (popup && !popup.closed) popup.close();
+        popup = null;
+        store.detached = false;
+    }
+}
 
 watch(
     () => store.activity,

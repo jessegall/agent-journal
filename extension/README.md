@@ -8,8 +8,8 @@ meant — the selector, the page, the text, its opening tag, and a picture of th
 1. `chrome://extensions` → turn on **Developer mode** → **Load unpacked** → pick this folder.
 2. Start a viewer if none is running: `journal serve`.
 
-The extension finds every journal itself by asking ports 8420–8439 for `/api/identity`, so nothing
-needs configuring when a port changes. Which journal and which environment are chosen inside the
+The extension finds every journal itself by asking ports 8420–8439 for `/api/identity` (which also
+lists the environments), so nothing needs configuring when a port changes. Which journal and which environment are chosen inside the
 chat window's bar.
 
 The extension is a shell. Its window is a frame of the journal's own viewer, and the viewer draws

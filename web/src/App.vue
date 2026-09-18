@@ -14,12 +14,14 @@ import SearchPage from "./pages/SearchPage.vue";
 import Reader from "./resource/Reader.vue";
 import Lightbox from "./kit/Lightbox.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
+import ChatWindow from "./layout/ChatWindow.vue";
 
 const page = computed(() => (!route.value.page ? "home" : ["settings", "search"].includes(route.value.page) ? route.value.page : "index"));
 const opened = computed(
     () => route.value.open || (route.value.n && page.value === "index" ? {type: route.value.page, n: route.value.n} : {type: "", n: 0})
 );
 
+const chatOnly = new URLSearchParams(location.search).has("chat");
 const quick = ref(false);
 let pointed = false;
 const sawPointer = () => (pointed = true);
@@ -56,7 +58,10 @@ watch(
 </script>
 
 <template>
-    <template v-if="store.spec">
+    <template v-if="store.spec && chatOnly">
+        <ChatWindow />
+    </template>
+    <template v-else-if="store.spec">
         <div class="app">
             <Sidebar />
             <div class="main">

@@ -133,7 +133,7 @@
     }
     shade.querySelector(".fallback .name").textContent = [got.project, got.env].filter(Boolean).join(" · ") || "journal";
     view = document.createElement("iframe");
-    view.src = got.env ? `${got.url}/?chat#/env/${got.env}` : `${got.url}/?chat`;
+    view.src = got.env ? `${got.url}/?chat#/${got.env}` : `${got.url}/?chat`;
     body.append(view);
     expectHello();
   });
