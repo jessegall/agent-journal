@@ -21,6 +21,10 @@
   ].join(";");
   // no words over the page: the outline under the pointer says what is about to happen
   document.documentElement.append(box);
+  // THE KEYS COME HERE. Started from the chat window, the focus is inside that window's frame, and an
+  // Escape pressed there never reaches this page — so the frame is blurred and the page takes the focus.
+  try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) { /* nothing to blur */ }
+  try { window.focus(); } catch (e) { /* the page keeps its focus */ }
 
   let at = null;
 
