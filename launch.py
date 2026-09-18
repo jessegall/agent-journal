@@ -132,9 +132,12 @@ class Launcher:
                         break
                     self.write(data)
                     self._note_typed(data)
-                if not ready:
-                    for tick in self.ticks:
-                        tick(self)
+                # EVERY TURN OF THE LOOP, NOT ONLY A QUIET ONE. The ticks ran when select timed out,
+                # and an agent that prints steadily (a spinner while it works) never let it time out —
+                # so the seat stopped stamping, the viewer lost it after thirty seconds and the no-seat
+                # band flickered on and off (message 193). A tick throttles itself.
+                for tick in self.ticks:
+                    tick(self)
         finally:
             signal.signal(signal.SIGWINCH, signal.SIG_DFL)
             if saved is not None:

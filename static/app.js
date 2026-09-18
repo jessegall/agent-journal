@@ -1573,6 +1573,10 @@ const Compose = {
         <div class=compose-quote-text><p v-for="(l, i) in quoteLines" :key="i">{{ l }}</p></div>
       </div>
       <div :class="['compose-box', {attachable: attach && !bare, floating: bare}]">
+        <!-- what is attached sits at the top of the box, over the words, and never under the Send row (message 193) -->
+        <div v-if="draft.files.length" class=compose-files>
+          <span v-for="(f, i) in draft.files" :key="i" class=chip>{{ f.name }} <button type=button class=chip-x title="Remove" @click="unpick(i)">×</button></span>
+        </div>
         <!-- UP IN AN EMPTY BOX GOES BACK TO THE LAST THING SAID, the way a shell goes back through
              its history. With anything typed the arrow moves the caret, which is what it is for. -->
         <textarea ref=area class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
@@ -1596,9 +1600,6 @@ const Compose = {
           <label v-if="attach" class=compose-attach title="Attach files" aria-label="Attach files">
             <Icon name="paperclip"/><input type=file multiple hidden @change="picked">
           </label>
-        </div>
-        <div v-if="draft.files.length" class=compose-files>
-          <span v-for="(f, i) in draft.files" :key="i" class=chip>{{ f.name }} <button type=button class=chip-x title="Remove" @click="unpick(i)">×</button></span>
         </div>
       </div>
       <div v-if="!bare" class=compose-bar>
