@@ -137,6 +137,15 @@ check("an archived message is not a turn",
       [t for t in turns() if "archived one" in t["text"]], [])
 check("every turn carries a time, so the thread can be ordered", all(t["at"] for t in turns()), True)
 
+# A QUOTE IS A QUOTE ON BOTH SIDES. Replying to something the agent SAID has no message to hang a
+# reply on, so the viewer puts the quoted line in the text; the thread reads it back as a quote.
+inbox.add(root, "> the cause was a font ligature\n\nis that fixed everywhere?", now(), track="w")
+_quoted = [t for t in turns() if t["kind"] == "message" and "fixed everywhere" in t["text"]]
+check("a message that opens with a quote carries it as the quote, not in its words",
+      [(t["ref"], t["text"]) for t in _quoted],
+      [("the cause was a font ligature", "is that fixed everywhere?")])
+
+
 # ------------------------------------------ the journal's note, and only when the agent said nothing
 # EITHER A NOTE OR AN ANSWER, NEVER BOTH. The note is read off the record rather than written into
 # it, so a reply that lands after the message was filed still replaces it.
