@@ -14,7 +14,7 @@ Every command runs through `.journal/journal.py`; `journal` is an alias for it.
     journal messages                                              waiting messages first, then processed ones
     journal messages show <n>                                     the message, its parts, and the questions about it
     journal messages process <n> --part="<words>" --became=<ref>  one part, and what it became
-    journal messages reply <n> "<answer>" --part="<words>"        a part that asks something: answered, and the user notified
+    journal messages reply <n> "<answer>" --part="<words>"        a part that asks something: answered in place, under it
     journal messages file <n> <name> "doc <doc>"|keep             an attached file: into the doc it belongs to, or kept
     journal messages done <n>                                     processed, once its parts say what they became and its files are filed
     journal messages move <n> "<environment>"                     left on the wrong environment: carry it there

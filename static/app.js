@@ -4539,7 +4539,7 @@ const Thread = {
 
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread, StatusIcon, NoteRow, BarDrop, Switch },
+  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread, StatusIcon, NoteRow, BarDrop },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
@@ -4686,27 +4686,6 @@ const EnvHome = {
       return (agent && agent.shells) || [];
     });
     const skillsAt = reactive({ x: 0, y: 0 });
-    // WHETHER THE CORE PAIR IS NAMED AT EVERY START. journal and journal-memory are the ones report
-    // 10 keeps named outright — the rest trigger on their own — so this reads and writes them
-    // together rather than offering a bulk "load everything" action that no longer matches the
-    // decision that was actually made.
-    const coreAlways = useFetch(() => "/api/skills/journal", { poll: false });
-    const coreAlwaysOn = computed(() => !!(coreAlways.data && coreAlways.data.always));
-    const coreAlwaysBusy = ref(false);
-    const setCoreAlways = async (on) => {
-      if (coreAlwaysBusy.value || !props.env) return;
-      coreAlwaysBusy.value = true;
-      try {
-        await Promise.all(["journal", "journal-memory"].map((name) =>
-          send("POST", `/api/env/${props.env}/environment/settings`, { always_load: name, always_on: on })));
-        coreAlways.reload();
-        flash(on ? "Journal skills load at every start" : "Journal skills load on their own triggers");
-      } catch (e) {
-        flash(e.message);
-      } finally {
-        coreAlwaysBusy.value = false;
-      }
-    };
     const openSkills = (e) => {
       const box = e.currentTarget.getBoundingClientRect();
       skillsAt.x = Math.max(8, Math.min(box.left, window.innerWidth - 276));
@@ -4916,7 +4895,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, coreAlwaysOn, coreAlwaysBusy, setCoreAlways, waitingCount,
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
              barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
   },
@@ -5007,11 +4986,6 @@ const EnvHome = {
             </template>
           </BarDrop>
         </div>
-      </div>
-      <!-- THE HOMEPAGE, WHERE THE SETTING ACTUALLY LIVES. Not a one-shot button in a menu you have
-           to reopen to check: a standing switch, read from the same place the skills page reads it. -->
-      <div class=agent-skills-row>
-        <Switch label="Journal skills load at every start" :modelValue="coreAlwaysOn" @update:modelValue="setCoreAlways"/>
       </div>
       <!-- ONLY THE X TAKES IT DOWN. Clicking the line does nothing, so a notice cannot be dismissed
            by the click that was meant to read it. -->
