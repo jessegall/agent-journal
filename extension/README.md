@@ -25,10 +25,12 @@ The popup is one button: **Open the chat here**.
   journal and the environment, and each is a switch: click one to pick another. Beside the clip in
   its write box, a crosshair points at an element of the page under the window (the same as Alt+P)
   and a camera sends a picture of one. The – in the bar folds the window down to the bar and the
-  agent's status line, and opens it back up. Open, closed, minimized and where it sits are one state
-  for every tab: open it here and the tab you switch to has it too; fold or close it anywhere and
-  every tab follows. The extension asks for every site at install, so nothing has to be granted
-  later. Alt+J again, Esc, or × closes it.
+  agent's status line, and opens it back up. Open it here and the tab you switch to has it too;
+  where it sits and whether it is folded are shared. A tab may go its own way: a journal or
+  environment picked in one tab's window is that tab's, and × in a tab closes the window there
+  only — a new tab starts on the shared choice. Closing it on the journal's own page puts the chat
+  back on the page and closes every window. The extension asks for every site at install, so
+  nothing has to be granted later. Alt+J again or Esc closes it in the tab.
 - **Alt+P**: a crosshair appears, whatever is under the pointer is outlined, and clicking it sends
   it — the selector, the page, the element's text and a picture. Esc stops without sending.
 - **Detach, in the journal's own viewer**: the button beside the ⋮ hands the chat to this

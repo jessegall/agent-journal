@@ -10,10 +10,16 @@
   const ask = (msg, cb) => { try { chrome.runtime.sendMessage(msg, (got) => { void chrome.runtime.lastError; if (cb) cb(got); }); } catch (e) { if (cb) cb(null); } };
   const stored = (key) => { try { return chrome.storage.local.get(key).catch(() => ({})); } catch (e) { return Promise.resolve({}); } };
   const store = (value) => { try { chrome.storage.local.set(value).catch(() => {}); } catch (e) { /* not remembered, not fatal */ } };
+  const onJournal = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(window.location.origin);
   const tellBackground = (kind, extra) => {
+    // CLOSED ON THE JOURNAL'S OWN PAGE IS PUTTING THE CHAT BACK, which is the one close that reaches
+    // every tab; closed anywhere else is this tab's alone, and the others keep their windows.
+    if (kind === "closed" && onJournal) {
+      ask({ kind: "follow", on: false });
+      try { window.postMessage({ source: "journal-extension", kind: "attached" }, window.location.origin); } catch (e) { /* nothing to tell */ }
+      return;
+    }
     ask({ kind, ...(extra || {}) });
-    // the page under the window may be the journal's own: told the window closed, it draws the chat again
-    if (kind === "closed") try { window.postMessage({ source: "journal-extension", kind: "attached" }, window.location.origin); } catch (e) { /* nothing to tell */ }
   };
   const old = document.getElementById(ID);
   if (old) {                                        // the shortcut toggles: press it again to close
@@ -101,7 +107,8 @@
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== "local" || !document.getElementById(ID)) return;
       if (changes.chatOpen && changes.chatOpen.newValue === false) { host.remove(); return; }
-      if (changes.url || changes.env) load(true);   // picked elsewhere: this window goes there too
+      // the shared choice changed (the popup, or a pick with no tab): a window on no choice of its own follows it
+      if (changes.url || changes.env) ask({ kind: "where" }, (got) => { if (got && got.url && view && !view.src.startsWith(got.url)) load(true); });
       if (changes.window && changes.window.newValue) {
         box = { ...box, ...changes.window.newValue };
         place(box);
