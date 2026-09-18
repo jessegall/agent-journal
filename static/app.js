@@ -1093,8 +1093,9 @@ const StatusBar = {
       <span class=statusbar-tools>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"
-          @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)"><span :class="['switch', 'worded', {on: SHELL.activity.auto}]">
-            <span class=switch-word>auto</span><span class=knob></span></span></button>
+          @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)">
+          <!-- A SWITCH WITH A KNOB, then the word (message 145): the knob's side and colour say on or off, the word never changes -->
+          <span :class="['switch', 'small', {on: SHELL.activity.auto}]"><span class=knob></span></span><span class=statusbar-auto-word>auto</span></button>
       </span>
     </div>
     <TransitionGroup name=planbar>
