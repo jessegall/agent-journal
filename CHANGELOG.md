@@ -4,6 +4,75 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.152.0 — The agent says what it is doing, and the chat leaves the page
+
+**The status bar says what the agent is running, right now.** Every Bash command, every MCP call and
+every file it reads or writes appears beside the work it is on — small, muted, rolling as one follows
+another, with the age of THAT command rather than of the work. A command still going after twenty
+seconds turns Working into Waiting, because waiting is not working and from the outside they look
+identical. The last command stays up with its clock stopped, and leaves five quiet seconds later; a
+gap between two calls is no longer reported as idle.
+
+**A notice: one line the agent pins over the conversation.** `journal notice "<the line>"
+[--tone=note|good|warn] [--link=<url> --label="Open the PR"]` sits at the top of the chat until the
+user closes it with its X — clicking the line does nothing, so it cannot be dismissed by the click
+meant to read it. It is neither a notification (news that ages into a list) nor a pin (a fact for the
+agent): it is for the user, and it stays on their screen.
+
+**A reaction: a face on a turn, either way.** `journal react <message> "👍"`, and in the viewer the
+turn's own tools bar becomes the six faces. The same face again takes it off — the gesture is the
+undo. A reaction the USER leaves is pushed to the agent through the channel exactly once, worded as
+what it is: a yes, a thanks, a laugh, with nothing to file.
+
+**A Chrome extension, shipped with the package.** `extension/`, offered from the viewer's Settings
+page as a download. **Alt+P** puts a crosshair on any page: click an element and the agent is told
+what you meant — the selector, the page, the element's text, its opening tag, and a picture of it.
+**Alt+J** opens the chat as a window over whatever you are looking at, and Detach in the viewer hands
+the chat to that window so it follows you from tab to tab. The journal's own page answers a handshake,
+so a viewer with no extension keeps its own window.
+
+**The agent bar says what the agent has open.** A book with a count for the skills loaded in THIS
+window — a compaction empties it, because a skill lives in the window and what crosses a boundary is
+a summary of one. A terminal with a count for the background shells it started, and whether each is
+still going, read from the file the harness writes rather than claimed. How many times the session
+has been compacted. The branch, the model, the context, and every fact scrolling rather than
+vanishing when the window is narrow.
+
+**The skills are nudged until they are loaded, and a compaction resets that.** A session that has
+opened no journal skill after a dozen tool calls is held at its stop and told to load one — and the
+count is taken from the last compaction boundary, so a window that lost them is in the same position
+as a session that never had them, because it is. Every skill on disk can be browsed at
+`/agents/session/<id>/skills` — searchable, filtered by what is open now or named at every start,
+with a toggle on each row.
+
+**Asking is the last resort, and the record is the first.** A session's first `questions add` is
+refused once if that session has read nothing — no `search`, no `conversation`, no `user` — and the
+refusal names the three reads that answer most questions. The skill says the same in its own words,
+and says to reload a skill rather than remember it.
+
+**One environment and a waiting message is not a choice.** A session still starts on no environment;
+but where the project has exactly one AND a message is waiting on it, the session binds itself and
+reads the message instead of asking which of one it should be on.
+
+**A message the user deleted is not answered.** A reply to an archived message is refused, and
+nothing can be filed from it: the user took the words back, and an agent told about it before it went
+would otherwise answer into a hole.
+
+**In the viewer.** An active plan is a slim strip under the status bar, on every page. The chat
+detaches into a draggable window that follows you across pages. The rule between the chat and the
+rail is a handle that snaps back to its own width. The agent bar has a menu for what you want of THIS
+conversation — search inside it, and the files it holds. Several pictures in one message are a 2×2
+grid with the rest folded behind the fourth. A notification reads as a headline, the thing it is
+about, and then its words. The search page has its own padded column with the bar stuck to the top.
+A row that changes section is tinted as it arrives and as it leaves, and switching a tab does not
+pretend the rows just arrived.
+
+**Under it.** Two answers to the same question inside one second no longer share a push key, so the
+second one — the change of mind — is told rather than deduped away. The whole suite runs in 64
+seconds instead of 134, with test_channel waiting on conditions rather than timeouts. The journal's
+skills were measured against what they claim to trigger on: ten of eleven, with the one miss now
+named at every start.
+
 ## 1.151.0 — A reply keeps its file, and the viewer stops flinching
 
 **A reply carries what was attached to it.** The viewer's reply path sent only the text, and the
