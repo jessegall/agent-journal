@@ -220,6 +220,8 @@ class Environment(Shape, Resource):
     help_ = "A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason."
     scope = PROJECT
     nav = False
+    notify = ()
+    notify = ()
 
 
 class Nudge(Shape, Resource):

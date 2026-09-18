@@ -74,7 +74,10 @@ class Band:
         left = max(0, (cols - plain) // 2)
         return " " * left + "".join(out) + " " * (cols - plain - left)
 
-    def draw(self, cols: int) -> bytes:
+    def draw(self, cols: int, force: bool = False) -> bytes:
         body = "".join(f"{ESC}[{n + 1};1H{STYLE}{line}{RESET}" for n, line in enumerate(self.lines(cols)))
         drawn = f"{ESC}7{ESC}[?6l{body}{ESC}[?6h{ESC}8".encode()
+        if drawn == self.shown and not force:
+            return b""
+        self.shown = drawn
         return drawn
