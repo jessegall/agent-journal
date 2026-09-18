@@ -215,7 +215,6 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     // chat.js says when it opened or closed on a page, so the window comes back after a reload
     opened: () => rememberOpen(true).then(() => ({ ok: true })),
     closed: () => rememberOpen(false).then(() => ({ ok: true })),
-    test: () => post("[agent journal] a test message from the extension", []),
     follow: () => follow(msg.on, sender.tab && sender.tab.id),
     following: async () => ({ on: await following(), everywhere: await everywhere() }),
     where: async () => {
