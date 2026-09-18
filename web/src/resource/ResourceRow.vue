@@ -1,6 +1,7 @@
 <script setup>
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
+import PriorityIcon from "../kit/PriorityIcon.vue";
 import {age, meta} from "../store.js";
 defineProps({resource: Object, selected: Boolean});
 
@@ -17,6 +18,9 @@ const state = (r) => (r.completed ? "done" : r.data.blocked ? "blocked" : r.data
                 <Icon :name="meta(resource.type).icon" :size="14" />
             </template>
         </span>
+        <template v-if="meta(resource.type).fields.priority">
+            <PriorityIcon :value="Number(resource.data.priority ?? 100)" />
+        </template>
         <span class="n">#{{ resource.n }}</span>
         <span class="text">
             <span class="title">{{ resource.title }}</span>

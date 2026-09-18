@@ -9,7 +9,7 @@ Everything runs through one command, `journal`, and every command is a **noun an
 ## When the user asks for work
 
 1. **It is the current work**, a step of it, or a correction: carry on; `journal work section <n> "<what moved>" "<how far>"` when the direction changes.
-2. **It is different.** A to-do — the default: `journal todo add "<title>" --brief "<why, where to start>"`, say "parked as to-do n", and carry on.
+2. **It is different.** A to-do — the default: `journal todo add "<title>" --brief "<why, where to start>"`, say "parked as to-do n", and carry on. The list is ordered by priority, then number: `journal todo priority <n> low|default|high|critical` (or a number; 100 is default) when the user says something comes first.
 3. **It is different and the user said NOW** — their word, not your judgement: update the open work with where it got to, then start the new one.
 
 With nothing open, the request is the work: read until you can name it, `journal work start "<the work>"`, go. **Declare before the first write**: a write with no work open is refused by the gate. Start work on a row with `--set todo=<n>`; end it with `journal work end <n> --how "<the same words>" --set todo=true` to close the row with it, without `--set todo=true` the row stays open. A commit closes a row when its message carries `Journal: todos done <n>` at column 0.

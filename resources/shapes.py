@@ -40,3 +40,11 @@ class Options(Shape):
 
 class Reasoned(Shape):
     labels = {"brief": "Reasoning", "outcome": "Why struck"}
+
+
+LEVELS = {"low": 50, "default": 100, "high": 150, "critical": 200}
+
+
+class Ranked(Shape):
+    fields = {"priority": NUMBER}
+    labels = {"priority": "Priority"}
