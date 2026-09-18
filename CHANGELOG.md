@@ -4,6 +4,51 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.156.0 — The agent sees and drives the page you are on, and the extension is a shell
+
+**The agent can see and drive the tab you put at the wheel.** In the chat window's bar there is a
+wheel: click it and Chrome's own debugger is attached to that tab, a band over the bar says "the
+agent is driving this tab" with a Stop, and the agent may ask that tab: `journal browser shot`
+(a picture, attached), `text`, `dom`, `url`, `console`, `click "<selector>"`, `type "<selector>"
+--text="…"`, `goto <url>`, `eval "<js>"`, `scroll`. Each ask is queued for the extension, run with
+the DevTools protocol, and answered as a message from `browser` — **which the agent reads and the
+chat never shows**: the pictures and DOM dumps stay in the record, off the thread. An ask before
+the wheel is on is refused and says so. Stop, closing the tab, or Chrome detaching ends it. The
+extension asks for the `debugger` permission once.
+
+**The extension is a shell now.** Its window is a frame of the journal's viewer, and the viewer
+draws the bar — the journal and environment switches, the fold, the close, the wheel — and tells
+the shell what to do; a change to the window's look is a journal upgrade, and the extension is
+reloaded only when the shell itself changes. A journal on an older version draws no bar, so the
+shell keeps one of its own (drag, back to the last journal, close) and shows it the instant the
+window opens. Open, minimized and position are one state for every tab; closing the window is
+putting the chat back; every site is granted at install; the popup is one button. Dragging and
+resizing follow the pointer wherever it goes, because the page captures it and streams the moves.
+The picker draws its outline and says nothing, and Escape cancels it from the chat window too.
+The extension is named **Agent journal**, has icons, a description, a zip in the shape the Web
+Store takes, upload steps for an unlisted listing in its README, and a store link the Settings card
+shows once it exists.
+
+**The chat window, inside.** Tabs under the agent bar — Chat, Waiting on you, To-dos,
+Notifications — swap what fills the window; the write box has a crosshair (point at an element)
+and a camera (send a picture of one) beside the clip; a page opened inside the window carries a
+Back to the chat bar; the working line opens its row in the journal's own tab.
+
+**Skills.** `journal-messages` teaches notices, reactions and driving the page; the core skill and
+the command reference point at them. **Every project loads four skills at every start** —
+`journal`, `journal-memory`, `journal-todos`, `journal-messages` — until its user says otherwise.
+
+**The rest.** The Messages entry left the sidebar (the page keeps its route). The status bar's
+running command sits against the divider with its clock to the left, the work takes the room up
+to it, and the command text is synthesised — verb, subcommand, the argument it acts on, chained
+pieces newest last — never a cut tail. The skills page: each root group is its own box with the
+chevron at the right, groups start folded, the row's button says Load at one width. A to-do that
+waits on another says "after to-do N" as its blocked reason. Reactions gained 👎 💔 😠, the picker
+six wide and scrolling. A pasted console error renders as a console card. The journal selector in
+the sidebar is a boxed control. The shells and subagents strip scrolls sideways and back. A write
+from the extension's own origin is not refused as foreign. `environments remove` refuses while work
+is open there, whoever declared it.
+
 ## 1.155.0 — A console error reads as one, and the skills page opens folded
 
 **A pasted console error is drawn as the console would draw it.** A browser error — `file:line
