@@ -8,12 +8,17 @@ class Inbox(Feature):
     name = "inbox"
     title_ = "The inbox"
     abstract_ = "Unread messages are named after a tool use, again and again, and past a patience they hold the agent's writes"
-    help_ = "journal message unread lists them; reading each one marks it read and lifts the hold. triggers.inbox sets how often, settings inbox.patience how many times before the hold."
-    trigger = {"every": 1, "unit": trigger.USES}
+    help_ = "Said at the first tool use after a message arrives and every third after; five times ignored, the hold. triggers.inbox sets the cadence, inbox.patience the count."
+    trigger = {"every": 3, "unit": trigger.USES}
     patience = 5
 
     def unread(self, record) -> list:
         return CONTROLLERS["message"](record, actor=SYSTEM).unread(AGENT)
+
+    @on("message.created")
+    def arrived(self, event, record) -> None:
+        for agent in CONTROLLERS["agent"](record, actor=SYSTEM).all():
+            trigger.write(record, agent, self.name, uses=int(agent.data.get("uses") or 0) - self.trigger["every"])
 
     @on("agent.updated")
     def remind(self, event, record) -> None:
