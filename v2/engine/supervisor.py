@@ -50,6 +50,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     session = f"{agent}-{pid}"
     printed = root / "runtime" / f"printed-{session}"
     printed.parent.mkdir(parents=True, exist_ok=True)
+    (root / "runtime" / "env").write_text(env)
     out = printed.open("ab")
     driver = spawn_driver(root, cwd, env, agent, fd, session)
     stamps = watched(root)

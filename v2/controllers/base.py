@@ -12,8 +12,9 @@ class Controller:
     resource = Resource
     actor = "user"
 
-    def __init__(self, record: Record, actor: str | None = None):
+    def __init__(self, record: Record, actor: str | None = None, session: str = ""):
         self.record = record
+        self.session = session
         if actor:
             self.actor = actor
 
