@@ -209,7 +209,9 @@
   .top-tools { display: flex; align-items: center; gap: 6px; flex: none; }
   /* the agent's state under the top bar on every page; only the description gives way when the bar is narrow */
   .statusbar { height: 52px; flex: none; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 0 16px 0 20px;
-    position: relative; border-bottom: 1px solid var(--border); background: #17181b; }
+    position: relative; border-bottom: 1px solid var(--border); background: #17181b; cursor: pointer; }
+  /* THE WHOLE BAR IS THE HOVER, not the words in it (message 162): it is one control, and it lights as one */
+  .statusbar:hover { background: #1b1c20; }
   .statusbar.held { background: #1b1a16; }
   .statusbar-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--text-3); }
   .statusbar-dot.live { background: var(--accent); }
@@ -222,7 +224,6 @@
   .statusbar-text { flex: 1 1 0%; min-width: 0; display: flex; align-items: center; overflow: hidden; white-space: nowrap;
     text-overflow: ellipsis; margin: 0 -7px; padding: 3px 7px; border: none; border-radius: 7px;
     background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
-  .statusbar-text:hover { background: rgba(255, 255, 255, .04); }
   .statusbar-text b { flex: none; font-weight: 500; font-size: 13.5px; margin-right: 8px; }
   /* the work does not give way to the command: both are held at their own width, and only a narrow
      bar (the media query below) lets the sentence shrink */
@@ -241,7 +242,7 @@
      It sits between the work and the tools, and shrinks before the work does. */
   .statusbar-running { flex: 0 1 auto; min-width: 0; position: relative; display: inline-flex; align-items: center;
     margin-left: auto; padding-left: 14px; font-size: 11px; color: var(--text-4, #6b6e76); }
-  .statusbar-run-line { display: inline-flex; align-items: center; gap: 8px; max-width: 56ch; min-width: 0; height: 26px; padding: 0 8px 0 6px;
+  .statusbar-run-line { display: inline-flex; align-items: center; gap: 8px; max-width: 56ch; min-width: 0; height: 26px; padding: 0 8px;
     border: 1px solid transparent; border-radius: 7px; background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: left; }
   .statusbar-run-line:hover, .statusbar-run-line.open { border-color: var(--border); background: rgba(255, 255, 255, .03); color: var(--text-3); }
   .statusbar-run-text { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -252,18 +253,6 @@
   .statusbar-running-for { flex: 0 0 auto; font-size: 10.5px; font-variant-numeric: tabular-nums; opacity: .8; }
   /* a clock that has stopped is a step quieter than one still counting */
   .statusbar-running-for.done { opacity: .55; }
-  /* THE MARK: a ring that turns while the command runs, a check when it is done, a cross when it failed.
-     Drawn here, the journal's own: a 10px ring with one bright quarter. */
-  .statusbar-run-mark { flex: none; width: 10px; height: 10px; border-radius: 50%; position: relative; }
-  .statusbar-run-mark.live { border: 1.5px solid rgba(160, 165, 240, .22); border-top-color: var(--accent); animation: run-turn 900ms linear infinite; }
-  .statusbar-run-mark.done::after, .statusbar-run-mark.failed::after { content: ""; position: absolute; inset: 0; }
-  .statusbar-run-mark.done { background: color-mix(in srgb, var(--ok, #6fae7d) 22%, transparent); }
-  .statusbar-run-mark.done::after { left: 3px; top: 1.5px; width: 3px; height: 5px; border: solid var(--ok, #6fae7d); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
-  .statusbar-run-mark.failed { background: color-mix(in srgb, #d98c8c 22%, transparent); }
-  .statusbar-run-mark.failed::after { left: 4.25px; top: 2px; width: 1.5px; height: 6px; background: #d98c8c; transform: rotate(45deg); box-shadow: 0 0 0 0 transparent; }
-  .statusbar-run-mark.failed::before { content: ""; position: absolute; left: 4.25px; top: 2px; width: 1.5px; height: 6px; background: #d98c8c; transform: rotate(-45deg); }
-  @keyframes run-turn { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .statusbar-run-mark.live { animation: none; } }
   /* THE LOG under the bar: the command's output as it printed it, over the page, closed by Escape or the row */
   .statusbar-log { position: absolute; z-index: 40; left: 0; right: 0; top: 100%; max-height: min(60vh, 520px); display: flex; flex-direction: column;
     border-bottom: 1px solid var(--border); background: #121316; box-shadow: 0 18px 40px rgba(0, 0, 0, .45); }
@@ -1948,6 +1937,14 @@
   /* a console error, drawn as the console would: dark, monospace, the error lit and the frames dimmed */
   .md .console-card { position: relative; margin: .5em 0 .8em; padding: 10px 12px 9px; border: 1px solid #3a2a2a; border-radius: 8px;
     background: #121012; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; line-height: 1.5; overflow-x: auto; }
+  /* markup pasted in: the same box, the log's face, a neutral border rather than the error's red */
+  .md .markup-box { border-color: var(--border); background: #111214; }
+  .md .markup-box .console-label { color: var(--text-4, #6b6e76); }
+  .md .markup-pre { margin: 0; padding: 0; background: none; border: 0; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-3); font: inherit; }
+  .md .markup-more { margin-top: 4px; }
+  .md .markup-more summary { cursor: pointer; list-style: none; color: var(--accent-text, #a3a8f0); font-size: 11px; }
+  .md .markup-more summary::-webkit-details-marker { display: none; }
+  .md .markup-more[open] summary { display: none; }
   .md .console-label { position: absolute; bottom: 5px; right: 9px; font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: #6b5c5c; }
   .md .console-entry + .console-entry { margin-top: 8px; padding-top: 8px; border-top: 1px solid #2a2222; }
   .md .console-head { color: #f0a0a0; white-space: pre-wrap; overflow-wrap: anywhere; }
