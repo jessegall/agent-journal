@@ -230,6 +230,7 @@ class Nudger:
         self.last_look = 0.0
         self.reports = Reports(root)
         self.typed_at = 0.0          # when this seat last typed; nothing more until the hooks report after it
+        self.why = ""                # what the last look decided, kept in the seat record
         self.nudged = False          # the last line into the agent was the queue's, not the user's
         self.user_lines = 0          # the user's Enter count, as last seen
 
@@ -250,23 +251,39 @@ class Nudger:
         if now - self.last_look < self.every:
             return
         self.last_look = now
-        self.stamp(seat)
         if getattr(seat, "user_lines", 0) != self.user_lines:
             self.user_lines = seat.user_lines
             self.nudged = False                      # the user spoke: the next queue read is a fresh one
-        if not self.agent_idle(seat) or seat.user_mid_line() or not self.settled():
-            return
-        for key, params in self.pending():
+        self.why = self.look(seat)
+        self.stamp(seat)
+
+    def look(self, seat: Launcher) -> str:
+        """One look at the agent, and what it decided, in words the seat record keeps: WHY THE SEAT
+        DID NOT TYPE is the one question a user asks when a message sits unanswered."""
+        last = self.reports.last()
+        if not self.agent_idle(seat):
+            return f"not idle: last report {last.get('event') if last else 'none'}, quiet {seat.idle_for():.1f}s"
+        if seat.user_mid_line():
+            return f"the user is mid-line ({len(seat.typed)} chars)"
+        if not self.settled():
+            return "typed a moment ago, waiting for the hooks to report"
+        try:
+            pending = self.pending()
+        except Exception as e:                       # never a crash; the record says what broke
+            return f"news unreadable: {e!r}"
+        for key, params in pending:
             if key in self.told:
                 continue
             self.told.add(key)
             self.say(seat, params["content"])
             self.mark([key])
-            return                                   # one line per quiet moment; the agent answers, then the next
+            return f"typed {key}"                    # one line per quiet moment; the agent answers, then the next
         line = self.owed()
         if line:
             self.say(seat, line)
             self.nudged = True
+            return "typed the queue's line"
+        return "nothing owed"
 
     def say(self, seat: Launcher, line: str) -> None:
         # ONE LINE: a newline typed into the agent is Enter, and would send half a sentence
@@ -306,6 +323,7 @@ class Nudger:
             try:
                 state.put(self.root, "seat_seen", int(time.time()), stem=stem)
                 state.put(self.root, "seat", {"working": not self.agent_idle(seat), "quiet": round(seat.idle_for(), 1),
+                                              "why": self.why, "env": self.env, "quiet_mode": self.quiet,
                                               "printed": " ".join(seat.printed.split())[-PRINTED_KEEP:]}, stem=stem)
             except OSError:
                 pass
@@ -317,10 +335,7 @@ class Nudger:
         # record and never repeats, so the look back costs nothing but the first read.
         if not self.since:
             self.since = time.time() - SINCE_BACK
-        try:
-            return news._waiting(self.env, self.since)
-        except Exception:                            # a half-written record is next look's problem, not a crash
-            return []
+        return news._waiting(self.env, self.since)
 
     def mark(self, keys: list) -> None:
         try:

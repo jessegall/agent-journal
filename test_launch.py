@@ -96,6 +96,7 @@ class FakeSeat:
         self.idle = 10.0
         self.mid = False
         self.printed = ""
+        self.typed = b""
 
     def idle_for(self):
         return self.idle
