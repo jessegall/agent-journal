@@ -3999,13 +3999,6 @@ const EXTENSION = reactive({ here: false, holding: false });
 function askExtension(kind) {
   window.postMessage({ source: "journal-page", kind }, window.location.origin);
 }
-// THE WINDOW AROUND THE FRAME SPEAKS TOO: folded down to the status line, it sends the frame home.
-window.addEventListener("message", (e) => {
-  if (e.source === window.parent && e.source !== window && CHAT_ONLY && e.data && e.data.source === "journal-extension" && e.data.kind === "shut") {
-    const env = parseHash().params.env;
-    if (env && parseHash().view !== "EnvHome") location.hash = `#/env/${env}`;
-  }
-});
 window.addEventListener("message", (e) => {
   if (e.source !== window || !e.data || e.data.source !== "journal-extension") return;
   if (e.data.kind === "here") EXTENSION.here = true;
@@ -6905,6 +6898,29 @@ const App = {
     };
     // the pickers list this journal first; colours still come from the whole list, so none changes
     const journalsOrdered = computed(() => [...journals.list.filter((j) => j.current), ...journals.list.filter((j) => !j.current)]);
+    // THE WINDOW'S BAR IS DRAWN HERE, NOT BY THE EXTENSION. The extension keeps a shell — an iframe,
+    // a box, a grip — and obeys what this page tells it: drag from here, fold, close, another
+    // journal. So a change to the bar is a journal upgrade, and the extension is not touched.
+    const SHELL_UI = reactive({ shut: false, hosted: false, journalsOpen: false, envsOpen: false });
+    const tellShell = (op, extra) => { if (window.parent !== window) window.parent.postMessage({ source: "journal-page", kind: "shell", op, ...(extra || {}) }, "*"); };
+    window.addEventListener("message", (e) => {
+      if (e.source !== window.parent || e.source === window || !e.data || e.data.source !== "journal-extension" || e.data.kind !== "shell") return;
+      SHELL_UI.hosted = true;
+      if ("shut" in e.data) SHELL_UI.shut = !!e.data.shut;
+    });
+    const shellDrag = (e) => {
+      if (e.button || e.target.closest("button, a, .drop")) return;
+      e.preventDefault();
+      tellShell("drag", { sx: e.screenX, sy: e.screenY });
+    };
+    const shellFold = () => { SHELL_UI.shut = !SHELL_UI.shut; tellShell(SHELL_UI.shut ? "shut" : "open"); if (SHELL_UI.shut) { const env = envName.value; if (env && route.view !== "EnvHome") location.hash = `#/env/${env}`; } };
+    const shellClose = () => tellShell("close");
+    const shellPickJournal = (j) => { SHELL_UI.journalsOpen = false; tellShell("pick", { url: j.url, env: "" }); };
+    const shellPickEnv = (name) => { SHELL_UI.envsOpen = false; tellShell("pick", { url: location.origin, env: name }); location.hash = `#/env/${name}`; };
+    const outsideShell = (e) => { if (!e.target.closest(".shell-menu, .shell-pick")) { SHELL_UI.journalsOpen = false; SHELL_UI.envsOpen = false; } };
+    document.addEventListener("mousedown", outsideShell);
+    onUnmounted(() => document.removeEventListener("mousedown", outsideShell));
+    tellShell("hello");
     const loadJournals = () => fetch("/api/viewers").then((r) => r.json())
       .then((d) => { journals.list = Array.isArray(d) ? d : []; }).catch(() => {});
     const journalsTimer = setInterval(() => { if (document.visibilityState === "visible") loadJournals(); }, 20000);
@@ -6959,10 +6975,32 @@ const App = {
     SHELL.setAuto = setAuto;
     const envSettings = useFetch(() => envName.value && `/api/env/${envName.value}/environment`);
     watchEffect(() => { RETENTION.table = envSettings.data ? envSettings.data.retention || null : null; });
-    return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade, updateBand, dismissUpdate, CHAT_ONLY, DETACHED };
+    return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade, updateBand, dismissUpdate, CHAT_ONLY, DETACHED,
+             SHELL_UI, shellDrag, shellFold, shellClose, shellPickJournal, shellPickEnv };
   },
   template: `
     <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
+      <div v-if="CHAT_ONLY && SHELL_UI.hosted" class=shell-bar @pointerdown="shellDrag">
+        <span class=shell-dot></span>
+        <span class=shell-name>
+          <span class=shell-pick-wrap>
+            <button type=button class=shell-pick title="Switch journal" @click="SHELL_UI.journalsOpen = !SHELL_UI.journalsOpen; SHELL_UI.envsOpen = false">{{ ov.data ? ov.data.project : 'journal' }}</button>
+            <div v-if="SHELL_UI.journalsOpen" class="shell-menu">
+              <button v-for="j in journalsOrdered" :key="j.port" type=button :class="['shell-row', {on: j.current}]" @click="shellPickJournal(j)">
+                <span class=journal-dot :style="{background: colorOf(j.project)}"></span>{{ j.project }}</button>
+            </div>
+          </span>
+          <span v-if="envName" class=shell-sep>·</span>
+          <span v-if="envName" class=shell-pick-wrap>
+            <button type=button class=shell-pick title="Switch environment" @click="SHELL_UI.envsOpen = !SHELL_UI.envsOpen; SHELL_UI.journalsOpen = false">{{ envName }}</button>
+            <div v-if="SHELL_UI.envsOpen" class="shell-menu">
+              <button v-for="e in (ov.data ? ov.data.environments : [])" :key="e.name" type=button :class="['shell-row', {on: e.name === envName}]" @click="shellPickEnv(e.name)">{{ e.name }}</button>
+            </div>
+          </span>
+        </span>
+        <button type=button class=shell-btn :title="SHELL_UI.shut ? 'Restore' : 'Minimize'" @click="shellFold">{{ SHELL_UI.shut ? '▴' : '–' }}</button>
+        <button type=button class=shell-btn title="Close" @click="shellClose">×</button>
+      </div>
       <div v-if="strip" class=project-strip role=presentation>
         <button type=button class=project-strip-name :aria-expanded="stripMenu.open" title="Journals running on this machine"
           @click="stripMenu.open = !stripMenu.open; loadJournals()">{{ strip.name }}</button>
