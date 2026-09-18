@@ -113,6 +113,10 @@ def last_said(path, cap: int = 600) -> str:
     return text
 
 
+#: how long the command that has finished stays on the bar with nothing running after it
+QUIET_AFTER = 5
+
+
 def running_now(root: Path, stem: str) -> dict | None:
     """The shell command this session is in the middle of, and for how long — or None.
 
@@ -137,9 +141,13 @@ def running_now(root: Path, stem: str) -> dict | None:
     started = _epoch(open_work[-1].get("at") or "")
     if started and started > float(got["at"]):
         return None
-    took = got.get("took")
-    if took is not None:
-        return {"what": got["what"], "seconds": int(max(0, float(took))), "done": True}
+    # A FINISHED COMMAND IS HELD BRIEFLY, THEN LET GO. It stays while the next one may still be
+    # coming — most calls follow within a second — and after QUIET_AFTER seconds of nothing it is
+    # gone, because a line that never leaves stops meaning "this is what is happening now".
+    if got.get("ended"):
+        if time.time() - float(got["ended"]) > QUIET_AFTER:
+            return None
+        return {"what": got["what"], "seconds": int(max(0, float(got.get("took") or 0))), "done": True}
     return {"what": got["what"], "seconds": int(max(0, time.time() - float(got["at"])))}
 
 
