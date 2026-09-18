@@ -440,7 +440,7 @@ class Codex(Command):
             return 1
         # THE HOOKS ARE WIRED BEFORE THE START, into .codex/hooks.json; Codex asks once to trust them (/hooks)
         import install
-        for line in install.wire_codex(False):
+        for line in install.wire_codex(False) + install.codex_skills(False):
             if line.startswith(("  +", "  -")):
                 print(line)
         already, url, _ = start_viewer()

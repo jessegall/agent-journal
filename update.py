@@ -201,7 +201,7 @@ def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
         lines = install.pull(Path(src), check=False)
     except SystemExit as e:
         return False, str(e)
-    for line in install.skill(False):
+    for line in install.skill(False) + install.codex_skills(False):
         lines.append(line)
     # AN EVENT THE NEW VERSION LISTENS TO IS WIRED BY THE UPDATE, and one it has RETIRED is
     # unwired. Idempotent: what is already right is left alone.

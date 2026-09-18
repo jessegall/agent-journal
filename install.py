@@ -547,6 +547,23 @@ def executable(check: bool) -> list[str]:
 # writes no runtime state at all, so it can no longer forge the evidence `verify` reads.
 
 
+#: WHERE CODEX READS THE SAME SKILLS: `.agents/skills/<name>/` in the project, the same folder
+#: shape. Measured (2026-09-18, codex-cli 0.142.5): a skill there is loaded from its description
+#: without being named. Written only where Codex is a thing — the folder exists, or `codex` is
+#: on the PATH — so a project that never runs Codex gets no second copy.
+CODEX_SKILLS = ".agents/skills"
+
+
+def codex_skills(check: bool) -> list[str]:
+    """The ten skills where Codex loads them, kept current the same way."""
+    if not ((PROJECT / CODEX_SKILLS).is_dir() or shutil.which("codex")):
+        return []
+    out = []
+    for src_name, dst_name in SKILLS:
+        out += _one_skill(src_name, f"{CODEX_SKILLS}/{Path(dst_name).name}", check)
+    return out
+
+
 def skill(check: bool) -> list[str]:
     """Copy the packaged skill folder into place, and keep it current on every re-run.
 
@@ -778,7 +795,7 @@ def main(argv: list[str]) -> int:
     if not _installed_at(ROOT):
         lines.append(say("source_checkout", name=ROOT.name, project=PROJECT.name))
     else:
-        lines += unchannel(check) + wire(check) + wire_codex(check) + skill(check) + briefing(PROJECT, check, _conf) + style_skills(check)
+        lines += unchannel(check) + wire(check) + wire_codex(check) + skill(check) + codex_skills(check) + briefing(PROJECT, check, _conf) + style_skills(check)
     if "--alias" in argv:
         lines += alias(check)
     if "--git-hook" in argv:
