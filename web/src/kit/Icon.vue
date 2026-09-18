@@ -1,45 +1,83 @@
 <script setup>
-defineProps({ name: { type: String, default: "dot" }, size: { type: Number, default: 16 } });
+defineProps({name: {type: String, default: "dot"}});
 
-const paths = {
-  dot: "M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z",
-  home: "M2.5 7.5 8 3l5.5 4.5V13H10V9.5H6V13H2.5z",
-  mail: "M2 4h12v8H2zM2 4l6 4.5L14 4",
-  circle: "M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z",
-  play: "M5 3v10l8-5z",
-  flag: "M4 14V2.5h8L10 5.5l2 3H4",
-  file: "M4 2h5l3 3v9H4zM9 2v3h3",
-  report: "M3 13h10M5 11V6M8 11V3M11 11V8",
-  pin: "M6 2h4v5l1.5 2H4.5L6 7zM8 9v5",
-  list: "M3 4h10M3 8h10M3 12h7",
-  clock: "M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM8 5v3l2 1.5",
-  help: "M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM6.3 6.3A1.8 1.8 0 1 1 8.6 8c-.5.3-.6.6-.6 1.1M8 11.3h.01",
-  bubble: "M2.5 3h11v7H7l-3 2.5V10H2.5z",
-  bot: "M4 6h8v6H4zM8 3v3M6 9h.5M9.5 9h.5",
-  bell: "M5 11V7a3 3 0 0 1 6 0v4l1 1H4zM7 13.5h2",
-  band: "M2 5h12M2 8h12M2 11h8",
-  smile: "M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM6 9.5c1 1 3 1 4 0M6.3 6.5h.01M9.7 6.5h.01",
-  wrench: "M9.5 2.5a3 3 0 0 0-3 4L2.5 10.5l2 2L8.5 8.5a3 3 0 0 0 4-3l-2 1-1.5-1.5z",
-  brush: "M3 13c2 0 3-1 3-3l6-6-2-2-6 6c-2 0-3 1-3 3z",
-  plug: "M6 2v3M10 2v3M4 5h8v3a4 4 0 0 1-8 0zM8 12v2",
-  branch: "M5 3v10M5 3a2 2 0 1 0 0 .01M5 13a2 2 0 1 0 0 .01M11 5a2 2 0 1 0 0 .01M11 7c0 3-6 2-6 5",
-  arrow: "M3 8h9M9 5l3 3-3 3",
-  settings: "M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1 1M11.2 11.2l1 1M3.8 12.2l1-1M11.2 4.8l1-1",
-  search: "M7 2.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM10.5 10.5 14 14",
-  panel: "M2.5 3h11v10h-11zM9.5 3v10",
-  plus: "M8 3v10M3 8h10",
-  chevron: "M6 4l4 4-4 4",
-  check: "M3 8.5l3 3 7-7",
-  x: "M4 4l8 8M12 4l-8 8",
-  clip: "M10.5 5.5 6 10a1.5 1.5 0 0 0 2 2l5-5a3 3 0 0 0-4-4L4 8",
-  send: "M2.5 8l11-5-3 11-3-4.5z",
-  info: "M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM8 7v4M8 5h.01",
-  more: "M4 8h.01M8 8h.01M12 8h.01",
+const alias = {
+    mail: "inbox",
+    circle: "todos",
+    play: "work",
+    flag: "plan",
+    file: "docs",
+    report: "reports",
+    pin: "pins",
+    list: "rules",
+    clock: "reminders",
+    help: "questions",
+    bubble: "inbox",
+    wrench: "tools",
+    brush: "style",
+    band: "rules",
+    smile: "smile",
+    bot: "agents",
+    panel: "activity",
+    x: "close",
+    check: "todos",
+    clip: "paperclip",
+    send: "arrow",
+    more: "dots",
+    chevron: "arrow",
+};
+const shapes = {
+    todos: '<circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/>',
+    pins: '<path d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>',
+    style: '<path d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>',
+    warn: '<path d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/>',
+    book: '<path d="M4 2.5h8.5v11H4a1.5 1.5 0 0 1 0-3h8.5M4 2.5a1.5 1.5 0 0 0 0 3h8.5"/>',
+    auto: '<path d="M5 3.4 12.4 8 5 12.6z" fill="currentColor" stroke-width="1"/>',
+    branch: '<circle cx="5" cy="3.6" r="1.6"/><circle cx="5" cy="12.4" r="1.6"/><circle cx="11.6" cy="5.4" r="1.6"/><path d="M5 5.2v5.6M11.6 7v.6a3.6 3.6 0 0 1-3.6 3.6H6.6"/>',
+    up: '<path d="M8 12.5V4M4.5 7.5L8 4l3.5 3.5"/>',
+    down: '<path d="M8 3.5V12M4.5 8.5L8 12l3.5-3.5"/>',
+    open: '<path d="M9 3.5h3.5V7"/><path d="M12.5 3.5L7.5 8.5"/><path d="M11 9.5v3H3.5V5h3"/>',
+    sidepanel: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10"/>',
+    info: '<circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/>',
+    bell: '<path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/>',
+    activity: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/>',
+    arrow: '<path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/>',
+    paperclip: '<path d="M10.5 5.5l-4.3 4.3a1.3 1.3 0 0 0 1.8 1.8l4.6-4.6a2.6 2.6 0 0 0-3.7-3.7L4.3 8a3.9 3.9 0 0 0 5.5 5.5l3.7-3.7"/>',
+    agents: '<circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/>',
+    reports: '<path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/>',
+    work: '<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/>',
+    reminders: '<path d="M13 8a5 5 0 1 1-1.5-3.55"/><path d="M13 2.75V5h-2.25"/><path d="M8 5.5V8l1.75 1.25"/>',
+    docs: '<path d="M4 1.8h5.5L12.5 5v9.2H4V1.8Z"/><path d="M9.5 1.8V5h3"/>',
+    rules: '<path d="M3 3.5h10M3 8h10M3 12.5h6"/>',
+    folder: '<path d="M2.5 3h4l1.5 1.5h5.5v8.5h-11V3Z"/>',
+    inbox: '<path d="M2 9.5l1.8-6h8.4l1.8 6v3.5H2V9.5Z"/><path d="M2 9.5h3.5l1 1.5h3l1-1.5H14"/>',
+    questions:
+        '<circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.3a1.7 1.7 0 0 1 3.2.7c0 1.2-1.6 1.4-1.6 2.5"/><circle cx="8" cy="11.4" r=".6" fill="currentColor" stroke="none"/>',
+    home: '<path d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>',
+    close: '<path d="M4 4l8 8M12 4l-8 8"/>',
+    plus: '<path d="M8 3.5v9M3.5 8h9"/>',
+    plug: '<path d="M5.2 2.2v3.2M8.8 2.2v3.2M3.4 5.4h7.2v2.1a3.6 3.6 0 0 1-3.6 3.6 3.6 3.6 0 0 1-3.6-3.6Z"/><path d="M7 11.3v2.5"/>',
+    tools: '<path d="M9.8 2.3a3 3 0 0 0-3.6 3.9L2.5 9.9a1.2 1.2 0 0 0 1.7 1.7l3.7-3.7a3 3 0 0 0 3.9-3.6L10 6 8.6 5.4 8 4l1.8-1.7Z"/>',
+    plan: '<path d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/>',
+    search: '<circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/>',
+    settings:
+        '<circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/>',
+    smile: '<circle cx="8" cy="8" r="5.5"/><path d="M5.8 9.5c1.2 1.2 3.2 1.2 4.4 0M6.2 6.5h.01M9.8 6.5h.01"/>',
+    dots: '<path d="M4 8h.01M8 8h.01M12 8h.01"/>',
+    dot: '<circle cx="8" cy="8" r="2.5"/>',
 };
 </script>
 
 <template>
-  <svg :width="size" :height="size" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path :d="paths[name] || paths.dot" />
-  </svg>
+    <svg
+        class="ico"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        v-html="shapes[alias[name] || name] || shapes.dot"
+    />
 </template>

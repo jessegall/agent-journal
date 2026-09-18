@@ -1,12 +1,12 @@
 export async function api(method, path, body) {
-  const res = await fetch(`/api${path}`, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  const got = await res.json();
-  if (!res.ok) throw new Error(got.error || res.statusText);
-  return got;
+    const res = await fetch(`/api${path}`, {
+        method,
+        headers: {"Content-Type": "application/json"},
+        body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    const got = await res.json();
+    if (!res.ok) throw new Error(got.error || res.statusText);
+    return got;
 }
 
 export const manifest = () => api("GET", "/manifest");
