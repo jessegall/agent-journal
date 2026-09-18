@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
+import CommentToggle from "./CommentToggle.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
 import {rows} from "../store.js";
@@ -51,6 +52,7 @@ async function run(action, body = {}) {
                 <template v-if="status === 'active' || status === 'waiting'">· phase {{ current }} of {{ phases.length }}</template>
             </span>
             <span class="grow" />
+            <CommentToggle />
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
         </header>
         <h2 class="title">{{ resource.title }}</h2>

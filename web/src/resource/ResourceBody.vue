@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import Btn from "../kit/Btn.vue";
+import CommentToggle from "./CommentToggle.vue";
 import Icon from "../kit/Icon.vue";
 import {fileUrl} from "../api.js";
 import {route} from "../route.js";
@@ -31,6 +32,7 @@ const traced = computed(() => !!kind.value.fields.changed);
                     {{ kind.title }} {{ resource.n }}
                 </span>
                 <span class="age">{{ age(resource.created) }}</span>
+                <CommentToggle />
                 <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
             </div>
             <h2 class="title">{{ resource.title }}</h2>

@@ -57,7 +57,8 @@ class Files(Feature):
             files = {f[CHANGE.path]: f for f in work.changed}
             before = {f[CHANGE.path]: (f[CHANGE.added], f[CHANGE.removed]) for f in files.values()}
             delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
-            for f in changed(project, only):
+            now = changed(project, only)
+            for f in now:
                 files[f[CHANGE.path]] = f
                 was = before.get(f[CHANGE.path], (0, 0))
                 if f[CHANGE.path] not in before and f[CHANGE.created]:
@@ -68,9 +69,11 @@ class Files(Feature):
                     continue
                 delta[DELTA.added] += max(0, f[CHANGE.added] - was[0])
                 delta[DELTA.removed] += max(0, f[CHANGE.removed] - was[1])
-            for path in [p for p in before if p not in {f[CHANGE.path] for f in changed(project, only)} and (only in ("", p)) and not (project / p).exists()]:
+            for path in [p for p in before if p not in {f[CHANGE.path] for f in now} and (only in ("", p)) and not (project / p).exists()]:
                 delta[DELTA.deleted] += 1
                 files.pop(path)
-            works.update(work.n, changed=list(files.values()), commits=committed(project, work.created))
+            commits = committed(project, work.created)
+            if list(files.values()) != work.changed or commits != work.commits:
+                works.update(work.n, changed=list(files.values()), commits=commits)
             if agent.running and any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
                 Agents(record, actor=SYSTEM).update(agent.n, running={**agent.running, RUNNING.changed: delta})

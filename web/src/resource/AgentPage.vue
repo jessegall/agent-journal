@@ -2,6 +2,7 @@
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api.js";
 import Btn from "../kit/Btn.vue";
+import CommentToggle from "./CommentToggle.vue";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {rows, span} from "../store.js";
@@ -49,6 +50,7 @@ onUnmounted(() => clearInterval(timer));
             </span>
             <span :class="['state', data.status]">{{ data.status }}</span>
             <span class="grow" />
+            <CommentToggle />
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
         </header>
         <h2 class="title">{{ family ? `${name} · ${family[0].toLowerCase()}` : name }}</h2>

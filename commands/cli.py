@@ -121,7 +121,7 @@ def verify(ctx) -> str:
     lines.append(f"engine: {len(live)} running — {', '.join(p.stem.removeprefix('seat-')[:8] for p in live) or 'none'}")
     row = Agents(ctx["record"], actor=ctx["actor"]).by_session(ctx["session"]) if ctx["session"] else None
     if row:
-        lines.append(f"this session: {row.data.get('status', '?')} after {row.data.get('event', '?')}, {row.data.get('uses', 0)} tool uses")
+        lines.append(f"this session: {row.status or '?'} after {row.event or '?'}, {row.uses} tool uses")
     return "\n".join(lines)
 
 
