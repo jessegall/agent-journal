@@ -22,6 +22,7 @@ function unedit() {
     editing.value = null;
 }
 const away = ref(false);
+const missed = ref(0);
 const settledOnce = ref(false);
 const reading = ref({inside: false, moved: 0});
 const turns = computed(() =>
@@ -41,6 +42,7 @@ const turns = computed(() =>
 function toBottom() {
     if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
     away.value = false;
+    missed.value = 0;
 }
 
 function settled() {
@@ -90,9 +92,10 @@ async function upload(n, file) {
 
 watch(
     () => turns.value.length,
-    async (n) => {
+    async (n, before) => {
         await nextTick();
-        if (!stillReading()) toBottom();
+        if (stillReading()) missed.value += Math.max(0, n - (before || 0));
+        else toBottom();
         if (n && !settledOnce.value) setTimeout(() => (settledOnce.value = true), 300);
     },
     {immediate: true}
@@ -102,12 +105,18 @@ watch(
 <template>
     <div class="thread">
         <div class="thread-write">
-            <template v-if="away">
-                <button type="button" class="thread-down" title="Back to the newest" @click="toBottom">
+            <Transition name="rise">
+                <button
+                    v-if="away"
+                    type="button"
+                    class="thread-down"
+                    :title="missed ? `${missed} arrived while you were reading` : 'Back to the newest'"
+                    @click="toBottom"
+                >
                     <Icon name="down" />
-                    Newest
+                    {{ missed ? `${missed} new` : "Newest" }}
                 </button>
-            </template>
+            </Transition>
             <template v-if="editing">
                 <div class="thread-answering">
                     <span class="thread-answering-label">Editing</span>
@@ -213,6 +222,24 @@ watch(
 
 .thread-write :deep(.compose-box) {
     margin-right: 2px;
+}
+
+.rise-enter-active {
+    transition:
+        opacity 0.22s ease-out,
+        transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.rise-leave-active {
+    transition:
+        opacity 0.16s ease-in,
+        transform 0.16s ease-in;
+}
+
+.rise-enter-from,
+.rise-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 8px);
 }
 
 .thread-down {
