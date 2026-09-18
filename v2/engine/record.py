@@ -69,17 +69,26 @@ class Record:
         got = self.events()
         return got[-1].id if got else 0
 
-    def cursor(self, name: str) -> int:
+    def cursor_text(self, name: str) -> str:
         f = self.root / "runtime" / f"cursor-{name}"
         try:
-            return int(f.read_text().strip() or 0)
-        except (OSError, ValueError):
+            return f.read_text().strip()
+        except OSError:
+            return ""
+
+    def set_cursor_text(self, name: str, text: str) -> None:
+        f = self.root / "runtime" / f"cursor-{name}"
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(text)
+
+    def cursor(self, name: str) -> int:
+        try:
+            return int(self.cursor_text(name) or 0)
+        except ValueError:
             return 0
 
     def set_cursor(self, name: str, n: int) -> None:
-        f = self.root / "runtime" / f"cursor-{name}"
-        f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(str(n))
+        self.set_cursor_text(name, str(n))
 
     def setting(self, key: str, default=None):
         f = self.home / "settings.json"
