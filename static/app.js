@@ -5955,19 +5955,21 @@ const AgentSkills = {
               <button type=button :class="['skills-group', {folded: isFolded(g.key)}]" @click="fold(g.key)">
                 <Icon name="down"/><span class=skills-group-name>{{ g.name }}</span><span class=skills-group-n>{{ g.count }}</span>
               </button>
-              <template v-if="!isFolded(g.key)">
+              <!-- THE ROWS STAY IN THE DOM AND THE BOX AROUND THEM CHANGES HEIGHT: a grid row going
+                   from 1fr to 0fr is the one height transition CSS can do without knowing the height. -->
+              <div :class="['skills-fold', {shut: isFolded(g.key)}]" :inert="isFolded(g.key) || null"><div class=skills-fold-in>
                 <template v-for="it in g.items" :key="it.key">
                   <SkillRow v-if="it.single" :s="it.single" :env="env" :picked="picked" :busy="busy" :asked="asked" :open="open" :toggle="toggle" :ask="ask" :depth="1"/>
                   <template v-else>
                     <button type=button :class="['skills-group', 'skills-subgroup', {folded: isFolded(it.key)}]" @click="fold(it.key)">
                       <Icon name="down"/><span class=skills-group-name>{{ it.name }}</span><span class=skills-group-n>{{ it.rows.length }}</span>
                     </button>
-                    <template v-if="!isFolded(it.key)">
+                    <div :class="['skills-fold', {shut: isFolded(it.key)}]" :inert="isFolded(it.key) || null"><div class=skills-fold-in>
                       <SkillRow v-for="s in it.rows" :key="s.source + s.name" :s="s" :env="env" :picked="picked" :busy="busy" :asked="asked" :open="open" :toggle="toggle" :ask="ask" :depth="2"/>
-                    </template>
+                    </div></div>
                   </template>
                 </template>
-              </template>
+              </div></div>
             </template>
           </template>
         </div>
