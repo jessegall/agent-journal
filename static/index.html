@@ -1838,6 +1838,10 @@
   .md p { margin: .6em 0; }
   .md ul, .md ol { margin: .4em 0 .8em; padding-left: 1.3em; }
   .md li { margin: .2em 0; }
+  /* a list that was written inline: it follows its lead line closely, the way it read */
+  .md p + .inline-list { margin-top: -.3em; }
+  .md .inline-list li { margin: .3em 0; }
+  .md .inline-list li::marker { color: var(--text-3); }
   .md code { background: var(--raised); border: 1px solid var(--border); border-radius: 4px; padding: .05em .35em;
     font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   .md pre { background: var(--raised); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; }

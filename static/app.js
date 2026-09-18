@@ -339,6 +339,29 @@ function _mdInline(text) {
   return text;
 }
 
+// A LIST WRITTEN AS A SENTENCE. "Got it, both. (1) The frame … (2) An illegal mutation …" is
+// a list the writer did not have room to lay out, and it reads as one only once it is. The
+// markers have to run from the first — 1 or a — and there have to be two, so a lone "(1)" in
+// prose or a "3." that is a number stays what it was. The text itself is never changed.
+const INLINE_MARK = /(?<=^|\s)\(?([1-9]\d?|[a-z])[).]\s+/g;
+
+function _inlineList(text) {
+  const marks = [];
+  for (const m of text.matchAll(INLINE_MARK)) marks.push({ at: m.index, end: m.index + m[0].length, key: m[1], style: m[0].trim().replace(/[^().]/g, "") });
+  if (marks.length < 2) return null;
+  const letters = /^[a-z]$/.test(marks[0].key);
+  const want = (i) => (letters ? String.fromCharCode(97 + i) : String(i + 1));
+  const run = [];
+  // one style throughout: "(1) … (2)" is a list, "(1) … 2." is two numbers that happen to be in order
+  for (const m of marks) if (m.key === want(run.length) && (!run.length || m.style === run[0].style)) run.push(m);
+  if (run.length < 2 || run[0].key !== want(0)) return null;
+  const lead = text.slice(0, run[0].at).trim();
+  const items = run.map((m, i) => text.slice(m.end, i + 1 < run.length ? run[i + 1].at : text.length).trim());
+  // an item is words, or the markers were being talked about rather than used
+  if (items.some((it) => it.split(/\s+/).filter(Boolean).length < 2)) return null;
+  return { lead, items, letters };
+}
+
 function renderMarkdown(src) {
   if (!(src || "").trim()) return "";
   const lines = _escapeHtml(src).replace(/\r\n/g, "\n").split("\n");
@@ -375,7 +398,14 @@ function renderMarkdown(src) {
     const para = [line];
     i++;
     while (i < lines.length && !startsBlock(lines[i])) { para.push(lines[i]); i++; }
-    out.push(`<p>${_mdInline(para.join(" "))}</p>`);
+    const text = para.join(" ");
+    const listed = _inlineList(text);
+    if (listed) {
+      if (listed.lead) out.push(`<p>${_mdInline(listed.lead)}</p>`);
+      out.push(`<ol class="inline-list"${listed.letters ? ' type="a"' : ""}>${listed.items.map((it) => `<li>${_mdInline(it)}</li>`).join("")}</ol>`);
+      continue;
+    }
+    out.push(`<p>${_mdInline(text)}</p>`);
   }
   closeList();
   return out.join("\n");
