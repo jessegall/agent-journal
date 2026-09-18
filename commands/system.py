@@ -438,6 +438,11 @@ class Codex(Command):
         if not shutil.which("codex"):
             fmt.say(TEXT["codex_missing"])
             return 1
+        # THE HOOKS ARE WIRED BEFORE THE START, into .codex/hooks.json; Codex asks once to trust them (/hooks)
+        import install
+        for line in install.wire_codex(False):
+            if line.startswith(("  +", "  -")):
+                print(line)
         already, url, _ = start_viewer()
         if url:
             fmt.say(render(TEXT["claude_viewer_already"] if already else TEXT["claude_viewer_up"], url=url))

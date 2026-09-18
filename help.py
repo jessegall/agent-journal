@@ -276,7 +276,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal serve [--port=<n>] [--open]   a local web viewer over this journal on 127.0.0.1, at 8420 or the next free port; it restarts itself when the journal's code changes — Ctrl-C to stop",
         "journal statusline [--install]   the one line Claude Code's status bar shows: environment, open work, viewer; --install adds it to .claude/settings.json",
         "journal claude [prompt]         start Claude under the journal's launcher: the viewer's news is typed into the idle session; --quiet never types; --continue, --resume=<id>, --dry-run to only show the command; any other flag is passed through to claude",
-        "journal codex [prompt]          start Codex under the journal's launcher, the same way; --quiet never types, --dry-run shows the command",
+        "journal codex [prompt]          start Codex under the journal's launcher, the same way, with the journal's hooks wired into .codex/hooks.json first (Codex asks once to trust them: /hooks); --quiet never types, --dry-run shows the command",
         "journal enable / journal disable   the kill switch: disable makes every hook inert — no hold, no gate, no context — until enable; the USER's call, never the agent's own idea",
     ),
 }

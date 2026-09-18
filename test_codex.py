@@ -74,5 +74,30 @@ check("the hold is decision: block with the line as its reason", (got.get("decis
 check("no additionalContext rides on a Codex Stop", "hookSpecificOutput" in got, False)
 
 P.close()
+
+# THE HOOKS GO INTO .codex/hooks.json, in Codex's three-level shape, keeping whatever the user put there;
+# a second run changes nothing. In a subprocess, because install.PROJECT is fixed at import.
+import subprocess  # noqa: E402
+codex_conf = d / ".codex" / "hooks.json"
+codex_conf.parent.mkdir()
+codex_conf.write_text(json.dumps({"hooks": {"Stop": [{"matcher": "", "hooks": [{"type": "command", "command": "echo mine"}]}]}}))
+
+
+def wire_codex():
+    return subprocess.run([sys.executable, "-c", f"import sys; sys.path.insert(0, {str(d / '.journal')!r});"
+                           "import install; print(chr(10).join(install.wire_codex(False)))"],
+                          capture_output=True, text=True, timeout=120).stdout.splitlines()
+
+
+said = wire_codex()
+after = json.loads(codex_conf.read_text())["hooks"]
+check("every event the journal listens to is wired", sorted(after), sorted(set(["Stop", "SessionStart", "SessionEnd", "PostToolUse", "PreToolUse", "UserPromptSubmit", "SubagentStop", "PreCompact"])))
+stop = after["Stop"]
+check("the user's own Stop hook is kept beside ours", [h["command"] for b in stop for h in b["hooks"]][:1], ["echo mine"])
+ours = [h for b in stop for h in b["hooks"] if "hook.py" in h["command"]]
+check("ours walks up to the installation, with a matcher and a timeout", (len(ours), stop[-1].get("matcher"), ours[0].get("timeout")), (1, "", 60))
+check("and says so, once per event", sum(1 for l in said if l.startswith("  + ")), 8)
+check("a second run changes nothing", all(l.startswith("  = ") for l in wire_codex()), True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -133,7 +133,8 @@ to their page, because it is their page and they are watching it move.
     journal serve [--port=<n>]      the web viewer, on this machine only: 8420, or the next free port
     journal claude [flags] ["<prompt>"]   start Claude under the journal's launcher, and the web
                                           viewer if none is running here; other flags pass through to claude
-    journal codex ["<prompt>"]            Codex under the launcher, the same way; --quiet never types
+    journal codex ["<prompt>"]            Codex under the launcher, the same way, its hooks wired into
+                                          .codex/hooks.json first (trust them once with /hooks); --quiet never types
     journal statusline --install    show environment, open work and viewer in the status bar — only if the user wants it
 
 The user reads and changes the journal in a browser while you work: they leave messages,

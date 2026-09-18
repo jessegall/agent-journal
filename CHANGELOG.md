@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.160.0 — Codex's hooks: the same hook.py, wired by journal codex
+
+**hook.py answers Codex.** Measured against codex-cli 0.142.5 (doc 9, "Codex hooks: config and
+payloads, measured"): Codex hands a hook the fields Claude Code does and takes the same JSON back,
+so the write gate, the start block and the queue work unchanged; the one difference — a Stop is
+held there with `decision: block`, never with additionalContext — hook.py now answers by itself,
+telling the two apart by the transcript's path. The session records which agent it is.
+
+**`journal codex` wires the hooks first**, into `.codex/hooks.json` in the project, in Codex's
+three-level shape, keeping whatever else is there; `journal install` and `journal update` do the
+same where Codex is present. Codex asks once to trust them (`/hooks`), or
+`--dangerously-bypass-hook-trust` passes through.
+
 ## 1.159.0 — The launcher watches the agent from outside, and the bands move up
 
 **A seated session's Working and Idle come from its launcher.** The seat records, every look,
