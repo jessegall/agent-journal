@@ -66,7 +66,7 @@ def say(turns) -> str:
 def parser() -> argparse.ArgumentParser:
     top = argparse.ArgumentParser(prog="journal", description="the journal, every type a noun and every method its word")
     top.add_argument("--root", default=os.environ.get("JOURNAL_ROOT", ".journal"))
-    top.add_argument("--env", default=os.environ.get("JOURNAL_ENV", ""))
+    top.add_argument("--env", dest="bound", default=os.environ.get("JOURNAL_ENV", ""))
     top.add_argument("--as", dest="as_actor", default=os.environ.get("JOURNAL_ACTOR", AGENT))
     top.add_argument("--session", default=os.environ.get("JOURNAL_SESSION", ""))
     top.add_argument("--agent", default=os.environ.get("JOURNAL_AGENT", ""))
@@ -180,7 +180,7 @@ def context(args: dict) -> dict:
     features.load()
     sessions = Sessions(root)
     session = args.pop("session")
-    env = args.pop("env") or (sessions.environment(session) if session else "") or ((root / "runtime" / "env").read_text().strip() if (root / "runtime" / "env").is_file() else "main")
+    env = args.pop("bound") or (sessions.environment(session) if session else "") or ((root / "runtime" / "env").read_text().strip() if (root / "runtime" / "env").is_file() else "main")
     session = session or sessions.holder(env)
     return {"record": Record(root, env), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"), "sessions": sessions}
 
