@@ -88,9 +88,12 @@ saying what is now true, pointing at the to-do, report, doc or message it is abo
 
 ## A notice: one line pinned over the conversation
 
-    journal notice "<the line>" [--tone=note|good|warn] [--link=<url>]   it sits at the top of the chat
+    journal notice "<the line>" [--tone=note|good|warn] [--link=<url> --label="Open the PR"]   it sits at the top of the chat
     journal notices                  what is pinned now
     journal notices close <n>        take your own down when it stops being true
+
+**A notice can carry a button.** `--link` with a `--label` puts one on the right of the line —
+"Open the PR", "See the preview" — which is most of why a notice exists: there is something to go to.
 
 **A notice is what the user must keep seeing**, not news they will read once: the URL of the
 PR you opened, the address the preview is served on, the one warning that governs everything

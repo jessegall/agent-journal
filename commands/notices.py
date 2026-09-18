@@ -18,7 +18,7 @@ PAGE = {
     "empty": "Nothing is pinned to the chat.",
     "lead": "One line pinned over the conversation until the user closes it — where a link or a result has to stay "
             "in front of them. News that can age belongs in a notification; a fact belongs in a pin.",
-    "commands": (('journal notice "<the line>" [--tone=note|good|warn] [--link=<url>]', "pin it to the top of the chat"),
+    "commands": (('journal notice "<the line>" [--tone=note|good|warn] [--link=<url> --label="Open the PR"]', "pin it to the top of the chat"),
                  ("journal notices", "what is up now"),
                  ("journal notices close <n>", "take one down yourself; the user's X does the same")),
 }
@@ -44,14 +44,14 @@ class List(Resource):
 
 
 class Add(Resource):
-    signature = 'notices:add {text* : the line the user sees} {--tone= : note, good or warn} {--link= : a url it points at}'
+    signature = 'notices:add {text* : the line the user sees} {--tone= : note, good or warn} {--link= : a url it points at} {--label= : what the button says}'
     writes = True
     controller = CONTROLLER
     action = "store"
 
 
 class Notice(Add):
-    signature = 'notice {text* : the line the user sees} {--tone= : note, good or warn} {--link= : a url it points at}'
+    signature = 'notice {text* : the line the user sees} {--tone= : note, good or warn} {--link= : a url it points at} {--label= : what the button says}'
 
 
 class Close(Resource):

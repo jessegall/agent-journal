@@ -49,7 +49,7 @@ def standing(root: Path, track: str | None = None) -> list[tuple[int, dict]]:
     return [(n, x) for n, x in enumerate(_all(root, track), 1) if not x.get("closed_at")]
 
 
-def add(root: Path, text: str, at: str, tone: str = "note", link: str = "",
+def add(root: Path, text: str, at: str, tone: str = "note", link: str = "", label: str = "",
         source: str = "cli", track: str | None = None) -> tuple[bool, str]:
     text = " ".join((text or "").split())
     if not text:
@@ -62,6 +62,9 @@ def add(root: Path, text: str, at: str, tone: str = "note", link: str = "",
     with state.locked(root):
         items = _all(root, track)
         items.append({"text": text, "at": at, "tone": tone, "link": (link or "").strip(),
+                      # THE BUTTON SAYS WHAT IT DOES. A bare "open" beside a link is a link with a
+                      # worse name; the agent says "Open the PR", "See the preview", "Read the report".
+                      "label": " ".join((label or "").split())[:32] or "open",
                       "source": source, "closed_at": None, "closed_by": ""})
         _put(root, items, track)
         n = len(items)
@@ -91,6 +94,6 @@ def facts(x: dict) -> list[str]:
 
 def row_response(n: int, x: dict) -> dict:
     return {"n": n, "text": x.get("text") or "", "tone": x.get("tone") or "note",
-            "link": x.get("link") or "", "at": x.get("at") or "",
+            "link": x.get("link") or "", "label": x.get("label") or "open", "at": x.get("at") or "",
             "closed": bool(x.get("closed_at")), "closed_at": x.get("closed_at") or "",
             "meta": " · ".join(facts(x))}
