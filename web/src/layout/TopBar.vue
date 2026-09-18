@@ -43,12 +43,12 @@ onUnmounted(() => window.removeEventListener("click", away));
                         <span class="tool-badge">{{ waiting }}</span>
                     </template>
                 </button>
-                <template v-if="drop">
-                    <div class="drop" @click="drop = false">
+                <Transition name="drop">
+                    <div v-if="drop" class="drop" @click="drop = false">
                         <div class="drop-head">Notifications</div>
                         <RailNotes />
                     </div>
-                </template>
+                </Transition>
             </div>
             <button
                 type="button"
@@ -176,5 +176,23 @@ onUnmounted(() => window.removeEventListener("click", away));
     padding: 8px 12px;
     font-size: 12.5px;
     color: var(--text-2);
+}
+
+.drop-enter-active {
+    transition:
+        opacity 0.16s ease-out,
+        transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.drop-leave-active {
+    transition:
+        opacity 0.12s ease-in,
+        transform 0.12s ease-in;
+}
+
+.drop-enter-from,
+.drop-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
 }
 </style>

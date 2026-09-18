@@ -36,8 +36,8 @@ async function pick(level) {
             <PriorityIcon :value="current" />
             {{ name }}
         </button>
-        <template v-if="open">
-            <div class="prio-menu">
+        <Transition name="drop">
+            <div v-if="open" class="prio-menu">
                 <template v-for="l in LEVELS" :key="l.value">
                     <button type="button" :class="['prio-row', {on: l.n === current}]" @click="pick(l)">
                         <PriorityIcon :value="l.n" />
@@ -45,7 +45,7 @@ async function pick(level) {
                     </button>
                 </template>
             </div>
-        </template>
+        </Transition>
     </span>
 </template>
 
@@ -113,5 +113,23 @@ async function pick(level) {
 
 .prio-row.on {
     color: var(--accent-text);
+}
+
+.drop-enter-active {
+    transition:
+        opacity 0.16s ease-out,
+        transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.drop-leave-active {
+    transition:
+        opacity 0.12s ease-in,
+        transform 0.12s ease-in;
+}
+
+.drop-enter-from,
+.drop-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
 }
 </style>

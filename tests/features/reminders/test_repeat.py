@@ -1,21 +1,15 @@
 import sys
-import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import CONTROLLERS  # noqa: E402
-from resources.base import SYSTEM, USER  # noqa: E402
+from resources.base import USER  # noqa: E402
+from tests.features.kit import report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
 
 features.unload()
 features.load()
-
-
-def report(record, status, event, **more):
-    agents = CONTROLLERS["agent"](record, actor=SYSTEM)
-    row = agents.by_session("claude-1")
-    agents.update(row.n, **{**row.data, **more, "status": status, "event": event, "at": time.time()})
 
 
 def nudges(record):
@@ -32,9 +26,12 @@ report(record, "idle", "Stop")
 check("idle: one nudge naming every standing reminder", nudges(record), [("2 reminders standing, read them", "1. run the suites first; 2. say which environment")])
 report(record, "idle", "Stop")
 check("the same idle stretch: not said again", len(nudges(record)), 1)
+report(record, "working", "UserPromptSubmit")
+report(record, "idle", "Stop")
+check("a reply with no tool use between two stops: not said again", len(nudges(record)), 1)
 report(record, "working", "PreToolUse")
 report(record, "idle", "Stop")
-check("the next idle: said again", len(nudges(record)), 2)
+check("the next idle after work: said again", len(nudges(record)), 2)
 CONTROLLERS["reminder"](record, actor=USER).complete(1, "done")
 report(record, "working", "PreToolUse")
 report(record, "idle", "Stop")

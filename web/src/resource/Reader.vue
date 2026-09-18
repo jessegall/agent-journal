@@ -105,4 +105,22 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
     opacity: 0;
     transform: translateY(8px);
 }
+
+.reader-leave-active :deep(.document-body),
+.reader-leave-active :deep(.document-aside) {
+    animation: none;
+    transition:
+        transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.22s ease-in;
+}
+
+.reader-leave-to :deep(.document-body) {
+    opacity: 0;
+    transform: translateX(-28px);
+}
+
+.reader-leave-to :deep(.document-aside) {
+    opacity: 0;
+    transform: translateX(28px);
+}
 </style>

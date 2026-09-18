@@ -124,38 +124,40 @@ function onInput(e) {
 </script>
 
 <template>
-    <div class="quick-scrim" @click="emit('close')" />
-    <div class="quick-menu" role="dialog" aria-label="Quick menu">
-        <div class="quick-head">
-            <Icon name="search" />
-            <input
-                ref="input"
-                class="quick-input"
-                :value="q"
-                placeholder="Search actions…"
-                aria-label="Search actions"
-                @input="onInput"
-                @keydown="onKey"
-            />
-            <button type="button" class="quick-key" @click="emit('close')">esc</button>
-        </div>
-        <div class="quick-rows">
-            <template v-for="(r, n) in rows" :key="r.label">
-                <button type="button" :class="['quick-row', {on: n === cursor}]" @click="r.run" @mouseenter="i = n">
-                    <Icon :name="r.icon" />
-                    <span class="quick-label">{{ r.label }}</span>
-                    <template v-if="r.hk">
-                        <span class="quick-cap">{{ r.hk }}</span>
-                    </template>
-                </button>
-            </template>
-        </div>
-        <div class="quick-foot">
-            <span>↑↓ move</span>
-            <span>↵ run</span>
-            <span class="quick-foot-note">
-                {{ q.trim() ? `${rows.length} ${rows.length === 1 ? "match" : "matches"}` : "press a key, or search" }}
-            </span>
+    <div class="quick-shell">
+        <div class="quick-scrim" @click="emit('close')" />
+        <div class="quick-menu" role="dialog" aria-label="Quick menu">
+            <div class="quick-head">
+                <Icon name="search" />
+                <input
+                    ref="input"
+                    class="quick-input"
+                    :value="q"
+                    placeholder="Search actions…"
+                    aria-label="Search actions"
+                    @input="onInput"
+                    @keydown="onKey"
+                />
+                <button type="button" class="quick-key" @click="emit('close')">esc</button>
+            </div>
+            <div class="quick-rows">
+                <template v-for="(r, n) in rows" :key="r.label">
+                    <button type="button" :class="['quick-row', {on: n === cursor}]" @click="r.run" @mouseenter="i = n">
+                        <Icon :name="r.icon" />
+                        <span class="quick-label">{{ r.label }}</span>
+                        <template v-if="r.hk">
+                            <span class="quick-cap">{{ r.hk }}</span>
+                        </template>
+                    </button>
+                </template>
+            </div>
+            <div class="quick-foot">
+                <span>↑↓ move</span>
+                <span>↵ run</span>
+                <span class="quick-foot-note">
+                    {{ q.trim() ? `${rows.length} ${rows.length === 1 ? "match" : "matches"}` : "press a key, or search" }}
+                </span>
+            </div>
         </div>
     </div>
 </template>

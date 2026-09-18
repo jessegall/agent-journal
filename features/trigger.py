@@ -1,8 +1,8 @@
 import json
 import time
 
-PERCENT, USES, MINUTES, IDLE, START = "percent", "uses", "minutes", "idle", "start"
-UNITS = (PERCENT, USES, MINUTES, IDLE, START)
+PERCENT, USES, MINUTES, IDLE, WORKED, START = "percent", "uses", "minutes", "idle", "worked", "start"
+UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START)
 
 
 def spec(record, name: str, default: dict) -> dict:
@@ -39,6 +39,8 @@ def due(record, agent, name: str, default: dict) -> bool:
         return time.time() - float(was.get("at") or 0) >= every * 60
     if unit == IDLE:
         return now.get("status") == IDLE and was.get("status") != IDLE
+    if unit == WORKED:
+        return now.get("status") == IDLE and was.get("status") != IDLE and int(now.get("uses") or 0) > int(was.get("uses") or 0)
     if unit == START:
         return now.get("event") == "SessionStart" and was.get("event") != "SessionStart"
     return False

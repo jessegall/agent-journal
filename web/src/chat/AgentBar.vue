@@ -98,8 +98,8 @@ onUnmounted(() => window.removeEventListener("click", away));
                 <Icon name="sidepanel" />
             </button>
         </template>
-        <template v-if="open && data">
-            <div class="bar-drop">
+        <Transition name="drop">
+            <div v-if="open && data" class="bar-drop">
                 <SwitchCase :value="open">
                     <template #skills>
                         <p class="bar-none">Loaded in this window, newest last. A compaction empties it.</p>
@@ -121,7 +121,7 @@ onUnmounted(() => window.removeEventListener("click", away));
                     </template>
                 </SwitchCase>
             </div>
-        </template>
+        </Transition>
     </div>
 </template>
 
@@ -274,5 +274,23 @@ onUnmounted(() => window.removeEventListener("click", away));
 .bar-item .ico {
     width: 13px;
     height: 13px;
+}
+
+.drop-enter-active {
+    transition:
+        opacity 0.16s ease-out,
+        transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.drop-leave-active {
+    transition:
+        opacity 0.12s ease-in,
+        transform 0.12s ease-in;
+}
+
+.drop-enter-from,
+.drop-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
 }
 </style>
