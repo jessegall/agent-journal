@@ -1,12 +1,12 @@
 <script setup>
 import { computed, ref } from "vue";
-import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import { go, route } from "../route.js";
-import { meta, open, rows, store, types, unseenByUser } from "../store.js";
+import { open, rows, types, unseenByUser } from "../store.js";
 import Chat from "../chat/Chat.vue";
 import ResourceRow from "../resource/ResourceRow.vue";
 import PlanBar from "../chat/PlanBar.vue";
+import HomeTabs from "./HomeTabs.vue";
 
 const tab = ref("waiting");
 const quiet = ["message", "comment", "reaction", "notification", "nudge", "work", "environment", "todo"];
@@ -31,21 +31,7 @@ const tabs = computed(() => [["waiting", "Waiting on you", waiting.value.length]
           <ResourceRow v-for="r in todos" :key="r.n" :resource="r" @click="go(route.env, 'todo', r.n)" />
           <p v-if="!todos.length" class="empty">Nothing waiting.</p>
         </template>
-        <template #notifications>
-          <button v-for="n in notifications" :key="n.n" type="button" :class="['note', { unseen: !n.seen.includes('user') }]" @click="go(route.env, ...n.refs[0].split(':'))">
-            <span class="ntitle">{{ n.title }}</span><span class="nabs">{{ n.abstract }}</span>
-          </button>
-          <p v-if="!notifications.length" class="empty">Nothing yet.</p>
-        </template>
-        <template #default>
-          <button v-for="r in waiting" :key="r.ref" type="button" class="waiting" @click="go(route.env, r.type, r.n)">
-            <span class="wkind">{{ meta(r.type).title }}</span>
-            <span class="wtitle">{{ r.title }}</span>
-            <span class="wabs">{{ r.abstract || r.brief.slice(0, 300) }}</span>
-            <span class="wfoot">{{ r.type }} {{ r.n }}</span>
-          </button>
-          <p v-if="!waiting.length" class="empty">Nothing waits on you.</p>
-        </template>
+        <template #default><HomeTabs :tab="tab" :waiting="waiting" :notifications="notifications" /></template>
       </SwitchCase>
     </aside>
   </div>
@@ -60,13 +46,4 @@ const tabs = computed(() => [["waiting", "Waiting on you", waiting.value.length]
 .tab.on { color: var(--text); border-bottom-color: var(--accent); }
 .tab b { margin-left: 6px; color: var(--accent-text); font-weight: 500; }
 .empty { margin: 16px; color: var(--text-3); }
-.waiting { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 12px 14px; border: 0; border-bottom: 1px solid var(--border); background: none; text-align: left; cursor: pointer; }
-.waiting:hover, .note:hover { background: var(--hover); }
-.wkind { color: var(--warn); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-.wtitle { font-weight: 500; }
-.wabs { color: var(--text-2); white-space: pre-wrap; }
-.wfoot { color: var(--text-3); font-size: 11.5px; }
-.note { display: flex; flex-direction: column; width: 100%; padding: 10px 14px; border: 0; border-bottom: 1px solid var(--border); background: none; text-align: left; cursor: pointer; color: var(--text-3); }
-.note.unseen { color: var(--text); }
-.nabs { color: var(--text-3); font-size: 12.5px; }
 </style>
