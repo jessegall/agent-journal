@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.167.4 — A fresh seat does not replay history
+
+At its first look the launcher typed every untold reaction, reply and plan event of the last hours,
+one per idle moment, before the message the user had just sent. Now only a message still waiting is
+owed from before the seat sat down; the rest is marked told, unspoken.
+
 ## 1.167.3 — The launcher's Enter is a keystroke
 
 Measured with a real Claude Code under the launcher: the typed line landed in the input box and sat
