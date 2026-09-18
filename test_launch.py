@@ -82,6 +82,7 @@ class FakeSeat:
         self.lines = []
         self.idle = 10.0
         self.mid = False
+        self.printed = ""
 
     def idle_for(self):
         return self.idle
@@ -167,6 +168,17 @@ state.put(root, "seat_seen", int(time.time()), stem="sess-9")
 check("stamped just now: seated", hook.seated("sess-9"), True)
 state.put(root, "seat_seen", int(time.time()) - 120, stem="sess-9")
 check("a stale stamp is no seat", hook.seated("sess-9"), False)
+
+# THE SEAT RECORDS WHAT IT SEES: working or idle, and the words the agent last printed, plain
+seat.printed = "\x1b[32m$ \x1b[0mrunning the tests…\n"
+seat.printed = launch.plain(seat.printed.encode())
+nudger.stamp(seat)
+got = state.get(root, "seat", {}, stem="sess-1")
+check("idle after a Stop, and the words without their colours", (got.get("working"), got.get("printed")), (False, "$ running the tests…"))
+with (events / "sess-1.jsonl").open("a") as f:
+    f.write(json.dumps({"at": time.time() + 3, "event": "PreToolUse", "tool": "Bash", "session": "sess-1"}) + "\n")
+nudger.stamp(seat)
+check("a tool call under way is working", state.get(root, "seat", {}, stem="sess-1").get("working"), True)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

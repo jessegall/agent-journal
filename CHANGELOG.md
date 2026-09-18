@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.159.0 — The launcher watches the agent from outside, and the bands move up
+
+**A seated session's Working and Idle come from its launcher.** The seat records, every look,
+whether the agent is working (a tool call under way, or output still flowing) or idle (a Stop
+reported, or quiet for a few seconds) and the last words it printed, plain; the viewer's agent bar
+and status bar read that for a session under `journal claude` or `journal codex`, and the hooks'
+last event only for one on no seat. Hovering the state word shows what the agent last printed.
+
+**The no-seat and no-agent bands sit under the top bar, on every page**, above the status bar,
+so they are seen wherever the user is and before they read what the agent is doing.
+
 ## 1.158.0 — The launcher types the stop queue
 
 **A session under the launcher is nudged from outside.** What the stop hook used to hold the turn
