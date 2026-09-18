@@ -100,7 +100,9 @@ Settings page, and remove old environments. Every one of those goes through the 
 controllers the terminal commands use, so it lands in the same record and obeys the same
 refusals (a closed to-do cannot be edited, a struck pin cannot change).
 
-**A session started with `journal claude` hears the viewer while idle.** A message the user
+**A session started with `journal claude` hears the viewer while idle.** One started as plain
+`claude` does not, and the viewer says so: a warning band above the agent bar, there until a
+session with the channel holds the environment. A message the user
 leaves wakes it; with auto mode on, an answered question, a comment and a decided suggestion do too,
 and only while it is idle. With auto mode
 off, nothing but a message wakes it, and a wake-up is never a reason to start on the to-do list.

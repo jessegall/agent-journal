@@ -363,6 +363,8 @@ try:
     state.put(root, "session_pids", {"424242": "holder-a"})
     chan_mod.STARTED[0] = _now
     check("a process id whose session ran its hook just now is trusted", chan_mod._session(), "holder-a")
+    check("and being trusted stamps the session: the viewer reads it as one with a channel",
+          abs((state.get(root, "channel_seen", 0, stem="holder-a") or 0) - time.time()) < 5, True)
     state.put(root, "seen_at", int(_now - 3 * 3600), stem="holder-a")
     check("a process id left by a session last seen hours before this server started is not", chan_mod._session(), None)
 finally:
