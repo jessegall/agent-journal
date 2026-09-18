@@ -15,6 +15,8 @@ import json
 import os
 import tempfile
 from pathlib import Path
+
+import rollout
 from templates import render as fill
 
 #: The windows that exist, smallest first. The right one is the smallest that fits what
@@ -108,6 +110,11 @@ def reading(path: Path, cache: Path | None = None) -> tuple[int, int] | None:
         # a 0.81s command in a real project, to read a number that lives on maybe 400 of
         # them. A substring test on the raw line is two orders of magnitude cheaper, and
         # it can only ever admit MORE candidates than it should, never fewer.
+        codex = rollout.usage_of(line)              # a Codex rollout counts in its own record
+        if codex is not None:
+            used = codex
+            peak = max(peak, used)
+            continue
         if b'"usage"' not in line:
             continue
         try:
@@ -186,6 +193,10 @@ def reading_tail(path: Path, limit: int = 300_000) -> int | None:
         raw = fh.read().decode("utf-8", "replace")
     used = None
     for line in raw.splitlines():
+        codex = rollout.usage_of(line.encode())
+        if codex is not None:
+            used = codex
+            continue
         if '"usage"' not in line:
             continue
         try:
