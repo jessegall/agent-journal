@@ -41,6 +41,9 @@ class Engine:
         self.seat()
         return self.why
 
+    def private(self, e) -> bool:
+        return TYPES[e.type].spoken and bool(CONTROLLERS[e.type](self.record, actor=AGENT).load(e.n).data.get("private"))
+
     def follow(self) -> str:
         last = self.agent.driver.last_report()
         if not last or not last.get("session"):
@@ -88,7 +91,7 @@ class Engine:
                 if fresh and e.at < self.born:
                     actor.notified(e)
                     continue
-                if e.actor == actor.name or actor.name not in TYPES[e.type].notify:
+                if e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e):
                     actor.notified(e)
                     continue
                 actor.notify(e)

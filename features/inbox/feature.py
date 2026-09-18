@@ -31,6 +31,6 @@ class Inbox(Feature):
             return
         count = int(trigger.last(record, agent.title, self.name).get("count") or 0) + 1
         trigger.write(record, agent, self.name, count=count)
-        self.nudge(record, agent, "there are new messages in your inbox", "journal message unread, then journal message read <n> for each")
+        self.nudge(record, agent, "there are new messages in your inbox", "journal message unread, then journal message read <n> for each", private=True)
         if count > record.setting("inbox", {}).get("patience", self.patience):
             self.hold(record, "your inbox is unread: journal message unread, then journal message read <n> for each, before any other write")
