@@ -892,17 +892,39 @@ const StatusBar = {
     // THE ACTIVE PLAN IS A STRIP UNDER THE BAR, on every page. It used to be a card in the rail,
     // which is on the home alone and beside everything else waiting on the user — but a plan is not
     // waiting on anybody: it is what the work is inside, and it belongs where the work is said.
-    const strip = computed(() => {
-      const p = plans.data ? plans.data.find((one) => one.status === "active") : null;
-      if (!p) return null;
-      const done = p.phases_done || 0;
-      const total = p.phases_total || 0;
-      return { n: p.n, title: p.title, done, total,
-               phase: total ? `phase ${Math.min(done + 1, total)} of ${total}` : "",
-               width: total ? `${(100 * done) / total}%` : "0%",
-               href: `#/env/${env.value}/plans/${p.n}` };
+    // EVERY PLAN THAT IS LIVE IS A BAR HERE — the active one with its progress, a draft with its
+    // Start, a parked one with Resume, a finished one with Acknowledge, a held one with Continue.
+    // They used to be cards in the Home rail, which is one page; a plan is on every page.
+    const PLAN_BAR_ORDER = { active: 0, draft: 1, parked: 2, preparing: 3, done: 4 };
+    const bars = computed(() => {
+      const rows = (plans.data || [])
+        .filter((p) => p.status === "active" || p.status === "draft" || p.status === "parked"
+                       || p.status === "preparing" || (p.status === "done" && !p.acknowledged))
+        .sort((a, b) => (PLAN_BAR_ORDER[a.status] - PLAN_BAR_ORDER[b.status]) || a.n - b.n);
+      const active = rows.some((p) => p.status === "active");
+      return rows.map((p) => {
+        const done = p.phases_done || 0;
+        const total = p.phases_total || 0;
+        const act = (active && (p.status === "draft" || p.status === "parked")) ? null : planPrimary(p);
+        return { n: p.n, title: p.title, done, total, status: p.status, act,
+                 phase: p.status === "draft" ? `${total} ${total === 1 ? "phase" : "phases"}, a draft`
+                   : p.status === "preparing" ? "the agent is adding its phases"
+                   : p.status === "parked" ? `parked${p.parked_why ? " — " + p.parked_why : ""}`
+                   : p.status === "done" ? "finished"
+                   : total ? `phase ${Math.min(done + 1, total)} of ${total}${p.held ? " — waiting for you at a checkpoint" : ""}` : "",
+                 bar: p.status === "active" || p.status === "done",
+                 width: total ? `${(100 * done) / total}%` : "0%",
+                 href: `#/env/${env.value}/plans/${p.n}` };
+      });
     });
-    return { env, view, said, running, SHELL, openCurrent, facts, strip };
+    const strip = computed(() => bars.value.find((b) => b.status === "active") || null);
+    const barError = ref("");
+    const runBar = (b) => {
+      barError.value = "";
+      send("POST", `/api/env/${env.value}/plans/${b.n}/${b.act.verb}`).then(() => { plans.reload(); changed(); })
+        .catch((e) => { barError.value = e.message; });
+    };
+    return { env, view, said, running, SHELL, openCurrent, facts, strip, bars, runBar, barError };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
@@ -938,13 +960,17 @@ const StatusBar = {
             <span class=switch-word>auto</span><span class=knob></span></span></button>
       </span>
     </div>
-    <a v-if="strip" class=planbar :href="strip.href" :title="'Plan ' + strip.n + ': ' + strip.title">
-      <span class=planbar-n>Plan {{ strip.n }}</span>
-      <span class=planbar-title>{{ strip.title }}</span>
-      <span v-if="strip.phase" class=planbar-phase>{{ strip.phase }}</span>
-      <span class=planbar-track role=progressbar :aria-valuenow="strip.done" :aria-valuemax="strip.total"
-        :aria-label="strip.done + ' of ' + strip.total + ' phases done'"><span :style="{ width: strip.width }"></span></span>
-    </a>`,
+    <div v-for="b in bars" :key="'planbar' + b.n" :class="['planbar', 'planbar-' + b.status]">
+      <a class=planbar-link :href="b.href" :title="'Plan ' + b.n + ': ' + b.title">
+        <span class=planbar-n>Plan {{ b.n }}</span>
+        <span class=planbar-title>{{ b.title }}</span>
+        <span v-if="b.phase" class=planbar-phase>{{ b.phase }}</span>
+        <span v-if="b.bar" class=planbar-track role=progressbar :aria-valuenow="b.done" :aria-valuemax="b.total"
+          :aria-label="b.done + ' of ' + b.total + ' phases done'"><span :style="{ width: b.width }"></span></span>
+      </a>
+      <button v-if="b.act" type=button :class="['planbar-act', {ack: b.status === 'done'}]" :title="b.act.hint" @click="runBar(b)">{{ b.act.short }}<Icon name="arrow"/></button>
+      <span v-if="barError" class=planbar-error>{{ barError }}</span>
+    </div>`,
 };
 
 // THE BARS DO NOT BELONG TO THE PAGE. Every view rendered its own TopBar, so the crumbs, the search
@@ -5358,9 +5384,7 @@ const EnvHome = {
       <div class=home-rail :style="CHAT_ONLY ? null : railStyle">
       <!-- the ACTIVE plan is the strip under the status bar now; what is left here is a draft
            waiting to be started or a plan parked, which really are waiting on the user -->
-      <section v-if="railPlans.length" class=home-section>
-        <PlanCards :env="env" :plans="railPlans" :reloaded="reloadPlans" :peek="peek"/>
-      </section>
+      <!-- the plans are bars under the status bar now, on every page; the rail holds what waits on the user -->
       <div class=rail-tabs role=tablist>
         <button v-for="t in TABS" :key="t.key" type=button role=tab :aria-selected="tab === t.key"
           :class="['rail-tab', {on: tab === t.key}]" @click="swapTabs((v) => tab = v, t.key)">
