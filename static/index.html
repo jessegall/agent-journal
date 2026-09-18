@@ -928,15 +928,16 @@
      which put a hairline of page between one notice and the next; they are one block of bars. */
   /* THE LOUD ONE: the session on this environment has no seat, so what the user writes here
      waits for its next turn. Bigger and warmer than a notice, and no X — it goes when the cause does. */
-  .chat-alert { flex: none; display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px;
-    border-bottom: 1px solid color-mix(in srgb, var(--warn) 45%, var(--border));
-    background: color-mix(in srgb, var(--warn) 22%, var(--bg)); color: var(--text); font-size: 13px; line-height: 1.45; }
+  .chat-alert { flex: none; width: 100%; display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; margin: 0;
+    border: 0; border-bottom: 1px solid color-mix(in srgb, var(--warn) 45%, var(--border)); border-radius: 0; text-align: left;
+    background: color-mix(in srgb, var(--warn) 22%, var(--bg)); color: var(--text); font: inherit; font-size: 13px; line-height: 1.45; cursor: pointer; }
+  .chat-alert:hover { background: color-mix(in srgb, var(--warn) 28%, var(--bg)); }
+  .chat-alert:hover .chat-alert-go { background: color-mix(in srgb, var(--warn) 34%, transparent); }
   .chat-alert > .ico { flex: none; width: 20px; height: 20px; margin-top: 1px; color: var(--warn); }
   .chat-alert-text { flex: 1; min-width: 0; }
   .chat-alert-text strong { display: block; font-weight: 600; color: #f0c98a; }
-  .chat-alert-go { flex: none; align-self: center; height: 28px; padding: 0 12px; border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent);
-    border-radius: 7px; background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--text); font: inherit; font-size: 12px; cursor: pointer; }
-  .chat-alert-go:hover { background: color-mix(in srgb, var(--warn) 34%, transparent); }
+  .chat-alert-go { flex: none; align-self: center; display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent);
+    border-radius: 7px; background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--text); font: inherit; font-size: 12px; }
   .assign-dialog { position: fixed; z-index: 51; top: 120px; left: 50%; transform: translateX(-50%); width: min(520px, calc(100% - 56px));
     display: flex; flex-direction: column; overflow: hidden; border: 1px solid #33363d; border-radius: 14px; background: #151619;
     box-shadow: 0 26px 64px rgba(0, 0, 0, .6); }
