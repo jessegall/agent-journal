@@ -1152,7 +1152,10 @@ def _since_compaction(ctx: Ctx, lines):
     folds = transcript.read(ctx.path, _caches(ctx.stem)[0])[1]
     if not folds:
         return lines
-    return [l for l in lines if l.n > folds[-1]]
+    # A BOUNDARY IS AN INDEX INTO THESE LINES, NOT A LINE NUMBER — `boundaries.append(len(lines))`
+    # in transcript.py. Comparing it against `l.n` filtered away everything and reported a window
+    # with no skills open while one had just been loaded.
+    return lines[folds[-1]:]
 
 
 def _note_skills(ctx: Ctx, lines) -> list[str]:
