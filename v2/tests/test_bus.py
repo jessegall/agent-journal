@@ -19,7 +19,7 @@ def check(label, got, want):
 
 
 def event(type_, action, n=1):
-    return Event(id=n, at=0.0, type=type_, n=n, action=action, dispatcher="user")
+    return Event(id=n, at=0.0, type=type_, n=n, action=action, actor="user")
 
 
 heard = []

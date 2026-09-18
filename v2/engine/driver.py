@@ -11,7 +11,7 @@ from v2.resources.types import PRIORITY
 TICK = 1.0
 
 def render(e: Event, env: str) -> str:
-    return f"The {e.dispatcher} {e.action} {e.type} {e.n} on {env}. Read it before you act on it: `journal {e.type} show {e.n}`."
+    return f"The {e.actor} {e.action} {e.type} {e.n} on {env}. Read it before you act on it: `journal {e.type} show {e.n}`."
 
 
 class Driver:
@@ -29,7 +29,7 @@ class Driver:
 
     def deliver(self) -> str:
         since = self.record.cursor(self.name)
-        events = [e for e in self.record.events(since) if e.dispatcher == "user"]
+        events = [e for e in self.record.events(since) if e.actor == "user"]
         for e in events:
             self.agent.send(render(e, self.record.env))
             self.record.set_cursor(self.name, e.id)
@@ -52,7 +52,7 @@ class Driver:
     def owed(self) -> str:
         env = self.record.env
         for type_ in PRIORITY:
-            unseen = CONTROLLERS[type_](self.record, dispatcher=AGENT).unseen()
+            unseen = CONTROLLERS[type_](self.record, actor=AGENT).unseen()
             if unseen:
                 rows = ", ".join(str(r.n) for r in unseen[:10])
                 return f"{len(unseen)} unseen {type_}(s) on {env}: {rows}. Read each: `journal {type_} show <n>`."
