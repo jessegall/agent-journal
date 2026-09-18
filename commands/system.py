@@ -8,7 +8,7 @@ from command import Command, Parsed, number
 from templates import render
 
 NOUNS = (("cleanup", "tidy"), ("migrate", "migrations"), ("loop",), ("update",), ("upgrade",),
-         ("verify",), ("settings",), ("serve",), ("statusline", "status-line"), ("channel",), ("codex",), ("enable",), ("disable",), ("version",))
+         ("verify",), ("settings",), ("serve",), ("statusline", "status-line"), ("codex",), ("enable",), ("disable",), ("version",))
 
 TEXT = {
     "settings_here": "set on {env}; the project's is {was}",
@@ -42,11 +42,6 @@ TEXT = {
                     '  journal work update "<what moved>"',
     "enabled": "hooks ENABLED: every hold, gate and reminder is back in force.",
     "rules_block_removed": "the rules injected into CLAUDE.md are taken out; `journal rules inject <n>` puts one back",
-    "channel_installed": "the journal channel is added to {path}. Start Claude with it so a message you leave wakes an "
-                         "idle session:\n  claude --dangerously-load-development-channels server:journal",
-    "channel_taken": "{path} already has a server named journal; it was left as it is",
-    "channel_usage": "journal channel --install adds the journal's channel server to .mcp.json",
-    "claude_added": "the journal channel is added to {path}",
     "codex_would_run": "would run, under the journal's launcher:",
     "codex_missing": "codex is not on PATH; install Codex first",
     "claude_missing": "no `claude` command on your PATH; install Claude Code first",
@@ -383,52 +378,18 @@ class Statusline(Command):
         return 0
 
 
-def install_channel() -> tuple[bool, Path]:
-    """Add the journal's channel server to .mcp.json. (added, the path shown); False when one is already there."""
-    import json
-    path = project() / ".mcp.json"
-    data = json.loads(path.read_text()) if path.is_file() else {}
-    servers = data.setdefault("mcpServers", {})
-    shown = path.relative_to(project())
-    if "journal" in servers:
-        return False, shown
-    servers["journal"] = {"command": "python3", "args": [".journal/channel.py"]}
-    path.write_text(json.dumps(data, indent=2) + "\n")
-    return True, shown
-
-
-class Channel(Command):
-    signature = "channel {--install}"
-
-    def run(self, p: Parsed) -> int:
-        if not p.option("install"):
-            fmt.say(TEXT["channel_usage"])
-            return 0
-        added, shown = install_channel()
-        fmt.say(render(TEXT["channel_installed" if added else "channel_taken"], path=shown))
-        return 0
-
-
 class Claude(Command):
     signature = ("claude {prompt*? : what to ask Claude first} {--continue} {--resume= : a session id} "
-                 "{--pty : run it under the journal's launcher, which types the viewer's news in instead of the channel pushing it} "
-                 "{--quiet : with --pty, never type} {--dry-run}")
+                 "{--quiet : never type the viewer's news into it} {--dry-run}")
     passthrough = True
 
     def run(self, p: Parsed) -> int:
-        import os
         import shlex
         import shutil
         import sys
-        # UNDER THE LAUNCHER THERE IS NO CHANNEL TO LOAD: the seat outside the agent types what the
-        # channel would have pushed, so the flag — and the server it names — are left out.
-        pty_mode = bool(p.option("pty"))
+        # THE LAUNCHER IS THE CHANNEL. Claude runs under the journal's pseudo-terminal, and the seat
+        # outside it types the viewer's news in when it is idle; no MCP server, no flag.
         command = ["claude"]
-        if not pty_mode:
-            added, shown = install_channel()
-            if added:
-                fmt.say(render(TEXT["claude_added"], path=shown))
-            command += ["--dangerously-load-development-channels", "server:journal"]
         if p.option("continue"):
             command.append("--continue")
         if p.option("resume"):
@@ -450,19 +411,12 @@ class Claude(Command):
         already, url, _ = start_viewer()
         if url:
             fmt.say(render(TEXT["claude_viewer_already"] if already else TEXT["claude_viewer_up"], url=url))
-        os.chdir(project())
-        # FLUSH BEFORE THE EXEC. `execvp` replaces the process image without running any of
-        # Python's teardown, so anything still sitting in the stdout buffer is simply gone —
-        # which is why the line saying the channel was installed has never reached a user who
-        # was not on a tty, and why the viewer's url would not have either.
         sys.stdout.flush()
         sys.stderr.flush()
-        if pty_mode:
-            import launch
-            import state
-            return launch.run(command, cwd=project(), root=root(), env=state.current_track(root()) or "",
-                              quiet=bool(p.option("quiet")))
-        os.execvp("claude", command)
+        import launch
+        import state
+        return launch.run(command, cwd=project(), root=root(), env=state.current_track(root()) or "",
+                          quiet=bool(p.option("quiet")))
 
 
 class Codex(Command):
@@ -547,4 +501,4 @@ class Version(Command):
 
 
 COMMANDS = (Cleanup, CleanupRead, CleanupKeep, Migrate, MigrateRun, Loop, LoopSet, LoopUnset,
-            Upgrade, Update, Verify, Settings, Serve, Statusline, Channel, Claude, Codex, Enable, Disable, Version)
+            Upgrade, Update, Verify, Settings, Serve, Statusline, Claude, Codex, Enable, Disable, Version)
