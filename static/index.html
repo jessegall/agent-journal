@@ -1087,18 +1087,18 @@
   /* THE ACTIVE PLAN, under the status bar and on every page: the same slim height as the bar above it */
   /* THE BARS STEP DOWN. The status bar is the loudest (#17181b), the plan bar a shade under it, and
      the agent bar and the rail's tabs — one row, one tone — a shade under that. */
-  .planbar { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px 0 0;
-    border-bottom: 1px solid var(--line, #1d2026); background: #141518;
-    color: var(--text-2); font-size: 12.5px; }
-  /* the dot sits where the status bar's dot sits, the same distance from its word; a step smaller, as the bar is */
-  .planbar-link { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; height: 100%; padding: 0 14px 0 20px;
-    color: inherit; text-decoration: none; font-size: 12px; }
-  .planbar-link .statusbar-dot { width: 8px; height: 8px; }
+  /* THE FIRST DESIGN, BACK BY REQUEST: a step darker and shorter than the status bar, no dot — the plan's
+     state is the word Plan and its button, not a light. Its text starts under the status bar's word. */
+  .planbar { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 8px 0 0;
+    border-bottom: 1px solid var(--line, #1d2026); background: var(--bg-2, #101216);
+    color: var(--text-2); font-size: 11.5px; }
+  .planbar-link { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; height: 100%; padding: 0 14px 0 20px;
+    color: inherit; text-decoration: none; }
   .planbar-link:hover { background: rgba(255, 255, 255, .03); color: var(--text); }
   /* the button IS the bar's reason to exist for a draft: Start, where the eye already is */
-  .planbar-act { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 12px;
+  .planbar-act { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 10px;
     border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); border-radius: 6px;
-    background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--text); font: inherit; font-size: 11.5px; cursor: pointer; }
+    background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--text); font: inherit; font-size: 11px; cursor: pointer; }
   .planbar-act:hover { background: color-mix(in srgb, var(--accent) 34%, transparent); }
   .planbar-act .ico { width: 11px; height: 11px; }
   .planbar-act.ack { border-color: var(--border-2); background: var(--raised); }
@@ -1106,8 +1106,8 @@
   .planbar-error { flex: none; color: var(--danger); font-size: 11px; }
   .planbar-n { flex: none; font-weight: 600; color: var(--text); }
   .planbar-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .planbar-phase { flex: none; margin-left: auto; color: var(--text-3); font-size: 11.5px; }
-  .planbar-track { flex: none; width: 120px; height: 5px; border-radius: 3px; overflow: hidden;
+  .planbar-phase { flex: none; margin-left: auto; color: var(--text-3); font-size: 11px; }
+  .planbar-track { flex: none; width: 120px; height: 4px; border-radius: 3px; overflow: hidden;
     background: var(--line, #22252b); }
   .planbar-track > span { display: block; height: 100%; border-radius: 3px; background: var(--accent);
     transition: width .3s ease; }
