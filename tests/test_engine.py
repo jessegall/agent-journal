@@ -157,6 +157,8 @@ check("an agent row's events reach nobody: only the nudge was typed", ("agent" i
 
 # THE PROBE: two silent minutes while working earn one Ctrl-C; what comes back decides
 from engine import engine as engine_module  # noqa: E402
+check("a github ssh remote becomes the branch's web home; an unknown host is not guessed at",
+      (engine_module.web_remote("git@github.com:me/repo.git"), engine_module.web_remote("https://example.com/me/repo.git")), ("https://github.com/me/repo", ""))
 driver.sent.clear()
 driver.interrupted = 0
 driver.interrupt = lambda: setattr(driver, "interrupted", driver.interrupted + 1)

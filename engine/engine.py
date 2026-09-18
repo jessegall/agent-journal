@@ -14,6 +14,16 @@ from resources.base import AGENT
 from resources.types import PRIORITY, TYPES
 
 TICK = 1.0
+WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
+
+
+def web_remote(url: str) -> str:
+    if url.startswith("git@") or (url.startswith("ssh://") and "@" in url):
+        url = f"https://{url.removeprefix('ssh://').split('@', 1)[-1].replace(':', '/', 1)}"
+    url = url.removesuffix(".git").rstrip("/")
+    host = url.split("://", 1)[-1].split("/", 1)[0]
+    return url if url.startswith("https://") and host in WEB_HOSTS else ""
+
 SILENT_AFTER = 120.0
 PROBE_WAIT = 5.0
 
@@ -148,10 +158,12 @@ class Engine:
         self.branched_at = time.time()
         try:
             self.branch_name = subprocess.run(["git", "-C", cwd, "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True, timeout=2).stdout.strip()
+            remote = subprocess.run(["git", "-C", cwd, "remote", "get-url", "origin"], capture_output=True, text=True, timeout=2).stdout.strip()
         except (OSError, subprocess.SubprocessError):
-            self.branch_name = ""
-        if last.get("session") and self.branch_name and last.get("branch") != self.branch_name:
-            self.agent.mark(last.get("status", ""), last.get("event", ""), branch=self.branch_name, at=last.get("at"))
+            self.branch_name, remote = "", ""
+        url = f"{web}/tree/{self.branch_name}" if self.branch_name and (web := web_remote(remote)) else ""
+        if last.get("session") and self.branch_name and (last.get("branch"), last.get("branch_url")) != (self.branch_name, url):
+            self.agent.mark(last.get("status", ""), last.get("event", ""), branch=self.branch_name, branch_url=url, at=last.get("at"))
         return self.branch_name
 
     def crew(self) -> None:

@@ -40,7 +40,18 @@ onUnmounted(() => window.removeEventListener("click", away));
                     <Icon name="agents" />
                     {{ family ? `${name} · ${family[0].toLowerCase()}` : name }}
                 </span>
-                <template v-if="data.branch">
+                <template v-if="data.branch && data.branch_url">
+                    <a
+                        class="agent-fact agent-link"
+                        :href="data.branch_url"
+                        target="_blank"
+                        title="the branch it works on — open it in the repository"
+                    >
+                        <Icon name="branch" />
+                        {{ data.branch }}
+                    </a>
+                </template>
+                <template v-else-if="data.branch">
                     <span class="agent-fact" title="the branch it works on">
                         <Icon name="branch" />
                         {{ data.branch }}
@@ -141,6 +152,17 @@ onUnmounted(() => window.removeEventListener("click", away));
 
 .agent-fact-lead {
     color: var(--text-2);
+}
+
+.agent-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.agent-link:hover {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .agent-context {
