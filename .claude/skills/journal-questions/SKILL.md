@@ -52,9 +52,6 @@ marked "(a new answer)". Act on the latest answer, not the one you remember.
     journal questions add "<which is right?>" --about="style" --option="<one way>" --option-code="<its example>" ...
     journal style add <subject> "<title>" --decision="<the rule, one line>" --when="<what code it covers>" --brief
     journal style                                   the rules there are
-    journal style show <n>                          one rule, its reasoning and what it covers
-    journal style remove <n> "<why>"                it stopped being how this project writes code
-    journal style sync                              rewrite the `style-*` skills from the rules — run it after any change here
 
 **When the user asks for a coding style review**, from the Coding style page or in words,
 dispatch a background subagent to do the reading, and name its model (`sonnet`: careful

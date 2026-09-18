@@ -86,11 +86,6 @@ Open every message with exactly one tag. Talking *about* a tag is not using one.
 | `[!info]`        | reports something happening that is not work progress: an agent started, a build running |
 | `[!reply]`       | answers what was asked, directly. Routine; kept out of the digest        |
 
-**One message in a stretch may matter more than the rest, and you can say so.** `[!]` after the
-tag — `[!discovery][!] the cause was a font ligature` — outlines that turn in the user's chat.
-It is your own call and it is optional; nothing is refused for lacking it, and a stretch where
-everything is outlined has said nothing. Use it for the thing they would be sorry to scroll past.
-
 When in doubt, `[!reply]`. It is honest for any answer, and it is what makes the rule
 keepable: every message can carry a tag, so the check needs no judgement. Only the last
 message of a turn is judged; connective lines before a tool call are scaffolding. If the
@@ -166,11 +161,10 @@ here it is four ways:
     is it one thing to do, later?                      a to-do
     does it bind every environment?                    a rule
 
-**When the context warning arrives, decide.** At 50%, 70%, 90% and 95% of the window the stop
-asks for `pin`, `rule` or `nothing "<why>"`. It forces a decision, not a pin; `nothing` with a
-reason is the right answer more often than not. It is also the moment to park any work you are
-holding for later, because that lives only in the window. **With `gate_after_context_rung` on —
-off by default — it is more than a question: no other tool runs until one of the three has.**
+**When the context warning arrives, decide.** At 50%, 70%, 90% and 95% of the window, no
+other tool runs until `pin`, `rule` or `nothing "<why>"` has. It forces a decision,
+not a pin; `nothing` with a reason is the right answer more often than not. It is also the
+moment to park any work you are holding for later, because that lives only in the window.
 
 Everything else about them — when a pin earns its place, the reasoning under a claim, reminders and their `--until`, moving claims, and cleaning out what stopped being true — is in the `journal-memory` skill. Load it before you write one.
 
@@ -237,21 +231,6 @@ backwards. That is worse than an admitted gap, because nobody questions it. `sea
 prints line numbers, which are citations. If it comes back empty, say the record does not
 have it rather than filling the space.
 
-**ASKING IS THE LAST RESORT, AND THE RECORD IS THE FIRST.** A question costs the user their
-attention and costs you the rest of the turn; a search costs one command and answers most of
-them. Before `journal questions add`, before "which did you mean?", before a message that ends
-in a question mark: `journal search <term>`, `journal conversation --back=1`, `journal user`.
-Ask only what the record CANNOT hold — a preference nobody has stated, a judgement that is
-theirs, a fact about the world outside this project. Anything they have already said, ruled,
-struck or chosen is in there, and asking again tells them you did not look.
-
-**And when a mechanism is what you are unsure about, RELOAD THE SKILL rather than remember
-it.** What you are holding after a compaction is a summary of these files, and a summary of a
-rule is not the rule — it is the rule with its exceptions filed off. The skills are on disk,
-they are current, and reading one costs less than being confidently wrong about what it says.
-Reload the core skill and the focused one for what you are doing whenever a hook holds you,
-whenever you are about to say what the journal "does", and always after a compaction.
-
 ## After a compaction, or at a start
 
     journal conversation --back=1   the stretch the last summary REPLACED
@@ -263,10 +242,7 @@ they are precisely what the summary dropped. At a fresh start, the block lists t
 rules, pins, open work and to-dos, and says which environment this session is on.
 
 **A new session is on none.** It is not given one: you choose it, from the first thing the
-user says, because you are the one who has read it. **The one exception is not a choice at all**:
-where the project has exactly one environment AND a message is waiting on it, the session is bound
-to it before your first prompt — there is nothing to choose between, and asking would leave the
-message unread. If that message names or plainly implies
+user says, because you are the one who has read it. If that message names or plainly implies
 an environment, take it — `journal switch "<name>"` — and say in one line which you took, so
 a wrong guess costs one word to correct. If the work is real and belongs on none of them,
 `journal prepare "<name>"`. If the message asks for nothing to work on — a greeting, a
@@ -291,26 +267,14 @@ session is told at its next stop what happened and how to take it back. Nothing 
 environment is deleted. **Ask the user first** unless they have already said to take it —
 the holder may be a session they are using.
 
-`switch`, `claim` and `prepare` each answer under the noun too:
+`switch`, `claim`, `prepare`, `delegate` and `handoff` each answer under the noun too:
 `journal environments switch "<name>"` is the same command as `journal switch "<name>"`.
-(`delegate` and `handoff` were removed in 1.37.0; both now answer with a refusal saying why.)
 The noun answers to `env`, `envs`, `environment`, `tracks` and `track` as well.
-
-## The kill switch is the user's, and only theirs
-
-    journal disable        every hook goes inert: no hold, no gate, no context block
-    journal enable         it is in force again
-
-**Never run `disable` because a hold is in your way.** It is here so you know the words exist when
-the user says them — "disable the journal", by name — and for nothing else. A hook that refused a
-call refused it for a reason written in the refusal; turning the mechanism off to get past it is the
-one move that makes the journal worthless, and it is a standing rule of this project. Say what is in
-the way instead, and let the user decide.
 
 ## If a hook holds or denies you
 
 Read what it says and do that one thing. A hold is one line, and holds come one per
-stop in a fixed order — claimed, environment, inbox, comments, loop, context, deferral, untagged, questions, suggestions, suggest_hint, work, skills, auto, recall, cleanup — so what
+stop in a fixed order — claimed, environment, inbox, comments, loop, context, deferral, untagged, questions, suggestions, suggest_hint, work, auto, recall, cleanup — so what
 you are shown is the first thing owed, and the next stop shows the next. When the line ends with
 "details: `.journal/journal.py next`", run that first: it prints the full text of the
 hold, which to-do is next, the questions the user answered, or what is filling the
@@ -328,8 +292,6 @@ thing to do now.
 | *A subagent dispatch must name its model*                       | add `model`: haiku, sonnet or opus. A fork, or an agent whose definition sets its model, goes through |
 | *AUTO IS ON, so the question tool is refused*                  | `questions add "<question>" --about=<ref>` and carry on with what does not depend on it |
 | *N untagged message(s)*                                        | tag your next message; it will not hold for those lines again |
-| *this session has not opened a journal skill*                  | load the `journal` skill and the focused one for what you are doing. It fires after a dozen tool calls, because a session working from memory is working from a summary of these files |
-| *what you searched for is attached to a doc*                   | read the doc's own copy before grepping the repo: `journal docs <n>` — somebody already filed it |
 | *work still open* / *auto is on, work still open*              | `work end` it, `update` where it got to, or `work await "<what>"` if it is in flight |
 | *auto is on, but the open work was opened by another session*  | not yours to end: leave it to that session; if that session is gone, `work end --force "<note>"` if it is finished, or ask the user |
 | *Nothing is open, so this edit would not be filed*             | `work start` the work, then edit                            |

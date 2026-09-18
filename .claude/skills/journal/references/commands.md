@@ -24,11 +24,6 @@ payload, not a description of it.
     journal                          environment, rules, pins, open work, to-dos, context, hooks
     journal verify                   is the journal wired, and has it fired — in this session?
     journal settings                 every setting, its value, and where it came from
-    journal settings <key> <value>   change one for THIS environment; `--off` puts it back to the project's
-    journal upgrade / journal update [--from=<path or git url>]   pull the newest journal into this project
-    journal migrate run              apply a pending migration the journal is holding
-    journal loop unset               this session's loop is gone; `loop set` says one is running
-    journal cleanup keep [<mark>]    keep what a cleanup offered to retire
 
 **Reading the transcript**
 
@@ -94,7 +89,7 @@ the claim rather than erasing it, so being wrong about one is cheap.
     journal todos done N "<how>"      resolved without starting it
     journal todos reopen N "<why>"    undo a close; the reason and the close it undoes are kept
     journal todos from-commit [<ref>]   act on a commit's trailer by hand — what the git post-commit hook runs
-    journal todos drop N "<why>"     abandoned, on the record — `journal todos strike N "<why>"` is the same
+    journal todos strike N "<why>"   abandoned, on the record — `journal todo drop N "<why>"` is the same
     journal todos ask N "<question>"  it waits on the user's answer; auto moves on to the next
     journal todos answer N "<answer>" the user answers from the terminal; the agent is told at its next stop and picks it up first
     journal auto-mode [enable|disable]  per environment: work through the list without asking, or wait for the user's word
@@ -202,10 +197,6 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal suggest "<the change>" [--about=<ref>] --brief   propose a change nobody asked for; the user decides
     journal suggestions [--all]      waiting ones; `suggestions withdraw <n> "<why>"` takes one back
     journal notify "<what finished>" [--about=<ref>]   a notification on the user's Home; only what they want to hear about
-    journal notice "<the line>" [--tone=note|good|warn] [--link=<url> --label="<the button>"]   one line pinned over the chat until the user closes it
-    journal notices [close <n>]                        what is pinned now; close your own when it stops being true
-    journal react <message> "👍"                        a face on a turn: 👍 ❤️ 🎉 😄 👀 🙏, the same one again takes it off
-    journal reactions                                  what carries a face here
     journal notifications [--all]    the unread ones; `notifications read <n>` marks one read
     journal reports [--all]          what the user asked to have checked or researched, for the user to read
     journal reports add "<title>" [--about="todo 22"] --brief   file one; never a doc, never handed to a session
@@ -216,7 +207,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal plans phase <n> "<title>" [--when="<complete when>"] [--checkpoint] [--before=<p>]
                                      add a phase, or INSERT one before phase <p> — the phases after it move
                                      along with their to-dos and their checkpoints
-    journal plans rephrase <n> <p> ["<title>"] [--when=] [--checkpoint|--no-checkpoint]   correct a phase written wrong
+    journal plans rephrase <n> <p> ["<title>"] [--when=] [--checkpoint]   correct a phase written wrong
     journal plans todos <n> <phase> <to-do numbers> [--off] [--reopen="<why>"]   put to-dos in a phase, or take them out
     journal plans show <n>           the plan, its phases and their to-dos
     journal plans link <n> "doc 4.2"   a doc or report it rests on; a report it links is kept while it runs
@@ -236,8 +227,6 @@ holds while messages wait; the first tool call after a new one mentions it once.
                                      is a token that has leaked. A value shaped like one is refused where it
                                      is typed, and the only thing read back is whether that variable is set
     journal connections here <name> purpose|kind|url|secret "<value>" [--off]   change it on this environment only
-    journal connections set <name> purpose|kind|url|secret "<value>"   change it for the whole project
-    journal connections remove <name> "<why>"          it is gone, with the reason
     journal statusline [--install]   the status bar line: environment, open work, viewer; --install adds it to .claude/settings.json, never over one that exists
     journal channel --install        add the channel server to .mcp.json; with claude --dangerously-load-development-channels server:journal, a message left in the viewer wakes an idle session
     journal claude [prompt]          start Claude with the channel (added to .mcp.json first if missing) AND the web viewer, if this journal has none running — it says where. --continue, --resume=<id>, --dry-run shows the command; any other flag is passed through to claude
@@ -310,10 +299,8 @@ case you are in; `journal worktree link` replaces a copy by hand. Never write to
 
 
 rest are denied with a line saying to report back; `search`, `pins`, `open` and other reads
-are fine. Their tool calls are neither gated nor nudged. They are briefed ONCE, on their first tool
-call — the environment they were lent, the name to write under, and what a subagent may not do. There
-is no ladder and no repetition: nine branches that tried to handle a subagent were deleted in favour
-of one answer at the door, because a rule binds
+are fine. Their tool calls are neither gated nor nudged. They are handed the rules on their
+first tool call and again at 25%, 50% and 75% of their own window, because a rule binds
 main conversation files it.
 
 ## When something seems broken

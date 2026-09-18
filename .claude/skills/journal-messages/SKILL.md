@@ -15,14 +15,10 @@ Every command runs through `.journal/journal.py`; `journal` is an alias for it.
     journal messages show <n>                                     the message, its parts, and the questions about it
     journal messages process <n> --part="<words>" --became=<ref>  one part, and what it became
     journal messages reply <n> "<answer>" --part="<words>"        a part that asks something: answered, and the user notified
-    journal messages reply <n> "<answer>" --quoting="<their words in the thread>"   answering a REPLY of theirs, not the message
-    journal messages process <n> --part="<words>" --became=<ref> --in="<environment>"   filed on another environment
     journal messages file <n> <name> "doc <doc>"|keep             an attached file: into the doc it belongs to, or kept
     journal messages done <n>                                     processed, once its parts say what they became and its files are filed
     journal messages move <n> "<environment>"                     left on the wrong environment: carry it there
     journal messages edit <n> "<text>"                            reword one that still waits
-    journal messages attach <n> --file=<path>                     put a file on a message that is already there
-    journal messages detach <n> <name> "<why>"                    take one off it, with the reason
 
 The user leaves messages instead of interrupting you — mostly from the journal's web viewer,
 while you work: instructions, follow-ups, corrections, things to remember, new work. It belongs to an environment, like a pin. When a
@@ -43,10 +39,6 @@ stop says the user left messages, process them before anything else — one at a
      open ends with a follow-up the user can click:** add `--follow-up="<the question>"
      --option="<a choice>" [--option-description="<why>"] --option="<another>" [--pick=<n>]`
      to the same reply — make it a to-do, change it now, leave it as it is.
-   **A reply of THEIRS, under a message already answered, is quoted with `--quoting=` instead.**
-   `--part` names words from the message; `--quoting=` names words from anywhere in the thread — the
-   message or any reply on it — which is how you answer the turn they just took rather than the one
-   they took first. The two point in opposite directions and never both appear on one reply.
 3. **A part you do not understand becomes a question, never a guess:** `journal questions
    add "<question>" --about="inbox <n>"`, recorded as `--became="question <q>"`.
 4. **Record each part, then close the message:** one `messages process` per part, several
@@ -76,7 +68,6 @@ message mentions it once; that never blocks, so finish the step you are on first
     journal comments                            what the user said, not handled yet
     journal comments show <n>                   one in full
     journal comments done <n> "<what was done>" it is handled
-    journal comments add "<ref>" "<text>"       your own comment on a row — `todo 22`, `doc 4`, `pin 3`
 
 The user comments from the viewer on a to-do, doc, pin, rule, reminder, suggestion, message
 or piece of work. Every comment is a nudge: the next stop names it. Act on what it asks —
@@ -95,40 +86,9 @@ are waiting on: a migration through, a research report ready, a to-do they cared
 update` or nothing; a Home full of notifications is one the user stops reading. One line,
 saying what is now true, pointing at the to-do, report, doc or message it is about.
 
-## A notice: one line pinned over the conversation
-
-    journal notice "<the line>" [--tone=note|good|warn] [--link=<url> --label="Open the PR"]   it sits at the top of the chat
-    journal notices                  what is pinned now
-    journal notices close <n>        take your own down when it stops being true
-
-**A notice can carry a button.** `--link` with a `--label` puts one on the right of the line —
-"Open the PR", "See the preview" — which is most of why a notice exists: there is something to go to.
-
-**A notice is what the user must keep seeing**, not news they will read once: the URL of the
-PR you opened, the address the preview is served on, the one warning that governs everything
-they are about to do. It stays over the conversation until they close it with its X —
-clicking the line does nothing, so it cannot be dismissed by the click meant to read it.
-
-**Notify, notice, pin — three different things, and the difference is who it is for and how
-long it lives.** A notification is news that ages into a list. A pin is a FACT, and it is for
-you, re-read at every compaction. A notice is for the USER, and it stays on their screen
-until they take it down. Pin one at a time, and take yours down yourself the moment it stops
-being true: `journal notices close <n>`.
-
-## A reaction: a face on a turn
-
-    journal react <message> "👍"     one of 👍 ❤️ 🎉 😄 👀 🙏; the same one again takes it off
-    journal reactions               what carries a face here
-
-The user can leave one on anything either of you said, and it reaches you through the channel once —
-read it as what it is, a yes, a thanks, a laugh, and file nothing. Yours is for the same thing in the
-other direction: they said thank you, or a row landed well. It is not a reply, it is not a
-notification, and a conversation where everything is reacted to has said nothing.
-
 ## The viewer: what the user does in the browser
 
-    journal serve [--port=<n>] [--open]   the web viewer, on this machine only: 8420, or the next free port;
-                                          --open opens a browser at it
+    journal serve [--port=<n>]      the web viewer, on this machine only: 8420, or the next free port
     journal claude [flags] ["<prompt>"]   start Claude with the journal's channel, and the web
                                           viewer if none is running here; other flags pass through to claude
     journal statusline --install    show environment, open work and viewer in the status bar — only if the user wants it
@@ -140,27 +100,10 @@ Settings page, and remove old environments. Every one of those goes through the 
 controllers the terminal commands use, so it lands in the same record and obeys the same
 refusals (a closed to-do cannot be edited, a struck pin cannot change).
 
-**A session started with `journal claude` hears the viewer while idle.** Everything the user does
-there reaches an idle session: a message, an answered question, a comment, a decided suggestion, a
-plan approved, a face left on a turn, and anything else the viewer writes. **Auto mode does not
-decide WHETHER it arrives — it decides what rides with it**: with auto off, everything but a
-message carries "handle this only, and do not start on the to-do list". MID-TURN is the line that
-matters: while the agent is working, only the user speaking gets through — a message, an answered
-question, a comment, a reaction — and the rest waits for its next stop. A wake-up is never a reason
-to start on the to-do list.
-
-**What the channel actually says, and what each one means:**
-
-| it arrives as                                                     | what it is |
-|-------------------------------------------------------------------|------------|
-| *The user left message N on `env`*                                 | read it with `messages show N` — never act on the line itself, which carries no excerpt on purpose |
-| *The user answered under message N*                                | their reply in the thread: a turn owed an answer, not a new message |
-| *The user answered question N* / *reacted 👍 to …*                  | an answer. A face is one character of the user speaking — read it as the yes, thanks or laugh it is, and file nothing |
-| *The user approved / continued plan N*                             | the plan moved: `journal plans show N` and carry on with the phase that is now open |
-| *The user did this on `env`: …*                                    | the catch-all. Any viewer write with no wording of its own — a to-do re-prioritised, a setting changed, a pin struck — reaches you like this. Read what it changed and act on it |
-| *N thing(s) are waiting on `env`, and this session is on no environment* | somebody is waiting somewhere you are not. Nothing there is yours until you pick an environment |
-| *Nothing has moved on `env` for N minutes and auto mode is on*      | the idle nudge: the list is ready and nothing is running. `journal next`, then pick it up |
-| *the viewer had stopped and is up again at …*                       | the hook restarted it for the user; nothing to do |
+**A session started with `journal claude` hears the viewer while idle.** A message the user
+leaves wakes it; with auto mode on, an answered question, a comment and a decided suggestion do too,
+and only while it is idle. With auto mode
+off, nothing but a message wakes it, and a wake-up is never a reason to start on the to-do list.
 
 **So the record can change under you.** A to-do you are working may have been re-prioritised
 or rewritten, and a pin you rely on may have been struck. Before acting on something you read
