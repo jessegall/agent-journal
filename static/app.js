@@ -231,12 +231,14 @@ const NoteRow = {
     return { tint, href, said };
   },
   template: `
-    <button type=button :class="['rail-row', 'wrap', {tinted: tint, read: note.read}]"
+    <button type=button :class="['rail-row', 'wrap', 'note-row', {tinted: tint, read: note.read}]"
       :style="{ '--tint': tint || null }" :disabled="!href"
       :title="href ? 'Open ' + (note.about_label || 'it') : null" @click="open($event, note)">
-      <span v-if="said.head" class=rail-note-head>{{ said.head }}<span v-if="said.ref" class=rail-note-ref>{{ said.ref }}</span></span>
+      <span class=rail-note-top>
+        <span v-if="said.head" class=rail-note-head>{{ said.head }}<span v-if="said.ref" class=rail-note-ref>{{ said.ref }}</span></span>
+        <span class=rail-row-state>{{ note.age || 'just now' }}</span>
+      </span>
       <span class=rail-row-title>{{ said.body }}</span>
-      <span class=rail-row-state>{{ note.age || 'just now' }}</span>
     </button>`,
 };
 
@@ -4604,8 +4606,6 @@ const EnvHome = {
         { label: "running", icon: "reminders", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
         // WHAT IT HAS OPEN, not what exists: a session works from the skills it has loaded, and the
         // count is the fastest way to see it is working from none of them.
-        { label: "skills", icon: "book", value: agent && agent.skills && agent.skills.length ? String(agent.skills.length) : "",
-          skills: (agent && agent.skills) || [] },
         { label: "context", icon: "files", value: agent && agent.context ? `${agent.context.share}%` : "" },
         // HOW OFTEN THIS SESSION HAS LOST ITS WINDOW. It is the one fact here that says why the agent
         // may not remember something said an hour ago, and it is counted from the transcript itself.
@@ -4625,6 +4625,10 @@ const EnvHome = {
     // reason these facts left the space above the thread in the first place
     const crewOpen = ref(false);
     const skillsOpen = ref(false);
+    const skills = computed(() => {
+      const agent = SHELL.activity && SHELL.activity.agent;
+      return (agent && agent.skills) || [];
+    });
     // ─── the divider between the conversation and the rail
     // THE RAIL'S WIDTH IS THE READER'S. It is clamp(288px, 27%, 400px) by default, and dragging the
     // rule between the two columns writes a width this browser remembers. SNAPPING BACK MATTERS MORE
@@ -4821,7 +4825,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, waitingCount,
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, skills, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
              barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
   },
@@ -4840,18 +4844,20 @@ const EnvHome = {
               <Icon :name="r.icon"/>{{ r.value }}</a>
             <a v-else-if="r.href" class=agent-fact :href="r.href" target=_blank rel=noopener
               :title="r.label + ' — open it'"><Icon :name="r.icon"/>{{ r.value }}</a>
-            <span v-else-if="r.skills" class="agent-fact bar-menu">
-              <button type=button class=agent-fact-open :title="r.skills.length + ' skill(s) open in this session'"
-                :aria-expanded="skillsOpen ? 'true' : 'false'" @click="skillsOpen = !skillsOpen">
-                <Icon name="book"/>{{ r.value }}</button>
-              <div v-if="skillsOpen" class="drop bar-drop skills-drop">
-                <p class=bar-none>Skills this session has opened, newest last.</p>
-                <a v-for="name in r.skills" :key="name" class=bar-item :href="'#/skills/' + name"
-                  @click="skillsOpen = false"><Icon name="book"/>{{ name }}</a>
-              </div>
-            </span>
             <span v-else class=agent-fact :title="r.label"><Icon :name="r.icon"/>{{ r.value }}</span>
           </template>
+        </div>
+        <!-- OUTSIDE THE SCROLLING ROW. The facts scroll sideways, and an overflow container clips
+             anything hanging out of it — which is a dropdown that opened and could not be seen. -->
+        <div v-if="skills.length" class=bar-menu>
+          <button type=button class=agent-skills :title="skills.length + ' skill(s) open in this window'"
+            :aria-expanded="skillsOpen ? 'true' : 'false'" @click="skillsOpen = !skillsOpen">
+            <Icon name="book"/>{{ skills.length }}</button>
+          <div v-if="skillsOpen" class="drop bar-drop skills-drop">
+            <p class=bar-none>Open in this window, newest last. A compaction empties it.</p>
+            <a v-for="name in skills" :key="name" class=bar-item :href="'#/skills/' + name"
+              @click="skillsOpen = false"><Icon name="book"/>{{ name }}</a>
+          </div>
         </div>
         <button v-if="liveCrew.length" type=button class=agent-crew-toggle :aria-expanded="crewOpen ? 'true' : 'false'"
           :title="crewOpen ? 'Hide the subagents' : 'Show the subagents'" @click="crewOpen = !crewOpen">
