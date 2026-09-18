@@ -4,6 +4,27 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.155.0 — A console error reads as one, and the skills page opens folded
+
+**A pasted console error is drawn as the console would draw it.** A browser error — `file:line
+Uncaught (in promise) SomeError: message` and its `at fn (file:line:col)` frames, usually run
+together by the paste — or a Python traceback becomes a card inside the bubble: dark, monospace,
+the error name and message lit, each frame on its own dimmed line, several errors one under the
+other. The prose around it stays prose, and the stored text is untouched.
+
+**The skills page opens with every group folded**, a table of contents first; a search still opens
+everything. The row's button says **Load**, always, at one width — disabled while the skill is
+loaded and unchanged, or while the agent is asked.
+
+**A to-do that waits on another says so.** It was already blocked by the mechanism, but the reason
+line only knew about `todos block` and questions, so a row after another read as Blocked with
+nothing beside it. The list and the panel now say `after to-do 57` (or `after plan 3`).
+
+**Smaller.** The left-nav footer is flush with the bottom again (1.154.0 had left 12px under it).
+The update notice's Upgrade button stays **Asked** across reloads until a newer version appears.
+The messages skill and the commands reference carry in the package source what 1.154.0's installed
+copies said — an update no longer reverts them.
+
 ## 1.154.0 — The viewer says who is listening, and the skills page is a page
 
 **The chat says when nobody is listening.** Two warning bands above the agent bar, in place of
