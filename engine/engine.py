@@ -6,6 +6,7 @@ import features
 from engine import bus
 from engine.actors import Actor, Agent, IDLE, STOPPED, System, User, WAITING, WORKING
 from engine.record import Record
+from engine.sessions import Sessions
 from resources.base import AGENT
 from resources.types import PRIORITY, TYPES
 
@@ -32,9 +33,22 @@ class Engine:
         self.running = False
 
     def tick(self) -> str:
-        self.why = self.probe() or self.deliver() or self.nudge()
+        self.why = self.follow() or self.probe() or self.deliver() or self.nudge()
         self.seat()
         return self.why
+
+    def follow(self) -> str:
+        last = self.agent.driver.last_report()
+        if not last or not last.get("session"):
+            return ""
+        bound = Sessions(self.record.root).environment(last["session"])
+        if not bound or bound == self.record.env:
+            return ""
+        self.record = Record(self.record.root, bound)
+        self.agent.driver.record = self.record
+        self.agent = Agent(self.record, self.agent.driver)
+        self.actors = [User(self.record), self.agent, System(self.record)]
+        return f"following the session to {bound}"
 
     def probe(self) -> str:
         driver = self.agent.driver

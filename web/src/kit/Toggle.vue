@@ -14,6 +14,7 @@ const emit = defineEmits(["change"]);
 
 <style scoped>
 .toggle {
+    flex: none;
     display: inline-flex;
     align-items: center;
     gap: 7px;

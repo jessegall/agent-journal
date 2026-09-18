@@ -1,6 +1,6 @@
 import {computed, reactive} from "vue";
 import * as http from "./api.js";
-import {route} from "./route.js";
+import {go, route} from "./route.js";
 
 export const store = reactive({spec: null, rows: {}, events: [], settings: null, agents: [], stream: null, activity: true});
 
@@ -37,6 +37,10 @@ export function listen() {
 
 export async function boot() {
     store.spec = await http.manifest();
+    if (!route.value.env) {
+        go(store.spec.environment);
+        return boot();
+    }
     await Promise.all(types.value.filter((t) => t.name !== "nudge").map((t) => load(t.name)));
     await reload();
     listen();

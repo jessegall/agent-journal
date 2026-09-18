@@ -116,7 +116,7 @@ def static(path: str) -> Reply:
 
 @route("GET", "/api/manifest")
 def get_manifest(req: Request) -> Reply:
-    return Reply(200, manifest())
+    return Reply(200, manifest(req.root))
 
 
 @route("GET", "/api/{env}/events")

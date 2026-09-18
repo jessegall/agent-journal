@@ -94,6 +94,7 @@ h2 {
 }
 
 .feature {
+    min-width: 0;
     display: flex;
     align-items: flex-start;
     gap: 12px;
