@@ -1,10 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Agent journal",
-  "version": "1.2.9",
+  "version": "1.3.0",
   "description": "Point at anything on a page and send it to the agent's journal, with a picture of what you pointed at.",
   "permissions": [
     "activeTab",
+    "debugger",
     "scripting",
     "storage",
     "tabs"

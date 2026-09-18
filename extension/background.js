@@ -222,6 +222,9 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     point: () => inject("picker.js", "point"),
     shot: () => inject("picker.js", "shot"),
     chat: () => inject("chat.js"),
+    // the page's wheel: drive this tab for the agent, or stop
+    drive: () => (msg.on ? driveOn(sender.tab && sender.tab.id) : driveOff()),
+    driving: async () => ({ on: DRIVE.tabId !== null && DRIVE.tabId === (sender.tab && sender.tab.id), anywhere: DRIVE.tabId !== null, url: DRIVE.url }),
     // chat.js says when it opened or closed on a page, so the window comes back after a reload
     opened: () => rememberOpen(true).then(() => ({ ok: true })),
     // closing the window is putting the chat back: nothing follows, nothing reopens
@@ -245,3 +248,135 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   answer().then(reply, (e) => reply({ ok: false, why: e.message }));
   return true;                                      // the reply is awaited
 });
+
+// ─────────────────────────────────────────────── driving the page for the agent
+// THE AGENT ASKS THE JOURNAL, THE JOURNAL QUEUES, THIS RUNS IT ON THE TAB. Chrome's own debugger is
+// attached to one tab the user chose from the window; while it is, this polls that journal for
+// asks, answers each with the DevTools protocol, and posts the answer back — a picture, the text,
+// the DOM — which the journal hands to the agent as a message. Chrome shows its own "is debugging"
+// bar the whole time, so the user always sees it is on; the window's button switches it off.
+const DRIVE = { tabId: null, url: "", env: "", title: "", timer: null, console: [] };
+const POLL_MS = 1500;
+
+async function cdp(method, params) {
+  return chrome.debugger.sendCommand({ tabId: DRIVE.tabId }, method, params || {});
+}
+
+async function evalIn(expression) {
+  const got = await cdp("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
+  if (got.exceptionDetails) {
+    const ex = got.exceptionDetails;
+    throw new Error((ex.exception && ex.exception.description) || ex.text || "threw");
+  }
+  return got.result ? got.result.value : undefined;
+}
+
+const q = (s) => JSON.stringify(String(s));
+
+// each ask, by name: what it runs on the page and what it says back
+const ASKS = {
+  shot: async () => {
+    const got = await cdp("Page.captureScreenshot", { format: "png" });
+    return { text: `a picture of ${DRIVE.url}`, files: [{ name: `page-${Date.now()}.png`, data: got.data }] };
+  },
+  url: async () => ({ text: await evalIn("location.href") }),
+  text: async () => ({ text: String(await evalIn("document.body ? document.body.innerText : ''")).slice(0, 12000) }),
+  dom: async () => ({ text: String(await evalIn("document.documentElement.outerHTML")).slice(0, 20000) }),
+  console: async () => ({ text: DRIVE.console.slice(-80).join("\n") || "(nothing logged since driving began)" }),
+  click: async ([sel]) => ({ text: await evalIn(`(() => { const el = document.querySelector(${q(sel)}); if (!el) return "nothing matches " + ${q(sel)}; el.scrollIntoView({ block: "center" }); el.click(); return "clicked " + el.tagName.toLowerCase() + (el.innerText ? " " + JSON.stringify(el.innerText.trim().slice(0, 60)) : ""); })()`) }),
+  type: async ([sel, words]) => {
+    const focused = await evalIn(`(() => { const el = document.querySelector(${q(sel)}); if (!el) return false; el.focus(); return true; })()`);
+    if (!focused) return { text: `nothing matches ${sel}` };
+    await cdp("Input.insertText", { text: String(words || "") });
+    return { text: `typed ${JSON.stringify(String(words || ""))} into ${sel}` };
+  },
+  goto: async ([url]) => { await cdp("Page.navigate", { url: String(url) }); return { text: `going to ${url}` }; },
+  eval: async ([js]) => { const v = await evalIn(String(js)); return { text: typeof v === "string" ? v : JSON.stringify(v, null, 1) || String(v) }; },
+  scroll: async ([sel]) => ({ text: await evalIn(sel === "top" ? "(window.scrollTo(0, 0), 'at the top')"
+    : sel === "bottom" ? "(window.scrollTo(0, document.body.scrollHeight), 'at the bottom')"
+    : `(() => { const el = document.querySelector(${q(sel)}); if (!el) return "nothing matches " + ${q(sel)}; el.scrollIntoView({ block: "center" }); return "scrolled to " + el.tagName.toLowerCase(); })()`) }),
+};
+
+async function runAsk(base, ask) {
+  let ok = true;
+  let out;
+  try {
+    const run = ASKS[ask.op];
+    out = run ? await run(ask.args || []) : { text: `${ask.op} is not something this extension can do` };
+  } catch (e) {
+    ok = false;
+    out = { text: e.message || String(e) };
+  }
+  try {
+    await fetch(`${base}/api/env/${DRIVE.env}/browser/${ask.n}/result`, {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ok, text: out.text || "", files: out.files || [] }),
+    });
+  } catch (e) { /* the journal went away; the ask stays pending and is answered when it is back */ }
+}
+
+async function pollAsks() {
+  if (DRIVE.tabId === null) return;
+  const to = await target();
+  if (to.why) return;
+  try {
+    const r = await fetch(`${to.url}/api/env/${DRIVE.env}/browser/pending`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+    if (!r.ok) return;
+    const got = await r.json();
+    for (const ask of ((got && got.data) || [])) await runAsk(to.url, ask);
+  } catch (e) { /* next poll */ }
+}
+
+async function tellDriver(on) {
+  const to = await target();
+  if (to.why) return;
+  try {
+    await fetch(`${to.url}/api/env/${DRIVE.env || to.env}/browser/driver`, {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ on, url: DRIVE.url, title: DRIVE.title }),
+    });
+  } catch (e) { /* the journal is told next time */ }
+}
+
+async function driveOn(tabId) {
+  const tab = await chrome.tabs.get(tabId).catch(() => null);
+  if (!tab || !/^https?:/.test(tab.url || "")) return { ok: false, why: "This page cannot be driven." };
+  if (DRIVE.tabId !== null && DRIVE.tabId !== tabId) await driveOff();
+  const to = await target();
+  if (to.why) return { ok: false, why: to.why };
+  try {
+    await chrome.debugger.attach({ tabId }, "1.3");
+    await chrome.debugger.sendCommand({ tabId }, "Runtime.enable");
+  } catch (e) {
+    return { ok: false, why: `Chrome would not let the extension drive this page: ${e.message}` };
+  }
+  Object.assign(DRIVE, { tabId, url: tab.url, title: tab.title || "", env: to.env, console: [] });
+  await tellDriver(true);
+  clearInterval(DRIVE.timer);
+  DRIVE.timer = setInterval(() => pollAsks().catch(() => {}), POLL_MS);
+  return { ok: true, env: to.env };
+}
+
+async function driveOff() {
+  clearInterval(DRIVE.timer);
+  DRIVE.timer = null;
+  const had = DRIVE.tabId;
+  if (had !== null) {
+    await tellDriver(false);
+    try { await chrome.debugger.detach({ tabId: had }); } catch (e) { /* already gone */ }
+  }
+  Object.assign(DRIVE, { tabId: null, url: "", title: "", env: "", console: [] });
+  return { ok: true };
+}
+
+chrome.debugger.onEvent.addListener((source, method, params) => {
+  if (source.tabId !== DRIVE.tabId) return;
+  if (method === "Runtime.consoleAPICalled") {
+    DRIVE.console.push(`${params.type}: ${(params.args || []).map((a) => (a.value !== undefined ? String(a.value) : a.description || a.type)).join(" ")}`);
+    if (DRIVE.console.length > 200) DRIVE.console.shift();
+  }
+  if (method === "Runtime.exceptionThrown") DRIVE.console.push(`error: ${(params.exceptionDetails && params.exceptionDetails.text) || ""}`);
+});
+chrome.debugger.onDetach.addListener((source) => { if (source.tabId === DRIVE.tabId) driveOff().catch(() => {}); });
+chrome.tabs.onUpdated.addListener((tabId, info, tab) => { if (tabId === DRIVE.tabId && tab && tab.url) { DRIVE.url = tab.url; DRIVE.title = tab.title || DRIVE.title; } });
+chrome.tabs.onRemoved.addListener((tabId) => { if (tabId === DRIVE.tabId) driveOff().catch(() => {}); });

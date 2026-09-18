@@ -1290,6 +1290,27 @@ check("an open question nobody has opened asks for attention in Activity", _aske
 _st, _got = post(f"/api/env/alpha/questions/{_qn}/seen", {})
 check("opening it in the viewer marks it seen, and its Activity line stops asking",
       (_st, _asked(), json.loads(get(f"/api/env/alpha/questions/{_qn}")[2])["seen"]), (200, [""], True))
+tracks.create(root, "delta", at=AT)
+# THE PAGE, DRIVEN. Nothing can be asked until the extension says it drives a tab; then an ask is
+# queued, the extension takes it from pending, and its answer comes back as a message from `browser`.
+import browser as _browser  # noqa: E402
+check("an ask before any tab is driven is refused, saying how to start", _browser.ask(root, "shot", [], AT, track="delta")[0], False)
+status, got = post("/api/env/delta/environment/../browser/driver", {"on": True, "url": "http://localhost:3000/x", "title": "X"}) if False else post("/api/env/delta/browser/driver", {"on": True, "url": "http://localhost:3000/x", "title": "X"})
+check("the extension says it drives a tab", (status, _browser.driver(root, "delta")["url"]), (200, "http://localhost:3000/x"))
+status, got = post("/api/env/delta/browser", {"op": "click", "target": "button.save"})
+check("the agent's ask is queued", (status, got.get("message", "")[:16]), (201, "asked the page: "))
+status, got = post("/api/env/delta/browser", {"op": "click"})
+check("an ask that needs a target says so", status, 400)
+status, got = post("/api/env/delta/browser/pending", {})
+_pend = got.get("data") or []
+check("pending lists it for the extension, oldest first", [(x["op"], x["args"]) for x in _pend], [("click", ["button.save"])])
+_msgs_before = len(inbox._all(root, "delta"))
+status, got = post(f"/api/env/delta/browser/{_pend[0]['n']}/result", {"ok": True, "text": "clicked button \"Save\""})
+_last = inbox._all(root, "delta")[-1]
+check("the answer lands as a message from browser, and the ask is done",
+      (status, len(inbox._all(root, "delta")) - _msgs_before, _last["source"], "clicked button" in _last["text"], post("/api/env/delta/browser/pending", {})[1].get("data")),
+      (200, 1, "browser", True, []))
+check("answering twice is refused", post(f"/api/env/delta/browser/{_pend[0]['n']}/result", {"ok": True, "text": "again"})[0], 400)
 srv.shutdown()
 srv.server_close()
 thread.join(timeout=5)
@@ -1423,6 +1444,7 @@ check("a pasted transcript is on disk, though it has no attachment",
       (_tr_path.is_file(), bool(_msgs[_tr_n - 1].get("files"))), (True, False))
 _retention.prune(root, "beta")
 check("and pruning the message takes the transcript with it", _tr_path.exists(), False)
+
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
