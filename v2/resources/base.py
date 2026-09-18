@@ -38,6 +38,8 @@ class Resource:
     names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
     view: ClassVar[str] = SMALL  # how it is read: a small inspector, a wide one, or a document page
     nav: ClassVar[bool] = True   # whether it sits in the sidebar
+    notify: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
+    spoken: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
     n: int = 0
     title: str = ""
     abstract: str = ""

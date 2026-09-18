@@ -11,7 +11,7 @@ from v2.engine.actors import IDLE, STOPPED, WAITING, WORKING, User  # noqa: E402
 from v2.engine.drivers import Driver  # noqa: E402
 from v2.engine.engine import Engine  # noqa: E402
 from v2.engine.record import Record  # noqa: E402
-from v2.resources.base import AGENT, USER  # noqa: E402
+from v2.resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from v2.resources.types import PRIORITY, TYPES  # noqa: E402
 
 ok = fail = 0
@@ -91,7 +91,7 @@ driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 driver.quiet = 0.1
 check("before a tick nothing is typed", driver.sent, [])
 why = engine.tick()
-check("the tick delivers the user's event to the agent while it is working", (why, len(driver.sent), driver.sent[0] == "message 1 created"), ("delivered 2", 1, True))
+check("the tick delivers the user's event to the agent while it is working", (why, len(driver.sent), driver.sent[0] == "message 1 created"), ("delivered 1", 1, True))
 check("the user is not notified of their own event", User(record).unread(), [])
 check("the cursor moved: a second tick types nothing more", (engine.tick(), len(driver.sent)), (WORKING, 1))
 CONTROLLERS["message"](record, actor=AGENT).complete(1, "read and filed")
@@ -140,6 +140,18 @@ bus.on("*", lambda e, r: heard.append((e.type, e.action)))
 CONTROLLERS["pin"](record, actor=USER).create("a fact")
 check("record.emit reaches the bus", heard[-1], ("pin", "created"))
 bus.clear()
+
+# A NUDGE is spoken to the agent as its own words, and the user never hears it
+driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
+engine.tick()
+driver.sent.clear()
+CONTROLLERS["agent"](record, actor=SYSTEM).by_session("fake-1")
+CONTROLLERS["nudge"](record, actor=SYSTEM).create("2 reminders standing, read them", brief="1. run the suites")
+before = len(User(record).unread())
+engine.tick()
+check("a nudge is typed as its title and brief, not as type n action", driver.sent, ["2 reminders standing, read them — 1. run the suites"])
+check("the user is not notified of a nudge", len(User(record).unread()), before)
+check("an agent row's events reach nobody: only the nudge was typed", ("agent" in [e.type for e in record.events()], len(driver.sent)), (True, 1))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
