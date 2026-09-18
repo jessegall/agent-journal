@@ -5,6 +5,15 @@ from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
 os.environ["AGENT_JOURNAL_IN_TESTS"] = "1"
+# THE POLL IS THE CLOCK THIS SUITE RUNS ON. The channel wakes, looks, sleeps; every wait here is a
+# multiple of that, so the suite is told to poll fast and then waits on the CONDITION — a line that
+# arrives, or a quiet window several polls long — rather than on a timeout somebody guessed.
+POLL = 0.25
+os.environ["AGENT_JOURNAL_CHANNEL_POLL"] = str(POLL)
+#: a push is expected: generous, and it costs nothing because it returns the moment the line lands
+SOON = 12
+#: nothing is expected: long enough for several polls to have happened and found nothing
+QUIET = max(1.0, POLL * 6)
 SRC = Path(__file__).resolve().parent
 sys.path.insert(0, str(SRC))
 import testkit  # noqa: E402
@@ -74,13 +83,13 @@ def read_line(timeout):
 
 
 ask({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18", "capabilities": {}}})
-got = read_line(10)
+got = read_line(SOON)
 check("initialize declares the channel capability",
       (got or {}).get("result", {}).get("capabilities", {}).get("experimental", {}).get("claude/channel"), {})
 ask({"jsonrpc": "2.0", "method": "notifications/initialized"})
 
 j("messages", "add", "please check the build")
-push = read_line(12)
+push = read_line(SOON)
 # WHAT ARRIVED AND ITS NUMBER, NOT HALF OF WHAT IT SAYS. The line used to carry the first two
 # hundred characters of the message, and the agent's very next act is to open it and read all of
 # it — so the quote was a partial copy of something about to be read in full, which can be acted
@@ -91,7 +100,7 @@ check("a waiting message is pushed to an idle session, naming which one",
       ("notifications/claude/channel", "1", True))
 check("and it does not quote the message the agent is about to read",
       "please check the build" in ((push or {}).get("params") or {}).get("content", ""), False)
-check("and not pushed twice", read_line(7), None)
+check("and not pushed twice", read_line(QUIET), None)
 # A MESSAGE WITH A FILE IS STILL JUST A MESSAGE HERE. The line once carried the file's name too,
 # which was one more thing quoted out of something the agent opens in full a moment later.
 import base64 as _b64  # noqa: E402
@@ -110,47 +119,47 @@ j("auto-mode", "enable")
 import questions  # noqa: E402
 questions.add(root, "ship it on Friday?", "2026-09-14T10:00:00+00:00", track="default")
 j("questions", "answer", "1", "yes, Friday")
-push = read_line(12)
+push = read_line(SOON)
 params = (push or {}).get("params") or {}
 check("an answered question is pushed to an idle session, naming which one",
       ("question 1" in params.get("content", ""), "yes, Friday" in params.get("content", ""),
        params.get("meta", {}).get("question")), (True, False, "1"))
-check("and not pushed twice", read_line(7), None)
+check("and not pushed twice", read_line(QUIET), None)
 check("a pushed answer is told, so the next stop does not deliver it again", questions.untold(root, "default"), [])
 j("questions", "answer", "1", "no, Monday")
-push = read_line(12)
+push = read_line(SOON)
 check("a changed answer is pushed again, still without quoting it",
       (((push or {}).get("params") or {}).get("meta", {}).get("question"),
        "no, Monday" in (((push or {}).get("params") or {}).get("content", ""))), ("1", False))
 
 j("todos", "add", "a to-do to comment on")
 j("comments", "add", "todo 1", "use the other colour")
-push = read_line(12)
+push = read_line(SOON)
 params = (push or {}).get("params") or {}
 check("a new comment is pushed to an idle session, naming what it is on",
       ("to-do 1" in params.get("content", ""), "use the other colour" in params.get("content", ""),
        params.get("meta", {}).get("comment")), (True, False, "1"))
-check("and not pushed twice", read_line(7), None)
+check("and not pushed twice", read_line(QUIET), None)
 import comments as _comments  # noqa: E402
 check("a pushed comment is told, so the next stop does not deliver it again", _comments.untold(root, "default"), [])
 
 P.cli("suggest", "poll the to-dos less often", "--brief", stdin="the list reloads every five seconds")
 P.cli("suggestions", "accept", "1")
-push = read_line(12)
+push = read_line(SOON)
 params = (push or {}).get("params") or {}
 check("a suggestion the user decides is pushed to an idle session, naming it",
       ("accepted suggestion 1" in params.get("content", ""), params.get("meta", {}).get("suggestion")), (True, "1"))
 check("an accepted suggestion names the to-do it became and how to start it",
       (" as to-do " in params.get("content", ""), "todos start " in params.get("content", "")), (True, True))
-check("and not pushed twice", read_line(7), None)
+check("and not pushed twice", read_line(QUIET), None)
 
 (root / "runtime").mkdir(exist_ok=True)
 (root / "runtime" / "upstream.cache").write_text(json.dumps({"version": "9.9.9", "headline": "", "at": 9e12}))
-push = read_line(12)
+push = read_line(SOON)
 params = (push or {}).get("params") or {}
 check("a newer journal upstream is pushed to an idle session, with the upgrade command",
       (params.get("meta", {}).get("update"), "journal.py update" in params.get("content", "")), ("9.9.9", True))
-check("once per version", read_line(7), None)
+check("once per version", read_line(QUIET), None)
 (root / "runtime" / "upstream.cache").unlink()
 
 import re as _re  # noqa: E402
@@ -162,43 +171,43 @@ P.cli("plans", "add", "a plan to approve", "--goal=it gets approved", "--brief",
 P.cli("plans", "phase", "1", "the first phase")
 P.cli("plans", "todos", "1", "1", _step)
 _plans.activate(root, 1, _dt.now(_tz.utc).isoformat(timespec="seconds"), source="web", track="default")
-push = read_line(12)
+push = read_line(SOON)
 params = (push or {}).get("params") or {}
 check("a plan the user approves in the viewer is pushed to an idle session, naming the phase to start",
       (params.get("meta", {}).get("plan"), "approved plan 1" in params.get("content", ""), "Phase 1 is current" in params.get("content", "")),
       ("1", True, True))
-check("and only once", read_line(7), None)
+check("and only once", read_line(QUIET), None)
 j("auto-mode", "enable")
 # THE USER SPEAKING DOES NOT WAIT FOR A STOP; a plan approved in the viewer does. The kind is
 # already in every event's meta, and `channel_reach_now` is the list of kinds that interrupt.
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("messages", "add", "another one while working")
-push = read_line(12)
+push = read_line(SOON)
 check("a message reaches a session that is mid-turn",
       (bool(((push or {}).get("params") or {}).get("meta", {}).get("message")),
        "another one while working" in (((push or {}).get("params") or {}).get("content", ""))), (True, False))
 
 j("auto-mode", "disable")
 j("questions", "answer", "1", "no, Tuesday")
-push = read_line(12)
+push = read_line(SOON)
 params = (push or {}).get("params") or {}
 check("with auto mode off an answered question still reaches it, saying not to start the to-do list",
       (params.get("meta", {}).get("question"), "no, Tuesday" in params.get("content", ""), "do not start on the to-do list" in params.get("content", "")),
       ("1", False, True))
 j("messages", "add", "a message with auto off")
-push = read_line(12)
+push = read_line(SOON)
 check("while a message still does", bool(((push or {}).get("params") or {}).get("meta", {}).get("message")), True)
 state.put(root, "last_event", "PreToolUse", stem=STEM)
 j("questions", "answer", "1", "no, Wednesday")
 j("messages", "add", "sent while it works, auto off")
 _kinds = set()
 while not {"message", "question"} <= _kinds:
-    _line = read_line(12)
+    _line = read_line(SOON)
     if _line is None:
         break
     _kinds |= set((_line.get("params") or {}).get("meta", {}))
 check("with auto off a message and a changed answer still reach it mid-turn: both are the user speaking",
-      {"message", "question"} <= _kinds, True)
+      sorted(_kinds & {"message", "question"}), ["message", "question"])
 
 import commandlog as _commandlog  # noqa: E402
 from datetime import datetime as _dt2, timezone as _tz2  # noqa: E402
@@ -206,18 +215,18 @@ from datetime import datetime as _dt2, timezone as _tz2  # noqa: E402
 # `channel_reach_now`: it is there when the turn ends, and reading it a minute later costs
 # nothing. The session is still mid-turn from the checks above.
 _commandlog.record_web(root, "default", "reminders", "store", None, {}, _dt2.now(_tz2.utc).isoformat(timespec="seconds"))
-check("a quiet kind does not reach a session mid-turn", read_line(8), None)
+check("a quiet kind does not reach a session mid-turn", read_line(QUIET), None)
 state.put(root, "last_event", "Stop", stem=STEM)
-push = read_line(12)
+push = read_line(SOON)
 params = (push or {}).get("params") or {}
 check("anything else the user does in the viewer is pushed too, in the words Activity shows it",
       ("Wrote a reminder" in params.get("content", ""), params.get("meta", {}).get("did")),
       (True, "Wrote a reminder"))
-check("and not pushed twice", read_line(7), None)
+check("and not pushed twice", read_line(QUIET), None)
 
 tracks.unbind(root, STEM)
 j("messages", "add", "while on no environment")
-push = read_line(12)
+push = read_line(SOON)
 params = (push or {}).get("params") or {}
 # AN EVENT BELONGS TO AN ENVIRONMENT AND GOES TO WHOEVER WORKS IT. A session that has chosen
 # nothing used to be handed every environment's traffic — written when being unbound was rare,
