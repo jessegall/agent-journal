@@ -89,7 +89,7 @@ class Plans(Controller):
                 phase[key] = check_title(value) if key in ("title", "when") and value else value
         return self.save(r, "updated", phase=int(p))
 
-    def place(self, n: int, p: int, *todos: int, move: bool = False, off: bool = False):
+    def place(self, n: int, p: int, todos: list, move: bool = False, off: bool = False):
         r = self.load(n)
         phase = self._phase(r, p)
         for t in (int(x) for x in todos):
