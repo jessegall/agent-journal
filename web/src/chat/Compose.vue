@@ -47,10 +47,12 @@ function arrowDown(e) {
 function picked(e) {
     draft.files.push(...e.target.files);
     e.target.value = "";
+    area.value && area.value.focus();
 }
 
 function unpick(i) {
     draft.files.splice(i, 1);
+    area.value && area.value.focus();
 }
 
 async function go() {
