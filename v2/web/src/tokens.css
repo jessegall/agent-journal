@@ -12,3 +12,4 @@ html, body, #app { height: 100%; margin: 0; }
 body { background: var(--bg); color: var(--text); font: 13.5px/1.5 var(--font); }
 button, input, textarea { font: inherit; color: inherit; }
 a { color: inherit; text-decoration: none; }
+:root { --accent-dim: #2a2d5a; --warn-bg: #2a2118; --good: #7fc59a; }
