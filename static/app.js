@@ -25,6 +25,7 @@ const ROUTES = [
   { re: /^\/env\/([a-z0-9-]+)\/files$/, view: "Files", params: ["env"] },
   { re: /^\/env\/([a-z0-9-]+)\/agents\/(session|subagent)\/([0-9a-f-]{6,40})$/, view: "Agent", params: ["env", "kind", "id"] },
   { re: /^\/env\/([a-z0-9-]+)\/agents\/(session|subagent)\/([0-9a-f-]{6,40})\/transcript$/, view: "AgentTranscript", params: ["env", "kind", "id"] },
+  { re: /^\/env\/([a-z0-9-]+)\/agents\/(session|subagent)\/([0-9a-f-]{6,40})\/skills$/, view: "AgentSkills", params: ["env", "kind", "id"] },
   { re: /^\/env\/([a-z0-9-]+)\/commits\/([0-9a-f]{7,40})$/, view: "Commit", params: ["env", "sha"] },
   { re: /^\/env\/([a-z0-9-]+)\/search$/, view: "Search", params: ["env"] },
   { re: /^\/rules(\/archive)?(?:\/(\d+|new))?$/, view: "Rules", params: ["archive", "n"] },
@@ -4922,7 +4923,7 @@ const EnvHome = {
           <div class=bar-foot>
             <button type=button class=bar-act :disabled="marking" @click="alwaysJournal">
               {{ marking ? 'Marking…' : 'Load the journal skills at every start' }}</button>
-            <a v-if="lead.href" class=bar-act :href="lead.href" @click="skillsOpen = false">Browse every skill</a>
+            <a v-if="lead.href" class=bar-act :href="lead.href + '/skills'" @click="skillsOpen = false">Browse every skill</a>
           </div>
         </BarDrop>
         <!-- OUTSIDE THE SCROLLING ROW. The facts scroll sideways, and an overflow container clips
@@ -5695,6 +5696,84 @@ const Agent = {
     </div>`,
 };
 
+// EVERY SKILL THIS AGENT COULD LOAD, AND WHAT IT HAS. The agent's page lists them in a table three
+// columns wide because it is one section of a page about something else; browsing is its own job —
+// searching by name, reading what each is for, and deciding which are named at every start.
+const AgentSkills = {
+  props: ["env", "kind", "id"],
+  components: { TopBar, SkillPanel, Icon },
+  setup(props) {
+    const about = useFetch(() => props.env && props.id && `/api/env/${props.env}/agent?kind=${props.kind}&agent=${props.id}`);
+    const find = ref("");
+    const only = ref("all");
+    const picked = ref(null);
+    const busy = ref("");
+    const rows = computed(() => {
+      const want = find.value.trim().toLowerCase();
+      return ((about.data && about.data.skills) || [])
+        .filter((s) => (only.value === "all" ? true : only.value === "open" ? s.loaded : s.always))
+        .filter((s) => !want || `${s.name} ${s.description || ""}`.toLowerCase().includes(want));
+    });
+    const counts = computed(() => {
+      const all = (about.data && about.data.skills) || [];
+      return { all: all.length, open: all.filter((s) => s.loaded).length, always: all.filter((s) => s.always).length };
+    });
+    // the same write the skill's own panel makes: one funnel, so a toggle here and a toggle there
+    // cannot disagree about what "every start" means
+    const toggle = async (s) => {
+      if (busy.value) return;
+      busy.value = s.name;
+      try {
+        await send("POST", `/api/env/${props.env}/environment/settings`, { always_load: s.name, always_on: !s.always });
+        about.reload();
+      } catch (e) {
+        flash(e.message);
+      } finally {
+        busy.value = "";
+      }
+    };
+    const open = (event, s) => {
+      if (!s.readable || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      event.preventDefault();
+      picked.value = s.name;
+    };
+    return { about, find, only, rows, counts, toggle, busy, picked, open, close: () => { picked.value = null; } };
+  },
+  template: `
+    <TopBar :crumbs="[env, 'Agent', 'Skills']"/>
+    <div class=page><div class="page-inner skills-page">
+      <FetchState :state="about" loading="Reading the skills…"/>
+      <template v-if="about.data">
+        <div class=skills-bar>
+          <input class="input skills-find" v-model="find" placeholder="Find a skill by name or by what it is for">
+          <div class=skills-only>
+            <button v-for="k in ['all', 'open', 'always']" :key="k" type=button
+              :class="['skills-only-tab', {on: only === k}]" @click="only = k">
+              {{ k === 'all' ? 'All' : k === 'open' ? 'Open now' : 'Every start' }}
+              <span class=skills-only-n>{{ counts[k] }}</span>
+            </button>
+          </div>
+        </div>
+        <p v-if="!rows.length" class="prose muted">Nothing here matches that.</p>
+        <div v-else class=skills-list>
+          <div v-for="s in rows" :key="s.source + s.name" :class="['skills-row', {picked: picked === s.name}]">
+            <component :is="s.readable ? 'a' : 'div'" class=skills-open :href="s.readable ? '#/env/' + env + '/skills/' + s.name : null"
+              @click="open($event, s)">
+              <span class=skills-name><Icon name="book"/>{{ s.name }}
+                <span v-if="s.loaded" class=skills-badge>{{ s.loaded === 1 ? 'open' : s.loaded + '×' }}</span></span>
+              <span class=skills-what>{{ s.description || 'No description.' }}</span>
+              <span class=skills-where>{{ s.source }}</span>
+            </component>
+            <button type=button :class="['skills-always', {on: s.always}]" :disabled="busy === s.name"
+              :title="s.always ? 'Stop naming it at every start' : 'Name it at every start'" @click="toggle(s)">
+              {{ s.always ? 'Every start' : 'Load at start' }}</button>
+          </div>
+        </div>
+      </template>
+    </div></div>
+    <SkillPanel v-if="picked" :key="'skill' + picked" :env="env" :name="picked" :onClose="close" :reloaded="about.reload"/>`,
+};
+
 // an agent's raw transcript: the newest lines first, older ones a thousand at a time as you scroll up
 const AgentTranscript = {
   props: ["env", "kind", "id"],
@@ -5813,7 +5892,7 @@ const SkillView = {
     </div></div></div>`,
 };
 
-const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Connections, Inbox, Questions, Suggestions, Style, Reports, ReportDetail, Plans, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentTranscript, About, SkillView, NotFound };
+const VIEWS = { Home, EnvHome, Todos, Pins, Rules, Connections, Inbox, Questions, Suggestions, Style, Reports, ReportDetail, Plans, Work, Reminders, Docs, EnvDocs, DocDetail, Settings, Search, Tools, Files, Commit, Agent, AgentSkills, AgentTranscript, About, SkillView, NotFound };
 
 // ─────────────────────────────────────────────────────────────── the app shell
 // open work lives on Home, so the sidebar has no entry of its own for it
