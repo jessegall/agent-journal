@@ -256,7 +256,13 @@
   .statusbar-run-tail { flex: 0 1 auto; min-width: 0; max-width: 28ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10.5px; color: var(--text-4, #6b6e76); opacity: .8; }
   .statusbar-run-line.failed .statusbar-run-tail { color: #d98c8c; opacity: .9; }
-  .statusbar-running-for { flex: 0 0 auto; font-size: 10.5px; font-variant-numeric: tabular-nums; opacity: .8; }
+  .statusbar-running-slot { flex: none; min-width: 3.4ch; display: inline-grid; justify-items: end; }
+  .statusbar-running-for { font-size: 10.5px; font-variant-numeric: tabular-nums; opacity: .8; }
+  /* the clock slides in from the right and fades; it leaves with the line, so no leave of its own */
+  .clock-enter-active { transition: opacity 260ms ease, transform 260ms cubic-bezier(.22,.7,.3,1); }
+  .clock-enter-from { opacity: 0; transform: translateX(8px); }
+  .clock-leave-active { transition: opacity 120ms ease; }
+  .clock-leave-to { opacity: 0; }
   /* a clock that has stopped is a step quieter than one still counting */
   .statusbar-running-for.done { opacity: .55; }
   /* the command's roll is the same roll as the work's, a step taller so it reads as one at a glance */
