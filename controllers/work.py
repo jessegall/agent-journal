@@ -108,7 +108,7 @@ class WorkController(Controller):
         env = state.current_track(root)
         meta = {"standing": len(pins.live(root, pins.RULES)) + len(pins.live(root))}
         row = todo.titled(root, env, subject)
-        if row and (p.todo or p.todos):
+        if row and p.todo:
             closed, note = todo.close_titled(root, env, subject, p.at, p.agent)
             meta.update(todo_closed=closed, todo_note=note)
         elif row:

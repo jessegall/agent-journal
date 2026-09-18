@@ -94,7 +94,7 @@ the claim rather than erasing it, so being wrong about one is cheap.
     journal todos done N "<how>"      resolved without starting it
     journal todos reopen N "<why>"    undo a close; the reason and the close it undoes are kept
     journal todos from-commit [<ref>]   act on a commit's trailer by hand — what the git post-commit hook runs
-    journal todos strike N "<why>"   abandoned, on the record — `journal todo drop N "<why>"` is the same
+    journal todos drop N "<why>"     abandoned, on the record — `journal todos strike N "<why>"` is the same
     journal todos ask N "<question>"  it waits on the user's answer; auto moves on to the next
     journal todos answer N "<answer>" the user answers from the terminal; the agent is told at its next stop and picks it up first
     journal auto-mode [enable|disable]  per environment: work through the list without asking, or wait for the user's word
@@ -216,7 +216,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal plans phase <n> "<title>" [--when="<complete when>"] [--checkpoint] [--before=<p>]
                                      add a phase, or INSERT one before phase <p> — the phases after it move
                                      along with their to-dos and their checkpoints
-    journal plans rephrase <n> <p> ["<title>"] [--when=] [--checkpoint]   correct a phase written wrong
+    journal plans rephrase <n> <p> ["<title>"] [--when=] [--checkpoint|--no-checkpoint]   correct a phase written wrong
     journal plans todos <n> <phase> <to-do numbers> [--off] [--reopen="<why>"]   put to-dos in a phase, or take them out
     journal plans show <n>           the plan, its phases and their to-dos
     journal plans link <n> "doc 4.2"   a doc or report it rests on; a report it links is kept while it runs
@@ -310,8 +310,10 @@ case you are in; `journal worktree link` replaces a copy by hand. Never write to
 
 
 rest are denied with a line saying to report back; `search`, `pins`, `open` and other reads
-are fine. Their tool calls are neither gated nor nudged. They are handed the rules on their
-first tool call and again at 25%, 50% and 75% of their own window, because a rule binds
+are fine. Their tool calls are neither gated nor nudged. They are briefed ONCE, on their first tool
+call — the environment they were lent, the name to write under, and what a subagent may not do. There
+is no ladder and no repetition: nine branches that tried to handle a subagent were deleted in favour
+of one answer at the door, because a rule binds
 main conversation files it.
 
 ## When something seems broken

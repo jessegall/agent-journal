@@ -17,7 +17,6 @@ class EndPayload(Payload):
     subject = Field(str)
     force = Field(bool)
     todo = Field(bool)
-    todos = Field(bool)
     agent = Field(str, key="as")
 
 
