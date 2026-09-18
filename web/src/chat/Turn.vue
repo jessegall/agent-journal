@@ -6,6 +6,8 @@ import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import {peek, route} from "../route.js";
 import {clock, meta, quoted, reload, rows, store, types} from "../store.js";
+import {render} from "../text/index.js";
+import "../text/all.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠"];
 const props = defineProps({turn: Object});
@@ -13,6 +15,15 @@ const emit = defineEmits(["reply", "edit", "grew"]);
 const picking = ref(false);
 const mine = computed(() => props.turn.who === "user");
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
+const html = computed(() => render(words.value.text, {types: types.value}));
+
+function follow(e) {
+    const pill = e.target.closest("[data-peek]");
+    if (!pill) return;
+    e.preventDefault();
+    const [type, n] = pill.dataset.peek.split(":");
+    peek(type, Number(n));
+}
 const became = computed(() => {
     const declared = props.turn.sections.flatMap((s) => s.body.split(/,\s*/).map((word) => ({part: s.title, word, ref: refOf(word)})));
     const named = new Set(declared.map((b) => `${b.ref.type}:${b.ref.n}`));
@@ -80,7 +91,7 @@ async function drop() {
             <template v-if="words.quote">
                 <p class="thread-quote">{{ words.quote }}</p>
             </template>
-            <div class="thread-text">{{ words.text }}</div>
+            <div class="thread-text" @click="follow" v-html="html" />
             <template v-if="turn.type === 'question'">
                 <template v-if="turn.abstract">
                     <p class="thread-context">{{ turn.abstract }}</p>
@@ -265,8 +276,97 @@ button.thread-pill:hover {
     white-space: pre-wrap;
 }
 
-.thread-text {
+.thread-text :deep(p) {
+    margin: 0;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.thread-text :deep(p + p) {
+    margin-top: 0.7em;
+}
+
+.thread-text :deep(code) {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.92em;
+}
+
+.thread-text :deep(a) {
+    color: var(--accent-text);
+}
+
+.thread-text :deep(.row-pill) {
+    padding: 0 4px;
+    border: 1px solid var(--border-2);
+    border-radius: 5px;
+    color: var(--text-2);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.thread-text :deep(.row-pill:hover) {
+    border-color: var(--accent);
+    color: var(--accent-text);
+}
+
+.thread-text :deep(.console-card) {
+    position: relative;
+    margin: 0.5em 0 0.8em;
+    padding: 10px 12px 9px;
+    border: 1px solid #3a2a2a;
+    border-radius: 8px;
+    background: #121012;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+    line-height: 1.5;
+    overflow-x: auto;
+}
+
+.thread-text :deep(.console-label) {
+    position: absolute;
+    bottom: 5px;
+    right: 9px;
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #6b5c5c;
+}
+
+.thread-text :deep(.console-entry + .console-entry) {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #2a2222;
+}
+
+.thread-text :deep(.console-head) {
+    color: #f0a0a0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.thread-text :deep(.console-frame) {
+    padding-left: 1.6em;
+    color: var(--text-3);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.thread-text :deep(.console-more) {
+    margin-top: 6px;
+}
+
+.thread-text :deep(.console-more summary) {
+    cursor: pointer;
+    list-style: none;
+    color: var(--accent-text);
+    font-size: 11px;
+}
+
+.thread-text :deep(.console-more[open] summary) {
+    display: none;
 }
 
 .thread-context {
