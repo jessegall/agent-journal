@@ -111,12 +111,10 @@
   } catch (e) { /* no storage events here: this window keeps to itself */ }
 
   let lastUrl = "";                                 // the journal before the current one, for the fallback's way back
-  let helloTimer = null;
   const expectHello = () => {
-    clearTimeout(helloTimer);
-    frame.classList.remove("bare");
-    // a page that has not spoken in three seconds draws no bar: this shell draws one
-    helloTimer = setTimeout(() => frame.classList.add("bare"), 3000);
+    // THE BAR IS THERE FROM THE FIRST FRAME: the shell's own, until the page says hello and draws
+    // its own in the same place — on a current journal that is a moment, on an older one never.
+    frame.classList.add("bare");
   };
   const load = (fresh) => ask({ kind: "where", fresh: !!fresh }, (got) => {
     body.innerHTML = "";
@@ -182,7 +180,7 @@
   window.addEventListener("message", (e) => {
     if (!view || e.source !== view.contentWindow || !e.data || e.data.source !== "journal-page" || e.data.kind !== "shell") return;
     const op = e.data.op;
-    if (op === "hello") { clearTimeout(helloTimer); frame.classList.remove("bare"); tellPage({ shut: box.shut }); }
+    if (op === "hello") { frame.classList.remove("bare"); tellPage({ shut: box.shut }); }
     else if (op === "drag") dragWindow(e.data.sx, e.data.sy);
     else if (op === "dragmove") { if (live) live.at(e.data.sx, e.data.sy); }
     else if (op === "dragend") { if (live) live.done(); }
