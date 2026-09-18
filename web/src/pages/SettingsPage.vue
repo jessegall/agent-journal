@@ -6,7 +6,8 @@ import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
 import {load, reload, rows, store} from "../store.js";
 
-const features = computed(() => Object.values(store.spec.features));
+const triggerText = (t) => (t.on ? `on ${t.on}` : t.at ? `at ${t.at.join(", ")} percent` : t.every ? `every ${t.every} ${t.unit}` : "");
+const features = computed(() => Object.values(store.spec.features).map((f) => ({...f, when: triggerText(f.trigger)})));
 const on = (name) => !!(store.settings && store.settings.features[name]);
 const retention = computed(() => (store.settings && store.settings.keep) || {});
 const days = ref({});
@@ -30,49 +31,67 @@ async function remove(e) {
 
 <template>
     <section class="settings">
-        <h2>Features on {{ route.env }}</h2>
-        <p class="lead">Each is a switch; its trigger says when it speaks to the agent.</p>
-        <template v-for="f in features" :key="f.name">
-            <div class="feature">
-                <Switch :on="on(f.name)" @change="(v) => flip(f.name, v)" />
-                <span class="ftext">
-                    <span class="ftitle">{{ f.title }}</span>
-                    <span class="fabs">{{ f.abstract }}</span>
-                    <template v-if="Object.keys(f.trigger).length">
-                        <span class="ftrig">
-                            {{
-                                f.trigger.on
-                                    ? `on ${f.trigger.on}`
-                                    : f.trigger.at
-                                      ? `at ${f.trigger.at.join(", ")} percent`
-                                      : `every ${f.trigger.every} ${f.trigger.unit}`
-                            }}
-                        </span>
-                    </template>
-                </span>
-            </div>
-        </template>
-        <h2>Keep</h2>
-        <template v-for="type in ['report', 'todo']" :key="type">
-            <div class="keep">
-                <span class="ktext">{{ type }}s are archived after</span>
-                <input
-                    v-model="days[type]"
-                    type="number"
-                    min="0"
-                    :placeholder="String(retention[type] ?? (type === 'report' ? 14 : 7))"
-                    @change="saveRetention(type)"
-                />
-                <span class="ktext">days; 0 keeps them listed</span>
-            </div>
-        </template>
-        <h2>Environments</h2>
-        <template v-for="e in envs" :key="e.n">
-            <div class="env">
-                <span class="etitle">{{ e.title }}</span>
-                <Btn kind="danger" small :disabled="e.title === route.env" @click="remove(e)">Remove</Btn>
-            </div>
-        </template>
+        <section class="group">
+            <header class="group-head">
+                <h2>Features on {{ route.env }}</h2>
+                <p class="lead">Each is a switch; its trigger says when it speaks to the agent.</p>
+            </header>
+            <template v-for="f in features" :key="f.name">
+                <div class="row">
+                    <span class="text">
+                        <span class="title">{{ f.title }}</span>
+                        <span class="help">{{ f.abstract }}</span>
+                        <template v-if="f.when">
+                            <span class="note">{{ f.when }}</span>
+                        </template>
+                    </span>
+                    <span class="control">
+                        <Switch :on="on(f.name)" @change="(v) => flip(f.name, v)" />
+                    </span>
+                </div>
+            </template>
+        </section>
+        <section class="group">
+            <header class="group-head">
+                <h2>Keep</h2>
+                <p class="lead">How long a finished row stays listed before it is archived; 0 keeps it.</p>
+            </header>
+            <template v-for="type in ['report', 'todo']" :key="type">
+                <div class="row">
+                    <span class="text">
+                        <span class="title">{{ type }}s</span>
+                        <span class="help">archived this many days after they are done</span>
+                    </span>
+                    <span class="control">
+                        <input
+                            v-model="days[type]"
+                            class="days"
+                            type="number"
+                            min="0"
+                            :placeholder="String(retention[type] ?? (type === 'report' ? 14 : 7))"
+                            @change="saveRetention(type)"
+                        />
+                        <span class="unit">days</span>
+                    </span>
+                </div>
+            </template>
+        </section>
+        <section class="group">
+            <header class="group-head">
+                <h2>Environments</h2>
+                <p class="lead">Removing one keeps its record on disk; it leaves the sidebar.</p>
+            </header>
+            <template v-for="e in envs" :key="e.n">
+                <div class="row">
+                    <span class="text">
+                        <span class="title">{{ e.title }}</span>
+                    </span>
+                    <span class="control">
+                        <Btn kind="danger" small :disabled="e.title === route.env" @click="remove(e)">Remove</Btn>
+                    </span>
+                </div>
+            </template>
+        </section>
     </section>
 </template>
 
@@ -82,65 +101,79 @@ async function remove(e) {
     padding: 22px 28px 60px;
 }
 
+.group + .group {
+    margin-top: 32px;
+}
+
+.group-head {
+    margin-bottom: 4px;
+}
+
 h2 {
-    margin: 22px 0 4px;
+    margin: 0 0 3px;
     font-size: 15px;
     font-weight: 600;
 }
 
 .lead {
-    margin: 0 0 12px;
+    margin: 0;
     color: var(--text-3);
+    font-size: 12.5px;
 }
 
-.feature {
-    min-width: 0;
+.row {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: center;
+    gap: 16px;
+    min-height: 52px;
     padding: 10px 0;
     border-bottom: 1px solid var(--border);
 }
 
-.ftext {
+.text {
+    flex: 1 1 auto;
+    min-width: 0;
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
-.ftitle {
+.title {
     font-weight: 500;
 }
 
-.fabs {
+.help {
     color: var(--text-2);
+    font-size: 12.5px;
 }
 
-.ftrig {
+.note {
     color: var(--text-3);
     font-size: 12px;
 }
 
-.keep {
+.control {
+    flex: none;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 8px;
-    padding: 6px 0;
-    color: var(--text-2);
+    min-width: 96px;
 }
 
-.keep input {
+.days {
     width: 64px;
-    padding: 4px 8px;
+    height: 28px;
+    padding: 0 8px;
     border: 1px solid var(--border-2);
     border-radius: 6px;
     background: var(--raised);
+    color: var(--text);
+    text-align: right;
 }
 
-.env {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
+.unit {
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 </style>

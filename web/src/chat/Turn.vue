@@ -141,6 +141,7 @@ async function drop() {
         <div class="thread-meta">
             <template v-if="mine || turn.type === 'question'">
                 <span class="thread-ref">{{ turn.type }} {{ turn.n }}</span>
+                <span class="thread-meta-dot" />
             </template>
             <span>{{ clock(turn.created) }}</span>
             <template v-if="mine">
@@ -222,10 +223,10 @@ async function drop() {
 
 .thread-pill {
     padding: 0 6px;
-    border: 1px solid var(--border-2);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border-2));
     border-radius: 99px;
-    background: none;
-    color: inherit;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--text-2);
     font-size: 10px;
     line-height: 1.6;
     letter-spacing: 0.03em;
@@ -364,11 +365,19 @@ button.thread-pill:hover {
 
 .thread-meta {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 6px;
     padding: 0 3px;
     font-size: 11px;
     color: var(--text-3);
+}
+
+.thread-meta-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-3);
+    opacity: 0.7;
 }
 
 .thread-ref {
