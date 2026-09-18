@@ -395,6 +395,8 @@ const Icon = {
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
+      <!-- a terminal: the prompt mark and the line you type on, which is what a shell looks like -->
+      <path v-else-if="name === 'terminal'" d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>
       <!-- skills: a closed book seen from its spine side — a cover, its pages, and the band down the
            spine. The open-book pair of curves was two shapes fighting for twelve pixels. -->
       <path v-else-if="name === 'book'" d="M4 2.5h8.5v11H4a1.5 1.5 0 0 1 0-3h8.5M4 2.5a1.5 1.5 0 0 0 0 3h8.5"/>
@@ -4941,16 +4943,16 @@ const EnvHome = {
         </BarDrop>
         <!-- OUTSIDE THE SCROLLING ROW. The facts scroll sideways, and an overflow container clips
              anything hanging out of it — which is a dropdown that opened and could not be seen. -->
-        <!-- THE SHELLS IT SENT TO THE BACKGROUND, beside the subagents for the same reason: both are
-             work the agent started and is not sitting on. A finished one stays until it is read. -->
-        <button v-if="shells.length" type=button class=agent-crew-toggle :aria-expanded="shellsOpen ? 'true' : 'false'"
-          :title="shellsOpen ? 'Hide the background shells' : 'Show the background shells'" @click="shellsOpen = !shellsOpen">
-          {{ shells.filter((x) => !x.done).length || shells.length }} {{ shells.filter((x) => !x.done).length === 1 ? "shell" : "shells" }}<Icon :name="shellsOpen ? 'up' : 'down'"/>
-        </button>
-        <button v-if="liveCrew.length" type=button class=agent-crew-toggle :aria-expanded="crewOpen ? 'true' : 'false'"
-          :title="crewOpen ? 'Hide the subagents' : 'Show the subagents'" @click="crewOpen = !crewOpen">
-          {{ liveCrew.length }} {{ liveCrew.length === 1 ? "subagent" : "subagents" }}<Icon :name="crewOpen ? 'up' : 'down'"/>
-        </button>
+        <!-- AN ICON AND A NUMBER, NOT A SENTENCE. Three counters in a row — skills, shells,
+             subagents — read as three of the same thing, and the words were the only part that
+             made them look like three different ones. -->
+        <button v-if="shells.length" type=button :class="['agent-fact', 'agent-skills', {none: !shells.filter((x) => !x.done).length}]"
+          :aria-expanded="shellsOpen ? 'true' : 'false'"
+          :title="shells.filter((x) => !x.done).length + ' background shell(s) still running, ' + shells.length + ' in all'"
+          @click="shellsOpen = !shellsOpen"><Icon name="terminal"/>{{ shells.filter((x) => !x.done).length || shells.length }}</button>
+        <button v-if="liveCrew.length" type=button class="agent-fact agent-skills" :aria-expanded="crewOpen ? 'true' : 'false'"
+          :title="liveCrew.length + ' subagent(s)'" @click="crewOpen = !crewOpen">
+          <Icon name="agents"/>{{ liveCrew.length }}</button>
         <!-- THE TWO THINGS YOU WANT OF THIS CONVERSATION. Search and Files are pages of the
              environment; neither can be asked about the thread in front of you, which is what these
              two do — and they live on the bar because that is what sits over the thread. -->
