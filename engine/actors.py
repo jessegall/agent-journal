@@ -18,9 +18,9 @@ def spoken(e: Event, record: Record) -> str:
 
 
 def counted(events: list[Event]) -> list[str]:
-    groups: dict[tuple, list] = {}
+    groups: dict[tuple, dict] = {}
     for e in events:
-        groups.setdefault((e.type, e.action), []).append(e.n)
+        groups.setdefault((e.type, e.action), {})[e.n] = True
     return [f"{len(ns)} new {t}{'s' if len(ns) != 1 else ''}" if a == "created" else f"{t}{'s' if len(ns) != 1 else ''} {' '.join(map(str, ns))} {a}"
             for (t, a), ns in groups.items()]
 
