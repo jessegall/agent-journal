@@ -5222,13 +5222,13 @@ const EnvHome = {
       <!-- THE AGENT BAR BELONGS TO THE CHAT, NOT TO THE PAGE. It is the agent's own state — which
            model, which session, how long, how full — and the rail beside it is not the agent's, so
            a bar spanning both said that state was the whole page's. -->
-      <!-- THE LOUD ONE. A session started as plain \`claude\` has no channel: nothing you write here
+      <!-- THE LOUD ONE. A session started as plain \`claude\` has no seat: nothing you write here
            reaches it until its next turn, and the chat looks the same either way. -->
       <div v-if="noChannel" class=chat-alert role=alert>
         <Icon name="warn"/>
         <div class=chat-alert-text>
           <strong>This session was not started through the journal.</strong>
-          It does not hear what you write here while it is idle. Stop it and start it with <code>journal claude</code>.
+          It does not hear what you write here while it is idle. Stop it and start it with <code>journal claude</code> or <code>journal codex</code>.
         </div>
       </div>
       <div v-else-if="noAgent" class=chat-alert role=alert>

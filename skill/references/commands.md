@@ -231,9 +231,8 @@ holds while messages wait; the first tool call after a new one mentions it once.
                                      is typed, and the only thing read back is whether that variable is set
     journal connections here <name> purpose|kind|url|secret "<value>" [--off]   change it on this environment only
     journal statusline [--install]   the status bar line: environment, open work, viewer; --install adds it to .claude/settings.json, never over one that exists
-    journal channel --install        add the channel server to .mcp.json; with claude --dangerously-load-development-channels server:journal, a message left in the viewer wakes an idle session
-    journal claude [prompt]          start Claude with the channel (added to .mcp.json first if missing) AND the web viewer, if this journal has none running — it says where. --continue, --resume=<id>, --dry-run shows the command; any other flag is passed through to claude. --pty runs it under the launcher instead (no channel; the viewer's news is typed in), --quiet never types
-    journal codex [prompt]           start Codex under the journal's launcher: the terminal is the channel — the viewer's news is typed into the idle session; --quiet never types, --dry-run shows the command
+    journal claude [prompt]          start Claude under the journal's launcher AND the web viewer, if this journal has none running — it says where. The launcher types the viewer's news into the idle session; --quiet never types. --continue, --resume=<id>, --dry-run shows the command; any other flag is passed through to claude
+    journal codex [prompt]           start Codex under the journal's launcher, the same way; --quiet never types, --dry-run shows the command
 
 Everything the viewer changes goes through the same controllers as these commands, marked as
 coming from the web where a record keeps a source. The API is `/api/env/<env>/<resource>[/<n>][/<action>]`

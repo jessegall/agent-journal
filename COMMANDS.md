@@ -133,7 +133,7 @@ being complete. You approve it before the agent starts, and again at a checkpoin
 ### Messages, questions, suggestions, comments and reports
 
 Five ways you and the agent talk when you are not both at the terminal. All of them reach an
-idle agent through the web interface's channel, and are told at its next stop otherwise.
+idle agent through the launcher (`journal claude`, `journal codex`), and are told at its next stop otherwise.
 
     journal messages "<message>"         leave one for the agent: an instruction, a follow-up
     journal messages                     what is waiting, then what has been handled

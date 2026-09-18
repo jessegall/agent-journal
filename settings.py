@@ -59,7 +59,7 @@ DEFAULTS = {
     "bind_on_start": False,
 
     # WHICH EVENTS INTERRUPT. Everything the user does in the viewer reaches an idle session
-    # through the channel; these kinds reach one that is mid-turn as well, because the user
+    # through the launcher; these kinds reach one that is mid-turn as well, because the user
     # speaking is the one thing that cannot wait. The rest — a plan approved, a suggestion
     # decided, a to-do edited, a newer version upstream — is there when the turn ends.
     # The names are the event's own kind: message, question, comment, suggestion, plan, did,
@@ -106,8 +106,8 @@ DEFAULTS = {
     "reminder_every": 50,
 
     # AUTO MODE MEANS THE LIST GETS WORKED, and an agent that stopped with work ready is the
-    # one case nothing notices: its own hooks only fire when it acts, and the channel only
-    # speaks when the user does. So the channel nudges it back after this many minutes idle.
+    # one case nothing notices: its own hooks only fire when it acts, and the launcher only
+    # speaks when the user does. So the launcher nudges it back after this many minutes idle.
     # It fires only while something is READY — never on an empty or wholly blocked list — and
     # again each interval, because the reason it stopped is usually that nothing is coming.
     # 0 turns it off. Nothing nudges when auto is off: that is the user's list to hand out.

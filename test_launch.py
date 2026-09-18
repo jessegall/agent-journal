@@ -67,7 +67,7 @@ seat._note_typed(b"abc\x03")
 check("Ctrl-C drops it", seat.typed, b"")
 
 # THE NUDGER TYPES THE VIEWER'S NEWS, ONCE, WHEN THE AGENT IS QUIET. A message left on the environment
-# is typed as the channel would have said it; typed once; never over a half-typed line or a busy agent.
+# is typed as the record says it; typed once; never over a half-typed line or a busy agent.
 import tempfile  # noqa: E402
 from pathlib import Path  # noqa: E402
 import tracks  # noqa: E402
@@ -108,7 +108,7 @@ nudger(seat)
 check("a half-typed line is not typed over", seat.lines, [])
 seat.mid = False
 nudger(seat)
-check("quiet agent, empty line: the message is typed as the channel would say it",
+check("quiet agent, empty line: the message is typed as the record says it",
       (len(seat.lines), "left message 1" in seat.lines[0], "messages show 1" in seat.lines[0]), (1, True, True))
 nudger(seat)
 check("and only once", len(seat.lines), 1)

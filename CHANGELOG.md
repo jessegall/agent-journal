@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.157.0 — The MCP channel is retired: the launcher is how the viewer reaches a session
+
+**`journal claude` runs Claude under the journal's launcher, and the channel server is gone.**
+The launcher holds the agent in a pseudo-terminal, reads the hooks' one-line-per-event reports
+from outside, and when the agent is idle and you have no half-typed line it types the viewer's
+news in — a message, an answer, a comment, a plan approved — and presses Enter. `journal codex`
+does the same for Codex. Nothing runs inside the agent's turn any more, so a message no longer
+needs an MCP server to be heard, and `--dangerously-load-development-channels` is not needed.
+
+`journal update` takes the old `journal` server entry out of `.mcp.json` on its own. `journal
+channel` is no more; `--pty` is no longer a flag, because the launcher is the default. The
+viewer's warning band names the seat: a session started as plain `claude` still hears nothing
+while idle, and the band says to start it with `journal claude` or `journal codex`.
+
 ## 1.156.2 — The extension's icons ship
 
 **The extension zip carries its icons.** They were `.png` files in a repository that ignores

@@ -43,7 +43,7 @@ def set_setting(root: Path, track: str, key: str, value) -> tuple[bool, str]:
         got[track] = int(value)
         state.put(root, key, got)
     return True, say("set_show" if key == SHOW else "set_keep", env=track, n=int(value))
-SKIP = {"statusline", "serve", "channel", "claude", "migrate", "version"}
+SKIP = {"statusline", "serve", "claude", "codex", "migrate", "version"}
 # noun -> the kind of resource a line is about, so Activity can open it
 KINDS = {"todos": "todo", "messages": "message", "questions": "question", "reports": "report", "plans": "plan",
          "suggestions": "suggestion", "docs": "doc", "pins": "pin", "rules": "rule", "comments": "comment",
