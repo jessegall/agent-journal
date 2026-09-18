@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import {act, saveSettings} from "../api.js";
 import Icon from "../kit/Icon.vue";
+import Switch from "../kit/Switch.vue";
 import {go, route} from "../route.js";
 import {agent, autoOn, reload, rows} from "../store.js";
 
@@ -49,19 +50,14 @@ async function runBar(p) {
             <span class="statusbar-line">{{ line }}</span>
         </button>
         <span class="statusbar-tools">
-            <button
-                type="button"
-                class="statusbar-auto"
-                role="switch"
-                :aria-checked="autoOn ? 'true' : 'false'"
+            <Switch
+                :on="autoOn"
+                word="auto"
                 :title="
                     autoOn ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'
                 "
-                @click="setAuto(!autoOn)"
-            >
-                <span :class="['switch', 'small', {on: autoOn}]"><span class="knob" /></span>
-                <span class="statusbar-auto-word">auto</span>
-            </button>
+                @change="setAuto"
+            />
         </span>
     </div>
     <template v-for="p in plans" :key="p.n">
@@ -165,63 +161,6 @@ async function runBar(p) {
     width: 1px;
     margin: 3px 0;
     background: rgba(255, 255, 255, 0.14);
-}
-
-.statusbar-auto {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 26px;
-    padding: 0 10px 0 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 13px;
-    background: var(--raised);
-    color: var(--text-2);
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.statusbar-auto:hover {
-    border-color: var(--border-3);
-    color: var(--text);
-}
-
-.switch {
-    position: relative;
-    width: 28px;
-    height: 16px;
-    flex: none;
-    padding: 0;
-    border: none;
-    border-radius: 8px;
-    background: #3a3d44;
-}
-
-.switch .knob {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #cfd2d8;
-    transition:
-        transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
-        background 0.15s;
-}
-
-.switch.on {
-    background: var(--accent);
-}
-
-.switch.on .knob {
-    transform: translateX(12px);
-    background: #fff;
-}
-
-.statusbar-auto-word {
-    letter-spacing: 0.01em;
 }
 
 .planbar {
