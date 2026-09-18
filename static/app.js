@@ -3803,7 +3803,25 @@ function keepWindow() {
     localStorage.setItem(DETACHED_KEY, JSON.stringify({ on: DETACHED.on, x: DETACHED.x, y: DETACHED.y, w: DETACHED.w, h: DETACHED.h }));
   } catch (e) { /* nothing is lost that was not already only a convenience */ }
 }
+//: IS THE EXTENSION HERE? A page cannot see an extension, so it asks and waits a moment for an
+//: answer; no answer means no extension, and Detach keeps doing what it does on its own.
+const EXTENSION = reactive({ here: false, holding: false });
+window.addEventListener("message", (e) => {
+  if (e.source !== window || !e.data || e.data.source !== "journal-extension") return;
+  if (e.data.kind === "here") EXTENSION.here = true;
+  if (e.data.kind === "detached") { EXTENSION.holding = true; DETACHED.on = false; keepWindow(); }
+  if (e.data.kind === "attached" || e.data.kind === "failed") EXTENSION.holding = false;
+});
+window.postMessage({ source: "journal-page", kind: "hello" }, window.location.origin);
+
 function detach(on) {
+  // THE EXTENSION'S WINDOW BEATS THE VIEWER'S OWN, because it is the one that follows you off this
+  // page. The viewer's window only exists here, which is the one place the chat already is.
+  if (EXTENSION.here && !CHAT_ONLY) {
+    window.postMessage({ source: "journal-page", kind: on ? "detach" : "attach" }, window.location.origin);
+    if (!on) EXTENSION.holding = false;
+    return;
+  }
   DETACHED.on = !!on;
   if (DETACHED.on && !DETACHED.x && !DETACHED.y) {
     DETACHED.x = Math.max(16, window.innerWidth - DETACHED.w - 28);
@@ -4762,7 +4780,7 @@ const EnvHome = {
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
-             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
+             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4791,8 +4809,10 @@ const EnvHome = {
              two do — and they live on the bar because that is what sits over the thread. -->
         <!-- THE CHAT CAN LEAVE THE PAGE. Detached it is one window floating over wherever you walk
              to, and the home says where it went rather than drawing a second thread. -->
-        <button v-if="!CHAT_ONLY" type=button class=bar-dots :title="DETACHED.on ? 'Put the chat back on the page' : 'Detach the chat into its own window'"
-          :aria-pressed="DETACHED.on ? 'true' : 'false'" @click="detach(!DETACHED.on)"><Icon name="sidepanel"/></button>
+        <button v-if="!CHAT_ONLY" type=button class=bar-dots
+          :title="DETACHED.on || EXTENSION.holding ? 'Put the chat back on the page' : (EXTENSION.here ? 'Hand the chat to the extension, so it follows you across tabs' : 'Detach the chat into its own window')"
+          :aria-pressed="DETACHED.on || EXTENSION.holding ? 'true' : 'false'"
+          @click="detach(!(DETACHED.on || EXTENSION.holding))"><Icon name="sidepanel"/></button>
         <div class=bar-menu>
           <button type=button class=bar-dots :aria-expanded="barMenu.open ? 'true' : 'false'"
             title="Search this chat, or its files" @click="barMenu.open = !barMenu.open; barMenu.kind = ''">⋮</button>
@@ -4841,9 +4861,10 @@ const EnvHome = {
           <span v-for="f in a.facts" :key="f.icon" class=crew-fact><Icon :name="f.icon"/><span>{{ f.value }}</span></span>
         </button>
       </div>
-        <Thread v-if="!DETACHED.on || CHAT_ONLY" :env="env"/>
+        <Thread v-if="(!DETACHED.on && !EXTENSION.holding) || CHAT_ONLY" :env="env"/>
         <div v-else class=thread-gone>
-          <p>The chat is in its own window.</p>
+          <p v-if="EXTENSION.holding">The chat is in the extension's window, and follows you across tabs.</p>
+          <p v-else>The chat is in its own window.</p>
           <button type=button class=thread-gone-back @click="detach(false)">Put it back on the page</button>
         </div>
       </section>

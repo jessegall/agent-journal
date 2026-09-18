@@ -122,6 +122,41 @@ async function inject(file) {
   }
 }
 
+// FOLLOWING YOU FROM TAB TO TAB. Detaching in the viewer hands the chat to this extension: the flag
+// says the chat is loose, and every page you open gets the window automatically — but only where
+// the user has granted the permission to touch other pages, which they do from the popup. Without
+// the grant the flag still works for Alt+J, and the popup says what is missing.
+async function everywhere() {
+  return chrome.permissions.contains({ origins: ["<all_urls>"] }).catch(() => false);
+}
+
+async function follow(on) {
+  await chrome.storage.local.set({ following: !!on });
+  return { ok: true, everywhere: await everywhere() };
+}
+
+async function following() {
+  const got = await chrome.storage.local.get("following");
+  return !!(got && got.following);
+}
+
+async function openOn(tabId, url) {
+  if (!tabId || !url || !/^https?:/.test(url)) return;
+  if (url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost")) return;  // the journal's own page has the chat
+  if (!(await following()) || !(await everywhere())) return;
+  try {
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["chat.js"] });
+  } catch (e) { /* a page the extension may not touch is not an error worth saying twice */ }
+}
+
+chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
+  if (info.status === "complete") openOn(tabId, tab && tab.url);
+});
+chrome.tabs.onActivated.addListener(async ({ tabId }) => {
+  const tab = await chrome.tabs.get(tabId).catch(() => null);
+  if (tab) openOn(tabId, tab.url);
+});
+
 chrome.commands.onCommand.addListener(async (command) => {
   if (command === "point") await inject("picker.js");
   if (command === "chat") await inject("chat.js");
@@ -134,6 +169,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     point: () => inject("picker.js"),
     chat: () => inject("chat.js"),
     test: () => post("[journal pointer] a test message from the extension", []),
+    follow: () => follow(msg.on),
+    following: async () => ({ on: await following(), everywhere: await everywhere() }),
     where: async () => {
       const to = await target({ fresh: !!msg.fresh });
       return to.why ? { why: to.why, journals: [] } : {

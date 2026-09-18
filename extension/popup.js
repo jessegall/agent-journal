@@ -43,6 +43,22 @@ env.addEventListener("change", () => {
     tell(`Messages go to ${env.value}.`, "good");
   });
 });
+// THE PERMISSION IS ASKED FOR HERE, because Chrome only grants one from a click inside the
+// extension's own window. Detaching in the viewer sets the flag; this is what lets it act on it.
+const follow = document.getElementById("follow");
+function showFollow() {
+  chrome.runtime.sendMessage({ kind: "following" }, (got) => {
+    if (!got) return;
+    follow.hidden = !got.on;
+    follow.textContent = got.everywhere ? "The chat follows you on every page" : "Let the chat follow you on every page";
+    follow.disabled = !!got.everywhere;
+  });
+}
+follow.addEventListener("click", () => {
+  chrome.permissions.request({ origins: ["<all_urls>"] }, () => showFollow());
+});
+showFollow();
+
 document.getElementById("again").addEventListener("click", () => load(true));
 document.getElementById("test").addEventListener("click", () => {
   tell("Sending…");

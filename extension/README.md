@@ -16,6 +16,10 @@ then the environment inside it.
 
 - **Alt+P**, or **Point at an element** in the popup: a crosshair appears, whatever is under the
   pointer is outlined, and clicking it sends it. Esc stops without sending.
+- **Detach, in the journal's own viewer**: the button beside the ⋮ hands the chat to this
+  extension instead of to the viewer's own window, and the page says where it went. Press **Let the
+  chat follow you on every page** in the popup once, and the window then opens by itself on every
+  page you visit — that is the permission Chrome will only grant from a click inside the extension.
 - **Alt+J**, or **Open the chat here**: the journal opens as a window over the page you are on —
   dragged by its bar, resized from its corner, remembered where you left it. Alt+J again, Esc, or ×
   closes it.
