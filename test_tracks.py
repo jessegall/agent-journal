@@ -251,9 +251,15 @@ todo_mod.add(r7, "gone", "a to-do on gone", "the brief", AT)
 tracks.switch(r7, "default", AT)          # the project starts on default again
 pins.add(r7, "fact D", AT, 12)
 
+took, msg = tracks.remove(r7, "gone", AT, yes=True)
+check("an environment with open work is not removed, --yes or not", took, False)
+check("and it names the work to end", "work on gone" in msg and "end it first" in msg, True)
+tracks.switch(r7, "gone", AT)
+work.end(r7, "work on gone", AT)
+tracks.switch(r7, "default", AT)
 took, msg = tracks.remove(r7, "gone", AT)
 check("bare remove does nothing", took, False)
-check("bare remove says what would be lost", "1 pin(s), 1 open work, 1 open to-do(s)" in msg, True)
+check("bare remove says what would be lost", "1 pin(s), 0 open work, 1 open to-do(s)" in msg, True)
 check("bare remove leaves the environment standing",
       sorted(t["name"] for t in tracks.listing(r7)), ["default", "gone"])
 
