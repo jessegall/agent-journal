@@ -1,5 +1,5 @@
 <script setup>
-import {reactive, ref} from "vue";
+import {reactive, ref, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 
 const props = defineProps({
@@ -8,9 +8,35 @@ const props = defineProps({
     send: Function,
     quote: {type: String, default: ""},
     quoteLabel: {type: String, default: "Commenting on"},
+    preset: {type: String, default: ""},
+    up: Function,
+    down: Function,
 });
 const draft = reactive({text: "", files: [], sending: false, error: ""});
 const area = ref(null);
+
+watch(
+    () => props.preset,
+    (text) => {
+        draft.text = text;
+        area.value && area.value.focus();
+    }
+);
+
+function arrowUp(e) {
+    if (props.up && !draft.text.trim()) {
+        e.preventDefault();
+        props.up();
+    }
+}
+
+function arrowDown(e) {
+    if (props.down && (!draft.text.trim() || draft.text === props.preset)) {
+        e.preventDefault();
+        draft.text = "";
+        props.down();
+    }
+}
 
 function picked(e) {
     draft.files.push(...e.target.files);
@@ -65,6 +91,8 @@ async function go() {
                 :placeholder="placeholder"
                 :aria-label="submit"
                 @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), go())"
+                @keydown.up="arrowUp"
+                @keydown.down="arrowDown"
                 @keydown.meta.enter.prevent="go"
                 @keydown.ctrl.enter.prevent="go"
             />
