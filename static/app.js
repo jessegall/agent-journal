@@ -6105,12 +6105,14 @@ const AgentSkills = {
           </div>
         </div>
         <p v-if="!rows.length" class="prose muted">Nothing here matches that.</p>
+        <!-- ONE BOX PER ROOT GROUP. In one table a folded group's header read as the header of the
+             row under it; boxed, each group is its own thing, its header a header, the chevron at
+             the right where a disclosure lives. Skills under no prefix share a box of their own. -->
         <div v-else class=skills-list>
           <template v-for="g in groups" :key="g.key">
-            <SkillRow v-if="g.single" :s="g.single" :env="env" :picked="picked" :busy="busy" :asked="asked" :open="open" :toggle="toggle" :ask="ask"/>
-            <template v-else>
-              <button type=button :class="['skills-group', {folded: isFolded(g.key)}]" @click="fold(g.key)">
-                <Icon name="down"/><span class=skills-group-name>{{ g.name }}</span><span class=skills-group-n>{{ g.count }}</span>
+            <div v-if="!g.single" class=skills-box>
+              <button type=button :class="['skills-group', {folded: isFolded(g.key)}]" :aria-expanded="!isFolded(g.key)" @click="fold(g.key)">
+                <span class=skills-group-name>{{ g.name }}</span><span class=skills-group-n>{{ g.count }}</span><Icon name="down"/>
               </button>
               <!-- THE ROWS STAY IN THE DOM AND THE BOX AROUND THEM CHANGES HEIGHT: a grid row going
                    from 1fr to 0fr is the one height transition CSS can do without knowing the height. -->
@@ -6118,8 +6120,8 @@ const AgentSkills = {
                 <template v-for="it in g.items" :key="it.key">
                   <SkillRow v-if="it.single" :s="it.single" :env="env" :picked="picked" :busy="busy" :asked="asked" :open="open" :toggle="toggle" :ask="ask" :depth="1"/>
                   <template v-else>
-                    <button type=button :class="['skills-group', 'skills-subgroup', {folded: isFolded(it.key)}]" @click="fold(it.key)">
-                      <Icon name="down"/><span class=skills-group-name>{{ it.name }}</span><span class=skills-group-n>{{ it.rows.length }}</span>
+                    <button type=button :class="['skills-group', 'skills-subgroup', {folded: isFolded(it.key)}]" :aria-expanded="!isFolded(it.key)" @click="fold(it.key)">
+                      <span class=skills-group-name>{{ it.name }}</span><span class=skills-group-n>{{ it.rows.length }}</span><Icon name="down"/>
                     </button>
                     <div :class="['skills-fold', {shut: isFolded(it.key)}]" :inert="isFolded(it.key) || null"><div class=skills-fold-in>
                       <SkillRow v-for="s in it.rows" :key="s.source + s.name" :s="s" :env="env" :picked="picked" :busy="busy" :asked="asked" :open="open" :toggle="toggle" :ask="ask" :depth="2"/>
@@ -6127,8 +6129,14 @@ const AgentSkills = {
                   </template>
                 </template>
               </div></div>
-            </template>
+            </div>
           </template>
+          <div v-if="groups.some((g) => g.single)" class=skills-box>
+            <div class="skills-group skills-group-plain"><span class=skills-group-name>On their own</span><span class=skills-group-n>{{ groups.filter((g) => g.single).length }}</span></div>
+            <template v-for="g in groups" :key="'one' + g.key">
+              <SkillRow v-if="g.single" :s="g.single" :env="env" :picked="picked" :busy="busy" :asked="asked" :open="open" :toggle="toggle" :ask="ask" :depth="1"/>
+            </template>
+          </div>
         </div>
       </template>
     </div></div>
