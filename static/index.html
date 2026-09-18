@@ -884,6 +884,11 @@
     padding: 0; border: 0; }
   .app.chat-only .home.rail-in-chat .home-rail > .rail-tabs { display: none; }
   .app.chat-only .home-divider { display: none; }
+  .chat-back { display: none; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-bottom: 1px solid var(--border);
+    background: var(--raised); color: var(--text-2); font-size: 12px; text-decoration: none; }
+  .chat-back:hover { color: var(--text); }
+  .chat-back .ico { width: 12px; height: 12px; transform: rotate(180deg); }
+  .app.chat-only .chat-back { display: flex; }
   /* WHAT THE AGENT PINNED OVER THE CONVERSATION, under the agent bar: one line, and only its X
      takes it down. The tone is the agent's own call — a note, something that went well, a warning. */
   /* FLUSH, LIKE THE BARS ABOVE IT. The section holding the thread is a flex column with a 2px gap,

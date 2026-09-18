@@ -7028,6 +7028,8 @@ const App = {
         </div>
       </aside>
       <main class=main>
+        <!-- the little window has no top bar and no nav: a page opened inside it needs a way back -->
+        <a v-if="CHAT_ONLY && route.view !== 'EnvHome' && envName" class=chat-back :href="'#/env/' + envName"><Icon name="arrow"/>Back to the chat</a>
         <TopBarView v-if="route.view !== 'not-found'"/>
         <Transition name=page mode=out-in>
           <div class=page-shell :key="key"><component :is="route.view" v-bind="route.params"/></div>
