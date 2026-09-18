@@ -48,6 +48,7 @@ def resize(fd: int) -> tuple[int, int]:
 
 
 REDRAWS = (b"\x1b[2J", b"\x1b[?1049h", b"\x1b[?1049l", b"\x1bc", b"\x1b[r")
+FRAME_END = b"\x1b[?25h"
 
 
 def spawn_driver(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> subprocess.Popen:
@@ -103,9 +104,11 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
                 last_output = time.time()
                 if any(mark in data for mark in REDRAWS):
                     os.write(stdout, band.region(shape[0]) + top.draw(shape[1], force=True))
+                elif data.rstrip().endswith(FRAME_END):
+                    os.write(stdout, top.draw(shape[1]))
                 out.write(data[-4096:])
                 out.flush()
-            if time.time() - last_band >= 1.0 and time.time() - last_output >= 0.25:
+            if time.time() - last_band >= 1.0 and time.time() - last_output >= 1.0:
                 last_band = time.time()
                 os.write(stdout, top.draw(shape[1]))
             if stdin in ready:
