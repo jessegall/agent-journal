@@ -692,8 +692,11 @@
   /* stuck to the foot of the column the way the tabs are stuck to its head */
   .rail-foot { position: sticky; bottom: 0; z-index: 2; margin-top: auto; display: flex; align-items: center;
     height: 34px; padding: 0 var(--rail-gutter); border-top: 1px solid var(--border); background: var(--raised); }
-  .rail-foot-act { padding: 0; border: 0; background: none; font: inherit; font-size: 11.5px;
-    letter-spacing: .03em; color: var(--text-3); cursor: pointer; }
+  /* the bar is a bar, not a row that gives way: it is the last thing in a scrolling column, and a
+     flex parent was taking its height back when the list above it grew */
+  .rail-foot { flex: none; }
+  .rail-foot-act { flex: none; padding: 0; border: 0; background: none; font: inherit; font-size: 11.5px;
+    letter-spacing: .03em; white-space: nowrap; color: var(--text-3); cursor: pointer; }
   .rail-foot-act:hover:not(:disabled) { color: var(--text); }
   .rail-foot-act:disabled { color: var(--text-4, var(--text-3)); opacity: .5; cursor: default; }
   /* the reason a row is not moving, on the line that says it is not moving */
