@@ -24,6 +24,14 @@ class Plans(Controller):
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         return super().create(title, abstract, brief, status=DRAFT, phases=[], current=1, **data)
 
+    def from_doc(self, doc: int):
+        source = CONTROLLERS["doc"](self.record, actor=self.actor).load(int(doc))
+        plan = self.create(source.title, brief=source.brief, goal=source.abstract)
+        for s in source.sections:
+            if s["title"].lower().startswith("phase"):
+                self.phase(plan.n, s["title"].split(":", 1)[-1].split("—", 1)[-1].strip() or s["title"], brief=s["body"])
+        return self.link(plan.n, source.ref)
+
     def phases(self, n: int) -> list[dict]:
         return self.load(n).data["phases"]
 
