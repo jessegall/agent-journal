@@ -4933,7 +4933,7 @@ const EnvHome = {
                menu is FIXED rather than absolute: this row scrolls sideways, and an overflow
                container clips a dropdown that hangs out of it. -->
           <button v-if="lead.href" type=button :class="['agent-fact', 'agent-skills', {none: !skills.length}]"
-            :title="skills.length ? skills.length + ' skill(s) open in this window' : 'No journal skill is open in this window'"
+            :title="skills.length ? skills.length + ' skill(s) loaded in this window' : 'No journal skill is loaded in this window'"
             :aria-expanded="skillsOpen ? 'true' : 'false'" @click="openSkills">
             <Icon name="book"/>{{ skills.length }}</button>
           <!-- AN ICON AND A NUMBER, NOT A SENTENCE. Three counters in a row — skills, shells,
@@ -4948,12 +4948,10 @@ const EnvHome = {
             <Icon name="agents"/>{{ liveCrew.length }}</button>
         </div>
         <BarDrop :open="skillsOpen" :where="skillsAt" :width="280">
-          <p class=bar-none>Open in this window, newest last. A compaction empties it.</p>
+          <p class=bar-none>Loaded in this window, newest last. A compaction empties it.</p>
           <p v-if="!skills.length" class=bar-none>None — the agent is working from memory.</p>
           <a v-for="name in skills" :key="name" class=bar-item :href="'#/skills/' + name"
             @click="skillsOpen = false"><Icon name="book"/>{{ name }}</a>
-          <!-- THE ON/OFF SWITCH LIVES ON THE HOMEPAGE, not as a one-shot button here: it is a
-               standing setting, and a bulk action reads as something to click again, not a state. -->
           <div class=bar-foot>
             <a v-if="lead.href" class=bar-act :href="lead.href + '/skills'" @click="skillsOpen = false">Browse every skill</a>
           </div>
@@ -5618,34 +5616,68 @@ function useSkillActions(env, name, skill, reloaded) {
   return { acting, loadNow, toggleAlways };
 }
 
+// A SKILL READS LIKE A REPORT: the facts up top, the actions, then the whole text — and the files
+// it keeps beside itself, since a skill that says "read references/commands.md" is not read until
+// that is on the screen too. One body, on the page and in the panel alike.
+const SkillBody = {
+  props: ["env", "name", "skill", "title", "acting", "loadNow", "toggleAlways"],
+  components: { Icon },
+  setup(props) {
+    const body = computed(() => String((props.skill.data && props.skill.data.text) || "").replace(/^---\n[\s\S]*?\n---\n/, ""));
+    const shown = ref(new Set());
+    const isShown = (path) => shown.value.has(path);
+    const show = (path) => {
+      const next = new Set(shown.value);
+      if (next.has(path)) next.delete(path); else next.add(path);
+      shown.value = next;
+    };
+    const size = (n) => (n >= 1024 ? `${Math.round(n / 1024)} KB` : `${n} B`);
+    return { body, isShown, show, size };
+  },
+  template: `
+    <FetchState :state="skill" loading="Loading…"/>
+    <template v-if="skill.data">
+      <component :is="title === 'p-title' ? 'h1' : 'h2'" :class="title">{{ skill.data.name }}</component>
+      <dl class=props>
+        <dt>Type</dt><dd>Skill — read-only, changed in its SKILL.md</dd>
+        <dt>Where</dt><dd>{{ skill.data.source === 'user' ? "Your own skills" : "This project's skills" }}</dd>
+        <dt>Loads when</dt><dd>{{ skill.data.description }}</dd>
+        <dt>At every start</dt><dd>{{ skill.data.always ? 'Yes, every session is told to load it' : 'No' }}</dd>
+        <dt>References</dt><dd>{{ skill.data.references.length ? skill.data.references.length + (skill.data.references.length === 1 ? ' file' : ' files') : 'None' }}</dd>
+      </dl>
+      <div v-if="env" class=skill-actions>
+        <button type=button class=btn :disabled="acting.busy" @click="loadNow">Ask the agent to load it now</button>
+        <button type=button :class="['btn', {on: skill.data.always}]" :disabled="acting.busy" @click="toggleAlways">
+          {{ skill.data.always ? 'Stop loading it at every start' : 'Load it at every start' }}</button>
+      </div>
+      <p v-if="acting.said" class="prose muted">{{ acting.said }}</p>
+      <p v-if="acting.error" class=error>{{ acting.error }}</p>
+      <div class="md prose" v-html="$md(body)"></div>
+      <template v-if="skill.data.references.length">
+        <p class=section-label>References <span class=muted>the files beside it</span></p>
+        <div class=skill-refs>
+          <div v-for="r in skill.data.references" :key="r.path" :class="['skill-ref', {open: isShown(r.path)}]">
+            <button type=button class=skill-ref-head :disabled="r.text === null" @click="show(r.path)">
+              <Icon :name="r.text === null ? 'files' : 'down'"/><span class=skill-ref-path>{{ r.path }}</span><span class=skill-ref-size>{{ size(r.size) }}</span>
+            </button>
+            <div v-if="isShown(r.path) && r.text !== null" class="md prose skill-ref-body" v-html="$md(r.text)"></div>
+          </div>
+        </div>
+      </template>
+    </template>`,
+};
+
 const SkillPanel = {
   props: ["env", "name", "onClose", "reloaded"],
-  components: { Panel },
+  components: { Panel, SkillBody },
   setup(props) {
     const skill = useFetch(() => props.name && `/api/skills/${props.name}`, { poll: false });
     const page = computed(() => `#/env/${props.env}/skills/${props.name}`);
     return { skill, page, ...useSkillActions(() => props.env, () => props.name, skill, props.reloaded) };
   },
   template: `
-    <Panel label="Skill" :onClose="onClose" :link="page">
-      <FetchState :state="skill" loading="Loading…"/>
-      <template v-if="skill.data">
-        <h2 class=p-title>{{ skill.data.name }}</h2>
-        <dl class=props><dt>Where</dt><dd>{{ skill.data.source === 'user' ? "Your own skills" : "This project's skills" }}</dd>
-          <dt>At every start</dt><dd>{{ skill.data.always ? 'Yes, every session is told to load it' : 'No' }}</dd></dl>
-        <div class=skill-actions>
-          <button type=button :class="['btn', {on: skill.data.always}]" :disabled="acting.busy" @click="toggleAlways">
-            {{ skill.data.always ? 'Stop loading it at every start' : 'Load it at every start' }}</button>
-          <button type=button class=btn :disabled="acting.busy" @click="loadNow">Ask the agent to load it now</button>
-          <a class=btn :href="page">Read the skill</a>
-        </div>
-        <p v-if="acting.said" class="prose muted">{{ acting.said }}</p>
-        <p v-if="acting.error" class=error>{{ acting.error }}</p>
-        <div>
-          <p class=section-label>Loads when</p>
-          <p class=prose>{{ skill.data.description }}</p>
-        </div>
-      </template>
+    <Panel label="Skill" :onClose="onClose" :link="page" :wide="true">
+      <SkillBody :env="env" :name="name" :skill="skill" title="p-title" :acting="acting" :loadNow="loadNow" :toggleAlways="toggleAlways"/>
     </Panel>`,
 };
 
@@ -5833,7 +5865,8 @@ const AgentSkills = {
       if (asked.value) return;
       asked.value = s.name;
       try {
-        await postJSON(`/api/env/${props.env}/messages`, { text: `Load the \`${s.name}\` skill now, and keep it in mind for what follows.`, files: [] });
+        await postJSON(`/api/env/${props.env}/messages`, { text: `Please load the \`${s.name}\` skill now.`, files: [] });
+        changed();
         flash(`The agent is asked to load ${s.name}.`);
         setTimeout(() => { if (asked.value === s.name) asked.value = ""; }, 4000);
       } catch (e) {
@@ -5853,7 +5886,7 @@ const AgentSkills = {
           <div class=skills-only>
             <button v-for="k in ['all', 'open', 'always']" :key="k" type=button
               :class="['skills-only-tab', {on: only === k}]" @click="only = k">
-              {{ k === 'all' ? 'All' : k === 'open' ? 'Open now' : 'Every start' }}
+              {{ k === 'all' ? 'All' : k === 'open' ? 'Loaded now' : 'Every start' }}
               <span class=skills-only-n>{{ counts[k] }}</span>
             </button>
           </div>
@@ -5977,31 +6010,15 @@ const About = {
 // one skill's text, read-only: skills are edited in the project's files, not here
 const SkillView = {
   props: ["env", "name"],
-  components: { TopBar },
+  components: { TopBar, SkillBody },
   setup(props) {
     const skill = useFetch(() => props.name && `/api/skills/${props.name}`, { poll: false });
-    const body = computed(() => String((skill.data && skill.data.text) || "").replace(/^---\n[\s\S]*?\n---\n/, ""));
-    return { skill, body, ...useSkillActions(() => props.env, () => props.name, skill) };
+    return { skill, ...useSkillActions(() => props.env, () => props.name, skill) };
   },
   template: `
     <TopBar :crumbs="['Skills', name]"/>
     <div class=body><div class=page><div class=page-inner>
-      <FetchState :state="skill" loading="Loading…"/>
-      <template v-if="skill.data">
-        <h1 class=p-title>{{ skill.data.name }}</h1>
-        <dl class=props><dt>Where</dt><dd>{{ skill.data.source === 'user' ? "Your own skills" : "This project's skills" }}</dd>
-          <dt>Loads when</dt><dd>{{ skill.data.description }}</dd>
-          <dt>At every start</dt><dd>{{ skill.data.always ? 'Yes, every session is told to load it' : 'No' }}</dd></dl>
-        <div v-if="env" class=skill-actions>
-          <button type=button class=btn :disabled="acting.busy" @click="loadNow">Ask the agent to load it now</button>
-          <button type=button :class="['btn', {on: skill.data.always}]" :disabled="acting.busy" @click="toggleAlways">
-            {{ skill.data.always ? 'Stop loading it at every start' : 'Load it at every start' }}</button>
-        </div>
-        <p v-if="acting.said" class="prose muted">{{ acting.said }}</p>
-        <p v-if="acting.error" class=error>{{ acting.error }}</p>
-        <p class="prose muted">Read-only. A skill is changed in its SKILL.md file, not through the journal.</p>
-        <div class="md prose" v-html="$md(body)"></div>
-      </template>
+      <SkillBody :env="env" :name="name" :skill="skill" title="p-title" :acting="acting" :loadNow="loadNow" :toggleAlways="toggleAlways"/>
     </div></div></div>`,
 };
 
