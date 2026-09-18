@@ -165,6 +165,14 @@ const REF_ROUTES = { todos: "todo", messages: "message", questions: "question", 
 // A reference whose kind has no panel — a skill, a session, a commit — is left alone and still navigates.
 function openRef(event, href) {
   if (!href || event.metaKey || event.ctrlKey || event.shiftKey || event.button) return;
+  // THE CHAT-ONLY WINDOW OPENS NOTHING OVER ITSELF. It is 430 pixels of conversation floating on
+  // somebody else's page; an inspector there is a page inside a panel inside a page. The full
+  // viewer is a tab away, so the row opens THERE, in the journal's own window.
+  if (CHAT_ONLY) {
+    event.preventDefault();
+    window.open(`${location.origin}/${href}`, "journal");
+    return;
+  }
   const parts = String(href).replace(/^#\//, "").split("/");
   // #/docs/3 reads as ["docs", "3"]; #/env/<env>/todos/5 carries the environment first
   const tail = parts[0] === "env" ? parts.slice(2) : parts;
@@ -448,6 +456,13 @@ const OVERLAY = reactive({ kind: "", n: 0, quote: "", file: null, images: [], at
 function openImages(event, files, i, at) {
   if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.button)) return;
   if (event) event.preventDefault();
+  // in the chat-only window a picture opens in the journal's own tab: there is no room to look at
+  // anything over 430 pixels of conversation
+  if (CHAT_ONLY) {
+    const one = (files || [])[i || 0];
+    if (one) window.open(one.url, "journal");
+    return;
+  }
   OVERLAY.kind = "image";
   OVERLAY.images = files;
   OVERLAY.at = i;
@@ -460,6 +475,10 @@ function openImages(event, files, i, at) {
 function openFile(event, file) {
   if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.button)) return;
   if (event) event.preventDefault();
+  if (CHAT_ONLY) {
+    if (file && file.url) window.open(file.url, "journal");
+    return;
+  }
   OVERLAY.kind = "file";
   OVERLAY.file = file;
 }
@@ -4372,7 +4391,14 @@ const EnvHome = {
     // glance at while reading the conversation. One at a time, each saying how much it holds.
     const tab = ref("waiting");
     const view = reactive({ kind: "", n: 0 });
-    const peek = (kind, n) => { view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`; };
+    const peek = (kind, n) => {
+      if (CHAT_ONLY) {
+        const href = refHref(`${kind}:${n}`, props.env);
+        if (href) window.open(`${location.origin}/${href}`, "journal");
+        return;
+      }
+      view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`;
+    };
     // the thread answers if it holds that turn; it says so by moving, and peek is the fallback
     const goto = (kind, n) => {
       THREAD_GOTO.key = `${kind}:${n}`;
