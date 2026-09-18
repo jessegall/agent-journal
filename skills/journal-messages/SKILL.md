@@ -133,6 +133,9 @@ to their page, because it is their page and they are watching it move.
     journal serve [--port=<n>]      the web viewer, on this machine only: 8420, or the next free port
     journal claude [flags] ["<prompt>"]   start Claude with the journal's channel, and the web
                                           viewer if none is running here; other flags pass through to claude
+    journal claude --pty ["<prompt>"]     the same, under the journal's launcher: no channel — the launcher
+                                          types the viewer's news into the idle session instead
+    journal codex ["<prompt>"]            Codex under the launcher, the same way; --quiet never types
     journal statusline --install    show environment, open work and viewer in the status bar — only if the user wants it
 
 The user reads and changes the journal in a browser while you work: they leave messages,
@@ -142,7 +145,12 @@ Settings page, and remove old environments. Every one of those goes through the 
 controllers the terminal commands use, so it lands in the same record and obeys the same
 refusals (a closed to-do cannot be edited, a struck pin cannot change).
 
-**A session started with `journal claude` hears the viewer while idle.** One started as plain
+**A session under the journal's launcher (`journal codex`, `journal claude --pty`) hears the
+viewer by being TYPED TO.** The launcher runs the agent in a pseudo-terminal, watches from outside,
+and when the agent has printed nothing for a few seconds and the user has no half-typed line, it
+types the same sentence the channel would have pushed — "The user left message 12 on main…" —
+and presses Enter. Read it as you read a channel line. **A session started with `journal claude`
+hears the viewer while idle** through the channel. One started as plain
 `claude` does not, and the viewer says so: a warning band above the agent bar, there until a
 session with the channel holds the environment. An environment no running session holds gets
 the same band with an **Assign agent** button: the user picks one of the running sessions and
