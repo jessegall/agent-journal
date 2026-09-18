@@ -15,7 +15,7 @@ class Notifications(Feature):
     @on("*")
     def tell(self, event, record) -> None:
         kind = TYPES[event.type]
-        if event.actor != AGENT or USER not in kind.notify:
+        if event.actor != AGENT or USER not in kind.notify or "seen" in event.data:
             return
         resource = CONTROLLERS[event.type](record, actor=SYSTEM).load(event.n)
         word = kind.names.get(WORDS.get(event.action, ""), event.action)

@@ -1,7 +1,8 @@
 <script setup>
-import {computed} from "vue";
+import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
-import {go, route} from "../route.js";
+import RailNotes from "../pages/RailNotes.vue";
+import {route} from "../route.js";
 import {meta, store, unreadByUser} from "../store.js";
 
 const title = computed(() =>
@@ -14,6 +15,13 @@ const title = computed(() =>
             : `${meta(route.value.page).title}s`
 );
 const waiting = computed(() => unreadByUser("notification").length);
+const drop = ref(false);
+const wrap = ref(null);
+const away = (e) => {
+    if (wrap.value && !wrap.value.contains(e.target)) drop.value = false;
+};
+window.addEventListener("click", away);
+onUnmounted(() => window.removeEventListener("click", away));
 </script>
 
 <template>
@@ -28,12 +36,20 @@ const waiting = computed(() => unreadByUser("notification").length);
         </div>
         <div class="top-tools">
             <a class="icon-btn" :href="`#/${route.env}/search`" title="Search"><Icon name="search" /></a>
-            <button type="button" class="icon-btn" title="Notifications" @click="go(route.env)">
-                <Icon name="bell" />
-                <template v-if="waiting">
-                    <span class="tool-badge">{{ waiting }}</span>
+            <div ref="wrap" class="drop-wrap">
+                <button type="button" :class="['icon-btn', {on: drop}]" title="Notifications" :aria-expanded="drop" @click="drop = !drop">
+                    <Icon name="bell" />
+                    <template v-if="waiting">
+                        <span class="tool-badge">{{ waiting }}</span>
+                    </template>
+                </button>
+                <template v-if="drop">
+                    <div class="drop" @click="drop = false">
+                        <div class="drop-head">Notifications</div>
+                        <RailNotes />
+                    </div>
                 </template>
-            </button>
+            </div>
             <button
                 type="button"
                 :class="['icon-btn', {on: store.activity}]"
@@ -132,5 +148,33 @@ const waiting = computed(() => unreadByUser("notification").length);
     line-height: 15px;
     text-align: center;
     pointer-events: none;
+}
+.drop-wrap {
+    position: relative;
+}
+
+.drop {
+    --rail-gutter: 12px;
+    --rail-tabs-top: 0px;
+    position: absolute;
+    right: 0;
+    top: 34px;
+    z-index: 30;
+    width: 340px;
+    max-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden auto;
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    background: var(--side);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.drop-head {
+    flex: none;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    color: var(--text-2);
 }
 </style>
