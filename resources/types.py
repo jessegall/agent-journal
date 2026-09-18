@@ -181,7 +181,6 @@ class AgentRow(Shape, Resource):
     commands = Field(default=list)
     branch = Field()
     branch_url = Field()
-    env = Field()
     active = Field()
     decided = Field()
     icon = "bot"

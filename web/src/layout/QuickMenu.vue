@@ -30,6 +30,8 @@ async function write(draft) {
     for (let tries = 0; tries < 20 && !focusThread(draft); tries++) await new Promise((r) => setTimeout(r, 50));
 }
 
+defineExpose({spaceAgain: () => !q.value && write("")});
+
 const goTo = (page) => () => {
     emit("close");
     go(route.value.env, page);
@@ -103,6 +105,7 @@ function onKey(e) {
         !q.value && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey && rows.value.find((r) => r.hk === e.key.toLowerCase());
     if (e.key === " " && !q.value) {
         e.preventDefault();
+        e.stopPropagation();
         write("");
     } else if (hot) {
         e.preventDefault();

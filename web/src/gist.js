@@ -135,17 +135,22 @@ function withoutScripts(command) {
     return kept.join("\n");
 }
 
-function expanded(command) {
+function expanded(pieces_) {
     const names = {};
-    const rest = command.replace(/(?:^|(?<=[;&|]\s*))([A-Za-z_]\w*)=(\S+)\s*;?\s*/g, (all, name, value) => {
-        names[name] = value;
-        return "";
-    });
-    return rest.replace(/\$\{?([A-Za-z_]\w*)\}?/g, (all, name) => (name in names ? names[name] : all));
+    const out = [];
+    for (const piece of pieces_) {
+        const m = piece.trim().match(/^([A-Za-z_]\w*)=([^\s=]\S*)$/);
+        if (m) {
+            names[m[1]] = m[2];
+            continue;
+        }
+        out.push(piece.replace(/\$\{?([A-Za-z_]\w*)\}?/g, (all, name) => (name in names ? names[name] : all)));
+    }
+    return out;
 }
 
 export function gists(command, translate) {
-    return pieces(withoutScripts(expanded(command)))
+    return expanded(pieces(withoutScripts(command)))
         .filter((p, i) => !(i > 0 && FILTERS.has(verbOf(p)[0] || "")))
         .map((p) => pieceGist(p, translate))
         .filter(Boolean);

@@ -34,8 +34,14 @@ const sawPointer = () => (pointed = true);
 const sawKeyMove = (e) => {
     if (e.key === "Tab" || e.key.startsWith("Arrow")) pointed = false;
 };
+const quickMenu = ref(null);
 function onSpace(e) {
-    if (e.key !== " " || quick.value || e.defaultPrevented) return;
+    if (e.key !== " " || e.defaultPrevented) return;
+    if (quick.value) {
+        e.preventDefault();
+        if (quickMenu.value) quickMenu.value.spaceAgain();
+        return;
+    }
     const el = document.activeElement;
     if (el && el !== document.body) {
         if (el.isContentEditable || el.matches("input,textarea,select")) return;
@@ -93,7 +99,7 @@ watch(
             <Reader :type="opened.type" :n="opened.n" />
             <Lightbox />
             <Transition name="quick">
-                <QuickMenu v-if="quick" @close="quick = false" />
+                <QuickMenu v-if="quick" ref="quickMenu" @close="quick = false" />
             </Transition>
             <template v-if="away.open">
                 <AwayCard />

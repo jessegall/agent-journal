@@ -69,11 +69,9 @@ const line = computed(() => {
             <span v-if="line" :key="line.key" :class="['statusbar-run-line', {done: line.done}]">
                 <span class="statusbar-run-text">{{ line.text }}</span>
                 <Transition name="delta">
-                    <span v-if="line.delta.length" class="statusbar-run-delta">
-                        <template v-for="d in line.delta" :key="d.kind">
-                            <span :class="['statusbar-run-count', d.kind]">{{ d.text }}</span>
-                        </template>
-                    </span>
+                    <TransitionGroup v-if="line.delta.length" tag="span" name="count" class="statusbar-run-delta">
+                        <span v-for="d in line.delta" :key="d.kind" :class="['statusbar-run-count', d.kind]">{{ d.text }}</span>
+                    </TransitionGroup>
                 </Transition>
                 <span class="statusbar-running-slot">
                     <Transition name="clock">
@@ -134,11 +132,11 @@ const line = computed(() => {
     letter-spacing: 0.02em;
 }
 
-.statusbar-run-count.edited,
-.statusbar-run-count.added {
+.statusbar-run-count.edited {
     color: var(--progress);
 }
 
+.statusbar-run-count.added,
 .statusbar-run-count.created {
     color: var(--created);
 }
@@ -222,5 +220,29 @@ const line = computed(() => {
     max-width: 0;
     margin-left: 0;
     opacity: 0;
+}
+
+.statusbar-run-count {
+    display: inline-block;
+    max-width: 12ch;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.count-enter-active,
+.count-leave-active {
+    transition:
+        max-width 0.24s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.18s ease;
+}
+
+.count-enter-from,
+.count-leave-to {
+    max-width: 0;
+    opacity: 0;
+}
+
+.count-leave-active {
+    position: absolute;
 }
 </style>
