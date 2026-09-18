@@ -4959,17 +4959,19 @@ const Thread = {
                the loudest line in the bubble spent half its width on a reference nobody reads first. -->
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question</p>
           <p v-if="t.kind === 'parked'" class=thread-ask-label>Waiting on you</p>
-          <p v-if="t.kind === 'message' && (t.becameRefs || []).length" :class="['thread-became', {live: t.working}]">
-            <span v-if="t.working" class=thread-became-dot></span>
-            <span v-if="t.working" class=thread-became-word>Working on</span>
-            <a v-for="r in t.becameRefs" :key="r.label" class=thread-pill :href="r.href"
-              :title="'Open ' + r.label" @click.stop="goRef($event, r)">{{ r.label }}</a></p>
+          <!-- THE LEAD IS ON THE AGENT'S TURN (message 176): what it was working on when it said this,
+               as a small line over the words. What a message became is the receipt line under it. -->
+          <p v-if="t.who === 'agent' && t.on && t.on.todo" class=thread-lead>
+            <span class=thread-lead-dot></span><span class=thread-lead-word>working on</span>
+            <a class=thread-lead-link :href="'#/env/' + env + '/todos/' + t.on.todo" :title="t.on.subject"
+              @click.stop="goRef($event, { href: '#/env/' + env + '/todos/' + t.on.todo })">to-do {{ t.on.todo }}</a></p>
           <!-- BOTH SIDES QUOTE THE SAME WAY. A message of the user's that opens with a quote carries
                it as a ref like every other turn, so it is the same chip rather than markdown in the
-               bubble; only the ones that can be jumped to are buttons. -->
-          <button v-if="t.ref && quoteAnchor(t)" type=button class="thread-quote go"
+               bubble; only the ones that can be jumped to are buttons. An agent's reply and the
+               receipt do not quote: they sit under the message they answer (message 176). -->
+          <button v-if="t.ref && t.who !== 'agent' && quoteAnchor(t)" type=button class="thread-quote go"
             :title="'Go to the turn this answers'" @click="goQuote(t)">{{ t.ref }}</button>
-          <p v-else-if="t.ref" class=thread-quote>{{ t.ref }}</p>
+          <p v-else-if="t.ref && t.who !== 'agent'" class=thread-quote>{{ t.ref }}</p>
           <div v-if="t.text" v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
           <p v-if="t.state === 'failed'" class=thread-failed>Not sent — {{ t.error }}
             <button type=button class=thread-tool @click.stop="retry(t)">Put it back in the box</button></p>

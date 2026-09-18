@@ -312,6 +312,25 @@ def waited(root: Path, env: str) -> list[dict]:
     return out
 
 
+def _on_work(root: Path, env: str, turns: list) -> None:
+    """Mark each agent turn with the to-do it was working on: the work whose span covers the turn.
+
+    THE LEAD IS ON THE AGENT'S BUBBLE (message 176): "working on to-do 49" says what a reply belongs
+    to, and the record already knows — the piece of work open at that moment, and its to-do.
+    """
+    import work
+    spans = [(w.get("at") or "", w.get("ended") or "9999", w.get("todo"), w.get("subject") or "")
+             for w in work._all(root, env) if w.get("at")]
+    for t in turns:
+        if t.get("who") != "agent" or t.get("kind") not in ("said", "reply"):
+            continue
+        at = t.get("at") or ""
+        for start, end, todo, subject in spans:
+            if start <= at <= end:
+                t["on"] = {"todo": todo, "subject": subject}
+                break
+
+
 class ChatController(Controller):
     """The conversation on an environment: what the agent said and what the user said back, and nothing else."""
     resource = "chat"
@@ -323,4 +342,5 @@ class ChatController(Controller):
         turns = said(root, p.env) + wrote(root, p.env) + asked(root, p.env) + waited(root, p.env)
         turns.sort(key=lambda t: t["at"])
         left = max(0, len(turns) - TURNS)
+        _on_work(root, p.env, turns[left:])
         return Result("ok", "", {"turns": turns[left:], "more": left})

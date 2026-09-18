@@ -55,7 +55,7 @@ MESSAGES = {
                 'journal messages process {n} --part="<words>" --became=noted',
     "done": "message {n} is processed: it became {became:, } ({waiting} waiting)",
     # what the USER reads under their own message, written by the journal itself
-    "receipt": "Noted — created {became:, }.",
+    "receipt": "Filed {became:, } from your message.",
     "fact_waiting": "waiting",
     "fact_reading": "being handled",
     "fact_processed": "processed[ {age}]",

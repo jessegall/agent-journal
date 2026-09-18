@@ -158,7 +158,7 @@ inbox.process(root, _n, "the padding", ["todo:1"], now(), track="w")
 inbox.done(root, _n, now(), track="w")
 check("a message nobody answered carries the journal's note, naming what it became",
       [(t["who"], t["kind"], t["text"]) for t in turns() if t["kind"] == "receipt"],
-      [("agent", "receipt", "Noted — created to-do 1.")])
+      [("agent", "receipt", "Filed to-do 1 from your message.")])
 inbox.reply(root, _n, "Done — it was the bar, not the bubble.", now(), source="cli", track="w")
 check("a reply quotes the message it answers, so the thread shows it IS a reply",
       [t["ref"] for t in turns() if t["kind"] == "reply"][-1], "please look at the padding")
