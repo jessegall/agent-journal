@@ -5909,10 +5909,10 @@ const SkillRow = {
         <span :class="['skills-state', {stale: s.stale}]">{{ s.stale ? 'Changed since loaded' : s.loaded ? 'Loaded' : '' }}</span>
         <span class=skills-where>{{ s.source }}</span>
       </component>
-      <!-- loaded and unchanged: nothing to ask for. Changed since it was loaded: what the agent holds is old. -->
+      <!-- ONE WORD, ONE WIDTH. The button says Load and never anything else; what it would do is in
+           its title and the state column. Loaded and unchanged: disabled. Asked: disabled while it is out. -->
       <button type=button :class="['skills-ask', {stale: s.stale}]" :disabled="asked === s.name || (s.loaded && !s.stale)"
-        :title="s.loaded && !s.stale ? 'Loaded, and unchanged since' : s.stale ? s.name + ' changed after the agent loaded it' : 'Ask the agent to load ' + s.name + ' now'" @click="ask(s)">
-        {{ asked === s.name ? 'Asked' : s.stale ? 'Reload' : s.loaded ? 'Loaded' : 'Load now' }}</button>
+        :title="asked === s.name ? 'The agent is asked' : s.loaded && !s.stale ? 'Loaded, and unchanged since' : s.stale ? s.name + ' changed after the agent loaded it: load it again' : 'Ask the agent to load ' + s.name + ' now'" @click="ask(s)">Load</button>
       <button type=button :class="['skills-always', {on: s.always}]" :disabled="busy === s.name"
         :title="s.always ? 'Stop naming it at every start' : 'Name it at every start'" @click="toggle(s)">
         {{ s.always ? 'Every start' : 'Load at start' }}</button>
