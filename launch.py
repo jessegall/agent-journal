@@ -3,6 +3,7 @@ from __future__ import annotations
 import fcntl
 import os
 import pty
+import re
 import select
 import signal
 import struct
@@ -16,6 +17,15 @@ import news
 
 #: how long the agent must print nothing before the launcher takes it to be idle
 IDLE_SECONDS = 3.0
+#: how much of what the agent printed the seat keeps, as plain text
+PRINTED_KEEP = 400
+#: terminal control sequences: colours, cursor moves, mode switches — what the pty carries beside the words
+ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
+
+
+def plain(data: bytes) -> str:
+    """The words in a stretch of terminal output, without the control sequences around them."""
+    return ANSI.sub(b"", data).decode(errors="replace")
 
 
 class Launcher:
@@ -36,6 +46,7 @@ class Launcher:
         self.last_output = 0.0
         self.typed = b""            # the user's line so far, since the last Enter
         self.user_lines = 0         # how many lines the user has sent
+        self.printed = ""           # the tail of what the agent printed, as words
         self.outputs: list = []    # who wants the agent's output besides the terminal
         self.ticks: list = []      # who wants a moment of quiet, called once per select timeout
 
@@ -98,6 +109,7 @@ class Launcher:
                         break
                     os.write(stdout, data)
                     self.last_output = time.time()
+                    self.printed = (self.printed + plain(data))[-PRINTED_KEEP:]
                     for want in self.outputs:
                         want(data)
                 if stdin in ready:
@@ -214,7 +226,7 @@ class Nudger:
         if now - self.last_look < self.every:
             return
         self.last_look = now
-        self.stamp()
+        self.stamp(seat)
         if getattr(seat, "user_lines", 0) != self.user_lines:
             self.user_lines = seat.user_lines
             self.nudged = False                      # the user spoke: the next queue read is a fresh one
@@ -260,14 +272,17 @@ class Nudger:
         except Exception:
             return None
 
-    def stamp(self) -> None:
-        """This session has a seat: the viewer reads it as one that hears the viewer while idle."""
+    def stamp(self, seat: Launcher) -> None:
+        """This session has a seat, and this is what the seat sees: working or idle, and the last
+        words the agent printed. The viewer's agent bar reads it instead of the hooks' state."""
         import state
         last = self.reports.last()
         stem = last.get("session") if last else ""
         if stem:
             try:
                 state.put(self.root, "seat_seen", int(time.time()), stem=stem)
+                state.put(self.root, "seat", {"working": not self.agent_idle(seat), "quiet": round(seat.idle_for(), 1),
+                                              "printed": " ".join(seat.printed.split())[-PRINTED_KEEP:]}, stem=stem)
             except OSError:
                 pass
 
