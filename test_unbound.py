@@ -225,5 +225,26 @@ fire(d8, "SessionStart", "s8-new", source="startup")
 check("a session that has never been anywhere starts on nothing",
       tracks.current(d8 / ".journal", "s8-new"), "")
 
+# ─────────────── one environment and a message waiting is not a choice ───────────────
+# THE FRESH INSTALL. The user starts the viewer, types their first message, and the project has one
+# environment — asking which of one to bind to leaves the message sitting there unread.
+d9 = project()
+check("the fresh project has exactly one environment", tracks.choices(d9 / ".journal"), ["default"])
+fire(d9, "SessionStart", "s9", source="startup")
+check("a session still starts on nothing when nothing waits", tracks.current(d9 / ".journal", "s9"), "")
+journal(d9, "s9", "--env=default", "messages", "add", "is anyone there?")
+fire(d9, "UserPromptSubmit", "s9", prompt="hello")
+check("with one environment and a message waiting, the session takes it rather than asking",
+      tracks.current(d9 / ".journal", "s9"), "default")
+
+# AND IT STILL ASKS WHEN THERE IS SOMETHING TO CHOOSE BETWEEN.
+d10 = project()
+journal(d10, "setup10", "prepare", "second")
+journal(d10, "setup10", "--env=default", "messages", "add", "is anyone there?")
+fire(d10, "SessionStart", "s10", source="startup")
+out = fire(d10, "UserPromptSubmit", "s10", prompt="hello")
+check("with two environments the session is still asked, message or no message",
+      (len(tracks.choices(d10 / ".journal")) > 1, tracks.current(d10 / ".journal", "s10")), (True, ""))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

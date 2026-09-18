@@ -614,7 +614,7 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
     # it. It is repeated on every prompt until an environment is taken: a session that
     # answered three questions unbound has had three chances to notice, and the fourth
     # message may be the one that writes.
-    if _unbound(conf, ctx):
+    if _unbound(conf, ctx) and not _only_one(conf, ctx):
         return _context("UserPromptSubmit", with_notes(_choose_block(" YET")))
     standing = work.open_work(ROOT)
     if not asked or not standing or "prompt_reminder" in conf["silenced"]:
@@ -1459,6 +1459,32 @@ def _unbound(conf: dict, ctx: Ctx) -> bool:
     if conf["bind_on_start"]:
         return False
     return not tracks.bound(ROOT, ctx.stem)
+
+
+def _only_one(conf: dict, ctx: Ctx) -> bool:
+    """Bind a session that has nothing to choose between, and say whether it did.
+
+    ONE ENVIRONMENT AND A MESSAGE WAITING IS NOT A CHOICE. A session starts on no environment, and
+    that is right while there are several lines of work: the agent must not guess which one the user
+    means. It is wrong on a fresh install — one environment, and the user has typed their first
+    message into the viewer rather than the terminal. There is nothing to choose between, and asking
+    answers a question nobody put while the message sits there unread.
+
+    THE MESSAGE IS HALF THE CONDITION. Without it this would bind every session at its start and
+    quietly undo the rule the package ships; with it, the binding only happens where the alternative
+    is an agent asking which of one environment it should read the waiting message on.
+    """
+    if conf["bind_on_start"] or tracks.bound(ROOT, ctx.stem):
+        return False
+    names = tracks.choices(ROOT)
+    if len(names) != 1:
+        return False
+    import inbox
+    if not inbox.unprocessed(ROOT, names[0]):
+        return False
+    tracks.bind(ROOT, ctx.stem, names[0])
+    state.use_track(names[0])
+    return True
 
 
 def _choice_line() -> str:
@@ -3539,6 +3565,9 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     # prompt, by the agent, out loud. A switch from inside the session rebinds it alone.
     if conf["bind_on_start"] and not tracks.bound(ROOT, ctx.stem):
         tracks.bind(ROOT, ctx.stem, tracks.start(ROOT))
+    # with exactly one environment there is nothing to choose between, so the session takes it here
+    # rather than opening with a question about a list of one
+    _only_one(conf, ctx)
     state.use_track(tracks.current(ROOT, ctx.stem))
     if source == "compact" and ctx.path is not None and not conf["context_window"]:
         peak = context.peak_before_compaction(ctx.path)
