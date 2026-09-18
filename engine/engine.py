@@ -21,6 +21,7 @@ class Engine:
         self.agent = Agent(record, driver)
         self.actors: list[Actor] = [User(record), self.agent, System(record)]
         self.running = False
+        self.born = time.time()
         self.typed_at = 0.0
         self.probed_at = 0.0
         self.why = ""
@@ -79,7 +80,11 @@ class Engine:
             return "waiting for the agent's first report"
         count = 0
         for actor in self.actors:
+            fresh = actor.cursor() == 0
             for e in self.record.events(actor.cursor()):
+                if fresh and e.at < self.born:
+                    actor.notified(e)
+                    continue
                 if e.actor == actor.name or actor.name not in TYPES[e.type].notify:
                     actor.notified(e)
                     continue
