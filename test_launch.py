@@ -127,5 +127,46 @@ seat.idle = 1.5
 nudger(seat)
 check("a Stop report is idle, and the next message is typed", (len(seat.lines), "left message 2" in seat.lines[-1]), (2, True))
 
+# THE STOP QUEUE IS TYPED FROM OUTSIDE. With the news told, the seat asks the hook's queue what the
+# session is owed and types that one line; typed once until the agent is heard from again; the
+# user's own Enter makes the next read a fresh one.
+import hook  # noqa: E402
+asked = []
+
+
+def fake_nudge(stem, active):
+    asked.append((stem, active))
+    return "1 untagged message(s)\n  last at line 9; open the next with [!reply]" if len(asked) < 3 else None
+
+
+hook.nudge_for = fake_nudge
+nudger(seat)
+check("the message typed a moment ago is not typed over before the hooks report", len(seat.lines), 2)
+with (events / "sess-1.jsonl").open("a") as f:
+    f.write(json.dumps({"at": time.time(), "event": "Stop", "session": "sess-1"}) + "\n")
+nudger(seat)
+check("nothing more waiting: the queue is read for the reported session and its line typed on one line",
+      (asked[-1], seat.lines[-1]), (("sess-1", False), "1 untagged message(s) last at line 9; open the next with [!reply]"))
+nudger(seat)
+check("nothing is typed over a line the hooks have not answered yet", len(seat.lines), 3)
+with (events / "sess-1.jsonl").open("a") as f:
+    f.write(json.dumps({"at": time.time() + 1, "event": "Stop", "session": "sess-1"}) + "\n")
+nudger(seat)
+check("the agent stopped again: the queue is read as one being answered", asked[-1], ("sess-1", True))
+seat.user_lines = 1
+with (events / "sess-1.jsonl").open("a") as f:
+    f.write(json.dumps({"at": time.time() + 2, "event": "Stop", "session": "sess-1"}) + "\n")
+nudger(seat)
+check("after the user's own line the read is fresh again", asked[-1], ("sess-1", False))
+
+# THE STOP HOOK STEPS BACK FOR A SEATED SESSION: a fresh seat stamp means the launcher speaks for the queue
+import state  # noqa: E402
+hook.ROOT = root
+check("no stamp: not seated", hook.seated("sess-9"), False)
+state.put(root, "seat_seen", int(time.time()), stem="sess-9")
+check("stamped just now: seated", hook.seated("sess-9"), True)
+state.put(root, "seat_seen", int(time.time()) - 120, stem="sess-9")
+check("a stale stamp is no seat", hook.seated("sess-9"), False)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
