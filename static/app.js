@@ -5016,7 +5016,11 @@ const EnvHome = {
           <span v-for="f in a.facts" :key="f.icon" class=crew-fact><Icon :name="f.icon"/><span>{{ f.value }}</span></span>
         </button>
       </div>
-        <Thread v-if="(!DETACHED.on && !EXTENSION.holding) || CHAT_ONLY" :env="env"/>
+        <!-- THE STRIP IS WHAT YOU OPENED, so the conversation steps back while it is open. It is not
+             a modal and nothing is blocked: the dimming says where to look, and clicking the counter
+             again puts it back. -->
+        <Thread v-if="(!DETACHED.on && !EXTENSION.holding) || CHAT_ONLY" :env="env"
+          :class="{ stepped: (crewOpen && liveCrew.length) || (shellsOpen && shells.length) }"/>
         <div v-else class=thread-gone>
           <p v-if="EXTENSION.holding">The chat is in the extension's window, and follows you across tabs.</p>
           <p v-else>The chat is in its own window.</p>
