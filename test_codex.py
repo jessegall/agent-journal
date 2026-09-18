@@ -99,5 +99,34 @@ check("ours walks up to the installation, with a matcher and a timeout", (len(ou
 check("and says so, once per event", sum(1 for l in said if l.startswith("  + ")), 8)
 check("a second run changes nothing", all(l.startswith("  = ") for l in wire_codex()), True)
 
+# THE ROLLOUT IS READ AS A TRANSCRIPT: the same lines the Claude reader gives, from Codex's records.
+# A synthetic rollout in the measured shape (doc 9), not the real file.
+import transcript, context, rollout  # noqa: E402
+recs = [
+    {"timestamp": "t0", "type": "session_meta", "payload": {"id": SID, "cwd": str(d)}},
+    {"timestamp": "t1", "type": "event_msg", "payload": {"type": "task_started", "turn_id": "t", "model_context_window": 258400}},
+    {"timestamp": "t1", "type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "<environment_context>x</environment_context>"}]}},
+    {"timestamp": "t1", "type": "turn_context", "payload": {"turn_id": "t", "model": "gpt-5.5"}},
+    {"timestamp": "t2", "type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "fix the header"}]}},
+    {"timestamp": "t2", "type": "event_msg", "payload": {"type": "user_message", "message": "fix the header"}},
+    {"timestamp": "t3", "type": "response_item", "payload": {"type": "reasoning", "encrypted_content": "…"}},
+    {"timestamp": "t3", "type": "response_item", "payload": {"type": "function_call", "name": "exec_command", "arguments": "{\"cmd\":\"ls\"}", "call_id": "c1"}},
+    {"timestamp": "t4", "type": "response_item", "payload": {"type": "function_call_output", "call_id": "c1", "output": "a.py"}},
+    {"timestamp": "t4", "type": "event_msg", "payload": {"type": "token_count", "info": {"last_token_usage": {"input_tokens": 12000}, "model_context_window": 258400}}},
+    {"timestamp": "t5", "type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "[!reply] fixed"}]}},
+    {"timestamp": "t5", "type": "event_msg", "payload": {"type": "agent_message", "message": "[!reply] fixed"}},
+]
+rollout_path = home / ".codex" / "sessions" / "2026" / "09" / "18" / f"rollout-2026-09-18T12-00-00-{SID[:-1]}9.jsonl"
+rollout_path.write_text("".join(json.dumps(r) + "\n" for r in recs))
+lines, boundaries = transcript.read(rollout_path)
+check("one line per thing said: injected, human, the tool call, its result, the reply — reasoning and the doubled records skipped",
+      [(l.role, l.kind, l.tools) for l in lines],
+      [("user", "injected", []), ("user", "human", []), ("assistant", "text", ["Bash"]), ("user", "tool_result", []), ("assistant", "text", [])])
+check("the last reply and its tag read as on Claude", (transcript.last_reply(rollout_path) or ("", ""))[0], "[!reply] fixed")
+check("the model comes from the turn's context", transcript.last_model(rollout_path), "gpt-5.5")
+check("the context reading is the last call's input, and the window the rollout's own", (context.reading_tail(rollout_path), rollout.window_of(rollout_path)), (12000, 258400))
+os.environ["CODEX_HOME"] = str(home / ".codex")
+check("a Codex session's file is found by its stem under the sessions folder", transcript.find(d, rollout_path.stem), rollout_path)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -273,10 +273,13 @@ class ActivityController(Controller):
         import state
         import tracks
         import transcript
+        import rollout
         for stem, info in tracks.live(root).items():
             if info["track"] == env:
-                window = settings.load(root)[0].get("context_window") or state.get(root, "window", 0) or 0
                 path = transcript.find(root.parent, stem)
+                window = settings.load(root)[0].get("context_window") or state.get(root, "window", 0) or 0
+                if not window and path is not None and rollout.is_rollout(path):
+                    window = rollout.window_of(path)    # a Codex rollout says its own
                 return {"session": stem[:8], "seen": tracks.age_text(info["age"]), "working": agent_working(root, stem),
                         "compacting": agent_compacting(root, stem),
                         "context": context_use(path, window), "said": last_said(path), "started": session_started(path),

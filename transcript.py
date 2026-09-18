@@ -14,6 +14,8 @@ import re
 import tempfile
 from pathlib import Path
 
+import rollout
+
 def _projects() -> Path:
     """Claude Code's projects folder; the test suites use a temporary one so they never fill the real folder."""
     if os.environ.get("AGENT_JOURNAL_PROJECTS"):
@@ -75,6 +77,23 @@ def last_reply(path: Path, limit: int = 400_000, settled: bool = True) -> tuple[
             fh.readline()  # a partial first line
         raw = fh.read().decode("utf-8", "replace")
     latest: tuple[str, str] | None = None
+    if rollout.is_rollout(path):
+        # THE SAME RULE ON CODEX'S RECORDS: the agent's last text since the user spoke, unless a tool call followed it
+        for n, line in enumerate(raw.splitlines()):
+            try:
+                got = rollout.line_of(json.loads(line), n)
+            except ValueError:
+                continue
+            if got is None:
+                continue
+            if got.kind == "human":
+                if settled:
+                    latest = None
+            elif got.kind == "text" and got.tools and settled:
+                latest = None
+            elif got.kind == "text" and got.text.strip():
+                latest = (got.text, got.ts)
+        return latest
     for line in raw.splitlines():
         try:
             rec = json.loads(line)
@@ -211,6 +230,8 @@ def find(cwd: Path, stem: str) -> Path | None:
 
 
 def _find(cwd: Path, stem: str) -> Path | None:
+    if stem.startswith("rollout-"):                   # a Codex session keeps its file under ~/.codex/sessions
+        return rollout.find(stem)
     d = project_dir(cwd)
     top = d / f"{stem}.jsonl"
     if top.is_file():
@@ -455,6 +476,8 @@ def last_model(path: Path | None, limit: int = 300_000) -> str:
     """The model that wrote the last reply in a transcript, read from its tail."""
     if path is None or not path.is_file():
         return ""
+    if rollout.is_rollout(path):
+        return rollout.last_model(path, limit)
     size = path.stat().st_size
     with path.open("rb") as fh:
         if size > limit:
@@ -539,6 +562,11 @@ def _take(raw: bytes, lines: list[Line], boundaries: list[int], asked: set[str])
     except ValueError:
         return  # a half-written line is not a reason to lose the rest
     typ = rec.get("type")
+    if typ in rollout.TYPES:                          # a Codex rollout: its records, read as lines
+        line = rollout.line_of(rec, len(lines) + 1)
+        if line is not None:
+            lines.append(line)
+        return
     if typ == "system" and rec.get("subtype") == "compact_boundary":
         boundaries.append(len(lines))
         return
