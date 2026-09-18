@@ -9,6 +9,27 @@ FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠
 class Messages(Controller):
     resource = types.Message
 
+    def process(self, n: int, part: str, became: str):
+        r = self.load(n)
+        if part not in r.title and part not in r.brief:
+            raise Refused(f"that part is not in message {n}; quote the words it is about")
+        return self.section(n, part, became)
+
+    def reply(self, n: int, text: str, file: str = ""):
+        made = self.comment(n, text)
+        if file:
+            CONTROLLERS["comment"](self.record, actor=self.actor).attach(made.n, file)
+        return made
+
+    def edit(self, n: int, text: str):
+        r = self.load(n)
+        if AGENT in r.seen and self.actor != AGENT:
+            raise Refused(f"message {n} has been read: leave a new one")
+        return self.update(n, brief=text)
+
+    def declare(self, n: int, kind: str):
+        return self.update(n, kind=kind)
+
     def react(self, n: int, face: str):
         if face not in FACES:
             raise Refused(f"a reaction is one of {' '.join(FACES)}")

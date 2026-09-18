@@ -1,4 +1,6 @@
+import shutil
 import time
+from dataclasses import asdict
 from pathlib import Path
 
 from v2.engine.record import Record
@@ -133,6 +135,39 @@ class Controller:
     def comments(self, n: int) -> list[Resource]:
         from v2.controllers.types import CONTROLLERS
         return CONTROLLERS["comment"](self.record, actor=self.actor).linked_to(f"{self.type}:{n}")
+
+    def folder(self, n: int) -> Path:
+        self.load(n)
+        f = self.record.folder(self.type) / f"{n:03d}"
+        f.mkdir(exist_ok=True)
+        return f
+
+    def attach(self, n: int, path: str, what: str = "") -> Resource:
+        source = Path(path)
+        if not source.exists():
+            raise Refused(f"no such file: {path}")
+        target = self.folder(n) / source.name
+        shutil.copytree(source, target, dirs_exist_ok=True) if source.is_dir() else shutil.copy2(source, target)
+        r = self.load(n)
+        r.data.setdefault("files", {})[source.name] = what
+        return self.save(r, "updated", file=source.name, what=what)
+
+    def files(self, n: int) -> list[str]:
+        return sorted(p.name for p in self.folder(n).iterdir())
+
+    def move(self, n: int, env: str) -> Resource:
+        from v2.engine.record import Record
+        r = self.load(n)
+        there = type(self)(Record(self.record.root, env), actor=self.actor)
+        with there.record.locked():
+            m = (there.numbers() or [0])[-1] + 1
+            moved = self.resource(**{**asdict(r), "n": m})
+            there.path(m).write_text(moved.dump())
+            if self.folder(n).iterdir():
+                shutil.copytree(self.folder(n), there.folder(m), dirs_exist_ok=True)
+            there.record.emit(self.type, m, "created", self.actor, moved_from=f"{self.record.env}/{n}")
+        self.delete(n, why=f"moved to {env} as {self.type} {m}")
+        return moved
 
     def show(self, n: int) -> Resource:
         return self.see(n)
