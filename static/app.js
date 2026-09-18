@@ -1014,7 +1014,7 @@ const StatusBar = {
       // finished and waiting to be acknowledged are things waiting on the user, and they wait where
       // everything else that waits on the user does: as cards under Waiting on you in the rail.
       const rows = (plans.data || [])
-        .filter((p) => p.status === "active")
+        .filter((p) => p.status === "active" && p.n !== PLAN_ON_SCREEN.n)
         .sort((a, b) => (PLAN_BAR_ORDER[a.status] - PLAN_BAR_ORDER[b.status]) || a.n - b.n);
       const active = rows.some((p) => p.status === "active");
       return rows.map((p) => {
@@ -1097,6 +1097,7 @@ const StatusBar = {
             <span class=switch-word>auto</span><span class=knob></span></span></button>
       </span>
     </div>
+    <TransitionGroup name=planbar>
     <div v-for="b in bars" :key="'planbar' + b.n" :class="['planbar', 'planbar-' + b.status]">
       <a class=planbar-link :href="b.href" :title="'Plan ' + b.n + ': ' + b.title">
         <span class=planbar-n>Plan</span>
@@ -1107,7 +1108,8 @@ const StatusBar = {
       </a>
       <button v-if="b.act" type=button :class="['planbar-act', {ack: b.status === 'done'}]" :title="b.act.hint" @click="runBar(b)">{{ b.act.short }}<Icon name="arrow"/></button>
       <span v-if="barError" class=planbar-error>{{ barError }}</span>
-    </div>`,
+    </div>
+    </TransitionGroup>`,
 };
 
 // THE BARS DO NOT BELONG TO THE PAGE. Every view rendered its own TopBar, so the crumbs, the search
@@ -1313,6 +1315,10 @@ const INSPECTOR_WIDTH = { key: "journal.inspector.width", min: 420, fallback: 50
 const inspector = reactive({ width: storedInspectorWidth() });
 // the rows of the list that opened the inspector, in the order shown: its position and its up and down steps read from here
 const INSPECTOR_TRAIL = reactive({ owner: null, items: [], current: null });
+//: THE PLAN WHOSE OWN PROGRESS IS ON SCREEN. On a plan's page its segments say what the bar under the
+//: status bar says, so the bar steps aside while they are in view and slides down once they scroll
+//: under it (message 159). Set by the plan page, read by the status bar.
+const PLAN_ON_SCREEN = reactive({ n: 0 });
 
 // an item dealt with in the inspector hands over to the next one in its list; with none left, the inspector closes
 function trailIndex(hash) {
@@ -3401,6 +3407,21 @@ const Plans = {
       set.value = next;
     };
     const moreOpen = ref(false);
+    // the segments in view: this plan's bar under the status bar steps aside; scrolled under it, the bar comes down
+    const segments = ref(null);
+    let seeing = null;
+    const watchSegments = () => {
+      if (seeing) { seeing.disconnect(); seeing = null; }
+      PLAN_ON_SCREEN.n = 0;
+      const el = segments.value;
+      if (!el || !item.data || item.data.status !== "active") return;
+      seeing = new IntersectionObserver((seen) => {
+        PLAN_ON_SCREEN.n = seen.some((e) => e.isIntersecting) ? item.data.n : 0;
+      }, { rootMargin: "-52px 0px 0px 0px" });
+      seeing.observe(el);
+    };
+    watch([segments, () => item.data && item.data.status], () => nextTick(watchSegments));
+    onUnmounted(() => { if (seeing) seeing.disconnect(); PLAN_ON_SCREEN.n = 0; });
     const TODO_SHORT = { progress: "now", waiting: "waiting on you", blocked: "blocked", done: "", open: "" };
     // THE BAND CARRIES THE ONE ACT THE PLAN IS WAITING FOR, and `planPrimary` is what decides it here,
     // in the peek panel and on the home card alike.
@@ -3436,7 +3457,7 @@ const Plans = {
       const when = p.status === "done" ? "ended" : p.status === "abandoned" ? "stopped" : "drafted";
       return [`plan ${p.n}`, p.from_doc ? `from doc ${p.from_doc}` : "", `${when} ${p.age || "just now"}`].filter(Boolean).join(" · ");
     });
-    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, todoState, TODO_WORD, TODO_SHORT, meta, PLAN_STATUS, segmentWidth, isOpen, togglePhase, moreOpen };
+    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, todoState, TODO_WORD, TODO_SHORT, meta, PLAN_STATUS, segmentWidth, isOpen, togglePhase, moreOpen, segments };
   },
   template: `
     <template v-if="onPage">
@@ -3469,7 +3490,7 @@ const Plans = {
               </span>
             </div>
             <!-- ONE SEGMENT PER PHASE: a done phase is filled, the current one as far as its to-dos are, the rest empty -->
-            <div class=plan-segments role=progressbar :aria-valuenow="item.data.phases_done" :aria-valuemax="item.data.phases_total" :aria-label="progress.phases">
+            <div ref=segments class=plan-segments role=progressbar :aria-valuenow="item.data.phases_done" :aria-valuemax="item.data.phases_total" :aria-label="progress.phases">
               <!-- each segment is as long as the phase's share of the to-dos (message 167); an empty phase still gets a sliver -->
               <span v-for="ph in item.data.phases" :key="'seg' + ph.p" :class="['plan-segment', {done: ph.complete, current: ph.current}]"
                 :style="{ flex: Math.max(1, ph.todos.length) }" :title="'Phase ' + ph.p + ': ' + ph.title">
