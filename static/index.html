@@ -815,6 +815,10 @@
   .agent-fact, .agent-fact-lead { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
   .agent-fact .ico, .agent-fact-lead .ico { width: 12px; height: 12px; opacity: .65; }
   .agent-fact-lead { color: var(--text-2); }
+  /* THE NAME STAYS. The row scrolls sideways under the first fact, which is who is working here —
+     the one thing the row is about — on the page's own ground so what slides under it is hidden. */
+  .agent-facts > .agent-fact-lead { position: sticky; left: 0; z-index: 1; margin-right: -12px; padding-right: 12px;
+    background: var(--bg); box-shadow: 8px 0 8px -4px var(--bg); }
   /* a fact that happens to be a link is still a fact: it reads like the ones beside it, and says it
      can be opened by answering the pointer, not by being a different colour standing still */
   a.agent-fact { color: inherit; text-decoration: none; }
