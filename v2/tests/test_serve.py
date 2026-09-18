@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 import tempfile
 import threading
 import urllib.request
@@ -67,6 +68,23 @@ code, got = call("GET", "/api/main/nothing")
 check("an unknown type is a 404", code, 404)
 code, got = call("POST", "/api/main/todo/1/nothing", {})
 check("an unknown action is refused", code, 400)
+# THE EVENT LOG AND THE STREAM
+code, got = call("GET", "/api/main/events?since=0")
+check("the log is served past a cursor", (code, got[0]["id"], got[0]["type"], all(e["id"] > 3 for e in call("GET", "/api/main/events?since=3")[1])), (200, 1, "message", True))
+import socket  # noqa: E402
+sock = socket.create_connection(("127.0.0.1", port), timeout=5)
+sock.sendall(b"GET /api/main/stream HTTP/1.1\r\nHost: x\r\n\r\n")
+time.sleep(0.3)
+call("POST", "/api/main/todo", {"title": "streamed"})
+call("POST", "/api/other/todo", {"title": "elsewhere"})
+buf = b""
+deadline = time.time() + 5
+while b"data:" not in buf and time.time() < deadline:
+    buf += sock.recv(4096)
+sock.close()
+lines = [l for l in buf.decode().splitlines() if l.startswith("data:")]
+check("an event on the environment reaches the stream as it happens, another environment's does not",
+      (b"text/event-stream" in buf, len(lines), json.loads(lines[0][5:])["type"] if lines else None, b"elsewhere" in buf), (True, 1, "todo", False))
 server.shutdown()
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
