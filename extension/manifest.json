@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Journal pointer",
+  "version": "1.0.0",
+  "description": "Point at anything on a page and send it to the agent's journal, with a picture of what you pointed at.",
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html", "default_title": "Journal pointer" },
+  "commands": {
+    "point": {
+      "suggested_key": { "default": "Alt+P" },
+      "description": "Point at an element and send it to the journal"
+    },
+    "chat": {
+      "suggested_key": { "default": "Alt+J" },
+      "description": "Open the journal chat"
+    }
+  }
+}
