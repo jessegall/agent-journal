@@ -843,19 +843,20 @@
      is its anchor; `top` is the agent bar's own height, so it starts exactly where the bar ends. */
   .crew-strip { position: absolute; left: 0; right: 0; top: 33px; z-index: 40;
     display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 4px 9px 6px;
+    overflow-x: auto; overflow-y: hidden; scrollbar-width: thin;
     background: var(--bg); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
     box-shadow: 0 14px 28px rgba(0, 0, 0, .35); }
   /* A COLUMN, NOT A RUN-ON LINE: names and models differ in length, so each fact used to start
      wherever the last one ended and nothing lined up down the strip. */
-  .crew-line { display: flex; align-items: center; gap: 9px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;
+  .crew-line { flex: none; max-width: none; display: flex; align-items: center; gap: 9px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;
     background: transparent; text-align: left; cursor: pointer; animation: crew-in .28s ease-out both; }
   .crew-line:hover { background: #17181b; }
   /* a fact and its mark, the agent bar's vocabulary at the size the strip uses */
   /* ONE COLUMN, NOT FOUR. Fixed-width facts lined the marks up and left a stretch of nothing
      between them; the NAME holds a column, and the facts that follow read as one quiet line — the
      model first, because that is the one being looked for. */
-  .crew-fact { flex: 0 1 auto; display: inline-flex; align-items: center; gap: 4px;
-    min-width: 0; font-size: 10.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; }
+  .crew-fact { flex: none; display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10.5px; color: var(--text-3); white-space: nowrap; }
   .crew-fact + .crew-fact::before { content: ""; flex: none; width: 1px; height: 9px; margin-right: 7px;
     background: var(--border-2); }
   .crew-fact span { overflow: hidden; text-overflow: ellipsis; }
