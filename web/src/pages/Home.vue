@@ -18,7 +18,7 @@ const agentLine = computed(() => {
     const since = a.started ? age(a.started) : "";
     return [
         {icon: "agents", value: `${a.model || a.provider || "agent"} · ${agent.value.title.slice(0, 8)}`, lead: true},
-        {icon: "reminders", value: since ? `${since} up` : "just started"},
+        {icon: "reminders", value: since && since !== "now" ? `${since} up` : "just started"},
         {icon: "tools", value: `${a.uses || 0} tool uses`},
         {bar: Number(a.context || 0), value: `${a.context || 0}%`},
     ];

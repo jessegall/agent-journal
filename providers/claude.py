@@ -34,7 +34,6 @@ class Claude(Provider):
         path = Path(str(payload.get("transcript_path") or ""))
         if not path.is_file():
             return None
-        window = 1_000_000 if "[1m]" in str(payload.get("model") or "") else 200_000
         for raw in reversed(path.read_text().splitlines()):
             try:
                 usage = json.loads(raw).get("message", {}).get("usage")
@@ -42,6 +41,7 @@ class Claude(Provider):
                 continue
             if usage:
                 used = sum(int(usage.get(k) or 0) for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
+                window = 1_000_000 if "[1m]" in str(payload.get("model") or "") or used > 200_000 else 200_000
                 return round(100 * used / window, 1)
         return None
 
