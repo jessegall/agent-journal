@@ -24,7 +24,7 @@ check("the same face again removes it", [r.data["face"] for r in reactions.linke
 messages.react(m.n, "🎉")
 check("the agent's same face is its own, not the user's", sorted(r.seen[0] for r in reactions.linked_to(m.ref)), [AGENT, USER])
 check("a face outside the nine is refused", refused(lambda: by_user.react(m.n, "🐍")).startswith("a reaction is one of"), True)
-check("the user's reactions are events the agent is told of: put on, linked, taken off", [e.action for e in record.events() if e.type == "reaction" and e.actor == USER], ["created", "linked", "created", "linked", "deleted"])
+check("the user's reactions are events the agent is told of: put on (born linked), taken off", [e.action for e in record.events() if e.type == "reaction" and e.actor == USER], ["created", "created", "deleted"])
 
 # A NOTICE is one line kept until closed, with a tone and a link
 notices = CONTROLLERS["notice"](record, actor=AGENT)

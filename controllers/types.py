@@ -45,8 +45,7 @@ class Messages(Controller):
             if r.data.get("face") == face and self.actor in r.seen[:1]:
                 reactions.force_delete(r.n)
                 return None
-        made = reactions.create(face, face=face)
-        return reactions.link(made.n, message.ref)
+        return reactions.create(face, face=face, about=message.ref)
 
 
 class Todos(Controller):
