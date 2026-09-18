@@ -73,6 +73,10 @@ got = json.loads(out) if out.strip() else {}
 check("the hold is decision: block with the line as its reason", (got.get("decision"), "auto is on" in got.get("reason", "")), ("block", True))
 check("no additionalContext rides on a Codex Stop", "hookSpecificOutput" in got, False)
 
+# THE VIEWER NAMES IT: the activity's agent carries "codex", and the bar reads the name from that
+import controllers.activity as activity  # noqa: E402
+got_agent = activity.ActivityController._agent(d / ".journal", "default") or {}
+check("the activity says which agent holds the environment, and its model from the rollout", (got_agent.get("agent"), got_agent.get("model")), ("codex", "gpt-5.5"))
 P.close()
 
 # THE HOOKS GO INTO .codex/hooks.json, in Codex's three-level shape, keeping whatever the user put there;

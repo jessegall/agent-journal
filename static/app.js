@@ -5018,7 +5018,7 @@ const EnvHome = {
       // the set's own: whatever a fact IS elsewhere in the viewer is what marks it here.
       const rows = [
         { label: "agent", icon: "agents",
-          value: session && session.name ? session.name : agent ? "Claude Code" : "No agent" },
+          value: session && session.name ? session.name : agent ? AGENT_NAMES[agent.agent] || "Claude Code" : "No agent" },
         { label: "model", icon: "style", value: agent && agent.model ? agent.model : "" },
         { label: "session", icon: "activity", value: agent ? agent.session : "" },
         { label: "running", icon: "reminders", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
@@ -5956,6 +5956,8 @@ const Commit = {
 };
 
 // ─────────────────────────────────────────────────────────────── one agent
+//: what the agent bar calls each agent the hooks know
+const AGENT_NAMES = { claude: "Claude Code", codex: "Codex" };
 const AGENT_STATUS = { working: "Working", idle: "Idle", ended: "Ended", finished: "Finished" };
 const TRANSCRIPT_WHO = { human: "You", text: "Agent", tool_result: "Tool result", injected: "Journal", task: "Task",
                          peer: "Another session", superseded: "You, edited" };
