@@ -259,6 +259,12 @@ state.put(s13.d / ".journal", "seat_seen", int(time.time()), stem="s1")
 check("a fresh seat stamp: the untagged message is left for the launcher to type", s13.stop(), "")
 state.put(s13.d / ".journal", "seat_seen", int(time.time()) - 300, stem="s1")
 check("the stamp gone stale: the hook holds again", s13.stop(), "1 untagged message(s)")
+# a seated session is never asked for a loop: the launcher wakes it at every idle moment
+s14 = S()
+s14.j("todo", "chore"); s14.j("todo", "auto", "on")
+state.put(s14.d / ".journal", "seat_seen", int(time.time()), stem="s1")
+got = s14.j("todo", "another chore")
+check("with a seat, auto on and no loop, a write goes through", ("no loop" in got.stdout, got.returncode), (False, 0))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

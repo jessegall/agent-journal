@@ -1285,7 +1285,8 @@ _LOOP_TOOLS = frozenset({"CronCreate", "ScheduleWakeup", "Skill:loop"})
 
 
 def _loop_running(ctx: Ctx, lines) -> bool:
-    if state.get(ROOT, "loop_set", False, stem=ctx.stem):
+    # a seated session is woken by its launcher at every idle moment: that is the loop
+    if seated(ctx.stem) or state.get(ROOT, "loop_set", False, stem=ctx.stem):
         return True
     for l in lines:
         # `/loop` COUNTS ONLY WHEN THE USER TYPED IT. A tool result or an injected block that
