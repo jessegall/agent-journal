@@ -1,5 +1,6 @@
 import argparse
 import inspect
+import json
 import os
 import sys
 from pathlib import Path
@@ -128,6 +129,13 @@ def context(args: dict) -> dict:
     return {"record": Record(root, env), "session": session, "actor": args.pop("as_actor")}
 
 
+def typed(value: str):
+    try:
+        return json.loads(value) if value[:1] in "[{" or value in ("true", "false") or value.lstrip("-").replace(".", "", 1).isdigit() else value
+    except ValueError:
+        return value
+
+
 def run(argv: list[str]) -> int:
     parsed, passed = parser().parse_known_args(argv)
     args = vars(parsed)
@@ -144,7 +152,7 @@ def run(argv: list[str]) -> int:
             return 0
         method = args.pop("method")
         args.pop("action", None)
-        extra = dict(kv.split("=", 1) for kv in args.pop("set", []))
+        extra = {k: typed(v) for k, v in (kv.split("=", 1) for kv in args.pop("set", []))}
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"])
         got = getattr(controller, method)(**args, **extra)
     except Refused as e:
