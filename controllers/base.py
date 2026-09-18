@@ -4,7 +4,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from engine.record import Record
-from resources.base import Refused, Resource, check_abstract, check_title, titled
+from resources.base import Refused, Resource, SECTION, check_abstract, check_title, titled
 from resources.shapes import check
 
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
@@ -80,11 +80,11 @@ class Controller:
     def section(self, n: int, title: str, body: str) -> Resource:
         r = self.load(n)
         for s in r.sections:
-            if s["title"] == title:
-                s["body"] = body
+            if s[SECTION.title] == title:
+                s[SECTION.body] = body
                 break
         else:
-            r.sections.append({"title": title, "body": body})
+            r.sections.append({SECTION.title: title, SECTION.body: body})
         return self.save(r, "updated", section=title)
 
     def delete(self, n: int, why: str = "") -> Resource:
@@ -156,7 +156,7 @@ class Controller:
         target = self.folder(n) / source.name
         shutil.copytree(source, target, dirs_exist_ok=True) if source.is_dir() else shutil.copy2(source, target)
         r = self.load(n)
-        r.data.setdefault("files", {})[source.name] = what
+        r.files[source.name] = what
         return self.save(r, "updated", file=source.name, what=what)
 
     def files(self, n: int) -> list[str]:
@@ -167,17 +167,17 @@ class Controller:
 
     def detach(self, n: int, name: str, why: str = "") -> Resource:
         r = self.load(n)
-        if name not in (r.data.get("files") or {}):
+        if name not in r.files:
             raise Refused(f"{self.type} {n} has no file {name}")
         struck = self.folder(n) / "struck"
         struck.mkdir(exist_ok=True)
         shutil.move(str(self.folder(n) / name), str(struck / name))
-        r.data["files"].pop(name)
+        r.files.pop(name)
         return self.save(r, "updated", detached=name, why=why)
 
     def index(self, n: int) -> Resource:
         r = self.load(n)
-        known = r.data.setdefault("files", {})
+        known = r.files
         for f in self.folder(n).iterdir():
             if f.is_file() and f.name not in known:
                 known[f.name] = ""
@@ -218,7 +218,7 @@ class Controller:
     def search(self, term: str) -> list[Resource]:
         want = term.lower()
         return [r for r in self.all() if want in r.title.lower() or want in r.brief.lower() or want in r.abstract.lower()
-                or any(want in s["title"].lower() or want in s["body"].lower() for s in r.sections)]
+                or any(want in s[SECTION.title].lower() or want in s[SECTION.body].lower() for s in r.sections)]
 
     def find(self, name: str) -> Resource:
         if str(name).isdigit():
@@ -235,7 +235,7 @@ class Controller:
         r = self.load(n)
         reactions = Reactions(self.record, actor=self.actor)
         for made in reactions.linked_to(r.ref):
-            if made.data.get("face") == face and self.actor in made.seen[:1]:
+            if made.face == face and self.actor in made.seen[:1]:
                 reactions.force_delete(made.n)
                 return None
         return reactions.create(face, face=face, about=r.ref)

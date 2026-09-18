@@ -44,12 +44,12 @@ class Driver(ABC):
     def at_prompt(self) -> bool:
         return bool(self.PROMPT.search(self.last_printed().rstrip()))
 
-    def last_report(self) -> dict | None:
-        from controllers.types import CONTROLLERS
+    def last_report(self):
+        from controllers.types import Agents
         from resources.base import SYSTEM
         rows = [r for r in Agents(self.record, actor=SYSTEM).all()
-                if r.data.get("event") and (r.title == self.session or (r.data.get("provider") == self.name and float(r.data.get("at") or 0) >= self.born - 1))]
-        return {**rows[-1].data, "session": rows[-1].title} if rows else None
+                if r.event and (r.title == self.session or (r.provider == self.name and float(r.at or 0) >= self.born - 1))]
+        return rows[-1] if rows else None
 
     def quiet_for(self) -> float:
         try:

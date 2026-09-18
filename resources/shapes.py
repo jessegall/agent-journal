@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import Refused
+from resources.base import Field, Refused, names
 
 TEXT, NUMBER, FLAG = "text", "number", "flag"
 KINDS = {TEXT: str, NUMBER: (int, float), FLAG: bool}
@@ -8,6 +8,7 @@ KINDS = {TEXT: str, NUMBER: (int, float), FLAG: bool}
 
 def rows(**columns: str) -> dict:
     return {"rows": columns}
+
 
 
 def check(name: str, spec, value):
@@ -30,12 +31,16 @@ class Shape:
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
-        cls.fields = {k: v for base in reversed(cls.__mro__) for k, v in vars(base).get("fields", {}).items()}
+        cls.fields = {k: v.spec for base in reversed(cls.__mro__) for k, v in vars(base).items() if isinstance(v, Field) and v.spec}
         cls.labels = {k: v for base in reversed(cls.__mro__) for k, v in vars(base).get("labels", {}).items()}
 
 
+OPTION = names("title", "description", "code")
+
+
 class Options(Shape):
-    fields = {"options": rows(title=TEXT, description=TEXT, code=TEXT), "pick": NUMBER}
+    options = Field(rows(title=TEXT, description=TEXT, code=TEXT), list)
+    pick = Field(NUMBER)
 
 
 class Reasoned(Shape):
@@ -46,9 +51,14 @@ LEVELS = {"low": 50, "default": 100, "high": 150, "critical": 200}
 
 
 class Ranked(Shape):
-    fields = {"priority": NUMBER}
+    priority = Field(NUMBER)
     labels = {"priority": "Priority"}
 
 
+CHANGE = names("path", "added", "removed", "created")
+COMMIT = names("sha", "subject")
+
+
 class Traced(Shape):
-    fields = {"changed": rows(path=TEXT, added=NUMBER, removed=NUMBER, created=FLAG), "commits": rows(sha=TEXT, subject=TEXT)}
+    changed = Field(rows(path=TEXT, added=NUMBER, removed=NUMBER, created=FLAG), list)
+    commits = Field(rows(sha=TEXT, subject=TEXT), list)

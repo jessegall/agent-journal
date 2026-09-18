@@ -14,7 +14,7 @@ class Skills(Feature):
         agent = self.agent_due(event, record)
         if not agent:
             return
-        loaded = agent.data.get("skills") or []
+        loaded = agent.skills
         if any(s == "journal" or s.startswith("journal-") for s in loaded):
             return
         self.nudge(record, agent, "no journal skill is loaded in this window", "load the journal skill (Skill: journal) before the next write; a compaction emptied it", private=True)

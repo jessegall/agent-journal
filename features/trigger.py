@@ -1,12 +1,16 @@
 import json
 import time
 
+from resources.base import names
+from resources.types import AgentRow
+
 PERCENT, USES, MINUTES, IDLE, WORKED, START = "percent", "uses", "minutes", "idle", "worked", "start"
 UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START)
+TRIGGER = names("unit", "on", "every", "at")
 
 
 def spec(record, name: str, default: dict) -> dict:
-    return record.setting("triggers", {}).get(name, default)
+    return record.triggers.get(name, default)
 
 
 def _file(record, session: str, name: str):
@@ -25,24 +29,23 @@ def due(record, agent, name: str, default: dict) -> bool:
     if not s:
         return False
     was = last(record, agent.title, name)
-    now = agent.data
     observe(record, agent, name, was)
-    unit, every = s.get("unit") or s.get("on"), float(s.get("every") or 1)
-    if unit == PERCENT and s.get("at"):
-        before, after = float(was.get("context") or 0), float(now.get("context") or 0)
-        return any(before < mark <= after for mark in s["at"])
+    unit, every = s.get(TRIGGER.unit) or s.get(TRIGGER.on), float(s.get(TRIGGER.every) or 1)
+    context, uses, status, event = (float(was.get(AgentRow.context) or 0), int(was.get(AgentRow.uses) or 0), was.get(AgentRow.status), was.get(AgentRow.event))
+    if unit == PERCENT and s.get(TRIGGER.at):
+        return any(context < mark <= float(agent.context or 0) for mark in s[TRIGGER.at])
     if unit == PERCENT:
-        return int(float(now.get("context") or 0) // every) > int(float(was.get("context") or 0) // every)
+        return int(float(agent.context or 0) // every) > int(context // every)
     if unit == USES:
-        return int(now.get("uses") or 0) - int(was.get("uses") or 0) >= every
+        return int(agent.uses or 0) - uses >= every
     if unit == MINUTES:
-        return time.time() - float(was.get("at") or 0) >= every * 60
+        return time.time() - float(was.get(AgentRow.at) or 0) >= every * 60
     if unit == IDLE:
-        return now.get("status") == IDLE and was.get("status") != IDLE
+        return agent.status == IDLE and status != IDLE
     if unit == WORKED:
-        return now.get("status") == IDLE and was.get("status") != IDLE and int(now.get("uses") or 0) > int(was.get("uses") or 0)
+        return agent.status == IDLE and status != IDLE and int(agent.uses or 0) > uses
     if unit == START:
-        return now.get("event") == "SessionStart" and was.get("event") != "SessionStart"
+        return agent.event == "SessionStart" and event != "SessionStart"
     return False
 
 
@@ -53,9 +56,9 @@ def write(record, agent, name: str, **fields) -> None:
 
 
 def observe(record, agent, name: str, was: dict) -> None:
-    if (was.get("status"), was.get("event")) != (agent.data.get("status"), agent.data.get("event")):
-        write(record, agent, name, status=agent.data.get("status"), event=agent.data.get("event"))
+    if (was.get(AgentRow.status), was.get(AgentRow.event)) != (agent.status, agent.event):
+        write(record, agent, name, status=agent.status, event=agent.event)
 
 
 def fired(record, agent, name: str) -> None:
-    write(record, agent, name, at=time.time(), context=agent.data.get("context") or 0, uses=agent.data.get("uses") or 0)
+    write(record, agent, name, at=time.time(), context=agent.context or 0, uses=agent.uses or 0)

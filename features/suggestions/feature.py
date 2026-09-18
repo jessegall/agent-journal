@@ -13,7 +13,7 @@ class SuggestionsDecided(Feature):
     def filed(self, event, record) -> None:
         suggestions = Suggestions(record, actor=SYSTEM)
         s = suggestions.load(event.n)
-        decision = s.data.get("decision")
+        decision = s.decision
         if decision not in (ACCEPT.lower(), ADJUST.lower()):
             return
         todos = Todos(record, actor=SYSTEM)

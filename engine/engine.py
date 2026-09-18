@@ -67,13 +67,13 @@ class Engine:
                 bus.emit(e, self.record)
 
     def private(self, e) -> bool:
-        return TYPES[e.type].spoken and bool(CONTROLLERS[e.type](self.record, actor=AGENT).load(e.n).data.get("private"))
+        return TYPES[e.type].spoken and bool(CONTROLLERS[e.type](self.record, actor=AGENT).load(e.n).private)
 
     def follow(self) -> str:
         last = self.agent.driver.last_report()
-        if not last or not last.get("session"):
+        if not last or not last.title:
             return ""
-        bound = Sessions(self.record.root).environment(last["session"])
+        bound = Sessions(self.record.root).environment(last.title)
         if not bound or bound == self.record.env:
             return ""
         self.record = Record(self.record.root, bound)
@@ -88,7 +88,7 @@ class Engine:
         last = driver.last_report()
         if last is None or not driver.alive():
             return ""
-        reported = float(last.get("at") or 0)
+        reported = float(last.at or 0)
         silent = time.time() - max(reported, self.typed_at) >= SILENT_AFTER and driver.quiet_for() >= SILENT_AFTER
         if self.probed_at > reported:
             if time.time() - self.probed_at < PROBE_WAIT:
@@ -134,7 +134,7 @@ class Engine:
         if self.agent.state() != IDLE:
             return self.agent.state()
         last = self.agent.driver.last_report()
-        if last and self.typed_at and float(last.get("at") or 0) < self.typed_at:
+        if last and self.typed_at and float(last.at or 0) < self.typed_at:
             return "typed, waiting for the hooks"
         line = self.owed()
         if not line:
@@ -153,8 +153,8 @@ class Engine:
         return ""
 
     def branch(self) -> str:
-        last = self.agent.driver.last_report() or {}
-        cwd = last.get("cwd") or str(self.record.root.parent)
+        last = self.agent.driver.last_report()
+        cwd = (last and last.cwd) or str(self.record.root.parent)
         if time.time() - self.branched_at < 10:
             return self.branch_name
         self.branched_at = time.time()
@@ -164,14 +164,14 @@ class Engine:
         except (OSError, subprocess.SubprocessError):
             self.branch_name, remote = "", ""
         url = f"{web}/tree/{self.branch_name}" if self.branch_name and (web := web_remote(remote)) else ""
-        if last.get("session") and self.branch_name and (last.get("branch"), last.get("branch_url")) != (self.branch_name, url):
-            self.agent.mark(last.get("status", ""), last.get("event", ""), branch=self.branch_name, branch_url=url, at=last.get("at"))
+        if last and last.title and self.branch_name and (last.branch, last.branch_url) != (self.branch_name, url):
+            self.agent.mark(last.status or "", last.event or "", branch=self.branch_name, branch_url=url, at=last.at)
         return self.branch_name
 
     def crew(self) -> None:
-        last = self.agent.driver.last_report() or {}
-        path = last.get("transcript")
-        if not path or not last.get("session") or time.time() - self.crewed_at < 10:
+        last = self.agent.driver.last_report()
+        path = last and last.title and last.transcript
+        if not path or time.time() - self.crewed_at < 10:
             return
         self.crewed_at = time.time()
         try:
@@ -181,9 +181,9 @@ class Engine:
         if size == self.crewed_size:
             return
         self.crewed_size = size
-        facts = PROVIDERS[last.get("provider", "")]().crew(Path(path)) if last.get("provider") in PROVIDERS else {}
-        if facts and any(last.get(k) != v for k, v in facts.items()):
-            self.agent.mark(last.get("status", ""), last.get("event", ""), at=last.get("at"), **facts)
+        facts = PROVIDERS[last.provider]().crew(Path(path)) if last.provider in PROVIDERS else {}
+        if facts and any(last.data.get(k) != v for k, v in facts.items()):
+            self.agent.mark(last.status or "", last.event or "", at=last.at, **facts)
 
     def seat(self) -> None:
         self.branch()

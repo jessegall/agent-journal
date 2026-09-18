@@ -3,6 +3,7 @@ import re
 import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
+from types import SimpleNamespace
 from typing import ClassVar
 
 TITLE_MAX = 80
@@ -14,6 +15,31 @@ USER, AGENT, SYSTEM = "user", "agent", "system"
 ENVIRONMENT, PROJECT = "environment", "project"
 SCOPES = (ENVIRONMENT, PROJECT)
 ACTORS = (USER, AGENT, SYSTEM)
+
+
+def names(*columns: str) -> SimpleNamespace:
+    return SimpleNamespace(**{c: c for c in columns})
+
+
+class Field:
+    def __init__(self, spec=None, default=None):
+        self.spec, self.default = spec, default
+
+    def __set_name__(self, owner, name: str) -> None:
+        self.name = name
+
+    def __get__(self, obj, owner=None):
+        if obj is None:
+            return self.name
+        if self.name in obj.data:
+            return obj.data[self.name]
+        return obj.data.setdefault(self.name, self.default()) if callable(self.default) else self.default
+
+    def __set__(self, obj, value) -> None:
+        obj.data[self.name] = value
+
+
+SECTION = names("title", "body")
 
 
 @dataclass
@@ -51,6 +77,9 @@ class Resource:
     scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
     notify: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
     spoken: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
+    files = Field(default=dict)               # what is attached: name → what became of it
+    agent = Field()                           # the subagent that wrote it, and its dispatcher
+    dispatcher = Field()
     n: int = 0
     title: str = ""
     abstract: str = ""
@@ -74,7 +103,7 @@ class Resource:
         head["type"] = self.type
         out = ["---", json.dumps(head, indent=2), "---", self.brief.strip(), ""]
         for s in self.sections:
-            out += [f"## {s['title']}", s["body"].strip(), ""]
+            out += [f"## {s[SECTION.title]}", s[SECTION.body].strip(), ""]
         return "\n".join(out)
 
     @classmethod
@@ -84,7 +113,7 @@ class Resource:
         got.pop("type", None)
         parts = re.split(r"^## (.+)$", body, flags=re.M)
         brief = parts[0].strip()
-        sections = [{"title": parts[i].strip(), "body": parts[i + 1].strip()} for i in range(1, len(parts) - 1, 2)]
+        sections = [{SECTION.title: parts[i].strip(), SECTION.body: parts[i + 1].strip()} for i in range(1, len(parts) - 1, 2)]
         return cls(brief=brief, sections=sections, **got)
 
 

@@ -12,9 +12,9 @@ class Style(Feature):
     @on("style")
     def write(self, event, record) -> None:
         rule = Styles(record, actor=SYSTEM).load(event.n)
-        if not rule.data.get("subject"):
+        if not rule.subject:
             return
-        folder = record.root.parent / ".claude" / "skills" / f"style-{rule.data['subject']}"
+        folder = record.root.parent / ".claude" / "skills" / f"style-{rule.subject}"
         skill = folder / "SKILL.md"
         if rule.completed or rule.deleted:
             if skill.is_file():
@@ -22,7 +22,7 @@ class Style(Feature):
                 folder.rmdir()
             return
         folder.mkdir(parents=True, exist_ok=True)
-        head = f"---\nname: style-{rule.data['subject']}\ndescription: {rule.title}: {rule.data.get('decision', '')}\n---\n\n# {rule.title}\n\n**The rule here:** {rule.data.get('decision', '')}\n"
-        when = f"\nApplies to {rule.data['when']}.\n" if rule.data.get("when") else ""
+        head = f"---\nname: style-{rule.subject}\ndescription: {rule.title}: {rule.decision or ''}\n---\n\n# {rule.title}\n\n**The rule here:** {rule.decision or ''}\n"
+        when = f"\nApplies to {rule.when}.\n" if rule.when else ""
         body = f"\n{rule.brief}\n" if rule.brief else ""
         skill.write_text(head + when + body)

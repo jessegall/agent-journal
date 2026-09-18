@@ -74,8 +74,8 @@ class Band:
 
     def agent(self) -> dict:
         record = Record(self.root, self.seat().get("env") or self.env)
-        rows = [r for r in Agents(record, actor=SYSTEM).all() if r.data.get("event")]
-        rows.sort(key=lambda r: float(r.data.get("at") or 0))
+        rows = [r for r in Agents(record, actor=SYSTEM).all() if r.event]
+        rows.sort(key=lambda r: float(r.at or 0))
         return {"title": rows[-1].title, **rows[-1].data} if rows else {}
 
     def lines(self, cols: int) -> list[str]:

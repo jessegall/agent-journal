@@ -3,7 +3,11 @@ from pathlib import Path
 
 from controllers.types import Agents, Works
 from features.base import Feature, on
-from resources.base import SYSTEM
+from resources.base import SYSTEM, names
+from resources.shapes import CHANGE, COMMIT
+from resources.types import RUNNING
+
+DELTA = names("edited", "created", "deleted")
 
 
 def git(project: Path, *args: str) -> str:
@@ -19,19 +23,19 @@ def changed(project: Path, only: str = "") -> list[dict]:
     for line in git(project, "diff", "--numstat", "HEAD", "--", *paths).splitlines():
         added, removed, path = (line.split("\t", 2) + ["", ""])[:3]
         if path:
-            out.append({"path": path, "added": int(added) if added.isdigit() else 0, "removed": int(removed) if removed.isdigit() else 0, "created": False})
+            out.append({CHANGE.path: path, CHANGE.added: int(added) if added.isdigit() else 0, CHANGE.removed: int(removed) if removed.isdigit() else 0, CHANGE.created: False})
     for path in git(project, "ls-files", "--others", "--exclude-standard", "--", *paths).splitlines():
         try:
             lines = sum(1 for _ in (project / path).open(errors="replace"))
         except OSError:
             lines = 0
-        out.append({"path": path, "added": lines, "removed": 0, "created": True})
+        out.append({CHANGE.path: path, CHANGE.added: lines, CHANGE.removed: 0, CHANGE.created: True})
     return out
 
 
 def committed(project: Path, since: float) -> list[dict]:
     out = git(project, "log", f"--since=@{int(since)}", "--format=%H%x1f%s")
-    return [{"sha": sha, "subject": subject} for sha, _, subject in (line.partition("\x1f") for line in out.splitlines()) if sha]
+    return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, _, subject in (line.partition("\x1f") for line in out.splitlines()) if sha]
 
 
 class Files(Feature):
@@ -43,26 +47,24 @@ class Files(Feature):
     @on("agent.updated")
     def record_files(self, event, record) -> None:
         agent = self.agent(event, record)
-        if agent.data.get("event") != "PostToolUse" or not agent.data.get("wrote"):
+        if agent.event != "PostToolUse" or not agent.wrote:
             return
         works = Works(record, actor=SYSTEM)
         for work in self.standing(record, "work")[:1]:
             project = record.root.parent
-            file = agent.data.get("file") or ""
+            file = agent.file or ""
             only = str(Path(file).resolve().relative_to(project.resolve())) if file and file.startswith(str(project)) else ""
-            files = {f["path"]: f for f in work.data.get("changed") or []}
-            before = {f["path"]: (f["added"], f["removed"]) for f in files.values()}
-            delta = {"edited": 0, "created": 0, "deleted": 0}
+            files = {f[CHANGE.path]: f for f in work.changed}
+            before = {f[CHANGE.path]: (f[CHANGE.added], f[CHANGE.removed]) for f in files.values()}
+            delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0}
             for f in changed(project, only):
-                files[f["path"]] = f
-                if f["path"] not in before and f["created"]:
-                    delta["created"] += 1
-                elif before.get(f["path"]) != (f["added"], f["removed"]):
-                    delta["edited"] += 1
-            for path in [p for p in before if p not in {f["path"] for f in changed(project, only)} and (only in ("", p)) and not (project / p).exists()]:
-                delta["deleted"] += 1
+                files[f[CHANGE.path]] = f
+                if f[CHANGE.path] not in before and f[CHANGE.created]:
+                    delta[DELTA.created] += 1
+                elif before.get(f[CHANGE.path]) != (f[CHANGE.added], f[CHANGE.removed]):
+                    delta[DELTA.edited] += 1
+            for path in [p for p in before if p not in {f[CHANGE.path] for f in changed(project, only)} and (only in ("", p)) and not (project / p).exists()]:
+                delta[DELTA.deleted] += 1
             works.update(work.n, changed=list(files.values()), commits=committed(project, work.created))
-            running = dict(agent.data.get("running") or {})
-            if running and any(delta.values()):
-                agents = Agents(record, actor=SYSTEM)
-                agents.update(agent.n, running={**running, "changed": delta})
+            if agent.running and any(delta.values()):
+                Agents(record, actor=SYSTEM).update(agent.n, running={**agent.running, RUNNING.changed: delta})

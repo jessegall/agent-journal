@@ -10,6 +10,7 @@ from engine.actors import COMPACTING, IDLE, STOPPED, WORKING
 from engine.record import Record
 from engine.transcript import Turn
 from resources.base import AGENT, SYSTEM
+from resources.types import AgentRow, COMMAND, RUNNING
 
 STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
           "PostToolUse": WORKING, "PreCompact": COMPACTING, "SessionEnd": STOPPED}
@@ -46,14 +47,14 @@ class Provider(ABC):
             return {}
         agents = Agents(Record(root, env), actor=SYSTEM)
         row = agents.by_session(self.session_of(payload))
-        uses = int(row.data.get("uses") or 0) + (event == "PreToolUse")
+        uses = int(row.uses or 0) + (event == "PreToolUse")
         context = self.context(payload)
-        agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "", **self.shell(row.data, event, payload),
+        agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "", **self.shell(row, event, payload),
                       file=str((payload.get("tool_input") or {}).get("file_path") or ""), wrote=event == "PostToolUse" and self.writes(payload),
-                      cwd=str(payload.get("cwd") or row.data.get("cwd") or ""),
-                      at=time.time(), provider=self.name, uses=uses, transcript=str(payload.get("transcript_path") or row.data.get("transcript") or ""),
-                      model=self.model(payload) or row.data.get("model") or "", started=row.data.get("started") or time.time(),
-                      context=row.data.get("context") or 0 if context is None else context)
+                      cwd=str(payload.get("cwd") or row.cwd or ""),
+                      at=time.time(), provider=self.name, uses=uses, transcript=str(payload.get("transcript_path") or row.transcript or ""),
+                      model=self.model(payload) or row.model or "", started=row.started or time.time(),
+                      context=row.context or 0 if context is None else context)
         if event == "PreToolUse" and self.writes(payload):
             return self.refusal(self.gate(root, env, row.title))
         if event == "SessionStart":
@@ -64,7 +65,7 @@ class Provider(ABC):
 
     def whispered(self, root: Path, env: str, session: str) -> str:
         nudges = Nudges(Record(root, env), actor=AGENT)
-        mine = [n for n in nudges.unread() if n.data.get("private") and n.data.get("session") == session]
+        mine = [n for n in nudges.unread() if n.private and n.session == session]
         for n in mine:
             nudges.read(n.n)
         return "\n".join(dict.fromkeys(f"{n.title}{' — ' + n.brief if n.brief else ''}" for n in mine))
@@ -93,16 +94,16 @@ class Provider(ABC):
         command = str((payload.get("tool_input") or {}).get("command") or "")
         return tool == "Bash" and not JOURNAL_COMMAND.search(command) and bool(WRITING_COMMANDS.search(command))
 
-    def shell(self, data: dict, event: str, payload: dict) -> dict:
+    def shell(self, row, event: str, payload: dict) -> dict:
         command = str((payload.get("tool_input") or {}).get("command") or "").strip()[:400]
-        running = dict(data.get("running") or {})
+        running = dict(row.running)
         if event == "PreToolUse" and command:
             now = time.time()
-            running = {"what": command, "at": now}
-            return {"running": running, "commands": (list(data.get("commands") or []) + [{"what": command, "at": now}])[-RING:]}
-        if running and not running.get("done"):
-            running["done"] = time.time()
-        return {"running": running, "commands": list(data.get("commands") or [])}
+            running = {RUNNING.what: command, RUNNING.at: now}
+            return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: command, COMMAND.at: now}])[-RING:]}
+        if running and not running.get(RUNNING.done):
+            running[RUNNING.done] = time.time()
+        return {AgentRow.running: running, AgentRow.commands: list(row.commands)}
 
     def refusal(self, why: str) -> dict:
         return {"decision": "block", "reason": why} if why else {}

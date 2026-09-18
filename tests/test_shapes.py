@@ -5,7 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import Questions, Todos  # noqa: E402
 from engine.manifest import manifest  # noqa: E402
 from resources.base import USER  # noqa: E402
-from resources.shapes import Options, Reasoned, Shape  # noqa: E402
+from resources.shapes import FLAG, Field, Options, Reasoned, Shape  # noqa: E402
 from resources.types import TYPES  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
 
@@ -23,9 +23,10 @@ check("a shape declared once is the same object on both", TYPES["pin"].labels ==
 
 
 class Twice(Options, Reasoned, Shape):
-    fields = {"extra": "flag"}
+    extra = Field(FLAG)
 
 
+check("a Field with a spec is a typed field, read on the class as its name", (Twice.extra, Twice.fields["extra"]), ("extra", FLAG))
 check("shapes compose: fields and labels from every mixin plus its own", (sorted(Twice.fields), Twice.labels), (["extra", "options", "pick"], {"brief": "Reasoning", "outcome": "Why struck"}))
 
 # THE CONTROLLER VALIDATES what a type's shape declares, and leaves the rest of data free

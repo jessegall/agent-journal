@@ -6,6 +6,7 @@ from resources.base import AGENT, SYSTEM
 
 class Status(Feature):
     name = "status"
+    PATIENCE = "patience"
     title_ = "A status update owed"
     abstract_ = "A message read and not answered for ten tool uses earns a private nudge to give the user a status update; at twenty the writes wait for a reply"
     help_ = "triggers.status sets the cadence (every 10 uses); status.patience (2) is how many nudges go unheeded before the hold. A reply, a reaction or processing the message settles it."
@@ -24,7 +25,7 @@ class Status(Feature):
     @on("message.created")
     def arrived(self, event, record) -> None:
         for agent in Agents(record, actor=SYSTEM).all():
-            trigger.write(record, agent, self.name, uses=int(agent.data.get("uses") or 0), count=0)
+            trigger.write(record, agent, self.name, uses=int(agent.uses or 0), count=0)
 
     @on("agent.updated")
     def owed(self, event, record) -> None:
@@ -40,5 +41,5 @@ class Status(Feature):
         trigger.write(record, agent, self.name, count=count)
         names = ", ".join(f"message {m.n}" for m in held[-3:])
         self.nudge(record, agent, f"give the user a status update on {names}", "read and unanswered for a while: journal message reply <n> \"<where it stands>\", a reaction, or journal message processed <n>", private=True)
-        if count > record.setting("status", {}).get("patience", self.patience):
+        if count > record.status.get(self.PATIENCE, self.patience):
             self.hold(record, f"the user waits on a status update for {names}: reply, react or process before any other write")
