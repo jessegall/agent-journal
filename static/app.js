@@ -4216,7 +4216,9 @@ const Thread = {
       const real = ((chat.data && chat.data.turns) || []).map((t) => {
         let held = t.who === "you" ? adopted.get(`${t.kind}:${t.n}`) : null;
         if (!held && t.who === "you") {
-          held = mine.get(withoutQuote(t.text || ""));
+          // A LONG TURN COMES BACK TRIMMED, with the whole in `full`: matching on `text` alone left
+          // the optimistic copy standing beside every long paste. Measured: one ghost per paste.
+          held = mine.get(withoutQuote(t.full || t.text || ""));
           if (held && t.n) adopted.set(`${t.kind}:${t.n}`, held);
         }
         const refs = (t.became_refs || []).map((r) => ({ ...r, key: String(r.ref), href: refHref(r.ref, props.env) }))
