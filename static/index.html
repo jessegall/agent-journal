@@ -824,8 +824,9 @@
   /* the live subagents hang under the facts line, indented past it: part of the page's opening block, not a bar */
   /* ONE SUBAGENT TO A LINE: wrapped in a row, the model fell off the end of the one thing the user
      always wants to see. The top padding is gone with the rule that used to sit above it. */
+  /* the strip lines up with the bar above it, not with an indent of its own */
   .crew-strip { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
-    padding: 0 24px 6px; border-bottom: 1px solid var(--border); }
+    padding: 2px 9px 6px; border-bottom: 1px solid var(--border); }
   /* A COLUMN, NOT A RUN-ON LINE: names and models differ in length, so each fact used to start
      wherever the last one ended and nothing lined up down the strip. */
   .crew-line { display: flex; align-items: center; gap: 9px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;

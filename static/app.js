@@ -4910,7 +4910,7 @@ const EnvHome = {
       <!-- THE AGENT BAR BELONGS TO THE CHAT, NOT TO THE PAGE. It is the agent's own state — which
            model, which session, how long, how full — and the rail beside it is not the agent's, so
            a bar spanning both said that state was the whole page's. -->
-      <div :class="['agent-bar', {open: crewOpen && liveCrew.length}]">
+      <div :class="['agent-bar', {open: (crewOpen && liveCrew.length) || (shellsOpen && shells.length)}]">
         <div class=agent-facts>
           <template v-for="(r, i) in lead.rows" :key="r.label">
             <a v-if="i === 0 && lead.href" class=agent-fact-lead :href="lead.href" :title="'Open the agent page — ' + r.label">
@@ -4926,6 +4926,16 @@ const EnvHome = {
             :title="skills.length ? skills.length + ' skill(s) open in this window' : 'No journal skill is open in this window'"
             :aria-expanded="skillsOpen ? 'true' : 'false'" @click="openSkills">
             <Icon name="book"/>{{ skills.length }}</button>
+          <!-- AN ICON AND A NUMBER, NOT A SENTENCE. Three counters in a row — skills, shells,
+               subagents — read as three of the same thing, because they are: work the agent has
+               open and is not sitting on. -->
+          <button v-if="shells.length" type=button :class="['agent-fact', 'agent-skills', {none: !shells.filter((x) => !x.done).length}]"
+            :aria-expanded="shellsOpen ? 'true' : 'false'"
+            :title="shells.filter((x) => !x.done).length + ' background shell(s) still running, ' + shells.length + ' in all'"
+            @click="shellsOpen = !shellsOpen"><Icon name="terminal"/>{{ shells.filter((x) => !x.done).length || shells.length }}</button>
+          <button v-if="liveCrew.length" type=button class="agent-fact agent-skills" :aria-expanded="crewOpen ? 'true' : 'false'"
+            :title="liveCrew.length + ' subagent(s)'" @click="crewOpen = !crewOpen">
+            <Icon name="agents"/>{{ liveCrew.length }}</button>
         </div>
         <BarDrop :open="skillsOpen" :where="skillsAt" :width="280">
           <p class=bar-none>Open in this window, newest last. A compaction empties it.</p>
@@ -4943,16 +4953,6 @@ const EnvHome = {
         </BarDrop>
         <!-- OUTSIDE THE SCROLLING ROW. The facts scroll sideways, and an overflow container clips
              anything hanging out of it — which is a dropdown that opened and could not be seen. -->
-        <!-- AN ICON AND A NUMBER, NOT A SENTENCE. Three counters in a row — skills, shells,
-             subagents — read as three of the same thing, and the words were the only part that
-             made them look like three different ones. -->
-        <button v-if="shells.length" type=button :class="['agent-fact', 'agent-skills', {none: !shells.filter((x) => !x.done).length}]"
-          :aria-expanded="shellsOpen ? 'true' : 'false'"
-          :title="shells.filter((x) => !x.done).length + ' background shell(s) still running, ' + shells.length + ' in all'"
-          @click="shellsOpen = !shellsOpen"><Icon name="terminal"/>{{ shells.filter((x) => !x.done).length || shells.length }}</button>
-        <button v-if="liveCrew.length" type=button class="agent-fact agent-skills" :aria-expanded="crewOpen ? 'true' : 'false'"
-          :title="liveCrew.length + ' subagent(s)'" @click="crewOpen = !crewOpen">
-          <Icon name="agents"/>{{ liveCrew.length }}</button>
         <!-- THE TWO THINGS YOU WANT OF THIS CONVERSATION. Search and Files are pages of the
              environment; neither can be asked about the thread in front of you, which is what these
              two do — and they live on the bar because that is what sits over the thread. -->
