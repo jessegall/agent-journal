@@ -12,8 +12,14 @@ const props = defineProps({
     up: Function,
     down: Function,
 });
+const emit = defineEmits(["unquote"]);
 const draft = reactive({text: "", files: [], sending: false, error: ""});
 const area = ref(null);
+
+watch(
+    () => props.quote,
+    (text) => text && area.value && area.value.focus()
+);
 
 watch(
     () => props.preset,
@@ -70,6 +76,7 @@ async function go() {
             <div class="compose-quote">
                 <span class="compose-quote-label">{{ quoteLabel }}</span>
                 <div class="compose-quote-text">{{ quote }}</div>
+                <button type="button" class="compose-quote-x" title="Not a reply after all" @click="emit('unquote')">×</button>
             </div>
         </template>
         <div class="compose-box floating">
@@ -118,6 +125,7 @@ async function go() {
 }
 
 .compose-quote {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 3px;
@@ -132,6 +140,23 @@ async function go() {
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--text-3);
+}
+
+.compose-quote-x {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.compose-quote-x:hover {
+    color: var(--text);
 }
 
 .compose-quote-text {
