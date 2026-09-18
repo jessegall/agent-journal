@@ -5,7 +5,6 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
 import {reload, rows} from "../store.js";
-import Comments from "./Comments.vue";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -95,7 +94,6 @@ async function run(action, body = {}) {
                 </li>
             </template>
         </ol>
-        <Comments :resource="resource" />
     </article>
 </template>
 

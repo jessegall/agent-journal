@@ -13,7 +13,9 @@ const quote = ref("");
     <div class="document">
         <div class="document-body">
             <Highlight @quote="quote = $event">
-                <ResourceBody :resource="resource" :comments="false" @close="emit('close')" />
+                <slot>
+                    <ResourceBody :resource="resource" :comments="false" @close="emit('close')" />
+                </slot>
             </Highlight>
         </div>
         <aside class="document-aside">
