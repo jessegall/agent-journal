@@ -16,3 +16,10 @@ class Codex(Provider):
     def wiring(self, command: str) -> dict:
         return {"hooks": {event: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}]
                           for event in EVENTS}}
+
+    def turn(self, row: dict) -> tuple[str, str] | None:
+        payload = row.get("payload") or {}
+        if row.get("type") != "event_msg" or payload.get("type") not in ("user_message", "agent_message"):
+            return None
+        text = str(payload.get("message") or "")
+        return ("user" if payload["type"] == "user_message" else "agent", text) if text.strip() else None

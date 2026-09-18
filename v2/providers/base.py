@@ -8,6 +8,7 @@ from pathlib import Path
 from v2.controllers.types import CONTROLLERS
 from v2.engine.actors import IDLE, STOPPED, WORKING
 from v2.engine.record import Record
+from v2.engine.transcript import Turn
 from v2.resources.base import SYSTEM
 
 STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
@@ -46,7 +47,16 @@ class Provider(ABC):
                       context=row.data.get("context") or 0 if context is None else context)
         if event == "PreToolUse" and self.writes(payload):
             return self.refusal(self.gate(root, env, row.title))
+        if event == "SessionStart":
+            return self.handover(self.start(root, env))
         return {}
+
+    def start(self, root: Path, env: str) -> str:
+        f = root / "runtime" / f"start-{env}.md"
+        return f.read_text() if f.is_file() else ""
+
+    def handover(self, text: str) -> dict:
+        return {"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": text}} if text else {}
 
     def gate(self, root: Path, env: str, session: str) -> str:
         try:
@@ -65,6 +75,24 @@ class Provider(ABC):
         return {"decision": "block", "reason": why} if why else {}
 
     def context(self, payload: dict) -> float | None:
+        return None
+
+    def transcript(self, path: Path) -> list:
+        turns = []
+        try:
+            raw = Path(path).read_text().splitlines()
+        except OSError:
+            return turns
+        for i, line in enumerate(raw, 1):
+            try:
+                turn = self.turn(json.loads(line))
+            except ValueError:
+                continue
+            if turn:
+                turns.append(Turn(i, *turn))
+        return turns
+
+    def turn(self, row: dict) -> tuple[str, str] | None:
         return None
 
     @abstractmethod

@@ -60,3 +60,16 @@ class Sessions:
 
     def granted(self, session: str, env: str) -> bool:
         return env in self.read(session).get("grants", [])
+
+
+REFUSED_TO_SUBAGENTS = {"environment", "rule", "doc", "tool", "pin", "reminder", "style", "connection"}
+
+
+def allowed(sessions: Sessions, session: str, env: str, actor_id: str, type_: str) -> str:
+    if not actor_id:
+        return ""
+    if not sessions.granted(session, env):
+        return f"environment {env!r} is not lent to this session's subagents: journal environment <n> grant first"
+    if type_ in REFUSED_TO_SUBAGENTS:
+        return f"a subagent never writes a {type_}: report it, and the main conversation files it"
+    return ""
