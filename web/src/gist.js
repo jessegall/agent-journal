@@ -1,5 +1,30 @@
 const CAP = 60;
-const NOISE = new Set(["cd", "echo", "sleep", "true", "false", "set", "export", "clear", "printf", "do", "done", "then", "fi", "else"]);
+const NOISE = new Set([
+    "cd",
+    "echo",
+    "sleep",
+    "true",
+    "false",
+    "set",
+    "export",
+    "clear",
+    "printf",
+    "done",
+    "fi",
+    "for",
+    "while",
+    "until",
+    "if",
+    "elif",
+    "case",
+    "esac",
+    "read",
+    "shift",
+    "wait",
+    "exit",
+]);
+const LEAD = new Set(["do", "then", "else"]);
+const RUNNERS = new Set(["node", "python", "python3", "perl", "ruby", "php", "bash", "sh", "zsh", "osascript"]);
 const FILTERS = new Set(["tail", "head", "grep", "wc", "sort", "cut", "sed", "awk", "tr", "xargs", "cat", "tee", "uniq"]);
 const SUBVERBS = new Set([
     "git",
@@ -66,7 +91,7 @@ function words(piece) {
 
 function verbOf(piece) {
     let w = words(piece.replace(/^[({\s;&]+|[)}\s;&]+$/g, ""));
-    while (w.length > 1 && (/^[A-Z_][A-Z0-9_]*=/.test(w[0]) || WRAPPERS.has(w[0]))) {
+    while (w.length > 1 && (/^[A-Z_][A-Z0-9_]*=/.test(w[0]) || WRAPPERS.has(w[0]) || LEAD.has(w[0]))) {
         w =
             w[0] === "perl"
                 ? w.slice(
@@ -86,8 +111,10 @@ function pieceGist(piece) {
     const verb = w[0].split("/").pop();
     if (w.some((x) => x.startsWith("<<"))) return `${verb} script`;
     const rest = SUBVERBS.has(verb) && w[1] && !w[1].startsWith("-") ? `${verb} ${w[1]}` : verb;
-    const args = w.slice(rest.split(" ").length).filter((x) => !/^(-|["'$]|\d*[<>]|&|\/dev\/)/.test(x));
-    const shown = args.length ? `${rest} ${args[0].split("/").pop()}` : rest;
+    const given = w.slice(rest.split(" ").length);
+    const args = given.filter((x) => !/^(-|["'$]|\d*[<>]|&|\/dev\/)/.test(x));
+    const scripted = RUNNERS.has(verb) && given.some((x) => /^["']/.test(x));
+    const shown = args.length ? `${rest} ${args[0].split("/").pop()}` : scripted ? `${rest} script` : rest;
     return shown.length > CAP ? `${shown.slice(0, CAP - 1).trimEnd()}…` : shown;
 }
 
