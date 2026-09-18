@@ -4,6 +4,7 @@ from controllers.base import Controller
 from engine.record import Record
 from engine.sessions import Sessions
 from resources import types
+from resources.shapes import LEVELS
 from resources.base import AGENT, Refused, check_title
 
 
@@ -50,6 +51,15 @@ class Messages(Controller):
 
 class Todos(Controller):
     resource = types.Todo
+
+    def priority(self, n: int, value: str):
+        level = str(value).lower()
+        if level not in LEVELS and not level.lstrip("-").isdigit():
+            raise Refused(f"a priority is a number or one of {', '.join(LEVELS)}")
+        return self.update(n, priority=LEVELS.get(level, int(level) if level.lstrip("-").isdigit() else 0))
+
+    def all(self, deleted: bool = False) -> list:
+        return sorted(super().all(deleted), key=lambda t: (-int(t.data.get("priority") or LEVELS["default"]), t.n))
 
 
 class Works(Controller):

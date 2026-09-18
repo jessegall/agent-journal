@@ -1,5 +1,5 @@
 from resources.base import AGENT, DOCUMENT, PROJECT, USER, WIDE, Resource
-from resources.shapes import TEXT, Options, Reasoned, Shape
+from resources.shapes import TEXT, Options, Ranked, Reasoned, Shape
 
 
 class Message(Shape, Resource):
@@ -12,7 +12,7 @@ class Message(Shape, Resource):
     view = WIDE
 
 
-class Todo(Shape, Resource):
+class Todo(Ranked, Resource):
     type = "todo"
     handed = "TO-DOS waiting — delayed work, not an instruction to start any of it"
     counted = True

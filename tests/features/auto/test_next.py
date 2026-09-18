@@ -7,7 +7,7 @@ from controllers.types import CONTROLLERS  # noqa: E402
 from features.auto.next import next, ready  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.features.kit import idle, nudges  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+from tests.kit import check, done, fresh, refused  # noqa: E402
 
 features.unload()
 features.load()
@@ -17,8 +17,14 @@ record = fresh()
 todos = CONTROLLERS["todo"](record, actor=USER)
 a, b, c, d, e = (todos.create(t) for t in ("a", "b", "c", "d", "e"))
 check("nothing set: the first row by number", next(record).n, a.n)
-todos.set(c.n, "priority", 200)
+todos.priority(c.n, "critical")
 check("a higher priority comes first", [t.n for t in ready(record)], [c.n, a.n, b.n, d.n, e.n])
+todos.priority(e.n, "high")
+todos.priority(b.n, "low")
+check("the list itself is ordered by priority, then number", [t.n for t in todos.all()], [c.n, e.n, a.n, d.n, b.n])
+check("a priority is a level name or a number, nothing else", refused(lambda: todos.priority(a.n, "urgent")), "a priority is a number or one of low, default, high, critical")
+todos.priority(e.n, "default")
+todos.priority(b.n, "100")
 todos.set(c.n, "blocked", "the release is not cut")
 check("a blocked row is skipped", next(record).n, a.n)
 todos.link(a.n, b.ref)

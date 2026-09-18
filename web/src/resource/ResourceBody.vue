@@ -8,6 +8,7 @@ import {age, label, meta, word} from "../store.js";
 import ResourceActions from "./ResourceActions.vue";
 import Sections from "./Sections.vue";
 import OptionsPicker from "./OptionsPicker.vue";
+import Priority from "./Priority.vue";
 import Comments from "./Comments.vue";
 import Links from "./Links.vue";
 
@@ -15,6 +16,7 @@ const props = defineProps({resource: Object, comments: {type: Boolean, default: 
 const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
+const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
 </script>
 
 <template>
@@ -33,7 +35,12 @@ const files = computed(() => Object.entries(props.resource.data.files || {}));
         <template v-if="resource.abstract">
             <p class="abstract">{{ resource.abstract }}</p>
         </template>
-        <ResourceActions :resource="resource" />
+        <div class="controls">
+            <ResourceActions :resource="resource" />
+            <template v-if="ranked">
+                <Priority :resource="resource" />
+            </template>
+        </div>
         <template v-if="kind.fields.options">
             <OptionsPicker :resource="resource" />
         </template>
@@ -159,5 +166,11 @@ const files = computed(() => Object.entries(props.resource.data.files || {}));
     margin-top: 18px;
     color: var(--text-3);
     font-size: 11.5px;
+}
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
 }
 </style>

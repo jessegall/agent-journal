@@ -2,6 +2,7 @@
 import {computed} from "vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
+import PriorityIcon from "../kit/PriorityIcon.vue";
 import {peek, route} from "../route.js";
 import {open, rows} from "../store.js";
 
@@ -37,6 +38,7 @@ const groups = computed(() => {
             <template v-for="t in g.rows" :key="t.n">
                 <button type="button" :class="['rail-row', {sel: route.page === 'todo' && route.n === t.n}]" @click="peek('todo', t.n)">
                     <Dot :kind="g.key" />
+                    <PriorityIcon :value="Number(t.data.priority ?? 100)" />
                     <span class="rail-row-n">#{{ t.n }}</span>
                     <span class="rail-row-title">{{ t.title }}</span>
                 </button>

@@ -25,7 +25,7 @@ watch(
         for (const c of ring) {
             if (c.at <= seen.at) continue;
             seen.at = c.at;
-            if (!first) gists(c.what).forEach((text, i) => pending.push({key: `${c.at}-${i}`, text, what: c.what}));
+            if (!first) gists(c.what).forEach((text) => pending.push({key: text, text, what: c.what}));
         }
         if (first && !seen.at) seen.at = 1;
         if (pending.length && !rolls) roll();
@@ -49,7 +49,7 @@ const line = computed(() => {
     const parts = gists(run.what);
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
-    return {key: `run-${run.at}`, text: parts[parts.length - 1], what: run.what, clock: clock(secs), done: !!run.done};
+    return {key: parts[parts.length - 1], text: parts[parts.length - 1], what: run.what, clock: clock(secs), done: !!run.done};
 });
 </script>
 
