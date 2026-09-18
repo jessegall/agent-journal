@@ -4047,6 +4047,12 @@ def _report(event: str, payload: dict, ctx: Ctx) -> None:
     tool = payload.get("tool_name")
     if tool:
         line["tool"] = tool
+    # WHICH SEAT THIS SESSION SITS IN. The launcher puts its pid in the agent's environment and the
+    # hook inherits it, so a launcher reads its own session's reports and never another's — two
+    # launchers on one journal used to stamp and judge each other's sessions.
+    seat = os.environ.get("JOURNAL_SEAT")
+    if seat:
+        line["seat"] = seat
     try:
         f = events_file(ctx.stem)
         f.parent.mkdir(parents=True, exist_ok=True)

@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.169.0 — The launcher reloads its own code; one launcher reads only its own session
+
+**No more restarts for a launcher fix.** Every five seconds the launcher looks whether launch.py,
+news.py or hook.py changed on disk; when one did, it reloads them and a fresh nudger takes over with
+what the old one knew. Measured live: a touched news.py under a running Claude logs "reloaded the
+launcher's code" in the seat record.
+
+**Two launchers on one journal no longer read each other's sessions.** The launcher puts its pid in
+the agent's environment (`JOURNAL_SEAT`), the hooks report it, and a launcher reads only reports
+naming its own seat — before this, a second launcher (a test, a second terminal) stamped and judged
+the first one's session.
+
 ## 1.168.0 — A message is typed until the agent processes it
 
 The launcher's rule for messages is the user's (message 199): an unprocessed message is typed into
