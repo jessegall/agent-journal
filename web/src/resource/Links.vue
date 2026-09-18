@@ -94,8 +94,8 @@ h3 {
 }
 
 .bar-title {
-    flex: none;
-    max-width: 50%;
+    flex: 0 1 auto;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -103,7 +103,7 @@ h3 {
 }
 
 .bar-excerpt {
-    flex: 1;
+    flex: 1 1 30%;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
