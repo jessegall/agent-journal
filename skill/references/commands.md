@@ -199,7 +199,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal notify "<what finished>" [--about=<ref>]   a notification on the user's Home; only what they want to hear about
     journal notice "<line>" [--tone=note|good|warn] [--link=<url> --label=<text>]   one line kept over the chat until the user's X; `notices` lists, `notices close <n>` retires
     journal react <message> "<face>"   a face on a turn (👍 ❤️ 🎉 😄 👀 🙏 👎 💔 😠); the same face again removes it
-    journal browser <op> [target] [--text=]   ask the tab the user put at the wheel: shot, text, dom, url, console, click, type, goto, eval, scroll — answered as a message from browser (the `journal-messages` skill)
+    journal browser <op> [target] [--text=]   ask the tab the user put at the wheel: shot, text, dom, url, console, click, type, goto, eval, scroll — the command waits and prints the answer, a picture saved to a path (the `journal-messages` skill)
     journal notifications [--all]    the unread ones; `notifications read <n>` marks one read
     journal reports [--all]          what the user asked to have checked or researched, for the user to read
     journal reports add "<title>" [--about="todo 22"] --brief   file one; never a doc, never handed to a session

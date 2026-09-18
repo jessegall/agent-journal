@@ -50,17 +50,49 @@ class List(Resource):
                          PAGE["commands"], noun="browser", page=p.option("page"), order=p.option("order"))
 
 
+def _print_answer(x: dict) -> int:
+    """The page's answer, as this command's own output — the way a tool's result is, not a message."""
+    import browser
+    args = f" {' '.join(x.get('args') or [])}" if x.get("args") else ""
+    fmt.say(browser.say("result_text" if x.get("ok") else "result_failed", op=x.get("op", ""), args=args,
+                        text=x.get("text") or "(nothing)"), error=not x.get("ok"))
+    if x.get("files"):
+        fmt.say(browser.say("result_files", paths=x["files"]))
+    return 0 if x.get("ok") else 1
+
+
 class Ask(Resource):
     signature = ('browser:ask {op : shot, text, dom, url, console, click, type, goto, eval or scroll} '
-                 '{target*? : a selector, a url or javascript} {--text= : the words to type}')
+                 '{target*? : a selector, a url or javascript} {--text= : the words to type} '
+                 '{--wait= : seconds to wait for the answer, 45 by default; 0 returns at once}')
     writes = True
     controller = CONTROLLER
     action = "store"
 
+    def render(self, p: Parsed, result) -> int:
+        if not result.ok:
+            return super().render(p, result)
+        # THE ASK WAITS FOR ITS ANSWER. The extension polls the journal, runs it on the tab, and posts
+        # the result within a second or two; this command sits on it and prints it, so the agent
+        # reads a page the way it reads a file — and nothing about it goes through the chat.
+        import re
+        import browser
+        from app import root
+        m = re.search(r"\(browser (\d+)\)", result.message or "")
+        n = int(m.group(1)) if m else 0
+        seconds = float(p.option("wait") or 45)
+        import state
+        got = browser.wait(root(), n, track=state.current_track(root()), seconds=seconds) if n and seconds > 0 else None
+        if got is None:
+            fmt.say(result.message if seconds <= 0 else browser.say("no_answer", n=n, seconds=int(seconds)), error=seconds > 0)
+            return 0 if seconds <= 0 else 1
+        return _print_answer(got)
+
 
 class Browser(Ask):
     signature = ('browser {op : shot, text, dom, url, console, click, type, goto, eval or scroll} '
-                 '{target*? : a selector, a url or javascript} {--text= : the words to type}')
+                 '{target*? : a selector, a url or javascript} {--text= : the words to type} '
+                 '{--wait= : seconds to wait for the answer, 45 by default; 0 returns at once}')
 
 
 class Show(Resource):
@@ -68,6 +100,14 @@ class Show(Resource):
     casts = ASK
     controller = CONTROLLER
     action = "show"
+
+    def render(self, p: Parsed, result) -> int:
+        if not result.ok:
+            return super().render(p, result)
+        if not result.data.get("done"):
+            fmt.say(f"browser ask {result.data['n']} is still waiting for the page")
+            return 0
+        return _print_answer(result.data)
 
 
 COMMANDS = (List, Ask, Browser, Show)

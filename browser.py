@@ -23,8 +23,11 @@ MESSAGES = {
     "no_ask": "there is no browser ask {n}",
     "done_twice": "browser ask {n} was already answered",
     "answered": "browser ask {n} answered",
-    "result_text": "The page answered browser {n} ({op}{args}):\n{text}",
-    "result_failed": "The page could not do browser {n} ({op}{args}): {text}",
+    "result_text": "the page ({op}{args}):\n{text}",
+    "result_failed": "the page could not ({op}{args}): {text}",
+    "result_files": "saved: {paths:, }",
+    "no_answer": "the page has not answered browser {n} in {seconds}s — the extension may be off that tab; "
+                 "`journal browser show {n}` reads it once it has",
     "fact_open": "waiting for the page",
     "fact_done": "answered[ {age}]",
     "fact_failed": "failed[ {age}]",
@@ -102,9 +105,39 @@ def finish(root: Path, n: int, ok: bool, text: str, at: str, track: str | None =
         items[n - 1].update({"done_at": at, "ok": bool(ok), "text": text[:20000]})
         _put(root, items, track)
         x = items[n - 1]
-    said = say("result_text" if ok else "result_failed", n=n, op=x["op"], args=_argline(x), text=text or "(nothing)")
-    inbox.add(root, said, at, source="browser", track=track, files=files or None)
+    # THE ANSWER IS THE ASK'S, NOT A MESSAGE. The agent's command waits for it and prints it; a
+    # picture is written where the agent can open it, and its path is printed. Nothing reaches the
+    # chat, the inbox or the channel: it is a tool's result, not a thing the user said.
+    got, why = inbox._read_files(files)
+    paths = []
+    if got:
+        folder = files_dir(root, track, n)
+        folder.mkdir(parents=True, exist_ok=True)
+        for name, data in got:
+            (folder / name).write_bytes(data)
+            paths.append(str(folder / name))
+    if paths:
+        with state.locked(root):
+            items = _all(root, track)
+            items[n - 1]["files"] = paths
+            _put(root, items, track)
     return True, say("answered", n=n)
+
+
+def files_dir(root: Path, track: str | None, n: int) -> Path:
+    return root / "environments" / (track or "default") / "browser-files" / str(n)
+
+
+def wait(root: Path, n: int, track: str | None = None, seconds: float = 45.0) -> dict | None:
+    """The ask once it is answered, or None when the extension has not answered in `seconds`."""
+    import time
+    deadline = time.time() + seconds
+    while time.time() < deadline:
+        items = _all(root, track)
+        if 1 <= n <= len(items) and items[n - 1].get("done_at"):
+            return items[n - 1]
+        time.sleep(0.25)
+    return None
 
 
 def facts(x: dict) -> list[str]:
@@ -115,5 +148,5 @@ def facts(x: dict) -> list[str]:
 
 def row_response(n: int, x: dict) -> dict:
     return {"n": n, "op": x.get("op") or "", "args": x.get("args") or [], "at": x.get("at") or "",
-            "done": bool(x.get("done_at")), "ok": x.get("ok"), "text": x.get("text") or "",
+            "done": bool(x.get("done_at")), "ok": x.get("ok"), "text": x.get("text") or "", "files": x.get("files") or [],
             "meta": " · ".join(facts(x))}

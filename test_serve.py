@@ -1305,15 +1305,17 @@ status, got = post("/api/env/delta/browser/pending", {})
 _pend = got.get("data") or []
 check("pending lists it for the extension, oldest first", [(x["op"], x["args"]) for x in _pend], [("click", ["button.save"])])
 _msgs_before = len(inbox._all(root, "delta"))
-status, got = post(f"/api/env/delta/browser/{_pend[0]['n']}/result", {"ok": True, "text": "clicked button \"Save\""})
-_last = inbox._all(root, "delta")[-1]
-check("the answer lands as a message from browser, and the ask is done",
-      (status, len(inbox._all(root, "delta")) - _msgs_before, _last["source"], "clicked button" in _last["text"], post("/api/env/delta/browser/pending", {})[1].get("data")),
-      (200, 1, "browser", True, []))
+import base64 as _b64  # noqa: E402
+status, got = post(f"/api/env/delta/browser/{_pend[0]['n']}/result",
+                   {"ok": True, "text": "clicked button \"Save\"", "files": [{"name": "page.png", "data": _b64.b64encode(b"PNGBYTES").decode()}]})
+_ask = json.loads(get(f"/api/env/delta/browser/{_pend[0]['n']}")[2])
+check("the answer is kept on the ask, its picture saved to a path, and no message is sent",
+      (status, _ask["done"], _ask["ok"], _ask["text"], [Path(f).name for f in _ask["files"]], Path(_ask["files"][0]).read_bytes(),
+       len(inbox._all(root, "delta")) - _msgs_before, post("/api/env/delta/browser/pending", {})[1].get("data")),
+      (200, True, True, 'clicked button "Save"', ["page.png"], b"PNGBYTES", 0, []))
 check("answering twice is refused", post(f"/api/env/delta/browser/{_pend[0]['n']}/result", {"ok": True, "text": "again"})[0], 400)
-# the answer is the agent's to read: it is in the record and off the chat thread
-_chat_turns = json.loads(get("/api/env/delta/chat")[2]).get("turns") or []
-check("the page's answer does not show in the chat", any("clicked button" in (t.get("text") or "") for t in _chat_turns), False)
+check("the ask's command waits for the answer and gets it", _browser.wait(root, _pend[0]["n"], track="delta", seconds=1)["text"], 'clicked button "Save"')
+check("and gives up quietly on one nobody answers", _browser.wait(root, 999, track="delta", seconds=0.3), None)
 srv.shutdown()
 srv.server_close()
 thread.join(timeout=5)
