@@ -1,7 +1,8 @@
 from v2.resources.base import AGENT, DOCUMENT, WIDE, Resource
+from v2.resources.shapes import Options, Reasoned, Shape
 
 
-class Message(Resource):
+class Message(Shape, Resource):
     type = "message"
     names = {"complete": "processed"}
     title_ = "Message"
@@ -10,7 +11,7 @@ class Message(Resource):
     view = WIDE
 
 
-class Todo(Resource):
+class Todo(Shape, Resource):
     type = "todo"
     names = {"complete": "done", "create": "add"}
     title_ = "To-do"
@@ -18,7 +19,7 @@ class Todo(Resource):
     help_ = "A to-do waits on the list until it is started as work and closed; auto mode works the list in order."
 
 
-class Work(Resource):
+class Work(Shape, Resource):
     type = "work"
     names = {"complete": "end", "create": "start"}
     title_ = "Work"
@@ -27,7 +28,7 @@ class Work(Resource):
     nav = False
 
 
-class Plan(Resource):
+class Plan(Shape, Resource):
     type = "plan"
     names = {"complete": "acknowledge", "place": "todos", "resume": "continue"}
     title_ = "Plan"
@@ -36,7 +37,7 @@ class Plan(Resource):
     view = DOCUMENT
 
 
-class Doc(Resource):
+class Doc(Shape, Resource):
     type = "doc"
     title_ = "Document"
     abstract_ = "What stays true about the project, catalogued for every session"
@@ -44,7 +45,7 @@ class Doc(Resource):
     view = DOCUMENT
 
 
-class Report(Resource):
+class Report(Shape, Resource):
     type = "report"
     names = {"complete": "archive"}
     title_ = "Report"
@@ -53,7 +54,7 @@ class Report(Resource):
     view = DOCUMENT
 
 
-class Pin(Resource):
+class Pin(Reasoned, Resource):
     type = "pin"
     names = {"complete": "strike"}
     title_ = "Pin"
@@ -61,7 +62,7 @@ class Pin(Resource):
     help_ = "A pin is handed to every session on its environment; it is struck when it stops being true."
 
 
-class Rule(Resource):
+class Rule(Reasoned, Resource):
     type = "rule"
     names = {"complete": "strike"}
     title_ = "Rule"
@@ -69,7 +70,7 @@ class Rule(Resource):
     help_ = "A rule is decided by the user, cited where it applies, and struck only by them."
 
 
-class Reminder(Resource):
+class Reminder(Shape, Resource):
     type = "reminder"
     names = {"complete": "retire"}
     title_ = "Reminder"
@@ -77,7 +78,7 @@ class Reminder(Resource):
     help_ = "A reminder repeats at every start and every so often mid-work, because knowing is not doing."
 
 
-class Question(Resource):
+class Question(Options, Resource):
     type = "question"
     names = {"complete": "answer", "create": "ask"}
     title_ = "Question"
@@ -85,7 +86,7 @@ class Question(Resource):
     help_ = "A question waits for the user; its answer reaches the agent as an event."
 
 
-class Comment(Resource):
+class Comment(Shape, Resource):
     type = "comment"
     title_ = "Comment"
     abstract_ = "What the user or the agent said about another resource"
@@ -93,7 +94,7 @@ class Comment(Resource):
     nav = False
 
 
-class AgentRow(Resource):
+class AgentRow(Shape, Resource):
     type = "agent"
     title_ = "Agent"
     abstract_ = "A session of Claude or Codex, and what it is doing right now"
@@ -102,7 +103,7 @@ class AgentRow(Resource):
     notify = ()
 
 
-class Nudge(Resource):
+class Nudge(Shape, Resource):
     type = "nudge"
     title_ = "Nudge"
     abstract_ = "A line a feature has the engine type to the agent"
