@@ -888,6 +888,9 @@
   /* THE WINDOW'S BAR, drawn by the page the extension frames: dragged by its empty stretch, two
      switches in the name, fold and close at the right. Its look is the journal's, and so is every change to it. */
   .app.chat-only:has(.shell-bar) { flex-direction: column; }
+  /* a column's child does not shrink below its content unless told, and a thread that cannot
+     shrink cannot scroll: it just runs past the bottom of the window */
+  .app.chat-only:has(.shell-bar) > .main { min-height: 0; }
   .shell-bar { flex: none; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 6px 0 10px; cursor: grab;
     border-bottom: 1px solid var(--border); background: var(--raised); user-select: none; }
   .shell-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
