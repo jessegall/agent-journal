@@ -226,23 +226,22 @@
   .statusbar-text b { flex: none; font-weight: 500; font-size: 13.5px; margin-right: 8px; }
   /* the work does not give way to the command: both are held at their own width, and only a narrow
      bar (the media query below) lets the sentence shrink */
-  .statusbar-text .statusbar-roll { flex: 0 0 auto; min-width: 0; position: relative; display: flex;
+  .statusbar-text .statusbar-roll { flex: 0 1 auto; min-width: 0; position: relative; display: flex;
     align-items: baseline; font-size: 13px; color: var(--text-2);
     text-decoration: underline; text-decoration-color: #3a3d44; text-underline-offset: 3px; }
   .statusbar-text .statusbar-head { flex: none; white-space: pre; }
   /* THE WORK DOES NOT MOVE WHEN A COMMAND APPEARS. It used to shrink by the width of the command
      arriving beside it, which reads as the sentence twitching every time a command starts; it keeps
      its own width and only a very long one is cut. */
-  .statusbar-text .statusbar-line { flex: 0 0 auto; min-width: 0; max-width: 62ch;
+  /* THE WORK TAKES THE ROOM UP TO THE COMMAND. It is cut only when the bar is too narrow for both. */
+  .statusbar-text .statusbar-line { flex: 0 1 auto; min-width: 0;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  /* the command: right after the work, small and quiet, and it rolls when one follows another */
-  .statusbar-text .statusbar-running { flex: none; display: inline-flex; align-items: center;
+  /* the command: at the right, against the divider, small and quiet; the clock stands to its left */
+  .statusbar-text .statusbar-running { flex: none; margin-left: auto; padding-left: 14px; display: inline-flex; align-items: center;
     position: relative; font-size: 10px; color: var(--text-4, #6b6e76); text-decoration: none; }
-  .statusbar-text .statusbar-running-dot { margin-right: 4px; opacity: .5; }
-  .statusbar-text .statusbar-run-line { display: inline-flex; align-items: center; max-width: 40ch;
-    margin-left: 7px; }
+  .statusbar-text .statusbar-run-line { display: inline-flex; align-items: center; max-width: 40ch; }
   .statusbar-text .statusbar-run-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .statusbar-text .statusbar-running-for { flex: 0 0 auto; margin-left: 5px; font-size: 9.5px;
+  .statusbar-text .statusbar-running-for { flex: 0 0 auto; margin-right: 6px; font-size: 9.5px;
     font-variant-numeric: tabular-nums; opacity: .8; }
   .roll-enter-active { transition: opacity 180ms ease, transform 180ms cubic-bezier(.22,.7,.3,1); }
   .roll-leave-active { transition: opacity 140ms ease, transform 140ms cubic-bezier(.22,.7,.3,1); }

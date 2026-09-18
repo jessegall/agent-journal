@@ -839,9 +839,8 @@ const StatusBar = {
           <Transition name=roll><span v-if="running" :key="running.gist" class=statusbar-run-line>
             <!-- a middot rather than a mark: it is a continuation of the sentence before it, not a
                  second fact standing beside it -->
-            <span class=statusbar-running-dot>·</span>
-            <span class=statusbar-run-text>{{ running.gist }}</span>
-            <span v-if="running.forText" class=statusbar-running-for>{{ running.forText }}</span></span></Transition></span>
+            <span v-if="running.forText" class=statusbar-running-for>{{ running.forText }}</span>
+            <span class=statusbar-run-text>{{ running.gist }}</span></span></Transition></span>
       </button>
       <span class=statusbar-tools>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
