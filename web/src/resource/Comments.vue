@@ -10,15 +10,8 @@ const emit = defineEmits(["sent"]);
 const thread = computed(() =>
     rows("comment")
         .filter((c) => c.refs.includes(props.resource.ref) && !c.deleted)
-        .map(split)
+        .map((c) => ({...c, ...quoted(c.brief)}))
 );
-
-function split(c) {
-    const lines = c.brief.split("\n");
-    const quoted = [];
-    while (lines.length && lines[0].startsWith(">")) quoted.push(lines.shift().replace(/^> ?/, ""));
-    return {...c, quoted: quoted.join("\n"), text: lines.join("\n").trim()};
-}
 
 async function send(text) {
     await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: withQuote(props.quote, text)});
@@ -93,6 +86,10 @@ h3 {
 }
 
 .quoted {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
     margin: 2px 0 6px;
     padding: 2px 0 2px 9px;
     border-left: 2px solid var(--accent);
