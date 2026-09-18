@@ -9,7 +9,7 @@ import PlanBar from "../chat/PlanBar.vue";
 import HomeTabs from "./HomeTabs.vue";
 
 const tab = ref("waiting");
-const quiet = ["message", "comment", "reaction", "notification", "nudge", "work", "environment", "todo"];
+const quiet = ["message", "comment", "reaction", "notification", "nudge", "work", "environment", "todo", "notice"];
 const waiting = computed(() => types.value.filter((t) => t.notify.includes("user") && !quiet.includes(t.name)).flatMap((t) => unseenByUser(t.name)));
 const todos = computed(() => open("todo"));
 const notifications = computed(() => [...rows("notification")].reverse());
@@ -41,7 +41,7 @@ const tabs = computed(() => [["waiting", "Waiting on you", waiting.value.length]
 .home { display: flex; height: 100%; }
 .left { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .right { flex: none; width: 300px; overflow: auto; border-left: 1px solid var(--border); }
-.tabs { display: flex; gap: 14px; padding: 0 14px; border-bottom: 1px solid var(--border); }
+.tabs { display: flex; gap: 14px; padding: 0 14px; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: auto; }
 .tab { padding: 12px 0; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--text-3); cursor: pointer; }
 .tab.on { color: var(--text); border-bottom-color: var(--accent); }
 .tab b { margin-left: 6px; color: var(--accent-text); font-weight: 500; }
