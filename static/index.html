@@ -657,7 +657,7 @@
     padding: 34px 18px 0; text-align: center; color: var(--text-3); }
   .home-rail-empty p { margin: 0; font-size: 11.5px; }
   .home-rail-empty .ico { width: 20px; height: 20px; opacity: .5; }
-  .home-thread { flex: 1 1 auto; min-width: 0; min-height: 0; max-width: 1080px; display: flex; flex-direction: column; }
+  .home-thread { position: relative; flex: 1 1 auto; min-width: 0; min-height: 0; max-width: 1080px; display: flex; flex-direction: column; }
   /* a RANGE, not a number: with the Activity column hidden the page gains its whole width, and a
      fixed rail left all of it to the thread while its own cards stayed as cramped as before */
   /* NO GAP BETWEEN THE STRIP AND WHAT IT INTRODUCES. The column used to put 22px between everything
@@ -853,11 +853,13 @@
      always wants to see. The top padding is gone with the rule that used to sit above it. */
   /* the strip lines up with the bar above it, not with an indent of its own, and it keeps a rule on
      BOTH sides: the bar's own line above it stays, and its own closes it off underneath */
-  /* ONE RULE, NOT TWO. The bar's line and the strip's read as a two-pixel band with the thread
-     column's own 2px gap between them; the strip lifts by that gap plus one, so its line lands
-     exactly ON the bar's. */
-  .crew-strip { flex: none; margin-top: -3px; display: flex; flex-direction: column; align-items: flex-start;
-    gap: 2px; padding: 4px 9px 6px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  /* IT FLOATS OVER THE THREAD, not in the flow above it: opening it used to push every message down
+     by its own height, which moved what you were reading out from under your eyes. `.home-thread`
+     is its anchor; `top` is the agent bar's own height, so it starts exactly where the bar ends. */
+  .crew-strip { position: absolute; left: 0; right: 0; top: 33px; z-index: 40;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 4px 9px 6px;
+    background: var(--bg); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, .35); }
   /* A COLUMN, NOT A RUN-ON LINE: names and models differ in length, so each fact used to start
      wherever the last one ended and nothing lined up down the strip. */
   .crew-line { display: flex; align-items: center; gap: 9px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;

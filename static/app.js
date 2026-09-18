@@ -4929,9 +4929,9 @@ const EnvHome = {
           <button v-if="shells.length" type=button :class="['agent-fact', 'agent-skills', {none: !shells.filter((x) => !x.done).length}]"
             :aria-expanded="shellsOpen ? 'true' : 'false'"
             :title="shells.filter((x) => !x.done).length + ' background shell(s) still running, ' + shells.length + ' in all'"
-            @click="shellsOpen = !shellsOpen"><Icon name="terminal"/>{{ shells.filter((x) => !x.done).length || shells.length }}</button>
+            @click="shellsOpen = !shellsOpen; if (shellsOpen) crewOpen = false"><Icon name="terminal"/>{{ shells.filter((x) => !x.done).length || shells.length }}</button>
           <button v-if="liveCrew.length" type=button class="agent-fact agent-skills" :aria-expanded="crewOpen ? 'true' : 'false'"
-            :title="liveCrew.length + ' subagent(s)'" @click="crewOpen = !crewOpen">
+            :title="liveCrew.length + ' subagent(s)'" @click="crewOpen = !crewOpen; if (crewOpen) shellsOpen = false">
             <Icon name="agents"/>{{ liveCrew.length }}</button>
         </div>
         <BarDrop :open="skillsOpen" :where="skillsAt" :width="280">
