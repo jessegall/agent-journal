@@ -1,9 +1,11 @@
+import json
 from abc import ABC
 from typing import ClassVar
 
 from v2.controllers.types import CONTROLLERS
 from v2.engine import bus
 from v2.features import trigger
+from v2.providers.base import gate_file
 from v2.resources.base import SYSTEM
 
 REGISTRY: dict[str, type] = {}
@@ -11,7 +13,7 @@ REGISTRY: dict[str, type] = {}
 
 def on(pattern: str):
     def mark(fn):
-        fn.pattern = pattern
+        fn.patterns = (*getattr(fn, "patterns", ()), pattern)
         return fn
     return mark
 
@@ -30,8 +32,8 @@ class Feature(ABC):
             REGISTRY[cls.name] = cls
 
     def listeners(self) -> list[tuple[str, object]]:
-        return [(fn.pattern, getattr(self, attr)) for attr in dir(type(self))
-                for fn in [getattr(type(self), attr)] if callable(fn) and hasattr(fn, "pattern")]
+        return [(pattern, getattr(self, attr)) for attr in dir(type(self))
+                for fn in [getattr(type(self), attr)] if callable(fn) for pattern in getattr(fn, "patterns", ())]
 
     def register(self) -> None:
         for pattern, handler in self.listeners():
@@ -51,6 +53,20 @@ class Feature(ABC):
             return False
         trigger.fired(record, agent, self.name)
         return True
+
+    def hold(self, record, why: str) -> None:
+        for agent in CONTROLLERS["agent"](record, actor=SYSTEM).all():
+            f = gate_file(record.root, record.env, agent.title)
+            f.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                holds = json.loads(f.read_text())
+            except (OSError, ValueError):
+                holds = {}
+            holds[self.name] = why
+            f.write_text(json.dumps(holds))
+
+    def release(self, record) -> None:
+        self.hold(record, "")
 
     def nudge(self, record, agent, title: str, brief: str = "") -> None:
         CONTROLLERS["nudge"](record, actor=SYSTEM).create(title, brief=brief, session=agent.title)

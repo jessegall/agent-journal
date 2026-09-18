@@ -1,8 +1,5 @@
-import json
-
 from v2.controllers.types import CONTROLLERS
 from v2.features.base import Feature, on
-from v2.providers.base import gate_file
 from v2.resources.base import SYSTEM
 
 
@@ -12,21 +9,15 @@ class Gate(Feature):
     abstract_ = "A write is refused while no work is open; the flag the hook reads is set here"
     help_ = "Declare work before the first write; reads are never refused."
 
-    def flag(self, record, writes: str, why: str = "") -> None:
-        for agent in CONTROLLERS["agent"](record, actor=SYSTEM).all():
-            f = gate_file(record.root, record.env, agent.title)
-            f.parent.mkdir(parents=True, exist_ok=True)
-            f.write_text(json.dumps({"writes": writes, "why": why}))
-
     def open_work(self, record) -> bool:
         return any(not w.completed for w in CONTROLLERS["work"](record, actor=SYSTEM).all())
 
     @on("work")
     def on_work(self, event, record) -> None:
         if self.open_work(record):
-            self.flag(record, "allowed")
+            self.release(record)
         else:
-            self.flag(record, "refused", "nothing is open, so this write would not be filed: journal work start \"<the work>\" first")
+            self.hold(record, "nothing is open, so this write would not be filed: journal work start \"<the work>\" first")
 
     @on("agent.created")
     def on_agent(self, event, record) -> None:
