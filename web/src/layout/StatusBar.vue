@@ -8,10 +8,14 @@ import {go, route} from "../route.js";
 import {agent, autoOn, reload, rows} from "../store.js";
 
 const state = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data.status : "stopped"));
+const named = (w) => (w.data.todo ? `to-do ${w.data.todo} · ${w.title}` : w.title);
 const line = computed(() => {
     if (state.value === "stopped") return "no agent is on this environment";
-    const work = rows("work").find((w) => !w.completed);
-    return work ? `on ${work.title}` : state.value === "idle" ? "waiting for you" : "working";
+    const works = rows("work");
+    const open = works.find((w) => !w.completed);
+    if (open) return `on ${named(open)}`;
+    const last = works[works.length - 1];
+    return last ? `last on ${named(last)}` : state.value === "idle" ? "waiting for you" : "on nothing declared";
 });
 const was = ref("");
 const sentence = computed(() => {
