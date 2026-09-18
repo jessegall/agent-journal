@@ -9,10 +9,10 @@ Everything runs through one command, `journal`, and every command is a **noun an
 ## When the user asks for work
 
 1. **It is the current work**, a step of it, or a correction: carry on; `journal work section <n> "<what moved>" "<how far>"` when the direction changes.
-2. **It is different.** A to-do — the default: `journal todo add "<title>" --brief "<why, where to start>"`, say "parked as to-do n", and carry on. Its words: `journal todo ask <n> "<question>"` files a question on the row and the row waits; `todo answer <n> "<text>"` answers it; `todo block <n> "<why>"` / `todo unblock <n>`; `todo after <n> --waits <m>` says it waits on another row (`--off` undoes); `todo strike <n> "<why>"` abandons it on the record; `todo start <n>` opens work for it; `todo prune --days 30` drops long-closed rows. The list is ordered by priority, then number: `journal todo priority <n> low|default|high|critical` (or a number; 100 is default) when the user says something comes first.
+2. **It is different.** A to-do — the default: `journal todo add "<title>" --brief "<why, where to start>"`, say "parked as to-do n", and carry on. Its words: `journal todo ask <n> "<question>"` files a question on the row and the row waits; `todo answer <n> "<text>"` answers it; `todo block <n> "<why>"` / `todo unblock <n>`; `todo after <n> <m>` says it waits on row m (`--off` undoes); `todo strike <n> "<why>"` abandons it on the record; `todo start <n>` opens work for it; `todo prune --days 30` drops long-closed rows. The list is ordered by priority, then number: `journal todo priority <n> low|default|high|critical` (or a number; 100 is default) when the user says something comes first.
 3. **It is different and the user said NOW** — their word, not your judgement: update the open work with where it got to, then start the new one.
 
-With nothing open, the request is the work: read until you can name it, `journal work start "<the work>"`, go. **Declare before the first write**: a write with no work open is refused by the gate. Start work on a row with `--set todo=<n>`; end it with `journal work end <n> --how "<the same words>" --set todo=true` to close the row with it, without `--set todo=true` the row stays open. A commit closes a row when its message carries `Journal: todos done <n>` at column 0.
+With nothing open, the request is the work: read until you can name it, `journal work start "<the work>"`, go. **Declare before the first write**: a write with no work open is refused by the gate. `journal todo start <n>` opens work for a row; `journal work end <n> --how "<what landed>"` ends it, and the row is closed only by `journal todo done <n> --how "<how>"` — ending work is not finishing a row. `journal work update <n> --brief "<where it got to>"` records a turn in the work; `work section` a longer part. A commit closes a row when its message carries `Journal: todos done <n>` at column 0.
 
 **"I'll do it after this" is a to-do, every time.** The deferral feature names the sentence back to you if nothing was parked.
 
@@ -26,7 +26,7 @@ Would a later reader be WRONG without it? **a pin.** Will you stop DOING it thou
 
 ## Messages, questions, comments
 
-The user writes to you from the viewer. A message is processed part by part — `journal message process <n> "<their words>" "<what it became>"` — and closed with `journal message processed <n>`; reply under it with `journal message reply <n> "<text>"`. Ask through the journal, never by halting: `journal question ask "<one line>" --abstract "<context>" --set about=todo:<n>` with options as `--set options=…` JSON; the answer reaches you as an event. A comment the user left is handled and `journal comment done <n> --how "<what was done>"`.
+The user writes to you from the viewer. `journal message unread` lists what waits, `journal message read <n>` marks one seen. A message is processed part by part — `journal message process <n> "<their words>" "<what it became>"` — and closed with `journal message processed <n> --how "<what was done>"`; reply under it with `journal message reply <n> "<text>" [--file <path>]`, quoting the message's own words. `message waiting` lists the ones not yet processed; `message file <n> <name> --into "doc <d>"` files an attached file into a doc (`keep` keeps it); `message archive <n> "<why>"` puts one away; `message edit <n> "<text>"` rewords one that still waits. Ask through the journal, never by halting: `journal question ask "<one line>" --abstract "<context>" --set about=todo:<n>` with options as `--set options=…` JSON; the answer reaches you as an event. A comment the user left is handled and `journal comment done <n> --how "<what was done>"`.
 
 ## Plans, reports, docs
 
@@ -42,11 +42,15 @@ Phases, a roadmap, "first … then …" is a plan: `journal plan create "<name>"
 
 ## Environments and sessions
 
-A session works one environment; `journal environment switch <n>` takes a free one, `journal environment claim <n> "<why>"` a held one (the holder is told), `journal environment prepare "<name>"` makes one. Never switch on your own initiative. A subagent that must write is lent one: `journal environment grant <n>`, and it runs every command with `--env <name> --as agent`.
+A session works one environment; `journal environment switch <n>` takes a free one (`--project` also makes it the project's start environment, `--move <session>` moves another session, `--back` returns), `journal environment claim <n> "<why>"` a held one (the holder is told), `journal environment prepare "<name>"` makes one, `journal environment rename <n> "<name>"` renames it (the folder moves and every session on it follows), `journal environment remove <n> [--yes]` takes it away — its record goes to `.journal/attic/` and the name is free again; `--yes` when rows are still open. `journal environment pickup <n>` shows what waits on one before you take it. Never switch on your own initiative. A subagent that must write is lent one: `journal environment grant <n>`, and it runs every command with `--env <name> --agent <its-id>`.
 
 ## Look before you answer
 
 `journal search <term>`, `journal conversation --back 1` (the stretch the last summary replaced), `journal user` (the user's own words), `journal carry` (everything standing, in full), `journal status`.
+
+## Skills
+
+The start block names the skills to load before the first write — every `journal-*` skill until the user chooses otherwise on the viewer's Skills page, where each skill has a Load button (a message asking you to load it now) and an every-start switch. Load what the block names with the Skill tool, then work; the skills feature reminds you every 25 tool uses if no journal skill is in the window, because a compaction empties it.
 
 ## Features
 
