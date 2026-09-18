@@ -4539,7 +4539,7 @@ const Thread = {
 
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread, StatusIcon, NoteRow, BarDrop },
+  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread, StatusIcon, NoteRow, BarDrop, Switch },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
@@ -4686,23 +4686,25 @@ const EnvHome = {
       return (agent && agent.shells) || [];
     });
     const skillsAt = reactive({ x: 0, y: 0 });
-    const marking = ref(false);
-    // every journal skill at once: one gesture for the set the user means when they say "the skills"
-    const alwaysJournal = async () => {
-      if (marking.value) return;
-      marking.value = true;
+    // WHETHER THE CORE PAIR IS NAMED AT EVERY START. journal and journal-memory are the ones report
+    // 10 keeps named outright — the rest trigger on their own — so this reads and writes them
+    // together rather than offering a bulk "load everything" action that no longer matches the
+    // decision that was actually made.
+    const coreAlways = useFetch(() => "/api/skills/journal", { poll: false });
+    const coreAlwaysOn = computed(() => !!(coreAlways.data && coreAlways.data.always));
+    const coreAlwaysBusy = ref(false);
+    const setCoreAlways = async (on) => {
+      if (coreAlwaysBusy.value || !props.env) return;
+      coreAlwaysBusy.value = true;
       try {
-        const all = await (await fetch(`/api/env/${props.env}/agent`, { cache: "no-store" })).json();
-        const names = ((all && all.skills) || []).map((s) => s.name).filter((n) => /^journal(-|$)/.test(n));
-        for (const name of names.filter((n) => !((all.skills.find((s) => s.name === n) || {}).always))) {
-          await send("POST", `/api/env/${props.env}/environment/settings`, { always_load: name, always_on: true });
-        }
-        flash(names.length ? `${names.length} journal skill(s) load at every start` : "no journal skills on disk here");
+        await Promise.all(["journal", "journal-memory"].map((name) =>
+          send("POST", `/api/env/${props.env}/environment/settings`, { always_load: name, always_on: on })));
+        coreAlways.reload();
+        flash(on ? "Journal skills load at every start" : "Journal skills load on their own triggers");
       } catch (e) {
         flash(e.message);
       } finally {
-        marking.value = false;
-        skillsOpen.value = false;
+        coreAlwaysBusy.value = false;
       }
     };
     const openSkills = (e) => {
@@ -4914,7 +4916,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, marking, alwaysJournal, waitingCount,
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, coreAlwaysOn, coreAlwaysBusy, setCoreAlways, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
              barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
   },
@@ -4958,12 +4960,9 @@ const EnvHome = {
           <p v-if="!skills.length" class=bar-none>None — the agent is working from memory.</p>
           <a v-for="name in skills" :key="name" class=bar-item :href="'#/skills/' + name"
             @click="skillsOpen = false"><Icon name="book"/>{{ name }}</a>
-          <!-- THE MECHANISM ALREADY EXISTS: a skill marked here is named in every session's start
-               block and after every compaction. This is the one gesture that marks all of the
-               journal's own, and the browser where each one is marked singly is the agent's page. -->
+          <!-- THE ON/OFF SWITCH LIVES ON THE HOMEPAGE, not as a one-shot button here: it is a
+               standing setting, and a bulk action reads as something to click again, not a state. -->
           <div class=bar-foot>
-            <button type=button class=bar-act :disabled="marking" @click="alwaysJournal">
-              {{ marking ? 'Marking…' : 'Load the journal skills at every start' }}</button>
             <a v-if="lead.href" class=bar-act :href="lead.href + '/skills'" @click="skillsOpen = false">Browse every skill</a>
           </div>
         </BarDrop>
@@ -5008,6 +5007,11 @@ const EnvHome = {
             </template>
           </BarDrop>
         </div>
+      </div>
+      <!-- THE HOMEPAGE, WHERE THE SETTING ACTUALLY LIVES. Not a one-shot button in a menu you have
+           to reopen to check: a standing switch, read from the same place the skills page reads it. -->
+      <div class=agent-skills-row>
+        <Switch label="Journal skills load at every start" :modelValue="coreAlwaysOn" @update:modelValue="setCoreAlways"/>
       </div>
       <!-- ONLY THE X TAKES IT DOWN. Clicking the line does nothing, so a notice cannot be dismissed
            by the click that was meant to read it. -->
