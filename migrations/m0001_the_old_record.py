@@ -107,6 +107,10 @@ class Migration:
                 current = next((k + 1 for k, ph in enumerate(phases) if not ph["todos"] or not all(self.closed(record, n) for n in ph["todos"])), len(phases) or 1)
                 self.write(record, "plan", i, p["title"], brief=p.get("body", ""), actor=AGENT, created=when(p.get("at")), goal=p.get("goal", ""), phases=phases, status=status, current=current,
                            refs=[f"todo:{n}" for ph in phases for n in ph["todos"]])
+        if self.fresh(record, "report"):
+            for i, r in enumerate(load_json(home / "reports.json", "reports"), 1):
+                self.write(record, "report", i, r["title"], brief=r.get("body", ""), actor=AGENT, created=when(r.get("at")),
+                           completed=when(r.get("archived_at")), outcome=r.get("archived") or "", refs=[r["about"].replace("todos:", "todo:")] if r.get("about") else [])
         if self.fresh(record, "notification"):
             for i, n in enumerate(load_json(home / "notifications.json", "notifications"), 1):
                 self.write(record, "notification", i, n["text"], actor=SYSTEM, created=when(n.get("at")))

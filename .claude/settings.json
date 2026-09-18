@@ -1,41 +1,21 @@
 {
   "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; n=0; while [ -n \"$d\" ] && [ \"$d\" != \"/\" ] && [ \"$n\" -lt 40 ]; do if [ -x \"$d/.journal/hook.py\" ]; then exec \"$d/.journal/hook.py\"; fi; d=$(dirname \"$d\"); n=$((n+1)); done; exit 0"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; n=0; while [ -n \"$d\" ] && [ \"$d\" != \"/\" ] && [ \"$n\" -lt 40 ]; do if [ -x \"$d/.journal/hook.py\" ]; then exec \"$d/.journal/hook.py\"; fi; d=$(dirname \"$d\"); n=$((n+1)); done; exit 0"
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py claude /Users/jessegall/projects/agent-journal/.journal"
           }
         ]
       }
     ],
-    "PostToolUse": [
+    "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; n=0; while [ -n \"$d\" ] && [ \"$d\" != \"/\" ] && [ \"$n\" -lt 40 ]; do if [ -x \"$d/.journal/hook.py\" ]; then exec \"$d/.journal/hook.py\"; fi; d=$(dirname \"$d\"); n=$((n+1)); done; exit 0"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; n=0; while [ -n \"$d\" ] && [ \"$d\" != \"/\" ] && [ \"$n\" -lt 40 ]; do if [ -x \"$d/.journal/hook.py\" ]; then exec \"$d/.journal/hook.py\"; fi; d=$(dirname \"$d\"); n=$((n+1)); done; exit 0"
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py claude /Users/jessegall/projects/agent-journal/.journal"
           }
         ]
       }
@@ -45,7 +25,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; n=0; while [ -n \"$d\" ] && [ \"$d\" != \"/\" ] && [ \"$n\" -lt 40 ]; do if [ -x \"$d/.journal/hook.py\" ]; then exec \"$d/.journal/hook.py\"; fi; d=$(dirname \"$d\"); n=$((n+1)); done; exit 0"
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py claude /Users/jessegall/projects/agent-journal/.journal"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py claude /Users/jessegall/projects/agent-journal/.journal"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py claude /Users/jessegall/projects/agent-journal/.journal"
           }
         ]
       }
@@ -55,27 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; n=0; while [ -n \"$d\" ] && [ \"$d\" != \"/\" ] && [ \"$n\" -lt 40 ]; do if [ -x \"$d/.journal/hook.py\" ]; then exec \"$d/.journal/hook.py\"; fi; d=$(dirname \"$d\"); n=$((n+1)); done; exit 0"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; n=0; while [ -n \"$d\" ] && [ \"$d\" != \"/\" ] && [ \"$n\" -lt 40 ]; do if [ -x \"$d/.journal/hook.py\" ]; then exec \"$d/.journal/hook.py\"; fi; d=$(dirname \"$d\"); n=$((n+1)); done; exit 0"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "d=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; n=0; while [ -n \"$d\" ] && [ \"$d\" != \"/\" ] && [ \"$n\" -lt 40 ]; do if [ -x \"$d/.journal/hook.py\" ]; then exec \"$d/.journal/hook.py\"; fi; d=$(dirname \"$d\"); n=$((n+1)); done; exit 0"
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py claude /Users/jessegall/projects/agent-journal/.journal"
           }
         ]
       }
