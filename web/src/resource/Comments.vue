@@ -22,7 +22,12 @@ async function send(text) {
 
 <template>
     <section class="comments">
-        <h3>Comments</h3>
+        <template v-if="thread.length">
+            <h3>Comments</h3>
+        </template>
+        <template v-else>
+            <p class="none">No comments yet.</p>
+        </template>
         <template v-for="c in thread" :key="c.n">
             <div :class="['comment', c.seen[0]]">
                 <span class="who">
@@ -55,6 +60,12 @@ h3 {
     color: var(--text-3);
     text-transform: uppercase;
     letter-spacing: 0.04em;
+}
+
+.none {
+    margin: 0;
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
 .comment {
