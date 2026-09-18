@@ -122,6 +122,18 @@ class Question(Options, Resource):
     help_ = "A question waits for the user; its answer reaches the agent as an event."
 
 
+class Suggestion(Options, Resource):
+    type = "suggestion"
+    handed = "SUGGESTIONS waiting on the user"
+    attention = True
+    icon = "up"
+    names = {"complete": "decide", "create": "suggest", "delete": "withdraw"}
+    labels = {"outcome": "Decision", "brief": "Why"}
+    title_ = "Suggestion"
+    abstract_ = "A change the agent proposes unasked; the user accepts, adjusts or declines it, and nothing waits"
+    help_ = "Accepting or adjusting files a to-do from it; a decline is a ruling the agent does not propose again."
+
+
 class Comment(Shape, Resource):
     type = "comment"
     mirror = True
@@ -238,5 +250,5 @@ class Nudge(Shape, Resource):
     spoken = True
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Environment, Nudge)}
-PRIORITY = ("message", "question", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "environment", "work", "agent", "notification", "nudge")
+TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Environment, Nudge)}
+PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "environment", "work", "agent", "notification", "nudge")

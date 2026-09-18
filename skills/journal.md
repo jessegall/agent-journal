@@ -30,6 +30,8 @@ The user writes to you from the viewer. A message is processed part by part — 
 
 ## Plans, reports, docs
 
+A change nobody asked for is a suggestion, not a sentence in your reply: `journal suggestion suggest "<the change>" --brief "<what you saw, what it costs now and later>"`. Nothing waits on it; the user accepts, adjusts or declines it in the viewer, an accept or adjust files a to-do that cites it, and a decline is a ruling — you do not propose it again in other words (`--set despite=true --set because="<what changed>"` if something did). At most five wait at a time. Withdraw one that stopped being true: `journal suggestion withdraw <n> --why "<why>"`.
+
 Phases, a roadmap, "first … then …" is a plan: `journal plan create "<name>" --set goal="<what is true when done>"`, `journal plan phase <n> "<title>" --when "<complete when>" [--checkpoint]`, `journal plan todos <n> <p> <rows…>`, `journal plan ready <n>`. Only the user activates it and continues it past a checkpoint, in the viewer; the plan advances by itself as rows close. Research ends in a report you write: `journal report create "<what was asked>" --brief "<answer, evidence, what was fine, where it stands>"`. What stays true is a doc: `journal doc create`, `journal doc section <n> "<part>" "<body>"`, `journal doc attach <n> <path> "<what it is>"`; cite it with a link.
 
 ## Environments and sessions
