@@ -3340,6 +3340,20 @@ DELIVERS_CONTEXT = frozenset({
 })
 
 
+#: WHICH AGENT IS ON THE OTHER END. Codex's hooks hand the same payload and take the same
+#: answers as Claude Code's — measured, doc 9 — with one exception that matters here: a Stop
+#: answered with `additionalContext` FAILS under Codex ("hook: Stop Failed", the turn ends),
+#: where `decision: "block"` holds it. Its transcript is the tell: a rollout file under
+#: ~/.codex/sessions, named rollout-<time>-<id>.jsonl.
+_AGENT: list = []
+
+
+def agent_of(payload: dict) -> str:
+    """"codex" or "claude", from the transcript the payload names."""
+    tp = str(payload.get("transcript_path") or "")
+    return "codex" if Path(tp).name.startswith("rollout-") or "/.codex/" in tp else "claude"
+
+
 def _context(event: str, text: str, system: str | None = None) -> int:
     """Hand the harness something to put in front of the agent, and the user.
 
@@ -3361,6 +3375,12 @@ def _context(event: str, text: str, system: str | None = None) -> int:
         print(say("no_context", event=event, n=len(text.splitlines())), file=sys.stderr)
         if out:
             print(json.dumps(out))
+        return 0
+    if event == "Stop" and _AGENT and _AGENT[0] == "codex":
+        # THE ONE PLACE THE SHAPES DIFFER: Codex re-opens a stopped turn on `decision: "block"`
+        # only, and reads `reason` as the next prompt — the hold's line, as it is.
+        out["decision"], out["reason"] = "block", fmt.block(text)
+        print(json.dumps(out))
         return 0
     out["hookSpecificOutput"] = {"hookEventName": event, "additionalContext": fmt.block(text)}
     print(json.dumps(out))
@@ -3699,6 +3719,7 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     source = payload.get("source") or "startup"
     _floor(ctx)
     state.put(ROOT, "session_started", source, stem=ctx.stem)
+    state.put(ROOT, "agent", agent_of(payload), stem=ctx.stem)   # which agent this session is: the viewer names it
     state.put(ROOT, "started_at", int(time.time()), stem=ctx.stem)
     # A LOOP DOES NOT SURVIVE ITS PROCESS. A resumed or restarted session starts with none,
     # whatever the runtime file remembers; only a compaction keeps the process, and the loop.
@@ -3987,6 +4008,7 @@ def main(raw: str | None = None) -> int:
     if ctx is None:
         print(say("no_session", event=event), file=sys.stderr)
         return 0
+    _AGENT[:] = [agent_of(payload)]
     # A SUBAGENT IS TURNED AWAY AT THE DOOR, AND THAT IS THE WHOLE OF IT. It used to be let
     # in and then handled: a delegation to bind it to an environment, a rules ladder on its
     # own window, a refusal list for the verbs it may not run, a stop that had to check
