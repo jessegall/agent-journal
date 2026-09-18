@@ -27,7 +27,7 @@ MESSAGES = {
 REPLY_TAG = re.compile(r"^\[![a-z]+\]\s*")
 
 TEXT_MAX = 100
-#: the channel stamps its session every poll (3s); this long without one and the server is gone
+#: the launcher stamps its session every couple of seconds; this long without one and there is no launcher
 CHANNEL_QUIET = 30
 TITLE_MAX = 200
 AGENT, USER = "Agent", "You"
@@ -87,10 +87,11 @@ _SAID: dict = {}
 
 
 def channel_now(root: Path, stem: str) -> bool | None:
-    """Is the journal's channel server alive for this session? None while the session is too young to tell."""
+    """Is the journal's launcher around this session — the seat that types the viewer's news in?
+    None while the session is too young to tell."""
     import state
     now = time.time()
-    seen = state.get(root, "channel_seen", 0, stem=stem) or 0
+    seen = state.get(root, "seat_seen", 0, stem=stem) or 0
     if now - seen <= CHANNEL_QUIET:
         return True
     started = state.get(root, "started_at", 0, stem=stem) or 0
@@ -271,7 +272,7 @@ class ActivityController(Controller):
                         "skills": state.get(root, "skills_open", [], stem=stem) or [],
                         # the background shells it started, and whether each is still going
                         "shells": shells_now(root, stem),
-                        # False: no channel server is polling for this session, so it hears nothing while idle
+                        # False: no launcher holds this session, so it hears nothing while idle
                         "channel": channel_now(root, stem)}
         return None
 

@@ -556,7 +556,7 @@ def update(root: Path, n: int, text: str, at: str = "", track: str | None = None
     AN EDIT IS NOT AN OVERWRITE HERE. The agent may already have READ these words — and a to-do, a
     pin or a plan may cite them — so replacing them silently would leave every one of those quoting
     something nobody ever wrote. What was there is kept, the way `pins --supersedes` and `rules
-    replace` keep theirs, and the message is stamped so the channel can tell the agent it CHANGED
+    replace` keep theirs, and the message is stamped so the launcher can tell the agent it CHANGED
     rather than that a new one arrived.
     """
     text = (text or "").strip()
@@ -683,7 +683,7 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
 def untold_replies(root: Path, track: str | None = None) -> list[tuple[int, int, dict]]:
     """(message, index, reply) for every reply the USER left under a message that nobody has been told about.
 
-    A MESSAGE IS TOLD ONCE; A CONVERSATION IS NOT. The channel reads `unprocessed`, which is keyed by
+    A MESSAGE IS TOLD ONCE; A CONVERSATION IS NOT. The launcher's news reads `unprocessed`, which is keyed by
     the message and stops the moment the agent marks it processed — so the user's answer under a
     message the agent had already handled reached nobody, and a back-and-forth died after its first
     turn. A reply therefore carries its own `told_at`, for the same reason a comment does: what has to

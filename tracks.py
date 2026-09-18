@@ -131,7 +131,7 @@ def _bindings(root: Path) -> dict:
         return {}
 
 
-#: WHO READS IT, AND WITHOUT THE LOCK. `current`, the channel's poll loop and the viewer all read
+#: WHO READS IT, AND WITHOUT THE LOCK. `current`, the launcher's nudger and the viewer all read
 #: the bindings constantly and none of them takes the lock, so the file must never exist in a
 #: half-written state: a reader landing in a truncate window parses nothing, `_bindings` answers
 #: with an empty map, and for that instant every session in the project reads as unbound.

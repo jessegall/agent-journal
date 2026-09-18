@@ -22,9 +22,9 @@ already there, installs the agent's skills, and puts a `journal` command in
 
     journal claude
 
-**This is the command to run.** It starts Claude Code with the journal's channel attached,
-so the agent is wired to the journal from its first message and what you do in the web
-interface reaches it while it works. It also brings the web interface up if this journal
+**This is the command to run.** It starts Claude Code under the journal's launcher, so the
+agent is wired to the journal from its first message and what you do in the web interface is
+typed into it while it sits idle. `journal codex` does the same for Codex. It also brings the web interface up if this journal
 has none running, and tells you where.
 
 It takes what `claude` takes: `journal claude --continue`, `journal claude --resume=<id>`,

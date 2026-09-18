@@ -229,9 +229,9 @@ GROUPS: dict[str, tuple[str, ...]] = {
     ),
     "claude": (
         "journal claude [\"<first prompt>\"] [--continue] [--resume=<id>] [--dry-run]",
-        "      start Claude Code wired to this journal: the channel is attached, so what you do in",
-        "      the web interface reaches the agent while it works. Brings the viewer up if this",
-        "      journal has none running. Everything else is passed through to `claude`.",
+        "      start Claude Code under the journal's launcher: what you do in the web interface is",
+        "      typed into the agent while it sits idle. Brings the viewer up if this journal has",
+        "      none running. --quiet never types. Everything else is passed through to `claude`.",
     ),
     "tools": (
         "journal tools [--order=asc|desc]   the tools, newest first: scripts kept for repeated work, with what each does and how to call it",
@@ -275,8 +275,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "journal loop set              this session has a loop running (the hook could not see it); `journal loop` says whether one is known",
         "journal serve [--port=<n>] [--open]   a local web viewer over this journal on 127.0.0.1, at 8420 or the next free port; it restarts itself when the journal's code changes — Ctrl-C to stop",
         "journal statusline [--install]   the one line Claude Code's status bar shows: environment, open work, viewer; --install adds it to .claude/settings.json",
-        "journal channel --install       add the journal's channel server to .mcp.json, so a message left in the viewer wakes an idle session (start Claude with --dangerously-load-development-channels server:journal)",
-        "journal claude [prompt]         start Claude with the channel, adding it to .mcp.json first if needed; --continue, --resume=<id>, --dry-run to only show the command; any other flag is passed through to claude",
+        "journal claude [prompt]         start Claude under the journal's launcher: the viewer's news is typed into the idle session; --quiet never types; --continue, --resume=<id>, --dry-run to only show the command; any other flag is passed through to claude",
+        "journal codex [prompt]          start Codex under the journal's launcher, the same way; --quiet never types, --dry-run shows the command",
         "journal enable / journal disable   the kill switch: disable makes every hook inert — no hold, no gate, no context — until enable; the USER's call, never the agent's own idea",
     ),
 }
@@ -314,7 +314,7 @@ ALIAS: dict[str, str] = {
     "conversation": "transcript", "user": "transcript", "search": "transcript",
     "carry": "transcript",
     "status": "system", "verify": "system", "version": "system", "update": "system", "settings": "system",
-    "loop": "system", "serve": "system", "statusline": "system", "channel": "system", "enable": "system", "disable": "system",
+    "loop": "system", "serve": "system", "statusline": "system", "codex": "system", "enable": "system", "disable": "system",
 }
 
 

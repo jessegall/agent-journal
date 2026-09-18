@@ -2926,7 +2926,7 @@ def _response_size(payload: dict) -> int:
     return len(json.dumps(r)) if r is not None else 0
 
 
-#: runtime key, per session: the newest version the AGENT was told about (the channel sets it too)
+#: runtime key, per session: the newest version the AGENT was told about (the launcher's news sets it too)
 UPDATE_TOLD = "update_told"
 
 
@@ -3635,7 +3635,7 @@ def _prune(keep: str = "") -> None:
 
 
 def _remember_pid(stem: str) -> None:
-    """Claude Code's process id for this session, so the channel server it starts can find its session."""
+    """Claude Code's process id for this session, so the viewer can tell a live session from a dead one."""
     import os
     pid = str(os.getppid())
     got = state.get(ROOT, "session_pids", {})
@@ -4065,7 +4065,7 @@ def main(raw: str | None = None) -> int:
         # the answer survives a crash.
         if env:
             state.put(ROOT, "ended_on", env, stem=ctx.stem)
-        # which event came last tells an idle session (Stop) from a working one, for the channel server
+        # which event came last tells an idle session (Stop) from a working one, for the viewer
         state.put(ROOT, "last_event", event, stem=ctx.stem)
         # THE HOOK REPORTS; THE LAUNCHER DECIDES. One line per event, appended where the seat outside
         # the agent tails it — the first step of the orchestration leaving the hooks: what the hook

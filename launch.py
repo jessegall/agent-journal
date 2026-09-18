@@ -208,6 +208,7 @@ class Nudger:
         if now - self.last_look < self.every:
             return
         self.last_look = now
+        self.stamp()
         if not self.agent_idle(seat) or seat.user_mid_line():
             return
         for key, params in self.pending():
@@ -217,6 +218,17 @@ class Nudger:
             seat.type_line(params["content"])
             self.mark([key])
             return                                   # one line per quiet moment; the agent answers, then the next
+
+    def stamp(self) -> None:
+        """This session has a seat: the viewer reads it as one that hears the viewer while idle."""
+        import state
+        last = self.reports.last()
+        stem = last.get("session") if last else ""
+        if stem:
+            try:
+                state.put(self.root, "seat_seen", int(time.time()), stem=stem)
+            except OSError:
+                pass
 
     def pending(self) -> list:
         news.ROOT = self.root

@@ -107,7 +107,7 @@ def finish(root: Path, n: int, ok: bool, text: str, at: str, track: str | None =
         x = items[n - 1]
     # THE ANSWER IS THE ASK'S, NOT A MESSAGE. The agent's command waits for it and prints it; a
     # picture is written where the agent can open it, and its path is printed. Nothing reaches the
-    # chat, the inbox or the channel: it is a tool's result, not a thing the user said.
+    # chat, the inbox or the launcher: it is a tool's result, not a thing the user said.
     got, why = inbox._read_files(files)
     paths = []
     if got:
