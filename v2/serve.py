@@ -4,10 +4,13 @@ import sys
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from queue import Empty, Queue
+from urllib.parse import parse_qsl, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from v2 import features  # noqa: E402
 from v2.controllers.types import CONTROLLERS  # noqa: E402
+from v2.engine import bus  # noqa: E402
 from v2.engine.manifest import manifest  # noqa: E402
 from v2.engine.record import Record  # noqa: E402
 from v2.resources.base import USER, Refused  # noqa: E402
@@ -36,10 +39,40 @@ class Handler(BaseHTTPRequestHandler):
     def parts(self):
         return [p for p in self.path.split("?")[0].split("/") if p]
 
+    def query(self) -> dict:
+        return dict(parse_qsl(urlparse(self.path).query))
+
+    def stream(self, env: str) -> None:
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        queue: Queue = Queue()
+        off = bus.on(bus.ANY, lambda e, r: queue.put(e) if r is not None and r.env == env else None)
+        try:
+            self.wfile.write(b": open\n\n")
+            self.wfile.flush()
+            while True:
+                try:
+                    e = queue.get(timeout=15)
+                    self.wfile.write(f"id: {e.id}\ndata: {json.dumps(asdict(e))}\n\n".encode())
+                except Empty:
+                    self.wfile.write(b": keep\n\n")
+                self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            pass
+        finally:
+            off()
+
     def do_GET(self):
         parts = self.parts()
         if parts == ["api", "manifest"]:
             return self.send(200, manifest())
+        if len(parts) == 3 and parts[0] == "api" and parts[2] == "events":
+            since = int(self.query().get("since") or 0)
+            return self.send(200, [asdict(e) for e in Record(self.root, parts[1]).events(since)])
+        if len(parts) == 3 and parts[0] == "api" and parts[2] == "stream":
+            return self.stream(parts[1])
         if len(parts) >= 3 and parts[0] == "api":
             env, type_ = parts[1], parts[2]
             if type_ not in CONTROLLERS:
