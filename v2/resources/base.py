@@ -8,8 +8,8 @@ from pathlib import Path
 TITLE_MAX = 80
 ABSTRACT_MAX = 200
 ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed")
-USER, AGENT = "user", "agent"
-ACTORS = (USER, AGENT)
+USER, AGENT, SYSTEM = "user", "agent", "system"
+ACTORS = (USER, AGENT, SYSTEM)
 
 
 @dataclass
@@ -40,7 +40,6 @@ class Resource:
     brief: str = ""
     sections: list = field(default_factory=list)   # [{"title": str, "body": str}]
     refs: list = field(default_factory=list)       # ["type:n"]
-    comments: list = field(default_factory=list)   # [{"at": float, "by": str, "text": str}]
     seen: list = field(default_factory=list)       # the actors who have seen it: USER, AGENT
     data: dict = field(default_factory=dict)       # what a type adds: status, answer, phases …
     created: float = 0.0
