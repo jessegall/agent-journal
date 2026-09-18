@@ -2551,12 +2551,27 @@ def _running_what(payload: dict) -> str:
     return ""
 
 
+#: runtime key: the last ACTIONS_KEPT actions this session took, oldest first — what the bar's ticker rolls
+ACTIONS = "actions_recent"
+ACTIONS_KEPT = 10
+
+
 def _running_start(payload: dict, ctx: Ctx) -> None:
-    """Record what this call is about to run, so the viewer can say what is taking so long."""
+    """Record what this call is about to run, so the viewer can say what is taking so long.
+
+    AND ADD IT TO THE RING. The bar rolls one action a second and the agent runs them faster than
+    that, so every action is written down, the oldest kicked out past ten; nothing waits on it
+    (message 164). The line is written as the bar shows it, so the viewer only drains.
+    """
     what = _running_what(payload)
     if not what:
         return
-    state.put(ROOT, RUNNING, {"what": what[:120], "at": time.time()}, stem=ctx.stem)
+    now = time.time()
+    state.put(ROOT, RUNNING, {"what": what[:120], "at": now}, stem=ctx.stem)
+    ring = state.get(ROOT, ACTIONS, [], stem=ctx.stem) or []
+    ring = [a for a in ring if isinstance(a, dict)][-(ACTIONS_KEPT - 1):]
+    ring.append({"what": what[:120], "at": round(now, 3)})
+    state.put(ROOT, ACTIONS, ring, stem=ctx.stem)
 
 
 def _running_end(payload: dict, ctx: Ctx) -> None:

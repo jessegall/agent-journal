@@ -1041,6 +1041,39 @@ const StatusBar = {
     };
     // what the agent's launcher last saw it print: a seat's fact, so a session on none has nothing here
     const printed = computed(() => (SHELL.activity && SHELL.activity.agent && SHELL.activity.agent.printed) || null);
+    // THE TICKER. Every action the hook wrote into the ring that the bar has not shown yet waits in a
+    // queue, and one leaves it a second — so a burst of six reads rolls as six lines, not one. Once the
+    // queue is drained the row shows the running command itself, with its clock.
+    const seenAt = { at: 0 };
+    const pending = [];
+    const tick = ref(null);
+    let ticking = null;
+    const roll = () => {
+      if (pending.length) { tick.value = pending.shift(); ticking = setTimeout(roll, 1000); }
+      else { tick.value = null; ticking = null; }
+    };
+    watch(() => SHELL.activity && SHELL.activity.agent && SHELL.activity.agent.actions, (ring) => {
+      // ON THE FIRST READ NOTHING ROLLS: the ring is history then, and rolling ten old lines at a
+      // fresh page would replay the past. What arrives after it is new, and rolls.
+      const first = !seenAt.at;
+      for (const a of ring || []) {
+        if (a.at > seenAt.at) { seenAt.at = a.at; if (!first) pending.push(a); }
+      }
+      if (first && !seenAt.at) seenAt.at = 1;
+      if (pending.length && !ticking) roll();
+    }, { immediate: true });
+    onUnmounted(() => { if (ticking) clearTimeout(ticking); });
+    // what the row shows: the line rolling through, or the running command once the queue is empty
+    const shown = computed(() => {
+      const r = running.value;
+      if (tick.value) {
+        const flat = String(tick.value.what || "").trim();
+        const own = !!(r && r.what === flat);
+        return { what: flat, gist: commandGist(flat), forText: own ? r.forText : "", done: own ? r.done : false, failed: own ? r.failed : false,
+                 lastLine: own ? r.lastLine : "", output: own ? r.output : "", key: `${tick.value.at}` };
+      }
+      return r ? { ...r, key: r.gist } : null;
+    });
     // the log opens on a click and closes on the next, on Escape, or when the command it showed is gone
     const logOpen = ref(false);
     const toggleLog = () => { logOpen.value = !logOpen.value && !!(running.value && running.value.output); };
@@ -1048,7 +1081,7 @@ const StatusBar = {
     const escLog = (e) => { if (e.key === "Escape" && logOpen.value) logOpen.value = false; };
     onMounted(() => document.addEventListener("keydown", escLog));
     onUnmounted(() => document.removeEventListener("keydown", escLog));
-    return { env, view, said, running, SHELL, openCurrent, facts, strip, bars, runBar, barError, printed, logOpen, toggleLog };
+    return { env, view, said, running, SHELL, openCurrent, facts, strip, bars, runBar, barError, printed, logOpen, toggleLog, shown };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]" @click.self="openCurrent">
@@ -1073,14 +1106,14 @@ const StatusBar = {
              leaves upward as the next arrives from below, the way the work's own sentence does.
              The v-if is INSIDE the transition, so the last command of a piece of work rolls up and
              nothing rolls in behind it, rather than being cut out of the bar. -->
-        <Transition name=roll><button v-if="running" :key="running.gist" type=button
-            :class="['statusbar-run-line', {open: logOpen, failed: running.failed}]"
-            :title="running.done ? (running.output ? 'Open the output' : running.what) : running.what"
+        <Transition name=roll><button v-if="shown" :key="shown.key" type=button
+            :class="['statusbar-run-line', {open: logOpen, failed: shown.failed}]"
+            :title="shown.done ? (shown.output ? 'Open the output' : shown.what) : shown.what"
             :aria-expanded="logOpen ? 'true' : 'false'" @click="toggleLog">
-          <span class=statusbar-run-text>{{ running.gist }}</span>
+          <span class=statusbar-run-text>{{ shown.gist }}</span>
           <!-- the last line it printed, muted, arriving from below the way a log's newest line does -->
-          <Transition name=roll><span v-if="running.lastLine" :key="running.lastLine" class=statusbar-run-tail>{{ running.lastLine }}</span></Transition>
-          <span v-if="running.forText" :class="['statusbar-running-for', {done: running.done}]">{{ running.forText }}</span>
+          <Transition name=roll><span v-if="shown.lastLine" :key="shown.lastLine" class=statusbar-run-tail>{{ shown.lastLine }}</span></Transition>
+          <span v-if="shown.forText" :class="['statusbar-running-for', {done: shown.done}]">{{ shown.forText }}</span>
         </button></Transition>
       </span>
       <!-- THE LOG, under the bar, when the row is opened: what the command printed, as it printed it -->
@@ -7098,7 +7131,8 @@ const App = {
     const activity = useFetch(() => envName.value && `/api/env/${envName.value}/activity`, {
       every: () => {
         const agent = activity.data && activity.data.agent;
-        return agent && (agent.working || agent.running) ? 1000 : POLL_MS;
+        // twice a second while it works: the bar's ticker drains the actions ring (message 164)
+        return agent && (agent.working || agent.running) ? 500 : POLL_MS;
       },
     });
     // a message just sent, or anything else just written, shows in Activity now rather than at the next poll
