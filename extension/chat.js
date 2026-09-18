@@ -87,6 +87,7 @@
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== "local" || !document.getElementById(ID)) return;
       if (changes.chatOpen && changes.chatOpen.newValue === false) { host.remove(); return; }
+      if (changes.url || changes.env) load(true);   // picked elsewhere: this window goes there too
       if (changes.window && changes.window.newValue) {
         box = { ...box, ...changes.window.newValue };
         place(box);
