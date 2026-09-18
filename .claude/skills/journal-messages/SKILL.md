@@ -43,6 +43,10 @@ stop says the user left messages, process them before anything else — one at a
      open ends with a follow-up the user can click:** add `--follow-up="<the question>"
      --option="<a choice>" [--option-description="<why>"] --option="<another>" [--pick=<n>]`
      to the same reply — make it a to-do, change it now, leave it as it is.
+   **A reply of THEIRS, under a message already answered, is quoted with `--quoting=` instead.**
+   `--part` names words from the message; `--quoting=` names words from anywhere in the thread — the
+   message or any reply on it — which is how you answer the turn they just took rather than the one
+   they took first. The two point in opposite directions and never both appear on one reply.
 3. **A part you do not understand becomes a question, never a guess:** `journal questions
    add "<question>" --about="inbox <n>"`, recorded as `--became="question <q>"`.
 4. **Record each part, then close the message:** one `messages process` per part, several
