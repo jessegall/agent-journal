@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import {peek, route} from "../route.js";
-import {clock, meta, quoted, reload, rows, store, types} from "../store.js";
+import {clock, meta, quoted, rows, store, types} from "../store.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
 
@@ -53,12 +53,10 @@ function refOf(word) {
 async function react(face) {
     picking.value = false;
     await act(route.value.env, "message", props.turn.n, "react", {face});
-    await reload();
 }
 
 async function drop() {
     await act(route.value.env, "message", props.turn.n, "delete", {why: "deleted from the viewer"});
-    await reload();
 }
 </script>
 

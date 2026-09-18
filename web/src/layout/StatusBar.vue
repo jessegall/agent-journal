@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
 import {go, peek, route} from "../route.js";
-import {agent, autoOn, reload, rows} from "../store.js";
+import {agent, autoOn, rows} from "../store.js";
 
 const state = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data.status : "stopped"));
 const named = (w) => (w.data.todo ? `to-do ${w.data.todo} · ${w.title}` : w.title);
@@ -47,14 +47,12 @@ const button = (p) =>
 
 async function setAuto(on) {
     await saveSettings(route.value.env, {features: {auto: on}});
-    await reload();
 }
 
 async function runBar(p) {
     error.value = "";
     try {
         await act(route.value.env, "plan", p.n, button(p)[0]);
-        await reload();
     } catch (e) {
         error.value = e.message;
     }

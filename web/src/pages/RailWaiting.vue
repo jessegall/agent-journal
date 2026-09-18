@@ -3,7 +3,7 @@ import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {act} from "../api.js";
 import {peek, route} from "../route.js";
-import {focusTurn, meta, reload, types, unreadByUser} from "../store.js";
+import {focusTurn, meta, types, unreadByUser} from "../store.js";
 
 const TINT = {
     question: "#a78bfa",
@@ -22,7 +22,6 @@ function open(r) {
 
 async function dismiss(r) {
     await act(route.value.env, r.type, r.n, "read");
-    await reload();
 }
 </script>
 

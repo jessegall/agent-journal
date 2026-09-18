@@ -66,6 +66,8 @@ export async function load(type) {
     return store.rows[type];
 }
 
+http.onWrite(() => reload());
+
 export async function reload() {
     const env = route.value.env;
     const [events, settings, agents] = await Promise.all([http.events(env), http.settings(env), http.all(env, "agent")]);

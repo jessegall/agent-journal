@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
-import {reload, word} from "../store.js";
+import {word} from "../store.js";
 
 const props = defineProps({resource: Object});
 const own = ref("");
@@ -17,7 +17,6 @@ async function submit(text) {
     if (props.resource.completed) await act(route.value.env, props.resource.type, props.resource.n, "set", {key: "outcome", value: text});
     else await act(route.value.env, props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: text});
     changing.value = false;
-    await reload();
 }
 </script>
 

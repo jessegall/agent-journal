@@ -3,7 +3,7 @@ import {computed, onUnmounted, ref} from "vue";
 import {act} from "../api.js";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {route} from "../route.js";
-import {reload} from "../store.js";
+import {} from "../store.js";
 
 const LEVELS = [
     {value: "low", n: 50},
@@ -26,7 +26,6 @@ async function pick(level) {
     open.value = false;
     if (level.n === current.value) return;
     await act(route.value.env, props.resource.type, props.resource.n, "priority", {value: level.value});
-    await reload();
 }
 </script>
 

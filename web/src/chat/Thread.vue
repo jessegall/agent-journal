@@ -98,7 +98,6 @@ async function post(text, files) {
     if (editing.value) {
         await act(route.value.env, "message", editing.value.n, "edit", {text});
         editing.value = null;
-        await reload();
         return;
     }
     const body = withQuote(quote.value, text);

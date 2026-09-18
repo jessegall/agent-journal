@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
-import {meta, reload, word} from "../store.js";
+import {meta, word} from "../store.js";
 
 const props = defineProps({resource: Object});
 const error = ref("");
@@ -23,7 +23,6 @@ async function run(method) {
         );
         prompt.value = "";
         text.value = "";
-        await reload();
     } catch (e) {
         error.value = e.message;
     }
