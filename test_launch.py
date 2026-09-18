@@ -113,5 +113,19 @@ check("quiet agent, empty line: the message is typed as the channel would say it
 nudger(seat)
 check("and only once", len(seat.lines), 1)
 
+# THE HOOKS' REPORTS ARE THE IDLE SIGNAL when there are any: a Stop means idle, a tool call means not
+import json  # noqa: E402
+events = root / "runtime" / "events"
+events.mkdir(parents=True, exist_ok=True)
+(events / "sess-1.jsonl").write_text(json.dumps({"at": time.time(), "event": "PreToolUse", "tool": "Bash", "session": "sess-1"}) + "\n")
+inbox.add(root, "and the footer", "2026-09-18T00:00:09+00:00", source="web", track="alpha")
+nudger(seat)
+check("a session mid tool call is not typed to, however quiet the pty", len(seat.lines), 1)
+with (events / "sess-1.jsonl").open("a") as f:
+    f.write(json.dumps({"at": time.time(), "event": "Stop", "session": "sess-1"}) + "\n")
+seat.idle = 1.5
+nudger(seat)
+check("a Stop report is idle, and the next message is typed", (len(seat.lines), "left message 2" in seat.lines[-1]), (2, True))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
