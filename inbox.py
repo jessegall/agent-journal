@@ -31,8 +31,7 @@ MESSAGES = {
     "plain_work": "a work update",
     "plain_noted": "noted",
     "plain_answered": "answered",
-    "answered_part": "answered part of message {n} ({excerpt}); the user is notified and reads it under the message",
-    "answer_note": "Answered your question in message {n}",
+    "answered_part": "answered part of message {n} ({excerpt}); the user reads it under the message",
     "already_kind": "message {n} is already a {kind}",
     "declared": "message {n} is a {kind} now; its transcript is written and the rows you file from it can name it",
     "bad_kind": "there is no message kind called {kind}; there is only: {kinds:, }",
@@ -614,9 +613,9 @@ def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tup
 
 
 def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: str | None = None,
-          part: str = "", quoting: str = "", notify: bool = True, files: list | None = None) -> tuple[bool, str]:
+          part: str = "", quoting: str = "", files: list | None = None) -> tuple[bool, str]:
     """A short answer under a message: what was done, a clarification, a call the agent made. Any status.
-    With `part`, it answers the question those words ask: the part is recorded as answered and the user is notified.
+    With `part`, it answers the question those words ask: the part is recorded as answered.
 
     `part` AND `quoting` POINT IN OPPOSITE DIRECTIONS, which is why they are two fields and not one.
     `part` is the USER's words that this reply answers, checked against the message; `quoting` is words
@@ -671,14 +670,11 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
         if part:
             m.setdefault("parts", []).append({"excerpt": part, "became": ["answered"], "at": at})
         _put(root, items, here)
-    # A PLAIN REPLY IS NOT NEWS ANY MORE. This was written when a reply under a message was invisible
-    # unless you went looking for it; the thread shows it in place now, so a notification for one is a
-    # second telling of something already on the screen — and it was most of what the list held.
-    # A reply that ANSWERS A PART is different: it closes a question the user asked, and the row it
-    # answers is somewhere else on the page, so that one is still worth saying.
-    if source != "web" and notify and part:
-        import notifications
-        notifications.add(root, say("answer_note", n=n), at, f"message {n}", source, track)
+    # NO REPLY IS NEWS ANY MORE, PLAIN OR PART. A reply used to be invisible unless you went looking
+    # for it, so answering a part was worth a bell notification even though a plain reply was not —
+    # the row it answered was somewhere else on the page. The chat shows a reply under the turn it
+    # answers now, with the quote as a chip, so that reason is gone: both kinds are on the screen the
+    # user is already reading, and a notification for either is a second telling of the same thing.
     if not part:
         return True, say("replied", n=n)
     return True, say("answered_part", n=n, excerpt=fmt.gist(part, 60))
