@@ -4290,6 +4290,9 @@ const Thread = {
     const fileUrl = (n, name) => `/message-files/${props.env}/${n}/${encodeURIComponent(name)}`;
     // the PICTURES of one turn, in the order they were sent: what the arrow keys walk
     const pictures = (t) => (t.files || []).filter((f) => f.picture).map((f) => ({ name: f.name, url: fileUrl(t.n, f.name) }));
+    //: the pictures of a turn, and everything else on it: a grid is for the pictures alone
+    const shots = (t) => (t.files || []).filter((f) => f.picture);
+    const rest = (t) => (t.files || []).filter((f) => !f.picture);
     // the stored time is UTC; slicing the characters out of it showed the reader somebody else's clock
     const clock = (at) => {
       const when = new Date(at);
@@ -4376,7 +4379,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote, editLast, dropEdit, FACES, picking, reactionsOn, react };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, shots, rest, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote, editLast, dropEdit, FACES, picking, reactionsOn, react };
   },
   template: `
     <div class=thread>
@@ -4437,7 +4440,19 @@ const Thread = {
             <!-- A FILE IN THE THREAD IS READ WHERE IT WAS SENT. A picture opens over the page with
                  its neighbours; anything else opens in the reader, which renders markdown and shows
                  text — and both still keep the raw file one click away. -->
-            <a v-for="(f, i) in t.files" :key="f.name" class=thread-file :href="fileUrl(t.n, f.name)" target=_blank :title="f.name"
+            <!-- FOUR PICTURES ARE A GRID, NOT A COLUMN. A message with six screenshots was six
+                 full-width images to scroll past; they are a 2×2 now and the fourth carries the
+                 rest behind it, which is one click to the lightbox where they all are anyway. -->
+            <div v-if="shots(t).length > 1" :class="['thread-grid', {pair: shots(t).length === 2, three: shots(t).length === 3}]">
+              <a v-for="(f, i) in shots(t).slice(0, 4)" :key="f.name" :class="['thread-shot', {more: i === 3 && shots(t).length > 4}]"
+                :href="fileUrl(t.n, f.name)" target=_blank :title="f.name"
+                @click="$openImages($event, pictures(t), i)">
+                <img :src="fileUrl(t.n, f.name)" :alt="f.name" loading=lazy @load="grew">
+                <span v-if="i === 3 && shots(t).length > 4" class=thread-shot-more>{{ shots(t).length - 4 }} more</span>
+              </a>
+            </div>
+            <a v-for="f in (shots(t).length > 1 ? rest(t) : t.files)" :key="f.name" class=thread-file
+              :href="fileUrl(t.n, f.name)" target=_blank :title="f.name"
               @click="f.picture ? $openImages($event, pictures(t), pictures(t).findIndex((p) => p.name === f.name))
                                 : $openFile($event, { url: fileUrl(t.n, f.name), name: f.name, from: 'Message ' + t.n })">
               <img v-if="f.picture" class=thread-image :src="fileUrl(t.n, f.name)" :alt="f.name" loading=lazy @load="grew">
