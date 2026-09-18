@@ -49,6 +49,14 @@ class Sessions:
     def unbind(self, session: str) -> None:
         self.write(session, environment="")
 
+    def rebind(self, old: str, new: str) -> None:
+        for session, s in self.all().items():
+            if s.get("environment") == old:
+                self.write(session, environment=new)
+        f = self.root / "runtime" / "env"
+        if f.is_file() and f.read_text().strip() == old:
+            f.write_text(new)
+
     def environment(self, session: str) -> str:
         return self.read(session).get("environment", "")
 
