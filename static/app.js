@@ -3452,6 +3452,8 @@ const Plans = {
       set.value = next;
     };
     const moreOpen = ref(false);
+    const briefOpen = ref(new Set());
+    const toggleBrief = (ph) => { const next = new Set(briefOpen.value); next.has(ph.p) ? next.delete(ph.p) : next.add(ph.p); briefOpen.value = next; };
     // the segments in view: this plan's bar under the status bar steps aside; scrolled under it, the bar comes down
     const segments = ref(null);
     let seeing = null;
@@ -3502,7 +3504,7 @@ const Plans = {
       const when = p.status === "done" ? "ended" : p.status === "abandoned" ? "stopped" : "drafted";
       return [`plan ${p.n}`, p.from_doc ? `from doc ${p.from_doc}` : "", `${when} ${p.age || "just now"}`].filter(Boolean).join(" · ");
     });
-    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, todoState, TODO_WORD, TODO_SHORT, meta, PLAN_STATUS, segmentWidth, isOpen, togglePhase, moreOpen, segments };
+    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, todoState, TODO_WORD, TODO_SHORT, meta, PLAN_STATUS, segmentWidth, isOpen, togglePhase, moreOpen, segments, briefOpen, toggleBrief };
   },
   template: `
     <template v-if="onPage">
@@ -3566,8 +3568,9 @@ const Plans = {
                 <span class=plan-phase-count>{{ doneCount(ph) }}/{{ ph.todos.length }}</span>
               </button>
               <div v-if="isOpen(ph)" class=plan-phase-todos>
-                <!-- the phase's brief, when it has one: read when the phase is opened, never on the row -->
-                <div v-if="ph.body" class="md prose plan-phase-brief" v-html="$md(ph.body)"></div>
+                <!-- the brief is behind a click (message 199): the row and its --when are the short part -->
+                <button v-if="ph.body" type=button class=plan-text-btn @click="toggleBrief(ph)">{{ briefOpen.has(ph.p) ? 'Hide the brief' : 'Brief' }}</button>
+                <div v-if="ph.body && briefOpen.has(ph.p)" class="md prose plan-phase-brief" v-html="$md(ph.body)"></div>
                 <div v-for="t in ph.todos" :key="t.n" :class="['phase-todo', todoState(t), {sel: todoView.n === t.n}]"
                   role=button :tabindex="0" :aria-label="'To-do ' + t.n + ': ' + (t.title || 'archived')"
                   @click="openTodo(t)" @keydown.enter.self.prevent="openTodo(t)" @keydown.space.self.prevent="openTodo(t)">

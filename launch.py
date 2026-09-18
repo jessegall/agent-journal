@@ -19,6 +19,8 @@ import news
 IDLE_SECONDS = 3.0
 #: with no hooks reporting, how long a typed line stands before an unprocessed message is typed again
 RETYPE_AFTER = 30.0
+#: the least time between two typed lines: the agent's input queue takes them one at a time
+TYPE_GAP = 2.0
 #: how often the launcher looks whether its own code changed on disk
 RELOAD_EVERY = 5.0
 #: how many changes of the seat's decision the record keeps
@@ -60,6 +62,10 @@ class Launcher:
             os.environ["JOURNAL_SEAT"] = str(os.getppid())   # the hooks report it: this seat reads only its own session
             os.execvp(self.command[0], self.command)
         self.pid, self.fd = pid, fd
+        for tick in self.ticks:
+            hot = getattr(tick, "nudger", None)
+            if hot is not None:
+                hot.reports.child = pid
         self._resize()
 
     def _resize(self, *_) -> None:
@@ -201,10 +207,11 @@ class Hot:
             return
         old = self.nudger
         new = fresh.Nudger(self.root, self.env, quiet=self.quiet)
-        for name in ("since", "told", "typed_at", "nudged", "user_lines", "whys"):
+        for name in ("since", "told", "delivered", "typed_at", "nudged", "user_lines", "whys"):
             if hasattr(old, name):
                 setattr(new, name, getattr(old, name))
         new.reports.born = old.reports.born      # the session's reports predate the reload; they are still its own
+        new.reports.child = old.reports.child
         new.whys = (new.whys + [f"{time.strftime('%H:%M:%S')} reloaded the launcher's code"])[-fresh.WHYS_KEPT:]
         self.nudger = new
 
@@ -217,6 +224,7 @@ class Reports:
         self.born = time.time()
         self.offsets: dict = {}
         self.seat = str(os.getpid())
+        self.child = 0                # the agent's pid, once the seat has started it
 
     def last(self) -> dict | None:
         import json
@@ -235,6 +243,8 @@ class Reports:
             except (OSError, ValueError):
                 continue
             if line.get("seat") and line.get("seat") != self.seat:
+                continue
+            if self.child and line.get("ppid") and int(line["ppid"]) != self.child:
                 continue
             if newest is None or line.get("at", 0) > newest.get("at", 0):
                 newest = line
@@ -255,6 +265,7 @@ class Nudger:
         self.reports = Reports(root)
         self.typed_at = 0.0          # when this seat last typed; nothing more until the hooks report after it
         self.why = ""                # what the last look decided, kept in the seat record
+        self.delivered: set = set()  # messages typed once already; typed again at the next idle moment if still unprocessed
         self.whys: list = []         # the last changes of that decision, with the clock: a missed message is read back here
         self.nudged = False          # the last line into the agent was the queue's, not the user's
         self.user_lines = 0          # the user's Enter count, as last seen
@@ -283,30 +294,40 @@ class Nudger:
 
     def look(self, seat: Launcher) -> str:
         last = self.reports.last()
-        if not self.agent_idle(seat):
-            return f"not idle: last report {last.get('event') if last else 'none'}, quiet {seat.idle_for():.1f}s"
+        idle = self.agent_idle(seat)
         if seat.user_mid_line():
             return f"the user is mid-line ({len(seat.typed)} chars)"
-        if not self.settled():
-            return "typed a moment ago, waiting for the hooks to report"
         try:
             pending = self.pending()
-        except Exception as e:                       # never a crash; the record says what broke
+        except Exception as e:
             return f"news unreadable: {e!r}"
+        if idle and self.settled():
+            self.delivered -= {key for key, _ in pending if self.is_message(key)}
         for key, params in pending:
-            if key in self.told:
+            if key in self.told or key in self.delivered:
                 continue
-            if not re.fullmatch(rf"{re.escape(self.env)}:\d+", key):
+            if time.time() - self.typed_at < TYPE_GAP:
+                return "typed a moment ago"
+            if self.is_message(key):
+                self.delivered.add(key)
+            else:
                 self.told.add(key)
                 self.mark([key])
             self.say(seat, params["content"])
-            return f"typed {key}"                    # one line per quiet moment; the agent answers, then the next
+            return f"typed {key}"
+        if not idle:
+            return f"not idle: last report {last.get('event') if last else 'none'}, quiet {seat.idle_for():.1f}s"
+        if not self.settled():
+            return "typed a moment ago, waiting for the hooks to report"
         line = self.owed()
         if line:
             self.say(seat, line)
             self.nudged = True
             return "typed the queue's line"
         return "nothing owed"
+
+    def is_message(self, key: str) -> bool:
+        return re.fullmatch(rf"{re.escape(self.env)}:\d+", key) is not None
 
     def say(self, seat: Launcher, line: str) -> None:
         # ONE LINE: a newline typed into the agent is Enter, and would send half a sentence
