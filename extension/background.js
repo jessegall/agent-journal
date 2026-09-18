@@ -51,10 +51,28 @@ async function keep(values) {
   try { await chrome.storage.local.set(values); } catch (e) { /* not remembered, not fatal */ }
 }
 
-async function target({ fresh = false } = {}) {
+// A TAB MAY GO ITS OWN WAY. The window opens everywhere and starts on the shared choice; a journal
+// or environment picked inside one tab's window is that tab's, and a window closed in one tab is
+// closed there only. The overrides live for the browser session, keyed by tab, and die with the tab.
+async function tabState(tabId) {
+  if (!tabId) return {};
+  try { return ((await chrome.storage.session.get("tabs")) || {}).tabs?.[String(tabId)] || {}; } catch (e) { return {}; }
+}
+async function setTabState(tabId, patch) {
+  if (!tabId) return;
+  try {
+    const all = ((await chrome.storage.session.get("tabs")) || {}).tabs || {};
+    all[String(tabId)] = patch === null ? undefined : { ...(all[String(tabId)] || {}), ...patch };
+    if (patch === null) delete all[String(tabId)];
+    await chrome.storage.session.set({ tabs: all });
+  } catch (e) { /* the tab keeps to the shared choice */ }
+}
+
+async function target({ fresh = false, tabId = null } = {}) {
   const found = await journals({ fresh });
   if (!found.length) return { why: "No journal viewer is running. Start one with `journal serve`." };
-  const chosen = await kept(["url", "env"], {});
+  const own = await tabState(tabId);
+  const chosen = own.url ? { url: own.url, env: own.env || "" } : await kept(["url", "env"], {});
   const same = (a, b) => String(a || "").replace(/\/+$/, "") === String(b || "").replace(/\/+$/, "");
   const one = found.find((j) => same(j.url, chosen.url)) || found[0];
   const names = await environments(one.url);
@@ -193,6 +211,7 @@ async function openOn(tabId, url) {
   if (!follow && (url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost"))) return;
   const left = (await chatOpen()) && ((await everywhere()) || (await mayTouch(url)));
   if (!follow && !left) return;
+  if ((await tabState(tabId)).closed) return;    // this tab said no; the others carry on
   try {
     // CHAT.JS TOGGLES. Run on a tab that already has the window it takes the window DOWN — and says
     // closed, which closes every tab's. Switching back to a tab was doing exactly that. So: look first.
@@ -226,21 +245,25 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     drive: () => (msg.on ? driveOn(sender.tab && sender.tab.id) : driveOff()),
     driving: async () => ({ on: DRIVE.tabId !== null && DRIVE.tabId === (sender.tab && sender.tab.id), anywhere: DRIVE.tabId !== null, url: DRIVE.url }),
     // chat.js says when it opened or closed on a page, so the window comes back after a reload
-    opened: () => rememberOpen(true).then(() => ({ ok: true })),
-    // closing the window is putting the chat back: nothing follows, nothing reopens
-    closed: () => keep({ chatOpen: false, following: false }).then(() => ({ ok: true })),
+    // opened by hand in this tab: the window is open everywhere again, and this tab's "no" is lifted
+    opened: async () => { await setTabState(sender.tab && sender.tab.id, { closed: false }); await rememberOpen(true); return { ok: true }; },
+    // closed in this tab: this tab only. Putting the chat back on the journal's page (attach) is the
+    // one close that reaches every tab, and it comes through `follow`.
+    closed: () => setTabState(sender.tab && sender.tab.id, { closed: true }).then(() => ({ ok: true })),
     follow: () => follow(msg.on, sender.tab && sender.tab.id),
     following: async () => ({ on: await following(), everywhere: await everywhere() }),
     where: async () => {
-      const to = await target({ fresh: !!msg.fresh });
+      const to = await target({ fresh: !!msg.fresh, tabId: sender.tab && sender.tab.id });
       return to.why ? { why: to.why, journals: [] } : {
         url: to.url, project: to.project, env: to.env, envs: to.envs,
         journals: (to.journals || []).map((j) => ({ url: j.url, project: j.project })),
       };
     },
+    // picked inside a tab's window: that tab's choice; picked with no tab (the popup): the shared one
     pick: async () => {
-      // the viewer writes a journal's url with a trailing slash, this file without: one form is kept
-      await keep({ url: String(msg.url || "").replace(/\/+$/, ""), env: msg.env || "" });
+      const url = String(msg.url || "").replace(/\/+$/, "");   // the viewer writes a trailing slash, this file does not
+      if (sender.tab && sender.tab.id) await setTabState(sender.tab.id, { url, env: msg.env || "" });
+      else await keep({ url, env: msg.env || "" });
       return { ok: true };
     },
   }[msg.kind];
@@ -379,4 +402,7 @@ chrome.debugger.onEvent.addListener((source, method, params) => {
 });
 chrome.debugger.onDetach.addListener((source) => { if (source.tabId === DRIVE.tabId) driveOff().catch(() => {}); });
 chrome.tabs.onUpdated.addListener((tabId, info, tab) => { if (tabId === DRIVE.tabId && tab && tab.url) { DRIVE.url = tab.url; DRIVE.title = tab.title || DRIVE.title; } });
-chrome.tabs.onRemoved.addListener((tabId) => { if (tabId === DRIVE.tabId) driveOff().catch(() => {}); });
+chrome.tabs.onRemoved.addListener((tabId) => {
+  if (tabId === DRIVE.tabId) driveOff().catch(() => {});
+  setTabState(tabId, null).catch(() => {});       // a tab's own choices die with it
+});
