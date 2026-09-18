@@ -1,17 +1,4 @@
 #!/usr/bin/env python3
-"""The record is shared; the marks are one transcript's. What that must never get wrong.
-
-    .journal/test_state.py
-
-THIS SUITE EXISTS BECAUSE THE MARKS WERE PROJECT-WIDE FOR WEEKS AND NOBODY COULD SEE IT.
-A session at line 53 inherited `held_at: 1746` from the one before and its untagged hold
-could not fire until line 1747; a subagent's read raised `biggest_result` in the parent's
-context; the 50% rung, announced once per project, was never announced again. Every green
-light stayed green, because the failure was silence.
-
-Every test runs against a throwaway directory. It never touches the real record. The hook
-is driven as a subprocess with a hand-built payload, exactly as the harness drives it.
-"""
 import json, os, shutil, subprocess, sys, tempfile, types
 from pathlib import Path
 
@@ -137,7 +124,6 @@ check("nested locking does not deadlock and still writes", [p["fact"] for p in p
 
 # -------------------------------------------------------- the hook, end to end
 def project_with(lines: int, stem: str = "s1", tagged: bool = False):
-    """A throwaway project whose transcript dir the hook will resolve from its own path."""
     d = Path(tempfile.mkdtemp()) / "proj"
     (d / ".claude").mkdir(parents=True)
     testkit.make(d, SRC)
@@ -171,13 +157,6 @@ def _project(d):
 
 
 def cli(d, *args, stdin=""):
-    """`journal <args>` for project `d`, in the ONE interpreter that already answers for it.
-
-    EVERY CALL USED TO START PYTHON AGAIN — seventy-five of them in this suite, each paying an
-    interpreter start plus the package's imports before it did anything, which was most of this
-    file's runtime. `testkit.Project` already holds an interpreter open for the hook; the CLI goes
-    through the same one, and the shape the checks read — returncode, stdout, stderr — is kept.
-    """
     project = _project(d)
     code, out = project.cli(*args, session="s1", stdin=stdin)
     return types.SimpleNamespace(returncode=code, stdout=out, stderr=project.err)
@@ -190,7 +169,6 @@ def fire(d, event, path, **extra):
 
 
 def held(out: str) -> tuple[str, str]:
-    """(the one line the user sees, the reasoning the agent reads) of a Stop hold."""
     if not out.strip():
         return "", ""
     label, ctx = testkit.hold(out)
@@ -1402,7 +1380,6 @@ print(len(b), "more of" in b, hook.INLINE_CAP, widest, len(hushed))
 
 
 def _doorway(n):
-    """The doorway's measurements on a record of `n` pins and `n` rules, each at the cap."""
     out = subprocess.run([sys.executable, "-c", _probe, str(n)], capture_output=True, text=True,
                          env={**os.environ, "AGENT_JOURNAL_OFFLINE": "1"}).stdout.split()
     return (int(out[0]), out[1] == "True", int(out[2]), int(out[3]), int(out[4])) if out else (0, False, 0, 0, 0)

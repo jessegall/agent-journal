@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""A to-do's priority: bigger is more important, 100 is the default, and it orders
-the list and what `ready()`/auto pick up next.
-
-    .journal/test_priority.py
-"""
 import json, os, sys, tempfile
 from pathlib import Path
 

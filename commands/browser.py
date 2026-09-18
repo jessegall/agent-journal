@@ -51,7 +51,6 @@ class List(Resource):
 
 
 def _print_answer(x: dict) -> int:
-    """The page's answer, as this command's own output — the way a tool's result is, not a message."""
     import browser
     args = f" {' '.join(x.get('args') or [])}" if x.get("args") else ""
     fmt.say(browser.say("result_text" if x.get("ok") else "result_failed", op=x.get("op", ""), args=args,

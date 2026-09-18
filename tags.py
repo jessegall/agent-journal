@@ -1,21 +1,3 @@
-"""What a message is FOR, written as a bracketed prefix opening a line.
-
-A TAG DESCRIBES A MESSAGE. It does not commit you to anything, which is why it is free and
-why you should use one every time. Starting a piece of WORK is a different act — it is a
-commitment, it must be done with thought, and it therefore costs a command. See `work.py`.
-
-THE TAG RIDES ON A MESSAGE YOU WERE SENDING ANYWAY, which is the whole reason this works.
-Nothing has to be remembered, no command has to be run, and there is no store to keep
-current — the filing is a side effect of speaking. A mechanism that must be CALLED to
-prevent a loss is a discipline; this one is not.
-
-The words are SPELLED OUT because the user reads them. A tag is part of what the agent
-says, in the terminal, where `[!discovery]` is a word a human reads and `[d]` is a code
-they must learn.
-
-A tag's spelling is a STORAGE FORMAT — it is what a past transcript already carries — so
-renaming one makes every message already filed under it read back as untagged.
-"""
 from __future__ import annotations
 
 import re
@@ -34,12 +16,6 @@ PATTERN = re.compile(r"\A\s*\[!([a-z]+)\]")
 
 
 class Tag:
-    """A tag and what it is for. Deliberately NOT a dataclass.
-
-    `dataclasses` pulls `inspect`, which is 8.6ms of import on a module that hook.py loads
-    on every single event and journal.py loads on every command. Two attributes and an
-    equality nobody uses do not cost that.
-    """
 
     __slots__ = ("name", "line")
 
@@ -86,12 +62,6 @@ LEGACY = {"update": "retired — progress on work is `journal update` now"}
 
 
 def found(text: str) -> list[str]:
-    """Every tag opening a line of this message, in order, known ones only.
-
-    At most one, because a message is one thing. An unknown bracket is NOT silently
-    treated as a tag: a typo would otherwise file a message under a name nothing reads
-    back, which is the shape of every write that reports success and lands nowhere.
-    """
     m = PATTERN.match(text or "")
     return [m.group(1)] if m and m.group(1) in (TAGS.keys() | LEGACY.keys()) else []
 
@@ -101,11 +71,6 @@ ROUTINE = {"reply"}
 
 
 def carried(text: str) -> bool:
-    """Did this message say something worth reading back?
-
-    A `[!reply]` is TAGGED — the message obeyed the rule — and carries nothing, so it is
-    counted in an elision rather than shown.
-    """
     return any(t not in ROUTINE for t in found(text))
 
 
@@ -117,10 +82,8 @@ FLAG = re.compile(r"\A\s*\[!([a-z]+)\]\s*\[!\]")
 
 
 def flagged(text: str) -> bool:
-    """Did the agent mark this message important? Its own call, and optional."""
     return bool(FLAG.match(text or ""))
 
 
 def strip(text: str) -> str:
-    """The message without its leading tag — and without the important mark that may follow it."""
     return PATTERN.sub("", FLAG.sub(lambda m: f"[!{m.group(1)}]", text or "", count=1), count=1).strip()

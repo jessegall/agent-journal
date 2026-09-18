@@ -59,13 +59,6 @@ def label(ref: str) -> str:
 
 
 def retired(root: Path, ref: str, track: str | None = None) -> str | None:
-    """Why the row this points at has been retracted, or None.
-
-    A COMMENT ON SOMETHING RETRACTED GOES NOWHERE. A struck pin is hidden from every list, an
-    archived report has left the rail, a withdrawn suggestion is off the page — and the comment
-    sits on it where nobody will pass again. DONE IS NOT RETRACTED: a comment on a closed to-do
-    ("this came back") is exactly the kind of thing worth saying, so it is not refused.
-    """
     kind, _, num = ref.partition(":")
     n = int(num) if num.isdigit() else 0
     if kind in ("pin", "rule"):
@@ -156,14 +149,6 @@ def mark_told(root: Path, track: str | None, ns: list[int], at: str) -> None:
 
 def done(root: Path, n: int, how: str, at: str, became: list[str] | None = None,
          track: str | None = None) -> tuple[bool, str]:
-    """Handle a comment, and record what it PRODUCED.
-
-    A COMMENT THAT ASKS FOR SOMETHING MAKES SOMETHING, and saying so only in the prose of
-    `how` leaves the two unlinked: the reader sees "filed it as a to-do" and has to go
-    looking. A message part already records what it became; a comment records it the same
-    way, through the same refs (`todo 22`, `doc 4`, `work 7`), so the viewer can offer them
-    as places to go rather than as words.
-    """
     how = " ".join((how or "").split())
     if not how:
         return False, say("needs_how", n=n)

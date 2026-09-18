@@ -30,7 +30,6 @@ def _days_since(at: str, now: datetime) -> float | None:
 
 
 def sweep(root: Path, track: str, now: datetime | None = None) -> dict[str, int]:
-    """Remove the content of everything closed more than REMOVE_DAYS ago, on one environment. Returns counts per store."""
     import shutil
     import inbox
     import todo

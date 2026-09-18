@@ -68,14 +68,11 @@ def _option(spec: str, casts: dict) -> Opt:
 
 
 def options(signature: str, casts: dict | None = None) -> tuple:
-    """The `{--...}` blocks of a signature, as options."""
     return tuple(_option(b.partition(" : ")[0].strip(), casts or {})
                  for b in _BLOCK.findall(signature) if b.strip().startswith("--"))
 
 
 def parse_signature(signature: str, casts: dict | None = None) -> tuple[str, str, tuple, tuple]:
-    """`noun:verb {arg} {arg?} {rest*} {--flag} {--opt=} {--opt=default} {--opt=*}`, with
-    ` : description` inside any block."""
     casts = casts or {}
     noun, _, verb = signature.split("{", 1)[0].strip().partition(":")
     args = []
@@ -99,11 +96,9 @@ class Parsed:
         self._extra = tuple(extra)
 
     def options_in_order(self) -> list[tuple[str, str | None]]:
-        """Every --name=value as typed, in command-line order: for options that belong to the one before them."""
         return list(self._raw)
 
     def passthrough_options(self) -> list[str]:
-        """Options the command did not declare, as typed (`--flag` or `--opt=value`), in order."""
         return list(self._extra)
 
     def arg(self, name: str, default=None):

@@ -46,7 +46,6 @@ def _entries(text: str) -> dict[int, str]:
 
 
 def injected(root: Path) -> set[int]:
-    """The rule numbers CLAUDE.md holds, read from the file itself."""
     return set(_entries(_text(root)))
 
 
@@ -112,13 +111,11 @@ def uninject(root: Path, n: int) -> tuple[bool, str]:
 
 
 def forget(root: Path, n: int) -> None:
-    """A struck rule leaves CLAUDE.md with it; quiet when it was never there."""
     if n in injected(root):
         uninject(root, n)
 
 
 def remove(root: Path) -> bool:
-    """Take the whole block out. True when there was one."""
     if BEGIN not in _text(root):
         return False
     _write(root, {})

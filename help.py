@@ -1,24 +1,3 @@
-"""Every command, grouped by the noun that owns it — the detail `journal --help` stopped printing.
-
-THE SYNOPSIS WAS THE BIGGEST WALL THE CLI COULD PRODUCE, and it arrived at every `-h`,
-every `--help` and every unknown verb: 77 lines of it, one per command, in a package whose
-whole argument is that output costs the reader something. For the person at a terminal that
-wall is a feature — it is how you find a verb you half-remember without knowing which noun
-owns it — so it is not deleted, it is MOVED: `journal --help` is now an index of the groups,
-and each group's own lines are one command away, behind `journal <noun> help`.
-
-ONE TABLE, NOT TWO. GROUPS below is the only place a command's line is written. The index in
-journal.py's docstring names the groups and nothing else, so it cannot fall out of step with
-what the commands actually are — the failure that a second hand-maintained list guarantees
-eventually. `_help` reads this module; nothing greps the docstring for a command any more.
-
-EVERY SPELLING ANSWERS, canonical or alias. ALIAS maps each legacy and singular spelling to
-the group whose lines it borrows, because ruling R3 keeps every current spelling running
-forever and an alias with no help is a spelling the reader is told does not exist — which is
-the one thing an alias promised not to be. When a verb is in neither table, `_help` falls
-back to matching it against every line here, so a command can never regress to "No such
-command" merely because nobody remembered to file it under a noun.
-"""
 from __future__ import annotations
 
 #: group -> its commands, in the order a reader meets them. The ONLY list of them.
@@ -319,14 +298,6 @@ ALIAS: dict[str, str] = {
 
 
 def lines(verb: str) -> list[str]:
-    """The lines that answer `journal <verb> help`, or an empty list if nothing does.
-
-    A GROUP FIRST, THEN THE VERB ITSELF. `journal pin help` wants the pins group, not the
-    one line that happens to start with `journal pin` — a reader asking about a noun is
-    asking what can be done with it. Only when the verb names no group does the match fall
-    to the lines themselves, which is what keeps a command that nobody filed under a noun
-    from answering "No such command".
-    """
     group = ALIAS.get(verb, verb)
     if group in GROUPS:
         return list(GROUPS[group])
@@ -339,7 +310,6 @@ def lines(verb: str) -> list[str]:
 
 
 def groups() -> list[str]:
-    """The group names, for the index and for anything that needs to list them."""
     return list(GROUPS)
 
 
@@ -387,5 +357,4 @@ RETIRED = {
 
 
 def retired(verb: str) -> tuple[str, list, str] | None:
-    """(why it is gone, the commands that replace it, what to do next) — or None."""
     return RETIRED.get(verb)

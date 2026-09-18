@@ -64,7 +64,6 @@ def unread(root: Path, track: str | None = None) -> list[tuple[int, dict]]:
 
 
 def _exists(root: Path, ref: str, track: str | None) -> str | None:
-    """The row this points at, or why it is not there. One funnel: questions.check_ref knows them all."""
     kind, _, num = ref.partition(":")
     if kind == "report":
         return None if 1 <= int(num) <= len(_reports(root, track)) else say("no_row", kind=KINDS[kind], n=num)

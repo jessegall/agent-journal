@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""comments.py: comment on a resource, the stop nudge, and closing one."""
 import json, os, re, sys, tempfile
 from pathlib import Path
 

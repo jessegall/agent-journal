@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""prune.py: content of anything closed more than 30 days ago is removed; numbers and status stay."""
 import json, os, sys, tempfile
 from pathlib import Path
 

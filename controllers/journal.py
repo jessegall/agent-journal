@@ -21,11 +21,6 @@ def say(message: str, /, **values) -> str:
 
 
 class JournalController(Controller):
-    """The journal's own settings — the ones that belong to the project, not to an environment.
-
-    Auto mode is the first: it was set per environment, and an agent that switched came to a
-    halt on the one where the flag was off.
-    """
     resource = "journal"
     noun = "journal"
     scoped = False
@@ -37,11 +32,6 @@ class JournalController(Controller):
         return Result("ok", "", {"auto": todo.auto(root)})
 
     def auto(self, root: Path, p: AutoPayload) -> Result:
-        """`journal auto-mode [enable|disable]`: the journal's switch, shown bare or set by its verb.
-
-        What is NEXT is still an environment's question — which to-do would be picked up — so the
-        line under the answer is read on the environment this session is on.
-        """
         here = p.env or state.current_track(root)
         want = p.state.lower()
         if not want:

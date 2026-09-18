@@ -1,30 +1,3 @@
-"""A local web viewer over the journal: a thin JSON API in front of `views.py`, one
-static page, and a Vue app (loaded from a CDN) doing the rendering in the browser.
-
-STDLIB ONLY, ON THE PYTHON SIDE, AND THAT IS DELIBERATE. This project has no dependency
-mechanism at all — no `pyproject.toml`, no `requirements.txt`; `install.py` ships a
-consumer's copy by copying `.py` files. Vue does not change that: it is loaded by the
-BROWSER, from a CDN `<script>` tag, with no npm install and no build step on this side —
-the Python process never imports it and never needs to. The MVP server itself is still a
-dozen GET routes with no forms, no sessions and no auth: exactly what `http.server` is
-for, whatever renders the JSON it returns.
-
-ONE RESPONSE, RENDERED TWICE. `views.py` already reads the journal once, the same way for
-everyone; this module's only job is to hand that response back as JSON instead of
-choosing how it looks. The choosing happens in the browser now, not here — see
-`static/app.js`. (Whether the CLI's own text rendering should be rewritten to consume the
-same response objects is a separate, larger question — see doc 4, to-do 11 — and this
-module does not attempt it.)
-
-LOCALHOST ONLY. `http.server` is not hardened for anything public, so it binds 127.0.0.1.
-The writes — a message into the inbox, an answer to a question — are POST with a JSON body
-and refused from another origin: a page elsewhere cannot send `application/json` here
-without a preflight this server never answers.
-
-THE ROUTE TABLE IS FRAMEWORK-AGNOSTIC ON PURPOSE: a route is a compiled pattern and a
-function `(root, project, match) -> (status, content_type, bytes)`, nothing about
-`BaseHTTPRequestHandler` leaks into a handler.
-"""
 from __future__ import annotations
 
 import json
@@ -90,17 +63,6 @@ _FINGERPRINTED = frozenset({"/", "/app.js"})
 
 
 def _fingerprints(path: str) -> bool:
-    """Is this worth answering "nothing changed" for?
-
-    THE VIEWER POLLS EVERY FIVE SECONDS AND MOST POLLS BRING BACK WHAT IT ALREADY HAS. A listing
-    carries every row in full -- measured at 499 KB over 414 messages on a real project -- so the
-    cost is not the reading, it is sending a half-megabyte the browser must then parse into fresh
-    objects, sixty times a minute if two lists are open. Hashing that body costs about a
-    millisecond; sending it again costs all of the rest.
-
-    Nothing about the viewer changes for this. `fetch` revalidates under `Cache-Control: no-cache`
-    on its own and hands JavaScript the body it already had, so a 304 is invisible to the page.
-    """
     return path in _FINGERPRINTED or path.startswith("/api/")
 UPLOAD_LIMIT = 28_000_000   # a message with attached files, base64 in JSON
 _UPLOAD = re.compile(r"^/api/env/[a-z0-9-]+/messages(/\d+/attach)?$")
@@ -196,7 +158,6 @@ def _api_identity(root: Path, project: Path, m: re.Match):
 
 @route(r"^/api/skills/([A-Za-z0-9_.:-]+)$")
 def _api_skill(root: Path, project: Path, m: re.Match):
-    """One skill's text, read-only: skills are edited in the project's files, not through the journal."""
     skills = __import__("skills")
     got = skills.find(root.resolve().parent, m.group(1))
     if not got:
@@ -206,7 +167,6 @@ def _api_skill(root: Path, project: Path, m: re.Match):
 
 @route(r"^/api/about$")
 def _api_about(root: Path, project: Path, m: re.Match):
-    """The running version and its changelog, for the About page."""
     f = root / "CHANGELOG.md"
     return _json({"version": __import__("update").current(root), "changelog": f.read_text() if f.is_file() else "",
                   # the Chrome extension ships with the package; the Settings page offers it when it is there
@@ -252,7 +212,6 @@ _STATUS = {"ok": 200, "created": 201, "refused": 400, "missing": 404}
 
 
 class Request:
-    """An HTTP request for a resource: it produces the same payload a CLI command does."""
     __slots__ = ("env", "id", "body")
 
     def __init__(self, env: str, id: str | None, body: dict):
@@ -263,7 +222,6 @@ class Request:
 
 
 def _served(path: str):
-    """(controller, match) for a path that names a resource in its scope, or None."""
     import controllers
     m = RESOURCE.match(path)
     controller = controllers.CONTROLLERS.get(m.group("resource")) if m else None
@@ -273,7 +231,6 @@ def _served(path: str):
 
 
 def _answered(root: Path, method: str, path: str, body: dict | None):
-    """A resource's answer, and a 500 with the error when its controller raises, as the routes already do."""
     try:
         return _resource(root, method, path, body)
     except Exception as e:  # a bad controller must answer 500, never drop the connection
@@ -313,7 +270,6 @@ def _resource(root: Path, method: str, path: str, body: dict) -> tuple[int, str,
 # ────────────────────────────────────────────────────────── binary: doc attachments
 @route(r"^/message-files/(?P<env>[a-z0-9-]+)/(?P<n>\d+)/(?P<name>[^/]+)$")
 def _message_file(root: Path, project: Path, m: re.Match):
-    """A file held on a message, by NAME matched against the message's own record."""
     import inbox
     env, n, name = m.group("env"), int(m.group("n")), unquote(m.group("name"))
     items = inbox._all(root, env) if _known_env(root, env) else []
@@ -330,7 +286,6 @@ def _message_file(root: Path, project: Path, m: re.Match):
 
 @route(r"^/transcripts/(?P<env>[a-z0-9-]+)/(?P<n>\d+)$")
 def _transcript(root: Path, project: Path, m: re.Match):
-    """The transcript a message carried. Nothing lists these: it is reached from the message itself."""
     import inbox
     env, n = m.group("env"), int(m.group("n"))
     got = inbox.transcript(root, env, n) if _known_env(root, env) else None
@@ -342,13 +297,6 @@ def _transcript(root: Path, project: Path, m: re.Match):
 
 @route(r"^/docs/(?P<n>\d+)/files/(?P<name>[^/]+)$")
 def _doc_file(root: Path, project: Path, m: re.Match):
-    """An attachment, by NAME matched against the doc's own manifest — never a raw path.
-
-    Whitelisting by name against `docs.attachments(doc)` is what makes this safe: the
-    path that is actually opened always comes from the manifest, never from the URL, so
-    there is no `..` or absolute-path escape to defend against in the first place. See
-    `views.safe_path` for the general check a future by-path route would still need.
-    """
     n, name = int(m.group("n")), unquote(m.group("name"))
     doc, _prt, err = docs_mod.get(root, str(n))
     if doc is None:
@@ -362,7 +310,6 @@ def _doc_file(root: Path, project: Path, m: re.Match):
 
 @route(r"^/docs/(?P<n>\d+)/files/(?P<name>[^/]+)/(?P<rest>.+)$")
 def _doc_folder_file(root: Path, project: Path, m: re.Match):
-    """A file inside a folder attachment: the folder comes from the manifest, and the file must resolve inside it."""
     n, name, rest = int(m.group("n")), unquote(m.group("name")), unquote(m.group("rest"))
     doc, _prt, err = docs_mod.get(root, str(n))
     if doc is None:
@@ -438,16 +385,6 @@ class _Handler(BaseHTTPRequestHandler):
         self._send(*answered, False)
 
     def _viewer(self, verb: str) -> None:
-        """Stop or restart the server from the page it is serving.
-
-        A VIEWER THAT OUTLIVES ITS LAUNCHER IS ONE NOBODY KNOWS HOW TO STOP -- `serve --detach`
-        made that true, and finding a pid through lsof is not an answer for the person reading the
-        page. It goes through the write path, so the same-origin guard that protects every other
-        write protects this: another page on this machine cannot end your viewer.
-
-        Both verbs are the stop `_watch_code` already uses -- set the flag, shut down -- and `run`
-        decides what happens next: exec a fresh server, or fall off the end and exit.
-        """
         _body, refusal = self._write_body(BODY_LIMIT)
         if refusal:
             self._send(*refusal, False)
@@ -512,12 +449,6 @@ class _Handler(BaseHTTPRequestHandler):
         self._send(*_not_found(say("nothing_at", path=path)), head)
 
     def _tagged(self, path: str, status: int, ctype: str, body: bytes, head: bool) -> None:
-        """Send it, or answer 304 when the client already holds exactly this.
-
-        ONE FUNNEL: a resource answers through `_answered` and everything else through ROUTES, and
-        both used to send for themselves -- which is why the API, the thing polled every five
-        seconds, was the one path that never got a fingerprint.
-        """
         if status == 200 and _fingerprints(path):
             import hashlib
             etag = '"' + hashlib.sha1(body).hexdigest()[:20] + '"'
@@ -545,7 +476,6 @@ VIEWER_PORT = "viewer_port"
 
 
 def _identity(port: int, timeout: float = 0.5) -> dict | None:
-    """What the viewer on `port` says about itself; None when nothing answers or it does not say."""
     import http.client
     try:
         conn = http.client.HTTPConnection(HOST, int(port), timeout=timeout)
@@ -560,7 +490,6 @@ def _identity(port: int, timeout: float = 0.5) -> dict | None:
 
 
 def running(root: Path) -> str:
-    """This project's viewer URL when it answers on its last port (or the default), else ''."""
     import socket
     import state
     port = state.get(root, VIEWER_PORT, DEFAULT_PORT) or DEFAULT_PORT
@@ -581,14 +510,12 @@ SELF_RESTART_VERSION = "1.131.63"
 
 
 def needs_restart(identity: dict | None) -> bool:
-    """Whether a running viewer is too old to pick up new code by itself."""
     import update
     version = (identity or {}).get("version") or ""
     return not version or update.newer(SELF_RESTART_VERSION, version)
 
 
 def stale_viewer(root: Path) -> dict | None:
-    """This project's running viewer when it runs code from before the self-restart: {url, port, version}."""
     import state
     url = running(root)
     if not url:
@@ -599,13 +526,11 @@ def stale_viewer(root: Path) -> dict | None:
 
 
 def restart_notice(root: Path) -> str:
-    """What an agent is told after an upgrade when its viewer will not pick up the new code by itself."""
     old = stale_viewer(root)
     return say("restart_viewer", since=SELF_RESTART_VERSION, **old) if old else ""
 
 
 def viewers(root: Path, ports=None) -> list[dict]:
-    """Every journal viewer answering on this machine's viewer ports, with this project's marked current."""
     from concurrent.futures import ThreadPoolExecutor
     import state
     if ports is None:
@@ -629,7 +554,6 @@ def _taken(e: OSError) -> bool:
 
 
 def bind(root: Path, project: Path, port: int | None = None, first: int = DEFAULT_PORT) -> "_Server":
-    """A server on `port`, or on the first free port from `first` when no port is asked for."""
     if port:
         try:
             return _Server((HOST, port), root, project)
@@ -657,7 +581,6 @@ SETTLE_SECONDS = 1.5
 
 
 def _snapshot(root: Path) -> dict[str, int]:
-    """Every Python file of the package under `root`, with when it last changed."""
     out = {}
     for f in root.rglob("*.py"):
         if "__pycache__" in f.parts or "runtime" in f.relative_to(root).parts[:1]:
@@ -670,7 +593,6 @@ def _snapshot(root: Path) -> dict[str, int]:
 
 
 def _watch_code(root: Path, server: "_Server", changed) -> None:
-    """Stop the server once the package's Python has changed and then stayed still, so an upgrade lands whole."""
     import time
     seen = _snapshot(root)
     last_change = None
@@ -685,7 +607,6 @@ def _watch_code(root: Path, server: "_Server", changed) -> None:
 
 
 def run(root: Path, project: Path, port: int | None = None, open_browser: bool = False) -> None:
-    """Start the server in the foreground; Ctrl-C stops it. It restarts itself when the journal's code changes."""
     import os
     import threading
     server = bind(root, project, port)

@@ -34,7 +34,6 @@ RECENT_SECONDS = 15 * 60
 
 
 def _sessions(root: Path) -> list[dict]:
-    """Every running session of this project, bound or not, most recently seen first: what the viewer offers to assign."""
     import time
     from controllers.activity import channel_now
     import os
@@ -74,13 +73,6 @@ class EnvironmentController(Controller):
     payloads = {"settings": SettingsPayload, "remove": RemovePayload, "make": MakePayload, "assign": AssignPayload}
 
     def assign(self, root: Path, p: AssignPayload) -> Result:
-        """Bind a running session to this environment, from the viewer.
-
-        THE USER IS THE ONE PERSON WHO MAY MOVE AN AGENT. Binding was made explicit so no agent moves
-        another behind its back; the viewer is the user's hand, and an environment nobody holds is
-        exactly the case they need it for. The moved session reads the environment on its next
-        hook event, and the switch is on its record like one it made itself.
-        """
         conf, _ = settings_mod.load(root)
         want = (p.session or "").strip()
         stems = [stem for stem, _ in state.runtime_files(root) if want and stem.startswith(want)]
@@ -154,12 +146,6 @@ class EnvironmentController(Controller):
         return Result("ok", "\n".join(said))
 
     def make(self, root: Path, p: MakePayload) -> Result:
-        """Bring an environment into existence from the viewer. It creates; it moves nobody.
-
-        `journal prepare` creates AND switches, because a person at a terminal who names a new
-        environment is about to work in it. A person in a browser is not: no session is theirs to
-        move, and moving one behind an agent's back is the thing binding was made explicit to stop.
-        """
         import state as state_mod
         name = state_mod.slug(p.name or "")
         if not name:

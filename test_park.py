@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""Work can be set aside without being finished.
-
-    .journal/test_park.py
-
-Every edge: `work park` refuses with nothing open, refuses without a reason, and refuses to
-guess between two open pieces; parked work stays open and is skipped by the stop hold while
-its siblings are still held; the first update picks it up again; `todos ask` and `todos
-block` park the work of that title instead of ending it, so nothing reads as finished that
-nobody finished.
-"""
 import json, os, sys, tempfile
 from pathlib import Path
 

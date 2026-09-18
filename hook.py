@@ -1,25 +1,4 @@
 #!/usr/bin/env python3
-"""One doorbell. The payload says which event fired, so the harness config never changes.
-
-    "command": "\"$CLAUDE_PROJECT_DIR\"/.journal/hook.py"
-
-THE CONTRACT, and it is the whole reason this file is small:
-  exit 0            silent; stdout is shown to the user
-  exit 2 + stderr   the turn is HELD and stderr is fed back to the agent
-
-The hold is what makes a rule a mechanism instead of a wish. It sits at the STOP and
-nowhere else: a tool count is an arbitrary boundary that can fire mid-thought, while a
-stop is the moment the stretch is about to be lost — which is the moment worth holding.
-
-AND IT CAN ONLY HOLD ONCE PER STRETCH. A hook that re-holds on the message it provoked is
-a loop the agent cannot leave, so the line it last held at is written down and it never
-holds at or behind that mark again. A nudge that cannot be escaped stops being a nudge.
-
-THE TRANSCRIPT COMES FROM THE PAYLOAD. Every event carries `session_id` and
-`transcript_path`; the first version guessed the newest file by mtime instead, and with two
-terminals open on one project it held session A for session B's messages. Every mark this
-file writes is a fact about the transcript it was handed, and is filed under its name.
-"""
 from __future__ import annotations
 
 import contextlib
@@ -417,15 +396,6 @@ def say(message: str, /, **values) -> str:
 
 
 class Ctx:
-    """Which transcript this event is about, and where its marks go.
-
-    `stem` names the runtime file. For the session's own events it is the transcript's
-    stem. A SUBAGENT's tool call carries the PARENT's transcript and session — measured —
-    and only `agent_id` tells them apart; it is keyed `agent-<id>`, the name of its own
-    transcript on disk, so that nothing it does can land in the parent's file. In practice
-    the handlers ignore subagents altogether (each checks `payload.get("agent_id")` where
-    it matters), so no such file is written.
-    """
 
     __slots__ = ("stem", "path")   # not a dataclass: `inspect` is 6ms on every hook event
 
@@ -464,11 +434,6 @@ def _ctx(payload: dict) -> Ctx | None:
 
 
 def untagged(lines, units: set[int]) -> list:
-    """Messages that said nothing about what they carried.
-
-    A `[!reply]` is NOT untagged — it obeyed the rule and declared itself routine. Only a
-    message wearing no tag at all filed nothing, and only a FILING UNIT can be one.
-    """
     return [
         l
         for l in lines
@@ -484,7 +449,6 @@ def untagged(lines, units: set[int]) -> list:
 
 
 def _caches(stem: str) -> tuple[Path, Path]:
-    """Where a session's parsed transcript and its context reading are kept between hook processes."""
     d = ROOT / state.RUNTIME_DIR
     return d / f"{stem}.lines.cache", d / f"{stem}.context.cache"
 
@@ -496,19 +460,6 @@ def _drop_caches(stem: str, *, lines_only: bool = False) -> None:
 
 
 def _floor(ctx: Ctx, lines=None) -> int:
-    """The line under which nothing is held against anyone, written on FIRST SIGHT.
-
-    A transcript the hook was not present for has a history, all of it untagged because
-    there was no vocabulary to tag it with. That history exists for a fresh install into a
-    running session, for a resumed or forked session whose transcript was copied at line N,
-    and for a SessionStart hook that failed once in a session that then ran for hours. The
-    first version drew this line only at install, into a transcript guessed by mtime; the
-    second only at SessionStart, which does not fire when a hook is picked up mid-session.
-
-    So WHICHEVER HANDLER FIRST SEES A TRANSCRIPT with no floor writes one, at the line count
-    of that moment. In a fresh session that is SessionStart at line one or two and nothing
-    is suppressed; in a session joined late it is the line it was joined at.
-    """
     got = state.get(ROOT, "floor", None, stem=ctx.stem)
     if got is not None:
         return got
@@ -539,7 +490,6 @@ _DEFERRAL = re.compile(
 
 
 def deferred(text: str) -> str | None:
-    """The sentence in which this message puts work off, if it does."""
     m = _DEFERRAL.search(tags.strip(text or ""))
     if not m:
         return None
@@ -549,20 +499,6 @@ def deferred(text: str) -> str | None:
 
 
 def _deferral(conf: dict, ctx: Ctx, at_stop: bool = False) -> tuple[str, str] | None:
-    """(the one-line instruction, the reasoning) if the agent's latest reply puts work
-    off and nothing was parked since the user asked; None otherwise. Said once per reply.
-
-    THE USER ASKED, THE AGENT SAID "LATER", NOTHING WAS WRITTEN. Measured: "Let's rename
-    Nothing to Empty? or None?" — "I'll rename it once the Editor agent finishes; for now,
-    back to the failures." — and the rename lived nowhere but that sentence, one
-    distraction from gone. The skill said to park it and was not enough, so it is a gate.
-
-    Three things must all hold, so that an agent describing the order of its own work is
-    not stopped: the last prompt asked for work (`asks.asks_for_work`, recorded at
-    UserPromptSubmit); no to-do has been added since that prompt; and the latest reply
-    contains a deferral. Then it fires once for that reply, and a retry passes, so a false
-    match costs one call and never traps.
-    """
     if "deferral" in conf["silenced"] or ctx.path is None:
         return None
     asked = state.get(ROOT, "prompt", None, stem=ctx.stem)
@@ -588,7 +524,6 @@ def _deferral(conf: dict, ctx: Ctx, at_stop: bool = False) -> tuple[str, str] | 
 
 
 def _filed(here: str) -> int:
-    """How many to-dos, suggestions and questions exist here: a rise since the prompt means one was filed."""
     import questions
     import suggestions
     return (len(todo._all(ROOT, here)) + len(suggestions._all(ROOT, here)) + len(questions._all(ROOT, here)))
@@ -600,12 +535,6 @@ _PROPOSES = re.compile(r"\b(?:we could|we might want to|it (?:might|would) be (?
 
 
 def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """The moment the user asks. Record whether they asked for work; remind if work is open.
-
-    The reminder rides only on a prompt that asks for work while something is open —
-    exactly the case where the answer might be "later" — so it is not wallpaper on every
-    message. With nothing open the request is the work and needs no reminder.
-    """
     notes = state.get(ROOT, PROMPT_NOTES, [], stem=ctx.stem) or []
     if notes:
         state.put(ROOT, PROMPT_NOTES, [], stem=ctx.stem)
@@ -634,19 +563,6 @@ def on_user_prompt(conf: dict, payload: dict, ctx: Ctx) -> int:
 
 
 def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
-    """(label, instruction, reasoning) if a new rung of the ladder was just passed.
-
-    ONE RUNG, ONCE. The highest rung already passed is written down, so a session that
-    sits at 71% for an hour is told once and not at every stop — a warning that repeats
-    while nothing has changed is one the reader learns to clear without looking.
-
-    CALLED FROM THE STOP AND FROM EVERY TOOL CALL. A rung that fires only at a stop is
-    missed by exactly the session that needs it: one long stretch of tool calls can cross
-    95% and compact before the agent ever stops. Measured — the user had to ask "did you
-    get the 95% warning?" and the answer was no. So the tool-call hook checks a cheap tail
-    reading too; the rung is recorded the same way, and the decision gate that follows it
-    is the same gate.
-    """
     ladder = sorted(conf["context_warn_ladder"])
     if not ladder or "context" in conf["silenced"]:
         return None
@@ -705,23 +621,6 @@ def _rung(conf: dict, ctx: Ctx, got, stretch=()) -> tuple[str, str, str] | None:
 
 
 def _still_raised(conf: dict, ctx: Ctx, lines, active: bool) -> dict:
-    """{subject: the line it was raised at} for the subjects this chain must stay quiet about.
-
-    ONE HOLD PER CHAIN WAS THE WRONG BUDGET, and it failed in the direction that costs most:
-    an agent held once, that answered the hold and then worked for nine minutes, met a stop
-    where every subject it needed was already marked raised and stopped in SILENCE. The
-    longer the stretch, the more certain the silence. Seen on a live run — four phases
-    finished, work open, 52 to-dos waiting, and nothing said.
-
-    So the memory expires on PROGRESS rather than on the chain. A subject held a moment ago
-    stays quiet; one held twenty-five lines of work ago is not being nagged about, it is
-    being told at the next stop after real work. Raising it at every stop was tried in
-    1.29.0 for the loop subject and starved the queue behind it — the threshold is exactly
-    what separates the two.
-
-    An older record holds a bare LIST here; it is read as "raised just now", which is what
-    it meant, and written back in the new shape at the next hold.
-    """
     if not active:
         return {}
     got = state.get(ROOT, "raised_this_turn", {}, stem=ctx.stem) or {}
@@ -737,16 +636,6 @@ def _still_raised(conf: dict, ctx: Ctx, lines, active: bool) -> dict:
 
 
 def _keep_viewer(conf: dict, ctx: Ctx) -> None:
-    """The viewer comes back if it stopped while somebody is still working here.
-
-    AT A STOP, NOT ON EVERY TOOL CALL. Asking whether it is up opens a socket with a timeout,
-    and this hook is a fresh process on every single call — paying that on each one is the
-    mistake. A stop is an idle moment and the moment the user is most likely to look at it.
-
-    IT RESPECTS A DELIBERATE SILENCE. Somebody who stopped the viewer on purpose must not have
-    it resurrected on a loop, so `silenced: ["viewer"]` switches this off like any other nudge.
-    And a session on no environment is not working anywhere yet, so it starts nothing.
-    """
     # NOT IN A TEST, AND NOT OFFLINE. A suite fires hundreds of stops against throwaway journals; each
     # one started a viewer for a temp directory and then WAITED up to fifteen seconds for it to answer.
     # The user watched a row of "proj" viewers appear on ports of their own, and two suites timed out.
@@ -839,19 +728,10 @@ SEAT_QUIET = 30
 
 
 def seated(stem: str) -> bool:
-    """A launcher (`journal claude`, `journal codex`) holds this session and speaks for the queue."""
     return time.time() - (state.get(ROOT, "seat_seen", 0, stem=stem) or 0) <= SEAT_QUIET
 
 
 def owed(conf: dict, ctx: Ctx, active: bool) -> tuple | None:
-    """The first thing the stop queue owes this session: `(subject, hold)`, or None.
-
-    THE QUEUE, WITH NO OPINION ABOUT WHO DELIVERS IT. The stop hook holds the turn with the
-    answer; the launcher types it into an idle agent from outside. Both read the transcript
-    here, both mark the subject raised, and `active` means the same to both: the agent is
-    answering something the queue already said, so what it was told stays quiet until it has
-    made progress (`_still_raised`).
-    """
     if ctx.path is None or not ctx.path.is_file():
         return None
     _HOLD_CTX[:] = [ctx.stem]
@@ -875,7 +755,6 @@ def owed(conf: dict, ctx: Ctx, active: bool) -> tuple | None:
 
 
 def spoken(hold: tuple) -> str:
-    """The queue's answer as ONE TYPED LINE: the brief, with its details filed for `journal next`."""
     if hold[0] == "context-only":
         return hold[1]
     _, brief, *rest = hold
@@ -883,7 +762,6 @@ def spoken(hold: tuple) -> str:
 
 
 def nudge_for(stem: str, active: bool) -> str | None:
-    """What a launcher types into an idle session, or None: the queue read from outside the agent."""
     conf = settings_mod.load(ROOT)[0]
     ctx = Ctx(stem, transcript.find(ROOT.parent, stem))
     got = owed(conf, ctx, active)
@@ -901,7 +779,6 @@ def _for_next_prompt(ctx: Ctx, text: str) -> None:
 
 
 def _tell_user(text: str) -> int:
-    """Shown to the user at a stop; the agent's turn is not re-opened."""
     print(json.dumps({"systemMessage": text}))
     return 0
 
@@ -929,27 +806,6 @@ def _tell_user(text: str) -> int:
 
 
 def _say(fact: str, *do: str, rows=(), note: str = "") -> tuple:
-    """One stop message: the fact on its own line, what to do about it under it.
-
-    IT USED TO BE ONE LINE AND IT READ AS A WALL. Fact, em dash, instruction, semicolon,
-    second instruction, all run together and wrapped by the terminal wherever it happened
-    to end — so the reader had to parse a sentence to find the command. The user's word for
-    it: a shit ton of text. What is on the screen now is a heading and an indented
-    instruction, which is the same information and can be skimmed in one glance:
-
-        1 untagged message(s)
-          last at line 928; open the next with [!discovery] [!correction] [!blocked]
-          [!info] [!reply]
-
-    AND IT DOES NOT SAY `journal:` FIRST. The harness already labels this "Stop hook
-    feedback:" before a word of ours is printed, so the prefix was the second label on the
-    same line — the user has asked for it gone twice, and it survived both times because it
-    is written here and complained about over there.
-
-    THE FACT IS STILL WRITTEN ONCE. It is the first line here and the short label the user
-    sees, so the two cannot disagree — that was the point of this function and it survives
-    the reshaping intact.
-    """
     # SEVERAL THINGS ARE A LIST, NOT A SENTENCE. `rows` is how a subject says "these N
     # things", and they are printed one per line under the fact. Nine open work subjects
     # joined with "; " and dropped mid-paragraph is what the user sent a screenshot of:
@@ -967,12 +823,6 @@ def _say(fact: str, *do: str, rows=(), note: str = "") -> tuple:
 
 
 def _said(fact: str, *do: str) -> tuple:
-    """The same message, SAID rather than held — the queue's `context-only` answer.
-
-    The same shaper deliberately: a subject that only reports still puts the fact before what
-    to do about it, and still must not be a place where the house style is re-invented
-    because the delivery happens to differ.
-    """
     return ("context-only", _say(fact, *do)[1])
 
 
@@ -988,17 +838,6 @@ SKILLS_AFTER = 12
 
 @nudges.subject("claimed", 4)
 def _p_claimed(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
-    """THE SESSION THAT LOST AN ENVIRONMENT LEARNS IT FROM THE JOURNAL, not by contradiction.
-
-    A claim unbinds this session, and nothing about being unbound looks like an event: the
-    next write is simply refused, or worse, lands somewhere else. So the claim leaves a note
-    on this session's runtime and it is read out here, once, ahead of everything — before
-    even the environment subject, because "you are on no environment" is the CONSEQUENCE and
-    this is the cause.
-
-    Said once and cleared: it is news, and news repeated at every stop is a hold nobody
-    reads.
-    """
     return _claimed_note(ctx)
 
 
@@ -1086,7 +925,6 @@ def _p_untagged(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
 
 
 def _session_live(name: str, stale_hours: float = 24.0) -> bool:
-    """Is the session that opened this work still running? Its hook has run recently and it has not ended."""
     stem = name[:-len(".jsonl")] if name.endswith(".jsonl") else name
     if not stem or state.get(ROOT, "ended", None, stem=stem):
         return False
@@ -1095,13 +933,6 @@ def _session_live(name: str, stale_hours: float = 24.0) -> bool:
 
 
 def _owners(ctx: Ctx) -> set:
-    """The transcript name whose work this session is answerable for.
-
-    IT WAS A SET FOR ONE REASON, and that reason is gone: a delegated subagent's writes
-    carried its parent's transcript name, so the parent's name had to be matched too. A
-    subagent no longer reaches the hook at all, so there is one owner and it is this one.
-    The set survives because every caller asks `in` of it.
-    """
     return {ctx.path.name if ctx.path else None}
 
 
@@ -1188,13 +1019,6 @@ SKILLS_OPEN = "skills_open"
 
 
 def _since_compaction(ctx: Ctx, lines):
-    """The lines of THIS window: everything after the last compaction boundary.
-
-    A COMPACTION EMPTIES THE WINDOW, AND A SKILL LIVES IN THE WINDOW. Loading one an hour ago is not
-    having it now — what crossed the boundary is a summary of it, and a summary of a rule is the rule
-    with its exceptions filed off. So everything about skills is counted from the boundary, and after
-    one the session is in the same position as a session that has loaded none: because it has.
-    """
     if ctx.path is None or not ctx.path.is_file():
         return lines
     folds = transcript.read(ctx.path, _caches(ctx.stem)[0])[1]
@@ -1207,7 +1031,6 @@ def _since_compaction(ctx: Ctx, lines):
 
 
 def _note_skills(ctx: Ctx, lines) -> list[str]:
-    """Record the skills open in THIS window, newest last, and return them."""
     seen = []
     for l in lines:
         for t in l.tools:
@@ -1221,18 +1044,6 @@ def _note_skills(ctx: Ctx, lines) -> list[str]:
 
 @nudges.subject("skills", 60)
 def _p_skills(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
-    """Say to load the journal's skills while this window has none of them.
-
-    THE SKILLS ARE THE ONLY PLACE THE MECHANISMS ARE TAUGHT, and a session that never opens one works
-    from whatever it half-remembers of them — which is how a verb that does not exist gets typed and
-    a rule that was decided last week gets broken. The user's instruction, twice: if we detect it has
-    not loaded its skills, keep nudging — and again after a compaction, because that is where it
-    forgets. So this repeats, it counts from the last boundary, and it stops the moment the core
-    skill is open in the window that is running now.
-
-    ONLY AFTER IT HAS DONE SOMETHING. A session that has just started and read two files is not
-    ignoring anything yet.
-    """
     here_now = _since_compaction(ctx, lines)
     open_now = _note_skills(ctx, here_now)
     if "skills" in conf["silenced"]:
@@ -1247,19 +1058,6 @@ def _p_skills(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
 
 @nudges.subject("recall", 65)
 def _p_recall(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
-    """Say that the rules and pins exist, a few times a session. Never say what they are.
-
-    THEY ARE HANDED OVER ONCE AND THEN LEFT TO ROT IN THE WINDOW. A session gets its rules
-    and pins in full at its start, and after that nothing mentions them again until a
-    compaction re-delivers them. A subagent is treated better than this — it gets the rules
-    from the start is far behind and attention fades, and the main agent, which runs
-    longest and holds the most, was told nothing.
-
-    A POINTER, AND ONLY A POINTER. Re-injecting the claims would spend the context to fight
-    a symptom of the context being full, and the user's instruction was explicit: remind the
-    agent to look, do not print them all. So this is two numbers and two commands. What
-    makes it land is that reading them is one command and being wrong about one is not.
-    """
     if "recall" in conf["silenced"] or not conf["recall_ladder"]:
         return None
     ruled, pinned = len(pins.live(ROOT, pins.RULES)), len(pins.live(ROOT))
@@ -1294,19 +1092,6 @@ def _p_recall(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
 
 @nudges.subject("cleanup", 70)
 def _p_cleanup(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
-    """The record has entries with evidence against them — said once, never held.
-
-    TAUGHT AT THE MOMENT IT ANSWERS, which is the standing rule: a command reachable only
-    through the skill or its own help is a command the agent meets the moment and does not
-    know exists. `cleanup` was being done by the USER instead, pasted in by hand session
-    after session — remove the obsolete rules, clear the docs nobody uses, strike the
-    stale pins — which is the definition of a thing the tool never learned.
-
-    SAID, NOT HELD, and last in the queue. Nothing here blocks anyone: a stale pin is a
-    slow cost, and a hold that fires when nothing has to move is what teaches a reader to
-    clear a hold without reading it. It also repeats only when the set of candidates
-    CHANGES, so a reader who judged them and left them costs one line, once.
-    """
     if work.open_work(ROOT):
         return None
     import cleanup as cleanup_mod
@@ -1398,7 +1183,6 @@ def _p_suggestions(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool
 
 @nudges.subject("suggest_hint", 47)
 def _p_suggest_hint(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
-    """A reply that proposes a change and filed nothing: say once that a suggestion exists for that. Never held."""
     if ctx.path is None:
         return None
     asked = state.get(ROOT, "prompt", None, stem=ctx.stem)
@@ -1501,7 +1285,6 @@ _LOOP_TOOLS = frozenset({"CronCreate", "ScheduleWakeup", "Skill:loop"})
 
 
 def _loop_running(ctx: Ctx, lines) -> bool:
-    """Has this session a loop? Once seen it is remembered; `journal loop set` says so by hand."""
     if state.get(ROOT, "loop_set", False, stem=ctx.stem):
         return True
     for l in lines:
@@ -1514,13 +1297,6 @@ def _loop_running(ctx: Ctx, lines) -> bool:
 
 
 def _loop_owed(conf: dict, ctx: Ctx, here: str) -> str:
-    """The refusal owed when auto is on and nothing will wake this session, or "".
-
-    The same four exemptions the stop subject has, and for the same reasons: the setting
-    turned off, auto off, a subagent (its parent owns the loop), a delegated session. And
-    nothing is owed while the list has nothing ready — a loop that wakes to an empty list
-    is noise, so the demand starts when there is something for it to pick up.
-    """
     m = conf.get("auto_loop_minutes", 0)
     if not m or "loop" in conf["silenced"] or not todo.auto(ROOT):
         return ""
@@ -1537,33 +1313,12 @@ def _loop_owed(conf: dict, ctx: Ctx, here: str) -> str:
 
 
 def _unbound(conf: dict, ctx: Ctx) -> bool:
-    """Has this session still not chosen an environment?
-
-    A SESSION IS UNBOUND UNTIL SOMEBODY CHOOSES. Not a subagent — a delegated one is put on
-    its environment by the session that dispatched it, and an undelegated one is outside all
-    of this — and not a session that has switched, delegated, or run under
-    `bind_on_start`. Unbound, `tracks.current` answers "" — there is no default environment —
-    so the CLI refuses a read as well as a write until one is picked; this is what both are
-    held on.
-    """
     if conf["bind_on_start"]:
         return False
     return not tracks.bound(ROOT, ctx.stem)
 
 
 def _only_one(conf: dict, ctx: Ctx) -> bool:
-    """Bind a session that has nothing to choose between, and say whether it did.
-
-    ONE ENVIRONMENT AND A MESSAGE WAITING IS NOT A CHOICE. A session starts on no environment, and
-    that is right while there are several lines of work: the agent must not guess which one the user
-    means. It is wrong on a fresh install — one environment, and the user has typed their first
-    message into the viewer rather than the terminal. There is nothing to choose between, and asking
-    answers a question nobody put while the message sits there unread.
-
-    THE MESSAGE IS HALF THE CONDITION. Without it this would bind every session at its start and
-    quietly undo the rule the package ships; with it, the binding only happens where the alternative
-    is an agent asking which of one environment it should read the waiting message on.
-    """
     if conf["bind_on_start"] or tracks.bound(ROOT, ctx.stem):
         return False
     names = tracks.choices(ROOT)
@@ -1578,13 +1333,11 @@ def _only_one(conf: dict, ctx: Ctx) -> bool:
 
 
 def _choice_line() -> str:
-    """The one line the USER sees when a session starts with no environment."""
     names = tracks.choices(ROOT)
     return say("choice_line", names=[say("backticked", name=n) for n in names] or [say("none_exist")])
 
 
 def _viewer_line(conf: dict) -> str:
-    """The line the USER sees at a start: where the web viewer is, or how to start one."""
     if "viewer_line" in conf["silenced"]:
         return ""
     import serve
@@ -1593,21 +1346,12 @@ def _viewer_line(conf: dict) -> str:
 
 
 def _choose_block(where: str) -> str:
-    """What the AGENT is told while the session is unbound. Said at the start and at each prompt."""
     names = tracks.choices(ROOT)
     have = [say("choose_row", name=n) for n in names] or [say("choose_none")]
     return say("choose", where=where, have=have)
 
 
 def _track_due(conf: dict, ctx: Ctx) -> dict | None:
-    """Is this session on an environment another live session holds? Written to runtime while it is.
-
-    ONE SESSION WORKS AN ENVIRONMENT. Two agents on one environment share its open work and its to-do
-    list, and two auto sessions would pick the same chore. So a session that starts on a
-    taken environment — the project's start environment, usually, because the user opened a second
-    terminal — is told at its start, held at its stops and refused edits until it has
-    switched. A session that was here first is never moved.
-    """
     if not conf["one_session_per_environment"] or "environment" in conf["silenced"] or "track" in conf["silenced"]:
         return None
     if _unbound(conf, ctx):
@@ -1668,7 +1412,6 @@ _REDIR = re.compile(r"^\d*>{1,2}(.*)$")
 
 
 def _piece_is_write(words: list[str]) -> bool:
-    """Does this one command of a chain change something on disk?"""
     if not words:
         return False
     for i, w in enumerate(words):
@@ -1728,26 +1471,6 @@ def _piece_is_write(words: list[str]) -> bool:
 
 
 def _is_write(payload: dict) -> bool:
-    """Is this tool call about to change something on disk?
-
-    MATCHED AS A COMMAND, NEVER AS TEXT. The first version tested substrings — `"patch "`
-    in the command line — and denied this, which is a pure read:
-
-        cat resources/js/view/triggers.ts; echo "=== useDispatch ==="; cat …
-
-    `useDis` + `patch ` matched inside a heading being echoed. The agent was reading, and
-    it was made to declare work before it had learned enough to say what the work was.
-    That is the worst possible failure for a gate: it fires on discovery, which is exactly
-    when nobody can yet name the thing they are about to do, so it teaches that the gate is
-    an obstacle to get around rather than a prompt to answer. Word boundaries are not a
-    detail here; they are the difference between a prompt and a nuisance.
-
-    So: quoted text is stripped first — it is data, not a command — the line is split on
-    the separators that end a command, and each piece is judged by its FIRST WORD. The
-    journal's own commands are never a write, but only THAT piece is exempt: the first
-    version waved through any line that mentioned journal.py anywhere, so
-    `journal todos add "x" && rm -rf build` was not a write.
-    """
     name = payload.get("tool_name") or ""
     if name in WRITE_TOOLS:
         return True
@@ -1762,17 +1485,6 @@ def _is_journal_verb(word: str) -> bool:
 
 
 def _pieces(cmd: str) -> list[list[str]]:
-    """Each command of a chain as its words, quotes and heredoc bodies removed.
-
-    NEWLINES ARE SEPARATORS, SO THEY ARE NOT COLLAPSED FIRST. The first version joined
-    the whole command on spaces before splitting, and `cd proj\njournal work start "w"`
-    became one piece whose verb was `cd` — the `start` on the second line was never seen,
-    and a line that declared before it wrote was denied. Heredoc bodies are removed on
-    the raw text, where the newlines still say where a body begins and ends.
-
-    `>&` IS A FILE-DESCRIPTOR DUP, NOT A SEPARATOR. Splitting on `&` cut `2>&1` into a
-    redirect with no target, which read as a write, and stopped a read.
-    """
     bare = _QUOTED.sub(" ", _HEREDOC_BODY.sub(r"\1", cmd)).replace(">&", ">@")
     out = []
     # A VARIABLE SET EARLIER IN THE LINE IS RESOLVED. `J=.journal/journal.py; $J remember`
@@ -1807,14 +1519,6 @@ _FILTERS = frozenset({"head", "tail", "grep", "cut", "wc", "sort", "uniq", "tr",
                       "less", "more", "fold", "column", "awk"})
 
 def _declared_first(payload: dict) -> bool:
-    """Does every write in this line come after a `journal work start` in the same line?
-
-    `journal work start "w" && git commit` declares and then writes, in that order, which is
-    exactly what the gate asks for. `cd proj && journal work start "w" && git checkout -b x`
-    too: `cd` changes nothing. `git add && journal work start "w"` does not qualify — the
-    write would run undeclared. The same shape the rung gate accepts: the deciding
-    command leads, and neutral pieces before it do not count.
-    """
     declared = False
     for words in _pieces(str((payload.get("tool_input") or {}).get("command", ""))):
         rest = _journal_args(words)
@@ -1827,7 +1531,6 @@ def _declared_first(payload: dict) -> bool:
 
 
 def _journal_args(words: list[str]) -> list[str] | None:
-    """The words after `journal`, its leading flags (`--env=x`, `--as=y`) skipped; None when this is not the journal."""
     if not words or not _is_journal_verb(words[0]):
         return None
     return [w for w in words[1:] if not w.startswith("-")]
@@ -1841,13 +1544,6 @@ DECIDES_ADD = frozenset({"pins", "rules"})
 
 
 def _is_journal(payload: dict) -> bool:
-    """May this call pass the rung gate? Journal-only lines, or a line that decides first.
-
-    `journal search x` and `journal conversation --back=1` are how the decision gets made, so a line of
-    nothing but journal commands passes. `journal pins add "…" && git commit` passes too:
-    the decision runs first and lifts the gate before the commit. `ls && journal nothing
-    "…"` does not — the `ls` would run undecided.
-    """
     if (payload.get("tool_name") or "") != "Bash":
         return False
     pieces = [w for w in _pieces(str((payload.get("tool_input") or {}).get("command", "")))
@@ -1862,13 +1558,6 @@ def _is_journal(payload: dict) -> bool:
 
 
 def _journal_only(payload: dict) -> bool:
-    """Is this line nothing but the journal's own commands, and filters over their output?
-
-    NOT `_is_journal`. That one also passes a line that OPENS with a decision, because it
-    answers the context rung, and it is right for that gate alone. Used for the others, it let
-    `journal nothing "x"; rm -rf build` past the environment, loop and wait gates, the `rm`
-    riding on a decision nobody owed.
-    """
     if (payload.get("tool_name") or "") != "Bash":
         return False
     pieces = [w for w in _pieces(str((payload.get("tool_input") or {}).get("command", "")))
@@ -1890,18 +1579,6 @@ _HEREDOC_BODY = re.compile(r"(<<-?\s*['\"]?(\w+)['\"]?[^\n]*)\n.*?(?:\n\2(?=\n|$
 
 
 def _pin_overflow(payload: dict, limit: int) -> str | None:
-    """The refusal a `journal pin` on this command line would earn, before it runs.
-
-    THE COMMAND'S OWN EXIT 1 WAS NOT ENOUGH. It is a line of stderr after the fact, and a
-    reader in the middle of a thought reads past it and carries on believing the pin
-    stands. A denied tool call is not readable past: the command never ran, and the reason
-    is the whole of what comes back. So the fact is read off the command line here — the
-    same tokens `journal.py` would join — and judged by the same function the CLI uses.
-
-    If the line cannot be parsed it is left to the CLI: a gate that guesses at a quoting
-    it did not understand would deny reads, and that is the failure this file keeps
-    measuring. The miss costs one refused command; the guess costs trust in the gate.
-    """
     if (payload.get("tool_name") or "") != "Bash":
         return None
     cmd = str((payload.get("tool_input") or {}).get("command", ""))
@@ -1956,9 +1633,6 @@ _REDIRECT = re.compile(r"^(\d*>>?|\d*<|&>>?)(&?\d+|\S+)?$")
 
 
 def _command_words(toks: list[str], start: int) -> list[str]:
-    """The words of one journal command from its verb: up to the next separator, even one glued to a word
-    (`-150;`), and without the shell's redirections. `journal todos --all 2>&1` once read as `todos add "2>&1"`,
-    a write, and a subagent's plain read was refused for it."""
     out: list[str] = []
     k = start
     while k < len(toks):
@@ -1980,14 +1654,6 @@ def _command_words(toks: list[str], start: int) -> list[str]:
 
 
 def _journal_lines(line: str) -> list[str]:
-    """The line as the shell runs it: heredoc bodies dropped, `NAME=value` variables put back, and each
-    `bash -c` / `sh -c` script as a line of its own.
-
-    A SUBAGENT'S PIN HID BEHIND A VARIABLE. `J=.journal/journal.py; $J pins add "x"` and
-    `bash -c ".journal/journal.py pins add x"` were not seen as journal writes at all, so an
-    agent that was lent nothing filed a pin under its dispatcher's name. And a heredoc body is
-    data: a patch script that merely mentions `suggestions accept` was refused as a decision.
-    """
     line = _HEREDOC_BODY.sub(r"\1", line)
     names = {k: v.strip("'\"") for k, v in re.findall(r"(?:^|[\s;&|])([A-Za-z_][A-Za-z0-9_]*)=([^\s;&|]+)", line)}
 
@@ -1998,7 +1664,6 @@ def _journal_lines(line: str) -> list[str]:
 
 
 def _journal_cmds(payload: dict) -> list[tuple[str, object, list[str]]] | None:
-    """(verb, command, its words) for each journal command a Bash line runs; None when a journal line cannot be read."""
     if (payload.get("tool_name") or "") != "Bash":
         return []
     # NOT AT THE TOP, AND THIS IS THE CASE THE RULE NAMES. `commands` pulls in every command
@@ -2042,13 +1707,6 @@ def _closes_row(cmd, words: list[str]) -> bool:
 
 
 def _todo_without_brief(payload: dict) -> bool:
-    """A `todos add` on this line that carries no --brief.
-
-    A TITLE IS NOT A TO-DO. The row is read again in a week by a session that remembers nothing of
-    this one, so "fix it" is a note to somebody who already knows — which is nobody by then. This sits
-    in the hook rather than in the command because it is a rule about how the AGENT files work: the
-    CLI is still a tool a person or a script can use with a title alone.
-    """
     for _, cmd, words in _journal_cmds(payload) or ():
         if str(getattr(cmd, "signature", "")).startswith("todos:add") and "--brief" not in words:
             return True
@@ -2061,7 +1719,6 @@ LOOKED = "looked_at_record"
 
 
 def _looked(payload: dict, ctx: Ctx) -> None:
-    """Mark that this session has read the record. Called on every journal command that IS a read of it."""
     for verb, _, _ in _journal_cmds(payload) or ():
         if verb in LOOKED_AT:
             state.put(ROOT, LOOKED, True, stem=ctx.stem)
@@ -2069,14 +1726,6 @@ def _looked(payload: dict, ctx: Ctx) -> None:
 
 
 def _ask_without_looking(payload: dict, ctx: Ctx) -> bool:
-    """A question put to the user by a session that has not read the record once.
-
-    ASKING IS THE LAST RESORT AND THE RECORD IS THE FIRST. The user's own words: "you can just search
-    in the journal history — I want you to utilise this". Most questions are already answered in
-    there, and asking again tells them you did not look. Refused ONCE: the mark is written by the
-    refusal itself, so running the search — or simply running the question again — goes through, and
-    the wall is a reminder rather than a gate somebody has to argue with.
-    """
     if state.get(ROOT, LOOKED, False, stem=ctx.stem):
         return False
     for _, cmd, _ in _journal_cmds(payload) or ():
@@ -2087,13 +1736,6 @@ def _ask_without_looking(payload: dict, ctx: Ctx) -> bool:
 
 
 def _work_too_bare(payload: dict) -> str:
-    """The subject of a `work start` on this line that names a tool or one bare word, or "".
-
-    A GOOD SUBJECT IS A SENTENCE YOU WILL SAY AGAIN — the skill's own rule, and the subject is what
-    the next session is handed at its first stop. `work start "Bash"` says nothing at all. Like the
-    brief check above this is the AGENT's rule, so it lives here: `todos start <n>` opens work named
-    by the row's title, and a row the user wrote in the viewer is theirs to title as they like.
-    """
     import work
     for verb, cmd, words in _journal_cmds(payload) or ():
         sig = str(getattr(cmd, "signature", ""))
@@ -2108,7 +1750,6 @@ def _work_too_bare(payload: dict) -> str:
 
 
 def _journal_write(payload: dict) -> str | None:
-    """The journal write verb on this command line, if it is one, anywhere in a chain."""
     for verb, cmd, words in _journal_cmds(payload) or ():
         if cmd.writes and not (cmd.reads_bare and len(words) == 1):
             return verb
@@ -2116,7 +1757,6 @@ def _journal_write(payload: dict) -> str | None:
 
 
 def _user_only(payload: dict) -> str | None:
-    """The verb of a journal command on this line that only the user may run, or None."""
     if (payload.get("tool_name") or "") != "Bash":
         return None
     line = _HEREDOC_BODY.sub(r"\1", str((payload.get("tool_input") or {}).get("command", "")))
@@ -2144,24 +1784,6 @@ def _user_only(payload: dict) -> str | None:
 
 
 def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """Refuse a write while no work is open. The one rule that stands IN THE PATH of an act.
-
-    Everything else here is a nudge after the fact: the stop hook says a message went
-    unfiled once it is already unfiled, and the agent can read past it. Measured on a live
-    session doing eight hours of real work — 843 lines, every message dutifully tagged, and
-    `journal work start` run EXACTLY ZERO TIMES. The free thing got used and the costly one did
-    not, which is what always happens when one rule is a side effect and the other is a
-    discipline.
-
-    So this is the second rule, and it is deliberate that there are now two. A gate is
-    expensive — it stops work — and it earns that only where a nudge has been shown not to
-    land. That evidence now exists.
-
-    IT NAMES THE WAY OUT IN THE MESSAGE, and the way out is one command. A gate that says
-    "denied" without saying how to proceed is an obstacle; one that hands you the next line
-    is a prompt. And it never blocks `journal.py` itself, because declaring the work is the
-    escape and a gate that locks its own door is a trap.
-    """
     # The first event a transcript's hook sees is nearly always a tool call, so this is
     # where a session joined late gets its floor. One small read, once.
     _floor(ctx)
@@ -2253,16 +1875,6 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
 
 
 def _deny(reason: str) -> int:
-    """Refuse the tool call, with the way out in the message. The one hold before an act.
-
-    IT SAYS WHICH JOURNAL IS SPEAKING. There can be more than one on a machine and more than
-    one in a session's reach: a subagent dispatched from here runs under THIS project's
-    hook, whatever directory it was sent to work in — so an agent working in another
-    project, against another journal, is refused by this one, judged against this one's
-    record. Measured: a dogfood agent spent most of its run trying flag after flag against a
-    journal that was never the one refusing it, and no message it received named either.
-    One word makes the mismatch legible in the line that reports it.
-    """
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
         "permissionDecision": "deny",
@@ -2281,15 +1893,6 @@ _MD_WRITE = re.compile(r"(?:^|\s)(?:>>?|tee(?:\s+-a)?)\s*['\"]?([^\s'\"|;&]+\.md
 
 
 def _raw_markdown(conf: dict, payload: dict, ctx: Ctx) -> str | None:
-    """A markdown file written by hand, not through the journal: a hint, once per file.
-
-    A HINT, NEVER A HOLD. The user's ruling. Writing docs by hand is fine and sometimes
-    right — a README, a changelog — but a design or a report written as a loose file is
-    one the catalogue does not know, no session is handed, and search does not find. So
-    the first write to a given .md file says so, once, and names the command. The
-    journal's own writes are exempt, and so is anything already catalogued: editing a
-    doc's own file by hand is how a human maintains it.
-    """
     if "markdown_hint" in conf["silenced"]:
         return None
     name = payload.get("tool_name") or ""
@@ -2359,7 +1962,6 @@ _READ_CMDS = frozenset({"cat", "head", "tail", "less", "more", "bat", "open", "p
 
 
 def _read_path(payload: dict) -> str:
-    """The one file this tool call read, or ''. `Read`, or a bash line whose verb only reads."""
     name = payload.get("tool_name") or ""
     inp = payload.get("tool_input") or {}
     if name == "Read":
@@ -2377,7 +1979,6 @@ FILE_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 
 
 def _project_path(path: str) -> str:
-    """The path relative to the project, or "" when it lies outside it or inside the journal."""
     try:
         rel = Path(path).resolve().relative_to(ROOT.parent.resolve())
     except (ValueError, OSError):
@@ -2386,7 +1987,6 @@ def _project_path(path: str) -> str:
 
 
 def _tool_file_changes(payload: dict) -> list[dict]:
-    """An Edit or Write names its file and hands back the patch: its + and - lines are the counts."""
     resp = payload.get("tool_response")
     if payload.get("tool_name") not in FILE_TOOLS or not isinstance(resp, dict):
         return []
@@ -2414,7 +2014,6 @@ def _git_out(project: Path, *args: str) -> str | None:
 
 
 def _git_snapshot(project: Path, base: str = "HEAD") -> dict | None:
-    """HEAD, lines changed against `base` per tracked file, and the untracked files: what a shell command is measured by."""
     head = _git_out(project, "rev-parse", "HEAD")
     numstat = _git_out(project, "diff", "--numstat", base)
     untracked = _git_out(project, "ls-files", "--others", "--exclude-standard")
@@ -2464,7 +2063,6 @@ def _owns_open_work(ctx: Ctx) -> bool:
 
 
 def _snapshot_files(payload: dict, ctx: Ctx) -> None:
-    """Before a shell command that writes, remember what git sees, so the files it changed can be counted after."""
     if payload.get("tool_name") != "Bash":
         return
     if _may_change_files(payload) and _owns_open_work(ctx):
@@ -2476,7 +2074,6 @@ def _snapshot_files(payload: dict, ctx: Ctx) -> None:
 
 
 def _record_commits(before: dict | None, after: dict | None, ctx: Ctx, on: str = "") -> None:
-    """A shell command that moved HEAD made commits; each goes on the open work with its subject."""
     from datetime import datetime, timezone
     import commandlog
     if not before or not after or before["head"] == after["head"]:
@@ -2499,7 +2096,6 @@ def _record_commits(before: dict | None, after: dict | None, ctx: Ctx, on: str =
 
 
 def _record_files(payload: dict, ctx: Ctx) -> None:
-    """The files this tool call changed go on the open work, with lines added and removed."""
     from datetime import datetime, timezone
     changes = _tool_file_changes(payload)
     was = ""   # only a shell call can end the work it was doing mid-call; an Edit or a Write cannot
@@ -2522,12 +2118,6 @@ RUNNING = "running_command"
 
 
 def _running_what(payload: dict) -> str:
-    """What this call is, in the words the bar shows — or "" for a call not worth saying.
-
-    A SHELL COMMAND AND AN MCP TOOL ARE THE SAME FACT to whoever is watching: something is running
-    and the agent is waiting on it. The tool name is already the sentence — `mcp__playwright__
-    browser_click` is a server and a verb — so it is read back as "playwright · browser click".
-    """
     name = payload.get("tool_name") or ""
     if name == "Bash":
         what = " ".join(str((payload.get("tool_input") or {}).get("command", "")).split())
@@ -2557,12 +2147,6 @@ ACTIONS_KEPT = 10
 
 
 def _running_start(payload: dict, ctx: Ctx) -> None:
-    """Record what this call is about to run, so the viewer can say what is taking so long.
-
-    AND ADD IT TO THE RING. The bar rolls one action a second and the agent runs them faster than
-    that, so every action is written down, the oldest kicked out past ten; nothing waits on it
-    (message 164). The line is written as the bar shows it, so the viewer only drains.
-    """
     what = _running_what(payload)
     if not what:
         return
@@ -2579,8 +2163,6 @@ def _running_start(payload: dict, ctx: Ctx) -> None:
 
 
 def _chain(cmd: str) -> list[str]:
-    """The links of a command chain — split on `&&`, `||`, `;` and newlines outside quotes, a pipe kept
-    whole, a leading `cd` dropped, heredoc bodies left inside the link they belong to."""
     text = _HEREDOC_BODY.sub(r"\1", cmd)
     out, cur, quote, i = [], [], "", 0
     while i < len(text):
@@ -2607,12 +2189,6 @@ def _chain(cmd: str) -> list[str]:
 
 
 def _running_end(payload: dict, ctx: Ctx) -> None:
-    """The call is over: freeze it, and if it took a while, give it an Activity line of its own.
-
-    THE LAST COMMAND STAYS UP. Clearing it left the line empty between calls — which is most of the
-    time — so the bar flickered a command in and out instead of saying what the agent last ran. It is
-    marked finished with what it took, so the clock stops; the work it belongs to is what retires it.
-    """
     if not _running_what(payload):
         return
     got = state.get(ROOT, RUNNING, None, stem=ctx.stem)
@@ -2640,14 +2216,6 @@ SHELLS_KEPT = 8
 
 
 def _shell_start(payload: dict, ctx: Ctx) -> None:
-    """Record a Bash call sent to the background, so the bar can say what the agent left running.
-
-    THE TOOL CALL RETURNS AT ONCE AND THE WORK DOES NOT, and the hook is told neither the shell's id
-    nor where its output goes — measured: the PostToolUse payload carries neither. What it does know
-    is the command and the moment it started, and the harness writes every background command's
-    output into one directory per session. Pairing the two by time is what lets the viewer say
-    whether a shell is still going without claiming anything it cannot check.
-    """
     if payload.get("tool_name") != "Bash" or not (payload.get("tool_input") or {}).get("run_in_background"):
         return
     what = " ".join(str((payload.get("tool_input") or {}).get("command", "")).split())
@@ -2659,8 +2227,6 @@ def _shell_start(payload: dict, ctx: Ctx) -> None:
 
 
 def _queue_tool(payload: dict, ctx: Ctx) -> None:
-    """Count a tool use for Activity's summed line. A shell line that runs the journal is not counted:
-    the journal command itself writes out the queue."""
     from datetime import datetime, timezone
     import commandlog
     name = payload.get("tool_name") or ""
@@ -2676,7 +2242,6 @@ def _queue_tool(payload: dict, ctx: Ctx) -> None:
 
 
 def _note_dispatch(payload: dict, ctx: Ctx) -> None:
-    """The session hands work to a subagent: Activity says so, with the dispatcher's description."""
     from datetime import datetime, timezone
     import commandlog
     if payload.get("tool_name") != "Agent" or payload.get("agent_id"):
@@ -2701,17 +2266,6 @@ _GIT_COMMIT = re.compile(r"\bgit\b(?:\s+-{1,2}[^\s]+(?:\s+[^\s-]\S*)?)*\s+commit
 
 
 def _closed_by_commit(conf: dict, payload: dict, ctx: Ctx) -> str | None:
-    """A commit that names a to-do in its trailer closes it, once the commit exists.
-
-    THE MESSAGE IS READ OFF HEAD, NOT OFF THE COMMAND. The command is what was asked for;
-    HEAD is what happened. Reading HEAD closes nothing when the commit was rejected by a
-    gate or aborted, costs no parsing of `-m` against `-F -` against a heredoc, and hands
-    back the sha and subject that become the `how` — a citation instead of a summary.
-
-    ONCE PER SHA. An `--amend`, a rebase, or a second commit in the same line runs this
-    again over a message it has already acted on; the sha it last closed against is kept,
-    and `todo.close_from_commit` treats an already-closed to-do as a no-op besides.
-    """
     if (payload.get("tool_name") or "") != "Bash" or "commit_trailer" in conf["silenced"]:
         return None
     cmd = ((payload.get("tool_input") or {}).get("command") or "")
@@ -2749,13 +2303,6 @@ def _closed_by_commit(conf: dict, payload: dict, ctx: Ctx) -> str | None:
 
 
 def _trailer_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
-    """A commit landed while a to-do is started, and its message closed nothing. Said once.
-
-    THE THIRD PLACE THE TRAILER IS TAUGHT, and the only one that fires at the moment it is
-    needed: the skill is read at a start, `todos start` prints it before there is anything
-    to commit, and this is the commit itself. Once per session — the point is that the
-    spelling exists, and an agent that has been told and chose otherwise is not wrong.
-    """
     if (payload.get("tool_name") or "") != "Bash" or "commit_trailer" in conf["silenced"]:
         return None
     if not _GIT_COMMIT.search(((payload.get("tool_input") or {}).get("command") or "")):
@@ -2792,7 +2339,6 @@ def _searched(payload: dict) -> str:
 
 
 def _cleanup_report(conf: dict, ctx: Ctx) -> str | None:
-    """At most once every `cleanup_every_minutes` per session: run the cleanup checks and say what is new."""
     every = conf.get("cleanup_every_minutes") or 0
     if not every or "cleanup_report" in conf["silenced"] or ctx is None:
         return None
@@ -2818,7 +2364,6 @@ def _cleanup_report(conf: dict, ctx: Ctx) -> str | None:
 
 
 def _search_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
-    """A search whose term names an attached file: point at the doc that holds it, once per file."""
     if "search_hint" in conf["silenced"]:
         return None
     text = _searched(payload).lower()
@@ -2843,16 +2388,6 @@ def _search_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
 
 
 def _attach_hint(conf: dict, payload: dict, ctx: Ctx) -> str | None:
-    """A non-source file read again and again: a hint to attach it to a doc, once per file.
-
-    THE ALGORITHM. (1) The call read exactly one file. (2) The file is not the journal's,
-    not already under docs/, and not source: a source extension, or tracked by git in this
-    project, makes it source and ends the matter. Inside the project, only a reference
-    extension (rendered, exported, sent) counts; outside it — Downloads, another checkout,
-    a scratch folder — anything that is not source counts. (3) It has been read
-    `attach_hint_reads` times this session. Then the hint, once per file, never a hold: a
-    scratch file read twice is not a problem, and the agent is told to ignore it if so.
-    """
     if "attach_hint" in conf["silenced"] or not conf["attach_hint_reads"]:
         return None
     raw = _read_path(payload)
@@ -2905,15 +2440,6 @@ _HEREDOC_BODY_RE = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n(.*?)\n\1(?=\n|$
 
 
 def _tool_shaped(conf: dict, payload: dict, ctx: Ctx) -> str | None:
-    """Something that looks like a tool before anyone called it one: a hint, once.
-
-    THREE SHAPES, all measured in live sessions. A script written into the scratchpad or
-    a scripts folder — a helper the agent will lose with the session. The same long
-    inline script run twice — `python3 - <<'PY' …` with the same body, which is a tool
-    being retyped. A scratch script run by name — `php /tmp/x.php`, the helper in use.
-    Each earns one hint naming `journal tools add`; a hint, never a hold, because plenty
-    of scripts are rightly one-offs and the agent is the one who knows.
-    """
     if "tool_hint" in conf["silenced"]:
         return None
     name = payload.get("tool_name") or ""
@@ -2958,27 +2484,6 @@ def _tool_shaped(conf: dict, payload: dict, ctx: Ctx) -> str | None:
 
 
 def _stall(conf: dict, ctx: Ctx) -> str | None:
-    """Many tool calls on one started to-do with no progress filed: say so, once.
-
-    THE MEASUREMENT BEHIND "SPENDING TOO MUCH TIME WITHOUT RESULT". With auto on the
-    agent must decide for itself, and the one thing it cannot judge from inside is how
-    long it has been going round. So the hook counts tool calls since the to-do was
-    started and, past the setting, says so once — unless an `update` has been filed on the
-    work since the last count, which is the agent saying it moved. A nudge, not a hold: the
-    agent may well be one call from done. Fires at most once per to-do per multiple of
-    the setting, so a long to-do with real progress notes is left alone.
-
-    THE ROW THAT STALLS IS WHICHEVER ONE HAS WORK OPEN, NOT WHICHEVER WAS `started` LAST.
-    A to-do's `started` stamp is never cleared by a plain `work end` (only `--todo`/`done`
-    clears the row), so a row that was started, ended without `--todo`, and then touched
-    again — `todos after`, `todos block` — still carries `started` and can sort after the
-    row genuinely open. Measured live: the nudge named to-do 2269, ended and chained
-    onto another to-do earlier, while the session's actual open work — per `journal
-    open` — was to-do 1417. Matching the open work's subject against the started to-dos,
-    instead of taking the last started to-do and hoping it is the open one, is what the
-    line below did two steps later anyway, to count progress notes — just too late to
-    fix which row got named.
-    """
     limit = conf["stall_calls"]
     if not limit or "stall" in conf["silenced"]:
         return None
@@ -3015,7 +2520,6 @@ OUTPUT_KEEP = 6000
 
 
 def _response_text(payload: dict) -> str:
-    """What the tool printed, as text: stdout and stderr of a command, the text of anything else."""
     r = payload.get("tool_response")
     if isinstance(r, str):
         return r
@@ -3032,7 +2536,6 @@ def _response_text(payload: dict) -> str:
 
 
 def _response_failed(payload: dict) -> bool:
-    """Did the command fail? A non-zero exit, or the harness saying so."""
     r = payload.get("tool_response")
     if isinstance(r, dict):
         code = r.get("exit_code", r.get("exitCode"))
@@ -3043,7 +2546,6 @@ def _response_failed(payload: dict) -> bool:
 
 
 def _response_size(payload: dict) -> int:
-    """How much this tool actually handed back, in characters."""
     r = payload.get("tool_response")
     if isinstance(r, str):
         return len(r)
@@ -3062,7 +2564,6 @@ UPDATE_TOLD = "update_told"
 
 
 def _update_news(conf: dict, ctx: Ctx) -> str:
-    """A newer journal upstream, told to a working agent once per version: a stop tells only the user."""
     if "update_check" in conf["silenced"]:
         return ""
     note, latest = update.available(ROOT)
@@ -3088,7 +2589,6 @@ def _inbox_news(conf: dict, ctx: Ctx) -> str:
 
 
 def _comments_news(conf: dict, ctx: Ctx) -> str:
-    """New comments, mentioned once each after a tool call: at a stop the messages reminder outranks them."""
     if "comments" in conf["silenced"]:
         return ""
     import comments
@@ -3105,13 +2605,6 @@ def _comments_news(conf: dict, ctx: Ctx) -> str:
 
 
 def _reminder_due(conf: dict, ctx: Ctx) -> str:
-    """Every `reminder_every` tool calls, the standing reminders again — or "".
-
-    THE COUNTER IS PER SESSION AND IT IS RESET BY THE STOP, so the interval measures the
-    distance from the last time the agent actually saw them rather than from an arbitrary
-    origin. With nothing standing it is held at zero: a reminder added mid-session then
-    gets its full interval instead of firing on whatever the count happened to be.
-    """
     every = conf["reminder_every"]
     if not every or "reminders" in conf["silenced"]:
         return ""
@@ -3128,26 +2621,6 @@ def _reminder_due(conf: dict, ctx: Ctx) -> str:
 
 
 def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """Say what a tool call cost, at the moment it cost it — and almost never say it.
-
-    THE SIZE IS A FACT AND THE COMMAND IS A GUESS. The first shape of this was going to
-    check whether a bash line contained a `grep` or a `head`, and refuse it if not. That
-    reads the intent instead of the result: a piped `grep` can still return forty thousand
-    characters, and a bare `cat` of a short file costs nothing. What is worth saying is
-    what actually came back, which is measured and cannot be argued with.
-
-    IT SPEAKS ONLY ON A NEW RECORD. Not every large result — the LARGEST SO FAR in this
-    context, above a floor. That is the rate limit, and it is self-decaying: the second
-    40k read after a 60k one says nothing, and a session settles into silence on its own
-    without a counter or an interval. Every rule in here that fired on a condition rather
-    than a record ended up teaching the reader to skim it — eleven wrong nudges to catch
-    three — and a per-tool complaint is the worst possible place for that, because it lands
-    mid-thought where the agent is least able to weigh it.
-
-    SUBAGENTS ARE OUT OF THIS. When this mark was project-wide, three critics reading the
-    package raised it from 28,780 to 83,700 and the parent session was silenced by output
-    it never saw. A subagent no longer reaches the hook at all — see `main`.
-    """
     _floor(ctx)
     try:
         _record_files(payload, ctx)
@@ -3238,27 +2711,12 @@ _REMIND: list = []
 
 
 def _remembering(text: str = "") -> str:
-    """Fold this stop's reminder into whatever else the stop was going to say.
-
-    ONE COPY. `additionalContext` is rendered to the user as well as to the agent, so a
-    `systemMessage` twin of the same words was the same sentence printed twice in one stop.
-    """
     if not _REMIND:
         return text
     return _REMIND[0] + ("\n\n" + text if text else "")
 
 
 def _remind_only() -> int:
-    """The stop had nothing else to say — so the reminder is said to the USER and no more.
-
-    A REMINDER IS NOT A REASON TO CARRY ON WORKING. `additionalContext` at a stop re-opens
-    the turn (see `_hold`), so a standing reminder emitted there with nothing else pending
-    woke this very session three times with nothing to do — the user watching it happen.
-    The agent is reminded where reminding is free: mid-turn every `reminder_every` calls,
-    and in the block it is handed at every start. What is owed at the stop is the person's
-    confirmation that their instruction is still in force, and `systemMessage` is the field
-    for exactly that: shown to them, no turn re-opened.
-    """
     if not _REMIND:
         return 0
     print(json.dumps({"systemMessage": _REMIND[0]}))
@@ -3293,19 +2751,11 @@ _ERROR_LABELLED = frozenset({"claimed", "environment"})
 
 
 def _open_ids() -> list:
-    """The open to-do numbers on this environment — what a held listing was true of."""
     here = tracks.current(ROOT, _HOLD_CTX[0] if _HOLD_CTX else None)
     return sorted(t["n"] for t in todo.open_items(ROOT, here))
 
 
 def _asked_lent(payload: dict) -> bool:
-    """Did this tool call run `journal lent`? The one command whose answer is the hook's.
-
-    The CLI cannot see `agent_id`, so it cannot answer "who am I" — it prints what a SESSION
-    should hear and this supplies the rest on the tool's result. `PostToolUse` because
-    `DELIVERS_CONTEXT` does not list `PreToolUse`: the harness rejects context there,
-    measured, whatever the reference says.
-    """
     if (payload.get("tool_name") or "") != "Bash":
         return False
     cmd = str((payload.get("tool_input") or {}).get("command", ""))
@@ -3321,13 +2771,11 @@ def _asked_lent(payload: dict) -> bool:
 
 
 def _parent_of(payload: dict) -> str:
-    """The DISPATCHING session's stem. A subagent's events carry it, not its own."""
     tp = payload.get("transcript_path") or ""
     return Path(tp).stem if tp else (payload.get("session_id") or "")
 
 
 def _file_details(brief: str, text: str) -> str:
-    """The long half of a hold goes behind `journal next`; the line grows the pointer to it."""
     if text and _HOLD_CTX:
         state.put(ROOT, "next_text", text, stem=_HOLD_CTX[0])
         state.put(ROOT, "next_rows", _open_ids(), stem=_HOLD_CTX[0])
@@ -3338,27 +2786,6 @@ def _file_details(brief: str, text: str) -> str:
 
 
 def _hold(label: str, brief: str, text: str = "", subject: str = "") -> int:
-    """Hold the stop: a small label for the user, the instruction and reasoning for the agent.
-
-    The user asked for less: the one-line instruction was still the agent's business
-    rendered in their terminal at every hold, under a heading that calls it an error. So
-    the reason — the only half the harness prints — is now a label saying that the journal
-    reminded Claude and of what, in a few words. The instruction line leads the context
-    block, so the agent still reads it first.
-
-    The first version did this with `exit 2` + stderr, which works — and which the harness
-    renders to the user as `Stop hook error`. `decision: "block"` was the same hold said
-    properly: exit 0, the turn continues so the agent can act. The harness still labels
-    the block's reason an error on the user's screen, and prints ALL of it — twenty lines
-    of reasoning about pins, every stop, in the user's terminal, for a nudge addressed to
-    the agent.
-
-    So the hold has two halves. `reason` is ONE LINE, and it is the whole instruction: what
-    happened and the one thing to do, so an agent that received nothing else could still
-    act. `additionalContext` carries the reasoning, which the harness delivers to the agent
-    and folds away on the user's side. The user sees one line and can open it; the agent
-    reads the rest.
-    """
     # THE HARNESS PRINTS BOTH HALVES TO THE USER. Measured: "Stop hook feedback:" followed
     # by the whole reasoning, in the terminal, for an untagged message. So a hold carries
     # its one-line instruction and nothing else; the reasoning is in the skill's hold
@@ -3432,25 +2859,11 @@ _AGENT: list = []
 
 
 def agent_of(payload: dict) -> str:
-    """"codex" or "claude", from the transcript the payload names."""
     tp = str(payload.get("transcript_path") or "")
     return "codex" if Path(tp).name.startswith("rollout-") or "/.codex/" in tp else "claude"
 
 
 def _context(event: str, text: str, system: str | None = None) -> int:
-    """Hand the harness something to put in front of the agent, and the user.
-
-    `system` is the half the user sees. `additionalContext` reaches the agent and nothing
-    else: the user cannot read it, so a hook that needs the PERSON to know something —
-    that this session has no environment yet — has to say it in the one field the harness
-    shows them. It is a universal field, so it survives an event that cannot carry
-    context, and it is printed even then.
-
-    Refuses an event that cannot carry it. A rejected payload looks identical to a
-    delivered one from in here — same exit 0, same written state — so the refusal is
-    LOUD: it goes to stderr and to the user, because a delivery that fails invisibly is
-    the one shape this system exists to prevent.
-    """
     out: dict = {}
     if system:
         out["systemMessage"] = system
@@ -3471,9 +2884,6 @@ def _context(event: str, text: str, system: str | None = None) -> int:
 
 
 def on_pre_compact(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """Says nothing: the harness accepts no context on PreCompact. `main` has already recorded it as
-    the session's last event, which is how the viewer shows the agent compacting until the
-    SessionStart(source="compact") on the far side of it."""
     return 0
 
 
@@ -3533,14 +2943,6 @@ DOORWAY_CAPS = {"rules": 3, "pins": 3, "docs": 3, "tools": 0, "todos": 0}
 
 def carried(source: str = "compact", stem: str | None = None, unbound: bool = False,
             depth: str = BRIEF) -> str:
-    """The start block, built to fit. See `_carried` for what goes in it.
-
-    IT TIGHTENS UNTIL IT FITS. The caps are halved and rebuilt until the block is inside the
-    budget or there is nothing left to give — measured, not assumed, because the thing that
-    broke was somebody's assumption about how big a record gets. A store never falls below
-    three entries: past that the block stops being a hand-over and becomes a footnote, and
-    the reader is better served by the honest over-budget notice at the end.
-    """
     # THE DOORWAY IS THE HALF THAT GOES INTO CONTEXT, so it is the half that must fit. It
     # used to return here without measuring, on the reasoning that it is short because the
     # long half is a command away — which is a bound on the NUMBER of entries and not on
@@ -3565,23 +2967,6 @@ def carried(source: str = "compact", stem: str | None = None, unbound: bool = Fa
 
 def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
              depth: str = FULL) -> str:
-    """Exactly what a session is handed at its start, built without writing anything.
-
-    THE INJECTED BLOCK IS THE ONE THING NOBODY COULD LOOK AT. It is assembled inside a
-    hook, delivered to a context the user cannot read, and until now the only way to see it
-    was to pipe a fake payload into the hook — which also wrote state, so looking changed
-    the thing being looked at. A mechanism whose output is invisible until it fires is the
-    shape this whole package exists to argue against, and this one had it.
-
-    So the assembling lives here, pure, and the handler is what writes. `journal carry`
-    reads it and nothing moves.
-
-    THE STORE IS DELIVERED AT EVERY START. The journal is shared by every session, and a
-    session that starts fresh, or after `/clear`, or as a fork, has lost as much as one that
-    compacted. Only the closing paragraph about "the summary you are holding" is kept for a
-    compaction, because on any other source there is no summary and a message claiming one
-    is a nudge about an event that did not happen.
-    """
     here = tracks.current(ROOT, stem)
     short = depth == BRIEF
     parts = [
@@ -3653,21 +3038,6 @@ def _carried(source: str, stem: str | None, unbound: bool, caps: dict,
 
 
 def _standing(short: bool) -> str:
-    """The work this session declared and never closed — the first record fact it meets.
-
-    IT IS SECOND IN THE BLOCK, ABOVE THE RULES, because a summary is worst at exactly this.
-    It is passable at narrative and hopeless at standing orders, and open work is the one
-    standing order that decides what the next thirty seconds are spent on. Buried seventh,
-    under three rules and three doc abstracts, it was read as trivia.
-
-    THE TITLE, NOT THE UPDATES. The doorway carries pointers; `journal open` carries where
-    each got to. A section that grows with how much was written about the work is the same
-    defect as an uncapped pin, one noun over.
-
-    AND SILENCE IS NOT AN ANSWER. An omitted section reads as "not mentioned", which leaves
-    a reader unable to tell no open work from a doorway that did not say. So the brief block
-    says nothing is open when nothing is, in the fewest words that settle it.
-    """
     standing = work.open_work(ROOT)
     if not standing:
         return say("nothing_open") if short else ""
@@ -3675,18 +3045,6 @@ def _standing(short: bool) -> str:
 
 
 def _todo_note(here: str, unbound: bool = False) -> str:
-    """What the to-do count needs said beside it — and it is never the to-dos themselves.
-
-    THE ANSWERED ONES ARE WHY THIS ROW MATTERS. A to-do the user has answered is them saying
-    to do it, and it is the one thing in the record that is actionable now and invisible from
-    a count: 117 waiting and 2 answered look identical unless the second number is said. The
-    ANSWERS are what broke the block — two of them were 7,014 characters — so what crosses
-    here is that they exist and the command that reads them.
-
-    AND AUTO IS AN INSTRUCTION, NOT A LISTING. A session in auto that is not told so simply
-    stops, which is the one omission a doorway cannot afford: everything else it leaves out
-    is readable on demand, and this one is not readable at all — it is a standing order.
-    """
     # TWO FACTS THAT BOTH APPLY. Auto is a standing order and an answered to-do is the user
     # saying to do that one — an early return on the first dropped the second, and an
     # answered row under auto is the most actionable thing in the record.
@@ -3706,18 +3064,6 @@ def _todo_note(here: str, unbound: bool = False) -> str:
 
 
 def _counts(here: str, unbound: bool = False) -> str:
-    """How much of each store stands, and the one command that reads it.
-
-    ONLY WHAT IS NOT ALREADY ABOVE. Rules, pins and docs show their most recent few inline,
-    each with its own count and its own "reads the rest" line, so repeating them here would
-    print the same number twice and teach the reader that this block is filler. What is left
-    is exactly what the doorway drops: the reminders, the to-dos, the open work, the tools.
-
-    ROWS WITH NOTHING BEHIND THEM ARE NOT PRINTED. A zero teaches the reader these lines are
-    noise, and the next line they skip is the one that mattered. `journal carry` is last
-    because "I would rather read it all at once" is a real preference, and cheaper offered
-    than discovered.
-    """
     import reminders as rem
     rows = [
         (len(rem.live(ROOT)), "journal reminders", say("count_reminders")),
@@ -3736,7 +3082,6 @@ def _counts(here: str, unbound: bool = False) -> str:
 
 
 def _loop_line(conf: dict) -> str:
-    """The ask that keeps an idle auto session alive: a loop that prompts `journal next`."""
     m = conf.get("auto_loop_minutes", 0)
     if not m:
         return ""
@@ -3744,13 +3089,6 @@ def _loop_line(conf: dict) -> str:
 
 
 def _prune(keep: str = "") -> None:
-    """Drop the runtime file of any transcript this machine no longer has.
-
-    BY EVIDENCE, NEVER BY A COUNTER. A file is kept as long as its transcript is, however
-    old, because `verify` counts these as proof the hook ran and nothing here deletes what
-    it cannot account for. Subagent transcripts live one level down and are found there.
-    Only `*.json` is touched: a writer's tmp is somebody else's file mid-flight.
-    """
     project = ROOT.parent
     found: dict[str, bool] = {}
 
@@ -3778,7 +3116,6 @@ def _prune(keep: str = "") -> None:
 
 
 def _remember_pid(stem: str) -> None:
-    """Claude Code's process id for this session, so the viewer can tell a live session from a dead one."""
     import os
     pid = str(os.getppid())
     got = state.get(ROOT, "session_pids", {})
@@ -3790,15 +3127,6 @@ def _remember_pid(stem: str) -> None:
 
 
 def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """Hand the session the store, and mark that this hook is alive in this transcript.
-
-    EVIDENCE THAT THIS RAN, written by the only thing that can write it. Until now the
-    only proof a hook had fired was a HOLD, so a journal doing its job quietly — teaching
-    the vocabulary at every session start and never needing to hold anybody — was
-    indistinguishable from one that had never been invoked. `verify` would have called it
-    dead. A hook that works has to leave a mark, or the check that looks for marks is
-    measuring how often the agent misbehaves rather than whether the mechanism is alive.
-    """
     source = payload.get("source") or "startup"
     _floor(ctx)
     state.put(ROOT, "session_started", source, stem=ctx.stem)
@@ -3889,14 +3217,6 @@ def conf_of(payload: dict) -> dict:
 
 
 def _register(payload: dict, ctx: Ctx) -> str | None:
-    """The environment this session is registered on — registering it now if it may be.
-
-    A SESSION WITH NO BINDING YET — its start, or its first event after an update —
-    registers on the project's start environment, UNLESS a running session holds it: then
-    it is registered nowhere until it switches, told so at its start, refused edits and
-    held at its stops meanwhile. That is how two agents never share an environment: the
-    second one is simply not let in.
-    """
     if tracks.bound(ROOT, ctx.stem):
         return tracks.current(ROOT, ctx.stem)
     # a continued or resumed session goes back on the environment it ended on, if that still exists and is free
@@ -3918,15 +3238,6 @@ def _register(payload: dict, ctx: Ctx) -> str | None:
 
 
 def _claimed_note(ctx: Ctx | None, clear: bool = True) -> tuple[str, str] | None:
-    """(label, text) if this session's environment was claimed away, else None. Said once.
-
-    AN EVICTED SESSION IS NOT A SESSION THAT STARTED ON A TAKEN ENVIRONMENT, and until this
-    it was told it was: being unbound, it fell into the registered-nowhere path, whose whole
-    explanation is "the environment you START on is held by somebody else". True of the
-    start environment, and no answer at all to what actually happened — the session HAD an
-    environment, and another session took it. Wrong causes are worse than none: the reader
-    switches somewhere else and never learns its work moved.
-    """
     if ctx is None or not ctx.stem:
         return None
     got = state.get(ROOT, "claimed_away", {}, stem=ctx.stem)
@@ -3940,13 +3251,6 @@ def _claimed_note(ctx: Ctx | None, clear: bool = True) -> tuple[str, str] | None
 
 
 def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) -> int:
-    """An actor registered nowhere: refused the journal's writes, handed the rules, else nothing.
-
-    A SESSION registered nowhere is one whose start environment another running session
-    holds. It is told at its start by whom, refused edits, held at its stops, and let
-    through to the one thing that registers it: `journal switch` (or `prepare`) onto a
-    free environment. Reads are fine.
-    """
     if ctx is not None:
         due = state.get(ROOT, "track_due", None, stem=ctx.stem) or {}
         if handler is on_session_start:
@@ -3988,14 +3292,6 @@ def _unregistered(conf: dict, payload: dict, handler, ctx: Ctx | None = None) ->
 
 
 def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """The session is over: its environment is free, and so is anything it lent.
-
-    A GRANT DIES WITH THE SESSION, and for one release that was a sentence rather than a
-    fact: `granted` is a runtime key, the runtime file outlives the session, and nothing
-    cleared it — so a `claude --resume` woke up still lending an environment to subagents
-    nobody was watching. That is a door left open by a session that has stopped looking,
-    which is the exact failure the grant exists to prevent.
-    """
     # remembered so a --continue or --resume of this session starts back on it
     state.put(ROOT, "ended_on", tracks.bound(ROOT, ctx.stem) or "", stem=ctx.stem)
     tracks.unbind(ROOT, ctx.stem)
@@ -4008,7 +3304,6 @@ def on_session_end(conf: dict, payload: dict, ctx: Ctx) -> int:
 
 
 def on_subagent_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
-    """A subagent stopped; the subagent branch in main marks it finished. Nothing else about it is the journal's."""
     return 0
 
 
@@ -4041,7 +3336,6 @@ def events_file(stem: str) -> Path:
 
 
 def _report(event: str, payload: dict, ctx: Ctx) -> None:
-    """One line: which event, when, which tool — enough for a watcher outside to know the moment."""
     import json
     line = {"at": time.time(), "event": event, "session": ctx.stem}
     tool = payload.get("tool_name")
@@ -4067,8 +3361,6 @@ def _report(event: str, payload: dict, ctx: Ctx) -> None:
 
 
 def main(raw: str | None = None) -> int:
-    """One hook event. `raw` is the payload; without it, stdin — which is how the harness
-    calls it, and how a test can answer many events in one interpreter instead of one."""
     try:
         payload = json.loads(raw) if raw is not None else json.load(sys.stdin)
     except Exception:

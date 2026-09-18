@@ -41,7 +41,6 @@ def say(message: str, /, **values) -> str:
 
 
 def days(root: Path, track: str, resource: str) -> dict:
-    """{"archive": days listed once closed, "delete": days archived before deletion} for one resource here."""
     archive, delete = DEFAULTS.get(resource, DEFAULT)
     if resource in LEGACY:
         got = state.get(root, LEGACY[resource], {})
@@ -63,11 +62,6 @@ def _when(stamp) -> float | None:
 
 
 def prune(root: Path, track: str) -> int:
-    """Delete, for good, the content of closed items past their days listed and their days archived; how many.
-
-    A deleted item keeps its place and whatever marks it closed, so numbers never shift and nothing that
-    reads the list mistakes it for open; the resource layer leaves it out of every list.
-    """
     import importlib
     import time
     gone = 0

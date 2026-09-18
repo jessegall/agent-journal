@@ -58,7 +58,6 @@ class Show(Resource):
 
 
 def options_of(p: Parsed) -> list[dict]:
-    """Each --option, with the --option-description and --option-code typed after it and before the next --option."""
     out: list[dict] = []
     for name, value in p.options_in_order():
         if name == "option":

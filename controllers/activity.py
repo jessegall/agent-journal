@@ -37,7 +37,6 @@ BECAME = {"todo": "to-do", "question": "question", "pin": "pin", "rule": "rule",
 
 
 def became(message: dict) -> str:
-    """What a filed message's parts became, like "to-do 139, question 12"."""
     out = []
     for part in message.get("parts") or []:
         for ref in part.get("became") or []:
@@ -61,8 +60,6 @@ def say(message: str, /, **values) -> str:
 
 
 def seat_now(root: Path, stem: str) -> dict | None:
-    """What the launcher sees of this session from outside — working or idle, and what it last
-    printed — when a launcher holds it; None for a session on no seat."""
     import state
     if not channel_now(root, stem):
         return None
@@ -71,9 +68,6 @@ def seat_now(root: Path, stem: str) -> dict | None:
 
 
 def agent_working(root: Path, stem: str) -> bool:
-    """Is the session busy right now? A seated session's launcher says, from the pty and the hooks'
-    reports together. Otherwise its last hook event says: a Stop means it is waiting for the user.
-    A long tool call fires nothing until it ends, so its last event stays the PreToolUse that started it."""
     import state
     seat = seat_now(root, stem)
     if seat is not None:
@@ -82,13 +76,11 @@ def agent_working(root: Path, stem: str) -> bool:
 
 
 def agent_compacting(root: Path, stem: str) -> bool:
-    """Is the session compacting its context? PreCompact is its last event until the SessionStart that follows."""
     import state
     return state.get(root, "last_event", "", stem=stem) == "PreCompact"
 
 
 def context_use(path: Path | None, window: int) -> dict | None:
-    """How full the session's context is, or None when the window or the reading is unknown."""
     import context
     used = context.reading_tail(path) if path and window else None
     if used is None:
@@ -101,8 +93,6 @@ _SAID: dict = {}
 
 
 def channel_now(root: Path, stem: str) -> bool | None:
-    """Is the journal's launcher around this session — the seat that types the viewer's news in?
-    None while the session is too young to tell."""
     import state
     now = time.time()
     seen = state.get(root, "seat_seen", 0, stem=stem) or 0
@@ -126,7 +116,6 @@ def session_started(path) -> str:
 
 
 def last_said(path, cap: int = 600) -> str:
-    """The agent's latest reply, cut to a readable length, for the top of the Activity column."""
     import transcript
     if path is None or not path.is_file():
         return ""
@@ -147,12 +136,6 @@ QUIET_AFTER = 5
 
 
 def running_now(root: Path, stem: str) -> dict | None:
-    """The shell command this session is in the middle of, and for how long — or None.
-
-    WAITING IS NOT WORKING, and from the outside they look identical: the bar says Working while the
-    agent sits on a four-minute test run with nothing on the screen to say so. The hook records the
-    command when it starts it and clears it when it ends.
-    """
     import state
     import time
     import tracks
@@ -182,7 +165,6 @@ def running_now(root: Path, stem: str) -> dict | None:
 
 
 def _epoch(at: str) -> float:
-    """An ISO timestamp as seconds, or 0 when it is not one."""
     from datetime import datetime
     try:
         return datetime.fromisoformat(at).timestamp()
@@ -195,12 +177,6 @@ OVER = "[exited with code"
 
 
 def _tasks_dir(root: Path, stem: str) -> Path | None:
-    """Where this session's background output is written, or None.
-
-    THE PATH IS DERIVED AND THEN CHECKED, never assumed: the harness writes to
-    <tmp>/claude-<uid>/<project slug>/<session>/tasks, and a version that changes it simply leaves
-    this returning None — the bar then shows nothing rather than something invented.
-    """
     import os
     slug = str(root.resolve().parent).replace("/", "-")
     here = Path("/tmp") / f"claude-{os.getuid()}" / slug / stem / "tasks"
@@ -208,13 +184,6 @@ def _tasks_dir(root: Path, stem: str) -> Path | None:
 
 
 def shells_now(root: Path, stem: str) -> list[dict]:
-    """The background shells this session started, and whether each is still going.
-
-    NOTHING CLAIMS LIVENESS IT CANNOT CHECK. The hook records the command and the moment it was sent
-    to the background; the harness writes that command's output into one file per shell, and closes
-    it with an exit line when it is over. Pairing the two by time is what makes "still going"
-    answerable — and a shell with no file found is reported as over rather than as running for ever.
-    """
     import state
     import time
     held = [x for x in (state.get(root, "background_shells", [], stem=stem) or [])
@@ -250,7 +219,6 @@ def shells_now(root: Path, stem: str) -> list[dict]:
 
 
 class ActivityController(Controller):
-    """What is happening on an environment: the working agent's latest message, and the latest journal events."""
     resource = "activity"
     noun = "activity"
     actions = ("index",)
@@ -339,8 +307,6 @@ class ActivityController(Controller):
         def add(at, kind: str, text: str, n: int | None, by: str, titled: bool = False, needs: str = "",
                 detail: str = "", about: str = "", title: str = "", order: int = -1, sha: str = "",
                 calls: list | None = None) -> None:
-            """`needs`: "open" when the line waits on the user, "answered" once they have answered it.
-            `order`: a command-log line's place in the log, so lines logged in the same second list newest first."""
             if at:
                 out.append({"at": at, "kind": kind, "n": n, "text": short(text),
                             "title": short(title, TITLE_MAX) if title else title_of(kind, n) if titled else "",

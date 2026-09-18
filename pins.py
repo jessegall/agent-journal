@@ -1,26 +1,3 @@
-"""A fact that must reach the far side of every compaction.
-
-A TAG IS FREE. A PIN IS NOT. A tag rides on a message you were sending anyway; a pin rides
-on nothing and is restored, in full, on the far side of every compaction — so it costs
-room in the context it lands in, and only the far side can ever spend it.
-
-IT DOES NOT SHAPE THE SUMMARY. The summariser cannot be addressed at all (see
-`hook.on_pre_compact`); a pin is handed back AFTER the loss, beside the summary, never
-inside it.
-
-AND IT NEVER EVICTS, AND NEVER TRIMS. There is no cap on how many stand and no cap on
-how many are handed over: every standing pin and rule reaches the far side, always. The
-only limit is on the LENGTH of one entry, enforced when it is written. The tool this
-replaces dropped the oldest silently, and the pin it ate — "DO NOT ACT ON status's
-Running LIST" — cost a real build two hours of a wrong board. A tier that silently forgets
-is the exact failure the whole system exists to prevent, so nothing leaves the store
-except by a person striking it, with a reason.
-
-THE TEST, three questions: did somebody DECIDE it; would the next reader get it WRONG
-without it; will it still be true tomorrow? A status, a count, or what you just did fails
-the third and becomes a confident falsehood wearing the same authority as the facts that
-still hold.
-"""
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -106,13 +83,6 @@ def say(message: str, /, **values) -> str:
 
 
 def _store(key: str = KEY, root: Path | None = None):
-    """What `entries` needs to know about a pin — or a rule, which is a pin everywhere.
-
-    `facts` closes over the root and the key because the line beneath a pin cites a doc by
-    its label, which only the record can resolve. The signature stays uniform — every
-    store's `facts` is `(entry, number) -> fragments` — so `entries.rows` never learns
-    which noun it is holding.
-    """
     import entries
     noun = "rule" if key == RULES else "pin"
 
@@ -143,28 +113,11 @@ RULES = "rules"
 
 
 def _doc_label(root: Path, ref) -> str:
-    """A pin's doc citation, rendered. Imported here so `import pins` is not `import docs`."""
     import docs as docs_mod
     return docs_mod.ref_label(root, str(ref))
 
 
 def age(at: str, now: datetime | None = None) -> str:
-    """How long this fact has been asserted, in the coarsest honest unit.
-
-    THE ONE PLACE THIS SYSTEM ASKS TO BE TRUSTED. Everything else here fails by being
-    absent — an untagged message files nothing, a hook that never runs holds nothing,
-    `work.note` refuses rather than guessing. A pin is the exception: it is re-asserted
-    verbatim at the top of every compaction, in the highest-authority position the system
-    has, and nothing revisits it. `pins.py` states the test in its own docstring — will it
-    still be true tomorrow — and then never asks again.
-
-    So the age is SHOWN and nothing is expired. A date invites the question; it does not
-    answer it. Automatic eviction is the failure this module exists to prevent, and a
-    stale pin you can see beats a true one that silently vanished.
-
-    Unreadable timestamps return "" rather than a guess: a wrong age on a true fact is
-    the same confident falsehood the whole exercise is against.
-    """
     try:
         when = datetime.fromisoformat((at or "").replace("Z", "+00:00"))
     except ValueError:
@@ -182,7 +135,6 @@ def age(at: str, now: datetime | None = None) -> str:
 
 
 def _all(root: Path, key: str = KEY, track: str | None = None) -> list[dict]:
-    """Every entry — the current environment, or a named one (rules ignore `track`)."""
     if track and key in state.TRACKED:
         got = state.tracked(root, key, track, [])
     else:
@@ -196,17 +148,6 @@ def live(root: Path, key: str = KEY, track: str | None = None) -> list[dict]:
 
 def add(root: Path, fact: str, at: str, limit: int, supersedes: int | None = None,
         where: dict | None = None, key: str = KEY, long: str = ""):
-    """Pin a fact. Refuses a paragraph, and records where it was said.
-
-    THE LIMIT IS ON LENGTH, NOT ON COUNT, and that is the whole change. A pin is re-read in
-    full at every compaction forever, so what it costs is not a slot — it is the reader's
-    attention, every single time. A 380-character pin was three facts and a rationale
-    wearing one number; refusing it costs the writer one sentence of thought and saves
-    every future reader the paragraph.
-
-    The refusal SHOWS THE OVERFLOW rather than truncating, because a pin silently cut in
-    half is a fact that reads as complete and is not.
-    """
     fact = " ".join(fact.split())
     if not fact:
         return False, say("needs_fact")
@@ -262,18 +203,6 @@ STRUCK = "struck"
 
 
 def body_dir(root: Path, key: str = KEY, track: str | None = None) -> Path:
-    """Where the long forms live: beside the rules, or inside the environment for pins.
-
-    THE ENVIRONMENT THIS PROCESS IS ON, NOT THE PROJECT'S — by default. `state.
-    current_track` is the same resolution `_all`/`add` already go through for the pin
-    ENTRY itself; reading the record's `current` directly — the project's start
-    environment — put the entry on one environment and its body file under another's
-    folder the moment a session was bound to any other one.
-
-    `track` overrides that default for a caller reading a NAMED environment rather
-    than whichever one this process happens to be on — the web viewer, which answers
-    for any environment in one request, never just its own.
-    """
     if key == RULES:
         return root / "rules"
     return state.env_dir(root, track or state.current_track(root)) / "pins"
@@ -290,8 +219,6 @@ def body_path(root: Path, n: int, fact: str, key: str = KEY) -> Path:
 
 
 def body(root: Path, n: int, key: str = KEY, track: str | None = None) -> str:
-    """The long form of claim n, or "" when it has none. `track` reads a NAMED
-    environment's pins instead of this process's own — see `body_dir`."""
     items = _all(root, key, track)
     if n < 1 or n > len(items):
         return ""
@@ -303,7 +230,6 @@ def body(root: Path, n: int, key: str = KEY, track: str | None = None) -> str:
 
 
 def write_body(root: Path, n: int, text: str, key: str = KEY, at: str = "") -> tuple[bool, str]:
-    """Give claim n a long form, or replace the one it has. The old text is kept under struck/."""
     noun = "rule" if key == RULES else "pin"
     if not (text or "").strip():
         return False, say("needs_body")
@@ -325,7 +251,6 @@ def write_body(root: Path, n: int, text: str, key: str = KEY, at: str = "") -> t
 
 
 def amend_body(root: Path, n: int, title: str, text: str, key: str = KEY, at: str = "") -> tuple[bool, str]:
-    """Append a `## <title>` section to the long form, leaving what is there."""
     title = " ".join((title or "").split())
     if not title:
         return False, say("needs_section", key=key, n=n)
@@ -346,13 +271,6 @@ VOLATILE = ("scratchpad", "/tmp/", "/private/tmp", "/var/folders/")
 
 
 def refused(fact: str, limit: int) -> str | None:
-    """Why this pin cannot be written, or None. ONE text, said in two places.
-
-    The CLI says it after the command ran and exited 1, which a reader can skim past.
-    The PreToolUse gate says it BEFORE the command runs, as a denied tool call, which a
-    reader cannot — and the two must be the same words, or the gate and the command would
-    disagree about the rule they share.
-    """
     fact = " ".join(fact.split())
     low = fact.lower()
     hit = next((v for v in VOLATILE if v in low), None)
@@ -366,37 +284,14 @@ def refused(fact: str, limit: int) -> str | None:
 
 
 def strike(root: Path, n: int, why: str, key: str = KEY, at: str = "") -> tuple[bool, str]:
-    """Retire a pin that has simply STOPPED BEING TRUE, without inventing a replacement.
-
-    `--supersedes` already struck a pin, but only by putting another one in its place — it
-    answers "this fact changed". It has no answer for "this fact expired", and the first
-    stale pin proved it: a spent probe number, true when written, dead an hour later, with
-    nothing to replace it. Retiring it through `--supersedes` would have meant writing a
-    fact I did not have in order to delete one I did not want, and a store that makes you
-    invent an entry to remove an entry will accumulate inventions.
-
-    THE REASON IS REQUIRED, and it is the whole safeguard — see `entries.retire`, which is
-    where that safeguard lives for every store that has it.
-    """
     return entries.retire(root, _store(key), n, why, at)
 
 
 def move(root: Path, n: int, dst: str, at: str) -> tuple[bool, str]:
-    """Move a pin to another environment. Struck here, added there — see `entries.move`.
-
-    Rules are not moved by this: a rule binds every environment, so there is nowhere to move
-    it to. That refusal lives at the CLI, where the noun is known.
-    """
     return entries.move(root, _store(KEY), n, dst, at)
 
 
 def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[bool, str]:
-    """Lift a pin into a rule: the same claim, now for every environment.
-
-    THE PIN IS STRUCK, NOT COPIED. Two entries carrying one claim would drift — one gets
-    superseded, the other does not — and the far side would be handed both. The strike
-    reason names the rule, so `pins --all` still shows where the claim went.
-    """
     with state.locked(root):
         items = _all(root)
         i = n - 1
@@ -423,15 +318,6 @@ def promote(root: Path, n: int, at: str, where: dict | None = None) -> tuple[boo
 def listing(root: Path, *, all_of_them: bool = False, key: str = KEY,
             cap: int | None = None, page: int = 1, order: str = fmt.DESC,
             track: str | None = None):
-    """(the rows, how many were left off). What a page is BUILT from — see `entries.rows`.
-
-    A page that is handed rendered TEXT can only print it; one handed rows can put them
-    under a heading, beside a footer, inside a section. The catalogue pages take these, and
-    `render` below is for the two callers that genuinely want a finished string.
-
-    `track` reads another environment's pins instead of the current one (ignored for
-    rules, which bind every environment) — see `entries.all_of`.
-    """
     import entries
     return entries.rows(root, _store(key, root), all_of_them=all_of_them, cap=cap,
                         page=page, order=order, track=track)
@@ -440,12 +326,6 @@ def listing(root: Path, *, all_of_them: bool = False, key: str = KEY,
 def rows_response(root: Path, *, all_of_them: bool = False, key: str = KEY,
                   cap: int | None = None, page: int = 1, order: str = fmt.DESC,
                   track: str | None = None) -> tuple[list[dict], int]:
-    """(the rows as plain, JSON-safe dicts, how many were left off) — the ONE place a
-    pin or rule becomes DATA instead of an `fmt.Item`. `render` below turns this same
-    response into terminal text; the web viewer's `views.pins_on`/`rules` turn it into
-    the API's JSON, unchanged apart from a web-only display choice (dropping the
-    transcript line, which means nothing outside a terminal — see `views._drop_line_
-    segment`). Neither caller re-derives a row from `listing`/`entries.rows` itself."""
     items, left = listing(root, all_of_them=all_of_them, key=key, cap=cap, page=page,
                           order=order, track=track)
     return [{"n": it.n, "fact": it.text, "meta": it.meta, "struck": it.struck} for it in items], left
@@ -453,14 +333,6 @@ def rows_response(root: Path, *, all_of_them: bool = False, key: str = KEY,
 
 def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int | None = None,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC) -> str:
-    """The list as a person reads it — built on `rows_response`, the same response the
-    web viewer serves as JSON; only what goes BENEATH an entry is this module's, and
-    only turning the response into fmt.Item/text is what this function still does.
-
-    NOTHING HERE IS ABOUT SCOPE. A pin belongs to ONE environment and a rule to the whole
-    project — `state.TRACKED` puts pins in the environment's folder and `rules` stays in the
-    record, and `tracks.switch` moves the one and never the other. Using the same renderer
-    changes neither, and the word "shared" belongs to that distinction, not to this one."""
     width = fmt.room(width)
     if not _all(root, key):
         return say("no_rules" if key == RULES else "no_pins")
@@ -470,15 +342,6 @@ def render(root: Path, *, all_of_them: bool = False, key: str = KEY, width: int 
 
 
 def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tuple[bool, str]:
-    """The conversation around where a pin was written — the reasoning it deliberately omits.
-
-    THIS IS WHY THE PIN CAN BE SHORT. The claim is the pin; the argument is here, in the
-    transcript, unedited and in the words both people actually used. Nothing is copied
-    between them, so they cannot drift apart.
-
-    A pin from before line numbers were kept SAYS SO instead of guessing at a location. An
-    index that points confidently at the wrong page is worse than one that admits a gap.
-    """
     import transcript
     noun = "rule" if key == RULES else "pin"
     items = _all(root, key)
@@ -529,18 +392,6 @@ def around(root: Path, n: int, project: Path, spread: int, key: str = KEY) -> tu
 
 def carry(root: Path, source: str = "compact", key: str = KEY, cap: int = 0,
           brief: bool = False) -> str:
-    """What a compaction cannot be trusted to keep, handed back AFTER it. Empty if none.
-
-    Not "told to keep" — the summariser is unreachable, so this never shapes the summary.
-    It is restored on the far side, at SessionStart, which is the only door that opens.
-    The wording says so, because a page claiming a side effect it no longer has is the
-    defect this whole system is a reaction to.
-
-    THE HEADER DEPENDS ON WHAT JUST HAPPENED. The journal is shared by every session, so
-    the pins are delivered at every start — and a fresh session is holding no summary. A
-    header that says "the summary you are holding" to a session that has none is a claim
-    about an event that did not happen, in the highest-authority position the system has.
-    """
     # THE NUMBER IS THE POSITION IN THE FULL LIST, and here it was not. `render` numbers
     # over every entry so a struck one keeps its number; this block numbered over the LIVE
     # ones, so `·pins show 3` in a session's start block pointed at a different pin from

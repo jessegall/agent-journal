@@ -1,23 +1,3 @@
-"""Rules the PACKAGE ships, in force on every project that installs it.
-
-A RULE THE USER CAN DELETE IS A DEFAULT, NOT A RULE. Everything else in this record is
-somebody's: written here, numbered here, strikable here, and absent from a fresh install.
-These are the journal's own — they arrive with the code, they reach every project, and
-`rules strike` refuses them. The user's word for it: baked in.
-
-WHY THERE IS EXACTLY ONE. The bar is not "good advice"; it is: does this bind every agent
-in every project, whatever the project is about? "A subagent runs on the cheapest model
-that meets the task" passes — it is about how agents are dispatched, which is true of a PHP
-kit and a Rust compiler alike. "A subagent runs no git" does not, however sound it is in the
-project it came from: that is a workflow, and a tool that ships workflows is a tool with
-opinions about a codebase it has never read. The user drew that line themselves.
-
-THEY ARE NUMBERED APART. `B1`, not `1`, because the project's rules are numbered by their
-position in its own list and inserting the package's at the front would move every citation
-ever written. `journal rules` shows both, marked, so a reader can always tell "this project
-decided" from "the tool ships this" — a rule whose provenance is unclear is one nobody can
-find the argument for.
-"""
 from __future__ import annotations
 
 import fmt
@@ -75,7 +55,6 @@ END = f"<!-- END: {MARK} -->"
 
 
 def block() -> str:
-    """The managed block, whole. Replaced between the markers, never merged."""
     out = [BEGIN, "", say("heading"), "", say("lead"), ""]
     for r in RULES:
         out += [say("rule", id=r["id"], fact=r["fact"]), ""]
@@ -85,13 +64,6 @@ def block() -> str:
 
 
 def carry(brief: bool = False) -> str:
-    """The one-line claims, for the block a session is handed at its start.
-
-    THE SHIPPED RULE IS AN ENTRY LIKE ANY OTHER, and it was the one that escaped the cap:
-    every project's rules and pins were shortened to a line while this sat above them at
-    275 characters, because it is written here rather than read from a store. A bound that
-    the hardcoded case walks around is not a bound.
-    """
     if not RULES:
         return ""
     rows = [say("carry_row", fact=fmt.gist(r["fact"]) if brief else r["fact"], id=r["id"]) for r in RULES]
@@ -99,6 +71,5 @@ def carry(brief: bool = False) -> str:
 
 
 def by_id(ref: str):
-    """One shipped rule by its id, or None. `rules show B1` reads its reasoning."""
     want = (ref or "").strip().upper()
     return next((r for r in RULES if r["id"] == want), None)

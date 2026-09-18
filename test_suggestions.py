@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""suggestions.py: the agent proposes, the user accepts, adjusts or declines; the agent is told."""
 import json, os, sys, tempfile
 from pathlib import Path
 

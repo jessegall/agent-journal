@@ -1,21 +1,4 @@
 #!/usr/bin/env python3
-"""Every edge of `todo auto`: the switch that lets the agent work through an environment on its own.
-
-    .journal/test_auto.py
-
-THIS IS THE FEATURE THAT MAKES THE AGENT AUTONOMOUS, so every state the stop hook can
-find it in is driven here, through the real hook binary with real payloads, in a
-throwaway project. The first live run found the shape of the bug this guards against: the
-agent's work had ended in its own mind and not in the journal's, auto was on, and the
-list sat. Nothing about that looked broken.
-
-Two invariants, checked in every scenario:
-  - with auto on, EVERY stop with the list waiting is held — finishing a thing and
-    stopping brings the next — except the stop that follows a hold in the same turn
-    (the harness's `stop_hook_active`), so an agent that answered a hold can end its turn
-    and is never trapped;
-  - with auto off, nothing is ever held for the list; it is mentioned once per state.
-"""
 import json, os, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
@@ -49,7 +32,6 @@ def project():
 
 
 class Session:
-    """One transcript of the project, driven the way the harness drives it."""
 
     def __init__(self, d, stem):
         self.d, self.stem = d, stem
@@ -83,11 +65,6 @@ class Session:
         return self.P.cli(*args, session=self.stem)
 
     def stop(self, after_hold=False):
-        """(label the user sees, text the agent reads) of this stop, or ('', '') if silent.
-
-        `after_hold` is the harness's `stop_hook_active`: this stop follows a hold in the
-        same turn, i.e. the agent has already answered the hold once.
-        """
         out = self.fire("Stop", stop_hook_active=after_hold)
         if not out.strip():
             return "", ""
@@ -588,7 +565,6 @@ check("and `journal todo` agrees with it, which is the whole point",
 # arrives when the agent is trying to finish — so auto was being turned on with no loop
 # behind it. A denial cannot be stepped over.
 def loud():
-    """A project with the loop subject NOT silenced: this suite silences it everywhere else."""
     d = project()
     (d / ".journal" / "settings.json").write_text(json.dumps(
         {"one_session_per_environment": False, "context_window": 1000000}))

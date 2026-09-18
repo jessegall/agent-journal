@@ -1,42 +1,4 @@
 #!/usr/bin/env python3
-"""install — wire the journal into a project that has just downloaded it.
-
-    .journal/install.py           wire the hooks, make things executable
-    .journal/install.py --alias   also put a `journal` command on your PATH (every shell)
-    .journal/install.py --git-hook    also install a git post-commit hook, so a commit you
-                                      make yourself closes the to-do its trailer names
-    .journal/install.py --no-git-hook remove that hook, if it is the one this wrote
-    .journal/install.py --check   say what would change, write nothing
-    .journal/install.py --from <path or git url>   pull that package in first (add --test to run its suites before anything lands)
-
-WHAT THIS IS CAREFUL ABOUT, and why each one is a real way to lose somebody's work:
-
-MERGE, NEVER OVERWRITE. `.claude/settings.json` is the user's file and this is a guest
-in it. There may be other hooks in there, on these very events, that matter more than
-this one. So the file is read, the journal's entries are added to whatever is already
-there, and everything else is passed through untouched. A tool that writes its own
-config over yours is a tool you cannot adopt incrementally.
-
-IDEMPOTENT. Running it twice must not wire the hook twice — a duplicated Stop hook fires
-twice per stop, holds twice, and reads like the check is broken rather than like the
-install is. So an entry already pointing at `hook.py` counts as done.
-
-IT REFUSES TO GUESS ABOUT MALFORMED JSON. If `settings.json` does not parse, this stops
-and says so rather than starting from `{}`. Starting fresh would silently delete every
-hook the user had, and the failure would look like an install that worked.
-
---from PULLS THE PACKAGE, NEVER THE DATA. The code and the skill come across, not the suites;
-the record, the settings and the runtime files are this project's and stay. A pull is a
-copy: the package is tested where it is developed, not in every consumer. `--test` runs
-the pulled copy's suites first, for the one time you want that. Until this existed every
-update to a consumer was an rsync by hand, and "the consumer has the latest" was a
-belief.
-
-AND IT DOES NOT CLAIM SUCCESS. The last thing it does is run `verify`, which reports
-WIRED and FIRED as two separate facts. Installing can only ever prove the first one. The
-tool this replaces sat wired and silent for seventeen hours, so `install` finishing is
-deliberately not the same as the journal being in force.
-"""
 from __future__ import annotations
 
 import filecmp
@@ -111,7 +73,6 @@ COMMAND = (
 #: has to be edited whenever the directory changes is a second source of truth for what the
 #: directory contains, and the directory always wins.
 def _executable(root: Path) -> set[str]:
-    """Every .py at the package root that starts with a shebang — that is what makes one."""
     out = set()
     for f in root.glob("*.py"):
         try:
@@ -150,17 +111,6 @@ BRIEFED = ("AGENTS.md", "CLAUDE.md")
 
 
 def briefing(project: Path, check: bool, conf: dict) -> list[str]:
-    """Write the managed block into each briefing file. Replaced between markers, never merged.
-
-    THE CONVENTION IS THE USER'S OWN, from `code-commandments`: an HTML comment so the
-    markers are invisible in rendered markdown, naming the package AND the command that
-    regenerates the block — so a reader who edits inside it is told, in the block, why their
-    edit will vanish. Everything outside the markers is theirs and is never touched, which
-    is what makes this safe to run on every update.
-
-    THREE CASES, ONE FUNCTION: no file, a file with no markers, a file with markers. Create,
-    append, replace between.
-    """
     import builtin
     out = []
     # always written: the package's own rules hold in every project, and no setting turns them off
@@ -188,7 +138,6 @@ def briefing(project: Path, check: bool, conf: dict) -> list[str]:
 
 
 def style_skills(check: bool) -> list[str]:
-    """The project's coding style rules, regenerated into their skills on every install and upgrade."""
     if check:
         return []
     import style
@@ -278,7 +227,6 @@ def _is_test(rel: Path) -> bool:
 
 
 def _git_files(root: Path) -> set[Path] | None:
-    """In a git checkout, the files git counts: tracked, or new and not ignored. None elsewhere."""
     if not (root / ".git").exists():
         return None
     try:
@@ -290,7 +238,6 @@ def _git_files(root: Path) -> set[Path] | None:
 
 
 def _package_files(root: Path) -> list[Path]:
-    """Every file of the package under `root`, relative — code, skill, gitignore; never the suites."""
     # a checkout also holds untracked or ignored folders (an editor's, a browser tool's) that are not the package
     listed = _git_files(root)
     out = []
@@ -309,7 +256,6 @@ def _package_files(root: Path) -> list[Path]:
 
 
 def pull(src: Path, check: bool) -> list[str]:
-    """Bring another checkout's package here. No suites run unless --test asked for them; then the files."""
     src = src.resolve()
     # a repository whose ROOT is the package also holds its own .journal/ instance inside;
     # the root is the source, the instance is that project's data
@@ -403,12 +349,6 @@ def _settings_path() -> Path:
 
 
 def unchannel(check: bool) -> list[str]:
-    """Take the journal's old MCP channel server out of `.mcp.json`, and nothing else.
-
-    THE LAUNCHER IS THE CHANNEL NOW. An entry pointing at `.journal/channel.py` names a file the
-    package no longer ships; left in place, every Claude start would try it and report a broken
-    server. Only that entry is touched; the rest of the file is the user's.
-    """
     f = ROOT.parent / ".mcp.json"
     if not f.is_file():
         return []
@@ -428,7 +368,6 @@ def unchannel(check: bool) -> list[str]:
 
 
 def wire(check: bool) -> list[str]:
-    """Add the journal's hooks to `.claude/settings.json`, keeping everything else."""
     return _wire(_settings_path(), check, {"hooks": [{"type": "command", "command": COMMAND}]})
 
 
@@ -437,14 +376,6 @@ def _codex_hooks_path() -> Path:
 
 
 def wire_codex(check: bool) -> list[str]:
-    """The same hooks into `.codex/hooks.json`, for a project Codex works in.
-
-    THE SAME COMMAND, THE SAME SHAPE. Codex reads `.codex/hooks.json` in the project (doc 9:
-    event → matcher group → handlers), runs the command through a shell with the project as
-    its cwd, and hands hook.py the fields Claude Code does. Only written where Codex is a
-    thing: the file already exists, a `.codex/` folder does, or `codex` is on the PATH —
-    a project that never runs Codex gets no stray folder.
-    """
     f = _codex_hooks_path()
     if not (f.is_file() or f.parent.is_dir() or shutil.which("codex")):
         return []
@@ -525,7 +456,6 @@ def _wire(f: Path, check: bool, block: dict) -> list[str]:
 
 
 def executable(check: bool) -> list[str]:
-    """A hook that is not executable fails silently — the harness just gets nothing."""
     out = []
     for name in sorted(_executable(ROOT)):
         p = ROOT / name
@@ -555,7 +485,6 @@ CODEX_SKILLS = ".agents/skills"
 
 
 def codex_skills(check: bool) -> list[str]:
-    """The ten skills where Codex loads them, kept current the same way."""
     if not ((PROJECT / CODEX_SKILLS).is_dir() or shutil.which("codex")):
         return []
     out = []
@@ -565,18 +494,6 @@ def codex_skills(check: bool) -> list[str]:
 
 
 def skill(check: bool) -> list[str]:
-    """Copy the packaged skill folder into place, and keep it current on every re-run.
-
-    IT OVERWRITES, DELIBERATELY, and only the files that differ. The installed copy is
-    package output, not a place to keep notes: an edited copy would drift away from the
-    rules the hooks actually enforce, and a skill that describes a tool inaccurately is
-    worse than no skill, because it is believed. Anything worth changing belongs in
-    `skill/`, where the next install carries it everywhere.
-
-    THE WHOLE FOLDER, not one file. The skill has a body and references it points at;
-    a copy that carried SKILL.md alone would leave every one of those pointers dangling in
-    the installed copy, silently. Files the package no longer ships are removed by name.
-    """
     out = []
     for src_name, dst_name in SKILLS:
         out += _one_skill(src_name, dst_name, check)
@@ -584,7 +501,6 @@ def skill(check: bool) -> list[str]:
 
 
 def _one_skill(SKILL_SRC: str, SKILL_DST: str, check: bool) -> list[str]:
-    """One packaged skill folder, copied into place and kept current."""
     src = ROOT / SKILL_SRC
     if not (src / "SKILL.md").is_file():
         return [say("skill_missing", src=SKILL_SRC)]
@@ -627,7 +543,6 @@ top=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 
 
 def _git_hook_path() -> Path | None:
-    """Where this repo keeps its hooks — asked of git, because a worktree's `.git` is a file."""
     try:
         p = subprocess.run(["git", "rev-parse", "--git-path", "hooks"], cwd=str(PROJECT),
                            capture_output=True, text=True, timeout=5)
@@ -640,15 +555,6 @@ def _git_hook_path() -> Path | None:
 
 
 def git_hook(check: bool, remove: bool = False) -> list[str]:
-    """Install (or take back) the post-commit hook that acts on a commit's trailer.
-
-    OPT-IN, AND IT NEVER CLOBBERS. `.git/hooks` is not the journal's to own: husky, lefthook
-    and pre-commit all live there, a hook is not committed so it cannot be reviewed, and a
-    tool that overwrites one costs somebody a workflow with no diff to find it in. An
-    existing post-commit that is not ours is left exactly as it is and the line to add is
-    printed instead. The agent's own commits do not need this at all — those are read at
-    PostToolUse — so this is only for the commits a person types.
-    """
     f = _git_hook_path()
     if f is None:
         return ["  ! not a git repository — no post-commit hook to install"]
@@ -685,14 +591,6 @@ def git_hook(check: bool, remove: bool = False) -> list[str]:
 
 
 def _retire_rc_alias(check: bool) -> list[str]:
-    """Remove the alias 1.3.x wrote into the shell rc; name any other `journal` alias.
-
-    A SHELL ALIAS BEATS THE PATH, so the old alias shadowed the new launcher and `journal`
-    stayed broken after an upgrade that printed "Already installed." — reported from a
-    workspace whose .journal sits above several git repos, where `git rev-parse` in the
-    alias could never find it. The lines this installer wrote carry its own marker and are
-    removed; a `journal` alias somebody else wrote is only pointed at.
-    """
     out = []
     for name in (".zshrc", ".bashrc", ".bash_profile", ".profile"):
         rc = Path.home() / name
@@ -724,7 +622,6 @@ def _retire_rc_alias(check: bool) -> list[str]:
 
 
 def alias(check: bool) -> list[str]:
-    """Put `journal` on the PATH as a script, for every shell."""
     dst = BIN_DIR / "journal"
     out = _retire_rc_alias(check)
     if dst.is_file() and dst.read_text() == LAUNCHER and os.access(dst, os.X_OK):
@@ -747,15 +644,6 @@ def alias(check: bool) -> list[str]:
 
 
 def _installed_at(root: Path) -> bool:
-    """Is this an installed copy, or the package's own source?
-
-    THE PACKAGE LIVES AT `<project>/.journal/`, so `PROJECT` is `ROOT.parent` — right for an
-    install, and one level too high when `install.py` is run from a checkout of the package
-    itself. Run there, it writes `.claude/settings.json`, the skill and the briefing into
-    whatever directory happens to hold the checkout. Measured, by doing it: a `.claude/`
-    with hooks and a skill, and two briefing files, appeared in the folder ABOVE this repo.
-    Nothing was lost — they were new files — but nothing asked, either.
-    """
     return root.name == ".journal"
 
 

@@ -1,13 +1,3 @@
-"""What is worth reading back, out of everything that was said.
-
-A digest keeps the user's own words UNTOUCHED and enough either side of them to know what
-they were answering. A bare "yes please" is meaningless without the thing it agreed to,
-which is why a prompt is never shown alone.
-
-Everything else is kept only when the agent said it CARRIED something. A `[!reply]` obeyed
-the rule and carries nothing, so it is counted in an elision rather than shown — the same
-as an untagged one. A quiet stretch reads back as `⋯ 41 messages ⋯`, which is its worth.
-"""
 from __future__ import annotations
 
 import tags
@@ -30,19 +20,10 @@ def say(message: str, /, **values) -> str:
 
 
 def _near_prompt(lines, i: int, prompts: set[int]) -> bool:
-    """Does a prompt sit close enough behind or ahead for this line to be its context?"""
     return any(abs(i - p) <= CONTEXT for p in prompts)
 
 
 def select(lines) -> list:
-    """The lines a reader needs, in order.
-
-    The user's words ALWAYS; the agent's when they carried a tag, or when they sit close
-    enough to a prompt to be what it answered or what answered it.
-
-    A message with no TEXT is not context: a turn that only called a tool said nothing, and
-    keeping it spends a line of the digest to show a blank.
-    """
     # ONLY A FILING UNIT CAN BE KEPT FOR PROXIMITY. Nearness to a prompt is a weak reason
     # — it keeps a line for where it sat, not for what it said — and applied to every text
     # block it dragged in the scaffolding: "Now wiring it into the CLI", "Let me check the
@@ -82,11 +63,6 @@ def select(lines) -> list:
 
 
 def render(lines, *, elide: bool = True) -> str:
-    """The digest as it reads: the user in their own words, the agent indented behind them.
-
-    A dropped stretch is COUNTED rather than hidden. A reader who cannot see that forty
-    messages were skipped cannot tell a quiet stretch from a missing one.
-    """
     keep = select(lines)
     kept = {l.n for l in keep}
     out: list[str] = []
@@ -115,11 +91,6 @@ def _one(line) -> str:
 
 
 def users_only(lines) -> str:
-    """Only the user's own words, in full, never trimmed.
-
-    The one tier that is never summarised: what somebody TOLD the agent is the half a
-    compaction is most likely to drop and the half nothing else can re-derive.
-    """
     out = []
     for line in lines:
         if line.kind == "human":

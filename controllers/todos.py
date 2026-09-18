@@ -69,7 +69,6 @@ class TodosController(Controller):
         return None
 
     def _park_work(self, root: Path, n: int, at: str, key: str, why: str) -> str:
-        """Asking and blocking STOP work without finishing it, so they park it rather than end it."""
         t = self.repository(root).find(n)
         if not t or not any(w["subject"] == t.title for w in work.open_work(root)):
             return ""
@@ -206,7 +205,6 @@ class TodosController(Controller):
         return self._said(root, p, todo.amend(root, self.env(root), p.id, p.title, p.body))
 
     def _said(self, root: Path, p, got: tuple[bool, str]) -> Result:
-        """A brief that was written or rewritten is read for dependencies it only states in prose."""
         if got[0]:
             got = (True, got[1] + todo.mentions_hint(root, self.env(root), p.id, p.body or ""))
         return Result.of(got)

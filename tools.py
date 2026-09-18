@@ -1,21 +1,3 @@
-"""The project's tools: scripts the agent keeps for repeated work, catalogued and runnable.
-
-WHAT THIS IS FOR. An agent doing a long refactor writes a script — move a class with every
-reference, list uncovered methods, run the fixer on one directory — and the next session
-does not know it exists, so it writes it again, slightly differently. Read in a live
-project: three such scripts under tools/, each with a docblock that says exactly how to
-call it, and no catalogue anywhere. A tool here is that script with its docblock lifted
-into a place every session is handed.
-
-A TOOL IS A FOLDER WITH A tool.md. The frontmatter says what it is called, what it does in
-one line, how to call it and when; the body says the rest. `entry` names the script,
-either in the folder or anywhere in the project, so an existing script is catalogued
-where it is. `journal tools run <name> …` runs it from the project root with the right
-interpreter; running the script directly works too.
-
-GLOBAL, LIKE DOCS. A tool is the project's. Nothing is deleted: a removed tool moves
-under struck/ with the reason.
-"""
 from __future__ import annotations
 
 import os
@@ -133,7 +115,6 @@ def _all(root: Path) -> list[dict]:
 
 
 def all_tools(root: Path) -> list[dict]:
-    """The whole catalogue — the public entry point `_all` is read through."""
     return _all(root)
 
 
@@ -153,7 +134,6 @@ def get(root: Path, name: str) -> tuple[dict | None, str]:
 
 
 def entry_path(root: Path, t: dict) -> Path | None:
-    """The script to run: a path inside the tool's folder, or relative to the project."""
     e = t.get("entry") or ""
     if not e:
         return None
@@ -220,7 +200,6 @@ def remove(root: Path, name: str, why: str) -> tuple[bool, str]:
 
 
 def adopt(root: Path, track: str) -> list[str]:
-    """A tool.md for every folder under tools/ that has none, from what the folder holds."""
     out = []
     for f in uncatalogued(root):
         files = sorted(x for x in f.iterdir() if x.is_file() and not x.name.startswith("."))
@@ -262,7 +241,6 @@ def run(root: Path, name: str, args: list[str]) -> int:
 
 # ------------------------------------------------------------------ rendering
 def facts_text(t: dict) -> str:
-    """The line beneath a tool's summary: how it is called, its entry point, its age."""
     out = []
     if t.get("usage"):
         out.append(t["usage"])
@@ -286,7 +264,6 @@ def detail(root: Path, n: int, t: dict) -> dict:
 
 
 def render_rows(rows: list[dict]) -> str:
-    """Tool rows as the terminal catalogue: a name beside its title, the summary, then the facts."""
     items = [fmt.Item(title=say("head", name=r["name"], title=r["title"]) if r["title"] and r["title"] != r["name"] else r["name"],
                       text=r["summary"], meta=r["facts"]) for r in rows]
     return "\n\n".join(fmt.render(fmt.Out(items=(it,))) for it in items)
@@ -294,7 +271,6 @@ def render_rows(rows: list[dict]) -> str:
 
 def catalogue(root: Path, width: int | None = None, cap: int | None = None, page: int = 1,
               order: str = fmt.DESC) -> str:
-    """The catalogue, paged — the loop is `entries.listing`, a tool's own part is `row`."""
     import entries
     tools = _all(root)
     if not tools:
@@ -312,7 +288,6 @@ def show(root: Path, name: str, width: int | None = None) -> tuple[bool, str]:
 
 
 def show_text(d: dict, width: int | None = None) -> str:
-    """A tool's `detail` as the terminal page."""
     width = fmt.room(width)
     env = say("show_env", env=d["track"]) if d["track"] else ""
     out = [fmt.title(say("show_title", name=d["name"]), sub=d["title"]),

@@ -1,21 +1,3 @@
-"""`.journal/record.json` and `.journal/runtime/<transcript>.json` — two kinds of fact.
-
-THE RECORD IS SHARED. Pins, work, environments: what somebody decided. It belongs to the project,
-survives a fresh clone, is the half worth reviewing in a diff, and every Claude Code session
-and every agent inside one reads and writes the same file.
-
-THE RUNTIME IS NOT. Where the untagged hold last fired, which context rung was announced,
-the largest tool result so far, the floor under history the hook was not present for: each
-of these is a LINE NUMBER OR A READING OF ONE TRANSCRIPT. Held at project scope they were
-inherited by every later transcript — a session at line 53 carried `held_at: 1746` from the
-one before it, so its untagged hold could not fire until line 1747, and a subagent's read
-raised `biggest_result` in the parent's context. So the runtime is one small file per
-transcript, keyed by the transcript's own name, and it is gitignored because it means
-nothing in anybody else's checkout.
-
-Which file a key lives in is DATA, not a rule to remember, because a rule about where to
-write is one that is eventually written past.
-"""
 from __future__ import annotations
 
 import contextlib
@@ -119,21 +101,6 @@ def _read(f: Path) -> dict:
 
 
 def write_json(f: Path, data) -> None:
-    """THE ONE ATOMIC JSON WRITE. Every module that keeps a file of JSON writes it through here.
-
-    PUBLIC, BECAUSE FIVE MODULES NEED IT. It was `_write` and reached anyway — from `migrate`,
-    from `tracks` — while `docs`, `update` and `tracks`'s own bindings file each kept their own
-    `write_text(json.dumps(...))`, which is the truncate-then-write a reader can land inside.
-    A private name that four callers already use is not a boundary, it is a warning nobody read.
-
-    Atomic, and SAFE UNDER CONCURRENT WRITERS.
-
-    The first version wrote `<name>.tmp` and replaced it. Two hooks writing at once — and
-    parallel tool calls fire PostToolUse at once — shared that path, and one of them died
-    with FileNotFoundError when the other's replace consumed the tmp. Reproduced: four
-    writers, three tracebacks. A crashing hook is rendered to the user as a hook error. So
-    every writer gets its own tmp, and the loser of a race is overwritten, not killed.
-    """
     _CACHE.pop(str(f), None)
     f.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=f.parent, prefix=f".{f.name}.", suffix=".tmp")
@@ -148,7 +115,6 @@ def write_json(f: Path, data) -> None:
 
 
 def load(root: Path, name: str = RECORD) -> dict:
-    """A whole file, by name relative to the root. `verify` reads runtime files this way."""
     return _read(root / name)
 
 
@@ -157,7 +123,6 @@ def runtime(root: Path, stem: str) -> dict:
 
 
 def runtime_files(root: Path) -> list[tuple[str, dict]]:
-    """Every transcript's runtime marks, by stem. What `verify` counts as evidence."""
     d = root / RUNTIME_DIR
     if not d.is_dir():
         return []
@@ -231,11 +196,6 @@ def use_track(name: str) -> None:
 
 
 def slug(name: str) -> str:
-    """An environment's name on disk and on the command line: lowercase, letters, digits, dashes.
-
-    NO SPACES, EVER. A name with a space is a folder with a space, a flag that needs
-    quoting, and a search that matches half of it. Everything becomes a slug on the way in.
-    """
     return re.sub(r"[^a-z0-9]+", "-", (name or "").lower()).strip("-")[:60].rstrip("-")
 
 
@@ -292,15 +252,6 @@ def _track_name(root: Path, data: dict) -> str:
 
 
 def current_track(root: Path) -> str:
-    """The environment this process reads and writes TRACKED keys under, right now.
-
-    NOT THE RECORD'S `current`. That is the PROJECT's start environment, and a session
-    bound to a different one (`use_track`, set from its own binding at every CLI
-    invocation — see `journal.py`) reads and writes its own, not the project's. Anything
-    that decides where a TRACKED key's data belongs — `get`/`put` already do, through
-    `_track_name` — must resolve it the same way, or it silently writes into the wrong
-    environment's folder while the entry itself lands in the right one.
-    """
     return _track_name(root, _record(root))
 
 
@@ -315,13 +266,6 @@ def get(root: Path, key: str, default=None, *, stem: str | None = None):
 
 
 def put(root: Path, key: str, value, *, stem: str | None = None) -> None:
-    """Write one key. A runtime write with no transcript SAYS SO and does nothing.
-
-    Not an exception: the hook's contract is that a crash is worse than silence, and a
-    handler fed a payload without a transcript should be quiet about the mark rather than
-    dead. Not a silent fallback to project scope either — that is the bug this module was
-    rewritten to end.
-    """
     if key in TRACKED:
         put_tracked(root, key, _track_name(root, _record(root)), value)
         return
@@ -338,7 +282,6 @@ def put(root: Path, key: str, value, *, stem: str | None = None) -> None:
 
 
 def tracked(root: Path, key: str, track: str, default=None):
-    """One TRACKED key, read off a named environment rather than the current one."""
     got = _read(_tracked_file(root, track, key)).get(key)
     if got is not None:
         return got
@@ -351,7 +294,6 @@ def tracked(root: Path, key: str, track: str, default=None):
 
 
 def put_many(root: Path, values: dict, *, stem: str) -> None:
-    """Write several runtime keys of one session with a single read and a single write."""
     if not stem or any(k in TRACKED or is_record(k) for k in values):
         for key, value in values.items():
             put(root, key, value, stem=stem)
@@ -363,14 +305,6 @@ def put_many(root: Path, values: dict, *, stem: str) -> None:
 
 
 def put_tracked(root: Path, key: str, track: str, value) -> None:
-    """Write one TRACKED key on a NAMED environment.
-
-    `get`/`put` resolve the environment from `current` or the `use_track` override, which is
-    right for everything a session does to its own environment and wrong for the one
-    operation that touches two: moving an entry from one to another. Swapping the override
-    around a pair of writes would do it, and would leave the process pointed at the wrong
-    environment if anything in between raised.
-    """
     with locked(root):
         f = _tracked_file(root, track, key)
         f.parent.mkdir(parents=True, exist_ok=True)
@@ -378,7 +312,6 @@ def put_tracked(root: Path, key: str, track: str, value) -> None:
 
 
 def retire_old(root: Path) -> bool:
-    """Set the project-wide runtime file aside, once. True if this call did it."""
     old = root / RETIRED
     if not old.is_file():
         return False
@@ -406,26 +339,6 @@ _local = threading.local()
 
 @contextlib.contextmanager
 def locked(root: Path, wait: float = 3.0):
-    """Hold the record for one load-mutate-save.
-
-    THE LOCK SPANS THE WHOLE OPERATION, not the write. A lock around `put` alone protects
-    nothing: every caller loads, mutates, saves, and two of them interleaved both load eight
-    pins and both write nine. The lock has to be taken before the load.
-
-    BOUNDED. It waits a few seconds and then PROCEEDS with a line on stderr, because a hook
-    has a timeout of its own and a wedged `journal remember` is a stalled tool with no
-    message. A lost race under contention that long is a lost pin, which is visible in
-    `pins`; a hang is not visible anywhere.
-
-    ONE LOCK FOR THE PROJECT, NOT ONE PER ENVIRONMENT, and that is deliberate now rather
-    than by default. Granted subagents write concurrently, so the question was asked
-    properly and MEASURED: thirty writers across three environments, and twelve at once to
-    the shared record, lost nothing and never reached the three-second wait — the whole
-    thirty finished in 1.3 seconds. The critical section is a read, a list append and an
-    atomic replace of one small file; it is microseconds, and the wait exists for a wedged
-    process, not for contention. A per-environment lock would buy nothing measurable and
-    would need its own answer for `record.json`, which every environment shares.
-    """
     if getattr(_local, "depth", 0):
         _local.depth += 1
         try:

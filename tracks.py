@@ -1,25 +1,3 @@
-"""One journal, several environments of work — and none of them a Claude Code session.
-
-AN ENVIRONMENT IS NOT A SESSION. A session belongs to the harness: it starts when somebody opens
-a terminal, it ends when they close it, and its id means nothing to anyone else. An environment
-is what the WORK is called, so a new agent joins whichever one is current without knowing
-anything about how it got there, and the same environment survives any number of sessions,
-compactions and restarts.
-
-PARKED, NEVER CLOSED. Switching away keeps everything exactly as it stood — its pins, its
-open work, its notes — and switching back finds it unchanged. There is no delete: the tool
-this replaces dropped things quietly to stay tidy, and the whole point here is that nothing
-disappears without somebody deciding it should.
-
-NOTHING IS SWAPPED, AND THIS DOCSTRING USED TO SAY OTHERWISE. The first design parked the
-live pins and work under the old name and lifted the new pair into their place, which meant
-one current environment for the whole project and two sessions that could not be on two of
-them. What replaced it is in `state.py`: an environment is a FOLDER — `environments/<name>/
-pins.json`, `work.json`, `todo/` — and `state.get("pins")` resolves through whichever
-environment this process said it was on. Every other module still just reads "pins" and
-"work" and learns no new concept, which was the good half of the original idea and the only
-half that survived.
-"""
 from __future__ import annotations
 
 import json
@@ -142,7 +120,6 @@ def bound(root: Path, stem: str | None) -> str | None:
 
 
 def bind(root: Path, stem: str, track: str) -> None:
-    """Bind one session to an environment. The record's `current` is untouched."""
     if not stem:
         return
     track = state.slug(track) or "default"
@@ -164,30 +141,6 @@ def unbind(root: Path, stem: str) -> None:
 
 def claim(root: Path, name: str, at: str, stem: str, why: str,
           stale_hours: float = 24.0) -> tuple[bool, str]:
-    """Take an environment a live session still holds, and tell that session it lost it.
-
-    THE GUARD REFUSES; IT DOES NOT ADJUDICATE. `one_session_per_environment` stops a second
-    session binding to an occupied environment, which is right almost always and useless in
-    the one case it is reached for: the holder is GONE — a closed terminal, a crashed
-    session, a runner that never reported — and the only ways past were to wait out
-    `stale_hours`, or to turn the setting off for every environment at once. A guard whose
-    only override is global is a guard people turn off.
-
-    A CLAIM IS AN EVICTION, NEVER CO-TENANCY. Occupancy is derived from who is BOUND, so
-    taking an environment means unbinding the holder: two sessions on one environment is the
-    exact thing the guard exists to prevent, and a claim that produced it would be a bug
-    wearing a command's name.
-
-    THE EVICTED SESSION IS TOLD, which is what makes this safe rather than sneaky. The note
-    lands on its runtime and its next stop reads it out, so it learns it has moved from the
-    journal instead of by contradiction — writing to an environment that is no longer its
-    own. Nothing is deleted: the environment's pins, work and to-dos are untouched, and the
-    evicted session can claim it back.
-
-    IT ALWAYS SAYS WHY, for the same reason `strike` does. A takeover with no reason on the
-    record is indistinguishable from a bug, and the session that lost the environment is
-    owed the sentence.
-    """
     name = state.slug(name)
     if not name:
         return False, say("claim_what")
@@ -224,7 +177,6 @@ def claim(root: Path, name: str, at: str, stem: str, why: str,
 
 
 def prune(root: Path, keep) -> None:
-    """Drop the binding of every session `keep(stem)` says is gone."""
     b = _bindings(root)
     gone = [sid for sid in b if not keep(sid)]
     if not gone:
@@ -237,13 +189,6 @@ def prune(root: Path, keep) -> None:
 
 
 def live(root: Path, stale_hours: float = 24.0) -> dict[str, dict]:
-    """{stem: {environment, age}} for every bound session still counted as running.
-
-    RUNNING IS EVIDENCE, NOT A COUNTER: not ended by a SessionEnd, and seen by a hook event
-    within `stale_hours`. A terminal closed without a SessionEnd goes stale and frees its
-    environment; one that sits idle waiting for its user for an hour is still running, because
-    the user comes back to it.
-    """
     now = time.time()
     out = {}
     for sid, track in _bindings(root).items():
@@ -261,7 +206,6 @@ def live(root: Path, stale_hours: float = 24.0) -> dict[str, dict]:
 
 
 def occupants(root: Path, track: str, stem: str | None, stale_hours: float = 24.0) -> list[tuple[str, float]]:
-    """Other live sessions on `environment`, most recently seen first: (stem, seconds since seen)."""
     got = [(sid, v["age"]) for sid, v in live(root, stale_hours).items() if v["track"] == track and sid != stem]
     return sorted(got, key=lambda x: x[1])
 
@@ -282,39 +226,14 @@ _OVERRIDE: list = []
 
 
 def override(name: str) -> None:
-    """`--env=<name>`: every read and write of this process is about that environment."""
     _OVERRIDE[:] = [name] if name else []
 
 
 def start(root: Path) -> str:
-    """The project's start environment: where a `--project` switch points, and nothing else.
-
-    IT IS NOT A DEFAULT AND IT IS NOT AN ANSWER TO "WHERE AM I". It is the first name
-    `choices` offers and the one a project that binds on start binds to; a session that has
-    not chosen is on NO environment, and `current` says so.
-    """
     return state.get(root, CURRENT, DEFAULT) or DEFAULT
 
 
 def current(root: Path, stem: str | None = None) -> str:
-    """The environment this session is on, or "" while it has not chosen one.
-
-    A SESSION IS BOUND TO AN ENVIRONMENT; THE PROJECT HAS A START ENVIRONMENT, AND THEY ARE
-    NOT THE SAME QUESTION. A switch from inside a session moves that session only, so two
-    sessions can work two environments of one project at once; a switch from the terminal,
-    or with --project, moves the start environment for later sessions and leaves running
-    ones where they are.
-
-    THERE IS NO DEFAULT ENVIRONMENT. This used to fall back to the start environment so that
-    a READ never needed a decision first — which meant a session that had chosen nothing
-    still read one environment's pins, to-dos and work as if it had, and the start
-    environment was a selected environment in everything but name. It is gone: an unbound
-    session gets "", the CLI refuses the read and says how to choose.
-
-    A PROCESS THAT IS NOT A SESSION IS NOT UNBOUND. `stem=None` is the server, a test
-    harness, a hook with no transcript — nothing that could ever bind or be asked to
-    choose — so it is answered with the project's start environment, as before.
-    """
     if _OVERRIDE:
         return _OVERRIDE[0]
     if stem is None:
@@ -334,27 +253,16 @@ MARKS = "session_marks"
 
 
 def carried_by(root: Path) -> dict[str, list[str]]:
-    """{environment: [session stems that were ever on it]} — the index `search` reads.
-
-    AN ENVIRONMENT HAS A TRANSCRIPT, spread over every session that was on it. Without this,
-    finding it means parsing every session the project ever had and segmenting each by
-    its marks: correct, and growing with every session. So each session start records
-    the session under the current environment, and each switch records it under the environment
-    switched to. A session absent from every list predates the index and is read the
-    long way, once, so nothing is lost while the index fills in.
-    """
     got = state.get(root, SESSIONS, {})
     return got if isinstance(got, dict) else {}
 
 
 def marks(root: Path) -> dict[str, list[list]]:
-    """{session stem: [[environment, the transcript line it began at], ...]} — recorded, never parsed."""
     got = state.get(root, MARKS, {})
     return got if isinstance(got, dict) else {}
 
 
 def carried(root: Path, track: str, stem: str, line: int = 0) -> None:
-    """Record that `stem` was on `environment`, and from which transcript line. A record write, under the lock."""
     if not stem:
         return
     with state.locked(root):
@@ -382,17 +290,6 @@ def _all(root: Path) -> dict:
 
 
 def create(root: Path, *names: str, at: str = "") -> None:
-    """Bring an environment into existence in the registry, if it is not there already.
-
-    THE ONE PLACE AN ENVIRONMENT STARTS. It lived inside `switch`, which meant the only way
-    to make one was to MOVE A SESSION TO IT — so lending three environments to subagents
-    cost six session moves, to do a thing whose definition is "this session does not move".
-    Making it and going there are two acts; this is the first, and `switch` and `grant` both
-    call it rather than each knowing how a registry entry is shaped.
-
-    NOT LOCKED HERE. Both callers already hold the record lock across a larger read-modify-
-    write, and taking it again inside would deadlock on the one they hold.
-    """
     data = state._record(root)
     held = data.setdefault("tracks", {})
     if not isinstance(held, dict):
@@ -418,24 +315,11 @@ def create(root: Path, *names: str, at: str = "") -> None:
 
 
 def choices(root: Path) -> list[str]:
-    """Every environment a session could bind to, the project's start environment first.
-
-    WHAT AN UNBOUND SESSION IS OFFERED. `listing` answers "where is everyone", which needs
-    the record, the bindings and the liveness of every session; this answers the smaller
-    question a session asks once, at its start, before it has chosen anything.
-    """
     home = start(root)
     return sorted(_all(root), key=lambda n: (n != home, n))
 
 
 def page(root: Path, name: str, width: int | None = None, commands: bool = True) -> tuple[bool, str]:
-    """One environment, ready to be picked up: its docs, pins, open work, to-dos, and how.
-
-    THE HAND-OFF IS A PAGE, NOT A CONVERSATION. Whoever picks the environment up — this
-    session later, another session, a colleague, a subagent — reads this and starts: the
-    docs to read first, the facts that stand, what is open, the to-dos in order, and the
-    one command that begins.
-    """
     import docs as docs_mod
     import fmt
     import todo as todo_mod
@@ -499,7 +383,6 @@ def page(root: Path, name: str, width: int | None = None, commands: bool = True)
 
 
 def listing(root: Path, stem: str | None = None, stale_hours: float = 24.0) -> list[dict]:
-    """Every environment: the project's start environment first, sessions bound to each, this one marked."""
     home = start(root)
     mine = current(root, stem)
     by_track: dict[str, list[str]] = {}
@@ -524,12 +407,6 @@ def listing(root: Path, stem: str | None = None, stale_hours: float = 24.0) -> l
 
 def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False,
            exclusive: bool = True, stale_hours: float = 24.0, line: int = 0) -> tuple[bool, str]:
-    """Move this session to an environment, or the project's start environment, or both.
-
-    NOTHING IS SWAPPED ANY MORE. Every environment's pins and work live under its name; a
-    switch only changes which name this process reads. A new environment is a name with
-    nothing under it yet. Nothing is ever deleted by switching.
-    """
     name = state.slug(name)
     if not name:
         return False, say("switch_what")
@@ -597,11 +474,6 @@ def switch(root: Path, name: str, at: str, stem: str = "", project: bool = False
 def move_sessions(root: Path, name: str, which: list[str] | None,
                   exclusive: bool = True, stale_hours: float = 24.0) -> tuple[list[str], list[str]]:
     name = state.slug(name)
-    """Bind the named sessions (or every bound session) to `name`: (moved, refused).
-
-    With one session per environment, at most one live session lands on `name`: the one already
-    there if any, else the first picked; the rest are refused and named.
-    """
     b = _bindings(root)
     picked = [sid for sid in b if which is None or any(sid.startswith(w) for w in which)]
     refused: list[str] = []
@@ -644,27 +516,6 @@ def _held_summary(root: Path, name: str, held: dict) -> tuple[int, int, int]:
 
 def remove(root: Path, name: str, at: str, stem: str = "", yes: bool = False,
            stale_hours: float = 24.0) -> tuple[bool, str]:
-    """Take an environment off the list. Remove means remove.
-
-    IT USED TO ARCHIVE, AND THE ARCHIVE HAD TWO SHAPES. A folder-shaped environment moved to
-    `removed/<name>-<stamp>/environment`, a pre-1.34.0 one to `.../todo` — and which you got
-    depended on whether `environments/<name>/` had been created yet, which is lazy. So the
-    place a user's work went to be recoverable was decided by a race. That is worse than not
-    keeping it: a promise of recovery you cannot follow to one path is not a promise.
-
-    THE DECISION IS REQUIRED, THE COPY IS NOT. This module's first rule is that nothing
-    disappears without somebody deciding it should, and for a long time that was read as
-    "keep a copy of everything" — which is a different rule, and the one that grew the second
-    shape. What it needs is that the user SEES what they are destroying and types `--yes`
-    knowing it: the count of pins, open work and to-dos is printed first, and a one-line row
-    of what it held is kept in the record, which is an audit trail and not a hiding place.
-
-    WHAT IT REFUSES. The project's start environment, because a new session would land
-    nowhere. An environment a live session is on, including this one, because pulling the
-    ground out from under a running agent is exactly the quiet loss this guards against.
-    One with open work, whoever declared it, because deleting work is not ending it.
-    Docs are never touched: they belong to the project, not to one environment.
-    """
     import shutil
     import todo as todo_mod
     name = state.slug(name)
@@ -743,7 +594,6 @@ VIEWER_FIRST = "viewer_first"
 
 
 def viewer_first(root: Path, track: str) -> bool:
-    """Does the user work this environment from the viewer, so the agent's answers go where they read them?"""
     got = state.get(root, VIEWER_FIRST, {})
     return bool(got.get(track)) if isinstance(got, dict) else False
 

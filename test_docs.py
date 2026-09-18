@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""The docs catalogue: a doc is a folder of parts, cited by pins, rules and to-dos.
-
-    .journal/test_docs.py
-
-Driven through the CLI and the real hook in a throwaway project, the way an agent and a
-person use it. The properties that matter: a number is given once and never reused; a
-single file is a doc and becomes a folder without breaking what cites it; nothing is
-deleted, only struck with a reason; the catalogue, not the docs, is what a session is
-handed; a loose markdown file earns a hint, once, never a hold.
-"""
 import json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
 

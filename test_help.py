@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""cli-streamline: every old spelling and its new equivalent produce the SAME store state.
-
-    .journal/test_help.py
-
-This is the table-driven proof to-do 1 asks for: not "does it exit 0" but "is what got
-written to disk identical, whichever spelling wrote it." It also carries the line-count
-caps later to-dos add (journal --help, journal carry, the capped catalogues) so a later
-change that widens one of them fails loudly here rather than being noticed by eye.
-"""
 import json, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
@@ -413,7 +404,6 @@ check("the numbered stores share one listing: only what goes beneath differs",
 # dependencies (shutil, subprocess, tempfile) with modules that must load anyway.
 import subprocess as _sp, sys as _sys
 def _eager(module):
-    """Which of the deferred modules `import <module>` actually pulls in."""
     watch = ("docs", "tools", "context", "migrate", "update", "verify", "dataclasses", "inspect")
     code = (f"import sys; sys.path.insert(0, {str(SRC)!r}); import {module}; "
             f"print(','.join(m for m in {watch!r} if m in sys.modules))")

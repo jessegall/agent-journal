@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""journal <noun> search <term>: lines in that one resource mentioning a word, open items first, --all adds closed."""
 import os, sys, tempfile
 from pathlib import Path
 

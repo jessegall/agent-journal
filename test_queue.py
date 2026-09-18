@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""The stop queue: one subject per stop, each once per turn, pending until resolved.
-
-    .journal/test_queue.py
-
-Every edge the queue has: the order; a subject raised once per turn however many stops
-follow; an unresolved subject returning next turn and a resolved one not; a turn with
-every subject pending draining in as many stops and then passing; the queue never
-looping; and what "resolved" means for each subject.
-"""
 import json, os, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 
@@ -62,7 +53,6 @@ class S:
         return subprocess.CompletedProcess(a, code, out, "")
 
     def stop(self, after=False):
-        """The label of whatever this stop raised — one reader, in testkit, for every suite."""
         label, _ = testkit.hold(self.fire("Stop", stop_hook_active=after))
         return label
 

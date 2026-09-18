@@ -1,51 +1,3 @@
-"""A session lending one environment to the subagents it dispatches, and to nobody else.
-
-THE PROBLEM IS NOT PERMISSION, IT IS IDENTITY. A subagent's shell carries its PARENT's
-session id — measured, and written into `transcript.py` long before this file existed — so
-`journal pins add` run inside a subagent is, at the operating system, the same act as the
-parent running it. Nothing the CLI can look at tells them apart. `agent_id` exists, but only
-in the JSON a hook receives, and only for the instant of the tool call; it never reaches the
-process the subagent actually runs.
-
-SO THE GRANT CANNOT BE DETECTED. It has to be DECLARED, twice over: once by the session, in
-the record, saying which environment it is lending; and once by the subagent, on its command
-line, saying which environment it is writing to. The hook holds the two against each other.
-That is what makes "this agent works on its own journal" a mechanism rather than a wish —
-and it is exactly the sentence the user asked the dispatcher to have to say out loud.
-
-WHAT THIS IS NOT. It is not `delegate`, which bound the SESSION to the environment so that
-its subagents' writes landed there by accident of sharing an id — and which cost nine
-branches across six functions before it was deleted. Nothing here binds the session,
-nothing moves it, and no other line of the package asks whether an actor is a subagent: the
-one place that ever asks is the door in `hook.main`, and it asks once.
-
-WHAT A GRANTED SUBAGENT CAN TOUCH, measured rather than asserted: its full write repertoire
-— `work start`, `todos add`, `todos start`, `todos report` — changes these files and no
-others:
-
-    environments/<lent>/agents/<its own id>/work.json
-    environments/<lent>/todo/NNN-*.md
-
-Nothing shared. Not `record.json`, not another environment, not the bindings, and not
-another agent's ledger. That is the whole property, and it is why `rules`, `docs` and
-`tools` are refused rather than merely discouraged: each writes somewhere every session
-reads, and allowing one would be the single exception that makes the sentence untrue.
-
-PINS AND REMINDERS ARE INHERITED AND NOT WRITTEN, which is a different reason and the
-user's own ruling. They are not shared across environments — a pin belongs to one
-environment exactly as work does — so this is not about blast radius. It is about
-PROVENANCE: a pin is re-read in full at the top of every compaction by every session that
-binds here, and nothing revisits it, so a claim whose reasoning nobody in the main
-conversation saw would stand in the highest-authority position the system has, forever. The
-lent agent reads them and reports; the session that dispatched it decides what is kept.
-
-AND NO HIERARCHY. There is no parent field on an environment. Five agents argued it and the
-evidence went the other way: this codebase has never kept a field inert — `docs.track` was
-documented as "provenance, not ownership" and was deciding what `cleanup` flags within one
-release — and nobody has yet named work a flat namespace cannot do. A granted environment is
-an ordinary environment. What makes it a subagent's is that a session lent it, which is a
-fact about the SESSION and lives on the session.
-"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -119,13 +71,6 @@ NEVER = {
 
 
 def unreachable() -> set:
-    """Entries of NEVER the gate can never reach — a refusal nothing enforces.
-
-    THE LIST AND THE GATE MUST AGREE, and for one release they did not: five verbs were
-    named here as forbidden while `hook._journal_write` classified them as not-a-write, so
-    a granted subagent could `journal claim` a live session's environment out from under it.
-    `test_bind` asserts this is empty, which is the assertion that would have caught it.
-    """
     import commands
     return {v for v in NEVER if not commands.REGISTRY.knows(v)}
 
@@ -173,13 +118,11 @@ def say(message: str, /, **values) -> str:
 
 
 def granted(root: Path, stem: str | None) -> list[str]:
-    """The environments this session has lent to its subagents."""
     got = state.get(root, KEY, [], stem=stem) if stem else []
     return got if isinstance(got, list) else []
 
 
 def grant(root: Path, stem: str, name: str) -> tuple[bool, str]:
-    """Lend an environment to this session's subagents. The session itself does not move."""
     import tracks
     name = state.slug(name)
     if not name:
@@ -206,7 +149,6 @@ def grant(root: Path, stem: str, name: str) -> tuple[bool, str]:
 
 
 def revoke(root: Path, stem: str, name: str = "") -> tuple[bool, str]:
-    """Take a grant back. Without a name, all of them."""
     have = granted(root, stem)
     if not have:
         return False, say("revoke_none")
@@ -221,12 +163,6 @@ def revoke(root: Path, stem: str, name: str = "") -> tuple[bool, str]:
 
 
 def allows(root: Path, stem: str | None, verb: str, command: str) -> tuple[bool, str]:
-    """May this subagent's journal write go through? (yes/no, the refusal when no).
-
-    BOTH DECLARATIONS OR NEITHER. The session must have lent the environment, and the
-    command must name it. A subagent that names an environment nobody lent it is refused
-    the same as one that names none — otherwise the grant would be a suggestion.
-    """
     if verb in NEVER:
         return False, say("never", verb=verb, why=NEVER[verb])
     lent = granted(root, stem)
@@ -262,17 +198,14 @@ def allows(root: Path, stem: str | None, verb: str, command: str) -> tuple[bool,
 
 
 def acting_in(command: str) -> str:
-    """The agent a command claims to be, with `--as=` — slugged, or ""."""
     return _flag_in(command, ("--as=",))
 
 
 def _env_in(command: str) -> str:
-    """The environment a command names with `--env=`, slugged — or ""."""
     return _flag_in(command, ("--env=", "--environment=", "--track="))
 
 
 def _flag_in(command: str, prefixes: tuple) -> str:
-    """The slugged value of the first of `prefixes` on this command line — one reader."""
     import shlex
     try:
         toks = shlex.split(command or "")
@@ -285,12 +218,6 @@ def _flag_in(command: str, prefixes: tuple) -> str:
 
 
 def _briefing(name: str, already: bool = False, fresh: bool = False) -> str:
-    """What the dispatcher must pass on, verbatim. The whole point of the command.
-
-    IT PRINTS THE SENTENCE RATHER THAN DESCRIBING IT, because the dispatcher's job is to
-    copy it into the prompt, and a sentence somebody paraphrases is a sentence that loses
-    the flag the entire mechanism turns on.
-    """
     head = say("head_already" if already else "head_fresh" if fresh else "head_lent", name=name)
     # EVERY EXAMPLE HERE IS A WRITE THE AGENT MAY ACTUALLY MAKE. It used to offer
     # `pins add` — which a lent agent is refused, by the user's ruling that pins are

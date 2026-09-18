@@ -52,7 +52,6 @@ def say(message: str, /, **values) -> str:
 
 @runtime_checkable
 class PayloadSource(Protocol):
-    """A parsed CLI command and an HTTP request are both this: each builds the payload an action takes."""
     def payload(self, kind: type[Payload], extra: dict | None = None) -> Payload: ...
 
 
@@ -109,7 +108,6 @@ class Controller:
         return self.payloads.get(action, Payload) if action in self.actions else None
 
     def search(self, root: Path, p: Payload) -> Result:
-        """Lines of this resource that mention the term, open items first; closed ones are counted unless --all."""
         needle = (p.term or "").lower()
         if not needle:
             return Result("refused", say("search_wants", resource=self.resource))
@@ -136,7 +134,6 @@ class Controller:
         return self.repository(root, payload).exists(payload.id)
 
     def identify(self, root: Path, action: str, payload: Payload) -> Result | None:
-        """Turn the payload's id into the one the actions use, or say why there is none."""
         if not str(payload.id).isdigit():
             return Result("refused", say("bad_id", resource=self.resource, action=action, id=repr(payload.id)))
         payload.id = int(payload.id)
@@ -145,7 +142,6 @@ class Controller:
         return None
 
     def sorted(self, query, payload: Payload):
-        """The query in the order the payload asks for, or the refusal naming what it can sort by."""
         try:
             return query.order_by(payload.sort or self.default_sort,
                                   payload.direction or payload.order or self.default_direction)
@@ -178,7 +174,6 @@ class Controller:
 
 def dispatch(root: Path, controller: Controller, action: str, source: PayloadSource,
              extra: dict | None = None) -> Result:
-    """The one way into a controller: the source builds the payload the action takes, and the controller runs it."""
     kind = controller.payload_for(action)
     if kind is None:
         return Result("missing", say("no_action", resource=controller.resource, action=repr(action)))

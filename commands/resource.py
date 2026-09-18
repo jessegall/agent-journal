@@ -21,14 +21,12 @@ SEARCH_TEXT = {
 
 
 class Resource(Command):
-    """A command that sends what was typed to a resource controller and renders the result."""
     controller = None
     action = ""
     id_arg = "n"
     env_arg = ""            # the argument that names the environment, when it is not the session's
 
     def extra(self, p: Parsed) -> dict | int:
-        """Fields the command adds to what was typed, or the exit code of a refusal."""
         return {}
 
     def run(self, p: Parsed) -> int:
@@ -42,13 +40,6 @@ class Resource(Command):
         return self.render(p, dispatch(root(), self.controller, self.action, p, {**extra, **said}))
 
     def said(self, p: Parsed) -> dict | int:
-        """`--stdin` puts this command's prose where the shell cannot reach it.
-
-        ONE FUNNEL FOR EVERY COMMAND THAT TAKES PROSE. A shell eats a backtick span out of an argument
-        and the command receives the sentence with a hole in it, with nothing to detect afterwards —
-        what was removed leaves no trace. So the fix is not a check, it is a path: the same one
-        `--brief` has always used. A command declares which field it fills and gets the option.
-        """
         if not self.prose or not p.option("stdin"):
             return {}
         from app import STDIN_REFUSED, brief, refuse
@@ -64,7 +55,6 @@ class Resource(Command):
 
 
 def search_command(verb: str, controller, label: str, noun: str) -> type:
-    """`journal <verb> search <term>`: lines of that one resource mentioning a word, open items first."""
     from app import PAGE
     from commands.options import LISTING_CASTS
 

@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""The files a piece of work changed are recorded on it, with lines added and removed.
-
-    .journal/test_files.py
-"""
 import json, os, subprocess, sys, tempfile
 from pathlib import Path
 

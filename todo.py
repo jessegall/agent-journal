@@ -30,24 +30,6 @@
 #: The predicate is precise now instead of the order being clever: waiting on the user means
 #: a question with NO answer and nobody has picked it up. Starting such a row is an agent
 #: saying it will proceed without one, which is legitimate and used to be invisible.
-"""Delayed work — what the agent should remember TO DO. Not a rule, not a pin, not in flight.
-
-A pin is a claim, a rule binds, open work is in flight. None of them holds "do this later",
-and a piece of work that is only remembered in a summary is a piece of work that is
-forgotten at the next compaction. So a to-do is written down, and it is written as a FILE:
-a to-do is a brief, not a claim, and when it is picked up in a week the reader needs what,
-why and where to start, which is longer than one line. A file can be edited by hand and
-read in a diff.
-
-SCOPED TO THE ENVIRONMENT. A to-do belongs to the line of work that deferred it, and one environment's
-debts do not bleed into another's: `todo/<environment>/NNN-<slug>.md`. The number is the file's,
-stable for the life of the to-do, so "to-do 3" means the same thing after 2 is done.
-
-SAID, NEVER HELD, AND NOT AT EVERY STOP. An idle agent told "three to-dos are waiting"
-will start one; whether it should is the user's call. The line says so, and it is said once
-per transcript and again only when the list has changed — a reminder at every idle stop is
-wallpaper within the hour.
-"""
 from __future__ import annotations
 
 import contextlib
@@ -249,13 +231,6 @@ def _slug(text: str, limit: int = 40) -> str:
 
 
 def folder(root: Path, track: str) -> Path:
-    """Where this environment's to-dos live: inside the environment's own folder.
-
-    They sat in a parallel `todo/<name>/` tree, which meant "what is on this environment"
-    was answered in two places that could disagree. `migrate` moves an older layout across
-    on the first run after an upgrade; the old path is still read until it has, so nothing
-    is invisible in between.
-    """
     d = state.env_dir(root, track) / DIR
     if not d.is_dir():
         was = root / DIR / _slug(state.slug(track) or "default", 60)
@@ -310,16 +285,6 @@ def _read_todo(path: Path) -> dict:
 
 
 def _write(path: Path, meta: dict, body: str) -> None:
-    """Atomic, and SAFE UNDER A CONCURRENT READER — see `state.write_json`, which this mirrors.
-
-    `path.write_text` opens with truncation, then writes: a reader that lands in that
-    window — a background loop's `journal next`, a hook firing on a different tool call —
-    sees a short or empty file. `_read_todo` treats a front matter with no closing `---`
-    as NO front matter at all, so a reader catching this row mid-write reads it as if
-    `started` and `done` had never been set. Each writer gets its own tmp file, exactly
-    as `state.write_json` does, for the same reason: two writers sharing one tmp path killed
-    the loser with FileNotFoundError.
-    """
     _PARSED.pop(str(path), None)
     lines = ["---"] + [f"{k}: {meta.get(k, '') or ''}" for k in FIELDS] + ["---", ""]
     if body.strip():
@@ -365,15 +330,6 @@ def _index_file(root: Path, track: str) -> Path:
 
 
 def _stamped(d: Path) -> dict:
-    """{name: [mtime_ns, size]} for every row in the folder, from ONE scandir.
-
-    THIS IS NOT CACHED, AND THAT IS THE POINT. Caching it per process saves 0.14s of a
-    one-second command and was tried: the suite caught it immediately, because a row written
-    by anything that does not go through `_write` — a hand edit, a sibling process, a git
-    checkout mid-command — is then invisible for the life of the process. The ledger is
-    allowed to be a cache precisely because THIS re-reads the folder every time and checks
-    it; caching the check as well leaves nothing checking anything.
-    """
     import os
     out = {}
     try:
@@ -468,13 +424,10 @@ def _write_index(f: Path, rows: dict) -> None:
 
 
 def all_items(root: Path, track: str) -> list[dict]:
-    """Every to-do on this environment, open and done — the public entry point `_all` is
-    read through."""
     return _all(root, track)
 
 
 def item(root: Path, track: str, n: int) -> tuple[dict | None, str]:
-    """One to-do, with its body — the public entry point `_get` is read through."""
     return _get(root, track, n)
 
 
@@ -483,19 +436,6 @@ def open_items(root: Path, track: str) -> list[dict]:
 
 
 def ready(root: Path, track: str) -> list[dict]:
-    """Open to-dos nothing is waiting on: what auto may pick up. Answered first.
-
-    TWO WAYS TO BE UNREADY AND THEY ARE NOT THE SAME. `asks` waits on a PERSON — somebody
-    must answer, and the list surfaces it to them. `blocked` waits on a CONDITION — a batch
-    that must run together, a release, another to-do — and nobody has to do anything; the
-    agent re-judges it itself when it comes round again.
-
-    THE SECOND ONE EXISTS BECAUSE ITS ABSENCE COST A REAL SESSION. With no way to say "not
-    now, because X", an agent whose reminder forbade the work the list kept offering built
-    a parking-bay environment, switched to it, and silenced every reminder it had — the
-    list was a wall and it went around. A wall is what an agent routes around; a skip is
-    what it uses.
-    """
     # A ROW HELD BY A LIVE AGENT IS NOT READY FOR ANYONE ELSE. The hold lapses on a
     # heartbeat, so a dispatch that died releases its row without anybody remembering to.
     import agents as ag
@@ -516,17 +456,10 @@ def ready(root: Path, track: str) -> list[dict]:
 
 
 def blocked(root: Path, track: str) -> list[dict]:
-    """Open to-dos set aside on a condition, with the reason each is waiting on."""
     return [t for t in open_items(root, track) if t.get("blocked")]
 
 
 def assign(root: Path, track: str, n: int, agent: str) -> tuple[bool, str]:
-    """Hand a to-do to one named subagent. `--off` gives it back to the list.
-
-    A HELD ROW IS NOT A LOCKED ONE. The hold means: while that agent is still writing, this
-    is theirs to work and theirs alone. It lapses on a heartbeat rather than on a promise,
-    because nothing can tell us a subagent died — see `agents.touch`.
-    """
     import agents as ag
     # UNDER THE LOCK: THE CHECK AND THE WRITE ARE ONE ACT. Reading `assigned`, finding it
     # free and then writing it were three steps with a gap, so two agents could both pass
@@ -553,13 +486,6 @@ def assign(root: Path, track: str, n: int, agent: str) -> tuple[bool, str]:
 
 
 def report(root: Path, track: str, n: int, how: str, agent: str) -> tuple[bool, str]:
-    """A subagent says a to-do is finished. Only the parent may CLOSE one.
-
-    TWO PHASES, AND THE SECOND IS THE PARENT'S. A subagent that could close its own row
-    would be marking its own homework — the failure this project already watched happen
-    once, where a runner ticked its own box and the record read as done while a step was
-    missed. So it reports, with how, and the close stays where the judgement is.
-    """
     how = " ".join((how or "").split())
     if not how:
         return False, say("report_how", n=n)
@@ -577,7 +503,6 @@ def report(root: Path, track: str, n: int, how: str, agent: str) -> tuple[bool, 
 
 
 def reported(root: Path, track: str) -> list[dict]:
-    """Rows a subagent has finished and the parent has not yet closed."""
     return [t for t in open_items(root, track) if t.get("reported")]
 
 
@@ -595,9 +520,6 @@ PRIORITY_LEVELS = {"low": 50, "default": DEFAULT_PRIORITY, "high": 150, "critica
 
 
 def priority_of(t: dict) -> int:
-    """This to-do's priority — `DEFAULT_PRIORITY` for one that has never had it set,
-    and for a value that somehow ended up unreadable, because a broken number here
-    must never crash the list that is supposed to be showing it."""
     got = t.get("priority")
     if got in (None, ""):
         return DEFAULT_PRIORITY
@@ -608,7 +530,6 @@ def priority_of(t: dict) -> int:
 
 
 def parse_priority(word: str) -> tuple[int | None, str]:
-    """(the number, "") for a raw integer or a named level — or (None, the refusal)."""
     word = (word or "").strip()
     if not word:
         return None, say("priority_empty")
@@ -622,8 +543,6 @@ def parse_priority(word: str) -> tuple[int | None, str]:
 
 
 def priority_label(value: int) -> str:
-    """The named level this number matches, or the number itself — for the CLI to
-    show a reader the word they set rather than making them recompute it."""
     for name, num in PRIORITY_LEVELS.items():
         if num == value and name != "default":
             return say("priority_named", name=name, value=value)
@@ -631,9 +550,6 @@ def priority_label(value: int) -> str:
 
 
 def priority(root: Path, track: str, n: int, word: str) -> tuple[bool, str]:
-    """Set a to-do's priority. `word` is a raw number or a named level (low/medium/
-    high/...) — see `parse_priority`. Bigger means more important; `journal todos`
-    orders by it, highest first, unless told `--order-by-id`."""
     value, err = parse_priority(word)
     if value is None:
         return False, err
@@ -645,18 +561,11 @@ def priority(root: Path, track: str, n: int, word: str) -> tuple[bool, str]:
 
 
 def after_of(t: dict) -> list[int]:
-    """The to-do numbers this one must follow, as numbers."""
     raw = (t.get("after") or "").replace(",", " ").split()
     return [int(x) for x in raw if x.isdigit()]
 
 
 def after_plan(t: dict) -> int | None:
-    """The plan this to-do waits for, if it waits for one.
-
-    A PLAN IS A PREREQUISITE LIKE ANY OTHER, and it lives in the same field: a row that only
-    makes sense once a whole plan has landed was written as prose before this, and prose is
-    not something `ready` can read.
-    """
     for token in (t.get("after") or "").replace(",", " ").split():
         if token.startswith("plan:") and token[5:].isdigit():
             return int(token[5:])
@@ -664,12 +573,6 @@ def after_plan(t: dict) -> int | None:
 
 
 def waiting_on_plan(root: Path, track: str, t: dict) -> int | None:
-    """The plan this row waits for while that plan is unfinished — None when nothing holds it.
-
-    AN ABANDONED PLAN IS NOT A FINISHED ONE, the same way a struck to-do is not a done one:
-    the row stays waiting and says which plan it waits on, rather than quietly becoming
-    ready because what it depended on was dropped.
-    """
     p = after_plan(t)
     if p is None:
         return None
@@ -682,17 +585,6 @@ def waiting_on_plan(root: Path, track: str, t: dict) -> int | None:
 
 
 def waiting_on(root: Path, track: str, t: dict, by_n: dict | None = None) -> list[int]:
-    """Which of this to-do's prerequisites are not done yet — [] when it is free to start.
-
-    A PREREQUISITE IS A `blocked` WHOSE CONDITION THE CODE CAN CHECK. `blocked` is prose the
-    agent re-judges; this is a list of numbers, so when the last one closes the row becomes
-    ready ON ITS OWN and nobody has to remember to release it. That is the whole reason to
-    have both.
-
-    A STRUCK PREREQUISITE IS NOT A DONE ONE. It was abandoned, not finished, so the row that
-    depended on it may no longer make sense — it stays waiting and `journal todos` says which
-    number it is waiting on, rather than quietly becoming ready because the blocker vanished.
-    """
     # a list of many rows passes `by_n` in once; reading the folder again for every row made it quadratic
     by_n = by_n if by_n is not None else {x["n"]: x for x in _all(root, track)}
     return [n for n in after_of(t)
@@ -700,7 +592,6 @@ def waiting_on(root: Path, track: str, t: dict, by_n: dict | None = None) -> lis
 
 
 def asking(root: Path, track: str) -> list[dict]:
-    """Open to-dos waiting on the user, each with its question, not yet answered."""
     return [t for t in open_items(root, track) if t.get("asks") and not t.get("answer")]
 
 
@@ -709,26 +600,10 @@ def answered_one(t: dict) -> bool:
 
 
 def answered(root: Path, track: str) -> list[dict]:
-    """To-dos the user has answered and nobody has picked up yet: the agent is unstuck.
-
-    AN ANSWER DOES NOT OUTRANK THE ROW'S OWN SEQUENCING. The user's reply is their word to
-    do it — but a row given `after 1717,1704` waits on those landing, and the answer does
-    not close them. Measured in workflows: the hold said "the user answered to-do 1410 —
-    that is their word to do it: todos start 1410" while both prerequisites were open and
-    the answer's own text said the work waits behind them. `ready` already skips such a
-    row; this list is what the hold and the doorway read, so it skips it too.
-    """
     return [t for t in open_items(root, track) if answered_one(t) and not waiting_on(root, track, t)]
 
 
 def answer(root: Path, track: str, n: int, text: str) -> tuple[bool, str]:
-    """The user's answer to a to-do's question, from the terminal, on the record.
-
-    THE OTHER HALF OF `ask`. The agent parked a question; the user reads it in `journal
-    todo` and answers here without opening a session. The to-do is ready again and goes
-    first: the next stop tells the agent which question was answered and what the answer
-    was, and hands it that to-do before any other.
-    """
     text = " ".join((text or "").split())
     if not text:
         return False, say("answer_empty")
@@ -750,15 +625,6 @@ def answer(root: Path, track: str, n: int, text: str) -> tuple[bool, str]:
 
 
 def ask(root: Path, track: str, n: int, question: str) -> tuple[bool, str]:
-    """Mark a to-do as waiting on the user, with the question it waits on.
-
-    THE WAY AUTO SKIPS WITHOUT FORGETTING. An agent working through a list meets a to-do
-    whose brief leaves a decision only the user can make. Without this it asks, the turn
-    ends, and the next hold names the same to-do again — a loop with the user as the
-    exit. With it the question is on the record, the hold names the next to-do that is
-    not waiting, the start block shows the user what is waiting on them, and `start`
-    picks it up once they have answered.
-    """
     question = " ".join((question or "").split())
     if not question:
         return False, say("ask_empty")
@@ -776,19 +642,6 @@ def ask(root: Path, track: str, n: int, question: str) -> tuple[bool, str]:
 
 
 def block(root: Path, track: str, n: int, why: str) -> tuple[bool, str]:
-    """Set a to-do aside on a condition. Not done, not abandoned, not the user's problem.
-
-    THE REASON IS REQUIRED, like every retirement here — and unlike them this one is not a
-    retirement at all: the to-do stays open, stays counted, and comes back. What the reason
-    buys is a later reader knowing WHY a row was skipped rather than finding a gap, and the
-    agent that meets it again reading the condition at the moment it is judging whether the
-    condition still holds.
-
-    IT IS THE AGENT'S OWN JUDGEMENT, exactly like a reminder's `--until`. Nothing here can
-    evaluate "the rig batch has run"; the agent wrote it, the agent reads it back, and the
-    agent unblocks it. `journal todos start <n>` does that in one move, deliberately: if
-    you are picking it up, the block is over.
-    """
     why = " ".join((why or "").split())
     if not why:
         return False, say("block_empty")
@@ -802,14 +655,6 @@ def block(root: Path, track: str, n: int, why: str) -> tuple[bool, str]:
 
 
 def after(root: Path, track: str, n: int, names: str) -> tuple[bool, str]:
-    """Say which to-dos must land before this one. `--none` clears it.
-
-    REFUSED RATHER THAN DISCOVERED. A dependency rots in ways a flat list cannot: a number
-    that is not a to-do, a row waiting on itself, or a CYCLE — 12 after 14 after 12 — which
-    is a list that can never be worked and whose only symptom is a `next` that returns
-    nothing forever. All three are caught here, when they are written, because that is the
-    only moment somebody is looking.
-    """
     # `plan 4` and `plan:4` are the same thing said two ways; the rest are to-do numbers
     names = re.sub(r"(?i)\bplan[ :]+(\d+)", r"plan:\1", " ".join((names or "").replace(",", " ").split()))
     t, err = _get(root, track, n)
@@ -849,7 +694,6 @@ def after(root: Path, track: str, n: int, names: str) -> tuple[bool, str]:
 
 
 def _cycle(by_n: dict, start: int, nums: list[int]) -> list[int] | None:
-    """The path back to `start`, if these prerequisites would close a loop."""
     seen, stack = set(), [(x, [start, x]) for x in nums]
     while stack:
         cur, path = stack.pop()
@@ -864,7 +708,6 @@ def _cycle(by_n: dict, start: int, nums: list[int]) -> list[int] | None:
 
 
 def unblock(root: Path, track: str, n: int) -> tuple[bool, str]:
-    """The condition came true. Also what `start` does, so picking one up is enough."""
     t, err = _get(root, track, n)
     if t is None:
         return False, err
@@ -876,12 +719,6 @@ def unblock(root: Path, track: str, n: int) -> tuple[bool, str]:
 
 
 def _get(root: Path, track: str, n: int) -> tuple[dict | None, str]:
-    """One row, WITH its body — the only reader that needs one, and the only one that pays.
-
-    The ledger keeps front matter and a `brief` flag, because a listing says "has a brief"
-    and never prints one. Whoever asks for a specific row is asking to read it, so this is
-    the one place a body is fetched, and it is one file.
-    """
     items = {t["n"]: t for t in _all(root, track)}
     if n not in items:
         return None, say("no_such", n=n, track=track)
@@ -892,12 +729,10 @@ def _get(root: Path, track: str, n: int) -> tuple[dict | None, str]:
 
 
 def _same_title(a: str, b: str) -> bool:
-    """Two titles name one to-do when they differ only in case, punctuation or spacing."""
     return re.sub(r"[^a-z0-9]+", " ", a.lower()).strip() == re.sub(r"[^a-z0-9]+", " ", b.lower()).strip()
 
 
 def _cites_hint(root: Path, track: str, n: int, meta: dict) -> str:
-    """Three open to-dos citing one doc, none in a plan, read like a plan kept in a doc."""
     doc = str(meta.get("doc") or "").split(".")[0]
     if not doc:
         return ""
@@ -913,13 +748,6 @@ _MENTION = re.compile(r"(?i)\b(to-?do|plan)\s*#?\s*(\d{1,5})\b")
 
 
 def mentions_hint(root: Path, track: str, n: int, body: str, t: dict | None = None) -> str:
-    """A NUDGE, NEVER A GATE. A brief that says "after the migration lands" or names another
-    row is stating a dependency in prose, and prose is not something `ready` can read — the
-    row is offered anyway and the constraint is discovered by a reader, or not at all. So
-    when a brief names a to-do or a plan and the row records no dependency, the write says
-    so and names the command. It does not refuse, and it does not repeat once one is
-    recorded: the agent is told once, at the moment it wrote the thing.
-    """
     t = t if t is not None else (_get(root, track, n)[0] or {})
     if (t.get("after") or "").strip():
         return ""
@@ -940,15 +768,6 @@ def mentions_hint(root: Path, track: str, n: int, body: str, t: dict | None = No
 
 
 def add(root: Path, track: str, title: str, body: str, at: str, where: dict | None = None) -> tuple[bool, str]:
-    """Write one. Refuses an empty title and a duplicate open one.
-
-    UNDER THE LOCK, BECAUSE A NUMBER MUST BE UNIQUE. Reading the counter, deciding `n` and
-    writing the file were three unguarded steps, and this project has concurrent writers by
-    design — granted subagents, and a threading viewer. Measured before this: twelve threads
-    adding at once produced twelve files under TWO numbers, eleven of them sharing 001, which
-    makes every `todo:1` reference ambiguous eleven ways. The duplicate-title check is inside
-    the same take, or two callers both pass it and both write.
-    """
     title = " ".join((title or "").split())
     if not title:
         return False, say("add_empty")
@@ -1001,15 +820,6 @@ _HEADING = re.compile(r"^##\s+(.+?)\s*$")
 
 
 def _sections(body: str) -> list[tuple[str, str]]:
-    """[(title, text)], in the order they appear in the body.
-
-    A SECTION IS AN ATX `## <name>` HEADING plus everything up to the next one or the
-    end of the file — level 2, deliberately, so it never collides with a `# <title>` a
-    hand-written brief might already carry. The stretch before the first heading (most
-    briefs, today) is title "". `text` includes its own heading line for a named
-    section, so `"\\n".join(text for _, text in sections)` reproduces the body exactly —
-    that is what `replace_section` relies on to touch only the one section it names.
-    """
     lines = (body or "").split("\n")
     out: list[tuple[str, str]] = []
     title = ""
@@ -1026,12 +836,6 @@ def _sections(body: str) -> list[tuple[str, str]]:
 
 
 def _snapshot(t: dict) -> Path:
-    """Copy the whole file, unchanged, to struck/ before it is rewritten.
-
-    A to-do has no per-part files to move individually the way a doc's part does, so the
-    whole file is the snapshot. NOTHING IS EVER DELETED holds here too: the file named
-    here is the pre-edit brief, in full, reachable after the edit that replaced it.
-    """
     struck_dir = t["path"].parent / STRUCK
     struck_dir.mkdir(exist_ok=True)
     # MICROSECONDS, NOT SECONDS: two edits inside one automated run (a test, a script)
@@ -1045,13 +849,6 @@ def _snapshot(t: dict) -> Path:
 
 
 def amend(root: Path, track: str, n: int, title: str, addition: str) -> tuple[bool, str]:
-    """Append a NEW `## <title>` section to a brief. Mirrors `docs.part`.
-
-    Refuses a title that already names a section — journal todos replace updates one of
-    those — and refuses an empty addition, the same discipline `journal todos add`
-    already applies to an empty title: a write that reports success and lands wrong is
-    the one failure this project exists to prevent.
-    """
     title = " ".join((title or "").split())
     if not title:
         return False, say("amend_title")
@@ -1071,10 +868,6 @@ def amend(root: Path, track: str, n: int, title: str, addition: str) -> tuple[bo
 
 
 def replace_section(root: Path, track: str, n: int, title: str, new_text: str) -> tuple[bool, str]:
-    """Replace ONE named section, byte-for-byte elsewhere; without a title, the whole
-    body. Mirrors `docs.replace`. A title that names no section refuses and lists what
-    the brief does have, rather than guessing or silently appending.
-    """
     new_text = (new_text or "").rstrip("\n")
     if not new_text.strip():
         return False, say("replace_body")
@@ -1104,19 +897,6 @@ def replace_section(root: Path, track: str, n: int, title: str, new_text: str) -
 
 def start(root: Path, track: str, n: int, at: str, strict: bool = False,
           agent: str = "") -> tuple[dict | None, str]:
-    """Pick a to-do up. An AGENT picking one up also claims it, through `assign`.
-
-    PICKING IT UP IS CLAIMING IT, and the absence of that cost a dogfood run its report: a
-    subagent ran `todos start 1`, worked the row, and was then refused by `report` with
-    "held by `nobody`" — because `started` and `assigned` were two facts and only a
-    dispatcher set the second. Nothing in the flow told it to assign itself, so the hold
-    that `ready` checks was never taken and the row stayed offerable to anyone the whole
-    time it was being worked.
-
-    THE CLAIM GOES THROUGH `assign` RATHER THAN BESIDE IT. One funnel holds a row, so the
-    refusal an agent gets for a row another live agent holds is the same sentence whichever
-    door it came in by, and the lapse-on-heartbeat rule has one implementation.
-    """
     t, err = _get(root, track, n)
     if t is None:
         return None, err
@@ -1152,13 +932,6 @@ def done(root: Path, track: str, n: int, how: str, at: str) -> tuple[bool, str]:
 
 
 def move(root: Path, track: str, n: int, dst: str, at: str) -> tuple[bool, str]:
-    """Move a to-do to another environment, brief and all.
-
-    THE FILE MOVES AND THE NUMBER CHANGES, because a to-do's number is its filename and the
-    numbering is per environment. What it was is kept in `moved_from`, so a to-do named by
-    an old message can still be found. Nothing is left behind: unlike a pin, a to-do is not
-    re-asserted into anybody's context, so a tombstone would only be a second entry to read.
-    """
     dst = state.slug(dst)
     if not dst:
         return False, say("move_where")
@@ -1181,14 +954,6 @@ def move(root: Path, track: str, n: int, dst: str, at: str) -> tuple[bool, str]:
 
 
 def reopen(root: Path, track: str, n: int, why: str, at: str) -> tuple[bool, str]:
-    """Undo a close, on the record.
-
-    THE PRICE OF CLOSING A TO-DO AUTOMATICALLY. `done` is a field with no verb that cleared
-    it, so a wrong number — a typo in a commit trailer, a close that fired on the wrong
-    environment — could only be undone by hand-editing the markdown. Nothing that closes
-    without a human in the loop should be that expensive to reverse. The reason is required
-    and the old close is kept beside it, so a reopen is auditable rather than silent.
-    """
     why = " ".join((why or "").split())
     if not why:
         return False, say("reopen_why")
@@ -1218,7 +983,6 @@ LAST_FILE = ".last_number"
 
 
 def _next_n(root: Path, track: str, items: list[dict]) -> int:
-    """One past the highest number ever given here, so an archived or deleted to-do's number is never reused."""
     import os
     highest = items[-1]["n"] if items else 0
     try:
@@ -1254,7 +1018,6 @@ def _next_n(root: Path, track: str, items: list[dict]) -> int:
 
 
 def archive_days(root: Path, track: str) -> int:
-    """How many days a done to-do stays listed on this environment; 0 means until archived by hand."""
     got = state.get(root, ARCHIVE_DAYS, {})
     value = got.get(track) if isinstance(got, dict) else None
     return DEFAULT_ARCHIVE_DAYS if value is None else int(value)
@@ -1272,7 +1035,6 @@ def set_archive_days(root: Path, track: str, days: int) -> tuple[bool, str]:
 
 
 def auto_archive(root: Path, track: str, at: str) -> int:
-    """Move the done to-dos older than this environment's archive days into archived/; how many moved."""
     days = archive_days(root, track)
     if not days:
         return 0
@@ -1284,11 +1046,6 @@ def auto_archive(root: Path, track: str, at: str) -> int:
 
 
 def _prune_cutoff(word: str, now: str) -> tuple[str | None, str]:
-    """(the ISO cutoff, "") from a duration ("30d", "2h", "6w") or a date/timestamp
-    typed as-is — or (None, the refusal). Nothing here guesses a default age: pruning
-    clears rows off the list for good, and a silent number would be the one time this
-    package's "ask, don't assume" habit matters most.
-    """
     import re as _re
     from datetime import datetime, timedelta, timezone
     word = (word or "").strip()
@@ -1313,16 +1070,6 @@ def _prune_cutoff(word: str, now: str) -> tuple[str | None, str]:
 
 
 def prune(root: Path, track: str, word: str, at: str, force: bool = False) -> tuple[bool, str]:
-    """Clear DONE to-dos older than `word` off the list — archived under `archived/`
-    by default, actually removed with `force`. An OPEN to-do is never touched, whatever
-    its age; "done" already covers a dropped one too, since `strike`/`drop` close a
-    to-do through the same `done` field a normal finish does.
-
-    ARCHIVED, NOT STRUCK — a moved file is invisible to `_all` for free: it scans the
-    folder itself, not subfolders (see `_stamped`), so nothing here has to teach the
-    read path a new exclusion. `force` is the one real deletion this package does
-    anywhere; everywhere else "gone" means "hidden, on purpose, and still on disk."
-    """
     cutoff, err = _prune_cutoff(word, at)
     if cutoff is None:
         return False, err
@@ -1347,12 +1094,6 @@ def prune(root: Path, track: str, word: str, at: str, force: bool = False) -> tu
 
 
 def titled(root: Path, track: str, title: str) -> dict | None:
-    """The started to-do whose title is these words, if there is one. Reads, decides nothing.
-
-    THE MATCH AND THE CLOSE ARE TWO QUESTIONS, and for a long time one function answered
-    both. Ending work said whether a row existed AND marked it done in the same breath, so
-    the only way to learn a row was about to close was to close it.
-    """
     want = " ".join(title.split()).lower()
     return next((t for t in open_items(root, track)
                  if t["title"].lower() == want and t.get("started")), None)
@@ -1371,36 +1112,6 @@ def close_note(t: dict) -> str:
 
 def close_titled(root: Path, track: str, title: str, at: str,
                  agent: str = "") -> tuple[str, str]:
-    """Close the to-do whose title these words are. ASKED FOR, never automatic.
-
-    IT USED TO FIRE ON EVERY `work end` AND IT WAS WRONG 36 TIMES. In one real project 710
-    of 1,810 closed rows — 39% — were closed by this and not by anyone deciding they were
-    done; the 36 are only the ones an agent later noticed and reopened, in words that say
-    exactly what happened: "parked on a Kit gap, not done — the work-end closed it", "closed
-    by a work-end of the same name while I was filing, not by any implementation", "five of
-    seven sites remain; the work end matched its title and closed it". One row had it happen
-    twice.
-
-    THE CAUSE WAS ONE MISSING DISTINCTION. `work end` meant both "this is finished" and "I
-    am putting this down", because there was no verb for the second. An agent interrupted
-    mid-row does the tidy thing — closes its declaration before switching — and the record
-    heard "done". The user's ruling: closing a to-do is always explicit. `journal todos done
-    <n>`, a `Journal: todos done <n>` commit trailer, or `work end "<subject>" --todo`, which
-    is the one-command form and still says so out loud.
-
-    A SUBAGENT CLOSES NOTHING, AND THIS IS THE DOOR IT WENT THROUGH. `report` refuses to
-    close and says the parent does it; then `work end`, on the subject `todos start` itself
-    opened, closed the row here — unconditionally, with no idea who was calling. Two agents
-    in one dogfood run found it: one guessed the hint did not apply to it and worked around
-    it, the other followed the documented order exactly — report, then `work end` — and
-    marked its own homework. The guarantee held everywhere it was written down and nowhere
-    it was wired.
-
-    SO THE CHECK GOES WHERE THE WRITE IS. It was in `report` alone, which is the door that
-    announces the rule; the row is `assigned` either way, and that field is what says a
-    close is not this caller's to make. The work still ends — that is the agent's own
-    ledger and nobody else's — and the row stays standing for whoever dispatched it.
-    """
     t = titled(root, track, title)
     if not t:
         return "", ""
@@ -1434,7 +1145,6 @@ def close_titled(root: Path, track: str, title: str, at: str,
 #: has that number — and REFUSES when more than one does, because a close nobody can see is
 #: worse than a close that did not happen. `<environment>/<n>` says it outright.
 def now() -> str:
-    """One timestamp shape, for the callers that write a to-do without going through the CLI."""
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
@@ -1462,12 +1172,6 @@ _TRAILER = re.compile(r"^Journal:[ \t]*todos?[ \t]+done[ \t]+"
 
 
 def commit_at(project: Path, ref: str = "HEAD") -> tuple[str, str, str] | None:
-    """A commit as (sha, subject, whole message), or None where there is no such commit.
-
-    READ THE COMMIT, NOT THE COMMAND that made it. The command is what was asked for; the
-    commit is what happened — so a commit a gate rejected closes nothing, and `-m`, `-F -`
-    and an editor session all parse the same, because none of them are parsed at all.
-    """
     import subprocess
     try:
         p = subprocess.run(["git", "log", "-1", "--format=%H%n%s%n%B", ref], cwd=str(project),
@@ -1482,11 +1186,6 @@ def commit_at(project: Path, ref: str = "HEAD") -> tuple[str, str, str] | None:
 
 
 def refs_in(message: str) -> list[tuple[str | None, int, str]]:
-    """Every close the message asks for: (environment or None, number, the how it gave).
-
-    A line naming several numbers yields several refs, all with the same `how` and the
-    same environment (or none) — see the comment on `_TRAILER`.
-    """
     out = []
     for m in _TRAILER.finditer(message or ""):
         env = " ".join(m.group("env").split()) if m.group("env") else None
@@ -1498,7 +1197,6 @@ def refs_in(message: str) -> list[tuple[str | None, int, str]]:
 
 
 def environments_with_todos(root: Path) -> list[str]:
-    """The environment names that own at least one to-do, read off the to-dos themselves."""
     d = root / DIR
     names = []
     for sub in sorted(d.iterdir()) if d.is_dir() else []:
@@ -1511,12 +1209,6 @@ def environments_with_todos(root: Path) -> list[str]:
 
 def close_from_commit(root: Path, message: str, how_default: str, at: str,
                       here: str | None = None) -> list[tuple[bool, str]]:
-    """Act on every trailer in a commit message.
-
-    Back comes one (did it close, what to say) per ref — the caller writes the headline,
-    because "the trailer closed what it named" is a lie when the number was wrong, and a
-    hook that overstates what it did is one an agent learns to skim.
-    """
     said: list[tuple[bool, str]] = []
     for env, n, how in refs_in(message):
         if env is None:
@@ -1549,11 +1241,6 @@ def close_from_commit(root: Path, message: str, how_default: str, at: str,
 
 
 def _end_its_work(root: Path, title: str, at: str) -> str:
-    """End the open work named after a to-do that just closed: a closed row leaves no work standing.
-
-    ONLY `ask` AND `block` DID THIS. `todos done`, a drop and a commit trailer closed the row and left
-    its work open for good, holding every stop after it.
-    """
     import work
     if not any(w["subject"] == title for w in work.open_work(root)):
         return ""
@@ -1612,24 +1299,14 @@ _STATES = (
 
 
 def _state(t: dict) -> str:
-    """Which state this to-do is in. One name, from one table — see `_STATES`."""
     return next(name for name, is_it in _STATES if is_it(t))
 
 
 def states_of(t: dict) -> list[str]:
-    """EVERY state whose predicate matches, most significant first.
-
-    A LADDER CANNOT BE CHECKED FROM THE OUTSIDE. It always returns exactly one answer, so a
-    rung in the wrong place shows up only as a wrong answer in a case nobody thought of —
-    which is precisely how `asks` shadowed five states for as long as it did. This exposes
-    what else was true, so a test can assert the PRECEDENCE itself rather than assert its
-    way through a handful of hand-picked rows.
-    """
     return [name for name, is_it in _STATES[:-1] if is_it(t)]
 
 
 def question_counts(root: Path, track: str) -> dict[int, tuple[int, int]]:
-    """to-do number -> (open, answered) questions linked to it, read in one pass."""
     import questions
     out: dict[int, list[int]] = {}
     for q in questions._all(root, track):
@@ -1651,13 +1328,6 @@ def _plan_of(root: Path, track: str, n: int) -> dict | None:
 
 def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
                  counts: dict[int, tuple[int, int]] | None = None, by_n: dict | None = None) -> dict:
-    """One to-do as a plain, JSON-safe dict — the shape the web viewer serves, built
-    from the SAME predicates (`states_of`, `after_of`, `waiting_on`) the terminal
-    renderer's own `facts()` reads to build its one-line sentence per row. Neither
-    re-derives what counts as blocked, after or waiting on the user; only how that
-    is finally SAID differs — a joined sentence for a terminal, separate fields for
-    a page that renders its own badges and links from them.
-    """
     asked = (question_counts(root, track) if counts is None else counts).get(t["n"], (0, 0))
     return {
         "questions_open": asked[0],
@@ -1688,8 +1358,6 @@ def row_response(root: Path, track: str, t: dict, short_refs: bool = False,
 
 
 def rows_response(root: Path, track: str) -> list[dict]:
-    """Every to-do on this environment, as plain dicts, newest first — what
-    the to-dos controller serves; its `show` starts from `row_response` for one."""
     items = _all(root, track)
     by_n = {x["n"]: x for x in items}
     rows = [row_response(root, track, t, by_n=by_n) for t in items]
@@ -1702,7 +1370,6 @@ def _held(root: Path, track: str, t: dict) -> str:
 
 
 def work_log(root: Path, track: str, t: dict) -> list[dict]:
-    """What was done on a to-do: each piece of work started from it, its updates, waits and end."""
     import work
     title = " ".join(t["title"].split()).lower()
     out = []
@@ -1723,11 +1390,6 @@ def work_log(root: Path, track: str, t: dict) -> list[dict]:
 
 
 def _started(root: Path, track: str, t: dict) -> str:
-    """`started` is never cleared by a plain `work end` — only `--todo`/`done` clears the
-    row — so a row that was started and then ended without closing it still says
-    `started`, and claiming "work is open" for it unconditionally was a lie the moment
-    that happened. Say so only when `work.open_work` actually has a matching subject.
-    """
     import work
     live = any(w["subject"].lower() == t["title"].lower() for w in work.open_work(root))
     return say("started_live" if live else "started_ended", age=_age(t["started"]))
@@ -1754,30 +1416,6 @@ _STATE_TEXT = {
 
 def render(root: Path, track: str, *, all_of_them: bool = False, width: int | None = None, short_refs: bool = False,
            cap: int | None = None, page: int = 1, order: str = fmt.DESC, order_by_id: bool = False) -> str:
-    """The list as a person reads it: the title, where it stands, and any question below.
-
-    CAPPED LIKE `carry` (below), for the same reason: a bare `journal todo` is asked for
-    fresh each time rather than handed automatically, so it pages past the cap instead
-    of just saying how many more there are. `cap` is None by default — the environment
-    pickup page (`tracks.page`) calls this uncapped on purpose: a runner has to see the
-    WHOLE ordered list, not the first page of it.
-
-    THE LOOP IS `entries.listing`, shared with `docs.catalogue` and `tools.catalogue` —
-    only `facts` below is this noun's own, exactly the strategy `pins._store` already
-    supplies for a pin, a rule and a reminder.
-
-    ORDERED BY PRIORITY UNLESS `order_by_id` SAYS OTHERWISE. `entries.listing`/
-    `fmt.paged` order and page whatever list they are handed; the only change here is
-    WHICH list that is — pre-sorted by priority (ascending, ties keeping their number
-    order) so the existing `order=asc|desc` reversal still means what it already means:
-    DESC (the default) reads highest-first, exactly as it read newest-first before.
-
-    THE QUESTION AND ITS ANSWER ARE NOT A FACT, and stay out of `facts`: a fact is a short
-    fragment joined into one line with " · ", and a wrapped line breaks wherever it must —
-    measured, folding a long answer in with the rest put the wrap point inside the arrow
-    itself, on this exact to-do, and the test that reads "→ " off the front of it failed.
-    They get their own wrapped block beneath, exactly as they always did.
-    """
     width = fmt.room(width)
     import entries
     everything = _all(root, track)
@@ -1794,7 +1432,6 @@ def render(root: Path, track: str, *, all_of_them: bool = False, width: int | No
 
 
 def facts_text(root: Path, track: str, t: dict, short_refs: bool = False, by_n: dict | None = None) -> str:
-    """The line beneath a to-do's title: where it stands, its priority, its brief, its doc."""
     state = _state(t)
     out = [_after_text(t, waiting_on(root, track, t, by_n=by_n)) if state == "after" else _STATE_TEXT[state](root, track, t)]
     if priority_of(t) != DEFAULT_PRIORITY:
@@ -1809,7 +1446,6 @@ def facts_text(root: Path, track: str, t: dict, short_refs: bool = False, by_n: 
 
 
 def render_rows(rows: list[dict], width: int | None = None) -> str:
-    """To-do rows (`row_response`) as the terminal list: title, facts, and a waiting question beneath."""
     width = fmt.room(width)
     blocks = []
     for r in rows:
@@ -1831,7 +1467,6 @@ def show(root: Path, track: str, n: int, width: int | None = None) -> tuple[bool
 
 
 def detail(root: Path, track: str, t: dict) -> dict:
-    """One to-do in full, as data: its row, its brief, and what the terminal page says of it."""
     meta = [say("meta_env", env=track)]
     if t.get("at"):
         meta.append(say("meta_written", age=_age(t["at"]), date=t["at"][:10]))
@@ -1856,7 +1491,6 @@ def detail(root: Path, track: str, t: dict) -> dict:
 
 
 def show_text(t: dict, width: int | None = None) -> str:
-    """A to-do's `detail` as the terminal page."""
     width = fmt.room(width)
     n = t["n"]
     out = [fmt.title(say("show_title", n=n), sub=" ".join(t["title"].split())), "  " + fmt.dim(t["facts"])]
@@ -1909,18 +1543,6 @@ AUTO = "auto"
 
 
 def auto(root: Path, track: str | None = None) -> bool:
-    """May the agent work through the list without asking? ONE SWITCH FOR THE WHOLE JOURNAL.
-
-    OFF BY DEFAULT, AND THE DEFAULT IS THE POINT. A to-do is work the user put off, and
-    whether it gets picked up is their call — unless they have said that the agent should
-    work through the list on its own.
-
-    IT WAS A MAP KEYED BY ENVIRONMENT, and the user ended that for a reason they watched
-    happen: an agent that switches environments came to a halt the moment it moved to one
-    where the flag was off. `track` is still accepted, and ignored, while the callers are
-    moved. A journal that still holds the old map reads as ON if any environment had it on,
-    until the migration rewrites it.
-    """
     got = state.get(root, AUTO, False)
     if isinstance(got, dict):
         return any(bool(v) for v in got.values())
@@ -1928,7 +1550,6 @@ def auto(root: Path, track: str | None = None) -> bool:
 
 
 def set_auto(root: Path, on: bool) -> str:
-    """Turn it on or off for the whole journal."""
     with state.locked(root):
         state.put(root, AUTO, bool(on))
     return say("auto_on" if on else "auto_off")
@@ -1943,14 +1564,6 @@ def _loop_line(root: Path) -> str:
 
 
 def carry(root: Path, track: str, cap: int = 0) -> str:
-    """The block a session start hands over. Titles only; what it asks depends on auto.
-
-    CAPPED AFTER THE SORT, NEVER BEFORE. The answered ones come first because they are the
-    user's word to proceed, and the ones waiting on the user carry their question — so
-    those are exactly the entries a trim must never take. Sorting first and cutting the
-    tail means what is dropped is the ordinary end of the list, and `fmt.cut` says how many
-    and which command reads them.
-    """
     import plans
     plan = plans.carry_line(root, track)
     waiting = open_items(root, track)

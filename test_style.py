@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""style.py: coding style rules, one per subject, generated into a skill each and listed in CLAUDE.md."""
 import json, os, sys, tempfile
 from pathlib import Path
 

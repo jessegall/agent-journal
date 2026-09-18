@@ -46,17 +46,11 @@ def on(root: Path, turn: str, track: str | None = None) -> list[dict]:
 
 
 def all_of(root: Path, track: str | None = None) -> dict:
-    """Every turn that carries a reaction, for the viewer to draw in one read."""
     return {k: v for k, v in _all(root, track).items() if isinstance(v, list) and v}
 
 
 def leave(root: Path, turn: str, face: str, at: str, by: str = "agent",
           track: str | None = None) -> tuple[bool, str, bool]:
-    """Put one on, or take it off when the same side leaves the same one again.
-
-    A REACTION TOGGLES. It is the only write in the journal with no undo verb, because the gesture
-    IS the undo: clicking the face you left is how it comes off, the way every chat does it.
-    """
     turn = (turn or "").strip()
     # A NUMBER MEANS A MESSAGE. The agent writes `journal react 12 "👍"`; the viewer writes the turn's
     # own key. Both arrive here, and the shorthand is spelled out once, where it is stored.
@@ -89,18 +83,11 @@ def leave(root: Path, turn: str, face: str, at: str, by: str = "agent",
 
 
 def _number(turn: str) -> str:
-    """The message number inside a turn key, or the key itself for a turn that has none."""
     parts = (turn or "").split(":")
     return parts[1] if len(parts) > 1 and parts[1].isdigit() and parts[1] != "0" else turn
 
 
 def untold(root: Path, track: str | None = None) -> list[tuple[str, int, dict]]:
-    """(turn, index, reaction) for every one the USER left that nobody has been told about.
-
-    A THUMBS UP IS AN ANSWER. The user reacting to "I'll do this next" is confirming it, and a
-    confirmation the agent never hears is the same as one never given — so a reaction of theirs is
-    told the way a reply under a message is, once, and marked.
-    """
     out = []
     for turn, rows in _all(root, track).items():
         for i, r in enumerate(rows if isinstance(rows, list) else []):

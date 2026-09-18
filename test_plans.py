@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""plans.py: a plan is ordered phases of to-dos; a phase is complete when its to-dos are done."""
 import json, os, sys, tempfile
 from pathlib import Path
 

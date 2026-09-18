@@ -155,7 +155,6 @@ def _todos(root: Path, track: str) -> dict[int, dict]:
 
 
 def phases(root: Path, plan: dict, track: str, known: dict[int, dict] | None = None) -> list[dict]:
-    """Each phase with its to-dos and whether it is complete; a to-do no longer listed (archived) counts as done."""
     known = _todos(root, track) if known is None else known
     out = []
     for p, ph in enumerate(plan.get("phases") or [], 1):
@@ -182,17 +181,6 @@ def status(plan: dict, rows: list[dict]) -> str:
 
 
 def park(root: Path, n: int, why: str, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
-    """Set the plan being worked aside, without finishing it and without saying it was dropped.
-
-    A PLAN HAD NOWHERE TO WAIT. The states were draft, active, done and abandoned, and only one plan
-    could be active — so a plan that was started and then had to wait could only be finished, which is
-    a lie, or abandoned, which says it was dropped. Parking is the same act `work park` already names
-    for a piece of work: it stays, it says why, and it is picked up again by activating it.
-
-    IT FREES THE SLOT. `active()` finds a plan by its derived status, so a parked plan is no longer
-    active: another plan may be activated, and this one's to-dos leave `order()` on their own, with
-    nothing to remember and nothing to undo.
-    """
     why = " ".join((why or "").split())
     if not why:
         return False, say("park_why", n=n)
@@ -211,14 +199,12 @@ def park(root: Path, n: int, why: str, at: str, source: str = "cli", track: str 
 
 
 def current(plan: dict, rows: list[dict]) -> dict | None:
-    """The first phase that is not complete, while the plan is active."""
     if status(plan, rows) != ACTIVE:
         return None
     return next((r for r in rows if not r["complete"]), None)
 
 
 def membership(root: Path, track: str) -> dict[int, tuple[int, int]]:
-    """{to-do number: (plan, phase)} for every plan that is not abandoned."""
     out = {}
     for n, plan in enumerate(_all(root, track), 1):
         if plan.get("status") == ABANDONED:
@@ -263,15 +249,6 @@ def add(root: Path, title: str, goal: str, body: str, at: str, source: str = "cl
 
 def edit(root: Path, n: int, title: str | None = None, goal: str | None = None, body: str | None = None,
          track: str | None = None) -> tuple[bool, str]:
-    """Correct a plan's title, goal or approach. What is not given stays.
-
-    THE GOAL IS THE ONE LINE THE PLAN IS JUDGED AGAINST, and until now it was frozen at creation —
-    while the way a plan is meant to be written makes it provisional on purpose: the skill says shape
-    the goal WITH the user, and the viewer opens a plan as `preparing` with a placeholder so it is
-    visible while being shaped. Both routes produced a goal that had to be corrected and could not be.
-
-    A DONE OR ABANDONED PLAN IS THE RECORD OF WHAT WAS DONE, so it refuses, exactly as a phase does.
-    """
     here = _here(root, track)
     said = []
     with state.locked(root):
@@ -321,17 +298,6 @@ def _is_a_date(title: str) -> bool:
 
 def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bool = False,
               track: str | None = None, before: int = 0, body: str = "") -> tuple[bool, str]:
-    """A phase, at the end or `before` an existing one.
-
-    APPEND-ONLY WAS A REAL COST, PAID ONCE. A plan is written before the work is understood, so the
-    phase that turns out to belong in the middle is the ordinary case, not the exception — and with
-    only an append the choice was to put its rows in a phase that does not describe them or to abandon
-    the plan and write it again. Both happened here; the second is what this ends.
-
-    Nothing has to be renumbered: a phase's number is its position, its to-dos live inside it, and
-    every reader — `current`, `checkpoint`, `membership`, `reachable` — derives that position by
-    enumerating. So an insert moves the later phases along and they carry everything with them.
-    """
     title = " ".join((title or "").split())
     if not title:
         return False, say("phase_title", n=n)
@@ -371,18 +337,6 @@ def add_phase(root: Path, n: int, title: str, when: str, at: str, checkpoint: bo
 
 def rephrase(root: Path, n: int, p: int, at: str, title: str = "", when: str = "",
              checkpoint: bool | None = None, track: str | None = None, body: str | None = None) -> tuple[bool, str]:
-    """Correct a phase after it is written: its title, what completes it, whether it is a checkpoint.
-
-    A PLAN IS WRITTEN BEFORE THE WORK IS UNDERSTOOD, which is the same argument that put `--before` on
-    `phase`. A phase whose title turned out wrong, or whose `--when` cannot be judged true or false,
-    could only be lived with — and the way people live with it is to abandon the plan and write it
-    again, which costs the user a second approval for no new decision.
-
-    THE CHECKPOINT IS THE ONE THAT CHANGES WHAT IS HAPPENING, so it says so. Taking one off a phase the
-    plan is stopped at sets the plan moving; putting one on a phase already run past changes nothing.
-    Both are allowed and both are named, because a silent change to whether the agent stops is the
-    thing nobody would look for.
-    """
     title = " ".join((title or "").split())
     when = " ".join((when or "").split())
     if not title and not when and checkpoint is None and body is None:
@@ -434,19 +388,12 @@ def rephrase(root: Path, n: int, p: int, at: str, title: str = "", when: str = "
 
 
 def _is_held(root: Path, plan: dict, rows: list[dict], p: int) -> bool:
-    """Is the plan stopped at THIS phase's checkpoint right now?"""
     held = checkpoint(plan, rows, todo.auto(root))
     return bool(held and held["p"] == p)
 
 
 def put_todos(root: Path, n: int, p: int, numbers, at: str, off: bool = False, reopen: str = "",
               move: bool = False, track: str | None = None) -> tuple[bool, str]:
-    """Put to-dos in a phase, or take them out with `off`. A to-do sits in one phase of one plan.
-
-    `move` IS THE ONE-COMMAND CORRECTION. A row in the wrong phase is the ordinary case — the
-    plan was written before the work was understood — and taking it out of one phase and
-    putting it in another was two commands, which is two chances to leave it in neither.
-    """
     wanted = _numbers(numbers)
     if not wanted:
         return False, say("todos_usage", n=n, p=p)
@@ -503,14 +450,6 @@ def put_todos(root: Path, n: int, p: int, numbers, at: str, off: bool = False, r
 
 
 def ready(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, str]:
-    """The agent says the plan it was writing is finished and the user may approve it.
-
-    A PLAN BEING WRITTEN IS NOT A PLAN WAITING. Between `plans add` and the last phase landing, a plan
-    had one state with a plan that was finished and waiting — so the card said "ready to start" and the
-    user could start something with no phases in it. The agent states when it is done rather than the
-    code guessing from the phase count, because a plan abandoned half-written looks exactly the same
-    from outside.
-    """
     here = _here(root, track)
     with state.locked(root):
         items = _all(root, here)
@@ -568,7 +507,6 @@ def activate(root: Path, n: int, at: str, source: str = "cli", track: str | None
 
 
 def active(root: Path, track: str, known: dict[int, dict] | None = None) -> tuple[int, dict, list[dict]] | None:
-    """(number, plan, its phases) of the active plan on this environment, or None."""
     known = _todos(root, track) if known is None else known
     for n, plan in enumerate(_all(root, track), 1):
         rows = phases(root, plan, track, known)
@@ -578,13 +516,6 @@ def active(root: Path, track: str, known: dict[int, dict] | None = None) -> tupl
 
 
 def checkpoint(plan: dict, rows: list[dict], auto: bool = False) -> dict | None:
-    """A complete checkpoint phase before the current one that the user has not continued past.
-
-    ONE AUTO SWITCH, THE ENVIRONMENT'S. `auto` is that flag, passed in by every caller: with it on
-    the agent goes on past a checkpoint (the phase still marks and still notifies), with it off the
-    plan stops there and waits. A plan used to carry its own auto field, which could disagree with
-    the environment's — a plan ran past its checkpoints while the list itself was not being worked.
-    """
     now = current(plan, rows)
     if now is None or auto:
         return None
@@ -597,15 +528,6 @@ def checkpoint(plan: dict, rows: list[dict], auto: bool = False) -> dict | None:
 
 
 def reachable(plan: dict, rows: list[dict], now: dict, auto: bool) -> list[int]:
-    """The phases auto may take from, in order: the current one, then each later one a checkpoint does not gate.
-
-    A PHASE MUST NEVER WEDGE THE LIST. Every row in the current phase can be waiting on the
-    user, blocked, or held by an agent, and then a plan that offered only that phase would
-    leave auto with nothing to do while the list below it was full of work. So the later
-    phases stay reachable — they are simply never picked while the current phase has
-    something ready — and the only thing that really stops the run is a checkpoint the user
-    has not continued past, which is what a checkpoint is for.
-    """
     out = [now["p"]]
     for row, ph in zip(rows, plan.get("phases") or []):
         if row["p"] < now["p"]:
@@ -618,8 +540,6 @@ def reachable(plan: dict, rows: list[dict], now: dict, auto: bool) -> list[int]:
 
 
 def order(root: Path, track: str, items: list[dict]) -> list[tuple[int, dict]]:
-    """(rank, to-do) for what auto may pick: the earliest reachable phase with something ready (0),
-    then to-dos in no plan above default priority (1)."""
     got = active(root, track)
     member = membership(root, track)
     if got is None:
@@ -648,7 +568,6 @@ STALL_ROWS = 3
 
 
 def stall(root: Path, track: str) -> str:
-    """Why the active plan gives auto nothing to pick up: a checkpoint, or a current phase with no to-dos; else ""."""
     got = active(root, track)
     if got is None:
         # A PARKED PLAN IS WHY THE LIST WENT QUIET, and saying nothing would leave `next` unexplained
@@ -687,7 +606,6 @@ def stall(root: Path, track: str) -> str:
 
 
 def _why_held(root: Path, track: str, t: dict) -> str:
-    """Why this one row cannot be started, in the order that decides what happens to it next."""
     n = t["n"]
     if t.get("asks") and not t.get("answer"):
         return say("stall_row_asking", n=n)
@@ -703,7 +621,6 @@ def _why_held(root: Path, track: str, t: dict) -> str:
 
 
 def proceed(root: Path, n: int, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
-    """The user's word to go on past a checkpoint phase."""
     if source != "web" and approval(root) != "agent":
         return False, say("continue_user")
     here = _here(root, track)
@@ -721,18 +638,10 @@ def proceed(root: Path, n: int, at: str, source: str = "cli", track: str | None 
 
 
 def acknowledged(plan: dict) -> bool:
-    """Has the user seen that this plan finished? A plan that never finished needs no answer."""
     return bool(plan.get("acknowledged_at"))
 
 
 def acknowledge(root: Path, n: int, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
-    """The user's word that they have seen a finished plan — what takes its card off the home.
-
-    A PLAN THAT FINISHES SHOULD NOT VANISH. The home card followed the ACTIVE plan, so the moment the
-    last phase completed the plan derived as done and the card disappeared with nothing saying it had
-    finished. The card stays until the user says they have seen it; this is that word, and like
-    approving a plan or continuing past a checkpoint it is theirs, not the agent's.
-    """
     if source != "web" and approval(root) != "agent":
         return False, say("ack_user")
     here = _here(root, track)
@@ -751,7 +660,6 @@ def acknowledge(root: Path, n: int, at: str, source: str = "cli", track: str | N
 
 
 def announce(root: Path, track: str, at: str) -> None:
-    """Tell the user once when a phase of an active plan completes."""
     import notifications
     with state.locked(root):
         items = _all(root, track)
@@ -778,7 +686,6 @@ def announce(root: Path, track: str, at: str) -> None:
 
 
 def carry_line(root: Path, track: str) -> str:
-    """The active plan, for the block a session start hands over; "" when there is none."""
     got = active(root, track)
     if got is None:
         return ""
@@ -852,21 +759,18 @@ def link(root: Path, n: int, ref: str, track: str | None = None) -> tuple[bool, 
 
 
 def reads_like_plan(doc: dict) -> bool:
-    """A doc titled like a plan, or with parts titled "Phase …"."""
     import docs
     return bool(docs._PLAN_WORDS.search(doc.get("title", ""))) or any(
         _PHASE_PART.match(p.get("title", "")) for p in doc.get("parts") or [])
 
 
 def made_from_docs(root: Path) -> set[int]:
-    """Doc numbers some environment already turned into a plan that is not abandoned."""
     import tracks
     return {plan["from_doc"] for name in tracks._all(root) for plan in _all(root, name)
             if plan.get("from_doc") and plan.get("status") != ABANDONED}
 
 
 def from_doc(root: Path, ref: str, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
-    """A draft plan from a doc: its "Phase …" parts become phases, holding the to-dos that cite them."""
     import docs
     here = _here(root, track)
     doc, _, err = docs.get(root, str(ref or "").strip())
@@ -898,7 +802,6 @@ def from_doc(root: Path, ref: str, at: str, source: str = "cli", track: str | No
 
 
 def linked_reports(root: Path, track: str) -> set[int]:
-    """Report numbers a plan that is not finished links: kept listed and never removed while it runs."""
     known = _todos(root, track)
     out = set()
     for plan in _all(root, track):

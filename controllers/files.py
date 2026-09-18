@@ -17,7 +17,6 @@ def _stamp(path: Path, fallback: str = "") -> str:
 
 
 class FilesController(Controller):
-    """Every file stored for an environment: the files held on its messages and its documents' attachments."""
     resource = "files"
     noun = "file"
     actions = ("index",)

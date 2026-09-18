@@ -1,17 +1,3 @@
-"""Worktrees share the journal: a linked worktree's .journal is a symlink, never a copy.
-
-A `git worktree add` checks the committed .journal/ out again, and from that moment two
-journals drift: a pin written in the worktree is not in the main checkout, a to-do closed
-in one is open in the other. The user's ruling: the journal folder in a worktree must be
-symlinked, not copied.
-
-DONE AT SESSION START, SAFELY. A linked worktree is known from git itself — its common
-dir is the main checkout's .git — so the main .journal is found without guessing. If the
-worktree's .journal is a plain directory that is CLEAN (nothing in it differs from what
-is committed) it is replaced with a symlink and said once. If it is dirty, nothing is
-deleted: every command and hook is REDIRECTED to the main journal for this session, and
-the notice says the copy should go. Either way one record.
-"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -49,25 +35,6 @@ def say(message: str, /, **values) -> str:
 
 
 def nearest(start: Path) -> Path | None:
-    """The closest `.journal/` at or above `start`, or None. The one way a journal is found.
-
-    A PROJECT IS NOT ALWAYS A REPOSITORY, AND THE JOURNAL IS NOT ALWAYS BESIDE ONE. The real
-    shape this was written for:
-
-        worldwatchmarket/        no git here at all — but this is where .journal lives
-          chronos/               a repository
-            .claude/worktrees/…  Claude Code's own worktrees, three levels down
-          site/                  another repository
-          site-shopify-fix/      a linked worktree of `site`, sitting as a sibling
-
-    Every one of those is a place an agent works, and every one of them belongs to the
-    journal at the top. Locating it by git — the only way this module knew — answers
-    correctly for exactly one of them, because four of the five are not the repository the
-    journal sits beside, and the top one is not a repository at all.
-
-    WALKING UP ANSWERS ALL FIVE, and needs no git, no remote and no assumption about layout.
-    It is also what a person does: the journal is the nearest one above you.
-    """
     here = start if start.is_dir() else start.parent
     for _ in range(_UP):
         if (here / ".journal" / "journal.py").is_file():
@@ -105,7 +72,6 @@ WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
 
 
 def web_remote(gitdir: Path) -> str:
-    """The origin remote as a web address, or "" — read from .git/config, no subprocess."""
     try:
         text = (gitdir / "config").read_text(errors="replace")
     except OSError:
@@ -130,7 +96,6 @@ def web_remote(gitdir: Path) -> str:
 
 
 def branch(project: Path) -> dict | None:
-    """The checked-out branch, or the short sha of a detached HEAD; None outside git. Read from HEAD, no subprocess."""
     for folder in (project, *project.parents):
         dot = folder / ".git"
         if dot.is_dir():
@@ -158,7 +123,6 @@ def branch(project: Path) -> dict | None:
 
 
 def main_root(project: Path) -> Path | None:
-    """The main checkout's root if `project` is a LINKED worktree, else None."""
     key = str(project)
     if key in _MAIN:
         return _MAIN[key]
@@ -195,13 +159,6 @@ _ARTIFACTS = ("runtime", "__pycache__")
 
 
 def _dirty(project: Path, root: Path) -> bool:
-    """Does this copy hold anything a delete would lose?
-
-    JUDGED BY WALKING, NOT BY ASKING GIT ALONE. The exclude written by `hide_from_git`
-    hides untracked files under .journal from `git status`, so a copy with a new file
-    would read as clean and be deleted. So: a tracked file modified (git knows), or any
-    file present that git does not track and that is not a runtime artifact.
-    """
     status = _git(project, "status", "--porcelain", "--", ".journal")
     if status is None or status.strip():
         return True
@@ -219,16 +176,6 @@ def _dirty(project: Path, root: Path) -> bool:
 
 
 def hide_from_git(project: Path) -> None:
-    """After the symlink: git in this worktree must never see .journal as changed.
-
-    THE SYMLINK REPLACES A TRACKED DIRECTORY, so without this git sees every tracked file
-    under .journal/ as deleted and the link as new, and the next `git add -A` in the
-    worktree commits a symlink — measured: a release commit whose .journal was a link to
-    itself. So every tracked path under .journal/ is marked skip-worktree, which makes
-    git ignore that it is gone, and the link itself goes in the repository's exclude file,
-    which makes git ignore that it is there. A commit in the worktree then touches
-    .journal not at all; the main checkout commits the real one.
-    """
     tracked = _git(project, "ls-files", "--", ".journal") or ""
     for line in tracked.splitlines():
         if line.strip():
@@ -246,7 +193,6 @@ def hide_from_git(project: Path) -> None:
 
 
 def resolve(root: Path) -> tuple[Path, str]:
-    """(the .journal to use, a note or ""). Links a clean copy; redirects a dirty one."""
     project = root.parent
     if root.is_symlink():
         return root.resolve(), ""
@@ -269,7 +215,6 @@ def resolve(root: Path) -> tuple[Path, str]:
 
 
 def link(root: Path) -> tuple[bool, str]:
-    """`journal worktree link`: replace a copy with the symlink, whatever its state."""
     project = root.parent
     if root.is_symlink():
         return True, say("already_linked", target=root.resolve())

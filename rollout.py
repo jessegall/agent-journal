@@ -11,7 +11,6 @@ TOOLS = {"exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "appl
 
 
 def is_rollout(path: Path | None) -> bool:
-    """A Codex session's file: rollout-<time>-<id>.jsonl, kept under ~/.codex/sessions."""
     return path is not None and path.name.startswith("rollout-")
 
 
@@ -20,7 +19,6 @@ def sessions_dir() -> Path:
 
 
 def find(stem: str) -> Path | None:
-    """The rollout file with this stem, anywhere under the sessions folder (YYYY/MM/DD)."""
     if not stem.startswith("rollout-"):
         return None
     root = sessions_dir()
@@ -33,14 +31,6 @@ def find(stem: str) -> Path | None:
 
 
 def line_of(rec: dict, n: int):
-    """The journal's Line for one rollout record, or None for a record nobody said.
-
-    ONE RECORD PER THING SAID. Codex writes the user's prompt twice (a response_item message and
-    an event_msg user_message) and the agent's reply twice (a response_item message and an
-    event_msg agent_message); the response_item is the one kept, because it is the one that
-    also carries what the harness injected (a developer message, a <hook_prompt>) and the
-    tool calls in order. Reasoning is encrypted and skipped; token counts are read elsewhere.
-    """
     from transcript import Line
     typ = rec.get("type")
     if typ != "response_item":
@@ -68,7 +58,6 @@ def line_of(rec: dict, n: int):
 
 
 def usage_of(raw: bytes) -> int | None:
-    """Tokens in context after a token_count record: the last call's whole input, cached or not."""
     if b'"token_count"' not in raw:
         return None
     try:
@@ -85,7 +74,6 @@ def usage_of(raw: bytes) -> int | None:
 
 
 def window_of(path: Path, limit: int = 300_000) -> int:
-    """The model's context window, as the rollout's own token_count says it; 0 when it does not."""
     for raw in _tail(path, limit):
         if b'"model_context_window"' not in raw:
             continue
@@ -101,7 +89,6 @@ def window_of(path: Path, limit: int = 300_000) -> int:
 
 
 def last_model(path: Path, limit: int = 300_000) -> str:
-    """The model of the last turn, from its turn_context."""
     model = ""
     for raw in _tail(path, limit):
         if b'"turn_context"' not in raw:

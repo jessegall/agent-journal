@@ -1,13 +1,3 @@
-"""hook.py under Codex: the payloads doc 9 measured, answered the way Codex takes them.
-
-    .journal/test_codex.py
-
-Codex's hooks hand the same fields Claude Code's do and take the same JSON back, with one
-measured exception: a Stop answered with additionalContext FAILS ("hook: Stop Failed") where
-`decision: "block"` holds the turn. So the suite fires the measured payloads — transcript_path a
-rollout file under a .codex/sessions folder — and checks the start block, the write gate, and
-the shape of a Stop hold.
-"""
 import json
 import os
 import sys

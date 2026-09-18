@@ -57,7 +57,6 @@ class InboxController(Controller):
 
     @staticmethod
     def _read(root: Path, p: Payload, numbers: list[int]) -> None:
-        """The agent reading a message is what the viewer shows as it being handled; the user opening it is not."""
         if p.source != "web" and numbers:
             from datetime import datetime, timezone
             inbox.mark_read(root, numbers, p.at or datetime.now(timezone.utc).isoformat(timespec="seconds"), p.env or None)
@@ -67,7 +66,6 @@ class InboxController(Controller):
         return Result("ok", "", inbox.detail(root, p.id, self.repository(root, p).find(p.id).raw, p.env or None))
 
     def waiting(self, root: Path, p: Payload) -> Result:
-        """Every message still waiting to be processed, oldest first, each in full."""
         self._read(root, p, [m.n for m in self.repository(root, p).query() if m.waiting])
         rows = [m for m in self.repository(root, p).query().order_by("n", fmt.ASC) if m.waiting]
         return Result("ok", "", [inbox.detail(root, m.n, m.raw, p.env or None) for m in rows])

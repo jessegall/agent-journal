@@ -1,14 +1,3 @@
-"""Is any of this actually in force?
-
-THE QUESTION THIS ANSWERS IS THE ONE YOU CANNOT ASK FROM THE INSIDE. A hook that is wired,
-listed as registered, and never fires looks exactly like a hook everybody is obeying — and
-in the tool this replaces that shape ran for seventeen hours, captured nothing, and was
-found only when somebody went looking for an unrelated bug.
-
-So this never asks "is it configured". It asks "has it RUN", and it reports the two
-answers differently, because *armed and never invoked* and *never armed* have opposite
-fixes and one silence.
-"""
 from __future__ import annotations
 
 import json
@@ -57,7 +46,6 @@ FIRED = ("held_at", "floor", "taught_vocabulary", "warned_at", "held_work",
 
 
 def _ignored(project: Path, rel: str) -> bool | None:
-    """Is `rel` gitignored? None when there is no git or no repository to ask."""
     import subprocess
     try:
         if subprocess.run(["git", "rev-parse", "--git-dir"], cwd=project,

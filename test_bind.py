@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""Sessions are bound to environments: two sessions, two environments, one project.
-
-    .journal/test_bind.py
-"""
 import json, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
@@ -53,7 +49,6 @@ class S:
 
 
 def terminal(*a):
-    """A shell with NO session id in it: this is about what a person at a terminal sees."""
     env = {k: v for k, v in os.environ.items() if k != transcript.SESSION_ENV}
     p = subprocess.run([J, *a], env=env, capture_output=True, text=True, timeout=180)
     return p.returncode, p.stdout + p.stderr
@@ -315,7 +310,6 @@ gP.cli("switch", "default", session="gs1")
 
 
 def sub(cmd):
-    """One subagent tool call: the parent's session id, plus an agent_id."""
     return gP.hook("PreToolUse", session_id="gs1", transcript_path=str(gpath), agent_id="a1",
                    tool_name="Bash", tool_input={"command": cmd})[1]
 

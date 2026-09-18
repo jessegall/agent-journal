@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""`journal enable` / `journal disable`: the kill switch, and that it actually
-silences every hook.
-
-    .journal/test_enable.py
-"""
 import json, os, sys, tempfile
 from pathlib import Path
 

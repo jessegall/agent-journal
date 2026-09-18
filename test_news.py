@@ -1,4 +1,3 @@
-"""news.py: what the viewer left for a session, as the lines it is told — once each, in the record's words."""
 import sys
 import tempfile
 import time

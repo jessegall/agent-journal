@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""command.py: signatures, parsing, refusals, and write classification."""
 import sys
 from pathlib import Path
 

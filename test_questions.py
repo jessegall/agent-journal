@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""questions.py: ask, link, answer, withdraw, and the stop nudge."""
 import json, os, sys, tempfile
 from pathlib import Path
 

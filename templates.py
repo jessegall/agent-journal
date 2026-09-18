@@ -18,8 +18,6 @@ def _text(value, sep: str | None) -> str:
 
 
 def render(template: str, **values) -> str:
-    """`{name}` fills a value, `{name:sep}` joins a list, `[... {name} ...]` is dropped when a
-    placeholder inside it is empty. `\\[`, `\\]`, `{{` and `}}` are literal."""
     for raw, mark in _ESCAPES:
         template = template.replace(raw, mark)
 
