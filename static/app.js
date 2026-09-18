@@ -4685,7 +4685,7 @@ const EnvHome = {
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto,
-             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, railStyle, onDivider, dragging };
+             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, railStyle, onDivider, dragging, CHAT_ONLY };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4714,7 +4714,7 @@ const EnvHome = {
              two do — and they live on the bar because that is what sits over the thread. -->
         <!-- THE CHAT CAN LEAVE THE PAGE. Detached it is one window floating over wherever you walk
              to, and the home says where it went rather than drawing a second thread. -->
-        <button type=button class=bar-dots :title="DETACHED.on ? 'Put the chat back on the page' : 'Detach the chat into its own window'"
+        <button v-if="!CHAT_ONLY" type=button class=bar-dots :title="DETACHED.on ? 'Put the chat back on the page' : 'Detach the chat into its own window'"
           :aria-pressed="DETACHED.on ? 'true' : 'false'" @click="detach(!DETACHED.on)"><Icon name="sidepanel"/></button>
         <div class=bar-menu>
           <button type=button class=bar-dots :aria-expanded="barMenu.open ? 'true' : 'false'"
@@ -4753,7 +4753,7 @@ const EnvHome = {
           <span v-for="f in a.facts" :key="f.icon" class=crew-fact><Icon :name="f.icon"/><span>{{ f.value }}</span></span>
         </button>
       </div>
-        <Thread v-if="!DETACHED.on" :env="env"/>
+        <Thread v-if="!DETACHED.on || CHAT_ONLY" :env="env"/>
         <div v-else class=thread-gone>
           <p>The chat is in its own window.</p>
           <button type=button class=thread-gone-back @click="detach(false)">Put it back on the page</button>
@@ -6307,7 +6307,9 @@ const App = {
       <FileReader_ v-if="OVERLAY.kind === 'file' && OVERLAY.file" :key="OVERLAY.file.url" :file="OVERLAY.file" :close="closeOverlay"/>
       <Lightbox v-if="OVERLAY.kind === 'image' && OVERLAY.images.length" :images="OVERLAY.images" :at="OVERLAY.at" :close="closeOverlay"/>
       <QuickMenu v-if="QUICK.open && envName" :env="envName"/>
-      <ChatWindow v-if="DETACHED.on && envName" :env="envName"/>
+      <!-- never in the chat-only window: detaching is remembered per ORIGIN, so the extension's
+           frame read the flag the full viewer had set and floated a second chat inside itself -->
+      <ChatWindow v-if="DETACHED.on && envName && !CHAT_ONLY" :env="envName"/>
       <div v-if="TOAST.text" class=quick-toast role=status>{{ TOAST.text }}</div>
       <aside v-if="(activity.data && ACTIVITY.shown) || (ov.data && ov.data.update)" class=activity-dock>
         <ActivityPanel v-if="activity.data && ACTIVITY.shown" :data="activity.data" :href="activityHref" :env="envName"/>
