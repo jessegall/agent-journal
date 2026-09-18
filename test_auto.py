@@ -673,6 +673,23 @@ check("with a brief it goes through",
       bash_call(s9, '.journal/journal.py todos add "fix the loader" --brief <<\'MSG\'\nwhere to start\nMSG'), "")
 check("and every other todos verb is untouched", bash_call(s9, ".journal/journal.py todos done 1"), "")
 
+# ASKING IS THE LAST RESORT AND THE RECORD IS THE FIRST: a session that has not read the record once
+# is refused its first question, and the refusal names the reads that answer most of them.
+s_ask = Session(d9, "s-ask")
+s_ask.fire("SessionStart", source="startup")
+s_ask.journal("switch", "default")
+_asked = bash_call(s_ask, '.journal/journal.py questions add "which colour did you want?"')
+check("the first question from a session that has not looked is refused, and says where to look",
+      (bool(_asked), "the record answers most of" in _asked, "search" in _asked), (True, True, True))
+check("and the same question again goes through: the wall is a reminder, not a gate",
+      bash_call(s_ask, '.journal/journal.py questions add "which colour did you want?"'), "")
+s_look = Session(d9, "s-look")
+s_look.fire("SessionStart", source="startup")
+s_look.journal("switch", "default")
+bash_call(s_look, '.journal/journal.py search "colour"')
+check("a session that HAS read the record is never held for asking",
+      bash_call(s_look, '.journal/journal.py questions add "which colour did you want?"'), "")
+
 # A SUBJECT IS A SENTENCE YOU WILL SAY AGAIN: "Bash" is what you are working WITH, not what you are
 # doing. Also the hook's, not the command's — `todos start <n>` opens work named by the row's title.
 _bare_work = bash_call(s9, '.journal/journal.py work start "Bash"')
