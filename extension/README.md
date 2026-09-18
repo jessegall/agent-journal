@@ -9,21 +9,16 @@ meant — the selector, the page, the text, its opening tag, and a picture of th
 2. Start a viewer if none is running: `journal serve`.
 
 The extension finds every journal itself by asking ports 8420–8439 for `/api/identity`, so nothing
-needs configuring when a port changes. The popup lists the projects that answered: pick the journal,
-then the environment inside it.
+needs configuring when a port changes. Which journal and which environment are chosen inside the
+chat window's bar.
 
-## Use
-
-- **Alt+P**, or **Point at an element** in the popup: a crosshair appears, whatever is under the
-  pointer is outlined, and clicking it sends it. Esc stops without sending.
-- **Detach, in the journal's own viewer**: the button beside the ⋮ hands the chat to this
-  extension instead of to the viewer's own window, and the page says where it went. Press **Let the
-  chat follow you on every page** in the popup once, and the window then opens by itself on every
-  page you visit — that is the permission Chrome will only grant from a click inside the extension.
 The extension is a shell. Its window is a frame of the journal's own viewer, and the viewer draws
 the window's bar — the switches, the fold, the close — and tells the shell what to do; so a change
 to how the window looks or behaves is a journal upgrade, and the extension is reloaded only when
 the shell itself (the picker, the background worker, the relay between page and shell) changes.
+The popup is one button: **Open the chat here**.
+
+## Use
 
 - **Alt+J**, or **Open the chat here**: the journal opens as a window over the page you are on —
   dragged by its bar, resized from its corner, remembered where you left it. The bar names the
@@ -33,12 +28,12 @@ the shell itself (the picker, the background worker, the relay between page and 
   agent's status line, and opens it back up. Open, closed, minimized and where it sits are one state
   for every tab: open it here and the tab you switch to has it too; fold or close it anywhere and
   every tab follows. The extension asks for every site at install, so nothing has to be granted
-  later. Alt+J again, Esc, or ×
-  closes it.
-- **Send a test message** in the popup posts one message with no pointing involved. If the test
-  lands and pointing does not, the pointer is at fault; if neither lands, the popup says why.
-
-The popup's dropdown picks which environment the message lands on.
+  later. Alt+J again, Esc, or × closes it.
+- **Alt+P**: a crosshair appears, whatever is under the pointer is outlined, and clicking it sends
+  it — the selector, the page, the element's text and a picture. Esc stops without sending.
+- **Detach, in the journal's own viewer**: the button beside the ⋮ hands the chat to this
+  extension, which opens its window over the page and on every page after it; the page says where
+  the chat went, and the same button puts it back.
 
 ## What the agent is handed
 
