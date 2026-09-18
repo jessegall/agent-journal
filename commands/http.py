@@ -1,6 +1,9 @@
 import json
 import mimetypes
 import re
+import tempfile
+from email import policy
+from email.parser import BytesParser
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from queue import Empty, Queue
@@ -185,6 +188,24 @@ def get_file(req: Request) -> Reply:
     if not f.is_file():
         raise Missing(f"no file {req.params['name']}")
     return Reply(200, f.read_bytes(), mimetypes.guess_type(str(f))[0] or "application/octet-stream")
+
+
+@route("POST", "/api/{env}/{type}/{n}/upload")
+def post_upload(req: Request) -> Reply:
+    message = BytesParser(policy=policy.default).parsebytes(b"Content-Type: " + req.body["_type"].encode() + b"\r\n\r\n" + req.body["_raw"])
+    controller = req.controller()
+    n = int(req.params["n"])
+    names = []
+    with tempfile.TemporaryDirectory() as folder:
+        for part in message.iter_parts():
+            name = part.get_filename()
+            if not name:
+                continue
+            f = Path(folder) / Path(name).name
+            f.write_bytes(part.get_payload(decode=True))
+            controller.attach(n, str(f))
+            names.append(f.name)
+    return Reply(200, {"files": names})
 
 
 @route("POST", "/api/{env}/{type}/{action}")

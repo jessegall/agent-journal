@@ -34,7 +34,7 @@ const groups = computed(() => {
     }));
 });
 
-async function made(n) {
+async function select(n) {
     adding.value = false;
     await load(props.type);
     go(route.value.env, props.type, n);
@@ -50,12 +50,18 @@ async function made(n) {
             <span class="grow" />
             <Btn kind="primary" @click="adding = true">New {{ kind.title.toLowerCase() }}</Btn>
         </div>
-        <NewResource v-if="adding" :type="type" @made="made" @close="adding = false" />
-        <p v-if="!shown.length" class="empty">No {{ kind.title.toLowerCase() }}s {{ archive ? "archived" : "on this environment" }} yet.</p>
+        <template v-if="adding">
+            <NewResource :type="type" @made="select" @close="adding = false" />
+        </template>
+        <template v-if="!shown.length">
+            <p class="empty">No {{ kind.title.toLowerCase() }}s {{ archive ? "archived" : "on this environment" }} yet.</p>
+        </template>
         <SwitchCase :value="kind.view">
             <template #document>
                 <div class="cards">
-                    <ResourceCard v-for="r in shown" :key="r.n" :resource="r" @click="go(route.env, type, r.n)" />
+                    <template v-for="r in shown" :key="r.n">
+                        <ResourceCard :resource="r" @click="go(route.env, type, r.n)" />
+                    </template>
                 </div>
             </template>
             <template #default>

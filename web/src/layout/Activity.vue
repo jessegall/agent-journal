@@ -9,82 +9,134 @@ const shown = computed(() =>
         .filter((e) => meta(e.type).notify.includes("user"))
         .slice(0, 80)
 );
-const verbs = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on"};
-const verb = (e) =>
+const words = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on"};
+const heading = (e) =>
     e.action === "completed"
         ? `${meta(e.type).title} ${word(e.type, "complete")}`
-        : `${verbs[e.action]} ${meta(e.type).title.toLowerCase()}`;
+        : `${words[e.action]} ${meta(e.type).title.toLowerCase()}`;
 const title = (e) => (byRef(`${e.type}:${e.n}`) || {}).title || "";
+const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
 </script>
 
 <template>
-    <aside class="activity">
-        <header class="head">Activity</header>
-        <div class="list">
-            <button v-for="e in shown" :key="e.id" type="button" class="event" @click="go(route.env, e.type, e.n)">
-                <span class="line">
-                    <span class="verb">{{ verb(e) }}</span>
-                    <span class="n">· {{ e.n }}</span>
-                </span>
-                <span v-if="title(e)" class="title">{{ title(e) }}</span>
-                <span class="who">{{ e.actor[0].toUpperCase() + e.actor.slice(1) }} · {{ age(e.at) }}</span>
-            </button>
+    <aside class="activity-dock">
+        <div class="activity-panel">
+            <div class="activity-head"><span class="group-label">Activity</span></div>
+            <div class="activity-list">
+                <template v-for="e in shown" :key="e.id">
+                    <a class="activity-row activity-link" :href="`#/${route.env}/${e.type}/${e.n}`">
+                        <span class="activity-text">
+                            {{ heading(e) }}
+                            <span class="activity-n">{{ e.n }}</span>
+                        </span>
+                        <template v-if="title(e)">
+                            <span class="activity-title">{{ title(e) }}</span>
+                        </template>
+                        <span class="activity-age">{{ who(e) }} · {{ age(e.at) || "just now" }}</span>
+                    </a>
+                </template>
+            </div>
         </div>
     </aside>
 </template>
 
 <style scoped>
-.activity {
-    flex: none;
+.activity-dock {
     width: 290px;
-    display: flex;
-    flex-direction: column;
-    border-left: 1px solid var(--border);
-    background: var(--side);
-}
-.head {
     flex: none;
-    height: 52px;
-    padding: 0 18px;
-    line-height: 52px;
-    border-bottom: 1px solid var(--border);
-    font-weight: 500;
-}
-.list {
-    flex: 1;
-    overflow: auto;
-    padding: 8px 0;
-}
-.event {
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    width: 100%;
-    padding: 8px 18px;
-    border: 0;
-    background: none;
-    color: var(--text-2);
-    text-align: left;
-    cursor: pointer;
+    overflow: hidden;
+    padding: 0 10px;
+    background: var(--side);
+    border-left: 1px solid var(--border);
 }
-.event:hover {
+
+.activity-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.activity-head {
+    height: 48px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 -10px;
+    padding: 0 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.group-label {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-3);
+    padding: 0 8px;
+}
+
+.activity-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 8px 0 12px;
+}
+
+.activity-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 5px 8px;
+}
+
+.activity-link {
+    color: inherit;
+    border-radius: 7px;
+}
+
+.activity-link:hover {
     background: var(--hover);
 }
-.line {
-    display: flex;
-    gap: 6px;
-}
-.verb {
+
+.activity-link:hover .activity-text {
     color: var(--text);
 }
-.n {
-    color: var(--text-3);
-}
-.title {
-    color: var(--text-2);
-}
-.who {
-    color: var(--text-3);
+
+.activity-text {
     font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.activity-n {
+    margin-left: 0.35em;
+    font-size: 10.5px;
+    color: var(--text-3);
+    opacity: 0.65;
+    font-variant-numeric: tabular-nums;
+}
+
+.activity-n::before {
+    content: "·";
+    margin-right: 0.35em;
+}
+
+.activity-title {
+    font-size: 11.5px;
+    color: var(--text-3);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.activity-age {
+    font-size: 11px;
+    color: var(--text-3);
+    white-space: nowrap;
+    opacity: 0.8;
 }
 </style>

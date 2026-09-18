@@ -20,13 +20,17 @@ async function send() {
 <template>
     <section class="comments">
         <h3>Comments</h3>
-        <div v-for="c in thread" :key="c.n" :class="['comment', c.seen[0]]">
-            <span class="who">
-                {{ c.seen[0] }} · {{ age(c.created) }}
-                <span v-if="c.completed" class="done">· handled: {{ c.outcome }}</span>
-            </span>
-            <span class="text">{{ c.brief }}</span>
-        </div>
+        <template v-for="c in thread" :key="c.n">
+            <div :class="['comment', c.seen[0]]">
+                <span class="who">
+                    {{ c.seen[0] }} · {{ age(c.created) }}
+                    <template v-if="c.completed">
+                        <span class="done">· handled: {{ c.outcome }}</span>
+                    </template>
+                </span>
+                <span class="text">{{ c.brief }}</span>
+            </div>
+        </template>
         <form class="write" @submit.prevent="send">
             <textarea v-model="text" rows="2" placeholder="Comment…" @keydown.meta.enter="send" />
             <Btn kind="primary" small @click="send">Comment</Btn>

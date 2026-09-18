@@ -22,11 +22,17 @@ const open = (ref) => {
 </script>
 
 <template>
-    <section v-if="shown.length || back.length" class="links">
-        <h3>Links</h3>
-        <button v-for="r in shown" :key="r" type="button" class="link" @click="open(r)">→ {{ name(r) }}</button>
-        <button v-for="r in back" :key="`b${r}`" type="button" class="link" @click="open(r)">← {{ name(r) }}</button>
-    </section>
+    <template v-if="shown.length || back.length">
+        <section class="links">
+            <h3>Links</h3>
+            <template v-for="r in shown" :key="r">
+                <button type="button" class="link" @click="open(r)">→ {{ name(r) }}</button>
+            </template>
+            <template v-for="r in back" :key="`b${r}`">
+                <button type="button" class="link" @click="open(r)">← {{ name(r) }}</button>
+            </template>
+        </section>
+    </template>
 </template>
 
 <style scoped>

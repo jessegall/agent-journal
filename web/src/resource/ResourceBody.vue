@@ -28,40 +28,50 @@ const files = computed(() => Object.entries(props.resource.data.files || {}));
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
         </header>
         <h2 class="title">{{ resource.title }}</h2>
-        <p v-if="resource.abstract" class="abstract">{{ resource.abstract }}</p>
+        <template v-if="resource.abstract">
+            <p class="abstract">{{ resource.abstract }}</p>
+        </template>
         <ResourceActions :resource="resource" />
-        <OptionsPicker v-if="kind.fields.options" :resource="resource" />
-        <section v-if="resource.brief" class="block">
-            <h3 v-if="kind.labels.brief">{{ kind.labels.brief }}</h3>
-            <div class="text">{{ resource.brief }}</div>
-        </section>
+        <template v-if="kind.fields.options">
+            <OptionsPicker :resource="resource" />
+        </template>
+        <template v-if="resource.brief">
+            <section class="block">
+                <template v-if="kind.labels.brief">
+                    <h3>{{ kind.labels.brief }}</h3>
+                </template>
+                <div class="text">{{ resource.brief }}</div>
+            </section>
+        </template>
         <Sections :sections="resource.sections" />
-        <section v-if="resource.completed" class="block">
-            <h3>
-                {{
-                    label(
-                        resource.type,
-                        "outcome",
-                        word(resource.type, "complete").replace(/^\w/, (c) => c.toUpperCase())
-                    )
-                }}
-            </h3>
-            <div class="text">{{ resource.outcome || age(resource.completed) }}</div>
-        </section>
-        <section v-if="files.length" class="block">
-            <h3>Files</h3>
-            <a
-                v-for="[name, what] in files"
-                :key="name"
-                class="file"
-                :href="fileUrl(route.env, resource.type, resource.n, name)"
-                target="_blank"
-            >
-                <Icon name="clip" :size="13" />
-                {{ name }}
-                <span v-if="what" class="what">— {{ what }}</span>
-            </a>
-        </section>
+        <template v-if="resource.completed">
+            <section class="block">
+                <h3>
+                    {{
+                        label(
+                            resource.type,
+                            "outcome",
+                            word(resource.type, "complete").replace(/^\w/, (c) => c.toUpperCase())
+                        )
+                    }}
+                </h3>
+                <div class="text">{{ resource.outcome || age(resource.completed) }}</div>
+            </section>
+        </template>
+        <template v-if="files.length">
+            <section class="block">
+                <h3>Files</h3>
+                <template v-for="[name, what] in files" :key="name">
+                    <a class="file" :href="fileUrl(route.env, resource.type, resource.n, name)" target="_blank">
+                        <Icon name="clip" :size="13" />
+                        {{ name }}
+                        <template v-if="what">
+                            <span class="what">— {{ what }}</span>
+                        </template>
+                    </a>
+                </template>
+            </section>
+        </template>
         <Links :resource="resource" />
         <Comments :resource="resource" />
         <footer class="foot">seen by {{ resource.seen.join(", ") || "nobody" }}</footer>

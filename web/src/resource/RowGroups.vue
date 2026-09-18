@@ -5,13 +5,17 @@ defineProps({groups: Array, type: String});
 </script>
 
 <template>
-    <div v-for="g in groups" :key="g.key" class="group">
-        <div class="ghead">
-            <span class="gtitle">{{ g.title }}</span>
-            <span class="gcount">{{ g.list.length }}</span>
+    <template v-for="g in groups" :key="g.key">
+        <div class="group">
+            <div class="ghead">
+                <span class="gtitle">{{ g.title }}</span>
+                <span class="gcount">{{ g.list.length }}</span>
+            </div>
+            <template v-for="r in g.list" :key="r.n">
+                <ResourceRow :resource="r" :selected="r.n === route.n" @click="go(route.env, type, r.n)" />
+            </template>
         </div>
-        <ResourceRow v-for="r in g.list" :key="r.n" :resource="r" :selected="r.n === route.n" @click="go(route.env, type, r.n)" />
-    </div>
+    </template>
 </template>
 
 <style scoped>

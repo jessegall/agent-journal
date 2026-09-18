@@ -7,7 +7,7 @@ import {meta, reload, word} from "../store.js";
 
 const props = defineProps({resource: Object});
 const error = ref("");
-const asking = ref("");
+const prompt = ref("");
 const text = ref("");
 const offered = computed(() => (props.resource.completed ? ["delete"] : ["complete", "delete"]));
 
@@ -21,7 +21,7 @@ async function run(method) {
             word(props.resource.type, method),
             method === "complete" ? {how: text.value} : {}
         );
-        asking.value = "";
+        prompt.value = "";
         text.value = "";
         await reload();
     } catch (e) {
@@ -32,29 +32,27 @@ async function run(method) {
 
 <template>
     <div class="actions">
-        <template v-if="asking">
+        <template v-if="prompt">
             <input
                 v-model="text"
                 :placeholder="meta(resource.type).labels.outcome || 'A word on how'"
                 autofocus
-                @keydown.enter="run(asking)"
-                @keydown.esc="asking = ''"
+                @keydown.enter="run(prompt)"
+                @keydown.esc="prompt = ''"
             />
-            <Btn kind="primary" small @click="run(asking)">{{ word(resource.type, asking) }}</Btn>
-            <Btn small @click="asking = ''">Cancel</Btn>
+            <Btn kind="primary" small @click="run(prompt)">{{ word(resource.type, prompt) }}</Btn>
+            <Btn small @click="prompt = ''">Cancel</Btn>
         </template>
         <template v-else>
-            <Btn
-                v-for="m in offered"
-                :key="m"
-                :kind="m === 'complete' ? 'primary' : 'danger'"
-                small
-                @click="m === 'complete' ? (asking = m) : run(m)"
-            >
-                {{ word(resource.type, m) }}
-            </Btn>
+            <template v-for="m in offered" :key="m">
+                <Btn :kind="m === 'complete' ? 'primary' : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">
+                    {{ word(resource.type, m) }}
+                </Btn>
+            </template>
         </template>
-        <span v-if="error" class="error">{{ error }}</span>
+        <template v-if="error">
+            <span class="error">{{ error }}</span>
+        </template>
     </div>
 </template>
 

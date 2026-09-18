@@ -22,13 +22,17 @@ const waiting = computed(() => unreadByUser("notification").length);
             <a class="crumb-link" :href="`#/${route.env}`">{{ route.env }}</a>
             <span class="sep">/</span>
             <b>{{ title }}</b>
-            <span v-if="route.page && meta(route.page)" class="icon-btn help-btn" :title="meta(route.page).help"><Icon name="info" /></span>
+            <template v-if="route.page && meta(route.page)">
+                <span class="icon-btn help-btn" :title="meta(route.page).help"><Icon name="info" /></span>
+            </template>
         </div>
         <div class="top-tools">
             <a class="icon-btn" :href="`#/${route.env}/search`" title="Search"><Icon name="search" /></a>
             <button type="button" class="icon-btn" title="Notifications" @click="go(route.env)">
                 <Icon name="bell" />
-                <span v-if="waiting" class="tool-badge">{{ waiting }}</span>
+                <template v-if="waiting">
+                    <span class="tool-badge">{{ waiting }}</span>
+                </template>
             </button>
             <button
                 type="button"

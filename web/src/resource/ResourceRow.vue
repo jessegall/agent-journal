@@ -10,9 +10,11 @@ defineProps({resource: Object, selected: Boolean});
         <span class="n">#{{ resource.n }}</span>
         <span class="text">
             <span class="title">{{ resource.title }}</span>
-            <span v-if="resource.abstract || resource.brief" class="abstract">
-                {{ resource.abstract || resource.brief.split("\n")[0] }}
-            </span>
+            <template v-if="resource.abstract || resource.brief">
+                <span class="abstract">
+                    {{ resource.abstract || resource.brief.split("\n")[0] }}
+                </span>
+            </template>
         </span>
         <span class="age">{{ age(resource.updated || resource.created) }}</span>
     </button>

@@ -19,7 +19,9 @@ class Handler(BaseHTTPRequestHandler):
     def handle_one(self, method: str) -> None:
         url = urlparse(self.path)
         length = int(self.headers.get("Content-Length") or 0)
-        body = json.loads(self.rfile.read(length) or b"{}") if length else {}
+        raw = self.rfile.read(length) if length else b""
+        kind = self.headers.get("Content-Type") or ""
+        body = {"_raw": raw, "_type": kind} if kind.startswith("multipart/") else json.loads(raw or b"{}")
         reply = dispatch(method, url.path, self.root, dict(parse_qsl(url.query)), body)
         self.send_response(reply.code)
         self.send_header("Content-Type", reply.kind)
