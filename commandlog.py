@@ -67,7 +67,7 @@ DETAIL = {"todos:priority": "value", "reports:keep": "days", "todos:keep": "days
 HOOKS = {"todos:from-commit"}
 # lines that introduce something, so Activity shows its title under them; reads and closes do not repeat it
 TITLED = {"questions:add", "reports:add", "plans:add", "docs:add", "suggestions:add", "suggest:", "pins:add", "rules:add",
-          "reminders:add", "notifications:add", "comments:add"}
+          "reminders:add", "notifications:add", "notices:add", "comments:add"}
 
 # noun:verb -> the line shown in Activity; "noun:" is a command with no verb; {n} is its number argument
 DESCRIBE = {
@@ -130,6 +130,8 @@ DESCRIBE = {
     "reminders:list": "Reading reminders",
     "reminders:add": "Writing a reminder",
     "notifications:add": "Sending you a notification",
+    "notices:add": "Pinning a line to the chat",
+    "notice:": "Pinning a line to the chat",
     "upgrade:": "Upgrading the journal",
     "update:": "Updating the journal",
     "verify:": "Checking the journal install",
@@ -175,6 +177,8 @@ DESCRIBE = {
     "questions:link": "Linking question {n}",
     "questions:unlink": "Unlinking question {n}",
     "comments:add": "Writing a comment",
+    "notices:list": "Reading what is pinned to the chat",
+    "notices:close": "Taking notice {n} down",
     "notifications:list": "Reading notifications",
     "notifications:read": "Marking notification {n} read",
     "pins:": "Reading pin {n}",
@@ -346,6 +350,8 @@ WEB = {
     "messages:move": "Moved message {n}",
     "messages:destroy": "Removed message {n}",
     "messages:reply": "Replied to message {n}",
+    "notices:store": "Pinned a line to the chat",
+    "notices:close": "Closed notice {n}",
     "notifications:store": "Sent a notification",
     "notifications:read": "Marked notification {n} read",
     "notifications:readall": "Marked all notifications read",

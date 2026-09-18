@@ -86,6 +86,23 @@ are waiting on: a migration through, a research report ready, a to-do they cared
 update` or nothing; a Home full of notifications is one the user stops reading. One line,
 saying what is now true, pointing at the to-do, report, doc or message it is about.
 
+## A notice: one line pinned over the conversation
+
+    journal notice "<the line>" [--tone=note|good|warn] [--link=<url>]   it sits at the top of the chat
+    journal notices                  what is pinned now
+    journal notices close <n>        take your own down when it stops being true
+
+**A notice is what the user must keep seeing**, not news they will read once: the URL of the
+PR you opened, the address the preview is served on, the one warning that governs everything
+they are about to do. It stays over the conversation until they close it with its X —
+clicking the line does nothing, so it cannot be dismissed by the click meant to read it.
+
+**Notify, notice, pin — three different things, and the difference is who it is for and how
+long it lives.** A notification is news that ages into a list. A pin is a FACT, and it is for
+you, re-read at every compaction. A notice is for the USER, and it stays on their screen
+until they take it down. Pin one at a time, and take yours down yourself the moment it stops
+being true: `journal notices close <n>`.
+
 ## The viewer: what the user does in the browser
 
     journal serve [--port=<n>]      the web viewer, on this machine only: 8420, or the next free port

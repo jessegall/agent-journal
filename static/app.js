@@ -4461,6 +4461,13 @@ const EnvHome = {
     const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(reloadPlans);
     const goPlan = () => { if (plan.value) location.hash = `#/env/${props.env}/plans/${plan.value.n}`; };
     const crew = useFetch(url("/agents"));
+    // WHAT THE AGENT PINNED OVER THE CONVERSATION. Not a notification — that is news, and it ages
+    // into a list; this is one line the user keeps seeing until they take it down themselves.
+    const notices = useFetch(url("/notices"));
+    const upNotices = computed(() => (notices.data || []).filter((x) => !x.closed));
+    const closeNotice = (x) => send("POST", `/api/env/${props.env}/notices/${x.n}/close`)
+      .then(() => { notices.reload(); window.dispatchEvent(new CustomEvent("journal:changed")); })
+      .catch(() => {});
     // the answer, in words: how many things need the user, what that means, and the facts about the agent in one muted line
     // who is working here, in one muted line: the page leads with it and goes straight into what needs the user
     const lead = computed(() => {
@@ -4685,7 +4692,7 @@ const EnvHome = {
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto,
-             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, railStyle, onDivider, dragging, CHAT_ONLY };
+             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4747,6 +4754,17 @@ const EnvHome = {
           </div>
         </div>
       </div>
+      <!-- ONLY THE X TAKES IT DOWN. Clicking the line does nothing, so a notice cannot be dismissed
+           by the click that was meant to read it. -->
+      <TransitionGroup name=qrow>
+      <div v-for="x in upNotices" :key="'notice' + x.n" :class="['chat-notice', x.tone]">
+        <span class=chat-notice-dot></span>
+        <span class=chat-notice-text>{{ x.text }}</span>
+        <a v-if="x.link" class=chat-notice-link :href="x.link" target=_blank rel=noopener>open</a>
+        <button type=button class=chat-notice-x title="Close this" aria-label="Close this" @click="closeNotice(x)">
+          <Icon name="close"/></button>
+      </div>
+      </TransitionGroup>
       <div v-if="crewOpen && liveCrew.length" class=crew-strip>
         <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" @click="a.open">
           <span class=crew-dot></span><span class=crew-name>{{ a.name }}</span>
