@@ -33,8 +33,8 @@ for type_, cls in TYPES.items():                          # every type describes
 
 record = Record(Path(tempfile.mkdtemp()) / ".journal", "main")
 for type_ in TYPES:                                       # seen: the creator has seen it, the other side has not, until it looks
-    by_user = CONTROLLERS[type_](record, dispatcher=USER)
-    by_agent = CONTROLLERS[type_](record, dispatcher=AGENT)
+    by_user = CONTROLLERS[type_](record, actor=USER)
+    by_agent = CONTROLLERS[type_](record, actor=AGENT)
     r = by_user.create(f"one {type_}")
     check(f"{type_}: the user who created it has seen it, the agent has not", (r.seen, [x.n for x in by_agent.unseen()]), ([USER], [1]))
     by_agent.show(1)
@@ -46,15 +46,21 @@ for type_ in TYPES:                                       # seen: the creator ha
 top = parser()
 base_actions = actions(Controller)
 check("the base controller's actions are the CRUD set", base_actions,
-      ["all", "comment", "create", "delete", "force_delete", "link", "linked_to", "restore", "section", "see", "show", "unlink", "unseen", "update"])
+      ["all", "comment", "complete", "create", "delete", "force_delete", "link", "linked_to", "restore", "section", "see", "show", "unlink", "unseen", "update"])
 subs = top._subparsers._group_actions[0].choices
 check("every type is a command", sorted(subs), sorted(TYPES))
 for type_ in TYPES:
     acts = subs[type_]._subparsers._group_actions[0].choices
-    check(f"{type_}: every base action is a subcommand", all(a in acts for a in base_actions), True)
+    names = TYPES[type_].names
+    check(f"{type_}: every base action is a subcommand, under the type's own name where it has one",
+          all((names.get(a, a) in acts) and (a in acts or a in names) for a in base_actions), True)
     check(f"{type_}: its help is the type's own abstract", subs[type_].description, TYPES[type_].help_)
 
 root = Path(tempfile.mkdtemp()) / ".journal"
+
+
+def record_events_of(root, type_):
+    return [e.action for e in Record(root, "main").events() if e.type == type_]
 
 
 def cli(*argv):
@@ -64,10 +70,16 @@ def cli(*argv):
 
 
 for type_ in TYPES:                                       # and each generated command runs end to end
-    code, out = cli(type_, "create", f"a {type_} from the shell", "--abstract", "short")
-    check(f"{type_}: create from the shell", (code, f'"title": "a {type_} from the shell"' in out), (0, True))
-    code, out = cli(type_, "create", "a: colon")
+    create = TYPES[type_].names.get("create", "create")
+    code, out = cli(type_, create, f"a {type_} from the shell", "--abstract", "short")
+    check(f"{type_}: create from the shell, by the type's own name ({create})", (code, f'"title": "a {type_} from the shell"' in out), (0, True))
+    code, out = cli(type_, create, "a: colon")
     check(f"{type_}: the title rule holds from the shell", (code, "colon" in out), (1, True))
+    done = TYPES[type_].names.get("complete", "complete")
+    code, out = cli(type_, done, "1", "--how", "finished")
+    check(f"{type_}: completing it by the type's own name ({done}) emits completed", (code, record_events_of(root, type_)[-1]), (0, "completed"))
+    code, out = cli(type_, done, "1")
+    check(f"{type_}: completing twice is refused", code, 1)
     code, out = cli(type_, "all")
     check(f"{type_}: all from the shell", out.split("\n")[-1].strip(), f"1  a {type_} from the shell")
 

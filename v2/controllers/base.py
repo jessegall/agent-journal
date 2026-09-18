@@ -7,12 +7,12 @@ from v2.resources.base import Refused, Resource, check_abstract, check_title
 
 class Controller:
     resource = Resource
-    dispatcher = "user"
+    actor = "user"
 
-    def __init__(self, record: Record, dispatcher: str | None = None):
+    def __init__(self, record: Record, actor: str | None = None):
         self.record = record
-        if dispatcher:
-            self.dispatcher = dispatcher
+        if actor:
+            self.actor = actor
 
     @property
     def type(self) -> str:
@@ -33,14 +33,14 @@ class Controller:
     def save(self, r: Resource, action: str, **event) -> Resource:
         r.updated = time.time()
         self.path(r.n).write_text(r.dump())
-        self.record.emit(self.type, r.n, action, self.dispatcher, **event)
+        self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
         with self.record.locked():
             n = (self.numbers() or [0])[-1] + 1
             r = self.resource(n=n, title=check_title(title), abstract=check_abstract(abstract), brief=brief,
-                              data=data, created=time.time(), seen=[self.dispatcher])
+                              data=data, created=time.time(), seen=[self.actor])
             return self.save(r, "created")
 
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, **data) -> Resource:
@@ -69,6 +69,24 @@ class Controller:
         r.deleted = time.time()
         return self.save(r, "deleted", why=why)
 
+    def complete(self, n: int, how: str = "") -> Resource:
+        r = self.load(n)
+        if r.completed:
+            raise Refused(f"{self.type} {n} is already {self.named('complete')}")
+        r.completed = time.time()
+        return self.save(r, "completed", how=how)
+
+    def named(self, method: str) -> str:
+        return self.resource.names.get(method, method)
+
+    def method(self, name: str):
+        for method, alias in self.resource.names.items():
+            if alias == name:
+                return getattr(self, method)
+        if name in self.resource.names:
+            raise Refused(f"a {self.type} calls that {self.resource.names[name]}")
+        return getattr(self, name)
+
     def restore(self, n: int) -> Resource:
         r = self.load(n)
         r.deleted = 0.0
@@ -77,7 +95,7 @@ class Controller:
     def force_delete(self, n: int) -> None:
         self.load(n)
         self.path(n).unlink()
-        self.record.emit(self.type, n, "deleted", self.dispatcher, force=True)
+        self.record.emit(self.type, n, "deleted", self.actor, force=True)
 
     def link(self, n: int, ref: str) -> Resource:
         r = self.load(n)
@@ -92,7 +110,7 @@ class Controller:
 
     def comment(self, n: int, text: str) -> Resource:
         r = self.load(n)
-        r.comments.append({"at": time.time(), "by": self.dispatcher, "text": text.strip()})
+        r.comments.append({"at": time.time(), "by": self.actor, "text": text.strip()})
         return self.save(r, "commented")
 
     def show(self, n: int) -> Resource:
@@ -100,13 +118,13 @@ class Controller:
 
     def see(self, n: int) -> Resource:
         r = self.load(n)
-        if self.dispatcher in r.seen:
+        if self.actor in r.seen:
             return r
-        r.seen.append(self.dispatcher)
-        return self.save(r, "updated", seen=self.dispatcher)
+        r.seen.append(self.actor)
+        return self.save(r, "updated", seen=self.actor)
 
-    def unseen(self, dispatcher: str | None = None) -> list[Resource]:
-        who = dispatcher or self.dispatcher
+    def unseen(self, actor: str | None = None) -> list[Resource]:
+        who = actor or self.actor
         return [r for r in self.all() if who not in r.seen]
 
     def all(self, deleted: bool = False) -> list[Resource]:

@@ -9,22 +9,26 @@ from v2.engine.record import Record
 from v2.resources.base import Refused
 
 
+HIDDEN = ("path", "numbers", "load", "save", "named", "method")
+
+
 def actions(controller: type) -> list[str]:
     return sorted(name for name, f in inspect.getmembers(controller, inspect.isfunction)
-                  if not name.startswith("_") and name not in ("path", "numbers", "load", "save"))
+                  if not name.startswith("_") and name not in HIDDEN)
 
 
 def parser() -> argparse.ArgumentParser:
     top = argparse.ArgumentParser(prog="journal")
     top.add_argument("--root", default=".journal")
     top.add_argument("--env", default="main")
-    top.add_argument("--as", dest="dispatcher", default=None)
+    top.add_argument("--as", dest="actor", default=None)
     types = top.add_subparsers(dest="type", required=True)
     for type_, controller in CONTROLLERS.items():
         t = types.add_parser(type_, help=controller.resource.abstract_, description=controller.resource.help_)
         acts = t.add_subparsers(dest="action", required=True)
         for name in actions(controller):
-            a = acts.add_parser(name)
+            a = acts.add_parser(controller.resource.names.get(name, name))     # the type's own word for it
+            a.set_defaults(method=name)
             for p in list(inspect.signature(getattr(controller, name)).parameters.values())[1:]:
                 flag = f"--{p.name}" if p.default is not inspect.Parameter.empty else p.name
                 kind = int if p.annotation is int else str
@@ -39,12 +43,13 @@ def parser() -> argparse.ArgumentParser:
 
 def run(argv: list[str]) -> int:
     args = vars(parser().parse_args(argv))
-    root, env, dispatcher = Path(args.pop("root")), args.pop("env"), args.pop("dispatcher")
-    type_, action = args.pop("type"), args.pop("action")
+    root, env, actor = Path(args.pop("root")), args.pop("env"), args.pop("actor")
+    type_, method = args.pop("type"), args.pop("method")
+    args.pop("action", None)
     extra = dict(kv.split("=", 1) for kv in args.pop("set", []))
-    controller = CONTROLLERS[type_](Record(root, env), dispatcher=dispatcher)
+    controller = CONTROLLERS[type_](Record(root, env), actor=actor)
     try:
-        got = getattr(controller, action)(**args, **extra)
+        got = getattr(controller, method)(**args, **extra)
     except Refused as e:
         print(f"! {e}", file=sys.stderr)
         return 1

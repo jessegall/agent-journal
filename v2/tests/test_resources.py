@@ -48,6 +48,8 @@ for type_ in TYPES:                                                 # the data p
     got = c.show(1)
     check(f"{type_}: a section, a comment and a reference stick", (got.sections, got.comments[0]["text"], got.refs),
           ([{"title": "Why", "body": "because"}], "a note", ["todo:9"]))
+    c.complete(1, "finished")
+    check(f"{type_}: completed is the final phase, marked once", (c.show(1).completed > 0, refused(lambda: c.complete(1))), (True, True))
     c.delete(1, "no longer needed")
     check(f"{type_}: deleted is soft — gone from the list, still on disk", ([x.n for x in c.all()], c.show(1).deleted > 0), ([2], True))
     c.restore(1)
@@ -56,9 +58,9 @@ for type_ in TYPES:                                                 # the data p
 
 for type_ in TYPES:                                                 # every type emits the same five actions, no more
     mine = [e for e in record.events() if e.type == type_]
-    check(f"{type_}: every action left an event, and only the five actions", (sorted({e.action for e in mine}), len(mine)),
-          (sorted(ACTIONS), 8))
-    check(f"{type_}: an event says who dispatched it and what it is about", (mine[0].dispatcher, mine[0].ref), ("user", f"{type_}:1"))
+    check(f"{type_}: every action left an event, and only the six actions", (sorted({e.action for e in mine}), len(mine)),
+          (sorted(ACTIONS), 9))
+    check(f"{type_}: an event says who dispatched it and what it is about", (mine[0].actor, mine[0].ref), ("user", f"{type_}:1"))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

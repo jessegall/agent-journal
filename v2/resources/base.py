@@ -2,13 +2,14 @@ import json
 import re
 import time
 from dataclasses import dataclass, field, asdict
+from typing import ClassVar
 from pathlib import Path
 
 TITLE_MAX = 80
 ABSTRACT_MAX = 200
-ACTIONS = ("created", "updated", "deleted", "linked", "commented")
+ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed")
 USER, AGENT = "user", "agent"
-DISPATCHERS = (USER, AGENT)
+ACTORS = (USER, AGENT)
 
 
 @dataclass
@@ -18,7 +19,7 @@ class Event:
     type: str          # the resource type
     n: int
     action: str        # one of ACTIONS
-    dispatcher: str    # one of DISPATCHERS
+    actor: str    # one of ACTORS
     data: dict = field(default_factory=dict)
 
     @property
@@ -32,6 +33,7 @@ class Resource:
     title_ = ""
     abstract_ = ""
     help_ = ""
+    names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
     n: int = 0
     title: str = ""
     abstract: str = ""
@@ -39,11 +41,12 @@ class Resource:
     sections: list = field(default_factory=list)   # [{"title": str, "body": str}]
     refs: list = field(default_factory=list)       # ["type:n"]
     comments: list = field(default_factory=list)   # [{"at": float, "by": str, "text": str}]
-    seen: list = field(default_factory=list)       # the dispatchers who have seen it: USER, AGENT
+    seen: list = field(default_factory=list)       # the actors who have seen it: USER, AGENT
     data: dict = field(default_factory=dict)       # what a type adds: status, answer, phases …
     created: float = 0.0
     updated: float = 0.0
     deleted: float = 0.0
+    completed: float = 0.0
 
     @property
     def ref(self) -> str:

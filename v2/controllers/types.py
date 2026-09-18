@@ -5,22 +5,13 @@ from v2.resources import types
 class Messages(Controller):
     resource = types.Message
 
-    def process(self, n: int, became: list[str]):
-        return self.update(n, processed=True, became=became)
-
 
 class Todos(Controller):
     resource = types.Todo
 
-    def done(self, n: int, how: str = ""):
-        return self.update(n, status="done", how=how)
-
 
 class Works(Controller):
     resource = types.Work
-
-    def end(self, n: int, note: str = ""):
-        return self.update(n, status="ended", note=note)
 
 
 class Plans(Controller):
@@ -49,9 +40,6 @@ class Reminders(Controller):
 
 class Questions(Controller):
     resource = types.Question
-
-    def answer(self, n: int, answer: str):
-        return self.update(n, answer=answer, status="answered")
 
 
 class Suggestions(Controller):
