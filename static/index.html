@@ -54,9 +54,12 @@
   /* each section pads itself, so the Activity section can run edge to edge */
   .side > .project { margin-inline: 10px; }
   .side > .journal-switch { margin-inline: 10px; }
-  button.project { width: 100%; background: transparent; border: none; border-radius: 6px; cursor: pointer; text-align: left; font-family: inherit; }
-  button.project:hover { background: var(--hover); }
-  button.project .fold { margin-left: auto; }
+  /* A CONTROL, NOT A HEADING. Boxed and a little taller than the plain name, with the chevron in
+     from the edge, so it reads as the dropdown it is rather than a label that happens to open. */
+  button.project { width: 100%; padding: 8px 10px; background: var(--raised); border: 1px solid var(--border); border-radius: 8px;
+    cursor: pointer; text-align: left; font-family: inherit; }
+  button.project:hover, button.project[aria-expanded="true"] { background: var(--hover); border-color: var(--border-2); }
+  button.project .fold { margin-left: auto; margin-right: 2px; }
   /* the sidebar clips what sticks out, so the list keeps to its width */
   /* A DROPDOWN MAY BE WIDER THAN THE THING IT HANGS FROM. Pinned to both edges of the sidebar it
      was 215px, and its own heading — "Journals running on this machine" — wrapped to two lines. */
