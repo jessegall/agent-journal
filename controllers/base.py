@@ -51,12 +51,12 @@ class Controller:
             n = (self.numbers() or [0])[-1] + 1
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
             r = self.resource(n=n, title=check_title(title), abstract=check_abstract(abstract), brief=brief,
-                              data=self._shaped(data), created=time.time(), seen=[self.actor])
-            self.save(r, "created")
+                              data=self._shaped(data), created=time.time(), seen=[self.actor], refs=[about] if about else [])
+            r = self.save(r, "created")
             if supersedes:
                 self.complete(int(supersedes), how=f"superseded by {self.type} {n}")
                 r = self.link(n, f"{self.type}:{int(supersedes)}")
-            return self.link(n, about) if about else r
+            return r
 
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data) -> Resource:
         r = self.load(n)
