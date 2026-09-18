@@ -1084,10 +1084,21 @@
     font-size: 11.5px; line-height: 1.5; text-align: center; }
   .thread-gone-more a { color: var(--accent-text); }
   /* THE ACTIVE PLAN, under the status bar and on every page: the same slim height as the bar above it */
-  .planbar { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 14px;
+  .planbar { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 8px 0 0;
     border-bottom: 1px solid var(--line, #1d2026); background: var(--bg-2, #101216);
-    color: var(--text-2); font-size: 11.5px; text-decoration: none; }
-  .planbar:hover { background: rgba(255, 255, 255, .03); color: var(--text); }
+    color: var(--text-2); font-size: 11.5px; }
+  .planbar-link { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; height: 100%; padding: 0 14px;
+    color: inherit; text-decoration: none; }
+  .planbar-link:hover { background: rgba(255, 255, 255, .03); color: var(--text); }
+  /* the button IS the bar's reason to exist for a draft: Start, where the eye already is */
+  .planbar-act { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 10px;
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); border-radius: 6px;
+    background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--text); font: inherit; font-size: 11.5px; cursor: pointer; }
+  .planbar-act:hover { background: color-mix(in srgb, var(--accent) 34%, transparent); }
+  .planbar-act .ico { width: 11px; height: 11px; }
+  .planbar-act.ack { border-color: var(--border-2); background: var(--raised); }
+  .planbar-draft .planbar-n { color: var(--text-3); }
+  .planbar-error { flex: none; color: var(--danger); font-size: 11px; }
   .planbar-n { flex: none; font-weight: 500; color: var(--accent-text); }
   .planbar-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .planbar-phase { flex: none; margin-left: auto; color: var(--text-3); font-size: 11px; }
