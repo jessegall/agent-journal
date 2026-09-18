@@ -31,3 +31,14 @@ class Claude(Provider):
                 used = sum(int(usage.get(k) or 0) for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
                 return round(100 * used / window, 1)
         return None
+
+    def turn(self, row: dict) -> tuple[str, str] | None:
+        if row.get("isSidechain") or row.get("type") not in ("user", "assistant"):
+            return None
+        content = (row.get("message") or {}).get("content")
+        text = content if isinstance(content, str) else "\n".join(b.get("text", "") for b in content or () if isinstance(b, dict) and b.get("type") == "text")
+        if not text.strip():
+            return None
+        if row.get("isCompactSummary"):
+            return "summary", text
+        return ("user" if row["type"] == "user" else "agent"), text
