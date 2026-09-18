@@ -85,6 +85,10 @@ with urllib.request.urlopen(req) as r:
     check("an upload attaches the file and names it", json.loads(r.read()), {"files": ["pic.png"]})
 with urllib.request.urlopen(base + "/api/main/todo/1/files/pic.png") as r:
     check("and it is served back", r.read(), b"\x89PNGdata")
+part = b"--" + boundary + b"\r\nContent-Disposition: form-data; name=\"file\"; filename=\"a shot.png\"\r\nContent-Type: image/png\r\n\r\nspaced\r\n--" + boundary + b"--\r\n"
+urllib.request.urlopen(urllib.request.Request(base + "/api/main/todo/1/upload", data=part, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary.decode()}"})).read()
+with urllib.request.urlopen(base + "/api/main/todo/1/files/a%20shot.png") as r:
+    check("a name with a space is served back from its encoded path", r.read(), b"spaced")
 
 # THE EVENT LOG AND THE STREAM
 code, got = call("GET", "/api/main/events?since=0")

@@ -8,6 +8,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from queue import Empty, Queue
 from typing import Callable, Iterator
+from urllib.parse import unquote
 
 import features
 from controllers.types import CONTROLLERS
@@ -77,7 +78,7 @@ def resolve(method: str, path: str) -> tuple[Route, dict] | None:
     for r in ROUTES:
         m = r.regex.match(path)
         if m and r.method == method:
-            return r, m.groupdict()
+            return r, {k: unquote(v) for k, v in m.groupdict().items()}
     return None
 
 
