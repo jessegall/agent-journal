@@ -15,6 +15,8 @@ ACCENT = f"{ESC}[38;2;163;168;240m"
 DIM = f"{ESC}[38;2;131;134;142m"
 RESET = f"{ESC}[0m"
 STATES = {"idle": "●", "working": "◐", "waiting": "◔", "stopped": "○"}
+BRAND = "◆ AGENT JOURNAL"
+GRADIENT = ((94, 99, 222), (62, 66, 160), (30, 32, 60))
 
 
 def region(rows: int) -> bytes:
@@ -80,12 +82,27 @@ class Band:
         seat, agent = self.seat(), self.agent()
         state = seat.get("state") or agent.get("status") or "stopped"
         mark = STATES.get(state, "○")
-        first = f"{ACCENT}◆ journal{DIM}  {BRIGHT}{self.project}{DIM} · environment {BRIGHT}{seat.get('env') or self.env}"
-        second = (f"{ACCENT}{mark} {BRIGHT}{state}{DIM}  {agent.get('model') or agent.get('provider') or '—'} · {agent.get('title', '')[:8]}"
+        env = seat.get("env") or self.env
+        facts = f"{BRIGHT}{self.project}{DIM} · environment {BRIGHT}{env}"
+        status = (f"{ACCENT}{mark} {BRIGHT}{state}{DIM}  {agent.get('model') or agent.get('provider') or '—'} · {agent.get('title', '')[:8]}"
                   f" · up {since(float(agent.get('started') or 0))} · context {round(float(agent.get('context') or 0))}%")
-        third = f"{DIM}{seat.get('why') or 'starting'}"
         rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
-        return [self.fit(line, cols) for line in (first, second, third, rule)]
+        return [self.banner(env, cols)] + [self.fit(line, cols) for line in (facts, status, rule)]
+
+    def shade(self, x: int, cols: int) -> tuple[int, int, int]:
+        t = x / max(1, cols - 1) * (len(GRADIENT) - 1)
+        a, b = GRADIENT[int(t)], GRADIENT[min(int(t) + 1, len(GRADIENT) - 1)]
+        f = t - int(t)
+        return tuple(round(a[i] + (b[i] - a[i]) * f) for i in range(3))
+
+    def banner(self, env: str, cols: int) -> str:
+        left, right = f"  {BRAND}", f"{env.upper()}  "
+        text = left + " " * max(1, cols - len(left) - len(right)) + right
+        cells = []
+        for x, ch in enumerate(text[:cols]):
+            r, g, b = self.shade(x, cols)
+            cells.append(f"{ESC}[48;2;{r};{g};{b}m{ch}")
+        return f"{ESC}[1m{ESC}[38;2;245;246;250m" + "".join(cells)
 
     def fit(self, line: str, cols: int) -> str:
         plain = 0
