@@ -15,6 +15,7 @@ from controllers.types import CONTROLLERS
 from engine import bus
 from engine.manifest import manifest
 from engine.record import Record
+from providers import PROVIDERS
 from resources.base import USER, Refused
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
@@ -159,6 +160,15 @@ def get_files(req: Request) -> Reply:
                                 "at": f.stat().st_mtime, "image": (mimetypes.guess_type(name)[0] or "").startswith("image/"),
                                 "url": f"/api/{record.env}/{type_}/{r.n}/files/{name}"})
     return Reply(200, sorted(out, key=lambda x: -x["at"]))
+
+
+@route("GET", "/api/{env}/agent/{n}/transcript")
+def get_transcript(req: Request) -> Reply:
+    row = CONTROLLERS["agent"](req.record(), actor=USER).load(int(req.params["n"]))
+    provider = PROVIDERS.get(row.data.get("provider", ""))
+    turns = provider().transcript(Path(row.data.get("transcript") or "")) if provider and row.data.get("transcript") else []
+    since = int(req.query.get("since") or 0)
+    return Reply(200, [{"line": t.line, "who": t.who, "text": t.text} for t in turns if t.line > since][-int(req.query.get("last") or 300):])
 
 
 @route("GET", "/api/{env}/search")

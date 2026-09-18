@@ -6,10 +6,11 @@ import {meta, rows} from "../store.js";
 import ResourceBody from "./ResourceBody.vue";
 import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
+import AgentPage from "./AgentPage.vue";
 
 const props = defineProps({type: String, n: Number});
 const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
-const shape = computed(() => (!props.type ? "" : props.type === "plan" ? "plan" : meta(props.type).view));
+const shape = computed(() => (!props.type ? "" : ["plan", "agent"].includes(props.type) ? props.type : meta(props.type).view));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
 </script>
 
@@ -21,6 +22,13 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
                     <div class="page">
                         <DocumentPage :resource="resource" @close="close">
                             <PlanPage :resource="resource" @close="close" />
+                        </DocumentPage>
+                    </div>
+                </template>
+                <template #agent>
+                    <div class="page">
+                        <DocumentPage :resource="resource" @close="close">
+                            <AgentPage :resource="resource" @close="close" />
                         </DocumentPage>
                     </div>
                 </template>

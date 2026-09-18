@@ -2,6 +2,7 @@
 import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
+import {peek} from "../route.js";
 import {agent, detach, span, store} from "../store.js";
 
 const open = ref("");
@@ -37,10 +38,15 @@ onUnmounted(() => window.removeEventListener("click", away));
                 <span class="agent-fact">No agent</span>
             </template>
             <template v-else>
-                <span class="agent-fact-lead" :title="`session ${agent.title}`">
+                <button
+                    type="button"
+                    class="agent-fact-lead"
+                    :title="`Open the agent's page — session ${agent.title}`"
+                    @click="peek('agent', agent.n)"
+                >
                     <Icon name="agents" />
                     {{ name }}
-                </span>
+                </button>
                 <template v-if="family">
                     <span class="agent-fact" :title="data.model">
                         <Icon name="model" />
@@ -169,7 +175,19 @@ onUnmounted(() => window.removeEventListener("click", away));
 }
 
 .agent-fact-lead {
+    padding: 2px 6px;
+    margin-left: -6px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
     color: var(--text-2);
+    font: inherit;
+    cursor: pointer;
+}
+
+.agent-fact-lead:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 
 .agent-link {
