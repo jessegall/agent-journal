@@ -63,6 +63,7 @@ const close = () => go(route.value.env, props.type);
 .page > :deep(.body) {
     max-width: 800px;
     margin: 0 auto;
-    padding: 36px 32px 80px;
+    min-height: 100%;
+    padding: 36px 32px 0;
 }
 </style>

@@ -73,14 +73,21 @@ const files = computed(() => Object.entries(props.resource.data.files || {}));
             </section>
         </template>
         <Links :resource="resource" />
-        <Comments :resource="resource" />
         <footer class="foot">seen by {{ resource.seen.join(", ") || "nobody" }}</footer>
+        <Comments :resource="resource" />
     </article>
 </template>
 
 <style scoped>
 .body {
-    padding: 16px 20px 30px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: 16px 20px 0;
+}
+
+.body > :deep(.comments) {
+    flex: 1;
 }
 .top {
     display: flex;
@@ -135,7 +142,7 @@ const files = computed(() => Object.entries(props.resource.data.files || {}));
     color: var(--text-3);
 }
 .foot {
-    margin-top: 22px;
+    margin-top: 18px;
     color: var(--text-3);
     font-size: 11.5px;
 }

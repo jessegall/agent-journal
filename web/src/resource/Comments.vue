@@ -1,18 +1,15 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed} from "vue";
 import {act} from "../api.js";
-import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
 import {age, reload, rows} from "../store.js";
+import Compose from "../chat/Compose.vue";
 
 const props = defineProps({resource: Object});
-const text = ref("");
 const thread = computed(() => rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted));
 
-async function send() {
-    if (!text.value.trim()) return;
-    await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: text.value});
-    text.value = "";
+async function send(text) {
+    await act(route.value.env, props.resource.type, props.resource.n, "comment", {text});
     await reload();
 }
 </script>
@@ -31,17 +28,17 @@ async function send() {
                 <span class="text">{{ c.brief }}</span>
             </div>
         </template>
-        <form class="write" @submit.prevent="send">
-            <textarea v-model="text" rows="2" placeholder="Comment…" @keydown.meta.enter="send" />
-            <Btn kind="primary" small @click="send">Comment</Btn>
-        </form>
     </section>
+    <div class="comment-write">
+        <Compose placeholder="Comment…" submit="Comment" :send="send" />
+    </div>
 </template>
 
 <style scoped>
 .comments {
     margin-top: 20px;
 }
+
 h3 {
     margin: 0 0 6px;
     font-size: 12px;
@@ -50,6 +47,7 @@ h3 {
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
+
 .comment {
     display: flex;
     flex-direction: column;
@@ -59,32 +57,30 @@ h3 {
     border-radius: 8px;
     background: var(--raised);
 }
+
 .comment.agent {
     border-left: 2px solid var(--accent);
 }
+
 .who {
     color: var(--text-3);
     font-size: 11.5px;
 }
+
 .done {
     color: var(--good);
 }
+
 .text {
     white-space: pre-wrap;
     color: var(--text-2);
 }
-.write {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: flex-end;
-}
-textarea {
-    width: 100%;
-    padding: 8px 11px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--raised);
-    resize: vertical;
+
+.comment-write {
+    position: sticky;
+    bottom: 0;
+    margin: 12px -20px 0;
+    padding: 10px 20px 14px;
+    background: var(--bg);
 }
 </style>

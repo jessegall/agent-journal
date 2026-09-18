@@ -1,12 +1,12 @@
 <script setup>
-defineProps({on: Boolean, word: {type: String, default: ""}, title: {type: String, default: ""}});
+defineProps({on: Boolean, word: {type: String, default: ""}, title: {type: String, default: ""}, framed: Boolean});
 const emit = defineEmits(["change"]);
 </script>
 
 <template>
     <button
         type="button"
-        class="switch-button"
+        :class="['switch-button', {framed}]"
         role="switch"
         :aria-checked="on ? 'true' : 'false'"
         :title="title"
@@ -26,16 +26,22 @@ const emit = defineEmits(["change"]);
     align-items: center;
     gap: 8px;
     height: 26px;
-    padding: 0 10px 0 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 13px;
-    background: var(--raised);
+    padding: 0;
+    border: 0;
+    background: none;
     color: var(--text-2);
     font-size: 12px;
     cursor: pointer;
 }
 
-.switch-button:hover {
+.switch-button.framed {
+    padding: 0 10px 0 6px;
+    border: 1px solid var(--border-2);
+    border-radius: 13px;
+    background: var(--raised);
+}
+
+.switch-button.framed:hover {
     border-color: var(--border-3);
     color: var(--text);
 }
