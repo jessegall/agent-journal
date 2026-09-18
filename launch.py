@@ -19,6 +19,8 @@ import news
 IDLE_SECONDS = 3.0
 #: with no hooks reporting, how long a typed line stands before an unprocessed message is typed again
 RETYPE_AFTER = 30.0
+#: how often the launcher looks whether its own code changed on disk
+RELOAD_EVERY = 5.0
 #: how many changes of the seat's decision the record keeps
 WHYS_KEPT = 12
 #: the pause between a typed line and its Enter, so the agent reads the Enter as a key and not as pasted text
@@ -27,8 +29,6 @@ ENTER_AFTER = 0.3
 PRINTED_KEEP = 400
 #: how far back a fresh seat looks for news never told: a restart mid-conversation loses nothing
 SINCE_BACK = 6 * 3600
-#: terminal control sequences: colours, cursor moves, mode switches — what the pty carries beside the words
-#: what a terminal sends on stdin besides keys: focus in/out, arrows and other CSI, SS3 keys, paste marks, OSC
 ANSI_INPUT = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1bO[A-Za-z]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[PX^_][^\x1b]*\x1b\\")
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 
@@ -39,14 +39,7 @@ def plain(data: bytes) -> str:
 
 
 class Launcher:
-    """An agent run under a pseudo-terminal, with the launcher between it and the real one.
-
-    THE LAUNCHER IS THE ORCHESTRATOR'S SEAT. Everything the user types goes to the agent and
-    everything the agent prints comes back, byte for byte, with the window size passed through —
-    so the agent cannot tell it is not on the terminal itself. What the seat adds is a place
-    outside the agent from which to watch it (is it printing, when did it last, has the user
-    a half-typed line) and to speak to it, by typing, without a hook inside the agent's turn.
-    """
+    """An agent run under a pseudo-terminal, with the launcher between it and the real one."""
 
     def __init__(self, command: list[str], cwd: Path | None = None):
         self.command = command
@@ -66,6 +59,7 @@ class Launcher:
         if pid == 0:
             if self.cwd:
                 os.chdir(self.cwd)
+            os.environ["JOURNAL_SEAT"] = str(os.getppid())   # the hooks report it: this seat reads only its own session
             os.execvp(self.command[0], self.command)
         self.pid, self.fd = pid, fd
         self._resize()
@@ -84,12 +78,7 @@ class Launcher:
             data = data[n:]
 
     def type_line(self, text: str) -> None:
-        """A whole line, then Enter — a beat later, on its own.
-
-        MEASURED: the line landed in Claude Code's input box and sat there. Bytes that arrive in one
-        burst are read as a paste, and the Enter inside the burst became part of it instead of
-        sending it. A pause before the Enter makes it a keystroke again.
-        """
+        """A whole line, then Enter — a beat later, on its own."""
         self.write(text.encode())
         time.sleep(ENTER_AFTER)
         self.write(b"\r")
@@ -136,10 +125,6 @@ class Launcher:
                         break
                     self.write(data)
                     self._note_typed(data)
-                # EVERY TURN OF THE LOOP, NOT ONLY A QUIET ONE. The ticks ran when select timed out,
-                # and an agent that prints steadily (a spinner while it works) never let it time out —
-                # so the seat stopped stamping, the viewer lost it after thirty seconds and the no-seat
-                # band flickered on and off (message 193). A tick throttles itself.
                 for tick in self.ticks:
                     tick(self)
         finally:
@@ -150,19 +135,9 @@ class Launcher:
         return os.waitstatus_to_exitcode(status)
 
     def _note_typed(self, data: bytes) -> None:
-        """What the user has on the line: Enter clears it, backspace shortens it, Ctrl-C drops it.
-
-        THE TERMINAL TYPES TOO. Focus events (`ESC [ I`, `ESC [ O`), arrow keys, bracketed-paste
-        marks and mouse reports all arrive on stdin as escape sequences, and each one used to
-        leave its tail on the line — `[I` after every switch to the browser — so the seat believed
-        the user was mid-sentence and never typed again. Measured: a message left in the viewer was
-        never typed into a session that sat idle at its prompt. Sequences are stripped whole; a bare
-        Escape still drops the line, as it does in the agent.
-        """
+        """What the user has on the line: Enter clears it, backspace shortens it, Ctrl-C drops it."""
         self.raw += data
         text = ANSI_INPUT.sub(b"", self.raw)
-        # a sequence still arriving is kept for the next read; it is never part of the line. A bare
-        # Escape followed by an ordinary key is two keys, not the start of a sequence.
         cut = text.rfind(b"\x1b")
         pending = text[cut:] if cut >= 0 else b""
         if pending and len(pending) < 64 and (len(pending) == 1 or pending[1:2] in (b"[", b"O", b"]", b"P", b"X", b"^", b"_")):
@@ -185,25 +160,71 @@ def run(command: list[str], cwd: Path | None = None, ticks: list | None = None, 
     seat = Launcher(command, cwd)
     seat.ticks = list(ticks or [])
     if root is not None:
-        nudger = Nudger(root, env, quiet=quiet)
-        seat.ticks.append(nudger)
+        seat.ticks.append(Hot(root, env, quiet))
     seat.start()
     return seat.run()
 
 
+class Hot:
+    """The nudger, swapped for a fresh one whenever its code changes on disk."""
+
+    WATCHED = ("launch.py", "news.py", "hook.py")
+
+    def __init__(self, root: Path, env: str, quiet: bool):
+        self.root, self.env, self.quiet = root, env, quiet
+        self.stamps = self._stamps()
+        self.nudger = Nudger(root, env, quiet=quiet)
+        self.last_check = 0.0
+
+    def _stamps(self) -> tuple:
+        out = []
+        for name in self.WATCHED:
+            try:
+                out.append(Path(__file__).with_name(name).stat().st_mtime_ns)
+            except OSError:
+                out.append(0)
+        return tuple(out)
+
+    def __call__(self, seat: Launcher) -> None:
+        now = time.time()
+        if now - self.last_check >= RELOAD_EVERY:
+            self.last_check = now
+            stamps = self._stamps()
+            if stamps != self.stamps:
+                self.stamps = stamps
+                self.reload()
+        self.nudger(seat)
+
+    def reload(self) -> None:
+        import importlib
+        import sys
+        me = sys.modules[__name__]
+        try:
+            importlib.reload(news)
+            if "hook" in sys.modules:
+                importlib.reload(sys.modules["hook"])
+            fresh = importlib.reload(me)
+        except Exception:                            # a half-written file: keep the nudger we have, look again later
+            return
+        old = self.nudger
+        new = fresh.Nudger(self.root, self.env, quiet=self.quiet)
+        for name in ("since", "told", "typed_at", "nudged", "user_lines", "whys"):
+            if hasattr(old, name):
+                setattr(new, name, getattr(old, name))
+        new.reports.born = old.reports.born      # the session's reports predate the reload; they are still its own
+        new.whys = (new.whys + [f"{time.strftime('%H:%M:%S')} reloaded the launcher's code"])[-fresh.WHYS_KEPT:]
+        self.nudger = new
+
+
 # ─────────────────────────────────────────────── what the hooks report, read from outside
 class Reports:
-    """The hooks' event lines for the sessions this launcher started, newest last.
-
-    A HOOK WRITES ONE LINE PER EVENT and the launcher reads them here: which session is inside
-    the pty is not known until its first hook fires, so every events file that appears after the
-    launch is taken as this seat's — one launcher, one agent, one terminal.
-    """
+    """The hooks' event lines for the sessions this launcher started, newest last."""
 
     def __init__(self, root: Path):
         self.root = root
         self.born = time.time()
         self.offsets: dict = {}
+        self.seat = str(os.getpid())
 
     def last(self) -> dict | None:
         import json
@@ -221,6 +242,8 @@ class Reports:
                 line = json.loads(tail[-1])
             except (OSError, ValueError):
                 continue
+            if line.get("seat") and line.get("seat") != self.seat:
+                continue
             if newest is None or line.get("at", 0) > newest.get("at", 0):
                 newest = line
         return newest
@@ -228,13 +251,7 @@ class Reports:
 
 # ─────────────────────────────────────────────── the viewer's news, typed into the agent
 class Nudger:
-    """What the channel used to push, typed into the agent's terminal by the seat outside it.
-
-    WHEN, NOT WHAT, IS THE WHOLE CARE. The words are the record's own (`news._waiting`), so
-    nothing is said twice or said differently; what the seat adds is judgement about the moment:
-    the agent has printed nothing for IDLE_SECONDS, the user has no half-typed line, and the
-    thing has not been typed before. Then one line, and Enter.
-    """
+    """Types the viewer's news and the stop queue into an idle agent."""
 
     def __init__(self, root: Path, env: str, every: float = 2.0, quiet: bool = False):
         self.root = root
@@ -252,12 +269,9 @@ class Nudger:
         self.user_lines = 0          # the user's Enter count, as last seen
 
     def agent_idle(self, seat: Launcher) -> bool:
-        """Idle is what the hooks report, when they do: a Stop with no event after it. Without a
-        hook (an agent the journal has no hooks in yet) the pty's own quiet has to do."""
+        """Idle is what the hooks report, when they do: a Stop with no event after it."""
         last = self.reports.last()
         if last is not None:
-            # A SESSION JUST STARTED OR RESUMED IS IDLE TOO: it sits at its prompt with no Stop behind it.
-            # Measured: a resumed session was never typed to, because its last report was SessionStart.
             return last.get("event") in ("Stop", "SessionStart") and seat.idle_for() >= 1.0
         return seat.idle_for() >= IDLE_SECONDS
 
@@ -278,8 +292,7 @@ class Nudger:
         self.stamp(seat)
 
     def look(self, seat: Launcher) -> str:
-        """One look at the agent, and what it decided, in words the seat record keeps: WHY THE SEAT
-        DID NOT TYPE is the one question a user asks when a message sits unanswered."""
+        """One look at the agent; what it decided goes in the seat record."""
         last = self.reports.last()
         if not self.agent_idle(seat):
             return f"not idle: last report {last.get('event') if last else 'none'}, quiet {seat.idle_for():.1f}s"
@@ -294,9 +307,6 @@ class Nudger:
         for key, params in pending:
             if key in self.told:
                 continue
-            # A MESSAGE IS TYPED AT EVERY IDLE MOMENT UNTIL THE AGENT PROCESSES IT (the user's rule,
-            # message 199): the record's `processed` is the only acknowledgement. Everything else —
-            # an answer, a reaction, a plan event — is told once and marked in the record.
             if not re.fullmatch(rf"{re.escape(self.env)}:\d+", key):
                 self.told.add(key)
                 self.mark([key])
@@ -315,17 +325,14 @@ class Nudger:
         self.typed_at = time.time()
 
     def settled(self) -> bool:
-        """The hooks have reported since this seat last typed — so a line typed a moment ago is
-        not typed over while the agent is still picking it up."""
+        """The hooks have reported since this seat last typed."""
         last = self.reports.last()
         if last is None:                             # no hooks to report: a line stands for a while on its own
             return not self.typed_at or time.time() - self.typed_at >= RETYPE_AFTER
         return not self.typed_at or float(last.get("at") or 0) > self.typed_at
 
     def owed(self) -> str | None:
-        """THE STOP QUEUE, READ FROM OUTSIDE. What the stop hook would have held the turn with —
-        untagged, open work, the next to-do under auto mode, a question answered — typed in
-        instead, one subject per quiet moment; `nudged` tells the queue the agent is answering it."""
+        """The stop queue's first line, read from outside the agent."""
         last = self.reports.last()
         stem = last.get("session") if last else ""
         if not stem:
@@ -338,8 +345,7 @@ class Nudger:
             return None
 
     def stamp(self, seat: Launcher) -> None:
-        """This session has a seat, and this is what the seat sees: working or idle, and the last
-        words the agent printed. The viewer's agent bar reads it instead of the hooks' state."""
+        """What the seat sees of the session, written for the viewer."""
         import state
         last = self.reports.last()
         stem = last.get("session") if last else ""
@@ -354,18 +360,11 @@ class Nudger:
 
     def pending(self) -> list:
         news.ROOT = self.root
-        # WHAT WAS LEFT BEFORE THE SEAT SAT DOWN IS STILL OWED. A message written while the agent was
-        # being restarted must be typed once it is idle; what was told already is marked told in the
-        # record and never repeats, so the look back costs nothing but the first read.
         first = not self.since
         if first:
             self.since = time.time() - SINCE_BACK
         got = news._waiting(self.env, self.since)
         if first:
-            # ONLY A MESSAGE STILL WAITING IS OWED FROM BEFORE THE SEAT SAT DOWN. A reaction, a reply
-            # or a plan approved hours ago and never told is history — measured: a fresh seat typed
-            # six of them one after another before the user's new message. They are marked told,
-            # unspoken; a message nobody has read yet is not.
             stale = [key for key, _ in got if not re.fullmatch(rf"{re.escape(self.env)}:\d+", key)]
             if stale:
                 self.mark(stale)
