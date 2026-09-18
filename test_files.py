@@ -122,12 +122,14 @@ ended = [e for e in activity.ActivityController._events(d / ".journal", "w") if 
 check("the Ended work line in Activity says how many files changed", [e["detail"] for e in ended], ["4 files changed"])
 import commandlog  # noqa: E402
 # THE QUEUE IS WRITTEN OUT BY WHATEVER COMES NEXT: a journal command, a commit being recorded, or the
-# tenth tool use. So a run like this one leaves several summed lines, not one — each holding the uses
-# since the last thing that flushed. Asserted as the lines themselves, so a drift prints what it said.
+# use that fills the batch (commandlog.QUEUE_SIZE). So a run like this one leaves several summed
+# lines, not one — each holding the uses since the last thing that flushed. Asserted as the lines
+# themselves, so a drift prints what it said.
 _summed = [e["text"] for e in commandlog.entries(d / ".journal", "w")
            if e.get("by") == "Agent" and not e.get("kind") and not e.get("sha")]
 check("the tool uses between two journal commands become one summed line each time",
-      _summed, ["Edited 1 file", "Ran 1 command, edited 5 files", "Ran 2 commands", "Ran 1 command"])
+      _summed, ["Edited 1 file", "Edited 3 files", "Ran 1 command, edited 2 files", "Ran 2 commands",
+                "Ran 1 command"])
 
 # ─────────── a call that commits AND ends the work still records the commit ───────────
 # ONE TOOL CALL CAN CLOSE THE WORK IT WAS DOING: `git commit … && journal work end "…"`. The hook
