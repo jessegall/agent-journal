@@ -3769,6 +3769,30 @@ const THREAD_GOTO = reactive({ key: "", at: 0 });
 //: written by the Thread on every load and never written back.
 const CHAT_HELD = reactive({ turns: [], env: "" });
 
+//: THE CHAT, TAKEN OFF THE PAGE. Detached, the thread is rendered once in a window that floats over
+//: whatever page you walk to, and the home says where it went rather than drawing a second one.
+//: Where the window sits is remembered, because a window that resets its place every navigation is
+//: not a window.
+const DETACHED_KEY = "journal.chat.window";
+const DETACHED = reactive({ on: false, x: 0, y: 0, w: 430, h: 620 });
+try {
+  const kept = JSON.parse(localStorage.getItem(DETACHED_KEY) || "null");
+  if (kept && typeof kept === "object") Object.assign(DETACHED, kept);
+} catch (e) { /* a browser that refuses storage still gets a window, just not the old one */ }
+function keepWindow() {
+  try {
+    localStorage.setItem(DETACHED_KEY, JSON.stringify({ on: DETACHED.on, x: DETACHED.x, y: DETACHED.y, w: DETACHED.w, h: DETACHED.h }));
+  } catch (e) { /* nothing is lost that was not already only a convenience */ }
+}
+function detach(on) {
+  DETACHED.on = !!on;
+  if (DETACHED.on && !DETACHED.x && !DETACHED.y) {
+    DETACHED.x = Math.max(16, window.innerWidth - DETACHED.w - 28);
+    DETACHED.y = 84;
+  }
+  keepWindow();
+}
+
 // WHAT A QUOTE POINTS AT. A reply quotes the message it answers and an answer quotes the question
 // it answers, and both of those are turns already in the thread — so the quote is a way back to
 // them rather than a decoration.
@@ -4451,6 +4475,15 @@ const EnvHome = {
     // These two read what the thread is holding, which is the whole point of them being here.
     const barMenu = reactive({ open: false, kind: "", find: "" });
     const closeBarMenu = () => { barMenu.open = false; barMenu.kind = ""; };
+    // A MENU CLOSES WHEN YOU LOOK AWAY FROM IT. Anywhere outside the menu counts, including the page
+    // under it; the dots themselves are left alone, or the click that opens it would close it again.
+    const clickAway = (e) => {
+      if (!barMenu.open) return;
+      if (e.target.closest && e.target.closest(".bar-menu")) return;
+      closeBarMenu();
+    };
+    onMounted(() => document.addEventListener("click", clickAway, true));
+    onUnmounted(() => document.removeEventListener("click", clickAway, true));
     const chatFiles = computed(() => CHAT_HELD.turns.flatMap((t) => (t.files || []).map((f) => ({
       key: `${t.kind}:${t.n}:${f.name}`, name: f.name, picture: f.picture, n: t.n, who: t.who,
       at: t.at, anchor: turnAnchor(t),
@@ -4588,7 +4621,7 @@ const EnvHome = {
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto,
-             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile };
+             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4615,6 +4648,10 @@ const EnvHome = {
         <!-- THE TWO THINGS YOU WANT OF THIS CONVERSATION. Search and Files are pages of the
              environment; neither can be asked about the thread in front of you, which is what these
              two do — and they live on the bar because that is what sits over the thread. -->
+        <!-- THE CHAT CAN LEAVE THE PAGE. Detached it is one window floating over wherever you walk
+             to, and the home says where it went rather than drawing a second thread. -->
+        <button type=button class=bar-dots :title="DETACHED.on ? 'Put the chat back on the page' : 'Detach the chat into its own window'"
+          :aria-pressed="DETACHED.on ? 'true' : 'false'" @click="detach(!DETACHED.on)"><Icon name="sidepanel"/></button>
         <div class=bar-menu>
           <button type=button class=bar-dots :aria-expanded="barMenu.open ? 'true' : 'false'"
             title="Search this chat, or its files" @click="barMenu.open = !barMenu.open; barMenu.kind = ''">⋮</button>
@@ -4652,7 +4689,11 @@ const EnvHome = {
           <span v-for="f in a.facts" :key="f.icon" class=crew-fact><Icon :name="f.icon"/><span>{{ f.value }}</span></span>
         </button>
       </div>
-        <Thread :env="env"/>
+        <Thread v-if="!DETACHED.on" :env="env"/>
+        <div v-else class=thread-gone>
+          <p>The chat is in its own window.</p>
+          <button type=button class=thread-gone-back @click="detach(false)">Put it back on the page</button>
+        </div>
       </section>
       <div class=home-rail>
       <!-- the ACTIVE plan is the strip under the status bar now; what is left here is a draft
@@ -5636,6 +5677,47 @@ function spanText(ms) {
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 
+// THE CHAT IN ITS OWN WINDOW: one thread, floating over whatever page you are on, dragged by its
+// bar and resized from its corner. It is the same Thread component the home renders — detaching
+// moves it, it does not copy it, so there is never a second conversation on the screen.
+const ChatWindow = {
+  props: { env: String },
+  components: { Thread, Icon },
+  setup() {
+    const held = (e, move) => {
+      e.preventDefault();
+      const from = { px: e.clientX, py: e.clientY, x: DETACHED.x, y: DETACHED.y, w: DETACHED.w, h: DETACHED.h };
+      const step = (ev) => move(ev.clientX - from.px, ev.clientY - from.py, from);
+      const done = () => {
+        document.removeEventListener("pointermove", step, true);
+        document.removeEventListener("pointerup", done, true);
+        keepWindow();
+      };
+      document.addEventListener("pointermove", step, true);
+      document.addEventListener("pointerup", done, true);
+    };
+    const onBar = (e) => held(e, (dx, dy, from) => {
+      DETACHED.x = Math.min(Math.max(-from.w + 90, from.x + dx), window.innerWidth - 90);
+      DETACHED.y = Math.min(Math.max(0, from.y + dy), window.innerHeight - 40);
+    });
+    const onGrip = (e) => held(e, (dx, dy, from) => {
+      DETACHED.w = Math.max(320, Math.min(from.w + dx, window.innerWidth - 24));
+      DETACHED.h = Math.max(260, Math.min(from.h + dy, window.innerHeight - 24));
+    });
+    return { DETACHED, detach, onBar, onGrip };
+  },
+  template: `
+    <div class=chat-window :style="{ left: DETACHED.x + 'px', top: DETACHED.y + 'px', width: DETACHED.w + 'px', height: DETACHED.h + 'px' }">
+      <div class=chat-window-bar @pointerdown="onBar">
+        <span class=chat-window-dot></span>
+        <span class=chat-window-name>{{ env }}</span>
+        <button type=button class=chat-window-x title="Put it back on the page" @click.stop="detach(false)"><Icon name="close"/></button>
+      </div>
+      <Thread :env="env"/>
+      <span class=chat-window-grip @pointerdown="onGrip"></span>
+    </div>`,
+};
+
 const QuickMenu = {
   props: ["env"],
   components: { Icon },
@@ -5818,7 +5900,7 @@ const QuickMenu = {
 };
 
 const App = {
-  components: { ...VIEWS, Icon, TopBarView, ActivityPanel, Peek, QuickMenu, JournalsDropdown, FileReader_, Lightbox },
+  components: { ...VIEWS, Icon, TopBarView, ActivityPanel, Peek, QuickMenu, ChatWindow, JournalsDropdown, FileReader_, Lightbox },
   setup() {
     const route = reactive(parseHash());
     const ov = OVERVIEW;
@@ -6081,7 +6163,7 @@ const App = {
     SHELL.setAuto = setAuto;
     const envSettings = useFetch(() => envName.value && `/api/env/${envName.value}/environment`);
     watchEffect(() => { RETENTION.table = envSettings.data ? envSettings.data.retention || null : null; });
-    return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade, CHAT_ONLY };
+    return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade, CHAT_ONLY, DETACHED };
   },
   template: `
     <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
@@ -6157,6 +6239,7 @@ const App = {
       <FileReader_ v-if="OVERLAY.kind === 'file' && OVERLAY.file" :key="OVERLAY.file.url" :file="OVERLAY.file" :close="closeOverlay"/>
       <Lightbox v-if="OVERLAY.kind === 'image' && OVERLAY.images.length" :images="OVERLAY.images" :at="OVERLAY.at" :close="closeOverlay"/>
       <QuickMenu v-if="QUICK.open && envName" :env="envName"/>
+      <ChatWindow v-if="DETACHED.on && envName" :env="envName"/>
       <div v-if="TOAST.text" class=quick-toast role=status>{{ TOAST.text }}</div>
       <aside v-if="(activity.data && ACTIVITY.shown) || (ov.data && ov.data.update)" class=activity-dock>
         <ActivityPanel v-if="activity.data && ACTIVITY.shown" :data="activity.data" :href="activityHref" :env="envName"/>
