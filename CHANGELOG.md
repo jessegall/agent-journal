@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.167.0 — The chat after the user's pictures
+
+**The chat box floats:** a soft grey border, the paperclip at its foot on the left and Send on the
+right, "Message the agent" in it. **The agent bar is one line:** the agent and its model's short
+name, the branch, the running time, the context as a small bar, a divider, the counts. **In the
+thread**, an agent turn opens with "working on to-do N" when it belongs to open work; what a
+message became is one muted line under it — "Filed to-do 51 from your message." — and the
+agent's replies no longer quote the part they answer.
+
+**A chained command is several actions**: `a && b; c` rolls through the bar as three lines.
+
 ## 1.166.0 — The ticker, the plan bar that steps aside, the auto switch
 
 **The bar's action line is a ticker.** The hook writes every action it sees — a command, reading a
