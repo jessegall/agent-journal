@@ -37,7 +37,9 @@ UPDATE_TOLD = "update_told"
 AUTO_OFF_NOTE = " Auto mode is off: handle this only, and do not start on the to-do list."
 
 #: the event kinds that reach a session mid-turn: the user speaking, and nothing else
-REACH_NOW = ("message", "question", "comment")
+#: a reaction is the user speaking in one character, and it is often an answer to what the agent
+#: just said it would do — so it reaches a working session like the other three
+REACH_NOW = ("message", "question", "comment", "reaction")
 
 _OUT = threading.Lock()
 
@@ -157,7 +159,7 @@ def _reach_now() -> set:
     set membership, not a new field on each source.
 
     The user speaking is the one thing that cannot wait: a message, an answer to a question the
-    agent asked, a comment on what it wrote. The rest — a plan approved, a suggestion decided, a
+    agent asked, a comment on what it wrote, a face left on a turn. The rest — a plan approved, a suggestion decided, a
     to-do edited, a newer version upstream — is there when the turn ends, and reading it a minute
     later costs nothing. `channel_reach_now` in settings moves the line.
     """
@@ -287,7 +289,11 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
     for n, q in questions.untold(ROOT, env):
         if _epoch(q.get("answered_at")) < since:
             continue
-        got.append((f"{env}:question:{n}:{q.get('answered_at') or ''}",
+        # THE KEY COUNTS THE ANSWERS, not just when the last one landed. Stamps are whole seconds, so
+        # two answers in one second produced the same key and the second one was deduped away —
+        # the user changed their mind and nobody was told. `earlier_answers` grows with every
+        # re-answer, which is what makes each answer its own event.
+        got.append((f"{env}:question:{n}:{q.get('answered_at') or ''}:{len(q.get('earlier_answers') or [])}",
                     {"content": _read_it(f"The user answered question {n} on {env}.",
                                          f"questions show {n}"),
                      "meta": {"env": env, "question": str(n)}}))
