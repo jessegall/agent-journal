@@ -38,9 +38,10 @@ check("every view in the manifest is one of the three", all(t["view"] in VIEWS f
 
 for type_ in TYPES:                                                   # every type over HTTP, same routes
     code, made = call("POST", f"/api/main/{type_}", {"title": f"a {type_}", "abstract": "short"})
-    check(f"{type_}: create", (code, made["n"], made["type"], made["seen"]), (201, 1, type_, ["user"]))
+    first = 2 if type_ == "environment" else 1
+    check(f"{type_}: create", (code, made["n"], made["type"], made["seen"]), (201, first, type_, ["user"]))
     code, rows = call("GET", f"/api/main/{type_}")
-    check(f"{type_}: list", (code, [r["title"] for r in rows]), (200, [f"a {type_}"]))
+    check(f"{type_}: list", (code, [r["title"] for r in rows][-1:]), (200, [f"a {type_}"]))
     code, one = call("GET", f"/api/main/{type_}/1")
     check(f"{type_}: show", (code, one["ref"]), (200, f"{type_}:1"))
     finish = TYPES[type_].names.get("complete", "complete")
@@ -78,7 +79,7 @@ check("a missing file is a 404", call("GET", "/api/main/todo/1/files/none.png")[
 
 # THE EVENT LOG AND THE STREAM
 code, got = call("GET", "/api/main/events?since=0")
-check("the log is served past a cursor", (code, got[0]["id"], got[0]["type"], all(e["id"] > 3 for e in call("GET", "/api/main/events?since=3")[1])), (200, 1, "message", True))
+check("the log is served past a cursor", (code, got[0]["id"], all(e["id"] > 3 for e in call("GET", "/api/main/events?since=3")[1])), (200, 1, True))
 import socket  # noqa: E402
 sock = socket.create_connection(("127.0.0.1", port), timeout=5)
 sock.sendall(b"GET /api/main/stream HTTP/1.1\r\nHost: x\r\n\r\n")

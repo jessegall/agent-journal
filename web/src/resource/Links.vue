@@ -4,9 +4,8 @@ import { go, route } from "../route.js";
 import { byRef, linkedTo, meta } from "../store.js";
 
 const props = defineProps({ resource: Object });
-const quiet = ["comment", "notification", "reaction"];
-const shown = computed(() => props.resource.refs.filter((r) => !quiet.includes(r.split(":")[0])));
-const back = computed(() => linkedTo(props.resource.ref).filter((r) => !quiet.includes(r.type)).map((r) => r.ref));
+const shown = computed(() => props.resource.refs.filter((r) => !meta(r.split(":")[0]).mirror));
+const back = computed(() => linkedTo(props.resource.ref).filter((r) => !meta(r.type).mirror).map((r) => r.ref));
 const name = (ref) => {
   const [t, n] = ref.split(":");
   const r = byRef(ref);

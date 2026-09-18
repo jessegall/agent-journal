@@ -42,10 +42,11 @@ check("nothing notes the decision on the session's agent row", journal("nothing"
 check("version is the package's VERSION file", journal("version", env="")[1] != "0", True)
 
 # THE SESSION: --session binds; without it the holder of the environment is used
-journal("environment", "prepare", "t", env="t")
-code, out = journal("environment", "switch", "1", session="s-1")
+journal("environment", "prepare", "t")
+n = next(e.n for e in CONTROLLERS["environment"](Record(root, "t")).all() if e.title == "t")
+code, out = journal("environment", "switch", str(n), session="s-1")
 check("switch binds the named session", (code, Sessions(root).environment("s-1")), (0, "t"))
-code, out = journal("environment", "switch", "1", session="s-2")
+code, out = journal("environment", "switch", str(n), session="s-2")
 check("a held environment refuses another session", out.startswith("! environment 't' is taken by session s-1"), True)
 check("with no --env the session's environment is used", journal("status", env="", session="s-1")[1].startswith("JOURNAL  environment t"), True)
 

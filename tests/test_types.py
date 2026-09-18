@@ -27,20 +27,20 @@ for type_ in TYPES:                                       # seen: the creator ha
     by_user = CONTROLLERS[type_](record, actor=USER)
     by_agent = CONTROLLERS[type_](record, actor=AGENT)
     r = by_user.create(f"one {type_}")
-    check(f"{type_}: the user who created it has seen it, the agent has not", (r.seen, [x.n for x in by_agent.unseen()]), ([USER], [1]))
+    check(f"{type_}: the user who created it has seen it, the agent has not", (r.seen, [x.n for x in by_agent.unread()]), ([USER], [1]))
     by_agent.show(1)
-    check(f"{type_}: the agent's show marks it seen for the agent", (sorted(by_agent.show(1).seen), by_agent.unseen()), ([AGENT, USER], []))
+    check(f"{type_}: the agent's show marks it seen for the agent", (sorted(by_agent.show(1).seen), by_agent.unread()), ([AGENT, USER], []))
     w = by_agent.create(f"another {type_}")
-    check(f"{type_}: the agent who created it has seen it, the user has not", (w.seen, [x.n for x in by_user.unseen()]), ([AGENT], [2]))
+    check(f"{type_}: the agent who created it has seen it, the user has not", (w.seen, [x.n for x in by_user.unread()]), ([AGENT], [2]))
 
 # THE GENERATOR: one command per type per action, all the same shape, none written by hand
 top = parser()
 base_actions = actions(Controller)
 check("the base controller's actions are the CRUD set", base_actions,
-      ["all", "attach", "comment", "comments", "complete", "create", "delete", "files", "find", "folder", "force_delete", "link", "linked_to", "move", "restore", "search", "section", "see", "set", "show", "unlink", "unseen", "update"])
+      ["all", "attach", "comment", "comments", "complete", "create", "delete", "files", "find", "folder", "force_delete", "link", "linked_to", "move", "read", "restore", "search", "section", "set", "show", "unlink", "unread", "update"])
 subs = top._subparsers._group_actions[0].choices
 check("every type is a command, beside the queries", sorted(t for t in subs if t in TYPES), sorted(TYPES))
-check("the queries stand beside them", sorted(t for t in subs if t not in TYPES), ["carry", "claude", "codex", "conversation", "nothing", "open", "search", "serve", "start", "status", "user", "version"])
+check("the queries stand beside them", sorted(t for t in subs if t not in TYPES), ["carry", "claude", "codex", "conversation", "nothing", "open", "search", "serve", "start", "status", "upgrade", "user", "version"])
 for type_ in TYPES:
     acts = subs[type_]._subparsers._group_actions[0].choices
     names = TYPES[type_].names
@@ -73,6 +73,6 @@ for type_ in TYPES:                                       # and each generated c
     code, out = cli(type_, finish, "1")
     check(f"{type_}: completing twice is refused", code, 1)
     code, out = cli(type_, "all")
-    check(f"{type_}: all from the shell", out.split("\n")[-1].strip(), f"1  a {type_} from the shell")
+    check(f"{type_}: all from the shell", out.split("\n")[-1].strip().split("  ", 1)[-1], f"a {type_} from the shell")
 
 done()

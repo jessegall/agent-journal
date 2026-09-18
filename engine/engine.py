@@ -92,9 +92,9 @@ class Engine:
         for type_ in PRIORITY:
             if AGENT not in TYPES[type_].notify:
                 continue
-            unseen = CONTROLLERS[type_](self.record, actor=AGENT).unseen()
-            if unseen:
-                return f"{len(unseen)} unseen {type_}"
+            unread = CONTROLLERS[type_](self.record, actor=AGENT).unread()
+            if unread:
+                return f"{len(unread)} unread {type_}"
         return ""
 
     def seat(self) -> None:

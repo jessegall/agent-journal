@@ -35,7 +35,7 @@ check("a notification itself never notifies", USER in TYPES["notification"].noti
 # THE USER READS THEM as unseen; seeing one takes it off
 unread = User(record).unread()
 check("unread notifications are the user's unseen ones", [n.title for n in unread], ["Message 1 processed", "To-do 1 add"])
-CONTROLLERS["notification"](record, actor=USER).see(1)
+CONTROLLERS["notification"](record, actor=USER).read(1)
 check("seen: gone from unread", [n.title for n in User(record).unread()], ["To-do 1 add"])
 
 # THE AGENT MAY WRITE ONE ITSELF, to say a long piece of work landed

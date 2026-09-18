@@ -13,7 +13,7 @@ STATES = (STOPPED, IDLE, WORKING, WAITING)
 
 def render(e: Event, record: Record) -> str:
     if TYPES[e.type].spoken:
-        r = CONTROLLERS[e.type](record, actor=AGENT).see(e.n)
+        r = CONTROLLERS[e.type](record, actor=AGENT).read(e.n)
         return f"{r.title} — {r.brief}" if r.brief else r.title
     return f"{e.type} {e.n} {e.action}"
 
@@ -41,7 +41,7 @@ class User(Actor):
         self.notified(event)
 
     def unread(self) -> list:
-        return CONTROLLERS["notification"](self.record, actor=USER).unseen()
+        return CONTROLLERS["notification"](self.record, actor=USER).unread()
 
 
 class System(Actor):

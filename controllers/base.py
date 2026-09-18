@@ -174,16 +174,16 @@ class Controller:
         return moved
 
     def show(self, n: int) -> Resource:
-        return self.see(n)
+        return self.read(n)
 
-    def see(self, n: int) -> Resource:
+    def read(self, n: int) -> Resource:
         r = self.load(n)
         if self.actor in r.seen:
             return r
         r.seen.append(self.actor)
         return self.save(r, "updated", seen=self.actor)
 
-    def unseen(self, actor: str | None = None) -> list[Resource]:
+    def unread(self, actor: str | None = None) -> list[Resource]:
         who = actor or self.actor
         return [r for r in self.all() if who not in r.seen]
 

@@ -17,7 +17,7 @@ def manifest() -> dict:
         "priority": list(PRIORITY),
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
-        "types": {name: {"title": c.title_, "abstract": c.abstract_, "help": c.help_, "view": c.view, "nav": c.nav, "scope": c.scope, "icon": c.icon, "notify": list(c.notify), "spoken": c.spoken, "fields": c.fields, "labels": c.labels,
+        "types": {name: {"title": c.title_, "abstract": c.abstract_, "help": c.help_, "view": c.view, "nav": c.nav, "scope": c.scope, "icon": c.icon, "attention": c.attention, "mirror": c.mirror, "notify": list(c.notify), "spoken": c.spoken, "fields": c.fields, "labels": c.labels,
                          "names": dict(c.names), "methods": actions(CONTROLLERS[name])}
                   for name, c in TYPES.items()},
         "features": features.describe(),

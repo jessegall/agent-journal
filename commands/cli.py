@@ -6,6 +6,7 @@ from pathlib import Path
 
 from controllers.base import Controller
 from controllers.types import CONTROLLERS
+import migrations
 from engine import queries
 from engine.drivers import DRIVERS
 from engine.record import Record
@@ -84,7 +85,14 @@ def parser() -> argparse.ArgumentParser:
     for name in DRIVERS:
         add_query(cmds, name, f"start {name} under the supervisor, on this environment", lambda ctx, name=name: supervise(ctx, name), ("args", {"nargs": argparse.REMAINDER}))
     add_query(cmds, "serve", "the web viewer", lambda ctx: serve_forever(ctx), ("--port", {"type": int, "default": 8430}))
+    add_query(cmds, "upgrade", "pull the package, wire the hooks, write the skills, run the migrations", lambda ctx: upgrade_here(ctx))
     return top
+
+
+def upgrade_here(ctx) -> str:
+    from install import upgrade
+    root = ctx["record"].root
+    return "\n".join(upgrade(root.parent, root))
 
 
 def supervise(ctx, agent: str) -> str:
@@ -109,7 +117,8 @@ def decided(ctx) -> str:
 
 
 def context(args: dict) -> dict:
-    root = Path(args.pop("root"))
+    root = Path(args.pop("root")).resolve()
+    migrations.run(root)
     sessions = Sessions(root)
     session = args.pop("session")
     env = args.pop("env") or (sessions.environment(session) if session else "") or ((root / "runtime" / "env").read_text().strip() if (root / "runtime" / "env").is_file() else "main")
