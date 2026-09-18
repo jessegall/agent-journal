@@ -502,6 +502,10 @@ const Icon = {
       <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
       <!-- a terminal: the prompt mark and the line you type on, which is what a shell looks like -->
       <path v-else-if="name === 'terminal'" d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>
+      <!-- a crosshair: the ring and the four ticks, what the picker draws over the page -->
+      <template v-else-if="name === 'crosshair'"><circle cx="8" cy="8" r="4.2"/><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3"/></template>
+      <!-- a camera: the body, the lens, the little bump for the shutter -->
+      <template v-else-if="name === 'camera'"><path d="M2 5.5h2.6l1.2-1.8h4.4l1.2 1.8H14v7.5H2z"/><circle cx="8" cy="9" r="2.3"/></template>
       <!-- a warning: the triangle, its bar, and the dot under it -->
       <path v-else-if="name === 'warn'" d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/>
       <!-- skills: a closed book seen from its spine side — a cover, its pages, and the band down the
@@ -1220,7 +1224,7 @@ const Panel = {
 };
 
 const Compose = {
-  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial", "quote", "bare", "onUp", "onDown"],
+  props: ["placeholder", "submit", "hint", "send", "attach", "autofocus", "initial", "quote", "bare", "onUp", "onDown", "tools"],
   components: { Icon },
   setup(props) {
     // `initial` seeds the box. `quote` does NOT: what is being commented ON is shown above the field and
@@ -1269,9 +1273,14 @@ const Compose = {
           @keydown.up="onUp && !draft.text.trim() && ($event.preventDefault(), onUp())"
           @keydown.down="onDown && ($event.preventDefault(), onDown(draft.text))"
           @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go"></textarea>
-        <label v-if="attach" class=compose-attach title="Attach files" aria-label="Attach files">
-          <Icon name="paperclip"/><input type=file multiple hidden @change="picked">
-        </label>
+        <div v-if="attach || (tools && tools.length)" class=compose-tools>
+          <!-- what the box can reach for besides words: files, and whatever the page it sits on offers -->
+          <button v-for="t in (tools || [])" :key="t.icon" type=button class=compose-attach :title="t.title" :aria-label="t.title" @click="t.go">
+            <Icon :name="t.icon"/></button>
+          <label v-if="attach" class=compose-attach title="Attach files" aria-label="Attach files">
+            <Icon name="paperclip"/><input type=file multiple hidden @change="picked">
+          </label>
+        </div>
         <div v-if="draft.files.length" class=compose-files>
           <span v-for="(f, i) in draft.files" :key="i" class=chip>{{ f.name }} <button type=button class=chip-x title="Remove" @click="unpick(i)">×</button></span>
         </div>
@@ -3979,6 +3988,11 @@ function keepWindow() {
 //: IS THE EXTENSION HERE? A page cannot see an extension, so it asks and waits a moment for an
 //: answer; no answer means no extension, and Detach keeps doing what it does on its own.
 const EXTENSION = reactive({ here: false, holding: false });
+// THE CHAT REACHES THE PAGE IT FLOATS OVER through the extension: the crosshair points at an element,
+// the camera sends a picture of one. Both are the picker; the mode decides what the click sends.
+function askExtension(kind) {
+  window.postMessage({ source: "journal-page", kind }, window.location.origin);
+}
 window.addEventListener("message", (e) => {
   if (e.source !== window || !e.data || e.data.source !== "journal-extension") return;
   if (e.data.kind === "here") EXTENSION.here = true;
@@ -4362,6 +4376,11 @@ const Thread = {
     const answering = ref(null);
     // the box is where the reply goes, so Reply puts the caret there — the draft already in it stays
     const replyTo = (t) => { answering.value = t; THREAD_BOX.focus && THREAD_BOX.focus(); };
+    // only in the extension's own window: there is a page under it to point at
+    const pageTools = computed(() => (CHAT_ONLY && EXTENSION.here ? [
+      { icon: "crosshair", title: "Point at an element on the page", go: () => askExtension("point") },
+      { icon: "camera", title: "Send a picture of an element on the page", go: () => askExtension("shot") },
+    ] : []));
     const unreply = () => { answering.value = null; };
     const quoteOf = computed(() => (answering.value ? (answering.value.full || answering.value.text || "") : ""));
     // A QUOTE IS A REMINDER OF WHAT IS BEING ANSWERED, not a second copy of it — one line, cut on a
@@ -4521,7 +4540,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, shots, rest, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote, editLast, dropEdit, FACES, picking, reactionsOn, react };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, shots, rest, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote, editLast, dropEdit, FACES, picking, reactionsOn, react, pageTools };
   },
   template: `
     <div class=thread>
@@ -4539,7 +4558,8 @@ const Thread = {
           <span class=thread-answering-text>{{ answering.text }}</span>
           <button type=button class=thread-answering-x title="Not replying to it after all" @click="unreply">×</button>
         </div>
-        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true" :onUp="editLast" :onDown="dropEdit"/>
+        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true" :onUp="editLast" :onDown="dropEdit"
+          :tools="pageTools"/>
       </div>
       <div ref=root :class="['thread-scroll', {focusing: !!lit}]" @scroll.passive="watchScroll">
       <template v-if="!chat.data">

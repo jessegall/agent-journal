@@ -15,6 +15,8 @@
     if (e.source !== window || !e.data || e.data.source !== "journal-page") return;
     const kind = e.data.kind;
     if (kind === "hello") return tell("here");
+    // the chat in the window asks for the page under it: point at an element, or send a picture of one
+    if (kind === "point" || kind === "shot") return chrome.runtime.sendMessage({ kind });
     if (kind === "detach" || kind === "attach") {
       chrome.runtime.sendMessage({ kind: "follow", on: kind === "detach" }, (got) => {
         if (chrome.runtime.lastError) return tell("failed");
