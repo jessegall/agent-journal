@@ -1,6 +1,6 @@
 ---
 name: journal-messages
-description: "Handling what the user sends through the journal: processing a message part by part (routing each part, answering a question part with messages reply --part and a clickable follow-up), acting on comments on to-dos, docs, messages or work, notifying the user sparingly, and what the web viewer and its channel do. Use it whenever a stop, a hint or a channel notice says the user left a message or a comment, before you send a notification or the user asks to be told when something is done, and whenever the user talks about the viewer, its pages or the channel. Not for subagents."
+description: "Handling what the user sends through the journal: processing a message part by part (routing each part, answering a question part with messages reply --part and a clickable follow-up), acting on comments on to-dos, docs, messages or work, notifying the user sparingly, pinning one line over the chat (notice), reacting to a turn and reading the user's reactions, asking the tab the user is driving for a screenshot, its text or a click (journal browser), and what the web viewer and its channel do. Use it whenever a stop, a hint or a channel notice says the user left a message, a comment or a reaction, before you send a notification or pin a notice, when the user asks you to look at or control the page they are on, and whenever the user talks about the viewer, its pages or the channel. Not for subagents."
 ---
 
 # Journal messages, comments, notifications and the viewer
@@ -85,6 +85,46 @@ are waiting on: a migration through, a research report ready, a to-do they cared
 **Not for progress.** Each step, each commit, each to-do closed in auto mode is a `work
 update` or nothing; a Home full of notifications is one the user stops reading. One line,
 saying what is now true, pointing at the to-do, report, doc or message it is about.
+
+## A notice: one line kept over the chat
+
+    journal notice "<the line>" [--tone=note|good|warn] [--link=<url> --label="Open the PR"]   pinned at the top of the chat
+    journal notices                                what is up now
+    journal notices close <n>                      take yours down; the user's X does the same
+
+**A notice is neither a notification nor a pin.** A notification is news that ages into a list;
+a pin is a fact for your own reading. A notice is one line the user keeps seeing while it
+matters — a preview URL, a PR to review, "the migration is running, do not deploy" — and only
+their X (or your `close`, once it stops being true) takes it down. One line, at a glance; a
+paragraph is a message in the thread.
+
+## A reaction: a face on a turn
+
+    journal react <message> "👍"     one of 👍 ❤️ 🎉 😄 👀 🙏 👎 💔 😠; the same face again removes it
+
+A face under a turn, yours or theirs. **When the user reacts to something you said, read it
+as what it is** — a yes, a thanks, a laugh, a no — and carry on; the channel tells you once
+and nothing needs filing. 👎 or 😠 on a reply is a correction you have not been given the
+words for yet: look at what that reply claimed before doing more of it.
+
+## Driving the page the user is on
+
+    journal browser shot                       a picture of the tab, attached to the answer
+    journal browser text | dom | url | console what the page says, is, is at, or has logged
+    journal browser click "<selector>"         click it
+    journal browser type "<selector>" --text="<words>"   type into it
+    journal browser goto <url>                 take the tab there
+    journal browser eval "<javascript>"        run it there; the value comes back
+    journal browser scroll "<selector>"|top|bottom
+    journal browser                            what was asked, and whether a tab is being driven
+
+**Only while the user has put a tab at the wheel** — the wheel button in the chat window's
+bar; a band over the bar says the tab is driven, with their Stop. An ask before that is
+refused and says so. Each ask is queued for the Chrome extension, which runs it on that tab
+and answers **as a message from `browser`** — a picture, the text, the console — which you
+read like anything the user sends; nothing else wakes you. Look before you act: `shot` or
+`text` first, then the click; and say in the chat what you are about to do to their page,
+because it is their page and they are watching it move.
 
 ## The viewer: what the user does in the browser
 

@@ -178,7 +178,7 @@ before you act:
 |---|---|
 | `journal-todos` | you park, start, block or close a to-do; auto mode is on; a commit should close a row |
 | `journal-questions` | you are about to ask the user anything; the question tool is refused; a question was answered; you would propose a change |
-| `journal-messages` | the user left a message or a comment; you are about to notify them; the viewer or its channel comes up |
+| `journal-messages` | the user left a message or a comment; you are about to notify them, pin a line over the chat or react; the user reacted; you want to see or drive the page they are on; the viewer or its channel comes up |
 | `journal-memory` | you are about to pin, rule or remind; a context warning asks for a decision; a cleanup report is ready |
 | `journal-docs` | the user asks for something checked or researched; something was ruled and should be written down; you would write a reusable script |
 | `journal-agents` | before every subagent dispatch; a subagent must write; a subagent's journal command is refused |
