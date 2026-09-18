@@ -1,4 +1,4 @@
-from v2.resources.base import AGENT, DOCUMENT, USER, WIDE, Resource
+from v2.resources.base import AGENT, DOCUMENT, PROJECT, USER, WIDE, Resource
 from v2.resources.shapes import Options, Reasoned, Shape
 
 
@@ -40,6 +40,7 @@ class Plan(Shape, Resource):
 
 class Doc(Shape, Resource):
     type = "doc"
+    scope = PROJECT
     title_ = "Document"
     abstract_ = "What stays true about the project, catalogued for every session"
     help_ = "A doc is written once, cited by pins and rules, and read before anything it settles is re-investigated."
@@ -66,6 +67,7 @@ class Pin(Reasoned, Resource):
 class Rule(Reasoned, Resource):
     type = "rule"
     names = {"complete": "strike"}
+    scope = PROJECT
     title_ = "Rule"
     abstract_ = "A ruling that binds every environment of the project"
     help_ = "A rule is decided by the user, cited where it applies, and struck only by them."

@@ -11,6 +11,8 @@ ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed")
 SMALL, WIDE, DOCUMENT = "small", "wide", "document"
 VIEWS = (SMALL, WIDE, DOCUMENT)
 USER, AGENT, SYSTEM = "user", "agent", "system"
+ENVIRONMENT, PROJECT = "environment", "project"
+SCOPES = (ENVIRONMENT, PROJECT)
 ACTORS = (USER, AGENT, SYSTEM)
 
 
@@ -38,6 +40,7 @@ class Resource:
     names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
     view: ClassVar[str] = SMALL  # how it is read: a small inspector, a wide one, or a document page
     nav: ClassVar[bool] = True   # whether it sits in the sidebar
+    scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
     notify: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
     spoken: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
     n: int = 0

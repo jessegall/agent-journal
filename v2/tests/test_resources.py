@@ -69,5 +69,20 @@ for type_ in TYPES:                                                 # every type
     check(f"{type_}: every action left an event, and only the six actions", sorted({e.action for e in mine}), sorted(ACTIONS))
     check(f"{type_}: an event says who did it and what it is about", (mine[0].actor, mine[0].ref), ("user", f"{type_}:1"))
 
+# SCOPE: a project resource is one for every environment; an environment's is its own
+from v2.engine.record import Record  # noqa: E402
+from v2.resources.base import ENVIRONMENT, PROJECT  # noqa: E402
+root = Path(tempfile.mkdtemp())
+here, there = Record(root, "here"), Record(root, "there")
+for type_ in TYPES:
+    made = CONTROLLERS[type_](here).create("shared" if TYPES[type_].scope == PROJECT else "own")
+    seen_there = [r.title for r in CONTROLLERS[type_](there).all()]
+    if TYPES[type_].scope == PROJECT:
+        check(f"{type_}: project scope, listed from every environment, filed under the root", (seen_there, CONTROLLERS[type_](here).path(1).parent.parent), (["shared"], root))
+    else:
+        check(f"{type_}: environment scope, its own", (seen_there, CONTROLLERS[type_](here).path(1).parent.parent.parent), ([], root / "environments"))
+check("rules and docs are the project's", sorted(n for n, t in TYPES.items() if t.scope == PROJECT), ["doc", "rule"])
+check("every scope is one of the two", {t.scope for t in TYPES.values()} <= {ENVIRONMENT, PROJECT}, True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
