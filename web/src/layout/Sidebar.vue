@@ -145,6 +145,13 @@ async function makeEnv() {
 .project:hover {
     color: var(--text);
 }
+.project-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .logo {
     width: 20px;
     height: 20px;

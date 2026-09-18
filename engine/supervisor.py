@@ -51,6 +51,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     printed = root / "runtime" / f"printed-{session}"
     printed.parent.mkdir(parents=True, exist_ok=True)
     (root / "runtime" / "env").write_text(env)
+    print(f"journal: environment {env} — a session bound elsewhere is followed there")
     out = printed.open("ab")
     driver = spawn_driver(root, cwd, env, agent, fd, session)
     stamps = watched(root)

@@ -1,4 +1,5 @@
 from dataclasses import fields
+from pathlib import Path
 
 import features
 from commands.cli import actions
@@ -8,8 +9,12 @@ from resources.base import ACTIONS, ACTORS, SCOPES, VIEWS, Resource
 from resources.types import PRIORITY, TYPES
 
 
-def manifest() -> dict:
+def manifest(root: Path | None = None) -> dict:
+    env_file = root / "runtime" / "env" if root else None
     return {
+        "project": root.resolve().parent.name if root else "",
+        "environment": env_file.read_text().strip() if env_file and env_file.is_file() else "main",
+        "version": next((f.read_text().strip() for f in ((Path(__file__).resolve().parents[1] / "VERSION"),) if f.is_file()), ""),
         "actions": list(ACTIONS),
         "actors": list(ACTORS),
         "views": list(VIEWS),

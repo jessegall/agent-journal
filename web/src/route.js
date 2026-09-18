@@ -7,7 +7,7 @@ window.addEventListener("hashchange", () => {
 
 export const route = computed(() => {
     const [path, query = ""] = hash.value.replace(/^#\/?/, "").split("?");
-    const [env = "main", page = "", n = ""] = path.split("/");
+    const [env = "", page = "", n = ""] = path.split("/");
     return {env, page, n: n ? Number(n) : 0, q: new URLSearchParams(query).get("q") || ""};
 });
 
