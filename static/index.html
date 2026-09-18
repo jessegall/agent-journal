@@ -895,6 +895,43 @@
   /* the tools bar holding faces is the same bar, only wider: it grows leftwards from its own edge */
   .thread-tools.picking { gap: 1px; padding: 1px 3px; }
   .thread-tools.picking .thread-tool .ico { width: 11px; height: 11px; }
+  /* browsing the skills: a page of its own, because the agent's page lists them as one section */
+  .skills-page { max-width: 900px; }
+  .skills-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .skills-find { flex: 1; min-width: 220px; height: 34px; }
+  .skills-only { display: flex; align-items: center; gap: 2px; padding: 2px; border-radius: 8px;
+    background: var(--raised); }
+  .skills-only-tab { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 0;
+    border-radius: 6px; background: none; color: var(--text-3); font: inherit; font-size: 12px; cursor: pointer; }
+  .skills-only-tab:hover { color: var(--text-2); }
+  .skills-only-tab.on { background: var(--bg); color: var(--text); }
+  .skills-only-n { color: var(--text-4, #6b6e76); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .skills-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; }
+  .skills-row { display: flex; align-items: center; gap: 10px; padding: 0 12px 0 0;
+    border-bottom: 1px solid var(--border); }
+  .skills-row:last-child { border-bottom: 0; }
+  .skills-row:hover { background: var(--hover); }
+  .skills-row.picked { background: var(--sel); }
+  .skills-open { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(150px, 220px) 1fr auto;
+    align-items: center; gap: 12px; padding: 11px 12px; color: inherit; text-decoration: none; }
+  .skills-name { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text); }
+  .skills-name .ico { width: 13px; height: 13px; color: var(--text-3); }
+  .skills-badge { padding: 0 6px; border-radius: 10px; background: color-mix(in srgb, var(--accent) 22%, transparent);
+    color: var(--accent-text); font-size: 10px; }
+  .skills-what { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    color: var(--text-3); font-size: 12px; }
+  .skills-where { color: var(--text-4, #6b6e76); font-size: 11px; }
+  .skills-always { flex: none; padding: 4px 10px; border: 1px solid var(--border-2); border-radius: 7px;
+    background: none; color: var(--text-3); font: inherit; font-size: 11.5px; cursor: pointer; }
+  .skills-always:hover:not(:disabled) { color: var(--text); background: var(--raised); }
+  .skills-always.on { border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--text); }
+  .skills-always:disabled { opacity: .5; cursor: default; }
+  @media (max-width: 720px) {
+    .skills-open { grid-template-columns: 1fr; gap: 3px; }
+    .skills-what, .skills-where { white-space: normal; }
+  }
   /* the chat, taken off the page: one window over whatever you walk to */
   .chat-window { position: fixed; z-index: 60; display: flex; flex-direction: column; overflow: hidden;
     border: 1px solid var(--line, #2a2d33); border-radius: 12px; background: var(--bg);
