@@ -48,6 +48,9 @@ async function select(n) {
             <span class="count">{{ all.length }} {{ kind.title.toLowerCase() }}s, {{ open(type).length }} open</span>
             <span class="sep" />
             <button type="button" :class="['flat', {on: archive}]" @click="archive = !archive">Archive</button>
+            <template v-if="kind.view === 'document'">
+                <a class="flat" :href="`#/${route.env}/files`">Files</a>
+            </template>
             <span class="grow" />
             <Btn kind="primary" @click="adding = true">
                 <Icon name="plus" :size="12" />
