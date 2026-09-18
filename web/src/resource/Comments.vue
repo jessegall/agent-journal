@@ -46,7 +46,7 @@ async function send(text) {
         </template>
     </section>
     <div class="comment-write">
-        <Compose placeholder="Comment…" submit="Comment" :quote="quote" :send="send" />
+        <Compose placeholder="Comment…" submit="Comment" :quote="quote" :send="send" @unquote="emit('sent')" />
     </div>
 </template>
 

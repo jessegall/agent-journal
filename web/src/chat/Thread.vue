@@ -117,6 +117,7 @@ watch(
                 :send="post"
                 :quote="quote"
                 quote-label="Replying to"
+                @unquote="quote = ''"
                 :preset="editing ? editing.text : ''"
                 :up="editLast"
                 :down="unedit"
