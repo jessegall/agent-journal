@@ -5,7 +5,8 @@ from pathlib import Path
 from v2.controllers.types import CONTROLLERS
 from v2.engine.agent import Agent
 from v2.engine.record import Record
-from v2.resources.base import Event
+from v2.resources.base import AGENT, Event
+from v2.resources.types import PRIORITY
 
 TICK = 1.0
 
@@ -50,16 +51,17 @@ class Driver:
 
     def owed(self) -> str:
         env = self.record.env
-        messages = [m for m in CONTROLLERS["message"](self.record).list() if not m.data.get("processed")]
-        if messages:
-            n = messages[0].n
-            return f"Message {n} on {env} is still unprocessed: `journal message show {n}`, then process it."
-        open_work = [w for w in CONTROLLERS["work"](self.record).list() if w.data.get("status", "open") == "open"]
+        for type_ in PRIORITY:
+            unseen = CONTROLLERS[type_](self.record, dispatcher=AGENT).unseen()
+            if unseen:
+                rows = ", ".join(str(r.n) for r in unseen[:10])
+                return f"{len(unseen)} unseen {type_}(s) on {env}: {rows}. Read each: `journal {type_} show <n>`."
+        open_work = [w for w in CONTROLLERS["work"](self.record).all() if w.data.get("status", "open") == "open"]
         if open_work:
             w = open_work[0]
             return f"Work is still open on {env}: {w.title}. Continue it, or `journal work end {w.n}`."
         if self.record.setting("auto", False):
-            todos = [t for t in CONTROLLERS["todo"](self.record).list() if t.data.get("status", "open") == "open"]
+            todos = [t for t in CONTROLLERS["todo"](self.record).all() if t.data.get("status", "open") == "open"]
             if todos:
                 t = todos[0]
                 return f"Auto is on and nothing is open on {env}: start to-do {t.n}, {t.title}: `journal todo start {t.n}`."

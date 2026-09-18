@@ -49,10 +49,10 @@ for type_ in TYPES:                                                 # the data p
     check(f"{type_}: a section, a comment and a reference stick", (got.sections, got.comments[0]["text"], got.refs),
           ([{"title": "Why", "body": "because"}], "a note", ["todo:9"]))
     c.delete(1, "no longer needed")
-    check(f"{type_}: deleted is soft — gone from the list, still on disk", ([x.n for x in c.list()], c.show(1).deleted > 0), ([2], True))
+    check(f"{type_}: deleted is soft — gone from the list, still on disk", ([x.n for x in c.all()], c.show(1).deleted > 0), ([2], True))
     c.restore(1)
     c.force_delete(2)
-    check(f"{type_}: force delete removes the file", ([x.n for x in c.list()], refused(lambda: c.show(2))), ([1], True))
+    check(f"{type_}: force delete removes the file", ([x.n for x in c.all()], refused(lambda: c.show(2))), ([1], True))
 
 for type_ in TYPES:                                                 # every type emits the same five actions, no more
     mine = [e for e in record.events() if e.type == type_]

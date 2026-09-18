@@ -7,7 +7,8 @@ from pathlib import Path
 TITLE_MAX = 80
 ABSTRACT_MAX = 200
 ACTIONS = ("created", "updated", "deleted", "linked", "commented")
-DISPATCHERS = ("user", "agent")
+USER, AGENT = "user", "agent"
+DISPATCHERS = (USER, AGENT)
 
 
 @dataclass
@@ -27,7 +28,10 @@ class Event:
 
 @dataclass
 class Resource:
-    type = ""
+    type = ""              # the type's name; its title, abstract and help are the type's own words
+    title_ = ""
+    abstract_ = ""
+    help_ = ""
     n: int = 0
     title: str = ""
     abstract: str = ""
@@ -35,6 +39,7 @@ class Resource:
     sections: list = field(default_factory=list)   # [{"title": str, "body": str}]
     refs: list = field(default_factory=list)       # ["type:n"]
     comments: list = field(default_factory=list)   # [{"at": float, "by": str, "text": str}]
+    seen: list = field(default_factory=list)       # the dispatchers who have seen it: USER, AGENT
     data: dict = field(default_factory=dict)       # what a type adds: status, answer, phases …
     created: float = 0.0
     updated: float = 0.0
