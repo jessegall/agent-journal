@@ -6615,8 +6615,10 @@ const App = {
   template: `
     <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY, 'has-update-band': updateBand}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
       <div v-if="updateBand" class=update-band role=status>
-        <span class=update-band-text>Agent journal {{ updateBand.version }} is available<template v-if="updateBand.headline"> — {{ updateBand.headline }}</template></span>
-        <button type=button class=update-band-go :disabled="upgrade.busy" @click="askUpgrade(updateBand.version)">Upgrade</button>
+        <span v-if="upgrade.said" class=update-band-text>{{ upgrade.said }}</span>
+        <span v-else-if="upgrade.error" class=update-band-text>{{ upgrade.error }}</span>
+        <span v-else class=update-band-text>Agent journal {{ updateBand.version }} is available<template v-if="updateBand.headline"> — {{ updateBand.headline }}</template></span>
+        <button v-if="!upgrade.said" type=button class=update-band-go :disabled="upgrade.busy" @click="askUpgrade(updateBand.version)">Upgrade</button>
         <button type=button class=update-band-x title="Dismiss" aria-label="Dismiss" @click="dismissUpdate"><Icon name="close"/></button>
       </div>
       <div v-if="strip" class=project-strip role=presentation>
@@ -6695,19 +6697,10 @@ const App = {
            frame read the flag the full viewer had set and floated a second chat inside itself -->
       <ChatWindow v-if="DETACHED.on && envName && !CHAT_ONLY" :env="envName"/>
       <div v-if="TOAST.text" class=quick-toast role=status>{{ TOAST.text }}</div>
-      <aside v-if="(activity.data && ACTIVITY.shown) || (ov.data && ov.data.update)" class=activity-dock>
-        <ActivityPanel v-if="activity.data && ACTIVITY.shown" :data="activity.data" :href="activityHref" :env="envName"/>
-        <!-- it does not close: the journal serving this page is out of date, and nothing but the upgrade makes that untrue -->
-        <div v-if="ov.data && ov.data.update" class=update-bar>
-          <p class=update-bar-head>Agent journal {{ ov.data.update.version }} is available</p>
-          <p class=update-bar-note>This project has {{ ov.data.update.have }}<template v-if="ov.data.update.headline"> — {{ ov.data.update.headline }}</template></p>
-          <p v-if="upgrade.said" class=update-bar-how>{{ upgrade.said }}</p>
-          <p v-else-if="upgrade.error" class=error>{{ upgrade.error }}</p>
-          <template v-else>
-            <button type=button class=update-bar-go :disabled="upgrade.busy" @click="askUpgrade(ov.data.update.version)">Upgrade now</button>
-            <p class=update-bar-how>or from the terminal: <code>journal upgrade</code></p>
-          </template>
-        </div>
+      <!-- THE UPDATE LIVES IN ONE PLACE: the band at the very top of the page. This card said the
+           same thing a second time, buried in a column most views never open. -->
+      <aside v-if="activity.data && ACTIVITY.shown" class=activity-dock>
+        <ActivityPanel :data="activity.data" :href="activityHref" :env="envName"/>
       </aside>
       <!-- not in the chat-only window: it is a panel on somebody else's page, and a card that
            covers the conversation to say what happened while you were away covers the very thing -->
