@@ -54,12 +54,11 @@ for type_ in TYPES:                                                 # the data p
     c.force_delete(2)
     check(f"{type_}: force delete removes the file", ([x.n for x in c.list()], refused(lambda: c.show(2))), ([1], True))
 
-events = [(e.type, e.verb) for e in record.events()]
-check("every action left an event, one of the five verbs", events[:7],
-      [("message", "created"), ("message", "created"), ("message", "updated"), ("message", "commented"),
-       ("message", "linked"), ("message", "deleted"), ("message", "updated")])
-check("an event says who dispatched it and what it is about", (record.events()[0].dispatcher, record.events()[0].ref), ("user", "message:1"))
-check("only the five verbs exist", sorted({e.verb for e in record.events()}) <= sorted(VERBS), True)
+for type_ in TYPES:                                                 # every type emits the same five verbs, no more
+    mine = [e for e in record.events() if e.type == type_]
+    check(f"{type_}: every action left an event, and only the five verbs", (sorted({e.verb for e in mine}), len(mine)),
+          (sorted(VERBS), 8))
+    check(f"{type_}: an event says who dispatched it and what it is about", (mine[0].dispatcher, mine[0].ref), ("user", f"{type_}:1"))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
