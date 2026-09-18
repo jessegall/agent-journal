@@ -369,6 +369,8 @@ MESSAGES = {
                     "The transcript lost nothing. Read it rather than half-remembering it.",
     # WHAT SURVIVES A COMPACTION IS A SUMMARY OF A SKILL, NOT THE SKILL. The same instruction an
     # upgrade already gives, for the same reason: what you remember of it is stale.
+    "skills_open_now": "SKILLS OPEN IN THIS WINDOW: {names}.",
+    "skills_open_none": "NO JOURNAL SKILL IS OPEN IN THIS WINDOW.",
     "compact_skills": "RELOAD YOUR JOURNAL SKILLS NOW — invoke the `journal` skill again, and every `journal-*` skill "
                       "you had loaded, even if you believe they are still loaded. What crossed the compaction is a "
                       "summary of them, and a summary of a rule is not the rule.",
@@ -1137,8 +1139,24 @@ def _p_work(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
 SKILLS_OPEN = "skills_open"
 
 
-def _note_skills(ctx: Ctx, lines) -> None:
-    """Record every skill this session has loaded, newest last."""
+def _since_compaction(ctx: Ctx, lines):
+    """The lines of THIS window: everything after the last compaction boundary.
+
+    A COMPACTION EMPTIES THE WINDOW, AND A SKILL LIVES IN THE WINDOW. Loading one an hour ago is not
+    having it now — what crossed the boundary is a summary of it, and a summary of a rule is the rule
+    with its exceptions filed off. So everything about skills is counted from the boundary, and after
+    one the session is in the same position as a session that has loaded none: because it has.
+    """
+    if ctx.path is None or not ctx.path.is_file():
+        return lines
+    folds = transcript.read(ctx.path, _caches(ctx.stem)[0])[1]
+    if not folds:
+        return lines
+    return [l for l in lines if l.n > folds[-1]]
+
+
+def _note_skills(ctx: Ctx, lines) -> list[str]:
+    """Record the skills open in THIS window, newest last, and return them."""
     seen = []
     for l in lines:
         for t in l.tools:
@@ -1147,32 +1165,30 @@ def _note_skills(ctx: Ctx, lines) -> None:
                 seen.append(name[6:])
     if seen != (state.get(ROOT, SKILLS_OPEN, [], stem=ctx.stem) or []):
         state.put(ROOT, SKILLS_OPEN, seen, stem=ctx.stem)
+    return seen
 
 
 @nudges.subject("skills", 60)
 def _p_skills(conf: dict, ctx: Ctx, lines, stretch, here: str, active: bool):
-    """Say to load the journal's skills while this session has loaded none.
+    """Say to load the journal's skills while this window has none of them.
 
     THE SKILLS ARE THE ONLY PLACE THE MECHANISMS ARE TAUGHT, and a session that never opens one works
     from whatever it half-remembers of them — which is how a verb that does not exist gets typed and
-    a rule that was decided last week gets broken. The user's instruction: if we detect it has not
-    loaded its skills, keep nudging. So this repeats, and it stops the moment one is loaded.
+    a rule that was decided last week gets broken. The user's instruction, twice: if we detect it has
+    not loaded its skills, keep nudging — and again after a compaction, because that is where it
+    forgets. So this repeats, it counts from the last boundary, and it stops the moment the core
+    skill is open in the window that is running now.
 
     ONLY AFTER IT HAS DONE SOMETHING. A session that has just started and read two files is not
     ignoring anything yet.
     """
-    _note_skills(ctx, lines)
+    here_now = _since_compaction(ctx, lines)
+    open_now = _note_skills(ctx, here_now)
     if "skills" in conf["silenced"]:
         return None
-    if state.get(ROOT, "skills_loaded", False, stem=ctx.stem):
+    if any(s == "journal" or s.startswith("journal-") for s in open_now):
         return None
-    calls = 0
-    for l in lines:
-        for t in l.tools:
-            if str(t).startswith("Skill:journal"):
-                state.put(ROOT, "skills_loaded", True, stem=ctx.stem)
-                return None
-            calls += 1
+    calls = sum(len(l.tools) for l in here_now)
     if calls < SKILLS_AFTER:
         return None
     return _say(say("skills_fact"), say("skills_do"))

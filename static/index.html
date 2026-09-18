@@ -692,6 +692,11 @@
   /* THE ROWS ARE ONE LIST, not a column of sections: the rail puts 22px between its sections, and a
      row is not a section. They are divided by their own rule and nothing else, as every list page is. */
   /* a notification reads as a headline, the thing it is about, and then its words */
+  /* A NOTIFICATION IS TWO LINES: what happened and when, then the words. They were one row of
+     flex children, so the headline, the chip, the text and the time all sat on one line. */
+  .rail-row.note-row { flex-direction: column; align-items: stretch; gap: 3px; }
+  .rail-note-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .rail-note-top .rail-row-state { padding-top: 0; margin-left: auto; }
   .rail-note-head { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 600;
     letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
   .rail-note-ref { padding: 0 5px; border-radius: 4px; background: var(--raised); color: var(--text-4, #6b6e76);
@@ -966,7 +971,13 @@
   .agent-fact-open { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0;
     background: none; color: inherit; font: inherit; cursor: pointer; }
   .agent-fact-open:hover { color: var(--text); }
-  .skills-drop { width: 260px; left: 0; right: auto; }
+  .skills-drop { width: 260px; right: 0; left: auto; }
+  .agent-skills { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 2px 7px;
+    border: 1px solid transparent; border-radius: 6px; background: none; color: var(--text-3);
+    font: inherit; font-size: 11.5px; cursor: pointer; }
+  .agent-skills:hover, .agent-skills[aria-expanded="true"] { border-color: var(--border-2);
+    background: var(--raised); color: var(--text); }
+  .agent-skills .ico { width: 12px; height: 12px; }
   /* the thread: what was said, read downwards, with the writing box under it */
   /* THE WRITING BOX IS FIRST IN THE DOCUMENT AND LAST ON THE PAGE. Each turn carries two or three
      buttons, so a box written after them sat behind dozens of tab stops; ordering it here costs
