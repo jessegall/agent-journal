@@ -9,8 +9,10 @@ class Controller:
     resource = Resource
     dispatcher = "user"
 
-    def __init__(self, record: Record):
+    def __init__(self, record: Record, dispatcher: str | None = None):
         self.record = record
+        if dispatcher:
+            self.dispatcher = dispatcher
 
     @property
     def type(self) -> str:
@@ -38,7 +40,7 @@ class Controller:
         with self.record.locked():
             n = (self.numbers() or [0])[-1] + 1
             r = self.resource(n=n, title=check_title(title), abstract=check_abstract(abstract), brief=brief,
-                              data=data, created=time.time())
+                              data=data, created=time.time(), seen=[self.dispatcher])
             return self.save(r, "created")
 
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, **data) -> Resource:
@@ -94,11 +96,22 @@ class Controller:
         return self.save(r, "commented")
 
     def show(self, n: int) -> Resource:
-        return self.load(n)
+        return self.see(n)
 
-    def list(self, deleted: bool = False) -> list[Resource]:
+    def see(self, n: int) -> Resource:
+        r = self.load(n)
+        if self.dispatcher in r.seen:
+            return r
+        r.seen.append(self.dispatcher)
+        return self.save(r, "updated", seen=self.dispatcher)
+
+    def unseen(self, dispatcher: str | None = None) -> list[Resource]:
+        who = dispatcher or self.dispatcher
+        return [r for r in self.all() if who not in r.seen]
+
+    def all(self, deleted: bool = False) -> list[Resource]:
         rows = [self.load(n) for n in self.numbers()]
         return rows if deleted else [r for r in rows if not r.deleted]
 
     def linked_to(self, ref: str) -> list[Resource]:
-        return [r for r in self.list() if ref in r.refs]
+        return [r for r in self.all() if ref in r.refs]
