@@ -18,7 +18,7 @@ async function send() {
   if (!text.value.trim()) return;
   error.value = "";
   try {
-    const title = text.value.trim().split("\n")[0].slice(0, 80).replace(/:/g, " -");
+    const title = text.value.trim().split("\n")[0].replace(/:/g, " -").slice(0, 80);
     await create(route.value.env, "message", { title, brief: text.value.trim(), ...(kind.value === "transcript" ? { kind: "transcript" } : {}) });
     text.value = "";
     await reload();

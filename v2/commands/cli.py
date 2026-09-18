@@ -7,6 +7,7 @@ from pathlib import Path
 from v2.controllers.base import Controller
 from v2.controllers.types import CONTROLLERS
 from v2.engine import queries
+from v2.engine.drivers import DRIVERS
 from v2.engine.record import Record
 from v2.engine.sessions import Sessions
 from v2.engine.transcript import conversation, search, user
@@ -80,7 +81,24 @@ def parser() -> argparse.ArgumentParser:
     add_query(cmds, "user", "the user's own words, in full", lambda ctx: say(user(transcript(ctx["record"], ctx["session"]))))
     add_query(cmds, "nothing", "decide that nothing here needs pinning", lambda ctx: decided(ctx), ("why", {}))
     add_query(cmds, "version", "the version", lambda ctx: VERSION)
+    for name in DRIVERS:
+        add_query(cmds, name, f"start {name} under the supervisor, on this environment", lambda ctx, name=name: supervise(ctx, name), ("args", {"nargs": argparse.REMAINDER}))
+    add_query(cmds, "serve", "the web viewer", lambda ctx: serve_forever(ctx), ("--port", {"type": int, "default": 8430}))
     return top
+
+
+def supervise(ctx, agent: str) -> str:
+    from v2.engine.supervisor import run as run_supervisor
+    record = ctx["record"]
+    return str(run_supervisor(record.root, Path.cwd(), record.env, agent, ctx["args"]))
+
+
+def serve_forever(ctx) -> str:
+    from v2.serve import serve
+    server = serve(ctx["record"].root, ctx["port"])
+    print(f"http://127.0.0.1:{server.server_address[1]}/")
+    server.serve_forever()
+    return ""
 
 
 def decided(ctx) -> str:
