@@ -32,7 +32,7 @@ def available(project: Path) -> list[dict]:
 
 
 def loaded(path: Path | None) -> dict[str, dict]:
-    """{skill name: {count, at}} for every Skill tool call in a transcript."""
+    """{skill name: {count, at}} for every Skill tool call in a transcript; `at` is the LAST load."""
     got: dict[str, dict] = {}
     if path is None or not path.is_file():
         return got
@@ -47,20 +47,44 @@ def loaded(path: Path | None) -> dict[str, dict]:
             if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "Skill":
                 name = str((block.get("input") or {}).get("skill") or "")
                 if name:
-                    row = got.setdefault(name, {"count": 0, "at": rec.get("timestamp", "")})
+                    row = got.setdefault(name, {"count": 0, "at": ""})
                     row["count"] += 1
+                    row["at"] = rec.get("timestamp", "") or row["at"]
     return got
+
+
+def _epoch(stamp: str) -> float:
+    from datetime import datetime
+    try:
+        return datetime.fromisoformat(str(stamp).replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return 0.0
+
+
+def _changed_at(folder: Path) -> float:
+    """When the skill last changed: the newest file in its folder, references included."""
+    newest = 0.0
+    for f in folder.rglob("*"):
+        if f.is_file() and "__pycache__" not in f.parts and not f.name.startswith("."):
+            newest = max(newest, f.stat().st_mtime)
+    return newest
 
 
 def rows(project: Path, path: Path | None, every_start: list[str] | None = None) -> list[dict]:
     """Every skill on disk with how often this session loaded it, then loaded ones that have no file here."""
     used = loaded(path)
     wanted = set(every_start or [])
-    out = [{"name": s["name"], "description": s["description"], "source": s["source"],
-            "loaded": used.get(s["name"], {}).get("count", 0), "readable": True, "always": s["name"] in wanted}
-           for s in available(project)]
+    out = []
+    for s in available(project):
+        u = used.get(s["name"], {})
+        loaded_at = _epoch(u.get("at", "")) if u else 0.0
+        # STALE: the session loaded it, and a file of it changed since — what it holds is not what is on disk
+        out.append({"name": s["name"], "description": s["description"], "source": s["source"],
+                    "loaded": u.get("count", 0), "readable": True, "always": s["name"] in wanted,
+                    "stale": bool(u) and _changed_at(s["path"].parent) > loaded_at})
     known = {r["name"] for r in out}
-    out += [{"name": n, "description": "", "source": "built in", "loaded": u["count"], "readable": False, "always": n in wanted}
+    out += [{"name": n, "description": "", "source": "built in", "loaded": u["count"], "readable": False, "always": n in wanted,
+             "stale": False}
             for n, u in sorted(used.items()) if n not in known]
     return out
 

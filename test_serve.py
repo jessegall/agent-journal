@@ -1053,6 +1053,13 @@ check("the agent page lists the project's skills and how often the session loade
       (_sk_rows["demo-skill"]["source"], _sk_rows["demo-skill"]["loaded"], _sk_rows["demo-skill"]["readable"]), ("project", 2, True))
 check("a skill it loaded that has no file here is listed as built in, and cannot be opened",
       (_sk_rows["loop"]["source"], _sk_rows["loop"]["loaded"], _sk_rows["loop"]["readable"]), ("built in", 1, False))
+# STALE IS LOADED, THEN CHANGED. The transcript's loads are dated 2026-09-14; the file was just written, so it
+# is newer than the last load. Dated after the file, it is not.
+check("a skill whose file changed after the session last loaded it is stale", _sk_rows["demo-skill"]["stale"], True)
+_sk_tx.write_text(json.dumps({"type": "assistant", "timestamp": "2099-01-01T00:00:00+00:00",
+    "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": "demo-skill"}}]}}) + "\n")
+check("and one loaded after its last change is not",
+      {r["name"]: r["stale"] for r in _agc.AgentController._about(root, "beta", "session", _sess, _sk_tx)["skills"]}["demo-skill"], False)
 _sk_status, _, _sk_body = get("/api/skills/demo-skill")
 check("a skill's text is read by name, read-only", (_sk_status, "the body" in json.loads(_sk_body).get("text", "")), (200, True))
 # THE FILES BESIDE IT COME TOO: a skill that says "read references/x.md" is not read until x.md is on the screen

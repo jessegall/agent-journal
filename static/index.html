@@ -961,6 +961,10 @@
   .skills-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--border-2); }
   .skills-row.loaded .skills-dot { background: #63b37c; box-shadow: 0 0 0 3px color-mix(in srgb, #63b37c 22%, transparent); }
   .skills-state { color: #63b37c; font-size: 11.5px; white-space: nowrap; }
+  .skills-state.stale { color: var(--warn); }
+  .skills-row.loaded:has(.skills-state.stale) .skills-dot { background: var(--warn);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 22%, transparent); }
+  .skills-ask.stale:not(:disabled) { border-color: color-mix(in srgb, var(--warn) 55%, transparent); color: var(--text); }
   .skills-ask { flex: none; padding: 4px 10px; border: 1px solid var(--border-2); border-radius: 7px;
     background: none; color: var(--text-3); font: inherit; font-size: 11.5px; cursor: pointer; }
   .skills-ask:hover:not(:disabled) { color: var(--text); background: var(--raised); }
