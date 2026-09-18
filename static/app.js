@@ -5831,11 +5831,13 @@ const SkillRow = {
       <component :is="s.readable ? 'a' : 'div'" class=skills-open :href="s.readable ? '#/env/' + env + '/skills/' + s.name : null"
         :title="s.description || null" @click="open($event, s)">
         <span class=skills-name><span class=skills-dot></span><span class=skills-name-text>{{ s.name }}</span></span>
-        <span class=skills-state>{{ s.loaded ? 'Loaded' : '' }}</span>
+        <span :class="['skills-state', {stale: s.stale}]">{{ s.stale ? 'Changed since loaded' : s.loaded ? 'Loaded' : '' }}</span>
         <span class=skills-where>{{ s.source }}</span>
       </component>
-      <button type=button class=skills-ask :disabled="asked === s.name" :title="'Ask the agent to load ' + s.name + ' now'" @click="ask(s)">
-        {{ asked === s.name ? 'Asked' : 'Load now' }}</button>
+      <!-- loaded and unchanged: nothing to ask for. Changed since it was loaded: what the agent holds is old. -->
+      <button type=button :class="['skills-ask', {stale: s.stale}]" :disabled="asked === s.name || (s.loaded && !s.stale)"
+        :title="s.loaded && !s.stale ? 'Loaded, and unchanged since' : s.stale ? s.name + ' changed after the agent loaded it' : 'Ask the agent to load ' + s.name + ' now'" @click="ask(s)">
+        {{ asked === s.name ? 'Asked' : s.stale ? 'Reload' : s.loaded ? 'Loaded' : 'Load now' }}</button>
       <button type=button :class="['skills-always', {on: s.always}]" :disabled="busy === s.name"
         :title="s.always ? 'Stop naming it at every start' : 'Name it at every start'" @click="toggle(s)">
         {{ s.always ? 'Every start' : 'Load at start' }}</button>
