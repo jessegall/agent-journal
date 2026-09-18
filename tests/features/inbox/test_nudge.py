@@ -49,8 +49,14 @@ patient = fresh()
 patient.set_setting("inbox", {"patience": 0})
 CONTROLLERS["work"](patient, actor=AGENT).create("open")
 CONTROLLERS["message"](patient, actor=USER).create("hi")
-report(patient, "working", "PreToolUse", uses=1)
-report(patient, "working", "PreToolUse", uses=2)
+report(patient, "working", "PreToolUse", uses=3)
+report(patient, "working", "PreToolUse", uses=6)
 check("patience is a setting", PROVIDERS["claude"]().gate(patient.root, patient.env, "claude-1") != "", True)
+
+# PRIVATE: the nudge is never typed into the terminal; the next hook hands it to the agent as context
+check("the inbox nudge is private", all(n.data.get("private") for n in CONTROLLERS["nudge"](record).all() if "inbox" in n.title), True)
+whisper = PROVIDERS["claude"]().handle(record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Read"})
+check("PostToolUse carries the unread private nudges as context and marks them read", ("there are new messages in your inbox" in whisper["hookSpecificOutput"]["additionalContext"], whisper["hookSpecificOutput"]["hookEventName"]), (True, "PostToolUse"))
+check("handed once", PROVIDERS["claude"]().handle(record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Read"}), {})
 
 done()

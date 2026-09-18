@@ -9,13 +9,13 @@ from controllers.types import CONTROLLERS
 from engine.actors import IDLE, STOPPED, WORKING
 from engine.record import Record
 from engine.transcript import Turn
-from resources.base import SYSTEM
+from resources.base import AGENT, SYSTEM
 
 STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
           "PostToolUse": WORKING, "SessionEnd": STOPPED}
 EVENTS = tuple(STATUS)
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
-WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|>>?\s*(?!/dev/null)\S")
+WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
 JOURNAL_COMMAND = re.compile(r"(^|[;&|]\s*)(\S*journal(\.py)?)\s")
 
 
@@ -51,15 +51,24 @@ class Provider(ABC):
         if event == "PreToolUse" and self.writes(payload):
             return self.refusal(self.gate(root, env, row.title))
         if event == "SessionStart":
-            return self.handover(self.start(root, env))
+            return self.handover(event, self.start(root, env))
+        if event in ("PostToolUse", "UserPromptSubmit"):
+            return self.handover(event, self.whispered(root, env, row.title))
         return {}
+
+    def whispered(self, root: Path, env: str, session: str) -> str:
+        nudges = CONTROLLERS["nudge"](Record(root, env), actor=AGENT)
+        mine = [n for n in nudges.unread() if n.data.get("private") and n.data.get("session") == session]
+        for n in mine:
+            nudges.read(n.n)
+        return "\n".join(f"{n.title}{' — ' + n.brief if n.brief else ''}" for n in mine)
 
     def start(self, root: Path, env: str) -> str:
         f = root / "runtime" / f"start-{env}.md"
         return f.read_text() if f.is_file() else ""
 
-    def handover(self, text: str) -> dict:
-        return {"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": text}} if text else {}
+    def handover(self, event: str, text: str) -> dict:
+        return {"hookSpecificOutput": {"hookEventName": event, "additionalContext": text}} if text else {}
 
     def gate(self, root: Path, env: str, session: str) -> str:
         try:

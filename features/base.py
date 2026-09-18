@@ -78,8 +78,8 @@ class Feature(ABC):
     def release(self, record) -> None:
         self.hold(record, "")
 
-    def nudge(self, record, agent, title: str, brief: str = "") -> None:
-        CONTROLLERS["nudge"](record, actor=SYSTEM).create(title, brief=brief, session=agent.title)
+    def nudge(self, record, agent, title: str, brief: str = "", private: bool = False) -> None:
+        CONTROLLERS["nudge"](record, actor=SYSTEM).create(title, brief=brief, session=agent.title, private=private)
 
     def plural(self, n: int, word: str) -> str:
         return f"{n} {word}{'s' if n != 1 else ''}"
