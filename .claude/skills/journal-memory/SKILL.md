@@ -75,10 +75,11 @@ is honest: nothing asks for it and nothing nags.
 Several claims are still several pins. Never cite the scratchpad or `/tmp`: those paths
 exist for one session, and a pin naming one is refused.
 
-**When the context warning arrives, decide.** At 50%, 70%, 90% and 95% of the window, no
-other tool runs until `pin`, `rule` or `nothing "<why>"` has. It forces a decision,
-not a pin; `nothing` with a reason is the right answer more often than not. It is also the
-moment to park any work you are holding for later, because that lives only in the window.
+**When the context warning arrives, decide.** At 50%, 70%, 90% and 95% of the window the stop
+asks for `pin`, `rule` or `nothing "<why>"`. It forces a decision, not a pin; `nothing` with a
+reason is the right answer more often than not. It is also the moment to park any work you are
+holding for later, because that lives only in the window. **With `gate_after_context_rung` on —
+off by default — it is more than a question: no other tool runs until one of the three has.**
 
 **When work is reframed, move what belongs to it.** A piece of work that turns out to be a
 different thing gets its own environment, and the to-dos, pins and docs already filed under
