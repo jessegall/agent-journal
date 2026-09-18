@@ -4326,7 +4326,7 @@ const Thread = {
       <!-- EVERY TURN CAN BE JUMPED TO, not only the ones with a number: what the bar's search finds is
            usually something the agent said, which has no message behind it. Its key is its address. -->
       <div v-for="t in turns" :key="t.key" :data-turn="anchor(t) || t.key"
-        :class="['thread-turn', {mine: t.who === 'you', receipt: t.kind === 'receipt', ask: t.kind === 'question' || t.kind === 'parked', sending: t.state === 'sending', failed: t.state === 'failed', lit: !!anchor(t) && lit === anchor(t)}]">
+        :class="['thread-turn', {mine: t.who === 'you', receipt: t.kind === 'receipt', ask: t.kind === 'question' || t.kind === 'parked', sending: t.state === 'sending', failed: t.state === 'failed', lit: !!anchor(t) && lit === anchor(t), important: t.important}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
           <p v-if="t.kind === 'parked'" class=thread-ask-label>Waiting on you</p>
