@@ -211,6 +211,8 @@ MESSAGES = {
                 "delete whatever else you have wired.",
     "hooks_not_object": "  ! {path}: `hooks` is not an object, refusing to touch it",
     "hooks_not_list": "  ! {path}: hooks.{event} is not a list, refusing to touch it",
+    "unchannel_would": "  ~ {path}: the old journal channel server would be removed",
+    "unchannel_done": "  - {path}: the old journal channel server removed; the launcher is the channel",
     "already_wired": "  = {event} already wired",
     "rewired": "  ~ {event} rewired — the old command did not look above its own folder",
     "wired": "  + {event} wired",
@@ -398,6 +400,31 @@ exit 1
 
 def _settings_path() -> Path:
     return PROJECT / ".claude" / "settings.json"
+
+
+def unchannel(check: bool) -> list[str]:
+    """Take the journal's old MCP channel server out of `.mcp.json`, and nothing else.
+
+    THE LAUNCHER IS THE CHANNEL NOW. An entry pointing at `.journal/channel.py` names a file the
+    package no longer ships; left in place, every Claude start would try it and report a broken
+    server. Only that entry is touched; the rest of the file is the user's.
+    """
+    f = ROOT.parent / ".mcp.json"
+    if not f.is_file():
+        return []
+    try:
+        data = json.loads(f.read_text() or "{}")
+    except ValueError:
+        return []
+    servers = data.get("mcpServers") if isinstance(data, dict) else None
+    entry = servers.get("journal") if isinstance(servers, dict) else None
+    if not (isinstance(entry, dict) and "channel.py" in " ".join(str(a) for a in entry.get("args") or [])):
+        return []
+    if check:
+        return [say("unchannel_would", path=f)]
+    del servers["journal"]
+    f.write_text(json.dumps(data, indent=2) + "\n")
+    return [say("unchannel_done", path=f)]
 
 
 def wire(check: bool) -> list[str]:
@@ -729,7 +756,7 @@ def main(argv: list[str]) -> int:
     if not _installed_at(ROOT):
         lines.append(say("source_checkout", name=ROOT.name, project=PROJECT.name))
     else:
-        lines += wire(check) + skill(check) + briefing(PROJECT, check, _conf) + style_skills(check)
+        lines += unchannel(check) + wire(check) + skill(check) + briefing(PROJECT, check, _conf) + style_skills(check)
     if "--alias" in argv:
         lines += alias(check)
     if "--git-hook" in argv:
