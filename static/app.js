@@ -362,6 +362,21 @@ function _inlineList(text) {
   return { lead, items, letters };
 }
 
+// A WALL OF BOLD LEADS. "**Auto mode** is a map… **The nudge** fires once…" is several short
+// paragraphs the writer ran together, and the bold says where each begins. Two leads at least,
+// each at the start of the text or right after a sentence ends, each followed by words.
+const BOLD_LEAD = /(?<=^|[.!?:;]\s+|—\s+)\*\*[^*\n]+\*\*/g;
+
+function _boldLeads(text) {
+  const leads = [...text.matchAll(BOLD_LEAD)].map((m) => m.index);
+  if (leads.length < 2) return null;
+  const parts = [];
+  if (leads[0] > 0) parts.push(text.slice(0, leads[0]).trim());
+  leads.forEach((at, i) => parts.push(text.slice(at, i + 1 < leads.length ? leads[i + 1] : text.length).trim()));
+  if (parts.some((p) => p.replace(/\*\*[^*]+\*\*/, "").split(/\s+/).filter(Boolean).length < 2)) return null;
+  return parts;
+}
+
 function renderMarkdown(src) {
   if (!(src || "").trim()) return "";
   const lines = _escapeHtml(src).replace(/\r\n/g, "\n").split("\n");
@@ -399,6 +414,11 @@ function renderMarkdown(src) {
     i++;
     while (i < lines.length && !startsBlock(lines[i])) { para.push(lines[i]); i++; }
     const text = para.join(" ");
+    const leads = _boldLeads(text);
+    if (leads) {
+      for (const part of leads) out.push(`<p>${_mdInline(part)}</p>`);
+      continue;
+    }
     const listed = _inlineList(text);
     if (listed) {
       if (listed.lead) out.push(`<p>${_mdInline(listed.lead)}</p>`);
