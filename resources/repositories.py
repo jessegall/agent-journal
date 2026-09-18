@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable
 
+import browser
 import comments
 import connections
 import docs
@@ -20,7 +21,7 @@ import todo
 import tools
 import work
 from resources.base import Query, Repository
-from resources.models import Attachment, Claim, Comment, Connection, Doc, Notice, Notification, Report, Suggestion, Message, Part, Plan, Question, Reminder, Rule, StyleItem, Todo, Tool, Work
+from resources.models import Attachment, BrowserAsk, Claim, Comment, Connection, Doc, Notice, Notification, Report, Suggestion, Message, Part, Plan, Question, Reminder, Rule, StyleItem, Todo, Tool, Work
 
 
 class Todos(Repository[Todo]):
@@ -85,6 +86,13 @@ class Notifications(Repository[Notification]):
 
     def rows(self) -> list[dict]:
         return notifications._all(self.root, self.env or None)
+
+
+class BrowserAsks(Repository[BrowserAsk]):
+    model = BrowserAsk
+
+    def rows(self) -> list[dict]:
+        return browser._all(self.root, self.env or None)
 
 
 class Notices(Repository[Notice]):

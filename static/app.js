@@ -513,6 +513,8 @@ const Icon = {
       <template v-else-if="name === 'crosshair'"><circle cx="8" cy="8" r="4.2"/><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3"/></template>
       <!-- a camera: the body, the lens, the little bump for the shutter -->
       <template v-else-if="name === 'camera'"><path d="M2 5.5h2.6l1.2-1.8h4.4l1.2 1.8H14v7.5H2z"/><circle cx="8" cy="9" r="2.3"/></template>
+      <!-- a steering wheel: the rim, the hub, three spokes — the agent at the controls of a page -->
+      <template v-else-if="name === 'wheel'"><circle cx="8" cy="8" r="5.75"/><circle cx="8" cy="8" r="1.6"/><path d="M8 9.6v4.1M6.6 7.2 2.4 6M9.4 7.2 13.6 6"/></template>
       <!-- a warning: the triangle, its bar, and the dot under it -->
       <path v-else-if="name === 'warn'" d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/>
       <!-- skills: a closed book seen from its spine side — a cover, its pages, and the band down the
@@ -6914,13 +6916,21 @@ const App = {
     // THE WINDOW'S BAR IS DRAWN HERE, NOT BY THE EXTENSION. The extension keeps a shell — an iframe,
     // a box, a grip — and obeys what this page tells it: drag from here, fold, close, another
     // journal. So a change to the bar is a journal upgrade, and the extension is not touched.
-    const SHELL_UI = reactive({ shut: false, hosted: false, journalsOpen: false, envsOpen: false });
+    const SHELL_UI = reactive({ shut: false, hosted: false, journalsOpen: false, envsOpen: false, driving: false, drivingUrl: "", driveWhy: "" });
     const tellShell = (op, extra) => { if (window.parent !== window) window.parent.postMessage({ source: "journal-page", kind: "shell", op, ...(extra || {}) }, "*"); };
     window.addEventListener("message", (e) => {
       if (e.source !== window.parent || e.source === window || !e.data || e.data.source !== "journal-extension" || e.data.kind !== "shell") return;
       SHELL_UI.hosted = true;
       if ("shut" in e.data) SHELL_UI.shut = !!e.data.shut;
+      if ("driving" in e.data) {
+        SHELL_UI.driving = !!e.data.driving;
+        SHELL_UI.drivingUrl = e.data.drivingUrl || "";
+        if (e.data.driveWhy) flash(e.data.driveWhy);
+      }
     });
+    // DRIVING IS THE USER'S SWITCH, AND IT SHOWS. The agent may ask the page for pictures, text, clicks
+    // only while this tab is being driven; the band over the bar says so the whole time, with the stop.
+    const shellDrive = (on) => tellShell("drive", { on: !!on });
     // THE PAGE HOLDS THE POINTER AND STREAMS THE MOVES. A press in this frame belongs to this frame
     // until it is released — the shell around it never sees the moves — so the bar captures the
     // pointer (which keeps the events coming wherever it goes, off the bar, off the frame, off the
@@ -7013,10 +7023,15 @@ const App = {
     const envSettings = useFetch(() => envName.value && `/api/env/${envName.value}/environment`);
     watchEffect(() => { RETENTION.table = envSettings.data ? envSettings.data.retention || null : null; });
     return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade, updateBand, dismissUpdate, CHAT_ONLY, DETACHED,
-             SHELL_UI, shellDrag, shellFold, shellClose, shellPickJournal, shellPickEnv };
+             SHELL_UI, shellDrag, shellFold, shellClose, shellPickJournal, shellPickEnv, shellDrive };
   },
   template: `
     <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
+      <div v-if="CHAT_ONLY && SHELL_UI.hosted && SHELL_UI.driving" class=shell-driving role=status>
+        <span class=shell-driving-dot></span>
+        <span class=shell-driving-text>The agent is driving this tab — it can see it, click and type here.</span>
+        <button type=button class=shell-driving-stop @click="shellDrive(false)">Stop</button>
+      </div>
       <div v-if="CHAT_ONLY && SHELL_UI.hosted" class=shell-bar @pointerdown="shellDrag">
         <span class=shell-dot></span>
         <span class=shell-name>
@@ -7035,6 +7050,7 @@ const App = {
             </div>
           </span>
         </span>
+        <button v-if="!SHELL_UI.driving" type=button class="shell-btn shell-wheel" title="Let the agent drive this tab: see it, click and type on it" @click="shellDrive(true)"><Icon name="wheel"/></button>
         <button type=button class=shell-btn :title="SHELL_UI.shut ? 'Restore' : 'Minimize'" @click="shellFold">{{ SHELL_UI.shut ? '▴' : '–' }}</button>
         <button type=button class=shell-btn title="Close" @click="shellClose">×</button>
       </div>

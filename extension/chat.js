@@ -180,7 +180,9 @@
   window.addEventListener("message", (e) => {
     if (!view || e.source !== view.contentWindow || !e.data || e.data.source !== "journal-page" || e.data.kind !== "shell") return;
     const op = e.data.op;
-    if (op === "hello") { frame.classList.remove("bare"); tellPage({ shut: box.shut }); }
+    if (op === "hello") { frame.classList.remove("bare"); tellPage({ shut: box.shut }); ask({ kind: "driving" }, (d) => tellPage({ driving: !!(d && d.on), drivingUrl: (d && d.url) || "" })); }
+    // THE WHEEL: the page asks to drive this tab, or to stop; the worker attaches Chrome's debugger
+    else if (op === "drive") ask({ kind: "drive", on: !!e.data.on }, (got) => tellPage({ driving: !!(got && got.ok && e.data.on), drivingUrl: location.href, driveWhy: got && !got.ok ? got.why : "" }));
     else if (op === "drag") dragWindow(e.data.sx, e.data.sy);
     else if (op === "dragmove") { if (live) live.at(e.data.sx, e.data.sy); }
     else if (op === "dragend") { if (live) live.done(); }

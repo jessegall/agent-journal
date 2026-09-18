@@ -906,6 +906,16 @@
     color: var(--text-2); font: inherit; font-size: 12px; text-align: left; cursor: pointer; white-space: nowrap; }
   .shell-row:hover { background: var(--hover); color: var(--text); }
   .shell-row.on { color: var(--accent-text); }
+  /* the agent at the wheel: a band over the bar the whole time, in the warning colour, with the stop */
+  .shell-driving { flex: none; display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px 0 10px;
+    background: color-mix(in srgb, var(--warn) 26%, var(--bg)); border-bottom: 1px solid color-mix(in srgb, var(--warn) 45%, var(--border));
+    color: var(--text); font-size: 11.5px; }
+  .shell-driving-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); animation: env-blink 1.2s ease-in-out infinite; }
+  .shell-driving-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .shell-driving-stop { height: 22px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); border-radius: 6px;
+    background: color-mix(in srgb, var(--warn) 30%, transparent); color: var(--text); font: inherit; font-size: 11.5px; cursor: pointer; }
+  .shell-driving-stop:hover { background: color-mix(in srgb, var(--warn) 45%, transparent); }
+  .shell-wheel .ico { width: 14px; height: 14px; }
   .shell-btn { border: 0; border-radius: 6px; padding: 2px 7px; background: transparent; color: var(--text-3); font: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
   .shell-btn:hover { background: var(--hover); color: var(--text); }
   .chat-back { display: none; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-bottom: 1px solid var(--border);

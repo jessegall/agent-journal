@@ -131,6 +131,10 @@ DESCRIBE = {
     "reminders:add": "Writing a reminder",
     "notifications:add": "Sending you a notification",
     "notices:add": "Pinning a line to the chat",
+    "browser:": "Asking the page you are on",
+    "browser:ask": "Asking the page you are on",
+    "browser:list": "Reading what the page was asked",
+    "browser:show": "Reading browser ask {n}",
     "react:": "Reacting to a message",
     "notice:": "Pinning a line to the chat",
     "upgrade:": "Upgrading the journal",
@@ -290,7 +294,7 @@ def describe(noun: str, verb: str) -> str:
 
 
 # viewer actions that only read
-READS = {"index", "show", "files", "paths", "search", "waiting"}
+READS = {"index", "show", "files", "paths", "search", "waiting", "pending"}
 # viewer writes that Activity already shows from the stores they change
 # viewer bookkeeping, not something the user did: opening a question marks it seen and writes no Activity line
 WEB_QUIET = {"questions:seen", "reports:seen"}
@@ -344,6 +348,9 @@ WEB = {
     "environment:make": "Made an environment",
     "environment:remove": "Removed an environment",
     "environment:assign": "Assigned an agent to this environment",
+    "browser:store": "Asked the page: {op}",
+    "browser:result": "The page answered browser ask {n}",
+    "browser:driver": "Driving switched",
     "messages:update": "Edited message {n}",
     "messages:process": "Filed message {n}",
     "messages:file": "Filed an attachment from message {n}",

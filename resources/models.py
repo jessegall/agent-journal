@@ -112,6 +112,18 @@ class Notification(Model):
 
 
 @dataclass
+class BrowserAsk(Model):
+    op: str = ""
+    args: list = field(default_factory=list)
+    done_at: str = ""
+    ok: bool | None = None
+    text: str = ""
+
+    noun: ClassVar[str] = "browser ask"
+    sortable: ClassVar[tuple[str, ...]] = ("n", "at")
+
+
+@dataclass
 class Notice(Model):
     text: str = ""
     tone: str = "note"
