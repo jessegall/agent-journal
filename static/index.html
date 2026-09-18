@@ -1117,6 +1117,9 @@
   /* THE ACTIVE PLAN, under the status bar and on every page: the same slim height as the bar above it */
   /* THE BARS STEP DOWN. The status bar is the loudest (#17181b), the plan bar a shade under it, and
      the agent bar and the rail's tabs — one row, one tone — a shade under that. */
+  /* the bar slides down into place and folds back up: height and opacity together */
+  .planbar-enter-active, .planbar-leave-active { transition: height .22s ease, opacity .18s ease, padding .22s ease; overflow: hidden; }
+  .planbar-enter-from, .planbar-leave-to { height: 0 !important; opacity: 0; border-bottom-width: 0; }
   /* THE FIRST DESIGN, BACK BY REQUEST: a step darker and shorter than the status bar, no dot — the plan's
      state is the word Plan and its button, not a light. Its text starts under the status bar's word. */
   .planbar { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 8px 0 0;
