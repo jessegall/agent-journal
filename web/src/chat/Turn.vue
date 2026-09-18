@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import {peek, route} from "../route.js";
-import {clock, meta, quoted, reload, rows, store} from "../store.js";
+import {clock, meta, quoted, reload, rows, store, types} from "../store.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠"];
 const props = defineProps({turn: Object});
@@ -13,9 +13,18 @@ const emit = defineEmits(["reply", "edit", "grew"]);
 const picking = ref(false);
 const mine = computed(() => props.turn.who === "user");
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
-const became = computed(() =>
-    props.turn.sections.flatMap((s) => s.body.split(/,\s*/).map((word) => ({part: s.title, word, ref: refOf(word)})))
-);
+const became = computed(() => {
+    const declared = props.turn.sections.flatMap((s) => s.body.split(/,\s*/).map((word) => ({part: s.title, word, ref: refOf(word)})));
+    const named = new Set(declared.map((b) => `${b.ref.type}:${b.ref.n}`));
+    const linked = props.turn.refs
+        .filter((ref) => !named.has(ref) && meta(ref.split(":")[0]))
+        .map((ref) => ({
+            part: "filed while this message was in hand",
+            word: `${meta(ref.split(":")[0]).title.toLowerCase()} ${ref.split(":")[1]}`,
+            ref: refOf(ref),
+        }));
+    return [...declared, ...linked];
+});
 const faces = computed(() => {
     const seen = {};
     for (const r of rows("reaction").filter((r) => r.refs.includes(props.turn.ref) && !r.deleted))
@@ -25,8 +34,9 @@ const faces = computed(() => {
 const files = computed(() => Object.keys(props.turn.data.files || {}));
 
 function refOf(word) {
-    const m = word.trim().match(/^(\w+)[ :](\d+)$/);
-    return m && meta(m[1]) ? {type: m[1], n: Number(m[2])} : {type: "", n: 0};
+    const m = word.trim().match(/^([\w-]+)[ :](\d+)$/);
+    const type = m && (meta(m[1]) ? m[1] : types.value.find((t) => t.title.toLowerCase() === m[1].toLowerCase())?.name);
+    return type ? {type, n: Number(m[2])} : {type: "", n: 0};
 }
 
 async function react(face) {
