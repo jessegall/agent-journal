@@ -82,15 +82,21 @@ driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 driver.quiet = 0.1
 check("before a tick nothing is typed", driver.sent, [])
 why = engine.tick()
-check("the tick delivers the user's event to the agent while it is working", (why, len(driver.sent), driver.sent[0] == "message 1 created"), ("delivered 1", 1, True))
+check("the tick collects the user's event for the agent, typing nothing yet", (why, driver.sent), ("delivered 1", []))
 check("the user is not notified of their own event", User(record).unread(), [])
-check("the cursor moved: a second tick types nothing more", (engine.tick(), len(driver.sent)), (WORKING, 1))
+check("a second tick within the quiet spell types nothing and collects nothing twice", (engine.tick(), driver.sent, len(engine.agent.pending)), (WORKING, [], 1))
+engine.agent.pending_at -= 5
+check("five quiet seconds later the batch is typed as one counted line", (engine.tick(), driver.sent), ("typed 1 in one line", ["1 new message"]))
+check("the cursor moved: a further tick types nothing more", (engine.tick(), len(driver.sent)), (WORKING, 1))
+driver.sent.clear()
 CONTROLLERS["message"](record, actor=AGENT).complete(1, "read and filed")
 engine.tick()
-check("the agent's completion reaches the user as a notification and not the agent", ([n.refs[0] for n in User(record).unread()], len(driver.sent)), (["message:1"], 1))
+check("the agent's completion reaches the user as a notification and not the agent", ([n.refs[0] for n in User(record).unread()], driver.sent), (["message:1"], []))
 
 # THE NUDGE: only idle, and in priority order — unread resources first; open work and the next to-do are features
 def settle():                                          # deliver whatever is pending, then read the nudge alone
+    engine.tick()
+    engine.agent.pending_at -= 5
     engine.tick()
     engine.typed_at = 0
     driver.sent.clear()
@@ -115,7 +121,9 @@ check("the agent's own work is not owed to it by the engine: that is the work fe
 CONTROLLERS["nudge"](record, actor=SYSTEM).create("work 1 open")
 driver.sent.clear()
 engine.tick()
+engine.agent.pending_at -= 5
 driver.report = {"at": time.time() - 100, "event": "Stop", "status": IDLE}
+engine.tick()
 engine.tick()
 check("a line typed a moment ago is not followed by a nudge before the hooks report", (engine.why, driver.sent), ("typed, waiting for the hooks", ["work 1 open"]))
 check("the priority order is messages first", PRIORITY[0], "message")
@@ -134,10 +142,14 @@ bus.clear()
 # A NUDGE is spoken to the agent as its own words, and the user never hears it
 driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 engine.tick()
+engine.agent.pending_at -= 5
+engine.tick()
 driver.sent.clear()
 CONTROLLERS["agent"](record, actor=SYSTEM).by_session("fake-1")
 CONTROLLERS["nudge"](record, actor=SYSTEM).create("2 reminders standing, read them", brief="1. run the suites")
 before = len(User(record).unread())
+engine.tick()
+engine.agent.pending_at -= 5
 engine.tick()
 check("a nudge is typed as its title and brief, not as type n action", driver.sent, ["2 reminders standing, read them — 1. run the suites"])
 check("the user is not notified of a nudge", len(User(record).unread()), before)
@@ -200,5 +212,17 @@ from engine.sessions import Sessions  # noqa: E402
 driver.report = {"at": time.time(), "event": "SessionStart", "status": IDLE, "session": "s-old"}
 Sessions(root).bind("s-old", "elsewhere")
 check("the engine moves to the session's environment", (engine.tick(), engine.record.env), ("following the session to elsewhere", "elsewhere"))
+
+# A BATCH: ten waiting events are typed at once, one counted line, without waiting for the quiet spell
+driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
+driver.quiet = 0.1
+engine.typed_at = 0
+engine.tick()
+engine.agent.pending_at -= 5
+engine.tick()
+driver.sent.clear()
+for i in range(10):
+    CONTROLLERS["message"](engine.record, actor=USER).create(f"note {i}")
+check("ten waiting events are typed at once, without waiting for quiet", (engine.tick(), driver.sent), ("typed 10 in one line", ["10 new messages"]))
 
 done()

@@ -104,7 +104,7 @@ class Engine:
         count = 0
         for actor in self.actors:
             fresh = actor.cursor() == 0
-            for e in self.record.events(actor.cursor()):
+            for e in self.record.events(actor.heard()):
                 if fresh and e.at < self.born:
                     actor.notified(e)
                     continue
@@ -112,9 +112,11 @@ class Engine:
                     actor.notified(e)
                     continue
                 actor.notify(e)
-                if actor is self.agent:
-                    self.typed_at = time.time()
                 count += 1
+        waiting = len(self.agent.pending)
+        if self.agent.flush():
+            self.typed_at = time.time()
+            return f"typed {waiting} in one line"
         return f"delivered {count}" if count else ""
 
     def nudge(self) -> str:

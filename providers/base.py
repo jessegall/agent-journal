@@ -61,7 +61,7 @@ class Provider(ABC):
         mine = [n for n in nudges.unread() if n.data.get("private") and n.data.get("session") == session]
         for n in mine:
             nudges.read(n.n)
-        return "\n".join(f"{n.title}{' — ' + n.brief if n.brief else ''}" for n in mine)
+        return "\n".join(dict.fromkeys(f"{n.title}{' — ' + n.brief if n.brief else ''}" for n in mine))
 
     def start(self, root: Path, env: str) -> str:
         f = root / "runtime" / f"start-{env}.md"

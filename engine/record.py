@@ -71,14 +71,14 @@ class Record:
         return got[-1].id if got else 0
 
     def cursor_text(self, name: str) -> str:
-        f = self.root / "runtime" / f"cursor-{name}"
+        f = self.home / "runtime" / f"cursor-{name}"
         try:
             return f.read_text().strip()
         except OSError:
             return ""
 
     def set_cursor_text(self, name: str, text: str) -> None:
-        f = self.root / "runtime" / f"cursor-{name}"
+        f = self.home / "runtime" / f"cursor-{name}"
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(text)
 
