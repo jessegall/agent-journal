@@ -294,6 +294,8 @@ class ActivityController(Controller):
                         "channel": channel_now(root, stem),
                         # which agent it is, as its start hook recorded: "claude" or "codex"
                         "agent": state.get(root, "agent", "", stem=stem) or "claude",
+                        # the last ten actions, oldest first, for the bar's ticker to roll through
+                        "actions": [a for a in (state.get(root, "actions_recent", [], stem=stem) or []) if isinstance(a, dict)],
                         # the last words the agent printed, as its launcher saw them; "" off a seat
                         "printed": ((seat_now(root, stem) or {}).get("printed") or "")[-TITLE_MAX:]}
         return None

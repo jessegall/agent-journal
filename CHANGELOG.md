@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.166.0 — The ticker, the plan bar that steps aside, the auto switch
+
+**The bar's action line is a ticker.** The hook writes every action it sees — a command, reading a
+file, editing one, an MCP call — into a ring of the last ten; the viewer reads it twice a second
+while the agent works and rolls one line a second through the row until it has caught up, then
+shows the running command with its clock. Nothing waits and nothing is lost short of ten in a
+burst. The line is a touch larger.
+
+**On a plan's own page its bar steps aside** while the page's segments are in view, and slides
+down once they scroll under the status bar.
+
+**The auto toggle is a switch**: a knob at the left of the word, in one bordered pill.
+
 ## 1.165.0 — Phases are named and briefed; the chat box floats
 
 **A phase's title and its `--when` are names** — at most 80 characters, no colon, refused
