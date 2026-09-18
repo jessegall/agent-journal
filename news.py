@@ -13,30 +13,11 @@ REACH_NOW = ("message", "question", "comment", "reaction")
 _OWN_HANDLER = {"message", "question", "suggestion", "comment", "plan"}
 
 def _read_it(said: str, command: str) -> str:
-    """The line the agent is woken with: what arrived, and the command that reads it.
-
-    NOTHING TO ACT ON BUT THE NUMBER. A push that carried the first line of a message was acted on
-    as though it were the message — twice in one evening, by the agent that wrote this. What the
-    user said is in the record; the only thing this line is allowed to do is send the agent there.
-    """
     return f"{said} Read it before you act on it: `.journal/journal.py {command}`."
 
 
 
 def _reach_now() -> set:
-    """The event kinds that reach a session mid-turn; everything else waits for its next stop.
-
-    NOT EVERY EVENT IS WORTH INTERRUPTING FOR, and until this one gate decided all of them: an
-    idle session heard everything and a working one heard nothing, so the user speaking and a
-    setting being changed were the same urgency. The kind is already in every event's `meta` —
-    `message`, `question`, `comment`, `suggestion`, `plan`, `did`, `update` — so the gate is a
-    set membership, not a new field on each source.
-
-    The user speaking is the one thing that cannot wait: a message, an answer to a question the
-    agent asked, a comment on what it wrote, a face left on a turn. The rest — a plan approved, a suggestion decided, a
-    to-do edited, a newer version upstream — is there when the turn ends, and reading it a minute
-    later costs nothing. `channel_reach_now` in settings moves the line.
-    """
     import settings
     got = settings.load(ROOT)[0].get("channel_reach_now")
     return set(got if isinstance(got, (list, tuple, set)) else REACH_NOW)
@@ -134,14 +115,6 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
 #: kinds with a handler of their own above: they say more than a log line can, and mark themselves told
 
 def _did(env: str, since: float) -> list[tuple[str, dict]]:
-    """Everything ELSE the user did in the viewer, from the one record every web write already leaves.
-
-    ONE FUNNEL, SO A NEW VERB NEEDS NO NEW CASE HERE. `commandlog.record_web` is called for every write
-    the viewer makes, from one place in `serve.py`, and stamps it `by: "You"` — so the list of things
-    the user can do is already written down, in the same words Activity shows them. Reading that is
-    what makes editing a to-do, changing a setting, accepting something, and whatever verb is added
-    next all reach an idle agent, instead of each one being remembered here one at a time.
-    """
     import commandlog
     got = []
     for e in commandlog.entries(ROOT, env):
@@ -161,16 +134,6 @@ def _did(env: str, since: float) -> list[tuple[str, dict]]:
 
 
 def _plan_events(env: str, since: float) -> list[tuple[str, dict]]:
-    """A plan the user approved, or continued past a checkpoint, in the viewer: the agent has work to start.
-
-    AN APPROVAL IS NOT OLD NEWS UNTIL SOMEBODY ACTS ON IT. Every other source here has a record of
-    what it has already told, and `since` only keeps a fresh channel process from replaying history.
-    A plan has no such record, so an approval stamped before this process started was dropped and
-    never reached anyone — and a channel restarts far more often than a plan is approved. What makes
-    one of these events stale is the work STARTING, not the clock: so the latest of them also fires
-    while the current phase is sitting there with nothing picked up, and PUSHED keeps it to once a
-    session.
-    """
     import plans
     import todo
     auto = todo.auto(ROOT)
@@ -203,11 +166,6 @@ def _plan_events(env: str, since: float) -> list[tuple[str, dict]]:
 
 
 def _told(keys: list[str]) -> None:
-    """What the channel pushed is told, in the same record the stop hook reads.
-
-    PUSHED AND TOLD WERE TWO RECORDS. The channel kept its own list and never marked an item told,
-    so every comment, answer and decided suggestion it pushed was held again at the next stop.
-    """
     from datetime import datetime, timezone
     import comments
     import inbox

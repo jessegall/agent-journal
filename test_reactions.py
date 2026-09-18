@@ -1,4 +1,3 @@
-"""A face on a turn: either side leaves one, the same one again takes it off, and the user's is told."""
 from __future__ import annotations
 
 import os

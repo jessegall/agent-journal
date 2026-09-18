@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""Tools: scripts kept for repeated work, catalogued and run through the journal.
-
-    .journal/test_tools.py
-"""
 import json, os, shutil, sys, tempfile
 from pathlib import Path
 

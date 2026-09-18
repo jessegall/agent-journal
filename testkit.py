@@ -1,24 +1,3 @@
-"""One interpreter per test project, instead of one per check.
-
-THE SUITES SPENT THEIR WHOLE LIFE IMPORTING. Measured on this machine: a bare
-`python3 -c pass` is 58ms; `python3 journal.py version` is 480ms. The 422ms difference is
-the package's own import — 25 modules, and `worktree.resolve` shelling out to `git
-rev-parse` twice before the command is even parsed. There are 148 `subprocess.run` call
-sites across the suites, many inside loops, so the whole set cost 60s wall and 220s CPU to
-run assertions that are string comparisons.
-
-SO THE INTERPRETER IS PAID FOR ONCE PER PROJECT. A test project already has its own copy of
-the package under `<project>/.journal/`, and that copy's `ROOT` is fixed by `__file__` — so
-one long-lived process started from it is bound to that project for good, which is exactly
-what a session is. This module starts one, keeps it, and speaks a line of JSON to it per
-call: argv in, (code, stdout+stderr) out; or a hook payload in, its stdout out.
-
-WHAT IT DOES NOT DO. It does not fake anything. The same `journal.run` and `hook.main` run,
-against the same files, in the same order. What is lost is the process boundary, and the
-few tests that are ABOUT that boundary — the shebang, the exit status, the record lock under
-real concurrent writers, `worktree.resolve` reading a symlinked `__file__` — must keep
-spawning, and are worth their cost. `spawn()` is here for them.
-"""
 from __future__ import annotations
 
 import atexit
@@ -70,7 +49,6 @@ for line in sys.stdin:
 
 
 class Project:
-    """One test project, and the one interpreter that answers for it."""
 
     def __init__(self, root: Path, bind: bool = True):
         self.err = ""            # the last call's stderr, for the tests that read it
@@ -106,27 +84,17 @@ class Project:
         return got["code"], got["out"]
 
     def cli(self, *argv: str, session: str = "", stdin: str = "") -> tuple[int, str]:
-        """`journal <argv>`, as a terminal would run it: (exit code, stdout AND stderr).
-
-        BOTH STREAMS, because a refusal goes to stderr and a refusal is what half the
-        assertions in these suites read. Every suite's own helper joined them before this
-        harness existed; joining here keeps that true in one place instead of four. The
-        streams are still captured apart — `.err` has the last call's stderr alone, which
-        is what `test_state` needs to tell a handler's crash from its output.
-        """
         if session and self._bind:
             self._choose(session)
         code, out = self._ask({"kind": "cli", "argv": list(argv), "session": session, "stdin": stdin})
         return code, out + self.err
 
     def _choose(self, session: str) -> None:
-        """Put this session on the project's start environment, once, if nothing has yet."""
         import tracks
         if not tracks.bound(self.journal, session):
             tracks.bind(self.journal, session, tracks.start(self.journal))
 
     def hook(self, event: str, **payload) -> tuple[int, str]:
-        """One hook event, its JSON on stdin."""
         return self._ask({"kind": "hook", "payload": {"hook_event_name": event, **payload}})
 
     def close(self):
@@ -174,13 +142,6 @@ def _remove_made() -> None:
 
 
 def _clean_up_later(project: Path) -> None:
-    """Remove the temporary folder around `project` when this process exits, if it is one.
-
-    THE SUITES NEVER REMOVED WHAT THEY MADE. Each scenario builds a project in `tempfile.mkdtemp()`,
-    and nothing deleted it: 47,698 of them filled the disk until every command failed. Only a `tmp…`
-    folder directly in the system's temporary folder is removed, so a project made anywhere else is
-    never touched.
-    """
     holder = project.resolve().parent
     if holder.name.startswith("tmp") and holder.parent == Path(tempfile.gettempdir()).resolve():
         if not _MADE:
@@ -189,11 +150,6 @@ def _clean_up_later(project: Path) -> None:
 
 
 def make(project: Path, src: Path, settings: dict | None = None, cleanup: bool = True) -> Path:
-    """A test project at `project`, with `src`'s package hardlinked into `.journal`.
-
-    Removed when this process exits (`cleanup=False` keeps it, for a project built by a child process
-    and used after it has ended).
-    """
     project = Path(project)
     if cleanup:
         _clean_up_later(project)
@@ -218,23 +174,10 @@ def make(project: Path, src: Path, settings: dict | None = None, cleanup: bool =
 
 
 def flat(text: str) -> str:
-    """Text with its line breaks collapsed, for asserting on a PHRASE.
-
-    A message is wrapped before it is delivered, so where it breaks depends on how long the
-    environment's name happens to be. An assertion that searches for "moves a SESSION" fails
-    the day the wrap lands between the two words, which is a test measuring the terminal
-    width rather than the behaviour.
-    """
     return " ".join((text or "").split())
 
 
 def denied(out: str) -> str:
-    """The refusal a PreToolUse denial carries, on one line — "" when nothing was denied.
-
-    THE REASON TRAVELS INSIDE JSON, so its line breaks are escaped and `flat` on the raw
-    stdout sees none of them. Parse first, then flatten: an assertion about what a refusal
-    SAYS should not depend on where the wrap happened to land.
-    """
     if not (out or "").strip():
         return ""
     try:
@@ -248,14 +191,6 @@ def denied(out: str) -> str:
 
 
 def hold(out: str) -> tuple[str, str]:
-    """(the short label, the text the agent reads) of a Stop's answer — either shape.
-
-    A STOP HOLDS IN TWO FIELDS AND THE SUITES ONLY KNEW ONE. `decision: "block"` carries its
-    line in `reason`; `additionalContext` holds just as hard and carries it there, without
-    the harness calling it an error. Every suite had its own copy of the first shape, so the
-    day the package started using the second, five suites failed for a reason that had
-    nothing to do with what they were testing. One reader, here, for all of them.
-    """
     if not (out or "").strip():
         return "", ""
     got = json.loads(out)
@@ -277,6 +212,5 @@ def hold(out: str) -> tuple[str, str]:
 
 
 def spawn(project: Path, *argv: str, **kw) -> subprocess.CompletedProcess:
-    """A REAL process, for the handful of tests that are about the process boundary."""
     return subprocess.run([str(Path(project) / ".journal" / "journal.py"), *argv],
                           capture_output=True, text=True, timeout=60, **kw)

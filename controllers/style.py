@@ -22,7 +22,6 @@ def _style():
 
 
 class StyleController(Controller):
-    """The project's coding style rules; every change regenerates their skills."""
     resource = "style"
     noun = "rule"
     scoped = False

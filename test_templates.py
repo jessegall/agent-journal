@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""templates.py: placeholders, optional segments, joins, escapes."""
 import sys
 from pathlib import Path
 

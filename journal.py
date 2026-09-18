@@ -1,33 +1,4 @@
 #!/usr/bin/env python3
-"""journal — a session survives its own compaction.
-
-A compaction keeps what was DONE and loses what was DECIDED. The transcript on disk lost
-nothing. This is the index that gets you back to it.
-
-    journal                 where things stand: environment, rules, pins, open work, to-dos, context
-    journal next            what to do now: the details of the last hold, or the next to-do
-
-Every group below prints its own commands, and so does every spelling of them:
-`journal <noun> help`.
-
-    work           declare it, move it, wait on something, close it
-    pins           a claim that must survive a compaction, on this environment
-    rules          a pin that every environment obeys
-    reminders      an instruction said again at every stop, until you retire it
-    inbox          messages the user leaves for the agent, split into what each part became
-    questions      a question of its own, linked to to-dos, docs, pins, rules or inbox messages
-    todos          delayed work, parked with the brief you will need in a week
-    docs           what was settled: findings, reports, the reasoning a pin cites
-    tools          scripts kept for repeated work
-    connections    services the project can reach, overridable per environment
-    environments   where work lives: switch, prepare, claim, worktree
-    cleanup        what has evidence against it: stale rules, pins, docs, empty environments
-    transcript     read it back: conversation, user, search, carry
-    system         verify, version, update, settings, loop
-
-THE PLURAL NOUN IS THE CANONICAL SPELLING (ruling R10). Every singular and legacy one —
-`pin`, `rule`, `todo`, `tracks`, `strike`, `promote` — still runs and answers `help`.
-"""
 from __future__ import annotations
 
 import contextlib as _contextlib
@@ -104,13 +75,6 @@ if _AS:
 
 
 def _help(verb: str = "") -> int:
-    """The index, or the commands of one group — `help.py` holds the only list of them.
-
-    THE INDEX IS WHAT `--help` COSTS NOW. It named 72 commands in 77 lines at every `-h`,
-    every `--help` and every unknown verb, in a package whose whole argument is that output
-    is charged to the reader. The lines are not gone; they are one command away, under the
-    noun that owns them, which is also where a reader looking for a verb would think to ask.
-    """
     if not verb:
         fmt.say(__doc__)
         return 0
@@ -154,14 +118,6 @@ def _help(verb: str = "") -> int:
 
 
 def _retired(verb: str) -> int | None:
-    """A command that was removed says what replaced it, or None if it is simply unknown.
-
-    IT FAILS, AND IT TEACHES. Non-zero because the command did not run and a script must
-    not read this as success; the replacement in full because the reader is most often an
-    agent working from a prompt, a skill or a runbook written against a version still
-    installed somewhere — and an agent told only "no such command" retries the spelling,
-    which is the one thing that cannot work, and then routes around the journal.
-    """
     got = help.retired(verb)
     if not got:
         return None
@@ -201,13 +157,6 @@ UNBOUND_OK = frozenset((
 
 
 def _unbound_refusal(verb: str) -> str:
-    """Why this command cannot run yet, or "" — a session that has chosen nothing reads nothing.
-
-    THE READ IS REFUSED, NOT ANSWERED FROM THE START ENVIRONMENT. For a long time `current`
-    fell back there so a question about the record never needed a decision first; the cost
-    was that the start environment WAS a selected environment — a fresh session read its
-    pins, its to-dos and its work as its own, and the user was never asked.
-    """
     if verb in UNBOUND_OK or tracks._OVERRIDE or not _stem():
         return ""
     if tracks.current(_ROOT, _stem()):
@@ -263,17 +212,6 @@ def main(argv: list[str]) -> int:
 
 
 def run(argv: list[str]) -> int:
-    """One CLI invocation, from scratch, in this process.
-
-    THE MODULE-LEVEL SET-UP IS PART OF A COMMAND, not part of an import: `--env=` is read
-    off argv, the environment override is applied, and the process says which environment
-    it is on. Running twice in one interpreter therefore has to do that twice, or the
-    second command silently inherits the first one's environment.
-
-    It exists for the test harness, which pays the package's 420ms import once per project
-    instead of once per check — but it is also the honest shape: everything below `main`
-    was always per-invocation, and only the file it lived in said otherwise.
-    """
     _state._CACHE.clear()
     tracks.override("")
     flag = next((a.split("=", 1)[1] for a in argv

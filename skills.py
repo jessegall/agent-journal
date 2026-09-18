@@ -1,4 +1,3 @@
-"""Skills an agent can load, and which a session loaded: read from disk and from its transcript, never written."""
 from __future__ import annotations
 
 import json
@@ -18,7 +17,6 @@ def _front(text: str) -> dict:
 
 
 def available(project: Path) -> list[dict]:
-    """The project's skills, then the user's own; a name the project has is not listed twice."""
     out, names = [], set()
     for source, base in (("project", project / ".claude" / "skills"), ("user", Path.home() / ".claude" / "skills")):
         for f in sorted(base.glob("*/SKILL.md")) if base.is_dir() else []:
@@ -32,7 +30,6 @@ def available(project: Path) -> list[dict]:
 
 
 def loaded(path: Path | None) -> dict[str, dict]:
-    """{skill name: {count, at}} for every Skill tool call in a transcript; `at` is the LAST load."""
     got: dict[str, dict] = {}
     if path is None or not path.is_file():
         return got
@@ -62,7 +59,6 @@ def _epoch(stamp: str) -> float:
 
 
 def _changed_at(folder: Path) -> float:
-    """When the skill last changed: the newest file in its folder, references included."""
     newest = 0.0
     for f in folder.rglob("*"):
         if f.is_file() and "__pycache__" not in f.parts and not f.name.startswith("."):
@@ -71,7 +67,6 @@ def _changed_at(folder: Path) -> float:
 
 
 def rows(project: Path, path: Path | None, every_start: list[str] | None = None) -> list[dict]:
-    """Every skill on disk with how often this session loaded it, then loaded ones that have no file here."""
     used = loaded(path)
     wanted = set(every_start or [])
     out = []
@@ -90,7 +85,6 @@ def rows(project: Path, path: Path | None, every_start: list[str] | None = None)
 
 
 def find(project: Path, name: str) -> dict | None:
-    """One skill's text, looked up by name among the skills on disk only."""
     if not _NAME.match(name or ""):
         return None
     for s in available(project):
@@ -105,7 +99,6 @@ REFERENCE_MAX = 60_000
 
 
 def _references(folder: Path) -> list[dict]:
-    """The files beside SKILL.md, by relative path; markdown and plain text come with their contents."""
     out = []
     for f in sorted(folder.rglob("*")):
         if not f.is_file() or f.name == "SKILL.md" or f.name.startswith(".") or "__pycache__" in f.parts:
@@ -125,7 +118,6 @@ DEFAULT_ALWAYS = ("journal", "journal-memory", "journal-todos", "journal-message
 
 
 def always(root: Path) -> list[str]:
-    """The skills every session loads at its start: the project's own list, or the default until it has one."""
     import state
     got = state.get(root, ALWAYS, None)
     if got is None:

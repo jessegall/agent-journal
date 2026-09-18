@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""The web viewer: `views.py`'s read layer and `serve.py`'s JSON API over it.
-
-    .journal/test_serve.py
-
-IN-PROCESS, ON PORT 0. No subprocess: `serve.py`'s route handlers are pure functions of
-(root, project, match), so the server is started in a background thread against a bare
-fixture directory, on whatever port the OS hands out, and stopped at the end. That is
-what keeps this suite fast and keeps [[tests-bounded]] — nothing here can hang waiting on
-a port that was already taken.
-"""
 import contextlib
 import json
 import os
@@ -275,7 +265,6 @@ check("an empty message is refused: 400 with the reason", (status, "needs its te
 # project. A fingerprint costs a millisecond; sending it again costs all of the rest. This is
 # invisible in the page, so only a check keeps it: `fetch` revalidates and hands JS the body it had.
 def _conditional(path: str, tag: str) -> tuple[int, bytes]:
-    """GET with If-None-Match. urlopen raises on 304, so the answer comes back through the error."""
     req = urllib.request.Request(BASE + path, headers={"If-None-Match": tag})
     try:
         with urllib.request.urlopen(req, timeout=10) as r:

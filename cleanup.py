@@ -1,27 +1,3 @@
-"""cleanup — what in the record has stopped being true, laid out to be judged.
-
-WHY THIS IS A COMMAND AND NOT AN INSTRUCTION. Rules and pins are the only things handed
-whole to every session, in the highest-authority position the system has, and nothing
-revisits them: `pins.age` says so in its own docstring and then shows an age instead of
-expiring anything. That is right — automatic eviction is the failure this store exists to
-prevent — but "nothing revisits them" was being answered by the USER, by hand, pasting
-the same paragraph into session after session: remove the obsolete rules, clear the docs
-nobody uses, strike the stale pins. A thing the user has to say every time is a thing the
-tool has not learned.
-
-SO THE JUDGEMENT STAYS, AND ONLY THE LOOKING IS AUTOMATED. Nothing here strikes anything.
-It gathers what an agent would otherwise have to read four stores to notice — a rule that
-names a file which is not there, a pin that names a command that does not exist, a draft
-doc nobody has touched in a fortnight, an environment with nothing on it — and prints each
-one beside the exact command that retires it. The evidence is in the line, so the reader
-can disagree with it.
-
-WHAT COUNTS AS EVIDENCE. Age alone never does: a fact three months old that still holds is
-the best kind of pin, and a list that flags it teaches the reader to skim. Every candidate
-here rests on something checkable — a path that is gone, a spelling the CLI does not
-answer, a draft with no part in it, an environment with no pins, no work and no to-dos —
-and the age is shown beside it as context, never as the reason.
-"""
 from __future__ import annotations
 
 import re
@@ -125,7 +101,6 @@ ASKED_DAYS = 7       # a to-do waiting on the user this long is worth repeating
 
 
 def _verbs() -> set[str]:
-    """Every first word the CLI answers to — the one list the help is generated from."""
     return set(help_mod.GROUPS) | set(help_mod.ALIAS) | {"journal", "help"}
 
 
@@ -141,13 +116,6 @@ def _days(at: str) -> float | None:
 
 
 def _dangling(root: Path, text: str) -> str:
-    """What this claim names that is not there any more — or "" if it all checks out.
-
-    THE PATH IS CHECKED FROM THE PROJECT, NOT FROM `.journal/`, because a claim cites a
-    file the way the reader would type it. A bare name with no slash is ambiguous — `fmt.py`
-    could be anywhere — so it counts as gone only when nothing of that name exists anywhere
-    under the project, which is the case that actually happens: the file was deleted.
-    """
     project = root.parent
     for raw in PATH.findall(text):
         p = raw.split(":")[0].lstrip("`").rstrip("`,.")   # a LEADING dot is part of `.journal/x`, not punctuation
@@ -175,8 +143,6 @@ def _dangling(root: Path, text: str) -> str:
 
 
 def _standing(root: Path, key: str, where: str) -> list[dict]:
-    """Every entry of one store, unfiltered — rules from the record, pins from their OWN
-    environment rather than from whichever one this process happens to be reading."""
     if key == pins_mod.RULES:
         got = state.get(root, key, [])
         return got if isinstance(got, list) else []
@@ -211,18 +177,6 @@ def _standing_reminders(root: Path, here: str) -> list[dict]:
 
 
 def _reminders(root: Path, here: str) -> list[dict]:
-    """Reminders that name something gone — the same rot, in the store that repeats most.
-
-    A REMINDER IS READ ALOUD MORE OFTEN THAN ANY CLAIM HERE: at the head of every stop
-    chain and again every `reminder_every` tool calls, where a rule or a pin is handed over
-    once a session. So a dead path, or a `journal <verb>` the CLI no longer answers to,
-    costs more per day here than anywhere else — and this was the one store the checker did
-    not look at.
-
-    THE CONDITION IS NOT CHECKED, AND CANNOT BE. `--until` is prose by design — "the
-    migration tests pass on CI" — so nothing here can say whether it came true. That is what
-    the reading pass is for; this half checks only what is checkable.
-    """
     out = []
     for i, r in enumerate(_standing_reminders(root, here), 1):
         if r.get("done"):
@@ -284,16 +238,6 @@ AUTO_MARK = "auto-closed"
 
 
 def _auto_closed(root: Path, here: str) -> list[dict]:
-    """Rows the retired auto-close closed, counted — never reopened, and never listed one by one.
-
-    ONE LINE FOR ALL OF THEM. In the project this was found in there are 710, and a findings
-    list with 710 entries is a wall nobody reads — the same argument `cleanup` makes about
-    every other tier. The count and the command are what a reader acts on.
-
-    NOTHING IS REOPENED AUTOMATICALLY. Most of them were probably finished; the point is to
-    make the ambiguous ones findable, not to guess which. A sweep that changes what a reader
-    sees without being asked is the defect this whole tier exists to catch.
-    """
     hit = [t for t in todo_mod._all(root, here)
            if t.get("done") and (t.get("how") or "") == AUTO_CLOSED]
     if not hit or len(hit) <= (_kept(root, here).get(AUTO_MARK) or {}).get("n", -1):
@@ -337,7 +281,6 @@ def _environments(root: Path, here: str, stale_hours: float = 24.0) -> list[dict
 
 
 def report_due(root: Path, here: str, said: list, stale_hours: float = 24.0) -> tuple[str, list]:
-    """The background report's line and the key it was said for, or ("", said) when it would repeat itself."""
     found = candidates(root, here, stale_hours=stale_hours)
     if found:
         key = sorted(f"{f['kind']}{f['n']}{f['text'][:20]}" for f in found)
@@ -351,7 +294,6 @@ def report_due(root: Path, here: str, said: list, stale_hours: float = 24.0) -> 
 
 
 def candidates(root: Path, here: str, every: bool = False, stale_hours: float = 24.0) -> list[dict]:
-    """Everything the record holds that has evidence against it, in reading order."""
     found = _claims(root, pins_mod.RULES, "every environment")
     if every:
         for name in sorted(tracks._all(root)):
@@ -407,20 +349,6 @@ def _kept(root: Path, here: str) -> dict:
 
 
 def keep(root: Path, here: str, mark: str, at: str, n: int) -> str:
-    """Record that a countable finding was read and kept. It returns when the count grows.
-
-    A FINDING WITH NO WAY TO BE DONE WITH IS A FINDING THAT STOPS BEING READ. The auto-closed
-    count is the first candidate that is not a mistake to fix — it says how a row closed,
-    which is a fact about the past — so a reader who audits all 21 and finds nothing to
-    reopen has no way to say so, and the line says 21 forever.
-
-    IT STAMPS RATHER THAN EDITS, which is the whole difference. The tempting fix is to
-    rewrite `how:` on those rows so the report stops matching them; that is editing the
-    record to satisfy a report about the record, and the record is the thing being protected.
-
-    THE COUNT IS PART OF THE STAMP, so this is not a mute button: audit 21 and the line goes
-    quiet, and it comes back the moment there are 22.
-    """
     with state.locked(root):
         log = state.get(root, KEPT, {})
         log = log if isinstance(log, dict) else {}
@@ -441,23 +369,11 @@ READ_DAYS = 21
 
 
 def days_since_read(root: Path, here: str) -> float | None:
-    """Days since this environment's claims were last read, or None if they never were."""
     got = _read_log(root).get(here) or {}
     return _days(got.get("at", "")) if got.get("at") else None
 
 
 def last_read(root: Path, here: str) -> str:
-    """When this environment's claims were last READ, in words — never is a real answer.
-
-    AND "NEVER" SAYS WHETHER IT IS OWED, because on its own it reads as a bug. A field
-    report worked back from this line to the conclusion that the reading-pass nudge was
-    broken: the record said the pass had never been done, the nudge never fired, and
-    nothing on the page connected the two. `owed` is the gate and it is deliberate — every
-    record starts never-read, and a store that nags from its first pin teaches its reader
-    to ignore the line before there is anything worth reading. The condition was right and
-    only the sentence was silent about it, which is the same defect one level up: a fact
-    stated without the qualification that makes it mean anything.
-    """
     got = _read_log(root).get(here) or {}
     days = _days(got.get("at", "")) if got.get("at") else None
     if days is None:
@@ -468,14 +384,6 @@ def last_read(root: Path, here: str) -> str:
 
 
 def owed(root: Path, here: str) -> bool:
-    """Is a reading pass actually owed here — or is this simply a young record?
-
-    NEVER-READ IS NOT THE SAME AS OVERDUE. Every record starts never-read, and a store that
-    says so from its first pin is a store that has taught its reader to ignore the line
-    before there is anything worth reading. A pass is owed when there is something to read
-    AND it has had time to rot: the oldest standing claim is at least READ_DAYS old, or a
-    pass was done and that long ago.
-    """
     since = days_since_read(root, here)
     if since is not None:
         return since >= READ_DAYS
@@ -506,15 +414,6 @@ QUESTIONS = (
 
 
 def _entry(n: int, item: dict, noun: str) -> str:
-    """One claim, WHOLE. Nothing is truncated in the reading pass: a claim cut at 70
-    characters is a claim judged on its opening, which is how a rule survives every pass.
-
-    THE LONG FORM IS NAMED, NOT PRINTED, and that is a deliberate deviation from the line
-    above — do not "fix" it. Printing 125 claims is the point; printing 125 claims AND 125
-    arguments is a wall nobody reads, which is the same failure as truncating, arrived at
-    from the other side. The claim is what is being judged; the argument is one command away
-    for the entries where the judgement is hard.
-    """
     import fmt
     body = fmt.wrap(item.get("fact", ""), indent=7)
     # THE NOUN IS ALREADY PLURAL, and for a while this line did not believe it. Both callers
@@ -529,20 +428,6 @@ def _entry(n: int, item: dict, noun: str) -> str:
 
 
 def reading(root: Path, here: str, at: str = "", mark: bool = True) -> str:
-    """Every rule and every pin, in full, to be judged by somebody who has read the code.
-
-    THE COMMAND CANNOT DO THIS AND DOES NOT PRETEND TO. Everything in `report` is a fact
-    about the world the claim points at — a file, a spelling, a folder. Nothing there is a
-    fact about what the claim MEANS, and the rot that matters most is entirely semantic:
-    the rule that was true when the code worked one way and was never revisited when it
-    stopped. So this half is a reading list, printed in full because a pointer to
-    `journal rules` is how it gets skipped, and stamped because "when did anyone last
-    actually read these" is the one thing the record can answer and a reader cannot.
-
-    THE STAMP IS NOT A CERTIFICATE. It records that the claims were put in front of a
-    reader, which is all a CLI can witness. It is there so the next session can be told
-    "never done on this environment" instead of nothing at all.
-    """
     import fmt
     rules = [(i, r) for i, r in enumerate(_standing(root, pins_mod.RULES, ""), 1)
              if not r.get("struck")]

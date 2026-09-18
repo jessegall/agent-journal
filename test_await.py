@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""Work that waits on something is not nudged, until the wait runs out.
-
-    .journal/test_await.py
-
-Every edge: `work await` refuses with nothing open, refuses without a timeout, and refuses
-to guess between two open pieces; a waiting piece is skipped by the stop hold while its own
-siblings are still held; the wait ends the moment an update or a close arrives; when it
-expires the hold comes back FIRST, names what was awaited and for how long, and is said
-once; `--for` overrides the default and is capped; and a subagent's wait is its own.
-"""
 import json, os, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 

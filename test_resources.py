@@ -1,4 +1,3 @@
-"""Typed resources and their repositories: every store read the same way."""
 from __future__ import annotations
 
 import sys

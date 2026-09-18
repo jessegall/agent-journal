@@ -12,12 +12,6 @@ def _conn():
 
 
 def row_response(c) -> dict:
-    """One connection as the viewer reads it. THE SECRET IS A NAME AND A STATE, NEVER A VALUE.
-
-    The viewer is the one place this could be shown to somebody who is not at the terminal, so
-    what crosses the wire is the variable's NAME and whether the SERVER has it set — never what
-    is in it, and never a guess at what is in it.
-    """
     return {"n": c.n, "name": c.name, "kind": c.kind, "url": c.url, "purpose": c.purpose,
             "secret": c.secret, "secret_set": bool(_conn().secret_state(c.raw).endswith("is set in this shell")),
             "at": c.at, "source": c.source, "overridden": list(c.overridden),
@@ -25,8 +19,6 @@ def row_response(c) -> dict:
 
 
 class ConnectionsController(Controller):
-    """Services the project can reach. Read-only here: a connection is written from the terminal,
-    where the person typing a variable name can see what shell they are in."""
     resource = "connections"
     noun = "connection"
     actions = ("index", "show")

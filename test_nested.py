@@ -1,20 +1,4 @@
 #!/usr/bin/env python3
-"""A root that is not a repository, repositories under it, worktrees under those.
-
-THE LAYOUT EVERY ONE OF THESE BUGS HID IN, and it is ordinary:
-
-    root/                          no git here at all — but the journal lives here
-      alpha/                       a repository
-        .claude/worktrees/w        Claude Code's own worktree, three levels down
-      beta/                        another repository
-      beta-fix/                    a linked worktree of beta, sitting as a sibling
-
-Nothing was wrong in any single component. The journal found itself by where its own script
-sat, the hook was registered as `"$CLAUDE_PROJECT_DIR"/.journal/hook.py`, and every printed
-command said `.journal/journal.py` — each correct for a session standing at the root, and
-each silently wrong from the four other places an agent actually works. A hook that is not
-registered says nothing by definition, so none of it announced itself.
-"""
 import json, os, subprocess, sys, tempfile
 from pathlib import Path
 

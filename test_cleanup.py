@@ -1,16 +1,4 @@
 #!/usr/bin/env python3
-"""What `journal cleanup` may and may not call stale.
-
-    .journal/test_cleanup.py
-
-THE FALSE POSITIVE IS THE FAILURE MODE HERE. A checker that flags a claim which is
-perfectly true teaches the reader to skim the list, and a skimmed list is worse than no
-list: the one real finding goes past with the noise. So half of these tests are about what
-must NOT appear — prose that merely contains the word `journal`, a path that moved rather
-than died, a doc still being written, an environment somebody is on.
-
-Every test runs against a throwaway directory. It never touches the real record.
-"""
 import os, sys, tempfile, time
 from pathlib import Path
 
@@ -44,7 +32,6 @@ def fresh() -> Path:
 
 
 def flat(text):
-    """One line: the renderer wraps to 88 columns, and a test should not assert on that."""
     return " ".join(text.split())
 
 
@@ -167,7 +154,6 @@ check("it says why an empty findings list is not a clean record",
 check("nothing is struck by reporting", [p["struck"] for p in pins._all(r9, pins.RULES)], [None])
 
 def _aged():
-    """A record whose oldest standing claim is past READ_DAYS, so a pass is genuinely owed."""
     import datetime
     r = fresh()
     old_at = (datetime.datetime.now() - datetime.timedelta(days=cleanup.READ_DAYS + 1)).isoformat()

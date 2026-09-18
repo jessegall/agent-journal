@@ -1,17 +1,3 @@
-"""Declaring a piece of work — the one thing here that is WRITTEN, and the one that costs.
-
-A TAG IS FREE AND A DECLARATION IS NOT, and the difference is the point. A tag rides on a
-message you were sending anyway, so it is spent generously and describes what that message
-carried. Starting work is a COMMITMENT: it says a thing is now in flight and somebody is
-answerable for finishing it. Making that cost a deliberate command is what makes it done
-with thought — a free one would be sprayed across every message that mentions doing
-something, and then `open` would list forty things nobody is holding.
-
-It is also the one fact a transcript cannot yield. Everything else here is derived on
-demand from what was said; whether a piece of work is STILL OPEN is not in anything that
-was said — it is the absence of a later sentence, and an absence is not readable. So it is
-state, it is small, and it is written down.
-"""
 from __future__ import annotations
 
 import os
@@ -77,7 +63,6 @@ def _subjects(items: list[dict]) -> list[str]:
 
 
 def _all(root: Path, track: str | None = None) -> list[dict]:
-    """Every work item — the current environment, or a named one."""
     got = state.tracked(root, KEY, track, []) if track else state.get(root, KEY, [])
     return got if isinstance(got, list) else []
 
@@ -100,13 +85,6 @@ _VAGUE = frozenset(("it", "this", "that", "them", "these", "those", "stuff", "th
 
 
 def too_bare(subject: str) -> bool:
-    """True when the subject names a tool or is one bare word.
-
-    A GOOD SUBJECT IS A SENTENCE YOU WILL SAY AGAIN — the skill's own words, and every example in it
-    is a clause: "fix the Dropdown recompose 500", "add a --json flag to export". `work start "Bash"`
-    passes every other check and produces an open-work row that says nothing, which is what the next
-    session is handed at its first stop.
-    """
     words = [w for w in re.split(r"[\s/]+", (subject or "").strip().lower()) if w]
     if not words:
         return False
@@ -120,13 +98,6 @@ def too_bare(subject: str) -> bool:
 
 
 def start(root: Path, subject: str, at: str, where: dict | None = None) -> tuple[bool, str]:
-    """Declare work. Refuses a duplicate rather than opening a second of the same thing.
-
-    `where` records which transcript opened it. The journal is shared, so work opened in
-    one session is still open in the next — and the next session is TOLD about it at its
-    start, not HELD for it at its first stop. A hold is for a commitment this agent made;
-    the stop hook uses the recorded transcript to tell the two apart.
-    """
     subject = " ".join(subject.split())
     if not subject:
         return False, say("start_what")
@@ -145,21 +116,6 @@ def start(root: Path, subject: str, at: str, where: dict | None = None) -> tuple
 
 
 def end(root: Path, subject: str, at: str, force: bool = False) -> tuple[bool, str]:
-    """Close it by saying the same words — or, with --force, whatever the words are.
-
-    A close that matched nothing is REFUSED and lists what is open. Silently accepting it
-    would let the agent believe it had closed work that is still standing — and an open
-    piece of work nobody knows about is exactly what this exists to prevent.
-
-    `--force` IS FOR WORK THAT IS NOT YOURS TO NAME. The matching rule assumes the closer
-    is the declarer, who can say the subject again. That breaks for exactly the case it was
-    never designed for: work declared by a session that is gone — a runner in a worktree
-    that was deleted, a crashed agent, a hand-off nobody picked up. Its subject is
-    unguessable, it can never be closed by saying the same words, and it stands forever
-    holding every stop hostage. With force, the message is a NOTE rather than a key: every
-    open piece is closed and the words are kept beside it, so the record still says who
-    closed it and why, and nothing is lost but the pretence that anyone remembers.
-    """
     # THE LOWERCASE IS FOR MATCHING, AND ONLY FOR MATCHING. `--force` reuses this argument
     # as prose — it is the note kept beside a forced close, and the only thing that survives
     # one — so the raw text is kept and the fold is applied where the comparison happens.
@@ -193,22 +149,11 @@ def end(root: Path, subject: str, at: str, force: bool = False) -> tuple[bool, s
 
 
 def parked(w: dict) -> dict | None:
-    """The reason this work is set aside, or None. Unlike a wait, it has no clock."""
     got = w.get(PARK)
     return got if isinstance(got, dict) else None
 
 
 def park(root: Path, why: str, at: str, on: str | None = None) -> tuple[bool, str]:
-    """Set open work aside without ending it: it waits on somebody else, not on a clock.
-
-    ENDING IS NOT THE ONLY WAY TO STOP. Work that stops because a question went to the user
-    used to be ENDED, and an ended row reads exactly like a finished one — the home said
-    "Finished" for work nobody had finished. `await` is the neighbouring verb and does not
-    fit: it always expires, because the thing it waits on is in flight and a wait with no
-    end is how work is abandoned quietly. A question to the user has no such deadline; it
-    is answered or it is not. So parking has no clock, and what clears it is the same thing
-    that clears a wait — the first `work update` on that piece, which is progress arriving.
-    """
     why = " ".join((why or "").split())
     if not why:
         return False, say("park_why")
@@ -233,7 +178,6 @@ def park(root: Path, why: str, at: str, on: str | None = None) -> tuple[bool, st
 
 
 def awaiting(w: dict, now: float) -> dict | None:
-    """The wait still standing on this work, or None — expired counts as not waiting."""
     got = w.get(AWAIT)
     if not isinstance(got, dict):
         return None
@@ -241,7 +185,6 @@ def awaiting(w: dict, now: float) -> dict | None:
 
 
 def expired(w: dict, now: float) -> dict | None:
-    """The wait that has RUN OUT on this work, or None. What brings the hold back."""
     got = w.get(AWAIT)
     if not isinstance(got, dict):
         return None
@@ -249,7 +192,6 @@ def expired(w: dict, now: float) -> dict | None:
 
 
 def alive(pid: int) -> bool:
-    """Is that process still running? Signal 0 asks without sending anything."""
     try:
         os.kill(int(pid), 0)
     except ProcessLookupError:
@@ -262,20 +204,6 @@ def alive(pid: int) -> bool:
 def wait(root: Path, what: str, minutes: float, at: str, now: float,
          on: str | None = None, agent: str | None = None,
          pid: int | None = None) -> tuple[bool, str]:
-    """Mark open work as waiting on something, so the stop hold leaves it alone until then.
-
-    A HOLD THAT FIRES WHILE NOTHING CAN MOVE IS NOISE, and noise is what teaches a reader
-    to clear a hold without reading it. Work that is genuinely in flight — a subagent
-    running, a build, a review — is open for a good reason and has nothing to file at every
-    stop; measured on this project's own session, three consecutive stops were held for
-    work that was correctly open and simply waiting, each costing an update that said the
-    same thing.
-
-    IT ALWAYS EXPIRES. A wait with no end is how work is abandoned quietly: the thing being
-    waited for dies, nothing nudges, and the journal reads as busy forever. So the wait has
-    a deadline, and when it passes the hold comes back naming what was awaited and for how
-    long — the one question worth asking then is whether it is still coming.
-    """
     what = " ".join((what or "").split())
     if not what:
         return False, say("await_what")
@@ -306,7 +234,6 @@ def wait(root: Path, what: str, minutes: float, at: str, now: float,
 
 
 def named(got: dict) -> str:
-    """The identifier of the thing being awaited, if one was given."""
     if not isinstance(got, dict):
         return ""
     if got.get("agent"):
@@ -317,14 +244,6 @@ def named(got: dict) -> str:
 
 
 def gone(w: dict) -> dict | None:
-    """A wait whose named PROCESS has exited — over early, whatever the clock says.
-
-    AN IDENTIFIER IS WHAT MAKES A WAIT CHECKABLE. "waiting on the build" is a sentence; a
-    pid is a fact the machine can test, so a wait on one ends when the thing ends instead
-    of burning its whole timeout. An agent id cannot be tested from here — nothing exposes
-    a subagent's liveness to a hook — so it is recorded and shown, and its wait runs on the
-    clock like any other.
-    """
     got = w.get(AWAIT)
     if not isinstance(got, dict) or not got.get("pid"):
         return None
@@ -332,7 +251,6 @@ def gone(w: dict) -> dict | None:
 
 
 def woke(root: Path, subject: str) -> None:
-    """Progress arrived: the wait is over, whatever the clock says."""
     with state.locked(root):
         items = _all(root)
         for w in items:
@@ -343,38 +261,6 @@ def woke(root: Path, subject: str) -> None:
 
 
 def resumed(root: Path, owners: set) -> str | None:
-    """The work moved again, so it is not waiting any more. Returns the subject it woke.
-
-    THE USER'S RULING: a wait ends when the work starts again, and it should not need a
-    command to say so. `await` says "this is in flight on something I cannot hurry", and it
-    buys silence — the stop stops nudging. That silence is correct while the agent is
-    genuinely blocked and wrong the moment it is not, and the agent that has picked the work
-    back up is the least likely thing in the system to remember to say so. Measured: a
-    runner awaited a subagent, resumed on its own, worked for eighteen minutes and stopped
-    into silence with the record still reading "in flight".
-
-    A WRITE IS THE SIGNAL, not any tool call. Reading is what waiting LOOKS like — polling a
-    log, checking whether the build is done, tailing an output file — so a read must leave
-    the wait standing or `await` would cancel itself on the first thing an agent does after
-    filing it. A write is different: nothing that is still blocked edits a file. It is the
-    same line this package already draws at its gate, where reads are never refused and
-    changes are.
-
-    EXCEPT WHEN THE WAIT NAMES WHAT IT IS WAITING FOR. `--agent=` and `--pid=` say the wait
-    is on something identifiable, and those are precisely the waits a session gets on with
-    something else alongside — which is what awaiting is FOR. Measured here: this session
-    awaited a dispatched agent, shipped a release while it ran, and the wait was cancelled by
-    its own commits; the next stop then asked about work that was still genuinely in flight.
-    "Nothing still blocked edits a file" is true of the session's OTHER work and says nothing
-    about this piece, and a wait cancelled by an unrelated write punishes exactly the
-    behaviour it was built to allow.
-
-    A NAMED WAIT ALREADY HAD AN ENDING THAT IS NOT SOMEBODY TYPING. `gone` ends a pid's wait
-    the moment the process exits, and the clock ends any of them; `work update` and `work
-    end` on that subject end it deliberately. So a named wait keeps those three and gives up
-    the fourth, and an unnamed one — "waiting on the build", with nothing to check — still
-    ends on the first write, because for that one a write really is the only signal there is.
-    """
     with state.locked(root):
         items = _all(root)
         for w in items:
@@ -389,14 +275,6 @@ def resumed(root: Path, owners: set) -> str | None:
 
 
 def _receiving(items: list[dict], owners: set, on: str = "") -> dict | None:
-    """The row a tool call's files and commits go on — one rule for both.
-
-    A CALL CAN END THE WORK IT WAS DOING. `git commit … && journal work end "…"` is one tool
-    call: the hook only looks afterwards, when the work it belongs to is already closed, so
-    everything that call did was recorded against nothing. `on` is the subject the row had at
-    the START of the call, remembered before it ran, and it is used only when nothing is open
-    to take the work — so an ordinary call still lands on the open piece.
-    """
     standing = [w for w in items if not w.get("ended")]
     mine = [w for w in standing if w.get("session") in owners] or (standing if len(standing) == 1 else [])
     if mine:
@@ -407,13 +285,11 @@ def _receiving(items: list[dict], owners: set, on: str = "") -> dict | None:
 
 
 def owned_subject(root: Path, owners: set) -> str:
-    """The subject of the work a tool call would be recorded against right now, or ""."""
     target = _receiving(_all(root), owners)
     return target["subject"] if target else ""
 
 
 def record_files(root: Path, owners: set, changes: list[dict], at: str, on: str = "") -> int:
-    """Add each changed file to the open work this session answers for; lines sum per path."""
     with state.locked(root):
         items = _all(root)
         target = _receiving(items, owners, on)
@@ -434,7 +310,6 @@ def record_files(root: Path, owners: set, changes: list[dict], at: str, on: str 
 
 
 def record_commits(root: Path, owners: set, commits: list[dict], at: str, on: str = "") -> int:
-    """Add each commit made during a tool call to the open work this session answers for, once per sha."""
     with state.locked(root):
         items = _all(root)
         target = _receiving(items, owners, on)
@@ -454,18 +329,6 @@ def files_changed(w: dict) -> str:
 
 
 def note(root: Path, text: str, at: str, on: str | None = None) -> tuple[bool, str]:
-    """File progress AGAINST a piece of work. The thing `[!update]` was pretending to be.
-
-    It is a command and not a tag for the reason `start` is: it is about the WORK, not
-    about the message carrying it. A tag describes what you just said and can therefore
-    never be wrong; an update makes a claim about something outside itself, and the moment
-    that claim can be wrong it stops being free. This one costs a command, and that cost is
-    the thought.
-
-    It REFUSES with nothing open, and refuses to guess between several. Attaching a note to
-    the wrong scope is worse than not filing it: the note reads as true under a heading it
-    was never about, and nothing about it looks broken afterwards.
-    """
     text = " ".join((text or "").split())
     if not text:
         return False, say("update_what")

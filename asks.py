@@ -1,20 +1,3 @@
-"""Does this prompt ask for work? The question the to-do rule turns on.
-
-THE RULE IS ONLY AS GOOD AS THIS DETECTOR. "When the user asks for something you are not
-working on and it can wait, park it" needs the hook to know that the user asked for
-something — otherwise the reminder rides on every prompt and becomes wallpaper, or the
-deferral gate fires on an agent describing the order of its own work. So the prompt is
-read for the shapes a request takes, and read against the shapes a question, an answer, or
-an acknowledgement takes.
-
-BIASED TOWARDS THE REQUEST. A missed request costs one unparked to-do; a false positive
-costs one line of context the agent reads past. Both are cheap, but the whole reason this
-exists is the missed one, so a clause that could go either way counts as work.
-
-Measured against this project's own prompts, which are the test cases in `test_gate.py`:
-"Lets rename the Nothing component to Empty ? or None? Suggestions?" is a request;
-"are rules correctly injected on start too?!" is not; "nah, its fine" is not.
-"""
 from __future__ import annotations
 
 import re
@@ -97,7 +80,6 @@ def _words(text: str) -> list[str]:
 
 
 def _lead_verb(words: list[str]) -> bool:
-    """After the openers and the acks are stripped, does a work verb lead?"""
     changed = True
     while changed and words:
         changed = False
@@ -127,7 +109,6 @@ def _lead_verb(words: list[str]) -> bool:
 
 
 def asks_for_work(text: str) -> bool:
-    """Is there a request for work anywhere in this prompt?"""
     text = (text or "").strip()
     if not text:
         return False
@@ -158,6 +139,5 @@ _OPINION = re.compile(r"\b(?:what do you think|what would you|should we|would yo
 
 
 def asks_opinion(text: str) -> bool:
-    """The prompt asks what the agent thinks, so a proposal in the reply is the answer, not a suggestion to file."""
     return bool(_OPINION.search(text or ""))
 

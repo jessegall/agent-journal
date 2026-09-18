@@ -140,7 +140,6 @@ class Remove(Resource):
 
 
 def _line(session: str) -> int:
-    """The transcript line a switch happens at, so search knows where the session moved."""
     return (where().get("line", 0) + 1) if session else 0
 
 

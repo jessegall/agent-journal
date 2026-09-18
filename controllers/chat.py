@@ -16,27 +16,11 @@ PICTURES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".svg")
 
 
 def trim(text: str, limit: int = TEXT_MAX) -> str:
-    """The bubble's share of a turn. A cut one says so, and `full` carries the rest."""
     text = (text or "").strip()
     return text if len(text) <= limit else text[:limit].rstrip() + "…"
 
 
 def said(root: Path, env: str) -> list[dict]:
-    """What the agent SAID on this environment: its tagged replies, in the order it said them.
-
-    WHAT IT SAID AND WHAT IT DID ARE TWO RECORDS, AND ONLY ONE OF THEM IS A CONVERSATION. Every edit,
-    command and journal write is already in the command log, which is what the Activity column draws;
-    none of it belongs here. The filter is not a heuristic over that log — it is a different source.
-    A reply is a turn when it opens with a tag, and the tag is a field the agent already writes, so
-    nothing has to be classified and a message that merely MENTIONS a tag is not one (`tags.found`
-    matches the start of the message, never the start of a line).
-
-    EVERY TRANSCRIPT, NOT THE LIVE ONE. This used to walk `tracks.live()`, which drops a session that
-    has ended, one idle past a day, and one whose binding has moved — so the thread kept every message
-    the user wrote and silently lost everything the agent said, because the user's half is JSON and the
-    agent's was read live. A transcript does not stop existing when its session does, and it records
-    which environment each stretch of it belonged to, so that is what is read.
-    """
     import transcript
     # NOTHING SAID BEFORE THIS ENVIRONMENT EXISTED. The marks live in the transcripts, which this
     # package does not own and must never rewrite, so a NAME used again finds every stretch any
@@ -71,13 +55,6 @@ _READ: dict = {}
 
 
 def _text_of(rec: dict) -> str:
-    """Whatever text a record carries, for matching the marks that say which environment it is on.
-
-    The start block is not in the message at all: a SessionStart hook's output arrives under
-    `attachment.stdout`, and a switch's under `toolUseResult`. Reading only `message.content` found
-    neither, and every turn in every transcript filed itself under the environment that comes before
-    any mark.
-    """
     parts = []
     content = (rec.get("message") or {}).get("content")
     if isinstance(content, str):
@@ -94,7 +71,6 @@ def _text_of(rec: dict) -> str:
 
 
 def _spoken(rec: dict) -> str:
-    """The assistant's own words in this record, and nothing it called."""
     content = (rec.get("message") or {}).get("content")
     if isinstance(content, str):
         return content
@@ -105,12 +81,6 @@ def _spoken(rec: dict) -> str:
 
 
 def _scan(path, env: str) -> list[dict]:
-    """This transcript's tagged turns for `env`, parsing only the bytes appended since the last read.
-
-    The whole file is parsed the first time and never again: a record is small, and reading 317MB of
-    them across sixteen transcripts measured 0.87s, which is a price worth paying once per file rather
-    than a prefilter that is fast and sometimes wrong about where an environment began.
-    """
     import transcript
     try:
         size = path.stat().st_size
@@ -165,12 +135,6 @@ def _take(raw: bytes, held: dict) -> None:
 
 
 def wrote(root: Path, env: str) -> list[dict]:
-    """What the user wrote, and what was said back under it: the messages and their replies.
-
-    Both halves come from the inbox, which is already the record of everything sent from the viewer
-    and answered from the terminal — so a thread is a reading of what is there, not a second store
-    that has to be kept level with it.
-    """
     import inbox
     import todo
     # WHAT A MESSAGE BECAME IS ALREADY WRITTEN DOWN, and so is whether that row is being worked: a part
@@ -252,7 +216,6 @@ def wrote(root: Path, env: str) -> list[dict]:
 
 
 def _quoted_out(text: str) -> tuple[str, str]:
-    """(what it quotes, what it says) for a message that opens with a "> " block."""
     lines = text.splitlines()
     if not lines or not lines[0].startswith(">"):
         return "", text
@@ -267,13 +230,6 @@ def _quoted_out(text: str) -> tuple[str, str]:
 
 
 def asked(root: Path, env: str) -> list[dict]:
-    """The questions the agent asked, and the answers given: a question is a turn like any other.
-
-    A QUESTION IS THE ONE THING THE USER MUST ANSWER, and it used to live only on a card away from
-    the conversation that raised it. It travels with the whole question on it, not just its words, so
-    the thread can offer the same answering the question's own page does rather than a second one
-    that drifts from it.
-    """
     import questions
     out = []
     for n, q in enumerate(questions._all(root, env), 1):
@@ -289,16 +245,6 @@ def asked(root: Path, env: str) -> list[dict]:
 
 
 def waited(root: Path, env: str) -> list[dict]:
-    """Work the agent set aside because it is waiting on the user: a turn, with the ask on it.
-
-    PARKING IS THE AGENT SAYING IT CANNOT GO ON WITHOUT YOU, and until now it said it where
-    nobody was looking: parked work is filtered out of the home's open-work list, so "the PR is
-    ready, do you want to merge it?" sat in the record and the thread carried on without it.
-
-    It is a turn rather than a card because it IS one — the agent said something and is waiting
-    for an answer, which is the shape of every other turn here. Answering it is a reply on the
-    turn, which is a message, which is the one kind that reaches a working session at once.
-    """
     import work
     out = []
     for w in work.open_work(root, env):
@@ -313,11 +259,6 @@ def waited(root: Path, env: str) -> list[dict]:
 
 
 def _on_work(root: Path, env: str, turns: list) -> None:
-    """Mark each agent turn with the to-do it was working on: the work whose span covers the turn.
-
-    THE LEAD IS ON THE AGENT'S BUBBLE (message 176): "working on to-do 49" says what a reply belongs
-    to, and the record already knows — the piece of work open at that moment, and its to-do.
-    """
     import work
     spans = [(w.get("at") or "", w.get("ended") or "9999", w.get("todo"), w.get("subject") or "")
              for w in work._all(root, env) if w.get("at")]
@@ -332,7 +273,6 @@ def _on_work(root: Path, env: str, turns: list) -> None:
 
 
 class ChatController(Controller):
-    """The conversation on an environment: what the agent said and what the user said back, and nothing else."""
     resource = "chat"
     noun = "chat"
     actions = ("index",)

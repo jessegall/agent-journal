@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""Reminders: the one thing here that repeats, and everything that must not break it.
-
-    .journal/test_reminders.py
-
-A reminder is said at EVERY stop and every `reminder_every` tool calls, ahead of the stop
-queue and without spending its one slot. So what is tested is mostly the repetition
-itself — that it survives a hold, a silenced queue, three stops in a row, and a fresh turn
-— plus the parts that are ordinary catalogue behaviour: the cap, the required reason, the
-environment it belongs to, and the number that never shifts.
-"""
 import json, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
@@ -66,7 +56,6 @@ class S:
         return subprocess.run([self.J, *a], env=self.env, capture_output=True, text=True, timeout=180)
 
     def stop(self, after=False):
-        """The whole reply: (what the user sees, what the agent reads)."""
         out = self.fire("Stop", stop_hook_active=after)
         if not out.strip():
             return "", ""

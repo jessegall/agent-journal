@@ -22,7 +22,6 @@ TEXT = {
 
 
 class AutoMode(Resource):
-    """Auto mode for the whole journal: shown bare, switched by its verb."""
     controller = CONTROLLER
     action = "auto"
     state = ""

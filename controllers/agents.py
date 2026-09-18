@@ -21,7 +21,6 @@ QUIET_HOURS = 24
 
 
 def _branch_of(cwd: str) -> dict | None:
-    """The branch of the directory a subagent calls tools from, read the way the session's is read."""
     if not cwd:
         return None
     try:
@@ -31,7 +30,6 @@ def _branch_of(cwd: str) -> dict | None:
 
 
 class AgentsController(Controller):
-    """Who is working on an environment right now: its sessions, and the subagents they dispatched."""
     resource = "agents"
     noun = "agent"
     actions = ("index",)

@@ -45,7 +45,6 @@ def _put(root: Path, items: list[dict], track: str | None = None) -> None:
 
 
 def standing(root: Path, track: str | None = None) -> list[tuple[int, dict]]:
-    """What is on the chat right now: pinned, not yet closed by the user."""
     return [(n, x) for n, x in enumerate(_all(root, track), 1) if not x.get("closed_at")]
 
 
@@ -72,7 +71,6 @@ def add(root: Path, text: str, at: str, tone: str = "note", link: str = "", labe
 
 
 def close(root: Path, n: int, at: str, by: str = "user", track: str | None = None) -> tuple[bool, str]:
-    """Take it down. THE USER'S X IS THE NORMAL WAY; the agent can retire its own when it stops being true."""
     with state.locked(root):
         items = _all(root, track)
         if not 1 <= n <= len(items):

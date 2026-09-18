@@ -1,24 +1,4 @@
 #!/usr/bin/env python3
-"""What the write gate must and must not stop.
-
-    .journal/test_gate.py
-
-THIS SUITE EXISTS BECAUSE THE GATE WAS WRONG THREE TIMES IN ONE DAY, and every one of the
-three stopped a READ:
-
-  `cat …; echo "=== useDispatch ==="; cat …`   `useDis` + `patch ` matched as a substring
-  `python3 - <<'PY' … if n >= 6 … PY`          a heredoc body read as shell
-  `./test.py 2>&1 | grep FAIL`                 a file-descriptor dup read as a redirect
-
-Each fired during discovery — the one moment nobody can yet name the work, because the
-reading is what tells them what the work is. A gate that interrupts reading teaches that it
-is an obstacle to route around, and then the write it was built to catch is routed around
-too. So the cases below are kept as regressions, and new ones go here before the fix does.
-
-The bias is deliberate and stated: MISSING a write is cheaper than blocking a read. A false
-deny stops real work and gets the gate switched off within the hour; a miss costs one
-unfiled edit.
-"""
 import sys
 from pathlib import Path
 

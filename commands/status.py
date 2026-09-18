@@ -48,7 +48,6 @@ STATUS_COMMANDS = (
 
 
 def _plan_line(root, env: str) -> str:
-    """The plan being worked here, and which phase is current — or what it waits on."""
     import plans as plans_mod
     got = plans_mod.active(root, env)
     if got is not None:

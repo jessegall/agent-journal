@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""reports.py: file a report for the user, list, read, archive; never a doc."""
 import json, os, sys, tempfile
 from pathlib import Path
 

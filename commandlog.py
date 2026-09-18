@@ -287,7 +287,6 @@ RENAMED = {"Reading your messages": "Reading messages", "Reading waiting message
 
 
 def describe(noun: str, verb: str) -> str:
-    """The line's wording. The number is not part of it: Activity shows it on its own."""
     text = DESCRIBE.get(f"{noun}:{verb}") or DESCRIBE.get(f"{noun}:")
     if not text:
         return f"Running journal {noun} {verb}".strip()
@@ -430,7 +429,6 @@ def _detail(value) -> str:
 
 
 def _settings_said(key: str, body: dict) -> str:
-    """What a settings change from the viewer changed, in words: "Turned auto mode on", "Activity shows the last 80 lines"."""
     def on(value) -> bool:
         return str(value).lower() in ("true", "1", "yes", "on", "enable")
     said = []
@@ -453,7 +451,6 @@ def _settings_said(key: str, body: dict) -> str:
 
 
 def record_web(root: Path, track: str, resource: str, action: str, ident: str | None, body: dict, at: str) -> None:
-    """A write made in the viewer, as a line by the user."""
     key = f"{resource}:{action}"
     if action in READS or key in WEB_SHOWN or key not in WEB:
         return
@@ -500,7 +497,6 @@ WORDING = {"ran": ("ran 1 command", "ran {n} commands"), "edited": ("edited 1 fi
 
 
 def tools_text(counts: dict) -> str:
-    """"Ran 4 commands, edited 3 files, read 2 files": the queued tool uses as one line."""
     parts = [(one if counts[b] == 1 else many.replace("{n}", str(counts[b])))
              for b, (one, many) in WORDING.items() if counts.get(b)]
     text = ", ".join(parts)
@@ -508,7 +504,6 @@ def tools_text(counts: dict) -> str:
 
 
 def queue_tool(root: Path, track: str, stem: str, tool: str, at: str) -> None:
-    """Count one tool use the agent made outside the journal; ten of them become one Activity line."""
     counts = state.get(root, QUEUE, None, stem=stem) or {}
     bucket = BUCKETS.get(tool, "other")
     counts[bucket] = counts.get(bucket, 0) + 1
@@ -518,7 +513,6 @@ def queue_tool(root: Path, track: str, stem: str, tool: str, at: str) -> None:
 
 
 def flush_tools(root: Path, track: str, stem: str, at: str) -> None:
-    """Write whatever tool uses are queued as one Activity line, and empty the queue."""
     counts = state.get(root, QUEUE, None, stem=stem) or {}
     if not sum(counts.values()):
         return
@@ -528,7 +522,6 @@ def flush_tools(root: Path, track: str, stem: str, at: str) -> None:
 
 
 def flush_stale(root: Path, env: str, now: datetime | None = None) -> None:
-    """Write the queued tool uses of every session on this environment that has used no tool for a minute."""
     now = now or datetime.now(timezone.utc)
     for stem, marks in state.runtime_files(root):
         if marks.get(QUEUE_ENV) != env or not sum((marks.get(QUEUE) or {}).values()):
@@ -547,7 +540,6 @@ MCP_PREFIX = "mcp__"
 
 
 def mcp_parts(name: str) -> tuple[str, str]:
-    """(server, tool) for an MCP tool call, or ("", "") for anything else."""
     if not str(name or "").startswith(MCP_PREFIX):
         return "", ""
     server, _, tool = str(name)[len(MCP_PREFIX):].partition("__")
@@ -555,19 +547,11 @@ def mcp_parts(name: str) -> tuple[str, str]:
 
 
 def mcp_label(server: str) -> str:
-    """`playwright` reads as Playwright; `claude_ai_Gmail` as Claude ai Gmail."""
     words = str(server or "").replace("-", " ").replace("_", " ").split()
     return " ".join([w[:1].upper() + w[1:] for w in words[:1]] + words[1:]) or server
 
 
 def record_mcp(root: Path, track: str, stem: str, name: str, at: str) -> None:
-    """An MCP tool call: its own Activity line, naming the server, holding every call made through it.
-
-    NOT BUNCHED INTO "used 3 tools". A call through an MCP server is a different kind of act from a
-    shell command — the user asked to see which server was used and what was done with it — so it gets
-    a line of its own, and the calls that follow it are appended to that same line rather than piling
-    up new ones. A line in between ends the run: the next call starts a new line, in its real place.
-    """
     server, tool = mcp_parts(name)
     if not server:
         return
@@ -590,11 +574,6 @@ LONG_SECONDS = 30
 
 
 def record_long(root: Path, track: str, stem: str, what: str, took: float, at: str) -> None:
-    """A shell command that took a long time: its own Activity line, with what it was and how long.
-
-    A TALLY MARK SAYS NOTHING ABOUT WAITING. "Ran 3 commands" is the same line whether they took a
-    second or four minutes, and the four minutes is the part the user is looking at the screen for.
-    """
     flush_tools(root, track, stem, at)
     _append(root, track, {"at": at, "text": say("ran_long", what=" ".join(str(what).split())[:80]),
                           "kind": "ran", "n": None, "detail": _span(took), "by": "Agent"})
@@ -606,14 +585,12 @@ def _span(seconds: float) -> str:
 
 
 def record_commit(root: Path, track: str, stem: str, sha: str, subject: str, at: str) -> None:
-    """The agent committed: its own line, with the short sha and the subject, after the tool uses before it."""
     flush_tools(root, track, stem, at)
     _append(root, track, {"at": at, "text": say("committed"), "kind": "commit", "n": None, "detail": sha[:7], "sha": sha,
                           "title": " ".join((subject or "").split()), "by": "Agent"})
 
 
 def record_dispatch(root: Path, track: str, stem: str, description: str, at: str) -> None:
-    """The agent handed work to a subagent: its own line, after whatever tool uses came before it."""
     flush_tools(root, track, stem, at)
     _append(root, track, {"at": at, "text": say("dispatched"), "n": None, "detail": " ".join((description or "").split()),
                           "by": "Agent"})
@@ -638,7 +615,6 @@ def _patterns() -> tuple:
 
 
 def kind_of(text: str) -> dict:
-    """The resource a line names and its wording, read from its text: for lines logged before they recorded them."""
     for pattern, kind, wording in _patterns():
         got = pattern.match(text or "")
         if got:
@@ -650,7 +626,6 @@ PRIORITY_LINES = {"Setting to-do priority", "Changed to-do priority"}
 
 
 def _named_priority(e: dict) -> dict:
-    """A priority line whose number is a named level shows the name."""
     detail = str(e.get("detail") or "")
     if e.get("text") not in PRIORITY_LINES or not detail.lstrip("-").isdigit():
         return e

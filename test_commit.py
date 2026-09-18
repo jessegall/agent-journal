@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""A commit closes the to-do its message names, and a close can be undone.
-
-    .journal/test_commit.py
-
-Owns the trailer protocol end to end: what `todo.refs_in` will and will not read out of a
-commit message, what the PostToolUse hook does with a commit that has landed, and
-`todos reopen`, which is what makes closing without a human in the loop affordable.
-"""
 import json, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 

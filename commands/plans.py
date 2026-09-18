@@ -76,7 +76,6 @@ class Add(Resource):
 
 
 class Edit(Resource):
-    """Correct a plan's title, goal or approach — what is not given stays."""
     signature = "plans:edit {n : a plan number} {title?* : the plan's title, reworded} {--goal=} {--brief}"
     casts = PLAN
     writes = True

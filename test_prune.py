@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-"""`journal todos prune`: done/dropped to-dos, cleared off the list once they are old
-enough — archived by default, actually deleted only with --force. An open to-do is
-never touched, whatever its age.
-
-    .journal/test_prune.py
-"""
 import os, re, sys, tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -41,8 +35,6 @@ def j(*a):
 
 
 def backdate(n: int, days: int):
-    """Rewrite to-do n's `done:` line as if it closed `days` ago — the only way to
-    test an age-based cutoff without waiting for real time to pass."""
     f = next(todo_dir.glob(f"{n:03d}-*.md"))
     when = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat(timespec="seconds")
     f.write_text(re.sub(r"^done: .*$", f"done: {when}", f.read_text(), flags=re.M))

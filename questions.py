@@ -212,7 +212,6 @@ def add(root: Path, text: str, at: str, about_refs: list[str] | None = None,
 
 
 def refused(text: str, limit: int) -> str | None:
-    """Why a title this long is refused, or None. The same words wherever the cap is checked."""
     text = " ".join((text or "").split())
     over = entries.capped(text, limit)
     if not over:
@@ -226,7 +225,6 @@ _BULLET = re.compile(r"^\s*(?:[-*\u2022]|\d{1,2}[.)])\s+\S", re.M)
 
 
 def listed_choices(text: str) -> str:
-    """The choice markers a question's text lists, such as "A) … B) …", "1. … 2. …" or bullet lines; empty when it lists none."""
     marks = [m.lower() for m in _MARKER.findall(text)]
     for first, second in (("a", "b"), ("1", "2")):
         if first in marks and second in marks:
@@ -237,8 +235,6 @@ def listed_choices(text: str) -> str:
 
 
 def _options(raw: list | None) -> list[dict]:
-    """The choices offered, as {label, description, code}: the label one line, blanks and repeated labels dropped.
-    An option written as a bare string, as every option once was, is its label."""
     out: list[dict] = []
     for o in [raw] if isinstance(raw, (str, dict)) else raw or []:
         o = o if isinstance(o, dict) else {"label": o}
@@ -254,7 +250,6 @@ def _find(items: list[dict], n: int) -> tuple[dict | None, str]:
 
 
 def seen(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, str]:
-    """The user opened the question in the viewer; the first time is kept."""
     with state.locked(root):
         items = _all(root, track)
         q, why = _find(items, n)
@@ -285,7 +280,6 @@ def answer(root: Path, n: int, text: str, at: str, track: str | None = None) -> 
 
 def edit(root: Path, n: int, text: str | None, track: str | None = None, description: str | None = None,
          options: list[str] | None = None, pick: int | None = None, limit: int = 0) -> tuple[bool, str]:
-    """Reword a question, and/or change its description, options or pick; what is not given stays."""
     if text is not None and not text.strip():
         return False, say("needs_text")
     if text is not None and (found := listed_choices(text)):
@@ -370,7 +364,6 @@ def show(root: Path, n: int) -> tuple[bool, str]:
 
 
 def show_text(q: dict) -> str:
-    """A question's `row_response` as the terminal page."""
     text = say("show_head", n=q["n"], age=q["age"], text=fmt.wrap(q["text"], indent=2),
                links=[link["label"] for link in q["links"]] or "nothing linked")
     if q["description"]:

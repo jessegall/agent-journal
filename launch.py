@@ -34,12 +34,10 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 
 def plain(data: bytes) -> str:
-    """The words in a stretch of terminal output, without the control sequences around them."""
     return ANSI.sub(b"", data).decode(errors="replace")
 
 
 class Launcher:
-    """An agent run under a pseudo-terminal, with the launcher between it and the real one."""
 
     def __init__(self, command: list[str], cwd: Path | None = None):
         self.command = command
@@ -72,13 +70,11 @@ class Launcher:
             pass
 
     def write(self, data: bytes) -> None:
-        """Into the agent, as if typed."""
         while data:
             n = os.write(self.fd, data)
             data = data[n:]
 
     def type_line(self, text: str) -> None:
-        """A whole line, then Enter — a beat later, on its own."""
         self.write(text.encode())
         time.sleep(ENTER_AFTER)
         self.write(b"\r")
@@ -90,7 +86,6 @@ class Launcher:
         return bool(self.typed.strip()) and self.raw != b"\x1b"      # a bare Escape has dropped the line
 
     def run(self) -> int:
-        """Relay until the agent exits; the terminal is put back however this ends."""
         stdin = sys.stdin.fileno()
         stdout = sys.stdout.fileno()
         saved = None
@@ -135,7 +130,6 @@ class Launcher:
         return os.waitstatus_to_exitcode(status)
 
     def _note_typed(self, data: bytes) -> None:
-        """What the user has on the line: Enter clears it, backspace shortens it, Ctrl-C drops it."""
         self.raw += data
         text = ANSI_INPUT.sub(b"", self.raw)
         cut = text.rfind(b"\x1b")
@@ -166,7 +160,6 @@ def run(command: list[str], cwd: Path | None = None, ticks: list | None = None, 
 
 
 class Hot:
-    """The nudger, swapped for a fresh one whenever its code changes on disk."""
 
     WATCHED = ("launch.py", "news.py", "hook.py")
 
@@ -218,7 +211,6 @@ class Hot:
 
 # ─────────────────────────────────────────────── what the hooks report, read from outside
 class Reports:
-    """The hooks' event lines for the sessions this launcher started, newest last."""
 
     def __init__(self, root: Path):
         self.root = root
@@ -251,7 +243,6 @@ class Reports:
 
 # ─────────────────────────────────────────────── the viewer's news, typed into the agent
 class Nudger:
-    """Types the viewer's news and the stop queue into an idle agent."""
 
     def __init__(self, root: Path, env: str, every: float = 2.0, quiet: bool = False):
         self.root = root
@@ -269,7 +260,6 @@ class Nudger:
         self.user_lines = 0          # the user's Enter count, as last seen
 
     def agent_idle(self, seat: Launcher) -> bool:
-        """Idle is what the hooks report, when they do: a Stop with no event after it."""
         last = self.reports.last()
         if last is not None:
             return last.get("event") in ("Stop", "SessionStart") and seat.idle_for() >= 1.0
@@ -292,7 +282,6 @@ class Nudger:
         self.stamp(seat)
 
     def look(self, seat: Launcher) -> str:
-        """One look at the agent; what it decided goes in the seat record."""
         last = self.reports.last()
         if not self.agent_idle(seat):
             return f"not idle: last report {last.get('event') if last else 'none'}, quiet {seat.idle_for():.1f}s"
@@ -325,14 +314,12 @@ class Nudger:
         self.typed_at = time.time()
 
     def settled(self) -> bool:
-        """The hooks have reported since this seat last typed."""
         last = self.reports.last()
         if last is None:                             # no hooks to report: a line stands for a while on its own
             return not self.typed_at or time.time() - self.typed_at >= RETYPE_AFTER
         return not self.typed_at or float(last.get("at") or 0) > self.typed_at
 
     def owed(self) -> str | None:
-        """The stop queue's first line, read from outside the agent."""
         last = self.reports.last()
         stem = last.get("session") if last else ""
         if not stem:
@@ -345,7 +332,6 @@ class Nudger:
             return None
 
     def stamp(self, seat: Launcher) -> None:
-        """What the seat sees of the session, written for the viewer."""
         import state
         last = self.reports.last()
         stem = last.get("session") if last else ""

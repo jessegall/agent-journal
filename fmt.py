@@ -1,15 +1,3 @@
-"""How every command prints: plain terminal text, one house style.
-
-THE TERMINAL DOES NOT RENDER MARKDOWN. A `#` heading is a hash on screen, a backtick is
-a backtick, and a question folded into a metadata line is a paragraph nobody can find the
-start of. Measured: `journal todos 13` opened with a title behind a hash, then "written 4h
-ago · line 4874 · waiting on the user: The old /definitions…" running for nine lines. The
-question was there and the user could not see it.
-
-So: a title is a plain line, bold when stdout is a terminal. Facts sit behind labels.
-Anything longer than a line — a question, a brief — gets a section of its own. Commands
-are printed as they are typed, in a column with what they do. Nothing is decorated.
-"""
 from __future__ import annotations
 
 import sys
@@ -24,17 +12,6 @@ _FLOOR = 46
 
 
 def room(width: int | None = None) -> int:
-    """The width to lay text out in — the caller's, or the terminal's, whichever is smaller.
-
-    WIDTH WAS A CONSTANT AND THE TERMINAL IS NOT. Every page asked for 88 columns whatever
-    the reader's window was, so in anything narrower every line wrapped a SECOND time and
-    left a one- or two-word stub under it. `block` was already careful not to re-wrap what
-    it printed; it was the terminal doing it, downstream of anything this package could see.
-
-    ONLY WHEN SOMEBODY IS LOOKING. A hook writes to the harness and a test writes to a pipe,
-    where a terminal size is either absent or meaningless, so the constant stands there and
-    the layout stays reproducible.
-    """
     want = WIDTH if width is None else width
     if not _tty():
         return want
@@ -66,10 +43,6 @@ _CLI: list = []
 
 
 def cli(root=None) -> str:
-    """The prefix every printed path needs to start with, to resolve from where we are.
-
-    `.journal/` when that is honest, and the journal's absolute location when it is not.
-    """
     if _CLI:
         return _CLI[0]
     import os
@@ -94,24 +67,6 @@ _FLAGS: list = []
 
 
 def acting_as(env: str = "", agent: str = "") -> str:
-    """Remember the flags this invocation used, so printed commands carry them back.
-
-    A LENT AGENT MUST PUT `--env` AND `--as` ON EVERY COMMAND, and the journal's own printed
-    remediation said none of them: `journal todos 1` ends its brief with `journal todos start
-    1`, `journal todos done 1 "<how>"` and the rest, and an agent that ran what was printed
-    hit a refusal it had just been told how to avoid. The dispatch prompt says it; the
-    printed line contradicts it by omission; and the reader has no way to know which to
-    believe. Found by a dogfood agent working three directories down.
-
-    THE CLI CANNOT KNOW IT IS TALKING TO AN AGENT — that is the identity collision the whole
-    grant exists for, and it does not stop applying here. But it knows what THIS command
-    line carried: an agent that got far enough to be reading a brief typed the flags to get
-    it, so every command printed back to it is spelled the way the one it just ran was.
-
-    A SESSION PASSES NOTHING AND SEES NOTHING ADDED, which is the case that must stay clean:
-    the flags are noise to the reader who does not need them, and this package has spent a
-    day removing exactly that kind of noise.
-    """
     bits = " ".join(x for x in (f'--env="{env}"' if env else "",
                                 f'--as="{agent}"' if agent else "") if x)
     _FLAGS[:] = [bits] if bits else []
@@ -119,13 +74,6 @@ def acting_as(env: str = "", agent: str = "") -> str:
 
 
 def _flagged(text: str) -> str:
-    """Put this invocation's flags back into every printed `journal <verb>`.
-
-    ONLY BEFORE A VERB THE CLI ANSWERS TO, because `journal` is also an ordinary word in
-    every other sentence this package prints — "the journal is in force here" must not
-    become "the --env=… journal is". A table of verbs is the difference between a rewrite
-    and a corruption, and `help` already keeps that table for its own reasons.
-    """
     if not _FLAGS:
         return text
     import re
@@ -145,14 +93,6 @@ def dim(text: str) -> str:
 
 
 def title(text: str, *, sub: str = "", width: int | None = None) -> str:
-    """The first line of an output: what this is, and the one fact that scopes it.
-
-    THE SUB DROPS TO ITS OWN LINE RATHER THAN OFF THE EDGE. A to-do's heading is its number
-    and its title, and a long title pushed the pair past the terminal, where it wrapped at
-    whatever character happened to land there — a broken word in the first line the reader
-    sees. Measured on the plain text, before `bold` and `dim` add bytes that occupy no
-    columns: counting those is how a line that fits gets wrapped anyway.
-    """
     width = room(width)
     if not sub:
         return bold(text)
@@ -179,16 +119,6 @@ def _unknit(text: str) -> str:
 
 
 def wrap(text: str, indent: int = 2, width: int | None = None) -> str:
-    """A paragraph, or several, at an indent. Blank lines between paragraphs survive.
-
-    THEY DID NOT SURVIVE. This split on the blank line, wrapped each paragraph, and then
-    joined them with ONE newline — so every multi-paragraph message this package prints
-    arrived as a single block with the breaks its author put in silently removed. The
-    docstring above has claimed otherwise since the function was written, which is why
-    nobody looked: the separator was read once, believed, and never measured against what
-    came out. It is the funnel every command's prose goes through, so it is also the
-    reason the same complaint kept coming back about different screens.
-    """
     width = room(width)
     pad = " " * indent
     paras = [_knit(" ".join(p.split())) for p in (text or "").split("\n\n") if p.strip()]
@@ -198,7 +128,6 @@ def wrap(text: str, indent: int = 2, width: int | None = None) -> str:
 
 
 def numbered(n: int, text: str, meta: str = "", *, struck: bool = False, width: int | None = None) -> str:
-    """One entry of a list: the number, the text wrapped under it, the facts beneath."""
     width = room(width)
     num = f"{n:>3}  "
     pad = " " * len(num)
@@ -212,17 +141,6 @@ def numbered(n: int, text: str, meta: str = "", *, struck: bool = False, width: 
 
 
 def commands(rows: list[tuple[str, str]], indent: int = 2, width: int | None = None) -> str:
-    """Commands as they are typed, in a column, with what each does — inside `width`.
-
-    IT USED TO BOUND NOTHING. `wrap`, `numbered` and `table` all keep to the width; this one
-    took no width at all and never wrapped a description, so six of the eight trailing
-    command lists in the CLI ran past 88 columns — `journal tools` to 131 characters — and
-    the two that fitted did so because their descriptions happened to be short. A guarantee
-    that holds by accident of content is not a guarantee.
-
-    THE COMMAND ITSELF IS NEVER BROKEN. It is what the reader copies, so a line that cannot
-    fit puts its description underneath rather than wrapping the command mid-flag.
-    """
     width = room(width)
     pad = " " * indent
     w = max((len(c) for c, _ in rows), default=0)
@@ -247,19 +165,10 @@ def commands(rows: list[tuple[str, str]], indent: int = 2, width: int | None = N
 
 
 def dim_body(line: str, head: int) -> str:
-    """Dim everything after the command column, keeping the command bright."""
     return line[:head] + dim(line[head:]) if _tty() else line
 
 
 def facts(rows: list[tuple[str, str, str]], indent: int = 2, width: int | None = None) -> str:
-    """label   value   command — the status page's shape, inside `width`.
-
-    IT BOUNDED THE VALUE AND NOTHING ELSE. The value column was capped at 58 and the label
-    and trailing command were not, so the bare `journal` screen ran to 97 characters — a
-    second renderer with the same defect `commands` had, which the known one did not
-    explain. The value is what gives now, because it is the only column that can be cut
-    without taking away something the reader has to type.
-    """
     width = room(width)
     pad = " " * indent
     lw = max((len(l) for l, _, _ in rows), default=0)
@@ -275,12 +184,6 @@ def facts(rows: list[tuple[str, str, str]], indent: int = 2, width: int | None =
 
 
 def table(rows: list[tuple[str, str]], indent: int = 2, gap: int = 3, col: int = 26, width: int | None = None) -> str:
-    """Two columns: a name on the left, what it is on the right, wrapped in its column.
-
-    A row whose name is empty continues the row above: metadata, a path, a file inside a
-    folder — anything that belongs under the name without repeating it. The left column
-    is as wide as the widest name, up to `col`; a longer name gets its own line.
-    """
     width = room(width)
     pad = " " * indent
     w = min(col, max((len(n) for n, _ in rows if n), default=0))
@@ -327,16 +230,6 @@ _KEEP = re.compile(r"^\s*(\||#|>|```|journal:|\d+\.\s|[-•*]\s)")
 
 
 def _paragraphs(text: str):
-    """The lines of `text` grouped into paragraphs, each marked prose or structure.
-
-    A BLANK LINE IS THE ONLY PARAGRAPH BREAK — which is what a writer means by one, and what
-    `block` did not believe. It split on every newline and called each LINE a paragraph, so
-    prose that had already been hard-wrapped once arrived as a dozen short paragraphs, each
-    under the width, each passed through untouched. Then the reader's terminal wrapped them
-    a second time and left a stub under each: "timezone", "clock time", "compares",
-    "against." — six orphans in one to-do brief, and the user had to send a screenshot,
-    because from inside the process the text looked perfectly wrapped.
-    """
     for para in re.split(r"\n\s*\n", text):
         lines = para.split("\n")
         if lines and any(l.strip() for l in lines):
@@ -345,26 +238,12 @@ def _paragraphs(text: str):
 
 
 def _indent(lines: list) -> str:
-    """The indent every line of a paragraph shares — "" when they do not share one."""
     filled = [l for l in lines if l.strip()]
     common = min((len(l) - len(l.lstrip()) for l in filled), default=0)
     return " " * common
 
 
 def block(text: str, width: int | None = None) -> str:
-    """What the hook hands the harness, made readable: a long line wrapped, layout kept.
-
-    A hold, a denial, a start block, a hint — each is text the agent (and, in the terminal,
-    the user) reads. A line longer than the width is wrapped; a line that is indented, or is
-    a command or a list item, is kept as it is, because wrapping a command breaks it and
-    wrapping a column breaks the column.
-
-    IT IS LINE-WISE ON PURPOSE, AND THAT IS NOT AN OVERSIGHT. `render` and `say` pass an
-    already-laid-out page through here, so anything cleverer destroys the layout it is
-    handed: joining adjacent lines into paragraphs merges two column rows into one. Prose
-    that a person WROTE — a to-do's brief, a doc's body — is reflowed by `prose` instead,
-    which is only ever given text nobody has laid out yet.
-    """
     said = cli()
     if said != CANON:
         text = (text or "").replace(CANON, said)
@@ -382,20 +261,6 @@ def block(text: str, width: int | None = None) -> str:
 
 
 def prose(text: str, width: int | None = None) -> str:
-    """Authored markdown, reflowed to the reader: prose flows, structure is kept as written.
-
-    A PROSE PARAGRAPH IS ONE CONTINUOUS THING, whatever line breaks it happens to be stored
-    with. A brief is written in an editor at whatever width its author had, and printing it
-    verbatim into a narrower terminal wraps every stored line a SECOND time and leaves a
-    one- or two-word stub beneath each: "timezone", "clock time", "compares", "against." —
-    six orphans in one to-do, and it took a screenshot to see, because from inside the
-    process the text looked perfectly wrapped.
-
-    AND NOT EVERYTHING IS PROSE, which is the whole difficulty. A fenced or indented code
-    block, a list, a table, a heading and a command all mean something by their shape, and
-    reflowing them destroys it. A quoted passage is the interesting case: it is prose that
-    happens to be inset, so the indent is preserved and the words inside it flow.
-    """
     width = room(width)
     out = []
     for lines, flows in _paragraphs(text or ""):
@@ -414,20 +279,6 @@ def prose(text: str, width: int | None = None) -> str:
 
 
 class Item(NamedTuple):
-    """ONE ROW, WHATEVER KIND OF ROW IT IS. The renderer decides how it looks.
-
-    Every list this package prints is one of four things, and they differed only in which
-    fields were filled — so they are one shape, and the four renderers that used to be
-    chosen by the CALLER are chosen here instead:
-
-        Item(n=2, text="the claim", meta="3h ago")        a pin, a to-do, a reminder
-        Item(title='journal pins add "<x>"', text="…")    a command and what it does
-        Item(title="context_window", text="1000000")      a setting and its value
-        Item(text="a paragraph")                          prose
-
-    That is the whole vocabulary. A caller that wants a number gives a number; one that
-    wants a column gives a title; one that wants prose gives neither.
-    """
     text: str = ""
     n: int = 0
     title: str = ""
@@ -436,32 +287,10 @@ class Item(NamedTuple):
 
     @property
     def layout(self) -> str:
-        """Which of the four shapes this row is — from what was filled in, not from a flag.
-
-        A caller that wants a column gives a title; one that wants a number gives a number;
-        one that wants prose gives neither. There is no way to ask for a shape and no way to
-        ask for one the fields do not support, which is what keeps the vocabulary at four.
-        """
         return COLUMN if self.title else NUMBERED if self.n else PROSE
 
 
 class Out(NamedTuple):
-    """WHAT A COMMAND RETURNS, AND THE ONLY THING `say` ACCEPTS.
-
-    THE HOUSE STYLE USED TO LIVE IN 546 DECISIONS. `say` was the one exit, but every one of
-    its callers assembled its own string first — a `title`, a `\n\n`, a `commands` block,
-    another `\n\n`, a footer — so the blank lines, the order, the indent and the trimming
-    were re-decided at every site. That is why the same complaint about a wall of text kept
-    coming back in a different screen each time: there was no place to fix it once.
-
-    So a command describes WHAT it is saying and never how. `render` below is the only code
-    in the package that decides what a heading looks like, where the air goes, and how a row
-    is laid out — and `say` is the only thing that writes to a stream.
-
-    `items` may hold an `Out` as well as an `Item`: that is a section, rendered by the same
-    function one level in, which is how a page with several groups is built without any
-    caller joining two rendered strings together.
-    """
     lead: str = ""              # the paragraph under the heading — or the whole message
     title: str = ""             # "PINS"
     sub: str = ""               # "environment reminders · 7 standing"
@@ -481,12 +310,6 @@ _ROOM = 34
 
 
 def _column(i: "Item", width: int) -> str:
-    """A name, its value beside it in a column, its facts beneath.
-
-    COLUMNS ARE A PROPERTY OF THE GROUP. `width` is the widest title in the group, passed
-    in rather than measured here, so every row of one group aligns and no caller can get
-    half a table. The name itself is never broken: it is what the reader copies.
-    """
     if not i.text:
         return f"  {i.title}"
     # STACKED WHEN THE COLUMN WOULD NOT LEAVE ROOM TO READ. `width` is 0 when the group
@@ -501,12 +324,10 @@ def _column(i: "Item", width: int) -> str:
 
 
 def _numbered(i: "Item", width: int) -> str:
-    """A numbered entry: a pin, a to-do, a reminder. The number is what commands take."""
     return numbered(i.n, i.text, i.meta, struck=i.struck)
 
 
 def _prose(i: "Item", width: int) -> str:
-    """A paragraph, with anything qualifying it indented beneath."""
     return wrap(i.text) + (f"\n{wrap(i.meta, indent=4)}" if i.meta else "")
 
 
@@ -522,18 +343,11 @@ def _air(a, b) -> str:
 
 
 def _fill(text: str, head: str) -> str:
-    """One paragraph wrapped under a hanging indent, with backticked runs kept whole."""
     return _unknit(textwrap.fill(_knit(" ".join((text or "").split())), width=WIDTH,
                                  initial_indent=head, subsequent_indent=" " * len(head)))
 
 
 def _rows(items) -> str:
-    """A group of items as text, with one blank line between them.
-
-    The only branch here is structural: an `Out` among the items is a SECTION, and it is
-    rendered by the same function one level in. Everything else is a row, and which kind
-    of row it is was decided when it was written.
-    """
     rows = [i for i in items if i is not None]
     width = max((len(i.title) for i in rows if isinstance(i, Item)), default=0)
     # THE GROUP DECIDES, ONCE, FOR ALL OF ITS ROWS. One 58-character command in
@@ -553,13 +367,6 @@ def _rows(items) -> str:
 
 
 def render(out) -> str:
-    """AN `Out` AS TEXT. The only code that decides where the air goes.
-
-    One blank line after a heading, one between groups, none at the ends. A refusal is
-    marked once — `say(error=True)` puts `!` on the first line of whatever it is given, so
-    a refusal built from five calls announced itself five times, and a marker repeated down
-    a page means nothing.
-    """
     if isinstance(out, str):
         out = Out(lead=out)
     parts = []
@@ -576,14 +383,6 @@ def render(out) -> str:
 
 
 def _marked(text: str, error: bool) -> str:
-    """A refusal announces itself ONCE, on its first line, BEFORE the text is wrapped.
-
-    Both halves of that matter and both were learned by breaking them. Marking every call
-    made a refusal built from five `say`s announce itself five times. Marking AFTER the
-    wrap shifts the first line by four characters without re-wrapping it, so the break
-    points move and a command splits across two lines — which is the one thing this
-    package will not do to a command.
-    """
     if not error:
         return text
     lines = text.split("\n")
@@ -593,18 +392,6 @@ def _marked(text: str, error: bool) -> str:
 
 
 def say(out="", *, error: bool = False) -> None:
-    """THE ONE WAY OUT OF EVERY COMMAND, and the one SHAPE for everything migrated to it.
-
-    An `Out` is DESCRIBED — a title, rows, a footer — and `render` decides where the air
-    goes. That is the destination for every caller.
-
-    A BARE STRING IS A SITE NOT YET MIGRATED, and it is passed through `block` exactly as
-    it always was, because a string arriving here is already shaped: it has been through
-    `commands` or `table` or `numbered` at the call site, and wrapping it as prose would
-    reflow a column into a paragraph. Both forms end at `block`, which is the one gate that
-    decides what a line may look like — so this is one funnel with a queue behind it, not
-    two paths.
-    """
     if isinstance(out, Out):
         out = out._replace(error=out.error or error)
         text, error = render(out), out.error
@@ -614,21 +401,6 @@ def say(out="", *, error: bool = False) -> None:
 
 
 def notice(text: str) -> None:
-    """`journal: <text>` — one line, always to stderr, for something that happened off to
-    the side of whatever a command is answering: a mark that could not be filed because
-    there was no transcript to file it under, a lock that timed out and was proceeded
-    past, a tool that failed to run.
-
-    SIX PLACES SPELLED THIS DIFFERENTLY. Most wrote `journal: ...` to stderr by hand, each
-    with its own idea of the wording; `tools.py` wrote the `  ! ` error marker instead —
-    a second implementation of what `say(error=True)` already does, for a message that was
-    never part of any command's `Out`. Both are the same thing: a warning, one line, aside
-    from the command's own output. This is its one shape now.
-
-    `block` is still the gate — a `journal:` line is kept whole rather than wrapped, same as
-    every other line this package marks that way — so a long interpolated reason still
-    reads as one notice instead of breaking across two.
-    """
     print(block(_said("notice", text=text)), file=sys.stderr)
 
 
@@ -650,19 +422,10 @@ ORDERS = (DESC, ASC)
 
 
 def ordered(rows: list, order: str = DESC) -> list:
-    """The rows as they should be READ: newest first unless asked otherwise.
-
-    EVERY LIST HERE IS APPEND-ONLY, so its natural order is oldest first — which is the
-    order nobody wants. A reader opening `journal pins` or `journal docs` is looking for
-    what happened recently, and with a cap they were being handed the oldest page and told
-    there were more. The store's order is not touched: only the reading is reversed, and
-    the NUMBER travels with the row, so `pin 3` is pin 3 on either setting.
-    """
     return list(rows) if order == ASC else list(reversed(rows))
 
 
 def paged(rows: list, cap: int | None, page: int = 1, order: str = DESC) -> tuple[list, int]:
-    """(the slice to show, how many are left after it). Order first, then cut."""
     rows = ordered(rows, order)
     total = len(rows)
     if not cap:
@@ -671,20 +434,6 @@ def paged(rows: list, cap: int | None, page: int = 1, order: str = DESC) -> tupl
 
 
 def cut(shown: int, total: int, command: str, shortened: bool = False) -> str:
-    """The line that says what an injected block left out — "" when it left out nothing.
-
-    NOTHING IS DROPPED, AND THIS IS THE SENTENCE THAT KEEPS THAT TRUE. What crosses a
-    compaction used to be uncapped on principle: `pins.py` swears that a tier which
-    silently forgets is the failure the whole system exists to prevent. Then a real record
-    grew to 125 rules and 194 pins, the assembled block hit 120,360 characters against a
-    documented 10,000-character ceiling, and the harness replaced the whole thing with a
-    path to a file nobody was told to open. The uncapped rule did not protect the record;
-    it lost it.
-
-    So the store is still never trimmed — only one injection is, and the trim SAYS SO,
-    counts both halves, and names the command that reads the rest in full. The reader is
-    never left to infer that something is missing.
-    """
     # A LINE CUT SHORT NEEDS THE SAME SENTENCE AS AN ENTRY LEFT OUT. This named the reading
     # command only when the COUNT was trimmed, so a doorway showing three of three rules —
     # every one of them shortened to a line by `gist` — printed no command at all. The
@@ -701,17 +450,6 @@ GIST = 180
 
 
 def gist(text: str, cap: int = GIST) -> str:
-    """One entry as one line, never longer than `cap` — the character half of `cut`.
-
-    `cut` BOUNDS THE COUNT AND THIS BOUNDS THE LINE, and for a long time only the first
-    existed. A cap of three pins reads like a bound until the three are 400 characters
-    each, and then a section that looks capped is 1,200 characters of prose in a block
-    whose whole job is to be short. A count is the wrong unit for a character ceiling —
-    the sentence is already written above `cut`, about the same bug one level up.
-
-    IT CUTS AT A WORD AND SAYS IT CUT. The ellipsis is the promise that the rest exists,
-    and every caller that uses this prints a command beside it that reads the entry whole.
-    """
     text = " ".join(text.split())
     if len(text) <= cap:
         return text
@@ -719,7 +457,6 @@ def gist(text: str, cap: int = GIST) -> str:
 
 
 def more(noun: str, left: int, page: int, order: str = DESC) -> str:
-    """The one line that says a page was cut, carrying the order so the next page keeps it."""
     if left <= 0:
         return ""
     flag = _said("order_flag", order=order) if order != DESC else ""

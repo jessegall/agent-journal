@@ -15,7 +15,6 @@ def say(message: str, /, **values) -> str:
 
 
 def check(title: str, kind: str) -> tuple[bool, str]:
-    """Is this a title, or a sentence pretending to be one? Refused past MAX, or with a colon in it."""
     flat = " ".join((title or "").split())
     if len(flat) > MAX:
         return False, say("too_long", kind=kind, max=MAX, n=len(flat))

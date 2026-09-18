@@ -1,13 +1,3 @@
-"""How full the context is — measured from the transcript, never estimated.
-
-Every assistant message records its own `usage`, and input + cache_read + cache_creation
-IS the context that message was answering with. So this is a reading, not a guess.
-
-AND THE WARNING HAS TO ARRIVE EARLY. `PreCompact` fires when the decision is already
-made — there is no turn left in which to think about what matters, and a pin written then
-is written by an agent that is out of room. The moment worth interrupting is while there
-is still budget to spend on deciding what must survive it.
-"""
 from __future__ import annotations
 
 import contextlib
@@ -40,23 +30,6 @@ def say(message: str, /, **values) -> str:
 
 
 def window_for(peak: int, setting: int = 0, learned: int = 0) -> tuple[int, bool]:
-    """(the window, whether that is KNOWN or only the smallest one still possible).
-
-    NOT from the model id. The first version read `[1m]` out of the model name — and the
-    message-level model is `claude-opus-5`, with no suffix, in every one of 5,298 records.
-    The detector could not fire in the one case it was written for, and reported 241% full
-    instead. Ask of any detector: is the thing it looks for present in the case it is FOR?
-
-    AND NOT FROM THE PEAK ALONE, WHILE MORE THAN ONE WINDOW FITS IT. The second version
-    took the smallest window the peak fitted and called that the window. In a 1M session
-    that reported 54% at 108k tokens — 11% real — and burned every rung of the ladder
-    before 20%, after which `warned_at` sat at 0.95 and the ladder was mute for the actual
-    compaction. Four wrong nudges and then silence at the moment that mattered.
-
-    So: a `context_window` setting is the answer when it is set. Otherwise the peak is a
-    reading only once it has eliminated every window but one, and until then the caller is
-    told the window is unknown and must not climb the ladder on it.
-    """
     if setting:
         return setting, True
     # LEARNED AT A COMPACTION. Claude Code compacts when the window is nearly full, so the
@@ -78,15 +51,6 @@ _READ: dict = {}
 
 
 def reading(path: Path, cache: Path | None = None) -> tuple[int, int] | None:
-    """(tokens in context, peak this transcript has held) from the assistant's own `usage`.
-
-    IT RESUMES WHERE IT STOPPED. The file is append-only — the harness writes one record per
-    line and never rewrites one — so a scan that has already covered the first N bytes starts
-    at N next time and takes the larger peak. A file that got SHORTER is not a transcript
-    that shrank, it is a different file at the same path, so that case starts over. With
-    `cache`, where it stopped is kept on disk, so the next hook process resumes too instead of
-    scanning the whole transcript again.
-    """
     if not path.is_file():
         return None
     st = path.stat()
@@ -176,13 +140,6 @@ def _remember(cache: Path, path: Path, st, point: tuple[int, int | None, int]) -
 
 
 def reading_tail(path: Path, limit: int = 300_000) -> int | None:
-    """Tokens in context per the LAST assistant record, read from the file's tail only.
-
-    THE MID-WORK CHECK RUNS AT EVERY TOOL CALL, and a full parse of a 20 MB transcript per
-    call is the cost that would get it switched off. The last assistant record is always
-    within the last few hundred kilobytes. No peak comes from a tail, so this is only used
-    when `context_window` is set; with the window unknown the ladder is silent anyway.
-    """
     if not path.is_file():
         return None
     size = path.stat().st_size
@@ -213,7 +170,6 @@ def reading_tail(path: Path, limit: int = 300_000) -> int | None:
 
 
 def pressure(path: Path, setting: int = 0, learned: int = 0, cache: Path | None = None) -> tuple[float, int, int, bool] | None:
-    """(share full, tokens, window, window KNOWN). The share is a guess when the last is False."""
     got = reading(path, cache)
     if not got:
         return None
@@ -223,7 +179,6 @@ def pressure(path: Path, setting: int = 0, learned: int = 0, cache: Path | None 
 
 
 def peak_before_compaction(path: Path) -> int:
-    """The largest context held before any compaction boundary in this transcript, or 0."""
     peak = 0
     best = 0
     if not path.is_file():
@@ -281,23 +236,6 @@ _LEVER = {
 
 
 def shape(lines) -> list[tuple[str, float]]:
-    """What is actually filling the context, by share of characters, biggest first.
-
-    A FACT, NOT AN INSTRUCTION. The temptation at 75% is to append advice — "read files in
-    ranges, prefer grep" — and advice is the one thing this system has a rule against: it
-    cannot be measured, nothing fires when it is ignored, and it fails silently. That is
-    the shape of the secretary, which was deleted for never once being used.
-
-    A share is different. "tool output is 47% of this context" is checkable, specific to
-    the session in front of you, and wrong tomorrow if the session changes — which is
-    exactly what advice can never be. The lever is named beside the number rather than
-    preached on its own.
-
-    Characters, not tokens: the transcript does not record per-message token counts, and a
-    ratio of characters is close enough to a ratio of tokens to point at the right half of
-    the context. It is a proportion, never a total — the total comes from `reading`, which
-    is measured.
-    """
     total = 0
     by_kind: dict[str, int] = {}
     for l in lines:
@@ -338,14 +276,6 @@ _NOTHING_IS_FINE = (
 
 def warning(used: int, window: int, pinned: int, made_of=(), rung: float = 0.0,
             latest: str = "", since: int = 0, gated: bool = False) -> str:
-    """The context nudge for one rung of the ladder.
-
-    IT REPORTS, THEN ASKS, AND NEVER DEMANDS. Everything above the request is a measured
-    fact — how full, what filled it, how many pins stand, what the last one said — because
-    a nudge built on facts can be judged by the reader, while one built on urgency can only
-    be obeyed or ignored. Obedience is the failure mode here: pins are re-read forever, so a
-    padded store costs every future reader something the writer never sees.
-    """
     pct = 100 * used / window
     said = _RUNGS.get(rung, "A compaction is coming.")
     # THE TEACHING IS FRONT-LOADED AND THEN DROPPED. At 50% there is room to explain what a

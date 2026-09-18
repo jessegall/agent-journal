@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""A linked worktree shares the main checkout's journal: symlink when clean, redirect when not."""
 import json, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 

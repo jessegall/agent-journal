@@ -29,7 +29,6 @@ def say(message: str, /, **values) -> str:
 
 
 class AgentController(Controller):
-    """One agent on an environment, a session or a subagent: what it is doing, and its transcript."""
     resource = "agent"
     noun = "agent"
     actions = ("index",)
@@ -38,7 +37,6 @@ class AgentController(Controller):
 
     @staticmethod
     def _session(root: Path, env: str, wanted: str) -> str | None:
-        """The session asked for, else the live one on the environment, else the latest that worked there."""
         known = [stem for stem, track in tracks._bindings(root).items() if track == env]
         known += [stem for stem, _ in state.runtime_files(root)
                   if stem not in known and state.get(root, "ended_on", "", stem=stem) == env]

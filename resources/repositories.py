@@ -145,7 +145,6 @@ class ToolCatalogue(Repository[Tool]):
 
 
 class Connections(Repository[Connection]):
-    """The project's connections, as this environment reads them: its overrides already applied."""
     model = Connection
 
     def rows(self) -> list[dict]:

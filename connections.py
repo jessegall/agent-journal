@@ -61,12 +61,6 @@ _ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
 def secretish(value: str) -> str:
-    """Why this value looks like a token rather than a variable name, or "".
-
-    THE CHECK IS ON SHAPE, NOT ON A LIST OF VENDORS. A name of an environment variable is short,
-    has no punctuation and no lowercase-and-digit soup; a token is long, mixed and often carries a
-    prefix that says exactly what it is. Either test catching it is enough to refuse.
-    """
     got = (value or "").strip()
     if not got:
         return ""
@@ -89,15 +83,6 @@ _TOKENISH = re.compile(r"[A-Za-z0-9_\-]{32,}")
 
 
 def leaked(value: str) -> str:
-    """Why this value appears to CONTAIN a token, or "".
-
-    THE SECRET FIELD WAS THE ONLY ONE GUARDED, and the record does not care which field it is in:
-    every one of them is read back verbatim into every session and every subagent. A token pasted
-    into the URL — `https://api.example.com?key=sk-live-…` — leaked exactly as far as one in the
-    secret field would have. This is a different question from `secretish`, which asks whether a
-    value IS a variable name; here the value is a URL or a sentence, and the question is whether
-    something token-shaped is hiding inside it.
-    """
     got = (value or "").strip()
     if not got:
         return ""
@@ -122,13 +107,6 @@ def _here(root: Path, track: str | None) -> dict:
 
 
 def all_of(root: Path, track: str | None = None) -> dict:
-    """Every connection this environment can reach: the project's, with this environment's on top.
-
-    THE PROJECT KEEPS THE LIST AND AN ENVIRONMENT MAY DISAGREE WITH IT — a staging url here, a
-    different token variable there — without either forking the list or hiding what it overrode.
-    So an override is a patch of FIELDS, never a whole entry: nothing can exist only here, and
-    what it changed is always readable beside what it changed it from.
-    """
     out = {}
     here = _here(root, track)
     for name, got in sorted(_project(root).items()):
@@ -194,7 +172,6 @@ def set_field(root: Path, name: str, field: str, value: str) -> tuple[bool, str]
 
 def override(root: Path, track: str, name: str, field: str, value: str,
              off: bool = False) -> tuple[bool, str]:
-    """Change one field of one connection on this environment only."""
     name, field = state.slug(name), _field(field)
     if field not in SETTABLE:
         return False, say("not_a_field", field=repr(field))
@@ -239,12 +216,6 @@ def remove(root: Path, name: str, why: str, at: str) -> tuple[bool, str]:
 
 
 def _log_removal(root: Path, name: str, gone: dict, why: str, at: str) -> None:
-    """Nothing goes without a note saying what it was and why — as removing an environment leaves one.
-
-    ITS OWN LOG, NOT `removals`. That one holds environment removals, with a shape of their own and
-    a cap of their own; a second shape in the same list would evict them and would have to be told
-    apart by whichever reader came next.
-    """
     got = state.get(root, GONE, [])
     got = list(got) if isinstance(got, list) else []
     got.append({"name": name, "why": why, "at": at, "was": gone})
@@ -252,7 +223,6 @@ def _log_removal(root: Path, name: str, gone: dict, why: str, at: str) -> None:
 
 
 def secret_state(row: dict) -> str:
-    """Whether the variable this connection names is set HERE — never what is in it."""
     var = (row or {}).get("secret") or ""
     if not var:
         return say("secret_none")

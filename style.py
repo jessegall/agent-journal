@@ -1,4 +1,3 @@
-"""The project's coding style: one item per subject, each generated into a skill agents load while writing code."""
 from __future__ import annotations
 
 import json
@@ -94,7 +93,6 @@ def _write(path: Path, meta: dict, body: str) -> None:
 
 
 def all_items(root: Path) -> list[dict]:
-    """Every rule, by subject; a retired one is kept under struck/ and never listed."""
     d = folder(root)
     if not d.is_dir():
         return []
@@ -159,7 +157,6 @@ def remove(root: Path, subject: str, why: str) -> tuple[bool, str]:
 
 
 def sections(body: str) -> dict[str, str]:
-    """The body's `## Heading` sections, by lower-cased heading."""
     out: dict[str, list[str]] = {}
     current = ""
     for line in (body or "").splitlines():
@@ -182,7 +179,6 @@ def _description(item: dict) -> str:
 
 
 def skill_files(item: dict) -> dict[str, str]:
-    """What `sync` writes for one rule, by path inside its skill folder."""
     name, parts = PREFIX + item["subject"], sections(item["body"])
     why = parts.get("why", "")
     skill = [f'---\nname: {name}\ndescription: "{_description(item)}"\n---', "", f"# {item['title']}", "",
@@ -203,7 +199,6 @@ def _block(items: list[dict]) -> str:
 
 
 def _brief(project: Path, items: list[dict]) -> list[str]:
-    """The list of style skills in CLAUDE.md and AGENTS.md: replaced between its markers, removed when no rule is left."""
     out = []
     for name in BRIEFED:
         f = project / name
@@ -227,7 +222,6 @@ def _brief(project: Path, items: list[dict]) -> list[str]:
 
 
 def sync(root: Path, project: Path) -> list[str]:
-    """Write a skill per rule, drop the generated skills whose rule is gone, and refresh the list in CLAUDE.md and AGENTS.md."""
     items = all_items(root)
     base = project / ".claude" / "skills"
     out, wanted = [], set()

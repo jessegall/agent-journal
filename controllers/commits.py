@@ -31,14 +31,12 @@ def _git(project: Path, *args: str) -> str | None:
 
 
 def repo_url(remote: str) -> str:
-    """A web address for the repository behind a git remote, or "" when it is not one this can read."""
     remote = (remote or "").strip()
     got = re.match(r"^(?:https?://|ssh://git@)([^/:]+)[/:](.+?)(?:\.git)?/?$", remote) or re.match(r"^git@([^:]+):(.+?)(?:\.git)?$", remote)
     return f"https://{got.group(1)}/{got.group(2)}" if got else ""
 
 
 def details(project: Path, sha: str) -> dict:
-    """What git knows of a commit: author, date, the message under the subject, and the files it changed."""
     shown = _git(project, "show", "-s", "--format=%an%x00%aI%x00%b", sha)
     if shown is None:
         return {"author": "", "date": "", "body": "", "files": [], "url": ""}
@@ -55,7 +53,6 @@ def details(project: Path, sha: str) -> dict:
 
 
 def pull_request(project: Path, sha: str) -> dict | None:
-    """The pull request that holds a commit, asked of GitHub once per commit; None when there is none or no way to ask."""
     if sha in _PULLS:
         return _PULLS[sha]
     import json
@@ -76,7 +73,6 @@ def say(message: str, /, **values) -> str:
 
 
 class CommitsController(Controller):
-    """A commit made while work was open: the work it went onto, and that work's to-dos."""
     resource = "commits"
     noun = "commit"
     actions = ("index",)
@@ -84,7 +80,6 @@ class CommitsController(Controller):
     payloads = {"index": commit_payloads.ShowPayload}
 
     def _from_git(self, root: Path, sha: str) -> Result:
-        """A commit git knows and the journal does not: the same shape, with nothing tied to it."""
         full = (_git(root.parent, "rev-parse", "--verify", f"{sha}^{{commit}}") or "").strip()
         if not full:
             return Result("missing", say("no_commit", sha=sha))

@@ -258,7 +258,6 @@ class Settings(Command):
 
     @staticmethod
     def here(p: Parsed, env: str) -> int:
-        """`journal settings <key> <value>` changes it on THIS environment only."""
         import json as _json
         if not env:
             return refuse(TEXT["settings_nowhere"])
@@ -305,17 +304,6 @@ class Serve(Command):
 
 
 def start_viewer(port=None) -> tuple[bool, str, str]:
-    """Put a viewer up for this journal if none is: (was one already, its url, where its output goes).
-
-    IN A SESSION OF ITS OWN, so it outlives whatever started it. A VIEWER THAT VANISHES WAS REAPED,
-    NOT CLOSED: `serve` runs in the foreground, so an agent that wants one backgrounds it — and then
-    it belongs to that task's process group. A harness killing the tree when memory runs short takes
-    the viewer with it, and the user sees a window that shut itself for no reason. Reported by a
-    user's colleagues, twice in one session. It matters twice over for `journal claude`, which EXECS
-    into Claude Code: a child of this process would not survive the call that replaces it.
-
-    ONE FUNNEL, because two things now want a viewer — `serve --detach` and the start of a session.
-    """
     import subprocess
     import sys
     import time
@@ -420,7 +408,6 @@ class Claude(Command):
 
 
 class Codex(Command):
-    """Codex under the journal's launcher: the terminal is the channel, so nothing in Codex has to push."""
     signature = "codex {prompt*? : what to ask Codex first} {--quiet : never type the viewer's news into it} {--dry-run}"
     passthrough = True
 

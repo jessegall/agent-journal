@@ -289,7 +289,6 @@ class Tool(Model):
 
 @dataclass
 class Connection(Model):
-    """A service the project can reach. `secret` is the NAME of a variable, never a value."""
     name: str = ""
     kind: str = ""
     url: str = ""

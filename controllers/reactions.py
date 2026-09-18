@@ -8,8 +8,6 @@ from payloads import reactions as reaction_payloads
 
 
 class ReactionsController(Controller):
-    """What either side put on a turn. Not numbered: a reaction belongs to a TURN, and a turn is
-    named by its key in the thread — `message:5`, `said:0:<time>` — not by a row number of its own."""
     resource = "reactions"
     noun = "reaction"
     actions = ("index", "store")

@@ -55,7 +55,6 @@ def _argline(x: dict) -> str:
 
 
 def driver(root: Path, track: str | None = None) -> dict | None:
-    """The tab the extension is driving for this environment, as it last reported it — or None."""
     got = state.tracked(root, "browser_driver", track, None) if track else state.get(root, "browser_driver", None)
     return got if isinstance(got, dict) and got.get("on") else None
 
@@ -87,14 +86,12 @@ def ask(root: Path, op: str, args: list[str], at: str, track: str | None = None)
 
 
 def pending(root: Path, track: str | None = None) -> list[dict]:
-    """What the extension has not run yet, oldest first."""
     return [{"n": n, "op": x["op"], "args": x.get("args") or [], "at": x.get("at", "")}
             for n, x in enumerate(_all(root, track), 1) if not x.get("done_at")]
 
 
 def finish(root: Path, n: int, ok: bool, text: str, at: str, track: str | None = None,
            files: list | None = None) -> tuple[bool, str]:
-    """The extension's answer: kept on the ask, and handed to the agent as a message it reads like any other."""
     with state.locked(root):
         items = _all(root, track)
         if not 1 <= n <= len(items):
@@ -129,7 +126,6 @@ def files_dir(root: Path, track: str | None, n: int) -> Path:
 
 
 def wait(root: Path, n: int, track: str | None = None, seconds: float = 45.0) -> dict | None:
-    """The ask once it is answered, or None when the extension has not answered in `seconds`."""
     import time
     deadline = time.time() + seconds
     while time.time() < deadline:

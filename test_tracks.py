@@ -1,17 +1,4 @@
 #!/usr/bin/env python3
-"""Everything switching an environment must never get wrong.
-
-    .journal/test_tracks.py
-
-RUN IT BEFORE PUBLISHING A CHANGE TO ANOTHER PROJECT. Switching is the one operation here
-that moves somebody's whole record from one place to another, and it has already gone
-wrong once: renaming the key `threads` to `environments` silently changed which FILE the data
-belonged to, because `state._file()` routes by name, and a fully parked environment vanished
-from the listing while sitting untouched on disk. Nothing was lost only because nothing
-here deletes.
-
-Every test runs against a throwaway directory. It never touches the real record.
-"""
 import json, os, re, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 
@@ -145,7 +132,6 @@ P = testkit.Project(d)
 
 
 def run_cli(*args):
-    """A terminal, not a session: no session id in the environment."""
     return P.cli(*args)
 
 

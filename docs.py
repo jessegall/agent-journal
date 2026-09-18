@@ -1,23 +1,3 @@
-"""The project's docs, catalogued: a doc is a folder of parts, and the journal knows them.
-
-WHAT THIS IS FOR. A pin is a claim, a rule binds, a to-do is work. None of them holds a
-FINDING — a design once it is ruled, a subagent's report, an investigation — and those
-were living in the transcript, which compacts, or in the scratchpad, which the next
-session cannot open. Read in a live project: a design written the moment it was ruled
-("Ruled 2026-09-02" as its first line), then handed to five agents as their brief, then
-cited by pins as "read this before touching X". That is what a doc is here.
-
-A DOC IS A FOLDER, A PART IS A FILE. One big file is hard to scrap, edit or remove a
-section of; a part is the unit of all three. A subagent's report lands as one part, a
-section that turns out wrong is struck as one part, the rest stand. A single markdown
-file is a doc with no parts, so an existing docs/ folder is adopted in place.
-
-GLOBAL, LIKE RULES. Knowledge is the project's, not an environment's; the environment a doc came
-from is recorded as provenance. Nothing is deleted: a struck part moves to struck/ with
-its reason. Docs rot — a live project had five design files naming a class that no
-longer existed, "a map of a system that isn't there" — so age is shown and one doc can
-supersede another, which points every later reader at the current one.
-"""
 from __future__ import annotations
 
 import json
@@ -187,27 +167,16 @@ def say(message: str, /, **values) -> str:
 
 
 def scope_of(doc: dict) -> str:
-    """The environment a doc belongs to, or GLOBAL. An unset track has always meant global."""
     got = (doc.get("track") or "").strip()
     return got if got and got != GLOBAL else GLOBAL
 
 
 def scope_text(doc: dict) -> str:
-    """A doc's scope in the words a reader uses — for every renderer, not one.
-
-    THE CATALOGUE NEVER SAID IT AT ALL and `show` said it wrong. `show` interpolated the raw
-    field, so a global doc read "environment " with nothing after it, or "environment *" —
-    and a reader cannot tell "global" from "the renderer said nothing", which is the same
-    ambiguity an omitted section has. `journal docs` said nothing either way, so the one
-    command whose job is to show you the docs could not answer whether one was the
-    project's or this environment's.
-    """
     got = scope_of(doc)
     return say("scope_project") if got == GLOBAL else say("scope_env", env=got)
 
 
 def here(doc: dict, track: str) -> bool:
-    """Is this doc one that `track` should be shown? Its own, or the project's."""
     got = scope_of(doc)
     return got == GLOBAL or got == track
 PART_FIELDS = ("title", "at", "source", "track")
@@ -270,7 +239,6 @@ _CATALOGUE: dict = {}
 
 
 def _load(root: Path) -> list[dict]:
-    """Every catalogued doc: folders with an index.md, and single files with frontmatter."""
     d = folder(root)
     if not d.is_dir():
         return []
@@ -312,7 +280,6 @@ def _parts(d: Path) -> list[dict]:
 
 
 def uncatalogued(root: Path) -> list[Path]:
-    """Markdown files and folders under docs/ the catalogue does not know."""
     d = folder(root)
     if not d.is_dir():
         return []
@@ -329,12 +296,10 @@ def uncatalogued(root: Path) -> list[Path]:
 
 
 def all_docs(root: Path) -> list[dict]:
-    """The whole catalogue — the public entry point `_load` is read through."""
     return _load(root)
 
 
 def by_name(root: Path, name: str) -> tuple[dict | None, str]:
-    """The doc called `name`: its title, case-insensitive; else the one title containing it."""
     key = " ".join((name or "").split()).lower()
     if not key:
         return None, say("name_empty")
@@ -357,12 +322,10 @@ _ANCHOR = re.compile(r"^(?P<ref>[^#]*)#(?P<head>.+)$")
 
 
 def slug_of(text: str) -> str:
-    """A heading's slug: what a citation spells, and what a heading is matched by."""
     return re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
 
 
 def headings(root: Path, ref: str) -> list[str]:
-    """Every `##` heading in what `ref` names, in order — the titles, not the slugs."""
     doc, prt, _ = get(root, ref)
     if doc is None:
         return []
@@ -374,12 +337,6 @@ def headings(root: Path, ref: str) -> list[str]:
 
 
 def anchor(root: Path, ref: str) -> tuple[str, str, str]:
-    """(the ref without its anchor, the heading's title, the refusal) for `<ref>#<slug>`.
-
-    REFUSED WHEN THE HEADING IS NOT THERE, and the refusal names the ones that are. A
-    citation that silently points at nothing is the failure this package refuses everywhere
-    else — and a slug is exactly the kind of thing that is mistyped once and never checked.
-    """
     m = _ANCHOR.match((ref or "").strip())
     if not m:
         return ref, "", ""
@@ -393,7 +350,6 @@ def anchor(root: Path, ref: str) -> tuple[str, str, str]:
 
 
 def get(root: Path, ref: str) -> tuple[dict | None, dict | None, str]:
-    """(doc, part or None, error) for a reference like `4`, `4.2`, `4.2#a-heading`, or a name."""
     ref = _ANCHOR.match((ref or "").strip()).group("ref").strip() if "#" in (ref or "") else ref
     m = re.fullmatch(r"(\d+)(?:\.(\d+))?", (ref or "").strip())
     if not m:
@@ -439,7 +395,6 @@ def _save_manifest(doc: dict, items: list[dict]) -> None:
 
 
 def attachments(doc: dict) -> list[dict]:
-    """The doc's attachments that are still there: manifest entries with their file present."""
     if doc.get("dir") is None:
         return []
     out = []
@@ -466,14 +421,6 @@ def _human(n: int) -> str:
 
 def attach(root: Path, ref: str, src: str, title: str, track: str, source: str = "",
            replace: bool = False) -> tuple[bool, str]:
-    """Copy a file or a folder into the doc, and list it with what it is.
-
-    A DOC IS NOT ONLY PROSE. A design's HTML, a screenshot, a PDF the user was sent, a CSV
-    behind a finding: the doc is where they belong, beside the parts that explain them,
-    and copied — the original lives wherever it lives and may not tomorrow. Nothing is
-    read into the journal: the file is kept, listed by name with one line saying what it
-    is, and `journal docs <n>` prints its path for whoever wants to open it.
-    """
     doc, _, err = get(root, ref)
     if doc is None:
         return False, err
@@ -546,7 +493,6 @@ def detach(root: Path, ref: str, name: str, why: str) -> tuple[bool, str]:
 
 
 def _tree(p: Path, cap: int = 40) -> list[str]:
-    """The files inside a folder attachment, indented by depth; the tail elided past `cap`."""
     rows = []
     for x in sorted(p.rglob("*")):
         if x.name.startswith("."):
@@ -559,7 +505,6 @@ def _tree(p: Path, cap: int = 40) -> list[str]:
 
 
 def _attachment_lines(root: Path, files: list[dict]) -> list[str]:
-    """One table: the name, what it is; under it what kind, who, when, where; a folder's files."""
     rows = []
     for a in files:
         if a["dir"]:
@@ -580,7 +525,6 @@ def _attachment_lines(root: Path, files: list[dict]) -> list[str]:
 
 
 def list_attachments(root: Path, ref: str = "", width: int | None = None) -> tuple[bool, str]:
-    """Every attachment of one doc, or of every doc: name, what it is, size, where."""
     width = fmt.room(width)
     if ref:
         doc, _, err = get(root, ref)
@@ -608,7 +552,6 @@ def list_attachments(root: Path, ref: str = "", width: int | None = None) -> tup
 
 
 def adopt_attachments(root: Path) -> list[str]:
-    """Files copied into a doc's files/ by hand are listed, by name, as what they are."""
     out = []
     for doc in _load(root):
         if doc.get("dir") is None:
@@ -646,7 +589,6 @@ def _plan_hint(title: str) -> str:
 
 
 def _restates(title: str, abstract: str) -> bool:
-    """True when the abstract says nothing the title has not: its own words are (almost) all the title's."""
     import suggestions
     mine, theirs = suggestions._words(abstract), suggestions._words(title)
     # A SHORT ABSTRACT IS NOT A RESTATEMENT. Two or three words cannot be judged this way: they may be
@@ -657,7 +599,6 @@ def _restates(title: str, abstract: str) -> bool:
 
 
 def add(root: Path, title: str, abstract: str, body: str, track: str, source: str = "") -> tuple[bool, str]:
-    """A new doc: a folder with an index. The abstract is what every session is handed."""
     title = " ".join((title or "").split())
     abstract = " ".join((abstract or "").split())
     if not title:
@@ -682,7 +623,6 @@ def add(root: Path, title: str, abstract: str, body: str, track: str, source: st
 
 
 def _to_folder(root: Path, doc: dict) -> dict:
-    """A single-file doc becomes a folder; the file stays as a pointer so citations resolve."""
     if doc["dir"] is not None:
         return doc
     f = doc["path"]
@@ -750,13 +690,6 @@ def strike(root: Path, ref: str, why: str) -> tuple[bool, str]:
 
 
 def move(root: Path, ref: str, dst: str) -> tuple[bool, str]:
-    """Change a doc's SCOPE: to another environment, or to the project with `--global`.
-
-    ONLY THE FIELD MOVES, and that is the point. Its number, its folder and its parts stay
-    exactly where they are, so every citation of it keeps working from every environment —
-    a rule binds all of them and may cite a doc, so a citation that stopped resolving
-    outside one environment would make `--doc=` a trap. Scope decides what is LISTED.
-    """
     import state as _state
     to_global = dst in ("--global", "global", GLOBAL)
     dst = GLOBAL if to_global else _state.slug(dst)
@@ -777,7 +710,6 @@ def move(root: Path, ref: str, dst: str) -> tuple[bool, str]:
 
 
 def archive(root: Path, ref: str, why: str, at: str = "") -> tuple[bool, str]:
-    """Take a whole doc off the catalogue, with the reason; it stays readable by number."""
     why = " ".join((why or "").split())
     if not why:
         return False, say("archive_why")
@@ -823,7 +755,6 @@ def supersede(root: Path, old_ref: str, new_ref: str) -> tuple[bool, str]:
 
 
 def adopt(root: Path, track: str) -> list[str]:
-    """Catalogue what docs/ already holds: frontmatter for each, an abstract from its first paragraph."""
     out = []
     for f in uncatalogued(root):
         if f.is_dir():
@@ -894,7 +825,6 @@ def set_title(root: Path, ref: str, title: str) -> tuple[bool, str]:
 
 
 def file_paths(doc: dict) -> list[Path]:
-    """Every file a doc holds as an attachment, a folder's files included, as absolute paths."""
     out = []
     for a in attachments(doc):
         p = a["path"].resolve()
@@ -906,7 +836,6 @@ def file_paths(doc: dict) -> list[Path]:
 
 
 def stale(doc: dict) -> bool:
-    """A part or an attachment was added after the abstract was last written."""
     since = doc.get("abstract_at") or doc.get("at") or ""
     later = [x.get("at") or "" for x in (doc.get("parts") or [])] + [a.get("at") or "" for a in attachments(doc)]
     return bool(since) and any(at > since for at in later)
@@ -914,18 +843,6 @@ def stale(doc: dict) -> bool:
 
 # ------------------------------------------------------------------ what cites a doc
 def cited_by_rows(root: Path, n: int) -> list[dict]:
-    """Every pin, rule and to-do that references doc n, on ANY environment, as
-    structured rows — {kind, env, n, text}, env=None for a rule. `cited_by` below
-    is the text form built from this; a web page turns a row into a link instead
-    (a rule to /rules, a pin to its environment's pins, a to-do to its own page) —
-    the SAME rows, never re-parsed back out of the formatted string.
-
-    EVERY ENVIRONMENT, INCLUDING FOR TO-DOS. The pin scan already walked
-    `tracks._all(root)`; the to-do scan used to check only `tracks.current(root)`,
-    so a to-do citing this doc on any OTHER environment was invisible here despite
-    the docstring's own claim. Walking to-dos the same way the pins loop already
-    does is the fix, not a new behaviour.
-    """
     import todo
     import tracks
     key = str(n)
@@ -948,8 +865,6 @@ def cited_by_rows(root: Path, n: int) -> list[dict]:
 
 
 def cited_by(root: Path, n: int) -> list[str]:
-    """Every pin, rule and to-do that references doc n, on any environment — the
-    text form; see `cited_by_rows` for the structured rows this is built from."""
     def label(r: dict) -> str:
         if r["kind"] == "rule":
             return say("cite_rule", n=r["n"], text=r["text"])
@@ -958,10 +873,6 @@ def cited_by(root: Path, n: int) -> list[str]:
 
 
 def ref_label(root: Path, ref: str, short: bool = False) -> str:
-    """'doc 4: title' or 'doc 4.2: title · part title', for showing beside a citing entry.
-
-    `short` drops the doc's title — for a page that has already listed the doc above.
-    """
     base, head, _ = anchor(root, ref)
     doc, prt, _ = get(root, base)
     if doc is None:
@@ -976,7 +887,6 @@ def ref_label(root: Path, ref: str, short: bool = False) -> str:
 
 
 def normalize_ref(root: Path, ref: str) -> tuple[str | None, str]:
-    """A doc reference as it is stored — `4`, `4.2`, `4.2#heading` — or why it is refused."""
     err = check_ref(root, ref)
     if err:
         return None, err
@@ -987,7 +897,6 @@ def normalize_ref(root: Path, ref: str) -> tuple[str | None, str]:
 
 
 def check_ref(root: Path, ref: str) -> str | None:
-    """The reason a --doc reference cannot be taken, or None."""
     if not ref:
         return None
     base, _, bad = anchor(root, ref)
@@ -1050,7 +959,6 @@ def attachment_row(a: dict) -> dict:
 
 # ------------------------------------------------------------------ rendering
 def facts_text(root: Path, d: dict) -> str:
-    """The line beneath a doc's title in the catalogue."""
     out = [d.get("status", "draft"), scope_text(d)]
     if d["parts"]:
         out.append(say("fact_parts", n=len(d["parts"])))
@@ -1072,14 +980,6 @@ def facts_text(root: Path, d: dict) -> str:
 
 def catalogue(root: Path, width: int | None = None, cap: int | None = None, page: int = 1,
               order: str = fmt.DESC, track: str = "", all_of_them: bool = False) -> str:
-    """The catalogue, capped like `carry` (below) so a bare `journal docs` never grows
-    without bound; unlike carry — handed automatically, every session — this is asked
-    for, so it pages rather than just saying "N more".
-
-    THE LOOP IS `entries.listing`, shared with `todo.render` and `tools.catalogue` — only
-    `facts` below is a doc's own, the same strategy `pins._store` already supplies for a
-    pin, a rule and a reminder.
-    """
     width = fmt.room(width)
     import entries
     docs = _load(root)
@@ -1103,7 +1003,6 @@ def show(root: Path, ref: str, width: int | None = None) -> tuple[bool, str]:
 
 
 def detail(root: Path, doc: dict, prt: dict | None = None) -> dict:
-    """One doc in full, as data: its row, body, parts, attachments, what cites it, and the part asked for."""
     def rel(path) -> str:
         return str(path.relative_to(root.parent)) if path else ""
     files = attachments(doc)
@@ -1116,7 +1015,6 @@ def detail(root: Path, doc: dict, prt: dict | None = None) -> dict:
 
 
 def show_text(d: dict, width: int | None = None) -> str:
-    """A doc's `detail` as the terminal page — only the part, when one was asked for."""
     width = fmt.room(width)
     n = d["n"]
     if d["part"]:
@@ -1165,19 +1063,6 @@ def show_text(d: dict, width: int | None = None) -> str:
 
 
 def carry(root: Path, cap: int = 20, track: str = "", brief: bool = False) -> str:
-    """The catalogue a session start hands over: number, title, abstract; drafts marked.
-
-    BRIEF IS THE TITLE AND NOTHING ELSE. A doorway carries pointers, and an abstract is
-    content — the two sentences that explain a doc belong to `journal docs <n>`, which is
-    printed right beside the title. Three abstracts were the largest content in a block
-    whose entire purpose is to be small enough to survive.
-
-    NEWEST FIRST, like every other list that pages. 1.30.0 flipped the five renderers and
-    did not reach this one, so a session start handed docs 1 to 20 — the OLDEST twenty —
-    and hid everything since behind "and N more". In a project with 78 docs that is every
-    doc the current work is about, invisible at exactly the moment the catalogue exists to
-    stop somebody re-investigating what a doc settles.
-    """
     # THE CATALOGUE A SESSION IS HANDED IS THE ONE FOR ITS OWN WORK, plus the project's.
     # Every environment used to be handed every doc: eighty-four titles at a session start
     # in one real project, almost none of them about the work in front of the reader — and
@@ -1205,17 +1090,6 @@ def carry(root: Path, cap: int = 20, track: str = "", brief: bool = False) -> st
 
 def search_lines(root: Path, track: str = "",
                  all_of_them: bool = False) -> list[tuple[str, str, int, str]]:
-    """(reference, title, line number, text) for every line of every doc in scope.
-
-    A SEARCH IS A LISTING. `journal docs` has filtered by scope since 1.44.0 and this read
-    every doc in the project, so a doc that is deliberately absent from the catalogue turned
-    up in the results anyway — with its lines quoted, which is more than the catalogue would
-    have shown. Scope decides what is LISTED, and this is one of the places that lists.
-
-    READING BY NUMBER IS STILL UNSCOPED, which is the property that keeps `--doc=N` honest
-    from any environment. Nothing here changes that: a reference the search does not return
-    is still a reference `journal docs <n>` will read.
-    """
     out = []
     for d in _load(root):
         if (track and not all_of_them and not here(d, track)) or (d.get("archived") and not all_of_them):

@@ -1,15 +1,3 @@
-"""`.journal/settings.json` — what a project may tune, and nothing it may not.
-
-TWO RULES, both paid for by the tool this replaces:
-
-An UNKNOWN KEY IS REPORTED, never ignored. A setting quietly doing nothing is
-indistinguishable from a setting being obeyed, and that shape cost the last system
-seventeen hours of hooks that were wired, listed as registered, and never fired.
-
-A MISSING FILE IS FINE. Defaults are the whole configuration until somebody disagrees
-with one, so the file is a record of DISAGREEMENTS rather than a wall of restated
-defaults nobody reads.
-"""
 from __future__ import annotations
 
 import json
@@ -255,16 +243,6 @@ def overridable(key: str) -> bool:
 
 
 def load(root: Path, env: str | None = None) -> tuple[dict, list[str]]:
-    """Settings, and every complaint about the file. Never raises.
-
-    A broken settings file must not stop the journal: the record is what a session falls
-    back on when everything else is gone, so it degrades to defaults and SAYS SO.
-
-    THREE LAYERS, RESOLVED IN ONE PLACE: the defaults above, then the project's settings.json,
-    then what `env` disagrees with — and the third is a patch of KEYS, never a second settings
-    file, so nothing can exist only on one environment and what it changed is always readable
-    beside what it changed it from. The same shape `connections` uses, deliberately.
-    """
     out, problems = _project(root)
     if env:
         for key, value in _here(root, env).items():
@@ -274,12 +252,10 @@ def load(root: Path, env: str | None = None) -> tuple[dict, list[str]]:
 
 
 def overrides(root: Path, env: str) -> dict:
-    """What this environment changes, and nothing it merely inherits."""
     return {k: v for k, v in _here(root, env).items() if overridable(k)}
 
 
 def override(root: Path, env: str, key: str, value, off: bool = False) -> tuple[bool, str]:
-    """Change one setting on one environment, or give it back to the project."""
     import state
     key = ALIASES.get(key, key)
     if key not in DEFAULTS:

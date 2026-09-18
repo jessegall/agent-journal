@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""notifications.py: the agent tells the user, sparingly; read and unread."""
 import json, os, sys, tempfile
 from pathlib import Path
 

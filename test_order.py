@@ -1,16 +1,4 @@
 #!/usr/bin/env python3
-"""Newest first, on every list that pages.
-
-    .journal/test_order.py
-
-WHY THIS IS A SUITE OF ITS OWN. Four modules render four lists and each one sliced its own
-page by hand, so "newest first" had to be four changes that could drift apart. They share
-`fmt.paged` now, and this holds all four to the same three promises: the newest entry is on
-page 1, the NUMBER travels with the row so `pin 3` is pin 3 either way, and `--order=asc`
-gives back exactly the old reading.
-
-Every test runs against a throwaway directory. It never touches the real record.
-"""
 import json, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 

@@ -58,7 +58,6 @@ _MENTIONS = re.compile(r"\breports?\b", re.I)
 
 
 def hint(*texts: str) -> str:
-    """A reminder that reports exist, when what the agent is about to work from asks for one; else ""."""
     return say("hint") if any(_MENTIONS.search(t or "") for t in texts) else ""
 
 
@@ -99,11 +98,6 @@ def _all(root: Path, track: str | None = None) -> list[dict]:
 
 
 def seen(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, str]:
-    """The user opened the report in the viewer; the first time is kept.
-
-    A REPORT IS FOR THE USER, so "have they read it" is a fact about the report, the way it is
-    for a question — it is what lets the home stop asking once they have.
-    """
     with state.locked(root):
         items = _all(root, track)
         if not 1 <= n <= len(items):
@@ -127,14 +121,6 @@ _PROSE_MIN = 40
 
 
 def only_a_list(body: str) -> bool:
-    """True when the body is a list of things to do and nothing else.
-
-    RULE 9 EXISTS BECAUSE OF THIS FAILURE: research dispatched to a subagent ends in a REPORT, and
-    filing the findings as to-dos is not a substitute. The shape that fails is a body with no prose
-    in it at all — three or more bullets and nothing that reads as a sentence about what was found.
-    A report that ARGUES and then lists is the normal case and passes: the list is not the problem,
-    the absence of everything else is.
-    """
     import questions
     lines = [ln.strip() for ln in (body or "").splitlines() if ln.strip()]
     bullets = questions._BULLET.findall(body or "")
@@ -179,7 +165,6 @@ def add(root: Path, title: str, body: str, at: str, about: str = "", source: str
 
 
 def to_doc(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, str]:
-    """Copy a report into a new document, which is never pruned; the report is archived and points at it."""
     import docs
     here = track or state.current_track(root)
     items = _all(root, here)
@@ -225,7 +210,6 @@ REMOVE_DAYS = 30
 
 
 def archive_days(root: Path, track: str) -> int:
-    """How many days a report stays listed on this environment; 0 means until archived by hand."""
     got = state.get(root, ARCHIVE_DAYS, {})
     value = got.get(track) if isinstance(got, dict) else None
     return DEFAULT_ARCHIVE_DAYS if value is None else int(value)
@@ -254,7 +238,6 @@ def _age_days(r: dict) -> float | None:
 
 
 def prune(root: Path, track: str | None = None) -> int:
-    """Reports older than REMOVE_DAYS lose their title and text for good; the entry stays, so numbers do not shift."""
     from datetime import datetime, timezone
     import plans
     import retention
@@ -278,7 +261,6 @@ def prune(root: Path, track: str | None = None) -> int:
 
 
 def expired(r: dict, days: int) -> bool:
-    """Older than the environment's setting, and not archived by hand: treated as archived, nothing is written."""
     if not days or r.get("archived") or not r.get("at"):
         return False
     from datetime import datetime, timezone
@@ -292,7 +274,6 @@ def expired(r: dict, days: int) -> bool:
 
 
 def _expired_at(r: dict, days: int) -> str:
-    """When a report aged out under the keep setting: written `days` days after it was."""
     from datetime import datetime, timedelta
     try:
         return (datetime.fromisoformat(r["at"].replace("Z", "+00:00")) + timedelta(days=days)).isoformat(timespec="seconds")
@@ -314,7 +295,6 @@ def facts(r: dict, days: int = 0) -> str:
 
 
 def _ages_out_in(r: dict, days: int) -> int | None:
-    """Whole days left before a report ages off the list; None when it never does or already has."""
     if not days or r.get("archived"):
         return None
     got = _age_days(r)

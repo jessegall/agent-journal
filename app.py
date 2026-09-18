@@ -125,12 +125,6 @@ def where() -> dict:
 
 
 def transcript_where(doc_ref: str, transcript_ref: str) -> dict | None:
-    """Where this row came from: the same dict `doc_where` builds, plus the transcript that made it.
-
-    A row filed while reading a transcript says so on the row itself -- "whenever it is from a
-    transcript, it should get the tag transcript" -- and the number is checked against a message
-    that actually carries one, so the tag can never point at nothing.
-    """
     out = doc_where(doc_ref)
     if out is None or not transcript_ref:
         return out

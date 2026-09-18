@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""A new session has no environment: it is told, it chooses, and it cannot write until it has.
-
-    .journal/test_unbound.py
-
-Every edge: a fresh session is bound to nothing; its start says so to the AGENT in the
-block and to the USER in `systemMessage`, naming the environments that exist; every prompt
-carries the choice while it stands; a write is refused and the refusal names the way out;
-reads and the journal's own commands are never refused; `switch` ends all of it; an unbound
-session holds no environment, so a second session is not told the start one is taken; a
-delegated subagent is never asked to choose; and `bind_on_start` puts the old binding back.
-"""
 import json, os, shutil, sys, tempfile
 from pathlib import Path
 
@@ -66,7 +55,6 @@ def context_of(out: dict) -> str:
 
 
 def flat(text: str) -> str:
-    """The block as one line: it is wrapped for reading, and a phrase may straddle a break."""
     return " ".join(text.split())
 
 

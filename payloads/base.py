@@ -16,7 +16,7 @@ def say(message: str, /, **values) -> str:
 
 
 class PayloadError(ValueError):
-    """What was sent does not fit the payload the action takes."""
+    pass
 
 
 _TRUE = ("1", "true", "yes", "on")
@@ -24,7 +24,6 @@ _EMPTY = {str: "", bool: False, list: [], dict: {}}
 
 
 class Field:
-    """One typed field of a payload: its type, its default, the key it is sent under, and whether text is kept verbatim."""
     __slots__ = ("kind", "default", "key", "verbatim")
 
     def __init__(self, kind: type, default=None, *, key: str = "", verbatim: bool = False):
@@ -58,7 +57,6 @@ class Field:
 
 
 class Payload:
-    """What an action is given: where and how it was asked, and the typed fields its class declares."""
     schema: dict[str, Field] = {}
 
     def __init_subclass__(cls, **kw):

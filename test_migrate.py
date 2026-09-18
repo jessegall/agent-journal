@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""A record written by an older version is brought forward, by whoever notices first.
-
-    .journal/test_migrate.py
-
-The package is copied into consumers by file, not installed by a package manager, so
-"the upgrade command ran the migration" is not a guarantee anybody has. What this suite
-holds is the guarantee that IS available: the first process to read an old record migrates
-it, twice is a no-op, and nothing that was there is lost on the way.
-"""
 import json, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
@@ -48,7 +39,6 @@ AT = "2026-09-01T00:00:00+00:00"
 
 
 def project(with_record=True):
-    """A checkout holding a record in the PRE-1.34.0 shape: pins in the blob, todo/ beside it."""
     d = Path(tempfile.mkdtemp()) / "proj"
     (d / ".claude").mkdir(parents=True)
     testkit.make(d, SRC)

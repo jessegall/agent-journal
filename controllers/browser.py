@@ -9,13 +9,6 @@ from payloads.common import ListingPayload
 
 
 class BrowserController(Controller):
-    """The page the user is on, asked by the agent and answered by the extension.
-
-    THE AGENT ASKS, THE EXTENSION ANSWERS, THE ANSWER IS A MESSAGE. An ask is queued here; the
-    extension polls `pending`, runs it on the tab it drives with the DevTools protocol, and posts
-    the result — which lands in the inbox like anything the user sends, so the agent reads it the
-    way it reads everything else and nothing new has to wake it.
-    """
     resource = "browser"
     noun = "browser ask"
     actions = ("index", "show", "store", "pending", "result", "driver")

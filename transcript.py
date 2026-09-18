@@ -1,9 +1,3 @@
-"""Reading the session's own .jsonl — the record the journal indexes.
-
-THE TRANSCRIPT IS THE RECORD. The journal never copies it. A compaction rewrites the
-conversation into a summary of what was DONE and drops what was DECIDED; the .jsonl on
-disk lost nothing. Everything here exists to get back to it.
-"""
 from __future__ import annotations
 
 import contextlib
@@ -17,7 +11,6 @@ from pathlib import Path
 import rollout
 
 def _projects() -> Path:
-    """Claude Code's projects folder; the test suites use a temporary one so they never fill the real folder."""
     if os.environ.get("AGENT_JOURNAL_PROJECTS"):
         return Path(os.environ["AGENT_JOURNAL_PROJECTS"])
     if os.environ.get("AGENT_JOURNAL_IN_TESTS"):
@@ -30,19 +23,10 @@ PROJECTS = _projects()
 
 
 def project_dir(cwd: Path) -> Path:
-    """Claude Code's folder for a project: the absolute path with / as -."""
     return PROJECTS / ("-" + str(cwd.resolve()).strip("/").replace("/", "-"))
 
 
 def newest_session(cwd: Path) -> Path | None:
-    """The transcript most recently written for this project — A GUESS, and the last resort.
-
-    With two terminals open on one project this flips between them, and every reader that
-    trusted it read the other terminal's conversation: the hook held session A for session
-    B's messages, and `remember` stamped a pin with B's line number. The hook now takes its
-    transcript from the payload and the CLI from `CLAUDE_CODE_SESSION_ID`; this is what is
-    left for a person at a bare terminal, and its caller says that it guessed.
-    """
     d = project_dir(cwd)
     if not d.is_dir():
         return None
@@ -58,16 +42,6 @@ SESSION_ENV = "CLAUDE_CODE_SESSION_ID"
 
 
 def last_reply(path: Path, limit: int = 400_000, settled: bool = True) -> tuple[str, str] | None:
-    """(the agent's latest non-empty text since the user last spoke, its uuid), or None.
-
-    With `settled` off it is simply the latest text the agent wrote, whatever came after it: what
-    the Activity column shows of the agent while it works.
-
-    READ FROM THE TAIL. This runs at every tool call while a deferral may be pending, and
-    a 20 MB transcript parsed whole for each one would cost more than the check is worth.
-    The last few hundred kilobytes hold the current turn many times over. The uuid, not a
-    line number, identifies the message: numbering needs the whole file.
-    """
     if not path.is_file():
         return None
     size = path.stat().st_size
@@ -117,7 +91,6 @@ def last_reply(path: Path, limit: int = 400_000, settled: bool = True) -> tuple[
 
 
 def sessions(cwd: Path) -> list[Path]:
-    """Every session transcript of this project, newest first. Subagents' are not sessions."""
     d = project_dir(cwd)
     if not d.is_dir():
         return []
@@ -132,15 +105,6 @@ _BEFORE_TRACKS = "default"
 
 
 def track_segments(lines: list[Line]) -> list[tuple[str, int, int]]:
-    """(environment, first line, last line) for every stretch of this transcript, in order.
-
-    AN ENVIRONMENT HAS A TRANSCRIPT: everything ever said while it was current, across every
-    session. The transcript records where that is. Every session start injects "this session
-    is bound to environment `X`", and every switch prints "on X — …" as its own output, so the stretch
-    between one mark and the next belongs to the environment the mark names. Before the first
-    mark — a session older than environments, or older than the start block — the environment is
-    `default`, which is the environment every project had before anyone named one.
-    """
     out: list[tuple[str, int, int]] = []
     here = _BEFORE_TRACKS
     lo = 1
@@ -163,7 +127,6 @@ def track_segments(lines: list[Line]) -> list[tuple[str, int, int]]:
 
 
 def snippet(body: str, term: str, before: int = 140, after: int = 200) -> str:
-    """The stretch of a line around the first mention of `term`, the mention marked «like this»."""
     body = " ".join(body.split())
     needle = term.lower()
     at = body.lower().find(needle)
@@ -176,11 +139,6 @@ def snippet(body: str, term: str, before: int = 140, after: int = 200) -> str:
 
 
 def segments(lines: list[Line], marks: list | None = None) -> list[tuple[str, int, int]]:
-    """(environment, first line, last line) stretches: from the journal's recorded marks where it has them.
-
-    The text of the start block and the switch output is read only for what came before the first
-    recorded mark — a session older than the record — because wording changes and a record does not.
-    """
     last = lines[-1].n if lines else 0
     recorded = sorted((int(n), str(env)) for env, n in (marks or []) if n)
     if not recorded:
@@ -194,7 +152,6 @@ def segments(lines: list[Line], marks: list | None = None) -> list[tuple[str, in
 
 
 def on_track(lines: list[Line], track: str, marks: list | None = None) -> list[Line]:
-    """The lines of this transcript said while `environment` was current."""
     keep = [(lo, hi) for t, lo, hi in segments(lines, marks) if t == track]
     return [l for l in lines if any(lo <= l.n <= hi for lo, hi in keep)]
 
@@ -212,11 +169,6 @@ _FOUND: dict = {}
 
 
 def find(cwd: Path, stem: str) -> Path | None:
-    """The transcript with this stem: a session's own file, or a subagent's under it.
-
-    Subagent transcripts live one level down, at `<session>/subagents/agent-<id>.jsonl`,
-    and a check that only looked at the top level would call every one of them gone.
-    """
     key = (str(cwd), stem)
     if key in _FOUND:
         return _FOUND[key]
@@ -263,7 +215,6 @@ _CHECKOUTS: dict = {}
 
 
 def _checkouts(cwd: Path) -> list[Path]:
-    """The main checkout and every git worktree of the repository `cwd` is in, once per process."""
     key = str(cwd)
     if key not in _CHECKOUTS:
         import worktree
@@ -282,11 +233,6 @@ def _checkouts(cwd: Path) -> list[Path]:
 
 
 def session_transcript(cwd: Path) -> tuple[Path, bool] | None:
-    """(the transcript this process belongs to, whether it was guessed).
-
-    Exact when the session id is in the environment and its file exists; otherwise the
-    newest by mtime, flagged as a guess so the output can say so.
-    """
     sid = os.environ.get(SESSION_ENV, "")
     if sid:
         got = find(cwd, sid)
@@ -297,16 +243,6 @@ def session_transcript(cwd: Path) -> tuple[Path, bool] | None:
 
 
 class Line:
-    """One thing somebody said, or one thing the machine did.
-
-    `n` is the line's index in the transcript and is the citation the whole system quotes:
-    a brief that says "turn 412" is checkable, and one that says "earlier" is not.
-
-    NOT A DATACLASS, and the reason is measured: `dataclasses` pulls `inspect`, ~6ms of
-    import on a module every command and every hook event loads, and a transcript makes
-    thousands of these — `__slots__` is faster to build and smaller to hold than the dict
-    a dataclass gives each one. What was lost is a generated `__repr__` nothing printed.
-    """
 
     __slots__ = ("n", "role", "kind", "text", "ts", "tags", "tools", "parent")
 
@@ -323,11 +259,6 @@ class Line:
 
     @property
     def spoken(self) -> bool:
-        """Did a person or the agent SAY this, as opposed to the machine reporting it?
-
-        Tool results and hook injections are the bulk of a transcript and none of it is
-        anybody's words. Reading back is only ever worth doing over the half somebody said.
-        """
         return self.kind in ("human", "text")
 
 
@@ -340,7 +271,6 @@ ASKS = frozenset({"AskUserQuestion"})
 
 
 def _asked(inp: dict) -> str:
-    """The question tool's input, as the words the user saw."""
     out = []
     for q in (inp or {}).get("questions") or []:
         if not isinstance(q, dict):
@@ -354,7 +284,6 @@ def _asked(inp: dict) -> str:
 
 
 def _text_of(msg: dict) -> tuple[str, list[str], dict, list[str]]:
-    """(text, tool names, {tool_use id: name} for questions, tool_use ids answered here)."""
     content = msg.get("content")
     if isinstance(content, str):
         return content, [], {}, []
@@ -391,22 +320,6 @@ STOP_EVENTS = frozenset({"Stop", "SubagentStop", "SessionStart"})
 
 
 def _hook_line(rec: dict) -> tuple[str, str] | None:
-    """A hook's injection, when the transcript files it as an `attachment` record.
-
-    TWO TRANSCRIPT SHAPES EXIST. In one, a hook's context arrives as a user record and is
-    read like any other line. In the other it is an `attachment`, a type this reader used to
-    skip entirely — so the journal could not see its own footprints. Measured in a live
-    session: 173 attachment records ignored, turn boundaries lost with them, and 181
-    assistant messages collapsing into 3 filing units because nothing marked where the turns
-    ended. The check went quiet and every green light stayed green.
-
-    `hook_additional_context` is what actually reached the model. `hook_success` is the raw
-    result and would double every event, so it is taken only for a Stop, whose BLOCKED hold
-    travels in `reason` and appears nowhere else. (This docstring used to say a Stop "cannot
-    carry additionalContext at all". It can — `DELIVERS_CONTEXT` has listed it since it was
-    measured, and the reference documents it — so the sentence described a belief the code
-    had already stopped holding.)
-    """
     a = rec.get("attachment") or {}
     kind, event = a.get("type"), a.get("hookEvent")
     if event not in STOP_EVENTS:
@@ -428,14 +341,6 @@ PERSISTED = ("<persisted-output>", "Output too large")
 
 
 def start_context(path: Path) -> tuple[str, bool] | None:
-    """(what the last SessionStart injection actually delivered, whether it was persisted).
-
-    THE THIRD FACT PAST WIRED AND FIRED. `verify` could say a hook is configured and that it
-    has run, and a real consumer had both green while its 120,360-character start block was
-    replaced by a path to a file nobody was told to open. Firing is not arriving, and this
-    is the only place the difference is written down: the transcript records what reached
-    the model, so it can be read back and checked.
-    """
     if not path or not path.is_file():
         return None
     got = None
@@ -473,7 +378,6 @@ def _kind(rec: dict, has_tool_result: bool) -> str:
 
 
 def last_model(path: Path | None, limit: int = 300_000) -> str:
-    """The model that wrote the last reply in a transcript, read from its tail."""
     if path is None or not path.is_file():
         return ""
     if rollout.is_rollout(path):
@@ -498,7 +402,6 @@ def last_model(path: Path | None, limit: int = 300_000) -> str:
 
 
 def page(lines: list[Line], *, before: int | None = None, limit: int = 1000) -> dict:
-    """The `limit` lines ending just before line `before`, or the last `limit`: a transcript read from the newest end."""
     # a record with neither text nor a tool says nothing a reader can use; line numbers stay as they are
     lines = [x for x in lines if (x.text or "").strip() or x.tools]
     end = len(lines) if before is None else next((i for i, x in enumerate(lines) if x.n >= before), len(lines))
@@ -515,15 +418,6 @@ CACHE_VERSION = 1
 
 
 def read(path: Path, cache: Path | None = None) -> tuple[list[Line], list[int]]:
-    """Every line, and the indices where a compaction fell.
-
-    The boundaries are what make `--back=N` possible: a summary is not a thing you can
-    read, but the stretch it REPLACED is, and it is the stretch that was dropped.
-
-    With `cache`, what was parsed is kept in that file and the next read parses only the bytes
-    appended since. A long session's transcript runs past a hundred megabytes, and the stop
-    hook reads it at every turn.
-    """
     if not path.is_file():
         return [], []  # a transcript not yet written has no lines, not an error
     st = path.stat()
@@ -553,7 +447,6 @@ def read(path: Path, cache: Path | None = None) -> tuple[list[Line], list[int]]:
 
 
 def _take(raw: bytes, lines: list[Line], boundaries: list[int], asked: set[str]) -> None:
-    """One transcript record, added to the lines parsed so far."""
     raw = raw.strip()
     if not raw:
         return
@@ -620,7 +513,6 @@ def _take(raw: bytes, lines: list[Line], boundaries: list[int], asked: set[str])
 
 
 def _cached(cache: Path, path: Path, st) -> tuple[list[Line], list[int], set[str], int] | None:
-    """What an earlier read of this same file kept, or None when the cache is missing, stale or another file's."""
     try:
         with cache.open("rb") as fh:
             got = pickle.load(fh)
@@ -633,7 +525,6 @@ def _cached(cache: Path, path: Path, st) -> tuple[list[Line], list[int], set[str
 
 
 def _keep(cache: Path, path: Path, st, lines: list[Line], boundaries: list[int], asked: set[str], offset: int) -> None:
-    """Write the cache atomically; a failed write only costs the next read its speed."""
     data = {"version": CACHE_VERSION, "path": str(path), "inode": st.st_ino, "offset": offset,
             "lines": lines, "boundaries": boundaries, "asked": asked}
     tmp = None
@@ -650,7 +541,6 @@ def _keep(cache: Path, path: Path, st, lines: list[Line], boundaries: list[int],
 
 
 def since(lines: list[Line], boundaries: list[int], back: int = 0) -> list[Line]:
-    """The stretch `back` compactions ago. 0 is now; 1 is what the last summary replaced."""
     if not boundaries:
         return lines
     marks = [0] + boundaries + [len(lines)]
@@ -672,28 +562,6 @@ def interrupted(line: Line) -> bool:
 
 
 def filing_units(lines: list[Line]) -> set[int]:
-    """The line numbers that are actually MESSAGES, in the sense a reader means.
-
-    NOT every assistant text block. A turn is one answer delivered in several pieces: a
-    ten-word line saying what the next tool call is for, the tool call, another line, and
-    finally the thing the user actually reads. Only the last of those is the message; the
-    rest is scaffolding.
-
-    Measured, not assumed. Fourteen consecutive holds in one session, eleven of which were
-    lines like "Now wiring it into the CLI" — and the three that mattered were all the last
-    block of their turn. A rule that fires eleven times wrongly to catch three teaches the
-    reader to clear the nudge without reading it, and then the three go past too.
-
-    So: within each turn — everything between one stop and the next — the last non-empty
-    assistant text is the filing unit. The final turn has nothing after it, which is exactly
-    the turn the stop hook is judging.
-
-    IT LIVES HERE, NOT IN THE HOOK, BECAUSE TWO READERS HAVE TO AGREE. The hook decides
-    what to hold on and the digest decides what to render; when each carried its own idea
-    of "a message" the digest went on printing scaffolding the hook had already stopped
-    filing, and a reader comparing the two would have found the system disagreeing with
-    itself about its own central noun. One definition, in the module that owns the shape.
-    """
     units: set[int] = set()
     current: int | None = None
     for l in lines:

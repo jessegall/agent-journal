@@ -9,12 +9,6 @@ from payloads.common import ListingPayload
 
 
 class NoticesController(Controller):
-    """A line the agent pins over the conversation until the user closes it.
-
-    NOT A NOTIFICATION AND NOT A PIN. A notification is news that ages into a list; a pin is a fact
-    for the agent's own reading. This is neither: it is one line the user keeps seeing while it
-    matters, and only their X takes it down.
-    """
     resource = "notices"
     noun = "notice"
     actions = ("index", "show", "store", "close")

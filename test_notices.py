@@ -1,4 +1,3 @@
-"""The line the agent pins over the conversation: pinned, listed, and taken down only on purpose."""
 from __future__ import annotations
 
 import os

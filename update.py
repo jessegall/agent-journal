@@ -1,15 +1,3 @@
-"""Versions, the changelog, and the upgrade: how a project learns the journal has moved on.
-
-THE UPGRADE IS `install --from` POINTED AT THE PUBLIC REPO: a shallow clone into a temp
-directory, its suites run there, and only then the package copied over — the record,
-settings, runtime, to-dos and docs of this project untouched. What this module adds is
-knowing that an upgrade EXISTS and what it brings: the changelog entries between the
-version a project had and the one it got, printed at upgrade and handed to each session
-once, because a feature nobody was told about is one nobody uses.
-
-THE CHECK IS QUIET AND RARE. Once a day at most, a few seconds at most, and a network
-that is down is a check that did not happen — never an error in front of the agent.
-"""
 from __future__ import annotations
 
 import json
@@ -58,7 +46,6 @@ def say(message: str, /, **values) -> str:
 
 
 def entries(text: str) -> list[tuple[str, str, str]]:
-    """(version, headline, body) for every `## <version> — <headline>` section, newest first."""
     out = []
     parts = re.split(r"^## +", text, flags=re.M)[1:]
     for part in parts:
@@ -109,13 +96,6 @@ CACHE_SECONDS = 900
 
 
 def cached(root: Path) -> dict:
-    """The upstream answer already on disk, and NEVER a network call.
-
-    WHAT A PAGE MAY ASK. `check` refreshes a stale cache, which means a request that happens to
-    land after fifteen minutes pays a network round trip inside its own response — and on a
-    machine that cannot reach the repository quickly, that is a page sitting there loading.
-    A viewer reads what the hooks and the CLI have already learned, or nothing at all.
-    """
     f = root / CACHE
     if not f.is_file():
         return {}
@@ -127,7 +107,6 @@ def cached(root: Path) -> dict:
 
 
 def check(root: Path, force: bool = False) -> dict:
-    """{'version': latest upstream, 'headline': …} — cached for CACHE_SECONDS; `force` asks now."""
     f = root / CACHE
     cached = {}
     if f.is_file():
@@ -164,13 +143,6 @@ def check(root: Path, force: bool = False) -> dict:
 
 
 def available(root: Path) -> tuple[str, str]:
-    """(the sentence to say, the version it names) — or ("", "") when this project is current.
-
-    ONE CALL, TWO ANSWERS. The stop hook wanted both — the line to print, and the version to
-    compare against what it said last time — and asked twice: `notice()` and then `check()`,
-    each a round trip of its own before there was a cache. Two questions about one fact are
-    one function.
-    """
     got = check(root)
     have = current(root)
     if not (got.get("version") and newer(got["version"], have)):
@@ -179,13 +151,11 @@ def available(root: Path) -> tuple[str, str]:
 
 
 def notice(root: Path) -> str:
-    """One line if a newer version is upstream, else empty."""
     return available(root)[0]
 
 
 # ------------------------------------------------------------------ the upgrade
 def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
-    """Pull the package from the public repo (or a path), and say what changed."""
     import install
     had = current(root)
     src = source or REPO

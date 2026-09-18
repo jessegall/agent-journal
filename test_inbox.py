@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""inbox.py: leave a message, split it into parts, mark it processed."""
 import json, os, sys, tempfile
 from pathlib import Path
 

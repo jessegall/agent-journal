@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""Services the project can reach, and the one thing they must never hold.
-
-    .journal/test_connections.py
-
-Every edge: a connection is the project's and an environment may disagree with one field of
-it without forking the list; what it overrode is readable beside what it changed it from;
-`--off` puts one field back; the secret is the NAME of an environment variable and anything
-with the shape of a token is refused where it is typed; and removing one leaves a note in
-the record saying what went and why.
-"""
 import json, os, sys, tempfile
 from pathlib import Path
 

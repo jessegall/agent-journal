@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""The conversation on an environment: what was said, never what was done.
-
-    .journal/test_chat.py
-
-Every edge: a tagged reply is a turn and an untagged one is not; a message that merely
-mentions a tag is not filed as one; what the agent DID never appears, however much of it
-there is; the user's messages and both sides' replies interleave by time; the thread is
-capped and says how much it left off; and reading it twice does not read the transcript
-twice.
-"""
 import json, os, sys, tempfile
 from pathlib import Path
 
@@ -50,7 +40,6 @@ P.cli("switch", "w", session=STEM)
 
 
 def mark(env):
-    """A transcript says which environment it was on: the start block injects it, a switch prints it."""
     global n
     n += 1
     with path.open("a") as fh:

@@ -139,11 +139,6 @@ def label(ref: str) -> str:
 
 
 def sources(root: Path, ref: str, track: str | None = None) -> list[dict]:
-    """The messages a part of which became `ref` (like `todo:44`), each with the words it quoted.
-
-    A bare ref means nothing without an environment — `plan:1` exists on every environment that
-    has one — so a part records where its ref lives, and the message may sit somewhere else.
-    """
     here = track or state.current_track(root)
     out = []
     for env in dict.fromkeys([here] + tracks.choices(root)):
@@ -238,11 +233,6 @@ def transcript_path(root: Path, track: str | None, n: int) -> Path:
 
 
 def transcript(root: Path, track: str | None, n: int) -> tuple[dict, str] | None:
-    """The transcript a message carried: its frontmatter and its text, or None when there is none.
-
-    The frontmatter is read here rather than through `docs`, which owns a catalogue this file is
-    deliberately outside of — and whose reader clears that catalogue's cache as a side effect.
-    """
     path = transcript_path(root, track, n)
     if not path.is_file():
         return None
@@ -260,13 +250,6 @@ def transcript(root: Path, track: str | None, n: int) -> tuple[dict, str] | None
 
 
 def _write_transcript(root: Path, track: str | None, n: int, at: str, body: str) -> None:
-    """A transcript is its own FILE KIND: an .md that says so in its frontmatter.
-
-    It is not a doc. `docs.folder()` is `root.parent / docs_dir` — a tree outside the record
-    entirely — so a file under `environments/<env>/transcripts/` is invisible to the catalogue
-    structurally, not by a filter somebody has to keep in step. Nothing lists it; it is reached
-    from the message that carried it.
-    """
     path = transcript_path(root, track, n)
     path.parent.mkdir(parents=True, exist_ok=True)
     meta = {"kind": "transcript", "message": n, "at": at}
@@ -350,7 +333,6 @@ def unfiled(m: dict) -> list[str]:
 
 
 def detach(root: Path, n: int, name: str, why: str, at: str, track: str | None = None) -> tuple[bool, str]:
-    """Take a held file off a message: it moves to a struck folder beside the others, and the message keeps why."""
     why = " ".join((why or "").split())
     if not why:
         return False, say("detach_why", n=n, name=name)
@@ -379,7 +361,6 @@ def detach(root: Path, n: int, name: str, why: str, at: str, track: str | None =
 
 
 def attach(root: Path, n: int, files: list | None, at: str, source: str = "cli", track: str | None = None) -> tuple[bool, str]:
-    """Add files to a message already sent. From the viewer, the addition is a comment on the message, so the agent is told."""
     if not files:
         return False, say("attach_what", n=n)
     got, why = _read_files(files)
@@ -408,7 +389,6 @@ def attach(root: Path, n: int, files: list | None, at: str, source: str = "cli",
 
 
 def file_into(root: Path, n: int, name: str, into: str, at: str, track: str | None = None) -> tuple[bool, str]:
-    """File one held attachment: into a doc (copied there, the held copy removed), or kept where it is."""
     import re as _re
     here = track or state.current_track(root)
     where = " ".join((into or "").split())
@@ -514,14 +494,6 @@ def done(root: Path, n: int, at: str, track: str | None = None) -> tuple[bool, s
 
 
 def declare(root: Path, n: int, kind: str, at: str, track: str | None = None) -> tuple[bool, str]:
-    """Say what a message ALREADY HERE is, when it arrived without saying.
-
-    Recognition is worth nothing if a recognised transcript cannot become a declared one: it would
-    have no file, no flag, and neither the chip nor the link that phases 2 and 3 built. So this is
-    the same act as sending one declared, applied late -- and it goes through the one writer `add`
-    uses rather than a second one beside it. A PROCESSED message may still be declared: recognition
-    usually happens while the message is being filed, not before.
-    """
     kind = (kind or "").strip().lower()
     if kind not in MESSAGE_KINDS:
         return False, say("bad_kind", kind=repr(kind), kinds=list(MESSAGE_KINDS))
@@ -551,14 +523,6 @@ def declare(root: Path, n: int, kind: str, at: str, track: str | None = None) ->
 
 
 def update(root: Path, n: int, text: str, at: str = "", track: str | None = None) -> tuple[bool, str]:
-    """Change what a message says, keeping what it said before.
-
-    AN EDIT IS NOT AN OVERWRITE HERE. The agent may already have READ these words — and a to-do, a
-    pin or a plan may cite them — so replacing them silently would leave every one of those quoting
-    something nobody ever wrote. What was there is kept, the way `pins --supersedes` and `rules
-    replace` keep theirs, and the message is stamped so the launcher can tell the agent it CHANGED
-    rather than that a new one arrived.
-    """
     text = (text or "").strip()
     if not text:
         return False, say("needs_text")
@@ -582,7 +546,6 @@ def update(root: Path, n: int, text: str, at: str = "", track: str | None = None
 
 
 def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tuple[bool, str]:
-    """Carry a waiting message to another environment: closed here as moved, waiting there."""
     import tracks
     dst = state.slug(dst)
     if not dst:
@@ -614,15 +577,6 @@ def move(root: Path, n: int, dst: str, at: str, track: str | None = None) -> tup
 
 def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: str | None = None,
           part: str = "", quoting: str = "", files: list | None = None) -> tuple[bool, str]:
-    """A short answer under a message: what was done, a clarification, a call the agent made. Any status.
-    With `part`, it answers the question those words ask: the part is recorded as answered.
-
-    `part` AND `quoting` POINT IN OPPOSITE DIRECTIONS, which is why they are two fields and not one.
-    `part` is the USER's words that this reply answers, checked against the message; `quoting` is words
-    said EARLIER IN THIS THREAD that this reply answers, checked against the replies already on it. Each
-    carries its own guarantee — the excerpt is real, and it was really said here — and one field holding
-    both would check against one source and quietly let the other kind of quote be invented.
-    """
     text = (text or "").strip()
     part = " ".join((part or "").split())
     quoting = " ".join((quoting or "").split())
@@ -681,14 +635,6 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
 
 
 def untold_replies(root: Path, track: str | None = None) -> list[tuple[int, int, dict]]:
-    """(message, index, reply) for every reply the USER left under a message that nobody has been told about.
-
-    A MESSAGE IS TOLD ONCE; A CONVERSATION IS NOT. The launcher's news reads `unprocessed`, which is keyed by
-    the message and stops the moment the agent marks it processed — so the user's answer under a
-    message the agent had already handled reached nobody, and a back-and-forth died after its first
-    turn. A reply therefore carries its own `told_at`, for the same reason a comment does: what has to
-    be told is the turn, not the thread it is in.
-    """
     out = []
     for n, m in enumerate(_all(root, track), 1):
         if m.get("archived"):
@@ -712,7 +658,6 @@ def mark_replies_told(root: Path, track: str | None, refs: list[tuple[int, int]]
 
 
 def mark_read(root: Path, numbers: list[int], at: str, track: str | None = None) -> None:
-    """The agent has read these waiting messages: the viewer shows them as being handled until they are processed."""
     with state.locked(root):
         items = _all(root, track)
         changed = False
@@ -725,7 +670,6 @@ def mark_read(root: Path, numbers: list[int], at: str, track: str | None = None)
 
 
 def archive(root: Path, n: int, why: str, at: str, track: str | None = None) -> tuple[bool, str]:
-    """Take a message off the list, with the reason. A waiting one stops waiting; nothing is deleted."""
     why = " ".join((why or "").split())
     if not why:
         return False, say("archive_why", n=n)
@@ -789,7 +733,6 @@ def detail(root: Path, n: int, m: dict, track: str | None = None) -> dict:
 
 
 def show_text(d: dict) -> str:
-    """A message's `detail` as the terminal page."""
     n = d["n"]
     status = say("status_waiting" if d["status"] == "waiting" else "status_processed")
     out = [fmt.title(say("show_title", n=n), sub=say("show_sub", status=status, age=d["age"],

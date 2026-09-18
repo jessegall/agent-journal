@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""A to-do's brief: it reads back with its structure intact, and it can be changed.
-
-    .journal/test_todo.py
-
-Owns what test_queue.py (the stop queue) and test_docs.py (docs, a different shape) do
-not: todo.py's own CRUD — a brief's rendering, and the amend/replace verbs that change
-one without rewriting the file by hand.
-"""
 import json, os, re, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""claude_md.py: a chosen rule is written into CLAUDE.md between journal markers, and taken out again."""
 import os, sys, tempfile
 from pathlib import Path
 
