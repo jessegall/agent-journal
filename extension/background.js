@@ -1,38 +1,32 @@
-// The extension's one process: it finds the viewer, injects the picker, takes the picture, and
-// posts the message. Nothing here touches the page except through picker.js.
+// The extension's one process: it finds every journal running on this machine, injects the picker
+// and the chat window, takes the picture, and posts the message. Nothing here touches the page
+// except through picker.js and chat.js.
 
-// THE VIEWER IS FOUND, NOT CONFIGURED. It picks the first free port from 8420 up, so a port typed
-// into a settings box is wrong the next time it restarts. /api/identity names the project, which is
-// how a journal is told from anything else listening on a local port.
+// A JOURNAL IS FOUND, NOT CONFIGURED. Each viewer takes the first free port from 8420 up, so a port
+// typed into a settings box is wrong the next time one restarts — and several projects run at once,
+// which is why this collects all of them rather than the first. /api/identity names the project,
+// which is how a journal is told from anything else listening on a local port.
 const PORTS = Array.from({ length: 20 }, (_, i) => 8420 + i);
-
-async function stored() {
-  const got = await chrome.storage.local.get(["url", "env"]);
-  return { url: got.url || "", env: got.env || "" };
-}
+const FOUND = { at: 0, journals: [] };
+const FRESH_MS = 20_000;
 
 async function identify(url) {
   try {
-    const r = await fetch(`${url}/api/identity`, { cache: "no-store" });
+    const r = await fetch(`${url}/api/identity`, { cache: "no-store", signal: AbortSignal.timeout(900) });
     if (!r.ok) return null;
     const got = await r.json();
-    return got && got.root ? got : null;
+    return got && got.root ? { url, project: got.project || "journal", root: got.root } : null;
   } catch (e) {
     return null;
   }
 }
 
-async function findViewer() {
-  const { url } = await stored();
-  if (url && (await identify(url))) return url;
-  for (const port of PORTS) {
-    const here = `http://127.0.0.1:${port}`;
-    if (await identify(here)) {
-      await chrome.storage.local.set({ url: here });
-      return here;
-    }
-  }
-  return "";
+async function journals({ fresh = false } = {}) {
+  if (!fresh && FOUND.journals.length && Date.now() - FOUND.at < FRESH_MS) return FOUND.journals;
+  const found = (await Promise.all(PORTS.map((p) => identify(`http://127.0.0.1:${p}`)))).filter(Boolean);
+  FOUND.journals = found;
+  FOUND.at = Date.now();
+  return found;
 }
 
 async function environments(url) {
@@ -45,13 +39,18 @@ async function environments(url) {
   }
 }
 
-async function chosenEnv(url) {
-  const { env } = await stored();
-  const names = await environments(url);
-  if (env && names.includes(env)) return env;
-  const first = names[0] || "";
-  if (first) await chrome.storage.local.set({ env: first });
-  return first;
+// WHERE A MESSAGE GOES: the journal and the environment the user last picked, as long as both are
+// still there. Otherwise the first journal running and its first environment, so a fresh install
+// works before anything is chosen.
+async function target({ fresh = false } = {}) {
+  const found = await journals({ fresh });
+  if (!found.length) return { why: "No journal viewer is running. Start one with `journal serve`." };
+  const kept = await chrome.storage.local.get(["url", "env"]);
+  const one = found.find((j) => j.url === kept.url) || found[0];
+  const names = await environments(one.url);
+  if (!names.length) return { why: `${one.project} answered, but it has no environment to write to.` };
+  const env = names.includes(kept.env) ? kept.env : names[0];
+  return { ...one, env, envs: names, journals: found };
 }
 
 // THE PICTURE IS OF WHAT WAS POINTED AT, not of the tab. captureVisibleTab gives the whole visible
@@ -70,79 +69,84 @@ async function shotOf(rect, scale) {
   const blob = await canvas.convertToBlob({ type: "image/png" });
   const bytes = new Uint8Array(await blob.arrayBuffer());
   let binary = "";
-  for (const b of bytes) binary += String.fromCharCode(b);
+  for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]);
   return btoa(binary);
 }
 
 function said(picked) {
   const lines = [`I mean this element: \`${picked.selector}\``, picked.url];
   if (picked.text) lines.push(`"${picked.text}"`);
-  if (picked.hints.length) lines.push(picked.hints.join(" · "));
+  if (picked.hints && picked.hints.length) lines.push(picked.hints.join(" · "));
   if (picked.html) lines.push("```html", picked.html, "```");
   return lines.join("\n");
 }
 
-async function send(picked, tabId) {
-  const url = await findViewer();
-  if (!url) return { ok: false, why: "No journal viewer is running — start one with `journal serve`." };
-  const env = await chosenEnv(url);
-  if (!env) return { ok: false, why: "The viewer answered, but it has no environment to write to." };
+async function post(text, files) {
+  const to = await target();
+  if (to.why) return { ok: false, why: to.why };
+  try {
+    const r = await fetch(`${to.url}/api/env/${to.env}/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text, files }),
+    });
+    if (!r.ok) return { ok: false, why: `${to.project} refused it (${r.status}).` };
+    return { ok: true, project: to.project, env: to.env, shot: !!(files && files.length) };
+  } catch (e) {
+    // THE REASON IS CARRIED BACK TO THE PAGE. A pointer that silently does nothing is worse than
+    // one that fails: the user cannot tell a broken extension from a journal that is not running.
+    return { ok: false, why: `Could not reach ${to.project}: ${e.message}` };
+  }
+}
+
+async function send(picked) {
   let data = "";
+  let shotWhy = "";
   try {
     data = await shotOf(picked.rect, picked.scale);
   } catch (e) {
-    data = "";                                    // a message without its picture is still the message
+    shotWhy = e.message;                            // a message without its picture is still the message
   }
-  const files = data ? [{ name: `pointed-${Date.now()}.png`, data }] : [];
-  const r = await fetch(`${url}/api/env/${env}/messages`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ text: said(picked), files }),
-  });
-  if (!r.ok) return { ok: false, why: `The journal refused it (${r.status}).` };
-  return { ok: true, env, url, shot: !!data };
+  const got = await post(said(picked), data ? [{ name: `pointed-${Date.now()}.png`, data }] : []);
+  return { ...got, shotWhy };
 }
 
-async function point(tab) {
-  if (!tab || !tab.id) return;
-  await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["picker.js"] });
-}
-
-async function openChat() {
-  const url = await findViewer();
-  if (!url) return;
-  const env = await chosenEnv(url);
-  const where = env ? `${url}/#/env/${env}` : url;
-  const [open] = await chrome.tabs.query({ url: `${url}/*` });
-  if (open) {
-    await chrome.tabs.update(open.id, { active: true, url: where });
-    await chrome.windows.update(open.windowId, { focused: true });
-    return;
+async function inject(file) {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab || !tab.id) return { ok: false, why: "No page to work on." };
+  try {
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: [file] });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, why: e.message };           // chrome:// pages and the Web Store refuse every extension
   }
-  await chrome.tabs.create({ url: where });
 }
 
-chrome.commands.onCommand.addListener(async (command, tab) => {
-  if (command === "point") await point(tab);
-  if (command === "chat") await openChat();
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command === "point") await inject("picker.js");
+  if (command === "chat") await inject("chat.js");
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
-  if (msg && msg.kind === "picked") {
-    send(msg.picked, sender.tab && sender.tab.id).then(reply);
-    return true;                                  // the reply is awaited
-  }
-  if (msg && msg.kind === "point") {
-    chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => point(tab).then(() => reply({ ok: true })));
-    return true;
-  }
-  if (msg && msg.kind === "chat") {
-    openChat().then(() => reply({ ok: true }));
-    return true;
-  }
-  if (msg && msg.kind === "where") {
-    findViewer().then(async (url) => reply({ url, env: await chosenEnv(url), envs: await environments(url) }));
-    return true;
-  }
-  return false;
+  if (!msg || !msg.kind) return false;
+  const answer = {
+    picked: () => send(msg.picked),
+    point: () => inject("picker.js"),
+    chat: () => inject("chat.js"),
+    test: () => post("[journal pointer] a test message from the extension", []),
+    where: async () => {
+      const to = await target({ fresh: !!msg.fresh });
+      return to.why ? { why: to.why, journals: [] } : {
+        url: to.url, project: to.project, env: to.env, envs: to.envs,
+        journals: (to.journals || []).map((j) => ({ url: j.url, project: j.project })),
+      };
+    },
+    pick: async () => {
+      await chrome.storage.local.set({ url: msg.url, env: msg.env || "" });
+      return { ok: true };
+    },
+  }[msg.kind];
+  if (!answer) return false;
+  answer().then(reply, (e) => reply({ ok: false, why: e.message }));
+  return true;                                      // the reply is awaited
 });

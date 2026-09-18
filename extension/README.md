@@ -9,14 +9,19 @@ itself — as a message in this journal.
 1. `chrome://extensions` → turn on **Developer mode** → **Load unpacked** → pick this folder.
 2. Start a viewer if none is running: `journal serve`.
 
-The extension finds the viewer itself by asking ports 8420–8439 for `/api/identity`, so nothing
-needs configuring when the port changes.
+The extension finds every journal itself by asking ports 8420–8439 for `/api/identity`, so nothing
+needs configuring when a port changes. The popup lists the projects that answered: pick the journal,
+then the environment inside it.
 
 ## Use
 
 - **Alt+P**, or **Point at an element** in the popup: a crosshair appears, whatever is under the
   pointer is outlined, and clicking it sends it. Esc stops without sending.
-- **Alt+J**, or **Open the chat**: brings the journal's tab forward, or opens one.
+- **Alt+J**, or **Open the chat here**: the journal opens as a window over the page you are on —
+  dragged by its bar, resized from its corner, remembered where you left it. Alt+J again, Esc, or ×
+  closes it.
+- **Send a test message** in the popup posts one message with no pointing involved. If the test
+  lands and pointing does not, the pointer is at fault; if neither lands, the popup says why.
 
 The popup's dropdown picks which environment the message lands on.
 
