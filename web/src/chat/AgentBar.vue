@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {agent, span} from "../store.js";
@@ -21,10 +21,16 @@ const counts = computed(() => [
     {key: "subagents", icon: "agents", n: (data.value && data.value.subagents) || 0, title: "subagents dispatched this session", rows: []},
 ]);
 const toggle = (key) => (open.value = open.value === key ? "" : key);
+const bar = ref(null);
+const away = (e) => {
+    if (bar.value && !bar.value.contains(e.target)) open.value = "";
+};
+window.addEventListener("click", away);
+onUnmounted(() => window.removeEventListener("click", away));
 </script>
 
 <template>
-    <div class="agent-bar" @mouseleave="open = ''">
+    <div ref="bar" class="agent-bar">
         <div class="agent-facts">
             <template v-if="!data">
                 <span class="agent-fact">No agent</span>
@@ -63,7 +69,7 @@ const toggle = (key) => (open.value = open.value === key ? "" : key);
                 </template>
             </template>
         </div>
-        <template v-if="open">
+        <template v-if="open && data">
             <div class="bar-drop">
                 <SwitchCase :value="open">
                     <template #skills>
@@ -186,13 +192,14 @@ const toggle = (key) => (open.value = open.value === key ? "" : key);
 
 .bar-drop {
     position: absolute;
-    top: 33px;
-    right: 16px;
+    top: 100%;
+    left: 0;
+    right: 0;
     z-index: 30;
-    width: 280px;
-    padding: 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border-2);
     background: var(--raised);
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
 }
