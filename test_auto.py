@@ -161,7 +161,7 @@ s.journal("start", "the sweep")
 s.start()
 label, text = s.stop()
 check("auto on, unrelated work open, to-dos waiting: held once to end or park", label, AUTO_OPEN)
-s.journal("todo", "the sweep: ReferenceDemo waits on the user's ruling")
+s.journal("todo", "the sweep — ReferenceDemo waits on the user's ruling")
 s.journal("end", "the sweep")
 label, text = s.stop()
 check("remainder parked and the work ended: the next stop starts the list at to-do 1",

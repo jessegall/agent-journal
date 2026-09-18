@@ -240,8 +240,13 @@
   /* the command: at the right, against the divider, small and quiet; the clock stands to its left */
   /* THE COMMAND ROW, read like a build log: a mark, the command, the last line it printed, the clock.
      It sits between the work and the tools, and shrinks before the work does. */
-  .statusbar-running { flex: 0 1 auto; min-width: 0; position: relative; display: inline-flex; align-items: center;
-    margin-left: auto; padding-left: 14px; font-size: 11px; color: var(--text-4, #6b6e76); }
+  /* A GRID OF ONE CELL, so the leaving line and the arriving one stand on the same spot and the
+     roll is up and out, down and in — absolute positioning inside a flex row put the leaving
+     line at its static place, which was beside the new one: it slid sideways (message 170). */
+  .statusbar-running { flex: 0 1 auto; min-width: 0; position: relative; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center;
+    margin-left: auto; padding-left: 14px; font-size: 11px; color: var(--text-4, #6b6e76); overflow: hidden; }
+  .statusbar-running > * { grid-area: 1 / 1; }
+  .statusbar-running .roll-leave-active { position: static; }
   .statusbar-run-line { display: inline-flex; align-items: center; gap: 8px; max-width: 56ch; min-width: 0; height: 26px; padding: 0 8px;
     border: 1px solid transparent; border-radius: 7px; background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: left; }
   .statusbar-run-line:hover, .statusbar-run-line.open { border-color: var(--border); background: rgba(255, 255, 255, .03); color: var(--text-3); }
@@ -253,6 +258,11 @@
   .statusbar-running-for { flex: 0 0 auto; font-size: 10.5px; font-variant-numeric: tabular-nums; opacity: .8; }
   /* a clock that has stopped is a step quieter than one still counting */
   .statusbar-running-for.done { opacity: .55; }
+  /* the command's roll is the same roll as the work's, a step taller so it reads as one at a glance */
+  .statusbar-running .roll-enter-from { transform: translateY(10px); }
+  .statusbar-running .roll-leave-to { transform: translateY(-10px); }
+  .statusbar-running .roll-enter-active { transition-duration: 240ms; }
+  .statusbar-running .roll-leave-active { transition-duration: 200ms; }
   /* THE LOG under the bar: the command's output as it printed it, over the page, closed by Escape or the row */
   .statusbar-log { position: absolute; z-index: 40; left: 0; right: 0; top: 100%; max-height: min(60vh, 520px); display: flex; flex-direction: column;
     border-bottom: 1px solid var(--border); background: #121316; box-shadow: 0 18px 40px rgba(0, 0, 0, .45); }
@@ -1563,8 +1573,8 @@
   .part-chip { display: inline-flex; align-items: center; white-space: nowrap; height: 18px; padding: 0 7px; border-radius: 5px; font-size: 10.5px;
     background: rgba(217, 164, 65, .14); color: #d9a441; }
   .part-chip.done { background: rgba(111, 174, 125, .14); color: #8fc79d; }
-  .plan-screen { padding: 26px 28px 56px; display: flex; flex-direction: column; gap: 22px; max-width: 960px; }
-  .plan-top { display: flex; flex-direction: column; gap: 10px; }
+  .plan-screen { padding: 30px 32px 64px; display: flex; flex-direction: column; gap: 18px; max-width: 760px; }
+  .plan-top { display: flex; flex-direction: column; gap: 12px; }
   /* a finished plan stays reachable and stops looking like a choice */
   /* a plan nobody is working: the badge states what it is rather than claiming an owner */
   .plan-assigned.quiet { background: transparent; border: 1px solid var(--border-2); color: var(--text-3); }
@@ -1588,42 +1598,59 @@
   a.plan-panel-phase { color: var(--text); text-decoration: none; padding: 3px 0; }
   a.plan-panel-phase:hover .plan-panel-phase-title { color: var(--accent-text); }
   .plan-panel-phase-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .plan-top-meta { display: flex; align-items: center; gap: 10px; font-size: 11.5px; }
-  .plan-title { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; text-wrap: pretty; }
-  .plan-goal { margin: 0; max-width: 680px; font-size: 13.5px; line-height: 1.55; color: var(--text-2); }
-  .plan-progress { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--border-2); border-radius: 12px; background: var(--raised); }
-  .plan-progress-text { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 8px; }
-  .plan-progress-line { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; color: var(--text-2); }
-  .plan-progress-line b { font-weight: 500; color: var(--text); }
-  .plan-progress-actions { flex: 0 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .plan-progress-actions .actions { display: contents; }
-  .plan-progress-actions .action-buttons .btn { height: 32px; padding: 0 12px; border-radius: 8px; font-size: 13px; }
-  .plan-quiet { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: 8px; background: var(--sel); color: var(--text-3); font-size: 13px; }
-  .phase-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #151619; }
-  .phase-card.current { border-color: rgba(217, 164, 65, .45); background: #1a1913; }
-  .phase-head { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
-  .phase-num { flex: none; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 7px;
-    font-size: 12px; font-weight: 600; background: var(--sel); color: var(--text-3); }
-  .phase-card.complete .phase-num { background: rgba(62, 207, 116, .22); color: #6ee7a0; }
-  .phase-card.current .phase-num { background: rgba(217, 164, 65, .22); color: #e3bd77; }
-  .phase-name { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .phase-title { font-size: 14px; font-weight: 500; color: var(--text); }
-  .phase-when { font-size: 11.5px; color: var(--text-3); }
-  .phase-state { flex: none; display: inline-flex; align-items: center; height: 20px; padding: 0 9px; border-radius: 10px; font-size: 11px; font-weight: 500;
-    background: var(--sel); color: var(--text-3); }
-  .phase-card.complete .phase-state { background: rgba(62, 207, 116, .18); color: #6ee7a0; }
-  .phase-card.current .phase-state { background: rgba(217, 164, 65, .18); color: #e3bd77; }
-  .phase-count { flex: none; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
-  .phase-todo { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 16px; border-bottom: 1px solid #1f2125; cursor: pointer; }
-  .phase-todo:last-child { border-bottom: none; }
+  /* THE PLAN PAGE, after the user's mockup (message 158): one 700px column, a status line over the
+     title, the goal under it, the phase count over a segmented bar, the phases as rows with hairlines. */
+  .plan-status { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text-3); }
+  .plan-status .statusbar-dot { width: 7px; height: 7px; }
+  .plan-status-word { color: var(--text-2); }
+  .plan-status-word.active { color: #9fc0f7; }
+  .plan-status-word.done { color: #8fc79d; }
+  .plan-status-meta::before { content: "·"; margin-right: 8px; }
+  .plan-title { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; text-wrap: pretty; }
+  .plan-goal { margin: 0; max-width: 640px; font-size: 14px; line-height: 1.55; color: var(--text-2); }
+  .plan-progress { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .plan-progress-row { display: flex; align-items: center; gap: 10px; min-height: 28px; font-size: 13px; }
+  .plan-progress-phase { font-weight: 500; color: var(--text); }
+  .plan-progress-todos { color: var(--text-3); font-size: 12.5px; }
+  .plan-progress-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+  .plan-progress-actions .band-primary { height: 28px; padding: 0 12px; font-size: 12.5px; }
+  .plan-text-btn { height: 28px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: var(--text-2); font: inherit; font-size: 12.5px; cursor: pointer; }
+  .plan-text-btn:hover { background: var(--hover); color: var(--text); }
+  .plan-more.on { background: var(--sel); color: var(--text); }
+  /* one segment per phase, a gap between them; the current one fills as far as its to-dos are */
+  .plan-segments { display: flex; gap: 6px; height: 4px; }
+  .plan-segment { flex: 1; min-width: 8px; height: 100%; border-radius: 2px; overflow: hidden; background: var(--line, #22252b); }
+  .plan-segment > span { display: block; height: 100%; border-radius: 2px; background: var(--accent); transition: width .3s ease; }
+  .plan-segment.done > span { background: var(--accent); }
+  .plan-phases { display: flex; flex-direction: column; margin-top: 10px; border-top: 1px solid var(--border); }
+  .plan-phase { border-bottom: 1px solid var(--border); }
+  .plan-phase-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 46px; padding: 10px 4px 10px 0; border: 0; background: none;
+    color: var(--text-2); font: inherit; text-align: left; cursor: pointer; }
+  .plan-phase-row:hover { color: var(--text); }
+  .plan-phase.current .plan-phase-row { color: var(--text); }
+  .plan-phase.complete .plan-phase-row { color: var(--text-3); }
+  /* the mark: a check for a phase that is done, a lit dot for the one under way, an empty ring for one to come */
+  .plan-phase-mark { flex: none; width: 10px; height: 10px; position: relative; border-radius: 50%; margin-left: 4px; }
+  .plan-phase-mark.later { border: 1.5px solid var(--border-2, #3a3d44); }
+  .plan-phase-mark.now { background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .plan-phase-mark.done::after { content: ""; position: absolute; left: 2.5px; top: 0; width: 3.5px; height: 6.5px; border: solid var(--text-3); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
+  .plan-phase-name { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .plan-phase-title { font-size: 14px; font-weight: 500; }
+  .plan-phase.complete .plan-phase-title { font-weight: 400; }
+  .plan-phase-when { font-size: 11.5px; color: var(--text-3); }
+  .plan-phase-count { flex: none; font-size: 12.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .plan-phase-todos { padding: 0 0 8px 28px; }
+  .phase-todo { display: flex; align-items: center; gap: 12px; min-height: 32px; padding: 0 10px 0 6px; border-radius: 7px; cursor: pointer; color: var(--text-2); }
+  .phase-todo.progress { background: var(--raised); color: var(--text); }
   .phase-todo:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   .phase-todo:hover, .phase-todo.sel { background: var(--hover); }
-  .phase-todo .ico { flex: none; width: 14px; height: 14px; }
-  .phase-todo-n { flex: none; width: 44px; font-size: 12.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .phase-todo .ico { flex: none; width: 13px; height: 13px; }
+  .phase-todo-n { flex: none; width: 28px; font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
   .phase-todo-title { flex: 1 1 auto; min-width: 120px; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .phase-todo-title.done { color: var(--text-3); text-decoration: line-through; }
-  .phase-todo-state { flex: none; width: 92px; text-align: right; font-size: 12px; color: var(--text-3); }
-  .phase-empty { margin: 0; padding: 10px 16px; font-size: 12.5px; }
+  .phase-todo-title.done { color: var(--text-3); }
+  .phase-todo-state { flex: none; font-size: 11.5px; color: var(--text-3); }
+  .phase-todo.progress .phase-todo-state { color: var(--accent-text, #a3a8f0); }
+  .phase-empty { margin: 0; padding: 6px 0 6px 6px; font-size: 12.5px; }
   .cites-list { margin-top: 10px; border: 1px solid var(--border); border-radius: 11px; overflow: hidden; background: #151619; }
   .cite-row { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 16px; border-bottom: 1px solid #1f2125; color: inherit; text-decoration: none; overflow: hidden; }
   .cite-row:last-child { border-bottom: none; }

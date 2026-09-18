@@ -40,6 +40,10 @@ Every request is one of three things, and deciding which comes before anything e
 
 With nothing open, the request *is* the work: read until you can name it, `work start` it, go.
 
+**A title names the thing; the brief explains it** (rule 13). Work, a to-do, a plan and a report
+are refused a title past 80 characters or with a colon in it — "the plan page restyled after the
+user's mockup", not "the plan page restyled: status line, title and goal, phase progress with…".
+
 **THE DEFAULT IS 2, AND THE BURDEN IS ON 3.** The question is not "can this wait?" — that
 puts the call on you, and you will get it wrong in the user's favour every time, because
 answering feels helpful. The question is "did they tell me to do it now?" If the sentence

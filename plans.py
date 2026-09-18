@@ -242,6 +242,10 @@ def add(root: Path, title: str, goal: str, body: str, at: str, source: str = "cl
     title, goal = " ".join((title or "").split()), " ".join((goal or "").split())
     if not title:
         return False, say("needs_title")
+    import titles
+    named, why = titles.check(title, "plan")
+    if not named and not preparing:
+        return False, why
     if not goal:
         return False, say("needs_goal")
     here = _here(root, track)
@@ -281,6 +285,10 @@ def edit(root: Path, n: int, title: str | None = None, goal: str | None = None, 
             title = " ".join(title.split())
             if not title:
                 return False, say("needs_title")
+            import titles
+            named, why = titles.check(title, "plan")
+            if not named:
+                return False, why
             plan["title"] = title
             said.append(say("edited_title", title=title))
         if goal is not None:

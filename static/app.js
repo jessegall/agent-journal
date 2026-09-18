@@ -3381,8 +3381,27 @@ const Plans = {
       const p = item.data;
       if (!p) return null;
       const finished = planTodos.value.filter((t) => t.done).length;
-      return { phases: `${p.phases_done} of ${p.phases_total} phases complete`, todos: `${finished} of ${planTodos.value.length} to-dos done` };
+      const total = p.phases_total || 0;
+      const phaseWord = p.status === "done" ? `${total} ${total === 1 ? "phase" : "phases"} done`
+        : p.current ? `Phase ${p.current} of ${total}` : `${p.phases_done} of ${total} phases done`;
+      return { phases: `${p.phases_done} of ${p.phases_total} phases complete`, phaseWord,
+               todos: `${finished} of ${planTodos.value.length} to-dos` };
     });
+    // a phase's segment: full when done, its to-dos' share when current, empty otherwise
+    const segmentWidth = (ph) => (ph.complete ? "100%" : ph.current && ph.todos.length ? `${Math.round((100 * ph.todos.filter((t) => t.done).length) / ph.todos.length)}%` : "0%");
+    // THE CURRENT PHASE IS OPEN, the others fold; a click opens or closes any of them. On a finished
+    // plan nothing is current, so every phase starts folded and the list reads as the record it is.
+    const folded = ref(new Set());
+    const opened = ref(new Set());
+    const isOpen = (ph) => (ph.current ? !folded.value.has(ph.p) : opened.value.has(ph.p));
+    const togglePhase = (ph) => {
+      const set = ph.current ? folded : opened;
+      const next = new Set(set.value);
+      next.has(ph.p) ? next.delete(ph.p) : next.add(ph.p);
+      set.value = next;
+    };
+    const moreOpen = ref(false);
+    const TODO_SHORT = { progress: "now", waiting: "waiting on you", blocked: "blocked", done: "", open: "" };
     // THE BAND CARRIES THE ONE ACT THE PLAN IS WAITING FOR, and `planPrimary` is what decides it here,
     // in the peek panel and on the home card alike.
     const primary = computed(() => {
@@ -3417,7 +3436,7 @@ const Plans = {
       const when = p.status === "done" ? "ended" : p.status === "abandoned" ? "stopped" : "drafted";
       return [`plan ${p.n}`, p.from_doc ? `from doc ${p.from_doc}` : "", `${when} ${p.age || "just now"}`].filter(Boolean).join(" · ");
     });
-    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, todoState, TODO_WORD, meta, PLAN_STATUS };
+    return { list, item, reading, onPage, creating, actions, rest, done, phaseSheet, openPhase, closePhase, phaseRoutes, phaseDone, planTodos, leaveNew, api, home, base, todoView, openTodo, closeTodo, progress, primary, quiet, cites, PLAN_LIST, doneCount, planStepState, planRefHref, todoState, TODO_WORD, TODO_SHORT, meta, PLAN_STATUS, segmentWidth, isOpen, togglePhase, moreOpen };
   },
   template: `
     <template v-if="onPage">
@@ -3425,28 +3444,41 @@ const Plans = {
       <div class=body><div class=page><div class=plan-screen>
         <FetchState :state="item"/>
         <template v-if="item.data">
+          <!-- THE PAGE AFTER THE USER'S MOCKUP (message 158): a status line, the title, the goal; one
+               row with the phase count and the actions over a bar with a segment per phase; the phases
+               as a folding list of rows with their to-dos; the approach below. Drawn in the viewer's own
+               parts, not copied. -->
           <div class=plan-top>
-            <div class=plan-top-meta>
-              <span :class="['plan-assigned', {quiet: item.data.status !== 'active'}]">{{ item.data.status === 'active' ? 'Assigned to the agent' : PLAN_STATUS[item.data.status] }}</span>
-              <span class=muted>{{ meta }}</span>
+            <div class=plan-status>
+              <span :class="['statusbar-dot', {live: item.data.status === 'active' && !item.data.held, held: !!item.data.held}]"></span>
+              <span :class="['plan-status-word', item.data.status]">{{ PLAN_STATUS[item.data.status] }}</span>
+              <span class=plan-status-meta>{{ meta }}</span>
             </div>
             <h1 class=plan-title>{{ item.data.title }}</h1>
-            <p class=plan-goal><span class=muted>Goal — </span>{{ item.data.goal }}</p>
+            <p class=plan-goal>{{ item.data.goal }}</p>
           </div>
           <!-- a plan being written has no phases yet, so a 0 of 0 band measures nothing and says nothing -->
           <div v-if="item.data.status !== 'preparing'" class=plan-progress>
-            <div class=plan-progress-text>
-              <div class=plan-progress-line><b>{{ progress.phases }}</b><span class=muted>· {{ progress.todos }}</span></div>
-              <ProgressBar :rows="planTodos"/>
-              <p v-if="item.data.status === 'parked' && item.data.parked_why" class=plan-paused-why>Paused: {{ item.data.parked_why }}</p>
+            <div class=plan-progress-row>
+              <span class=plan-progress-phase>{{ progress.phaseWord }}</span>
+              <span class=plan-progress-todos>{{ progress.todos }}</span>
+              <span class=plan-progress-actions>
+                <button v-if="primary" type=button class=band-primary :title="primary.hint" @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
+                <button v-if="item.data.status === 'active'" type=button class=plan-text-btn @click="openPhase">Add phase</button>
+                <button v-if="rest.length" type=button :class="['icon-btn', 'plan-more', {on: moreOpen}]" title="More" aria-label="More" :aria-expanded="moreOpen ? 'true' : 'false'" @click="moreOpen = !moreOpen"><Icon name="more"/></button>
+              </span>
             </div>
-            <div class=plan-progress-actions>
-              <button v-if="primary" type=button class=band-primary :title="primary.hint" @click="primary.go">{{ primary.label }}<Icon name="arrow"/></button>
-              <span v-else-if="quiet" class=plan-quiet>{{ quiet }}</span>
-              <button v-if="item.data.status === 'active'" type=button class=btn @click="openPhase">Add phase</button>
+            <!-- ONE SEGMENT PER PHASE: a done phase is filled, the current one as far as its to-dos are, the rest empty -->
+            <div class=plan-segments role=progressbar :aria-valuenow="item.data.phases_done" :aria-valuemax="item.data.phases_total" :aria-label="progress.phases">
+              <!-- each segment is as long as the phase's share of the to-dos (message 167); an empty phase still gets a sliver -->
+              <span v-for="ph in item.data.phases" :key="'seg' + ph.p" :class="['plan-segment', {done: ph.complete, current: ph.current}]"
+                :style="{ flex: Math.max(1, ph.todos.length) }" :title="'Phase ' + ph.p + ': ' + ph.title">
+                <span :style="{ width: segmentWidth(ph) }"></span>
+              </span>
             </div>
+            <p v-if="item.data.status === 'parked' && item.data.parked_why" class=plan-paused-why>Paused: {{ item.data.parked_why }}</p>
           </div>
-          <ActionBar :actions="rest" :done="done" :key="'plan' + item.data.n + item.data.status + (item.data.held || '') + item.data.auto"/>
+          <ActionBar v-if="moreOpen" :actions="rest" :done="done" :key="'plan' + item.data.n + item.data.status + (item.data.held || '') + item.data.auto"/>
           <dialog ref=phaseSheet class=sheet @click.self="closePhase">
             <div class=help-head><span>Add a phase to plan {{ item.data.n }}</span>
               <button type=button class=icon-btn title="Close" aria-label="Close" @click="closePhase"><Icon name="close"/></button></div>
@@ -3455,26 +3487,31 @@ const Plans = {
               <ActionBar :actions="phaseRoutes" :done="phaseDone" :key="'phase' + item.data.n"/>
             </div>
           </dialog>
-          <section v-for="ph in item.data.phases" :key="ph.p" :class="['phase-card', {current: ph.current, complete: ph.complete}]">
-            <div class=phase-head>
-              <span class=phase-num>{{ ph.p }}</span>
-              <div class=phase-name>
-                <span class=phase-title>{{ ph.title }}</span>
-                <span v-if="ph.when || ph.checkpoint" class=phase-when>{{ [ph.checkpoint ? 'Checkpoint' : '', ph.when ? 'complete when ' + ph.when : ''].filter(Boolean).join(' — ') }}</span>
+          <!-- THE PHASES ARE ROWS, not cards: a mark, the title, what completes it, the count; the current
+               one open on its to-dos and any other opened with a click -->
+          <div v-if="item.data.phases.length" class=plan-phases>
+            <section v-for="ph in item.data.phases" :key="ph.p" :class="['plan-phase', {current: ph.current, complete: ph.complete, open: isOpen(ph)}]">
+              <button type=button class=plan-phase-row :aria-expanded="isOpen(ph) ? 'true' : 'false'" @click="togglePhase(ph)">
+                <span :class="['plan-phase-mark', ph.complete ? 'done' : ph.current ? 'now' : 'later']"></span>
+                <span class=plan-phase-name>
+                  <span class=plan-phase-title>{{ ph.title }}</span>
+                  <span v-if="ph.when || ph.checkpoint" class=plan-phase-when>{{ [ph.checkpoint ? 'Checkpoint' : '', ph.when ? 'complete when ' + ph.when : ''].filter(Boolean).join(' · ') }}</span>
+                </span>
+                <span class=plan-phase-count>{{ doneCount(ph) }}/{{ ph.todos.length }}</span>
+              </button>
+              <div v-if="isOpen(ph)" class=plan-phase-todos>
+                <div v-for="t in ph.todos" :key="t.n" :class="['phase-todo', todoState(t), {sel: todoView.n === t.n}]"
+                  role=button :tabindex="0" :aria-label="'To-do ' + t.n + ': ' + (t.title || 'archived')"
+                  @click="openTodo(t)" @keydown.enter.self.prevent="openTodo(t)" @keydown.space.self.prevent="openTodo(t)">
+                  <StatusIcon :kind="todoState(t)"/>
+                  <span class=phase-todo-n>{{ t.n }}</span>
+                  <span :class="['phase-todo-title', {done: t.done}]">{{ t.title || 'archived' }}</span>
+                  <span class=phase-todo-state>{{ TODO_SHORT[todoState(t)] }}</span>
+                </div>
+                <p v-if="!ph.todos.length" class="muted phase-empty">No to-dos yet</p>
               </div>
-              <span class=phase-state>{{ planStepState(ph) }}</span>
-              <span class=phase-count>{{ doneCount(ph) }} of {{ ph.todos.length }} done</span>
-            </div>
-            <div v-for="t in ph.todos" :key="t.n" :class="['phase-todo', {sel: todoView.n === t.n}]"
-              role=button :tabindex="0" :aria-label="'To-do ' + t.n + ': ' + (t.title || 'archived')"
-              @click="openTodo(t)" @keydown.enter.self.prevent="openTodo(t)" @keydown.space.self.prevent="openTodo(t)">
-              <StatusIcon :kind="todoState(t)"/>
-              <span class=phase-todo-n>#{{ t.n }}</span>
-              <span :class="['phase-todo-title', {done: t.done}]">{{ t.title || 'archived' }}</span>
-              <span class=phase-todo-state>{{ TODO_WORD[todoState(t)] }}</span>
-            </div>
-            <p v-if="!ph.todos.length" class="muted phase-empty">No to-dos yet</p>
-          </section>
+            </section>
+          </div>
           <p v-if="!item.data.phases.length" class=muted>{{ item.data.status === 'preparing' ? 'The agent is writing this plan; its phases are being added.' : 'No phases yet.' }}</p>
           <FromMessages :rows="item.data.from_messages" :env="env"/>
           <section v-if="cites.length" class=plan-cites>

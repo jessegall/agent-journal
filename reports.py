@@ -150,6 +150,10 @@ def add(root: Path, title: str, body: str, at: str, about: str = "", source: str
     title = " ".join((title or "").split())
     if not title:
         return False, say("needs_title")
+    import titles
+    named, why = titles.check(title, "report")
+    if not named:
+        return False, why
     if not (body or "").strip():
         return False, say("needs_body")
     if only_a_list(body):

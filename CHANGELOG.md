@@ -4,6 +4,21 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.164.0 — The plan page redrawn; titles are names
+
+**The plan page, after the user's mockup:** a status line over the title, the goal under it, the
+phase count beside the to-do count over a bar with one segment per phase — each as long as the
+phase's share of the to-dos, filled as far as it is done — and the phases as rows: a mark, the
+title, what completes it, the count; the current phase open on its to-dos, any other opened with a
+click. Add phase and the plan's other actions sit on the progress row, behind ···.
+
+**Rule 13: a title names the thing.** A plan, a piece of work, a to-do or a report is refused a
+title past 80 characters or with a colon in it — the brief carries the explanation. Enforced in the
+package, so it holds for the CLI, the viewer and every agent.
+
+**The command rolls up and out.** The leaving line and the arriving one stand on the same spot now;
+it used to slide sideways.
+
 ## 1.163.0 — The command reads like a build log; plans wait in the rail
 
 **The status bar's command is a log row.** A ring turns while it runs and a check or a cross
