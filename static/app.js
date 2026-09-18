@@ -6323,7 +6323,9 @@ const App = {
           </template>
         </div>
       </aside>
-      <div v-if="AWAY.open && envName" class=away-card role=status>
+      <!-- not in the chat-only window: it is a panel on somebody else's page, and a card that
+           covers the conversation to say what happened while you were away covers the very thing -->
+      <div v-if="AWAY.open && envName && !CHAT_ONLY" class=away-card role=status>
         <div class=away-head>
           <span class=away-dot></span><span class=away-title>While you were away</span><span class=away-for>{{ away.for }}</span>
           <button type=button class=away-close aria-label="Dismiss" title="Dismiss" @click="AWAY.open = false"><Icon name="close"/></button>
