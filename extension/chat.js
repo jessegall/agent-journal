@@ -1,0 +1,125 @@
+// The chat as a window over the page you are on: injected on demand, dragged by its bar, resized
+// from its corner, and remembered where you left it. It is a frame of the journal's own viewer, so
+// nothing here reimplements the chat.
+(() => {
+  const ID = "__journal-chat-window";
+  const old = document.getElementById(ID);
+  if (old) {                                        // the shortcut toggles: press it again to close
+    old.remove();
+    return;
+  }
+
+  const host = document.createElement("div");
+  host.id = ID;
+  host.style.cssText = "position:fixed;inset:0;z-index:2147483647;pointer-events:none";
+  const shade = host.attachShadow({ mode: "open" });   // the page's CSS cannot reach in here
+  document.documentElement.append(host);
+
+  const frame = document.createElement("div");
+  frame.className = "win";
+  frame.innerHTML = `
+    <style>
+      :host { all: initial; }
+      .win { position: absolute; display: flex; flex-direction: column; overflow: hidden;
+        min-width: 320px; min-height: 260px; pointer-events: auto;
+        border: 1px solid #2a2d33; border-radius: 12px; background: #0e1013;
+        box-shadow: 0 24px 60px rgba(0,0,0,.5); font: 13px/1.45 -apple-system, system-ui, sans-serif;
+        font-variant-ligatures: none; color: #e6e8ec; }
+      .bar { display: flex; align-items: center; gap: 8px; padding: 7px 9px; cursor: grab;
+        border-bottom: 1px solid #1d2026; background: #14161a; user-select: none; }
+      .bar.dragging { cursor: grabbing; }
+      .dot { width: 7px; height: 7px; border-radius: 50%; background: #6c8cff; }
+      .name { flex: 1; font-size: 11.5px; font-weight: 500; color: #9aa0a8; }
+      .x { border: 0; border-radius: 6px; padding: 2px 7px; background: transparent; color: #9aa0a8;
+        font: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
+      .x:hover { background: #1e222a; color: #e6e8ec; }
+      iframe { flex: 1; width: 100%; border: 0; background: #0e1013; }
+      .grip { position: absolute; right: 2px; bottom: 2px; width: 14px; height: 14px;
+        cursor: nwse-resize; }
+      .grip::after { content: ""; position: absolute; right: 3px; bottom: 3px; width: 7px; height: 7px;
+        border-right: 2px solid #3a3d44; border-bottom: 2px solid #3a3d44; }
+      .none { display: flex; align-items: center; justify-content: center; flex: 1; padding: 20px;
+        text-align: center; color: #9aa0a8; font-size: 12px; }
+    </style>
+    <div class="bar"><span class="dot"></span><span class="name">journal</span>
+      <button class="x" title="Close">×</button></div>
+    <div class="body"></div>
+    <div class="grip"></div>`;
+  shade.append(frame);
+
+  const bar = shade.querySelector(".bar");
+  const body = shade.querySelector(".body");
+  body.style.cssText = "flex:1;display:flex;min-height:0";
+
+  const place = (box) => {
+    frame.style.left = `${box.x}px`;
+    frame.style.top = `${box.y}px`;
+    frame.style.width = `${box.w}px`;
+    frame.style.height = `${box.h}px`;
+  };
+  const fallback = {
+    x: Math.max(12, window.innerWidth - 452), y: 72,
+    w: 440, h: Math.min(680, Math.max(360, window.innerHeight - 140)),
+  };
+  let box = { ...fallback };
+  place(box);
+  chrome.storage.local.get("window").then((got) => {
+    if (got && got.window) {
+      box = { ...fallback, ...got.window };
+      box.x = Math.min(Math.max(0, box.x), Math.max(0, window.innerWidth - 120));
+      box.y = Math.min(Math.max(0, box.y), Math.max(0, window.innerHeight - 60));
+      place(box);
+    }
+  });
+  const remember = () => chrome.storage.local.set({ window: box });
+
+  chrome.runtime.sendMessage({ kind: "where" }, (got) => {
+    if (!got || !got.url) {
+      body.innerHTML = `<div class="none">${(got && got.why) || "No journal viewer is running."}</div>`;
+      return;
+    }
+    const view = document.createElement("iframe");
+    view.src = got.env ? `${got.url}/#/env/${got.env}` : got.url;
+    body.append(view);
+    shade.querySelector(".name").textContent = [got.project, got.env].filter(Boolean).join(" · ") || "journal";
+  });
+
+  // DRAGGING IS ON THE DOCUMENT, NOT THE BAR. A pointer that leaves the bar mid-drag — which it does
+  // the moment the window cannot keep up — would otherwise drop the window where it stood.
+  const drag = (e, move) => {
+    e.preventDefault();
+    const from = { x: e.clientX, y: e.clientY, ...box };
+    bar.classList.add("dragging");
+    const step = (ev) => {
+      move(ev.clientX - from.x, ev.clientY - from.y, from);
+      place(box);
+    };
+    const done = () => {
+      bar.classList.remove("dragging");
+      document.removeEventListener("pointermove", step, true);
+      document.removeEventListener("pointerup", done, true);
+      remember();
+    };
+    document.addEventListener("pointermove", step, true);
+    document.addEventListener("pointerup", done, true);
+  };
+
+  bar.addEventListener("pointerdown", (e) => {
+    if (e.target.classList.contains("x")) return;
+    drag(e, (dx, dy, from) => {
+      box.x = Math.min(Math.max(-from.w + 80, from.x + dx), window.innerWidth - 80);
+      box.y = Math.min(Math.max(0, from.y + dy), window.innerHeight - 40);
+    });
+  });
+  shade.querySelector(".grip").addEventListener("pointerdown", (e) => drag(e, (dx, dy, from) => {
+    box.w = Math.max(320, from.w + dx);
+    box.h = Math.max(260, from.h + dy);
+  }));
+  shade.querySelector(".x").addEventListener("click", () => host.remove());
+  document.addEventListener("keydown", function esc(e) {
+    if (e.key === "Escape" && document.getElementById(ID)) {
+      host.remove();
+      document.removeEventListener("keydown", esc, true);
+    }
+  }, true);
+})();
