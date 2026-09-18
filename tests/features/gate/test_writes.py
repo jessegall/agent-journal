@@ -31,6 +31,8 @@ for name, provider_cls in PROVIDERS.items():
     check(f"{name}: an edit is refused, in the harness's shape", hook("PreToolUse", "Edit", file_path="x.py"), {"decision": "block", "reason": REFUSED})
     check(f"{name}: a writing command is refused", hook("PreToolUse", "Bash", command="git commit -m x"), {"decision": "block", "reason": REFUSED})
     check(f"{name}: a redirect is a write", hook("PreToolUse", "Bash", command="echo x > out.txt"), {"decision": "block", "reason": REFUSED})
+    check(f"{name}: a redirect to /dev/null is not", hook("PreToolUse", "Bash", command="make > /dev/null"), {})
+    check(f"{name}: a journal command is never gated, it is how work opens", hook("PreToolUse", "Bash", command="journal work start \"x\" >/dev/null; .journal/journal todo add x"), {})
     work = CONTROLLERS["work"](record, actor=AGENT).create(f"the header for {name}")
     check(f"{name}: work open: the flag flips to allowed", provider.gate(root, env, session), "")
     check(f"{name}: the same edit passes", hook("PreToolUse", "Edit", file_path="x.py"), {})
