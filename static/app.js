@@ -4389,10 +4389,12 @@ const Thread = {
     const answering = ref(null);
     // the box is where the reply goes, so Reply puts the caret there — the draft already in it stays
     const replyTo = (t) => { answering.value = t; THREAD_BOX.focus && THREAD_BOX.focus(); };
-    // only in the extension's own window: there is a page under it to point at
-    const pageTools = computed(() => (CHAT_ONLY && EXTENSION.here ? [
-      { icon: "crosshair", title: "Point at an element on the page", go: () => askExtension("point") },
-      { icon: "camera", title: "Send a picture of an element on the page", go: () => askExtension("shot") },
+    // whenever the chat floats: there is a page under it to point at. Without the extension the
+    // page cannot be reached, and the button says so rather than doing nothing.
+    const reach = (kind) => (EXTENSION.here ? askExtension(kind) : flash("Pointing at the page needs the journal's Chrome extension — Settings has it."));
+    const pageTools = computed(() => (CHAT_ONLY ? [
+      { icon: "crosshair", title: "Point at an element on the page", go: () => reach("point") },
+      { icon: "camera", title: "Send a picture of an element on the page", go: () => reach("shot") },
     ] : []));
     const unreply = () => { answering.value = null; };
     const quoteOf = computed(() => (answering.value ? (answering.value.full || answering.value.text || "") : ""));
