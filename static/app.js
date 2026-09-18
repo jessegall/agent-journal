@@ -4273,7 +4273,8 @@ const Thread = {
     // was really said in that thread, so the quote cannot be invented. Anything else has no thread to
     // answer under, so it becomes a new message carrying the words it answers.
     const answering = ref(null);
-    const replyTo = (t) => { answering.value = t; };
+    // the box is where the reply goes, so Reply puts the caret there — the draft already in it stays
+    const replyTo = (t) => { answering.value = t; THREAD_BOX.focus && THREAD_BOX.focus(); };
     const unreply = () => { answering.value = null; };
     const quoteOf = computed(() => (answering.value ? (answering.value.full || answering.value.text || "") : ""));
     // A QUOTE IS A REMINDER OF WHAT IS BEING ANSWERED, not a second copy of it — one line, cut on a
