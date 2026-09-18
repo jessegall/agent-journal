@@ -115,6 +115,8 @@ class Engine:
             fresh = actor.cursor() == 0
             for e in self.record.events(actor.heard()):
                 if fresh and e.at < self.born:
+                    if actor is self.agent and TYPES[e.type].spoken:
+                        CONTROLLERS[e.type](self.record, actor=AGENT).read(e.n)
                     actor.notified(e)
                     continue
                 if e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e) or "seen" in e.data:
@@ -143,7 +145,7 @@ class Engine:
 
     def owed(self) -> str:
         for type_ in PRIORITY:
-            if AGENT not in TYPES[type_].notify:
+            if AGENT not in TYPES[type_].notify or TYPES[type_].spoken:
                 continue
             unread = CONTROLLERS[type_](self.record, actor=AGENT).unread()
             if unread:
