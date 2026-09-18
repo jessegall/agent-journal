@@ -7,7 +7,7 @@ const props = defineProps({resource: Object});
 const shown = computed(() => props.resource.refs.filter((r) => !meta(r.split(":")[0]).mirror));
 const back = computed(() =>
     linkedTo(props.resource.ref)
-        .filter((r) => !meta(r.type).mirror)
+        .filter((r) => !meta(r.type).mirror && !(meta(r.type).fields.options && meta(r.type).attention))
         .map((r) => r.ref)
 );
 const name = (ref) => {
