@@ -119,7 +119,7 @@ class Engine:
     def seat(self) -> None:
         f = self.record.root / "runtime" / f"seat-{self.agent.driver.session}.json"
         f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(json.dumps({"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(),
+        f.write_text(json.dumps({"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
                                  "why": self.why, "printed": self.agent.driver.last_printed()}))
 
     def run(self) -> None:

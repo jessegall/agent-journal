@@ -11,6 +11,7 @@ import time
 import tty
 from pathlib import Path
 
+from engine import band
 from engine.drivers import DRIVERS
 
 RELOAD_EVERY = 5.0
@@ -29,12 +30,24 @@ def spawn_agent(command: list[str], cwd: Path) -> tuple[int, int]:
     return pid, fd
 
 
-def resize(fd: int) -> None:
+def size() -> tuple[int, int]:
     try:
-        size = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ, b"\0" * 8)
-        fcntl.ioctl(fd, termios.TIOCSWINSZ, size)
+        rows, cols = struct.unpack("HHHH", fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ, b"\0" * 8))[:2]
+        return rows or 24, cols or 80
+    except OSError:
+        return 24, 80
+
+
+def resize(fd: int) -> tuple[int, int]:
+    rows, cols = size()
+    try:
+        fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", max(rows - band.ROWS, 4), cols, 0, 0))
     except OSError:
         pass
+    return rows, cols
+
+
+REDRAWS = (b"\x1b[2J", b"\x1b[?1049h", b"\x1b[?1049l", b"\x1bc", b"\x1b[r")
 
 
 def spawn_driver(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> subprocess.Popen:
@@ -46,8 +59,9 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     driver = DRIVERS[agent]
     command = driver.command(driver, args)
     pid, fd = spawn_agent(command, cwd)
-    resize(fd)
+    rows, cols = resize(fd)
     session = f"{agent}-{pid}"
+    top = band.Band(root, env, session, root.resolve().parent.name)
     printed = root / "runtime" / f"printed-{session}"
     printed.parent.mkdir(parents=True, exist_ok=True)
     (root / "runtime" / "env").write_text(env)
@@ -62,8 +76,16 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
         tty.setraw(stdin)
     except termios.error:
         pass
-    signal.signal(signal.SIGWINCH, lambda *_: resize(fd))
+    shape = [rows, cols]
+
+    def frame() -> None:
+        shape[0], shape[1] = resize(fd)
+        os.write(stdout, b"\x1b[2J" + band.region(shape[0]) + top.draw(shape[1]))
+
+    signal.signal(signal.SIGWINCH, lambda *_: frame())
+    os.write(stdout, band.region(rows) + top.draw(cols))
     last_check = 0.0
+    last_band = 0.0
     try:
         while True:
             ready, _, _ = select.select([fd, stdin], [], [], 0.5)
@@ -75,8 +97,13 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
                 if not data:
                     break
                 os.write(stdout, data)
+                if any(mark in data for mark in REDRAWS):
+                    os.write(stdout, band.region(shape[0]) + top.draw(shape[1]))
                 out.write(data[-4096:])
                 out.flush()
+            if time.time() - last_band >= 1.0:
+                last_band = time.time()
+                os.write(stdout, top.draw(shape[1]))
             if stdin in ready:
                 data = os.read(stdin, 65536)
                 if not data:
@@ -95,6 +122,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
                     driver = spawn_driver(root, cwd, env, agent, fd, session)
     finally:
         signal.signal(signal.SIGWINCH, signal.SIG_DFL)
+        os.write(stdout, band.release())
         if saved is not None:
             termios.tcsetattr(stdin, termios.TCSADRAIN, saved)
         driver.terminate()

@@ -15,7 +15,8 @@ STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreT
           "PostToolUse": WORKING, "SessionEnd": STOPPED}
 EVENTS = tuple(STATUS)
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
-WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|>>?\s*\S")
+WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|>>?\s*(?!/dev/null)\S")
+JOURNAL_COMMAND = re.compile(r"(^|[;&|]\s*)(\S*journal(\.py)?)\s")
 
 
 def gate_file(root: Path, env: str, session: str) -> Path:
@@ -70,7 +71,8 @@ class Provider(ABC):
         tool = payload.get("tool_name") or ""
         if tool in WRITES:
             return True
-        return tool == "Bash" and bool(WRITING_COMMANDS.search(str((payload.get("tool_input") or {}).get("command") or "")))
+        command = str((payload.get("tool_input") or {}).get("command") or "")
+        return tool == "Bash" and not JOURNAL_COMMAND.search(command) and bool(WRITING_COMMANDS.search(command))
 
     def refusal(self, why: str) -> dict:
         return {"decision": "block", "reason": why} if why else {}
