@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 from v2.providers.base import EVENTS, Provider
@@ -5,6 +6,9 @@ from v2.providers.base import EVENTS, Provider
 
 class Codex(Provider):
     name = "codex"
+
+    def present(self, project: Path) -> bool:
+        return (project / ".codex").is_dir() or shutil.which("codex") is not None
 
     def config(self, project: Path) -> Path:
         return project / ".codex" / "hooks.json"
