@@ -8,7 +8,7 @@ follow; an unresolved subject returning next turn and a resolved one not; a turn
 every subject pending draining in as many stops and then passing; the queue never
 looping; and what "resolved" means for each subject.
 """
-import json, os, shutil, subprocess, sys, tempfile
+import json, os, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 
 os.environ["AGENT_JOURNAL_OFFLINE"] = "1"
@@ -258,6 +258,17 @@ s12 = S(); s12.j("todo", "chore"); s12.j("todo", "auto", "on"); s12.j("loop", "s
 check("with a loop set, none is asked for", s12.stop() != "auto is on, no loop running", True)
 s12.fire("SessionStart", source="resume"); s12.say("[!reply] back")
 check("a resumed session has no loop, whatever it had before: it is asked again", s12.stop(), "auto is on, no loop running")
+
+# ---------------------------------------------------------------- a seated session is nudged from outside
+# The launcher stamps `seat_seen` every look and reads the same queue itself; the stop hook then holds
+# nothing, or the agent would hear each subject twice. A stale stamp is no seat.
+s13 = S()
+s13.user("go")
+s13.say("no tag here")
+state.put(s13.d / ".journal", "seat_seen", int(time.time()), stem="s1")
+check("a fresh seat stamp: the untagged message is left for the launcher to type", s13.stop(), "")
+state.put(s13.d / ".journal", "seat_seen", int(time.time()) - 300, stem="s1")
+check("the stamp gone stale: the hook holds again", s13.stop(), "1 untagged message(s)")
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

@@ -1,6 +1,6 @@
 ---
 name: journal-messages
-description: "Handling what the user sends through the journal: processing a message part by part (routing each part, answering a question part with messages reply --part and a clickable follow-up), acting on comments on to-dos, docs, messages or work, notifying the user sparingly, pinning one line over the chat (notice), reacting to a turn and reading the user's reactions, asking the tab the user is driving for a screenshot, its text or a click (journal browser), and what the web viewer and its channel do. Use it whenever a stop, a hint or a channel notice says the user left a message, a comment or a reaction, before you send a notification or pin a notice, when the user asks you to look at or control the page they are on, and whenever the user talks about the viewer, its pages or the channel. Not for subagents."
+description: "Handling what the user sends through the journal: processing a message part by part (routing each part, answering a question part with messages reply --part and a clickable follow-up), acting on comments on to-dos, docs, messages or work, notifying the user sparingly, pinning one line over the chat (notice), reacting to a turn and reading the user's reactions, asking the tab the user is driving for a screenshot, its text or a click (journal browser), and what the web viewer and the launcher do. Use it whenever a stop, a hint or a launcher line says the user left a message, a comment or a reaction, before you send a notification or pin a notice, when the user asks you to look at or control the page they are on, and whenever the user talks about the viewer, its pages or the launcher. Not for subagents."
 ---
 
 # Journal messages, comments, notifications and the viewer
@@ -103,7 +103,7 @@ paragraph is a message in the thread.
     journal react <message> "👍"     one of 👍 ❤️ 🎉 😄 👀 🙏 👎 💔 😠; the same face again removes it
 
 A face under a turn, yours or theirs. **When the user reacts to something you said, read it
-as what it is** — a yes, a thanks, a laugh, a no — and carry on; the channel tells you once
+as what it is** — a yes, a thanks, a laugh, a no — and carry on; the launcher tells you once
 and nothing needs filing. 👎 or 😠 on a reply is a correction you have not been given the
 words for yet: look at what that reply claimed before doing more of it.
 
@@ -131,10 +131,8 @@ to their page, because it is their page and they are watching it move.
 ## The viewer: what the user does in the browser
 
     journal serve [--port=<n>]      the web viewer, on this machine only: 8420, or the next free port
-    journal claude [flags] ["<prompt>"]   start Claude with the journal's channel, and the web
+    journal claude [flags] ["<prompt>"]   start Claude under the journal's launcher, and the web
                                           viewer if none is running here; other flags pass through to claude
-    journal claude --pty ["<prompt>"]     the same, under the journal's launcher: no channel — the launcher
-                                          types the viewer's news into the idle session instead
     journal codex ["<prompt>"]            Codex under the launcher, the same way; --quiet never types
     journal statusline --install    show environment, open work and viewer in the status bar — only if the user wants it
 
@@ -145,14 +143,15 @@ Settings page, and remove old environments. Every one of those goes through the 
 controllers the terminal commands use, so it lands in the same record and obeys the same
 refusals (a closed to-do cannot be edited, a struck pin cannot change).
 
-**A session under the journal's launcher (`journal codex`, `journal claude --pty`) hears the
-viewer by being TYPED TO.** The launcher runs the agent in a pseudo-terminal, watches from outside,
-and when the agent has printed nothing for a few seconds and the user has no half-typed line, it
-types the same sentence the channel would have pushed — "The user left message 12 on main…" —
-and presses Enter. Read it as you read a channel line. **A session started with `journal claude`
-hears the viewer while idle** through the channel. One started as plain
-`claude` does not, and the viewer says so: a warning band above the agent bar, there until a
-session with the channel holds the environment. An environment no running session holds gets
+**A session under the journal's launcher (`journal claude`, `journal codex`) hears the viewer
+by being TYPED TO.** The launcher runs the agent in a pseudo-terminal, watches from outside, and
+when the hooks report a Stop (or the agent has printed nothing for a few seconds) and the user has
+no half-typed line, it types one line — "The user left message 12 on main…" — and presses Enter.
+Read it as a line from the user's side of the record. The stop queue's holds — an untagged
+message, open work, the next to-do under auto mode — come the same way, typed, and the stop
+hook holds nothing while the launcher has the seat. One started as plain `claude` hears nothing
+while idle, and the viewer says so: a warning band above the agent bar, there until a session
+under the launcher holds the environment. An environment no running session holds gets
 the same band with an **Assign agent** button: the user picks one of the running sessions and
 it is bound there — the one move of a session the agent does not make itself. A message the user
 leaves wakes it; with auto mode on, an answered question, a comment and a decided suggestion do too,

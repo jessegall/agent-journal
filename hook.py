@@ -795,30 +795,22 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
     if ctx.path is None:
         return _remind_only()
     _keep_viewer(conf, ctx)
-    _HOLD_CTX[:] = [ctx.stem]
     active = bool(payload.get("stop_hook_active"))
-    lines, boundaries = transcript.read(ctx.path, _caches(ctx.stem)[0])
-    raised = _still_raised(conf, ctx, lines, active)
-    stretch = transcript.since(lines, boundaries, 0)
-    _floor(ctx, lines)
     here = tracks.current(ROOT, ctx.stem)
-
-    for subject, pending in nudges.ordered(conf):
-        if subject in raised or subject in conf["silenced"]:
-            continue
-        hold = pending(conf, ctx, lines, stretch, here, active)
-        if hold is None:
-            continue
-        raised[subject] = lines[-1].n if lines else 0
-        state.put(ROOT, "raised_this_turn", raised, stem=ctx.stem)
-        if hold[0] == "context-only":
-            # SAID, NOT HELD: the user sees it now, the agent gets it with the next prompt,
-            # and the turn is not re-opened for something nobody owes an action on
-            _for_next_prompt(ctx, hold[1])
-            return _tell_user(_remembering(hold[1]))
-        return _hold(*hold, subject=subject)
-    if not active:
-        state.put(ROOT, "raised_this_turn", {}, stem=ctx.stem)
+    # A SEATED SESSION IS NUDGED FROM OUTSIDE. When the launcher holds this session it reads
+    # the same queue (`owed`) at the agent's next quiet moment and TYPES the line, so a hold
+    # here would say the same thing twice and re-open the turn for it. The hook still reports
+    # the Stop (that is what tells the launcher the agent is idle) and still says the rest.
+    if not seated(ctx.stem):
+        got = owed(conf, ctx, active)
+        if got is not None:
+            subject, hold = got
+            if hold[0] == "context-only":
+                # SAID, NOT HELD: the user sees it now, the agent gets it with the next prompt,
+                # and the turn is not re-opened for something nobody owes an action on
+                _for_next_prompt(ctx, hold[1])
+                return _tell_user(_remembering(hold[1]))
+            return _hold(*hold, subject=subject)
 
     # NOTHING HELD. Two things are only said, to the user, never held: a newer journal upstream,
     # and to-dos waiting while auto is off. `additionalContext` here would re-open the turn
@@ -840,6 +832,62 @@ def on_stop(conf: dict, payload: dict, ctx: Ctx) -> int:
             return _tell_user(_remembering(_say(
                 say("waiting_fact", n=len(ids), env=here), say("waiting_do"))[1]))
     return _remind_only()
+
+
+#: how long a launcher's stamp counts: it stamps every look, every few seconds
+SEAT_QUIET = 30
+
+
+def seated(stem: str) -> bool:
+    """A launcher (`journal claude`, `journal codex`) holds this session and speaks for the queue."""
+    return time.time() - (state.get(ROOT, "seat_seen", 0, stem=stem) or 0) <= SEAT_QUIET
+
+
+def owed(conf: dict, ctx: Ctx, active: bool) -> tuple | None:
+    """The first thing the stop queue owes this session: `(subject, hold)`, or None.
+
+    THE QUEUE, WITH NO OPINION ABOUT WHO DELIVERS IT. The stop hook holds the turn with the
+    answer; the launcher types it into an idle agent from outside. Both read the transcript
+    here, both mark the subject raised, and `active` means the same to both: the agent is
+    answering something the queue already said, so what it was told stays quiet until it has
+    made progress (`_still_raised`).
+    """
+    if ctx.path is None or not ctx.path.is_file():
+        return None
+    _HOLD_CTX[:] = [ctx.stem]
+    lines, boundaries = transcript.read(ctx.path, _caches(ctx.stem)[0])
+    raised = _still_raised(conf, ctx, lines, active)
+    stretch = transcript.since(lines, boundaries, 0)
+    _floor(ctx, lines)
+    here = tracks.current(ROOT, ctx.stem)
+    for subject, pending in nudges.ordered(conf):
+        if subject in raised or subject in conf["silenced"]:
+            continue
+        hold = pending(conf, ctx, lines, stretch, here, active)
+        if hold is None:
+            continue
+        raised[subject] = lines[-1].n if lines else 0
+        state.put(ROOT, "raised_this_turn", raised, stem=ctx.stem)
+        return subject, hold
+    if not active:
+        state.put(ROOT, "raised_this_turn", {}, stem=ctx.stem)
+    return None
+
+
+def spoken(hold: tuple) -> str:
+    """The queue's answer as ONE TYPED LINE: the brief, with its details filed for `journal next`."""
+    if hold[0] == "context-only":
+        return hold[1]
+    _, brief, *rest = hold
+    return _file_details(brief, rest[0] if rest else "")
+
+
+def nudge_for(stem: str, active: bool) -> str | None:
+    """What a launcher types into an idle session, or None: the queue read from outside the agent."""
+    conf = settings_mod.load(ROOT)[0]
+    ctx = Ctx(stem, transcript.find(ROOT.parent, stem))
+    got = owed(conf, ctx, active)
+    return spoken(got[1]) if got else None
 
 
 #: runtime key: what a stop had to say to the agent without re-opening the turn, handed over with the next prompt
@@ -3195,6 +3243,17 @@ def _parent_of(payload: dict) -> str:
     return Path(tp).stem if tp else (payload.get("session_id") or "")
 
 
+def _file_details(brief: str, text: str) -> str:
+    """The long half of a hold goes behind `journal next`; the line grows the pointer to it."""
+    if text and _HOLD_CTX:
+        state.put(ROOT, "next_text", text, stem=_HOLD_CTX[0])
+        state.put(ROOT, "next_rows", _open_ids(), stem=_HOLD_CTX[0])
+        # ITS OWN LINE. Appended with an em dash it ran onto the end of a wrapped
+        # instruction, which is the one place a reader stops looking.
+        brief += say("details")
+    return brief
+
+
 def _hold(label: str, brief: str, text: str = "", subject: str = "") -> int:
     """Hold the stop: a small label for the user, the instruction and reasoning for the agent.
 
@@ -3243,26 +3302,7 @@ def _hold(label: str, brief: str, text: str = "", subject: str = "") -> int:
     #
     # So a subject whose detail is a listing stores nothing, and `next` recomputes. The
     # subject knows which it is; nothing here has to guess.
-    if text and _HOLD_CTX:
-        state.put(ROOT, "next_text", text, stem=_HOLD_CTX[0])
-        # AND WHAT THE RECORD LOOKED LIKE WHEN IT WAS WRITTEN. A held detail is a snapshot,
-        # and most of them are facts about the MOMENT — the line an untagged message was at,
-        # the reading that tripped a context rung — as true later as they were then. A
-        # LISTING of what is waiting is not: it goes on being handed back after the rows in
-        # it are closed, and `journal next` is the command auto mode tells an agent to run,
-        # so the stale read lands on the reader least able to notice it.
-        #
-        # Seen twice in one session: `work end` closed a row, printed "to-do N is done with
-        # it", and the very next `journal next` offered N as the thing to start. Reading it
-        # cleared the snapshot, so the second call was right — which is how it stayed hidden.
-        #
-        # So the open rows are recorded beside the text, and `next` shows the snapshot only
-        # while they still describe the list. Nothing has to know WHICH subjects list rows:
-        # a hold whose detail never mentioned the list is simply never contradicted by it.
-        state.put(ROOT, "next_rows", _open_ids(), stem=_HOLD_CTX[0])
-        # ITS OWN LINE. Appended with an em dash it ran onto the end of a wrapped
-        # instruction, which is the one place a reader stops looking.
-        brief += say("details")
+    brief = _file_details(brief, text)
     # `_say` ALREADY BUILT THE LINE. This used to strip a `journal: ` prefix and then try to
     # spot the label repeated at the start of the body — a textual reconciliation of two
     # strings somebody wrote separately. They are one string now, so there is nothing to

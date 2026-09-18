@@ -281,6 +281,12 @@ hold, which to-do is next, the questions the user answered, or what is filling t
 context. `journal next` also answers the loop prompt in auto mode: it says the one
 thing to do now.
 
+**Under the launcher (`journal claude`, `journal codex`) the same line arrives TYPED,** as
+if the user had sent it, when you are idle: the stop hook holds nothing there, because the
+launcher reads the same queue from outside and types the first thing owed. Read it as a
+hold — the table below applies word for word — and answer it; the next quiet moment
+brings the next.
+
 | it says                                                        | do                                                     |
 |----------------------------------------------------------------|--------------------------------------------------------|
 | *the user left N message(s) for you*                      | `journal messages`; split each into parts with `messages process`, a question for any part you do not understand, then `messages done` |

@@ -147,7 +147,9 @@ refusals (a closed to-do cannot be edited, a struck pin cannot change).
 by being TYPED TO.** The launcher runs the agent in a pseudo-terminal, watches from outside, and
 when the hooks report a Stop (or the agent has printed nothing for a few seconds) and the user has
 no half-typed line, it types one line — "The user left message 12 on main…" — and presses Enter.
-Read it as a line from the user's side of the record. One started as plain `claude` hears nothing
+Read it as a line from the user's side of the record. The stop queue's holds — an untagged
+message, open work, the next to-do under auto mode — come the same way, typed, and the stop
+hook holds nothing while the launcher has the seat. One started as plain `claude` hears nothing
 while idle, and the viewer says so: a warning band above the agent bar, there until a session
 under the launcher holds the environment. An environment no running session holds gets
 the same band with an **Assign agent** button: the user picks one of the running sessions and

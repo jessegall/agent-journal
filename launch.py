@@ -35,6 +35,7 @@ class Launcher:
         self.fd = -1
         self.last_output = 0.0
         self.typed = b""            # the user's line so far, since the last Enter
+        self.user_lines = 0         # how many lines the user has sent
         self.outputs: list = []    # who wants the agent's output besides the terminal
         self.ticks: list = []      # who wants a moment of quiet, called once per select timeout
 
@@ -119,6 +120,8 @@ class Launcher:
         """What the user has on the line: Enter clears it, backspace shortens it, Ctrl-C and Escape drop it."""
         for b in data:
             if b in (10, 13, 3, 27):
+                if b in (10, 13) and self.typed.strip():
+                    self.user_lines += 1
                 self.typed = b""
             elif b in (8, 127):
                 self.typed = self.typed[:-1]
@@ -192,6 +195,9 @@ class Nudger:
         self.since = 0.0
         self.last_look = 0.0
         self.reports = Reports(root)
+        self.typed_at = 0.0          # when this seat last typed; nothing more until the hooks report after it
+        self.nudged = False          # the last line into the agent was the queue's, not the user's
+        self.user_lines = 0          # the user's Enter count, as last seen
 
     def agent_idle(self, seat: Launcher) -> bool:
         """Idle is what the hooks report, when they do: a Stop with no event after it. Without a
@@ -209,15 +215,50 @@ class Nudger:
             return
         self.last_look = now
         self.stamp()
-        if not self.agent_idle(seat) or seat.user_mid_line():
+        if getattr(seat, "user_lines", 0) != self.user_lines:
+            self.user_lines = seat.user_lines
+            self.nudged = False                      # the user spoke: the next queue read is a fresh one
+        if not self.agent_idle(seat) or seat.user_mid_line() or not self.settled():
             return
         for key, params in self.pending():
             if key in self.told:
                 continue
             self.told.add(key)
-            seat.type_line(params["content"])
+            self.say(seat, params["content"])
             self.mark([key])
             return                                   # one line per quiet moment; the agent answers, then the next
+        line = self.owed()
+        if line:
+            self.say(seat, line)
+            self.nudged = True
+
+    def say(self, seat: Launcher, line: str) -> None:
+        # ONE LINE: a newline typed into the agent is Enter, and would send half a sentence
+        seat.type_line(" ".join(part.strip() for part in line.splitlines() if part.strip()))
+        self.typed_at = time.time()
+
+    def settled(self) -> bool:
+        """The hooks have reported since this seat last typed — so a line typed a moment ago is
+        not typed over while the agent is still picking it up."""
+        last = self.reports.last()
+        if last is None:
+            return True
+        return not self.typed_at or float(last.get("at") or 0) > self.typed_at
+
+    def owed(self) -> str | None:
+        """THE STOP QUEUE, READ FROM OUTSIDE. What the stop hook would have held the turn with —
+        untagged, open work, the next to-do under auto mode, a question answered — typed in
+        instead, one subject per quiet moment; `nudged` tells the queue the agent is answering it."""
+        last = self.reports.last()
+        stem = last.get("session") if last else ""
+        if not stem:
+            return None
+        try:
+            import hook
+            hook.ROOT = self.root
+            return hook.nudge_for(stem, self.nudged)
+        except Exception:
+            return None
 
     def stamp(self) -> None:
         """This session has a seat: the viewer reads it as one that hears the viewer while idle."""

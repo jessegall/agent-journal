@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.158.0 — The launcher types the stop queue
+
+**A session under the launcher is nudged from outside.** What the stop hook used to hold the turn
+with — an untagged message, open work, the next to-do under auto mode, a question the user
+answered — is read by the launcher at the agent's next quiet moment and typed in as one line, the
+same words. The stop hook holds nothing while a launcher has the seat, so nothing is said twice
+and no turn is re-opened from inside the agent; a session started as plain `claude` is held as
+before. The queue is the same one, in the same order, one subject per quiet moment.
+
 ## 1.157.0 — The MCP channel is retired: the launcher is how the viewer reaches a session
 
 **`journal claude` runs Claude under the journal's launcher, and the channel server is gone.**
