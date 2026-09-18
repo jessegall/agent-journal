@@ -6,6 +6,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from v2 import features  # noqa: E402
 from v2.controllers.types import CONTROLLERS  # noqa: E402
 from v2.engine.manifest import manifest  # noqa: E402
 from v2.engine.record import Record  # noqa: E402
@@ -85,6 +86,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
     Handler.root = root
+    features.load()
     return ThreadingHTTPServer(("127.0.0.1", port), Handler)
 
 

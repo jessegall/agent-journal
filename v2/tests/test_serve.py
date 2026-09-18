@@ -65,8 +65,8 @@ for type_ in TYPES:                                                   # every ty
 
 code, got = call("GET", "/api/main/nothing")
 check("an unknown type is a 404", code, 404)
-code, got = call("GET", "/")
-check("no web build yet: the page says so", (code, "web build" in got["error"]), (404, True))
+code, got = call("POST", "/api/main/todo/1/nothing", {})
+check("an unknown action is refused", code, 400)
 server.shutdown()
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

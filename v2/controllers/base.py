@@ -74,12 +74,12 @@ class Controller:
         r.deleted = time.time()
         return self.save(r, "deleted", why=why)
 
-    def complete(self, n: int, how: str = "") -> Resource:
+    def complete(self, n: int, how: str = "", **data) -> Resource:
         r = self.load(n)
         if r.completed:
             raise Refused(f"{self.type} {n} is already {self.named('complete')}")
         r.completed = time.time()
-        return self.save(r, "completed", how=how)
+        return self.save(r, "completed", how=how, **data)
 
     def named(self, method: str) -> str:
         return self.resource.names.get(method, method)

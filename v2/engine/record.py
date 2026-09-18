@@ -48,7 +48,7 @@ class Record:
             e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data)
             with log.open("a") as fh:
                 fh.write(json.dumps(asdict(e)) + "\n")
-        bus.emit(e)
+        bus.emit(e, self)
         return e
 
     def events(self, since: int = 0) -> list[Event]:
