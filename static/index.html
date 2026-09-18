@@ -824,9 +824,10 @@
   /* the live subagents hang under the facts line, indented past it: part of the page's opening block, not a bar */
   /* ONE SUBAGENT TO A LINE: wrapped in a row, the model fell off the end of the one thing the user
      always wants to see. The top padding is gone with the rule that used to sit above it. */
-  /* the strip lines up with the bar above it, not with an indent of its own */
+  /* the strip lines up with the bar above it, not with an indent of its own, and it keeps a rule on
+     BOTH sides: the bar's own line above it stays, and its own closes it off underneath */
   .crew-strip { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
-    padding: 2px 9px 6px; border-bottom: 1px solid var(--border); }
+    padding: 4px 9px 6px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
   /* A COLUMN, NOT A RUN-ON LINE: names and models differ in length, so each fact used to start
      wherever the last one ended and nothing lined up down the strip. */
   .crew-line { display: flex; align-items: center; gap: 9px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;
@@ -1021,9 +1022,12 @@
     font: inherit; font-size: 12px; text-align: left; text-decoration: none; cursor: pointer; }
   .bar-act:hover:not(:disabled) { background: rgba(255, 255, 255, .05); }
   .bar-act:disabled { color: var(--text-3); cursor: default; }
-  .agent-skills { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 2px 7px;
-    border: 1px solid transparent; border-radius: 6px; background: none; color: var(--text-3);
-    font: inherit; font-size: 11.5px; cursor: pointer; }
+  /* THE HOVER BOX IS NOT PART OF THE SPACING. Its padding and border made every counter sit eight
+     pixels further from its neighbours than the facts do from each other; the negative margin gives
+     that back, so what lines up is the text and the box merely grows around it. */
+  .agent-skills { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 2px 4px;
+    margin: 0 -5px; border: 1px solid transparent; border-radius: 6px; background: none;
+    color: var(--text-3); font: inherit; font-size: 11.5px; cursor: pointer; }
   .agent-skills:hover, .agent-skills[aria-expanded="true"] { border-color: var(--border-2);
     background: var(--raised); color: var(--text); }
   .agent-skills .ico { width: 12px; height: 12px; }
