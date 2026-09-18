@@ -80,12 +80,13 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
 
     def frame() -> None:
         shape[0], shape[1] = resize(fd)
-        os.write(stdout, b"\x1b[2J" + band.region(shape[0]) + top.draw(shape[1]))
+        os.write(stdout, b"\x1b[2J" + band.region(shape[0]) + top.draw(shape[1], force=True))
 
     signal.signal(signal.SIGWINCH, lambda *_: frame())
-    os.write(stdout, band.region(rows) + top.draw(cols))
+    os.write(stdout, band.region(rows) + top.draw(cols, force=True))
     last_check = 0.0
     last_band = 0.0
+    last_output = 0.0
     try:
         while True:
             ready, _, _ = select.select([fd, stdin], [], [], 0.5)
@@ -97,11 +98,12 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
                 if not data:
                     break
                 os.write(stdout, data)
+                last_output = time.time()
                 if any(mark in data for mark in REDRAWS):
-                    os.write(stdout, band.region(shape[0]) + top.draw(shape[1]))
+                    os.write(stdout, band.region(shape[0]) + top.draw(shape[1], force=True))
                 out.write(data[-4096:])
                 out.flush()
-            if time.time() - last_band >= 1.0:
+            if time.time() - last_band >= 1.0 and time.time() - last_output >= 0.25:
                 last_band = time.time()
                 os.write(stdout, top.draw(shape[1]))
             if stdin in ready:
