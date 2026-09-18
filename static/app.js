@@ -3744,6 +3744,10 @@ const PLAN_WORD = { preparing: "being written", active: "working", parked: "paus
 // the turn that raised it, so the question is answered in line with the conversation around it. Off
 // the home — the Messages page, a list — there is no thread to move, and the inspector opens as before.
 const THREAD_GOTO = reactive({ key: "", at: 0 });
+//: WHAT THE THREAD IS HOLDING, readable from the bar above it. The turns belong to the Thread, which
+//: is mounted under the agent bar and cannot be reached from it; this is the one reading both share,
+//: written by the Thread on every load and never written back.
+const CHAT_HELD = reactive({ turns: [], env: "" });
 
 // WHAT A QUOTE POINTS AT. A reply quotes the message it answers and an answer quotes the question
 // it answers, and both of those are turns already in the thread — so the quote is a way back to
@@ -4129,6 +4133,10 @@ const Thread = {
       whole.value = next;
     };
     const lit = ref("");
+    watchEffect(() => {
+      CHAT_HELD.turns = (chat.data && chat.data.turns) || [];
+      CHAT_HELD.env = props.env || "";
+    });
     watch(() => THREAD_GOTO.at, () => {
       const want = THREAD_GOTO.key;
       if (!want || !root.value) return;
@@ -4228,7 +4236,9 @@ const Thread = {
       <p v-if="more" class=thread-more>{{ more }} earlier</p>
       <p v-if="chat.data && !turns.length" class=thread-empty>Nothing has been said here yet.</p>
       <TransitionGroup :name="settled ? 'turn' : ''">
-      <div v-for="t in turns" :key="t.key" :data-turn="anchor(t) || null"
+      <!-- EVERY TURN CAN BE JUMPED TO, not only the ones with a number: what the bar's search finds is
+           usually something the agent said, which has no message behind it. Its key is its address. -->
+      <div v-for="t in turns" :key="t.key" :data-turn="anchor(t) || t.key"
         :class="['thread-turn', {mine: t.who === 'you', receipt: t.kind === 'receipt', ask: t.kind === 'question' || t.kind === 'parked', sending: t.state === 'sending', failed: t.state === 'failed', lit: !!anchor(t) && lit === anchor(t)}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
@@ -4415,6 +4425,42 @@ const EnvHome = {
     // folded by default: a list that GROWS must never push the conversation down, which is the whole
     // reason these facts left the space above the thread in the first place
     const crewOpen = ref(false);
+    // ─── the bar's own menu: the two things you want OF THIS CONVERSATION rather than of the journal
+    // SEARCH AND FILES BOTH EXIST AS PAGES, and neither can be asked about the thread you are reading.
+    // These two read what the thread is holding, which is the whole point of them being here.
+    const barMenu = reactive({ open: false, kind: "", find: "" });
+    const closeBarMenu = () => { barMenu.open = false; barMenu.kind = ""; };
+    const chatFiles = computed(() => CHAT_HELD.turns.flatMap((t) => (t.files || []).map((f) => ({
+      key: `${t.kind}:${t.n}:${f.name}`, name: f.name, picture: f.picture, n: t.n, who: t.who,
+      at: t.at, anchor: turnAnchor(t),
+      url: `/message-files/${CHAT_HELD.env}/${t.n}/${encodeURIComponent(f.name)}`,
+    }))).reverse());
+    const chatHits = computed(() => {
+      const want = barMenu.find.trim().toLowerCase();
+      if (want.length < 2) return [];
+      return CHAT_HELD.turns.filter((t) => `${t.text || ""} ${t.full || ""}`.toLowerCase().includes(want))
+        .slice(-40).reverse()
+        .map((t) => ({ key: `${t.kind}:${t.n || 0}:${t.at}`, who: t.who, at: t.at,
+                       text: (t.full || t.text || "").trim(),
+                       anchor: turnAnchor(t) || `${t.kind}:${t.n || 0}:${t.at}` }));
+    });
+    const goTurn = (anchor) => {
+      if (!anchor) return;
+      THREAD_GOTO.key = anchor;
+      THREAD_GOTO.at = Date.now();
+      closeBarMenu();
+    };
+    const openChatFile = (event, file) => {
+      event.preventDefault();
+      closeBarMenu();
+      if (file.picture) {
+        const shots = chatFiles.value.filter((f) => f.picture);
+        openImages(null, shots.map((f) => ({ name: f.name, url: f.url })),
+                   Math.max(0, shots.findIndex((f) => f.key === file.key)));
+        return;
+      }
+      openFile(null, { url: file.url, name: file.name, from: `message ${file.n}` });
+    };
     const envRow = computed(() => (OVERVIEW.data ? OVERVIEW.data.environments.find((e) => e.name === props.env) : null));
     const SLOTS = 3;
     // the rows are a capped page; the COUNT is the environment's own, so a cap can never make it lie.
@@ -4520,7 +4566,8 @@ const EnvHome = {
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
-             tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto };
+             tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto,
+             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4544,6 +4591,39 @@ const EnvHome = {
           :title="crewOpen ? 'Hide the subagents' : 'Show the subagents'" @click="crewOpen = !crewOpen">
           {{ liveCrew.length }} {{ liveCrew.length === 1 ? "subagent" : "subagents" }}<Icon :name="crewOpen ? 'up' : 'down'"/>
         </button>
+        <!-- THE TWO THINGS YOU WANT OF THIS CONVERSATION. Search and Files are pages of the
+             environment; neither can be asked about the thread in front of you, which is what these
+             two do — and they live on the bar because that is what sits over the thread. -->
+        <div class=bar-menu>
+          <button type=button class=bar-dots :aria-expanded="barMenu.open ? 'true' : 'false'"
+            title="Search this chat, or its files" @click="barMenu.open = !barMenu.open; barMenu.kind = ''">⋮</button>
+          <div v-if="barMenu.open" class="drop bar-drop">
+            <template v-if="!barMenu.kind">
+              <button type=button class=bar-item @click="barMenu.kind = 'find'"><Icon name="search"/>Search this chat</button>
+              <button type=button class=bar-item @click="barMenu.kind = 'files'"><Icon name="paperclip"/>Files in this chat<span class=bar-n>{{ chatFiles.length }}</span></button>
+              <a class=bar-item :href="'#/env/' + env + '/search'" @click="closeBarMenu()"><Icon name="search"/>Search the whole journal</a>
+            </template>
+            <template v-else-if="barMenu.kind === 'find'">
+              <input class=bar-find v-model="barMenu.find" placeholder="Find in this conversation…" autofocus
+                @keydown.escape="closeBarMenu()">
+              <p v-if="barMenu.find.trim().length < 2" class=bar-none>Type two letters or more.</p>
+              <p v-else-if="!chatHits.length" class=bar-none>Nothing in this conversation says that.</p>
+              <button v-for="h in chatHits" :key="h.key" type=button class=bar-hit @click="goTurn(h.anchor)">
+                <span class=bar-hit-who>{{ h.who === 'you' ? 'You' : 'Agent' }}</span>
+                <span class=bar-hit-text>{{ h.text.slice(0, 140) }}</span>
+              </button>
+            </template>
+            <template v-else>
+              <p v-if="!chatFiles.length" class=bar-none>Nothing has been attached here.</p>
+              <a v-for="f in chatFiles" :key="f.key" class=bar-file :href="f.url" @click="openChatFile($event, f)">
+                <img v-if="f.picture" class=bar-file-shot :src="f.url" :alt="f.name" loading=lazy>
+                <Icon v-else name="paperclip"/>
+                <span class=bar-file-name>{{ f.name }}</span>
+                <span class=bar-file-from>message {{ f.n }}</span>
+              </a>
+            </template>
+          </div>
+        </div>
       </div>
       <div v-if="crewOpen && liveCrew.length" class=crew-strip>
         <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" @click="a.open">
