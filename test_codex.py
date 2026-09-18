@@ -132,5 +132,14 @@ check("the context reading is the last call's input, and the window the rollout'
 os.environ["CODEX_HOME"] = str(home / ".codex")
 check("a Codex session's file is found by its stem under the sessions folder", transcript.find(d, rollout_path.stem), rollout_path)
 
+# THE SKILLS GO WHERE CODEX LOADS THEM: .agents/skills/<name>/, the same ten, kept current
+(d / ".agents" / "skills").mkdir(parents=True)
+said = subprocess.run([sys.executable, "-c", f"import sys; sys.path.insert(0, {str(d / '.journal')!r});"
+                       "import install; print(chr(10).join(install.codex_skills(False)))"],
+                      capture_output=True, text=True, timeout=120).stdout.splitlines()
+names = sorted(x.name for x in (d / ".agents" / "skills").iterdir())
+check("the ten skills are installed under .agents/skills", (len(names), "journal" in names, "journal-messages" in names), (10, True, True))
+check("each with its SKILL.md", all((d / ".agents" / "skills" / n / "SKILL.md").is_file() for n in names), True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

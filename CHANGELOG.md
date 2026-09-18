@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.162.0 — The skills where Codex loads them
+
+**`journal codex`, `journal install` and `journal update` put the ten skills under
+`.agents/skills/`** in the project, where Codex reads them — measured: a skill there is loaded from
+its description without being named, as under Claude Code. Written only where Codex is present
+(the folder exists, or `codex` is on the PATH). `AGENTS.md` already carries the briefing.
+
 ## 1.161.0 — A Codex session is read: its rollout file, its name in the bar
 
 **The journal reads a Codex session's rollout file** (`~/.codex/sessions/…/rollout-<time>-<id>.jsonl`)
