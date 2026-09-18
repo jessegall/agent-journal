@@ -8,7 +8,7 @@ from command import Command, Parsed, number
 from templates import render
 
 NOUNS = (("cleanup", "tidy"), ("migrate", "migrations"), ("loop",), ("update",), ("upgrade",),
-         ("verify",), ("settings",), ("serve",), ("statusline", "status-line"), ("channel",), ("enable",), ("disable",), ("version",))
+         ("verify",), ("settings",), ("serve",), ("statusline", "status-line"), ("channel",), ("codex",), ("enable",), ("disable",), ("version",))
 
 TEXT = {
     "settings_here": "set on {env}; the project's is {was}",
@@ -47,6 +47,8 @@ TEXT = {
     "channel_taken": "{path} already has a server named journal; it was left as it is",
     "channel_usage": "journal channel --install adds the journal's channel server to .mcp.json",
     "claude_added": "the journal channel is added to {path}",
+    "codex_would_run": "would run, under the journal's launcher:",
+    "codex_missing": "codex is not on PATH; install Codex first",
     "claude_missing": "no `claude` command on your PATH; install Claude Code first",
     "claude_would_run": "would run:",
     "statusline_offer": "Want the environment, the open work and the web viewer in Claude Code's status bar? "
@@ -452,6 +454,34 @@ class Claude(Command):
         os.execvp("claude", command)
 
 
+class Codex(Command):
+    """Codex under the journal's launcher: the terminal is the channel, so nothing in Codex has to push."""
+    signature = "codex {prompt*? : what to ask Codex first} {--dry-run}"
+    passthrough = True
+
+    def run(self, p: Parsed) -> int:
+        import shlex
+        import shutil
+        import sys
+        command = ["codex"] + p.passthrough_options()
+        if p.arg("prompt"):
+            command.append(p.arg("prompt"))
+        if p.option("dry-run"):
+            fmt.say(TEXT["codex_would_run"])
+            print(shlex.join(command))
+            return 0
+        if not shutil.which("codex"):
+            fmt.say(TEXT["codex_missing"])
+            return 1
+        already, url, _ = start_viewer()
+        if url:
+            fmt.say(render(TEXT["claude_viewer_already"] if already else TEXT["claude_viewer_up"], url=url))
+        sys.stdout.flush()
+        sys.stderr.flush()
+        import launch
+        return launch.run(command, cwd=project())
+
+
 def has_statusline() -> bool:
     import json
     for f in (project() / ".claude" / "settings.json", project() / ".claude" / "settings.local.json"):
@@ -504,4 +534,4 @@ class Version(Command):
 
 
 COMMANDS = (Cleanup, CleanupRead, CleanupKeep, Migrate, MigrateRun, Loop, LoopSet, LoopUnset,
-            Upgrade, Update, Verify, Settings, Serve, Statusline, Channel, Claude, Enable, Disable, Version)
+            Upgrade, Update, Verify, Settings, Serve, Statusline, Channel, Claude, Codex, Enable, Disable, Version)
