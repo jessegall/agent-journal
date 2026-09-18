@@ -4325,7 +4325,11 @@ const Thread = {
       <TransitionGroup :name="settled ? 'turn' : ''">
       <!-- EVERY TURN CAN BE JUMPED TO, not only the ones with a number: what the bar's search finds is
            usually something the agent said, which has no message behind it. Its key is its address. -->
+      <!-- THE PICKER BELONGS TO THE TURN, NOT TO THE LITTLE BAR. Closing it when the pointer left
+           the bar closed it on the way to a face: the bar is a few buttons wide and the faces are
+           inside it. It closes when you leave the turn. -->
       <div v-for="t in turns" :key="t.key" :data-turn="anchor(t) || t.key"
+        @mouseleave="picking === (anchor(t) || t.key) && (picking = '')"
         :class="['thread-turn', {mine: t.who === 'you', receipt: t.kind === 'receipt', ask: t.kind === 'question' || t.kind === 'parked', sending: t.state === 'sending', failed: t.state === 'failed', lit: !!anchor(t) && lit === anchor(t), important: t.important}]">
         <div class="thread-bubble md">
           <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
@@ -4362,8 +4366,7 @@ const Thread = {
         <!-- THE FACES OPEN WHERE THE BUTTONS WERE. The picker is not a second bar under the first:
              the tools bar itself becomes the faces, growing to the left, and the X at its end puts
              the buttons back — as does taking the pointer off the turn. -->
-        <div v-if="t.kind !== 'receipt'" :class="['thread-tools', {picking: picking === (anchor(t) || t.key)}]"
-          @mouseleave="picking === (anchor(t) || t.key) && (picking = '')">
+        <div v-if="t.kind !== 'receipt'" :class="['thread-tools', {picking: picking === (anchor(t) || t.key)}]">
           <template v-if="picking === (anchor(t) || t.key)">
             <button v-for="f in FACES" :key="'pick' + f" type=button class=thread-face-pick
               :title="'React ' + f" @click.stop="react(t, f)">{{ f }}</button>
@@ -4653,6 +4656,15 @@ const EnvHome = {
       .filter((g) => g.rows.length));
     const unread = computed(() => (notes.data || []).filter((n) => !n.read));
     const read = computed(() => (notes.data || []).filter((n) => n.read));
+    // SWITCHING A TAB IS NOT NEWS. Changing tab replaces the whole list, and the entering animation
+    // says "these just arrived" about rows that were there all along. It is suppressed for the one
+    // render that swaps them; a row that really arrives — from a fetch — still animates.
+    const swapping = ref(false);
+    const swapTabs = (set, value) => {
+      swapping.value = true;
+      set(value);
+      nextTick(() => requestAnimationFrame(() => { swapping.value = false; }));
+    };
     const noteTab = ref("unread");
     const NOTE_TABS = computed(() => [{ key: "unread", label: "Unread", n: unread.value.length },
                                       { key: "read", label: "Read", n: read.value.length }]);
@@ -4736,7 +4748,7 @@ const EnvHome = {
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
-             tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto,
+             tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
              barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
   },
   template: `
@@ -4834,7 +4846,7 @@ const EnvHome = {
       </section>
       <div class=rail-tabs role=tablist>
         <button v-for="t in TABS" :key="t.key" type=button role=tab :aria-selected="tab === t.key"
-          :class="['rail-tab', {on: tab === t.key}]" @click="tab = t.key">
+          :class="['rail-tab', {on: tab === t.key}]" @click="swapTabs((v) => tab = v, t.key)">
           <!-- ALWAYS A NUMBER, and zero is a number: a count that disappears when it reaches nought
                makes the tab change shape at the moment it is telling you the best news it has. -->
           {{ t.label }}<span :class="['rail-tab-n', {hot: t.n && t.key !== 'todos'}]">{{ t.n }}</span>
@@ -4848,7 +4860,7 @@ const EnvHome = {
         </div>
         <section v-else class=home-section>
           <div class=needs-slot>
-            <TransitionGroup name=qrow>
+            <TransitionGroup :name="swapping ? '' : 'qrow'">
             <NeedsCard v-if="heldCard" key=held :item="heldCard" :dismiss="dismiss"/>
             <NeedsCard v-for="it in queue" :key="it.key" :item="it" :selected="view.kind + ':' + view.n === it.key" :dismiss="dismiss"/>
             </TransitionGroup>
@@ -4864,7 +4876,7 @@ const EnvHome = {
              row, which says the same thing as many times as there are rows; a heading says it once. -->
         <!-- the rows arrive the way the cards in Waiting on you do, and the way the Activity column
              does: a list that changes while you are looking at it should show what changed. -->
-        <TransitionGroup name=qrow tag=div class=rail-list>
+        <TransitionGroup :name="swapping ? '' : 'qrow'" tag=div class=rail-list>
           <template v-for="g in todoGroups" :key="'g:' + g.key">
             <div :key="'h:' + g.key" class=rail-group>{{ g.label }}<span class=rail-group-n>{{ g.rows.length }}</span></div>
             <button v-for="t in g.rows" :key="t.n" type=button
@@ -4881,7 +4893,7 @@ const EnvHome = {
              does not belong in the same list as what has not, but it must still be reachable. -->
         <div class="rail-tabs rail-subtabs" role=tablist>
           <button v-for="t in NOTE_TABS" :key="t.key" type=button role=tab :aria-selected="noteTab === t.key"
-            :class="['rail-tab', {on: noteTab === t.key}]" @click="noteTab = t.key">
+            :class="['rail-tab', {on: noteTab === t.key}]" @click="swapTabs((v) => noteTab = v, t.key)">
             {{ t.label }}<span :class="['rail-tab-n', {hot: t.n && t.key === 'unread'}]">{{ t.n }}</span>
           </button>
         </div>
@@ -4891,7 +4903,7 @@ const EnvHome = {
         </div>
         <!-- a notification is read by opening it, and cleared where it is if it opens nothing -->
         <!-- no dismiss control: opening one marks it read, which is the only thing to do with it -->
-        <TransitionGroup name=qrow tag=div class=rail-list>
+        <TransitionGroup :name="swapping ? '' : 'qrow'" tag=div class=rail-list>
         <!-- the class name "note" is taken: it already carries a card's border and radius, so the
              row picked up a box nobody gave it. A name in a shared stylesheet belongs to somebody. -->
         <div v-for="n in shownNotes" :key="n.n" class=rail-note>

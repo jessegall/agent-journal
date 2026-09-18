@@ -2445,7 +2445,11 @@ def _running_what(payload: dict) -> str:
     name = payload.get("tool_name") or ""
     if name == "Bash":
         what = " ".join(str((payload.get("tool_input") or {}).get("command", "")).split())
-        return "" if any(_is_journal_verb(w[0]) for w in _pieces(what) if w) else what
+        if any(_is_journal_verb(w[0]) for w in _pieces(what) if w):
+            return ""
+        # A `cd` INTO THE PROJECT IS NOT THE COMMAND. Nearly every line the agent runs opens with it,
+        # so the bar spent its width saying where it already is instead of what it is doing.
+        return re.sub(r"^cd\s+(?:'[^']*'|\"[^\"]*\"|\S+)\s*(?:&&|;)\s*", "", what)
     if name.startswith("mcp__"):
         _, _, rest = name.partition("mcp__")
         server, _, tool = rest.partition("__")
