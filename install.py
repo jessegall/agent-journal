@@ -429,7 +429,29 @@ def unchannel(check: bool) -> list[str]:
 
 def wire(check: bool) -> list[str]:
     """Add the journal's hooks to `.claude/settings.json`, keeping everything else."""
-    f = _settings_path()
+    return _wire(_settings_path(), check, {"hooks": [{"type": "command", "command": COMMAND}]})
+
+
+def _codex_hooks_path() -> Path:
+    return PROJECT / ".codex" / "hooks.json"
+
+
+def wire_codex(check: bool) -> list[str]:
+    """The same hooks into `.codex/hooks.json`, for a project Codex works in.
+
+    THE SAME COMMAND, THE SAME SHAPE. Codex reads `.codex/hooks.json` in the project (doc 9:
+    event → matcher group → handlers), runs the command through a shell with the project as
+    its cwd, and hands hook.py the fields Claude Code does. Only written where Codex is a
+    thing: the file already exists, a `.codex/` folder does, or `codex` is on the PATH —
+    a project that never runs Codex gets no stray folder.
+    """
+    f = _codex_hooks_path()
+    if not (f.is_file() or f.parent.is_dir() or shutil.which("codex")):
+        return []
+    return _wire(f, check, {"matcher": "", "hooks": [{"type": "command", "command": COMMAND, "timeout": 60}]})
+
+
+def _wire(f: Path, check: bool, block: dict) -> list[str]:
     data: dict = {}
     if f.is_file():
         try:
@@ -465,7 +487,7 @@ def wire(check: bool) -> list[str]:
                 h["command"] = COMMAND
             done.append(say("rewired", event=ev))
             continue
-        blocks.append({"hooks": [{"type": "command", "command": COMMAND}]})
+        blocks.append(json.loads(json.dumps(block)))
         done.append(say("wired", event=ev))
 
     # AND WHAT THIS PACKAGE ONCE WIRED AND SHOULD NOT HAVE, IS TAKEN OUT. Only ours: a block
@@ -756,7 +778,7 @@ def main(argv: list[str]) -> int:
     if not _installed_at(ROOT):
         lines.append(say("source_checkout", name=ROOT.name, project=PROJECT.name))
     else:
-        lines += unchannel(check) + wire(check) + skill(check) + briefing(PROJECT, check, _conf) + style_skills(check)
+        lines += unchannel(check) + wire(check) + wire_codex(check) + skill(check) + briefing(PROJECT, check, _conf) + style_skills(check)
     if "--alias" in argv:
         lines += alias(check)
     if "--git-hook" in argv:

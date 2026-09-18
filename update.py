@@ -215,7 +215,7 @@ def upgrade(root: Path, source: str | None = None) -> tuple[bool, str]:
     install = importlib.reload(install)
     for line in install.unchannel(False):
         lines.append(line)
-    for line in install.wire(False):
+    for line in install.wire(False) + install.wire_codex(False):
         if line.startswith(("  +", "  -")):
             lines.append(line)
     now = current(root)

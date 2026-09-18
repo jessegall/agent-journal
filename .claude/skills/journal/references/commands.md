@@ -232,7 +232,7 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal connections here <name> purpose|kind|url|secret "<value>" [--off]   change it on this environment only
     journal statusline [--install]   the status bar line: environment, open work, viewer; --install adds it to .claude/settings.json, never over one that exists
     journal claude [prompt]          start Claude under the journal's launcher AND the web viewer, if this journal has none running — it says where. The launcher types the viewer's news into the idle session; --quiet never types. --continue, --resume=<id>, --dry-run shows the command; any other flag is passed through to claude
-    journal codex [prompt]           start Codex under the journal's launcher, the same way; --quiet never types, --dry-run shows the command
+    journal codex [prompt]           start Codex under the journal's launcher, the same way; the journal's hooks are wired into .codex/hooks.json first, and Codex asks once to trust them (/hooks). --quiet never types, --dry-run shows the command
 
 Everything the viewer changes goes through the same controllers as these commands, marked as
 coming from the web where a record keeps a source. The API is `/api/env/<env>/<resource>[/<n>][/<action>]`
