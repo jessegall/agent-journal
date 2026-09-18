@@ -7,7 +7,18 @@ import Compose from "../chat/Compose.vue";
 
 const props = defineProps({resource: Object, quote: {type: String, default: ""}});
 const emit = defineEmits(["sent"]);
-const thread = computed(() => rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted));
+const thread = computed(() =>
+    rows("comment")
+        .filter((c) => c.refs.includes(props.resource.ref) && !c.deleted)
+        .map(split)
+);
+
+function split(c) {
+    const lines = c.brief.split("\n");
+    const quoted = [];
+    while (lines.length && lines[0].startsWith(">")) quoted.push(lines.shift().replace(/^> ?/, ""));
+    return {...c, quoted: quoted.join("\n"), text: lines.join("\n").trim()};
+}
 
 async function send(text) {
     const body = props.quote ? `> ${props.quote.replace(/\n/g, "\n> ")}\n\n${text}` : text;
@@ -28,7 +39,10 @@ async function send(text) {
                         <span class="done">· handled: {{ c.outcome }}</span>
                     </template>
                 </span>
-                <span class="text">{{ c.brief }}</span>
+                <template v-if="c.quoted">
+                    <span class="quoted">{{ c.quoted }}</span>
+                </template>
+                <span class="text">{{ c.text }}</span>
             </div>
         </template>
     </section>
@@ -77,6 +91,15 @@ h3 {
 .text {
     white-space: pre-wrap;
     color: var(--text-2);
+}
+
+.quoted {
+    margin: 2px 0 6px;
+    padding: 2px 0 2px 9px;
+    border-left: 2px solid var(--accent);
+    white-space: pre-wrap;
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .comment-write {
