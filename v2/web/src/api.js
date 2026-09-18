@@ -1,0 +1,16 @@
+export async function api(method, path, body) {
+  const res = await fetch(`/api${path}`, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const got = await res.json();
+  if (!res.ok) throw new Error(got.error || res.statusText);
+  return got;
+}
+
+export const manifest = () => api("GET", "/manifest");
+export const all = (env, type) => api("GET", `/${env}/${type}`);
+export const show = (env, type, n) => api("GET", `/${env}/${type}/${n}`);
+export const create = (env, type, body) => api("POST", `/${env}/${type}`, body);
+export const act = (env, type, n, action, body = {}) => api("POST", `/${env}/${type}/${n}/${action}`, body);

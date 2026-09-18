@@ -1,0 +1,14 @@
+:root {
+  color-scheme: dark;
+  --side: #0d0e10; --bg: #131416; --raised: #18191c; --hover: #1d1e22; --sel: #212329;
+  --border: #25272b; --border-2: #2f3136;
+  --text: #e6e7ea; --text-2: #a9acb3; --text-3: #83868e;
+  --accent: #5e64c9; --accent-text: #a3a8f0; --warn: #c9955e; --danger: #df8b7e;
+  --font: "Geist", -apple-system, system-ui, sans-serif;
+}
+* { box-sizing: border-box; scrollbar-width: none; }
+::-webkit-scrollbar { width: 0; height: 0; }
+html, body, #app { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--text); font: 13.5px/1.5 var(--font); }
+button, input, textarea { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
