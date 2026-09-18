@@ -6,7 +6,7 @@ from pathlib import Path
 
 TITLE_MAX = 80
 ABSTRACT_MAX = 200
-VERBS = ("created", "updated", "deleted", "linked", "commented")
+ACTIONS = ("created", "updated", "deleted", "linked", "commented")
 DISPATCHERS = ("user", "agent")
 
 
@@ -16,7 +16,7 @@ class Event:
     at: float
     type: str          # the resource type
     n: int
-    verb: str          # one of VERBS
+    action: str        # one of ACTIONS
     dispatcher: str    # one of DISPATCHERS
     data: dict = field(default_factory=dict)
 

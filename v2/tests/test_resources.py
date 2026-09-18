@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from v2.controllers.types import CONTROLLERS  # noqa: E402
 from v2.engine.record import Record  # noqa: E402
-from v2.resources.base import ABSTRACT_MAX, TITLE_MAX, VERBS, Refused  # noqa: E402
+from v2.resources.base import ABSTRACT_MAX, TITLE_MAX, ACTIONS, Refused  # noqa: E402
 from v2.resources.types import TYPES  # noqa: E402
 
 ok = fail = 0
@@ -54,10 +54,10 @@ for type_ in TYPES:                                                 # the data p
     c.force_delete(2)
     check(f"{type_}: force delete removes the file", ([x.n for x in c.list()], refused(lambda: c.show(2))), ([1], True))
 
-for type_ in TYPES:                                                 # every type emits the same five verbs, no more
+for type_ in TYPES:                                                 # every type emits the same five actions, no more
     mine = [e for e in record.events() if e.type == type_]
-    check(f"{type_}: every action left an event, and only the five verbs", (sorted({e.verb for e in mine}), len(mine)),
-          (sorted(VERBS), 8))
+    check(f"{type_}: every action left an event, and only the five actions", (sorted({e.action for e in mine}), len(mine)),
+          (sorted(ACTIONS), 8))
     check(f"{type_}: an event says who dispatched it and what it is about", (mine[0].dispatcher, mine[0].ref), ("user", f"{type_}:1"))
 
 print(f"\n{ok} passed, {fail} failed")

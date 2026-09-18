@@ -28,10 +28,10 @@ class Controller:
             raise Refused(f"no {self.type} {n}")
         return self.resource.load(p.read_text())
 
-    def save(self, r: Resource, verb: str, **event) -> Resource:
+    def save(self, r: Resource, action: str, **event) -> Resource:
         r.updated = time.time()
         self.path(r.n).write_text(r.dump())
-        self.record.emit(self.type, r.n, verb, self.dispatcher, **event)
+        self.record.emit(self.type, r.n, action, self.dispatcher, **event)
         return r
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
