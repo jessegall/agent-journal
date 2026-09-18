@@ -499,6 +499,95 @@ const HELP_TOPICS = { Todos: "todos", Messages: "messages", Questions: "question
   Files: "files", Style: "style" };
 const HELP_CACHE = {};
 
+// THE COMMAND'S IMPORTANT PART, NEVER A CUT TAIL. A line of shell is verbs and arguments and noise:
+// the bar shows the verb (and its subcommand), the one argument that says what it acts on — a
+// quoted string first, else the first word that is not a flag — and drops the pieces that say
+// nothing (cd, echo, sleep). Several commands chained together become their gists, newest last,
+// as many as fit; a gist that is still too long has its quoted string shortened inside the quotes.
+const GIST_CAP = 60;
+const GIST_NOISE = new Set(["cd", "echo", "sleep", "true", "false", "set", "export", "clear", "printf", "do", "done", "then", "fi", "else"]);
+// a filter at the end of a pipe says nothing about what is running
+const GIST_FILTERS = new Set(["tail", "head", "grep", "wc", "sort", "cut", "sed", "awk", "tr", "xargs", "cat", "tee", "uniq"]);
+const GIST_SUBVERBS = new Set(["git", "npm", "npx", "pnpm", "yarn", "docker", "cargo", "go", "make", "brew", "pip", "pip3", "journal", "gh", "kubectl"]);
+
+function shellPieces(line) {
+  const out = [];
+  let cur = "";
+  let quote = "";
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (quote) { cur += c; if (c === quote) quote = ""; continue; }
+    if (c === '"' || c === "'") { quote = c; cur += c; continue; }
+    if ((c === "&" && line[i + 1] === "&") || (c === "|" && line[i + 1] === "|")) { out.push(cur); cur = ""; i++; continue; }
+    if (c === ";" || c === "|") { out.push(cur); cur = ""; continue; }
+    cur += c;
+  }
+  out.push(cur);
+  return out.map((p) => p.trim()).filter(Boolean);
+}
+
+function shellWords(piece) {
+  const words = [];
+  let cur = "";
+  let quote = "";
+  for (const c of piece) {
+    if (quote) { cur += c; if (c === quote) quote = ""; continue; }
+    if (c === '"' || c === "'") { quote = c; cur += c; continue; }
+    if (/\s/.test(c)) { if (cur) words.push(cur); cur = ""; continue; }
+    cur += c;
+  }
+  if (cur) words.push(cur);
+  return words;
+}
+
+function pieceGist(piece, room) {
+  let words = shellWords(piece);
+  // an env assignment or a wrapper in front of the real command is not the command
+  while (words.length > 1 && (/^[A-Z_][A-Z0-9_]*=/.test(words[0]) || words[0] === "perl" || words[0] === "timeout" || words[0] === "time" || words[0] === "exec")) {
+    words = words[0] === "perl" ? words.slice(words.findIndex((w, i) => i > 0 && !w.startsWith("-") && !/^'.*'$/.test(w)) || 1) : words.slice(1);
+  }
+  if (!words.length || GIST_NOISE.has(words[0])) return "";
+  const verb = words[0].split("/").pop();
+  if (words.some((w) => w.startsWith("<<"))) return `${verb} script`;   // a heredoc: the script is the argument
+  const head = [verb];
+  let rest = words.slice(1);
+  if (GIST_SUBVERBS.has(verb) && rest.length && !rest[0].startsWith("-")) { head.push(rest[0]); rest = rest.slice(1); }
+  const quoted = rest.find((w) => /^["'].*["']$/.test(w));
+  const plain = rest.find((w) => !w.startsWith("-") && !/^["']/.test(w));
+  let arg = quoted || plain || "";
+  let out = [...head, arg].filter(Boolean).join(" ");
+  if (out.length > room && quoted) {
+    const keep = Math.max(6, room - head.join(" ").length - 4);
+    arg = `${quoted.slice(0, keep)}…${quoted[quoted.length - 1]}`;
+    out = [...head, arg].join(" ");
+  }
+  if (out.length > room && !quoted && plain) {
+    out = head.join(" ");                       // the verb alone still says what is happening
+  }
+  return out;
+}
+
+function commandGist(line, cap = GIST_CAP) {
+  const flat = String(line || "").trim();
+  if (flat.length <= cap && !/&&|;|\||<</.test(flat)) return flat;
+  const pieces = shellPieces(flat);
+  if (!pieces.some((p, i) => !(i > 0 && GIST_FILTERS.has(shellWords(p)[0] || "")) && pieceGist(p, cap))) {
+    return flat.length > cap ? `${flat.slice(0, cap - 1).trimEnd()}…` : flat;
+  }
+  // newest last: the piece at the end is what is running now and keeps its room; the ones before it
+  // are shortened to what is left, and dropped once there is not enough left to say anything
+  const real = pieces.filter((p, i) => !(i > 0 && GIST_FILTERS.has(shellWords(p)[0] || "")) && pieceGist(p, cap));
+  const kept = [pieceGist(real[real.length - 1], cap)];
+  for (let i = real.length - 2; i >= 0; i--) {
+    const room = cap - kept.join(" · ").length - 3;
+    if (room < 12) break;
+    const g = pieceGist(real[i], room);
+    if (!g || g.length > room) break;
+    kept.unshift(g);
+  }
+  return kept.join(" · ");
+}
+
 // ─────────────────────────────────────────────────────────────── icons
 const Icon = {
   props: ["name"],
@@ -697,7 +786,7 @@ const StatusBar = {
         const secs = ticks.value;
         const flat = FAKES[Math.floor(secs / 12) % FAKES.length];
         const own = secs % 12;
-        return { what: flat, seconds: own, gist: flat.length > 42 ? `${flat.slice(0, 42)}…` : flat,
+        return { what: flat, seconds: own, gist: commandGist(flat),
                  forText: forText(own) };
       }
       const agent = SHELL.activity && SHELL.activity.agent;
@@ -712,7 +801,7 @@ const StatusBar = {
       // still running for thirty seconds.
       const secs = got.done ? got.seconds : got.seconds + Math.floor((Date.now() - readAt.at) / 1000);
       const flat = String(got.what || "").trim();
-      return { what: flat, seconds: secs, gist: flat.length > 42 ? `${flat.slice(0, 42)}…` : flat,
+      return { what: flat, seconds: secs, gist: commandGist(flat),
                forText: got.done ? "" : forText(secs) };
     });
     const doing = computed(() => {
