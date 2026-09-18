@@ -224,7 +224,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     chat: () => inject("chat.js"),
     // chat.js says when it opened or closed on a page, so the window comes back after a reload
     opened: () => rememberOpen(true).then(() => ({ ok: true })),
-    closed: () => rememberOpen(false).then(() => ({ ok: true })),
+    // closing the window is putting the chat back: nothing follows, nothing reopens
+    closed: () => keep({ chatOpen: false, following: false }).then(() => ({ ok: true })),
     follow: () => follow(msg.on, sender.tab && sender.tab.id),
     following: async () => ({ on: await following(), everywhere: await everywhere() }),
     where: async () => {
