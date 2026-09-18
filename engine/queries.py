@@ -39,14 +39,15 @@ def describe(r) -> str:
 
 
 def start_block(record) -> str:
-    parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`."]
+    from features.skills.catalogue import handed as skills_handed
+    parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", skills_handed(record)]
     for type_ in reversed(PRIORITY):
         kind = TYPES[type_]
         rows = handed(record, type_) if kind.handed else []
         if not rows:
             continue
         parts.append(f"{len(rows)} {kind.handed}." if kind.counted else f"{kind.handed} ({len(rows)}):\n{lines(rows, describe)}")
-    return "\n\n".join(parts) + "\n"
+    return "\n\n".join(p for p in parts if p) + "\n"
 
 
 def carry(record) -> str:

@@ -2,7 +2,7 @@
 import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {peek} from "../route.js";
+import {go, peek, route} from "../route.js";
 import {agent, detach, span, store} from "../store.js";
 
 const open = ref("");
@@ -30,9 +30,9 @@ function toggle(key, e) {
     anchor.value = {left: Math.max(0, Math.min(box.left - wrap.left, wrap.width - 288)), top: box.bottom - wrap.top + 6};
 }
 const bar = ref(null);
-function openAgent() {
+function openSkills() {
     open.value = "";
-    peek("agent", agent.value.n);
+    go(route.value.env, "skills");
 }
 const away = (e) => {
     if (bar.value && !bar.value.contains(e.target)) open.value = "";
@@ -129,7 +129,7 @@ onUnmounted(() => window.removeEventListener("click", away));
                             </span>
                         </template>
                         <div class="bar-foot">
-                            <button type="button" class="bar-act" @click="openAgent">Browse every skill</button>
+                            <button type="button" class="bar-act" @click="openSkills">Browse every skill</button>
                         </div>
                     </template>
                     <template #shells>

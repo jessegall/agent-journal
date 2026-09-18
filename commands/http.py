@@ -14,6 +14,7 @@ from urllib.parse import unquote
 from urllib.request import urlopen
 
 import features
+from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
 from controllers.types import Agents, Asks, CONTROLLERS, Environments
 from engine import bus
 from engine.manifest import manifest
@@ -217,6 +218,33 @@ def post_pending(req: Request) -> Reply:
 def post_result(req: Request) -> Reply:
     got = Asks(req.record(), actor=USER).answer(int(req.params["n"]), req.body.get("text", ""), ok=bool(req.body.get("ok", True)), files=req.body.get("files") or [])
     return Reply(200, shaped(got))
+
+
+@route("GET", "/api/{env}/skills")
+def get_skills(req: Request) -> Reply:
+    return Reply(200, skills(req.record(), int(req.query.get("agent") or 0)))
+
+
+@route("GET", "/api/{env}/skills/{name}")
+def get_skill(req: Request) -> Reply:
+    root = req.record().root.parent
+    hit = next((s for s in catalogue(root) if s[SKILL.name] == req.params["name"]), None)
+    if not hit:
+        return Reply(404, {"error": f"no skill {req.params['name']}"})
+    return Reply(200, {**hit, "text": (root / hit[SKILL.path]).read_text(errors="replace")})
+
+
+@route("POST", "/api/{env}/skills/{name}/load")
+def post_skill_load(req: Request) -> Reply:
+    return Reply(200, {"said": load_now(req.record(), req.params["name"])})
+
+
+@route("POST", "/api/{env}/skills/{name}/always")
+def post_skill_always(req: Request) -> Reply:
+    record = req.record()
+    got = always(record, req.params["name"], bool(req.body.get("on")))
+    features.FEATURES["start"].write(None, record)
+    return Reply(200, {"skills": got})
 
 
 @route("GET", "/api/{env}/files")
