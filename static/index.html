@@ -243,6 +243,8 @@
   .statusbar-text .statusbar-run-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .statusbar-text .statusbar-running-for { flex: 0 0 auto; margin-right: 6px; font-size: 10.5px;
     font-variant-numeric: tabular-nums; opacity: .8; }
+  /* a clock that has stopped is a step quieter than one still counting */
+  .statusbar-text .statusbar-running-for.done { opacity: .55; }
   .roll-enter-active { transition: opacity 180ms ease, transform 180ms cubic-bezier(.22,.7,.3,1); }
   .roll-leave-active { transition: opacity 140ms ease, transform 140ms cubic-bezier(.22,.7,.3,1); }
   .roll-enter-from { opacity: 0; transform: translateY(5px); }

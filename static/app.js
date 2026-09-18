@@ -878,13 +878,14 @@ const StatusBar = {
         readAt.seconds = got.seconds;
         readAt.at = Date.now();
       }
-      // THE DURATION IS A LIVE THING. It counts while the command runs and is not shown at all once
-      // it has finished: a number standing still beside a command that is over reads as a command
-      // still running for thirty seconds.
+      // THE DURATION COUNTS WHILE THE COMMAND RUNS AND THEN STANDS STILL at what it took, for the few
+      // quiet seconds before the line rolls away — the user asked for the frozen clock (message 140):
+      // a command that ran for a minute says so until it goes, rather than losing its number the
+      // moment it ends. Only a command long enough to have shown a clock keeps one.
       const secs = got.done ? got.seconds : got.seconds + Math.floor((Date.now() - readAt.at) / 1000);
       const flat = String(got.what || "").trim();
-      return { what: flat, seconds: secs, gist: commandGist(flat),
-               forText: got.done ? "" : forText(secs) };
+      return { what: flat, seconds: secs, gist: commandGist(flat), done: !!got.done,
+               forText: forText(secs) };
     });
     const doing = computed(() => {
       const events = (SHELL.activity && SHELL.activity.events) || [];
@@ -1034,7 +1035,7 @@ const StatusBar = {
           <Transition name=roll><span v-if="running" :key="running.gist" class=statusbar-run-line>
             <!-- a middot rather than a mark: it is a continuation of the sentence before it, not a
                  second fact standing beside it -->
-            <span v-if="running.forText" class=statusbar-running-for>{{ running.forText }}</span>
+            <span v-if="running.forText" :class="['statusbar-running-for', {done: running.done}]">{{ running.forText }}</span>
             <span class=statusbar-run-text>{{ running.gist }}</span></span></Transition></span>
       </button>
       <span class=statusbar-tools>

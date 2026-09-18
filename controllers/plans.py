@@ -38,8 +38,11 @@ class PlansController(Controller):
             return query
         page = self.paged(query, p)
         rows = [plans.row_response(root, r.n, r.raw, env) for r in page.rows]
+        # A FINISHED PLAN STAYS LISTED UNTIL THE USER ACKNOWLEDGES IT: the bar with its Acknowledge
+        # button is drawn from this listing, and a plan that vanished the moment its last phase closed
+        # was never seen finished (message 152). Acknowledged ones are history, off the default list.
         if not p.all:
-            rows = [r for r in rows if r["status"] != plans.DONE]
+            rows = [r for r in rows if r["status"] != plans.DONE or not r.get("acknowledged")]
         abandoned = len([r for r in self.repository(root, p).all() if r.raw.get("status") == plans.ABANDONED])
         return Result("ok", "", rows, {"left": page.left, "abandoned": abandoned, "approval": plans.approval(root)})
 
