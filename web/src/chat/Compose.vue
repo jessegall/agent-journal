@@ -6,6 +6,7 @@ const props = defineProps({
     placeholder: {type: String, default: "Message the agent"},
     submit: {type: String, default: "Send"},
     send: Function,
+    quote: {type: String, default: ""},
 });
 const draft = reactive({text: "", files: [], sending: false, error: ""});
 const area = ref(null);
@@ -38,6 +39,12 @@ async function go() {
 
 <template>
     <form class="compose" @submit.prevent="go">
+        <template v-if="quote">
+            <div class="compose-quote">
+                <span class="compose-quote-label">Commenting on</span>
+                <div class="compose-quote-text">{{ quote }}</div>
+            </div>
+        </template>
         <div class="compose-box floating">
             <template v-if="draft.files.length">
                 <div class="compose-files">
@@ -79,6 +86,31 @@ async function go() {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.compose-quote {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 12px;
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    background: var(--raised);
+}
+
+.compose-quote-label {
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+
+.compose-quote-text {
+    max-height: 96px;
+    overflow: auto;
+    font-size: 12.5px;
+    color: var(--text-2);
+    white-space: pre-wrap;
 }
 
 .compose-box {

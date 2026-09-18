@@ -5,11 +5,14 @@ import {route} from "../route.js";
 import {age, reload, rows} from "../store.js";
 import Compose from "../chat/Compose.vue";
 
-const props = defineProps({resource: Object});
+const props = defineProps({resource: Object, quote: {type: String, default: ""}});
+const emit = defineEmits(["sent"]);
 const thread = computed(() => rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted));
 
 async function send(text) {
-    await act(route.value.env, props.resource.type, props.resource.n, "comment", {text});
+    const body = props.quote ? `> ${props.quote.replace(/\n/g, "\n> ")}\n\n${text}` : text;
+    await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: body});
+    emit("sent");
     await reload();
 }
 </script>
@@ -30,7 +33,7 @@ async function send(text) {
         </template>
     </section>
     <div class="comment-write">
-        <Compose placeholder="Comment…" submit="Comment" :send="send" />
+        <Compose placeholder="Comment…" submit="Comment" :quote="quote" :send="send" />
     </div>
 </template>
 

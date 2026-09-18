@@ -4,6 +4,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route} from "../route.js";
 import {meta, rows} from "../store.js";
 import ResourceBody from "./ResourceBody.vue";
+import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
 
 const props = defineProps({type: String, n: Number});
@@ -20,7 +21,7 @@ const close = () => go(route.value.env, props.type);
                     <div class="page"><PlanPage :resource="resource" @close="close" /></div>
                 </template>
                 <template #document>
-                    <div class="page"><ResourceBody :resource="resource" @close="close" /></div>
+                    <div class="page"><DocumentPage :resource="resource" @close="close" /></div>
                 </template>
                 <template #default>
                     <aside class="inspector"><ResourceBody :resource="resource" @close="close" /></aside>
