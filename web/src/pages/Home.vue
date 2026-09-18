@@ -19,9 +19,9 @@ const notices = computed(() => open("notice"));
         <div class="home-main">
             <section class="home-section home-thread">
                 <AgentBar />
-                <template v-for="x in notices" :key="x.n">
-                    <Notice :notice="x" />
-                </template>
+                <TransitionGroup name="act">
+                    <Notice v-for="x in notices" :key="x.n" :notice="x" />
+                </TransitionGroup>
                 <Thread />
             </section>
             <div class="home-divider" role="separator" aria-orientation="vertical" />
@@ -57,6 +57,29 @@ const notices = computed(() => open("notice"));
 </template>
 
 <style scoped>
+.act-enter-active {
+    transition:
+        opacity 0.24s ease-out,
+        transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.act-enter-from {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.act-leave-active {
+    transition: opacity 0.18s ease-in;
+}
+
+.act-leave-to {
+    opacity: 0;
+}
+
+.act-move {
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 .home {
     height: 100%;
     display: flex;

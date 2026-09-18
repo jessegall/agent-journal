@@ -1,0 +1,115 @@
+const CAP = 60;
+const NOISE = new Set(["cd", "echo", "sleep", "true", "false", "set", "export", "clear", "printf", "do", "done", "then", "fi", "else"]);
+const FILTERS = new Set(["tail", "head", "grep", "wc", "sort", "cut", "sed", "awk", "tr", "xargs", "cat", "tee", "uniq"]);
+const SUBVERBS = new Set([
+    "git",
+    "npm",
+    "npx",
+    "pnpm",
+    "yarn",
+    "docker",
+    "cargo",
+    "go",
+    "make",
+    "brew",
+    "pip",
+    "pip3",
+    "journal",
+    "gh",
+    "kubectl",
+]);
+const WRAPPERS = new Set(["perl", "timeout", "time", "exec", "nohup"]);
+
+function split(line, atBreak) {
+    const out = [];
+    let cur = "";
+    let quote = "";
+    for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (quote) {
+            cur += c;
+            if (c === quote) quote = "";
+            continue;
+        }
+        if (c === '"' || c === "'") {
+            quote = c;
+            cur += c;
+            continue;
+        }
+        const width = atBreak(line, i);
+        if (width) {
+            if (cur.trim()) out.push(cur.trim());
+            cur = "";
+            i += width - 1;
+            continue;
+        }
+        cur += c;
+    }
+    if (cur.trim()) out.push(cur.trim());
+    return out;
+}
+
+function pieces(line) {
+    return split(line, (s, i) => (["&&", "||"].includes(s.slice(i, i + 2)) ? 2 : ";|\n".includes(s[i]) ? 1 : 0));
+}
+
+function words(piece) {
+    return split(piece, (s, i) => (/\s/.test(s[i]) ? 1 : 0));
+}
+
+function verbOf(piece) {
+    let w = words(piece);
+    while (w.length > 1 && (/^[A-Z_][A-Z0-9_]*=/.test(w[0]) || WRAPPERS.has(w[0]))) {
+        w =
+            w[0] === "perl"
+                ? w.slice(
+                      Math.max(
+                          1,
+                          w.findIndex((x, i) => i > 0 && !x.startsWith("-") && !/^'.*'$/.test(x))
+                      )
+                  )
+                : w.slice(1);
+    }
+    return w;
+}
+
+function pieceGist(piece) {
+    const w = verbOf(piece);
+    if (!w.length || NOISE.has(w[0])) return "";
+    const verb = w[0].split("/").pop();
+    if (w.some((x) => x.startsWith("<<"))) return `${verb} script`;
+    const rest = SUBVERBS.has(verb) && w[1] && !w[1].startsWith("-") ? `${verb} ${w[1]}` : verb;
+    const args = w.slice(rest.split(" ").length).filter((x) => !x.startsWith("-") && !/^["'$]/.test(x));
+    const shown = args.length ? `${rest} ${args[0].split("/").pop()}` : rest;
+    return shown.length > CAP ? `${shown.slice(0, CAP - 1).trimEnd()}…` : shown;
+}
+
+function withoutScripts(command) {
+    const lines = String(command || "").split("\n");
+    const kept = [];
+    let end = "";
+    for (const line of lines) {
+        if (end) {
+            if (line.trim() === end) end = "";
+            continue;
+        }
+        kept.push(line);
+        const m = line.match(/<<-?\s*['"]?(\w+)/);
+        if (m) end = m[1];
+    }
+    return kept.join("\n");
+}
+
+export function gist(command) {
+    const real = pieces(withoutScripts(command))
+        .filter((p, i) => !(i > 0 && FILTERS.has(verbOf(p)[0] || "")))
+        .map(pieceGist)
+        .filter(Boolean);
+    if (!real.length) return "";
+    const kept = [real[real.length - 1]];
+    for (let i = real.length - 2; i >= 0; i--) {
+        if (CAP - kept.join(" · ").length - 3 < 12) break;
+        kept.unshift(real[i]);
+    }
+    return kept.join(" · ");
+}

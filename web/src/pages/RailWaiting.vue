@@ -31,28 +31,55 @@ async function dismiss(r) {
     </template>
     <template v-else>
         <section class="home-section">
-            <div class="needs-slot">
-                <template v-for="r in cards" :key="r.ref">
-                    <div :class="['needs-card', r.type]" @click="peek(r.type, r.n)">
-                        <div class="needs-card-top">
-                            <span class="needs-card-kind">{{ meta(r.type).title }}</span>
-                            <span class="needs-card-meta">{{ r.type }} {{ r.n }}</span>
-                            <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
-                                <Icon name="close" />
-                            </button>
-                        </div>
-                        <p class="needs-card-title">{{ r.title }}</p>
-                        <template v-if="r.abstract">
-                            <p class="needs-card-text">{{ r.abstract }}</p>
-                        </template>
+            <TransitionGroup name="qrow" tag="div" class="needs-slot">
+                <div v-for="r in cards" :key="r.ref" :class="['needs-card', r.type]" @click="peek(r.type, r.n)">
+                    <div class="needs-card-top">
+                        <span class="needs-card-kind">{{ meta(r.type).title }}</span>
+                        <span class="needs-card-meta">{{ r.type }} {{ r.n }}</span>
+                        <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
+                            <Icon name="close" />
+                        </button>
                     </div>
-                </template>
-            </div>
+                    <p class="needs-card-title">{{ r.title }}</p>
+                    <template v-if="r.abstract">
+                        <p class="needs-card-text">{{ r.abstract }}</p>
+                    </template>
+                </div>
+            </TransitionGroup>
         </section>
     </template>
 </template>
 
 <style scoped>
+.qrow-enter-active {
+    transition:
+        opacity 0.24s ease-out,
+        transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.qrow-enter-from {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.qrow-leave-active {
+    position: absolute;
+    left: 0;
+    right: 0;
+    transition:
+        opacity 0.16s ease-in,
+        transform 0.16s ease-in;
+}
+
+.qrow-leave-to {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.qrow-move {
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 .home-rail-empty {
     display: flex;
     flex-direction: column;
@@ -75,6 +102,7 @@ async function dismiss(r) {
 }
 
 .needs-slot {
+    position: relative;
     display: flex;
     flex-direction: column;
 }

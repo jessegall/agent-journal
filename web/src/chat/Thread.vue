@@ -133,14 +133,38 @@ watch(
             <template v-if="!turns.length">
                 <p class="thread-empty">Nothing has been said here yet.</p>
             </template>
-            <template v-for="t in turns" :key="t.ref">
-                <Turn :turn="t" @reply="quote = $event" @edit="editing = $event" @grew="settled" />
-            </template>
+            <TransitionGroup name="turn">
+                <Turn v-for="t in turns" :key="t.ref" :turn="t" @reply="quote = $event" @edit="editing = $event" @grew="settled" />
+            </TransitionGroup>
         </div>
     </div>
 </template>
 
 <style scoped>
+.turn-enter-active {
+    transition:
+        opacity 0.26s ease-out,
+        transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.turn-enter-from {
+    opacity: 0;
+    transform: translateY(9px);
+}
+
+.turn-leave-active {
+    position: absolute;
+    transition: opacity 0.16s ease-in;
+}
+
+.turn-leave-to {
+    opacity: 0;
+}
+
+.turn-move {
+    transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 .thread {
     position: relative;
     flex: 1;

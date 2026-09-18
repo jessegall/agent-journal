@@ -1,6 +1,7 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {act, saveSettings} from "../api.js";
+import {gist} from "../gist.js";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
 import {go, route} from "../route.js";
@@ -12,7 +13,16 @@ const line = computed(() => {
     const work = rows("work").find((w) => !w.completed);
     return work ? `on ${work.title}` : state.value === "idle" ? "waiting for you" : "working";
 });
-const command = computed(() => (agent.value && state.value !== "stopped" && state.value !== "idle" ? agent.value.data.command || "" : ""));
+const was = ref("");
+const sentence = computed(() => {
+    const now = line.value;
+    let i = 0;
+    while (i < now.length && i < was.value.length && now[i] === was.value[i]) i += 1;
+    const cut = i >= 6 && i < now.length ? now.lastIndexOf(" ", i) + 1 : 0;
+    return {head: now.slice(0, cut), tail: now.slice(cut)};
+});
+watch(line, (now, before) => (was.value = before || ""));
+const command = computed(() => (agent.value && state.value === "working" ? gist(agent.value.data.command) : ""));
 const plans = computed(() => rows("plan").filter((p) => ["ready", "active", "waiting", "done"].includes(p.data.status) && !p.completed));
 const error = ref("");
 
@@ -48,11 +58,20 @@ async function runBar(p) {
         <span :class="['statusbar-dot', {live: state !== 'stopped'}]" />
         <button type="button" class="statusbar-text" @click="go(route.env)">
             <b>{{ state[0].toUpperCase() + state.slice(1) }}</b>
-            <span class="statusbar-line">{{ line }}</span>
+            <span class="statusbar-roll">
+                <template v-if="sentence.head">
+                    <span class="statusbar-head">{{ sentence.head }}</span>
+                </template>
+                <Transition name="roll">
+                    <span :key="sentence.tail" class="statusbar-line">{{ sentence.tail }}</span>
+                </Transition>
+            </span>
         </button>
-        <template v-if="command">
-            <span class="statusbar-running" :title="command">{{ command }}</span>
-        </template>
+        <span class="statusbar-running">
+            <Transition name="roll">
+                <span v-if="command" :key="command" class="statusbar-run-line" :title="agent.data.command">{{ command }}</span>
+            </Transition>
+        </span>
         <span class="statusbar-tools">
             <Switch
                 :on="autoOn"
@@ -64,8 +83,8 @@ async function runBar(p) {
             />
         </span>
     </div>
-    <template v-for="p in plans" :key="p.n">
-        <div :class="['planbar', `planbar-${p.data.status}`]">
+    <TransitionGroup name="planbar">
+        <div v-for="p in plans" :key="p.n" :class="['planbar', `planbar-${p.data.status}`]">
             <a class="planbar-link" :href="`#/${route.env}/plan/${p.n}`" :title="`Plan ${p.n}: ${p.title}`">
                 <span class="planbar-n">Plan</span>
                 <span class="planbar-title">{{ p.title }}</span>
@@ -84,7 +103,7 @@ async function runBar(p) {
                 <span class="planbar-error">{{ error }}</span>
             </template>
         </div>
-    </template>
+    </TransitionGroup>
 </template>
 
 <style scoped>
@@ -141,29 +160,94 @@ async function runBar(p) {
     margin-right: 8px;
 }
 
+.statusbar-roll {
+    flex: 0 1 auto;
+    min-width: 0;
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.statusbar-head {
+    flex: none;
+    white-space: pre;
+}
+
 .statusbar-line {
     flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--text-2);
+}
+
+.roll-enter-active {
+    transition:
+        opacity 180ms ease,
+        transform 180ms cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+
+.roll-leave-active {
+    position: absolute;
+    transition:
+        opacity 140ms ease,
+        transform 140ms cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+
+.roll-enter-from {
+    opacity: 0;
+    transform: translateY(5px);
+}
+
+.roll-leave-to {
+    opacity: 0;
+    transform: translateY(-5px);
 }
 
 .statusbar-running {
     flex: 0 1 auto;
     min-width: 0;
-    max-width: 40%;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    margin-left: auto;
+    padding-left: 14px;
+    overflow: hidden;
+    font-size: 11px;
+    color: var(--text-3);
+}
+
+.statusbar-running > * {
+    grid-area: 1 / 1;
+    justify-self: end;
+}
+
+.statusbar-running .roll-leave-active {
+    position: static;
+}
+
+.statusbar-running .roll-enter-from {
+    transform: translateY(10px);
+}
+
+.statusbar-running .roll-leave-to {
+    transform: translateY(-10px);
+}
+
+.statusbar-run-line {
+    max-width: 44ch;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--text-3);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11.5px;
+    opacity: 0.75;
 }
 
 .statusbar-tools {
-    margin-left: auto;
     flex: 0 1 auto;
     min-width: 0;
     display: flex;
@@ -278,5 +362,20 @@ async function runBar(p) {
     flex: none;
     color: var(--danger);
     font-size: 11px;
+}
+
+.planbar-enter-active,
+.planbar-leave-active {
+    overflow: hidden;
+    transition:
+        height 0.22s ease,
+        opacity 0.18s ease;
+}
+
+.planbar-enter-from,
+.planbar-leave-to {
+    height: 0;
+    opacity: 0;
+    border-bottom-width: 0;
 }
 </style>
