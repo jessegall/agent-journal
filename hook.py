@@ -2534,6 +2534,35 @@ def _running_end(payload: dict, ctx: Ctx) -> None:
     commandlog.record_long(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, got.get("what") or "", took, at)
 
 
+#: the background shells this session started, newest last — what it ran and where the output lands
+SHELLS = "background_shells"
+SHELLS_KEPT = 8
+_SHELL = re.compile(r"running in background with ID: (\S+?)\.\s+Output is being written to: (\S+)")
+
+
+def _shell_start(payload: dict, ctx: Ctx) -> None:
+    """Record a Bash call that was sent to the background, so the bar can say it is still going.
+
+    THE TOOL CALL RETURNS AT ONCE AND THE WORK DOES NOT. A backgrounded command's PostToolUse fires
+    immediately, so the running-command line — which is about the call — says nothing about it. The
+    harness hands back the id and the file its output is written to, and that FILE is the honest
+    signal: it ends with an exit line when the command is over, so nothing has to claim liveness it
+    cannot check.
+    """
+    if payload.get("tool_name") != "Bash":
+        return
+    said = payload.get("tool_response")
+    said = said if isinstance(said, str) else json.dumps(said or "")
+    m = _SHELL.search(said)
+    if not m:
+        return
+    what = " ".join(str((payload.get("tool_input") or {}).get("command", "")).split())
+    held = state.get(ROOT, SHELLS, [], stem=ctx.stem) or []
+    held = [x for x in held if isinstance(x, dict) and x.get("id") != m.group(1)]
+    held.append({"id": m.group(1), "what": what[:160], "log": m.group(2), "at": time.time()})
+    state.put(ROOT, SHELLS, held[-SHELLS_KEPT:], stem=ctx.stem)
+
+
 def _queue_tool(payload: dict, ctx: Ctx) -> None:
     """Count a tool use for Activity's summed line. A shell line that runs the journal is not counted:
     the journal command itself writes out the queue."""
@@ -2996,6 +3025,7 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     try:
         _record_files(payload, ctx)
         _running_end(payload, ctx)
+        _shell_start(payload, ctx)
         _queue_tool(payload, ctx)
     except Exception as e:  # counting files and tool uses must never stop a tool call
         print(f"journal files: {e}", file=sys.stderr)

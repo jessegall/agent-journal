@@ -160,6 +160,34 @@ def _epoch(at: str) -> float:
         return 0.0
 
 
+#: a background shell's output file ends with this when the command is over
+OVER = "[exited with code"
+
+
+def shells_now(root: Path, stem: str) -> list[dict]:
+    """The background shells this session started, and whether each is still going.
+
+    NOTHING CLAIMS LIVENESS IT CANNOT CHECK. The harness writes each background command's output to
+    a file and closes it with an exit line, so that file answers the question; a shell whose file is
+    gone is reported as over rather than as running for ever.
+    """
+    import state
+    import time
+    out = []
+    for got in state.get(root, "background_shells", [], stem=stem) or []:
+        if not isinstance(got, dict) or not got.get("what"):
+            continue
+        log = Path(str(got.get("log") or ""))
+        try:
+            tail = log.read_text(errors="replace")[-400:] if log.is_file() else ""
+            done = not log.is_file() or OVER in tail
+        except OSError:
+            done, tail = True, ""
+        out.append({"id": got.get("id") or "", "what": got["what"], "done": done,
+                    "seconds": int(max(0, time.time() - float(got.get("at") or 0)))})
+    return out
+
+
 class ActivityController(Controller):
     """What is happening on an environment: the working agent's latest message, and the latest journal events."""
     resource = "activity"
@@ -195,7 +223,9 @@ class ActivityController(Controller):
                         "model": transcript.last_model(path), "running": running_now(root, stem),
                         "compactions": state.get(root, "compactions", 0, stem=stem) or 0,
                         # which skills this session has open: the bar counts them and names them on a click
-                        "skills": state.get(root, "skills_open", [], stem=stem) or []}
+                        "skills": state.get(root, "skills_open", [], stem=stem) or [],
+                        # the background shells it started, and whether each is still going
+                        "shells": shells_now(root, stem)}
         return None
 
     @staticmethod

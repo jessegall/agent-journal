@@ -4662,6 +4662,11 @@ const EnvHome = {
     // reason these facts left the space above the thread in the first place
     const crewOpen = ref(false);
     const skillsOpen = ref(false);
+    const shellsOpen = ref(false);
+    const shells = computed(() => {
+      const agent = SHELL.activity && SHELL.activity.agent;
+      return (agent && agent.shells) || [];
+    });
     const skillsAt = reactive({ x: 0, y: 0 });
     const marking = ref(false);
     // every journal skill at once: one gesture for the set the user means when they say "the skills"
@@ -4891,7 +4896,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, skillsAt, openSkills, skills, marking, alwaysJournal, waitingCount,
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, marking, alwaysJournal, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
              barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
   },
@@ -4936,6 +4941,12 @@ const EnvHome = {
         </BarDrop>
         <!-- OUTSIDE THE SCROLLING ROW. The facts scroll sideways, and an overflow container clips
              anything hanging out of it — which is a dropdown that opened and could not be seen. -->
+        <!-- THE SHELLS IT SENT TO THE BACKGROUND, beside the subagents for the same reason: both are
+             work the agent started and is not sitting on. A finished one stays until it is read. -->
+        <button v-if="shells.length" type=button class=agent-crew-toggle :aria-expanded="shellsOpen ? 'true' : 'false'"
+          :title="shellsOpen ? 'Hide the background shells' : 'Show the background shells'" @click="shellsOpen = !shellsOpen">
+          {{ shells.filter((x) => !x.done).length || shells.length }} {{ shells.filter((x) => !x.done).length === 1 ? "shell" : "shells" }}<Icon :name="shellsOpen ? 'up' : 'down'"/>
+        </button>
         <button v-if="liveCrew.length" type=button class=agent-crew-toggle :aria-expanded="crewOpen ? 'true' : 'false'"
           :title="crewOpen ? 'Hide the subagents' : 'Show the subagents'" @click="crewOpen = !crewOpen">
           {{ liveCrew.length }} {{ liveCrew.length === 1 ? "subagent" : "subagents" }}<Icon :name="crewOpen ? 'up' : 'down'"/>
@@ -4991,6 +5002,12 @@ const EnvHome = {
           <Icon name="close"/></button>
       </div>
       </TransitionGroup>
+      <div v-if="shellsOpen && shells.length" class=crew-strip>
+        <div v-for="x in shells" :key="x.id" :class="['crew-line', {done: x.done}]" :title="x.what">
+          <span class=crew-dot></span><span class=crew-name>{{ x.what }}</span>
+          <span class=crew-fact><Icon name="reminders"/><span>{{ x.done ? 'finished' : spanText(x.seconds * 1000) }}</span></span>
+        </div>
+      </div>
       <div v-if="crewOpen && liveCrew.length" class=crew-strip>
         <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" @click="a.open">
           <span class=crew-dot></span><span class=crew-name>{{ a.name }}</span>
