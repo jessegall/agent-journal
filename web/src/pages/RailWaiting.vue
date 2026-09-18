@@ -1,8 +1,9 @@
 <script setup>
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
-import {go, route} from "../route.js";
-import {meta, types, unreadByUser} from "../store.js";
+import {act} from "../api.js";
+import {peek, route} from "../route.js";
+import {meta, reload, types, unreadByUser} from "../store.js";
 
 const TINT = {
     question: "#a78bfa",
@@ -14,6 +15,11 @@ const TINT = {
     reminder: "#d9a441",
 };
 const cards = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));
+
+async function dismiss(r) {
+    await act(route.value.env, r.type, r.n, "read");
+    await reload();
+}
 </script>
 
 <template>
@@ -27,22 +33,18 @@ const cards = computed(() => types.value.filter((t) => t.attention).flatMap((t) 
         <section class="home-section">
             <div class="needs-slot">
                 <template v-for="r in cards" :key="r.ref">
-                    <div
-                        :class="['needs-card', r.type]"
-                        :style="{'--tint': TINT[r.type] || 'var(--text-3)'}"
-                        @click="go(route.env, r.type, r.n)"
-                    >
+                    <div :class="['needs-card', r.type]" :style="{'--tint': TINT[r.type] || 'var(--text-3)'}" @click="peek(r.type, r.n)">
                         <div class="needs-card-top">
                             <span class="needs-card-kind">{{ meta(r.type).title }}</span>
                             <span class="needs-card-meta">{{ r.type }} {{ r.n }}</span>
+                            <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
+                                <Icon name="close" />
+                            </button>
                         </div>
                         <p class="needs-card-title">{{ r.title }}</p>
                         <template v-if="r.abstract">
                             <p class="needs-card-text">{{ r.abstract }}</p>
                         </template>
-                        <div class="needs-card-foot">
-                            <button type="button" class="needs-card-go">Open</button>
-                        </div>
                     </div>
                 </template>
             </div>
@@ -132,6 +134,32 @@ const cards = computed(() => types.value.filter((t) => t.attention).flatMap((t) 
     color: var(--tint);
 }
 
+.needs-dismiss {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    margin: -4px -6px -4px auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.needs-dismiss:hover {
+    background: #212329;
+    color: var(--text-2);
+}
+
+.needs-dismiss .ico {
+    width: 12px;
+    height: 12px;
+}
+
 .needs-card-meta {
     min-width: 0;
     font-size: 11px;
@@ -153,28 +181,5 @@ const cards = computed(() => types.value.filter((t) => t.attention).flatMap((t) 
     font-size: 12px;
     line-height: 1.45;
     color: var(--text-3);
-}
-
-.needs-card-foot {
-    display: flex;
-    align-items: center;
-}
-
-.needs-card-go {
-    flex: 1 0 100%;
-    height: auto;
-    margin-top: 2px;
-    padding: 6px 10px;
-    border: none;
-    border-radius: 6px;
-    background: color-mix(in srgb, var(--tint) 16%, transparent);
-    color: var(--tint);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.needs-card-go:hover {
-    background: color-mix(in srgb, var(--tint) 26%, transparent);
 }
 </style>

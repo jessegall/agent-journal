@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
-import {go, route} from "../route.js";
+import {peek, route} from "../route.js";
 import {reload, rows} from "../store.js";
 import Comments from "./Comments.vue";
 
@@ -86,7 +86,7 @@ async function run(action, body = {}) {
                         <div class="when">complete when {{ p.when }}</div>
                     </template>
                     <template v-for="t in p.rows" :key="t.n">
-                        <button type="button" :class="['row', {completed: t.completed}]" @click="go(route.env, 'todo', t.n)">
+                        <button type="button" :class="['row', {completed: t.completed}]" @click="peek('todo', t.n)">
                             <Icon :name="t.completed ? 'check' : 'circle'" :size="12" />
                             <span class="rn">#{{ t.n }}</span>
                             <span class="rt">{{ t.title }}</span>

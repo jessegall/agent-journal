@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
-import {go, route} from "../route.js";
+import {peek, route} from "../route.js";
 import {open, rows} from "../store.js";
 
 const COLOR = {started: "#5b8def", asked: "#a78bfa", blocked: "#d9a441", open: "#8b8e96"};
@@ -35,11 +35,7 @@ const groups = computed(() => {
                 <span class="rail-group-n">{{ g.rows.length }}</span>
             </div>
             <template v-for="t in g.rows" :key="t.n">
-                <button
-                    type="button"
-                    :class="['rail-row', {sel: route.page === 'todo' && route.n === t.n}]"
-                    @click="go(route.env, 'todo', t.n)"
-                >
+                <button type="button" :class="['rail-row', {sel: route.page === 'todo' && route.n === t.n}]" @click="peek('todo', t.n)">
                     <span class="dot" :style="{borderColor: COLOR[g.key]}" />
                     <span class="rail-row-n">#{{ t.n }}</span>
                     <span class="rail-row-title">{{ t.title }}</span>

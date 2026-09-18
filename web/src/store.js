@@ -1,8 +1,34 @@
-import {computed, reactive} from "vue";
+import {computed, reactive, watch} from "vue";
 import * as http from "./api.js";
 import {go, route} from "./route.js";
 
-export const store = reactive({spec: null, rows: {}, events: [], settings: null, agents: [], stream: null, activity: true});
+function remembered(key, fallback) {
+    try {
+        const got = localStorage.getItem(key);
+        return got === null ? fallback : JSON.parse(got);
+    } catch (e) {
+        return fallback;
+    }
+}
+
+export const store = reactive({
+    spec: null,
+    rows: {},
+    events: [],
+    settings: null,
+    agents: [],
+    stream: null,
+    activity: remembered("journal.activity", true),
+});
+
+watch(
+    () => store.activity,
+    (on) => {
+        try {
+            localStorage.setItem("journal.activity", JSON.stringify(on));
+        } catch (e) {}
+    }
+);
 
 export const types = computed(() => (store.spec ? store.spec.priority.map((t) => ({name: t, ...store.spec.types[t]})) : []));
 export const navTypes = (scope) => types.value.filter((t) => t.nav && t.scope === scope);
@@ -33,6 +59,24 @@ export function listen() {
     const env = route.value.env;
     store.stream = new EventSource(`/api/${env}/stream`);
     store.stream.onmessage = () => reload();
+    poll();
+}
+
+let ticking = 0;
+let ticks = 0;
+
+function poll() {
+    clearInterval(ticking);
+    ticks = 0;
+    ticking = setInterval(async () => {
+        ticks += 1;
+        const env = route.value.env;
+        store.agents = await http.all(env, "agent");
+        if (ticks % 5) return;
+        const last = store.events.length ? store.events[store.events.length - 1].id : 0;
+        const fresh = await http.events(env, last);
+        if (fresh.length) await reload();
+    }, 1000);
 }
 
 export async function boot() {
@@ -73,4 +117,15 @@ export function clock(at) {
     const today = new Date().toDateString() === d.toDateString();
     const time = d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
     return today ? time : `${d.toLocaleDateString([], {day: "numeric", month: "short"})} ${time}`;
+}
+
+export function quoted(text) {
+    const lines = (text || "").split("\n");
+    const quote = [];
+    while (lines.length && lines[0].startsWith(">")) quote.push(lines.shift().replace(/^> ?/, ""));
+    return {quote: quote.join("\n"), text: lines.join("\n").trim()};
+}
+
+export function withQuote(quote, text) {
+    return quote ? `> ${quote.replace(/\n/g, "\n> ")}\n\n${text}` : text;
 }

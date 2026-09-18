@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import {act} from "../api.js";
 import {route} from "../route.js";
-import {age, reload, rows} from "../store.js";
+import {age, quoted, reload, rows, withQuote} from "../store.js";
 import Compose from "../chat/Compose.vue";
 
 const props = defineProps({resource: Object, quote: {type: String, default: ""}});
@@ -21,8 +21,7 @@ function split(c) {
 }
 
 async function send(text) {
-    const body = props.quote ? `> ${props.quote.replace(/\n/g, "\n> ")}\n\n${text}` : text;
-    await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: body});
+    await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: withQuote(props.quote, text)});
     emit("sent");
     await reload();
 }
@@ -39,8 +38,8 @@ async function send(text) {
                         <span class="done">· handled: {{ c.outcome }}</span>
                     </template>
                 </span>
-                <template v-if="c.quoted">
-                    <span class="quoted">{{ c.quoted }}</span>
+                <template v-if="c.quote">
+                    <span class="quoted">{{ c.quote }}</span>
                 </template>
                 <span class="text">{{ c.text }}</span>
             </div>

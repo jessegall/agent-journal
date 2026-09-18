@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {go, route} from "../route.js";
+import {go, route, unpeek} from "../route.js";
 import {meta, rows} from "../store.js";
 import ResourceBody from "./ResourceBody.vue";
 import DocumentPage from "./DocumentPage.vue";
@@ -10,7 +10,7 @@ import PlanPage from "./PlanPage.vue";
 const props = defineProps({type: String, n: Number});
 const resource = computed(() => rows(props.type).find((r) => r.n === props.n) || null);
 const shape = computed(() => (props.type === "plan" ? "plan" : meta(props.type).view));
-const close = () => go(route.value.env, props.type);
+const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
 </script>
 
 <template>

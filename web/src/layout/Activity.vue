@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {go, route} from "../route.js";
+import {peek} from "../route.js";
 import {age, byRef, meta, store, word} from "../store.js";
 
 const shown = computed(() =>
@@ -24,7 +24,7 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
             <div class="activity-head"><span class="group-label">Activity</span></div>
             <div class="activity-list">
                 <template v-for="e in shown" :key="e.id">
-                    <a class="activity-row activity-link" :href="`#/${route.env}/${e.type}/${e.n}`">
+                    <a class="activity-row activity-link" href="#" @click.prevent="peek(e.type, e.n)">
                         <span class="activity-text">
                             {{ heading(e) }}
                             <span class="activity-n">{{ e.n }}</span>

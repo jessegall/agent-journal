@@ -2,7 +2,7 @@
 import {computed, ref} from "vue";
 import {act} from "../api.js";
 import Icon from "../kit/Icon.vue";
-import {go, route} from "../route.js";
+import {peek, route} from "../route.js";
 import {age, reload, rows} from "../store.js";
 
 const sub = ref("unread");
@@ -14,7 +14,7 @@ async function openNote(n) {
     await act(route.value.env, "notification", n.n, "read");
     await reload();
     const [type, num] = n.refs[0].split(":");
-    go(route.value.env, type, Number(num));
+    peek(type, Number(num));
 }
 </script>
 
