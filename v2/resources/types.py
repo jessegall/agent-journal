@@ -4,6 +4,7 @@ from v2.resources.shapes import TEXT, Options, Reasoned, Shape
 
 class Message(Shape, Resource):
     type = "message"
+    icon = "mail"
     names = {"complete": "processed"}
     title_ = "Message"
     abstract_ = "What the user left for the agent, or the agent for the user"
@@ -13,6 +14,7 @@ class Message(Shape, Resource):
 
 class Todo(Shape, Resource):
     type = "todo"
+    icon = "circle"
     names = {"complete": "done", "create": "add"}
     labels = {"outcome": "How"}
     title_ = "To-do"
@@ -22,6 +24,7 @@ class Todo(Shape, Resource):
 
 class Work(Shape, Resource):
     type = "work"
+    icon = "play"
     names = {"complete": "end", "create": "start"}
     title_ = "Work"
     abstract_ = "What the agent is doing right now, declared before its first write"
@@ -31,6 +34,7 @@ class Work(Shape, Resource):
 
 class Plan(Shape, Resource):
     type = "plan"
+    icon = "flag"
     names = {"complete": "acknowledge", "place": "todos", "resume": "continue"}
     title_ = "Plan"
     abstract_ = "Ordered phases of to-dos with a goal, approved by the user before it runs"
@@ -40,6 +44,7 @@ class Plan(Shape, Resource):
 
 class Doc(Shape, Resource):
     type = "doc"
+    icon = "file"
     names = {"complete": "final"}
     scope = PROJECT
     title_ = "Document"
@@ -50,6 +55,7 @@ class Doc(Shape, Resource):
 
 class Report(Shape, Resource):
     type = "report"
+    icon = "report"
     names = {"complete": "archive"}
     title_ = "Report"
     abstract_ = "What was checked and what was found, written for the user, read once"
@@ -59,6 +65,7 @@ class Report(Shape, Resource):
 
 class Pin(Reasoned, Resource):
     type = "pin"
+    icon = "pin"
     names = {"complete": "strike"}
     title_ = "Pin"
     abstract_ = "A fact a later session would get wrong without"
@@ -67,6 +74,7 @@ class Pin(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
+    icon = "list"
     names = {"complete": "strike"}
     scope = PROJECT
     title_ = "Rule"
@@ -76,6 +84,7 @@ class Rule(Reasoned, Resource):
 
 class Reminder(Shape, Resource):
     type = "reminder"
+    icon = "clock"
     names = {"complete": "retire"}
     title_ = "Reminder"
     abstract_ = "An instruction said again until it is retired"
@@ -84,6 +93,7 @@ class Reminder(Shape, Resource):
 
 class Question(Options, Resource):
     type = "question"
+    icon = "help"
     names = {"complete": "answer", "create": "ask"}
     labels = {"outcome": "Answer", "abstract": "Context"}
     title_ = "Question"
@@ -93,6 +103,7 @@ class Question(Options, Resource):
 
 class Comment(Shape, Resource):
     type = "comment"
+    icon = "bubble"
     names = {"complete": "done"}
     title_ = "Comment"
     abstract_ = "What the user or the agent said about another resource"
@@ -102,6 +113,7 @@ class Comment(Shape, Resource):
 
 class AgentRow(Shape, Resource):
     type = "agent"
+    icon = "bot"
     title_ = "Agent"
     abstract_ = "A session of Claude or Codex, and what it is doing right now"
     help_ = "The hooks write an agent's status here; the engine reads it to know idle from working."
@@ -111,6 +123,7 @@ class AgentRow(Shape, Resource):
 
 class Notification(Shape, Resource):
     type = "notification"
+    icon = "bell"
     title_ = "Notification"
     abstract_ = "What the agent did, told to the user once"
     help_ = "A notification is written for the user by a feature for every act of the agent, or by the agent to say a long piece of work landed."
@@ -120,6 +133,7 @@ class Notification(Shape, Resource):
 
 class Notice(Shape, Resource):
     type = "notice"
+    icon = "band"
     names = {"complete": "close"}
     title_ = "Notice"
     abstract_ = "One line kept over the chat while it matters"
@@ -130,6 +144,7 @@ class Notice(Shape, Resource):
 
 class Reaction(Shape, Resource):
     type = "reaction"
+    icon = "smile"
     title_ = "Reaction"
     abstract_ = "A face on a message"
     help_ = "A reaction is one face by one actor on one message; the same face again takes it off."
@@ -138,6 +153,7 @@ class Reaction(Shape, Resource):
 
 class Tool(Shape, Resource):
     type = "tool"
+    icon = "wrench"
     title_ = "Tool"
     abstract_ = "A script kept for a job that comes back, catalogued so the next agent runs it instead of writing it again"
     help_ = "A tool names its entry (how to run it), its usage and what it does; run executes it from the project root."
@@ -148,6 +164,7 @@ class Tool(Shape, Resource):
 
 class Style(Reasoned, Resource):
     type = "style"
+    icon = "brush"
     names = {"complete": "strike"}
     title_ = "Coding style"
     abstract_ = "One rule of the project's coding style, on one subject, written as a skill"
@@ -159,6 +176,7 @@ class Style(Reasoned, Resource):
 
 class Connection(Shape, Resource):
     type = "connection"
+    icon = "plug"
     title_ = "Connection"
     abstract_ = "A service the project can reach, and which variable holds its token"
     help_ = "Never the token itself: the name of the variable that holds it."
@@ -169,6 +187,7 @@ class Connection(Shape, Resource):
 
 class Environment(Shape, Resource):
     type = "environment"
+    icon = "branch"
     names = {"create": "prepare", "complete": "remove"}
     title_ = "Environment"
     abstract_ = "One line of work with its own record: messages, to-dos, pins, plans, settings"
@@ -179,6 +198,7 @@ class Environment(Shape, Resource):
 
 class Nudge(Shape, Resource):
     type = "nudge"
+    icon = "arrow"
     title_ = "Nudge"
     abstract_ = "A line a feature has the engine type to the agent"
     help_ = "A nudge is written by a feature and spoken to the agent as it is; the user never hears it."
