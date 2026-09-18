@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.169.1 — A seated session is never asked for a loop
+
+Under the launcher the loop is the launcher: it types "auto is on, N to-do(s) waiting" the moment
+the agent stops. So a session with a seat is not refused a write for lack of a `/loop`, and
+`journal loop set` is not needed there.
+
 ## 1.169.0 — The launcher reloads its own code; one launcher reads only its own session
 
 **No more restarts for a launcher fix.** Every five seconds the launcher looks whether launch.py,
