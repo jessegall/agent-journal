@@ -12,7 +12,9 @@ const title = computed(() =>
           ? "Settings"
           : route.value.page === "search"
             ? "Search"
-            : `${meta(route.value.page).title}s`
+            : route.value.page === "files"
+              ? "Files"
+              : `${meta(route.value.page).title}s`
 );
 const waiting = computed(() => unreadByUser("notification").length);
 const drop = ref(false);

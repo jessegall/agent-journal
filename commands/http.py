@@ -145,6 +145,22 @@ def post_settings(req: Request) -> Reply:
     return Reply(200, settings(record))
 
 
+@route("GET", "/api/{env}/files")
+def get_files(req: Request) -> Reply:
+    record = req.record()
+    out = []
+    for type_ in CONTROLLERS:
+        c = CONTROLLERS[type_](record, actor=USER)
+        for r in c.all():
+            for name in r.data.get("files") or {}:
+                f = c.folder(r.n) / name
+                if f.is_file():
+                    out.append({"type": type_, "n": r.n, "title": r.title, "name": name, "what": (r.data.get("files") or {}).get(name, ""), "size": f.stat().st_size,
+                                "at": f.stat().st_mtime, "image": (mimetypes.guess_type(name)[0] or "").startswith("image/"),
+                                "url": f"/api/{record.env}/{type_}/{r.n}/files/{name}"})
+    return Reply(200, sorted(out, key=lambda x: -x["at"]))
+
+
 @route("GET", "/api/{env}/search")
 def get_search(req: Request) -> Reply:
     term = req.query.get("q", "")
