@@ -1,5 +1,6 @@
 from dataclasses import fields
 
+from v2 import features
 from v2.commands.generate import actions
 from v2.controllers.base import Controller
 from v2.controllers.types import CONTROLLERS
@@ -18,4 +19,5 @@ def manifest() -> dict:
         "types": {name: {"title": c.title_, "abstract": c.abstract_, "help": c.help_, "view": c.view, "nav": c.nav, "notify": list(c.notify), "spoken": c.spoken, "fields": c.fields, "labels": c.labels,
                          "names": dict(c.names), "methods": actions(CONTROLLERS[name])}
                   for name, c in TYPES.items()},
+        "features": features.describe(),
     }

@@ -96,7 +96,7 @@ check("the user is not notified of their own event", User(record).unread(), [])
 check("the cursor moved: a second tick types nothing more", (engine.tick(), len(driver.sent)), (WORKING, 1))
 CONTROLLERS["message"](record, actor=AGENT).complete(1, "read and filed")
 engine.tick()
-check("the agent's completion reaches the user as a notification and not the agent", ([n["ref"] for n in User(record).unread()], len(driver.sent)), (["message:1"], 1))
+check("the agent's completion reaches the user as a notification and not the agent", ([n.data["about"] for n in User(record).unread()], len(driver.sent)), (["message:1"], 1))
 
 # THE NUDGE: only idle, and in priority order — unseen resources first; open work and the next to-do are features
 def settle():                                          # deliver whatever is pending, then read the nudge alone

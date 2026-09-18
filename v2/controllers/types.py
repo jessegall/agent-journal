@@ -3,8 +3,23 @@ from v2.resources import types
 from v2.resources.base import AGENT, Refused, check_title
 
 
+FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
+
+
 class Messages(Controller):
     resource = types.Message
+
+    def react(self, n: int, face: str):
+        if face not in FACES:
+            raise Refused(f"a reaction is one of {' '.join(FACES)}")
+        message = self.load(n)
+        reactions = CONTROLLERS["reaction"](self.record, actor=self.actor)
+        for r in reactions.linked_to(message.ref):
+            if r.data.get("face") == face and self.actor in r.seen[:1]:
+                reactions.force_delete(r.n)
+                return None
+        made = reactions.create(face, face=face)
+        return reactions.link(made.n, message.ref)
 
 
 class Todos(Controller):
@@ -145,9 +160,21 @@ class Agents(Controller):
         return self.create(session, status="stopped")
 
 
+class Notifications(Controller):
+    resource = types.Notification
+
+
+class Notices(Controller):
+    resource = types.Notice
+
+
+class Reactions(Controller):
+    resource = types.Reaction
+
+
 class Nudges(Controller):
     resource = types.Nudge
 
 
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Plans, Docs, Reports, Pins, Rules, Reminders,
-                                            Questions, Comments, Agents, Nudges)}
+                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Nudges)}

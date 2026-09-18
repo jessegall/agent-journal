@@ -1,4 +1,3 @@
-import json
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -39,16 +38,10 @@ class User(Actor):
     name = USER
 
     def notify(self, event: Event) -> None:
-        f = self.record.home / "notifications.jsonl"
-        with f.open("a") as fh:
-            fh.write(json.dumps({"at": time.time(), "event": event.id, "ref": event.ref, "action": event.action, "by": event.actor}) + "\n")
         self.notified(event)
 
-    def unread(self) -> list[dict]:
-        f = self.record.home / "notifications.jsonl"
-        if not f.is_file():
-            return []
-        return [json.loads(l) for l in f.read_text().splitlines() if l.strip()]
+    def unread(self) -> list:
+        return CONTROLLERS["notification"](self.record, actor=USER).unseen()
 
 
 class System(Actor):

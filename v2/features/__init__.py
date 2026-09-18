@@ -4,25 +4,28 @@ from pathlib import Path
 from v2.engine import bus
 
 HERE = Path(__file__).parent
-_loaded: set[str] = set()
+FEATURES: dict[str, object] = {}
 
 
 def names() -> list[str]:
-    return sorted(p.name for p in HERE.iterdir() if (p / "handlers.py").is_file())
-
-
-def on(feature: str, pattern: str, handler) -> None:
-    bus.on(pattern, handler, feature=feature)
+    return sorted(p.name for p in HERE.iterdir() if (p / "feature.py").is_file())
 
 
 def load() -> list[str]:
+    from v2.features.base import REGISTRY
     for name in names():
-        if name not in _loaded:
-            importlib.import_module(f"v2.features.{name}.handlers").register()
-            _loaded.add(name)
-    return sorted(_loaded)
+        importlib.import_module(f"v2.features.{name}.feature")
+    for name, cls in REGISTRY.items():
+        if name not in FEATURES:
+            FEATURES[name] = cls()
+            FEATURES[name].register()
+    return sorted(FEATURES)
 
 
 def unload() -> None:
     bus.clear()
-    _loaded.clear()
+    FEATURES.clear()
+
+
+def describe() -> dict:
+    return {name: f.describe() for name, f in FEATURES.items()}

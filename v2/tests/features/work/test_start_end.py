@@ -19,7 +19,7 @@ todo = todos.create("a row to work")
 work = works.create("the work for it", todo=todo.n)
 check("work created for a to-do: linked to it", works.load(work.n).refs, [todo.ref])
 check("the to-do says it is started, and by which work", (todos.load(todo.n).data.get("status"), todos.load(todo.n).data.get("work")), ("started", work.n))
-check("the link and the status were the feature's acts, as SYSTEM", [(e.type, e.action, e.actor) for e in record.events()][2:],
+check("the link and the status were the feature's acts, as SYSTEM", [(e.type, e.action, e.actor) for e in record.events() if e.type != "notification"][2:],
       [("work", "linked", SYSTEM), ("todo", "updated", SYSTEM)])
 
 # WORK ENDED closes the row only when told to
