@@ -40,7 +40,7 @@ word. Measured here: a plan drafted without that conversation had to be rewritte
 ## Writing one
 
     journal plans add "<title>" --goal="<what is true when it is done>" [--brief]   the brief on stdin
-    journal plans phase <n> "<title>" [--when="<what is true when the phase is complete>"] [--checkpoint]
+    journal plans phase <n> "<title>" [--when="<what is true when the phase is complete>"] [--checkpoint] [--brief]
     journal plans phase <n> "<title>" --before=<p>       put it BEFORE phase p, not at the end
     journal plans rephrase <n> <p> ["<title>"] [--when=] [--checkpoint|--no-checkpoint]   correct one
     journal plans todos <n> <p> 4 5 6          put existing to-dos in phase p
@@ -75,6 +75,12 @@ and puts it here. Without `--move` it is refused, naming where the row already s
 "The plan page restyled after the user's mockup", "Codex and the launcher" — not a sentence
 explaining what it does; that is `--goal`. Past the limit, or with a colon, `plans add` and
 `plans edit` refuse (rule 13); the same holds for work, to-dos and reports.
+
+**A phase's title and its `--when` are one short line each** — at most 80 characters, no
+colon, refused otherwise (rule 13). "The MCP channel is retired", `--when="journal claude runs
+under the pty"`. Everything else about the phase — what it covers, why, where to start — is its
+brief: `--brief` on `plans phase` or `plans rephrase`, read when the phase is opened, never on
+the row. Message 171: the page showed sentences where it should show names.
 
 **A phase is an area of work, not a schedule.** "Everything the viewer shows about a plan"
 is a phase; "Tuesday" and "the next two hours" are not. `--when` says what is true when the

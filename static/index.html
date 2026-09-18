@@ -1438,9 +1438,14 @@
      border drawn on this block stopped 24px short of each edge — a hairline with a gap at both
      ends, which reads as a mistake rather than a division. It is pulled out to the edges and the
      padding put back on the inside, so only the LINE is flush and the box still lines up. */
+  /* free-floating, like the footer: no rule over the box (message 172) */
   .thread-write { flex: none; display: flex; flex-direction: column; gap: 6px;
-    margin: 0 calc(-1 * var(--home-gutter)); padding: 12px var(--home-gutter);
-    border-top: 1px solid var(--border); }
+    margin: 0 calc(-1 * var(--home-gutter)); padding: 8px var(--home-gutter) 12px; }
+  /* WITH THE ACTIVITY COLUMN CLOSED THE CHAT KEEPS ITS COMPACT WIDTH (message 173): on a wide screen the
+     room the column gave back becomes gutter on both sides of the turns and the box, not wider turns. */
+  @media (min-width: 1280px) {
+    .app.activity-off .home-thread { --home-gutter: 72px; }
+  }
   /* the box lines up with the turns above it: the rule spans the column, so the box must too */
   .thread-write .compose-box { margin-right: 2px; }
   /* positioned so a leaving row can be taken out of the flow: work moving from Working on to Finished must not jostle either list */
@@ -1640,6 +1645,7 @@
   .plan-phase-when { font-size: 11.5px; color: var(--text-3); }
   .plan-phase-count { flex: none; font-size: 12.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
   .plan-phase-todos { padding: 0 0 8px 28px; }
+  .plan-phase-brief { margin: 2px 0 10px 6px; max-width: 600px; font-size: 12.5px; color: var(--text-3); }
   .phase-todo { display: flex; align-items: center; gap: 12px; min-height: 32px; padding: 0 10px 0 6px; border-radius: 7px; cursor: pointer; color: var(--text-2); }
   .phase-todo.progress { background: var(--raised); color: var(--text); }
   .phase-todo:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }

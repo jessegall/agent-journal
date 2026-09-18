@@ -76,6 +76,18 @@ check("phase 1 is current", (show(1)["status"], show(1)["current"]), ("active", 
 j("plans", "add", "another", "--goal=something else", "--brief", stdin="x")
 j("plans", "phase", "2", "only phase")
 j("plans", "todos", "2", "1", "4")
+# A PHASE IS NAMED, NOT EXPLAINED (rule 13): its title and its --when are refused past 80 characters or
+# with a colon; the explanation is its brief, read when the phase is opened
+code, out = j("plans", "phase", "2", "the viewer: everything the plan page shows about a plan")
+check("a phase title that explains itself is refused", (code, "phase title" in out and "colon" in out), (1, True))
+code, out = j("plans", "phase", "2", "the viewer", "--when=complete when every page the plan touches — the list, the page, the bar, the card, the inspector — reads the same record")
+check("and so is a --when past the limit", (code, "at most 80" in out), (1, True))
+code, out = j("plans", "phase", "2", "briefed", "--brief", stdin="what this phase is for, at length\n")
+check("a phase takes a brief", (code, show(2)["phases"][-1]["body"]), (0, "what this phase is for, at length"))
+code, out = j("plans", "show", "2")
+check("plans show prints it under the phase", "what this phase is for, at length" in out, True)
+j("plans", "rephrase", "2", "2", "--brief", stdin="reworded\n")
+check("rephrase replaces it", show(2)["phases"][-1]["body"], "reworded")
 took = plans.activate(root, 2, AT, source="web", track="default")
 check("one plan is active at a time", (took[0], "plan 1 is already active" in took[1]), (False, True))
 

@@ -100,18 +100,34 @@ class FromDoc(Resource):
 
 
 class Phase(Resource):
-    signature = "plans:phase {n : a plan number} {title* : the phase's title} {--when=} {--checkpoint} {--before=}"
+    signature = "plans:phase {n : a plan number} {title* : the phase's title} {--when=} {--checkpoint} {--before=} {--brief}"
     casts = PLAN
     writes = True
     controller = CONTROLLER
     action = "phase"
 
+    def extra(self, p: Parsed):
+        if not p.option("brief"):
+            return {}
+        body = brief(True)
+        if body is None:
+            return refuse(BRIEF_REFUSED)
+        return {"body": body}
+
 
 class Rephrase(Resource):
     signature = ("plans:rephrase {n : a plan number} {phase : a phase number} {title*? : the phase's title, reworded} "
-                 "{--when=} {--checkpoint} {--no-checkpoint}")
+                 "{--when=} {--checkpoint} {--no-checkpoint} {--brief}")
     casts = PLAN
     writes = True
+
+    def extra(self, p: Parsed):
+        if not p.option("brief"):
+            return {}
+        body = brief(True)
+        if body is None:
+            return refuse(BRIEF_REFUSED)
+        return {"body": body}
     controller = CONTROLLER
     action = "rephrase"
 

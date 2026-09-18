@@ -21,6 +21,7 @@ class PhasePayload(Payload):
     when = Field(str)
     checkpoint = Field(bool)
     before = Field(int)
+    body = Field(str, verbatim=True)
 
 
 class RephrasePayload(Payload):
@@ -29,6 +30,7 @@ class RephrasePayload(Payload):
     when = Field(str)
     checkpoint = Field(bool)
     no_checkpoint = Field(bool)
+    body = Field(str, verbatim=True)
 
 
 class TodosPayload(Payload):
