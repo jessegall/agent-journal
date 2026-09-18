@@ -161,10 +161,11 @@ here it is four ways:
     is it one thing to do, later?                      a to-do
     does it bind every environment?                    a rule
 
-**When the context warning arrives, decide.** At 50%, 70%, 90% and 95% of the window, no
-other tool runs until `pin`, `rule` or `nothing "<why>"` has. It forces a decision,
-not a pin; `nothing` with a reason is the right answer more often than not. It is also the
-moment to park any work you are holding for later, because that lives only in the window.
+**When the context warning arrives, decide.** At 50%, 70%, 90% and 95% of the window the stop
+asks for `pin`, `rule` or `nothing "<why>"`. It forces a decision, not a pin; `nothing` with a
+reason is the right answer more often than not. It is also the moment to park any work you are
+holding for later, because that lives only in the window. **With `gate_after_context_rung` on —
+off by default — it is more than a question: no other tool runs until one of the three has.**
 
 Everything else about them — when a pin earns its place, the reasoning under a claim, reminders and their `--until`, moving claims, and cleaning out what stopped being true — is in the `journal-memory` skill. Load it before you write one.
 
@@ -267,14 +268,15 @@ session is told at its next stop what happened and how to take it back. Nothing 
 environment is deleted. **Ask the user first** unless they have already said to take it —
 the holder may be a session they are using.
 
-`switch`, `claim`, `prepare`, `delegate` and `handoff` each answer under the noun too:
+`switch`, `claim` and `prepare` each answer under the noun too:
 `journal environments switch "<name>"` is the same command as `journal switch "<name>"`.
+(`delegate` and `handoff` were removed in 1.37.0; both now answer with a refusal saying why.)
 The noun answers to `env`, `envs`, `environment`, `tracks` and `track` as well.
 
 ## If a hook holds or denies you
 
 Read what it says and do that one thing. A hold is one line, and holds come one per
-stop in a fixed order — claimed, environment, inbox, comments, loop, context, deferral, untagged, questions, suggestions, suggest_hint, work, auto, recall, cleanup — so what
+stop in a fixed order — claimed, environment, inbox, comments, loop, context, deferral, untagged, questions, suggestions, suggest_hint, work, skills, auto, recall, cleanup — so what
 you are shown is the first thing owed, and the next stop shows the next. When the line ends with
 "details: `.journal/journal.py next`", run that first: it prints the full text of the
 hold, which to-do is next, the questions the user answered, or what is filling the

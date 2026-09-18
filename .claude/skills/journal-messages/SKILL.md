@@ -120,10 +120,14 @@ Settings page, and remove old environments. Every one of those goes through the 
 controllers the terminal commands use, so it lands in the same record and obeys the same
 refusals (a closed to-do cannot be edited, a struck pin cannot change).
 
-**A session started with `journal claude` hears the viewer while idle.** A message the user
-leaves wakes it; with auto mode on, an answered question, a comment and a decided suggestion do too,
-and only while it is idle. With auto mode
-off, nothing but a message wakes it, and a wake-up is never a reason to start on the to-do list.
+**A session started with `journal claude` hears the viewer while idle.** Everything the user does
+there reaches an idle session: a message, an answered question, a comment, a decided suggestion, a
+plan approved, a face left on a turn, and anything else the viewer writes. **Auto mode does not
+decide WHETHER it arrives — it decides what rides with it**: with auto off, everything but a
+message carries "handle this only, and do not start on the to-do list". MID-TURN is the line that
+matters: while the agent is working, only the user speaking gets through — a message, an answered
+question, a comment, a reaction — and the rest waits for its next stop. A wake-up is never a reason
+to start on the to-do list.
 
 **So the record can change under you.** A to-do you are working may have been re-prioritised
 or rewritten, and a pin you rely on may have been struck. Before acting on something you read
