@@ -464,6 +464,19 @@ status, _, body = get(f"/api/env/alpha/plans/{_pn}")
 check("a plan's detail names the message it came from",
       [m["n"] for m in json.loads(body)["from_messages"]], [_pmsg])
 
+# THE EXTENSION SHIPS INSIDE THE PACKAGE, so the journal hands it over itself rather than sending
+# anyone to a store listing that does not exist. A checkout without the folder answers 404 and the
+# Settings page offers nothing — both are correct, and the check covers the pair.
+import io as _io, zipfile as _zipfile  # noqa: E402
+_ext_status, _ext_headers, _ext_body = get("/extension.zip")
+_ext_names = sorted(_zipfile.ZipFile(_io.BytesIO(_ext_body)).namelist()) if _ext_status == 200 else []
+check("the viewer hands out the extension as a zip, or says it has none",
+      (_ext_status in (200, 404),
+       _ext_status != 200 or ("journal-pointer/manifest.json" in _ext_names
+                              and _ext_headers.get("Content-Type", "").startswith("application/zip")),
+       json.loads(get("/api/about")[2])["extension"] == (_ext_status == 200)),
+      (True, True, True))
+
 # ─────────────────────────────────────────────────────────────── what is happening on an environment
 status, _, body = get("/api/env/alpha/activity")
 activity = json.loads(body)
