@@ -39,8 +39,13 @@ def loaded_at(agent) -> dict[str, float]:
     return when
 
 
+def chosen(record: Record) -> list[str]:
+    named = record.setting(Record.skills)
+    return sorted(s[SKILL.name] for s in catalogue(record.root.parent) if s[SKILL.name] == "journal" or s[SKILL.name].startswith("journal-")) if named is None else list(named)
+
+
 def skills(record: Record, n: int = 0) -> list[dict]:
-    always = set(record.skills)
+    always = set(chosen(record))
     agents = Agents(record, actor=SYSTEM)
     rows = [a for a in agents.all() if a.status and a.status != "stopped"]
     agent = agents.load(n) if n else (rows[-1] if rows else None)
@@ -58,9 +63,10 @@ def load_now(record: Record, name: str) -> str:
 
 
 def always(record: Record, name: str, on: bool) -> list[str]:
-    record.skills = sorted(set(record.skills) - {name} | ({name} if on else set()))
+    record.skills = sorted(set(chosen(record)) - {name} | ({name} if on else set()))
     return record.skills
 
 
 def handed(record: Record) -> str:
-    return f"SKILLS to load now, at every start: {', '.join(f'Skill: {s}' for s in record.skills)}" if record.skills else ""
+    named = chosen(record)
+    return f"SKILLS to load now, at every start, before the first write: {', '.join(f'Skill: {s}' for s in named)}" if named else ""
