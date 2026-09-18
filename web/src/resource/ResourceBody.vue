@@ -11,7 +11,7 @@ import OptionsPicker from "./OptionsPicker.vue";
 import Comments from "./Comments.vue";
 import Links from "./Links.vue";
 
-const props = defineProps({resource: Object});
+const props = defineProps({resource: Object, comments: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
@@ -76,7 +76,9 @@ const files = computed(() => Object.entries(props.resource.data.files || {}));
         </template>
         <Links :resource="resource" />
         <footer class="foot">seen by {{ resource.seen.join(", ") || "nobody" }}</footer>
-        <Comments :resource="resource" />
+        <template v-if="comments">
+            <Comments :resource="resource" />
+        </template>
     </article>
 </template>
 
