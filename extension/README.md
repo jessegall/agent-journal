@@ -21,7 +21,8 @@ then the environment inside it.
   chat follow you on every page** in the popup once, and the window then opens by itself on every
   page you visit — that is the permission Chrome will only grant from a click inside the extension.
 - **Alt+J**, or **Open the chat here**: the journal opens as a window over the page you are on —
-  dragged by its bar, resized from its corner, remembered where you left it. Alt+J again, Esc, or ×
+  dragged by its bar, resized from its corner, remembered where you left it. The bar names the
+  journal and the environment, and each is a switch: click one to pick another. Alt+J again, Esc, or ×
   closes it.
 - **Send a test message** in the popup posts one message with no pointing involved. If the test
   lands and pointing does not, the pointer is at fault; if neither lands, the popup says why.
