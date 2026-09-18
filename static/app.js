@@ -980,9 +980,11 @@ const StatusBar = {
     // They used to be cards in the Home rail, which is one page; a plan is on every page.
     const PLAN_BAR_ORDER = { active: 0, draft: 1, parked: 2, preparing: 3, done: 4 };
     const bars = computed(() => {
+      // ONLY THE PLAN BEING WORKED IS A BAR (message 153). A draft waiting to be approved and a plan
+      // finished and waiting to be acknowledged are things waiting on the user, and they wait where
+      // everything else that waits on the user does: as cards under Waiting on you in the rail.
       const rows = (plans.data || [])
-        .filter((p) => p.status === "active" || p.status === "draft" || p.status === "parked"
-                       || p.status === "preparing" || (p.status === "done" && !p.acknowledged))
+        .filter((p) => p.status === "active")
         .sort((a, b) => (PLAN_BAR_ORDER[a.status] - PLAN_BAR_ORDER[b.status]) || a.n - b.n);
       const active = rows.some((p) => p.status === "active");
       return rows.map((p) => {
@@ -5154,14 +5156,32 @@ const EnvHome = {
     // every open question, every unarchived report — while the list hides the ones this browser has
     // dismissed. So a dismissed report was counted and not shown, and the heading said five things
     // were waiting above an empty column. The code's own comment warned about exactly this.
-    const waitingCount = computed(() => queue.value.length + (held.value ? 1 : 0));
+    // A PLAN THAT WAITS ON THE USER IS A CARD HERE, not a bar: a draft to approve, a parked one to
+    // resume, a finished one to acknowledge. The bar is the plan being worked, and nothing else.
+    const planCards = computed(() => railPlans.value.filter((p) => p.status !== "preparing").map((p) => {
+      const act = planPrimary(p);
+      const total = p.phases_total || 0;
+      return {
+        key: `plan:${p.n}`, kind: "plan", label: "Plan", tint: "#a3a8f0", sticky: true,
+        action: act ? act.short : "",
+        title: p.status === "done" ? `Your plan is finished: ${p.title}`
+          : p.status === "parked" ? `Plan parked: ${p.title}`
+          : `Ready to start: ${p.title}`,
+        meta: p.status === "done" ? `plan ${p.n} · ${total} ${total === 1 ? "phase" : "phases"} done`
+          : p.status === "parked" ? `plan ${p.n}${p.parked_why ? " · " + p.parked_why : ""}`
+          : `plan ${p.n} · ${total} ${total === 1 ? "phase" : "phases"} · waiting for your approval`,
+        open: () => { location.hash = `#/env/${props.env}/plans/${p.n}`; },
+        act: act ? () => send("POST", `/api/env/${props.env}/plans/${p.n}/${act.verb}`).then(reloadPlans).catch(() => {}) : null,
+      };
+    }));
+    const waitingCount = computed(() => queue.value.length + planCards.value.length + (held.value ? 1 : 0));
     // A NEW THING WAITING PULLS THE RAIL BACK TO IT. Only when the count GOES UP, and only from
     // another tab — a tab that changes under the hand while the user is reading it is worse than the
     // row they missed, so a count that falls, or one that rises while they are already looking at
     // Waiting on you, moves nothing.
     watch(waitingCount, (now, was) => { if (now > was && tab.value !== "waiting") tab.value = "waiting"; });
     // nothing waiting: the section gives its space back rather than holding 200px of empty slot
-    const clear = computed(() => !queue.value.length && !held.value);
+    const clear = computed(() => !queue.value.length && !planCards.value.length && !held.value);
     const openTodos = computed(() => (todos.data || []).filter((t) => todoStatus(t) !== "done"));
     const todoGroups = computed(() => GROUPS.filter((g) => g.key !== "done")
       .map((g) => ({ key: g.key, label: g.label, rows: openTodos.value.filter((t) => todoStatus(t) === g.key) }))
@@ -5264,7 +5284,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, waitingCount,
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, planCards, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
              barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice, chatTab, CHAT_TABS, pickChatTab, stripHome };
   },
@@ -5426,6 +5446,7 @@ const EnvHome = {
           <div class=needs-slot>
             <TransitionGroup :name="swapping ? '' : 'qrow'">
             <NeedsCard v-if="heldCard" key=held :item="heldCard" :dismiss="dismiss"/>
+            <NeedsCard v-for="it in planCards" :key="it.key" :item="it" :dismiss="dismiss"/>
             <NeedsCard v-for="it in queue" :key="it.key" :item="it" :selected="view.kind + ':' + view.n === it.key" :dismiss="dismiss"/>
             </TransitionGroup>
           </div>
