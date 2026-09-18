@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {route} from "./route.js";
 import {boot, listen, reload, store} from "./store.js";
 import Sidebar from "./layout/Sidebar.vue";
@@ -13,8 +13,34 @@ import SettingsPage from "./pages/SettingsPage.vue";
 import SearchPage from "./pages/SearchPage.vue";
 import Reader from "./resource/Reader.vue";
 import Lightbox from "./kit/Lightbox.vue";
+import QuickMenu from "./layout/QuickMenu.vue";
 
 const page = computed(() => (!route.value.page ? "home" : ["settings", "search"].includes(route.value.page) ? route.value.page : "index"));
+
+const quick = ref(false);
+let pointed = false;
+const sawPointer = () => (pointed = true);
+const sawKeyMove = (e) => {
+    if (e.key === "Tab" || e.key.startsWith("Arrow")) pointed = false;
+};
+function onSpace(e) {
+    if (e.key !== " " || quick.value || e.defaultPrevented) return;
+    const el = document.activeElement;
+    if (el && el !== document.body) {
+        if (el.isContentEditable || el.matches("input,textarea,select")) return;
+        if (el.matches("button,a[href],[role=button],[tabindex]") && !pointed) return;
+    }
+    e.preventDefault();
+    quick.value = true;
+}
+window.addEventListener("pointerdown", sawPointer, true);
+window.addEventListener("keydown", sawKeyMove, true);
+window.addEventListener("keydown", onSpace);
+onUnmounted(() => {
+    window.removeEventListener("pointerdown", sawPointer, true);
+    window.removeEventListener("keydown", sawKeyMove, true);
+    window.removeEventListener("keydown", onSpace);
+});
 
 onMounted(boot);
 watch(
@@ -54,6 +80,9 @@ watch(
                 <Reader :type="route.page" :n="route.n" />
             </template>
             <Lightbox />
+            <template v-if="quick">
+                <QuickMenu @close="quick = false" />
+            </template>
         </div>
     </template>
 </template>
