@@ -116,16 +116,14 @@ nudger(seat)
 check("nothing waiting, nothing typed", seat.lines, [])
 inbox.add(root, "please look at the header", "2026-09-18T00:00:05+00:00", source="web", track="alpha")
 seat.idle = 1.0
-nudger(seat)
-check("a busy agent is not interrupted", seat.lines, [])
-seat.idle = 10.0
 seat.mid = True
 nudger(seat)
 check("a half-typed line is not typed over", seat.lines, [])
 seat.mid = False
 nudger(seat)
-check("quiet agent, empty line: the message is typed as the record says it",
+check("a busy agent is typed to anyway — its own input queue holds the line — and the message reads as the record says it",
       (len(seat.lines), "left message 1" in seat.lines[0], "messages show 1" in seat.lines[0]), (1, True, True))
+seat.idle = 10.0
 nudger(seat)
 check("not again in the same quiet moment: the seat waits for the hooks to report after it typed", len(seat.lines), 1)
 # A MESSAGE IS TYPED AGAIN AT THE NEXT IDLE MOMENT while it stays unprocessed — processing it is the only acknowledgement
@@ -145,12 +143,14 @@ events.mkdir(parents=True, exist_ok=True)
 (events / "sess-1.jsonl").write_text(json.dumps({"at": time.time(), "event": "PreToolUse", "tool": "Bash", "session": "sess-1"}) + "\n")
 inbox.add(root, "and the footer", "2026-09-18T00:00:09+00:00", source="web", track="alpha")
 nudger(seat)
-check("a session mid tool call is not typed to, however quiet the pty", len(seat.lines), 2)
+nudger.typed_at = 0
+nudger(seat)
+check("a session mid tool call is typed to as well: the event reaches it the moment it exists", len(seat.lines), 3)
 with (events / "sess-1.jsonl").open("a") as f:
     f.write(json.dumps({"at": time.time(), "event": "Stop", "session": "sess-1"}) + "\n")
 seat.idle = 1.5
 nudger(seat)
-check("a Stop report is idle, and the next message is typed", (len(seat.lines), "left message 2" in seat.lines[-1]), (3, True))
+check("a Stop report is idle: a message still unprocessed is typed again", (len(seat.lines), "left message 2" in seat.lines[-1]), (4, True))
 
 # A SESSION THAT JUST STARTED OR RESUMED IS IDLE: its last report is SessionStart, and it must be typed to
 inbox.add(root, "left while the agent was restarting", "2026-09-18T00:00:12+00:00", source="web", track="alpha")
@@ -158,7 +158,7 @@ with (events / "sess-1.jsonl").open("a") as f:
     f.write(json.dumps({"at": time.time(), "event": "SessionStart", "session": "sess-1"}) + "\n")
 nudger.typed_at = 0
 nudger(seat)
-check("after a SessionStart report the seat types the news, just as after a Stop", (len(seat.lines), "left message" in seat.lines[-1]), (4, True))
+check("after a SessionStart report the seat types the news, just as after a Stop", (len(seat.lines), "left message" in seat.lines[-1]), (5, True))
 check("a fresh seat looks back for news never told, not only from its own start",
       launch.Nudger(root, "alpha").since == 0.0 and launch.SINCE_BACK >= 3600, True)
 
@@ -179,14 +179,14 @@ for n, words in ((2, "and the footer"), (3, "left while the agent was restarting
     inbox.process(root, n, words, ["noted"], "2026-09-18T00:00:29+00:00", track="alpha")
     inbox.done(root, n, "2026-09-18T00:00:30+00:00", track="alpha")
 nudger(seat)
-check("the message typed a moment ago is not typed over before the hooks report", len(seat.lines), 4)
+check("the message typed a moment ago is not typed over before the hooks report", len(seat.lines), 5)
 with (events / "sess-1.jsonl").open("a") as f:
     f.write(json.dumps({"at": time.time(), "event": "Stop", "session": "sess-1"}) + "\n")
 nudger(seat)
 check("nothing more waiting: the queue is read for the reported session and its line typed on one line",
       (asked[-1], seat.lines[-1]), (("sess-1", False), "1 untagged message(s) last at line 9; open the next with [!reply]"))
 nudger(seat)
-check("nothing is typed over a line the hooks have not answered yet", len(seat.lines), 5)
+check("nothing is typed over a line the hooks have not answered yet", len(seat.lines), 6)
 with (events / "sess-1.jsonl").open("a") as f:
     f.write(json.dumps({"at": time.time() + 1, "event": "Stop", "session": "sess-1"}) + "\n")
 nudger(seat)

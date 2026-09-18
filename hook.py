@@ -3348,6 +3348,7 @@ def _report(event: str, payload: dict, ctx: Ctx) -> None:
     seat = os.environ.get("JOURNAL_SEAT")
     if seat:
         line["seat"] = seat
+    line["ppid"] = os.getppid()          # the agent's pid: a launcher matches it against its own child
     try:
         f = events_file(ctx.stem)
         f.parent.mkdir(parents=True, exist_ok=True)
