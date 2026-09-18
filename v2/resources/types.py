@@ -29,7 +29,7 @@ class Work(Resource):
 
 class Plan(Resource):
     type = "plan"
-    names = {"complete": "acknowledge"}
+    names = {"complete": "acknowledge", "place": "todos", "resume": "continue"}
     title_ = "Plan"
     abstract_ = "Ordered phases of to-dos with a goal, approved by the user before it runs"
     help_ = "A plan is drafted by the agent, approved and continued by the user, and worked phase by phase."
