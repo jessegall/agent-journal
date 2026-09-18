@@ -138,6 +138,41 @@ def run(command: list[str], cwd: Path | None = None, ticks: list | None = None, 
     return seat.run()
 
 
+# ─────────────────────────────────────────────── what the hooks report, read from outside
+class Reports:
+    """The hooks' event lines for the sessions this launcher started, newest last.
+
+    A HOOK WRITES ONE LINE PER EVENT and the launcher reads them here: which session is inside
+    the pty is not known until its first hook fires, so every events file that appears after the
+    launch is taken as this seat's — one launcher, one agent, one terminal.
+    """
+
+    def __init__(self, root: Path):
+        self.root = root
+        self.born = time.time()
+        self.offsets: dict = {}
+
+    def last(self) -> dict | None:
+        import json
+        folder = self.root / "runtime" / "events"
+        if not folder.is_dir():
+            return None
+        newest = None
+        for f in folder.glob("*.jsonl"):
+            try:
+                if f.stat().st_mtime < self.born - 1:
+                    continue
+                tail = f.read_bytes()[-4096:].decode(errors="replace").strip().splitlines()
+                if not tail:
+                    continue
+                line = json.loads(tail[-1])
+            except (OSError, ValueError):
+                continue
+            if newest is None or line.get("at", 0) > newest.get("at", 0):
+                newest = line
+        return newest
+
+
 # ─────────────────────────────────────────────── the viewer's news, typed into the agent
 class Nudger:
     """What the channel used to push, typed into the agent's terminal by the seat outside it.
@@ -156,6 +191,15 @@ class Nudger:
         self.told: set = set()
         self.since = 0.0
         self.last_look = 0.0
+        self.reports = Reports(root)
+
+    def agent_idle(self, seat: Launcher) -> bool:
+        """Idle is what the hooks report, when they do: a Stop with no event after it. Without a
+        hook (an agent the journal has no hooks in yet) the pty's own quiet has to do."""
+        last = self.reports.last()
+        if last is not None:
+            return last.get("event") == "Stop" and seat.idle_for() >= 1.0
+        return seat.idle_for() >= IDLE_SECONDS
 
     def __call__(self, seat: Launcher) -> None:
         if self.quiet or not self.env:
@@ -164,7 +208,7 @@ class Nudger:
         if now - self.last_look < self.every:
             return
         self.last_look = now
-        if seat.idle_for() < IDLE_SECONDS or seat.user_mid_line():
+        if not self.agent_idle(seat) or seat.user_mid_line():
             return
         for key, params in self.pending():
             if key in self.told:

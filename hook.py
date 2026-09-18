@@ -3887,6 +3887,35 @@ HANDLERS = {
 }
 
 
+#: where the hook's event reports go: one file per session, tailed by the launcher
+EVENTS_DIR = "runtime/events"
+EVENTS_KEEP = 2000
+
+
+def events_file(stem: str) -> Path:
+    return ROOT / EVENTS_DIR / f"{stem}.jsonl"
+
+
+def _report(event: str, payload: dict, ctx: Ctx) -> None:
+    """One line: which event, when, which tool — enough for a watcher outside to know the moment."""
+    import json
+    line = {"at": time.time(), "event": event, "session": ctx.stem}
+    tool = payload.get("tool_name")
+    if tool:
+        line["tool"] = tool
+    try:
+        f = events_file(ctx.stem)
+        f.parent.mkdir(parents=True, exist_ok=True)
+        with f.open("a") as out:
+            out.write(json.dumps(line) + "\n")
+        # a long session's file is trimmed now and then, never read back here
+        if f.stat().st_size > EVENTS_KEEP * 120:
+            lines = f.read_text().splitlines()[-EVENTS_KEEP:]
+            f.write_text("\n".join(lines) + "\n")
+    except OSError:
+        pass                                          # a report that could not be written blocks nothing
+
+
 def main(raw: str | None = None) -> int:
     """One hook event. `raw` is the payload; without it, stdin — which is how the harness
     calls it, and how a test can answer many events in one interpreter instead of one."""
@@ -4038,6 +4067,10 @@ def main(raw: str | None = None) -> int:
             state.put(ROOT, "ended_on", env, stem=ctx.stem)
         # which event came last tells an idle session (Stop) from a working one, for the channel server
         state.put(ROOT, "last_event", event, stem=ctx.stem)
+        # THE HOOK REPORTS; THE LAUNCHER DECIDES. One line per event, appended where the seat outside
+        # the agent tails it — the first step of the orchestration leaving the hooks: what the hook
+        # sees is written down for whoever watches, and it says nothing more than that here.
+        _report(event, payload, ctx)
         _remember_pid(ctx.stem)
         return handler(conf, payload, ctx)
     except Exception as e:  # noqa: BLE001
