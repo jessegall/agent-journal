@@ -50,10 +50,10 @@ class Provider(ABC):
 
     def gate(self, root: Path, env: str, session: str) -> str:
         try:
-            flag = json.loads(gate_file(root, env, session).read_text())
+            holds = json.loads(gate_file(root, env, session).read_text())
         except (OSError, ValueError):
             return ""
-        return "" if flag.get("writes", "allowed") == "allowed" else flag.get("why") or "writes are refused"
+        return "; ".join(why for why in holds.values() if why)
 
     def writes(self, payload: dict) -> bool:
         tool = payload.get("tool_name") or ""

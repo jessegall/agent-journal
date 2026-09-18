@@ -28,6 +28,9 @@ def due(record, agent, name: str, default: dict) -> bool:
     now = agent.data
     observe(record, agent, name, was)
     unit, every = s.get("unit") or s.get("on"), float(s.get("every") or 1)
+    if unit == PERCENT and s.get("at"):
+        before, after = float(was.get("context") or 0), float(now.get("context") or 0)
+        return any(before < mark <= after for mark in s["at"])
     if unit == PERCENT:
         return int(float(now.get("context") or 0) // every) > int(float(was.get("context") or 0) // every)
     if unit == USES:
