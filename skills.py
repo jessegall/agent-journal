@@ -1,133 +1,67 @@
-from __future__ import annotations
-
-import json
-import re
+import inspect
 from pathlib import Path
 
-_NAME = re.compile(r"^[A-Za-z0-9_.:-]+$")
+import features
+from commands.cli import actions
+from controllers.types import CONTROLLERS
+
+HERE = Path(__file__).resolve().parent
 
 
-def _front(text: str) -> dict:
-    m = re.match(r"^---\n(.*?)\n---", text, re.S)
-    out = {}
-    for line in (m.group(1).splitlines() if m else []):
-        key, _, value = line.partition(":")
-        out[key.strip()] = value.strip().strip('"')
+def signature(controller: type, name: str) -> str:
+    params = list(inspect.signature(getattr(controller, name)).parameters.values())[1:]
+    words = []
+    for p in params:
+        if p.kind is inspect.Parameter.VAR_KEYWORD:
+            words.append("[--set key=value…]")
+        elif p.default is inspect.Parameter.empty:
+            words.append(f"<{p.name}>")
+        else:
+            words.append(f"[--{p.name} …]" if not isinstance(p.default, bool) else f"[--{p.name}]")
+    return " ".join(words)
+
+
+def reference() -> str:
+    out = ["## Reference: every noun and its words", ""]
+    for type_, controller in CONTROLLERS.items():
+        r = controller.resource
+        out.append(f"### {type_} — {r.abstract_}")
+        out.append(f"{r.help_}  Scope: {r.scope}. Seen by: {', '.join(r.notify) or 'nobody'}.")
+        for name in actions(controller):
+            word = r.names.get(name, name)
+            out.append(f"    journal {type_} {word} {signature(controller, name)}".rstrip())
+        out.append("")
+    return "\n".join(out)
+
+
+def core() -> str:
+    text = (HERE / "skills" / "journal.md").read_text()
+    return f"---\nname: journal\ndescription: The journal, its commands and when each applies; load it before the first write\n---\n\n{text}\n{reference()}"
+
+
+def feature_skill(f) -> str:
+    d = f.describe()
+    trigger = d["trigger"]
+    when = (f"on {trigger['on']}" if trigger.get("on") else f"at {', '.join(map(str, trigger['at']))} percent of the context" if trigger.get("at")
+            else f"every {trigger['every']} {trigger['unit']}" if trigger else "on the events it listens to")
+    return (f"---\nname: journal-{d['name']}\ndescription: {d['abstract']}\n---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n\n"
+            f"It listens to: {', '.join(d['listens'])}. It speaks {when}. "
+            f"{'On' if d['default'] else 'Off'} by default; the viewer's Settings switches it per environment, and `triggers.{d['name']}` in the environment's settings tunes it.\n")
+
+
+def render() -> dict[str, str]:
+    features.load()
+    out = {"journal/SKILL.md": core()}
+    for name, f in features.FEATURES.items():
+        out[f"journal-{name}/SKILL.md"] = feature_skill(f)
     return out
 
 
-def available(project: Path) -> list[dict]:
-    out, names = [], set()
-    for source, base in (("project", project / ".claude" / "skills"), ("user", Path.home() / ".claude" / "skills")):
-        for f in sorted(base.glob("*/SKILL.md")) if base.is_dir() else []:
-            front = _front(f.read_text(errors="replace"))
-            name = front.get("name") or f.parent.name
-            if name in names:
-                continue
-            names.add(name)
-            out.append({"name": name, "description": front.get("description", ""), "source": source, "path": f})
-    return out
-
-
-def loaded(path: Path | None) -> dict[str, dict]:
-    got: dict[str, dict] = {}
-    if path is None or not path.is_file():
-        return got
-    for line in path.open(errors="replace"):
-        if '"Skill"' not in line:
-            continue
-        try:
-            rec = json.loads(line)
-        except ValueError:
-            continue
-        for block in (rec.get("message") or {}).get("content") or []:
-            if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "Skill":
-                name = str((block.get("input") or {}).get("skill") or "")
-                if name:
-                    row = got.setdefault(name, {"count": 0, "at": ""})
-                    row["count"] += 1
-                    row["at"] = rec.get("timestamp", "") or row["at"]
-    return got
-
-
-def _epoch(stamp: str) -> float:
-    from datetime import datetime
-    try:
-        return datetime.fromisoformat(str(stamp).replace("Z", "+00:00")).timestamp()
-    except ValueError:
-        return 0.0
-
-
-def _changed_at(folder: Path) -> float:
-    newest = 0.0
-    for f in folder.rglob("*"):
-        if f.is_file() and "__pycache__" not in f.parts and not f.name.startswith("."):
-            newest = max(newest, f.stat().st_mtime)
-    return newest
-
-
-def rows(project: Path, path: Path | None, every_start: list[str] | None = None) -> list[dict]:
-    used = loaded(path)
-    wanted = set(every_start or [])
-    out = []
-    for s in available(project):
-        u = used.get(s["name"], {})
-        loaded_at = _epoch(u.get("at", "")) if u else 0.0
-        # STALE: the session loaded it, and a file of it changed since — what it holds is not what is on disk
-        out.append({"name": s["name"], "description": s["description"], "source": s["source"],
-                    "loaded": u.get("count", 0), "readable": True, "always": s["name"] in wanted,
-                    "stale": bool(u) and _changed_at(s["path"].parent) > loaded_at})
-    known = {r["name"] for r in out}
-    out += [{"name": n, "description": "", "source": "built in", "loaded": u["count"], "readable": False, "always": n in wanted,
-             "stale": False}
-            for n, u in sorted(used.items()) if n not in known]
-    return out
-
-
-def find(project: Path, name: str) -> dict | None:
-    if not _NAME.match(name or ""):
-        return None
-    for s in available(project):
-        if s["name"] == name:
-            return {"name": s["name"], "description": s["description"], "source": s["source"],
-                    "text": s["path"].read_text(errors="replace"), "references": _references(s["path"].parent)}
-    return None
-
-
-#: a reference bigger than this is named, not shown: the panel is for reading, not for scrolling forever
-REFERENCE_MAX = 60_000
-
-
-def _references(folder: Path) -> list[dict]:
-    out = []
-    for f in sorted(folder.rglob("*")):
-        if not f.is_file() or f.name == "SKILL.md" or f.name.startswith(".") or "__pycache__" in f.parts:
-            continue
-        rel = str(f.relative_to(folder))
-        text = None
-        if f.suffix.lower() in (".md", ".txt") and f.stat().st_size <= REFERENCE_MAX:
-            text = f.read_text(errors="replace")
-        out.append({"path": rel, "text": text, "size": f.stat().st_size})
-    return out
-
-
-ALWAYS = "always_load_skills"
-#: what every project loads at every start until its user says otherwise: the core skill and the three
-#: a session reaches for most. Measured (11 real runs): the others trigger on their own cue.
-DEFAULT_ALWAYS = ("journal", "journal-memory", "journal-todos", "journal-messages")
-
-
-def always(root: Path) -> list[str]:
-    import state
-    got = state.get(root, ALWAYS, None)
-    if got is None:
-        return list(DEFAULT_ALWAYS)
-    return [str(x) for x in got] if isinstance(got, list) else []
-
-
-def set_always(root: Path, name: str, on: bool) -> list[str]:
-    import state
-    with state.locked(root):
-        now = [x for x in always(root) if x != name] + ([name] if on else [])
-        state.put(root, ALWAYS, now)
-    return now
+def write(folder: Path) -> list[Path]:
+    written = []
+    for path, text in render().items():
+        f = folder / path
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(text)
+        written.append(f)
+    return written
