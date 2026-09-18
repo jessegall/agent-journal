@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.167.3 — The launcher's Enter is a keystroke
+
+Measured with a real Claude Code under the launcher: the typed line landed in the input box and sat
+there. Bytes arriving in one burst are read as a paste, and the Enter inside the burst became part
+of the paste instead of sending it. The launcher now types the line, waits a beat, and presses Enter
+on its own — the message is sent. The seat record also says why the last look did not type.
+
 ## 1.167.2 — The launcher no longer mistakes the terminal's own keystrokes for a half-typed line
 
 The launcher types nothing over a line the user is typing — and it took a terminal's focus events

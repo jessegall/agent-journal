@@ -17,6 +17,8 @@ import news
 
 #: how long the agent must print nothing before the launcher takes it to be idle
 IDLE_SECONDS = 3.0
+#: the pause between a typed line and its Enter, so the agent reads the Enter as a key and not as pasted text
+ENTER_AFTER = 0.3
 #: how much of what the agent printed the seat keeps, as plain text
 PRINTED_KEEP = 400
 #: how far back a fresh seat looks for news never told: a restart mid-conversation loses nothing
@@ -78,8 +80,15 @@ class Launcher:
             data = data[n:]
 
     def type_line(self, text: str) -> None:
-        """A whole line, ended with Enter, typed into the agent."""
-        self.write(text.encode() + b"\r")
+        """A whole line, then Enter — a beat later, on its own.
+
+        MEASURED: the line landed in Claude Code's input box and sat there. Bytes that arrive in one
+        burst are read as a paste, and the Enter inside the burst became part of it instead of
+        sending it. A pause before the Enter makes it a keystroke again.
+        """
+        self.write(text.encode())
+        time.sleep(ENTER_AFTER)
+        self.write(b"\r")
 
     def idle_for(self) -> float:
         return time.time() - self.last_output if self.last_output else 0.0
