@@ -28,9 +28,10 @@ def refused(call) -> bool:
     return False
 
 
-record = Record(Path(tempfile.mkdtemp()) / ".journal", "main")
+records = {}
 
-for type_ in TYPES:                                                 # the data provider: every resource type
+for type_ in TYPES:                                                 # the data provider: every resource type, its own record
+    record = records[type_] = Record(Path(tempfile.mkdtemp()) / ".journal", "main")
     c = CONTROLLERS[type_](record)
     r = c.create(f"a {type_} to keep", abstract="one short line about it", brief="as long as it needs to be\n\nwith paragraphs")
     check(f"{type_}: created as number 1 with its three texts", (r.n, r.title, r.abstract, r.brief.split("\n")[0]),
@@ -43,24 +44,30 @@ for type_ in TYPES:                                                 # the data p
     long = c.create("fine", brief="z" * 50_000)
     check(f"{type_}: the brief is unlimited", len(c.show(long.n).brief), 50_000)
     c.section(1, "Why", "because")
-    c.comment(1, "a note")
+    note = c.comment(1, "a note")
     c.link(1, "todo:9")
     got = c.show(1)
-    check(f"{type_}: a section, a comment and a reference stick", (got.sections, got.comments[0]["text"], got.refs),
-          ([{"title": "Why", "body": "because"}], "a note", ["todo:9"]))
+    check(f"{type_}: a section and a link stick, and a comment is a resource of its own on it",
+          (got.sections, got.refs, note.type, note.data.get("on"), [x.title for x in c.comments(1)]),
+          ([{"title": "Why", "body": "because"}], ["todo:9"], "comment", f"{type_}:1", ["a note"]))
+    if type_ == "comment":
+        check("comment: commenting on a comment is the same act", note.data.get("on"), "comment:1")
+    reply = CONTROLLERS["comment"](record).comment(note.n, "a comment on the comment")
+    check(f"{type_}: a comment can have a comment", (reply.data.get("on"), [x.title for x in CONTROLLERS["comment"](record).comments(note.n)]),
+          (f"comment:{note.n}", ["a comment on the comment"]))
     c.complete(1, "finished")
     check(f"{type_}: completed is the final phase, marked once", (c.show(1).completed > 0, refused(lambda: c.complete(1))), (True, True))
+    others = [x.n for x in c.all() if x.n > 2]                    # a comment's record also holds the comments made above
     c.delete(1, "no longer needed")
-    check(f"{type_}: deleted is soft — gone from the list, still on disk", ([x.n for x in c.all()], c.show(1).deleted > 0), ([2], True))
+    check(f"{type_}: deleted is soft — gone from the list, still on disk", ([x.n for x in c.all()], c.show(1).deleted > 0), ([2] + others, True))
     c.restore(1)
     c.force_delete(2)
-    check(f"{type_}: force delete removes the file", ([x.n for x in c.all()], refused(lambda: c.show(2))), ([1], True))
+    check(f"{type_}: force delete removes the file", ([x.n for x in c.all()], refused(lambda: c.show(2))), ([1] + others, True))
 
-for type_ in TYPES:                                                 # every type emits the same five actions, no more
-    mine = [e for e in record.events() if e.type == type_]
-    check(f"{type_}: every action left an event, and only the six actions", (sorted({e.action for e in mine}), len(mine)),
-          (sorted(ACTIONS), 9))
-    check(f"{type_}: an event says who dispatched it and what it is about", (mine[0].actor, mine[0].ref), ("user", f"{type_}:1"))
+for type_ in TYPES:                                                 # every type emits the same six actions, no more
+    mine = [e for e in records[type_].events() if e.type == type_]
+    check(f"{type_}: every action left an event, and only the six actions", sorted({e.action for e in mine}), sorted(ACTIONS))
+    check(f"{type_}: an event says who did it and what it is about", (mine[0].actor, mine[0].ref), ("user", f"{type_}:1"))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

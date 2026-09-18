@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 from v2.engine.record import Record
-from v2.resources.base import Refused, Resource, check_abstract, check_title
+from v2.resources.base import TITLE_MAX, Refused, Resource, check_abstract, check_title
 
 
 class Controller:
@@ -109,9 +109,16 @@ class Controller:
         return self.save(r, "linked", to=ref, off=True)
 
     def comment(self, n: int, text: str) -> Resource:
-        r = self.load(n)
-        r.comments.append({"at": time.time(), "by": self.actor, "text": text.strip()})
-        return self.save(r, "commented")
+        from v2.controllers.types import CONTROLLERS
+        parent = self.load(n)
+        made = CONTROLLERS["comment"](self.record, actor=self.actor).create(text.strip()[:TITLE_MAX].replace(":", " -"), brief=text.strip(), on=parent.ref)
+        self.save(parent, "commented", comment=made.n)
+        return made
+
+    def comments(self, n: int) -> list[Resource]:
+        from v2.controllers.types import CONTROLLERS
+        ref = f"{self.type}:{n}"
+        return [c for c in CONTROLLERS["comment"](self.record, actor=self.actor).all() if c.data.get("on") == ref]
 
     def show(self, n: int) -> Resource:
         return self.see(n)

@@ -46,7 +46,7 @@ for type_ in TYPES:                                       # seen: the creator ha
 top = parser()
 base_actions = actions(Controller)
 check("the base controller's actions are the CRUD set", base_actions,
-      ["all", "comment", "complete", "create", "delete", "force_delete", "link", "linked_to", "restore", "section", "see", "show", "unlink", "unseen", "update"])
+      ["all", "comment", "comments", "complete", "create", "delete", "force_delete", "link", "linked_to", "restore", "section", "see", "show", "unlink", "unseen", "update"])
 subs = top._subparsers._group_actions[0].choices
 check("every type is a command", sorted(subs), sorted(TYPES))
 for type_ in TYPES:
