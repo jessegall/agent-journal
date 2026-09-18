@@ -119,7 +119,7 @@ onUnmounted(() => clearInterval(timer));
                 <template v-for="t in turns" :key="t.line">
                     <div :class="['turn', t.who]">
                         <span class="who">{{ t.who }}</span>
-                        <div class="said" v-html="render(t.text, {types: []})" />
+                        <div class="said" v-html="render(t.text, {types: [], env: route.env})" />
                     </div>
                 </template>
             </div>

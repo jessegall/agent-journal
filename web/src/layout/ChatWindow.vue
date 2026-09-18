@@ -6,7 +6,7 @@ import Thread from "../chat/Thread.vue";
 import {go, route} from "../route.js";
 import {rows, store} from "../store.js";
 
-const shell = reactive({hosted: false, shut: false, envs: false});
+const shell = reactive({hosted: false, shut: false, envs: false, driving: false, drivingUrl: ""});
 const framed = window.parent !== window;
 const project = computed(() => (store.spec && store.spec.project) || "journal");
 const environments = computed(() => rows("environment").map((e) => e.title));
@@ -20,6 +20,10 @@ function fromShell(e) {
         return;
     shell.hosted = true;
     if ("shut" in e.data) shell.shut = !!e.data.shut;
+    if ("driving" in e.data) {
+        shell.driving = !!e.data.driving;
+        shell.drivingUrl = e.data.drivingUrl || "";
+    }
 }
 window.addEventListener("message", fromShell);
 onUnmounted(() => window.removeEventListener("message", fromShell));
@@ -42,6 +46,10 @@ function drag(e) {
     bar.addEventListener("pointermove", move);
     bar.addEventListener("pointerup", done);
     bar.addEventListener("pointercancel", done);
+}
+
+function drive(on) {
+    toShell("drive", {on});
 }
 
 function fold() {
@@ -84,10 +92,27 @@ function close() {
                         </Transition>
                     </span>
                 </span>
+                <template v-if="!shell.driving">
+                    <button
+                        type="button"
+                        class="shell-btn shell-wheel"
+                        title="Let the agent drive this tab: see it, click and type on it"
+                        @click="drive(true)"
+                    >
+                        <Icon name="wheel" />
+                    </button>
+                </template>
                 <button type="button" class="shell-btn" :title="shell.shut ? 'Restore' : 'Minimize'" @click="fold">
                     {{ shell.shut ? "▴" : "–" }}
                 </button>
                 <button type="button" class="shell-btn" title="Close" @click="close">×</button>
+            </div>
+        </template>
+        <template v-if="shell.driving">
+            <div class="shell-driving">
+                <span class="shell-driving-dot" />
+                <span class="shell-driving-text">The agent is driving this tab{{ shell.drivingUrl ? ` — ${shell.drivingUrl}` : "" }}</span>
+                <button type="button" class="shell-driving-stop" @click="drive(false)">Stop</button>
             </div>
         </template>
         <AgentBar />
@@ -226,6 +251,63 @@ function close() {
 .shell-btn:hover {
     background: var(--hover);
     color: var(--text);
+}
+
+.shell-wheel .ico {
+    width: 13px;
+    height: 13px;
+}
+
+.shell-driving {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 30px;
+    padding: 0 8px 0 10px;
+    border-bottom: 1px solid color-mix(in srgb, #d9a441 45%, var(--border));
+    background: color-mix(in srgb, #d9a441 26%, var(--bg));
+    font-size: 11.5px;
+    color: var(--text);
+}
+
+.shell-driving-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #d9a441;
+    animation: blink 1.2s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.shell-driving-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shell-driving-stop {
+    height: 22px;
+    padding: 0 10px;
+    border: 1px solid color-mix(in srgb, #d9a441 55%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, #d9a441 30%, transparent);
+    color: var(--text);
+    font: inherit;
+    font-size: 11.5px;
+    cursor: pointer;
 }
 
 .drop-enter-active {

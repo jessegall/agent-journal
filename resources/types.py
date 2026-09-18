@@ -196,7 +196,6 @@ class Tool(Shape, Resource):
     help_ = "A tool names its entry (how to run it), its usage and what it does; run executes it from the project root."
     fields = {"entry": TEXT, "usage": TEXT}
     scope = PROJECT
-    nav = False
 
 
 class Style(Reasoned, Resource):
@@ -209,7 +208,6 @@ class Style(Reasoned, Resource):
     help_ = "A style rule names its subject and its decision; the style feature writes the skill for it."
     fields = {"subject": TEXT, "decision": TEXT, "when": TEXT}
     scope = PROJECT
-    nav = False
 
 
 class Connection(Shape, Resource):
@@ -221,7 +219,6 @@ class Connection(Shape, Resource):
     help_ = "Never the token itself: the name of the variable that holds it."
     fields = {"variable": TEXT}
     scope = PROJECT
-    nav = False
 
 
 class Environment(Shape, Resource):
@@ -238,6 +235,17 @@ class Environment(Shape, Resource):
     notify = ()
 
 
+class Ask(Shape, Resource):
+    type = "browser"
+    mirror = True
+    icon = "open"
+    title_ = "Browser ask"
+    abstract_ = "What the agent asks of the tab the user is driving — a picture, its text, a click — answered by the extension"
+    help_ = "journal browser shot|url|text|dom|console|click <selector>|type <selector> <words>|goto <url>|eval <js>|scroll top|bottom|<selector>; the user turns driving on in the chat window's bar."
+    nav = False
+    notify = ()
+
+
 class Nudge(Shape, Resource):
     type = "nudge"
     mirror = True
@@ -250,5 +258,5 @@ class Nudge(Shape, Resource):
     spoken = True
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Environment, Nudge)}
-PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "environment", "work", "agent", "notification", "nudge")
+TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Environment, Ask, Nudge)}
+PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "environment", "work", "agent", "notification", "browser", "nudge")

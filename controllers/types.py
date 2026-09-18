@@ -1,18 +1,41 @@
+import base64
+import json
 import subprocess
+import tempfile
 import time
+from pathlib import Path
 
 from controllers.base import Controller
 from engine.record import Record
 from engine.sessions import Sessions
 from resources import types
 from resources.shapes import LEVELS
-from resources.base import AGENT, Refused, check_title
+from resources.base import AGENT, SYSTEM, Refused, check_title
 
 
 
 
 class Messages(Controller):
     resource = types.Message
+
+    def waiting(self) -> list:
+        return [m for m in self.all() if not m.completed and m.seen[:1] != [AGENT]]
+
+    def file(self, n: int, name: str, into: str = "keep"):
+        r = self.load(n)
+        if name not in (r.data.get("files") or {}):
+            raise Refused(f"message {n} has no file {name}")
+        if into == "keep":
+            r.data["files"][name] = "kept"
+            return self.save(r, "updated", kept=name)
+        kind, _, num = into.partition(" ")
+        docs = CONTROLLERS[kind](self.record, actor=self.actor)
+        docs.attach(int(num), str(self.folder(n) / name), f"from message {n}")
+        r.data["files"][name] = f"filed into {kind} {num}"
+        return self.save(r, "updated", filed=name, into=into)
+
+    def archive(self, n: int, why: str):
+        return self.delete(n, why)
 
     def process(self, n: int, part: str, became: str):
         r = self.load(n)
@@ -53,6 +76,42 @@ class Todos(Controller):
         if not self.agent:
             raise Refused("report is a subagent's word — the dispatcher closes a row with done")
         return self.update(n, reported={"agent": self.agent, "dispatcher": self.session, "how": how, "at": time.time()})
+
+    def ask(self, n: int, question: str, **data):
+        row = self.load(n)
+        return CONTROLLERS["question"](self.record, actor=self.actor).create(question, about=row.ref, **data)
+
+    def answer(self, n: int, text: str):
+        questions = CONTROLLERS["question"](self.record, actor=self.actor)
+        row = self.load(n)
+        for q in questions.linked_to(row.ref):
+            if not q.completed:
+                return questions.complete(q.n, text)
+        raise Refused(f"todo {n} has no open question")
+
+    def block(self, n: int, why: str):
+        return self.update(n, blocked=why)
+
+    def unblock(self, n: int):
+        return self.update(n, blocked="")
+
+    def after(self, n: int, waits: int, off: bool = False):
+        other = self.load(int(waits))
+        return self.unlink(n, other.ref) if off else self.link(n, other.ref)
+
+    def strike(self, n: int, why: str):
+        return self.complete(n, f"struck: {why}", struck=True)
+
+    def start(self, n: int):
+        row = self.load(n)
+        return CONTROLLERS["work"](self.record, actor=self.actor, session=self.session, agent=self.agent).create(row.title, brief=row.brief, todo=row.n)
+
+    def prune(self, days: int = 30):
+        cut = time.time() - int(days) * 86400
+        gone = [r for r in self.all() if r.completed and r.completed < cut]
+        for r in gone:
+            self.delete(r.n, f"pruned after {days} days")
+        return gone
 
     def priority(self, n: int, value: str):
         level = str(value).lower()
@@ -170,6 +229,19 @@ class Plans(Controller):
 
 class Docs(Controller):
     resource = types.Doc
+
+    def draft(self, n: int):
+        return self.update(n, status="draft")
+
+    def complete(self, n: int, how: str = "", **data):
+        self.update(n, status="final")
+        return super().complete(n, how or "final", **data)
+
+    def supersede(self, n: int, by: int):
+        newer = self.load(int(by))
+        self.complete(n, how=f"superseded by doc {newer.n}")
+        self.link(n, newer.ref)
+        return self.link(newer.n, self.load(n).ref)
 
 
 class Reports(Controller):
@@ -302,13 +374,45 @@ class Environments(Controller):
             raise Refused("no session to bind: say which with --session")
         return Sessions(self.record.root)
 
-    def switch(self, n: int):
+    def switch(self, n: int, project: bool = False, move: str = "", back: bool = False):
+        who = move or self.session
+        if back:
+            was = self.sessions().read(who).get("before", "")
+            if not was:
+                raise Refused("this session came from nowhere: no environment to go back to")
+            return self.switch(self.find(was).n, move=who)
         env = self.load(n)
         holder = self.sessions().holder(env.title)
-        if holder and holder != self.session:
+        if holder and holder != who:
             raise Refused(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
-        self.sessions().bind(self.session, env.title)
-        return self.update(n, holder=self.session)
+        before = self.sessions().environment(who)
+        self.sessions().bind(who, env.title)
+        if before and before != env.title:
+            self.sessions().write(who, before=before)
+        if project:
+            f = self.record.root / "runtime" / "env"
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_text(env.title)
+        return self.update(n, holder=who)
+
+    def complete(self, n: int, how: str = "", yes: bool = False, **data):
+        env = self.load(n)
+        record = Record(self.record.root, env.title)
+        held = {t: len([r for r in CONTROLLERS[t](record, actor=SYSTEM).all() if not r.completed]) for t in ("todo", "pin", "reminder", "message", "question")}
+        holder = self.sessions().holder(env.title)
+        if holder:
+            raise Refused(f"environment {env.title!r} is held by session {holder}; it leaves first")
+        kept = ", ".join(f"{v} open {k}s" for k, v in held.items() if v)
+        if kept and not yes:
+            raise Refused(f"environment {env.title!r} holds {kept}; --yes removes it from the sidebar anyway (its record stays on disk)")
+        return super().complete(n, how or "removed", **data)
+
+    def pickup(self, n: int) -> dict:
+        env = self.load(n)
+        record = Record(self.record.root, env.title)
+        return {"environment": env.title, "holder": self.sessions().holder(env.title),
+                **{f"open {t}s": [f"{r.n} {r.title}" for r in CONTROLLERS[t](record, actor=SYSTEM).all() if not r.completed][:10] for t in ("work", "todo", "question", "message")},
+                "pins": [f"{r.n} {r.title}" for r in CONTROLLERS["pin"](record, actor=SYSTEM).all() if not r.completed][:10]}
 
     def claim(self, n: int, why: str):
         env = self.load(n)
@@ -327,9 +431,54 @@ class Environments(Controller):
         return self.sessions().grant(self.session, env.title, on=not off)
 
 
+OPS = ("shot", "url", "text", "dom", "console", "click", "type", "goto", "eval", "scroll")
+
+
+def driver_file(root: Path, env: str) -> Path:
+    return root / "runtime" / f"browser-{env}.json"
+
+
+class Asks(Controller):
+    resource = types.Ask
+
+    def driving(self) -> dict:
+        f = driver_file(self.record.root, self.record.env)
+        try:
+            return json.loads(f.read_text())
+        except (OSError, ValueError):
+            return {}
+
+    def ask(self, op: str, *args: str, wait: int = 30):
+        if op not in OPS:
+            raise Refused(f"an ask is one of {' '.join(OPS)}")
+        tab = self.driving()
+        if not tab.get("on"):
+            raise Refused("no tab is being driven: the user turns driving on in the chat window's bar (the wheel)")
+        made = self.create(f"{op} {' '.join(args)}".strip()[:80], op=op, args=list(args))
+        end = time.time() + int(wait)
+        while time.time() < end:
+            got = self.load(made.n)
+            if got.completed:
+                return got
+            time.sleep(0.4)
+        return self.load(made.n)
+
+    def pending(self) -> list:
+        return [r for r in self.all() if not r.completed]
+
+    def answer(self, n: int, text: str, ok: bool = True, files: list | None = None):
+        r = self.complete(n, text, ok=ok)
+        for f in files or []:
+            with tempfile.TemporaryDirectory() as folder:
+                path = Path(folder) / Path(f["name"]).name
+                path.write_bytes(base64.b64decode(f["data"].split(",", 1)[-1]))
+                self.attach(n, str(path))
+        return self.load(n)
+
+
 class Nudges(Controller):
     resource = types.Nudge
 
 
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Plans, Docs, Reports, Pins, Rules, Reminders, Suggestions,
-                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Styles, Connections, Environments, Nudges)}
+                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Styles, Connections, Environments, Asks, Nudges)}

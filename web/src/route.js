@@ -10,7 +10,13 @@ export const route = computed(() => {
     const [env = "", page = "", n = ""] = path.split("/");
     const params = new URLSearchParams(query);
     const [openType = "", openN = ""] = (params.get("open") || "").split(":");
-    return {env, page, n: n ? Number(n) : 0, q: params.get("q") || "", open: openType ? {type: openType, n: Number(openN)} : null};
+    return {
+        env,
+        page,
+        n: n ? (/^\d+$/.test(n) ? Number(n) : n) : 0,
+        q: params.get("q") || "",
+        open: openType ? {type: openType, n: Number(openN)} : null,
+    };
 });
 
 export function go(env, page = "", n = 0, q = "") {

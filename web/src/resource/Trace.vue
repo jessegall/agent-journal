@@ -1,5 +1,6 @@
 <script setup>
 import {computed} from "vue";
+import {route} from "../route.js";
 
 const props = defineProps({resource: Object});
 const files = computed(() => props.resource.data.changed || []);
@@ -36,7 +37,7 @@ const commits = computed(() => props.resource.data.commits || []);
             <div class="trace-commits">
                 <template v-for="c in commits" :key="c.sha">
                     <div class="trace-commit">
-                        <code class="trace-sha">{{ c.sha.slice(0, 7) }}</code>
+                        <a class="trace-sha" :href="`#/${route.env}/commit/${c.sha}`">{{ c.sha.slice(0, 7) }}</a>
                         <span class="trace-subject">{{ c.subject }}</span>
                     </div>
                 </template>
@@ -119,6 +120,8 @@ const commits = computed(() => props.resource.data.commits || []);
 
 .trace-sha {
     flex: none;
+    text-decoration: none;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
     padding: 1px 5px;
     border-radius: 4px;
     background: var(--raised);

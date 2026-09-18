@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {route} from "./route.js";
-import {boot, listen, reload, store} from "./store.js";
+import {away, boot, listen, reload, store} from "./store.js";
 import Sidebar from "./layout/Sidebar.vue";
 import TopBar from "./layout/TopBar.vue";
 import StatusBar from "./layout/StatusBar.vue";
@@ -12,13 +12,16 @@ import Index from "./pages/Index.vue";
 import SettingsPage from "./pages/SettingsPage.vue";
 import SearchPage from "./pages/SearchPage.vue";
 import FilesPage from "./pages/FilesPage.vue";
+import CommitPage from "./pages/CommitPage.vue";
 import Reader from "./resource/Reader.vue";
 import Lightbox from "./kit/Lightbox.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
 import ChatWindow from "./layout/ChatWindow.vue";
+import AwayCard from "./layout/AwayCard.vue";
+import UpgradeBand from "./layout/UpgradeBand.vue";
 
 const page = computed(() =>
-    !route.value.page ? "home" : ["settings", "search", "files"].includes(route.value.page) ? route.value.page : "index"
+    !route.value.page ? "home" : ["settings", "search", "files", "commit"].includes(route.value.page) ? route.value.page : "index"
 );
 const opened = computed(
     () => route.value.open || (route.value.n && page.value === "index" ? {type: route.value.page, n: route.value.n} : {type: "", n: 0})
@@ -69,6 +72,7 @@ watch(
             <Sidebar />
             <div class="main">
                 <TopBar />
+                <UpgradeBand />
                 <StatusBar />
                 <Transition name="page" mode="out-in">
                     <div :key="route.page || 'home'" class="page">
@@ -77,6 +81,7 @@ watch(
                             <template #settings><SettingsPage /></template>
                             <template #search><SearchPage /></template>
                             <template #files><FilesPage /></template>
+                            <template #commit><CommitPage /></template>
                             <template #default><Index :type="route.page" /></template>
                         </SwitchCase>
                     </div>
@@ -90,6 +95,9 @@ watch(
             <Transition name="quick">
                 <QuickMenu v-if="quick" @close="quick = false" />
             </Transition>
+            <template v-if="away.open">
+                <AwayCard />
+            </template>
         </div>
     </template>
 </template>

@@ -14,7 +14,9 @@ const title = computed(() =>
             ? "Search"
             : route.value.page === "files"
               ? "Files"
-              : `${meta(route.value.page).title}s`
+              : route.value.page === "commit"
+                ? "Commit"
+                : `${meta(route.value.page).title}s`
 );
 const waiting = computed(() => unreadByUser("notification").length);
 const drop = ref(false);

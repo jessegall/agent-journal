@@ -338,7 +338,7 @@ async function runAsk(base, ask) {
     out = { text: e.message || String(e) };
   }
   try {
-    await fetch(`${base}/api/env/${DRIVE.env}/browser/${ask.n}/result`, {
+    await fetch(`${base}/api/${DRIVE.env}/browser/${ask.n}/result`, {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ ok, text: out.text || "", files: out.files || [] }),
     });
@@ -350,7 +350,7 @@ async function pollAsks() {
   const to = await target();
   if (to.why) return;
   try {
-    const r = await fetch(`${to.url}/api/env/${DRIVE.env}/browser/pending`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+    const r = await fetch(`${to.url}/api/${DRIVE.env}/browser/pending`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
     if (!r.ok) return;
     const got = await r.json();
     for (const ask of ((got && got.data) || [])) await runAsk(to.url, ask);
@@ -361,7 +361,7 @@ async function tellDriver(on) {
   const to = await target();
   if (to.why) return;
   try {
-    await fetch(`${to.url}/api/env/${DRIVE.env || to.env}/browser/driver`, {
+    await fetch(`${to.url}/api/${DRIVE.env || to.env}/browser/driver`, {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ on, url: DRIVE.url, title: DRIVE.title }),
     });

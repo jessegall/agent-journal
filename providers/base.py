@@ -38,7 +38,7 @@ class Provider(ABC):
 
     def handle(self, root: Path, env: str, payload: dict) -> dict:
         event = payload.get("hook_event_name") or ""
-        if event not in STATUS:
+        if event not in STATUS or (root / "runtime" / "off").is_file():
             return {}
         agents = CONTROLLERS["agent"](Record(root, env), actor=SYSTEM)
         row = agents.by_session(self.session_of(payload))

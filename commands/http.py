@@ -1,7 +1,9 @@
 import json
 import mimetypes
 import re
+import subprocess
 import tempfile
+import time
 from email import policy
 from email.parser import BytesParser
 from dataclasses import asdict, dataclass, field
@@ -9,6 +11,7 @@ from pathlib import Path
 from queue import Empty, Queue
 from typing import Callable, Iterator
 from urllib.parse import unquote
+from urllib.request import urlopen
 
 import features
 from controllers.types import CONTROLLERS
@@ -146,6 +149,75 @@ def post_settings(req: Request) -> Reply:
     return Reply(200, settings(record))
 
 
+UPSTREAM = "https://raw.githubusercontent.com/jessegall/agent-journal/main/VERSION"
+
+
+def upstream(root: Path) -> str:
+    cache = root / "runtime" / "upstream.cache"
+    try:
+        if cache.is_file() and time.time() - cache.stat().st_mtime < 900:
+            return cache.read_text().strip()
+        with urlopen(UPSTREAM, timeout=3) as r:
+            latest = r.read().decode().strip()
+    except OSError:
+        return cache.read_text().strip() if cache.is_file() else ""
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text(latest)
+    return latest
+
+
+def newer(a: str, b: str) -> bool:
+    key = lambda v: tuple(int(x) if x.isdigit() else 0 for x in v.split("."))
+    return bool(a and b) and key(a) > key(b)
+
+
+@route("GET", "/api/upstream")
+def get_upstream(req: Request) -> Reply:
+    installed = manifest(req.root)["version"]
+    latest = upstream(req.root)
+    return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed)})
+
+
+@route("POST", "/api/upgrade")
+def post_upgrade(req: Request) -> Reply:
+    from install import upgrade
+    return Reply(200, {"lines": upgrade(req.root.parent, req.root)})
+
+
+@route("GET", "/api/journals")
+def get_journals(req: Request) -> Reply:
+    found = []
+    for port in range(8420, 8440):
+        try:
+            with urlopen(f"http://127.0.0.1:{port}/api/identity", timeout=0.25) as r:
+                got = json.loads(r.read())
+        except (OSError, ValueError):
+            continue
+        found.append({"port": port, "project": got.get("project", ""), "version": got.get("version", ""), "root": got.get("root", ""), "current": got.get("root") == str(req.root)})
+    return Reply(200, found)
+
+
+@route("POST", "/api/{env}/browser/driver")
+def post_driver(req: Request) -> Reply:
+    from controllers.types import driver_file
+    f = driver_file(req.root, req.params["env"])
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(json.dumps({"on": bool(req.body.get("on")), "url": req.body.get("url", ""), "title": req.body.get("title", ""), "at": time.time()}))
+    return Reply(200, {"ok": True})
+
+
+@route("POST", "/api/{env}/browser/pending")
+def post_pending(req: Request) -> Reply:
+    asks = CONTROLLERS["browser"](req.record(), actor=USER).pending()
+    return Reply(200, {"data": [{"n": a.n, "op": a.data.get("op"), "args": a.data.get("args") or []} for a in asks]})
+
+
+@route("POST", "/api/{env}/browser/{n}/result")
+def post_result(req: Request) -> Reply:
+    got = CONTROLLERS["browser"](req.record(), actor=USER).answer(int(req.params["n"]), req.body.get("text", ""), ok=bool(req.body.get("ok", True)), files=req.body.get("files") or [])
+    return Reply(200, shaped(got))
+
+
 @route("GET", "/api/{env}/files")
 def get_files(req: Request) -> Reply:
     record = req.record()
@@ -169,6 +241,23 @@ def get_transcript(req: Request) -> Reply:
     turns = provider().transcript(Path(row.data.get("transcript") or "")) if provider and row.data.get("transcript") else []
     since = int(req.query.get("since") or 0)
     return Reply(200, [{"line": t.line, "who": t.who, "text": t.text} for t in turns if t.line > since][-int(req.query.get("last") or 300):])
+
+
+@route("GET", "/api/{env}/commit/{sha}")
+def get_commit(req: Request) -> Reply:
+    sha = req.params["sha"]
+    if not re.fullmatch(r"[0-9a-f]{7,40}", sha):
+        raise Missing("not a commit")
+    try:
+        head = subprocess.run(["git", "show", "-s", "--format=%H%x1f%an%x1f%at%x1f%s%x1f%b", sha], cwd=req.root.parent, capture_output=True, text=True, timeout=5)
+        stat = subprocess.run(["git", "show", "--stat=120", "--format=", sha], cwd=req.root.parent, capture_output=True, text=True, timeout=5).stdout
+        diff = subprocess.run(["git", "show", "--format=", "--no-color", sha], cwd=req.root.parent, capture_output=True, text=True, timeout=10).stdout
+    except (OSError, subprocess.SubprocessError):
+        raise Missing("git did not answer")
+    if head.returncode:
+        raise Missing(f"no commit {sha}")
+    full, author, at, subject, body = (head.stdout.rstrip("\n").split("\x1f", 4) + ["", "", "", ""])[:5]
+    return Reply(200, {"sha": full, "author": author, "at": float(at or 0), "subject": subject, "body": body, "stat": stat, "diff": diff[:200000]})
 
 
 @route("GET", "/api/{env}/search")

@@ -1,6 +1,6 @@
 <script setup>
-import {computed, reactive, ref} from "vue";
-import {create} from "../api.js";
+import {computed, onMounted, onUnmounted, reactive, ref} from "vue";
+import {api, create} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {load, navTypes, open, rows, store, unreadByUser} from "../store.js";
@@ -12,6 +12,22 @@ const fold = (key) => {
     folded[key] = !folded[key];
 };
 const count = (t) => (t.attention ? unreadByUser(t.name).length : open(t.name).length);
+const journals = ref([]);
+const switching = ref(false);
+const switchWrap = ref(null);
+const colorOf = (name) => `hsl(${[...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7)} 55% 60%)`;
+async function openJournals() {
+    switching.value = !switching.value;
+    if (switching.value) journals.value = await api("GET", "/journals");
+}
+onMounted(async () => {
+    journals.value = await api("GET", "/journals");
+});
+const away = (e) => {
+    if (switchWrap.value && !switchWrap.value.contains(e.target)) switching.value = false;
+};
+window.addEventListener("click", away);
+onUnmounted(() => window.removeEventListener("click", away));
 const live = (name) => store.agents.some((a) => a.data.status && a.data.status !== "stopped" && a.data.env === name);
 
 async function makeEnv() {
@@ -29,10 +45,39 @@ async function makeEnv() {
 
 <template>
     <aside class="side">
-        <a class="project" :href="`#/${route.env}`">
-            <span class="logo">{{ route.env.charAt(0).toUpperCase() }}</span>
-            {{ route.env }}
-        </a>
+        <div ref="switchWrap" class="project-wrap">
+            <button
+                type="button"
+                class="project"
+                :title="journals.length > 1 ? 'Journals running on this machine' : route.env"
+                :aria-expanded="switching"
+                @click="openJournals"
+            >
+                <span class="logo">{{ route.env.charAt(0).toUpperCase() }}</span>
+                <span class="project-name">{{ route.env }}</span>
+                <template v-if="journals.length > 1">
+                    <Icon name="down" :size="11" />
+                </template>
+            </button>
+            <Transition name="drop">
+                <div v-if="switching" class="journals">
+                    <div class="journals-head">Journals running on this machine</div>
+                    <template v-for="j in journals" :key="j.port">
+                        <a
+                            :class="['journal-row', {current: j.current}]"
+                            :href="j.current ? `#/${route.env}` : `http://127.0.0.1:${j.port}/`"
+                            @click="switching = false"
+                        >
+                            <span class="journal-dot" :style="{background: colorOf(j.project)}" />
+                            <span class="journal-name">{{ j.project }}</span>
+                            <span class="journal-port">
+                                {{ j.current ? "this one" : `port ${j.port}` }}{{ j.version ? ` · ${j.version}` : "" }}
+                            </span>
+                        </a>
+                    </template>
+                </div>
+            </Transition>
+        </div>
         <div class="group">
             <button type="button" class="group-label fold-head" :aria-expanded="!folded.environment" @click="fold('environment')">
                 Environment
@@ -133,14 +178,105 @@ async function makeEnv() {
 .side > .group {
     padding-inline: 10px;
 }
+.project-wrap {
+    position: relative;
+}
+
 .project {
     display: flex;
     align-items: center;
     gap: 9px;
+    width: 100%;
     padding: 6px 8px;
+    border: 0;
+    border-radius: 7px;
+    background: none;
+    font: inherit;
     font-weight: 600;
     font-size: 13.5px;
     color: var(--text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.project:hover {
+    background: var(--hover);
+}
+
+.journals {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 8px;
+    right: 8px;
+    z-index: 40;
+    padding: 4px;
+    border: 1px solid var(--border-2);
+    border-radius: 9px;
+    background: var(--raised);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+}
+
+.journals-head {
+    padding: 6px 8px;
+    font-size: 11px;
+    color: var(--text-3);
+}
+
+.journal-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    color: var(--text-2);
+    text-decoration: none;
+    font-size: 12.5px;
+}
+
+.journal-row:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.journal-row.current {
+    color: var(--text);
+}
+
+.journal-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.journal-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.journal-port {
+    font-size: 11px;
+    color: var(--text-3);
+}
+
+.drop-enter-active {
+    transition:
+        opacity 0.16s ease-out,
+        transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.drop-leave-active {
+    transition:
+        opacity 0.12s ease-in,
+        transform 0.12s ease-in;
+}
+
+.drop-enter-from,
+.drop-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
 }
 .project:hover {
     color: var(--text);
