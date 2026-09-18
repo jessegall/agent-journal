@@ -3914,11 +3914,14 @@ const NeedsCard = {
     <div :class="['needs-card', item.kind, {sel: selected}]" :style="{ '--tint': item.tint }"
       role=button :tabindex="0" :aria-label="item.label + ': ' + item.title"
       @click="item.open" @keydown.enter.self.prevent="item.open" @keydown.space.self.prevent="item.open">
+      <!-- WHAT IT IS, THEN WHAT IT SAYS, THEN WHICH ONE. The kind was under the words, so a column of
+           cards read as a column of sentences and you learned what each one was after reading it. -->
       <div class=needs-card-top>
-        <p class=needs-card-title>{{ item.title }}</p>
+        <span class=needs-card-kind>{{ item.label }}</span>
         <button v-if="!item.sticky" type=button class=needs-dismiss title="Dismiss" aria-label="Dismiss" @click.stop="dismiss(item)"><Icon name="close"/></button>
       </div>
-      <div class=needs-card-meta><span class=needs-card-kind>{{ item.label }}</span>{{ item.meta }}</div>
+      <p class=needs-card-title>{{ item.title }}</p>
+      <div class=needs-card-meta>{{ item.meta }}</div>
       <!-- A BUTTON IS FOR AN ACT, and only a card that DOES something carries one: continuing past a
            checkpoint, starting a plan. A report you read and a question you answer are not acts, they
            are openings — and the whole card already opens, so the button was a second, louder way to

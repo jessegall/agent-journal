@@ -1351,7 +1351,8 @@
      so a question, a report and a message read as different things rather than four identical rows. */
   /* THE TITLE LEADS. The kind and the age used to share a row above it, which in a 288px rail pushed
      the title down and clipped it. They are what the title is, so they go under it. */
-  .needs-card-top { display: flex; align-items: flex-start; gap: 8px; }
+  .needs-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    margin-bottom: 3px; }
   .needs-card-top .needs-card-title { flex: 1 1 auto; min-width: 0; }
   .needs-card .needs-card-meta { display: flex; flex-wrap: wrap; gap: 6px; }
   .needs-card { position: relative; display: flex; flex-direction: column; gap: 5px; margin-bottom: 7px;
@@ -1366,7 +1367,8 @@
   .needs-card.question .needs-card-title { color: var(--text); font-weight: 500; }
   .needs-card-top { display: flex; align-items: baseline; gap: 9px; }
   .needs-card-kind { flex: none; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--tint); }
-  .needs-card-meta { flex: 1 1 auto; min-width: 0; font-size: 11px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .needs-card-meta { margin-top: 3px; min-width: 0; font-size: 11px; color: var(--text-3);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .needs-card-top .needs-dismiss { flex: none; margin: -4px -6px -4px 0; }
   .needs-card-title { margin: 0; font-size: 13px; line-height: 1.45; color: var(--text-2); text-wrap: pretty; }
   .needs-card-foot { display: flex; align-items: center; }
