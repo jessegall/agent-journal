@@ -55,3 +55,9 @@ class Claude(Provider):
         if row.get("isCompactSummary"):
             return "summary", text
         return ("user" if row["type"] == "user" else "agent"), text
+
+    def tool_uses(self, row: dict) -> list[dict]:
+        if row.get("type") != "assistant" or row.get("isSidechain"):
+            return []
+        content = (row.get("message") or {}).get("content")
+        return [{"name": b.get("name", ""), "input": b.get("input") or {}} for b in content or () if isinstance(b, dict) and b.get("type") == "tool_use"]

@@ -170,4 +170,35 @@ driver.report = {"at": time.time(), "event": "PostToolUse", "status": WORKING}
 driver.quiet = 1.0
 check("a fresh report: no probe", engine.tick() != "silent for two minutes: probing with Ctrl-C", True)
 
+# THE ENGINE RELAYS what other processes wrote to its own features, once, and never its own writes twice
+import json as _json  # noqa: E402
+heard = []
+bus.on("*", lambda e, r: heard.append(e.id))
+relay_record = Record(Path(tempfile.mkdtemp()) / ".journal", "main")
+relay_driver = Fake(relay_record)
+relay_driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
+relay_engine = Engine(relay_record, relay_driver)
+relay_engine.tick()
+foreign = relay_record.emit("todo", 1, "created", USER)
+lines = (relay_record.home / "events.jsonl").read_text().splitlines()
+lines[-1] = _json.dumps({**_json.loads(lines[-1]), "pid": 1})
+(relay_record.home / "events.jsonl").write_text("\n".join(lines) + "\n")
+heard.clear()
+relay_engine.tick()
+check("an event written by another process reaches the engine's bus once", heard, [foreign.id])
+heard.clear()
+relay_engine.tick()
+check("and not again", heard, [])
+relay_record.emit("todo", 2, "created", USER)
+heard.clear()
+relay_engine.tick()
+check("the engine's own emit is not relayed a second time", heard, [])
+bus.clear()
+
+# THE ENGINE FOLLOWS ITS SESSION: a resumed session bound to another environment takes the engine there
+from engine.sessions import Sessions  # noqa: E402
+driver.report = {"at": time.time(), "event": "SessionStart", "status": IDLE, "session": "s-old"}
+Sessions(root).bind("s-old", "elsewhere")
+check("the engine moves to the session's environment", (engine.tick(), engine.record.env), ("following the session to elsewhere", "elsewhere"))
+
 done()

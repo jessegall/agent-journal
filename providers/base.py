@@ -118,6 +118,29 @@ class Provider(ABC):
     def turn(self, row: dict) -> tuple[str, str] | None:
         return None
 
+    def tools(self, path: Path) -> list[dict]:
+        try:
+            raw = Path(path).read_text().splitlines()
+        except OSError:
+            return []
+        found = []
+        for line in raw:
+            try:
+                found.extend(self.tool_uses(json.loads(line)))
+            except ValueError:
+                continue
+        return found
+
+    def tool_uses(self, row: dict) -> list[dict]:
+        return []
+
+    def crew(self, path: Path) -> dict:
+        uses = self.tools(path)
+        skills = sorted({str((u.get("input") or {}).get("skill") or "") for u in uses if u.get("name") == "Skill"} - {""})
+        shells = sum(1 for u in uses if u.get("name") == "Bash" and (u.get("input") or {}).get("run_in_background"))
+        subagents = sum(1 for u in uses if u.get("name") in ("Agent", "Task"))
+        return {"skills": skills, "shells": shells, "subagents": subagents}
+
     @abstractmethod
     def present(self, project: Path) -> bool: ...
 

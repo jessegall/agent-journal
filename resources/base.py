@@ -25,6 +25,7 @@ class Event:
     action: str        # one of ACTIONS
     actor: str    # one of ACTORS
     data: dict = field(default_factory=dict)
+    pid: int = 0
 
     @property
     def ref(self) -> str:
