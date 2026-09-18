@@ -4300,12 +4300,14 @@ const Thread = {
       const rows = (faces.data && faces.data[key]) || [];
       const seen = new Map();
       rows.forEach((r) => {
-        const got = seen.get(r.face) || { face: r.face, n: 0, mine: false };
+        const got = seen.get(r.face) || { face: r.face, n: 0, mine: false, who: [] };
         got.n += 1;
         got.mine = got.mine || r.by === "user";
+        got.who.push(r.by === "user" ? "you" : "the agent");
         seen.set(r.face, got);
       });
-      return [...seen.values()];
+      // the hover says who: "you and the agent reacted ❤️", and what a click would do
+      return [...seen.values()].map((f) => ({ ...f, title: `${[...new Set(f.who)].join(" and ")} reacted ${f.face}${f.mine ? " — click to take yours off" : " — click to react with it too"}` }));
     };
     const react = (t, face) => {
       picking.value = "";
@@ -4787,7 +4789,7 @@ const Thread = {
              it off, and nothing about it is a notification. -->
         <div v-if="reactionsOn(t).length" class=thread-faces>
           <button v-for="f in reactionsOn(t)" :key="f.face" type=button
-            :class="['thread-face', {mine: f.mine}]" :title="f.mine ? 'Take yours off' : 'React with this too'"
+            :class="['thread-face', {mine: f.mine}]" :title="f.title"
             @click.stop="react(t, f.face)">{{ f.face }}<span v-if="f.n > 1" class=thread-face-n>{{ f.n }}</span></button>
         </div>
         <div class=thread-meta>
