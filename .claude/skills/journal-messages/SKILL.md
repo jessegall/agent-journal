@@ -129,6 +129,19 @@ matters: while the agent is working, only the user speaking gets through — a m
 question, a comment, a reaction — and the rest waits for its next stop. A wake-up is never a reason
 to start on the to-do list.
 
+**What the channel actually says, and what each one means:**
+
+| it arrives as                                                     | what it is |
+|-------------------------------------------------------------------|------------|
+| *The user left message N on `env`*                                 | read it with `messages show N` — never act on the line itself, which carries no excerpt on purpose |
+| *The user answered under message N*                                | their reply in the thread: a turn owed an answer, not a new message |
+| *The user answered question N* / *reacted 👍 to …*                  | an answer. A face is one character of the user speaking — read it as the yes, thanks or laugh it is, and file nothing |
+| *The user approved / continued plan N*                             | the plan moved: `journal plans show N` and carry on with the phase that is now open |
+| *The user did this on `env`: …*                                    | the catch-all. Any viewer write with no wording of its own — a to-do re-prioritised, a setting changed, a pin struck — reaches you like this. Read what it changed and act on it |
+| *N thing(s) are waiting on `env`, and this session is on no environment* | somebody is waiting somewhere you are not. Nothing there is yours until you pick an environment |
+| *Nothing has moved on `env` for N minutes and auto mode is on*      | the idle nudge: the list is ready and nothing is running. `journal next`, then pick it up |
+| *the viewer had stopped and is up again at …*                       | the hook restarted it for the user; nothing to do |
+
 **So the record can change under you.** A to-do you are working may have been re-prioritised
 or rewritten, and a pin you rely on may have been struck. Before acting on something you read
 a while ago, read it again. What the user did in the browser reaches you as a message, an

@@ -263,7 +263,10 @@ they are precisely what the summary dropped. At a fresh start, the block lists t
 rules, pins, open work and to-dos, and says which environment this session is on.
 
 **A new session is on none.** It is not given one: you choose it, from the first thing the
-user says, because you are the one who has read it. If that message names or plainly implies
+user says, because you are the one who has read it. **The one exception is not a choice at all**:
+where the project has exactly one environment AND a message is waiting on it, the session is bound
+to it before your first prompt — there is nothing to choose between, and asking would leave the
+message unread. If that message names or plainly implies
 an environment, take it — `journal switch "<name>"` — and say in one line which you took, so
 a wrong guess costs one word to correct. If the work is real and belongs on none of them,
 `journal prepare "<name>"`. If the message asks for nothing to work on — a greeting, a
@@ -314,6 +317,8 @@ thing to do now.
 | *A subagent dispatch must name its model*                       | add `model`: haiku, sonnet or opus. A fork, or an agent whose definition sets its model, goes through |
 | *AUTO IS ON, so the question tool is refused*                  | `questions add "<question>" --about=<ref>` and carry on with what does not depend on it |
 | *N untagged message(s)*                                        | tag your next message; it will not hold for those lines again |
+| *this session has not opened a journal skill*                  | load the `journal` skill and the focused one for what you are doing. It fires after a dozen tool calls, because a session working from memory is working from a summary of these files |
+| *what you searched for is attached to a doc*                   | read the doc's own copy before grepping the repo: `journal docs <n>` — somebody already filed it |
 | *work still open* / *auto is on, work still open*              | `work end` it, `update` where it got to, or `work await "<what>"` if it is in flight |
 | *auto is on, but the open work was opened by another session*  | not yours to end: leave it to that session; if that session is gone, `work end --force "<note>"` if it is finished, or ask the user |
 | *Nothing is open, so this edit would not be filed*             | `work start` the work, then edit                            |
