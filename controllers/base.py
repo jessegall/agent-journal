@@ -185,7 +185,7 @@ class Controller:
 
     def unread(self, actor: str | None = None) -> list[Resource]:
         who = actor or self.actor
-        return [r for r in self.all() if who not in r.seen]
+        return [r for r in self.all() if who not in r.seen and not r.completed]
 
     def all(self, deleted: bool = False) -> list[Resource]:
         rows = [self.load(n) for n in self.numbers()]
