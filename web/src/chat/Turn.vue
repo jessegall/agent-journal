@@ -7,7 +7,7 @@ import {clock, meta, quoted, reload, rows} from "../store.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠"];
 const props = defineProps({turn: Object});
-const emit = defineEmits(["reply"]);
+const emit = defineEmits(["reply", "grew"]);
 const picking = ref(false);
 const mine = computed(() => props.turn.who === "user");
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
@@ -71,7 +71,7 @@ async function drop() {
                     <template v-for="f in files" :key="f">
                         <a class="thread-file" :href="fileUrl(route.env, turn.type, turn.n, f)" target="_blank">
                             <template v-if="picture(f)">
-                                <img class="thread-image" :src="fileUrl(route.env, turn.type, turn.n, f)" :alt="f" />
+                                <img class="thread-image" :src="fileUrl(route.env, turn.type, turn.n, f)" :alt="f" @load="emit('grew')" />
                             </template>
                             <template v-else>
                                 <span class="thread-file-name">
