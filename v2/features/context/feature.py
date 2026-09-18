@@ -18,7 +18,7 @@ class Context(Feature):
             return self.release(record)
         if self.due(record, agent):
             pct = agent.data.get("context")
-            self.hold(record, f"context {pct}% full: decide before any other write — journal pin, journal rule, or journal nothing \"<why>\"")
+            self.hold(record, f"context {pct}% full — decide before any other write — journal pin, journal rule, or journal nothing \"<why>\"")
             self.nudge(record, agent, f"context {pct}% full, decide", "pin what a later reader would get wrong without, rule what binds every environment, or nothing \"<why>\"")
 
     @on("pin.created")
