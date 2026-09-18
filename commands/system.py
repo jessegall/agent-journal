@@ -456,7 +456,7 @@ class Claude(Command):
 
 class Codex(Command):
     """Codex under the journal's launcher: the terminal is the channel, so nothing in Codex has to push."""
-    signature = "codex {prompt*? : what to ask Codex first} {--dry-run}"
+    signature = "codex {prompt*? : what to ask Codex first} {--quiet : never type the viewer's news into it} {--dry-run}"
     passthrough = True
 
     def run(self, p: Parsed) -> int:
@@ -479,7 +479,9 @@ class Codex(Command):
         sys.stdout.flush()
         sys.stderr.flush()
         import launch
-        return launch.run(command, cwd=project())
+        import state
+        return launch.run(command, cwd=project(), root=root(), env=state.current_track(root()) or "",
+                          quiet=bool(p.option("quiet")))
 
 
 def has_statusline() -> bool:
