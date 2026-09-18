@@ -4866,6 +4866,13 @@ const EnvHome = {
           <p v-if="EXTENSION.holding">The chat is in the extension's window, and follows you across tabs.</p>
           <p v-else>The chat is in its own window.</p>
           <button type=button class=thread-gone-back @click="detach(false)">Put it back on the page</button>
+          <!-- THE WINDOW ENDS AT THIS TAB, and the thing that would carry it further ships with the
+               journal. Said here, where the empty slot has just raised the question, and only when
+               the extension is not already answering. -->
+          <p v-if="!EXTENSION.here" class=thread-gone-more>
+            This window lives on this tab. The journal's Chrome extension carries it to any page —
+            <a :href="'#/env/' + env + '/settings'">get it in Settings</a>.
+          </p>
         </div>
       </section>
       <!-- the rule between the two columns is the handle: drag it, and let go near where it started
