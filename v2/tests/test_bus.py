@@ -52,6 +52,7 @@ for type_ in TYPES:                                   # every type and every act
     off()
 
 bus.clear()
+heard.clear()
 bus.emit(event("todo", "created"))
 check("cleared: nothing listens, nothing breaks", heard, [])
 
