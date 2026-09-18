@@ -10,7 +10,11 @@
   const ask = (msg, cb) => { try { chrome.runtime.sendMessage(msg, (got) => { void chrome.runtime.lastError; if (cb) cb(got); }); } catch (e) { if (cb) cb(null); } };
   const stored = (key) => { try { return chrome.storage.local.get(key).catch(() => ({})); } catch (e) { return Promise.resolve({}); } };
   const store = (value) => { try { chrome.storage.local.set(value).catch(() => {}); } catch (e) { /* not remembered, not fatal */ } };
-  const tellBackground = (kind, extra) => ask({ kind, ...(extra || {}) });
+  const tellBackground = (kind, extra) => {
+    ask({ kind, ...(extra || {}) });
+    // the page under the window may be the journal's own: told the window closed, it draws the chat again
+    if (kind === "closed") try { window.postMessage({ source: "journal-extension", kind: "attached" }, window.location.origin); } catch (e) { /* nothing to tell */ }
+  };
   const old = document.getElementById(ID);
   if (old) {                                        // the shortcut toggles: press it again to close
     old.remove();
