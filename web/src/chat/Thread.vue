@@ -20,6 +20,9 @@ const turns = computed(() =>
         ...rows("comment")
             .filter((c) => !c.deleted && c.refs.some((r) => r.startsWith("message:")))
             .map((c) => ({...c, who: c.seen[0]})),
+        ...rows("question")
+            .filter((q) => !q.deleted)
+            .map((q) => ({...q, who: "agent"})),
     ].sort((a, b) => a.created - b.created)
 );
 

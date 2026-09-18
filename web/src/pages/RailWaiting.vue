@@ -33,7 +33,7 @@ async function dismiss(r) {
         <section class="home-section">
             <div class="needs-slot">
                 <template v-for="r in cards" :key="r.ref">
-                    <div :class="['needs-card', r.type]" :style="{'--tint': TINT[r.type] || 'var(--text-3)'}" @click="peek(r.type, r.n)">
+                    <div :class="['needs-card', r.type]" @click="peek(r.type, r.n)">
                         <div class="needs-card-top">
                             <span class="needs-card-kind">{{ meta(r.type).title }}</span>
                             <span class="needs-card-meta">{{ r.type }} {{ r.n }}</span>
@@ -97,8 +97,8 @@ async function dismiss(r) {
     top: 0;
     bottom: 0;
     width: 2px;
-    background: var(--tint);
-    opacity: 0.7;
+    background: var(--text-3);
+    opacity: 0.5;
 }
 
 .needs-card:hover {
@@ -131,7 +131,7 @@ async function dismiss(r) {
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--tint);
+    color: var(--text-3);
 }
 
 .needs-dismiss {

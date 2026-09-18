@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import {act, fileUrl} from "../api.js";
 import Icon from "../kit/Icon.vue";
+import OptionsPicker from "../resource/OptionsPicker.vue";
 import {peek, route} from "../route.js";
 import {clock, meta, quoted, reload, rows} from "../store.js";
 
@@ -66,6 +67,12 @@ async function drop() {
                 <p class="thread-quote">{{ words.quote }}</p>
             </template>
             <div class="thread-text">{{ words.text }}</div>
+            <template v-if="turn.type === 'question'">
+                <template v-if="turn.abstract">
+                    <p class="thread-context">{{ turn.abstract }}</p>
+                </template>
+                <OptionsPicker :resource="turn" />
+            </template>
             <template v-if="files.length">
                 <div class="thread-files">
                     <template v-for="f in files" :key="f">
@@ -256,6 +263,12 @@ button.thread-pill:hover {
 
 .thread-text {
     white-space: pre-wrap;
+}
+
+.thread-context {
+    margin: 4px 0 0;
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
 .thread-files {
