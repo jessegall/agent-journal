@@ -6938,7 +6938,14 @@ const App = {
     };
     const shellFold = () => { SHELL_UI.shut = !SHELL_UI.shut; tellShell(SHELL_UI.shut ? "shut" : "open"); if (SHELL_UI.shut) { const env = envName.value; if (env && route.view !== "EnvHome") location.hash = `#/env/${env}`; } };
     const shellClose = () => tellShell("close");
-    const shellPickJournal = (j) => { SHELL_UI.journalsOpen = false; tellShell("pick", { url: j.url, env: "" }); };
+    // THE FRAME GOES THERE ITSELF. Telling the shell records the choice for every window; going
+    // is not left to the shell, which may be an older one that matched the url wrong or not at all.
+    const shellPickJournal = (j) => {
+      SHELL_UI.journalsOpen = false;
+      const url = String(j.url || "").replace(/\/+$/, "");
+      tellShell("pick", { url, env: "" });
+      if (!j.current) location.href = `${url}/?chat`;
+    };
     const shellPickEnv = (name) => { SHELL_UI.envsOpen = false; tellShell("pick", { url: location.origin, env: name }); location.hash = `#/env/${name}`; };
     const outsideShell = (e) => { if (!e.target.closest(".shell-menu, .shell-pick")) { SHELL_UI.journalsOpen = false; SHELL_UI.envsOpen = false; } };
     document.addEventListener("mousedown", outsideShell);
