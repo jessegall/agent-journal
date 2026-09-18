@@ -10,8 +10,9 @@ const state = computed(() => (agent.value && agent.value.data.status !== "stoppe
 const line = computed(() => {
     if (state.value === "stopped") return "no agent is on this environment";
     const work = rows("work").find((w) => !w.completed);
-    return work ? `on ${work.title}` : agent.value.data.tool ? `using ${agent.value.data.tool}` : "waiting for something to do";
+    return work ? `on ${work.title}` : state.value === "idle" ? "waiting for you" : "working";
 });
+const command = computed(() => (agent.value && state.value !== "stopped" && state.value !== "idle" ? agent.value.data.command || "" : ""));
 const plans = computed(() => rows("plan").filter((p) => ["ready", "active", "waiting", "done"].includes(p.data.status) && !p.completed));
 const error = ref("");
 
@@ -49,6 +50,9 @@ async function runBar(p) {
             <b>{{ state[0].toUpperCase() + state.slice(1) }}</b>
             <span class="statusbar-line">{{ line }}</span>
         </button>
+        <template v-if="command">
+            <span class="statusbar-running" :title="command">{{ command }}</span>
+        </template>
         <span class="statusbar-tools">
             <Switch
                 :on="autoOn"
@@ -144,6 +148,18 @@ async function runBar(p) {
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--text-2);
+}
+
+.statusbar-running {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 40%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-3);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
 }
 
 .statusbar-tools {

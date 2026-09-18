@@ -12,6 +12,7 @@ import Index from "./pages/Index.vue";
 import SettingsPage from "./pages/SettingsPage.vue";
 import SearchPage from "./pages/SearchPage.vue";
 import Reader from "./resource/Reader.vue";
+import Lightbox from "./kit/Lightbox.vue";
 
 const page = computed(() => (!route.value.page ? "home" : ["settings", "search"].includes(route.value.page) ? route.value.page : "index"));
 
@@ -50,6 +51,7 @@ watch(
             <template v-else-if="route.n && page === 'index'">
                 <Reader :type="route.page" :n="route.n" />
             </template>
+            <Lightbox />
         </div>
     </template>
 </template>

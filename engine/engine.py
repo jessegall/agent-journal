@@ -1,4 +1,5 @@
 import json
+import subprocess
 import time
 
 from controllers.types import CONTROLLERS
@@ -22,6 +23,8 @@ class Engine:
         self.actors: list[Actor] = [User(record), self.agent, System(record)]
         self.running = False
         self.born = time.time()
+        self.branched_at = 0.0
+        self.branch_name = ""
         self.typed_at = 0.0
         self.probed_at = 0.0
         self.why = ""
@@ -116,7 +119,22 @@ class Engine:
                 return f"{len(unread)} unread {type_}"
         return ""
 
+    def branch(self) -> str:
+        last = self.agent.driver.last_report() or {}
+        cwd = last.get("cwd") or str(self.record.root.parent)
+        if time.time() - self.branched_at < 10:
+            return self.branch_name
+        self.branched_at = time.time()
+        try:
+            self.branch_name = subprocess.run(["git", "-C", cwd, "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True, timeout=2).stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            self.branch_name = ""
+        if last.get("session") and self.branch_name and last.get("branch") != self.branch_name:
+            self.agent.mark(last.get("status", ""), last.get("event", ""), branch=self.branch_name, at=last.get("at"))
+        return self.branch_name
+
     def seat(self) -> None:
+        self.branch()
         f = self.record.root / "runtime" / f"seat-{self.agent.driver.session}.json"
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(json.dumps({"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,

@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
-import {age, agent, open} from "../store.js";
+import {agent, open, span} from "../store.js";
 import Thread from "../chat/Thread.vue";
 import Notice from "../chat/Notice.vue";
 import RailWaiting from "./RailWaiting.vue";
@@ -15,11 +15,22 @@ const notices = computed(() => open("notice"));
 const agentLine = computed(() => {
     if (!agent.value || agent.value.data.status === "stopped") return [];
     const a = agent.value.data;
-    const since = a.started ? age(a.started) : "";
+    const family = (a.model || "").match(/opus|sonnet|haiku|gpt[-\w.]*/i);
+    const name = {claude: "Claude Code", codex: "Codex"}[a.provider] || a.provider || "agent";
     return [
-        {icon: "agents", value: `${a.model || a.provider || "agent"} · ${agent.value.title.slice(0, 8)}`, lead: true},
-        {icon: "reminders", value: since && since !== "now" ? `${since} up` : "just started"},
-        {icon: "tools", value: `${a.uses || 0} tool uses`},
+        {
+            icon: "agents",
+            value: family ? `${name} · ${family[0].toLowerCase()}` : name,
+            lead: true,
+            title: `${a.model || ""} · session ${agent.value.title}`,
+        },
+        ...(a.branch ? [{icon: "branch", value: a.branch, title: "the branch it works on"}] : []),
+        {
+            icon: "reminders",
+            value: a.started ? span(Date.now() / 1000 - a.started) : "just started",
+            title: "how long this session has run",
+        },
+        {icon: "tools", value: String(a.uses || 0), title: "tool uses this session"},
         {bar: Number(a.context || 0), value: `${a.context || 0}%`},
     ];
 });
