@@ -3,7 +3,7 @@ import {computed, nextTick, onMounted, ref} from "vue";
 import {saveSettings} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
-import {autoOn, meta, navTypes, reload, store, types, unreadByUser} from "../store.js";
+import {autoOn, meta, navTypes, store, types, unreadByUser} from "../store.js";
 
 const emit = defineEmits(["close"]);
 const q = ref("");
@@ -38,7 +38,6 @@ const goTo = (page) => () => {
 async function setAuto(on) {
     emit("close");
     await saveSettings(route.value.env, {features: {auto: on}});
-    await reload();
 }
 
 const waiting = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));

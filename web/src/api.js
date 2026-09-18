@@ -1,3 +1,9 @@
+let settle = async () => {};
+
+export function onWrite(fn) {
+    settle = fn;
+}
+
 export async function api(method, path, body) {
     const res = await fetch(`/api${path}`, {
         method,
@@ -6,6 +12,7 @@ export async function api(method, path, body) {
     });
     const got = await res.json();
     if (!res.ok) throw new Error(got.error || res.statusText);
+    if (method !== "GET") await settle();
     return got;
 }
 

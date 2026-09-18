@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {act} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
-import {age, reload, rows} from "../store.js";
+import {age, rows} from "../store.js";
 
 const sub = ref("unread");
 const notes = computed(() => [...rows("notification")].reverse());
@@ -12,12 +12,10 @@ const shown = computed(() => (sub.value === "unread" ? unread.value : notes.valu
 
 async function readAll() {
     await Promise.all(unread.value.map((n) => act(route.value.env, "notification", n.n, "read")));
-    await reload();
 }
 
 async function openNote(n) {
     await act(route.value.env, "notification", n.n, "read");
-    await reload();
     const [type, num] = n.refs[0].split(":");
     peek(type, Number(num));
 }

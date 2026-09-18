@@ -4,7 +4,7 @@ import {act, saveSettings} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
-import {load, reload, rows, store} from "../store.js";
+import {rows, store} from "../store.js";
 
 const triggerText = (t) => (t.on ? `on ${t.on}` : t.at ? `at ${t.at.join(", ")} percent` : t.every ? `every ${t.every} ${t.unit}` : "");
 const features = computed(() => Object.values(store.spec.features).map((f) => ({...f, when: triggerText(f.trigger)})));
@@ -15,17 +15,14 @@ const envs = computed(() => rows("environment").filter((e) => !e.completed));
 
 async function flip(name, value) {
     await saveSettings(route.value.env, {features: {...store.settings.features, [name]: value}});
-    await reload();
 }
 
 async function saveRetention(type) {
     await saveSettings(route.value.env, {keep: {...retention.value, [type]: Number(days.value[type])}});
-    await reload();
 }
 
 async function remove(e) {
     await act(route.value.env, "environment", e.n, "remove", {how: "removed from the viewer"});
-    await load("environment");
 }
 </script>
 

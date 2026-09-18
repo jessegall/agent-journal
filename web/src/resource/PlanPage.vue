@@ -4,7 +4,7 @@ import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
-import {reload, rows} from "../store.js";
+import {rows} from "../store.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -33,7 +33,6 @@ async function run(action, body = {}) {
     error.value = "";
     try {
         await act(route.value.env, "plan", props.resource.n, action, body);
-        await reload();
     } catch (e) {
         error.value = e.message;
     }

@@ -2,13 +2,12 @@
 import {act} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {reload} from "../store.js";
+import {} from "../store.js";
 
 const props = defineProps({notice: Object});
 
 async function close() {
     await act(route.value.env, "notice", props.notice.n, "close");
-    await reload();
 }
 </script>
 

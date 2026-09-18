@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import {act} from "../api.js";
 import {route} from "../route.js";
-import {age, quoted, reload, rows, withQuote} from "../store.js";
+import {age, quoted, rows, withQuote} from "../store.js";
 import Compose from "../chat/Compose.vue";
 
 const props = defineProps({resource: Object, quote: {type: String, default: ""}});
@@ -16,7 +16,6 @@ const thread = computed(() =>
 async function send(text) {
     await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: withQuote(props.quote, text)});
     emit("sent");
-    await reload();
 }
 </script>
 
