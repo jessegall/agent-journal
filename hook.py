@@ -267,6 +267,11 @@ MESSAGES = {
                       'changing, in a sentence you will say again when you close it:\n'
                       '  .journal/journal.py work start "fix the Dropdown recompose 500"\n'
                       '  .journal/journal.py work start "add a --json flag to export"'),
+    "ask_without_looking": "a question costs the user the rest of the turn, and the record answers most of "
+                           "them: nothing in this session has read it yet. Look first — "
+                           "`.journal/journal.py search \"<term>\"`, `conversation --back=1`, `user` — and ask only "
+                           "what the record cannot hold: a preference nobody has stated, a judgement that is "
+                           "theirs. Run this again afterwards and it goes through.",
     "todo_needs_brief": ('a to-do needs its brief: the row is read again in a week by a session that '
                         'remembers nothing of this one, and a title alone is a note to somebody who '
                         'already knows.\n'
@@ -1965,6 +1970,37 @@ def _todo_without_brief(payload: dict) -> bool:
     return False
 
 
+#: the reads that count as having LOOKED: the record answering for itself
+LOOKED_AT = ("search", "conversation", "user", "transcript")
+LOOKED = "looked_at_record"
+
+
+def _looked(payload: dict, ctx: Ctx) -> None:
+    """Mark that this session has read the record. Called on every journal command that IS a read of it."""
+    for verb, _, _ in _journal_cmds(payload) or ():
+        if verb in LOOKED_AT:
+            state.put(ROOT, LOOKED, True, stem=ctx.stem)
+            return
+
+
+def _ask_without_looking(payload: dict, ctx: Ctx) -> bool:
+    """A question put to the user by a session that has not read the record once.
+
+    ASKING IS THE LAST RESORT AND THE RECORD IS THE FIRST. The user's own words: "you can just search
+    in the journal history — I want you to utilise this". Most questions are already answered in
+    there, and asking again tells them you did not look. Refused ONCE: the mark is written by the
+    refusal itself, so running the search — or simply running the question again — goes through, and
+    the wall is a reminder rather than a gate somebody has to argue with.
+    """
+    if state.get(ROOT, LOOKED, False, stem=ctx.stem):
+        return False
+    for _, cmd, _ in _journal_cmds(payload) or ():
+        if str(getattr(cmd, "signature", "")).startswith("questions:add"):
+            state.put(ROOT, LOOKED, True, stem=ctx.stem)
+            return True
+    return False
+
+
 def _work_too_bare(payload: dict) -> str:
     """The subject of a `work start` on this line that names a tool or one bare word, or "".
 
@@ -2061,6 +2097,9 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     if due and not _is_journal(payload):
         pct = 100 * due["used"] / due["window"] if due.get("window") else 0
         return _deny(say("context_deny", pct=round(pct)))
+    _looked(payload, ctx)
+    if _ask_without_looking(payload, ctx):
+        return _deny(say("ask_without_looking"))
     if _todo_without_brief(payload):
         return _deny(say("todo_needs_brief"))
     bare = _work_too_bare(payload)

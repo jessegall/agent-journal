@@ -237,6 +237,21 @@ backwards. That is worse than an admitted gap, because nobody questions it. `sea
 prints line numbers, which are citations. If it comes back empty, say the record does not
 have it rather than filling the space.
 
+**ASKING IS THE LAST RESORT, AND THE RECORD IS THE FIRST.** A question costs the user their
+attention and costs you the rest of the turn; a search costs one command and answers most of
+them. Before `journal questions add`, before "which did you mean?", before a message that ends
+in a question mark: `journal search <term>`, `journal conversation --back=1`, `journal user`.
+Ask only what the record CANNOT hold — a preference nobody has stated, a judgement that is
+theirs, a fact about the world outside this project. Anything they have already said, ruled,
+struck or chosen is in there, and asking again tells them you did not look.
+
+**And when a mechanism is what you are unsure about, RELOAD THE SKILL rather than remember
+it.** What you are holding after a compaction is a summary of these files, and a summary of a
+rule is not the rule — it is the rule with its exceptions filed off. The skills are on disk,
+they are current, and reading one costs less than being confidently wrong about what it says.
+Reload the core skill and the focused one for what you are doing whenever a hook holds you,
+whenever you are about to say what the journal "does", and always after a compaction.
+
 ## After a compaction, or at a start
 
     journal conversation --back=1   the stretch the last summary REPLACED
