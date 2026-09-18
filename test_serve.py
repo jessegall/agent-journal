@@ -1136,6 +1136,13 @@ for _event, _want in (("PreToolUse", True), ("PostToolUse", True), ("UserPromptS
     check(f"an agent whose last hook event is {_event} reads as {'working' if _want else 'idle'}",
           _activity.agent_working(root, "presence-session"), _want)
 check("an agent with no hook event on record does not read as working", _activity.agent_working(root, "no-such-session"), False)
+# A SEATED SESSION IS READ FROM ITS LAUNCHER, not from the hooks: the seat says idle over a PreToolUse
+state.put(root, "last_event", "PreToolUse", stem="presence-session")
+state.put(root, "seat_seen", int(time.time()), stem="presence-session")
+state.put(root, "seat", {"working": False, "printed": "done."}, stem="presence-session")
+check("the seat's word beats the hook's last event", _activity.agent_working(root, "presence-session"), False)
+state.put(root, "seat_seen", int(time.time()) - 300, stem="presence-session")
+check("a stale seat: the hooks' state again", _activity.agent_working(root, "presence-session"), True)
 state.put(root, "last_event", "PreCompact", stem="presence-session")
 check("an agent whose last hook event is PreCompact reads as compacting, and still as working",
       (_activity.agent_compacting(root, "presence-session"), _activity.agent_working(root, "presence-session")), (True, True))

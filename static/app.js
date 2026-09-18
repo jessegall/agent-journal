@@ -1003,7 +1003,9 @@ const StatusBar = {
       send("POST", `/api/env/${env.value}/plans/${b.n}/${b.act.verb}`).then(() => { plans.reload(); changed(); })
         .catch((e) => { barError.value = e.message; });
     };
-    return { env, view, said, running, SHELL, openCurrent, facts, strip, bars, runBar, barError };
+    // what the agent's launcher last saw it print: a seat's fact, so a session on none has nothing here
+    const printed = computed(() => (SHELL.activity && SHELL.activity.agent && SHELL.activity.agent.printed) || null);
+    return { env, view, said, running, SHELL, openCurrent, facts, strip, bars, runBar, barError, printed };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
@@ -1012,7 +1014,7 @@ const StatusBar = {
            line that simply swapped read as a glitch; keyed on its own words, the old one leaves
            upward as the next arrives from below. -->
       <button type=button class=statusbar-text :title="facts.todo ? 'Open the to-do it is on' : 'Open what it is on'" @click="openCurrent">
-        <b>{{ view.state }}</b>
+        <b :title="printed">{{ view.state }}</b>
         <!-- ONLY WHAT CHANGED MOVES. "reading message 302" becoming "reading message 303" is one
              digit; rolling the whole sentence for it says more happened than did. The shared start
              stays put and the tail that differs rolls on its own. -->
