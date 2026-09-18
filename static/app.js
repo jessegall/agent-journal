@@ -1721,6 +1721,16 @@ function todoStatus(t) {
   return "open";
 }
 
+// WHY A ROW IS NOT READY, in the words the row would use: what the agent set it aside on, the
+// question it asks, or the rows and plan it must follow. A row after another is blocked by it;
+// the pill said Blocked and the reason was on the record all along, unread.
+function todoWhy(t) {
+  if (t.blocked || t.asks) return t.blocked || t.asks;
+  const on = (t.waiting_on || []).map((n) => `to-do ${n}`);
+  if (t.waiting_on_plan) on.push(`plan ${t.waiting_on_plan}`);
+  return on.length ? `after ${on.join(", ")}` : "";
+}
+
 function messageBecame(m) { return [...new Set(m.parts.flatMap((p) => p.became.map((b) => b.label)))].join(", "); }
 
 // a to-do row's question marker: lit while a linked question is open, faint once all are answered
@@ -1753,7 +1763,7 @@ const TODO_LIST = {
              // A ROW THAT IS WAITING SAYS ON WHAT. The pill told a reader that a to-do was Blocked or
              // Waiting on you and then stopped, which is the half of the sentence they did not need —
              // the reason is required when it is written, and it was being thrown away on the way out.
-             sub: (t) => t.asks || t.blocked || "",
+             sub: (t) => todoWhy(t),
              // the row already carried its plan and nobody drew it: a row in a plan reads differently
              // from one on the open list, and which PHASE is the part you cannot work out from the list
              cite: (t) => (t.plan ? `Plan ${t.plan.n} · phase ${t.plan.phase}` : "") },
@@ -1892,7 +1902,7 @@ const TodoPanel = {
         .then(() => { item.reload(); if (props.reloaded) props.reloaded(); changed(); })
         .finally(() => { saving.on = false; });
     };
-    return { item, actions, done, todoHref, todoStatus, STATUS_LABEL, priorityName, LOG_KIND, LEVELS, saving, menu, setPriority };
+    return { item, actions, done, todoHref, todoStatus, todoWhy, STATUS_LABEL, priorityName, LOG_KIND, LEVELS, saving, menu, setPriority };
   },
   template: `
     <Panel :label=\"'To-do ' + n" :close="close" :onClose="onClose" :link="link">
@@ -1903,7 +1913,7 @@ const TodoPanel = {
           <!-- A BLOCKED ROW SAYS WHAT IT IS BLOCKED ON, beside the word Blocked rather than in a note
                under the buttons. The word alone tells a reader the one thing they already know. -->
           <dt>Status</dt><dd><StatusIcon :kind="todoStatus(item.data)"/>{{ STATUS_LABEL[todoStatus(item.data)] }}
-            <span v-if="!item.data.done && (item.data.blocked || item.data.asks)" class=status-why>— {{ item.data.blocked || item.data.asks }}</span></dd>
+            <span v-if="!item.data.done && todoWhy(item.data)" class=status-why>— {{ todoWhy(item.data) }}</span></dd>
           <dt>Priority</dt>
           <dd v-if="item.data.done"><PriorityIcon :value="item.data.priority"/>{{ priorityName(item.data.priority) }}</dd>
           <dd v-else class=prio-wrap>
