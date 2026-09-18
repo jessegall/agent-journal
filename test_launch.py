@@ -65,6 +65,19 @@ seat._note_typed(b"nal\r")
 check("Enter clears it", seat.user_mid_line(), False)
 seat._note_typed(b"abc\x03")
 check("Ctrl-C drops it", seat.typed, b"")
+# THE TERMINAL'S OWN KEYSTROKES ARE NOT A LINE: focus in/out, arrows, paste marks arrive as escape sequences
+seat._note_typed(b"\x1b[I\x1b[O\x1b[A")
+check("focus events and arrows leave nothing on the line", seat.user_mid_line(), False)
+seat._note_typed(b"\x1b")
+seat._note_typed(b"[I")
+check("a sequence split across two reads leaves nothing either", (seat.user_mid_line(), seat.raw), (False, b""))
+seat._note_typed(b"\x1b[200~pasted words\x1b[201~")
+check("a paste is its words, without the marks", seat.typed, b"pasted words")
+seat._note_typed(b"\x1b")
+check("a bare Escape drops the line", seat.user_mid_line(), False)
+seat._note_typed(b"x")
+check("and the key after it is a new line", seat.typed, b"x")
+seat._note_typed(b"\r")
 
 # THE NUDGER TYPES THE VIEWER'S NEWS, ONCE, WHEN THE AGENT IS QUIET. A message left on the environment
 # is typed as the record says it; typed once; never over a half-typed line or a busy agent.

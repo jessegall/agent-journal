@@ -22,6 +22,8 @@ PRINTED_KEEP = 400
 #: how far back a fresh seat looks for news never told: a restart mid-conversation loses nothing
 SINCE_BACK = 6 * 3600
 #: terminal control sequences: colours, cursor moves, mode switches — what the pty carries beside the words
+#: what a terminal sends on stdin besides keys: focus in/out, arrows and other CSI, SS3 keys, paste marks, OSC
+ANSI_INPUT = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1bO[A-Za-z]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 
 
@@ -49,6 +51,7 @@ class Launcher:
         self.typed = b""            # the user's line so far, since the last Enter
         self.user_lines = 0         # how many lines the user has sent
         self.printed = ""           # the tail of what the agent printed, as words
+        self.raw = b""              # keystrokes not yet read as a line: a split escape sequence waits here
         self.outputs: list = []    # who wants the agent's output besides the terminal
         self.ticks: list = []      # who wants a moment of quiet, called once per select timeout
 
@@ -82,7 +85,7 @@ class Launcher:
         return time.time() - self.last_output if self.last_output else 0.0
 
     def user_mid_line(self) -> bool:
-        return bool(self.typed.strip())
+        return bool(self.typed.strip()) and self.raw != b"\x1b"      # a bare Escape has dropped the line
 
     def run(self) -> int:
         """Relay until the agent exits; the terminal is put back however this ends."""
@@ -131,8 +134,26 @@ class Launcher:
         return os.waitstatus_to_exitcode(status)
 
     def _note_typed(self, data: bytes) -> None:
-        """What the user has on the line: Enter clears it, backspace shortens it, Ctrl-C and Escape drop it."""
-        for b in data:
+        """What the user has on the line: Enter clears it, backspace shortens it, Ctrl-C drops it.
+
+        THE TERMINAL TYPES TOO. Focus events (`ESC [ I`, `ESC [ O`), arrow keys, bracketed-paste
+        marks and mouse reports all arrive on stdin as escape sequences, and each one used to
+        leave its tail on the line — `[I` after every switch to the browser — so the seat believed
+        the user was mid-sentence and never typed again. Measured: a message left in the viewer was
+        never typed into a session that sat idle at its prompt. Sequences are stripped whole; a bare
+        Escape still drops the line, as it does in the agent.
+        """
+        self.raw += data
+        text = ANSI_INPUT.sub(b"", self.raw)
+        # a sequence still arriving is kept for the next read; it is never part of the line. A bare
+        # Escape followed by an ordinary key is two keys, not the start of a sequence.
+        cut = text.rfind(b"\x1b")
+        pending = text[cut:] if cut >= 0 else b""
+        if pending and len(pending) < 8 and (len(pending) == 1 or pending[1:2] in (b"[", b"O", b"]")):
+            self.raw, text = pending, text[:cut]
+        else:
+            self.raw = b""
+        for b in text:
             if b in (10, 13, 3, 27):
                 if b in (10, 13) and self.typed.strip():
                     self.user_lines += 1
