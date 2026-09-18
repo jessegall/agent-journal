@@ -8,7 +8,6 @@ from resources.shapes import LEVELS
 from resources.base import AGENT, Refused, check_title
 
 
-FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
 
 
 class Messages(Controller):
@@ -36,16 +35,6 @@ class Messages(Controller):
     def declare(self, n: int, kind: str):
         return self.update(n, kind=kind)
 
-    def react(self, n: int, face: str):
-        if face not in FACES:
-            raise Refused(f"a reaction is one of {' '.join(FACES)}")
-        message = self.load(n)
-        reactions = CONTROLLERS["reaction"](self.record, actor=self.actor)
-        for r in reactions.linked_to(message.ref):
-            if r.data.get("face") == face and self.actor in r.seen[:1]:
-                reactions.force_delete(r.n)
-                return None
-        return reactions.create(face, face=face, about=message.ref)
 
 
 class Todos(Controller):

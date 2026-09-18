@@ -7,6 +7,8 @@ from engine.record import Record
 from resources.base import Refused, Resource, check_abstract, check_title, titled
 from resources.shapes import check
 
+FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
+
 
 class Controller:
     resource = Resource
@@ -203,6 +205,18 @@ class Controller:
         if len(hits) != 1:
             raise Refused(f"{'no' if not hits else len(hits)} {self.type}{'' if len(hits) == 1 else 's'} match {name!r}" + ("; say more of the title" if len(hits) > 1 else ""))
         return hits[0]
+
+    def react(self, n: int, face: str) -> Resource | None:
+        if face not in FACES:
+            raise Refused(f"a reaction is one of {' '.join(FACES)}")
+        from controllers.types import CONTROLLERS
+        r = self.load(n)
+        reactions = CONTROLLERS["reaction"](self.record, actor=self.actor)
+        for made in reactions.linked_to(r.ref):
+            if made.data.get("face") == face and self.actor in made.seen[:1]:
+                reactions.force_delete(made.n)
+                return None
+        return reactions.create(face, face=face, about=r.ref)
 
     def linked_to(self, ref: str) -> list[Resource]:
         return [r for r in self.all() if ref in r.refs]

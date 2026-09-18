@@ -37,7 +37,7 @@ for type_ in TYPES:                                       # seen: the creator ha
 top = parser()
 base_actions = actions(Controller)
 check("the base controller's actions are the CRUD set", base_actions,
-      ["all", "attach", "comment", "comments", "complete", "create", "delete", "files", "find", "folder", "force_delete", "link", "linked_to", "move", "read", "restore", "search", "section", "set", "show", "unlink", "unread", "update"])
+      ["all", "attach", "comment", "comments", "complete", "create", "delete", "files", "find", "folder", "force_delete", "link", "linked_to", "move", "react", "read", "restore", "search", "section", "set", "show", "unlink", "unread", "update"])
 subs = top._subparsers._group_actions[0].choices
 check("every type is a command, beside the queries", sorted(t for t in subs if t in TYPES), sorted(TYPES))
 check("the queries stand beside them", sorted(t for t in subs if t not in TYPES), ["carry", "claude", "codex", "conversation", "nothing", "open", "search", "serve", "start", "status", "upgrade", "user", "version"])
