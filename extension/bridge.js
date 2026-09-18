@@ -4,6 +4,8 @@
 (() => {
   const SOURCE = "journal-extension";
 
+  // a dead extension (reloaded under this page) throws on every chrome.* call: asked safely, it answers nothing
+  const ask = (msg, cb) => { try { chrome.runtime.sendMessage(msg, (got) => { void chrome.runtime.lastError; if (cb) cb(got); }); } catch (e) { if (cb) cb(null); } };
   function tell(kind, extra) {
     window.postMessage({ source: SOURCE, kind, ...(extra || {}) }, window.location.origin);
   }
@@ -16,16 +18,16 @@
     const kind = e.data.kind;
     // "here", and whether the chat has been handed to this extension: after a reload the page has
     // forgotten, and the window over it is the extension's to restore, not the page's to draw again
-    if (kind === "hello") return chrome.runtime.sendMessage({ kind: "following" }, (got) => tell("here", { holding: !!(got && got.on) }));
+    if (kind === "hello") return ask({ kind: "following" }, (got) => tell("here", { holding: !!(got && got.on) }));
     // the chat in the window asks for the page under it: point at an element, or send a picture of one
-    if (kind === "point" || kind === "shot") return chrome.runtime.sendMessage({ kind });
+    if (kind === "point" || kind === "shot") return ask({ kind });
     if (kind === "detach" || kind === "attach") {
-      chrome.runtime.sendMessage({ kind: "follow", on: kind === "detach" }, (got) => {
-        if (chrome.runtime.lastError) return tell("failed");
+      ask({ kind: "follow", on: kind === "detach" }, (got) => {
+        if (!got) return tell("failed");
         tell(kind === "detach" ? "detached" : "attached", { everywhere: !!(got && got.everywhere) });
       });
     }
   });
 
-  chrome.runtime.sendMessage({ kind: "following" }, (got) => tell("here", { holding: !!(got && got.on) }));   // in case the page was listening before we loaded
+  ask({ kind: "following" }, (got) => tell("here", { holding: !!(got && got.on) }));   // in case the page was listening before we loaded
 })();
