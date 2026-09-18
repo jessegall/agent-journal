@@ -1,8 +1,8 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import {act, saveSettings} from "../api.js";
-import {gist} from "../gist.js";
 import Icon from "../kit/Icon.vue";
+import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
 import {go, route} from "../route.js";
 import {agent, autoOn, reload, rows} from "../store.js";
@@ -26,7 +26,6 @@ const sentence = computed(() => {
     return {head: now.slice(0, cut), tail: now.slice(cut)};
 });
 watch(line, (now, before) => (was.value = before || ""));
-const command = computed(() => (agent.value && state.value === "working" ? gist(agent.value.data.command) : ""));
 const plans = computed(() => rows("plan").filter((p) => ["ready", "active", "waiting", "done"].includes(p.data.status) && !p.completed));
 const error = ref("");
 
@@ -71,11 +70,7 @@ async function runBar(p) {
                 </Transition>
             </span>
         </button>
-        <span class="statusbar-running">
-            <Transition name="roll">
-                <span v-if="command" :key="command" class="statusbar-run-line" :title="agent.data.command">{{ command }}</span>
-            </Transition>
-        </span>
+        <RunningCommand />
         <span class="statusbar-tools">
             <Switch
                 :on="autoOn"
@@ -208,47 +203,6 @@ async function runBar(p) {
 .roll-leave-to {
     opacity: 0;
     transform: translateY(-5px);
-}
-
-.statusbar-running {
-    flex: 0 1 auto;
-    min-width: 0;
-    position: relative;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: center;
-    margin-left: auto;
-    padding-left: 14px;
-    overflow: hidden;
-    font-size: 11px;
-    color: var(--text-3);
-}
-
-.statusbar-running > * {
-    grid-area: 1 / 1;
-    justify-self: end;
-}
-
-.statusbar-running .roll-leave-active {
-    position: static;
-}
-
-.statusbar-running .roll-enter-from {
-    transform: translateY(10px);
-}
-
-.statusbar-running .roll-leave-to {
-    transform: translateY(-10px);
-}
-
-.statusbar-run-line {
-    max-width: 44ch;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    opacity: 0.75;
 }
 
 .statusbar-tools {

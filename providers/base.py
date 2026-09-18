@@ -16,6 +16,7 @@ STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreT
 EVENTS = tuple(STATUS)
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
+RING = 12
 JOURNAL_COMMAND = re.compile(r"(^|[;&|]\s*)(\S*journal(\.py)?)\s")
 
 
@@ -43,7 +44,7 @@ class Provider(ABC):
         row = agents.by_session(self.session_of(payload))
         uses = int(row.data.get("uses") or 0) + (event == "PreToolUse")
         context = self.context(payload)
-        agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "", command=self.gist(payload) or row.data.get("command", ""),
+        agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "", **self.shell(row.data, event, payload),
                       cwd=str(payload.get("cwd") or row.data.get("cwd") or ""),
                       at=time.time(), provider=self.name, uses=uses, transcript=str(payload.get("transcript_path") or row.data.get("transcript") or ""),
                       model=self.model(payload) or row.data.get("model") or "", started=row.data.get("started") or time.time(),
@@ -84,8 +85,16 @@ class Provider(ABC):
         command = str((payload.get("tool_input") or {}).get("command") or "")
         return tool == "Bash" and not JOURNAL_COMMAND.search(command) and bool(WRITING_COMMANDS.search(command))
 
-    def gist(self, payload: dict) -> str:
-        return str((payload.get("tool_input") or {}).get("command") or "").strip()[:400]
+    def shell(self, data: dict, event: str, payload: dict) -> dict:
+        command = str((payload.get("tool_input") or {}).get("command") or "").strip()[:400]
+        running = dict(data.get("running") or {})
+        if event == "PreToolUse" and command:
+            now = time.time()
+            running = {"what": command, "at": now}
+            return {"running": running, "commands": (list(data.get("commands") or []) + [{"what": command, "at": now}])[-RING:]}
+        if running and not running.get("done"):
+            running["done"] = time.time()
+        return {"running": running, "commands": list(data.get("commands") or [])}
 
     def refusal(self, why: str) -> dict:
         return {"decision": "block", "reason": why} if why else {}

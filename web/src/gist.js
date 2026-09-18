@@ -24,6 +24,7 @@ function split(line, atBreak) {
     const out = [];
     let cur = "";
     let quote = "";
+    let depth = 0;
     for (let i = 0; i < line.length; i++) {
         const c = line[i];
         if (quote) {
@@ -33,6 +34,12 @@ function split(line, atBreak) {
         }
         if (c === '"' || c === "'") {
             quote = c;
+            cur += c;
+            continue;
+        }
+        if (c === "$" && line[i + 1] === "(") depth += 1;
+        else if (c === ")" && depth) depth -= 1;
+        if (depth) {
             cur += c;
             continue;
         }
@@ -58,7 +65,7 @@ function words(piece) {
 }
 
 function verbOf(piece) {
-    let w = words(piece);
+    let w = words(piece.replace(/^[({\s;&]+|[)}\s;&]+$/g, ""));
     while (w.length > 1 && (/^[A-Z_][A-Z0-9_]*=/.test(w[0]) || WRAPPERS.has(w[0]))) {
         w =
             w[0] === "perl"
@@ -79,7 +86,7 @@ function pieceGist(piece) {
     const verb = w[0].split("/").pop();
     if (w.some((x) => x.startsWith("<<"))) return `${verb} script`;
     const rest = SUBVERBS.has(verb) && w[1] && !w[1].startsWith("-") ? `${verb} ${w[1]}` : verb;
-    const args = w.slice(rest.split(" ").length).filter((x) => !x.startsWith("-") && !/^["'$]/.test(x));
+    const args = w.slice(rest.split(" ").length).filter((x) => !/^(-|["'$]|\d*[<>]|&|\/dev\/)/.test(x));
     const shown = args.length ? `${rest} ${args[0].split("/").pop()}` : rest;
     return shown.length > CAP ? `${shown.slice(0, CAP - 1).trimEnd()}…` : shown;
 }
@@ -100,11 +107,15 @@ function withoutScripts(command) {
     return kept.join("\n");
 }
 
-export function gist(command) {
-    const real = pieces(withoutScripts(command))
+export function gists(command) {
+    return pieces(withoutScripts(command))
         .filter((p, i) => !(i > 0 && FILTERS.has(verbOf(p)[0] || "")))
         .map(pieceGist)
         .filter(Boolean);
+}
+
+export function gist(command) {
+    const real = gists(command);
     if (!real.length) return "";
     const kept = [real[real.length - 1]];
     for (let i = real.length - 2; i >= 0; i--) {

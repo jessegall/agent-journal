@@ -42,6 +42,14 @@ for name, cls in PROVIDERS.items():                       # every provider, the 
     provider.handle(root, "main", {**payload, "hook_event_name": "PreToolUse", "tool_name": "Bash"})
     driver.quiet_for = lambda: 0.2
     check(f"{name}: after a tool call starts it is working", agent.state(), WORKING)
+    provider.handle(root, "main", {**payload, "hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "npm run build"}})
+    row = agents.by_session("abc-1").data
+    check(f"{name}: a shell command is reported as running and joins the ring", (row["running"]["what"], "done" in row["running"], [c["what"] for c in row["commands"]]), ("npm run build", False, ["npm run build"]))
+    provider.handle(root, "main", {**payload, "hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": "npm run build"}})
+    row = agents.by_session("abc-1").data
+    check(f"{name}: its end stamps the running command done; a read reports no command", (row["running"]["done"] >= row["running"]["at"], len(row["commands"])), (True, 1))
+    provider.handle(root, "main", {**payload, "hook_event_name": "PreToolUse", "tool_name": "Read", "tool_input": {"file_path": "/x"}})
+    check(f"{name}: another tool leaves the ring and the last command as they were", [c["what"] for c in agents.by_session("abc-1").data["commands"]], ["npm run build"])
     agents.set(agents.by_session("abc-1").n, "status", IDLE)
     check(f"{name}: journal agent set status idle is the same funnel", agents.by_session("abc-1").data["status"], IDLE)
 
