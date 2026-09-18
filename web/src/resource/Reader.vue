@@ -18,7 +18,11 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
         <div v-if="resource" :key="`${type}:${n}`" :class="['reader', shape]" @click.self="close">
             <SwitchCase :value="shape">
                 <template #plan>
-                    <div class="page"><PlanPage :resource="resource" @close="close" /></div>
+                    <div class="page">
+                        <DocumentPage :resource="resource" @close="close">
+                            <PlanPage :resource="resource" @close="close" />
+                        </DocumentPage>
+                    </div>
                 </template>
                 <template #document>
                     <div class="page"><DocumentPage :resource="resource" @close="close" /></div>
