@@ -1034,7 +1034,11 @@
   /* THE WRITING BOX IS FIRST IN THE DOCUMENT AND LAST ON THE PAGE. Each turn carries two or three
      buttons, so a box written after them sat behind dozens of tab stops; ordering it here costs
      nothing visually and puts it one Tab from the page. */
-  .thread { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .thread { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column;
+    transition: opacity .16s ease; }
+  /* while a strip is open above it, the conversation steps back so the strip is what you are reading */
+  .thread.stepped { opacity: .45; }
+  @media (prefers-reduced-motion: reduce) { .thread { transition: none; } }
   .thread-scroll { order: 1; }
   .thread-write { order: 2; position: relative; }
   /* THE REPLY CHIP OVERHANGS ITS TURN ON PURPOSE, and on a turn of the user's own — flush to the
