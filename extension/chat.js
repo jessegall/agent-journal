@@ -79,7 +79,7 @@
       return;
     }
     const view = document.createElement("iframe");
-    view.src = got.env ? `${got.url}/#/env/${got.env}` : got.url;
+    view.src = got.env ? `${got.url}/?chat#/env/${got.env}` : `${got.url}/?chat`;
     body.append(view);
     shade.querySelector(".name").textContent = [got.project, got.env].filter(Boolean).join(" · ") || "journal";
   });

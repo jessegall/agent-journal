@@ -795,6 +795,12 @@
   @keyframes crew-in { from { transform: translateY(-4px); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes crew-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
   @media (prefers-reduced-motion: reduce) { .crew-line, .crew-dot { animation-duration: .01ms; animation-iteration-count: 1; } }
+  /* THE CHAT ALONE — the extension's floating window asks for this with ?chat on the URL. What is
+     hidden is everything whose job is to take you somewhere else: the journals rail, the side
+     navigation, the to-do rail beside the thread, the Activity dock and the project strip. */
+  .app.chat-only .side, .app.chat-only .home-rail, .app.chat-only .activity-dock,
+  .app.chat-only .project-strip, .app.chat-only .crumbs { display: none; }
+  .app.chat-only .home-main { flex: 1; min-width: 0; }
   /* the thread: what was said, read downwards, with the writing box under it */
   /* THE WRITING BOX IS FIRST IN THE DOCUMENT AND LAST ON THE PAGE. Each turn carries two or three
      buttons, so a box written after them sat behind dozens of tab stops; ordering it here costs
