@@ -4,6 +4,53 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.154.0 — The viewer says who is listening, and the skills page is a page
+
+**The chat says when nobody is listening.** Two warning bands above the agent bar, in place of
+a chat that looked the same either way. One when the session holding the environment was started
+as plain `claude` rather than `journal claude`: it has no channel, so nothing written here reaches
+it while it is idle. The channel server stamps its session at every poll, and thirty quiet seconds
+on a session older than that is how the viewer knows. The other when no running session holds the
+environment at all — with an **Assign agent** button that lists the running sessions (bound or not,
+alive by their process or seen in the last fifteen minutes) and binds the one you pick. That is the
+one move of a session the agent does not make itself; it is on the Activity column like any write.
+
+**Every project loads four skills at every start.** `journal`, `journal-memory`, `journal-todos`
+and `journal-messages` are the shipped default — measured over eleven real runs, the other skills
+trigger on their own cue and these four are the ones a session reaches for most. A project that has
+set its own list keeps it; taking one off from a skill's page makes the list the project's own.
+
+**The skills page groups, folds, and says what is loaded.** Skills sit under their prefix, two
+levels deep (`commandments-backend` inside `commandments`), each group folding with a height
+transition. A row is one line — name, a lit dot and **Loaded** when the session has it, where it
+comes from — and never a description: that is the row's title and the panel's first paragraph.
+The button reads **Load now**, or **Loaded** and still when the session has it unchanged, or
+**Reload** once a file of the skill changed after the load — the transcript says when it was last
+loaded, the files say when they last changed. A skill's inspector reads like a report now: its
+facts, the actions, the whole SKILL.md, and every file beside it, each opening in place.
+
+**The update notice lives above the version footer in the left nav** — sticky to the bottom of the
+nav, dismissible per version, with its Upgrade button — and nowhere else. The band across the top
+of the page from 1.153.0 is gone.
+
+**Removing an environment with open work is refused**, whoever declared the work. The confirmation
+already counted "1 open work" and an agent typed `--yes` past it — its own work, opened before it
+switched away — and the work was deleted unended. End it first; it is one command.
+
+**A wall of text reads as what it is.** Three render-time changes, none touching the stored text:
+a paragraph with "(1) … (2) …" or "a) … b) …" run inline becomes a lead line and a list (one
+marker style, consecutive from the first, every item real words); a paragraph of bold-led
+sentences — **Auto mode** is… **The nudge** fires… — becomes one paragraph per lead; and a file
+with its line (`static/app.js:4276`), a commit hash and a journal command named in prose become
+chips. A journal noun alone ("the journal messages skill") stays prose; it is a command once
+something follows it.
+
+**Smaller.** Reply on a turn puts the caret in the write box, draft kept. The thread is not dimmed
+under the shells and subagents strips; their shadow is enough. The agent bar's counters share one
+icon colour. The extension's chat
+window names the journal and the environment in its bar, and each is a switch that reloads the
+window in place.
+
 ## 1.153.0 — A newer version shows itself, and a reply is not news twice
 
 **A newer version shows itself, above the multi-journal strip.** A full-width band at the very top
