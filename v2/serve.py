@@ -18,6 +18,11 @@ from v2.resources.base import USER, Refused  # noqa: E402
 WEB = Path(__file__).resolve().parent / "web" / "dist"
 
 
+def settings(record: Record) -> dict:
+    features_on = {name: f.enabled(record) for name, f in features.FEATURES.items()}
+    return {"features": features_on, "triggers": record.setting("triggers", {}), "keep": record.setting("keep", {})}
+
+
 def shaped(r) -> dict:
     return {**asdict(r), "type": r.type, "ref": r.ref}
 
@@ -73,6 +78,13 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(200, [asdict(e) for e in Record(self.root, parts[1]).events(since)])
         if len(parts) == 3 and parts[0] == "api" and parts[2] == "stream":
             return self.stream(parts[1])
+        if len(parts) == 3 and parts[0] == "api" and parts[2] == "settings":
+            return self.send(200, settings(Record(self.root, parts[1])))
+        if len(parts) == 3 and parts[0] == "api" and parts[2] == "search":
+            term = self.query().get("q", "")
+            record = Record(self.root, parts[1])
+            return self.send(200, [shaped(r) for type_ in CONTROLLERS for r in CONTROLLERS[type_](record, actor=USER).search(term)] if term else [])
+
         if len(parts) >= 3 and parts[0] == "api":
             env, type_ = parts[1], parts[2]
             if type_ not in CONTROLLERS:
@@ -83,6 +95,11 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send(200, [shaped(r) for r in c.all()])
                 if len(parts) == 4:
                     return self.send(200, shaped(c.show(int(parts[3]))))
+                if len(parts) == 6 and parts[4] == "files":
+                    f = c.folder(int(parts[3])) / parts[5]
+                    if not f.is_file():
+                        return self.send(404, {"error": f"no file {parts[5]}"})
+                    return self.send(200, f.read_bytes(), mimetypes.guess_type(str(f))[0] or "application/octet-stream")
             except Refused as e:
                 return self.send(404, {"error": str(e)})
         return self.static(parts)
@@ -91,6 +108,11 @@ class Handler(BaseHTTPRequestHandler):
         parts = self.parts()
         length = int(self.headers.get("Content-Length") or 0)
         body = json.loads(self.rfile.read(length) or b"{}") if length else {}
+        if len(parts) == 3 and parts[0] == "api" and parts[2] == "settings":
+            record = Record(self.root, parts[1])
+            for key, value in body.items():
+                record.set_setting(key, value)
+            return self.send(200, settings(record))
         if len(parts) < 3 or parts[0] != "api" or parts[2] not in CONTROLLERS:
             return self.send(404, {"error": "no such route"})
         env, type_ = parts[1], parts[2]

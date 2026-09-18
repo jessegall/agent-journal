@@ -68,6 +68,23 @@ code, got = call("GET", "/api/main/nothing")
 check("an unknown type is a 404", code, 404)
 code, got = call("POST", "/api/main/todo/1/nothing", {})
 check("an unknown action is refused", code, 400)
+# SETTINGS, SEARCH AND FILES
+code, got = call("GET", "/api/main/settings")
+check("settings say every feature's switch, the triggers and the keep days", (code, got["features"]["auto"], got["features"]["work"], got["triggers"], got["keep"]), (200, False, True, {}, {}))
+code, got = call("POST", "/api/main/settings", {"features": {"auto": True}, "keep": {"report": 30}})
+check("settings are written and read back", (got["features"]["auto"], got["keep"]), (True, {"report": 30}))
+code, got = call("GET", "/api/main/search?q=a%20todo")
+check("search spans every type", (code, sorted({r["type"] for r in got}) == ["todo"] and len(got) >= 1), (200, True))
+check("no term: nothing", call("GET", "/api/main/search")[1], [])
+import tempfile  # noqa: E402
+shot = Path(tempfile.mkdtemp()) / "shot.png"
+shot.write_bytes(b"\x89PNG")
+call("POST", "/api/main/todo/1/attach", {"path": str(shot), "what": "a picture"})
+req = urllib.request.Request(base + "/api/main/todo/1/files/shot.png")
+with urllib.request.urlopen(req) as r:
+    check("a resource's file is served with its type", (r.status, r.headers["Content-Type"], r.read()), (200, "image/png", b"\x89PNG"))
+check("a missing file is a 404", call("GET", "/api/main/todo/1/files/none.png")[0], 404)
+
 # THE EVENT LOG AND THE STREAM
 code, got = call("GET", "/api/main/events?since=0")
 check("the log is served past a cursor", (code, got[0]["id"], got[0]["type"], all(e["id"] > 3 for e in call("GET", "/api/main/events?since=3")[1])), (200, 1, "message", True))
