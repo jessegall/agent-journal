@@ -78,6 +78,12 @@ class Agent(Actor):
             return WAITING
         return WORKING
 
+    def mark(self, status: str, event: str) -> None:
+        agents = CONTROLLERS["agent"](self.record, actor=SYSTEM)
+        last = self.driver.last_report() or {}
+        row = agents.by_session(last.get("session") or self.driver.session)
+        agents.update(row.n, **{**row.data, "status": status, "event": event, "at": time.time()})
+
     def is_idle(self) -> bool:
         return self.state() == IDLE
 
