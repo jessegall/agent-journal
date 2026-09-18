@@ -111,17 +111,20 @@
   // DRAGGING IS ON THE DOCUMENT, NOT THE BAR — the bar is inside the frame, in another origin, so
   // what arrives from it is a start in screen coordinates; from there the pointer is on this document,
   // the frame muted, and screen coordinates are the one system both sides share.
+  let live = null;                                  // the drag in progress: where it started, and how it moves the box
   const drag = (sx, sy, move) => {
     const from = { sx, sy, ...box };
     frame.classList.add("dragging");
     const step = (ev) => { move(ev.screenX - from.sx, ev.screenY - from.sy, from); place(box); };
     const done = () => {
+      live = null;
       frame.classList.remove("dragging");
       document.removeEventListener("pointermove", step, true);
       document.removeEventListener("pointerup", done, true);
       document.removeEventListener("pointercancel", done, true);
       remember();
     };
+    live = { at: (x, y) => { move(x - from.sx, y - from.sy, from); place(box); }, done };
     document.addEventListener("pointermove", step, true);
     document.addEventListener("pointerup", done, true);
     document.addEventListener("pointercancel", done, true);
@@ -145,6 +148,8 @@
     const op = e.data.op;
     if (op === "hello") tellPage({ shut: box.shut });
     else if (op === "drag") dragWindow(e.data.sx, e.data.sy);
+    else if (op === "dragmove") { if (live) live.at(e.data.sx, e.data.sy); }
+    else if (op === "dragend") { if (live) live.done(); }
     else if (op === "shut" || op === "open") { setShut(op === "shut"); remember(); }
     else if (op === "close") { host.remove(); tellBackground("closed"); }
     else if (op === "pick") ask({ kind: "pick", url: e.data.url, env: e.data.env || "" }, () => load(true));

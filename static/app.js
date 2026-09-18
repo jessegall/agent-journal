@@ -6913,10 +6913,27 @@ const App = {
       SHELL_UI.hosted = true;
       if ("shut" in e.data) SHELL_UI.shut = !!e.data.shut;
     });
+    // THE PAGE HOLDS THE POINTER AND STREAMS THE MOVES. A press in this frame belongs to this frame
+    // until it is released — the shell around it never sees the moves — so the bar captures the
+    // pointer (which keeps the events coming wherever it goes, off the bar, off the frame, off the
+    // window) and hands every position to the shell in screen coordinates, the one system both share.
     const shellDrag = (e) => {
       if (e.button || e.target.closest("button, a, .drop")) return;
       e.preventDefault();
+      const bar = e.currentTarget;
+      try { bar.setPointerCapture(e.pointerId); } catch (err) { /* then the shell's own listeners do what they can */ }
       tellShell("drag", { sx: e.screenX, sy: e.screenY });
+      const move = (ev) => tellShell("dragmove", { sx: ev.screenX, sy: ev.screenY });
+      const done = (ev) => {
+        bar.removeEventListener("pointermove", move);
+        bar.removeEventListener("pointerup", done);
+        bar.removeEventListener("pointercancel", done);
+        try { bar.releasePointerCapture(ev.pointerId); } catch (err) { /* already released */ }
+        tellShell("dragend");
+      };
+      bar.addEventListener("pointermove", move);
+      bar.addEventListener("pointerup", done);
+      bar.addEventListener("pointercancel", done);
     };
     const shellFold = () => { SHELL_UI.shut = !SHELL_UI.shut; tellShell(SHELL_UI.shut ? "shut" : "open"); if (SHELL_UI.shut) { const env = envName.value; if (env && route.view !== "EnvHome") location.hash = `#/env/${env}`; } };
     const shellClose = () => tellShell("close");
