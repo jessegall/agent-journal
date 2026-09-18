@@ -2,7 +2,7 @@
 import {ref, watch} from "vue";
 import {search as find} from "../api.js";
 import Icon from "../kit/Icon.vue";
-import {go, route} from "../route.js";
+import {go, peek, route} from "../route.js";
 import ResourceCard from "../resource/ResourceCard.vue";
 
 const q = ref(route.value.q);
@@ -34,7 +34,7 @@ watch(
         </template>
         <div class="cards">
             <template v-for="r in hits" :key="r.ref">
-                <ResourceCard :resource="r" @click="go(route.env, r.type, r.n)" />
+                <ResourceCard :resource="r" @click="peek(r.type, r.n)" />
             </template>
         </div>
     </section>

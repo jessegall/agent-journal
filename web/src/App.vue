@@ -44,7 +44,10 @@ watch(
             <template v-if="store.activity">
                 <Activity />
             </template>
-            <template v-if="route.n && page === 'index'">
+            <template v-if="route.open">
+                <Reader :type="route.open.type" :n="route.open.n" />
+            </template>
+            <template v-else-if="route.n && page === 'index'">
                 <Reader :type="route.page" :n="route.n" />
             </template>
         </div>

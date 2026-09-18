@@ -7,6 +7,7 @@ const props = defineProps({
     submit: {type: String, default: "Send"},
     send: Function,
     quote: {type: String, default: ""},
+    quoteLabel: {type: String, default: "Commenting on"},
 });
 const draft = reactive({text: "", files: [], sending: false, error: ""});
 const area = ref(null);
@@ -41,7 +42,7 @@ async function go() {
     <form class="compose" @submit.prevent="go">
         <template v-if="quote">
             <div class="compose-quote">
-                <span class="compose-quote-label">Commenting on</span>
+                <span class="compose-quote-label">{{ quoteLabel }}</span>
                 <div class="compose-quote-text">{{ quote }}</div>
             </div>
         </template>

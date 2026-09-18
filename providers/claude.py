@@ -17,6 +17,19 @@ class Claude(Provider):
     def wiring(self, command: str) -> dict:
         return {"hooks": {event: [{"hooks": [{"type": "command", "command": command}]}] for event in EVENTS}}
 
+    def model(self, payload: dict) -> str:
+        path = Path(str(payload.get("transcript_path") or ""))
+        if not path.is_file():
+            return str(payload.get("model") or "")
+        for raw in reversed(path.read_text().splitlines()):
+            try:
+                model = json.loads(raw).get("message", {}).get("model")
+            except (ValueError, AttributeError):
+                continue
+            if model:
+                return model
+        return str(payload.get("model") or "")
+
     def context(self, payload: dict) -> float | None:
         path = Path(str(payload.get("transcript_path") or ""))
         if not path.is_file():

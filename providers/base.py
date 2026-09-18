@@ -44,6 +44,7 @@ class Provider(ABC):
         context = self.context(payload)
         agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "",
                       at=time.time(), provider=self.name, uses=uses, transcript=str(payload.get("transcript_path") or row.data.get("transcript") or ""),
+                      model=self.model(payload) or row.data.get("model") or "", started=row.data.get("started") or time.time(),
                       context=row.data.get("context") or 0 if context is None else context)
         if event == "PreToolUse" and self.writes(payload):
             return self.refusal(self.gate(root, env, row.title))
@@ -76,6 +77,9 @@ class Provider(ABC):
 
     def context(self, payload: dict) -> float | None:
         return None
+
+    def model(self, payload: dict) -> str:
+        return str(payload.get("model") or "")
 
     def transcript(self, path: Path) -> list:
         turns = []

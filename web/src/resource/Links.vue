@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {go, route} from "../route.js";
+import {peek} from "../route.js";
 import {byRef, linkedTo, meta} from "../store.js";
 
 const props = defineProps({resource: Object});
@@ -17,7 +17,7 @@ const name = (ref) => {
 };
 const open = (ref) => {
     const [t, n] = ref.split(":");
-    go(route.value.env, t, Number(n));
+    peek(t, Number(n));
 };
 </script>
 
