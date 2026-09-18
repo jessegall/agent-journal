@@ -98,7 +98,7 @@ async function openNote(n) {
 
 .rail-tabs {
     position: sticky;
-    top: 33px;
+    top: var(--rail-tabs-top, 33px);
     z-index: 1;
     flex: none;
     display: flex;
