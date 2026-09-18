@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import {peek, route} from "../route.js";
-import {clock, meta, quoted, rows, store, types} from "../store.js";
+import {clock, focusTurn, meta, quoted, rows, store, types} from "../store.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
 
@@ -16,6 +16,14 @@ const picking = ref(false);
 const mine = computed(() => props.turn.who === "user");
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
 const html = computed(() => render(words.value.text, {types: types.value}));
+
+function toQuoted() {
+    const ref = props.turn.refs.find((r) => rows(r.split(":")[0]).length && r !== props.turn.ref);
+    if (ref && focusTurn(ref)) return;
+    const head = words.value.quote.slice(0, 40);
+    const hit = rows("message").find((m) => m.n !== props.turn.n && quoted(m.brief || m.title).text.startsWith(head));
+    if (hit) focusTurn(hit.ref);
+}
 
 function follow(e) {
     const pill = e.target.closest("[data-peek]");
@@ -34,7 +42,7 @@ const became = computed(() => {
             word: `${meta(ref.split(":")[0]).title.toLowerCase()} ${ref.split(":")[1]}`,
             ref: refOf(ref),
         }));
-    return [...declared, ...linked];
+    return [...declared, ...linked].map((b) => ({...b, type: b.ref.type, n: b.ref.n}));
 });
 const faces = computed(() => {
     const seen = {};
@@ -85,7 +93,7 @@ async function drop() {
                 <p class="thread-ask-label">Question</p>
             </template>
             <template v-if="words.quote">
-                <p class="thread-quote">{{ words.quote }}</p>
+                <p class="thread-quote" title="Go to what this answers" @click.stop="toQuoted">{{ words.quote }}</p>
             </template>
             <div class="thread-text" @click="follow" v-html="html" />
             <template v-if="turn.type === 'question'">
@@ -109,7 +117,12 @@ async function drop() {
             </template>
             <template v-else>
                 <button type="button" class="thread-tool" title="React to this" @click.stop="picking = true">React</button>
-                <button type="button" class="thread-tool" title="Reply to this, quoting it" @click.stop="emit('reply', words.text)">
+                <button
+                    type="button"
+                    class="thread-tool"
+                    title="Reply to this, quoting it"
+                    @click.stop="emit('reply', {text: words.text, ref: turn.ref})"
+                >
                     Reply
                 </button>
                 <template v-if="mine && !turn.completed">
@@ -250,6 +263,7 @@ button.thread-pill:hover {
 }
 
 .thread-quote {
+    cursor: pointer;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -260,6 +274,10 @@ button.thread-pill:hover {
     color: var(--text-3);
     font-size: 12px;
     white-space: pre-wrap;
+}
+
+.thread-quote:hover {
+    color: var(--text-2);
 }
 
 .thread-text :deep(p) {
