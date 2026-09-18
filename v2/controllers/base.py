@@ -4,7 +4,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from v2.engine.record import Record
-from v2.resources.base import TITLE_MAX, Refused, Resource, check_abstract, check_title
+from v2.resources.base import Refused, Resource, check_abstract, check_title, titled
 from v2.resources.shapes import check
 
 
@@ -132,7 +132,7 @@ class Controller:
     def comment(self, n: int, text: str) -> Resource:
         from v2.controllers.types import CONTROLLERS
         parent = self.load(n)
-        made = CONTROLLERS["comment"](self.record, actor=self.actor).create(text.strip()[:TITLE_MAX].replace(":", " -"), brief=text.strip(), about=parent.ref)
+        made = CONTROLLERS["comment"](self.record, actor=self.actor).create(titled(text), brief=text.strip(), about=parent.ref)
         self.save(parent, "commented", comment=made.n)
         return made
 

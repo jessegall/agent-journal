@@ -96,6 +96,10 @@ def check_title(title: str) -> str:
     return flat
 
 
+def titled(text: str) -> str:
+    return " ".join((text or "").split()).replace(":", " -")[:TITLE_MAX].strip() or "untitled"
+
+
 def check_abstract(abstract: str) -> str:
     flat = " ".join((abstract or "").split())
     if len(flat) > ABSTRACT_MAX:
