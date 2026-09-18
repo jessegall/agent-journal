@@ -22,10 +22,10 @@ class Controller:
         return self.resource.type
 
     def path(self, n: int) -> Path:
-        return self.record.folder(self.type) / f"{n:03d}.md"
+        return self.record.folder(self.type, self.resource.scope) / f"{n:03d}.md"
 
     def numbers(self) -> list[int]:
-        return sorted(int(p.stem) for p in self.record.folder(self.type).glob("[0-9][0-9][0-9].md"))
+        return sorted(int(p.stem) for p in self.record.folder(self.type, self.resource.scope).glob("[0-9][0-9][0-9].md"))
 
     def load(self, n: int) -> Resource:
         p = self.path(n)
@@ -138,7 +138,7 @@ class Controller:
 
     def folder(self, n: int) -> Path:
         self.load(n)
-        f = self.record.folder(self.type) / f"{n:03d}"
+        f = self.record.folder(self.type, self.resource.scope) / f"{n:03d}"
         f.mkdir(exist_ok=True)
         return f
 

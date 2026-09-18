@@ -6,7 +6,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from v2.engine import bus
-from v2.resources.base import ACTIONS, ACTORS, Event
+from v2.resources.base import ACTIONS, ACTORS, PROJECT, Event
 
 
 class Record:
@@ -17,8 +17,8 @@ class Record:
         self.home.mkdir(parents=True, exist_ok=True)
         self._held = 0
 
-    def folder(self, type: str) -> Path:
-        f = self.home / type
+    def folder(self, type: str, scope: str = "") -> Path:
+        f = (self.root if scope == PROJECT else self.home) / type
         f.mkdir(exist_ok=True)
         return f
 
