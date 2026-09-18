@@ -60,7 +60,7 @@ function refOf(word) {
 
 async function react(face) {
     picking.value = false;
-    await act(route.value.env, "message", props.turn.n, "react", {face});
+    await act(route.value.env, props.turn.type, props.turn.n, "react", {face});
 }
 
 async function drop() {
