@@ -1,0 +1,67 @@
+import inspect
+from pathlib import Path
+
+from v2 import features
+from v2.commands.cli import actions
+from v2.controllers.types import CONTROLLERS
+
+HERE = Path(__file__).resolve().parent
+
+
+def signature(controller: type, name: str) -> str:
+    params = list(inspect.signature(getattr(controller, name)).parameters.values())[1:]
+    words = []
+    for p in params:
+        if p.kind is inspect.Parameter.VAR_KEYWORD:
+            words.append("[--set key=value…]")
+        elif p.default is inspect.Parameter.empty:
+            words.append(f"<{p.name}>")
+        else:
+            words.append(f"[--{p.name} …]" if not isinstance(p.default, bool) else f"[--{p.name}]")
+    return " ".join(words)
+
+
+def reference() -> str:
+    out = ["## Reference: every noun and its words", ""]
+    for type_, controller in CONTROLLERS.items():
+        r = controller.resource
+        out.append(f"### {type_} — {r.abstract_}")
+        out.append(f"{r.help_}  Scope: {r.scope}. Seen by: {', '.join(r.notify) or 'nobody'}.")
+        for name in actions(controller):
+            word = r.names.get(name, name)
+            out.append(f"    journal {type_} {word} {signature(controller, name)}".rstrip())
+        out.append("")
+    return "\n".join(out)
+
+
+def core() -> str:
+    text = (HERE / "skills" / "journal.md").read_text()
+    return f"---\nname: journal\ndescription: The journal, its commands and when each applies; load it before the first write\n---\n\n{text}\n{reference()}"
+
+
+def feature_skill(f) -> str:
+    d = f.describe()
+    trigger = d["trigger"]
+    when = (f"on {trigger['on']}" if trigger.get("on") else f"at {', '.join(map(str, trigger['at']))} percent of the context" if trigger.get("at")
+            else f"every {trigger['every']} {trigger['unit']}" if trigger else "on the events it listens to")
+    return (f"---\nname: journal-{d['name']}\ndescription: {d['abstract']}\n---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n\n"
+            f"It listens to: {', '.join(d['listens'])}. It speaks {when}. "
+            f"{'On' if d['default'] else 'Off'} by default; the viewer's Settings switches it per environment, and `triggers.{d['name']}` in the environment's settings tunes it.\n")
+
+
+def render() -> dict[str, str]:
+    features.load()
+    out = {"journal/SKILL.md": core()}
+    for name, f in features.FEATURES.items():
+        out[f"journal-{name}/SKILL.md"] = feature_skill(f)
+    return out
+
+
+def write(folder: Path) -> list[Path]:
+    written = []
+    for path, text in render().items():
+        f = folder / path
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(text)
+        written.append(f)
+    return written
