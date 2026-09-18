@@ -3889,6 +3889,17 @@ function detach(on) {
 // WHAT A QUOTE POINTS AT. A reply quotes the message it answers and an answer quotes the question
 // it answers, and both of those are turns already in the thread — so the quote is a way back to
 // them rather than a decoration.
+// WHAT A MESSAGE SAYS WITHOUT THE QUOTE IT OPENS WITH. The server splits a leading "> …" block off
+// a message when the thread is read, so anything matching a sent turn against a stored one has to
+// split it the same way.
+function withoutQuote(text) {
+  const lines = String(text || "").split("\n");
+  if (!lines.length || !lines[0].startsWith(">")) return String(text || "").trim();
+  let i = 0;
+  while (i < lines.length && (lines[i].startsWith(">") || !lines[i].trim())) i += 1;
+  return lines.slice(i).join("\n").trim();
+}
+
 function quoteAnchor(t) {
   if (!t || !t.n) return "";
   if (t.kind === "reply" || t.kind === "receipt") return `message:${t.n}`;
@@ -4073,7 +4084,12 @@ const Thread = {
       // THE SERVER'S VERSION OF A PENDING TURN KEEPS THE PENDING TURN'S KEY. Otherwise the optimistic
       // one leaves and the real one enters in the same render — two animations over the same words,
       // which is the stutter — where they are the same turn and should simply be updated in place.
-      const mine = new Map(pending.value.filter((t) => t.state !== "failed").map((t) => [(t.text || "").trim(), t.key]));
+      // MATCHED ON WHAT THE SERVER WILL SAY, not on what was sent. A message that opens with a quote
+      // is read back with the quote split off it, so keying the pending turn by the whole text
+      // stopped matching the moment that split was added — and the optimistic copy stayed on screen
+      // beside the real one. Measured: one ghost per quoted reply.
+      const mine = new Map(pending.value.filter((t) => t.state !== "failed")
+        .map((t) => [withoutQuote(t.text || ""), t.key]));
       // THE NOTE AND THE ANSWER ARE ONE SLOT. The journal's "Noted — created to-do 4." stands under
       // a message until the agent says something itself, and then it is gone: two turns, but one
       // place in the thread. Keyed apart, that swap is an exit and an enter over the same words,
@@ -4083,7 +4099,7 @@ const Thread = {
       const real = ((chat.data && chat.data.turns) || []).map((t) => {
         let held = t.who === "you" ? adopted.get(`${t.kind}:${t.n}`) : null;
         if (!held && t.who === "you") {
-          held = mine.get((t.text || "").trim());
+          held = mine.get(withoutQuote(t.text || ""));
           if (held && t.n) adopted.set(`${t.kind}:${t.n}`, held);
         }
         const refs = (t.became_refs || []).map((r) => ({ ...r, key: String(r.ref), href: refHref(r.ref, props.env) }))
