@@ -18,7 +18,7 @@ def check(label, got, want):
 
 
 def fresh(env: str = "t") -> Record:
-    return Record(Path(tempfile.mkdtemp()), env)
+    return Record(Path(tempfile.mkdtemp()) / ".journal", env)
 
 
 def done() -> None:
