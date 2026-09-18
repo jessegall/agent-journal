@@ -52,6 +52,8 @@
       .win.shut { height: auto !important; min-height: 0; }
       .win.shut .body { flex: none !important; height: 56px !important; }
       .win.shut .grip { display: none; }
+      /* the menu hangs below the bar; a minimized window is shorter than the menu, so it may not clip while one is open */
+      .win.menu-open { overflow: visible; }
       iframe { flex: 1; width: 100%; border: 0; background: #0e1013; }
       .grip { position: absolute; right: 2px; bottom: 2px; width: 14px; height: 14px;
         cursor: nwse-resize; }
@@ -107,7 +109,7 @@
   // same choice the popup makes, kept in the same place, so the two never disagree.
   const name = shade.querySelector(".name");
   const menu = shade.querySelector(".menu");
-  const closeMenu = () => { menu.hidden = true; menu.innerHTML = ""; };
+  const closeMenu = () => { menu.hidden = true; menu.innerHTML = ""; frame.classList.remove("menu-open"); };
   const openMenu = (anchor, rows) => {
     menu.innerHTML = "";
     for (const r of rows) {
@@ -119,6 +121,7 @@
     }
     menu.style.left = `${Math.max(6, anchor.offsetLeft)}px`;
     menu.hidden = false;
+    frame.classList.add("menu-open");
   };
   const pick = (url, env) => new Promise((res) => chrome.runtime.sendMessage({ kind: "pick", url, env }, res)).then(() => load(true));
   const show = (got) => {
