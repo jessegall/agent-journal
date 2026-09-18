@@ -5733,9 +5733,27 @@ const Agent = {
 // EVERY SKILL THIS AGENT COULD LOAD, AND WHAT IT HAS. The agent's page lists them in a table three
 // columns wide because it is one section of a page about something else; browsing is its own job —
 // searching by name, reading what each is for, and deciding which are named at every start.
+const SkillRow = {
+  props: { s: Object, env: String, picked: String, busy: String, open: Function, toggle: Function, depth: { type: Number, default: 0 } },
+  components: { Icon },
+  template: `
+    <div :class="['skills-row', 'skills-depth-' + depth, {picked: picked === s.name}]">
+      <component :is="s.readable ? 'a' : 'div'" class=skills-open :href="s.readable ? '#/env/' + env + '/skills/' + s.name : null"
+        @click="open($event, s)">
+        <span class=skills-name :title="s.name"><Icon name="book"/><span class=skills-name-text>{{ s.name }}</span>
+          <span v-if="s.loaded" class=skills-badge>{{ s.loaded === 1 ? 'open' : s.loaded + '×' }}</span></span>
+        <span class=skills-what>{{ s.description || 'No description.' }}</span>
+        <span class=skills-where>{{ s.source }}</span>
+      </component>
+      <button type=button :class="['skills-always', {on: s.always}]" :disabled="busy === s.name"
+        :title="s.always ? 'Stop naming it at every start' : 'Name it at every start'" @click="toggle(s)">
+        {{ s.always ? 'Every start' : 'Load at start' }}</button>
+    </div>`,
+};
+
 const AgentSkills = {
   props: ["env", "kind", "id"],
-  components: { TopBar, SkillPanel, Icon },
+  components: { TopBar, SkillPanel, Icon, SkillRow },
   setup(props) {
     const about = useFetch(() => props.env && props.id && `/api/env/${props.env}/agent?kind=${props.kind}&agent=${props.id}`);
     const find = ref("");
@@ -5752,6 +5770,39 @@ const AgentSkills = {
       const all = (about.data && about.data.skills) || [];
       return { all: all.length, open: all.filter((s) => s.loaded).length, always: all.filter((s) => s.always).length };
     });
+    // GROUPED BY PREFIX, TWO LEVELS DEEP. `commandments-backend-api` sits in `commandments-backend`
+    // inside `commandments`; a prefix only one skill carries is no group, and a skill named exactly
+    // its prefix (`journal`) heads its group. Collapsing is per page visit; a search opens everything.
+    const folded = ref(new Set());
+    const groups = computed(() => {
+      const list = rows.value;
+      const under = (prefix) => list.filter((s) => s.name === prefix || s.name.startsWith(`${prefix}-`));
+      const seen = new Set();
+      const out = [];
+      for (const s of list) {
+        const top = s.name.split("-")[0];
+        if (seen.has(top)) continue;
+        seen.add(top);
+        const members = under(top);
+        if (members.length < 2) { out.push({ key: s.name, single: s }); continue; }
+        const subs = new Set();
+        const items = [];
+        for (const m of members) {
+          const parts = m.name.split("-");
+          const sub = parts.length > 2 ? parts.slice(0, 2).join("-") : "";
+          if (sub && !subs.has(sub) && under(sub).length > 1) { subs.add(sub); items.push({ key: sub, name: sub, rows: under(sub) }); }
+          else if (!sub || !subs.has(sub)) items.push({ key: m.name, single: m });
+        }
+        out.push({ key: top, name: top, count: members.length, items });
+      }
+      return out;
+    });
+    const isFolded = (key) => !find.value.trim() && folded.value.has(key);
+    const fold = (key) => {
+      const next = new Set(folded.value);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      folded.value = next;
+    };
     // the same write the skill's own panel makes: one funnel, so a toggle here and a toggle there
     // cannot disagree about what "every start" means
     const toggle = async (s) => {
@@ -5771,7 +5822,7 @@ const AgentSkills = {
       event.preventDefault();
       picked.value = s.name;
     };
-    return { about, find, only, rows, counts, toggle, busy, picked, open, close: () => { picked.value = null; } };
+    return { about, find, only, rows, counts, toggle, busy, picked, open, close: () => { picked.value = null; }, groups, isFolded, fold };
   },
   template: `
     <TopBar :crumbs="[env, 'Agent', 'Skills']"/>
@@ -5790,18 +5841,27 @@ const AgentSkills = {
         </div>
         <p v-if="!rows.length" class="prose muted">Nothing here matches that.</p>
         <div v-else class=skills-list>
-          <div v-for="s in rows" :key="s.source + s.name" :class="['skills-row', {picked: picked === s.name}]">
-            <component :is="s.readable ? 'a' : 'div'" class=skills-open :href="s.readable ? '#/env/' + env + '/skills/' + s.name : null"
-              @click="open($event, s)">
-              <span class=skills-name><Icon name="book"/>{{ s.name }}
-                <span v-if="s.loaded" class=skills-badge>{{ s.loaded === 1 ? 'open' : s.loaded + '×' }}</span></span>
-              <span class=skills-what>{{ s.description || 'No description.' }}</span>
-              <span class=skills-where>{{ s.source }}</span>
-            </component>
-            <button type=button :class="['skills-always', {on: s.always}]" :disabled="busy === s.name"
-              :title="s.always ? 'Stop naming it at every start' : 'Name it at every start'" @click="toggle(s)">
-              {{ s.always ? 'Every start' : 'Load at start' }}</button>
-          </div>
+          <template v-for="g in groups" :key="g.key">
+            <SkillRow v-if="g.single" :s="g.single" :env="env" :picked="picked" :busy="busy" :open="open" :toggle="toggle"/>
+            <template v-else>
+              <button type=button :class="['skills-group', {folded: isFolded(g.key)}]" @click="fold(g.key)">
+                <Icon name="down"/><span class=skills-group-name>{{ g.name }}</span><span class=skills-group-n>{{ g.count }}</span>
+              </button>
+              <template v-if="!isFolded(g.key)">
+                <template v-for="it in g.items" :key="it.key">
+                  <SkillRow v-if="it.single" :s="it.single" :env="env" :picked="picked" :busy="busy" :open="open" :toggle="toggle" :depth="1"/>
+                  <template v-else>
+                    <button type=button :class="['skills-group', 'skills-subgroup', {folded: isFolded(it.key)}]" @click="fold(it.key)">
+                      <Icon name="down"/><span class=skills-group-name>{{ it.name }}</span><span class=skills-group-n>{{ it.rows.length }}</span>
+                    </button>
+                    <template v-if="!isFolded(it.key)">
+                      <SkillRow v-for="s in it.rows" :key="s.source + s.name" :s="s" :env="env" :picked="picked" :busy="busy" :open="open" :toggle="toggle" :depth="2"/>
+                    </template>
+                  </template>
+                </template>
+              </template>
+            </template>
+          </template>
         </div>
       </template>
     </div></div>
