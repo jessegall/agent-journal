@@ -8,14 +8,14 @@ import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
 
 const props = defineProps({type: String, n: Number});
-const resource = computed(() => rows(props.type).find((r) => r.n === props.n) || null);
-const shape = computed(() => (props.type === "plan" ? "plan" : meta(props.type).view));
+const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
+const shape = computed(() => (!props.type ? "" : props.type === "plan" ? "plan" : meta(props.type).view));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
 </script>
 
 <template>
-    <template v-if="resource">
-        <div :class="['reader', shape]" @click.self="close">
+    <Transition name="reader">
+        <div v-if="resource" :key="`${type}:${n}`" :class="['reader', shape]" @click.self="close">
             <SwitchCase :value="shape">
                 <template #plan>
                     <div class="page"><PlanPage :resource="resource" @close="close" /></div>
@@ -28,7 +28,7 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
                 </template>
             </SwitchCase>
         </div>
-    </template>
+    </Transition>
 </template>
 
 <style scoped>
@@ -71,5 +71,38 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
 .page > :deep(.body) > .head {
     margin: -36px -32px 0;
     padding: 36px 32px 8px;
+}
+
+.reader-enter-active,
+.reader-leave-active {
+    transition: background 0.24s ease;
+}
+
+.reader-enter-active .inspector,
+.reader-leave-active .inspector {
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.reader-enter-active .page,
+.reader-leave-active .page {
+    transition:
+        opacity 0.2s ease,
+        transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.reader-enter-from,
+.reader-leave-to {
+    background: transparent;
+}
+
+.reader-enter-from .inspector,
+.reader-leave-to .inspector {
+    transform: translateX(100%);
+}
+
+.reader-enter-from .page,
+.reader-leave-to .page {
+    opacity: 0;
+    transform: translateY(8px);
 }
 </style>

@@ -15,7 +15,7 @@ ACCENT = f"{ESC}[38;2;163;168;240m"
 DIM = f"{ESC}[38;2;131;134;142m"
 RESET = f"{ESC}[0m"
 STATES = {"idle": "●", "working": "◐", "waiting": "◔", "stopped": "○"}
-BRAND = "AGENT JOURNAL"
+BRAND = "JOURNAL"
 GRADIENT = ((36, 38, 78), (94, 99, 222), (36, 38, 78))
 
 
@@ -96,8 +96,8 @@ class Band:
         return tuple(round(a[i] + (b[i] - a[i]) * f) for i in range(3))
 
     def banner(self, env: str, cols: int) -> str:
-        left, right = f"  {BRAND}", f"{env.upper()}  "
-        text = left + " " * max(1, cols - len(left) - len(right)) + right
+        left = max(0, (cols - len(BRAND)) // 2)
+        text = " " * left + BRAND + " " * max(0, cols - left - len(BRAND))
         cells = []
         for x, ch in enumerate(text[:cols]):
             r, g, b = self.shade(x, cols)

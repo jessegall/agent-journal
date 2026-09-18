@@ -16,6 +16,9 @@ import Lightbox from "./kit/Lightbox.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
 
 const page = computed(() => (!route.value.page ? "home" : ["settings", "search"].includes(route.value.page) ? route.value.page : "index"));
+const opened = computed(
+    () => route.value.open || (route.value.n && page.value === "index" ? {type: route.value.page, n: route.value.n} : {type: "", n: 0})
+);
 
 const quick = ref(false);
 let pointed = false;
@@ -70,15 +73,10 @@ watch(
                     </div>
                 </Transition>
             </div>
-            <template v-if="store.activity">
-                <Activity />
-            </template>
-            <template v-if="route.open">
-                <Reader :type="route.open.type" :n="route.open.n" />
-            </template>
-            <template v-else-if="route.n && page === 'index'">
-                <Reader :type="route.page" :n="route.n" />
-            </template>
+            <Transition name="column">
+                <Activity v-if="store.activity" />
+            </Transition>
+            <Reader :type="opened.type" :n="opened.n" />
             <Lightbox />
             <template v-if="quick">
                 <QuickMenu @close="quick = false" />
@@ -120,6 +118,20 @@ watch(
 }
 
 .page-leave-to {
+    opacity: 0;
+}
+
+.column-enter-active,
+.column-leave-active {
+    transition:
+        width 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.2s ease;
+    overflow: hidden;
+}
+
+.column-enter-from,
+.column-leave-to {
+    width: 0;
     opacity: 0;
 }
 </style>
