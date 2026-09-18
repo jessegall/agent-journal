@@ -2,7 +2,7 @@
 import {computed, ref} from "vue";
 import {act, saveSettings} from "../api.js";
 import Btn from "../kit/Btn.vue";
-import Toggle from "../kit/Toggle.vue";
+import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
 import {load, reload, rows, store} from "../store.js";
 
@@ -34,7 +34,7 @@ async function remove(e) {
         <p class="lead">Each is a switch; its trigger says when it speaks to the agent.</p>
         <template v-for="f in features" :key="f.name">
             <div class="feature">
-                <Toggle :on="on(f.name)" @change="(v) => flip(f.name, v)" />
+                <Switch :on="on(f.name)" @change="(v) => flip(f.name, v)" />
                 <span class="ftext">
                     <span class="ftitle">{{ f.title }}</span>
                     <span class="fabs">{{ f.abstract }}</span>
