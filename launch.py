@@ -12,7 +12,7 @@ import time
 import tty
 from pathlib import Path
 
-import channel
+import news
 
 #: how long the agent must print nothing before the launcher takes it to be idle
 IDLE_SECONDS = 3.0
@@ -177,7 +177,7 @@ class Reports:
 class Nudger:
     """What the channel used to push, typed into the agent's terminal by the seat outside it.
 
-    WHEN, NOT WHAT, IS THE WHOLE CARE. The words are the channel's own (`channel._waiting`), so
+    WHEN, NOT WHAT, IS THE WHOLE CARE. The words are the record's own (`news._waiting`), so
     nothing is said twice or said differently; what the seat adds is judgement about the moment:
     the agent has printed nothing for IDLE_SECONDS, the user has no half-typed line, and the
     thing has not been typed before. Then one line, and Enter.
@@ -219,16 +219,16 @@ class Nudger:
             return                                   # one line per quiet moment; the agent answers, then the next
 
     def pending(self) -> list:
-        channel.ROOT = self.root
+        news.ROOT = self.root
         if not self.since:
-            self.since = channel.STARTED[0] or time.time()
+            self.since = time.time()
         try:
-            return channel._waiting(self.env, self.since)
+            return news._waiting(self.env, self.since)
         except Exception:                            # a half-written record is next look's problem, not a crash
             return []
 
     def mark(self, keys: list) -> None:
         try:
-            channel._told(keys)
+            news._told(keys)
         except Exception:
             pass
