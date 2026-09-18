@@ -49,7 +49,7 @@ check("the base controller's actions are the CRUD set", base_actions,
       ["all", "attach", "comment", "comments", "complete", "create", "delete", "files", "find", "folder", "force_delete", "link", "linked_to", "move", "restore", "search", "section", "see", "set", "show", "unlink", "unseen", "update"])
 subs = top._subparsers._group_actions[0].choices
 check("every type is a command, beside the queries", sorted(t for t in subs if t in TYPES), sorted(TYPES))
-check("the queries stand beside them", sorted(t for t in subs if t not in TYPES), ["carry", "conversation", "nothing", "open", "search", "start", "status", "user", "version"])
+check("the queries stand beside them", sorted(t for t in subs if t not in TYPES), ["carry", "claude", "codex", "conversation", "nothing", "open", "search", "serve", "start", "status", "user", "version"])
 for type_ in TYPES:
     acts = subs[type_]._subparsers._group_actions[0].choices
     names = TYPES[type_].names
