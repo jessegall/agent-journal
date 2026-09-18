@@ -52,6 +52,8 @@
       .win.shut { height: auto !important; min-height: 0; }
       .win.shut .body { flex: none !important; height: 56px !important; }
       .win.shut .grip { display: none; }
+      .win.dragging iframe { pointer-events: none; }
+      .grip:hover::after { border-color: #6c8cff; }
       /* the menu hangs below the bar; a minimized window is shorter than the menu, so it may not clip while one is open */
       .win.menu-open { overflow: visible; }
       iframe { flex: 1; width: 100%; border: 0; background: #0e1013; }
@@ -168,19 +170,29 @@
     // THE POINTER AND THE BOX ARE TWO DIFFERENT x's. Spreading the box over the pointer's own
     // coordinates made every drag measure from the window's corner, which is the jump to the right.
     const from = { px: e.clientX, py: e.clientY, ...box };
+    // THE POINTER IS CAPTURED, AND THE FRAME STOPS LISTENING. A fast drag leaves the grip and lands
+    // on the iframe, whose document takes every event from then on — the drag froze there. Capture
+    // keeps the events on the grip wherever the pointer is, and the frame ignores them until it ends.
+    const grabbed = e.currentTarget;
+    try { grabbed.setPointerCapture(e.pointerId); } catch (err) { /* an older browser: the document listeners still do */ }
     bar.classList.add("dragging");
+    frame.classList.add("dragging");
     const step = (ev) => {
       move(ev.clientX - from.px, ev.clientY - from.py, from);
       place(box);
     };
-    const done = () => {
+    const done = (ev) => {
       bar.classList.remove("dragging");
+      frame.classList.remove("dragging");
+      try { grabbed.releasePointerCapture(ev.pointerId); } catch (err) { /* already released */ }
       document.removeEventListener("pointermove", step, true);
       document.removeEventListener("pointerup", done, true);
+      document.removeEventListener("pointercancel", done, true);
       remember();
     };
     document.addEventListener("pointermove", step, true);
     document.addEventListener("pointerup", done, true);
+    document.addEventListener("pointercancel", done, true);
   };
 
   bar.addEventListener("pointerdown", (e) => {
