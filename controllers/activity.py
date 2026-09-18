@@ -291,6 +291,8 @@ class ActivityController(Controller):
                         "shells": shells_now(root, stem),
                         # False: no launcher holds this session, so it hears nothing while idle
                         "channel": channel_now(root, stem),
+                        # which agent it is, as its start hook recorded: "claude" or "codex"
+                        "agent": state.get(root, "agent", "", stem=stem) or "claude",
                         # the last words the agent printed, as its launcher saw them; "" off a seat
                         "printed": ((seat_now(root, stem) or {}).get("printed") or "")[-TITLE_MAX:]}
         return None

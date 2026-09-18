@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.161.0 — A Codex session is read: its rollout file, its name in the bar
+
+**The journal reads a Codex session's rollout file** (`~/.codex/sessions/…/rollout-<time>-<id>.jsonl`)
+through a parser of its own, `rollout.py`, so everything that reads a transcript — the last reply and
+its tag, the model, the context reading and its window, `journal search`, the agent page — works on
+a Codex session as on a Claude one. The agent bar says **Codex** and its model for a session the
+hooks started under Codex.
+
+The status bar's running command is a touch larger, in the same muted tone.
+
 ## 1.160.0 — Codex's hooks: the same hook.py, wired by journal codex
 
 **hook.py answers Codex.** Measured against codex-cli 0.142.5 (doc 9, "Codex hooks: config and
