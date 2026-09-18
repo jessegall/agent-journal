@@ -154,13 +154,35 @@ class Reports(Controller):
 class Pins(Controller):
     resource = types.Pin
 
+    def create(self, title: str, abstract: str = "", brief: str = "", supersedes: int = 0, **data):
+        made = super().create(title, abstract, brief, **data)
+        if not supersedes:
+            return made
+        self.complete(int(supersedes), how=f"superseded by pin {made.n}")
+        return self.link(made.n, f"pin:{int(supersedes)}")
+
+    def promote(self, n: int):
+        pin = self.load(n)
+        rule = CONTROLLERS["rule"](self.record, actor=self.actor).create(pin.title, pin.abstract, pin.brief, **pin.data)
+        self.complete(n, how=f"promoted to rule {rule.n}")
+        return rule
+
 
 class Rules(Controller):
     resource = types.Rule
 
+    def inject(self, n: int):
+        return self.update(n, injected=True)
+
+    def uninject(self, n: int):
+        return self.update(n, injected=False)
+
 
 class Reminders(Controller):
     resource = types.Reminder
+
+    def create(self, title: str, abstract: str = "", brief: str = "", until: str = "", **data):
+        return super().create(title, abstract, brief, until=until, **data)
 
 
 class Questions(Controller):
