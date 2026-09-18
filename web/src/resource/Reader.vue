@@ -13,19 +13,21 @@ const close = () => go(route.value.env, props.type);
 </script>
 
 <template>
-    <div v-if="resource" :class="['reader', shape]" @click.self="close">
-        <SwitchCase :value="shape">
-            <template #plan>
-                <div class="page"><PlanPage :resource="resource" @close="close" /></div>
-            </template>
-            <template #document>
-                <div class="page"><ResourceBody :resource="resource" @close="close" /></div>
-            </template>
-            <template #default>
-                <aside class="inspector"><ResourceBody :resource="resource" @close="close" /></aside>
-            </template>
-        </SwitchCase>
-    </div>
+    <template v-if="resource">
+        <div :class="['reader', shape]" @click.self="close">
+            <SwitchCase :value="shape">
+                <template #plan>
+                    <div class="page"><PlanPage :resource="resource" @close="close" /></div>
+                </template>
+                <template #document>
+                    <div class="page"><ResourceBody :resource="resource" @close="close" /></div>
+                </template>
+                <template #default>
+                    <aside class="inspector"><ResourceBody :resource="resource" @close="close" /></aside>
+                </template>
+            </SwitchCase>
+        </div>
+    </template>
 </template>
 
 <style scoped>

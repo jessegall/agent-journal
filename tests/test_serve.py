@@ -77,6 +77,15 @@ with urllib.request.urlopen(req) as r:
     check("a resource's file is served with its type", (r.status, r.headers["Content-Type"], r.read()), (200, "image/png", b"\x89PNG"))
 check("a missing file is a 404", call("GET", "/api/main/todo/1/files/none.png")[0], 404)
 
+# AN UPLOAD: a multipart body lands as the resource's files
+boundary = b"xx1234"
+part = b"--" + boundary + b"\r\nContent-Disposition: form-data; name=\"file\"; filename=\"pic.png\"\r\nContent-Type: image/png\r\n\r\n\x89PNGdata\r\n--" + boundary + b"--\r\n"
+req = urllib.request.Request(base + "/api/main/todo/1/upload", data=part, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary.decode()}"})
+with urllib.request.urlopen(req) as r:
+    check("an upload attaches the file and names it", json.loads(r.read()), {"files": ["pic.png"]})
+with urllib.request.urlopen(base + "/api/main/todo/1/files/pic.png") as r:
+    check("and it is served back", r.read(), b"\x89PNGdata")
+
 # THE EVENT LOG AND THE STREAM
 code, got = call("GET", "/api/main/events?since=0")
 check("the log is served past a cursor", (code, got[0]["id"], all(e["id"] > 3 for e in call("GET", "/api/main/events?since=3")[1])), (200, 1, True))

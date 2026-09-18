@@ -56,40 +56,44 @@ async function run(action, body = {}) {
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
         </header>
         <h2 class="title">{{ resource.title }}</h2>
-        <p v-if="resource.data.goal" class="goal">{{ resource.data.goal }}</p>
+        <template v-if="resource.data.goal">
+            <p class="goal">{{ resource.data.goal }}</p>
+        </template>
         <div class="actions">
-            <Btn v-if="button" kind="primary" @click="run(button[0])">{{ button[1] }}</Btn>
-            <Btn v-if="!['done', 'abandoned'].includes(status)" kind="danger" @click="run('abandon', {why: 'stopped from the viewer'})">
-                Abandon
-            </Btn>
+            <template v-if="button">
+                <Btn kind="primary" @click="run(button[0])">{{ button[1] }}</Btn>
+            </template>
+            <template v-if="!['done', 'abandoned'].includes(status)">
+                <Btn kind="danger" @click="run('abandon', {why: 'stopped from the viewer'})">Abandon</Btn>
+            </template>
             <span class="error">{{ error }}</span>
         </div>
-        <div v-if="resource.brief" class="brief">{{ resource.brief }}</div>
+        <template v-if="resource.brief">
+            <div class="brief">{{ resource.brief }}</div>
+        </template>
         <ol class="phases">
-            <li
-                v-for="p in phases"
-                :key="p.i"
-                :class="['phase', {current: p.i === current && (status === 'active' || status === 'waiting'), done: done(p)}]"
-            >
-                <div class="phead">
-                    <span class="mark"><Icon :name="done(p) ? 'check' : 'circle'" :size="14" /></span>
-                    <span class="ptitle">{{ p.i }}. {{ p.title }}</span>
-                    <span v-if="p.checkpoint" class="cp">checkpoint</span>
-                    <span class="progress">{{ p.rows.filter((t) => t.completed).length }}/{{ p.rows.length }}</span>
-                </div>
-                <div v-if="p.when" class="when">complete when {{ p.when }}</div>
-                <button
-                    v-for="t in p.rows"
-                    :key="t.n"
-                    type="button"
-                    :class="['row', {completed: t.completed}]"
-                    @click="go(route.env, 'todo', t.n)"
-                >
-                    <Icon :name="t.completed ? 'check' : 'circle'" :size="12" />
-                    <span class="rn">#{{ t.n }}</span>
-                    <span class="rt">{{ t.title }}</span>
-                </button>
-            </li>
+            <template v-for="p in phases" :key="p.i">
+                <li :class="['phase', {current: p.i === current && (status === 'active' || status === 'waiting'), done: done(p)}]">
+                    <div class="phead">
+                        <span class="mark"><Icon :name="done(p) ? 'check' : 'circle'" :size="14" /></span>
+                        <span class="ptitle">{{ p.i }}. {{ p.title }}</span>
+                        <template v-if="p.checkpoint">
+                            <span class="cp">checkpoint</span>
+                        </template>
+                        <span class="progress">{{ p.rows.filter((t) => t.completed).length }}/{{ p.rows.length }}</span>
+                    </div>
+                    <template v-if="p.when">
+                        <div class="when">complete when {{ p.when }}</div>
+                    </template>
+                    <template v-for="t in p.rows" :key="t.n">
+                        <button type="button" :class="['row', {completed: t.completed}]" @click="go(route.env, 'todo', t.n)">
+                            <Icon :name="t.completed ? 'check' : 'circle'" :size="12" />
+                            <span class="rn">#{{ t.n }}</span>
+                            <span class="rt">{{ t.title }}</span>
+                        </button>
+                    </template>
+                </li>
+            </template>
         </ol>
         <Comments :resource="resource" />
     </article>

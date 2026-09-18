@@ -4,7 +4,7 @@ import {route} from "./route.js";
 import {boot, listen, reload, store} from "./store.js";
 import Sidebar from "./layout/Sidebar.vue";
 import TopBar from "./layout/TopBar.vue";
-import AgentBand from "./layout/AgentBand.vue";
+import StatusBar from "./layout/StatusBar.vue";
 import Activity from "./layout/Activity.vue";
 import SwitchCase from "./kit/SwitchCase.vue";
 import Home from "./pages/Home.vue";
@@ -26,23 +26,29 @@ watch(
 </script>
 
 <template>
-    <div class="app" v-if="store.spec">
-        <Sidebar />
-        <div class="main">
-            <TopBar />
-            <AgentBand />
-            <div class="page">
-                <SwitchCase :value="page">
-                    <template #home><Home /></template>
-                    <template #settings><SettingsPage /></template>
-                    <template #search><SearchPage /></template>
-                    <template #default><Index :type="route.page" /></template>
-                </SwitchCase>
+    <template v-if="store.spec">
+        <div class="app">
+            <Sidebar />
+            <div class="main">
+                <TopBar />
+                <StatusBar />
+                <div class="page">
+                    <SwitchCase :value="page">
+                        <template #home><Home /></template>
+                        <template #settings><SettingsPage /></template>
+                        <template #search><SearchPage /></template>
+                        <template #default><Index :type="route.page" /></template>
+                    </SwitchCase>
+                </div>
             </div>
+            <template v-if="store.activity">
+                <Activity />
+            </template>
+            <template v-if="route.n && page === 'index'">
+                <Reader :type="route.page" :n="route.n" />
+            </template>
         </div>
-        <Activity v-if="store.activity" />
-        <Reader v-if="route.n && page === 'index'" :type="route.page" :n="route.n" />
-    </div>
+    </template>
 </template>
 
 <style scoped>

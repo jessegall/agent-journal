@@ -15,8 +15,8 @@ const error = ref("");
 async function submit() {
     error.value = "";
     try {
-        const made = await create(route.value.env, props.type, {title: title.value, abstract: abstract.value, brief: brief.value});
-        emit("made", made.n);
+        const resource = await create(route.value.env, props.type, {title: title.value, abstract: abstract.value, brief: brief.value});
+        emit("made", resource.n);
     } catch (e) {
         error.value = e.message;
     }

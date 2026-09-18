@@ -8,7 +8,7 @@ import {load, reload, rows, store} from "../store.js";
 
 const features = computed(() => Object.values(store.spec.features));
 const on = (name) => !!(store.settings && store.settings.features[name]);
-const keep = computed(() => (store.settings && store.settings.keep) || {});
+const retention = computed(() => (store.settings && store.settings.keep) || {});
 const days = ref({});
 const envs = computed(() => rows("environment").filter((e) => !e.completed));
 
@@ -17,8 +17,8 @@ async function flip(name, value) {
     await reload();
 }
 
-async function setKeep(type) {
-    await saveSettings(route.value.env, {keep: {...keep.value, [type]: Number(days.value[type])}});
+async function saveRetention(type) {
+    await saveSettings(route.value.env, {keep: {...retention.value, [type]: Number(days.value[type])}});
     await reload();
 }
 
@@ -32,39 +32,47 @@ async function remove(e) {
     <section class="settings">
         <h2>Features on {{ route.env }}</h2>
         <p class="lead">Each is a switch; its trigger says when it speaks to the agent.</p>
-        <div v-for="f in features" :key="f.name" class="feature">
-            <Toggle :on="on(f.name)" @change="(v) => flip(f.name, v)" />
-            <span class="ftext">
-                <span class="ftitle">{{ f.title }}</span>
-                <span class="fabs">{{ f.abstract }}</span>
-                <span v-if="Object.keys(f.trigger).length" class="ftrig">
-                    {{
-                        f.trigger.on
-                            ? `on ${f.trigger.on}`
-                            : f.trigger.at
-                              ? `at ${f.trigger.at.join(", ")} percent`
-                              : `every ${f.trigger.every} ${f.trigger.unit}`
-                    }}
+        <template v-for="f in features" :key="f.name">
+            <div class="feature">
+                <Toggle :on="on(f.name)" @change="(v) => flip(f.name, v)" />
+                <span class="ftext">
+                    <span class="ftitle">{{ f.title }}</span>
+                    <span class="fabs">{{ f.abstract }}</span>
+                    <template v-if="Object.keys(f.trigger).length">
+                        <span class="ftrig">
+                            {{
+                                f.trigger.on
+                                    ? `on ${f.trigger.on}`
+                                    : f.trigger.at
+                                      ? `at ${f.trigger.at.join(", ")} percent`
+                                      : `every ${f.trigger.every} ${f.trigger.unit}`
+                            }}
+                        </span>
+                    </template>
                 </span>
-            </span>
-        </div>
+            </div>
+        </template>
         <h2>Keep</h2>
-        <div v-for="type in ['report', 'todo']" :key="type" class="keep">
-            <span class="ktext">{{ type }}s are archived after</span>
-            <input
-                v-model="days[type]"
-                type="number"
-                min="0"
-                :placeholder="String(keep[type] ?? (type === 'report' ? 14 : 7))"
-                @change="setKeep(type)"
-            />
-            <span class="ktext">days; 0 keeps them listed</span>
-        </div>
+        <template v-for="type in ['report', 'todo']" :key="type">
+            <div class="keep">
+                <span class="ktext">{{ type }}s are archived after</span>
+                <input
+                    v-model="days[type]"
+                    type="number"
+                    min="0"
+                    :placeholder="String(retention[type] ?? (type === 'report' ? 14 : 7))"
+                    @change="saveRetention(type)"
+                />
+                <span class="ktext">days; 0 keeps them listed</span>
+            </div>
+        </template>
         <h2>Environments</h2>
-        <div v-for="e in envs" :key="e.n" class="env">
-            <span class="etitle">{{ e.title }}</span>
-            <Btn kind="danger" small :disabled="e.title === route.env" @click="remove(e)">Remove</Btn>
-        </div>
+        <template v-for="e in envs" :key="e.n">
+            <div class="env">
+                <span class="etitle">{{ e.title }}</span>
+                <Btn kind="danger" small :disabled="e.title === route.env" @click="remove(e)">Remove</Btn>
+            </div>
+        </template>
     </section>
 </template>
 

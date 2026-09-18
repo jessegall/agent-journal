@@ -3,10 +3,12 @@ defineProps({sections: Array});
 </script>
 
 <template>
-    <section v-for="s in sections" :key="s.title" class="section">
-        <h3>{{ s.title }}</h3>
-        <div class="text">{{ s.body }}</div>
-    </section>
+    <template v-for="s in sections" :key="s.title">
+        <section class="section">
+            <h3>{{ s.title }}</h3>
+            <div class="text">{{ s.body }}</div>
+        </section>
+    </template>
 </template>
 
 <style scoped>

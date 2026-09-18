@@ -29,9 +29,13 @@ watch(
             <Icon name="search" />
             <input v-model="q" placeholder="Search everything on this environment…" autofocus />
         </form>
-        <p v-if="route.q && !hits.length" class="empty">Nothing matches “{{ route.q }}”.</p>
+        <template v-if="route.q && !hits.length">
+            <p class="empty">Nothing matches “{{ route.q }}”.</p>
+        </template>
         <div class="cards">
-            <ResourceCard v-for="r in hits" :key="r.ref" :resource="r" @click="go(route.env, r.type, r.n)" />
+            <template v-for="r in hits" :key="r.ref">
+                <ResourceCard :resource="r" @click="go(route.env, r.type, r.n)" />
+            </template>
         </div>
     </section>
 </template>

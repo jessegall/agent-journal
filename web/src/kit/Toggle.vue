@@ -6,7 +6,9 @@ const emit = defineEmits(["change"]);
 <template>
     <button type="button" :class="['toggle', {on}]" @click="emit('change', !on)">
         <span class="knob" />
-        <span v-if="text" class="text">{{ text }}</span>
+        <template v-if="text">
+            <span class="text">{{ text }}</span>
+        </template>
     </button>
 </template>
 

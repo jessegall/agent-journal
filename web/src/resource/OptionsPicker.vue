@@ -10,7 +10,7 @@ const own = ref("");
 const options = computed(() => props.resource.data.options || []);
 const pick = computed(() => props.resource.data.pick || 0);
 
-async function answer(text) {
+async function submit(text) {
     await act(route.value.env, props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: text});
     await reload();
 }
@@ -18,25 +18,33 @@ async function answer(text) {
 
 <template>
     <section class="options">
-        <button
-            v-for="(o, i) in options"
-            :key="i"
-            type="button"
-            :class="['option', {picked: i + 1 === pick, chosen: resource.outcome === o.title}]"
-            :disabled="!!resource.completed"
-            @click="answer(o.title)"
-        >
-            <span class="label">
-                {{ o.title }}
-                <span v-if="i + 1 === pick" class="pick">the agent's pick</span>
-            </span>
-            <span v-if="o.description" class="desc">{{ o.description }}</span>
-            <code v-if="o.code" class="code">{{ o.code }}</code>
-        </button>
-        <form v-if="!resource.completed" class="own" @submit.prevent="answer(own)">
-            <input v-model="own" placeholder="Or answer in your own words…" />
-            <Btn kind="primary" small @click="answer(own)">{{ word(resource.type, "complete") }}</Btn>
-        </form>
+        <template v-for="(o, i) in options" :key="i">
+            <button
+                type="button"
+                :class="['option', {picked: i + 1 === pick, chosen: resource.outcome === o.title}]"
+                :disabled="!!resource.completed"
+                @click="submit(o.title)"
+            >
+                <span class="label">
+                    {{ o.title }}
+                    <template v-if="i + 1 === pick">
+                        <span class="pick">the agent's pick</span>
+                    </template>
+                </span>
+                <template v-if="o.description">
+                    <span class="desc">{{ o.description }}</span>
+                </template>
+                <template v-if="o.code">
+                    <code class="code">{{ o.code }}</code>
+                </template>
+            </button>
+        </template>
+        <template v-if="!resource.completed">
+            <form class="own" @submit.prevent="submit(own)">
+                <input v-model="own" placeholder="Or answer in your own words…" />
+                <Btn kind="primary" small @click="submit(own)">{{ word(resource.type, "complete") }}</Btn>
+            </form>
+        </template>
     </section>
 </template>
 

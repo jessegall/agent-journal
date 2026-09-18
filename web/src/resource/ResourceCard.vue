@@ -13,9 +13,9 @@ defineProps({resource: Object});
         </span>
         <span class="title">{{ resource.title }}</span>
         <span class="abstract">{{ resource.abstract || resource.brief.slice(0, 160) }}</span>
-        <span v-if="resource.sections.length" class="parts">
-            {{ resource.sections.length }} part{{ resource.sections.length > 1 ? "s" : "" }}
-        </span>
+        <template v-if="resource.sections.length">
+            <span class="parts">{{ resource.sections.length }} part{{ resource.sections.length > 1 ? "s" : "" }}</span>
+        </template>
     </button>
 </template>
 

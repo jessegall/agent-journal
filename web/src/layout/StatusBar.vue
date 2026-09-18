@@ -1,0 +1,327 @@
+<script setup>
+import {computed, ref} from "vue";
+import {act, saveSettings} from "../api.js";
+import Icon from "../kit/Icon.vue";
+import {go, route} from "../route.js";
+import {agent, autoOn, reload, rows} from "../store.js";
+
+const state = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data.status : "stopped"));
+const line = computed(() => {
+    if (state.value === "stopped") return "no agent is on this environment";
+    const work = rows("work").find((w) => !w.completed);
+    return work ? `on ${work.title}` : agent.value.data.tool ? `using ${agent.value.data.tool}` : "waiting for something to do";
+});
+const plans = computed(() => rows("plan").filter((p) => ["ready", "active", "waiting", "done"].includes(p.data.status) && !p.completed));
+const error = ref("");
+
+const phaseOf = (p) => {
+    const i = p.data.current || 1;
+    return p.data.phases[i - 1] ? `phase ${i}, ${p.data.phases[i - 1].title}` : "";
+};
+
+const doneOf = (p) =>
+    p.data.phases.filter((ph) => ph.todos.length && ph.todos.every((n) => (rows("todo").find((t) => t.n === n) || {}).completed)).length;
+
+const button = (p) =>
+    ({ready: ["activate", "Start"], waiting: ["continue", "Continue"], done: ["acknowledge", "Acknowledge"]})[p.data.status] || null;
+
+async function setAuto(on) {
+    await saveSettings(route.value.env, {features: {auto: on}});
+    await reload();
+}
+
+async function runBar(p) {
+    error.value = "";
+    try {
+        await act(route.value.env, "plan", p.n, button(p)[0]);
+        await reload();
+    } catch (e) {
+        error.value = e.message;
+    }
+}
+</script>
+
+<template>
+    <div class="statusbar" @click.self="go(route.env)">
+        <span :class="['statusbar-dot', {live: state !== 'stopped'}]" />
+        <button type="button" class="statusbar-text" @click="go(route.env)">
+            <b>{{ state[0].toUpperCase() + state.slice(1) }}</b>
+            <span class="statusbar-line">{{ line }}</span>
+        </button>
+        <span class="statusbar-tools">
+            <button
+                type="button"
+                class="statusbar-auto"
+                role="switch"
+                :aria-checked="autoOn ? 'true' : 'false'"
+                :title="
+                    autoOn ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'
+                "
+                @click="setAuto(!autoOn)"
+            >
+                <span :class="['switch', 'small', {on: autoOn}]"><span class="knob" /></span>
+                <span class="statusbar-auto-word">auto</span>
+            </button>
+        </span>
+    </div>
+    <template v-for="p in plans" :key="p.n">
+        <div :class="['planbar', `planbar-${p.data.status}`]">
+            <a class="planbar-link" :href="`#/${route.env}/plan/${p.n}`" :title="`Plan ${p.n}: ${p.title}`">
+                <span class="planbar-n">Plan</span>
+                <span class="planbar-title">{{ p.title }}</span>
+                <span class="planbar-phase">{{ phaseOf(p) }}</span>
+                <span class="planbar-track" role="progressbar">
+                    <span :style="{width: `${(100 * doneOf(p)) / Math.max(1, p.data.phases.length)}%`}" />
+                </span>
+            </a>
+            <template v-if="button(p)">
+                <button type="button" :class="['planbar-act', {ack: p.data.status === 'done'}]" @click="runBar(p)">
+                    {{ button(p)[1] }}
+                    <Icon name="arrow" />
+                </button>
+            </template>
+            <template v-if="error">
+                <span class="planbar-error">{{ error }}</span>
+            </template>
+        </div>
+    </template>
+</template>
+
+<style scoped>
+.statusbar {
+    height: 52px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px 0 20px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    background: #17181b;
+    cursor: pointer;
+}
+
+.statusbar:hover {
+    background: #1b1c20;
+}
+
+.statusbar-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--text-3);
+}
+
+.statusbar-dot.live {
+    background: var(--accent);
+}
+
+.statusbar-text {
+    flex: 1 1 0%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    margin: 0 -7px;
+    padding: 3px 7px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.statusbar-text b {
+    flex: none;
+    font-weight: 500;
+    font-size: 13.5px;
+    margin-right: 8px;
+}
+
+.statusbar-line {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-2);
+}
+
+.statusbar-tools {
+    margin-left: auto;
+    flex: 0 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.statusbar-tools::before {
+    content: "";
+    align-self: stretch;
+    width: 1px;
+    margin: 3px 0;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.statusbar-auto {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 26px;
+    padding: 0 10px 0 6px;
+    border: 1px solid var(--border-2);
+    border-radius: 13px;
+    background: var(--raised);
+    color: var(--text-2);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.statusbar-auto:hover {
+    border-color: var(--border-3);
+    color: var(--text);
+}
+
+.switch {
+    position: relative;
+    width: 28px;
+    height: 16px;
+    flex: none;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: #3a3d44;
+}
+
+.switch .knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #cfd2d8;
+    transition:
+        transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+        background 0.15s;
+}
+
+.switch.on {
+    background: var(--accent);
+}
+
+.switch.on .knob {
+    transform: translateX(12px);
+    background: #fff;
+}
+
+.statusbar-auto-word {
+    letter-spacing: 0.01em;
+}
+
+.planbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 30px;
+    padding: 0 8px 0 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-2);
+    color: var(--text-2);
+    font-size: 11.5px;
+}
+
+.planbar-link {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 100%;
+    padding: 0 14px 0 20px;
+    color: inherit;
+}
+
+.planbar-link:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text);
+}
+
+.planbar-n {
+    flex: none;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.planbar-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.planbar-phase {
+    flex: none;
+    margin-left: auto;
+    color: var(--text-3);
+    font-size: 11px;
+}
+
+.planbar-track {
+    flex: none;
+    width: 120px;
+    height: 4px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--line);
+}
+
+.planbar-track > span {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--accent);
+    transition: width 0.3s ease;
+}
+
+.planbar-act {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 10px;
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    color: var(--text);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.planbar-act:hover {
+    background: color-mix(in srgb, var(--accent) 34%, transparent);
+}
+
+.planbar-act .ico {
+    width: 11px;
+    height: 11px;
+    color: inherit;
+}
+
+.planbar-act.ack {
+    border-color: var(--border-2);
+    background: var(--raised);
+}
+
+.planbar-error {
+    flex: none;
+    color: var(--danger);
+    font-size: 11px;
+}
+</style>

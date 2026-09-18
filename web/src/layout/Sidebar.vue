@@ -6,7 +6,7 @@ import {route} from "../route.js";
 import {load, navTypes, open, rows, store, unreadByUser} from "../store.js";
 
 const envs = computed(() => rows("environment").filter((e) => !e.completed));
-const making = reactive({open: false, name: "", error: ""});
+const draft = reactive({open: false, name: "", error: ""});
 const folded = reactive({});
 const fold = (key) => {
     folded[key] = !folded[key];
@@ -15,14 +15,14 @@ const count = (t) => (t.attention ? unreadByUser(t.name).length : open(t.name).l
 const live = (name) => store.agents.some((a) => a.data.status && a.data.status !== "stopped" && a.data.env === name);
 
 async function makeEnv() {
-    making.error = "";
+    draft.error = "";
     try {
-        await create(route.value.env, "environment", {title: making.name.trim()});
-        making.open = false;
-        making.name = "";
+        await create(route.value.env, "environment", {title: draft.name.trim()});
+        draft.open = false;
+        draft.name = "";
         await load("environment");
     } catch (e) {
-        making.error = e.message;
+        draft.error = e.message;
     }
 }
 </script>
@@ -43,16 +43,13 @@ async function makeEnv() {
                     <Icon name="home" />
                     Home
                 </a>
-                <a
-                    v-for="t in navTypes('environment')"
-                    :key="t.name"
-                    :class="['item', {on: route.page === t.name}]"
-                    :href="`#/${route.env}/${t.name}`"
-                >
-                    <Icon :name="t.icon" />
-                    {{ t.title }}s
-                    <span :class="['count', {hot: t.attention && count(t)}]">{{ count(t) || "" }}</span>
-                </a>
+                <template v-for="t in navTypes('environment')" :key="t.name">
+                    <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
+                        <Icon :name="t.icon" />
+                        {{ t.title }}s
+                        <span :class="['count', {hot: t.attention && count(t)}]">{{ count(t) || "" }}</span>
+                    </a>
+                </template>
                 <a :class="['item', {on: route.page === 'settings'}]" :href="`#/${route.env}/settings`">
                     <Icon name="settings" />
                     Settings
@@ -65,16 +62,13 @@ async function makeEnv() {
                 <span :class="['fold', {shut: folded.project}]" />
             </button>
             <template v-if="!folded.project">
-                <a
-                    v-for="t in navTypes('project')"
-                    :key="t.name"
-                    :class="['item', {on: route.page === t.name}]"
-                    :href="`#/${route.env}/${t.name}`"
-                >
-                    <Icon :name="t.icon" />
-                    {{ t.title }}s
-                    <span class="count">{{ open(t.name).length || "" }}</span>
-                </a>
+                <template v-for="t in navTypes('project')" :key="t.name">
+                    <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
+                        <Icon :name="t.icon" />
+                        {{ t.title }}s
+                        <span class="count">{{ open(t.name).length || "" }}</span>
+                    </a>
+                </template>
             </template>
         </div>
         <div class="group">
@@ -83,18 +77,30 @@ async function makeEnv() {
                 <span :class="['fold', {shut: folded.environments}]" />
             </button>
             <template v-if="!folded.environments">
-                <a v-for="e in envs" :key="e.n" :class="['item', {on: route.env === e.title}]" :href="`#/${e.title}`">
-                    <span :class="['env-dot', {live: live(e.title)}]" />
-                    {{ e.title }}
-                </a>
-                <button type="button" class="item item-new" @click="making.open = true">
+                <template v-for="e in envs" :key="e.n">
+                    <a :class="['item', {on: route.env === e.title}]" :href="`#/${e.title}`">
+                        <span :class="['env-dot', {live: live(e.title)}]" />
+                        {{ e.title }}
+                    </a>
+                </template>
+                <button type="button" class="item item-new" @click="draft.open = true">
                     <Icon name="plus" />
                     New environment
                 </button>
-                <form v-if="making.open" class="env-new" @submit.prevent="makeEnv">
-                    <input v-model="making.name" class="field" placeholder="a short name" autofocus @keydown.escape="making.open = false" />
-                    <p v-if="making.error" class="error">{{ making.error }}</p>
-                </form>
+                <template v-if="draft.open">
+                    <form class="env-new" @submit.prevent="makeEnv">
+                        <input
+                            v-model="draft.name"
+                            class="field"
+                            placeholder="a short name"
+                            autofocus
+                            @keydown.escape="draft.open = false"
+                        />
+                        <template v-if="draft.error">
+                            <p class="error">{{ draft.error }}</p>
+                        </template>
+                    </form>
+                </template>
             </template>
         </div>
         <div class="side-bottom">

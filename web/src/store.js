@@ -62,3 +62,11 @@ export function byRef(ref) {
     const [type, n] = ref.split(":");
     return rows(type).find((r) => r.n === Number(n)) || null;
 }
+
+export function clock(at) {
+    if (!at) return "";
+    const d = new Date(at * 1000);
+    const today = new Date().toDateString() === d.toDateString();
+    const time = d.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+    return today ? time : `${d.toLocaleDateString([], {day: "numeric", month: "short"})} ${time}`;
+}
