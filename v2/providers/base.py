@@ -32,9 +32,15 @@ class Provider(ABC):
             return {}
         agents = CONTROLLERS["agent"](Record(root, env), actor=SYSTEM)
         row = agents.by_session(self.session_of(payload))
+        uses = int(row.data.get("uses") or 0) + (event == "PreToolUse")
+        context = self.context(payload)
         agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "",
-                      at=time.time(), provider=self.name)
+                      at=time.time(), provider=self.name, uses=uses,
+                      context=row.data.get("context") or 0 if context is None else context)
         return {}
+
+    def context(self, payload: dict) -> float | None:
+        return None
 
     @abstractmethod
     def present(self, project: Path) -> bool: ...

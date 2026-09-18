@@ -3,14 +3,19 @@ import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+from v2.controllers.types import CONTROLLERS
 from v2.engine.record import Record
 from v2.resources.base import AGENT, SYSTEM, USER, Event
+from v2.resources.types import TYPES
 
 STOPPED, IDLE, WORKING, WAITING = "stopped", "idle", "working", "waiting"
 STATES = (STOPPED, IDLE, WORKING, WAITING)
 
 
-def render(e: Event, env: str) -> str:
+def render(e: Event, record: Record) -> str:
+    if TYPES[e.type].spoken:
+        r = CONTROLLERS[e.type](record, actor=AGENT).see(e.n)
+        return f"{r.title} — {r.brief}" if r.brief else r.title
     return f"{e.type} {e.n} {e.action}"
 
 
@@ -61,7 +66,7 @@ class Agent(Actor):
         self.driver = driver
 
     def notify(self, event: Event) -> None:
-        self.driver.send(render(event, self.record.env))
+        self.driver.send(render(event, self.record))
         self.notified(event)
 
     def state(self) -> str:

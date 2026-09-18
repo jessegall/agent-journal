@@ -56,5 +56,9 @@ class Agents(Controller):
         return self.create(session, status="stopped")
 
 
+class Nudges(Controller):
+    resource = types.Nudge
+
+
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Plans, Docs, Reports, Pins, Rules, Reminders,
-                                            Questions, Comments, Agents)}
+                                            Questions, Comments, Agents, Nudges)}

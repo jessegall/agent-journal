@@ -1,4 +1,4 @@
-from v2.resources.base import DOCUMENT, WIDE, Resource
+from v2.resources.base import AGENT, DOCUMENT, WIDE, Resource
 
 
 class Message(Resource):
@@ -99,7 +99,18 @@ class AgentRow(Resource):
     abstract_ = "A session of Claude or Codex, and what it is doing right now"
     help_ = "The hooks write an agent's status here; the engine reads it to know idle from working."
     nav = False
+    notify = ()
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow)}
-PRIORITY = ("message", "question", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "work", "agent")
+class Nudge(Resource):
+    type = "nudge"
+    title_ = "Nudge"
+    abstract_ = "A line a feature has the engine type to the agent"
+    help_ = "A nudge is written by a feature and spoken to the agent as it is; the user never hears it."
+    nav = False
+    notify = (AGENT,)
+    spoken = True
+
+
+TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow, Nudge)}
+PRIORITY = ("message", "question", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "work", "agent", "nudge")

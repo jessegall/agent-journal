@@ -6,8 +6,8 @@ from v2 import features
 from v2.engine import bus
 from v2.engine.actors import Actor, Agent, IDLE, System, User
 from v2.engine.record import Record
-from v2.resources.base import AGENT, SYSTEM
-from v2.resources.types import PRIORITY
+from v2.resources.base import AGENT
+from v2.resources.types import PRIORITY, TYPES
 
 TICK = 1.0
 
@@ -39,7 +39,7 @@ class Engine:
         count = 0
         for actor in self.actors:
             for e in self.record.events(actor.cursor()):
-                if e.actor in (actor.name, SYSTEM):       # nobody is told of their own act, or of bookkeeping
+                if e.actor == actor.name or actor.name not in TYPES[e.type].notify:
                     actor.notified(e)
                     continue
                 actor.notify(e)
