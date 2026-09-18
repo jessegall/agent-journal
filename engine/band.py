@@ -50,10 +50,10 @@ class Band:
         seat, agent = self.seat(), self.agent()
         state = seat.get("state") or agent.get("status") or "stopped"
         mark = STATES.get(state, "○")
-        first = f" {ACCENT}◆ journal{DIM}  {BRIGHT}{self.project}{DIM} · environment {BRIGHT}{seat.get('env') or self.env}"
-        second = (f" {ACCENT}{mark} {BRIGHT}{state}{DIM}  {agent.get('model') or agent.get('provider') or '—'} · {agent.get('title', '')[:8]}"
+        first = f"{ACCENT}◆ journal{DIM}  {BRIGHT}{self.project}{DIM} · environment {BRIGHT}{seat.get('env') or self.env}"
+        second = (f"{ACCENT}{mark} {BRIGHT}{state}{DIM}  {agent.get('model') or agent.get('provider') or '—'} · {agent.get('title', '')[:8]}"
                   f" · up {since(float(agent.get('started') or 0))} · {agent.get('uses', 0)} tool uses · context {agent.get('context', 0)}%")
-        third = f" {DIM}{seat.get('why') or 'starting'}"
+        third = f"{DIM}{seat.get('why') or 'starting'}"
         return [self.fit(line, cols) for line in (first, second, third)]
 
     def fit(self, line: str, cols: int) -> str:
@@ -71,7 +71,8 @@ class Band:
             out.append(line[i])
             plain += 1
             i += 1
-        return "".join(out) + " " * (cols - plain)
+        left = max(0, (cols - plain) // 2)
+        return " " * left + "".join(out) + " " * (cols - plain - left)
 
     def draw(self, cols: int) -> bytes:
         body = "".join(f"{ESC}[{n + 1};1H{STYLE}{line}{RESET}" for n, line in enumerate(self.lines(cols)))
