@@ -9,7 +9,7 @@ import Turn from "./Turn.vue";
 
 const IDLE = 10000;
 const scroller = ref(null);
-const quote = ref("");
+const quote = ref({text: "", ref: ""});
 const editing = ref(null);
 const mine = computed(() => rows("message").filter((m) => !m.deleted && m.seen[0] === "user" && !m.seen.includes("agent")));
 
@@ -100,10 +100,14 @@ async function post(text, files) {
         editing.value = null;
         return;
     }
-    const body = withQuote(quote.value, text);
+    const body = withQuote(quote.value.text, text);
     const title = body.split("\n").find((l) => l && !l.startsWith(">")) || body;
-    const message = await create(route.value.env, "message", {title: title.replace(/:/g, " -").slice(0, 80), brief: body});
-    quote.value = "";
+    const message = await create(route.value.env, "message", {
+        title: title.replace(/:/g, " -").slice(0, 80),
+        brief: body,
+        about: quote.value.ref || undefined,
+    });
+    quote.value = {text: "", ref: ""};
     for (const f of files) await upload(message.n, f);
     await reload();
     await nextTick();
@@ -159,9 +163,9 @@ watch(
             </template>
             <Compose
                 :send="post"
-                :quote="quote"
+                :quote="quote.text"
                 quote-label="Replying to"
-                @unquote="quote = ''"
+                @unquote="quote = {text: '', ref: ''}"
                 :preset="editing ? editing.text : ''"
                 :up="editLast"
                 :down="unedit"
