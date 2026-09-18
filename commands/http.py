@@ -120,6 +120,13 @@ def get_manifest(req: Request) -> Reply:
     return Reply(200, manifest(req.root))
 
 
+@route("GET", "/api/identity")
+def get_identity(req: Request) -> Reply:
+    m = manifest(req.root)
+    names = [e.title for e in CONTROLLERS["environment"](Record(req.root, m["environment"]), actor=USER).all()]
+    return Reply(200, {"project": m["project"], "root": str(req.root), "version": m["version"], "environments": names})
+
+
 @route("GET", "/api/{env}/events")
 def get_events(req: Request) -> Reply:
     return Reply(200, [asdict(e) for e in req.record().events(int(req.query.get("since") or 0))])

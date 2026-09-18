@@ -2,9 +2,10 @@
 import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {agent, span} from "../store.js";
+import {agent, detach, span, store} from "../store.js";
 
 const open = ref("");
+const alone = window.parent !== window || new URLSearchParams(location.search).has("chat");
 const data = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data : null));
 const family = computed(() => ((data.value && data.value.model) || "").match(/opus|sonnet|haiku|gpt[-\w.]*/i));
 const name = computed(() => ({claude: "Claude Code", codex: "Codex"})[data.value && data.value.provider] || "agent");
@@ -86,6 +87,17 @@ onUnmounted(() => window.removeEventListener("click", away));
                 </template>
             </template>
         </div>
+        <template v-if="!alone">
+            <button
+                type="button"
+                :class="['agent-count', 'agent-detach', {on: store.detached}]"
+                :title="store.detached ? 'Put the chat back on the page' : 'Detach the chat into its own window'"
+                :aria-pressed="store.detached"
+                @click="detach(!store.detached)"
+            >
+                <Icon name="sidepanel" />
+            </button>
+        </template>
         <template v-if="open && data">
             <div class="bar-drop">
                 <SwitchCase :value="open">
@@ -216,6 +228,15 @@ onUnmounted(() => window.removeEventListener("click", away));
 
 .agent-count.none {
     color: var(--text-3);
+}
+
+.agent-detach {
+    flex: none;
+    margin-left: 6px;
+}
+
+.agent-detach.on {
+    color: var(--accent-text);
 }
 
 .bar-drop {

@@ -2,7 +2,7 @@
 import {computed, ref} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
-import {open, store, types, unreadByUser} from "../store.js";
+import {detach, open, store, types, unreadByUser} from "../store.js";
 import Thread from "../chat/Thread.vue";
 import Notice from "../chat/Notice.vue";
 import AgentBar from "../chat/AgentBar.vue";
@@ -27,7 +27,15 @@ const tabs = computed(() => [
                 <TransitionGroup name="act">
                     <Notice v-for="x in notices" :key="x.n" :notice="x" />
                 </TransitionGroup>
-                <Thread />
+                <template v-if="store.detached">
+                    <div class="home-away">
+                        <p>The chat is in its own window.</p>
+                        <button type="button" class="home-away-back" @click="detach(false)">Put it back here</button>
+                    </div>
+                </template>
+                <template v-else>
+                    <Thread />
+                </template>
             </section>
             <div class="home-divider" role="separator" aria-orientation="vertical" />
             <div class="home-rail">
@@ -113,6 +121,37 @@ const tabs = computed(() => [
     .home-thread.roomy {
         --home-gutter: 72px;
     }
+}
+
+.home-away {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--text-3);
+}
+
+.home-away p {
+    margin: 0;
+}
+
+.home-away-back {
+    height: 28px;
+    padding: 0 11px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+
+.home-away-back:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 
 .home-divider {

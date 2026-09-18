@@ -35,6 +35,8 @@ code, m = call("GET", "/api/manifest")
 check("the manifest says every type, its view and nav, the actions, actors and priority", (code, sorted(m["types"]), m["actions"], m["types"]["todo"]["names"]),
       (200, sorted(TYPES), list(ACTIONS), {"complete": "done", "create": "add"}))
 check("every view in the manifest is one of the three", all(t["view"] in VIEWS for t in m["types"].values()), True)
+code, who = call("GET", "/api/identity")
+check("identity names the project, its root, the version and the environments — what the extension asks a port", (code, who["project"], who["root"], bool(who["version"]), "main" in who["environments"]), (200, m["project"], str(root), True, True))
 
 for type_ in TYPES:                                                   # every type over HTTP, same routes
     code, made = call("POST", f"/api/main/{type_}", {"title": f"a {type_}", "abstract": "short"})

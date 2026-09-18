@@ -31,9 +31,9 @@ async function journals({ fresh = false } = {}) {
 
 async function environments(url) {
   try {
-    const r = await fetch(`${url}/api/overview`, { cache: "no-store" });
+    const r = await fetch(`${url}/api/identity`, { cache: "no-store" });
     const got = await r.json();
-    return (got.environments || []).map((e) => e.name);
+    return got.environments || [];
   } catch (e) {
     return [];
   }
@@ -114,12 +114,19 @@ async function post(text, files) {
   const to = await target();
   if (to.why) return { ok: false, why: to.why };
   try {
-    const r = await fetch(`${to.url}/api/env/${to.env}/messages`, {
+    const title = text.split("\n").find((l) => l.trim() && !l.startsWith(">")) || text;
+    const r = await fetch(`${to.url}/api/${to.env}/message`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text, files }),
+      body: JSON.stringify({ title: title.replace(/:/g, " -").slice(0, 80), brief: text }),
     });
     if (!r.ok) return { ok: false, why: `${to.project} refused it (${r.status}).` };
+    const made = await r.json();
+    for (const f of files || []) {
+      const body = new FormData();
+      body.append("file", await (await fetch(f.data)).blob(), f.name);
+      await fetch(`${to.url}/api/${to.env}/message/${made.n}/upload`, { method: "POST", body });
+    }
     return { ok: true, project: to.project, env: to.env, shot: !!(files && files.length) };
   } catch (e) {
     // THE REASON IS CARRIED BACK TO THE PAGE. A pointer that silently does nothing is worse than
