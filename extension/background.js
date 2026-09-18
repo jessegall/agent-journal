@@ -136,7 +136,8 @@ async function everywhere() {
 //: THE WINDOW OPENS WHERE YOU PRESSED THE BUTTON. Detaching in the viewer used to set the flag and
 //: leave the user to open the window themselves, which is two gestures for one intention.
 async function follow(on, tabId) {
-  await chrome.storage.local.set({ following: !!on });
+  // detaching in the viewer is opening the window: it is open, everywhere, from that moment
+  await chrome.storage.local.set({ following: !!on, chatOpen: !!on });
   if (tabId) {
     try {
       if (on) {
