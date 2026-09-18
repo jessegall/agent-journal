@@ -1258,14 +1258,14 @@ check("and once it stops, the status line says how to start one", "journal serve
 
 import notifications as _notif  # noqa: E402
 import inbox as _inbox_answer  # noqa: E402
+_notif_before = len(_notif._all(root, "alpha"))
 _inbox_answer.add(root, "is the cache on already? and tidy the logs", "2099-01-06T00:00:00+00:00", track="alpha")
 _qm = len(_inbox_answer._all(root, "alpha"))
 _inbox_answer.reply(root, _qm, "Yes.", "2099-01-06T00:00:01+00:00", track="alpha", part="is the cache on already?")
 _answered = lambda: [e for e in _activity.ActivityController._events(root, "alpha") if e["text"] == "Answered your question" and e["n"] == _qm]
 check("an answer asks nothing of the user, so even unread it is an ordinary line in Activity", [e["needs"] for e in _answered()], [""])
-_nn = next(n for n, x in enumerate(_notif._all(root, "alpha"), 1) if x.get("about") == f"inbox:{_qm}")
-_notif.read(root, _nn, "2099-01-06T00:00:02+00:00", "alpha")
-check("and it stays one once its notification is read", [e["needs"] for e in _answered()], [""])
+check("and it raises no notification, because the thread already shows the reply in place",
+      len(_notif._all(root, "alpha")) - _notif_before, 0)
 
 # ---------------------------------------------------------------- a commit is a line of its own in Activity
 commandlog.record_commit(root, "alpha", "commit-session", "0123456789abcdef0123", "fix the thing that broke", "2099-01-07T00:00:00+00:00")

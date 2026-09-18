@@ -704,7 +704,11 @@
   /* A BAR UNDER A BAR IS NOT THE SAME BAR. It carried the tabs' own ground and nearly their size,
      so the rail read as two competing strips. Darker than them, smaller, and quieter — and it must
      come after `.rail-tabs` here, because both classes are on the one element and order decides. */
-  .rail-tabs.rail-subtabs { position: static; height: 24px; margin-top: -1px; background: var(--side); }
+  /* STICKY LIKE THE BAR ABOVE IT, not scrolling away with the list: the user wants it fixed while
+     notifications scroll under it, the same way the top-level tabs already stick. `top` is that
+     bar's own height, so the two sit flush with no gap and no overlap. */
+  .rail-tabs.rail-subtabs { position: sticky; top: 33px; z-index: 1; height: 24px; margin-top: -1px;
+    background: var(--side); }
   .rail-subtabs .rail-tab { font-size: 10px; letter-spacing: .05em; text-transform: uppercase;
     color: var(--text-4, #6b6e76); }
   .rail-subtabs .rail-tab:hover { color: var(--text-3); }
