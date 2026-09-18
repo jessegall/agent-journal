@@ -26,6 +26,13 @@ approve and nothing else.
 phases, a roadmap, a redesign, or "first … then …". Do not park such a request as a to-do
 and carry on: it is the work being asked for.
 
+
+**The user moves a plan from the viewer, and an idle session is told.** Approving a draft and
+continuing past a checkpoint both wake a session that is sitting idle — *the user approved plan 3*,
+*the user continued plan 3 past phase 2* — and the line says what is ahead. Nothing files itself
+from it: read the plan and carry on with the phase that is now open.
+
+
 ## Shape the goal with the user BEFORE drafting
 
 **A plan is drafted WITH the user, not handed to them.** Ask what is true when it is done,
