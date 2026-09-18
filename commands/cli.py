@@ -6,6 +6,7 @@ from pathlib import Path
 
 from controllers.base import Controller
 from controllers.types import CONTROLLERS
+import features
 import migrations
 from engine import queries
 from engine.drivers import DRIVERS
@@ -119,6 +120,7 @@ def decided(ctx) -> str:
 def context(args: dict) -> dict:
     root = Path(args.pop("root")).resolve()
     migrations.run(root)
+    features.load()
     sessions = Sessions(root)
     session = args.pop("session")
     env = args.pop("env") or (sessions.environment(session) if session else "") or ((root / "runtime" / "env").read_text().strip() if (root / "runtime" / "env").is_file() else "main")
