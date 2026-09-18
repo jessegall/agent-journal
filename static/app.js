@@ -209,6 +209,19 @@ function noteTint(note) {
 // ONE NOTIFICATION ROW, WHEREVER A NOTIFICATION IS SHOWN. The bell's dropdown had its own markup
 // and the rail had another, which is how the two drifted apart: the wrap, the age's corner and the
 // kind's colour existed in one of them and not the other.
+// THE MENU PANEL, ONCE. The bar's ⋮ menu and the skills counter are the same object — a panel of
+// rows under a button — and they were two copies of the same markup with two different bugs. A
+// `where` turns it into a fixed panel, for a button that lives inside something that scrolls.
+const BarDrop = {
+  props: { open: Boolean, where: { type: Object, default: null }, width: { type: Number, default: 0 } },
+  template: `
+    <div v-if="open" class="drop bar-drop"
+      :style="where ? { position: 'fixed', left: where.x + 'px', top: where.y + 'px', width: (width || 260) + 'px' }
+                    : (width ? { width: width + 'px' } : null)">
+      <slot/>
+    </div>`,
+};
+
 const NoteRow = {
   props: ["note", "env", "open"],
   setup(props) {
@@ -4484,7 +4497,7 @@ const Thread = {
 
 const EnvHome = {
   props: ["env"],
-  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread, StatusIcon, NoteRow },
+  components: { TopBar, Icon, Peek, ProgressBar, PlanCards, NeedsCard, Thread, StatusIcon, NoteRow, BarDrop },
   setup(props) {
     const url = (tail) => () => props.env && `/api/env/${props.env}${tail}`;
     // everything, not just what is open: Current work reads the finished ones under the open ones
@@ -4625,6 +4638,13 @@ const EnvHome = {
     // reason these facts left the space above the thread in the first place
     const crewOpen = ref(false);
     const skillsOpen = ref(false);
+    const skillsAt = reactive({ x: 0, y: 0 });
+    const openSkills = (e) => {
+      const box = e.currentTarget.getBoundingClientRect();
+      skillsAt.x = Math.max(8, Math.min(box.left, window.innerWidth - 276));
+      skillsAt.y = box.bottom + 6;
+      skillsOpen.value = !skillsOpen.value;
+    };
     const skills = computed(() => {
       const agent = SHELL.activity && SHELL.activity.agent;
       return (agent && agent.skills) || [];
@@ -4674,10 +4694,13 @@ const EnvHome = {
     const closeBarMenu = () => { barMenu.open = false; barMenu.kind = ""; };
     // A MENU CLOSES WHEN YOU LOOK AWAY FROM IT. Anywhere outside the menu counts, including the page
     // under it; the dots themselves are left alone, or the click that opens it would close it again.
+    // ONE CLICK-AWAY FOR EVERY MENU THIS PAGE OWNS. Each menu had its own handler or none at all —
+    // the skills one had none — so "click outside to close" was true of some of them.
     const clickAway = (e) => {
-      if (!barMenu.open) return;
-      if (e.target.closest && e.target.closest(".bar-menu")) return;
-      closeBarMenu();
+      const inside = e.target.closest && e.target.closest(".bar-menu, .bar-drop, .agent-skills");
+      if (inside) return;
+      if (barMenu.open) closeBarMenu();
+      skillsOpen.value = false;
     };
     onMounted(() => document.addEventListener("click", clickAway, true));
     onUnmounted(() => document.removeEventListener("click", clickAway, true));
@@ -4825,7 +4848,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, skills, waitingCount,
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, skillsAt, openSkills, skills, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
              barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
   },
@@ -4846,23 +4869,22 @@ const EnvHome = {
               :title="r.label + ' — open it'"><Icon :name="r.icon"/>{{ r.value }}</a>
             <span v-else class=agent-fact :title="r.label"><Icon :name="r.icon"/>{{ r.value }}</span>
           </template>
+          <!-- ZERO IS THE NUMBER WORTH SEEING, so this is here whether or not anything is open. Its
+               menu is FIXED rather than absolute: this row scrolls sideways, and an overflow
+               container clips a dropdown that hangs out of it. -->
+          <button v-if="lead.href" type=button :class="['agent-fact', 'agent-skills', {none: !skills.length}]"
+            :title="skills.length ? skills.length + ' skill(s) open in this window' : 'No journal skill is open in this window'"
+            :aria-expanded="skillsOpen ? 'true' : 'false'" @click="openSkills">
+            <Icon name="book"/>{{ skills.length }}</button>
         </div>
+        <BarDrop :open="skillsOpen" :where="skillsAt" :width="260">
+          <p class=bar-none>Open in this window, newest last. A compaction empties it.</p>
+          <p v-if="!skills.length" class=bar-none>None — the agent is working from memory.</p>
+          <a v-for="name in skills" :key="name" class=bar-item :href="'#/skills/' + name"
+            @click="skillsOpen = false"><Icon name="book"/>{{ name }}</a>
+        </BarDrop>
         <!-- OUTSIDE THE SCROLLING ROW. The facts scroll sideways, and an overflow container clips
              anything hanging out of it — which is a dropdown that opened and could not be seen. -->
-        <!-- ZERO IS THE NUMBER WORTH SEEING. Hidden when nothing was loaded, the counter vanished at
-             exactly the moment it had something to say — that the agent is working from none. -->
-        <div v-if="lead.href" class=bar-menu>
-          <button type=button :class="['agent-skills', {none: !skills.length}]"
-            :title="skills.length ? skills.length + ' skill(s) open in this window' : 'No journal skill is open in this window'"
-            :aria-expanded="skillsOpen ? 'true' : 'false'" @click="skillsOpen = !skillsOpen">
-            <Icon name="book"/>{{ skills.length }}</button>
-          <div v-if="skillsOpen" class="drop bar-drop skills-drop">
-            <p class=bar-none>Open in this window, newest last. A compaction empties it.</p>
-            <p v-if="!skills.length" class=bar-none>None — the agent is working from memory.</p>
-            <a v-for="name in skills" :key="name" class=bar-item :href="'#/skills/' + name"
-              @click="skillsOpen = false"><Icon name="book"/>{{ name }}</a>
-          </div>
-        </div>
         <button v-if="liveCrew.length" type=button class=agent-crew-toggle :aria-expanded="crewOpen ? 'true' : 'false'"
           :title="crewOpen ? 'Hide the subagents' : 'Show the subagents'" @click="crewOpen = !crewOpen">
           {{ liveCrew.length }} {{ liveCrew.length === 1 ? "subagent" : "subagents" }}<Icon :name="crewOpen ? 'up' : 'down'"/>
@@ -4879,7 +4901,7 @@ const EnvHome = {
         <div class=bar-menu>
           <button type=button class=bar-dots :aria-expanded="barMenu.open ? 'true' : 'false'"
             title="Search this chat, or its files" @click="barMenu.open = !barMenu.open; barMenu.kind = ''">⋮</button>
-          <div v-if="barMenu.open" class="drop bar-drop">
+          <BarDrop :open="barMenu.open" :width="330">
             <template v-if="!barMenu.kind">
               <button type=button class=bar-item @click="barMenu.kind = 'find'"><Icon name="search"/>Search this chat</button>
               <button type=button class=bar-item @click="barMenu.kind = 'files'"><Icon name="paperclip"/>Files in this chat<span class=bar-n>{{ chatFiles.length }}</span></button>
@@ -4904,7 +4926,7 @@ const EnvHome = {
                 <span class=bar-file-from>message {{ f.n }}</span>
               </a>
             </template>
-          </div>
+          </BarDrop>
         </div>
       </div>
       <!-- ONLY THE X TAKES IT DOWN. Clicking the line does nothing, so a notice cannot be dismissed
