@@ -4,12 +4,19 @@ import time
 from pathlib import Path
 
 
+RECENT = 600.0
+
+
 def alive(pid: int) -> bool:
     try:
         os.kill(int(pid), 0)
         return True
     except (OSError, ValueError, TypeError):
         return False
+
+
+def live(session: dict) -> bool:
+    return alive(session.get("pid")) or time.time() - float(session.get("seen") or session.get("since") or 0) < RECENT
 
 
 class Sessions:
@@ -32,7 +39,10 @@ class Sessions:
         return got
 
     def bind(self, session: str, env: str, pid: int = 0) -> dict:
-        return self.write(session, environment=env, since=time.time(), pid=pid or os.getpid())
+        return self.write(session, environment=env, since=time.time(), pid=pid)
+
+    def touch(self, session: str) -> None:
+        self.write(session, seen=time.time())
 
     def unbind(self, session: str) -> None:
         self.write(session, environment="")
@@ -46,7 +56,7 @@ class Sessions:
 
     def holder(self, env: str) -> str:
         for session, s in self.all().items():
-            if s.get("environment") == env and alive(s.get("pid")):
+            if s.get("environment") == env and live(s):
                 return session
         return ""
 

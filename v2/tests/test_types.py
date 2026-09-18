@@ -5,7 +5,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(HERE))
-from v2.commands.generate import actions, parser  # noqa: E402
+from v2.commands.cli import actions, parser  # noqa: E402
 from v2.controllers.base import Controller  # noqa: E402
 from v2.controllers.types import CONTROLLERS  # noqa: E402
 from v2.engine.record import Record  # noqa: E402
@@ -48,7 +48,8 @@ base_actions = actions(Controller)
 check("the base controller's actions are the CRUD set", base_actions,
       ["all", "attach", "comment", "comments", "complete", "create", "delete", "files", "find", "folder", "force_delete", "link", "linked_to", "move", "restore", "search", "section", "see", "set", "show", "unlink", "unseen", "update"])
 subs = top._subparsers._group_actions[0].choices
-check("every type is a command", sorted(subs), sorted(TYPES))
+check("every type is a command, beside the queries", sorted(t for t in subs if t in TYPES), sorted(TYPES))
+check("the queries stand beside them", sorted(t for t in subs if t not in TYPES), ["carry", "conversation", "nothing", "open", "search", "start", "status", "user", "version"])
 for type_ in TYPES:
     acts = subs[type_]._subparsers._group_actions[0].choices
     names = TYPES[type_].names
@@ -64,7 +65,7 @@ def record_events_of(root, type_):
 
 
 def cli(*argv):
-    p = subprocess.run([sys.executable, "-m", "v2.commands.generate", "--root", str(root), *argv], cwd=HERE,
+    p = subprocess.run([sys.executable, "-m", "v2.commands.cli", "--root", str(root), *argv], cwd=HERE,
                        capture_output=True, text=True, timeout=60)
     return p.returncode, (p.stdout + p.stderr).strip()
 

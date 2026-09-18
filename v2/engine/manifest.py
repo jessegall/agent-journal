@@ -1,7 +1,7 @@
 from dataclasses import fields
 
 from v2 import features
-from v2.commands.generate import actions
+from v2.commands.cli import actions
 from v2.controllers.base import Controller
 from v2.controllers.types import CONTROLLERS
 from v2.resources.base import ACTIONS, ACTORS, SCOPES, VIEWS, Resource

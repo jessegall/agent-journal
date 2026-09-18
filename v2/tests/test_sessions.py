@@ -37,8 +37,10 @@ check("claimed: the new holder, the evicted one told why", (sessions.environment
 check("the same session may switch again", refused(lambda: two.switch(env.n)), "")
 two.leave(env.n)
 check("left: free", (sessions.environment("claude-2"), sessions.holder("repentance")), ("", ""))
-sessions.bind("gone-9", "repentance", pid=999999)
+sessions.write("gone-9", environment="repentance", pid=999999, since=1.0)
 check("a dead holder holds nothing", sessions.holder("repentance"), "")
+sessions.write("fresh-9", environment="repentance", pid=0, seen=__import__("time").time())
+check("a session that reported a moment ago holds it, pid or not", sessions.holder("repentance"), "fresh-9")
 
 # GRANTS lend an environment to a session's subagents
 one.grant(env.n)
