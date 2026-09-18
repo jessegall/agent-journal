@@ -4170,7 +4170,7 @@ const Thread = {
     // WHAT EITHER SIDE PUT ON A TURN. Kept beside the thread rather than inside it: the turns come
     // from the transcript and the inbox, and a face is neither — it is one small thing on top.
     const faces = useFetch(() => props.env && `/api/env/${props.env}/reactions`);
-    const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔"];
+    const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠"];
     const picking = ref("");
     const reactionsOn = (t) => {
       const key = turnAnchor(t) || t.key;

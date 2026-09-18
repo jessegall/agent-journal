@@ -109,11 +109,16 @@
     // THE MARKS COME OFF BEFORE THE PICTURE IS TAKEN, or the picture is of the marks.
     stop();
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      chrome.runtime.sendMessage({ kind: "picked", picked }, (got) => {
-        if (chrome.runtime.lastError) return say("The extension could not reach the journal.", false);
-        if (got && got.ok) return say(`Sent to ${got.env}${got.shot ? " with a picture" : ""}.`, true);
-        say((got && got.why) || "The journal did not take it.", false);
-      });
+      let sent = false;
+      try {
+        chrome.runtime.sendMessage({ kind: "picked", picked }, (got) => {
+          if (chrome.runtime.lastError) return say("The extension could not reach the journal.", false);
+          if (got && got.ok) return say(`Sent to ${got.env}${got.shot ? " with a picture" : ""}.`, true);
+          say((got && got.why) || "The journal did not take it.", false);
+        });
+        sent = true;
+      } catch (e) { /* the extension was reloaded under this page */ }
+      if (!sent) say("The extension was reloaded; reload this page and point again.", false);
     }));
   }
 

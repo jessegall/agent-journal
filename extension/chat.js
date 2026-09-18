@@ -4,7 +4,13 @@
 // look is a journal upgrade and never an extension reload.
 (() => {
   const ID = "__journal-chat-window";
-  const tellBackground = (kind, extra) => { try { chrome.runtime.sendMessage({ kind, ...(extra || {}) }, () => chrome.runtime.lastError); } catch (e) { /* the extension is gone; nothing to remember */ } };
+  // NOTHING HERE MAY THROW. An extension reloaded under an open page leaves this script with a dead
+  // chrome.*: every call would throw "context invalidated". Each one is wrapped, and a dead call is
+  // simply a call that did nothing — the window stays where it is and closes when the user says.
+  const ask = (msg, cb) => { try { chrome.runtime.sendMessage(msg, (got) => { void chrome.runtime.lastError; if (cb) cb(got); }); } catch (e) { if (cb) cb(null); } };
+  const stored = (key) => { try { return chrome.storage.local.get(key).catch(() => ({})); } catch (e) { return Promise.resolve({}); } };
+  const store = (value) => { try { chrome.storage.local.set(value).catch(() => {}); } catch (e) { /* not remembered, not fatal */ } };
+  const tellBackground = (kind, extra) => ask({ kind, ...(extra || {}) });
   const old = document.getElementById(ID);
   if (old) {                                        // the shortcut toggles: press it again to close
     old.remove();
@@ -65,7 +71,7 @@
     frame.classList.toggle("shut", box.shut);
     tellPage({ shut: box.shut });
   };
-  chrome.storage.local.get("window").then((got) => {
+  stored("window").then((got) => {
     if (got && got.window) {
       box = { ...fallback, ...got.window };
       box.x = Math.min(Math.max(0, box.x), Math.max(0, window.innerWidth - 120));
@@ -74,7 +80,7 @@
       setShut(box.shut);
     }
   });
-  const remember = () => chrome.storage.local.set({ window: box });
+  const remember = () => store({ window: box });
   // WHAT ANOTHER TAB DID, DONE HERE TOO. The box and the open flag live in the extension's storage;
   // a change from any tab arrives as a change event, and this window follows it.
   try {
@@ -89,7 +95,7 @@
     });
   } catch (e) { /* no storage events here: this window keeps to itself */ }
 
-  const load = (fresh) => chrome.runtime.sendMessage({ kind: "where", fresh: !!fresh }, (got) => {
+  const load = (fresh) => ask({ kind: "where", fresh: !!fresh }, (got) => {
     body.innerHTML = "";
     view = null;
     if (!got || !got.url) {
@@ -141,7 +147,7 @@
     else if (op === "drag") dragWindow(e.data.sx, e.data.sy);
     else if (op === "shut" || op === "open") { setShut(op === "shut"); remember(); }
     else if (op === "close") { host.remove(); tellBackground("closed"); }
-    else if (op === "pick") chrome.runtime.sendMessage({ kind: "pick", url: e.data.url, env: e.data.env || "" }, () => load(true));
+    else if (op === "pick") ask({ kind: "pick", url: e.data.url, env: e.data.env || "" }, () => load(true));
   });
 
   document.addEventListener("keydown", function esc(e) {

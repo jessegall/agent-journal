@@ -42,14 +42,23 @@ async function environments(url) {
 // WHERE A MESSAGE GOES: the journal and the environment the user last picked, as long as both are
 // still there. Otherwise the first journal running and its first environment, so a fresh install
 // works before anything is chosen.
+// STORAGE THAT CANNOT FAIL THE CALLER. A read that throws is an empty read; a write that throws
+// is a write that did not happen. Neither is worth a broken window.
+async function kept(keys, fallback) {
+  try { return (await chrome.storage.local.get(keys)) || fallback; } catch (e) { return fallback; }
+}
+async function keep(values) {
+  try { await chrome.storage.local.set(values); } catch (e) { /* not remembered, not fatal */ }
+}
+
 async function target({ fresh = false } = {}) {
   const found = await journals({ fresh });
   if (!found.length) return { why: "No journal viewer is running. Start one with `journal serve`." };
-  const kept = await chrome.storage.local.get(["url", "env"]);
-  const one = found.find((j) => j.url === kept.url) || found[0];
+  const chosen = await kept(["url", "env"], {});
+  const one = found.find((j) => j.url === chosen.url) || found[0];
   const names = await environments(one.url);
   if (!names.length) return { why: `${one.project} answered, but it has no environment to write to.` };
-  const env = names.includes(kept.env) ? kept.env : names[0];
+  const env = names.includes(chosen.env) ? chosen.env : names[0];
   return { ...one, env, envs: names, journals: found };
 }
 
@@ -137,7 +146,7 @@ async function everywhere() {
 //: leave the user to open the window themselves, which is two gestures for one intention.
 async function follow(on, tabId) {
   // detaching in the viewer is opening the window: it is open, everywhere, from that moment
-  await chrome.storage.local.set({ following: !!on, chatOpen: !!on });
+  await keep({ following: !!on, chatOpen: !!on });
   if (tabId) {
     try {
       if (on) {
@@ -154,7 +163,7 @@ async function follow(on, tabId) {
 }
 
 async function following() {
-  const got = await chrome.storage.local.get("following");
+  const got = await kept("following", {});
   return !!(got && got.following);
 }
 
@@ -164,12 +173,12 @@ async function following() {
 // box. The extension can only put it on a site it may touch: the site is asked for when the window
 // is opened by hand, and "follow me everywhere" covers every site at once.
 async function chatOpen() {
-  const got = await chrome.storage.local.get("chatOpen");
+  const got = await kept("chatOpen", {});
   return !!(got && got.chatOpen);
 }
 
 async function rememberOpen(on) {
-  await chrome.storage.local.set({ chatOpen: !!on });
+  await keep({ chatOpen: !!on });
 }
 
 async function mayTouch(url) {
@@ -193,11 +202,11 @@ async function openOn(tabId, url) {
 }
 
 chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
-  if (info.status === "complete") openOn(tabId, tab && tab.url);
+  if (info.status === "complete") openOn(tabId, tab && tab.url).catch(() => {});
 });
 chrome.tabs.onActivated.addListener(async ({ tabId }) => {
   const tab = await chrome.tabs.get(tabId).catch(() => null);
-  if (tab) openOn(tabId, tab.url);
+  if (tab) openOn(tabId, tab.url).catch(() => {});
 });
 
 chrome.commands.onCommand.addListener(async (command) => {
@@ -225,7 +234,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       };
     },
     pick: async () => {
-      await chrome.storage.local.set({ url: msg.url, env: msg.env || "" });
+      await keep({ url: msg.url, env: msg.env || "" });
       return { ok: true };
     },
   }[msg.kind];
