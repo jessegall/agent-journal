@@ -854,6 +854,14 @@ state.put(d / ".journal", "always_load_skills", ["real-one", "ghost-skill-that-i
 _ctx = s.start()
 check("the start block names always-load skills that exist, and not ones that are gone",
       ("`real-one`" in _ctx, "ghost-skill-that-is-gone" in _ctx), (True, False))
+# A PROJECT THAT NEVER SET THE LIST GETS THE DEFAULT: the core skill and the three most used.
+import skills as _skills  # noqa: E402
+d = project()
+check("a project with no list of its own loads the default four",
+      _skills.always(d / ".journal"), ["journal", "journal-memory", "journal-todos", "journal-messages"])
+_skills.set_always(d / ".journal", "journal-todos", False)
+check("and taking one off keeps the other three, as the project's own list now",
+      _skills.always(d / ".journal"), ["journal", "journal-memory", "journal-messages"])
 
 d = project(); s1 = Session(d, "s1"); s2 = Session(d, "s2")
 s1.start(); s2.start()
