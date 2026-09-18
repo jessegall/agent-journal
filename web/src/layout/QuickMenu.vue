@@ -3,7 +3,7 @@ import {computed, nextTick, onMounted, ref} from "vue";
 import {saveSettings} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
-import {autoOn, meta, navTypes, store, types, unreadByUser} from "../store.js";
+import {autoOn, meta, navTypes, showAway, store, types, unreadByUser} from "../store.js";
 
 const emit = defineEmits(["close"]);
 const q = ref("");
@@ -67,6 +67,15 @@ const commands = computed(() => {
         keys: "auto mode",
         icon: "auto",
         run: () => setAuto(!autoOn.value),
+    });
+    rows.push({
+        label: "Show what happened while you were away",
+        keys: "away digest recap",
+        icon: "bell",
+        run: () => {
+            emit("close");
+            showAway();
+        },
     });
     rows.push({
         label: store.activity ? "Hide the activity column" : "Show the activity column",

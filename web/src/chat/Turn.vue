@@ -15,7 +15,7 @@ const emit = defineEmits(["reply", "edit", "grew"]);
 const picking = ref(false);
 const mine = computed(() => props.turn.who === "user");
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
-const html = computed(() => render(words.value.text, {types: types.value}));
+const html = computed(() => render(words.value.text, {types: types.value, env: route.value.env}));
 
 function toQuoted() {
     const ref = props.turn.refs.find((r) => rows(r.split(":")[0]).length && r !== props.turn.ref);
