@@ -218,6 +218,8 @@ agent writes code the rule covers.
     journal loop set                     this session has a loop running the hook cannot see (agent)
     journal enable | journal disable     the kill switch — disable makes every hook inert until enable; the user's call, never the agent's own idea
     journal settings                     every setting and where it came from
+    journal claude [flags] ["<prompt>"]  Claude Code under the journal's launcher: the viewer's news and the journal's nudges are typed into it while idle; brings the web interface up; --quiet never types
+    journal codex [flags] ["<prompt>"]   Codex the same way, its hooks and skills installed first; Codex asks once to trust the hooks (/hooks)
     journal serve [--port=<n>] [--open] [--detach]   the web interface over this journal
     journal version                      the installed version; is a newer one out?
     journal update                       pull the latest journal and print what changed

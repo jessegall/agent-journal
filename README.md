@@ -24,11 +24,28 @@ already there, installs the agent's skills, and puts a `journal` command in
 
 **This is the command to run.** It starts Claude Code under the journal's launcher, so the
 agent is wired to the journal from its first message and what you do in the web interface is
-typed into it while it sits idle. `journal codex` does the same for Codex. It also brings the web interface up if this journal
-has none running, and tells you where.
+typed into it while it sits idle. It also brings the web interface up if this journal has
+none running, and tells you where.
 
 It takes what `claude` takes: `journal claude --continue`, `journal claude --resume=<id>`,
 or a first prompt in quotes.
+
+    journal codex
+
+**The same for Codex.** The journal's hooks are wired into `.codex/hooks.json` and its skills
+into `.agents/skills/` before Codex starts, so a Codex session is bound to an environment,
+held and refused the way a Claude one is, and reads the same skills; Codex asks once to trust
+the hooks (`/hooks`). The launcher watches it the same way and types the viewer's news and
+the journal's nudges into it while it is idle. The web interface names it Codex and shows its
+model, its context and its last reply from Codex's own session file. `--quiet` never types;
+anything else is passed through to `codex`.
+
+**What the launcher types, and when.** A message you leave, an answer, a comment, a plan
+approved — and what the stop hook would otherwise hold the turn with: an untagged reply, work
+left open, the next to-do under auto mode. One line at a time, only when the agent has
+stopped (its hooks report the stop) and you have no half-typed line in the terminal, never
+the same line twice. `--quiet` turns the typing off and the session then hears the viewer
+only at its next stop.
 
 ## The web interface
 
