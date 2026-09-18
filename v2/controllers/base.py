@@ -48,10 +48,13 @@ class Controller:
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
         with self.record.locked():
             n = (self.numbers() or [0])[-1] + 1
-            about = data.pop("about", None)
+            about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
             r = self.resource(n=n, title=check_title(title), abstract=check_abstract(abstract), brief=brief,
                               data=self._shaped(data), created=time.time(), seen=[self.actor])
             self.save(r, "created")
+            if supersedes:
+                self.complete(int(supersedes), how=f"superseded by {self.type} {n}")
+                r = self.link(n, f"{self.type}:{int(supersedes)}")
             return self.link(n, about) if about else r
 
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data) -> Resource:
@@ -186,6 +189,19 @@ class Controller:
     def all(self, deleted: bool = False) -> list[Resource]:
         rows = [self.load(n) for n in self.numbers()]
         return rows if deleted else [r for r in rows if not r.deleted]
+
+    def search(self, term: str) -> list[Resource]:
+        want = term.lower()
+        return [r for r in self.all() if want in r.title.lower() or want in r.brief.lower() or want in r.abstract.lower()
+                or any(want in s["title"].lower() or want in s["body"].lower() for s in r.sections)]
+
+    def find(self, name: str) -> Resource:
+        if str(name).isdigit():
+            return self.load(int(name))
+        hits = [r for r in self.all() if name.lower() in r.title.lower()]
+        if len(hits) != 1:
+            raise Refused(f"{'no' if not hits else len(hits)} {self.type}{'' if len(hits) == 1 else 's'} match {name!r}" + ("; say more of the title" if len(hits) > 1 else ""))
+        return hits[0]
 
     def linked_to(self, ref: str) -> list[Resource]:
         return [r for r in self.all() if ref in r.refs]

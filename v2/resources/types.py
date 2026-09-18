@@ -1,5 +1,5 @@
 from v2.resources.base import AGENT, DOCUMENT, PROJECT, USER, WIDE, Resource
-from v2.resources.shapes import Options, Reasoned, Shape
+from v2.resources.shapes import TEXT, Options, Reasoned, Shape
 
 
 class Message(Shape, Resource):
@@ -40,6 +40,7 @@ class Plan(Shape, Resource):
 
 class Doc(Shape, Resource):
     type = "doc"
+    names = {"complete": "final"}
     scope = PROJECT
     title_ = "Document"
     abstract_ = "What stays true about the project, catalogued for every session"
@@ -135,6 +136,37 @@ class Reaction(Shape, Resource):
     nav = False
 
 
+class Tool(Shape, Resource):
+    type = "tool"
+    title_ = "Tool"
+    abstract_ = "A script kept for a job that comes back, catalogued so the next agent runs it instead of writing it again"
+    help_ = "A tool names its entry (how to run it), its usage and what it does; run executes it from the project root."
+    fields = {"entry": TEXT, "usage": TEXT}
+    scope = PROJECT
+    nav = False
+
+
+class Style(Reasoned, Resource):
+    type = "style"
+    names = {"complete": "strike"}
+    title_ = "Coding style"
+    abstract_ = "One rule of the project's coding style, on one subject, written as a skill"
+    help_ = "A style rule names its subject and its decision; the style feature writes the skill for it."
+    fields = {"subject": TEXT, "decision": TEXT, "when": TEXT}
+    scope = PROJECT
+    nav = False
+
+
+class Connection(Shape, Resource):
+    type = "connection"
+    title_ = "Connection"
+    abstract_ = "A service the project can reach, and which variable holds its token"
+    help_ = "Never the token itself: the name of the variable that holds it."
+    fields = {"variable": TEXT}
+    scope = PROJECT
+    nav = False
+
+
 class Nudge(Shape, Resource):
     type = "nudge"
     title_ = "Nudge"
@@ -145,5 +177,5 @@ class Nudge(Shape, Resource):
     spoken = True
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow, Notification, Notice, Reaction, Nudge)}
-PRIORITY = ("message", "question", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "work", "agent", "notification", "nudge")
+TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Nudge)}
+PRIORITY = ("message", "question", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "work", "agent", "notification", "nudge")

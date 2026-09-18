@@ -1,3 +1,5 @@
+import subprocess
+
 from v2.controllers.base import Controller
 from v2.resources import types
 from v2.resources.base import AGENT, Refused, check_title
@@ -150,16 +152,18 @@ class Docs(Controller):
 class Reports(Controller):
     resource = types.Report
 
+    def doc(self, n: int):
+        r = self.load(n)
+        docs = CONTROLLERS["doc"](self.record, actor=self.actor)
+        made = docs.create(r.title, r.abstract, r.brief, **r.data)
+        for s in r.sections:
+            made = docs.section(made.n, s["title"], s["body"])
+        self.complete(n, how=f"became doc {made.n}")
+        return made
+
 
 class Pins(Controller):
     resource = types.Pin
-
-    def create(self, title: str, abstract: str = "", brief: str = "", supersedes: int = 0, **data):
-        made = super().create(title, abstract, brief, **data)
-        if not supersedes:
-            return made
-        self.complete(int(supersedes), how=f"superseded by pin {made.n}")
-        return self.link(made.n, f"pin:{int(supersedes)}")
 
     def promote(self, n: int):
         pin = self.load(n)
@@ -215,9 +219,27 @@ class Reactions(Controller):
     resource = types.Reaction
 
 
+class Tools(Controller):
+    resource = types.Tool
+
+    def run(self, n: int, *args: str):
+        tool = self.load(n)
+        project = self.record.root.parent
+        done = subprocess.run([*tool.data["entry"].split(), *args], cwd=project, capture_output=True, text=True, timeout=600)
+        return {"code": done.returncode, "out": done.stdout, "err": done.stderr}
+
+
+class Styles(Controller):
+    resource = types.Style
+
+
+class Connections(Controller):
+    resource = types.Connection
+
+
 class Nudges(Controller):
     resource = types.Nudge
 
 
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Plans, Docs, Reports, Pins, Rules, Reminders,
-                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Nudges)}
+                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Styles, Connections, Nudges)}
