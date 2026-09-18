@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import {create} from "../api.js";
 import Btn from "../kit/Btn.vue";
+import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route} from "../route.js";
 import {load, meta, open, rows, word} from "../store.js";
@@ -48,7 +49,10 @@ async function select(n) {
             <span class="sep" />
             <button type="button" :class="['flat', {on: archive}]" @click="archive = !archive">Archive</button>
             <span class="grow" />
-            <Btn kind="primary" @click="adding = true">New {{ kind.title.toLowerCase() }}</Btn>
+            <Btn kind="primary" @click="adding = true">
+                <Icon name="plus" :size="12" />
+                New {{ kind.title.toLowerCase() }}
+            </Btn>
         </div>
         <template v-if="adding">
             <NewResource :type="type" @made="select" @close="adding = false" />
