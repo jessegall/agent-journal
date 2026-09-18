@@ -21,3 +21,7 @@ This project's coding style, one skill per subject. Load a subject's skill befor
 - **`style-say-helper`** — A module's say() helper: Declare say(message: str, /, **values) with the message name positional-only
 
 <!-- END: agent-journal style -->
+
+## Controllers by reference
+
+A controller is reached by its class — `Todos(record, actor=SYSTEM)`, `Plans(...)` from `controllers.types` — never by a string key; `CONTROLLERS[event.type]` is for generic dispatch on an event's type only.

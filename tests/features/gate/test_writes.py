@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Works  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from resources.base import AGENT  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -34,10 +34,10 @@ for name, provider_cls in PROVIDERS.items():
     check(f"{name}: a redirect to /dev/null is not", hook("PreToolUse", "Bash", command="make > /dev/null"), {})
     check(f"{name}: joining stderr is not a write", hook("PreToolUse", "Bash", command="python3 tests/x.py 2>&1 | tail -1"), {})
     check(f"{name}: a journal command is never gated, it is how work opens", hook("PreToolUse", "Bash", command="journal work start \"x\" >/dev/null; .journal/journal todo add x"), {})
-    work = CONTROLLERS["work"](record, actor=AGENT).create(f"the header for {name}")
+    work = Works(record, actor=AGENT).create(f"the header for {name}")
     check(f"{name}: work open: the flag flips to allowed", provider.gate(root, env, session), "")
     check(f"{name}: the same edit passes", hook("PreToolUse", "Edit", file_path="x.py"), {})
-    CONTROLLERS["work"](record, actor=AGENT).complete(work.n, "done")
+    Works(record, actor=AGENT).complete(work.n, "done")
     check(f"{name}: work ended, nothing open: refused again", hook("PreToolUse", "Write", file_path="y.py"), {"decision": "block", "reason": REFUSED})
     check(f"{name}: the flag is a file per environment and session, with the why", json.loads((root / "runtime" / f"gate-{env}-{session}.json").read_text())["gate"], REFUSED)
 

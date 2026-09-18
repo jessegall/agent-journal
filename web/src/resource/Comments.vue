@@ -87,7 +87,7 @@ h3 {
 }
 
 .done {
-    color: var(--good);
+    color: var(--text-3);
 }
 
 .text {

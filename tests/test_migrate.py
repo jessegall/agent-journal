@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Docs, Environments, Messages, Notifications, Pins, Plans, Questions, Reminders, Reports, Rules, Todos, Works  # noqa: E402
 from engine.record import Record  # noqa: E402
 from migrations import applied, run as migrate  # noqa: E402
 from migrations.m0001_the_old_record import Migration  # noqa: E402
@@ -36,26 +36,26 @@ env = root / "environments" / "main"
 
 got = Migration(root).run()
 record = Record(root, "main")
-todos = CONTROLLERS["todo"](record)
+todos = Todos(record)
 check("to-dos keep their numbers, their state, their how, blocked, priority and after", (sorted(todos.numbers()), bool(todos.load(2).completed), todos.load(2).outcome, todos.load(4).data["blocked"], todos.load(4).data["priority"], todos.load(4).refs),
       ([2, 4], True, "shipped (abc1234)", "after the release", 200, ["todo:2"]))
-pins = CONTROLLERS["pin"](record)
+pins = Pins(record)
 check("pins with their reasoning; a struck one is struck with its why", (pins.load(1).brief, bool(pins.load(2).completed), pins.load(2).outcome), ("measured on the first of the month", True, "no longer true"))
-check("reminders with their until", CONTROLLERS["reminder"](record).load(1).data["until"], "CI is green")
-m = CONTROLLERS["message"](record).load(1)
-check("messages with their parts and replies, processed", (m.sections, bool(m.completed), [c.brief for c in CONTROLLERS["message"](record).comments(1)]), ([{"title": "fix the header", "body": "work"}, {"title": "later the footer", "body": "todo 4"}], True, ["parked as 4"]))
-q = CONTROLLERS["question"](record).load(1)
+check("reminders with their until", Reminders(record).load(1).data["until"], "CI is green")
+m = Messages(record).load(1)
+check("messages with their parts and replies, processed", (m.sections, bool(m.completed), [c.brief for c in Messages(record).comments(1)]), ([{"title": "fix the header", "body": "work"}, {"title": "later the footer", "body": "todo 4"}], True, ["parked as 4"]))
+q = Questions(record).load(1)
 check("questions with options, the pick, the answer and their links in v2 words", (q.data["options"][0]["title"], q.data["pick"], q.outcome, q.refs), ("blue", 1, "blue", ["todo:4", "message:1"]))
-check("work with its notes as sections, still open", (CONTROLLERS["work"](record).load(1).sections, CONTROLLERS["work"](record).load(1).completed), ([{"title": "2026-09-01T10:30:00", "body": "half way"}], 0.0))
-p = CONTROLLERS["plan"](record).load(1)
+check("work with its notes as sections, still open", (Works(record).load(1).sections, Works(record).load(1).completed), ([{"title": "2026-09-01T10:30:00", "body": "half way"}], 0.0))
+p = Plans(record).load(1)
 check("plans with phases, status, the current phase derived from the rows, linked to them", (p.data["status"], p.data["current"], [ph["todos"] for ph in p.data["phases"]], p.refs), ("active", 2, [[2], [4]], ["todo:2", "todo:4"]))
-check("reports with their body, linked to what they are about", (CONTROLLERS["report"](record).load(1).brief, CONTROLLERS["report"](record).load(1).refs), ("findings", ["todo:4"]))
-check("notifications, unread", CONTROLLERS["notification"](record).load(1).seen, ["system"])
-rules = CONTROLLERS["rule"](record)
+check("reports with their body, linked to what they are about", (Reports(record).load(1).brief, Reports(record).load(1).refs), ("findings", ["todo:4"]))
+check("notifications, unread", Notifications(record).load(1).seen, ["system"])
+rules = Rules(record)
 check("rules from the record, with the reasoning file where there is one; the struck one struck", (rules.load(1).brief, bool(rules.load(2).completed), rules.load(2).outcome), ("because the orchestrator's model is the expensive one", True, "repealed"))
-docs = CONTROLLERS["doc"](record)
+docs = Docs(record)
 check("docs keep their number, parts and files", (docs.load(10).title, docs.load(10).abstract, docs.load(10).sections, docs.files(10)), ("The engine", "the loop", [{"title": "The pieces", "body": "supervisor, driver"}], ["shot.png"]))
-check("environments become resources", [e.title for e in CONTROLLERS["environment"](record).all()], ["main"])
+check("environments become resources", [e.title for e in Environments(record).all()], ["main"])
 check("every migrated resource left one created event by the system, marked", all(e.actor == "system" and e.data.get("migrated") for e in record.events() if e.action == "created" and e.type != "comment"), True)
 again = Migration(root).run()
 check("a record already migrated is left alone", again, [])

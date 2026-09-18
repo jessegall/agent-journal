@@ -3,7 +3,7 @@ import re
 import time
 from pathlib import Path
 
-from controllers.types import CONTROLLERS
+from controllers.types import Agents
 from engine.record import Record
 from resources.base import SYSTEM
 
@@ -74,7 +74,7 @@ class Band:
 
     def agent(self) -> dict:
         record = Record(self.root, self.seat().get("env") or self.env)
-        rows = [r for r in CONTROLLERS["agent"](record, actor=SYSTEM).all() if r.data.get("event")]
+        rows = [r for r in Agents(record, actor=SYSTEM).all() if r.data.get("event")]
         rows.sort(key=lambda r: float(r.data.get("at") or 0))
         return {"title": rows[-1].title, **rows[-1].data} if rows else {}
 

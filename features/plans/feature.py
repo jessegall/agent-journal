@@ -1,22 +1,22 @@
-from controllers.types import ACTIVE, CONTROLLERS, DONE, WAITING
+from controllers.types import ACTIVE, DONE, Plans, Todos, WAITING
 from features.base import Feature, on
 from features.plans.query import current_phase, running
 from resources.base import SYSTEM
 
 
-class Plans(Feature):
+class PlansFeature(Feature):
     name = "plans"
     title_ = "Plans"
     abstract_ = "A plan advances as its rows close: a phase completes, a checkpoint waits, the last phase ends it"
     help_ = "Only the user activates a plan and continues it past a checkpoint."
 
     def phase_complete(self, record, phase: dict) -> bool:
-        todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+        todos = Todos(record, actor=SYSTEM)
         return all(todos.load(n).completed for n in phase["todos"])
 
     @on("todo.completed")
     def advance(self, event, record) -> None:
-        plans = CONTROLLERS["plan"](record, actor=SYSTEM)
+        plans = Plans(record, actor=SYSTEM)
         for plan in running(record):
             phase = current_phase(plan)
             if event.ref not in plan.refs or plan.data["status"] != ACTIVE or phase is None or not self.phase_complete(record, phase):

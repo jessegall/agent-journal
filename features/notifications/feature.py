@@ -1,4 +1,4 @@
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Notifications
 from features.base import Feature, on
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import TYPES
@@ -6,7 +6,7 @@ from resources.types import TYPES
 WORDS = {"created": "create", "completed": "complete"}
 
 
-class Notifications(Feature):
+class NotificationsFeature(Feature):
     name = "notifications"
     title_ = "Notifications"
     abstract_ = "Every act of the agent the user should hear of becomes a notification"
@@ -19,4 +19,4 @@ class Notifications(Feature):
             return
         resource = CONTROLLERS[event.type](record, actor=SYSTEM).load(event.n)
         word = kind.names.get(WORDS.get(event.action, ""), event.action)
-        CONTROLLERS["notification"](record, actor=SYSTEM).create(f"{kind.title_} {event.n} {word}", abstract=resource.title[:200], about=event.ref, event=event.id)
+        Notifications(record, actor=SYSTEM).create(f"{kind.title_} {event.n} {word}", abstract=resource.title[:200], about=event.ref, event=event.id)

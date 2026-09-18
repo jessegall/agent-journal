@@ -1,4 +1,4 @@
-from controllers.types import CONTROLLERS
+from controllers.types import Messages
 from features.base import Feature, on
 from resources.base import AGENT, SYSTEM
 
@@ -10,7 +10,7 @@ class Became(Feature):
     help_ = "The message the agent read last and has not closed is the one in hand; every to-do, pin, rule, reminder, question, doc, report, plan or work it creates meanwhile is linked to it and shows as a pill on the turn."
 
     def in_hand(self, record):
-        messages = CONTROLLERS["message"](record, actor=SYSTEM)
+        messages = Messages(record, actor=SYSTEM)
         held = [m for m in messages.all() if AGENT in m.seen and not m.completed and m.seen[0] != AGENT]
         return (messages, held[-1]) if held else (messages, None)
 

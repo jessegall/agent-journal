@@ -2,13 +2,13 @@ import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from controllers.types import CONTROLLERS
+from controllers.types import Agents, CONTROLLERS, Notifications
 from engine.record import Record
 from resources.base import AGENT, SYSTEM, USER, Event
 from resources.types import TYPES
 
-STOPPED, IDLE, WORKING, WAITING = "stopped", "idle", "working", "waiting"
-STATES = (STOPPED, IDLE, WORKING, WAITING)
+STOPPED, IDLE, WORKING, WAITING, COMPACTING = "stopped", "idle", "working", "waiting", "compacting"
+STATES = (STOPPED, IDLE, WORKING, WAITING, COMPACTING)
 BATCH = {"quiet": 5.0, "size": 10}
 
 
@@ -56,7 +56,7 @@ class User(Actor):
         self.notified(event)
 
     def unread(self) -> list:
-        return CONTROLLERS["notification"](self.record, actor=USER).unread()
+        return Notifications(self.record, actor=USER).unread()
 
 
 class System(Actor):
@@ -105,12 +105,14 @@ class Agent(Actor):
             return STOPPED
         if status == IDLE:
             return IDLE if quiet >= 1.0 else WORKING
+        if status == COMPACTING:
+            return COMPACTING
         if last.get("event") == "PreToolUse" and quiet >= 5.0:
             return WAITING
         return WORKING
 
     def mark(self, status: str, event: str, **more) -> None:
-        agents = CONTROLLERS["agent"](self.record, actor=SYSTEM)
+        agents = Agents(self.record, actor=SYSTEM)
         last = self.driver.last_report() or {}
         row = agents.by_session(last.get("session") or self.driver.session)
         agents.update(row.n, **{**row.data, "at": time.time(), **more, "status": status or row.data.get("status", ""), "event": event or row.data.get("event", "")})

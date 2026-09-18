@@ -1,7 +1,7 @@
 import re
 import subprocess
 
-from controllers.types import CONTROLLERS
+from controllers.types import Todos
 from features.base import Feature, on
 from resources.base import Refused, SYSTEM
 
@@ -23,7 +23,7 @@ class Commits(Feature):
         return [tuple(c.strip("\n").split("\x1f", 2)) for c in out.split("\x1e") if c.strip()]
 
     def close(self, record, sha: str, subject: str, body: str) -> None:
-        todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+        todos = Todos(record, actor=SYSTEM)
         for n, how in TRAILER.findall(body):
             try:
                 if not todos.load(int(n)).completed:

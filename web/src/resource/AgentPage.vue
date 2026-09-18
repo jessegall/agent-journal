@@ -158,8 +158,9 @@ onUnmounted(() => clearInterval(timer));
     color: var(--text-3);
 }
 
-.state.working {
-    color: #5b8def;
+.state.working,
+.state.compacting {
+    color: var(--progress);
 }
 
 .grow {
@@ -254,7 +255,7 @@ onUnmounted(() => clearInterval(timer));
 }
 
 .dot.open {
-    background: #5b8def;
+    background: var(--progress);
 }
 
 .work-title {

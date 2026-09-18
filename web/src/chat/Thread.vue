@@ -3,7 +3,7 @@ import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {act, create} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {quoted, reload, rows, store, withQuote} from "../store.js";
+import {agent, meta, quoted, reload, rows, store, withQuote} from "../store.js";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 
@@ -21,6 +21,7 @@ function editLast() {
 function unedit() {
     editing.value = null;
 }
+const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
 const away = ref(false);
 const missed = ref(0);
 const settledOnce = ref(false);
@@ -53,11 +54,35 @@ async function loaded() {
     ]);
 }
 const reading = ref({inside: false, moved: 0});
+const acknowledged = (m) =>
+    rows("comment").some((c) => !c.deleted && c.refs.includes(m.ref) && c.seen[0] === "agent") ||
+    rows("reaction").some((r) => !r.deleted && r.refs.includes(m.ref) && r.seen[0] === "agent");
+const filed = (m) => m.refs.filter((r) => !r.startsWith("message:") && meta(r.split(":")[0]));
+const receipt = (m) => ({
+    ref: `receipt:${m.n}`,
+    type: "receipt",
+    n: m.n,
+    who: "agent",
+    created: m.updated + 0.001,
+    seen: ["agent"],
+    refs: filed(m),
+    data: {},
+    sections: [],
+    title: filed(m).length
+        ? `Filed ${filed(m)
+              .map((r) => `${meta(r.split(":")[0]).title.toLowerCase()} ${r.split(":")[1]}`)
+              .join(", ")} from your message.`
+        : "Noted.",
+    brief: "",
+});
 const turns = computed(() =>
     [
         ...rows("message")
             .filter((m) => !m.deleted)
             .map((m) => ({...m, who: m.seen[0]})),
+        ...rows("message")
+            .filter((m) => !m.deleted && m.seen[0] === "user" && m.completed && !acknowledged(m))
+            .map(receipt),
         ...rows("comment")
             .filter((c) => !c.deleted && c.refs.some((r) => r.startsWith("message:")))
             .map((c) => ({...c, who: c.seen[0]})),
@@ -142,6 +167,16 @@ watch(
 <template>
     <div class="thread">
         <div class="thread-write">
+            <Transition name="rise">
+                <div v-if="busy" class="thread-turn busy" aria-label="The agent is working">
+                    <div class="thread-bubble">
+                        <span class="thread-dot" />
+                        <span class="thread-dot" />
+                        <span class="thread-dot" />
+                    </div>
+                    <div class="thread-meta"><span>working</span></div>
+                </div>
+            </Transition>
             <Transition name="rise">
                 <button
                     v-if="away"
@@ -291,6 +326,65 @@ watch(
 
     50% {
         opacity: 0.8;
+    }
+}
+
+.thread-turn.busy {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-width: max-content;
+    margin: 0 0 6px;
+}
+
+.rise-enter-from.thread-turn.busy,
+.rise-leave-to.thread-turn.busy {
+    transform: translateY(8px);
+}
+
+.thread-turn.busy .thread-bubble {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid #232529;
+    border-radius: 9px;
+    background: #161719;
+}
+
+.thread-turn.busy .thread-meta {
+    padding: 0 3px;
+    font-size: 11px;
+    color: var(--text-3);
+}
+
+.thread-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--text-3);
+    animation: thread-dot 1.3s ease-in-out infinite;
+}
+
+.thread-dot:nth-child(2) {
+    animation-delay: 0.18s;
+}
+
+.thread-dot:nth-child(3) {
+    animation-delay: 0.36s;
+}
+
+@keyframes thread-dot {
+    0%,
+    60%,
+    100% {
+        opacity: 0.35;
+        transform: none;
+    }
+
+    30% {
+        opacity: 1;
+        transform: translateY(-2px);
     }
 }
 

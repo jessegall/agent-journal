@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import CONTROLLERS, Comments  # noqa: E402
 from engine.record import Record  # noqa: E402
 from resources.base import ABSTRACT_MAX, TITLE_MAX, ACTIONS  # noqa: E402
 from resources.types import TYPES  # noqa: E402
@@ -39,8 +39,8 @@ for type_ in TYPES:                                                 # the data p
           ([{"title": "Why", "body": "because"}], ["todo:9"], "comment", f"{type_}:1", ["a note"]))
     if type_ == "comment":
         check("comment: commenting on a comment is the same act", note.refs[0], "comment:1")
-    reply = CONTROLLERS["comment"](record).comment(note.n, "a comment on the comment")
-    check(f"{type_}: a comment can have a comment", (reply.refs[0], [x.title for x in CONTROLLERS["comment"](record).comments(note.n)]),
+    reply = Comments(record).comment(note.n, "a comment on the comment")
+    check(f"{type_}: a comment can have a comment", (reply.refs[0], [x.title for x in Comments(record).comments(note.n)]),
           (f"comment:{note.n}", ["a comment on the comment"]))
     c.complete(1, "finished")
     check(f"{type_}: completed is the final phase, marked once", (c.show(1).completed > 0, refused(lambda: c.complete(1))), (True, True))

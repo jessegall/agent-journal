@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Agents, Environments, Todos  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.sessions import Sessions  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
@@ -25,7 +25,7 @@ def journal(*argv, env="t", session=""):
 # EVERY TYPE'S WORDS, AND THE QUERIES
 code, out = journal("todo", "add", "a row", "--brief", "why")
 check("a to-do is added by the type's own word, as the agent", (code, out.startswith("---")), (0, True))
-check("the agent created it", CONTROLLERS["todo"](Record(root, "t")).load(1).seen, ["agent"])
+check("the agent created it", Todos(Record(root, "t")).load(1).seen, ["agent"])
 check("all lists it", journal("todo", "all")[1], "   1  a row")
 check("done is refused with a wrong word", journal("todo", "complete", "1")[0], 2)
 check("done with a how", journal("todo", "done", "1", "--how", "shipped")[0], 0)
@@ -43,7 +43,7 @@ check("version is the package's VERSION file", journal("version", env="")[1] != 
 
 # THE SESSION: --session binds; without it the holder of the environment is used
 journal("environment", "prepare", "t")
-n = next(e.n for e in CONTROLLERS["environment"](Record(root, "t")).all() if e.title == "t")
+n = next(e.n for e in Environments(Record(root, "t")).all() if e.title == "t")
 code, out = journal("environment", "switch", str(n), session="s-1")
 check("switch binds the named session", (code, Sessions(root).environment("s-1")), (0, "t"))
 code, out = journal("environment", "switch", str(n), session="s-2")
@@ -53,7 +53,7 @@ check("with no --env the session's environment is used", journal("status", env="
 # THE TRANSCRIPT QUERIES read through the provider
 transcript = project / "s.jsonl"
 transcript.write_text("\n".join(json.dumps(r) for r in [{"type": "user", "message": {"content": "fix the header"}}, {"type": "assistant", "message": {"content": [{"type": "text", "text": "[!reply] done"}]}}]) + "\n")
-agents = CONTROLLERS["agent"](Record(root, "t"), actor=SYSTEM)
+agents = Agents(Record(root, "t"), actor=SYSTEM)
 row = agents.by_session("s-1")
 agents.update(row.n, provider="claude", transcript=str(transcript))
 check("search cites line numbers", journal("search", "header", session="s-1")[1], "     1  user    fix the header")

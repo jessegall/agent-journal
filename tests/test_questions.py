@@ -2,14 +2,14 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Comments, Questions, Todos  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
 
 record = fresh()
-todo = CONTROLLERS["todo"](record, actor=USER).create("a row")
-asked = CONTROLLERS["question"](record, actor=AGENT)
-answered = CONTROLLERS["question"](record, actor=USER)
+todo = Todos(record, actor=USER).create("a row")
+asked = Questions(record, actor=AGENT)
+answered = Questions(record, actor=USER)
 
 # ASKING: options with a pick, a description, about something — all through the one controller
 q = asked.create("which colour", abstract="the header is grey today", about=todo.ref,
@@ -27,8 +27,8 @@ answered.update(q.n, outcome="blue after all")
 check("a new answer replaces the old with set", asked.load(q.n).outcome, "blue after all")
 
 # COMMENTS: done is the comment's complete, with what was done
-c = CONTROLLERS["todo"](record, actor=USER).comment(todo.n, "make it two rows")
-comments = CONTROLLERS["comment"](record, actor=AGENT)
+c = Todos(record, actor=USER).comment(todo.n, "make it two rows")
+comments = Comments(record, actor=AGENT)
 check("a comment is about the row", c.refs, [todo.ref])
 comments.method("done")(c.n, "split into 2 and 3")
 check("done keeps what was done", comments.load(c.n).outcome, "split into 2 and 3")

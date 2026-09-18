@@ -12,7 +12,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(HERE))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Agents, Messages  # noqa: E402
 from engine.record import Record  # noqa: E402
 from install import install  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
@@ -49,7 +49,7 @@ root = project / ".journal"
 os.environ["PATH"] = os.environ.get("PATH", "") or os.defpath
 print("install:", *install(project))
 record = Record(root, "main")
-agents = CONTROLLERS["agent"](record, actor=SYSTEM)
+agents = Agents(record, actor=SYSTEM)
 
 
 def status():
@@ -104,7 +104,7 @@ try:
     check("the engine writes its seat record", bool(seats) and json.loads(seats[0].read_text())["agent"], "claude")
 
     # A USER EVENT REACHES THE AGENT: the engine types it, Claude submits it, the hooks say working, then idle again
-    CONTROLLERS["message"](record, actor=USER).create("say the single word PONG and nothing else")
+    Messages(record, actor=USER).create("say the single word PONG and nothing else")
     typed = wait_for("working", 10)
     check("the engine typed the event and Claude took it (UserPromptSubmit → working)", typed, True)
     pump(2)
@@ -113,7 +113,7 @@ try:
     check("Claude answered and stopped: idle again", (back, status()[1]), (True, "Stop"))
     seat = json.loads(seats[0].read_text()) if seats else {}
     check("the seat record followed", seat.get("state") in ("idle", "working"), True)
-    check("the message counts as seen by the agent only once it acts on it", AGENT in CONTROLLERS["message"](record).show(1).seen, False)
+    check("the message counts as seen by the agent only once it acts on it", AGENT in Messages(record).show(1).seen, False)
 finally:
     os.kill(pid, 9)
     trust(project, False)

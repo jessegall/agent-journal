@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Todos  # noqa: E402
 from engine.record import Record  # noqa: E402
 from resources.base import SYSTEM, USER  # noqa: E402
 from tests.features.kit import report  # noqa: E402
@@ -19,7 +19,7 @@ git = lambda *a: subprocess.run(["git", *a], cwd=project, capture_output=True, t
 git("init", "-q")
 git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "before the journal looked")
 record = Record(project / ".journal", "t")
-todos = CONTROLLERS["todo"](record, actor=USER)
+todos = Todos(record, actor=USER)
 todos.create("first")
 todos.create("second")
 todos.create("third")

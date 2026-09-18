@@ -60,7 +60,7 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
     left: 0;
     right: 0;
     z-index: 0;
-    background: color-mix(in srgb, #c9955e 16%, transparent);
+    background: color-mix(in srgb, var(--blocking) 16%, transparent);
     transition:
         opacity 0.18s ease-in,
         transform 0.18s ease-in;

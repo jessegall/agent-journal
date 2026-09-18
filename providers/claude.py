@@ -17,6 +17,9 @@ class Claude(Provider):
     def wiring(self, command: str) -> dict:
         return {"hooks": {event: [{"hooks": [{"type": "command", "command": command}]}] for event in EVENTS}}
 
+    def compacted(self, payload: dict) -> bool:
+        return payload.get("source") == "compact"
+
     def model(self, payload: dict) -> str:
         path = Path(str(payload.get("transcript_path") or ""))
         if not path.is_file():

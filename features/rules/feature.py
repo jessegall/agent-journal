@@ -7,7 +7,7 @@ from features.base import Recital, on
 BLOCK = re.compile(r"\n?<!-- journal rules -->.*?<!-- /journal rules -->\n?", re.DOTALL)
 
 
-class Rules(Recital):
+class RulesFeature(Recital):
     name = "rules"
     type = "rule"
     said = "in force, read them"

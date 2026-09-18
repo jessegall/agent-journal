@@ -265,8 +265,8 @@ function close() {
     gap: 8px;
     height: 30px;
     padding: 0 8px 0 10px;
-    border-bottom: 1px solid color-mix(in srgb, #d9a441 45%, var(--border));
-    background: color-mix(in srgb, #d9a441 26%, var(--bg));
+    border-bottom: 1px solid color-mix(in srgb, var(--blocking) 45%, var(--border));
+    background: color-mix(in srgb, var(--blocking) 26%, var(--bg));
     font-size: 11.5px;
     color: var(--text);
 }
@@ -275,7 +275,7 @@ function close() {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #d9a441;
+    background: var(--blocking);
     animation: blink 1.2s ease-in-out infinite;
 }
 
@@ -301,9 +301,9 @@ function close() {
 .shell-driving-stop {
     height: 22px;
     padding: 0 10px;
-    border: 1px solid color-mix(in srgb, #d9a441 55%, transparent);
+    border: 1px solid color-mix(in srgb, var(--blocking) 55%, transparent);
     border-radius: 6px;
-    background: color-mix(in srgb, #d9a441 30%, transparent);
+    background: color-mix(in srgb, var(--blocking) 30%, transparent);
     color: var(--text);
     font: inherit;
     font-size: 11.5px;

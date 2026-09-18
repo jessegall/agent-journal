@@ -1,4 +1,4 @@
-from controllers.types import CONTROLLERS
+from controllers.types import Styles
 from features.base import Feature, on
 from resources.base import SYSTEM
 
@@ -11,7 +11,7 @@ class Style(Feature):
 
     @on("style")
     def write(self, event, record) -> None:
-        rule = CONTROLLERS["style"](record, actor=SYSTEM).load(event.n)
+        rule = Styles(record, actor=SYSTEM).load(event.n)
         if not rule.data.get("subject"):
             return
         folder = record.root.parent / ".claude" / "skills" / f"style-{rule.data['subject']}"

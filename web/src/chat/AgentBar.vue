@@ -22,8 +22,18 @@ const counts = computed(() => [
     {key: "shells", icon: "terminal", n: (data.value && data.value.shells) || 0, title: "background shells started this session", rows: []},
     {key: "subagents", icon: "agents", n: (data.value && data.value.subagents) || 0, title: "subagents dispatched this session", rows: []},
 ]);
-const toggle = (key) => (open.value = open.value === key ? "" : key);
+const anchor = ref({left: 0, top: 0});
+function toggle(key, e) {
+    open.value = open.value === key ? "" : key;
+    const box = e.currentTarget.getBoundingClientRect();
+    const wrap = bar.value.getBoundingClientRect();
+    anchor.value = {left: Math.max(0, Math.min(box.left - wrap.left, wrap.width - 288)), top: box.bottom - wrap.top + 6};
+}
 const bar = ref(null);
+function openAgent() {
+    open.value = "";
+    peek("agent", agent.value.n);
+}
 const away = (e) => {
     if (bar.value && !bar.value.contains(e.target)) open.value = "";
 };
@@ -85,7 +95,7 @@ onUnmounted(() => window.removeEventListener("click", away));
                         :class="['agent-fact', 'agent-count', {none: !c.n, open: open === c.key}]"
                         :title="c.title"
                         :aria-expanded="open === c.key"
-                        @click="toggle(c.key)"
+                        @click="toggle(c.key, $event)"
                     >
                         <Icon :name="c.icon" />
                         {{ c.n }}
@@ -105,7 +115,7 @@ onUnmounted(() => window.removeEventListener("click", away));
             </button>
         </template>
         <Transition name="drop">
-            <div v-if="open && data" class="bar-drop">
+            <div v-if="open && data" class="bar-drop" :style="{left: `${anchor.left}px`, top: `${anchor.top}px`}">
                 <SwitchCase :value="open">
                     <template #skills>
                         <p class="bar-none">Loaded in this window, newest last. A compaction empties it.</p>
@@ -118,6 +128,9 @@ onUnmounted(() => window.removeEventListener("click", away));
                                 {{ s }}
                             </span>
                         </template>
+                        <div class="bar-foot">
+                            <button type="button" class="bar-act" @click="openAgent">Browse every skill</button>
+                        </div>
                     </template>
                     <template #shells>
                         <p class="bar-none">{{ data.shells || 0 }} background shell(s) were started in this session.</p>
@@ -259,16 +272,40 @@ onUnmounted(() => window.removeEventListener("click", away));
 
 .bar-drop {
     position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
     z-index: 30;
+    width: 280px;
     max-height: 60vh;
     overflow-y: auto;
-    padding: 6px 10px;
-    border-bottom: 1px solid var(--border-2);
+    padding: 5px;
+    border: 1px solid var(--border-2);
+    border-radius: 9px;
     background: var(--raised);
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
+}
+
+.bar-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+    padding-top: 5px;
+    border-top: 1px solid var(--border);
+}
+
+.bar-act {
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--accent-text);
+    font: inherit;
+    font-size: 12.5px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.bar-act:hover {
+    background: var(--hover);
 }
 
 .bar-none {

@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Agents, Messages, Nudges, Pins, Questions, Todos, Works  # noqa: E402
 from engine import bus  # noqa: E402
 from engine.actors import IDLE, STOPPED, WAITING, WORKING, User  # noqa: E402
 from engine.drivers import Driver  # noqa: E402
@@ -76,7 +76,7 @@ check("between tool calls: working", engine.agent.is_working(), True)
 # EVERY EVENT REACHES EVERY ACTOR BUT ITS OWN. The user writes a message: the agent is typed to at once,
 # working or not; the user is not notified of their own act. The agent completes it: the user is notified.
 driver.report = None
-CONTROLLERS["message"](record, actor=USER).create("look at the header")
+Messages(record, actor=USER).create("look at the header")
 check("nothing is delivered before the agent's first report: it may be at a dialog", (engine.tick(), driver.sent), ("waiting for the agent's first report", []))
 driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 driver.quiet = 0.1
@@ -89,7 +89,7 @@ engine.agent.pending_at -= 5
 check("five quiet seconds later the batch is typed as one counted line", (engine.tick(), driver.sent), ("typed 1 in one line", ["1 new message"]))
 check("the cursor moved: a further tick types nothing more", (engine.tick(), len(driver.sent)), (WORKING, 1))
 driver.sent.clear()
-CONTROLLERS["message"](record, actor=AGENT).complete(1, "read and filed")
+Messages(record, actor=AGENT).complete(1, "read and filed")
 engine.tick()
 check("the agent's completion reaches the user as a notification and not the agent", ([n.refs[0] for n in User(record).unread()], driver.sent), (["message:1"], []))
 
@@ -105,20 +105,20 @@ def settle():                                          # deliver whatever is pen
 
 driver.report = {"at": time.time(), "event": "Stop", "status": IDLE}
 driver.quiet = 3.0
-CONTROLLERS["todo"](record, actor=USER).create("a chore")
-CONTROLLERS["question"](record, actor=USER).create("which colour")
+Todos(record, actor=USER).create("a chore")
+Questions(record, actor=USER).create("which colour")
 settle()
 check("idle with unread resources: the highest priority type first, with its numbers", driver.sent[-1] == "1 unread question", True)
-CONTROLLERS["question"](record, actor=AGENT).read(1)
+Questions(record, actor=AGENT).read(1)
 settle()
 check("the question seen: the to-do is next in priority", driver.sent[-1] == "1 unread todo", True)
-CONTROLLERS["todo"](record, actor=AGENT).read(1)
+Todos(record, actor=AGENT).read(1)
 why = settle()
 check("everything seen: nothing owed", (why, driver.sent), ("nothing owed", []))
-CONTROLLERS["work"](record, actor=AGENT).create("the header")
+Works(record, actor=AGENT).create("the header")
 why = settle()
 check("the agent's own work is not owed to it by the engine: that is the work feature's nudge", (why, driver.sent), ("nothing owed", []))
-CONTROLLERS["nudge"](record, actor=SYSTEM).create("work 1 open")
+Nudges(record, actor=SYSTEM).create("work 1 open")
 driver.sent.clear()
 engine.tick()
 engine.agent.pending_at -= 5
@@ -135,7 +135,7 @@ check("the seat record says the agent, its state and the last decision", (seat["
 # THE BUS hears every emit
 heard = []
 bus.on("*", lambda e, r: heard.append((e.type, e.action)))
-CONTROLLERS["pin"](record, actor=USER).create("a fact")
+Pins(record, actor=USER).create("a fact")
 check("record.emit reaches the bus", heard[-1], ("pin", "created"))
 bus.clear()
 
@@ -145,8 +145,8 @@ engine.tick()
 engine.agent.pending_at -= 5
 engine.tick()
 driver.sent.clear()
-CONTROLLERS["agent"](record, actor=SYSTEM).by_session("fake-1")
-CONTROLLERS["nudge"](record, actor=SYSTEM).create("2 reminders standing, read them", brief="1. run the suites")
+Agents(record, actor=SYSTEM).by_session("fake-1")
+Nudges(record, actor=SYSTEM).create("2 reminders standing, read them", brief="1. run the suites")
 before = len(User(record).unread())
 engine.tick()
 engine.agent.pending_at -= 5
@@ -225,8 +225,8 @@ check("the engine moves to the session's environment", (engine.tick(), engine.re
 # A NUDGE IS SPOKEN ONCE, NEVER COUNTED: one missed by a restarted engine is read as stale, not nagged as "n unread nudge"
 stale_record = Record(Path(tempfile.mkdtemp()) / ".journal", "main")
 stale_driver = Fake(stale_record)
-CONTROLLERS["agent"](stale_record, actor=SYSTEM).by_session("fake-1")
-stale = CONTROLLERS["nudge"](stale_record, actor=SYSTEM).create("work 9 open")
+Agents(stale_record, actor=SYSTEM).by_session("fake-1")
+stale = Nudges(stale_record, actor=SYSTEM).create("work 9 open")
 stale_driver.report = {"at": time.time() + 1, "event": "Stop", "status": IDLE}
 stale_driver.quiet = 3.0
 stale_engine = Engine(stale_record, stale_driver)
@@ -234,7 +234,7 @@ stale_engine.born = time.time() + 0.5
 stale_engine.tick()
 stale_engine.agent.pending_at -= 5
 stale_engine.tick()
-check("a nudge from before the engine was born is marked read and not typed", (AGENT in CONTROLLERS["nudge"](stale_record).load(stale.n).seen, stale_driver.sent), (True, []))
+check("a nudge from before the engine was born is marked read and not typed", (AGENT in Nudges(stale_record).load(stale.n).seen, stale_driver.sent), (True, []))
 stale_engine.typed_at = 0
 check("and nothing counts it as owed", stale_engine.tick(), "nothing owed")
 
@@ -247,7 +247,7 @@ engine.agent.pending_at -= 5
 engine.tick()
 driver.sent.clear()
 for i in range(10):
-    CONTROLLERS["message"](engine.record, actor=USER).create(f"note {i}")
+    Messages(engine.record, actor=USER).create(f"note {i}")
 check("ten waiting events are typed at once, without waiting for quiet", (engine.tick(), driver.sent), ("typed 10 in one line", ["10 new messages"]))
 
 done()

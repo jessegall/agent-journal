@@ -50,7 +50,7 @@ class Messages(Controller):
         said = "\n".join(lines).strip()
         made = self.comment(n, f"> {said.replace(chr(10), chr(10) + '> ')}\n\n{text}" if said and not text.startswith(">") else text)
         if file:
-            CONTROLLERS["comment"](self.record, actor=self.actor).attach(made.n, file)
+            Comments(self.record, actor=self.actor).attach(made.n, file)
         return made
 
     def edit(self, n: int, text: str):
@@ -79,10 +79,10 @@ class Todos(Controller):
 
     def ask(self, n: int, question: str, **data):
         row = self.load(n)
-        return CONTROLLERS["question"](self.record, actor=self.actor).create(question, about=row.ref, **data)
+        return Questions(self.record, actor=self.actor).create(question, about=row.ref, **data)
 
     def answer(self, n: int, text: str):
-        questions = CONTROLLERS["question"](self.record, actor=self.actor)
+        questions = Questions(self.record, actor=self.actor)
         row = self.load(n)
         for q in questions.linked_to(row.ref):
             if not q.completed:
@@ -104,7 +104,7 @@ class Todos(Controller):
 
     def start(self, n: int):
         row = self.load(n)
-        return CONTROLLERS["work"](self.record, actor=self.actor, session=self.session, agent=self.agent).create(row.title, brief=row.brief, todo=row.n)
+        return Works(self.record, actor=self.actor, session=self.session, agent=self.agent).create(row.title, brief=row.brief, todo=row.n)
 
     def prune(self, days: int = 30):
         cut = time.time() - int(days) * 86400
@@ -128,7 +128,7 @@ class Works(Controller):
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         if data.get("todo"):
-            row = CONTROLLERS["todo"](self.record, actor=self.actor).load(int(data["todo"]))
+            row = Todos(self.record, actor=self.actor).load(int(data["todo"]))
             held = row.data.get("assigned") or ""
             if held and held != self.agent:
                 raise Refused(f"todo {row.n} is assigned to {held}; nobody else may take it")
@@ -145,7 +145,7 @@ class Plans(Controller):
         return super().create(title, abstract, brief, status=DRAFT, phases=[], current=1, **data)
 
     def from_doc(self, doc: int):
-        source = CONTROLLERS["doc"](self.record, actor=self.actor).load(int(doc))
+        source = Docs(self.record, actor=self.actor).load(int(doc))
         plan = self.create(source.title, brief=source.brief, goal=source.abstract)
         for s in source.sections:
             if s["title"].lower().startswith("phase"):
@@ -249,7 +249,7 @@ class Reports(Controller):
 
     def doc(self, n: int):
         r = self.load(n)
-        docs = CONTROLLERS["doc"](self.record, actor=self.actor)
+        docs = Docs(self.record, actor=self.actor)
         made = docs.create(r.title, r.abstract, r.brief, **r.data)
         for s in r.sections:
             made = docs.section(made.n, s["title"], s["body"])
@@ -262,7 +262,7 @@ class Pins(Controller):
 
     def promote(self, n: int):
         pin = self.load(n)
-        rule = CONTROLLERS["rule"](self.record, actor=self.actor).create(pin.title, pin.abstract, pin.brief, **pin.data)
+        rule = Rules(self.record, actor=self.actor).create(pin.title, pin.abstract, pin.brief, **pin.data)
         self.complete(n, how=f"promoted to rule {rule.n}")
         return rule
 
@@ -412,7 +412,7 @@ class Environments(Controller):
         record = Record(self.record.root, env.title)
         return {"environment": env.title, "holder": self.sessions().holder(env.title),
                 **{f"open {t}s": [f"{r.n} {r.title}" for r in CONTROLLERS[t](record, actor=SYSTEM).all() if not r.completed][:10] for t in ("work", "todo", "question", "message")},
-                "pins": [f"{r.n} {r.title}" for r in CONTROLLERS["pin"](record, actor=SYSTEM).all() if not r.completed][:10]}
+                "pins": [f"{r.n} {r.title}" for r in Pins(record, actor=SYSTEM).all() if not r.completed][:10]}
 
     def claim(self, n: int, why: str):
         env = self.load(n)

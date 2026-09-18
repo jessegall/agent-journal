@@ -2,7 +2,7 @@ from features import trigger
 from features.base import Recital
 
 
-class Reminders(Recital):
+class RemindersFeature(Recital):
     name = "reminders"
     type = "reminder"
     title_ = "Reminders"

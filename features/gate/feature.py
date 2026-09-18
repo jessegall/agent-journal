@@ -1,4 +1,4 @@
-from controllers.types import CONTROLLERS
+from controllers.types import Works
 from features.base import Feature, on
 from resources.base import SYSTEM
 
@@ -10,7 +10,7 @@ class Gate(Feature):
     help_ = "Declare work before the first write; reads are never refused."
 
     def open_work(self, record) -> bool:
-        return any(not w.completed for w in CONTROLLERS["work"](record, actor=SYSTEM).all())
+        return any(not w.completed for w in Works(record, actor=SYSTEM).all())
 
     @on("work")
     def on_work(self, event, record) -> None:

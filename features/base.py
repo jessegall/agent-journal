@@ -2,7 +2,7 @@ import json
 from abc import ABC
 from typing import ClassVar
 
-from controllers.types import CONTROLLERS
+from controllers.types import Agents, CONTROLLERS, Nudges
 from engine import bus
 from features import trigger
 from providers.base import gate_file
@@ -49,7 +49,7 @@ class Feature(ABC):
         record.set_setting("features", {**record.setting("features", {}), self.name: False})
 
     def agent(self, event, record):
-        return CONTROLLERS["agent"](record, actor=SYSTEM).load(event.n)
+        return Agents(record, actor=SYSTEM).load(event.n)
 
     def agent_due(self, event, record):
         agent = self.agent(event, record)
@@ -65,7 +65,7 @@ class Feature(ABC):
         return True
 
     def hold(self, record, why: str) -> None:
-        for agent in CONTROLLERS["agent"](record, actor=SYSTEM).all():
+        for agent in Agents(record, actor=SYSTEM).all():
             f = gate_file(record.root, record.env, agent.title)
             f.parent.mkdir(parents=True, exist_ok=True)
             try:
@@ -79,7 +79,7 @@ class Feature(ABC):
         self.hold(record, "")
 
     def nudge(self, record, agent, title: str, brief: str = "", private: bool = False) -> None:
-        CONTROLLERS["nudge"](record, actor=SYSTEM).create(title, brief=brief, session=agent.title, private=private)
+        Nudges(record, actor=SYSTEM).create(title, brief=brief, session=agent.title, private=private)
 
     def plural(self, n: int, word: str) -> str:
         return f"{n} {word}{'s' if n != 1 else ''}"

@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Agents  # noqa: E402
 from engine.actors import Agent, IDLE, STOPPED, WORKING  # noqa: E402
 from engine.drivers import DRIVERS  # noqa: E402
 from engine.record import Record  # noqa: E402
@@ -24,7 +24,7 @@ for name, cls in PROVIDERS.items():                       # every provider, the 
     check(f"{name}: wires every hook event into its own config file", (f.is_relative_to(project), sorted(got["hooks"])), (True, sorted(EVENTS)))
     check(f"{name}: each hook runs the one command", all("/x/hook.py" in json.dumps(v) for v in got["hooks"].values()), True)
     record = Record(root, "main")
-    agents = CONTROLLERS["agent"](record, actor=SYSTEM)
+    agents = Agents(record, actor=SYSTEM)
     payload = {"session_id": "abc-1", "transcript_path": f"/tmp/{name}/abc-1.jsonl", "cwd": str(project)}
     for event in EVENTS:
         provider.handle(root, "main", {**payload, "hook_event_name": event, "tool_name": "Bash" if "Tool" in event else ""})

@@ -2,7 +2,7 @@ import re
 import time
 
 from commands.cli import actions
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Questions, Todos
 from resources.base import SYSTEM
 
 CLAIMS = ("rule", "pin", "reminder")
@@ -39,8 +39,8 @@ def evidence(record) -> list[dict]:
                 found.append({"ref": r.ref, "title": r.title, "evidence": f"names {what}, which is gone", "retire": f"journal {type_} {r.n} {CONTROLLERS[type_].named(CONTROLLERS[type_], 'complete')} \"<why>\""})
             for what in unknown_verbs(text, words):
                 found.append({"ref": r.ref, "title": r.title, "evidence": f"names {what}, which the CLI does not answer to", "retire": f"journal {type_} {r.n} {CONTROLLERS[type_].named(CONTROLLERS[type_], 'complete')} \"<why>\""})
-    questions = CONTROLLERS["question"](record, actor=SYSTEM)
-    for t in CONTROLLERS["todo"](record, actor=SYSTEM).all():
+    questions = Questions(record, actor=SYSTEM)
+    for t in Todos(record, actor=SYSTEM).all():
         if t.completed:
             continue
         waiting = [q for q in questions.all() if not q.completed and t.ref in q.refs]

@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 
 from controllers.base import Controller
-from controllers.types import CONTROLLERS
+from controllers.types import Agents, CONTROLLERS
 import features
 import migrations
 from engine import queries
@@ -53,7 +53,7 @@ def add_query(cmds, name: str, help_: str, fn, *flags) -> None:
 
 
 def transcript(record, session: str):
-    row = CONTROLLERS["agent"](record, actor=SYSTEM).by_session(session)
+    row = Agents(record, actor=SYSTEM).by_session(session)
     provider = PROVIDERS.get(row.data.get("provider", ""))
     return provider().transcript(row.data.get("transcript", "")) if provider else []
 
@@ -118,7 +118,7 @@ def verify(ctx) -> str:
         lines.append(f"{name}: hooks {'wired' if wired else 'NOT wired'} ({settings})")
     live = [p for p in (root / "runtime").glob("seat-*.json") if time.time() - p.stat().st_mtime < 10]
     lines.append(f"engine: {len(live)} running — {', '.join(p.stem.removeprefix('seat-')[:8] for p in live) or 'none'}")
-    row = CONTROLLERS["agent"](ctx["record"], actor=ctx["actor"]).by_session(ctx["session"]) if ctx["session"] else None
+    row = Agents(ctx["record"], actor=ctx["actor"]).by_session(ctx["session"]) if ctx["session"] else None
     if row:
         lines.append(f"this session: {row.data.get('status', '?')} after {row.data.get('event', '?')}, {row.data.get('uses', 0)} tool uses")
     return "\n".join(lines)
@@ -167,7 +167,7 @@ def serve_forever(ctx) -> str:
 
 
 def decided(ctx) -> str:
-    agents = CONTROLLERS["agent"](ctx["record"], actor=SYSTEM)
+    agents = Agents(ctx["record"], actor=SYSTEM)
     row = agents.by_session(ctx["session"] or "cli")
     agents.update(row.n, **{**row.data, "decided": ctx["why"]})
     return f"noted: {ctx['why']}"

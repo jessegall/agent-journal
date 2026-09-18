@@ -99,7 +99,15 @@ function poll() {
         const last = store.events.length ? store.events[store.events.length - 1].id : 0;
         const fresh = await http.events(env, last);
         if (fresh.length) await reload();
+        if (ticks % 30 === 0) await rebuilt();
     }, 1000);
+}
+
+async function rebuilt() {
+    const loaded = (document.querySelector("script[type=module]") || {}).src || "";
+    const served = ((await fetch("/", {cache: "no-store"}).then((r) => r.text())).match(/src="([^"]+)"/) || [])[1] || "";
+    const typing = document.activeElement && document.activeElement.matches("textarea, input") && document.activeElement.value;
+    if (served && loaded && !loaded.endsWith(served) && !typing) location.reload();
 }
 
 export async function boot() {

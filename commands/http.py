@@ -14,7 +14,7 @@ from urllib.parse import unquote
 from urllib.request import urlopen
 
 import features
-from controllers.types import CONTROLLERS
+from controllers.types import Agents, Asks, CONTROLLERS, Environments
 from engine import bus
 from engine.manifest import manifest
 from engine.record import Record
@@ -127,7 +127,7 @@ def get_manifest(req: Request) -> Reply:
 @route("GET", "/api/identity")
 def get_identity(req: Request) -> Reply:
     m = manifest(req.root)
-    names = [e.title for e in CONTROLLERS["environment"](Record(req.root, m["environment"]), actor=USER).all()]
+    names = [e.title for e in Environments(Record(req.root, m["environment"]), actor=USER).all()]
     return Reply(200, {"project": m["project"], "root": str(req.root), "version": m["version"], "environments": names})
 
 
@@ -208,13 +208,13 @@ def post_driver(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/browser/pending")
 def post_pending(req: Request) -> Reply:
-    asks = CONTROLLERS["browser"](req.record(), actor=USER).pending()
+    asks = Asks(req.record(), actor=USER).pending()
     return Reply(200, {"data": [{"n": a.n, "op": a.data.get("op"), "args": a.data.get("args") or []} for a in asks]})
 
 
 @route("POST", "/api/{env}/browser/{n}/result")
 def post_result(req: Request) -> Reply:
-    got = CONTROLLERS["browser"](req.record(), actor=USER).answer(int(req.params["n"]), req.body.get("text", ""), ok=bool(req.body.get("ok", True)), files=req.body.get("files") or [])
+    got = Asks(req.record(), actor=USER).answer(int(req.params["n"]), req.body.get("text", ""), ok=bool(req.body.get("ok", True)), files=req.body.get("files") or [])
     return Reply(200, shaped(got))
 
 
@@ -236,7 +236,7 @@ def get_files(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/agent/{n}/transcript")
 def get_transcript(req: Request) -> Reply:
-    row = CONTROLLERS["agent"](req.record(), actor=USER).load(int(req.params["n"]))
+    row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
     provider = PROVIDERS.get(row.data.get("provider", ""))
     turns = provider().transcript(Path(row.data.get("transcript") or "")) if provider and row.data.get("transcript") else []
     since = int(req.query.get("since") or 0)

@@ -41,7 +41,7 @@ h3 {
 .asked-one {
     padding: 12px 14px;
     margin-bottom: 10px;
-    border: 1px solid color-mix(in srgb, #d9a441 45%, var(--border-2));
+    border: 1px solid color-mix(in srgb, var(--blocking) 45%, var(--border-2));
     border-radius: 9px;
     background: var(--raised);
 }

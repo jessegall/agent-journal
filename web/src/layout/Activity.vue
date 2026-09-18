@@ -1,8 +1,10 @@
 <script setup>
-import {computed} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {peek} from "../route.js";
 import {age, byRef, meta, store, word} from "../store.js";
 
+const settled = ref(false);
+onMounted(() => setTimeout(() => (settled.value = true), 400));
 const shown = computed(() =>
     [...store.events]
         .reverse()
@@ -22,20 +24,18 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
     <aside class="activity-dock">
         <div class="activity-panel">
             <div class="activity-head"><span class="group-label">Activity</span></div>
-            <div class="activity-list">
-                <template v-for="e in shown" :key="e.id">
-                    <a class="activity-row activity-link" href="#" @click.prevent="peek(e.type, e.n)">
-                        <span class="activity-text">
-                            {{ heading(e) }}
-                            <span class="activity-n">{{ e.n }}</span>
-                        </span>
-                        <template v-if="title(e)">
-                            <span class="activity-title">{{ title(e) }}</span>
-                        </template>
-                        <span class="activity-age">{{ who(e) }} · {{ age(e.at) || "just now" }}</span>
-                    </a>
-                </template>
-            </div>
+            <TransitionGroup tag="div" class="activity-list" :name="settled ? 'act' : ''">
+                <a v-for="e in shown" :key="e.id" class="activity-row activity-link" href="#" @click.prevent="peek(e.type, e.n)">
+                    <span class="activity-text">
+                        {{ heading(e) }}
+                        <span class="activity-n">{{ e.n }}</span>
+                    </span>
+                    <template v-if="title(e)">
+                        <span class="activity-title">{{ title(e) }}</span>
+                    </template>
+                    <span class="activity-age">{{ who(e) }} · {{ age(e.at) || "just now" }}</span>
+                </a>
+            </TransitionGroup>
         </div>
     </aside>
 </template>
@@ -138,5 +138,34 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
     color: var(--text-3);
     white-space: nowrap;
     opacity: 0.8;
+}
+.activity-list {
+    position: relative;
+}
+
+.act-enter-active {
+    transition:
+        opacity 0.24s ease-out,
+        transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.act-enter-from {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.act-leave-active {
+    position: absolute;
+    left: 0;
+    right: 0;
+    transition: opacity 0.18s ease-in;
+}
+
+.act-leave-to {
+    opacity: 0;
+}
+
+.act-move {
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 </style>

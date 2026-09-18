@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Works  # noqa: E402
 from resources.base import AGENT  # noqa: E402
 from tests.features.kit import report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -20,7 +20,7 @@ subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-
 (project / "kept.txt").write_text("one\ntwo\n")
 subprocess.run(["git", "add", "kept.txt"], cwd=project, check=True)
 subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "kept"], cwd=project, check=True)
-works = CONTROLLERS["work"](record, actor=AGENT)
+works = Works(record, actor=AGENT)
 time.sleep(1.1)
 work = works.create("change some files")
 
