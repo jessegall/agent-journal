@@ -3,6 +3,7 @@ from pathlib import Path
 
 from v2.engine.record import Record
 from v2.resources.base import TITLE_MAX, Refused, Resource, check_abstract, check_title
+from v2.resources.shapes import check
 
 
 class Controller:
@@ -38,11 +39,15 @@ class Controller:
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
 
+    def _shaped(self, data: dict) -> dict:
+        fields = self.resource.fields
+        return {k: check(k, fields[k], v) if k in fields else v for k, v in data.items()}
+
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
         with self.record.locked():
             n = (self.numbers() or [0])[-1] + 1
             r = self.resource(n=n, title=check_title(title), abstract=check_abstract(abstract), brief=brief,
-                              data=data, created=time.time(), seen=[self.actor])
+                              data=self._shaped(data), created=time.time(), seen=[self.actor])
             return self.save(r, "created")
 
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, **data) -> Resource:
@@ -53,7 +58,7 @@ class Controller:
             r.abstract = check_abstract(abstract)
         if brief is not None:
             r.brief = brief
-        r.data.update(data)
+        r.data.update(self._shaped(data))
         return self.save(r, "updated")
 
     def set(self, n: int, key: str, value: str) -> Resource:

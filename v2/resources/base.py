@@ -2,8 +2,8 @@ import json
 import re
 import time
 from dataclasses import dataclass, field, asdict
-from typing import ClassVar
 from pathlib import Path
+from typing import ClassVar
 
 TITLE_MAX = 80
 ABSTRACT_MAX = 200
