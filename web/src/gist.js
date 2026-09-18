@@ -135,8 +135,17 @@ function withoutScripts(command) {
     return kept.join("\n");
 }
 
+function expanded(command) {
+    const names = {};
+    const rest = command.replace(/(?:^|(?<=[;&|]\s*))([A-Za-z_]\w*)=(\S+)\s*;?\s*/g, (all, name, value) => {
+        names[name] = value;
+        return "";
+    });
+    return rest.replace(/\$\{?([A-Za-z_]\w*)\}?/g, (all, name) => (name in names ? names[name] : all));
+}
+
 export function gists(command, translate) {
-    return pieces(withoutScripts(command))
+    return pieces(withoutScripts(expanded(command)))
         .filter((p, i) => !(i > 0 && FILTERS.has(verbOf(p)[0] || "")))
         .map((p) => pieceGist(p, translate))
         .filter(Boolean);

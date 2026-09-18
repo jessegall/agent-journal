@@ -7,7 +7,7 @@ from resources.base import SYSTEM, names
 from resources.shapes import CHANGE, COMMIT
 from resources.types import RUNNING
 
-DELTA = names("edited", "created", "deleted")
+DELTA = names("edited", "created", "deleted", "added", "removed")
 
 
 def git(project: Path, *args: str) -> str:
@@ -47,7 +47,7 @@ class Files(Feature):
     @on("agent.updated")
     def record_files(self, event, record) -> None:
         agent = self.agent(event, record)
-        if agent.event != "PostToolUse" or not agent.wrote:
+        if agent.event != "PostToolUse":
             return
         works = Works(record, actor=SYSTEM)
         for work in self.standing(record, "work")[:1]:
@@ -56,15 +56,21 @@ class Files(Feature):
             only = str(Path(file).resolve().relative_to(project.resolve())) if file and file.startswith(str(project)) else ""
             files = {f[CHANGE.path]: f for f in work.changed}
             before = {f[CHANGE.path]: (f[CHANGE.added], f[CHANGE.removed]) for f in files.values()}
-            delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0}
+            delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
             for f in changed(project, only):
                 files[f[CHANGE.path]] = f
+                was = before.get(f[CHANGE.path], (0, 0))
                 if f[CHANGE.path] not in before and f[CHANGE.created]:
                     delta[DELTA.created] += 1
-                elif before.get(f[CHANGE.path]) != (f[CHANGE.added], f[CHANGE.removed]):
+                elif was != (f[CHANGE.added], f[CHANGE.removed]):
                     delta[DELTA.edited] += 1
+                else:
+                    continue
+                delta[DELTA.added] += max(0, f[CHANGE.added] - was[0])
+                delta[DELTA.removed] += max(0, f[CHANGE.removed] - was[1])
             for path in [p for p in before if p not in {f[CHANGE.path] for f in changed(project, only)} and (only in ("", p)) and not (project / p).exists()]:
                 delta[DELTA.deleted] += 1
+                files.pop(path)
             works.update(work.n, changed=list(files.values()), commits=committed(project, work.created))
-            if agent.running and any(delta.values()):
+            if agent.running and any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
                 Agents(record, actor=SYSTEM).update(agent.n, running={**agent.running, RUNNING.changed: delta})

@@ -27,7 +27,7 @@ watch(
         for (const c of ring) {
             if (c.at <= seen.at) continue;
             seen.at = c.at;
-            if (!first) gists(c.what, sentence).forEach((text) => pending.push({key: text, text, what: c.what}));
+            if (!first) gists(c.what, sentence).forEach((text) => pending.push({key: text, text, delta: []}));
         }
         if (first && !seen.at) seen.at = 1;
         if (pending.length && !rolls) roll();
@@ -52,22 +52,29 @@ const line = computed(() => {
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
     const changed = run.changed || {};
-    const delta = Object.entries(changed)
-        .filter(([, n]) => n)
-        .map(([k, n]) => `${k} ${n}`)
-        .join(" · ");
-    return {key: parts[parts.length - 1], text: parts[parts.length - 1], what: run.what, clock: clock(secs), done: !!run.done, delta};
+    const delta = [
+        {kind: "edited", text: changed.edited ? `${changed.edited} edited` : ""},
+        {kind: "created", text: changed.created ? `${changed.created} created` : ""},
+        {kind: "deleted", text: changed.deleted ? `${changed.deleted} deleted` : ""},
+        {kind: "added", text: changed.added ? `+${changed.added}` : ""},
+        {kind: "removed", text: changed.removed ? `−${changed.removed}` : ""},
+    ].filter((d) => d.text);
+    return {key: parts[parts.length - 1], text: parts[parts.length - 1], clock: clock(secs), done: !!run.done, delta};
 });
 </script>
 
 <template>
     <span class="statusbar-running">
         <Transition name="roll">
-            <span v-if="line" :key="line.key" :class="['statusbar-run-line', {done: line.done}]" :title="line.what">
+            <span v-if="line" :key="line.key" :class="['statusbar-run-line', {done: line.done}]">
                 <span class="statusbar-run-text">{{ line.text }}</span>
-                <template v-if="line.delta">
-                    <span class="statusbar-run-delta">{{ line.delta }}</span>
-                </template>
+                <Transition name="delta">
+                    <span v-if="line.delta.length" class="statusbar-run-delta">
+                        <template v-for="d in line.delta" :key="d.kind">
+                            <span :class="['statusbar-run-count', d.kind]">{{ d.text }}</span>
+                        </template>
+                    </span>
+                </Transition>
                 <span class="statusbar-running-slot">
                     <Transition name="clock">
                         <span v-if="line.clock" class="statusbar-running-for">{{ line.clock }}</span>
@@ -117,10 +124,43 @@ const line = computed(() => {
 
 .statusbar-run-delta {
     flex: none;
+    display: inline-flex;
+    gap: 7px;
+    max-width: 30ch;
     margin-left: 10px;
+    overflow: hidden;
+    white-space: nowrap;
     font-size: 9.5px;
     letter-spacing: 0.02em;
-    color: var(--text-4);
+}
+
+.statusbar-run-count.edited,
+.statusbar-run-count.added {
+    color: var(--progress);
+}
+
+.statusbar-run-count.created {
+    color: var(--created);
+}
+
+.statusbar-run-count.deleted,
+.statusbar-run-count.removed {
+    color: var(--danger);
+}
+
+.delta-enter-active,
+.delta-leave-active {
+    transition:
+        max-width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+        margin-left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.2s ease;
+}
+
+.delta-enter-from,
+.delta-leave-to {
+    max-width: 0;
+    margin-left: 0;
+    opacity: 0;
 }
 
 .statusbar-running-slot {
