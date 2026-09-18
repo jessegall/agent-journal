@@ -4496,6 +4496,44 @@ const EnvHome = {
     // folded by default: a list that GROWS must never push the conversation down, which is the whole
     // reason these facts left the space above the thread in the first place
     const crewOpen = ref(false);
+    // ─── the divider between the conversation and the rail
+    // THE RAIL'S WIDTH IS THE READER'S. It is clamp(288px, 27%, 400px) by default, and dragging the
+    // rule between the two columns writes a width this browser remembers. SNAPPING BACK MATTERS MORE
+    // THAN THE DRAG: a width nudged by hand is nearly impossible to put back on purpose, so within
+    // 18px of the default the rail forgets the number and returns to the clamp.
+    const RAIL_KEY = "journal.rail.width";
+    const SNAP = 18;
+    const railWidth = ref(Number(localStorage.getItem(RAIL_KEY)) || 0);
+    const railStyle = computed(() => (railWidth.value ? { width: `${railWidth.value}px`, flex: "none" } : null));
+    const dragging = ref(false);
+    const onDivider = (e) => {
+      e.preventDefault();
+      dragging.value = true;
+      const rail = e.target.parentElement.querySelector(".home-rail");
+      const from = { x: e.clientX, w: rail ? rail.getBoundingClientRect().width : 320 };
+      const wide = () => {
+        const main = e.target.closest(".home-main");
+        return main ? main.getBoundingClientRect().width : window.innerWidth;
+      };
+      const step = (ev) => {
+        const want = from.w - (ev.clientX - from.x);
+        const most = Math.max(288, wide() - 380);
+        const now = Math.min(Math.max(240, want), most);
+        const clamped = Math.min(Math.max(288, wide() * 0.27), 400);
+        railWidth.value = Math.abs(now - clamped) <= SNAP ? 0 : now;
+      };
+      const done = () => {
+        dragging.value = false;
+        document.removeEventListener("pointermove", step, true);
+        document.removeEventListener("pointerup", done, true);
+        try {
+          if (railWidth.value) localStorage.setItem(RAIL_KEY, String(Math.round(railWidth.value)));
+          else localStorage.removeItem(RAIL_KEY);
+        } catch (err) { /* a width is a convenience, not a record */ }
+      };
+      document.addEventListener("pointermove", step, true);
+      document.addEventListener("pointerup", done, true);
+    };
     // ─── the bar's own menu: the two things you want OF THIS CONVERSATION rather than of the journal
     // SEARCH AND FILES BOTH EXIST AS PAGES, and neither can be asked about the thread you are reading.
     // These two read what the thread is holding, which is the whole point of them being here.
@@ -4647,7 +4685,7 @@ const EnvHome = {
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto,
-             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach };
+             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, railStyle, onDivider, dragging };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4721,7 +4759,11 @@ const EnvHome = {
           <button type=button class=thread-gone-back @click="detach(false)">Put it back on the page</button>
         </div>
       </section>
-      <div class=home-rail>
+      <!-- the rule between the two columns is the handle: drag it, and let go near where it started
+           to have the rail forget the number and go back to its own width -->
+      <div :class="['home-divider', {dragging}]" role=separator aria-orientation=vertical
+        title="Drag to resize; let go near the middle to put it back" @pointerdown="onDivider"></div>
+      <div class=home-rail :style="railStyle">
       <!-- the ACTIVE plan is the strip under the status bar now; what is left here is a draft
            waiting to be started or a plan parked, which really are waiting on the user -->
       <section v-if="railPlans.length" class=home-section>

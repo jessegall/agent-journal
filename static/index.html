@@ -623,6 +623,10 @@
      in it, which is right between SECTIONS and wrong under a tab strip: a bar with a rule along the
      bottom and then a gap reads as a bar belonging to nothing. Sections that still want the air ask
      for it themselves. */
+  /* the handle between the columns: the rule itself, with a few pixels of grab either side of it */
+  .home-divider { flex: none; width: 5px; margin: 0 -2px; cursor: col-resize; background: transparent;
+    transition: background .15s ease; z-index: 3; }
+  .home-divider:hover, .home-divider.dragging { background: var(--accent); opacity: .5; }
   .home-rail { flex: none; width: clamp(288px, 27%, 400px); min-height: 0; overflow-y: auto; scrollbar-width: none;
     display: flex; flex-direction: column; gap: 0;
     padding: 0; border-left: 1px solid var(--border); }
