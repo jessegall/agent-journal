@@ -83,9 +83,9 @@ watch(
             </Transition>
             <Reader :type="opened.type" :n="opened.n" />
             <Lightbox />
-            <template v-if="quick">
-                <QuickMenu @close="quick = false" />
-            </template>
+            <Transition name="quick">
+                <QuickMenu v-if="quick" @close="quick = false" />
+            </Transition>
         </div>
     </template>
 </template>
@@ -119,11 +119,14 @@ watch(
 }
 
 .page-leave-active {
-    transition: opacity 0.1s ease-in;
+    transition:
+        opacity 0.16s ease-in,
+        transform 0.16s ease-in;
 }
 
 .page-leave-to {
     opacity: 0;
+    transform: translateY(-4px);
 }
 
 .column-enter-active,
@@ -138,5 +141,24 @@ watch(
 .column-leave-to {
     width: 0;
     opacity: 0;
+}
+
+.quick-enter-active,
+.quick-leave-active,
+.quick-enter-active :deep(.quick-menu),
+.quick-leave-active :deep(.quick-menu) {
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.quick-enter-from,
+.quick-leave-to {
+    opacity: 0;
+}
+
+.quick-enter-from :deep(.quick-menu),
+.quick-leave-to :deep(.quick-menu) {
+    transform: translate(-50%, -8px) scale(0.98);
 }
 </style>

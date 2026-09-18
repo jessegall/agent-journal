@@ -71,8 +71,6 @@ async function drop() {
         <div class="thread-bubble md">
             <template v-if="became.length">
                 <div :class="['thread-became', {live: !turn.completed}]">
-                    <span class="thread-became-dot" />
-                    <span class="thread-became-word">became</span>
                     <template v-for="(b, i) in became" :key="i">
                         <template v-if="b.type">
                             <button type="button" class="thread-pill" :title="b.part" @click="peek(b.type, b.n)">
@@ -220,17 +218,6 @@ async function drop() {
 
 .thread-became.live {
     color: var(--accent-text);
-}
-
-.thread-became-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-}
-
-.thread-became-word {
-    flex: none;
 }
 
 .thread-pill {

@@ -73,15 +73,15 @@ function close() {
                         <button type="button" class="shell-pick" title="Switch environment" @click="shell.envs = !shell.envs">
                             {{ route.env }}
                         </button>
-                        <template v-if="shell.envs">
-                            <div class="shell-menu">
+                        <Transition name="drop">
+                            <div v-if="shell.envs" class="shell-menu">
                                 <template v-for="name in environments" :key="name">
                                     <button type="button" :class="['shell-row', {on: name === route.env}]" @click="pick(name)">
                                         {{ name }}
                                     </button>
                                 </template>
                             </div>
-                        </template>
+                        </Transition>
                     </span>
                 </span>
                 <button type="button" class="shell-btn" :title="shell.shut ? 'Restore' : 'Minimize'" @click="fold">
@@ -226,5 +226,23 @@ function close() {
 .shell-btn:hover {
     background: var(--hover);
     color: var(--text);
+}
+
+.drop-enter-active {
+    transition:
+        opacity 0.16s ease-out,
+        transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.drop-leave-active {
+    transition:
+        opacity 0.12s ease-in,
+        transform 0.12s ease-in;
+}
+
+.drop-enter-from,
+.drop-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
 }
 </style>

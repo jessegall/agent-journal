@@ -9,7 +9,7 @@ class Work(Feature):
     title_ = "Work"
     abstract_ = "Work started for a to-do is linked to it; work ended --todo closes the row; open work is said on idle"
     help_ = "Start work with --todo=<n> to take a row; end it with --todo to close the row with it."
-    trigger = {"on": trigger.IDLE}
+    trigger = {"on": trigger.WORKED}
 
     @on("work.created")
     def started(self, event, record) -> None:
