@@ -23,6 +23,7 @@ def main(argv: list[str]) -> int:
     sessions = Sessions(root)
     session = provider.session_of(payload)
     env = sessions.environment(session) or sessions.bind(session, default_env(root), pid=os.getppid())["environment"]
+    sessions.touch(session)
     out = provider.handle(root, env, payload)
     if out:
         print(json.dumps(out))

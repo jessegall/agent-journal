@@ -1,7 +1,7 @@
 import re
 import time
 
-from v2.commands.generate import actions
+from v2.commands.cli import actions
 from v2.controllers.types import CONTROLLERS
 from v2.resources.base import SYSTEM
 
