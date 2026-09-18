@@ -29,8 +29,8 @@ def check(label, got, want):
 class Fake(Driver):
     name = "fake"
 
-    def __init__(self, root):
-        super().__init__(root, "fake-1", fd=1)
+    def __init__(self, record):
+        super().__init__(record, "fake-1", fd=1)
         self.sent = []
         self.report = None
         self.quiet = 10.0
@@ -57,7 +57,7 @@ class Fake(Driver):
 
 root = Path(tempfile.mkdtemp()) / ".journal"
 record = Record(root, "main")
-driver = Fake(root)
+driver = Fake(record)
 engine = Engine(record, driver)
 engine.start()
 check("start puts the engine in its loop; stop takes it out", (engine.running, (engine.stop(), engine.running)[1]), (True, False))
@@ -71,20 +71,20 @@ driver.quiet = 0.2
 check("no reports yet, printing: working", engine.agent.state(), WORKING)
 driver.quiet = 4.0
 check("no reports yet, quiet: idle", engine.agent.state(), IDLE)
-driver.report = {"at": time.time(), "event": "PreToolUse"}
+driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 driver.quiet = 6.0
 check("a tool call under way and quiet: waiting", engine.agent.state(), WAITING)
-driver.report = {"at": time.time(), "event": "Stop"}
+driver.report = {"at": time.time(), "event": "Stop", "status": IDLE}
 driver.quiet = 2.0
 check("a Stop and quiet: idle", (engine.agent.state(), engine.agent.is_idle()), (IDLE, True))
-driver.report = {"at": time.time(), "event": "SessionStart"}
+driver.report = {"at": time.time(), "event": "SessionStart", "status": IDLE}
 check("a SessionStart is idle too", engine.agent.is_idle(), True)
-driver.report = {"at": time.time(), "event": "PostToolUse"}
+driver.report = {"at": time.time(), "event": "PostToolUse", "status": WORKING}
 check("between tool calls: working", engine.agent.is_working(), True)
 
 # EVERY EVENT REACHES EVERY ACTOR BUT ITS OWN. The user writes a message: the agent is typed to at once,
 # working or not; the user is not notified of their own act. The agent completes it: the user is notified.
-driver.report = {"at": time.time(), "event": "PreToolUse"}
+driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 driver.quiet = 0.1
 CONTROLLERS["message"](record, actor=USER).create("look at the header")
 check("before a tick nothing is typed", driver.sent, [])
@@ -104,7 +104,7 @@ def settle():                                          # deliver whatever is pen
     return engine.tick()
 
 
-driver.report = {"at": time.time(), "event": "Stop"}
+driver.report = {"at": time.time(), "event": "Stop", "status": IDLE}
 driver.quiet = 3.0
 CONTROLLERS["todo"](record, actor=USER).create("a chore")
 CONTROLLERS["question"](record, actor=USER).create("which colour")
@@ -123,7 +123,7 @@ check("nothing open, auto off: nothing owed", (why, driver.sent), ("nothing owed
 record.set_setting("auto", True)
 settle()
 check("auto on: the next to-do", driver.sent[-1].startswith("Auto is on and nothing is open on main: start to-do 1"), True)
-driver.report = {"at": time.time() - 100, "event": "Stop"}
+driver.report = {"at": time.time() - 100, "event": "Stop", "status": IDLE}
 engine.tick()
 check("a nudge typed a moment ago is not typed again before the hooks report", (engine.why, len(driver.sent)), ("typed, waiting for the hooks", 1))
 check("the priority order is messages first", PRIORITY[0], "message")

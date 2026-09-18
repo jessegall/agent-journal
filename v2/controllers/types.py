@@ -50,5 +50,15 @@ class Comments(Controller):
     resource = types.Comment
 
 
+class Agents(Controller):
+    resource = types.AgentRow
+
+    def by_session(self, session: str):
+        for r in self.all():
+            if r.title == session:
+                return r
+        return self.create(session, status="stopped")
+
+
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Plans, Docs, Reports, Pins, Rules, Reminders,
-                                            Questions, Suggestions, Comments)}
+                                            Questions, Suggestions, Comments, Agents)}

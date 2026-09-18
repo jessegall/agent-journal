@@ -71,7 +71,10 @@ class Agent(Actor):
         quiet = self.driver.quiet_for()
         if last is None:
             return IDLE if quiet >= self.driver.QUIET else WORKING
-        if last.get("event") in ("Stop", "SessionStart"):
+        status = last.get("status", "")
+        if status == STOPPED:
+            return STOPPED
+        if status == IDLE:
             return IDLE if quiet >= 1.0 else WORKING
         if last.get("event") == "PreToolUse" and quiet >= 5.0:
             return WAITING
