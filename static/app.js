@@ -5257,7 +5257,8 @@ const EnvHome = {
            to have the rail forget the number and go back to its own width -->
       <div :class="['home-divider', {dragging}]" role=separator aria-orientation=vertical
         title="Drag to resize; let go near the middle to put it back" @pointerdown="onDivider"></div>
-      <div class=home-rail :style="railStyle">
+      <!-- the width the user dragged the rail to is the big page's; in the window the rail is the window -->
+      <div class=home-rail :style="CHAT_ONLY ? null : railStyle">
       <!-- the ACTIVE plan is the strip under the status bar now; what is left here is a draft
            waiting to be started or a plan parked, which really are waiting on the user -->
       <section v-if="railPlans.length" class=home-section>
