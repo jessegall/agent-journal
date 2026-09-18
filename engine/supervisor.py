@@ -62,6 +62,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     rows, cols = resize(fd)
     session = f"{agent}-{pid}"
     top = band.Band(root, env, session, root.resolve().parent.name)
+    rows_below = band.Translator(rows)
     printed = root / "runtime" / f"printed-{session}"
     printed.parent.mkdir(parents=True, exist_ok=True)
     (root / "runtime" / "env").write_text(env)
@@ -80,6 +81,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
 
     def frame() -> None:
         shape[0], shape[1] = resize(fd)
+        rows_below.rows = shape[0]
         os.write(stdout, b"\x1b[2J" + band.region(shape[0]) + top.draw(shape[1], force=True))
 
     signal.signal(signal.SIGWINCH, lambda *_: frame())
@@ -97,7 +99,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
                     break
                 if not data:
                     break
-                os.write(stdout, data)
+                os.write(stdout, rows_below.feed(data))
                 last_output = time.time()
                 if any(mark in data for mark in REDRAWS):
                     os.write(stdout, band.region(shape[0]) + top.draw(shape[1], force=True))
