@@ -354,7 +354,8 @@ _m = stored()[-1]
 check("a reply with --part answers that question: the part is recorded as answered and the reply names it",
       (code, [p["became"] for p in _m["parts"]], _m["replies"][-1].get("part")), (0, [["answered"]], "are we caching the build already?"))
 import notifications as _notes  # noqa: E402
-check("and the user is notified", any(f"message {_q}" in x["text"] for x in _notes._all(d / ".journal", "default")), True)
+check("and no notification is raised, because the chat shows the reply under the part it answers",
+      any(f"message {_q}" in x["text"] for x in _notes._all(d / ".journal", "default")), False)
 code, out = j("messages", "reply", str(_q), "no", "--part=words that are not there")
 check("a part that is not in the message is refused", code, 1)
 code, out = j("messages", "show", str(_q))
@@ -418,10 +419,9 @@ check("the to-do's page finds the message, though it sits elsewhere",
 check("and the same bare ref here keeps its OWN message, never the other environment's",
       [(r["n"], r["env"]) for r in _inbox.sources(_root, "todo:1", "default")], [(1, "default")])
 
-# ------------------------------------------------ a plain reply is not news; an answer to a part is
-# The thread shows a reply under the message it answers, so a notification for one is a second
-# telling of what is already on the screen. A reply that answers a PART is different: it closes a
-# question the user asked, and the row it answers is somewhere else on the page.
+# ------------------------------------------------------ neither a plain reply nor an answer is news
+# The thread shows a reply under the message it answers, with the quote as a chip, so a notification
+# for either kind is a second telling of what is already on the screen the user is reading.
 import notifications as _notif  # noqa: E402
 
 j("switch", "default")
@@ -435,12 +435,8 @@ check("and it raises no notification, because the chat already shows it",
 
 code, out = j("messages", "reply", str(_pr), "Yes, this morning.", "--part=did the loader ever get swapped?")
 check("a reply that answers a part is taken", code, 0)
-_notes = _notif._all(d / ".journal", "default")
-check("and that one IS told to the user, because the row it answers is elsewhere",
-      (len(_notes) - _had, _notes[-1]["about"], "Answered your question" in _notes[-1]["text"]),
-      (1, f"inbox:{_pr}", True))
-check("the notification is unread, which is what puts it in front of them",
-      _notes[-1].get("read_at"), None)
+check("and it raises no notification either, because the chat shows a reply under the part it answers",
+      len(_notif._all(d / ".journal", "default")) - _had, 0)
 
 # ------------------------------------------------- a message can say WHAT IT IS when it is sent
 # Sending a transcript DECLARES what it is, and that word is the instruction: nothing downstream
