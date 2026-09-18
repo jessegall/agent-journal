@@ -5,7 +5,7 @@ from v2.controllers.types import CONTROLLERS
 from v2.engine import bus
 from v2.engine.actors import Actor, Agent, IDLE, System, User
 from v2.engine.record import Record
-from v2.resources.base import AGENT
+from v2.resources.base import AGENT, SYSTEM
 from v2.resources.types import PRIORITY
 
 TICK = 1.0
@@ -32,10 +32,12 @@ class Engine:
         return self.why
 
     def deliver(self) -> str:
+        if self.agent.driver.last_report() is None:       # the agent has not reported yet: it may still be at a dialog
+            return "waiting for the agent's first report"
         count = 0
         for actor in self.actors:
             for e in self.record.events(actor.cursor()):
-                if e.actor == actor.name:
+                if e.actor in (actor.name, SYSTEM):       # nobody is told of their own act, or of bookkeeping
                     actor.notified(e)
                     continue
                 actor.notify(e)
@@ -58,21 +60,17 @@ class Engine:
         return f"typed: {line[:60]}"
 
     def owed(self) -> str:
-        env = self.record.env
         for type_ in PRIORITY:
             unseen = CONTROLLERS[type_](self.record, actor=AGENT).unseen()
             if unseen:
-                rows = ", ".join(str(r.n) for r in unseen[:10])
-                return f"{len(unseen)} unseen {type_}(s) on {env}: {rows}. Read each: `journal {type_} show <n>`."
+                return f"{len(unseen)} unseen {type_}"
         works = [w for w in CONTROLLERS["work"](self.record).all() if not w.completed]
         if works:
-            w = works[0]
-            return f"Work is still open on {env}: {w.title}. Continue it, or `journal work end {w.n}`."
+            return f"work {works[0].n} open"
         if self.record.setting("auto", False):
             todos = [t for t in CONTROLLERS["todo"](self.record).all() if not t.completed]
             if todos:
-                t = todos[0]
-                return f"Auto is on and nothing is open on {env}: start to-do {t.n}, {t.title}: `journal work start`."
+                return f"todo {todos[0].n} next"
         return ""
 
     def seat(self) -> None:

@@ -84,12 +84,14 @@ check("between tool calls: working", engine.agent.is_working(), True)
 
 # EVERY EVENT REACHES EVERY ACTOR BUT ITS OWN. The user writes a message: the agent is typed to at once,
 # working or not; the user is not notified of their own act. The agent completes it: the user is notified.
+driver.report = None
+CONTROLLERS["message"](record, actor=USER).create("look at the header")
+check("nothing is delivered before the agent's first report: it may be at a dialog", (engine.tick(), driver.sent), ("waiting for the agent's first report", []))
 driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 driver.quiet = 0.1
-CONTROLLERS["message"](record, actor=USER).create("look at the header")
 check("before a tick nothing is typed", driver.sent, [])
 why = engine.tick()
-check("the tick delivers the user's event to the agent while it is working", (why, len(driver.sent), "created message 1" in driver.sent[0]), ("delivered 2", 1, True))
+check("the tick delivers the user's event to the agent while it is working", (why, len(driver.sent), driver.sent[0] == "message 1 created"), ("delivered 2", 1, True))
 check("the user is not notified of their own event", User(record).unread(), [])
 check("the cursor moved: a second tick types nothing more", (engine.tick(), len(driver.sent)), (WORKING, 1))
 CONTROLLERS["message"](record, actor=AGENT).complete(1, "read and filed")
@@ -109,20 +111,20 @@ driver.quiet = 3.0
 CONTROLLERS["todo"](record, actor=USER).create("a chore")
 CONTROLLERS["question"](record, actor=USER).create("which colour")
 settle()
-check("idle with unseen resources: the highest priority type first, with its numbers", driver.sent[-1].startswith("1 unseen question(s) on main: 1."), True)
+check("idle with unseen resources: the highest priority type first, with its numbers", driver.sent[-1] == "1 unseen question", True)
 CONTROLLERS["question"](record, actor=AGENT).see(1)
 settle()
-check("the question seen: the to-do is next in priority", driver.sent[-1].startswith("1 unseen todo(s) on main: 1."), True)
+check("the question seen: the to-do is next in priority", driver.sent[-1] == "1 unseen todo", True)
 CONTROLLERS["todo"](record, actor=AGENT).see(1)
 CONTROLLERS["work"](record, actor=AGENT).create("the header")
 settle()
-check("everything seen, work open: the nudge names the open work", driver.sent[-1].startswith("Work is still open on main: the header."), True)
+check("everything seen, work open: the nudge names the open work", driver.sent[-1] == "work 1 open", True)
 CONTROLLERS["work"](record, actor=AGENT).complete(1)
 why = settle()
 check("nothing open, auto off: nothing owed", (why, driver.sent), ("nothing owed", []))
 record.set_setting("auto", True)
 settle()
-check("auto on: the next to-do", driver.sent[-1].startswith("Auto is on and nothing is open on main: start to-do 1"), True)
+check("auto on: the next to-do", driver.sent[-1] == "todo 1 next", True)
 driver.report = {"at": time.time() - 100, "event": "Stop", "status": IDLE}
 engine.tick()
 check("a nudge typed a moment ago is not typed again before the hooks report", (engine.why, len(driver.sent)), ("typed, waiting for the hooks", 1))

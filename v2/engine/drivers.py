@@ -16,6 +16,7 @@ class Driver(ABC):
         self.record = record
         self.session = session
         self.fd = fd
+        self.born = time.time()
         self.printed = record.root / "runtime" / f"printed-{session}"
 
     @abstractmethod
@@ -26,15 +27,19 @@ class Driver(ABC):
 
     def send(self, text: str) -> None:
         line = " ".join(part.strip() for part in text.splitlines() if part.strip()).encode()
-        os.write(self.fd, line)
-        time.sleep(ENTER_AFTER)
-        os.write(self.fd, b"\r")
+        try:
+            os.write(self.fd, line)
+            time.sleep(ENTER_AFTER)
+            os.write(self.fd, b"\r")
+        except OSError:                                   # the agent is gone: nothing to type into
+            self.fd = -1
 
     def last_report(self) -> dict | None:
         from v2.controllers.types import CONTROLLERS
         from v2.resources.base import SYSTEM
-        rows = [r for r in CONTROLLERS["agent"](self.record, actor=SYSTEM).all() if r.title == self.session]
-        return rows[0].data if rows and rows[0].data.get("event") else None
+        rows = [r for r in CONTROLLERS["agent"](self.record, actor=SYSTEM).all()
+                if r.data.get("event") and (r.title == self.session or (r.data.get("provider") == self.name and r.created >= self.born - 1))]
+        return rows[-1].data if rows else None
 
     def quiet_for(self) -> float:
         try:
