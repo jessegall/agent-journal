@@ -3942,6 +3942,30 @@ const Thread = {
   components: { Compose, QuestionAnswer, Icon },
   setup(props) {
     const chat = useFetch(() => props.env && `/api/env/${props.env}/chat`);
+    // WHAT EITHER SIDE PUT ON A TURN. Kept beside the thread rather than inside it: the turns come
+    // from the transcript and the inbox, and a face is neither — it is one small thing on top.
+    const faces = useFetch(() => props.env && `/api/env/${props.env}/reactions`);
+    const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏"];
+    const picking = ref("");
+    const reactionsOn = (t) => {
+      const key = turnAnchor(t) || t.key;
+      const rows = (faces.data && faces.data[key]) || [];
+      const seen = new Map();
+      rows.forEach((r) => {
+        const got = seen.get(r.face) || { face: r.face, n: 0, mine: false };
+        got.n += 1;
+        got.mine = got.mine || r.by === "user";
+        seen.set(r.face, got);
+      });
+      return [...seen.values()];
+    };
+    const react = (t, face) => {
+      picking.value = "";
+      const turn = turnAnchor(t) || t.key;
+      send("POST", `/api/env/${props.env}/reactions`, { turn, face })
+        .then(() => faces.reload())
+        .catch(() => {});
+    };
     // the shell is known before any turn is: the thread draws its own shape while /chat is in flight,
     // so the page does not snap into place and the writing box is there to type into from the first paint
     // THE WIDTH IS ON THE TURN, NOT ON THE LINES INSIDE IT. It was the other way round, and a
@@ -4268,7 +4292,7 @@ const Thread = {
     // answering inside the thread is the same act as answering on the question's own page, so the
     // thread reloads rather than keeping a second copy of the answer
     const answered = () => { chat.reload(); changed(); };
-    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote, editLast, dropEdit };
+    return { turns, more, post, retry, root, answered, landed, goRef, fileUrl, pictures, clock, away, missed, watchScroll, backDown, busy, editing, startEdit, unedit, replyTo, unreply, answering, drop, lit, whole, showAll, chat, SKELETON, settled, grew, THREAD_GOTO, anchor: turnAnchor, quoteAnchor, goQuote, editLast, dropEdit, FACES, picking, reactionsOn, react };
   },
   template: `
     <div class=thread>
@@ -4335,12 +4359,33 @@ const Thread = {
         </div>
         <!-- A RECEIPT IS NOT A TURN AND NOTHING IS DONE TO IT. It is the record saying what a
              message became; replying to it, or deleting it, is answering a filing cabinet. -->
-        <div v-if="t.kind !== 'receipt'" class=thread-tools>
-          <button type=button class=thread-tool title="Reply to this, quoting it" @click.stop="replyTo(t)">Reply</button>
-          <button v-if="t.kind === 'message' && t.state !== 'filed'" type=button class=thread-tool
-            title="Change what it says — the old words are kept and the agent is told" @click.stop="startEdit(t)">Edit</button>
-          <button v-if="t.kind === 'message' && t.state !== 'filed'" type=button class=thread-tool
-            title="Delete it — it comes off the list and stays in the record" @click.stop="drop(t)">Delete</button>
+        <!-- THE FACES OPEN WHERE THE BUTTONS WERE. The picker is not a second bar under the first:
+             the tools bar itself becomes the faces, growing to the left, and the X at its end puts
+             the buttons back — as does taking the pointer off the turn. -->
+        <div v-if="t.kind !== 'receipt'" :class="['thread-tools', {picking: picking === (anchor(t) || t.key)}]"
+          @mouseleave="picking === (anchor(t) || t.key) && (picking = '')">
+          <template v-if="picking === (anchor(t) || t.key)">
+            <button v-for="f in FACES" :key="'pick' + f" type=button class=thread-face-pick
+              :title="'React ' + f" @click.stop="react(t, f)">{{ f }}</button>
+            <button type=button class=thread-tool title="Never mind" aria-label="Never mind"
+              @click.stop="picking = ''"><Icon name="close"/></button>
+          </template>
+          <template v-else>
+            <button type=button class=thread-tool title="React to this"
+              @click.stop="picking = (anchor(t) || t.key)">React</button>
+            <button type=button class=thread-tool title="Reply to this, quoting it" @click.stop="replyTo(t)">Reply</button>
+            <button v-if="t.kind === 'message' && t.state !== 'filed'" type=button class=thread-tool
+              title="Change what it says — the old words are kept and the agent is told" @click.stop="startEdit(t)">Edit</button>
+            <button v-if="t.kind === 'message' && t.state !== 'filed'" type=button class=thread-tool
+              title="Delete it — it comes off the list and stays in the record" @click.stop="drop(t)">Delete</button>
+          </template>
+        </div>
+        <!-- A FACE IS A GESTURE, NOT A MESSAGE. It sits under the bubble, the same one twice takes
+             it off, and nothing about it is a notification. -->
+        <div v-if="reactionsOn(t).length" class=thread-faces>
+          <button v-for="f in reactionsOn(t)" :key="f.face" type=button
+            :class="['thread-face', {mine: f.mine}]" :title="f.mine ? 'Take yours off' : 'React with this too'"
+            @click.stop="react(t, f.face)">{{ f.face }}<span v-if="f.n > 1" class=thread-face-n>{{ f.n }}</span></button>
         </div>
         <div class=thread-meta>
           <span v-if="t.n && t.who === 'you'" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
@@ -4757,10 +4802,10 @@ const EnvHome = {
       <!-- ONLY THE X TAKES IT DOWN. Clicking the line does nothing, so a notice cannot be dismissed
            by the click that was meant to read it. -->
       <TransitionGroup name=qrow>
-      <div v-for="x in upNotices" :key="'notice' + x.n" :class="['chat-notice', x.tone]">
+      <div v-for="x in upNotices" :key="'notice' + x.n" :class="['chat-notice', 'tone-' + x.tone]">
         <span class=chat-notice-dot></span>
         <span class=chat-notice-text>{{ x.text }}</span>
-        <a v-if="x.link" class=chat-notice-link :href="x.link" target=_blank rel=noopener>open</a>
+        <a v-if="x.link" class=chat-notice-go :href="x.link" target=_blank rel=noopener>{{ x.label || "open" }}</a>
         <button type=button class=chat-notice-x title="Close this" aria-label="Close this" @click="closeNotice(x)">
           <Icon name="close"/></button>
       </div>

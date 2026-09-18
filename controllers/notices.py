@@ -40,7 +40,7 @@ class NoticesController(Controller):
 
     def store(self, root: Path, p: notice_payloads.StorePayload) -> Result:
         return Result.of(notices.add(root, p.text, p.at, tone=p.tone or "note", link=p.link or "",
-                                     source=p.source, track=p.env or None), created=True)
+                                     label=p.label or "", source=p.source, track=p.env or None), created=True)
 
     def close(self, root: Path, p: Payload) -> Result:
         return Result.of(notices.close(root, p.id, p.at, by=p.source, track=p.env or None))

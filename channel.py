@@ -274,6 +274,14 @@ def _waiting(env: str, since: float = 0.0, answers: bool = True) -> list[tuple[s
                     {"content": _read_it(f"The user answered under message {n} on {env}.",
                                          f"messages show {n}"),
                      "meta": {"env": env, "message": str(n)}}))
+    # A FACE THE USER LEFT IS AN ANSWER. A thumbs up on "I'll do this next" is a yes, and one nobody
+    # hears is one nobody gave — so it is told once, the way a reply under a message is.
+    import reactions
+    for turn, i, r in reactions.untold(ROOT, env):
+        got.append((f"{env}:react:{turn}:{i}",
+                    {"content": f"The user reacted {r.get('face') or ''} to {turn.replace(':', ' ')} on {env}. "
+                                f"Read it as what it is — a yes, a thanks, a laugh — and carry on; nothing needs filing.",
+                     "meta": {"env": env, "reaction": turn}}))
     got.extend(_plan_events(env, since))
     # keyed by when it was answered, so a changed answer wakes the session again
     for n, q in questions.untold(ROOT, env):
@@ -424,6 +432,10 @@ def _told(keys: list[str]) -> None:
         # a reply is told per TURN, so the mark goes on the reply itself and not on the message
         elif len(parts) >= 4 and parts[1] == "reply" and parts[2].isdigit() and parts[3].isdigit():
             inbox.mark_replies_told(ROOT, parts[0], [(int(parts[2]), int(parts[3]))], at)
+        # a reaction's key carries the turn it is on, which has colons of its own: the index is last
+        elif len(parts) >= 4 and parts[1] == "react" and parts[-1].isdigit():
+            import reactions
+            reactions.mark_told(ROOT, parts[0], [(":".join(parts[2:-1]), int(parts[-1]))], at)
 
 
 #: the poll code loaded from disk, and the newest modification time of the package it was loaded at
