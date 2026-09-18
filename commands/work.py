@@ -94,7 +94,7 @@ class Start(Resource):
 
 
 class End(Resource):
-    signature = "work:end {subject*? : the same words that opened it} {--force} {--todo} {--todos}"
+    signature = "work:end {subject*? : the same words that opened it} {--force} {--todo}"
     writes = True
     controller = CONTROLLER
     action = "end"
@@ -148,7 +148,7 @@ class BareStart(Start):
 
 
 class BareEnd(End):
-    signature = "end {subject*? : the same words that opened it} {--force} {--todo} {--todos}"
+    signature = "end {subject*? : the same words that opened it} {--force} {--todo}"
 
 
 class Open(Resource):
