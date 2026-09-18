@@ -5,7 +5,8 @@ from contextlib import contextmanager
 from dataclasses import asdict
 from pathlib import Path
 
-from v2.resources.base import ACTORS, ACTIONS, Event
+from v2.engine import bus
+from v2.resources.base import ACTIONS, ACTORS, Event
 
 
 class Record:
@@ -47,6 +48,7 @@ class Record:
             e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data)
             with log.open("a") as fh:
                 fh.write(json.dumps(asdict(e)) + "\n")
+        bus.emit(e)
         return e
 
     def events(self, since: int = 0) -> list[Event]:

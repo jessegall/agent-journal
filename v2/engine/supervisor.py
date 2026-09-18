@@ -10,7 +10,7 @@ import termios
 import tty
 from pathlib import Path
 
-from v2.engine.agent import AGENTS
+from v2.engine.drivers import DRIVERS
 
 RELOAD_EVERY = 5.0
 
@@ -37,13 +37,13 @@ def resize(fd: int) -> None:
 
 
 def spawn_driver(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> subprocess.Popen:
-    return subprocess.Popen([sys.executable, "-m", "v2.engine.driver_main", str(root), env, agent, str(fd), session],
+    return subprocess.Popen([sys.executable, "-m", "v2.engine.engine_main", str(root), env, agent, str(fd), session],
                             cwd=cwd, pass_fds=(fd,))
 
 
 def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
-    kind = AGENTS[agent]
-    command = kind.command(kind, args)
+    driver = DRIVERS[agent]
+    command = driver.command(driver, args)
     pid, fd = spawn_agent(command, cwd)
     resize(fd)
     session = f"{agent}-{pid}"

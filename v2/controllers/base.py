@@ -31,6 +31,8 @@ class Controller:
         return self.resource.load(p.read_text())
 
     def save(self, r: Resource, action: str, **event) -> Resource:
+        if self.actor not in r.seen:
+            r.seen.append(self.actor)                # whoever acts on it has seen it
         r.updated = time.time()
         self.path(r.n).write_text(r.dump())
         self.record.emit(self.type, r.n, action, self.actor, **event)
