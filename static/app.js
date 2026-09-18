@@ -568,7 +568,8 @@ function pieceGist(piece, room) {
 }
 
 function commandGist(line, cap = GIST_CAP) {
-  const flat = String(line || "").trim();
+  // a time limit wrapped around the command is not the command: `perl -e 'alarm N; exec @ARGV' x` is x
+  const flat = String(line || "").trim().replace(/^perl\s+-e\s+(?:'alarm \d+;\s*exec @ARGV'|"alarm \d+;\s*exec @ARGV")\s+/, "");
   if (flat.length <= cap && !/&&|;|\||<</.test(flat)) return flat;
   const pieces = shellPieces(flat);
   if (!pieces.some((p, i) => !(i > 0 && GIST_FILTERS.has(shellWords(p)[0] || "")) && pieceGist(p, cap))) {
@@ -884,7 +885,10 @@ const StatusBar = {
       // moment it ends. Only a command long enough to have shown a clock keeps one.
       const secs = got.done ? got.seconds : got.seconds + Math.floor((Date.now() - readAt.at) / 1000);
       const flat = String(got.what || "").trim();
-      return { what: flat, seconds: secs, gist: commandGist(flat), done: !!got.done,
+      const output = String(got.output || "").replace(/\s+$/, "");
+      const lines = output.split("\n").map((l) => l.trim()).filter(Boolean);
+      return { what: flat, seconds: secs, gist: commandGist(flat), done: !!got.done, failed: !!got.failed,
+               output, lastLine: lines.length ? lines[lines.length - 1].slice(0, 160) : "",
                forText: forText(secs) };
     });
     const doing = computed(() => {
@@ -1011,7 +1015,14 @@ const StatusBar = {
     };
     // what the agent's launcher last saw it print: a seat's fact, so a session on none has nothing here
     const printed = computed(() => (SHELL.activity && SHELL.activity.agent && SHELL.activity.agent.printed) || null);
-    return { env, view, said, running, SHELL, openCurrent, facts, strip, bars, runBar, barError, printed };
+    // the log opens on a click and closes on the next, on Escape, or when the command it showed is gone
+    const logOpen = ref(false);
+    const toggleLog = () => { logOpen.value = !logOpen.value && !!(running.value && running.value.output); };
+    watch(() => running.value && running.value.what, () => { logOpen.value = false; });
+    const escLog = (e) => { if (e.key === "Escape" && logOpen.value) logOpen.value = false; };
+    onMounted(() => document.addEventListener("keydown", escLog));
+    onUnmounted(() => document.removeEventListener("keydown", escLog));
+    return { env, view, said, running, SHELL, openCurrent, facts, strip, bars, runBar, barError, printed, logOpen, toggleLog };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
@@ -1026,20 +1037,34 @@ const StatusBar = {
              stays put and the tail that differs rolls on its own. -->
         <span class=statusbar-roll><span v-if="said.head" class=statusbar-head>{{ said.head }}</span
           ><Transition name=roll><span :key="said.tail" class=statusbar-line>{{ said.tail }}</span></Transition></span>
-        <!-- WAITING IS NOT WORKING, and from the outside they look the same. What the agent is in the
-             middle of running follows the work, quieter and smaller than it. -->
-        <span class=statusbar-running :title="running && running.gist !== running.what ? running.what : null">
-          <!-- IT ROLLS TOO, INCLUDING AWAY. One command follows another while a long piece of work
-               runs, and a line that swapped outright read as a flicker; keyed on the command, it
-               leaves upward as the next arrives from below, the way the work's own sentence does.
-               The v-if is INSIDE the transition, so the last command of a piece of work rolls up and
-               nothing rolls in behind it, rather than being cut out of the bar. -->
-          <Transition name=roll><span v-if="running" :key="running.gist" class=statusbar-run-line>
-            <!-- a middot rather than a mark: it is a continuation of the sentence before it, not a
-                 second fact standing beside it -->
-            <span v-if="running.forText" :class="['statusbar-running-for', {done: running.done}]">{{ running.forText }}</span>
-            <span class=statusbar-run-text>{{ running.gist }}</span></span></Transition></span>
       </button>
+      <!-- THE COMMAND IS A LOG ROW, the way a build log reads (message 149): a spinner while it runs
+           and a mark when it is over, the command, the last line it printed rolling in as it lands,
+           the clock — and the row opens to the output. Quieter and smaller than the work it serves. -->
+      <span class=statusbar-running>
+        <!-- IT ROLLS TOO, INCLUDING AWAY. One command follows another while a long piece of work
+             runs, and a line that swapped outright read as a flicker; keyed on the command, it
+             leaves upward as the next arrives from below, the way the work's own sentence does.
+             The v-if is INSIDE the transition, so the last command of a piece of work rolls up and
+             nothing rolls in behind it, rather than being cut out of the bar. -->
+        <Transition name=roll><button v-if="running" :key="running.gist" type=button
+            :class="['statusbar-run-line', {open: logOpen, failed: running.failed}]"
+            :title="running.done ? (running.output ? 'Open the output' : running.what) : running.what"
+            :aria-expanded="logOpen ? 'true' : 'false'" @click="toggleLog">
+          <span :class="['statusbar-run-mark', running.done ? (running.failed ? 'failed' : 'done') : 'live']"></span>
+          <span class=statusbar-run-text>{{ running.gist }}</span>
+          <!-- the last line it printed, muted, arriving from below the way a log's newest line does -->
+          <Transition name=roll><span v-if="running.lastLine" :key="running.lastLine" class=statusbar-run-tail>{{ running.lastLine }}</span></Transition>
+          <span v-if="running.forText" :class="['statusbar-running-for', {done: running.done}]">{{ running.forText }}</span>
+        </button></Transition>
+      </span>
+      <!-- THE LOG, under the bar, when the row is opened: what the command printed, as it printed it -->
+      <div v-if="logOpen && running && running.output" class=statusbar-log>
+        <div class=statusbar-log-head><span class=statusbar-log-cmd>{{ running.what }}</span>
+          <span class=statusbar-log-took>{{ running.failed ? 'failed' : 'done' }}{{ running.forText ? ' · ' + running.forText : '' }}</span>
+          <button type=button class=quick-key @click="logOpen = false">esc</button></div>
+        <pre class=statusbar-log-out>{{ running.output }}</pre>
+      </div>
       <span class=statusbar-tools>
         <button type=button class=statusbar-auto role=switch :aria-checked="SHELL.activity.auto ? 'true' : 'false'"
           :title="SHELL.activity.auto ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'"

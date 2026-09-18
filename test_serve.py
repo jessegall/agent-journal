@@ -885,8 +885,22 @@ check("a command in flight is reported with how long it has been running",
       ("python3 test_serve.py", True, None))
 state.put(root, "running_command", {"what": "npm run build", "at": time.time() - 40, "took": 12.4,
                                     "ended": time.time()}, stem=_run_stem)
-check("a command that has finished keeps its line, marked done so the clock stops",
-      _activity.running_now(root, _run_stem), {"what": "npm run build", "seconds": 12, "done": True})
+check("a command that has finished keeps its line, marked done so the clock stops, with what it printed",
+      _activity.running_now(root, _run_stem), {"what": "npm run build", "seconds": 12, "done": True, "output": "", "failed": False})
+state.put(root, "running_command", {"what": "npm test", "at": time.time() - 40, "took": 3.0, "ended": time.time(),
+                                    "output": "1 failing\n", "failed": True}, stem=_run_stem)
+# and the hook is what writes them: a PostToolUse with the command's response keeps its tail and its exit
+import hook as _hook  # noqa: E402
+_hook.ROOT = root
+_hook._running_start({"tool_name": "Bash", "tool_input": {"command": "npm test"}}, _hook.Ctx(_run_stem, None))
+_hook._running_end({"tool_name": "Bash", "tool_input": {"command": "npm test"},
+                    "tool_response": {"stdout": "ok\n1 failing", "stderr": "", "exit_code": 1}}, _hook.Ctx(_run_stem, None))
+check("the hook keeps what the command printed and whether it failed",
+      (lambda got: (got.get("output"), got.get("failed")))(state.get(root, "running_command", {}, stem=_run_stem)), ("ok\n1 failing", True))
+state.put(root, "running_command", {"what": "npm test", "at": time.time() - 40, "took": 3.0, "ended": time.time(),
+                                    "output": "1 failing\n", "failed": True}, stem=_run_stem)
+check("its output tail and a failed exit travel with it, for the log row",
+      (lambda got: (got["output"], got["failed"]))(_activity.running_now(root, _run_stem)), ("1 failing\n", True))
 state.put(root, "running_command", {"what": "npm run build", "at": time.time() - 40, "took": 12.4,
                                     "ended": time.time() - _activity.QUIET_AFTER - 1}, stem=_run_stem)
 check("and after a few quiet seconds with nothing else run, it is gone",
