@@ -2454,6 +2454,14 @@ def _running_what(payload: dict) -> str:
         _, _, rest = name.partition("mcp__")
         server, _, tool = rest.partition("__")
         return f"{server.replace('_', ' ')} · {tool.replace('_', ' ')}".strip(" ·")
+    # A FILE IS AS MUCH "WHAT IT IS DOING" AS A COMMAND IS. Said the way the agent would say it, and
+    # by the file's name alone: the path is the project's and the bar is one line.
+    got = payload.get("tool_input") or {}
+    said = {"Read": "reading", "Edit": "editing", "Write": "writing", "NotebookEdit": "editing"}.get(name)
+    if said:
+        return f"{said} {Path(str(got.get('file_path') or got.get('notebook_path') or '')).name}".strip()
+    if name in ("Grep", "Glob"):
+        return f"searching for {str(got.get('pattern') or '').strip()}"[:120]
     return ""
 
 
