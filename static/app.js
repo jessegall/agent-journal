@@ -422,6 +422,30 @@ function _consoleCard(text) {
   return `${lead ? `<p>${_mdInline(lead)}</p>` : ""}<div class="console-card"><span class="console-label">console</span>${rows}</div>`;
 }
 
+// MARKUP PASTED INTO THE CHAT IS MARKUP, NOT A PARAGRAPH. A chunk of a page's DOM (message 149) ran
+// as a wall of angle brackets. Three tags or more, making up most of the text, and it goes in a
+// box in the log's face, one tag per line, folded past the first few lines with the count on the
+// fold. The text arrives escaped, so a tag here is `&lt;name`.
+const MARKUP_TAG = /&lt;\/?[a-zA-Z][\w:-]*\b/g;
+const MARKUP_FOLD = 6;
+
+function _markupCard(text) {
+  const tags = [...text.matchAll(MARKUP_TAG)];
+  if (tags.length < 3) return null;
+  const first = tags[0].index;
+  const last = text.lastIndexOf("&gt;");
+  if (last < first) return null;
+  // most of it must be markup: prose that mentions a <div> or two is prose
+  const body = text.slice(first);
+  if (last + 4 - first < body.length * 0.6 || tags.length < body.length / 400) return null;
+  const lead = text.slice(0, first).trim();
+  const lines = body.replace(/&gt;\s*(?=&lt;)/g, "&gt;\n").replace(/(?<=\S)\s*(?=&lt;\/)/g, "\n").split("\n").map((l) => l.trim()).filter(Boolean);
+  const shown = lines.slice(0, MARKUP_FOLD).join("\n");
+  const rest = lines.slice(MARKUP_FOLD).join("\n");
+  const more = rest ? `<details class="markup-more"><summary>Show all ${lines.length} lines</summary><pre class="markup-pre">${rest}</pre></details>` : "";
+  return `${lead && /\w/.test(lead) ? `<p>${_mdInline(lead)}</p>` : ""}<div class="console-card markup-box"><span class="console-label">markup</span><pre class="markup-pre">${shown}</pre>${more}</div>`;
+}
+
 function _traceback(lines, i) {
   if (!/^Traceback \(most recent call last\):/.test(lines[i])) return null;
   const got = [lines[i]];
@@ -474,7 +498,7 @@ function renderMarkdown(src) {
     i++;
     while (i < lines.length && !startsBlock(lines[i])) { para.push(lines[i]); i++; }
     const text = para.join(" ");
-    const card = _consoleCard(text);
+    const card = _consoleCard(text) || _markupCard(text);
     if (card) { out.push(card); continue; }
     const leads = _boldLeads(text);
     if (leads) {
@@ -921,10 +945,12 @@ const StatusBar = {
       // WAITING IS NOT WORKING. A command that has been running this long is the agent sitting on its
       // hands, and the word for that is not the same word as thinking about the code.
       if (running.value && running.value.seconds >= WAITING_AFTER) {
-        return { state: "Waiting", live: true, what: onIt || doing.value, href: workHref };
+        return { state: "Waiting", live: true, what: onIt, href: workHref };
       }
       const live = agent.compacting ? { state: "Busy", live: true, what: "compacting its context", href: workHref }
-        : agent.working && !onIt ? { state: "Busy", live: true, what: doing.value, href: workHref }
+        // THE LEFT IS THE WORK, THE RIGHT IS THE ACTION (message 163): what the agent is reading,
+        // editing or running rolls on the right, so Busy with nothing declared says only Busy.
+        : agent.working && !onIt ? { state: "Busy", live: true, what: "", href: workHref }
         : agent.working ? { state: "Working", live: true, what: onIt, href: workHref } : null;
       if (live) {
         rest.at = 0;
@@ -1025,7 +1051,7 @@ const StatusBar = {
     return { env, view, said, running, SHELL, openCurrent, facts, strip, bars, runBar, barError, printed, logOpen, toggleLog };
   },
   template: `
-    <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
+    <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]" @click.self="openCurrent">
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
       <!-- THE SENTENCE ROLLS. What the agent is on changes while the user is looking at it, and a
            line that simply swapped read as a glitch; keyed on its own words, the old one leaves
@@ -1038,9 +1064,9 @@ const StatusBar = {
         <span class=statusbar-roll><span v-if="said.head" class=statusbar-head>{{ said.head }}</span
           ><Transition name=roll><span :key="said.tail" class=statusbar-line>{{ said.tail }}</span></Transition></span>
       </button>
-      <!-- THE COMMAND IS A LOG ROW, the way a build log reads (message 149): a spinner while it runs
-           and a mark when it is over, the command, the last line it printed rolling in as it lands,
-           the clock — and the row opens to the output. Quieter and smaller than the work it serves. -->
+      <!-- THE COMMAND IS A LOG ROW, the way a build log reads (message 149): the command, the last
+           line it printed rolling in as it lands, the clock — and the row opens to the output. No mark
+           in front of it (message 161). Quieter and smaller than the work it serves. -->
       <span class=statusbar-running>
         <!-- IT ROLLS TOO, INCLUDING AWAY. One command follows another while a long piece of work
              runs, and a line that swapped outright read as a flicker; keyed on the command, it
@@ -1051,7 +1077,6 @@ const StatusBar = {
             :class="['statusbar-run-line', {open: logOpen, failed: running.failed}]"
             :title="running.done ? (running.output ? 'Open the output' : running.what) : running.what"
             :aria-expanded="logOpen ? 'true' : 'false'" @click="toggleLog">
-          <span :class="['statusbar-run-mark', running.done ? (running.failed ? 'failed' : 'done') : 'live']"></span>
           <span class=statusbar-run-text>{{ running.gist }}</span>
           <!-- the last line it printed, muted, arriving from below the way a log's newest line does -->
           <Transition name=roll><span v-if="running.lastLine" :key="running.lastLine" class=statusbar-run-tail>{{ running.lastLine }}</span></Transition>
