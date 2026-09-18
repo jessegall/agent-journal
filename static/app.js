@@ -4999,7 +4999,7 @@ const EnvHome = {
     // THE LITTLE WINDOW HAS NO ROOM FOR TWO COLUMNS, so it has one and a row of tabs: the rail's
     // three lists and the chat, one at a time under the agent bar. Chat first — it is what the window is for.
     const chatTab = ref("chat");
-    const CHAT_TABS = computed(() => [...TABS.value, { key: "chat", label: "Chat", n: null }]);
+    const CHAT_TABS = computed(() => [{ key: "chat", label: "Chat", n: null }, ...TABS.value]);
     const pickChatTab = (key) => { chatTab.value = key; if (key !== "chat") swapTabs((v) => { tab.value = v; }, key); };
     const readNote = (n) => send("POST", `/api/env/${props.env}/notifications/${n.n}/read`).then(() => notes.reload());
     const readAll = () => send("POST", `/api/env/${props.env}/notifications/readall`).then(() => notes.reload());
