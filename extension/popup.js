@@ -26,9 +26,12 @@ function load(fresh) {
       fill(env, []);
       return tell((got && got.why) || "The extension could not answer.", "bad");
     }
-    fill(journal, got.journals.map((j) => ({ value: j.url, label: j.project })), got.url);
-    fill(env, got.envs, got.env);
-    tell(`${got.journals.length} journal${got.journals.length === 1 ? "" : "s"} running · ${got.url}`);
+    // NOTHING HERE TRUSTS THE ANSWER'S SHAPE. The popup and the service worker are reloaded
+    // separately, so a popup can be talking to the version that was running before the reload.
+    const found = Array.isArray(got.journals) ? got.journals : [];
+    fill(journal, found.map((j) => ({ value: j.url, label: j.project || j.url })), got.url);
+    fill(env, Array.isArray(got.envs) ? got.envs : [], got.env);
+    tell(`${found.length || 1} journal${found.length === 1 ? "" : "s"} running · ${got.url}`);
   });
 }
 
