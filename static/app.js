@@ -907,7 +907,7 @@ const StatusBar = {
         const total = p.phases_total || 0;
         const act = (active && (p.status === "draft" || p.status === "parked")) ? null : planPrimary(p);
         return { n: p.n, title: p.title, done, total, status: p.status, act, held: !!p.held,
-                 phase: p.status === "draft" ? `${total} ${total === 1 ? "phase" : "phases"}, a draft`
+                 phase: p.status === "draft" ? `${total} ${total === 1 ? "phase" : "phases"} · awaiting your approval`
                    : p.status === "preparing" ? "the agent is adding its phases"
                    : p.status === "parked" ? `parked${p.parked_why ? " — " + p.parked_why : ""}`
                    : p.status === "done" ? "finished"
@@ -3058,7 +3058,7 @@ function planPrimary(p) {
              hint: "The plan is waiting at a checkpoint for you" };
   }
   if (p.status === "draft") {
-    return { label: "Approve the plan", short: "Start", verb: "activate",
+    return { label: "Approve the plan", short: "Approve", verb: "activate",
              note: "The agent is assigned this plan and starts its first phase. One plan at a time.",
              hint: "Start this plan and assign it to the agent" };
   }
