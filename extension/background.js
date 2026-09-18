@@ -77,7 +77,7 @@ function said(picked) {
   const lines = [`I mean this element: \`${picked.selector}\``, picked.url];
   if (picked.text) lines.push(`"${picked.text}"`);
   if (picked.hints && picked.hints.length) lines.push(picked.hints.join(" · "));
-  if (picked.html) lines.push("```html", picked.html, "```");
+  if (picked.tag) lines.push(`\`${picked.tag}\``);
   return lines.join("\n");
 }
 

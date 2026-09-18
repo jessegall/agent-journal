@@ -1,8 +1,7 @@
 # Journal pointer
 
 A Chrome extension that lets you point at anything in any tab and have the agent told what you
-meant — the selector, the page, the text, the markup around it, and a picture of the element
-itself — as a message in this journal.
+meant — the selector, the page, the text, its opening tag, and a picture of the element itself — as a message in this journal.
 
 ## Install
 
@@ -31,9 +30,7 @@ The popup's dropdown picks which environment the message lands on.
     http://localhost:3000/settings
     "Save changes"
     data-testid="settings-save"
-    ```html
-    <button class="btn primary" data-testid="settings-save">Save changes</button>
-    ```
+    `<button class="btn primary" data-testid="settings-save">`
 
 with a PNG of the element attached to the message.
 

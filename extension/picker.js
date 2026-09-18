@@ -94,8 +94,10 @@
     const picked = {
       selector: selectorFor(el),
       url: location.href,
-      text: (el.innerText || "").trim().replace(/\s+/g, " ").slice(0, 200),
-      html: el.outerHTML.slice(0, 600),
+      text: (el.innerText || "").trim().replace(/\s+/g, " ").slice(0, 120),
+      // THE OPENING TAG, NOT THE ELEMENT. A whole outerHTML is a wall of markup in the chat, and
+      // the agent can open the page itself: the selector and the URL are what it acts on.
+      tag: el.outerHTML.slice(0, el.outerHTML.indexOf(">") + 1).slice(0, 160),
       hints: hintsFor(el),
       rect: { x: r.x, y: r.y, width: r.width, height: r.height },
       scale: window.devicePixelRatio || 1,
