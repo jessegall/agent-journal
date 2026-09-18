@@ -55,4 +55,6 @@ def read(record) -> list:
 
 
 def read_owed(record, days: int = 7) -> bool:
-    return time.time() - float(record.setting("cleanup_read_at", 0)) > days * 86400
+    events = record.events()
+    since = float(record.setting("cleanup_read_at", 0)) or (events[0].at if events else time.time())
+    return time.time() - since > days * 86400

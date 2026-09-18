@@ -43,7 +43,8 @@ questions.path(q.n).write_text(old.dump())
 check("eight days waiting: evidence", [e["evidence"] for e in evidence(record) if e["ref"] == row.ref], ["waiting on the user for over 7 days (question 1)"])
 
 # THE READING PASS is owed until done, and records when it ran
-check("never read: owed", read_owed(record), True)
+check("a young record owes no reading pass yet", read_owed(record), False)
+check("a week after its first event, never read: owed", read_owed(record, days=0), True)
 got = read(record)
 check("read returns every standing rule and pin in full", sorted(r.ref for r in got), ["pin:1", "rule:1"])
 check("read: no longer owed", read_owed(record), False)
