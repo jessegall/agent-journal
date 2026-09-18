@@ -5120,6 +5120,9 @@ const Settings = {
     // the Project rows say how much each holds: coding style rules and tools belong to the project, not the environment
     const styleRules = useFetch(() => "/api/style?all=1");
     const tools = useFetch(() => "/api/tools");
+    // the Chrome extension ships inside the package, so the journal can hand it over itself rather
+    // than sending anyone to a store listing that does not exist
+    const about = useFetch(() => "/api/about", { poll: false });
     // stopping is not undoable from here: once it goes, this page has nothing to ask
     const viewerSaid = ref("");
     const viewerBusy = ref(false);
@@ -5177,7 +5180,7 @@ const Settings = {
     }] : []));
     const toggleActivity = () => setActivityShown(!ACTIVITY.shown);
     const saveSetting = (body) => postJSON(`${api.value}/settings`, body).then(() => { s.reload(); changed(); });
-    return { s, auto, setAuto, saveSetting, removing, done, keepingRows, kept, showing, ACTIVITY, toggleActivity, styleRules, tools, counted,
+    return { s, about, auto, setAuto, saveSetting, removing, done, keepingRows, kept, showing, ACTIVITY, toggleActivity, styleRules, tools, counted,
              viewerSaid, viewerBusy, viewerAct };
   },
   template: `
@@ -5193,6 +5196,19 @@ const Settings = {
               <span class=settings-label>Work from the viewer</span>
               <span class=settings-value>{{ s.data.viewer_first ? 'On: the agent answers here, one line in the terminal' : 'Off' }}</span>
               <button type=button class=btn @click="saveSetting({ viewer_first: !s.data.viewer_first })">{{ s.data.viewer_first ? 'Turn off' : 'Turn on' }}</button>
+            </div>
+          </div>
+        </section>
+        <section v-if="about.data && about.data.extension" class=settings-group>
+          <h2>Chrome extension</h2>
+          <p class=settings-note>Point at anything on any page and the agent is told what you meant — the selector, the
+            page, the element's text and a picture of it. Alt+J opens this chat as a window over whatever you are
+            looking at.</p>
+          <div class=settings-card>
+            <div class=settings-row>
+              <span class=settings-label>Journal pointer</span>
+              <span class=settings-value>Unzip it, then chrome://extensions → Developer mode → Load unpacked</span>
+              <a class=btn href="/extension.zip" download="journal-pointer.zip">Download</a>
             </div>
           </div>
         </section>

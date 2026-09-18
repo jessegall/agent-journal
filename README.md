@@ -74,6 +74,13 @@ mattered can be found again without anyone filing anything.
     [!info]         something happening that is not work progress: an agent started, a build running
     [!reply]        a plain answer to what you asked; routine, and skipped when reading back
 
+## Point at what you mean
+
+There is a Chrome extension in `extension/` — the journal's viewer hands it out from its Settings
+page, or you can load the folder directly. With it, **Alt+P** puts a crosshair on any page: click an
+element and the agent is told what you pointed at — the selector, the page, the element's text, and
+a picture of it. **Alt+J** opens the chat as a window over whatever you are looking at.
+
 ## Everything else
 
 **[Commands and reference →](COMMANDS.md)** — every command, what each kind of entry is for,

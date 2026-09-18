@@ -53,6 +53,7 @@ ROUTES: list[tuple[re.Pattern, Callable]] = []
 MESSAGES = {
     "no_env": "no environment called {env}",
     "no_help": "no help page called {topic}",
+    "no_extension": "this journal has no extension/ folder to hand out",
     "no_doc": "no doc {ref}",
     "no_attachment": "no attachment {name} on doc {n}",
     "no_transcript": "message {n} carries no transcript",
@@ -146,6 +147,31 @@ def _app_js(root: Path, project: Path, m: re.Match):
     return 200, "text/javascript; charset=utf-8", f.read_bytes()
 
 
+#: WHERE THE EXTENSION LIVES once the package is installed: a consumer gets `.journal/extension/`,
+#: and this checkout has it beside the source. The zip is built on the way out rather than kept, so
+#: it is never stale and nothing has to be rebuilt when a file in it changes.
+def _extension_dir(root: Path) -> Path | None:
+    for here in (root / "extension", Path(__file__).resolve().parent / "extension"):
+        if (here / "manifest.json").is_file():
+            return here
+    return None
+
+
+@route(r"^/extension\.zip$")
+def _extension_zip(root: Path, project: Path, m: re.Match):
+    import io
+    import zipfile
+    here = _extension_dir(root)
+    if here is None:
+        return _not_found(say("no_extension"))
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for f in sorted(here.rglob("*")):
+            if f.is_file() and "__pycache__" not in f.parts:
+                zf.write(f, f"journal-pointer/{f.relative_to(here)}")
+    return 200, "application/zip", buf.getvalue()
+
+
 @route(r"^/help/(?P<topic>[a-z]+)\.md$")
 def _help(root: Path, project: Path, m: re.Match):
     f = STATIC / "help" / f"{m.group('topic')}.md"
@@ -180,7 +206,9 @@ def _api_skill(root: Path, project: Path, m: re.Match):
 def _api_about(root: Path, project: Path, m: re.Match):
     """The running version and its changelog, for the About page."""
     f = root / "CHANGELOG.md"
-    return _json({"version": __import__("update").current(root), "changelog": f.read_text() if f.is_file() else ""})
+    return _json({"version": __import__("update").current(root), "changelog": f.read_text() if f.is_file() else "",
+                  # the Chrome extension ships with the package; the Settings page offers it when it is there
+                  "extension": _extension_dir(root) is not None})
 
 
 @route(r"^/api/viewers$")
