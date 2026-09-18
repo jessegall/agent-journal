@@ -87,6 +87,7 @@ MESSAGES = {
     "archive_why": 'say why: journal messages archive {n} "<why it needs nothing more>"',
     "already_archived": "message {n} is already archived",
     "archived": "message {n} is archived: {why}\n  it is off the list; `journal messages --all` still shows it",
+    "reply_to_archived": "message {n} was deleted by the user — nothing to answer, and nothing to file from it",
     "fact_archived": "archived: {why}",
     "files_too_large": "the attached files come to {size} MB; a message holds at most {limit} MB",
     "file_unreadable": "cannot read {name}",
@@ -471,6 +472,10 @@ def process(root: Path, n: int, excerpt: str, became: list[str], at: str,
         if m.get("moved_to"):
             env, _, there = str(m["moved_to"]).partition(":")
             return False, say("already_moved", n=n, env=env, there=there)
+        # deleted by the user: there is nothing left to file, and filing it would put rows on the
+        # list for words the user took back
+        if m.get("archived"):
+            return False, say("reply_to_archived", n=n)
         target = in_env or track or state.current_track(root)
         late = bool(m.get("processed"))
         if _flat(excerpt) not in _flat(m["text"]):
@@ -633,6 +638,11 @@ def reply(root: Path, n: int, text: str, at: str, source: str = "cli", track: st
         m, err = _find(items, n)
         if m is None:
             return False, err
+        # THE USER DELETED IT, SO THERE IS NOTHING TO ANSWER. A message taken off the list is gone
+        # from the thread the user reads, so a reply to it is written where nobody will ever see it —
+        # and the agent, told about it before it went, would answer into that hole.
+        if m.get("archived") and source != "web":
+            return False, say("reply_to_archived", n=n)
         if part and _flat(part) not in _flat(m["text"]):
             return False, say("not_in_message", n=n)
         # THE MESSAGE COUNTS AS THE THREAD. A reply written under the message itself quotes the

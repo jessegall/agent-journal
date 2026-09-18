@@ -276,6 +276,13 @@ code, out = j("messages")
 check("it leaves the list and says how many are archived", ("never mind this one" in out, "1 archived" in out), (False, True))
 check("and --all still shows it", "never mind this one" in j("messages", "--all")[1], True)
 code, out = j("messages", "archive", str(_an), "again")
+
+# THE USER TOOK IT BACK. A deleted message is gone from the thread they read, so an answer to it is
+# written where nobody will see it and a row filed from it is a row for words that were withdrawn.
+code, out = j("messages", "reply", str(_an), "answering something that was deleted")
+check("a reply to a deleted message is refused, and says why", (code, "deleted by the user" in out), (1, True))
+code, out = j("messages", "process", str(_an), "--part=never mind", "--became=noted")
+check("and nothing can be filed from it either", (code, "already archived" in out), (1, True))
 check("twice is refused", code, 1)
 code, out = j("messages", "process", str(_an), "--part=never mind", "--became=noted")
 check("an archived message cannot be processed", code, 1)
