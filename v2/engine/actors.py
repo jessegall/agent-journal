@@ -11,7 +11,7 @@ STATES = (STOPPED, IDLE, WORKING, WAITING)
 
 
 def render(e: Event, env: str) -> str:
-    return f"The {e.actor} {e.action} {e.type} {e.n} on {env}. Read it before you act on it: `journal {e.type} show {e.n}`."
+    return f"{e.type} {e.n} {e.action}"
 
 
 class Actor(ABC):

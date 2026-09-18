@@ -42,10 +42,6 @@ class Questions(Controller):
     resource = types.Question
 
 
-class Suggestions(Controller):
-    resource = types.Suggestion
-
-
 class Comments(Controller):
     resource = types.Comment
 
@@ -61,4 +57,4 @@ class Agents(Controller):
 
 
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Plans, Docs, Reports, Pins, Rules, Reminders,
-                                            Questions, Suggestions, Comments, Agents)}
+                                            Questions, Comments, Agents)}

@@ -80,13 +80,6 @@ class Question(Resource):
     help_ = "A question waits for the user; its answer reaches the agent as an event."
 
 
-class Suggestion(Resource):
-    type = "suggestion"
-    title_ = "Suggestion"
-    abstract_ = "A change the agent proposes and the user decides"
-    help_ = "A suggestion is accepted, adjusted or declined by the user; accepted, it becomes a to-do."
-
-
 class Comment(Resource):
     type = "comment"
     title_ = "Comment"
@@ -101,5 +94,5 @@ class AgentRow(Resource):
     help_ = "The hooks write an agent's status here; the engine reads it to know idle from working."
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow)}
-PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "work", "agent")
+TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow)}
+PRIORITY = ("message", "question", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "work", "agent")

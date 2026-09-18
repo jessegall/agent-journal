@@ -7,6 +7,7 @@ import struct
 import subprocess
 import sys
 import termios
+import time
 import tty
 from pathlib import Path
 
@@ -37,8 +38,8 @@ def resize(fd: int) -> None:
 
 
 def spawn_driver(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> subprocess.Popen:
-    return subprocess.Popen([sys.executable, "-m", "v2.engine.engine_main", str(root), env, agent, str(fd), session],
-                            cwd=cwd, pass_fds=(fd,))
+    main = Path(__file__).resolve().with_name("engine_main.py")
+    return subprocess.Popen([sys.executable, str(main), str(root), env, agent, str(fd), session], cwd=cwd, pass_fds=(fd,))
 
 
 def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
@@ -50,7 +51,6 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     printed = root / "runtime" / f"printed-{session}"
     printed.parent.mkdir(parents=True, exist_ok=True)
     out = printed.open("ab")
-    os.environ["JOURNAL_SESSION"] = session
     driver = spawn_driver(root, cwd, env, agent, fd, session)
     stamps = watched(root)
     stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()
@@ -80,7 +80,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
                 if not data:
                     break
                 os.write(fd, data)
-            now = __import__("time").time()
+            now = time.time()
             if now - last_check >= RELOAD_EVERY:
                 last_check = now
                 dead = driver.poll() is not None
