@@ -4,12 +4,14 @@ import time
 from v2.controllers.types import CONTROLLERS
 from v2 import features
 from v2.engine import bus
-from v2.engine.actors import Actor, Agent, IDLE, System, User
+from v2.engine.actors import Actor, Agent, IDLE, STOPPED, System, User, WAITING, WORKING
 from v2.engine.record import Record
 from v2.resources.base import AGENT
 from v2.resources.types import PRIORITY, TYPES
 
 TICK = 1.0
+SILENT_AFTER = 120.0
+PROBE_WAIT = 5.0
 
 
 class Engine:
@@ -19,6 +21,7 @@ class Engine:
         self.actors: list[Actor] = [User(record), self.agent, System(record)]
         self.running = False
         self.typed_at = 0.0
+        self.probed_at = 0.0
         self.why = ""
 
     def start(self) -> None:
@@ -29,9 +32,33 @@ class Engine:
         self.running = False
 
     def tick(self) -> str:
-        self.why = self.deliver() or self.nudge()
+        self.why = self.probe() or self.deliver() or self.nudge()
         self.seat()
         return self.why
+
+    def probe(self) -> str:
+        driver = self.agent.driver
+        last = driver.last_report()
+        if last is None or not driver.alive():
+            return ""
+        reported = float(last.get("at") or 0)
+        silent = time.time() - max(reported, self.typed_at) >= SILENT_AFTER and driver.quiet_for() >= SILENT_AFTER
+        if self.probed_at > reported:
+            if time.time() - self.probed_at < PROBE_WAIT:
+                return "probed, waiting"
+            if driver.at_prompt():
+                self.agent.mark(IDLE, "probe")
+                return "probe: at the prompt, idle"
+            if driver.quiet_for() >= PROBE_WAIT:
+                self.agent.mark(STOPPED, "probe")
+                return "probe: nothing came back, stopped"
+            self.probed_at = 0.0
+            return "probe: working"
+        if silent and self.agent.state() in (WORKING, WAITING):
+            driver.interrupt()
+            self.probed_at = time.time()
+            return "silent for two minutes: probing with Ctrl-C"
+        return ""
 
     def deliver(self) -> str:
         if self.agent.driver.last_report() is None:       # the agent has not reported yet: it may still be at a dialog

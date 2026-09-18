@@ -152,5 +152,32 @@ check("a nudge is typed as its title and brief, not as type n action", driver.se
 check("the user is not notified of a nudge", len(User(record).unread()), before)
 check("an agent row's events reach nobody: only the nudge was typed", ("agent" in [e.type for e in record.events()], len(driver.sent)), (True, 1))
 
+# THE PROBE: two silent minutes while working earn one Ctrl-C; what comes back decides
+from v2.engine import engine as engine_module  # noqa: E402
+driver.sent.clear()
+driver.interrupted = 0
+driver.interrupt = lambda: setattr(driver, "interrupted", driver.interrupted + 1)
+driver.report = {"at": time.time() - 200, "event": "PreToolUse", "status": WORKING}
+driver.quiet = 200.0
+driver.tail = "still printing"
+driver.at_prompt = lambda: "›" in driver.tail
+engine.typed_at = 0
+check("silent and working: probed once", (engine.tick(), driver.interrupted), ("silent for two minutes: probing with Ctrl-C", 1))
+check("right after: waiting on the probe", (engine.tick(), driver.interrupted), ("probed, waiting", 1))
+engine.probed_at -= engine_module.PROBE_WAIT
+driver.tail = "› "
+driver.quiet = 1.0
+check("a prompt came back: marked idle, not probed again", (engine.tick(), driver.interrupted), ("probe: at the prompt, idle", 1))
+engine.probed_at = 0
+driver.report = {"at": time.time() - 200, "event": "PreToolUse", "status": WORKING}
+driver.tail = ""
+driver.quiet = 200.0
+engine.tick()
+engine.probed_at -= engine_module.PROBE_WAIT
+check("nothing came back: marked stopped", engine.tick(), "probe: nothing came back, stopped")
+driver.report = {"at": time.time(), "event": "PostToolUse", "status": WORKING}
+driver.quiet = 1.0
+check("a fresh report: no probe", engine.tick() != "silent for two minutes: probing with Ctrl-C", True)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

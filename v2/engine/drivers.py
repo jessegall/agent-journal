@@ -11,6 +11,7 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 class Driver(ABC):
     name = ""
     QUIET = 3.0
+    PROMPT = re.compile(r"[›>$❯]\s*$")
 
     def __init__(self, record, session: str, fd: int = -1):
         self.record = record
@@ -34,12 +35,21 @@ class Driver(ABC):
         except OSError:                                   # the agent is gone: nothing to type into
             self.fd = -1
 
+    def interrupt(self) -> None:
+        try:
+            os.write(self.fd, b"\x03")
+        except OSError:
+            self.fd = -1
+
+    def at_prompt(self) -> bool:
+        return bool(self.PROMPT.search(self.last_printed().rstrip()))
+
     def last_report(self) -> dict | None:
         from v2.controllers.types import CONTROLLERS
         from v2.resources.base import SYSTEM
         rows = [r for r in CONTROLLERS["agent"](self.record, actor=SYSTEM).all()
                 if r.data.get("event") and (r.title == self.session or (r.data.get("provider") == self.name and r.created >= self.born - 1))]
-        return rows[-1].data if rows else None
+        return {**rows[-1].data, "session": rows[-1].title} if rows else None
 
     def quiet_for(self) -> float:
         try:
