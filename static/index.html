@@ -245,7 +245,8 @@
      line at its static place, which was beside the new one: it slid sideways (message 170). */
   .statusbar-running { flex: 0 1 auto; min-width: 0; position: relative; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center;
     margin-left: auto; padding-left: 14px; font-size: 12px; color: var(--text-4, #6b6e76); overflow: hidden; }
-  .statusbar-running > * { grid-area: 1 / 1; }
+  /* both lines sit against the right edge, so a shorter line arriving does not snap over once the longer one has left (message 192) */
+  .statusbar-running > * { grid-area: 1 / 1; justify-self: end; }
   .statusbar-running .roll-leave-active { position: static; }
   .statusbar-run-line { display: inline-flex; align-items: center; gap: 8px; max-width: 56ch; min-width: 0; height: 26px; padding: 0 8px;
     border: 1px solid transparent; border-radius: 7px; background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: left; }
