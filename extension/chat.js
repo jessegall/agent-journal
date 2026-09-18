@@ -32,7 +32,18 @@
         border-bottom: 1px solid #1d2026; background: #14161a; user-select: none; }
       .bar.dragging { cursor: grabbing; }
       .dot { width: 7px; height: 7px; border-radius: 50%; background: #6c8cff; }
-      .name { flex: 1; font-size: 11.5px; font-weight: 500; color: #9aa0a8; }
+      .name { flex: 1; display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 11.5px; font-weight: 500; color: #9aa0a8; }
+      .pick { border: 0; border-radius: 6px; padding: 2px 6px; background: transparent; color: #c8ccd3;
+        font: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .pick:hover { background: #1e222a; color: #e6e8ec; }
+      .pick::after { content: " ▾"; color: #6b7079; }
+      .sep { color: #4a4e56; }
+      .menu { position: absolute; top: 32px; z-index: 2; min-width: 160px; max-height: 260px; overflow-y: auto; padding: 4px;
+        border: 1px solid #2a2d33; border-radius: 9px; background: #14161a; box-shadow: 0 14px 40px rgba(0,0,0,.5); }
+      .menu button { display: block; width: 100%; padding: 6px 9px; border: 0; border-radius: 6px; background: transparent;
+        color: #c8ccd3; font: inherit; font-size: 12px; text-align: left; cursor: pointer; white-space: nowrap; }
+      .menu button:hover { background: #1e222a; color: #e6e8ec; }
+      .menu button.on { color: #a3a8f0; }
       .x { border: 0; border-radius: 6px; padding: 2px 7px; background: transparent; color: #9aa0a8;
         font: inherit; font-size: 14px; line-height: 1; cursor: pointer; }
       .x:hover { background: #1e222a; color: #e6e8ec; }
@@ -46,6 +57,7 @@
     </style>
     <div class="bar"><span class="dot"></span><span class="name">journal</span>
       <button class="x" title="Close">×</button></div>
+    <div class="menu" hidden></div>
     <div class="body"></div>
     <div class="grip"></div>`;
   shade.append(frame);
@@ -76,16 +88,60 @@
   });
   const remember = () => chrome.storage.local.set({ window: box });
 
-  chrome.runtime.sendMessage({ kind: "where" }, (got) => {
+  // THE SWITCH IS AT THE TOP: which journal, which environment, one click each. Picking one is the
+  // same choice the popup makes, kept in the same place, so the two never disagree.
+  const name = shade.querySelector(".name");
+  const menu = shade.querySelector(".menu");
+  const closeMenu = () => { menu.hidden = true; menu.innerHTML = ""; };
+  const openMenu = (anchor, rows) => {
+    menu.innerHTML = "";
+    for (const r of rows) {
+      const b = document.createElement("button");
+      b.textContent = r.label;
+      if (r.on) b.className = "on";
+      b.addEventListener("click", () => { closeMenu(); r.go(); });
+      menu.append(b);
+    }
+    menu.style.left = `${Math.max(6, anchor.offsetLeft)}px`;
+    menu.hidden = false;
+  };
+  const pick = (url, env) => new Promise((res) => chrome.runtime.sendMessage({ kind: "pick", url, env }, res)).then(() => load(true));
+  const show = (got) => {
+    name.innerHTML = "";
+    const journal = document.createElement("button");
+    journal.className = "pick";
+    journal.textContent = got.project || "journal";
+    journal.title = "Switch journal";
+    journal.addEventListener("click", () => openMenu(journal, (got.journals || []).map((j) => ({
+      label: j.project, on: j.url === got.url, go: () => pick(j.url, "") }))));
+    name.append(journal);
+    if (got.env) {
+      const sep = document.createElement("span");
+      sep.className = "sep";
+      sep.textContent = "·";
+      const env = document.createElement("button");
+      env.className = "pick";
+      env.textContent = got.env;
+      env.title = "Switch environment";
+      env.addEventListener("click", () => openMenu(env, (got.envs || []).map((e) => ({
+        label: e, on: e === got.env, go: () => pick(got.url, e) }))));
+      name.append(sep, env);
+    }
+  };
+  const load = (fresh) => chrome.runtime.sendMessage({ kind: "where", fresh: !!fresh }, (got) => {
+    body.innerHTML = "";
     if (!got || !got.url) {
       body.innerHTML = `<div class="none">${(got && got.why) || "No journal viewer is running."}</div>`;
+      name.textContent = "journal";
       return;
     }
     const view = document.createElement("iframe");
     view.src = got.env ? `${got.url}/?chat#/env/${got.env}` : `${got.url}/?chat`;
     body.append(view);
-    shade.querySelector(".name").textContent = [got.project, got.env].filter(Boolean).join(" · ") || "journal";
+    show(got);
   });
+  load(false);
+  shade.addEventListener("click", (e) => { if (!menu.hidden && !menu.contains(e.target) && !e.target.classList.contains("pick")) closeMenu(); });
 
   // DRAGGING IS ON THE DOCUMENT, NOT THE BAR. A pointer that leaves the bar mid-drag — which it does
   // the moment the window cannot keep up — would otherwise drop the window where it stood.
@@ -110,7 +166,7 @@
   };
 
   bar.addEventListener("pointerdown", (e) => {
-    if (e.target.classList.contains("x")) return;
+    if (e.target.classList.contains("x") || e.target.classList.contains("pick")) return;
     drag(e, (dx, dy, from) => {
       box.x = Math.min(Math.max(-from.w + 80, from.x + dx), window.innerWidth - 80);
       box.y = Math.min(Math.max(0, from.y + dy), window.innerHeight - 40);
