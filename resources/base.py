@@ -1,113 +1,107 @@
-from __future__ import annotations
-
-from dataclasses import dataclass, field, fields
+import json
+import re
+import time
+from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Callable, ClassVar, Generic, Iterable, Iterator, TypeVar
+from typing import ClassVar
 
-import fmt
-from templates import render
-
-MESSAGES = {
-    "bad_sort": "{resource} cannot be sorted by {field}; it sorts by {fields:, }",
-    "bad_direction": "a direction is asc or desc, got {direction}",
-}
-
-
-def say(message: str, /, **values) -> str:
-    return render(MESSAGES[message], **values)
-
-
-M = TypeVar("M", bound="Model")
+TITLE_MAX = 80
+ABSTRACT_MAX = 200
+ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed")
+SMALL, WIDE, DOCUMENT = "small", "wide", "document"
+VIEWS = (SMALL, WIDE, DOCUMENT)
+USER, AGENT, SYSTEM = "user", "agent", "system"
+ENVIRONMENT, PROJECT = "environment", "project"
+SCOPES = (ENVIRONMENT, PROJECT)
+ACTORS = (USER, AGENT, SYSTEM)
 
 
 @dataclass
-class Model:
+class Event:
+    id: int
+    at: float
+    type: str          # the resource type
     n: int
-    at: str = ""
-    raw: dict = field(default_factory=dict, repr=False, compare=False)
+    action: str        # one of ACTIONS
+    actor: str    # one of ACTORS
+    data: dict = field(default_factory=dict)
 
-    noun: ClassVar[str] = "resource"
-    sortable: ClassVar[tuple[str, ...]] = ("n", "at")
+    @property
+    def ref(self) -> str:
+        return f"{self.type}:{self.n}"
+
+
+@dataclass
+class Resource:
+    type = ""              # the type's name; its title, abstract and help are the type's own words
+    title_ = ""
+    abstract_ = ""
+    help_ = ""
+    names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
+    view: ClassVar[str] = SMALL  # how it is read: a small inspector, a wide one, or a document page
+    nav: ClassVar[bool] = True   # whether it sits in the sidebar
+    icon: ClassVar[str] = "dot"  # the viewer's glyph for it
+    scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
+    notify: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
+    spoken: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
+    n: int = 0
+    title: str = ""
+    abstract: str = ""
+    brief: str = ""
+    sections: list = field(default_factory=list)   # [{"title": str, "body": str}]
+    refs: list = field(default_factory=list)       # ["type:n"]
+    seen: list = field(default_factory=list)       # the actors who have seen it: USER, AGENT
+    data: dict = field(default_factory=dict)       # what a type adds: status, answer, phases …
+    created: float = 0.0
+    updated: float = 0.0
+    deleted: float = 0.0
+    completed: float = 0.0
+    outcome: str = ""      # what completing it said: how a to-do was done, a question's answer, why a pin was struck
+
+    @property
+    def ref(self) -> str:
+        return f"{self.type}:{self.n}"
+
+    def dump(self) -> str:
+        head = {k: v for k, v in asdict(self).items() if k not in ("sections", "brief")}
+        head["type"] = self.type
+        out = ["---", json.dumps(head, indent=2), "---", self.brief.strip(), ""]
+        for s in self.sections:
+            out += [f"## {s['title']}", s["body"].strip(), ""]
+        return "\n".join(out)
 
     @classmethod
-    def of(cls: type[M], n: int, row: dict) -> M:
-        names = {f.name for f in fields(cls)} - {"n", "raw"}
-        return cls(n=n, raw=row, **{k: v for k, v in row.items() if k in names and v is not None})
+    def load(cls, text: str) -> "Resource":
+        _, head, body = text.split("---\n", 2)
+        got = json.loads(head)
+        got.pop("type", None)
+        parts = re.split(r"^## (.+)$", body, flags=re.M)
+        brief = parts[0].strip()
+        sections = [{"title": parts[i].strip(), "body": parts[i + 1].strip()} for i in range(1, len(parts) - 1, 2)]
+        return cls(brief=brief, sections=sections, **got)
 
 
-def _blank(value) -> bool:
-    return value is None or value == "" or value == []
+class Refused(Exception):
+    pass
 
 
-@dataclass
-class Page(Generic[M]):
-    rows: list[M]
-    left: int
-    total: int
+def check_title(title: str) -> str:
+    flat = " ".join((title or "").split())
+    if not flat:
+        raise Refused("a title is required")
+    if len(flat) > TITLE_MAX:
+        raise Refused(f"a title is at most {TITLE_MAX} characters; this one is {len(flat)} — the rest goes in the brief")
+    if ":" in flat:
+        raise Refused("a title names the thing; it does not explain it with a colon — that goes in the brief")
+    return flat
 
 
-class Query(Generic[M]):
-    def __init__(self, model: type[M], items: Iterable[M]):
-        self.model, self._items = model, list(items)
-
-    def __iter__(self) -> Iterator[M]:
-        return iter(self._items)
-
-    def where(self, test: Callable[[M], bool] | None = None, **equal) -> Query[M]:
-        return Query(self.model, [i for i in self._items
-                                  if (test is None or test(i)) and all(getattr(i, k) == v for k, v in equal.items())])
-
-    def order_by(self, name: str, direction: str = fmt.ASC) -> Query[M]:
-        if name not in self.model.sortable:
-            raise ValueError(say("bad_sort", resource=self.model.noun, field=repr(name), fields=list(self.model.sortable)))
-        if direction not in fmt.ORDERS:
-            raise ValueError(say("bad_direction", direction=repr(direction)))
-        # a blank value sorts last in either direction
-        filled = [i for i in self._items if not _blank(getattr(i, name))]
-        blank = [i for i in self._items if _blank(getattr(i, name))]
-        return Query(self.model, sorted(filled, key=lambda i: getattr(i, name), reverse=direction == fmt.DESC) + blank)
-
-    def get(self) -> list[M]:
-        return list(self._items)
-
-    def first(self) -> M | None:
-        return self._items[0] if self._items else None
-
-    def count(self) -> int:
-        return len(self._items)
-
-    def page(self, cap: int | None, number: int = 1) -> Page[M]:
-        total = len(self._items)
-        if not cap:
-            return Page(self.get(), 0, total)
-        start = (max(number, 1) - 1) * cap
-        return Page(self._items[start:start + cap], max(0, total - start - cap), total)
+def titled(text: str) -> str:
+    return " ".join((text or "").split()).replace(":", " -")[:TITLE_MAX].strip() or "untitled"
 
 
-class Repository(Generic[M]):
-    model: ClassVar[type] = Model
-
-    def __init__(self, root: Path, env: str = ""):
-        self.root, self.env = root, env
-
-    def rows(self) -> list[dict]:
-        raise NotImplementedError
-
-    def numbered(self) -> Iterable[tuple[int, dict]]:
-        return enumerate(self.rows(), 1)
-
-    def all(self) -> list[M]:
-        return [self.model.of(n, row) for n, row in self.numbered()]
-
-    def query(self) -> Query[M]:
-        # an item whose content was removed after its retention is kept for numbering, never listed
-        return Query(self.model, [m for m in self.all() if not m.raw.get("removed")])
-
-    def find(self, n: int) -> M | None:
-        return next((m for m in self.all() if m.n == n), None)
-
-    def exists(self, n: int) -> bool:
-        return self.find(n) is not None
-
-    def count(self) -> int:
-        return len(self.rows())
+def check_abstract(abstract: str) -> str:
+    flat = " ".join((abstract or "").split())
+    if len(flat) > ABSTRACT_MAX:
+        raise Refused(f"an abstract is at most {ABSTRACT_MAX} characters; this one is {len(flat)} — the rest goes in the brief")
+    return flat
