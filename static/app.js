@@ -1113,7 +1113,8 @@ const StatusBar = {
           <span class=statusbar-run-text>{{ shown.gist }}</span>
           <!-- the last line it printed, muted, arriving from below the way a log's newest line does -->
           <Transition name=roll><span v-if="shown.lastLine" :key="shown.lastLine" class=statusbar-run-tail>{{ shown.lastLine }}</span></Transition>
-          <span v-if="shown.forText" :class="['statusbar-running-for', {done: shown.done}]">{{ shown.forText }}</span>
+          <!-- the clock has its room from the start, so the command does not shift when it arrives; it slides in -->
+          <span class=statusbar-running-slot><Transition name=clock><span v-if="shown.forText" :class="['statusbar-running-for', {done: shown.done}]">{{ shown.forText }}</span></Transition></span>
         </button></Transition>
       </span>
       <!-- THE LOG, under the bar, when the row is opened: what the command printed, as it printed it -->
