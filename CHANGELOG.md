@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.167.5 — The seat keeps stamping while the agent prints; attachments at the top of the box
+
+The launcher's look ran only when its terminal was quiet, and an agent printing steadily (a spinner
+while it works) never let it be — so the seat stopped stamping, the viewer lost it after thirty
+seconds and the no-seat band flickered on and off. The look runs every turn now and throttles itself.
+In the chat box, attached files sit over the words, never under the Send row.
+
 ## 1.167.4 — A fresh seat does not replay history
 
 At its first look the launcher typed every untold reaction, reply and plan event of the last hours,
