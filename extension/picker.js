@@ -19,9 +19,8 @@
     "background:#14161a", "color:#e6e8ec", "border:1px solid #2a2d33",
     "font:500 12px/1.4 -apple-system,system-ui,sans-serif", "box-shadow:0 6px 24px rgba(0,0,0,.4)",
   ].join(";");
-  hint.textContent = mode === "shot" ? "Click an element to send a picture of it · Esc to stop"
-                                     : "Click an element to send it to the journal · Esc to stop";
-  document.documentElement.append(box, hint);
+  // no words over the page: the outline under the pointer says what is about to happen
+  document.documentElement.append(box);
 
   let at = null;
 
