@@ -53,7 +53,7 @@
       /* MINIMIZED: the bar and the viewer's own status line, which is the first thing in the frame.
          The frame is cut to that line's height rather than hidden, so what the agent is doing stays in view. */
       .win.shut { height: auto !important; min-height: 0; }
-      .win.shut .body { flex: none !important; height: 56px !important; }
+      .win.shut .body { flex: none !important; height: 54px !important; }
       .win.shut .grip { display: none; }
       .win.dragging iframe { pointer-events: none; }
       .grip:hover::after { border-color: #6c8cff; }
