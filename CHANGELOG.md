@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.167.2 — The launcher no longer mistakes the terminal's own keystrokes for a half-typed line
+
+The launcher types nothing over a line the user is typing — and it took a terminal's focus events
+(`ESC [ I` when you switch back to the terminal, `ESC [ O` when you leave), arrow keys and paste
+marks for one, leaving `[I` on the line after every switch to the browser. So a session sitting
+idle at its prompt was never typed to. Escape sequences are stripped whole now, split ones
+included; a bare Escape still drops the line.
+
 ## 1.167.1 — The launcher types after a resume, and what was left before it started
 
 Two launcher bugs, both measured on a live session. A session started or resumed under `journal
