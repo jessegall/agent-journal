@@ -15,10 +15,14 @@ Every command runs through `.journal/journal.py`; `journal` is an alias for it.
     journal messages show <n>                                     the message, its parts, and the questions about it
     journal messages process <n> --part="<words>" --became=<ref>  one part, and what it became
     journal messages reply <n> "<answer>" --part="<words>"        a part that asks something: answered, and the user notified
+    journal messages reply <n> "<answer>" --quoting="<their words in the thread>"   answering a REPLY of theirs, not the message
+    journal messages process <n> --part="<words>" --became=<ref> --in="<environment>"   filed on another environment
     journal messages file <n> <name> "doc <doc>"|keep             an attached file: into the doc it belongs to, or kept
     journal messages done <n>                                     processed, once its parts say what they became and its files are filed
     journal messages move <n> "<environment>"                     left on the wrong environment: carry it there
     journal messages edit <n> "<text>"                            reword one that still waits
+    journal messages attach <n> --file=<path>                     put a file on a message that is already there
+    journal messages detach <n> <name> "<why>"                    take one off it, with the reason
 
 The user leaves messages instead of interrupting you — mostly from the journal's web viewer,
 while you work: instructions, follow-ups, corrections, things to remember, new work. It belongs to an environment, like a pin. When a
@@ -68,6 +72,7 @@ message mentions it once; that never blocks, so finish the step you are on first
     journal comments                            what the user said, not handled yet
     journal comments show <n>                   one in full
     journal comments done <n> "<what was done>" it is handled
+    journal comments add "<ref>" "<text>"       your own comment on a row — `todo 22`, `doc 4`, `pin 3`
 
 The user comments from the viewer on a to-do, doc, pin, rule, reminder, suggestion, message
 or piece of work. Every comment is a nudge: the next stop names it. Act on what it asks —
@@ -106,9 +111,20 @@ you, re-read at every compaction. A notice is for the USER, and it stays on thei
 until they take it down. Pin one at a time, and take yours down yourself the moment it stops
 being true: `journal notices close <n>`.
 
+## A reaction: a face on a turn
+
+    journal react <message> "👍"     one of 👍 ❤️ 🎉 😄 👀 🙏; the same one again takes it off
+    journal reactions               what carries a face here
+
+The user can leave one on anything either of you said, and it reaches you through the channel once —
+read it as what it is, a yes, a thanks, a laugh, and file nothing. Yours is for the same thing in the
+other direction: they said thank you, or a row landed well. It is not a reply, it is not a
+notification, and a conversation where everything is reacted to has said nothing.
+
 ## The viewer: what the user does in the browser
 
-    journal serve [--port=<n>]      the web viewer, on this machine only: 8420, or the next free port
+    journal serve [--port=<n>] [--open]   the web viewer, on this machine only: 8420, or the next free port;
+                                          --open opens a browser at it
     journal claude [flags] ["<prompt>"]   start Claude with the journal's channel, and the web
                                           viewer if none is running here; other flags pass through to claude
     journal statusline --install    show environment, open work and viewer in the status bar — only if the user wants it

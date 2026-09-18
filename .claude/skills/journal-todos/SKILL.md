@@ -198,6 +198,7 @@ because the journal can tell when a to-do closes and cannot tell when a conditio
     journal todos block <n> "<what has to be true first>"   set it aside on a condition
     journal todos ask <n> "<the question>"                  it waits on the USER to answer
     journal todos start <n>                                 picking it up ends the block
+    journal todos unblock <n>                               the condition came true and you are not starting it yet
 
 **The list is not a sequence.** Work it in whatever order the work allows. A row you cannot
 do is skipped with its reason, and the reason is required — a skipped row with no reason

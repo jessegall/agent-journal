@@ -56,6 +56,9 @@ word. Measured here: a plan drafted without that conversation had to be rewritte
     journal plans                              every plan here, with its status
     journal plans show <n>                     the plan, its phases and their to-dos
     journal plans link <n> "doc 4"|"doc 4.2"|"report 1"   what it rests on
+    journal plans edit <n> ["<title>"] [--goal=] [--brief]   reword the plan itself, or its goal
+    journal plans park <n> "<why>"             set it aside without abandoning it; it can be taken up again
+    journal plans acknowledge <n>              you have read a plan the USER wrote, and will work it
     journal plans abandon <n> "<why>"          it is stopped, and why
 
 The order is **add, then phase, then todos**: a phase belongs to a plan and a to-do belongs

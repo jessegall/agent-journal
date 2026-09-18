@@ -24,6 +24,11 @@ payload, not a description of it.
     journal                          environment, rules, pins, open work, to-dos, context, hooks
     journal verify                   is the journal wired, and has it fired — in this session?
     journal settings                 every setting, its value, and where it came from
+    journal settings <key> <value>   change one for THIS environment; `--off` puts it back to the project's
+    journal upgrade / journal update [--from=<path or git url>]   pull the newest journal into this project
+    journal migrate run              apply a pending migration the journal is holding
+    journal loop unset               this session's loop is gone; `loop set` says one is running
+    journal cleanup keep [<mark>]    keep what a cleanup offered to retire
 
 **Reading the transcript**
 
@@ -197,8 +202,10 @@ holds while messages wait; the first tool call after a new one mentions it once.
     journal suggest "<the change>" [--about=<ref>] --brief   propose a change nobody asked for; the user decides
     journal suggestions [--all]      waiting ones; `suggestions withdraw <n> "<why>"` takes one back
     journal notify "<what finished>" [--about=<ref>]   a notification on the user's Home; only what they want to hear about
-    journal notice "<the line>" [--tone=note|good|warn] [--link=<url>]   one line pinned over the chat until the user closes it
+    journal notice "<the line>" [--tone=note|good|warn] [--link=<url> --label="<the button>"]   one line pinned over the chat until the user closes it
     journal notices [close <n>]                        what is pinned now; close your own when it stops being true
+    journal react <message> "👍"                        a face on a turn: 👍 ❤️ 🎉 😄 👀 🙏, the same one again takes it off
+    journal reactions                                  what carries a face here
     journal notifications [--all]    the unread ones; `notifications read <n>` marks one read
     journal reports [--all]          what the user asked to have checked or researched, for the user to read
     journal reports add "<title>" [--about="todo 22"] --brief   file one; never a doc, never handed to a session
@@ -229,6 +236,8 @@ holds while messages wait; the first tool call after a new one mentions it once.
                                      is a token that has leaked. A value shaped like one is refused where it
                                      is typed, and the only thing read back is whether that variable is set
     journal connections here <name> purpose|kind|url|secret "<value>" [--off]   change it on this environment only
+    journal connections set <name> purpose|kind|url|secret "<value>"   change it for the whole project
+    journal connections remove <name> "<why>"          it is gone, with the reason
     journal statusline [--install]   the status bar line: environment, open work, viewer; --install adds it to .claude/settings.json, never over one that exists
     journal channel --install        add the channel server to .mcp.json; with claude --dangerously-load-development-channels server:journal, a message left in the viewer wakes an idle session
     journal claude [prompt]          start Claude with the channel (added to .mcp.json first if missing) AND the web viewer, if this journal has none running — it says where. --continue, --resume=<id>, --dry-run shows the command; any other flag is passed through to claude

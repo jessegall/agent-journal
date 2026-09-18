@@ -296,6 +296,17 @@ the holder may be a session they are using.
 (`delegate` and `handoff` were removed in 1.37.0; both now answer with a refusal saying why.)
 The noun answers to `env`, `envs`, `environment`, `tracks` and `track` as well.
 
+## The kill switch is the user's, and only theirs
+
+    journal disable        every hook goes inert: no hold, no gate, no context block
+    journal enable         it is in force again
+
+**Never run `disable` because a hold is in your way.** It is here so you know the words exist when
+the user says them — "disable the journal", by name — and for nothing else. A hook that refused a
+call refused it for a reason written in the refusal; turning the mechanism off to get past it is the
+one move that makes the journal worthless, and it is a standing rule of this project. Say what is in
+the way instead, and let the user decide.
+
 ## If a hook holds or denies you
 
 Read what it says and do that one thing. A hold is one line, and holds come one per
