@@ -24,6 +24,34 @@ function unedit() {
 const away = ref(false);
 const missed = ref(0);
 const settledOnce = ref(false);
+const ready = ref(false);
+const SKELETON = [
+    {key: "a", lines: 3},
+    {key: "b", lines: 1},
+    {key: "c", lines: 2},
+    {key: "d", lines: 4},
+    {key: "e", lines: 2},
+];
+
+function pictured() {
+    return [...(scroller.value ? scroller.value.querySelectorAll("img") : [])].filter((img) => !img.complete);
+}
+
+async function loaded() {
+    const pending = pictured();
+    if (!pending.length) return;
+    await Promise.race([
+        Promise.all(
+            pending.map(
+                (img) =>
+                    new Promise(
+                        (done) => img.addEventListener("load", done, {once: true}) || img.addEventListener("error", done, {once: true})
+                    )
+            )
+        ),
+        new Promise((done) => setTimeout(done, 4000)),
+    ]);
+}
 const reading = ref({inside: false, moved: 0});
 const turns = computed(() =>
     [
@@ -94,6 +122,12 @@ watch(
     () => turns.value.length,
     async (n, before) => {
         await nextTick();
+        if (!ready.value) {
+            if (!n) return;
+            await loaded();
+            ready.value = true;
+            await nextTick();
+        }
         if (stillReading()) missed.value += Math.max(0, n - (before || 0));
         else toBottom();
         if (n && !settledOnce.value) setTimeout(() => (settledOnce.value = true), 300);
@@ -134,9 +168,22 @@ watch(
                 :down="unedit"
             />
         </div>
+        <template v-if="!ready">
+            <div class="thread-skeleton">
+                <template v-for="(blank, i) in SKELETON" :key="blank.key">
+                    <div :class="['thread-turn', 'waiting', {mine: i % 2}]">
+                        <div class="thread-bubble">
+                            <template v-for="k in blank.lines" :key="k">
+                                <span class="thread-blank" />
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
         <div
             ref="scroller"
-            :class="['thread-scroll', {focusing: store.focus}]"
+            :class="['thread-scroll', {focusing: store.focus, loading: !ready}]"
             @scroll.passive="watchScroll"
             @mouseenter="reading.inside = true"
             @mouseleave="reading.inside = false"
@@ -183,6 +230,71 @@ watch(
     min-height: 0;
     display: flex;
     flex-direction: column;
+}
+
+.thread-skeleton {
+    order: 1;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 7px;
+    padding: 14px 8px 12px;
+    overflow: hidden;
+}
+
+.thread-turn.waiting {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    max-width: 88%;
+}
+
+.thread-turn.waiting.mine {
+    align-self: flex-end;
+}
+
+.thread-turn.waiting .thread-bubble {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--raised) 55%, transparent);
+    animation: thread-wait 1.6s ease-in-out infinite;
+}
+
+.thread-blank {
+    display: block;
+    width: 100%;
+    height: 9px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--text-3) 22%, transparent);
+}
+
+.thread-turn.waiting .thread-bubble .thread-blank:not(:only-child):last-child {
+    width: 62%;
+    opacity: 0.6;
+}
+
+@keyframes thread-wait {
+    0%,
+    100% {
+        opacity: 0.45;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.thread-scroll.loading {
+    position: absolute;
+    visibility: hidden;
+    inset: 0;
 }
 
 .thread-scroll {

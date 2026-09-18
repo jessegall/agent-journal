@@ -26,7 +26,7 @@ const grid = computed(() => pictures.value.length > 1);
                         :title="p.name"
                         @click.prevent="openPictures(pictures, i)"
                     >
-                        <img :src="p.url" :alt="p.name" loading="lazy" @load="emit('grew')" />
+                        <img :src="p.url" :alt="p.name" @load="emit('grew')" />
                         <template v-if="i === 3 && pictures.length > 4">
                             <span class="thread-shot-more">{{ pictures.length - 4 }} more</span>
                         </template>
@@ -37,7 +37,7 @@ const grid = computed(() => pictures.value.length > 1);
         <template v-else>
             <template v-for="(p, i) in pictures" :key="p.name">
                 <a class="thread-file" :href="p.url" :title="p.name" @click.prevent="openPictures(pictures, i)">
-                    <img class="thread-image" :src="p.url" :alt="p.name" loading="lazy" @load="emit('grew')" />
+                    <img class="thread-image" :src="p.url" :alt="p.name" @load="emit('grew')" />
                 </a>
             </template>
         </template>
