@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.0.0 — The rebuild
+
+The whole package rewritten on one shape: a Resource (title, abstract, brief, sections, links, comments, who has read it, an outcome), one Controller every type shares (create, update, set, section, delete, restore, link, comment, complete, read, unread, attach, move, search, find) with each type's own words for its methods, six actions on one event log per environment, and a bus. Every capability is a feature class under `features/` — work, auto, commits, plans, reminders, rules, pins, notifications, gate, context, cleanup, retention, style, sessions, start, tags, deferral — each with its own tests, switchable per environment and tuned by a trigger measured in a unit (context percent, tool uses, minutes, idle, start). Hooks report and set state; the engine decides; drivers only talk to the agent; the supervisor keeps the engine alive and probes a silent agent with one Ctrl-C after two minutes. The viewer is Vue single-file components with scoped styles, configured from `/api/manifest` and refreshed by a server-sent event stream. The CLI is generated from the controllers: a noun, its word, `--help` for the rest; `journal next` is gone, the engine types what is owed.
+
+What to do about it: run the installer again (or `journal upgrade`). The migrations run once and carry the old record across — to-dos, pins, reminders, messages, questions, work, plans, notifications, rules, docs, environments — with their numbers kept; the ledger is `.journal/migrations.json`. The skills are regenerated from the package; the old `journal-*` skills are replaced.
+
 ## 1.169.1 — A seated session is never asked for a loop
 
 Under the launcher the loop is the launcher: it types "auto is on, N to-do(s) waiting" the moment

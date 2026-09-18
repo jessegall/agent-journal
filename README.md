@@ -14,38 +14,35 @@ In the root of your project, with `git` and `python3` available:
 
     curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/main/install.sh | sh
 
-This creates `.journal/`, wires the hooks into `.claude/settings.json` next to anything
-already there, installs the agent's skills, and puts a `journal` command in
-`~/.local/bin`. `journal verify` tells you it is wired.
+This copies the package into `.journal/`, wires the hooks into `.claude/settings.json` (and
+`.codex/hooks.json`) next to anything already there, writes the agent's skills, puts a
+`journal` command in `~/.local/bin`, and runs the migrations — an older record is carried
+across with every number kept. Running it again, or `journal upgrade`, upgrades.
 
 ## Start the agent
 
     journal claude
 
-**This is the command to run.** It starts Claude Code under the journal's launcher, so the
-agent is wired to the journal from its first message and what you do in the web interface is
-typed into it while it sits idle. It also brings the web interface up if this journal has
-none running, and tells you where.
+**This is the command to run.** It starts Claude Code under the journal's supervisor: an
+engine beside the terminal reads the record and types one line into the agent while it is
+idle — a message you left, an answer, a reminder, the next to-do under auto mode — in a
+tiny vocabulary the agent's skill explains. `journal serve` brings the web interface up.
 
 It takes what `claude` takes: `journal claude --continue`, `journal claude --resume=<id>`,
 or a first prompt in quotes.
 
     journal codex
 
-**The same for Codex.** The journal's hooks are wired into `.codex/hooks.json` and its skills
-into `.agents/skills/` before Codex starts, so a Codex session is bound to an environment,
-held and refused the way a Claude one is, and reads the same skills; Codex asks once to trust
-the hooks (`/hooks`). The launcher watches it the same way and types the viewer's news and
-the journal's nudges into it while it is idle. The web interface names it Codex and shows its
-model, its context and its last reply from Codex's own session file. `--quiet` never types;
-anything else is passed through to `codex`.
+**The same for Codex.** Claude and Codex are two drivers behind one interface; the hooks of
+each are wired into its own config, and the engine treats them alike.
 
-**What the launcher types, and when.** A message you leave, an answer, a comment, a plan
-approved — and what the stop hook would otherwise hold the turn with: an untagged reply, work
-left open, the next to-do under auto mode. One line at a time, only when the agent has
-stopped (its hooks report the stop) and you have no half-typed line in the terminal, never
-the same line twice. `--quiet` turns the typing off and the session then hears the viewer
-only at its next stop.
+**Hooks report, the engine decides.** The hooks only write the agent's status — idle,
+working, waiting, its tool uses, its context — and refuse a write while no work is open.
+Everything else is a feature in the engine: reminders said again on idle, rules and pins at
+every tenth of the context, a decision demanded at each mark of the window, the next row
+offered under auto mode, an untagged reply named once. Every feature is a switch in the
+viewer's Settings and its cadence a setting; a silent agent is probed with one Ctrl-C after
+two minutes.
 
 ## The web interface
 
@@ -67,13 +64,14 @@ These are mechanisms, not suggestions, and they are why the agent behaves differ
 
 - **An edit with nothing declared is refused.** The agent says what it is working on before
   it changes a file.
-- **Work deferred in words is parked.** If it tells you "I'll do that after this" and files
-  nothing, its next tool call is refused until it does.
-- **A context warning demands a decision.** At 50, 70, 90 and 95 percent of the window,
-  nothing else runs until the agent has pinned what must survive — or said, with a reason,
-  that nothing needs pinning.
+- **Work deferred in words is named back.** If it tells you "I'll do that after this" and files
+  nothing, the engine says so at its next idle moment.
+- **A context mark demands a decision.** At 50, 70, 90 and 95 percent of the window (a
+  setting), writes are held until the agent has pinned what must survive — or said, with a
+  reason, that nothing needs pinning.
 - **A reminder is repeated.** Not once at the start, where it is read and then drifted from:
-  at every stop, and every 50 tool calls, for as long as it stands.
+  at every idle moment (or every N tool uses, or every N percent — a setting), for as long as
+  it stands.
 - **A session starts on no environment.** An environment is a line of work with its own
   pins, to-dos and reminders. There is no default one: the agent picks, or asks.
 
@@ -100,9 +98,8 @@ a picture of it. **Alt+J** opens the chat as a window over whatever you are look
 
 ## Everything else
 
-**[Commands and reference →](COMMANDS.md)** — every command, what each kind of entry is for,
-where the files live, and the settings.
+Every command is a noun and a word: `journal todo add "…"`, `journal question answer 3 --how "…"`,
+`journal plan continue 1`. `journal --help` lists the nouns, `journal <noun> --help` the words;
+the agent's `journal` skill carries the same reference, generated from the package.
 
-The CLI prints it too: `journal help`, or `journal help <verb>` for one command.
-
-To update: `journal update`. The agent is told when a new version is out.
+To update: `journal upgrade`. Its changes are in [CHANGELOG.md](CHANGELOG.md).
