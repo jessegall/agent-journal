@@ -288,9 +288,17 @@
   .statusbar-tools { margin-left: auto; flex: 0 1 auto; min-width: 0; display: flex; align-items: center; gap: 14px; }
   .statusbar-tools::before { content: ""; align-self: stretch; width: 1px; margin: 3px 0;
     background: var(--line, rgba(255,255,255,.14)); }
-  .statusbar-auto { flex: none; display: inline-flex; align-items: center; gap: 7px; border: none; background: transparent; padding: 0;
-    font-size: 11.5px; color: var(--text-2); cursor: pointer; }
-  .statusbar-auto .ico { width: 12px; height: 12px; opacity: .65; }
+  /* THE AUTO TOGGLE IS ONE BORDERED PILL: a small switch at the left, the plain word at the right */
+  .statusbar-auto { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 26px; padding: 0 10px 0 6px;
+    border: 1px solid var(--border-2, #2c2f36); border-radius: 13px; background: var(--raised); color: var(--text-2);
+    font: inherit; font-size: 12px; cursor: pointer; }
+  .statusbar-auto:hover { border-color: var(--border-3, #3a3d44); color: var(--text); }
+  .statusbar-auto .switch.small { width: 28px; height: 16px; border-radius: 8px; background: #3a3d44; }
+  .statusbar-auto .switch.small .knob { width: 12px; height: 12px; top: 2px; left: 2px; background: #cfd2d8;
+    transition: transform .18s cubic-bezier(.2, .8, .2, 1), background .15s; }
+  .statusbar-auto .switch.small.on { background: var(--accent); }
+  .statusbar-auto .switch.small.on .knob { transform: translateX(12px); background: #fff; }
+  .statusbar-auto-word { letter-spacing: .01em; }
   /* the agent's latest reply, at the top of the Activity column, so what it wrote in the terminal is readable here */
   /* the quick menu: a command box over the whole app that sends what is typed to the agent unless a command is picked */
   .quick-scrim { position: fixed; inset: 0; z-index: 50; background: rgba(4, 5, 6, .62); }
