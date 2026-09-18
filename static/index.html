@@ -475,6 +475,22 @@
   .rows.quiet .row-leave-active { display: none; }
   .rows.quiet .row-move { transition: none; }
   .row-leave-to { opacity: 0; transform: scale(.98); }
+  /* A ROW THAT CHANGED SECTION SAYS SO AS IT MOVES. A list that reorders quietly is a list where the
+     one thing that happened is the one thing you missed: what arrives is tinted for a moment, and
+     what is leaving carries a warmer tint out with it. */
+  @keyframes row-arrived {
+    from { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+    to { background: transparent; }
+  }
+  .row-enter-active, .qrow-enter-active {
+    animation: row-arrived .9s ease-out both;
+    animation-delay: calc(min(var(--i, 0), 10) * 22ms);
+  }
+  .row-leave-active, .qrow-leave-active { background: color-mix(in srgb, #c9955e 16%, transparent); }
+  @media (prefers-reduced-motion: reduce) {
+    .row-enter-active, .qrow-enter-active { animation: none; }
+    .row-leave-active, .qrow-leave-active { background: none; }
+  }
   /* a whole group (its head, rows and Show more) fades in and out, and the groups after it glide */
   .groups { position: relative; }
   .group-enter-active { transition: opacity .22s ease-out; }
