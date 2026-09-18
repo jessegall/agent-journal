@@ -325,6 +325,19 @@ function _rowPills(escaped) {
   });
 }
 
+// WHAT IS NAMED IN PROSE IS A THING, AND A THING GETS A CHIP: a file with its line, a commit,
+// a journal command. Applied only to text outside code and links, and after them, so a chip is
+// never put inside one. A hash needs a digit, or "defaced" is a commit.
+// a bare verb is a command on its own; a noun is prose ("the journal messages skill") until something follows it
+const JOURNAL_VERBS = "search|switch|claim|prepare|update|upgrade|serve|claude|next|open|cleanup|grant|carry|user|conversation|nothing|notify|react|suggest|promote|verify|migrate|loop|auto-mode|style|statusline";
+const JOURNAL_NOUNS = "work|todos?|messages?|pins?|rules?|reminders?|docs?|tools?|questions?|suggestions?|reports?|plans?|notices?|environments?|envs?|connections?";
+const JOURNAL_SUBVERBS = "start|update|end|await|park|add|done|show|process|reply|file|move|edit|remove|make|strike|promote|amend|replace|inject|uninject|report|block|ask|after|assign|archive|adopt|part|attach|answer|withdraw|accept|adjust|decline|close|list|set|disable|enable|install|pull|read|waiting|readall|proceed|from-doc|phase|todos|back|off|on|--install";
+const CHIP_IN_TEXT = new RegExp(String.raw`(?<![\w/.-])((?:[\w.-]+/)+[\w.-]+\.[a-z]{1,5}(?::\d+)?)(?![\w/])|(?<![\w/])((?=[0-9a-f]*\d)[0-9a-f]{7,40})(?![\w/])|(?<![\w/-])(journal (?:(?:${JOURNAL_VERBS})\b|(?:${JOURNAL_NOUNS})\b(?= (?:(?:${JOURNAL_SUBVERBS})\b|\d|--|&quot;|&lt;)))(?: (?:${JOURNAL_SUBVERBS})\b){0,2}(?: (?:--[\w-]+(?:=[^\s&]+)?|&quot;[^&]*&quot;|&lt;[^&]+&gt;|\d+(?:\.\d+)?))*)`, "g");
+
+function _chips(escaped) {
+  return escaped.replace(CHIP_IN_TEXT, (whole) => `<code class="chip">${whole}</code>`);
+}
+
 function _mdInline(text) {
   text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
   text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
@@ -336,6 +349,7 @@ function _mdInline(text) {
   // a bare address becomes a link too; one already inside a link's href or text is left alone
   text = text.split(/(<a [^>]*>.*?<\/a>|<code>.*?<\/code>)/).map((part, i) => (i % 2 ? part : _linkUrls(part))).join("");
   text = text.split(/(<a [^>]*>.*?<\/a>|<code>.*?<\/code>)/).map((part, i) => (i % 2 ? part : _rowPills(part))).join("");
+  text = text.split(/(<a [^>]*>.*?<\/a>|<code[^>]*>.*?<\/code>)/).map((part, i) => (i % 2 ? part : _chips(part))).join("");
   return text;
 }
 
