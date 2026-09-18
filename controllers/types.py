@@ -1,4 +1,5 @@
 import subprocess
+import time
 
 from controllers.base import Controller
 from engine.record import Record
@@ -20,7 +21,10 @@ class Messages(Controller):
         return self.section(n, part, became)
 
     def reply(self, n: int, text: str, file: str = ""):
-        said = (self.load(n).brief or self.load(n).title).strip()
+        lines = (self.load(n).brief or self.load(n).title).strip().split("\n")
+        while lines and (lines[0].startswith(">") or not lines[0].strip()):
+            lines.pop(0)
+        said = "\n".join(lines).strip()
         made = self.comment(n, f"> {said.replace(chr(10), chr(10) + '> ')}\n\n{text}" if said and not text.startswith(">") else text)
         if file:
             CONTROLLERS["comment"](self.record, actor=self.actor).attach(made.n, file)
@@ -40,6 +44,16 @@ class Messages(Controller):
 class Todos(Controller):
     resource = types.Todo
 
+    def assign(self, n: int, to: str = "", off: bool = False):
+        if not to and not off:
+            raise Refused("assign names an agent with --to, or --off to put the row back")
+        return self.update(n, assigned="" if off else to)
+
+    def report(self, n: int, how: str):
+        if not self.agent:
+            raise Refused("report is a subagent's word — the dispatcher closes a row with done")
+        return self.update(n, reported={"agent": self.agent, "dispatcher": self.session, "how": how, "at": time.time()})
+
     def priority(self, n: int, value: str):
         level = str(value).lower()
         if level not in LEVELS and not level.lstrip("-").isdigit():
@@ -52,6 +66,14 @@ class Todos(Controller):
 
 class Works(Controller):
     resource = types.Work
+
+    def create(self, title: str, abstract: str = "", brief: str = "", **data):
+        if data.get("todo"):
+            row = CONTROLLERS["todo"](self.record, actor=self.actor).load(int(data["todo"]))
+            held = row.data.get("assigned") or ""
+            if held and held != self.agent:
+                raise Refused(f"todo {row.n} is assigned to {held}; nobody else may take it")
+        return super().create(title, abstract, brief, **data)
 
 
 DRAFT, READY, ACTIVE, WAITING, DONE, ABANDONED = "draft", "ready", "active", "waiting", "done", "abandoned"

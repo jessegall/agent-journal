@@ -14,9 +14,10 @@ class Controller:
     resource = Resource
     actor = "user"
 
-    def __init__(self, record: Record, actor: str | None = None, session: str = ""):
+    def __init__(self, record: Record, actor: str | None = None, session: str = "", agent: str = ""):
         self.record = record
         self.session = session
+        self.agent = agent
         if actor:
             self.actor = actor
 
@@ -53,7 +54,7 @@ class Controller:
             n = (self.numbers() or [0])[-1] + 1
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
             r = self.resource(n=n, title=check_title(title), abstract=check_abstract(abstract), brief=brief,
-                              data=self._shaped(data), created=time.time(), seen=[self.actor], refs=[about] if about else [])
+                              data={**self._shaped(data), **({"agent": self.agent, "dispatcher": self.session} if self.agent else {})}, created=time.time(), seen=[self.actor], refs=[about] if about else [])
             r = self.save(r, "created")
             if supersedes:
                 self.complete(int(supersedes), how=f"superseded by {self.type} {n}")

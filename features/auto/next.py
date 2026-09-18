@@ -19,7 +19,7 @@ def waiting_on(record, todo, rows: list) -> bool:
 
 def ready(record) -> list:
     rows = open_rows(record)
-    fit = [t for t in rows if not t.data.get("blocked") and not waiting_on(record, t, rows) and not asked(record, t) and not held(record, t)]
+    fit = [t for t in rows if not t.data.get("blocked") and not t.data.get("assigned") and not waiting_on(record, t, rows) and not asked(record, t) and not held(record, t)]
     return sorted(fit, key=lambda t: (-int(t.data.get("priority") or LEVELS["default"]), t.n))
 
 
