@@ -168,7 +168,9 @@ def _extension_zip(root: Path, project: Path, m: re.Match):
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         for f in sorted(here.rglob("*")):
             if f.is_file() and "__pycache__" not in f.parts:
-                zf.write(f, f"journal-pointer/{f.relative_to(here)}")
+                # AT THE ROOT OF THE ZIP: the Web Store wants manifest.json there, not in a folder,
+                # and a zip of many root entries unpacks into a folder of its own name anyway
+                zf.write(f, str(f.relative_to(here)))
     return 200, "application/zip", buf.getvalue()
 
 
@@ -208,7 +210,19 @@ def _api_about(root: Path, project: Path, m: re.Match):
     f = root / "CHANGELOG.md"
     return _json({"version": __import__("update").current(root), "changelog": f.read_text() if f.is_file() else "",
                   # the Chrome extension ships with the package; the Settings page offers it when it is there
-                  "extension": _extension_dir(root) is not None})
+                  "extension": _extension_dir(root) is not None,
+                  # once the extension is on the Chrome Web Store, its page is the one-click way in: the
+                  # link lives beside the code, filled in when the listing exists, empty until then
+                  "extension_store": _extension_store(root)})
+
+
+def _extension_store(root: Path) -> str:
+    here = _extension_dir(root)
+    f = here / "store.json" if here else None
+    try:
+        return str(json.loads(f.read_text()).get("url") or "") if f and f.is_file() else ""
+    except (OSError, ValueError):
+        return ""
 
 
 @route(r"^/api/viewers$")

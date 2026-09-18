@@ -472,7 +472,7 @@ _ext_status, _ext_headers, _ext_body = get("/extension.zip")
 _ext_names = sorted(_zipfile.ZipFile(_io.BytesIO(_ext_body)).namelist()) if _ext_status == 200 else []
 check("the viewer hands out the extension as a zip, or says it has none",
       (_ext_status in (200, 404),
-       _ext_status != 200 or ("journal-pointer/manifest.json" in _ext_names
+       _ext_status != 200 or ("manifest.json" in _ext_names   # at the root: the shape the Web Store takes
                               and _ext_headers.get("Content-Type", "").startswith("application/zip")),
        json.loads(get("/api/about")[2])["extension"] == (_ext_status == 200)),
       (True, True, True))
