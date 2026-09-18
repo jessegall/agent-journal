@@ -4,6 +4,31 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.153.0 — A newer version shows itself, and a reply is not news twice
+
+**A newer version shows itself, above the multi-journal strip.** A full-width band at the very top
+of the viewer, shown whenever a newer version is out — the version, its headline, an Upgrade button
+that asks the agent to run it, and an X. Dismissing is per-version, so closing it for one release
+says nothing about the next.
+
+**Neither a plain reply nor an answer to a part is a notification any more.** The thread shows a
+reply under the turn it answers, quote and all, so a bell notification for either was a second
+telling of what the user is already looking at. Only a commit, a plan phase, and the agent's own
+`journal notify` are left as real notifications now.
+
+**The Unread/Read bar in Notifications is sticky**, the same way the tabs above it already are, so
+the list scrolls under it rather than taking it with them.
+
+**The shells and subagents strip floats over the conversation instead of pushing it down.** Opening
+it used to move every message below it out from under the reader's eyes; it is `position: absolute`
+now, anchored to the agent bar, with the thread dimmed a little to say where to look — and the two
+strips are mutually exclusive, since both anchored at the same spot would otherwise stack.
+
+**A one-shot button was tried and reverted in the same session.** The agent briefly offered a
+toggle for whether the core journal skills load at every start; the user did not want a toggle for
+something that was already decided, so it is gone. The setting itself — `journal` and
+`journal-memory` always-load, the rest on their triggers — stands from 1.152.0, unchanged.
+
 ## 1.152.0 — The agent says what it is doing, and the chat leaves the page
 
 **The status bar says what the agent is running, right now.** Every Bash command, every MCP call and
