@@ -112,6 +112,19 @@ class Notification(Model):
 
 
 @dataclass
+class Notice(Model):
+    text: str = ""
+    tone: str = "note"
+    link: str = ""
+    source: str = ""
+    closed_at: str = ""
+    closed_by: str = ""
+
+    noun: ClassVar[str] = "notice"
+    sortable: ClassVar[tuple[str, ...]] = ("n", "at")
+
+
+@dataclass
 class Report(Model):
     title: str = ""
     body: str = ""

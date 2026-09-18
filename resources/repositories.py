@@ -7,6 +7,7 @@ import comments
 import connections
 import docs
 import inbox
+import notices
 import notifications
 import pins
 import plans
@@ -19,7 +20,7 @@ import todo
 import tools
 import work
 from resources.base import Query, Repository
-from resources.models import Attachment, Claim, Comment, Connection, Doc, Notification, Report, Suggestion, Message, Part, Plan, Question, Reminder, Rule, StyleItem, Todo, Tool, Work
+from resources.models import Attachment, Claim, Comment, Connection, Doc, Notice, Notification, Report, Suggestion, Message, Part, Plan, Question, Reminder, Rule, StyleItem, Todo, Tool, Work
 
 
 class Todos(Repository[Todo]):
@@ -84,6 +85,13 @@ class Notifications(Repository[Notification]):
 
     def rows(self) -> list[dict]:
         return notifications._all(self.root, self.env or None)
+
+
+class Notices(Repository[Notice]):
+    model = Notice
+
+    def rows(self) -> list[dict]:
+        return notices._all(self.root, self.env or None)
 
 
 class Reports(Repository[Report]):
