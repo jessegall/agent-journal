@@ -113,6 +113,7 @@ class Reminder(Shape, Resource):
 class Question(Options, Resource):
     type = "question"
     attention = True
+    nav = False
     icon = "help"
     names = {"complete": "answer", "create": "ask"}
     labels = {"outcome": "Answer", "abstract": "Context"}

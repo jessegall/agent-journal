@@ -3,7 +3,7 @@ import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {act} from "../api.js";
 import {peek, route} from "../route.js";
-import {meta, reload, types, unreadByUser} from "../store.js";
+import {focusTurn, meta, reload, types, unreadByUser} from "../store.js";
 
 const TINT = {
     question: "#a78bfa",
@@ -15,6 +15,10 @@ const TINT = {
     reminder: "#d9a441",
 };
 const cards = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));
+
+function open(r) {
+    if (!focusTurn(r.ref)) peek(r.type, r.n);
+}
 
 async function dismiss(r) {
     await act(route.value.env, r.type, r.n, "read");
@@ -32,7 +36,7 @@ async function dismiss(r) {
     <template v-else>
         <section class="home-section">
             <TransitionGroup name="qrow" tag="div" class="needs-slot">
-                <div v-for="r in cards" :key="r.ref" :class="['needs-card', r.type]" @click="peek(r.type, r.n)">
+                <div v-for="r in cards" :key="r.ref" :class="['needs-card', r.type]" @click="open(r)">
                     <div class="needs-card-top">
                         <span class="needs-card-kind">{{ meta(r.type).title }}</span>
                         <span class="needs-card-meta">{{ r.type }} {{ r.n }}</span>
