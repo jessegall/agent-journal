@@ -4069,8 +4069,16 @@ const Thread = {
       const left = pending.value.filter((t) => t.state === "failed" || !said.has((t.text || "").trim()));
       if (left.length !== pending.value.length) pending.value = left;
     }, { flush: "post" });
+    //: a reader who has not touched the scroll for this long is not reading up there any more, and a
+    //: thread that stays where a stray wheel-nudge left it hides everything said since
+    const IDLE_MS = 15000;
+    //: when the thread last moved ITSELF: its own scrolls must not count as the reader touching it
+    const ours = { at: 0 };
+    const touched = ref(Date.now());
     const bottom = (behavior) => {
-      if (root.value) root.value.scrollTo({ top: root.value.scrollHeight, behavior });
+      if (!root.value) return;
+      ours.at = Date.now();
+      root.value.scrollTo({ top: root.value.scrollHeight, behavior });
     };
     // AN IMAGE HAS NO HEIGHT UNTIL IT LOADS, so the box is measured short and the scroll lands above
     // the bottom. The one that grew says so, and the thread finishes the journey — but only if the
@@ -4094,6 +4102,8 @@ const Thread = {
       const was = away.value;
       away.value = !near();
       if (was && !away.value) missed.value = 0;
+      // a scroll the thread did itself is not the reader deciding to stay up there
+      if (Date.now() - ours.at > 400) touched.value = Date.now();
     };
     const backDown = () => { missed.value = 0; bottom("auto"); };
     // WHAT IS KNOWN IS THAT IT IS WORKING, not that it is typing. A typing indicator in a chat app
@@ -4110,7 +4120,10 @@ const Thread = {
       const key = newest(rows);
       const first = !last;
       const arrived = key && key !== last;
-      const follow = first || justSent() || near();
+      // THE POINTER RESTING ON THE THREAD IS NOT SOMEBODY READING IT. A wheel nudge from a pointer
+      // left on the chat leaves the thread a few hundred pixels up and every later turn lands out of
+      // sight; if nobody has touched the scroll for a while, the newest turn is what they want.
+      const follow = first || justSent() || near() || Date.now() - touched.value > IDLE_MS;
       if (arrived && !follow) missed.value += 1;
       last = key;
       if (first) nextTick(() => { settled.value = true; });
