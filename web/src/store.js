@@ -19,6 +19,7 @@ export const store = reactive({
     agents: [],
     stream: null,
     activity: remembered("journal.activity", true),
+    focus: "",
 });
 
 watch(
@@ -144,4 +145,13 @@ export const lightbox = reactive({pictures: [], at: -1});
 export function openPictures(pictures, at) {
     lightbox.pictures = pictures;
     lightbox.at = at;
+}
+
+export function focusTurn(ref) {
+    const el = document.querySelector(`[data-ref="${ref}"]`);
+    if (!el) return false;
+    store.focus = ref;
+    el.scrollIntoView({behavior: "smooth", block: "center"});
+    setTimeout(() => (store.focus = store.focus === ref ? "" : store.focus), 1800);
+    return true;
 }

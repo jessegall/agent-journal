@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import {peek, route} from "../route.js";
-import {clock, meta, quoted, reload, rows} from "../store.js";
+import {clock, meta, quoted, reload, rows, store} from "../store.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠"];
 const props = defineProps({turn: Object});
@@ -42,7 +42,11 @@ async function drop() {
 </script>
 
 <template>
-    <div :class="['thread-turn', {mine, ask: turn.type === 'question'}]" @mouseleave="picking = false">
+    <div
+        :class="['thread-turn', {mine, ask: turn.type === 'question', lit: store.focus === turn.ref}]"
+        :data-ref="turn.ref"
+        @mouseleave="picking = false"
+    >
         <div class="thread-bubble md">
             <template v-if="became.length">
                 <div :class="['thread-became', {live: !turn.completed}]">
@@ -404,5 +408,12 @@ button.thread-pill:hover {
     font-size: 10.5px;
     color: var(--text-3);
     font-variant-numeric: tabular-nums;
+}
+.thread-turn.lit .thread-bubble {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 </style>

@@ -3,7 +3,7 @@ import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {act, create} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {quoted, reload, rows, withQuote} from "../store.js";
+import {quoted, reload, rows, store, withQuote} from "../store.js";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 
@@ -127,7 +127,7 @@ watch(
         </div>
         <div
             ref="scroller"
-            class="thread-scroll"
+            :class="['thread-scroll', {focusing: store.focus}]"
             @scroll.passive="watchScroll"
             @mouseenter="reading.inside = true"
             @mouseleave="reading.inside = false"
@@ -190,6 +190,14 @@ watch(
 
 .thread-scroll:has(.thread-turn:hover) :deep(.thread-turn:not(:hover) .thread-bubble) {
     opacity: 0.82;
+}
+
+.thread-scroll.focusing :deep(.thread-turn:not(.lit)) {
+    opacity: 0.35;
+    filter: blur(0.6px);
+    transition:
+        opacity 0.25s ease,
+        filter 0.25s ease;
 }
 
 .thread-write {
