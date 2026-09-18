@@ -882,6 +882,18 @@ check("a command from before this work was declared belongs to the work before i
 _swork.end(root, "read the bar back", _run_began)
 state.put(root, "running_command", None, stem=_run_stem)
 check("and nothing recorded is nothing shown", _activity.running_now(root, _run_stem), None)
+# THE SHELLS THE AGENT LEFT RUNNING. The hook records the command and when it went to the background;
+# the harness writes its output into one file per shell, and pairing them by time is what makes
+# "still going" answerable. With no such directory the answer is an empty list, never a guess.
+import controllers.activity as _act  # noqa: E402
+state.put(root, "background_shells", [{"what": "python3 test_serve.py", "at": time.time()}], stem=_run_stem)
+_shells = _act.shells_now(root, _run_stem)
+check("a background shell is listed with what it ran, and reported over when nothing says otherwise",
+      [(x["what"], x["done"], x["seconds"] < 5) for x in _shells],
+      [("python3 test_serve.py", True, True)])
+state.put(root, "background_shells", [], stem=_run_stem)
+check("and nothing recorded is an empty list, not a guess", _act.shells_now(root, _run_stem), [])
+
 # HOW OFTEN THE SESSION HAS BEEN COMPACTED is counted at every session start from the transcript's
 # own boundaries, so the bar can say why the agent may not remember an hour ago.
 state.put(root, "compactions", 3, stem=_run_stem)

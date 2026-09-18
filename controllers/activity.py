@@ -164,27 +164,58 @@ def _epoch(at: str) -> float:
 OVER = "[exited with code"
 
 
+def _tasks_dir(root: Path, stem: str) -> Path | None:
+    """Where this session's background output is written, or None.
+
+    THE PATH IS DERIVED AND THEN CHECKED, never assumed: the harness writes to
+    <tmp>/claude-<uid>/<project slug>/<session>/tasks, and a version that changes it simply leaves
+    this returning None — the bar then shows nothing rather than something invented.
+    """
+    import os
+    slug = str(root.resolve().parent).replace("/", "-")
+    here = Path("/tmp") / f"claude-{os.getuid()}" / slug / stem / "tasks"
+    return here if here.is_dir() else None
+
+
 def shells_now(root: Path, stem: str) -> list[dict]:
     """The background shells this session started, and whether each is still going.
 
-    NOTHING CLAIMS LIVENESS IT CANNOT CHECK. The harness writes each background command's output to
-    a file and closes it with an exit line, so that file answers the question; a shell whose file is
-    gone is reported as over rather than as running for ever.
+    NOTHING CLAIMS LIVENESS IT CANNOT CHECK. The hook records the command and the moment it was sent
+    to the background; the harness writes that command's output into one file per shell, and closes
+    it with an exit line when it is over. Pairing the two by time is what makes "still going"
+    answerable — and a shell with no file found is reported as over rather than as running for ever.
     """
     import state
     import time
+    held = [x for x in (state.get(root, "background_shells", [], stem=stem) or [])
+            if isinstance(x, dict) and x.get("what")]
+    if not held:
+        return []
+    tasks = _tasks_dir(root, stem)
+    files = []
+    if tasks is not None:
+        files = sorted((f for f in tasks.glob("*.output") if not f.is_symlink() and f.is_file()),
+                       key=lambda f: f.stat().st_ctime)
+    taken: set = set()
     out = []
-    for got in state.get(root, "background_shells", [], stem=stem) or []:
-        if not isinstance(got, dict) or not got.get("what"):
-            continue
-        log = Path(str(got.get("log") or ""))
-        try:
-            tail = log.read_text(errors="replace")[-400:] if log.is_file() else ""
-            done = not log.is_file() or OVER in tail
-        except OSError:
-            done, tail = True, ""
-        out.append({"id": got.get("id") or "", "what": got["what"], "done": done,
-                    "seconds": int(max(0, time.time() - float(got.get("at") or 0)))})
+    for got in held:
+        at = float(got.get("at") or 0)
+        mine = None
+        for f in files:
+            if f in taken:
+                continue
+            # the file is made the instant the shell is: a couple of seconds covers a slow machine
+            if abs(f.stat().st_ctime - at) <= 5:
+                mine, _ = f, taken.add(f)
+                break
+        done = True
+        if mine is not None:
+            try:
+                done = OVER in mine.read_text(errors="replace")[-400:]
+            except OSError:
+                done = True
+        out.append({"id": mine.stem if mine is not None else "", "what": got["what"], "done": done,
+                    "seconds": int(max(0, time.time() - at))})
     return out
 
 

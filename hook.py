@@ -2194,6 +2194,7 @@ def on_pre_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
         _snapshot_files(payload, ctx)
         # WHAT IS RUNNING RIGHT NOW, so a long command can say so rather than looking like a hang
         _running_start(payload, ctx)
+        _shell_start(payload, ctx)
     except Exception as e:  # counting files must never stop a tool call
         print(f"journal files: {e}", file=sys.stderr)
     if not conf["gate_writes_on_start"] or "gate" in conf["silenced"]:
@@ -2537,29 +2538,24 @@ def _running_end(payload: dict, ctx: Ctx) -> None:
 #: the background shells this session started, newest last — what it ran and where the output lands
 SHELLS = "background_shells"
 SHELLS_KEPT = 8
-_SHELL = re.compile(r"running in background with ID: (\S+?)\.\s+Output is being written to: (\S+)")
 
 
 def _shell_start(payload: dict, ctx: Ctx) -> None:
-    """Record a Bash call that was sent to the background, so the bar can say it is still going.
+    """Record a Bash call sent to the background, so the bar can say what the agent left running.
 
-    THE TOOL CALL RETURNS AT ONCE AND THE WORK DOES NOT. A backgrounded command's PostToolUse fires
-    immediately, so the running-command line — which is about the call — says nothing about it. The
-    harness hands back the id and the file its output is written to, and that FILE is the honest
-    signal: it ends with an exit line when the command is over, so nothing has to claim liveness it
-    cannot check.
+    THE TOOL CALL RETURNS AT ONCE AND THE WORK DOES NOT, and the hook is told neither the shell's id
+    nor where its output goes — measured: the PostToolUse payload carries neither. What it does know
+    is the command and the moment it started, and the harness writes every background command's
+    output into one directory per session. Pairing the two by time is what lets the viewer say
+    whether a shell is still going without claiming anything it cannot check.
     """
-    if payload.get("tool_name") != "Bash":
-        return
-    said = payload.get("tool_response")
-    said = said if isinstance(said, str) else json.dumps(said or "")
-    m = _SHELL.search(said)
-    if not m:
+    if payload.get("tool_name") != "Bash" or not (payload.get("tool_input") or {}).get("run_in_background"):
         return
     what = " ".join(str((payload.get("tool_input") or {}).get("command", "")).split())
-    held = state.get(ROOT, SHELLS, [], stem=ctx.stem) or []
-    held = [x for x in held if isinstance(x, dict) and x.get("id") != m.group(1)]
-    held.append({"id": m.group(1), "what": what[:160], "log": m.group(2), "at": time.time()})
+    if not what:
+        return
+    held = [x for x in (state.get(ROOT, SHELLS, [], stem=ctx.stem) or []) if isinstance(x, dict)]
+    held.append({"what": what[:160], "at": time.time()})
     state.put(ROOT, SHELLS, held[-SHELLS_KEPT:], stem=ctx.stem)
 
 
@@ -3025,7 +3021,6 @@ def on_post_tool(conf: dict, payload: dict, ctx: Ctx) -> int:
     try:
         _record_files(payload, ctx)
         _running_end(payload, ctx)
-        _shell_start(payload, ctx)
         _queue_tool(payload, ctx)
     except Exception as e:  # counting files and tool uses must never stop a tool call
         print(f"journal files: {e}", file=sys.stderr)
