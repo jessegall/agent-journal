@@ -98,7 +98,7 @@ CONTROLLERS["message"](record, actor=AGENT).complete(1, "read and filed")
 engine.tick()
 check("the agent's completion reaches the user as a notification and not the agent", ([n["ref"] for n in User(record).unread()], len(driver.sent)), (["message:1"], 1))
 
-# THE NUDGE: only idle, and in priority order — unseen first, then open work, then the next to-do under auto
+# THE NUDGE: only idle, and in priority order — unseen resources first; open work and the next to-do are features
 def settle():                                          # deliver whatever is pending, then read the nudge alone
     engine.tick()
     engine.typed_at = 0
@@ -116,18 +116,17 @@ CONTROLLERS["question"](record, actor=AGENT).see(1)
 settle()
 check("the question seen: the to-do is next in priority", driver.sent[-1] == "1 unseen todo", True)
 CONTROLLERS["todo"](record, actor=AGENT).see(1)
-CONTROLLERS["work"](record, actor=AGENT).create("the header")
-settle()
-check("everything seen, work open: the nudge names the open work", driver.sent[-1] == "work 1 open", True)
-CONTROLLERS["work"](record, actor=AGENT).complete(1)
 why = settle()
-check("nothing open, auto off: nothing owed", (why, driver.sent), ("nothing owed", []))
-record.set_setting("auto", True)
-settle()
-check("auto on: the next to-do", driver.sent[-1] == "todo 1 next", True)
+check("everything seen: nothing owed", (why, driver.sent), ("nothing owed", []))
+CONTROLLERS["work"](record, actor=AGENT).create("the header")
+why = settle()
+check("the agent's own work is not owed to it by the engine: that is the work feature's nudge", (why, driver.sent), ("nothing owed", []))
+CONTROLLERS["nudge"](record, actor=SYSTEM).create("work 1 open")
+driver.sent.clear()
+engine.tick()
 driver.report = {"at": time.time() - 100, "event": "Stop", "status": IDLE}
 engine.tick()
-check("a nudge typed a moment ago is not typed again before the hooks report", (engine.why, len(driver.sent)), ("typed, waiting for the hooks", 1))
+check("a line typed a moment ago is not followed by a nudge before the hooks report", (engine.why, driver.sent), ("typed, waiting for the hooks", ["work 1 open"]))
 check("the priority order is messages first", PRIORITY[0], "message")
 
 # THE SEAT RECORD

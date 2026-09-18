@@ -63,16 +63,11 @@ class Engine:
 
     def owed(self) -> str:
         for type_ in PRIORITY:
+            if AGENT not in TYPES[type_].notify:
+                continue
             unseen = CONTROLLERS[type_](self.record, actor=AGENT).unseen()
             if unseen:
                 return f"{len(unseen)} unseen {type_}"
-        works = [w for w in CONTROLLERS["work"](self.record).all() if not w.completed]
-        if works:
-            return f"work {works[0].n} open"
-        if self.record.setting("auto", False):
-            todos = [t for t in CONTROLLERS["todo"](self.record).all() if not t.completed]
-            if todos:
-                return f"todo {todos[0].n} next"
         return ""
 
     def seat(self) -> None:
