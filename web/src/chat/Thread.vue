@@ -22,6 +22,7 @@ function unedit() {
     editing.value = null;
 }
 const away = ref(false);
+const settledOnce = ref(false);
 const reading = ref({inside: false, moved: 0});
 const turns = computed(() =>
     [
@@ -89,9 +90,10 @@ async function upload(n, file) {
 
 watch(
     () => turns.value.length,
-    async () => {
+    async (n) => {
         await nextTick();
         if (!stillReading()) toBottom();
+        if (n && !settledOnce.value) setTimeout(() => (settledOnce.value = true), 300);
     },
     {immediate: true}
 );
@@ -134,7 +136,7 @@ watch(
             <template v-if="!turns.length">
                 <p class="thread-empty">Nothing has been said here yet.</p>
             </template>
-            <TransitionGroup name="turn">
+            <TransitionGroup :name="settledOnce ? 'turn' : ''">
                 <Turn v-for="t in turns" :key="t.ref" :turn="t" @reply="quote = $event" @edit="editing = $event" @grew="settled" />
             </TransitionGroup>
         </div>

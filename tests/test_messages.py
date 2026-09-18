@@ -29,6 +29,7 @@ shot.write_bytes(b"png")
 reply = read.reply(m.n, "done differently: one row, not two", file=str(shot))
 comments = CONTROLLERS["comment"](record)
 check("the reply is a comment on the message, by the agent", (reply.refs, reply.seen), ([m.ref], [AGENT]))
+check("the reply opens on a quote of what it answers", reply.brief.startswith("> ") and reply.brief.endswith("\n\ndone differently: one row, not two"), True)
 check("the file is kept in the comment's own folder", (comments.files(reply.n), comments.load(reply.n).data["files"]), (["shot.png"], {"shot.png": ""}))
 
 # EDITING while unread; refused once the agent has read it

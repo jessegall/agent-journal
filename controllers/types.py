@@ -20,7 +20,8 @@ class Messages(Controller):
         return self.section(n, part, became)
 
     def reply(self, n: int, text: str, file: str = ""):
-        made = self.comment(n, text)
+        said = (self.load(n).brief or self.load(n).title).strip()
+        made = self.comment(n, f"> {said.replace(chr(10), chr(10) + '> ')}\n\n{text}" if said and not text.startswith(">") else text)
         if file:
             CONTROLLERS["comment"](self.record, actor=self.actor).attach(made.n, file)
         return made
