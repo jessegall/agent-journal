@@ -1,5 +1,6 @@
 import base64
 import json
+import shutil
 import subprocess
 import tempfile
 import time
@@ -405,8 +406,27 @@ class Environments(Controller):
             raise Refused(f"environment {env.title!r} is held by session {holder}; it leaves first")
         kept = ", ".join(f"{v} open {k}s" for k, v in held.items() if v)
         if kept and not yes:
-            raise Refused(f"environment {env.title!r} holds {kept}; --yes removes it from the sidebar anyway (its record stays on disk)")
-        return super().complete(n, how or "removed", **data)
+            raise Refused(f"environment {env.title!r} holds {kept}; --yes removes it anyway (its record goes to the attic)")
+        attic = self.record.root / "attic"
+        attic.mkdir(exist_ok=True)
+        if record.home.is_dir():
+            shutil.move(str(record.home), str(attic / f"{env.title}-{int(time.time())}"))
+        self.force_delete(n)
+        return f"environment {env.title!r} removed; its record is in {attic.name}/"
+
+    def rename(self, n: int, name: str):
+        env = self.load(n)
+        new = check_title(name)
+        if any(e.title == new for e in self.all()):
+            raise Refused(f"environment {new!r} exists")
+        holder = self.sessions().holder(env.title)
+        if holder and holder != self.session:
+            raise Refused(f"environment {env.title!r} is held by session {holder}; it leaves first")
+        old = Record(self.record.root, env.title).home
+        if old.is_dir():
+            old.rename(old.with_name(new))
+        Sessions(self.record.root).rebind(env.title, new)
+        return self.update(n, title=new)
 
     def pickup(self, n: int) -> dict:
         env = self.load(n)
