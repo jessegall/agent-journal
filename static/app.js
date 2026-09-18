@@ -391,6 +391,43 @@ function _boldLeads(text) {
   return parts;
 }
 
+// A CONSOLE ERROR PASTED INTO THE CHAT IS A CONSOLE ERROR, NOT A PARAGRAPH. A browser one is
+// "file:line Uncaught (in promise) SomeError: message" followed by "at fn (file:line:col)" frames,
+// usually run together on one line by the paste; a Python one opens with the traceback line. The
+// card keeps every character and only puts the frames back on their own lines.
+const CONSOLE_HEAD = /(?:(?<![\w/])[\w.\/-]+\.[a-z]{1,4}:\d+\s+)?(?:Uncaught(?: \(in promise\))?\s+)?\b[A-Z][\w$]*(?:Error|Exception|Warning)\b:?\s/g;
+const CONSOLE_FRAME = /\s+at\s+(?:(?:async\s+)?[\w.$<>\[\] ]+?\s+)?\(?(?:[\w.\/-]+|https?:\/\/\S+?):\d+(?::\d+)?\)?(?=\s|$)/g;
+
+function _consoleCard(text) {
+  const heads = [...text.matchAll(CONSOLE_HEAD)].map((m) => m.index);
+  if (!heads.length || !CONSOLE_FRAME.test(text)) return null;
+  CONSOLE_FRAME.lastIndex = 0;
+  const lead = text.slice(0, heads[0]).trim();
+  const entries = heads.map((at, i) => {
+    const chunk = text.slice(at, i + 1 < heads.length ? heads[i + 1] : text.length).trim();
+    const frames = [...chunk.matchAll(CONSOLE_FRAME)];
+    const head = frames.length ? chunk.slice(0, frames[0].index).trim() : chunk;
+    return { head, frames: frames.map((f) => f[0].trim()) };
+  });
+  if (!entries.some((e) => e.frames.length)) return null;
+  const rows = entries.map((e) => `<div class="console-entry"><div class="console-head">${e.head}</div>${
+    e.frames.map((f) => `<div class="console-frame">${f}</div>`).join("")}</div>`).join("");
+  return `${lead ? `<p>${_mdInline(lead)}</p>` : ""}<div class="console-card"><span class="console-label">console</span>${rows}</div>`;
+}
+
+function _traceback(lines, i) {
+  if (!/^Traceback \(most recent call last\):/.test(lines[i])) return null;
+  const got = [lines[i]];
+  let j = i + 1;
+  while (j < lines.length && lines[j].trim()) {
+    got.push(lines[j]);
+    j++;
+    if (/^[A-Z][\w.]*(?:Error|Exception|Warning|Exit)\b/.test(got[got.length - 1])) break;
+  }
+  const rows = got.map((l, k) => `<div class="${k === got.length - 1 ? "console-head" : "console-frame"}">${l}</div>`).join("");
+  return { html: `<div class="console-card"><span class="console-label">console</span><div class="console-entry">${rows}</div></div>`, next: j };
+}
+
 function renderMarkdown(src) {
   if (!(src || "").trim()) return "";
   const lines = _escapeHtml(src).replace(/\r\n/g, "\n").split("\n");
@@ -412,6 +449,8 @@ function renderMarkdown(src) {
     }
     const h = line.match(/^(#{1,6})\s+(.*)$/);
     if (h) { closeList(); out.push(`<h${h[1].length}>${_mdInline(h[2])}</h${h[1].length}>`); i++; continue; }
+    const tb = _traceback(lines, i);
+    if (tb) { closeList(); out.push(tb.html); i = tb.next; continue; }
     if (/^\s*$/.test(line)) { closeList(); i++; continue; }
     const li = line.match(/^\s*[-*]\s+(.*)$/) || line.match(/^\s*\d+\.\s+(.*)$/);
     if (li) {
@@ -428,6 +467,8 @@ function renderMarkdown(src) {
     i++;
     while (i < lines.length && !startsBlock(lines[i])) { para.push(lines[i]); i++; }
     const text = para.join(" ");
+    const card = _consoleCard(text);
+    if (card) { out.push(card); continue; }
     const leads = _boldLeads(text);
     if (leads) {
       for (const part of leads) out.push(`<p>${_mdInline(part)}</p>`);
