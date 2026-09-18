@@ -66,5 +66,52 @@ check("Enter clears it", seat.user_mid_line(), False)
 seat._note_typed(b"abc\x03")
 check("Ctrl-C drops it", seat.typed, b"")
 
+# THE NUDGER TYPES THE VIEWER'S NEWS, ONCE, WHEN THE AGENT IS QUIET. A message left on the environment
+# is typed as the channel would have said it; typed once; never over a half-typed line or a busy agent.
+import tempfile  # noqa: E402
+from pathlib import Path  # noqa: E402
+import tracks  # noqa: E402
+import inbox  # noqa: E402
+root = Path(tempfile.mkdtemp()) / ".journal"
+root.mkdir()
+tracks.create(root, "alpha", at="2026-09-18T00:00:00+00:00")
+
+
+class FakeSeat:
+    def __init__(self):
+        self.lines = []
+        self.idle = 10.0
+        self.mid = False
+
+    def idle_for(self):
+        return self.idle
+
+    def user_mid_line(self):
+        return self.mid
+
+    def type_line(self, text):
+        self.lines.append(text)
+
+
+seat = FakeSeat()
+nudger = launch.Nudger(root, "alpha", every=0)
+nudger.since = 1.0
+nudger(seat)
+check("nothing waiting, nothing typed", seat.lines, [])
+inbox.add(root, "please look at the header", "2026-09-18T00:00:05+00:00", source="web", track="alpha")
+seat.idle = 1.0
+nudger(seat)
+check("a busy agent is not interrupted", seat.lines, [])
+seat.idle = 10.0
+seat.mid = True
+nudger(seat)
+check("a half-typed line is not typed over", seat.lines, [])
+seat.mid = False
+nudger(seat)
+check("quiet agent, empty line: the message is typed as the channel would say it",
+      (len(seat.lines), "left message 1" in seat.lines[0], "messages show 1" in seat.lines[0]), (1, True, True))
+nudger(seat)
+check("and only once", len(seat.lines), 1)
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

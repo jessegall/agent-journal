@@ -8,8 +8,11 @@ import signal
 import struct
 import sys
 import termios
+import time
 import tty
 from pathlib import Path
+
+import channel
 
 #: how long the agent must print nothing before the launcher takes it to be idle
 IDLE_SECONDS = 3.0
@@ -62,7 +65,6 @@ class Launcher:
         self.write(text.encode() + b"\r")
 
     def idle_for(self) -> float:
-        import time
         return time.time() - self.last_output if self.last_output else 0.0
 
     def user_mid_line(self) -> bool:
@@ -70,7 +72,6 @@ class Launcher:
 
     def run(self) -> int:
         """Relay until the agent exits; the terminal is put back however this ends."""
-        import time
         stdin = sys.stdin.fileno()
         stdout = sys.stdout.fileno()
         saved = None
@@ -125,8 +126,65 @@ class Launcher:
                 self.typed += bytes([b])
 
 
-def run(command: list[str], cwd: Path | None = None, ticks: list | None = None) -> int:
+def run(command: list[str], cwd: Path | None = None, ticks: list | None = None, root: Path | None = None,
+        env: str = "", quiet: bool = False) -> int:
     seat = Launcher(command, cwd)
     seat.ticks = list(ticks or [])
+    if root is not None:
+        nudger = Nudger(root, env, quiet=quiet)
+        nudger.since = time.time()
+        seat.ticks.append(nudger)
     seat.start()
     return seat.run()
+
+
+# ─────────────────────────────────────────────── the viewer's news, typed into the agent
+class Nudger:
+    """What the channel used to push, typed into the agent's terminal by the seat outside it.
+
+    WHEN, NOT WHAT, IS THE WHOLE CARE. The words are the channel's own (`channel._waiting`), so
+    nothing is said twice or said differently; what the seat adds is judgement about the moment:
+    the agent has printed nothing for IDLE_SECONDS, the user has no half-typed line, and the
+    thing has not been typed before. Then one line, and Enter.
+    """
+
+    def __init__(self, root: Path, env: str, every: float = 2.0, quiet: bool = False):
+        self.root = root
+        self.env = env
+        self.every = every
+        self.quiet = quiet
+        self.told: set = set()
+        self.since = 0.0
+        self.last_look = 0.0
+
+    def __call__(self, seat: Launcher) -> None:
+        if self.quiet or not self.env:
+            return
+        now = time.time()
+        if now - self.last_look < self.every:
+            return
+        self.last_look = now
+        if seat.idle_for() < IDLE_SECONDS or seat.user_mid_line():
+            return
+        for key, params in self.pending():
+            if key in self.told:
+                continue
+            self.told.add(key)
+            seat.type_line(params["content"])
+            self.mark([key])
+            return                                   # one line per quiet moment; the agent answers, then the next
+
+    def pending(self) -> list:
+        channel.ROOT = self.root
+        if not self.since:
+            self.since = channel.STARTED[0] or time.time()
+        try:
+            return channel._waiting(self.env, self.since)
+        except Exception:                            # a half-written record is next look's problem, not a crash
+            return []
+
+    def mark(self, keys: list) -> None:
+        try:
+            channel._told(keys)
+        except Exception:
+            pass
