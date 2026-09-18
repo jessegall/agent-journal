@@ -50,7 +50,7 @@
       /* MINIMIZED: the bar and the viewer's own status line, which is the first thing in the frame.
          The frame is cut to that line's height rather than hidden, so what the agent is doing stays in view. */
       .win.shut { height: auto !important; min-height: 0; }
-      .win.shut .body { flex: none !important; height: 46px !important; }
+      .win.shut .body { flex: none !important; height: 56px !important; }
       .win.shut .grip { display: none; }
       iframe { flex: 1; width: 100%; border: 0; background: #0e1013; }
       .grip { position: absolute; right: 2px; bottom: 2px; width: 14px; height: 14px;
@@ -88,7 +88,7 @@
   const setShut = (on) => {
     box.shut = !!on;
     frame.classList.toggle("shut", box.shut);
-    minBtn.textContent = box.shut ? "▫" : "–";
+    minBtn.textContent = box.shut ? "▴" : "–";
     minBtn.title = box.shut ? "Restore" : "Minimize";
   };
   chrome.storage.local.get("window").then((got) => {
