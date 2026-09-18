@@ -50,7 +50,17 @@
       .grip:hover::after { border-color: #6c8cff; }
       .none { display: flex; align-items: center; justify-content: center; flex: 1; padding: 20px;
         text-align: center; color: #9aa0a8; font: 12px/1.45 -apple-system, system-ui, sans-serif; }
+      /* A BAR OF LAST RESORT. The page draws the bar — unless it is an older journal that cannot;
+         then this one appears, enough to drag, go back to the last journal, and close. */
+      .fallback { display: none; align-items: center; gap: 8px; height: 32px; padding: 0 6px 0 10px; cursor: grab;
+        border-bottom: 1px solid #1d2026; background: #14161a; color: #9aa0a8; user-select: none;
+        font: 500 11.5px/1 -apple-system, system-ui, sans-serif; }
+      .win.bare .fallback { display: flex; }
+      .fallback .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .fallback button { border: 0; border-radius: 6px; padding: 3px 7px; background: transparent; color: #9aa0a8; font: inherit; cursor: pointer; }
+      .fallback button:hover { background: #1e222a; color: #e6e8ec; }
     </style>
+    <div class="fallback"><span class="name">journal</span><button class="back" title="Back to the last journal">←</button><button class="x" title="Close">×</button></div>
     <div class="body"></div>
     <div class="grip"></div>`;
   shade.append(frame);
@@ -100,18 +110,39 @@
     });
   } catch (e) { /* no storage events here: this window keeps to itself */ }
 
+  let lastUrl = "";                                 // the journal before the current one, for the fallback's way back
+  let helloTimer = null;
+  const expectHello = () => {
+    clearTimeout(helloTimer);
+    frame.classList.remove("bare");
+    // a page that has not spoken in three seconds draws no bar: this shell draws one
+    helloTimer = setTimeout(() => frame.classList.add("bare"), 3000);
+  };
   const load = (fresh) => ask({ kind: "where", fresh: !!fresh }, (got) => {
     body.innerHTML = "";
     view = null;
     if (!got || !got.url) {
       body.innerHTML = `<div class="none">${(got && got.why) || "No journal viewer is running."}</div>`;
+      frame.classList.add("bare");
       return;
     }
+    shade.querySelector(".fallback .name").textContent = [got.project, got.env].filter(Boolean).join(" · ") || "journal";
     view = document.createElement("iframe");
     view.src = got.env ? `${got.url}/?chat#/env/${got.env}` : `${got.url}/?chat`;
     body.append(view);
+    expectHello();
   });
   load(false);
+  shade.querySelector(".fallback .x").addEventListener("click", () => { host.remove(); tellBackground("closed"); });
+  shade.querySelector(".fallback .back").addEventListener("click", () => {
+    if (lastUrl) ask({ kind: "pick", url: lastUrl, env: "" }, () => load(true));
+  });
+  shade.querySelector(".fallback").addEventListener("pointerdown", (e) => {
+    if (e.target.tagName === "BUTTON") return;
+    e.preventDefault();
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* the document listeners still do */ }
+    dragWindow(e.screenX, e.screenY);
+  });
 
   // DRAGGING IS ON THE DOCUMENT, NOT THE BAR — the bar is inside the frame, in another origin, so
   // what arrives from it is a start in screen coordinates; from there the pointer is on this document,
@@ -151,13 +182,17 @@
   window.addEventListener("message", (e) => {
     if (!view || e.source !== view.contentWindow || !e.data || e.data.source !== "journal-page" || e.data.kind !== "shell") return;
     const op = e.data.op;
-    if (op === "hello") tellPage({ shut: box.shut });
+    if (op === "hello") { clearTimeout(helloTimer); frame.classList.remove("bare"); tellPage({ shut: box.shut }); }
     else if (op === "drag") dragWindow(e.data.sx, e.data.sy);
     else if (op === "dragmove") { if (live) live.at(e.data.sx, e.data.sy); }
     else if (op === "dragend") { if (live) live.done(); }
     else if (op === "shut" || op === "open") { setShut(op === "shut"); remember(); }
     else if (op === "close") { host.remove(); tellBackground("closed"); }
-    else if (op === "pick") ask({ kind: "pick", url: e.data.url, env: e.data.env || "" }, () => load(true));
+    else if (op === "pick") {
+      expectHello();                                // the frame is about to be another page, which may not speak
+      ask({ kind: "where" }, (was) => { if (was && was.url) lastUrl = was.url; });
+      ask({ kind: "pick", url: e.data.url, env: e.data.env || "" }, () => load(true));
+    }
   });
 
   document.addEventListener("keydown", function esc(e) {
