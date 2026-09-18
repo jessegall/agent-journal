@@ -5941,7 +5941,9 @@ const AgentSkills = {
     // GROUPED BY PREFIX, TWO LEVELS DEEP. `commandments-backend-api` sits in `commandments-backend`
     // inside `commandments`; a prefix only one skill carries is no group, and a skill named exactly
     // its prefix (`journal`) heads its group. Collapsing is per page visit; a search opens everything.
-    const folded = ref(new Set());
+    // FOLDED UNTIL OPENED: the page is a table of contents first. A group is folded unless this visit
+    // unfolded it; a search opens everything, since what it found may be inside.
+    const unfolded = ref(new Set());
     const groups = computed(() => {
       const list = rows.value;
       const under = (prefix) => list.filter((s) => s.name === prefix || s.name.startsWith(`${prefix}-`));
@@ -5965,11 +5967,11 @@ const AgentSkills = {
       }
       return out;
     });
-    const isFolded = (key) => !find.value.trim() && folded.value.has(key);
+    const isFolded = (key) => !find.value.trim() && !unfolded.value.has(key);
     const fold = (key) => {
-      const next = new Set(folded.value);
+      const next = new Set(unfolded.value);
       if (next.has(key)) next.delete(key); else next.add(key);
-      folded.value = next;
+      unfolded.value = next;
     };
     // the same write the skill's own panel makes: one funnel, so a toggle here and a toggle there
     // cannot disagree about what "every start" means
