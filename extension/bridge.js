@@ -14,7 +14,9 @@
   window.addEventListener("message", (e) => {
     if (e.source !== window || !e.data || e.data.source !== "journal-page") return;
     const kind = e.data.kind;
-    if (kind === "hello") return tell("here");
+    // "here", and whether the chat has been handed to this extension: after a reload the page has
+    // forgotten, and the window over it is the extension's to restore, not the page's to draw again
+    if (kind === "hello") return chrome.runtime.sendMessage({ kind: "following" }, (got) => tell("here", { holding: !!(got && got.on) }));
     // the chat in the window asks for the page under it: point at an element, or send a picture of one
     if (kind === "point" || kind === "shot") return chrome.runtime.sendMessage({ kind });
     if (kind === "detach" || kind === "attach") {
@@ -25,5 +27,5 @@
     }
   });
 
-  tell("here");                                   // in case the page was listening before we loaded
+  chrome.runtime.sendMessage({ kind: "following" }, (got) => tell("here", { holding: !!(got && got.on) }));   // in case the page was listening before we loaded
 })();

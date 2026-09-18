@@ -178,11 +178,16 @@ async function mayTouch(url) {
 
 async function openOn(tabId, url) {
   if (!tabId || !url || !/^https?:/.test(url)) return;
-  if (url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost")) return;  // the journal's own page has the chat
-  const follow = (await following()) && (await everywhere());
+  const follow = await following();
+  // the journal's own page has the chat on it — unless the user detached it, and then the window is where it lives
+  if (!follow && (url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost"))) return;
   const left = (await chatOpen()) && ((await everywhere()) || (await mayTouch(url)));
   if (!follow && !left) return;
   try {
+    // CHAT.JS TOGGLES. Run on a tab that already has the window it takes the window DOWN — and says
+    // closed, which closes every tab's. Switching back to a tab was doing exactly that. So: look first.
+    const [has] = await chrome.scripting.executeScript({ target: { tabId }, func: () => !!document.getElementById("__journal-chat-window") });
+    if (has && has.result) return;
     await chrome.scripting.executeScript({ target: { tabId }, files: ["chat.js"] });
   } catch (e) { /* a page the extension may not touch is not an error worth saying twice */ }
 }
@@ -197,15 +202,7 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
 
 chrome.commands.onCommand.addListener(async (command) => {
   if (command === "point") await inject("picker.js");
-  if (command === "chat") {
-    // the shortcut is a gesture too: ask for this site so the window survives a reload here
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const origin = tab && tab.url && /^https?:/.test(tab.url) ? new URL(tab.url).origin : "";
-      if (origin && !/^http:\/\/(127\.0\.0\.1|localhost)/.test(origin)) await chrome.permissions.request({ origins: [`${origin}/*`] });
-    } catch (e) { /* declined, or no gesture to ask with */ }
-    await inject("chat.js");
-  }
+  if (command === "chat") await inject("chat.js");
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
@@ -218,8 +215,6 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     // chat.js says when it opened or closed on a page, so the window comes back after a reload
     opened: () => rememberOpen(true).then(() => ({ ok: true })),
     closed: () => rememberOpen(false).then(() => ({ ok: true })),
-    // asking for the page's origin has to come from a click, which is why the popup asks and this only answers
-    origin: async () => { const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }); return { origin: tab && tab.url && /^https?:/.test(tab.url) ? new URL(tab.url).origin : "" }; },
     test: () => post("[agent journal] a test message from the extension", []),
     follow: () => follow(msg.on, sender.tab && sender.tab.id),
     following: async () => ({ on: await following(), everywhere: await everywhere() }),
