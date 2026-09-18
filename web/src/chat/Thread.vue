@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, ref, watch} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {create} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
@@ -27,6 +27,18 @@ function toBottom() {
     if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
     away.value = false;
 }
+
+function settled() {
+    if (!stillReading() && !away.value) toBottom();
+}
+
+onMounted(() => {
+    const grew = new ResizeObserver(settled);
+    for (const el of scroller.value.children) grew.observe(el);
+    new MutationObserver(() => {
+        for (const el of scroller.value.children) grew.observe(el);
+    }).observe(scroller.value, {childList: true});
+});
 
 function watchScroll() {
     const s = scroller.value;
@@ -88,7 +100,7 @@ watch(
                 <p class="thread-empty">Nothing has been said here yet.</p>
             </template>
             <template v-for="t in turns" :key="t.ref">
-                <Turn :turn="t" @reply="quote = $event" />
+                <Turn :turn="t" @reply="quote = $event" @grew="settled" />
             </template>
         </div>
     </div>
