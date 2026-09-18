@@ -1,15 +1,26 @@
 <script setup>
 import {computed, nextTick, onMounted, ref, watch} from "vue";
-import {create} from "../api.js";
+import {act, create} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {reload, rows, withQuote} from "../store.js";
+import {quoted, reload, rows, withQuote} from "../store.js";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 
 const IDLE = 10000;
 const scroller = ref(null);
 const quote = ref("");
+const editing = ref(null);
+const mine = computed(() => rows("message").filter((m) => !m.deleted && m.seen[0] === "user" && !m.seen.includes("agent")));
+
+function editLast() {
+    const last = mine.value[mine.value.length - 1];
+    if (last) editing.value = {n: last.n, text: quoted(last.brief).text};
+}
+
+function unedit() {
+    editing.value = null;
+}
 const away = ref(false);
 const reading = ref({inside: false, moved: 0});
 const turns = computed(() =>
@@ -53,6 +64,12 @@ function stillReading() {
 }
 
 async function post(text, files) {
+    if (editing.value) {
+        await act(route.value.env, "message", editing.value.n, "edit", {text});
+        editing.value = null;
+        await reload();
+        return;
+    }
     const body = withQuote(quote.value, text);
     const title = body.split("\n").find((l) => l && !l.startsWith(">")) || body;
     const message = await create(route.value.env, "message", {title: title.replace(/:/g, " -").slice(0, 80), brief: body});
@@ -89,7 +106,21 @@ watch(
                     Newest
                 </button>
             </template>
-            <Compose :send="post" :quote="quote" quote-label="Replying to" />
+            <template v-if="editing">
+                <div class="thread-answering">
+                    <span class="thread-answering-label">Editing</span>
+                    <span class="thread-answering-text">{{ editing.text }}</span>
+                    <button type="button" class="thread-answering-x" title="Leave it as it was" @click="unedit">×</button>
+                </div>
+            </template>
+            <Compose
+                :send="post"
+                :quote="quote"
+                quote-label="Replying to"
+                :preset="editing ? editing.text : ''"
+                :up="editLast"
+                :down="unedit"
+            />
         </div>
         <div
             ref="scroller"
@@ -103,7 +134,7 @@ watch(
                 <p class="thread-empty">Nothing has been said here yet.</p>
             </template>
             <template v-for="t in turns" :key="t.ref">
-                <Turn :turn="t" @reply="quote = $event" @grew="settled" />
+                <Turn :turn="t" @reply="quote = $event" @edit="editing = $event" @grew="settled" />
             </template>
         </div>
     </div>
@@ -180,6 +211,38 @@ watch(
     height: 13px;
     stroke-width: 2.1;
     color: inherit;
+}
+
+.thread-answering {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--raised);
+    font-size: 12px;
+}
+
+.thread-answering-label {
+    flex: none;
+    color: var(--accent-text);
+}
+
+.thread-answering-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-3);
+}
+
+.thread-answering-x {
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    cursor: pointer;
 }
 
 .thread-empty {

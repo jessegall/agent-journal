@@ -8,7 +8,7 @@ import {clock, meta, quoted, reload, rows} from "../store.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠"];
 const props = defineProps({turn: Object});
-const emit = defineEmits(["reply", "grew"]);
+const emit = defineEmits(["reply", "edit", "grew"]);
 const picking = ref(false);
 const mine = computed(() => props.turn.who === "user");
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
