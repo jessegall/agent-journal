@@ -6590,9 +6590,12 @@ const App = {
     // THE USER ASKS, THE AGENT UPGRADES. An upgrade runs the suites and replaces the package, which is
     // the agent's job, not a button's -- so this says so in the one way the viewer already reaches it:
     // an ordinary message. Rule 8 -- a new viewer verb needs no new case to be announced.
-    const upgrade = reactive({ busy: false, said: "", error: "" });
+    // ASKED STAYS ASKED. The message goes out once; a reload must not bring the button back to
+    // send it again. The version asked for is kept per viewer, and a newer version resets it.
+    const upgrade = reactive({ busy: false, said: "", error: "", asked: "" });
+    try { upgrade.asked = localStorage.getItem("journal.update.asked") || ""; } catch (e) { /* fine without it */ }
     const askUpgrade = async (version) => {
-      if (upgrade.busy || !envName.value) return;
+      if (upgrade.busy || !envName.value || upgrade.asked === version) return;
       Object.assign(upgrade, { busy: true, said: "", error: "" });
       try {
         await postJSON(`/api/env/${envName.value}/messages`, {
@@ -6602,6 +6605,8 @@ const App = {
         });
         changed();
         upgrade.said = "The agent is asked to upgrade. It gets this at its next stop, or at once if it is idle.";
+        upgrade.asked = version;
+        try { localStorage.setItem("journal.update.asked", version); } catch (e) { /* per-viewer only */ }
       } catch (e) {
         upgrade.error = e.message;
       } finally {
@@ -6909,7 +6914,9 @@ const App = {
             <template v-else>
               <p class=side-update-text>Agent journal {{ updateBand.version }} is available<template v-if="updateBand.headline"> — {{ updateBand.headline }}</template></p>
               <div class=side-update-row>
-                <button type=button class=side-update-go :disabled="upgrade.busy" @click="askUpgrade(updateBand.version)">Upgrade</button>
+                <button type=button class=side-update-go :disabled="upgrade.busy || upgrade.asked === updateBand.version"
+                  :title="upgrade.asked === updateBand.version ? 'The agent has been asked' : null" @click="askUpgrade(updateBand.version)">
+                  {{ upgrade.asked === updateBand.version ? 'Asked' : 'Upgrade' }}</button>
                 <button type=button class=side-update-x title="Dismiss" aria-label="Dismiss" @click="dismissUpdate"><Icon name="close"/></button>
               </div>
             </template>
