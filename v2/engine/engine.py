@@ -2,6 +2,7 @@ import json
 import time
 
 from v2.controllers.types import CONTROLLERS
+from v2 import features
 from v2.engine import bus
 from v2.engine.actors import Actor, Agent, IDLE, System, User
 from v2.engine.record import Record
@@ -21,6 +22,7 @@ class Engine:
         self.why = ""
 
     def start(self) -> None:
+        features.load()
         self.running = True
 
     def stop(self) -> None:

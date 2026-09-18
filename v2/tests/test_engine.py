@@ -136,7 +136,7 @@ check("the seat record says the agent, its state and the last decision", (seat["
 
 # THE BUS hears every emit
 heard = []
-bus.on("*", lambda e: heard.append((e.type, e.action)))
+bus.on("*", lambda e, r: heard.append((e.type, e.action)))
 CONTROLLERS["pin"](record, actor=USER).create("a fact")
 check("record.emit reaches the bus", heard[-1], ("pin", "created"))
 bus.clear()

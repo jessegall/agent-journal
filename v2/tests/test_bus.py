@@ -24,10 +24,10 @@ def event(type_, action, n=1):
 
 heard = []
 bus.clear()
-off_all = bus.on(bus.ANY, lambda e: heard.append(("*", e.ref, e.action)))
-bus.on("todo", lambda e: heard.append(("todo", e.ref, e.action)))
-bus.on("deleted", lambda e: heard.append(("deleted", e.ref, e.action)))
-bus.on("plan.created", lambda e: heard.append(("plan.created", e.ref, e.action)))
+off_all = bus.on(bus.ANY, lambda e, r: heard.append(("*", e.ref, e.action)))
+bus.on("todo", lambda e, r: heard.append(("todo", e.ref, e.action)))
+bus.on("deleted", lambda e, r: heard.append(("deleted", e.ref, e.action)))
+bus.on("plan.created", lambda e, r: heard.append(("plan.created", e.ref, e.action)))
 
 bus.emit(event("todo", "created"))
 check("a listener on everything and one on the type hear a to-do created", heard, [("*", "todo:1", "created"), ("todo", "todo:1", "created")])
@@ -45,7 +45,7 @@ check("a listener taken off hears nothing more", heard, [])
 bus.clear()
 for type_ in TYPES:                                   # every type and every action reaches a listener on the type
     heard.clear()
-    off = bus.on(type_, lambda e: heard.append((e.ref, e.action)))
+    off = bus.on(type_, lambda e, r: heard.append((e.ref, e.action)))
     for action in ACTIONS:
         bus.emit(event(type_, action))
     check(f"{type_}: every action reaches the listener on the type, in order", heard, [(f"{type_}:1", a) for a in ACTIONS])
