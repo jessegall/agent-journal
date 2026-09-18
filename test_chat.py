@@ -122,6 +122,15 @@ inbox.mark_replies_told(root, "w", [(1, 1)], now())
 check("and the ticks fill in once the agent has been told of it",
       [t.get("state") for t in turns() if t["kind"] == "reply" and t["who"] == "you"], ["read"])
 
+# THE AGENT'S OWN MARK, after the tag and never instead of it.
+say("[!discovery][!] the cause was a font ligature")
+_flagged = [t for t in turns() if "font ligature" in t["text"]]
+check("a message marked important is a turn like any other, flagged and with the mark stripped",
+      [(t["tag"], t.get("important"), t["text"]) for t in _flagged],
+      [("discovery", True, "the cause was a font ligature")])
+check("and an ordinary message is not flagged",
+      [t.get("important") for t in turns() if t["kind"] == "said" and "answering directly" in t["text"]], [False])
+
 inbox.add(root, "an archived one", now(), track="w")
 inbox.archive(root, 2, "not part of the conversation", now(), track="w")
 check("an archived message is not a turn",

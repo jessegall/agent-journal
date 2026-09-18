@@ -109,6 +109,18 @@ def carried(text: str) -> bool:
     return any(t not in ROUTINE for t in found(text))
 
 
+#: THE ONE MARK THAT IS NOT A TAG. A tag says what KIND of message this is and every message has
+#: exactly one; this says the message matters more than the rest, and most messages do not carry it.
+#: It rides after the tag — `[!discovery][!] the cause was …` — so the tag stays the first thing on
+#: the line and the check for it stays binary.
+FLAG = re.compile(r"\A\s*\[!([a-z]+)\]\s*\[!\]")
+
+
+def flagged(text: str) -> bool:
+    """Did the agent mark this message important? Its own call, and optional."""
+    return bool(FLAG.match(text or ""))
+
+
 def strip(text: str) -> str:
-    """The message without its leading tag, for rendering a digest line."""
-    return PATTERN.sub("", text or "", count=1).strip()
+    """The message without its leading tag — and without the important mark that may follow it."""
+    return PATTERN.sub("", FLAG.sub(lambda m: f"[!{m.group(1)}]", text or "", count=1), count=1).strip()

@@ -153,6 +153,8 @@ def _take(raw: bytes, held: dict) -> None:
             held["turns"].append({"at": rec.get("timestamp") or "", "who": "agent", "kind": "said",
                                   "tag": got[0], "text": trim(whole), "n": None, "ref": "",
                                   "full": whole if len(whole.strip()) > TEXT_MAX else "",
+                                  # the agent's own call, and optional: `[!discovery][!] …`
+                                  "important": tags.flagged(text),
                                   "env": held["here"]})
         # an assistant message is never a mark: it can only ever be QUOTING one
         return

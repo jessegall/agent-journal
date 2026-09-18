@@ -1037,6 +1037,10 @@
     color: var(--text-3); font-size: 12.5px; display: -webkit-box; -webkit-line-clamp: 2;
     -webkit-box-orient: vertical; overflow: hidden; }
   /* the turn a rail card just moved the thread to: lit for a moment, so the eye lands on it */
+  /* THE AGENT'S OWN MARK. Not a tag and not a colour it chose: one outline, so a turn that matters
+     more than the ones around it can be found by looking rather than by reading. */
+  .thread-turn.important .thread-bubble { border-color: #c9955e;
+    box-shadow: 0 0 0 2px color-mix(in srgb, #c9955e 22%, transparent); }
   .thread-turn.lit .thread-bubble { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
   /* WHILE ONE TURN IS LIT, IT IS THE ONLY ONE IN FOCUS. Landing on a turn in a thread of a hundred
      is the moment the rest are in the way: they go quiet for the couple of seconds the light lasts.

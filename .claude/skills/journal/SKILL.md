@@ -86,6 +86,11 @@ Open every message with exactly one tag. Talking *about* a tag is not using one.
 | `[!info]`        | reports something happening that is not work progress: an agent started, a build running |
 | `[!reply]`       | answers what was asked, directly. Routine; kept out of the digest        |
 
+**One message in a stretch may matter more than the rest, and you can say so.** `[!]` after the
+tag — `[!discovery][!] the cause was a font ligature` — outlines that turn in the user's chat.
+It is your own call and it is optional; nothing is refused for lacking it, and a stretch where
+everything is outlined has said nothing. Use it for the thing they would be sorry to scroll past.
+
 When in doubt, `[!reply]`. It is honest for any answer, and it is what makes the rule
 keepable: every message can carry a tag, so the check needs no judgement. Only the last
 message of a turn is judged; connective lines before a tool call are scaffolding. If the
