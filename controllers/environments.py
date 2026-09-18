@@ -7,7 +7,8 @@ import todo
 import tracks
 from controller import Controller, Payload, Result
 import work
-from payloads.environments import MakePayload, RemovePayload, SettingsPayload
+import state
+from payloads.environments import AssignPayload, MakePayload, RemovePayload, SettingsPayload
 from templates import render
 
 MESSAGES = {
@@ -18,6 +19,9 @@ MESSAGES = {
                          "Auto mode is the journal's, not this environment's: POST /api/journal/settings",
     "viewer_first_on": "`{env}` is worked from the viewer: the agent keeps terminal messages to a tagged line and answers where the user reads",
     "viewer_first_off": "`{env}` is worked from the terminal again",
+    "assign_which": "{n} session(s) start with that — name one running session by its id",
+    "assign_already": "session {sid} is on {name} already",
+    "assigned": "session {sid} is on {name} now; it reads this environment from its next tool call",
 }
 
 
@@ -25,12 +29,71 @@ def say(message: str, /, **values) -> str:
     return render(MESSAGES[message], **values)
 
 
+#: a session with no process on record still counts as running this long after its last hook event
+RECENT_SECONDS = 15 * 60
+
+
+def _sessions(root: Path) -> list[dict]:
+    """Every running session of this project, bound or not, most recently seen first: what the viewer offers to assign."""
+    import time
+    from controllers.activity import channel_now
+    import os
+    conf, _ = settings_mod.load(root)
+    now = time.time()
+    # A SESSION IS RUNNING WHEN ITS PROCESS IS. The hook records Claude Code's pid per session; a
+    # one-shot `claude -p` that never sent a SessionEnd would otherwise sit here for a day as a
+    # candidate nobody can assign. With no pid on record, recently seen is the best evidence there is.
+    pids = state.get(root, "session_pids", {})
+    running = set()
+    for pid, stem in (pids.items() if isinstance(pids, dict) else ()):
+        try:
+            os.kill(int(pid), 0)
+            running.add(stem)
+        except (OSError, ValueError):
+            continue
+    out = []
+    for stem, data in state.runtime_files(root):
+        if data.get("ended"):
+            continue
+        seen = data.get("seen_at") or 0
+        if not seen or now - seen > conf["session_stale_hours"] * 3600:
+            continue
+        if stem not in running and now - seen > RECENT_SECONDS:
+            continue
+        out.append({"id": stem, "short": stem[:8], "env": tracks.bound(root, stem), "seen": tracks.age_text(now - seen),
+                    "age": now - seen, "channel": channel_now(root, stem)})
+    out.sort(key=lambda s: s["age"])
+    return out
+
+
 class EnvironmentController(Controller):
     resource = "environment"
     noun = "environment"
-    actions = ("index", "settings", "remove", "make")
+    actions = ("index", "settings", "remove", "make", "assign")
     numbered = ()
-    payloads = {"settings": SettingsPayload, "remove": RemovePayload, "make": MakePayload}
+    payloads = {"settings": SettingsPayload, "remove": RemovePayload, "make": MakePayload, "assign": AssignPayload}
+
+    def assign(self, root: Path, p: AssignPayload) -> Result:
+        """Bind a running session to this environment, from the viewer.
+
+        THE USER IS THE ONE PERSON WHO MAY MOVE AN AGENT. Binding was made explicit so no agent moves
+        another behind its back; the viewer is the user's hand, and an environment nobody holds is
+        exactly the case they need it for. The moved session reads the environment on its next
+        hook event, and the switch is on its record like one it made itself.
+        """
+        conf, _ = settings_mod.load(root)
+        want = (p.session or "").strip()
+        stems = [stem for stem, _ in state.runtime_files(root) if want and stem.startswith(want)]
+        if len(stems) != 1:
+            return Result("refused", say("assign_which", n=len(stems)))
+        stem = stems[0]
+        if tracks.bound(root, stem) == p.env:
+            return Result("refused", say("assign_already", sid=stem[:8], name=p.env))
+        ok, message = tracks.switch(root, p.env, p.at, stem, exclusive=conf["one_session_per_environment"],
+                                    stale_hours=conf["session_stale_hours"])
+        if not ok:
+            return Result("refused", message)
+        return Result("ok", say("assigned", sid=stem[:8], name=p.env), {"session": stem})
 
     def index(self, root: Path, p: Payload) -> Result:
         import views
@@ -45,7 +108,8 @@ class EnvironmentController(Controller):
                                  "activity_show": commandlog.setting(root, p.env, commandlog.SHOW),
                                  "activity_keep": commandlog.setting(root, p.env, commandlog.KEEP),
                                  "viewer_first": tracks.viewer_first(root, p.env),
-                                 "retention": __import__("retention").table(root, p.env)})
+                                 "retention": __import__("retention").table(root, p.env),
+                                 "sessions": _sessions(root)})
 
     def settings(self, root: Path, p: SettingsPayload) -> Result:
         import commandlog

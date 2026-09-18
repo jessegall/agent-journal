@@ -881,6 +881,27 @@
   .chat-alert > .ico { flex: none; width: 20px; height: 20px; margin-top: 1px; color: var(--warn); }
   .chat-alert-text { flex: 1; min-width: 0; }
   .chat-alert-text strong { display: block; font-weight: 600; color: #f0c98a; }
+  .chat-alert-go { flex: none; align-self: center; height: 28px; padding: 0 12px; border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent);
+    border-radius: 7px; background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--text); font: inherit; font-size: 12px; cursor: pointer; }
+  .chat-alert-go:hover { background: color-mix(in srgb, var(--warn) 34%, transparent); }
+  .assign-dialog { position: fixed; z-index: 51; top: 120px; left: 50%; transform: translateX(-50%); width: min(520px, calc(100% - 56px));
+    display: flex; flex-direction: column; overflow: hidden; border: 1px solid #33363d; border-radius: 14px; background: #151619;
+    box-shadow: 0 26px 64px rgba(0, 0, 0, .6); }
+  .assign-head { display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 15px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+  .assign-head .ico { flex: none; width: 15px; height: 15px; color: var(--text-3); }
+  .assign-head span { flex: 1; min-width: 0; }
+  .assign-note { margin: 0; padding: 14px 15px; color: var(--text-3); font-size: 12.5px; }
+  .assign-note code { padding: 1px 5px; border-radius: 4px; background: rgba(255, 255, 255, .08); }
+  .assign-rows { display: flex; flex-direction: column; padding: 6px; max-height: 320px; overflow-y: auto; }
+  .assign-row { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; border: 0; border-radius: 8px;
+    background: transparent; color: var(--text-2); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+  .assign-row:hover:not(:disabled) { background: var(--hover); color: var(--text); }
+  .assign-row:disabled { opacity: .6; cursor: default; }
+  .assign-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--border-2); }
+  .assign-dot.live { background: #63b37c; }
+  .assign-id { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: var(--text); }
+  .assign-env { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .assign-seen { color: var(--text-3); font-size: 11.5px; }
   .chat-alert-text code { padding: 1px 5px; border-radius: 4px; background: rgba(255, 255, 255, .1); font-size: 12px; }
   .chat-notice { flex: none; margin-bottom: -2px; display: flex; align-items: center; gap: 9px;
     padding: 7px 14px; border-radius: 0; border-bottom: 1px solid var(--border);
