@@ -4810,6 +4810,8 @@ const EnvHome = {
       }
     };
     const closeAssign = () => { assign.open = false; };
+    // a strip scrolled sideways to read the end comes back to its start when the pointer leaves it
+    const stripHome = (e) => { e.currentTarget.scrollTo({ left: 0, behavior: "smooth" }); };
     const assignTo = async (x) => {
       if (assign.busy) return;
       assign.busy = x.id;
@@ -5087,7 +5089,7 @@ const EnvHome = {
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
-             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice, noChannel, noAgent, assign, openAssign, closeAssign, assignTo, chatTab, CHAT_TABS, pickChatTab };
+             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice, noChannel, noAgent, assign, openAssign, closeAssign, assignTo, chatTab, CHAT_TABS, pickChatTab, stripHome };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -5221,13 +5223,13 @@ const EnvHome = {
           <Icon name="close"/></button>
       </div>
       </TransitionGroup>
-      <div v-if="shellsOpen && shells.length" class=crew-strip>
+      <div v-if="shellsOpen && shells.length" class=crew-strip @mouseleave="stripHome">
         <div v-for="x in shells" :key="x.id" :class="['crew-line', {done: x.done}]" :title="x.what">
           <span class=crew-dot></span><span class=crew-name>{{ x.what }}</span>
           <span class=crew-fact><Icon name="reminders"/><span>{{ x.done ? 'finished' : spanText(x.seconds * 1000) }}</span></span>
         </div>
       </div>
-      <div v-if="crewOpen && liveCrew.length" class=crew-strip>
+      <div v-if="crewOpen && liveCrew.length" class=crew-strip @mouseleave="stripHome">
         <button v-for="a in liveCrew" :key="a.key" type=button :class="['crew-line', {done: a.done, quiet: a.quiet}]" :title="a.title" @click="a.open">
           <span class=crew-dot></span><span class=crew-name>{{ a.name }}</span>
           <span v-for="f in a.facts" :key="f.icon" class=crew-fact><Icon :name="f.icon"/><span>{{ f.value }}</span></span>
