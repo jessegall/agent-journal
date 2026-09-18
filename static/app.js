@@ -4395,6 +4395,10 @@ const EnvHome = {
         { label: "session", icon: "activity", value: agent ? agent.session : "" },
         { label: "running", icon: "reminders", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
         { label: "context", icon: "files", value: agent && agent.context ? `${agent.context.share}%` : "" },
+        // HOW OFTEN THIS SESSION HAS LOST ITS WINDOW. It is the one fact here that says why the agent
+        // may not remember something said an hour ago, and it is counted from the transcript itself.
+        { label: agent && agent.compactions === 1 ? "compacted once" : `compacted ${agent && agent.compactions} times`,
+          icon: "collapse", value: agent && agent.compactions ? String(agent.compactions) : "" },
         // THE BRANCH IS THE AGENT'S FACT, not the page's: which checkout this session is working in,
         // beside which model it is and how full its window is. A subagent in a worktree is on another
         // branch entirely, and its own line says so.

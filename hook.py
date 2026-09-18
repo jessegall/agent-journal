@@ -3528,7 +3528,11 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
         peak = context.peak_before_compaction(ctx.path)
         if peak and not state.get(ROOT, "window", 0):
             state.put(ROOT, "window", context.window_from_peak(peak))
-    began = transcript.read(ctx.path, _caches(ctx.stem)[0])[0] if ctx.path is not None and ctx.path.is_file() else []
+    began, folds = transcript.read(ctx.path, _caches(ctx.stem)[0]) if ctx.path is not None and ctx.path.is_file() else ([], [])
+    # HOW MANY TIMES THIS SESSION HAS BEEN COMPACTED, counted from the transcript rather than kept as
+    # a tally: the boundaries are already in what was just read, so a session that predates the count
+    # has it from its first start, and a tally that drifts cannot.
+    state.put(ROOT, "compactions", len(folds), stem=ctx.stem)
     tracks.carried(ROOT, tracks.current(ROOT, ctx.stem), ctx.stem, (began[-1].n + 1) if began else 1)
     _prune(ctx.stem)
     loose = _unbound(conf, ctx)

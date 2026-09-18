@@ -192,7 +192,8 @@ class ActivityController(Controller):
                 return {"session": stem[:8], "seen": tracks.age_text(info["age"]), "working": agent_working(root, stem),
                         "compacting": agent_compacting(root, stem),
                         "context": context_use(path, window), "said": last_said(path), "started": session_started(path),
-                        "model": transcript.last_model(path), "running": running_now(root, stem)}
+                        "model": transcript.last_model(path), "running": running_now(root, stem),
+                        "compactions": state.get(root, "compactions", 0, stem=stem) or 0}
         return None
 
     @staticmethod

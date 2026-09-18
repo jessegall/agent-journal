@@ -869,6 +869,10 @@ check("a command from before this work was declared belongs to the work before i
 _swork.end(root, "read the bar back", _run_began)
 state.put(root, "running_command", None, stem=_run_stem)
 check("and nothing recorded is nothing shown", _activity.running_now(root, _run_stem), None)
+# HOW OFTEN THE SESSION HAS BEEN COMPACTED is counted at every session start from the transcript's
+# own boundaries, so the bar can say why the agent may not remember an hour ago.
+state.put(root, "compactions", 3, stem=_run_stem)
+check("the count of compactions is read back per session", state.get(root, "compactions", 0, stem=_run_stem), 3)
 
 commandlog.queue_tool(root, "alpha", _tool_stem, "Bash", "2099-01-06T00:00:00+00:00")
 commandlog.flush_tools(root, "alpha", _tool_stem, "2099-01-06T00:00:00+00:00")
