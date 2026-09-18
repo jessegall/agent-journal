@@ -9,7 +9,7 @@ from skills import reference, render, write  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
 got = render()
-check("the core skill and one per feature", (sorted(got)[:1], len(got)), (["journal-auto/SKILL.md"], 1 + len(features.FEATURES)))
+check("the core skill and one per feature", (sorted(got)[:1], len(got)), (["journal-agents/SKILL.md"], 1 + len(features.FEATURES)))
 core = got["journal/SKILL.md"]
 check("the core skill has its front matter and the reference", (core.startswith("---\nname: journal\n"), "## Reference: every noun and its words" in core), (True, True))
 ref = reference()
