@@ -43,7 +43,7 @@ class Provider(ABC):
         uses = int(row.data.get("uses") or 0) + (event == "PreToolUse")
         context = self.context(payload)
         agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "",
-                      at=time.time(), provider=self.name, uses=uses,
+                      at=time.time(), provider=self.name, uses=uses, transcript=str(payload.get("transcript_path") or row.data.get("transcript") or ""),
                       context=row.data.get("context") or 0 if context is None else context)
         if event == "PreToolUse" and self.writes(payload):
             return self.refusal(self.gate(root, env, row.title))
