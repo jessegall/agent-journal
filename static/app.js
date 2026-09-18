@@ -4420,7 +4420,9 @@ const Thread = {
         @mouseleave="picking === (anchor(t) || t.key) && (picking = '')"
         :class="['thread-turn', {mine: t.who === 'you', receipt: t.kind === 'receipt', ask: t.kind === 'question' || t.kind === 'parked', sending: t.state === 'sending', failed: t.state === 'failed', lit: !!anchor(t) && lit === anchor(t), important: t.important}]">
         <div class="thread-bubble md">
-          <p v-if="t.kind === 'question'" class=thread-ask-label>Question {{ t.n }}</p>
+          <!-- THE LABEL SAYS WHAT IT IS; THE FOOT SAYS WHICH ONE. The number was in both places, so
+               the loudest line in the bubble spent half its width on a reference nobody reads first. -->
+          <p v-if="t.kind === 'question'" class=thread-ask-label>Question</p>
           <p v-if="t.kind === 'parked'" class=thread-ask-label>Waiting on you</p>
           <p v-if="t.kind === 'message' && (t.becameRefs || []).length" :class="['thread-became', {live: t.working}]">
             <span v-if="t.working" class=thread-became-dot></span>
@@ -4494,7 +4496,7 @@ const Thread = {
             @click.stop="react(t, f.face)">{{ f.face }}<span v-if="f.n > 1" class=thread-face-n>{{ f.n }}</span></button>
         </div>
         <div class=thread-meta>
-          <span v-if="t.n && t.who === 'you'" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
+          <span v-if="t.n && (t.who === 'you' || t.kind === 'question')" class=thread-ref>{{ t.kind === "question" ? "question" : "message" }} {{ t.n }}</span>
           <span>{{ clock(t.at) }}</span>
           <span v-if="t.state && (t.kind === 'message' || t.kind === 'reply')" :class="['thread-ticks', t.state]" :title="landed(t)"
             role=img :aria-label="landed(t)">
