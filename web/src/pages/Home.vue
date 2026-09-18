@@ -2,7 +2,7 @@
 import {computed, ref} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
-import {open, types, unreadByUser} from "../store.js";
+import {open, store, types, unreadByUser} from "../store.js";
 import Thread from "../chat/Thread.vue";
 import Notice from "../chat/Notice.vue";
 import AgentBar from "../chat/AgentBar.vue";
@@ -22,7 +22,7 @@ const tabs = computed(() => [
 <template>
     <div class="home">
         <div class="home-main">
-            <section class="home-section home-thread">
+            <section :class="['home-section', 'home-thread', {roomy: !store.activity}]">
                 <AgentBar />
                 <TransitionGroup name="act">
                     <Notice v-for="x in notices" :key="x.n" :notice="x" />
@@ -107,6 +107,12 @@ const tabs = computed(() => [
 
 .home-thread > :deep(.thread) {
     padding: 0 var(--home-gutter);
+}
+
+@media (min-width: 1280px) {
+    .home-thread.roomy {
+        --home-gutter: 72px;
+    }
 }
 
 .home-divider {
