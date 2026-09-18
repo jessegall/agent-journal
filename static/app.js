@@ -3993,7 +3993,7 @@ function keepWindow() {
 }
 //: IS THE EXTENSION HERE? A page cannot see an extension, so it asks and waits a moment for an
 //: answer; no answer means no extension, and Detach keeps doing what it does on its own.
-const EXTENSION = reactive({ here: false, holding: false });
+const EXTENSION = reactive({ here: false, holding: false, everywhere: true });
 // THE CHAT REACHES THE PAGE IT FLOATS OVER through the extension: the crosshair points at an element,
 // the camera sends a picture of one. Both are the picker; the mode decides what the click sends.
 function askExtension(kind) {
@@ -4002,7 +4002,7 @@ function askExtension(kind) {
 window.addEventListener("message", (e) => {
   if (e.source !== window || !e.data || e.data.source !== "journal-extension") return;
   if (e.data.kind === "here") EXTENSION.here = true;
-  if (e.data.kind === "detached") { EXTENSION.holding = true; DETACHED.on = false; keepWindow(); }
+  if (e.data.kind === "detached") { EXTENSION.holding = true; EXTENSION.everywhere = e.data.everywhere !== false; DETACHED.on = false; keepWindow(); }
   if (e.data.kind === "attached" || e.data.kind === "failed") EXTENSION.holding = false;
 });
 window.postMessage({ source: "journal-page", kind: "hello" }, window.location.origin);
@@ -5236,7 +5236,9 @@ const EnvHome = {
         </div>
         <Thread v-if="((!DETACHED.on && !EXTENSION.holding) || CHAT_ONLY) && (!CHAT_ONLY || chatTab === 'chat')" :env="env"/>
         <div v-else-if="!CHAT_ONLY" class=thread-gone>
-          <p v-if="EXTENSION.holding">The chat is in the extension's window, and follows you across tabs.</p>
+          <p v-if="EXTENSION.holding && EXTENSION.everywhere">The chat is in the extension's window, and follows you across tabs.</p>
+          <p v-else-if="EXTENSION.holding">The chat is in the extension's window. To have it follow you to other sites, click the
+            extension's icon once and choose <b>Let the chat follow you on every page</b> — Chrome only lets the extension ask from there.</p>
           <p v-else>The chat is in its own window.</p>
           <button type=button class=thread-gone-back @click="detach(false)">Put it back on the page</button>
           <!-- THE WINDOW ENDS AT THIS TAB, and the thing that would carry it further ships with the
