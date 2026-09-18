@@ -3,6 +3,8 @@
 (() => {
   if (window.__journalPicking) return;
   window.__journalPicking = true;
+  const mode = window.__journalPickMode === "shot" ? "shot" : "point";
+  window.__journalPickMode = "";
 
   const box = document.createElement("div");
   box.style.cssText = [
@@ -17,7 +19,8 @@
     "background:#14161a", "color:#e6e8ec", "border:1px solid #2a2d33",
     "font:500 12px/1.4 -apple-system,system-ui,sans-serif", "box-shadow:0 6px 24px rgba(0,0,0,.4)",
   ].join(";");
-  hint.textContent = "Click an element to send it to the journal · Esc to stop";
+  hint.textContent = mode === "shot" ? "Click an element to send a picture of it · Esc to stop"
+                                     : "Click an element to send it to the journal · Esc to stop";
   document.documentElement.append(box, hint);
 
   let at = null;
@@ -92,6 +95,7 @@
     if (!el) return stop();
     const r = el.getBoundingClientRect();
     const picked = {
+      mode,
       selector: selectorFor(el),
       url: location.href,
       text: (el.innerText || "").trim().replace(/\s+/g, " ").slice(0, 120),

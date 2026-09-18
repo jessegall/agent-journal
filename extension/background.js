@@ -74,6 +74,7 @@ async function shotOf(rect, scale) {
 }
 
 function said(picked) {
+  if (picked.mode === "shot") return [`A picture of this element: \`${picked.selector}\``, picked.url].join("\n");
   const lines = [`I mean this element: \`${picked.selector}\``, picked.url];
   if (picked.text) lines.push(`"${picked.text}"`);
   if (picked.hints && picked.hints.length) lines.push(picked.hints.join(" · "));
@@ -111,10 +112,12 @@ async function send(picked) {
   return { ...got, shotWhy };
 }
 
-async function inject(file) {
+async function inject(file, mode) {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !tab.id) return { ok: false, why: "No page to work on." };
   try {
+    // the picker reads its mode off the window: "shot" sends a picture and little else
+    if (mode) await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: (m) => { window.__journalPickMode = m; }, args: [mode] });
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: [file] });
     return { ok: true };
   } catch (e) {
@@ -180,7 +183,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   if (!msg || !msg.kind) return false;
   const answer = {
     picked: () => send(msg.picked),
-    point: () => inject("picker.js"),
+    point: () => inject("picker.js", "point"),
+    shot: () => inject("picker.js", "shot"),
     chat: () => inject("chat.js"),
     test: () => post("[journal pointer] a test message from the extension", []),
     follow: () => follow(msg.on, sender.tab && sender.tab.id),
