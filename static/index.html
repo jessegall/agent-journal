@@ -668,7 +668,7 @@
   /* the tabs INSIDE a tab: they scroll with the list rather than sticking under the bar above them */
   .rail-tabs { position: sticky; top: 0; z-index: 2; flex: none; display: flex; align-items: stretch;
     height: 34px; padding: 0 var(--rail-gutter); gap: 14px;
-    border-bottom: 1px solid var(--border); background: var(--raised); }
+    border-bottom: 1px solid var(--border); background: #111215; }
   /* THE UNDERLINE TAKES NO SPACE. As a border it sat inside the tab's box, so selecting one moved
      its own text up a pixel; as an inset shadow it lies over the bar's rule and moves nothing. */
   .rail-tab { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0;
@@ -801,7 +801,7 @@
   /* THE SAME HEIGHT AS THE RAIL'S TABS, because they sit side by side across one line: the agent's
      state on the left of it and the rail's tabs on the right. Four pixels apart reads as a mistake. */
   .agent-bar { flex: none; display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 16px;
-    font-size: 11.5px; color: var(--text-3); border-bottom: 1px solid var(--border); }
+    font-size: 11.5px; color: var(--text-3); border-bottom: 1px solid var(--border); background: #111215; }
   /* the strip is the bar continuing, not a second thing under it: one rule goes under both */
   .agent-bar.open { border-bottom-color: transparent; }
   /* THE FACTS SCROLL RATHER THAN DISAPPEAR. In a narrow window the branch and the context fell off
@@ -1084,8 +1084,10 @@
     font-size: 11.5px; line-height: 1.5; text-align: center; }
   .thread-gone-more a { color: var(--accent-text); }
   /* THE ACTIVE PLAN, under the status bar and on every page: the same slim height as the bar above it */
+  /* THE BARS STEP DOWN. The status bar is the loudest (#17181b), the plan bar a shade under it, and
+     the agent bar and the rail's tabs — one row, one tone — a shade under that. */
   .planbar { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px 0 0;
-    border-bottom: 1px solid var(--line, #1d2026); background: var(--bg-2, #101216);
+    border-bottom: 1px solid var(--line, #1d2026); background: #141518;
     color: var(--text-2); font-size: 12.5px; }
   .planbar-link { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; height: 100%; padding: 0 14px 0 20px;
     color: inherit; text-decoration: none; }
