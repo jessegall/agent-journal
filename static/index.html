@@ -826,8 +826,11 @@
      always wants to see. The top padding is gone with the rule that used to sit above it. */
   /* the strip lines up with the bar above it, not with an indent of its own, and it keeps a rule on
      BOTH sides: the bar's own line above it stays, and its own closes it off underneath */
-  .crew-strip { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
-    padding: 4px 9px 6px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  /* ONE RULE, NOT TWO. The bar's line and the strip's read as a two-pixel band with the thread
+     column's own 2px gap between them; the strip lifts by that gap plus one, so its line lands
+     exactly ON the bar's. */
+  .crew-strip { flex: none; margin-top: -3px; display: flex; flex-direction: column; align-items: flex-start;
+    gap: 2px; padding: 4px 9px 6px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
   /* A COLUMN, NOT A RUN-ON LINE: names and models differ in length, so each fact used to start
      wherever the last one ended and nothing lined up down the strip. */
   .crew-line { display: flex; align-items: center; gap: 9px; height: 22px; padding: 0 7px; border: none; border-radius: 6px;
