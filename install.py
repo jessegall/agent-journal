@@ -19,6 +19,9 @@ def alias(project: Path, root: Path) -> Path:
     f.parent.mkdir(parents=True, exist_ok=True)
     f.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{PACKAGE / "journal.py"}" --root "{root}" "$@"\n')
     f.chmod(f.stat().st_mode | stat.S_IEXEC)
+    bin_ = Path.home() / ".local" / "bin"
+    if bin_.is_dir() and not (bin_ / "journal").exists():
+        (bin_ / "journal").symlink_to(f)
     return f
 
 
@@ -42,8 +45,8 @@ def install(project: Path, root: Path | None = None) -> list[str]:
 def upgrade(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
     done = []
-    if (PACKAGE.parent / ".git").is_dir() and shutil.which("git"):
-        pulled = subprocess.run(["git", "-C", str(PACKAGE.parent), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120)
+    if (PACKAGE / ".git").is_dir() and shutil.which("git"):
+        pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120)
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
     done += install(project, root)
     ran = migrate(root)

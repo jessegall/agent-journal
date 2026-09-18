@@ -2,18 +2,17 @@
 import { computed, ref } from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import { go, route } from "../route.js";
-import { open, rows, types, unseenByUser } from "../store.js";
+import { open, rows, types, unreadByUser } from "../store.js";
 import Chat from "../chat/Chat.vue";
 import ResourceRow from "../resource/ResourceRow.vue";
 import PlanBar from "../chat/PlanBar.vue";
 import HomeTabs from "./HomeTabs.vue";
 
 const tab = ref("waiting");
-const quiet = ["message", "comment", "reaction", "notification", "nudge", "work", "environment", "todo", "notice"];
-const waiting = computed(() => types.value.filter((t) => t.notify.includes("user") && !quiet.includes(t.name)).flatMap((t) => unseenByUser(t.name)));
+const waiting = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));
 const todos = computed(() => open("todo"));
 const notifications = computed(() => [...rows("notification")].reverse());
-const tabs = computed(() => [["waiting", "Waiting on you", waiting.value.length], ["todos", "To-dos", todos.value.length], ["notifications", "Notifications", unseenByUser("notification").length]]);
+const tabs = computed(() => [["waiting", "Waiting on you", waiting.value.length], ["todos", "To-dos", todos.value.length], ["notifications", "Notifications", unreadByUser("notification").length]]);
 </script>
 
 <template>

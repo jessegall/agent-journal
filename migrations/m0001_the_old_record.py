@@ -111,7 +111,7 @@ class Migration:
             for i, n in enumerate(load_json(home / "notifications.json", "notifications"), 1):
                 self.write(record, "notification", i, n["text"], actor=SYSTEM, created=when(n.get("at")))
                 if n.get("read_at"):
-                    CONTROLLERS["notification"](record, actor=USER).see(i)
+                    CONTROLLERS["notification"](record, actor=USER).read(i)
 
     def closed(self, record: Record, n: int) -> bool:
         try:

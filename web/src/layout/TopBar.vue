@@ -3,10 +3,10 @@ import { computed } from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import { go, route } from "../route.js";
-import { meta, store, unseenByUser } from "../store.js";
+import { meta, store, unreadByUser } from "../store.js";
 
 const title = computed(() => (!route.value.page ? "Home" : route.value.page === "settings" ? "Settings" : route.value.page === "search" ? "Search" : `${meta(route.value.page).title}s`));
-const bell = computed(() => unseenByUser("notification").length);
+const bell = computed(() => unreadByUser("notification").length);
 </script>
 
 <template>

@@ -89,7 +89,7 @@ CONTROLLERS["message"](record, actor=AGENT).complete(1, "read and filed")
 engine.tick()
 check("the agent's completion reaches the user as a notification and not the agent", ([n.refs[0] for n in User(record).unread()], len(driver.sent)), (["message:1"], 1))
 
-# THE NUDGE: only idle, and in priority order — unseen resources first; open work and the next to-do are features
+# THE NUDGE: only idle, and in priority order — unread resources first; open work and the next to-do are features
 def settle():                                          # deliver whatever is pending, then read the nudge alone
     engine.tick()
     engine.typed_at = 0
@@ -102,11 +102,11 @@ driver.quiet = 3.0
 CONTROLLERS["todo"](record, actor=USER).create("a chore")
 CONTROLLERS["question"](record, actor=USER).create("which colour")
 settle()
-check("idle with unseen resources: the highest priority type first, with its numbers", driver.sent[-1] == "1 unseen question", True)
-CONTROLLERS["question"](record, actor=AGENT).see(1)
+check("idle with unread resources: the highest priority type first, with its numbers", driver.sent[-1] == "1 unread question", True)
+CONTROLLERS["question"](record, actor=AGENT).read(1)
 settle()
-check("the question seen: the to-do is next in priority", driver.sent[-1] == "1 unseen todo", True)
-CONTROLLERS["todo"](record, actor=AGENT).see(1)
+check("the question seen: the to-do is next in priority", driver.sent[-1] == "1 unread todo", True)
+CONTROLLERS["todo"](record, actor=AGENT).read(1)
 why = settle()
 check("everything seen: nothing owed", (why, driver.sent), ("nothing owed", []))
 CONTROLLERS["work"](record, actor=AGENT).create("the header")

@@ -3,8 +3,7 @@ import { computed } from "vue";
 import { go, route } from "../route.js";
 import { age, byRef, meta, store, word } from "../store.js";
 
-const quiet = ["agent", "nudge", "notification"];
-const shown = computed(() => [...store.events].reverse().filter((e) => !quiet.includes(e.type)).slice(0, 80));
+const shown = computed(() => [...store.events].reverse().filter((e) => meta(e.type).notify.includes("user")).slice(0, 80));
 const verbs = { created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on" };
 const verb = (e) => (e.action === "completed" ? `${meta(e.type).title} ${word(e.type, "complete")}` : `${verbs[e.action]} ${meta(e.type).title.toLowerCase()}`);
 const title = (e) => (byRef(`${e.type}:${e.n}`) || {}).title || "";

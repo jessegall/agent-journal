@@ -16,7 +16,7 @@ q = asked.create("which colour", abstract="the header is grey today", about=todo
                  options=[{"title": "blue", "description": "matches the sidebar"}, {"title": "green"}], pick=1)
 check("the question links what it is about", q.refs, [todo.ref])
 check("its words: ask, answer; its labels: Context and Answer", (asked.named("create"), asked.named("complete"), q.labels), ("ask", "answer", {"outcome": "Answer", "abstract": "Context"}))
-check("the user has not seen it; the agent has", (answered.unseen() and [x.n for x in answered.unseen()], q.seen), ([1], [AGENT]))
+check("the user has not seen it; the agent has", (answered.unread() and [x.n for x in answered.unread()], q.seen), ([1], [AGENT]))
 
 # ANSWERING is the user's complete; the answer lives on the question and in the event
 answered.complete(q.n, "green")

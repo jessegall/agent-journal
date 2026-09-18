@@ -34,6 +34,7 @@ class Work(Shape, Resource):
 
 class Plan(Shape, Resource):
     type = "plan"
+    attention = True
     icon = "flag"
     names = {"complete": "acknowledge", "place": "todos", "resume": "continue"}
     title_ = "Plan"
@@ -44,6 +45,7 @@ class Plan(Shape, Resource):
 
 class Doc(Shape, Resource):
     type = "doc"
+    attention = True
     icon = "file"
     names = {"complete": "final"}
     scope = PROJECT
@@ -55,6 +57,7 @@ class Doc(Shape, Resource):
 
 class Report(Shape, Resource):
     type = "report"
+    attention = True
     icon = "report"
     names = {"complete": "archive"}
     title_ = "Report"
@@ -65,6 +68,7 @@ class Report(Shape, Resource):
 
 class Pin(Reasoned, Resource):
     type = "pin"
+    attention = True
     icon = "pin"
     names = {"complete": "strike"}
     title_ = "Pin"
@@ -74,6 +78,7 @@ class Pin(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
+    attention = True
     icon = "list"
     names = {"complete": "strike"}
     scope = PROJECT
@@ -84,6 +89,7 @@ class Rule(Reasoned, Resource):
 
 class Reminder(Shape, Resource):
     type = "reminder"
+    attention = True
     icon = "clock"
     names = {"complete": "retire"}
     title_ = "Reminder"
@@ -93,6 +99,7 @@ class Reminder(Shape, Resource):
 
 class Question(Options, Resource):
     type = "question"
+    attention = True
     icon = "help"
     names = {"complete": "answer", "create": "ask"}
     labels = {"outcome": "Answer", "abstract": "Context"}
@@ -103,6 +110,7 @@ class Question(Options, Resource):
 
 class Comment(Shape, Resource):
     type = "comment"
+    mirror = True
     icon = "bubble"
     names = {"complete": "done"}
     title_ = "Comment"
@@ -123,6 +131,7 @@ class AgentRow(Shape, Resource):
 
 class Notification(Shape, Resource):
     type = "notification"
+    mirror = True
     icon = "bell"
     title_ = "Notification"
     abstract_ = "What the agent did, told to the user once"
@@ -144,6 +153,7 @@ class Notice(Shape, Resource):
 
 class Reaction(Shape, Resource):
     type = "reaction"
+    mirror = True
     icon = "smile"
     title_ = "Reaction"
     abstract_ = "A face on a message"
@@ -198,6 +208,7 @@ class Environment(Shape, Resource):
 
 class Nudge(Shape, Resource):
     type = "nudge"
+    mirror = True
     icon = "arrow"
     title_ = "Nudge"
     abstract_ = "A line a feature has the engine type to the agent"
