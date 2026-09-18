@@ -222,6 +222,22 @@ driver.report = {"at": time.time(), "event": "SessionStart", "status": IDLE, "se
 Sessions(root).bind("s-old", "elsewhere")
 check("the engine moves to the session's environment", (engine.tick(), engine.record.env), ("following the session to elsewhere", "elsewhere"))
 
+# A NUDGE IS SPOKEN ONCE, NEVER COUNTED: one missed by a restarted engine is read as stale, not nagged as "n unread nudge"
+stale_record = Record(Path(tempfile.mkdtemp()) / ".journal", "main")
+stale_driver = Fake(stale_record)
+CONTROLLERS["agent"](stale_record, actor=SYSTEM).by_session("fake-1")
+stale = CONTROLLERS["nudge"](stale_record, actor=SYSTEM).create("work 9 open")
+stale_driver.report = {"at": time.time() + 1, "event": "Stop", "status": IDLE}
+stale_driver.quiet = 3.0
+stale_engine = Engine(stale_record, stale_driver)
+stale_engine.born = time.time() + 0.5
+stale_engine.tick()
+stale_engine.agent.pending_at -= 5
+stale_engine.tick()
+check("a nudge from before the engine was born is marked read and not typed", (AGENT in CONTROLLERS["nudge"](stale_record).load(stale.n).seen, stale_driver.sent), (True, []))
+stale_engine.typed_at = 0
+check("and nothing counts it as owed", stale_engine.tick(), "nothing owed")
+
 # A BATCH: ten waiting events are typed at once, one counted line, without waiting for the quiet spell
 driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 driver.quiet = 0.1

@@ -1,9 +1,11 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
 import {gists} from "../gist.js";
-import {agent} from "../store.js";
+import {spoken} from "../spoken.js";
+import {agent, types} from "../store.js";
 
 const STEP = 700;
+const sentence = (words) => spoken(words, types.value);
 const data = computed(() => (agent.value && agent.value.data.status === "working" ? agent.value.data : null));
 const ticks = ref(0);
 const timer = setInterval(() => (ticks.value += 1), 1000);
@@ -25,7 +27,7 @@ watch(
         for (const c of ring) {
             if (c.at <= seen.at) continue;
             seen.at = c.at;
-            if (!first) gists(c.what).forEach((text) => pending.push({key: text, text, what: c.what}));
+            if (!first) gists(c.what, sentence).forEach((text) => pending.push({key: text, text, what: c.what}));
         }
         if (first && !seen.at) seen.at = 1;
         if (pending.length && !rolls) roll();
@@ -46,7 +48,7 @@ const line = computed(() => {
     if (rolling.value) return rolling.value;
     const run = data.value && data.value.running;
     if (!run || !run.what) return null;
-    const parts = gists(run.what);
+    const parts = gists(run.what, sentence);
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
     return {key: parts[parts.length - 1], text: parts[parts.length - 1], what: run.what, clock: clock(secs), done: !!run.done};

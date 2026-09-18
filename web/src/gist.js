@@ -105,10 +105,11 @@ function verbOf(piece) {
     return w;
 }
 
-function pieceGist(piece) {
+function pieceGist(piece, translate) {
     const w = verbOf(piece);
     if (!w.length || NOISE.has(w[0])) return "";
     const verb = w[0].split("/").pop();
+    if (translate && /^journal(\.py)?$/.test(verb)) return translate(w.slice(1).filter((x) => !x.startsWith("-")));
     if (w.some((x) => x.startsWith("<<"))) return `${verb} script`;
     const rest = SUBVERBS.has(verb) && w[1] && !w[1].startsWith("-") ? `${verb} ${w[1]}` : verb;
     const given = w.slice(rest.split(" ").length);
@@ -134,15 +135,15 @@ function withoutScripts(command) {
     return kept.join("\n");
 }
 
-export function gists(command) {
+export function gists(command, translate) {
     return pieces(withoutScripts(command))
         .filter((p, i) => !(i > 0 && FILTERS.has(verbOf(p)[0] || "")))
-        .map(pieceGist)
+        .map((p) => pieceGist(p, translate))
         .filter(Boolean);
 }
 
-export function gist(command) {
-    const real = gists(command);
+export function gist(command, translate) {
+    const real = gists(command, translate);
     if (!real.length) return "";
     const kept = [real[real.length - 1]];
     for (let i = real.length - 2; i >= 0; i--) {
