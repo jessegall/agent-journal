@@ -1,4 +1,5 @@
 from v2.controllers.types import CONTROLLERS
+from v2.features.plans.query import held
 from v2.resources.base import SYSTEM
 
 DEFAULT_PRIORITY = 100
@@ -19,7 +20,7 @@ def waiting_on(record, todo, rows: list) -> bool:
 
 def ready(record) -> list:
     rows = open_rows(record)
-    fit = [t for t in rows if not t.data.get("blocked") and not waiting_on(record, t, rows) and not asked(record, t)]
+    fit = [t for t in rows if not t.data.get("blocked") and not waiting_on(record, t, rows) and not asked(record, t) and not held(record, t)]
     return sorted(fit, key=lambda t: (-int(t.data.get("priority") or DEFAULT_PRIORITY), t.n))
 
 
