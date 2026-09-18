@@ -1,12 +1,22 @@
 <script setup>
+import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import {age, meta} from "../store.js";
 defineProps({resource: Object, selected: Boolean});
+
+const state = (r) => (r.completed ? "done" : r.data.blocked ? "blocked" : r.data.status === "started" ? "started" : "open");
 </script>
 
 <template>
     <button type="button" :class="['row', {selected, completed: resource.completed}]">
-        <span class="glyph"><Icon :name="meta(resource.type).icon" :size="14" /></span>
+        <span class="glyph">
+            <template v-if="meta(resource.type).counted">
+                <Dot :kind="state(resource)" />
+            </template>
+            <template v-else>
+                <Icon :name="meta(resource.type).icon" :size="14" />
+            </template>
+        </span>
         <span class="n">#{{ resource.n }}</span>
         <span class="text">
             <span class="title">{{ resource.title }}</span>
