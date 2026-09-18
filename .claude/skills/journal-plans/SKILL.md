@@ -71,6 +71,10 @@ phase already passed changes nothing that has happened. Both are allowed and bot
 single command: `journal plans todos <n> <p> 4 --move` takes it out of the phase it is in
 and puts it here. Without `--move` it is refused, naming where the row already sits.
 
+**The title is a NAME, the goal is the sentence.** Two to five words that point at the plan —
+"Codex", "The launcher", "Skills page" — never a sentence saying what it does; that is `--goal`.
+A title that is a sentence cannot fit a bar or a card, and cannot be referred to (rule 12).
+
 **A phase is an area of work, not a schedule.** "Everything the viewer shows about a plan"
 is a phase; "Tuesday" and "the next two hours" are not. `--when` says what is true when the
 phase is complete, which is what makes "is this phase done?" a question with an answer.

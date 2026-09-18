@@ -4954,6 +4954,7 @@ const EnvHome = {
       try { dismissed.value = new Set(JSON.parse(localStorage.getItem(dismissKey.value) || "[]")); } catch (e) { dismissed.value = new Set(); }
     });
     const dismiss = (it) => {
+      if (it.onDismiss) { it.onDismiss(); return; }      // a card that means something by its X says so itself
       dismissed.value = new Set([...dismissed.value, it.key]);
       try { localStorage.setItem(dismissKey.value, JSON.stringify([...dismissed.value].slice(-300))); } catch (e) { /* storage off */ }
     };
@@ -5161,17 +5162,22 @@ const EnvHome = {
     const planCards = computed(() => railPlans.value.filter((p) => p.status !== "preparing").map((p) => {
       const act = planPrimary(p);
       const total = p.phases_total || 0;
+      const verb = (v) => send("POST", `/api/env/${props.env}/plans/${p.n}/${v}`).then(reloadPlans).catch(() => {});
+      const finished = p.status === "done";
+      // A FINISHED PLAN NEEDS NO BUTTON (messages 156, 157): going to it is the acknowledgement, and so
+      // is closing the card with its X. A draft still carries Approve, because starting a plan is an act.
       return {
-        key: `plan:${p.n}`, kind: "plan", label: "Plan", tint: "#a3a8f0", sticky: true,
-        action: act ? act.short : "",
-        title: p.status === "done" ? `Your plan is finished: ${p.title}`
+        key: `plan:${p.n}`, kind: "plan", label: "Plan", tint: "#a3a8f0", sticky: !finished,
+        action: !finished && act ? act.short : "",
+        title: finished ? `Your plan is finished: ${p.title}`
           : p.status === "parked" ? `Plan parked: ${p.title}`
           : `Ready to start: ${p.title}`,
-        meta: p.status === "done" ? `plan ${p.n} · ${total} ${total === 1 ? "phase" : "phases"} done`
+        meta: finished ? `plan ${p.n} · ${total} ${total === 1 ? "phase" : "phases"} done`
           : p.status === "parked" ? `plan ${p.n}${p.parked_why ? " · " + p.parked_why : ""}`
           : `plan ${p.n} · ${total} ${total === 1 ? "phase" : "phases"} · waiting for your approval`,
-        open: () => { location.hash = `#/env/${props.env}/plans/${p.n}`; },
-        act: act ? () => send("POST", `/api/env/${props.env}/plans/${p.n}/${act.verb}`).then(reloadPlans).catch(() => {}) : null,
+        open: () => { if (finished) verb("acknowledge"); location.hash = `#/env/${props.env}/plans/${p.n}`; },
+        onDismiss: finished ? () => verb("acknowledge") : null,
+        act: !finished && act ? () => verb(act.verb) : null,
       };
     }));
     const waitingCount = computed(() => queue.value.length + planCards.value.length + (held.value ? 1 : 0));
