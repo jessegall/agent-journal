@@ -781,6 +781,12 @@ const StatusBar = {
     // or the plan when nothing is open — the chip that used to carry the link is gone from the bar
     const openCurrent = () => {
       const w = inspectWork.value;
+      // the chat-only window opens nothing over itself: the row opens in the journal's own tab, like every ref
+      if (CHAT_ONLY && w) {
+        const href = refHref(w.todo ? `todo:${w.todo}` : `work:${w.n}`, env.value);
+        if (href) window.open(`${location.origin}/${href}`, "journal");
+        return;
+      }
       if (w && w.todo) { OVERLAY.kind = "todo"; OVERLAY.n = w.todo; }
       else if (w) { OVERLAY.kind = "work"; OVERLAY.n = w.n; }
       else if (view.value.href) location.hash = view.value.href;
