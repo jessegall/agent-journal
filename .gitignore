@@ -41,3 +41,5 @@ __pycache__/
 
 # screenshots taken while checking the viewer: scratch, not the project
 *.png
+# the extension's icons are part of the package, png or not
+!extension/icons/*.png

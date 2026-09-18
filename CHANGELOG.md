@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.156.2 — The extension's icons ship
+
+**The extension zip carries its icons.** They were `.png` files in a repository that ignores
+`.png`, so they never left the machine they were drawn on, and a downloaded zip failed to load with
+"Could not load icon 'icons/16.png'". They are in the package now. The extension is 1.4.0: a tab
+keeps its own journal in the window and may keep it closed while the others carry on.
+
 ## 1.156.1 — The agent sees and drives the page you are on, and the extension is a shell
 
 **The agent can see and drive the tab you put at the wheel.** In the chat window's bar there is a
