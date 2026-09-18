@@ -1,4 +1,4 @@
-from v2.resources.base import AGENT, DOCUMENT, WIDE, Resource
+from v2.resources.base import AGENT, DOCUMENT, USER, WIDE, Resource
 from v2.resources.shapes import Options, Reasoned, Shape
 
 
@@ -88,6 +88,7 @@ class Question(Options, Resource):
 
 class Comment(Shape, Resource):
     type = "comment"
+    names = {"complete": "done"}
     title_ = "Comment"
     abstract_ = "What the user or the agent said about another resource"
     help_ = "A comment is a resource of its own, linked to what it is about."
@@ -103,6 +104,33 @@ class AgentRow(Shape, Resource):
     notify = ()
 
 
+class Notification(Shape, Resource):
+    type = "notification"
+    title_ = "Notification"
+    abstract_ = "What the agent did, told to the user once"
+    help_ = "A notification is written for the user by a feature for every act of the agent, or by the agent to say a long piece of work landed."
+    nav = False
+    notify = ()
+
+
+class Notice(Shape, Resource):
+    type = "notice"
+    names = {"complete": "close"}
+    title_ = "Notice"
+    abstract_ = "One line kept over the chat while it matters"
+    help_ = "A notice stays until the user's X or the agent's close; a tone and a link may ride on it."
+    nav = False
+    notify = (USER,)
+
+
+class Reaction(Shape, Resource):
+    type = "reaction"
+    title_ = "Reaction"
+    abstract_ = "A face on a message"
+    help_ = "A reaction is one face by one actor on one message; the same face again takes it off."
+    nav = False
+
+
 class Nudge(Shape, Resource):
     type = "nudge"
     title_ = "Nudge"
@@ -113,5 +141,5 @@ class Nudge(Shape, Resource):
     spoken = True
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow, Nudge)}
-PRIORITY = ("message", "question", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "work", "agent", "nudge")
+TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow, Notification, Notice, Reaction, Nudge)}
+PRIORITY = ("message", "question", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "work", "agent", "notification", "nudge")

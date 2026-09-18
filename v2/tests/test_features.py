@@ -22,6 +22,19 @@ check("every feature folder is loaded", loaded, features.names())
 check("loading again loads nothing twice", features.load(), loaded)
 check("every loaded feature has a test folder", [n for n in loaded if not (Path(__file__).parent / "features" / n).is_dir()], [])
 check("every feature's listeners carry its name", sorted({f for entries in bus._listeners.values() for f, _ in entries}), loaded)
+from v2.features.base import Feature, REGISTRY  # noqa: E402
+check("the registry holds one class per feature, each a Feature", (sorted(REGISTRY), all(issubclass(c, Feature) for c in REGISTRY.values())), (loaded, True))
+check("a feature describes itself for a menu: name, words, what it listens to, its trigger", sorted(features.describe()["work"]), ["abstract", "help", "listens", "name", "title", "trigger"])
+check("the work feature listens to what its methods say", features.describe()["work"]["listens"], ["agent.updated", "work.completed", "work.created"])
+r = fresh()
+work = features.FEATURES["work"]
+check("enabled by default", work.enabled(r), True)
+work.disable(r)
+check("disable is a setting on the environment", (work.enabled(r), r.setting("features")), (False, {"work": False}))
+work.enable(r)
+check("enable again", work.enabled(r), True)
+from v2.engine.manifest import manifest  # noqa: E402
+check("the manifest carries every feature", sorted(manifest()["features"]), loaded)
 
 # THE SWITCH: a feature is off per environment through settings; another environment keeps it
 record = fresh()

@@ -60,7 +60,7 @@ check("one plan at a time", refused(lambda: by_user.activate(second.n)), "one pl
 todos.complete(1, "done")
 check("one row done: the phase is not complete", by_agent.load(plan.n).data["current"], 1)
 todos.complete(2, "done")
-check("every row done: the next phase is current, by the feature, as SYSTEM", (by_agent.load(plan.n).data["current"], record.events()[-1].actor, record.events()[-1].data), (2, SYSTEM, {"phase": 1, "complete": True, "status": "active"}))
+check("every row done: the next phase is current, by the feature, as SYSTEM", (by_agent.load(plan.n).data["current"], [e for e in record.events() if e.type == "plan"][-1].actor, [e for e in record.events() if e.type == "plan"][-1].data), (2, SYSTEM, {"phase": 1, "complete": True, "status": "active"}))
 check("next offers the new phase's row", next(record).n, 3)
 todos.complete(3, "done")
 check("a checkpoint phase complete: the plan waits, the phase stays current", (by_agent.load(plan.n).data["status"], by_agent.load(plan.n).data["current"]), ("waiting", 2))
@@ -80,7 +80,7 @@ by_agent.phase(other.n, "Only")
 row = todos.create("still open").n
 by_agent.place(other.n, 1, row)
 by_agent.abandon(other.n, "no longer wanted")
-check("abandoned, with the why, and the row stays open", (by_agent.load(other.n).data["status"], record.events()[-1].data["why"], todos.load(row).completed), ("abandoned", "no longer wanted", 0.0))
+check("abandoned, with the why, and the row stays open", (by_agent.load(other.n).data["status"], [e for e in record.events() if e.type == "plan"][-1].data["why"], todos.load(row).completed), ("abandoned", "no longer wanted", 0.0))
 
 # FROM A DOC: its "Phase …" sections become phases, and the plan links the doc
 docs = CONTROLLERS["doc"](record, actor=AGENT)
