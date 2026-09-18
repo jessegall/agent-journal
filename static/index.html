@@ -917,7 +917,7 @@
   .thread-tools.picking { gap: 1px; padding: 1px 3px; }
   .thread-tools.picking .thread-tool .ico { width: 11px; height: 11px; }
   /* browsing the skills: a page of its own, because the agent's page lists them as one section */
-  .skills-page { max-width: 900px; }
+  .skills-page { max-width: 1100px; }
   .skills-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .skills-find { flex: 1; min-width: 220px; height: 34px; }
   .skills-only { display: flex; align-items: center; gap: 2px; padding: 2px; border-radius: 8px;
@@ -934,8 +934,16 @@
   .skills-row:last-child { border-bottom: 0; }
   .skills-row:hover { background: var(--hover); }
   .skills-row.picked { background: var(--sel); }
-  .skills-open { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(150px, 300px) 1fr auto;
-    align-items: center; gap: 12px; padding: 11px 12px; color: inherit; text-decoration: none; }
+  .skills-open { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center; gap: 16px; padding: 10px 12px; color: inherit; text-decoration: none; }
+  /* loaded is a lit dot and a word, on the row and in the name: the state you came to read */
+  .skills-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--border-2); }
+  .skills-row.loaded .skills-dot { background: #63b37c; box-shadow: 0 0 0 3px color-mix(in srgb, #63b37c 22%, transparent); }
+  .skills-state { color: #63b37c; font-size: 11.5px; white-space: nowrap; }
+  .skills-ask { flex: none; padding: 4px 10px; border: 1px solid var(--border-2); border-radius: 7px;
+    background: none; color: var(--text-3); font: inherit; font-size: 11.5px; cursor: pointer; }
+  .skills-ask:hover:not(:disabled) { color: var(--text); background: var(--raised); }
+  .skills-ask:disabled { opacity: .6; cursor: default; }
   .skills-name { display: inline-flex; align-items: center; gap: 7px; min-width: 0; font-size: 12.5px; color: var(--text); }
   /* a name is one line, always: a long one ends in an ellipsis and its title holds the rest */
   .skills-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -949,13 +957,8 @@
   .skills-subgroup { padding-left: 30px; background: transparent; }
   .skills-depth-1 .skills-open { padding-left: 30px; }
   .skills-depth-2 .skills-open { padding-left: 48px; }
-  .skills-name .ico { width: 13px; height: 13px; color: var(--text-3); }
-  .skills-badge { padding: 0 6px; border-radius: 10px; background: color-mix(in srgb, var(--accent) 22%, transparent);
-    color: var(--accent-text); font-size: 10px; }
-  .skills-what { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    color: var(--text-3); font-size: 12px; }
   .skills-where { color: var(--text-4, #6b6e76); font-size: 11px; }
-  .skills-always { flex: none; padding: 4px 10px; border: 1px solid var(--border-2); border-radius: 7px;
+  .skills-always { flex: none; min-width: 96px; text-align: center; padding: 4px 10px; border: 1px solid var(--border-2); border-radius: 7px;
     background: none; color: var(--text-3); font: inherit; font-size: 11.5px; cursor: pointer; }
   .skills-always:hover:not(:disabled) { color: var(--text); background: var(--raised); }
   .skills-always.on { border-color: color-mix(in srgb, var(--accent) 55%, transparent);
@@ -963,7 +966,6 @@
   .skills-always:disabled { opacity: .5; cursor: default; }
   @media (max-width: 720px) {
     .skills-open { grid-template-columns: 1fr; gap: 3px; }
-    .skills-what, .skills-where { white-space: normal; }
   }
   /* the chat, taken off the page: one window over whatever you walk to */
   .chat-window { position: fixed; z-index: 60; display: flex; flex-direction: column; overflow: hidden;

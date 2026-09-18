@@ -5733,18 +5733,23 @@ const Agent = {
 // EVERY SKILL THIS AGENT COULD LOAD, AND WHAT IT HAS. The agent's page lists them in a table three
 // columns wide because it is one section of a page about something else; browsing is its own job —
 // searching by name, reading what each is for, and deciding which are named at every start.
+// ONE LINE PER SKILL, AND NO DESCRIPTION IN IT: a list of twenty sentences is not a list you scan.
+// The description is the row's title and the panel's first paragraph. What the line says is what
+// matters at a glance — the name, whether the agent has it open now, and how it gets loaded.
 const SkillRow = {
-  props: { s: Object, env: String, picked: String, busy: String, open: Function, toggle: Function, depth: { type: Number, default: 0 } },
+  props: { s: Object, env: String, picked: String, busy: String, asked: String, open: Function, toggle: Function, ask: Function,
+           depth: { type: Number, default: 0 } },
   components: { Icon },
   template: `
-    <div :class="['skills-row', 'skills-depth-' + depth, {picked: picked === s.name}]">
+    <div :class="['skills-row', 'skills-depth-' + depth, {picked: picked === s.name, loaded: !!s.loaded}]">
       <component :is="s.readable ? 'a' : 'div'" class=skills-open :href="s.readable ? '#/env/' + env + '/skills/' + s.name : null"
-        @click="open($event, s)">
-        <span class=skills-name :title="s.name"><Icon name="book"/><span class=skills-name-text>{{ s.name }}</span>
-          <span v-if="s.loaded" class=skills-badge>{{ s.loaded === 1 ? 'open' : s.loaded + '×' }}</span></span>
-        <span class=skills-what>{{ s.description || 'No description.' }}</span>
+        :title="s.description || null" @click="open($event, s)">
+        <span class=skills-name><span class=skills-dot></span><span class=skills-name-text>{{ s.name }}</span></span>
+        <span class=skills-state>{{ s.loaded ? (s.loaded === 1 ? 'Loaded' : 'Loaded ' + s.loaded + '×') : '' }}</span>
         <span class=skills-where>{{ s.source }}</span>
       </component>
+      <button type=button class=skills-ask :disabled="asked === s.name" :title="'Ask the agent to load ' + s.name + ' now'" @click="ask(s)">
+        {{ asked === s.name ? 'Asked' : 'Load now' }}</button>
       <button type=button :class="['skills-always', {on: s.always}]" :disabled="busy === s.name"
         :title="s.always ? 'Stop naming it at every start' : 'Name it at every start'" @click="toggle(s)">
         {{ s.always ? 'Every start' : 'Load at start' }}</button>
@@ -5822,7 +5827,21 @@ const AgentSkills = {
       event.preventDefault();
       picked.value = s.name;
     };
-    return { about, find, only, rows, counts, toggle, busy, picked, open, close: () => { picked.value = null; }, groups, isFolded, fold };
+    // a message to the agent, the same way the Upgrade button asks: it lands at the next stop, or at once when idle
+    const asked = ref("");
+    const ask = async (s) => {
+      if (asked.value) return;
+      asked.value = s.name;
+      try {
+        await postJSON(`/api/env/${props.env}/messages`, { text: `Load the \`${s.name}\` skill now, and keep it in mind for what follows.`, files: [] });
+        flash(`The agent is asked to load ${s.name}.`);
+        setTimeout(() => { if (asked.value === s.name) asked.value = ""; }, 4000);
+      } catch (e) {
+        asked.value = "";
+        flash(e.message);
+      }
+    };
+    return { about, find, only, rows, counts, toggle, busy, picked, open, close: () => { picked.value = null; }, groups, isFolded, fold, ask, asked };
   },
   template: `
     <TopBar :crumbs="[env, 'Agent', 'Skills']"/>
@@ -5842,20 +5861,20 @@ const AgentSkills = {
         <p v-if="!rows.length" class="prose muted">Nothing here matches that.</p>
         <div v-else class=skills-list>
           <template v-for="g in groups" :key="g.key">
-            <SkillRow v-if="g.single" :s="g.single" :env="env" :picked="picked" :busy="busy" :open="open" :toggle="toggle"/>
+            <SkillRow v-if="g.single" :s="g.single" :env="env" :picked="picked" :busy="busy" :asked="asked" :open="open" :toggle="toggle" :ask="ask"/>
             <template v-else>
               <button type=button :class="['skills-group', {folded: isFolded(g.key)}]" @click="fold(g.key)">
                 <Icon name="down"/><span class=skills-group-name>{{ g.name }}</span><span class=skills-group-n>{{ g.count }}</span>
               </button>
               <template v-if="!isFolded(g.key)">
                 <template v-for="it in g.items" :key="it.key">
-                  <SkillRow v-if="it.single" :s="it.single" :env="env" :picked="picked" :busy="busy" :open="open" :toggle="toggle" :depth="1"/>
+                  <SkillRow v-if="it.single" :s="it.single" :env="env" :picked="picked" :busy="busy" :asked="asked" :open="open" :toggle="toggle" :ask="ask" :depth="1"/>
                   <template v-else>
                     <button type=button :class="['skills-group', 'skills-subgroup', {folded: isFolded(it.key)}]" @click="fold(it.key)">
                       <Icon name="down"/><span class=skills-group-name>{{ it.name }}</span><span class=skills-group-n>{{ it.rows.length }}</span>
                     </button>
                     <template v-if="!isFolded(it.key)">
-                      <SkillRow v-for="s in it.rows" :key="s.source + s.name" :s="s" :env="env" :picked="picked" :busy="busy" :open="open" :toggle="toggle" :depth="2"/>
+                      <SkillRow v-for="s in it.rows" :key="s.source + s.name" :s="s" :env="env" :picked="picked" :busy="busy" :asked="asked" :open="open" :toggle="toggle" :ask="ask" :depth="2"/>
                     </template>
                   </template>
                 </template>
