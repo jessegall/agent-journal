@@ -1011,19 +1011,6 @@ const StatusBar = {
     return { env, view, said, running, SHELL, openCurrent, facts, strip, bars, runBar, barError, printed };
   },
   template: `
-    <div v-for="b in bars" :key="'planbar' + b.n" :class="['planbar', 'planbar-' + b.status]">
-      <a class=planbar-link :href="b.href" :title="'Plan ' + b.n + ': ' + b.title">
-        <!-- the same dot as the status bar: lit while the plan runs, amber at a checkpoint, still otherwise -->
-        <span :class="['statusbar-dot', {live: b.status === 'active' && !b.held, held: b.held}]"></span>
-        <span class=planbar-n>Plan</span>
-        <span class=planbar-title>{{ b.title }}</span>
-        <span v-if="b.phase" class=planbar-phase>{{ b.phase }}</span>
-        <span v-if="b.bar" class=planbar-track role=progressbar :aria-valuenow="b.done" :aria-valuemax="b.total"
-          :aria-label="b.done + ' of ' + b.total + ' phases done'"><span :style="{ width: b.width }"></span></span>
-      </a>
-      <button v-if="b.act" type=button :class="['planbar-act', {ack: b.status === 'done'}]" :title="b.act.hint" @click="runBar(b)">{{ b.act.short }}<Icon name="arrow"/></button>
-      <span v-if="barError" class=planbar-error>{{ barError }}</span>
-    </div>
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
       <span :class="['statusbar-dot', {live: view.live, held: view.held}]"></span>
       <!-- THE SENTENCE ROLLS. What the agent is on changes while the user is looking at it, and a
@@ -1056,6 +1043,19 @@ const StatusBar = {
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)"><span :class="['switch', 'worded', {on: SHELL.activity.auto}]">
             <span class=switch-word>auto</span><span class=knob></span></span></button>
       </span>
+    </div>
+    <div v-for="b in bars" :key="'planbar' + b.n" :class="['planbar', 'planbar-' + b.status]">
+      <a class=planbar-link :href="b.href" :title="'Plan ' + b.n + ': ' + b.title">
+        <!-- the same dot as the status bar: lit while the plan runs, amber at a checkpoint, still otherwise -->
+        <span :class="['statusbar-dot', {live: b.status === 'active' && !b.held, held: b.held}]"></span>
+        <span class=planbar-n>Plan</span>
+        <span class=planbar-title>{{ b.title }}</span>
+        <span v-if="b.phase" class=planbar-phase>{{ b.phase }}</span>
+        <span v-if="b.bar" class=planbar-track role=progressbar :aria-valuenow="b.done" :aria-valuemax="b.total"
+          :aria-label="b.done + ' of ' + b.total + ' phases done'"><span :style="{ width: b.width }"></span></span>
+      </a>
+      <button v-if="b.act" type=button :class="['planbar-act', {ack: b.status === 'done'}]" :title="b.act.hint" @click="runBar(b)">{{ b.act.short }}<Icon name="arrow"/></button>
+      <span v-if="barError" class=planbar-error>{{ barError }}</span>
     </div>`,
 };
 
