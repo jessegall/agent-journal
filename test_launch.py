@@ -127,7 +127,16 @@ nudger(seat)
 check("quiet agent, empty line: the message is typed as the record says it",
       (len(seat.lines), "left message 1" in seat.lines[0], "messages show 1" in seat.lines[0]), (1, True, True))
 nudger(seat)
-check("and only once", len(seat.lines), 1)
+check("not again in the same quiet moment: the seat waits for the hooks to report after it typed", len(seat.lines), 1)
+# A MESSAGE IS TYPED AGAIN AT THE NEXT IDLE MOMENT while it stays unprocessed — processing it is the only acknowledgement
+nudger.typed_at = 0
+nudger(seat)
+check("still unprocessed at the next idle moment: typed again", (len(seat.lines), "left message 1" in seat.lines[-1]), (2, True))
+inbox.process(root, 1, "please look at the header", ["noted"], "2026-09-18T00:00:06+00:00", track="alpha")
+inbox.done(root, 1, "2026-09-18T00:00:07+00:00", track="alpha")
+nudger.typed_at = 0
+nudger(seat)
+check("processed: no more", len(seat.lines), 2)
 
 # THE HOOKS' REPORTS ARE THE IDLE SIGNAL when there are any: a Stop means idle, a tool call means not
 import json  # noqa: E402
@@ -136,12 +145,12 @@ events.mkdir(parents=True, exist_ok=True)
 (events / "sess-1.jsonl").write_text(json.dumps({"at": time.time(), "event": "PreToolUse", "tool": "Bash", "session": "sess-1"}) + "\n")
 inbox.add(root, "and the footer", "2026-09-18T00:00:09+00:00", source="web", track="alpha")
 nudger(seat)
-check("a session mid tool call is not typed to, however quiet the pty", len(seat.lines), 1)
+check("a session mid tool call is not typed to, however quiet the pty", len(seat.lines), 2)
 with (events / "sess-1.jsonl").open("a") as f:
     f.write(json.dumps({"at": time.time(), "event": "Stop", "session": "sess-1"}) + "\n")
 seat.idle = 1.5
 nudger(seat)
-check("a Stop report is idle, and the next message is typed", (len(seat.lines), "left message 2" in seat.lines[-1]), (2, True))
+check("a Stop report is idle, and the next message is typed", (len(seat.lines), "left message 2" in seat.lines[-1]), (3, True))
 
 # A SESSION THAT JUST STARTED OR RESUMED IS IDLE: its last report is SessionStart, and it must be typed to
 inbox.add(root, "left while the agent was restarting", "2026-09-18T00:00:12+00:00", source="web", track="alpha")
@@ -149,7 +158,7 @@ with (events / "sess-1.jsonl").open("a") as f:
     f.write(json.dumps({"at": time.time(), "event": "SessionStart", "session": "sess-1"}) + "\n")
 nudger.typed_at = 0
 nudger(seat)
-check("after a SessionStart report the seat types the news, just as after a Stop", (len(seat.lines), "left message 3" in seat.lines[-1]), (3, True))
+check("after a SessionStart report the seat types the news, just as after a Stop", (len(seat.lines), "left message" in seat.lines[-1]), (4, True))
 check("a fresh seat looks back for news never told, not only from its own start",
       launch.Nudger(root, "alpha").since == 0.0 and launch.SINCE_BACK >= 3600, True)
 
@@ -166,15 +175,18 @@ def fake_nudge(stem, active):
 
 
 hook.nudge_for = fake_nudge
+for n, words in ((2, "and the footer"), (3, "left while the agent was restarting")):   # the agent processed them: nothing left to retype
+    inbox.process(root, n, words, ["noted"], "2026-09-18T00:00:29+00:00", track="alpha")
+    inbox.done(root, n, "2026-09-18T00:00:30+00:00", track="alpha")
 nudger(seat)
-check("the message typed a moment ago is not typed over before the hooks report", len(seat.lines), 3)
+check("the message typed a moment ago is not typed over before the hooks report", len(seat.lines), 4)
 with (events / "sess-1.jsonl").open("a") as f:
     f.write(json.dumps({"at": time.time(), "event": "Stop", "session": "sess-1"}) + "\n")
 nudger(seat)
 check("nothing more waiting: the queue is read for the reported session and its line typed on one line",
       (asked[-1], seat.lines[-1]), (("sess-1", False), "1 untagged message(s) last at line 9; open the next with [!reply]"))
 nudger(seat)
-check("nothing is typed over a line the hooks have not answered yet", len(seat.lines), 4)
+check("nothing is typed over a line the hooks have not answered yet", len(seat.lines), 5)
 with (events / "sess-1.jsonl").open("a") as f:
     f.write(json.dumps({"at": time.time() + 1, "event": "Stop", "session": "sess-1"}) + "\n")
 nudger(seat)

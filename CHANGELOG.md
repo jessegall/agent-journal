@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.168.0 — A message is typed until the agent processes it
+
+The launcher's rule for messages is the user's (message 199): an unprocessed message is typed into
+the agent at every idle moment until the agent processes it — the record's `processed` is the only
+acknowledgement, never "told once". Answers, reactions and plan events are still told once and
+marked in the record. The seat keeps a log of its last decisions (`whys` in the seat record), so a
+message that did not arrive can be read back; terminal DCS/APC replies are stripped from the typed
+line like the other sequences.
+
 ## 1.167.5 — The seat keeps stamping while the agent prints; attachments at the top of the box
 
 The launcher's look ran only when its terminal was quiet, and an agent printing steadily (a spinner

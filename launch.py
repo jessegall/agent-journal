@@ -17,6 +17,8 @@ import news
 
 #: how long the agent must print nothing before the launcher takes it to be idle
 IDLE_SECONDS = 3.0
+#: with no hooks reporting, how long a typed line stands before an unprocessed message is typed again
+RETYPE_AFTER = 30.0
 #: how many changes of the seat's decision the record keeps
 WHYS_KEPT = 12
 #: the pause between a typed line and its Enter, so the agent reads the Enter as a key and not as pasted text
@@ -292,9 +294,13 @@ class Nudger:
         for key, params in pending:
             if key in self.told:
                 continue
-            self.told.add(key)
+            # A MESSAGE IS TYPED AT EVERY IDLE MOMENT UNTIL THE AGENT PROCESSES IT (the user's rule,
+            # message 199): the record's `processed` is the only acknowledgement. Everything else —
+            # an answer, a reaction, a plan event — is told once and marked in the record.
+            if not re.fullmatch(rf"{re.escape(self.env)}:\d+", key):
+                self.told.add(key)
+                self.mark([key])
             self.say(seat, params["content"])
-            self.mark([key])
             return f"typed {key}"                    # one line per quiet moment; the agent answers, then the next
         line = self.owed()
         if line:
@@ -312,8 +318,8 @@ class Nudger:
         """The hooks have reported since this seat last typed — so a line typed a moment ago is
         not typed over while the agent is still picking it up."""
         last = self.reports.last()
-        if last is None:
-            return True
+        if last is None:                             # no hooks to report: a line stands for a while on its own
+            return not self.typed_at or time.time() - self.typed_at >= RETYPE_AFTER
         return not self.typed_at or float(last.get("at") or 0) > self.typed_at
 
     def owed(self) -> str | None:
