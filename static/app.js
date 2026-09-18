@@ -5066,7 +5066,9 @@ const Search = {
   },
   template: `
     <TopBar :crumbs="[env, 'Search']"/>
-    <div class=page><div class=home>
+    <!-- THE PAGE'S OWN COLUMN, NOT THE HOME'S. This rendered inside the home, which is the chat's
+         layout — a flex column with no padding — so the results ran into the window's edges. -->
+    <div class=page><div class="page-inner search-page">
       <form class=search-bar @submit.prevent="go">
         <input class="input search-input" v-model="form.text" placeholder="Search to-dos, pins, docs, messages and the conversation">
         <Switch label="Every environment" :modelValue="form.all" @update:modelValue="(v) => { form.all = v; if (form.term) go(); }"/>

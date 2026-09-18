@@ -1638,7 +1638,11 @@
   .form-buttons { display: flex; gap: 6px; }
   .primary.danger-fill { background: var(--danger); color: #1a0f0d; }
   .setting .toggle { margin-left: 0; align-self: flex-start; }
-  .search-bar { display: flex; align-items: center; gap: 10px; }
+  /* the results scroll under the bar rather than taking it with them */
+  .search-page { max-width: 900px; }
+  .search-bar { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 10px;
+    margin: -28px -32px 0; padding: 20px 32px 14px; background: var(--bg);
+    border-bottom: 1px solid var(--border); }
   .search-input { flex: 1; height: 34px; }
   .search-bar .toggle { margin-left: 0; }
   .searchrow, .hitrow { display: grid; gap: 12px; }
