@@ -2568,10 +2568,42 @@ def _running_start(payload: dict, ctx: Ctx) -> None:
         return
     now = time.time()
     state.put(ROOT, RUNNING, {"what": what[:120], "at": now}, stem=ctx.stem)
+    # A CHAIN IS SEVERAL ACTIONS (message 179): `a && b; c` goes into the ring as three lines, in
+    # order, a few milliseconds apart so they roll in order — a pipe stays one line.
+    links = _chain(what) if payload.get("tool_name") == "Bash" else [what]
     ring = state.get(ROOT, ACTIONS, [], stem=ctx.stem) or []
-    ring = [a for a in ring if isinstance(a, dict)][-(ACTIONS_KEPT - 1):]
-    ring.append({"what": what[:120], "at": round(now, 3)})
-    state.put(ROOT, ACTIONS, ring, stem=ctx.stem)
+    ring = [a for a in ring if isinstance(a, dict)]
+    for i, link in enumerate(links or [what]):
+        ring.append({"what": link[:120], "at": round(now + i / 1000, 3)})
+    state.put(ROOT, ACTIONS, ring[-ACTIONS_KEPT:], stem=ctx.stem)
+
+
+def _chain(cmd: str) -> list[str]:
+    """The links of a command chain — split on `&&`, `||`, `;` and newlines outside quotes, a pipe kept
+    whole, a leading `cd` dropped, heredoc bodies left inside the link they belong to."""
+    text = _HEREDOC_BODY.sub(r"\1", cmd)
+    out, cur, quote, i = [], [], "", 0
+    while i < len(text):
+        c = text[i]
+        if quote:
+            cur.append(c)
+            if c == quote:
+                quote = ""
+            elif c == "\\" and quote == '"' and i + 1 < len(text):
+                cur.append(text[i + 1]); i += 1
+        elif c in "\"'":
+            quote = c; cur.append(c)
+        elif text.startswith("&&", i) or text.startswith("||", i):
+            out.append("".join(cur)); cur = []; i += 1
+        elif c in ";\n":
+            out.append("".join(cur)); cur = []
+        else:
+            cur.append(c)
+        i += 1
+    out.append("".join(cur))
+    links = [" ".join(x.split()) for x in out]
+    links = [x for x in links if x and not re.match(r"^cd\s", x)]
+    return links
 
 
 def _running_end(payload: dict, ctx: Ctx) -> None:

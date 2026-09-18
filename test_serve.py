@@ -897,6 +897,11 @@ _hook._running_end({"tool_name": "Bash", "tool_input": {"command": "npm test"},
                     "tool_response": {"stdout": "ok\n1 failing", "stderr": "", "exit_code": 1}}, _hook.Ctx(_run_stem, None))
 check("the hook keeps what the command printed and whether it failed",
       (lambda got: (got.get("output"), got.get("failed")))(state.get(root, "running_command", {}, stem=_run_stem)), ("ok\n1 failing", True))
+check("every action the hook starts lands in the ring",
+      [a["what"] for a in state.get(root, "actions_recent", [], stem=_run_stem)][-1:], ["npm test"])
+_hook._running_start({"tool_name": "Bash", "tool_input": {"command": "cd /x && npm run build; npm test 2>&1 | tail -1"}}, _hook.Ctx(_run_stem, None))
+check("a chained command goes into the actions ring as one line per link, in order, cd dropped",
+      [a["what"] for a in state.get(root, "actions_recent", [], stem=_run_stem)][-2:], ["npm run build", "npm test 2>&1 | tail -1"])
 state.put(root, "running_command", {"what": "npm test", "at": time.time() - 40, "took": 3.0, "ended": time.time(),
                                     "output": "1 failing\n", "failed": True}, stem=_run_stem)
 check("its output tail and a failed exit travel with it, for the log row",
