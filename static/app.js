@@ -1046,8 +1046,6 @@ const StatusBar = {
     </div>
     <div v-for="b in bars" :key="'planbar' + b.n" :class="['planbar', 'planbar-' + b.status]">
       <a class=planbar-link :href="b.href" :title="'Plan ' + b.n + ': ' + b.title">
-        <!-- the same dot as the status bar: lit while the plan runs, amber at a checkpoint, still otherwise -->
-        <span :class="['statusbar-dot', {live: b.status === 'active' && !b.held, held: b.held}]"></span>
         <span class=planbar-n>Plan</span>
         <span class=planbar-title>{{ b.title }}</span>
         <span v-if="b.phase" class=planbar-phase>{{ b.phase }}</span>
