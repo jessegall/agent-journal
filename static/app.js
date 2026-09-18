@@ -3999,6 +3999,13 @@ const EXTENSION = reactive({ here: false, holding: false });
 function askExtension(kind) {
   window.postMessage({ source: "journal-page", kind }, window.location.origin);
 }
+// THE WINDOW AROUND THE FRAME SPEAKS TOO: folded down to the status line, it sends the frame home.
+window.addEventListener("message", (e) => {
+  if (e.source === window.parent && e.source !== window && CHAT_ONLY && e.data && e.data.source === "journal-extension" && e.data.kind === "shut") {
+    const env = parseHash().params.env;
+    if (env && parseHash().view !== "EnvHome") location.hash = `#/env/${env}`;
+  }
+});
 window.addEventListener("message", (e) => {
   if (e.source !== window || !e.data || e.data.source !== "journal-extension") return;
   if (e.data.kind === "here") EXTENSION.here = true;

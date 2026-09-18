@@ -95,6 +95,10 @@
   const setShut = (on) => {
     box.shut = !!on;
     frame.classList.toggle("shut", box.shut);
+    // folded down to the status line, the frame goes back to the chat: a page it had opened would
+    // put its Back bar where the status line is, and there is nothing else to see at that height
+    const view = body.querySelector("iframe");
+    if (box.shut && view && view.contentWindow) view.contentWindow.postMessage({ source: "journal-extension", kind: "shut" }, "*");
     minBtn.textContent = box.shut ? "▴" : "–";
     minBtn.title = box.shut ? "Restore" : "Minimize";
   };
