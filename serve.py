@@ -462,7 +462,10 @@ class _Handler(BaseHTTPRequestHandler):
 
     def _write_body(self, limit: int = BODY_LIMIT) -> tuple[dict | None, tuple | None]:
         origin = self.headers.get("Origin")
-        if origin and urlsplit(origin).netloc != self.headers.get("Host", ""):
+        # THE EXTENSION IS NOT A FOREIGN PAGE. Its worker writes from chrome-extension://…, which no
+        # website can forge: an extension origin is one the user installed, and the guard is against
+        # pages elsewhere on the web, not against the journal's own hands.
+        if origin and urlsplit(origin).netloc != self.headers.get("Host", "") and urlsplit(origin).scheme not in EXTENSION_SCHEMES:
             return None, _json({"error": say("foreign_origin")}, 403)
         if (self.headers.get("Content-Type") or "").split(";")[0].strip() != "application/json":
             return None, _json({"error": say("not_json")}, 415)
@@ -644,6 +647,9 @@ def bind(root: Path, project: Path, port: int | None = None, first: int = DEFAUL
     print(say("no_free_port", first=first, last=first + PORT_TRIES - 1), file=sys.stderr)
     raise SystemExit(1)
 
+
+#: a browser extension's own origin: a write from one is the user's, not a website's
+EXTENSION_SCHEMES = frozenset(("chrome-extension", "moz-extension", "safari-web-extension"))
 
 #: how often the viewer looks at its own code, and how long a change must settle before it restarts
 WATCH_SECONDS = 1.0
