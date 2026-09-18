@@ -9,6 +9,7 @@ import ResourceActions from "./ResourceActions.vue";
 import Sections from "./Sections.vue";
 import OptionsPicker from "./OptionsPicker.vue";
 import Priority from "./Priority.vue";
+import Trace from "./Trace.vue";
 import Comments from "./Comments.vue";
 import Links from "./Links.vue";
 
@@ -17,6 +18,7 @@ const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
 const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
+const traced = computed(() => !!kind.value.fields.changed);
 </script>
 
 <template>
@@ -53,6 +55,9 @@ const ranked = computed(() => !!kind.value.fields.priority && !props.resource.co
             </section>
         </template>
         <Sections :sections="resource.sections" />
+        <template v-if="traced">
+            <Trace :resource="resource" />
+        </template>
         <template v-if="resource.completed">
             <section class="block">
                 <h3>

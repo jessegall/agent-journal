@@ -1,5 +1,5 @@
 from resources.base import AGENT, DOCUMENT, PROJECT, USER, WIDE, Resource
-from resources.shapes import TEXT, Options, Ranked, Reasoned, Shape
+from resources.shapes import TEXT, Options, Ranked, Reasoned, Shape, Traced
 
 
 class Message(Shape, Resource):
@@ -24,10 +24,11 @@ class Todo(Ranked, Resource):
     help_ = "A to-do waits on the list until it is started as work and closed; auto mode works the list in order."
 
 
-class Work(Shape, Resource):
+class Work(Traced, Resource):
     type = "work"
     handed = "STILL OPEN, from this or an earlier session"
     icon = "play"
+    notify = (USER,)
     names = {"complete": "end", "create": "start"}
     title_ = "Work"
     abstract_ = "What the agent is doing right now, declared before its first write"
