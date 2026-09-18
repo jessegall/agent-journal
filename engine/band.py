@@ -7,7 +7,7 @@ from controllers.types import CONTROLLERS
 from engine.record import Record
 from resources.base import SYSTEM
 
-ROWS = 3
+ROWS = 4
 ESC = "\x1b"
 STYLE = f"{ESC}[48;2;23;24;27m{ESC}[38;2;169;172;179m"
 BRIGHT = f"{ESC}[38;2;230;231;234m"
@@ -84,7 +84,8 @@ class Band:
         second = (f"{ACCENT}{mark} {BRIGHT}{state}{DIM}  {agent.get('model') or agent.get('provider') or '—'} · {agent.get('title', '')[:8]}"
                   f" · up {since(float(agent.get('started') or 0))} · {agent.get('uses', 0)} tool uses · context {agent.get('context', 0)}%")
         third = f"{DIM}{seat.get('why') or 'starting'}"
-        return [self.fit(line, cols) for line in (first, second, third)]
+        rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
+        return [self.fit(line, cols) for line in (first, second, third, rule)]
 
     def fit(self, line: str, cols: int) -> str:
         plain = 0
