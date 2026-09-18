@@ -498,8 +498,15 @@ const StatusBar = {
   components: { Icon },
   setup() {
     const env = computed(() => SHELL.env);
-    const work = useFetch(() => env.value && `/api/env/${env.value}/work`);
-    const plans = useFetch(() => env.value && `/api/env/${env.value}/plans`);
+    // THE BAR IS ONE FACT, SO IT IS READ AT ONE PACE. The activity behind it is read every second
+    // while the agent works; the work sentence beside it was read every five, so the state and what
+    // it was on could disagree for four of them.
+    const quick = () => {
+      const agent = SHELL.activity && SHELL.activity.agent;
+      return agent && (agent.working || agent.running) ? 1000 : POLL_MS;
+    };
+    const work = useFetch(() => env.value && `/api/env/${env.value}/work`, { every: quick });
+    const plans = useFetch(() => env.value && `/api/env/${env.value}/plans`, { every: quick });
     watchEffect(() => {
       if (!env.value) return;
       const kept = AGENT_STATE[env.value] || (AGENT_STATE[env.value] = { work: null, plan: null });
@@ -557,7 +564,13 @@ const StatusBar = {
       const last = events.find((e) => e.by && e.by !== "You");
       return last && last.text ? `${last.text.toLowerCase()}${last.n ? ` ${last.n}` : ""}` : "working";
     });
+    //: A GAP BETWEEN TWO TOOL CALLS IS NOT IDLE. With auto on the agent picks the next row up by
+    //: itself, so "Idle · waiting for you" flashed between every pair of calls and said the one thing
+    //: that was not true. The last live state is held for a moment before the word changes.
+    const IDLE_AFTER = 5000;
+    const rest = { at: 0, was: null };
     const view = computed(() => {
+      ticks.value;                                        // the clock re-runs this while it rests
       const agent = SHELL.activity && SHELL.activity.agent;
       const kept = AGENT_STATE[env.value] || { work: null, plan: null };
       const plan = plans.data ? (plans.data.find((p) => p.status === "active") || null) : kept.plan;
@@ -578,9 +591,16 @@ const StatusBar = {
       if (running.value && running.value.seconds >= WAITING_AFTER) {
         return { state: "Waiting", live: true, what: onIt || doing.value, href: workHref };
       }
-      if (agent.compacting) return { state: "Busy", live: true, what: "compacting its context", href: workHref };
-      if (agent.working && !onIt) return { state: "Busy", live: true, what: doing.value, href: workHref };
-      if (agent.working) return { state: "Working", live: true, what: onIt, href: workHref };
+      const live = agent.compacting ? { state: "Busy", live: true, what: "compacting its context", href: workHref }
+        : agent.working && !onIt ? { state: "Busy", live: true, what: doing.value, href: workHref }
+        : agent.working ? { state: "Working", live: true, what: onIt, href: workHref } : null;
+      if (live) {
+        rest.at = 0;
+        rest.was = live;
+        return live;
+      }
+      if (!rest.at) rest.at = Date.now();
+      if (rest.was && Date.now() - rest.at < IDLE_AFTER) return rest.was;
       return { state: "Idle", what: onIt ? `last on ${onIt}` : "waiting for you", href: workHref };
     });
     // the sentence split at the point where it stopped matching the one before it: what is the same
