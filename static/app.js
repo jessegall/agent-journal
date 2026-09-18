@@ -4849,12 +4849,16 @@ const EnvHome = {
         </div>
         <!-- OUTSIDE THE SCROLLING ROW. The facts scroll sideways, and an overflow container clips
              anything hanging out of it — which is a dropdown that opened and could not be seen. -->
-        <div v-if="skills.length" class=bar-menu>
-          <button type=button class=agent-skills :title="skills.length + ' skill(s) open in this window'"
+        <!-- ZERO IS THE NUMBER WORTH SEEING. Hidden when nothing was loaded, the counter vanished at
+             exactly the moment it had something to say — that the agent is working from none. -->
+        <div v-if="lead.href" class=bar-menu>
+          <button type=button :class="['agent-skills', {none: !skills.length}]"
+            :title="skills.length ? skills.length + ' skill(s) open in this window' : 'No journal skill is open in this window'"
             :aria-expanded="skillsOpen ? 'true' : 'false'" @click="skillsOpen = !skillsOpen">
             <Icon name="book"/>{{ skills.length }}</button>
           <div v-if="skillsOpen" class="drop bar-drop skills-drop">
             <p class=bar-none>Open in this window, newest last. A compaction empties it.</p>
+            <p v-if="!skills.length" class=bar-none>None — the agent is working from memory.</p>
             <a v-for="name in skills" :key="name" class=bar-item :href="'#/skills/' + name"
               @click="skillsOpen = false"><Icon name="book"/>{{ name }}</a>
           </div>

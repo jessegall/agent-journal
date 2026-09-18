@@ -978,6 +978,9 @@
   .agent-skills:hover, .agent-skills[aria-expanded="true"] { border-color: var(--border-2);
     background: var(--raised); color: var(--text); }
   .agent-skills .ico { width: 12px; height: 12px; }
+  /* none open is the state worth noticing, so it is the one that is tinted */
+  .agent-skills.none { color: var(--text-4, #6b6e76); }
+  .agent-skills.none .ico { color: #c9955e; }
   /* the thread: what was said, read downwards, with the writing box under it */
   /* THE WRITING BOX IS FIRST IN THE DOCUMENT AND LAST ON THE PAGE. Each turn carries two or three
      buttons, so a box written after them sat behind dozens of tab stops; ordering it here costs
