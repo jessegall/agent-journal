@@ -54,6 +54,9 @@ function parseHash() {
 // on screen while the next request is in flight, so opening another item does not flash.
 // every list and item on screen refreshes itself while the tab is visible
 const POLL_MS = 5000;
+//: THE CHAT ALONE, for the window the extension floats over another page: everything that is there
+//: to move you around the journal is a waste of 440 pixels when the journal is a panel in the corner.
+const CHAT_ONLY = new URLSearchParams(location.search).has("chat");
 // when the tab was last hidden and shown again: the first refresh after a long absence carries everything that changed meanwhile
 const TAB = { hiddenAt: 0, shownAt: 0 };
 document.addEventListener("visibilitychange", () => { if (document.hidden) TAB.hiddenAt = Date.now(); else TAB.shownAt = Date.now(); });
@@ -5975,10 +5978,10 @@ const App = {
     SHELL.setAuto = setAuto;
     const envSettings = useFetch(() => envName.value && `/api/env/${envName.value}/environment`);
     watchEffect(() => { RETENTION.table = envSettings.data ? envSettings.data.retention || null : null; });
-    return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade };
+    return { making, makeEnv, QUICK, TOAST, openQuick, OVERLAY, closeOverlay, route, ov, envName, envRow, NAV, navCount, key, activity, folded, fold, activityHref, ACTIVITY, setAuto, journals, away, AWAY, openInbox, identity, strip, colorOf, stripMenu, loadJournals, journalsOrdered, upgrade, askUpgrade, CHAT_ONLY };
   },
   template: `
-    <div :class="['app', {striped: strip}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
+    <div :class="['app', {striped: strip, 'chat-only': CHAT_ONLY}]" :style="strip ? {'--strip': strip.color, '--strip-label': strip.label} : null">
       <div v-if="strip" class=project-strip role=presentation>
         <button type=button class=project-strip-name :aria-expanded="stripMenu.open" title="Journals running on this machine"
           @click="stripMenu.open = !stripMenu.open; loadJournals()">{{ strip.name }}</button>
