@@ -855,10 +855,14 @@ state.put(root, "running_command", {"what": "python3 test_serve.py", "at": time.
 check("a command in flight is reported with how long it has been running",
       (lambda got: (got["what"], got["seconds"] >= 9, got.get("done")))(_activity.running_now(root, _run_stem)),
       ("python3 test_serve.py", True, None))
-state.put(root, "running_command", {"what": "npm run build", "at": time.time() - 40, "took": 12.4},
-          stem=_run_stem)
-check("a command that has finished keeps its line, with the time it took and not a running clock",
+state.put(root, "running_command", {"what": "npm run build", "at": time.time() - 40, "took": 12.4,
+                                    "ended": time.time()}, stem=_run_stem)
+check("a command that has finished keeps its line, marked done so the clock stops",
       _activity.running_now(root, _run_stem), {"what": "npm run build", "seconds": 12, "done": True})
+state.put(root, "running_command", {"what": "npm run build", "at": time.time() - 40, "took": 12.4,
+                                    "ended": time.time() - _activity.QUIET_AFTER - 1}, stem=_run_stem)
+check("and after a few quiet seconds with nothing else run, it is gone",
+      _activity.running_now(root, _run_stem), None)
 state.put(root, "running_command", {"what": "an older command", "at": time.time() - 99999}, stem=_run_stem)
 check("a command from before this work was declared belongs to the work before it, so it is gone",
       _activity.running_now(root, _run_stem), None)

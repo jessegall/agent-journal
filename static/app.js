@@ -522,11 +522,13 @@ const StatusBar = {
         readAt.seconds = got.seconds;
         readAt.at = Date.now();
       }
-      // a command that has finished keeps its line, and its clock stops where it stopped
+      // THE DURATION IS A LIVE THING. It counts while the command runs and is not shown at all once
+      // it has finished: a number standing still beside a command that is over reads as a command
+      // still running for thirty seconds.
       const secs = got.done ? got.seconds : got.seconds + Math.floor((Date.now() - readAt.at) / 1000);
       const flat = String(got.what || "").trim();
       return { what: flat, seconds: secs, gist: flat.length > 42 ? `${flat.slice(0, 42)}…` : flat,
-               forText: forText(secs) };
+               forText: got.done ? "" : forText(secs) };
     });
     const doing = computed(() => {
       const events = (SHELL.activity && SHELL.activity.events) || [];

@@ -2394,8 +2394,8 @@ def _running_end(payload: dict, ctx: Ctx) -> None:
         state.put(ROOT, RUNNING, None, stem=ctx.stem)
         return
     took = time.time() - float(got["at"])
-    state.put(ROOT, RUNNING, {"what": got.get("what") or "", "at": got["at"], "took": round(took, 1)},
-              stem=ctx.stem)
+    state.put(ROOT, RUNNING, {"what": got.get("what") or "", "at": got["at"], "took": round(took, 1),
+                              "ended": time.time()}, stem=ctx.stem)
     import commandlog
     if took < commandlog.LONG_SECONDS:
         return
